@@ -24,6 +24,7 @@
 
 package hudson.slaves;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.Launcher;
@@ -89,6 +90,7 @@ public class EnvironmentVariablesNodeProperty extends NodeProperty<Node> {
     @Extension @Symbol("envVars")
     public static class DescriptorImpl extends NodePropertyDescriptor {
 
+        @NonNull
         @Override
         public String getDisplayName() {
             return Messages.EnvironmentVariablesNodeProperty_displayName();

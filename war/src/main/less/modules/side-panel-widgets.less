@@ -17,8 +17,7 @@
   font-size: var(--font-size-xs);
 }
 
-#side-panel .pane-header,
-#side-panel .pane-footer {
+#side-panel .pane-header, #side-panel .pane-footer {
   color: var(--link-dark-color);
   background-color: var(--panel-header-bg-color);
   border-radius: 0;
@@ -36,10 +35,17 @@
   }
 }
 
-#side-panel .pane-header .expand,
-#side-panel .pane-header .collapse {
+#side-panel .pane-header .expand, #side-panel .pane-header .collapse {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   margin-left: auto;
   padding-left: 0.5rem;
+
+  svg {
+    width: 1rem;
+    height: 1rem;
+  }
 }
 
 #side-panel .pane-content {
@@ -69,9 +75,7 @@
   }
 }
 
-#side-panel .pane-header a,
-#side-panel .pane-footer a,
-#side-panel .pane-content a {
+#side-panel .pane-header a, #side-panel .pane-footer a, #side-panel .pane-content a {
   .link-dark();
 
   text-decoration: underline;
@@ -141,13 +145,13 @@
   width: 100%;
 }
 
-.build-row-cell .pane.build-name .build-icon,
-.build-row-cell .pane.build-name .display-name {
+.build-row-cell .pane.build-name .build-icon, .build-row-cell .pane.build-name .display-name {
   display: inline-block;
 }
 
 .build-row-cell .pane.build-name .build-icon {
   position: absolute;
+  z-index: 1;
 }
 
 .build-row-cell .build-stop {
@@ -179,13 +183,11 @@
   }
 }
 
-.build-row .build-name-controls .pane.build-name,
-.build-row .build-details-controls .pane.build-details {
+.build-row .build-name-controls .pane.build-name, .build-row .build-details-controls .pane.build-details {
   width: 70%;
 }
 
-.build-row .build-row-cell .pane,
-#side-panel .build-row .build-row-cell .pane {
+.build-row .build-row-cell .pane, #side-panel .build-row .build-row-cell .pane {
   padding: 0 2px; /* Sync changes with func expandControlsTo50Percent in hudson-behavior.js */
   display: inline-block;
   overflow: hidden;
@@ -247,7 +249,7 @@
 .jenkins-pane__header--build-history {
   display: grid;
   grid-template-columns: auto 1fr auto;
-  font-weight: bold!important;
+  font-weight: bold !important;
 
   .jenkins-table__cell--tight {
     width: auto;

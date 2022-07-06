@@ -44,7 +44,6 @@ import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.jvnet.hudson.test.Issue;
@@ -85,7 +84,8 @@ public class PluginManagerTest {
                 () -> pluginManager.parseRequestedPlugins(new ByteArrayInputStream(evilXML.getBytes(StandardCharsets.UTF_8))),
                 "XML contains an external entity, but no exception was thrown.");
         assertThat(ex.getCause(), instanceOf(SAXException.class));
-        assertThat(ex.getCause().getMessage(), containsString("DOCTYPE is disallowed"));
+        assertThat(ex.getCause().getMessage(), containsString("DOCTYPE"));
+        assertThat(ex.getCause().getMessage(), containsString("http://apache.org/xml/features/disallow-doctype-decl"));
     }
 
     @Test
@@ -148,13 +148,13 @@ public class PluginManagerTest {
                 "Plugin-Developers: ";
 
     private File createHpiWithManifest() throws IOException {
-        String manifestPath = "META-INF/MANIFEST.MF";
-        new File("META-INF").mkdir();
-        FileUtils.write(new File(tmp.toFile(), manifestPath), SAMPLE_MANIFEST_FILE, StandardCharsets.UTF_8);
+        Path metaInf = tmp.resolve("META-INF");
+        Files.createDirectory(metaInf);
+        Files.writeString(metaInf.resolve("MANIFEST.MF"), SAMPLE_MANIFEST_FILE, StandardCharsets.UTF_8);
 
         final File f = new File(tmp.toFile(), "my.hpi");
         try (ZipOutputStream out = new ZipOutputStream(Files.newOutputStream(f.toPath()))) {
-            ZipEntry e = new ZipEntry(manifestPath);
+            ZipEntry e = new ZipEntry("META-INF/MANIFEST.MF");
             out.putNextEntry(e);
             byte[] data = SAMPLE_MANIFEST_FILE.getBytes(StandardCharsets.UTF_8);
             out.write(data, 0, data.length);

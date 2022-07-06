@@ -40,7 +40,6 @@ import static org.mockito.Mockito.when;
 
 import hudson.FilePath.TarCompression;
 import hudson.model.TaskListener;
-import hudson.os.PosixAPI;
 import hudson.os.WindowsUtil;
 import hudson.remoting.VirtualChannel;
 import hudson.slaves.WorkspaceList;
@@ -479,25 +478,6 @@ public class FilePathTest {
             }
     }
 
-    @Test public void copyToWithPermissionSpecialPermissions() throws IOException, InterruptedException {
-        assumeFalse(Functions.isWindows() || Platform.isDarwin());
-        File tmp = temp.getRoot();
-        File original = new File(tmp, "original");
-        FilePath originalP = new FilePath(channels.french, original.getPath());
-        originalP.touch(0);
-        PosixAPI.jnr().chmod(original.getAbsolutePath(), 02777); // Read/write/execute for everyone and setuid.
-
-        File sameChannelCopy = new File(tmp, "sameChannelCopy");
-        FilePath sameChannelCopyP = new FilePath(channels.french, sameChannelCopy.getPath());
-        originalP.copyToWithPermission(sameChannelCopyP);
-        assertEquals("Special permissions should be copied on the same machine", 02777, PosixAPI.jnr().stat(sameChannelCopy.getAbsolutePath()).mode() & 07777);
-
-        File diffChannelCopy = new File(tmp, "diffChannelCopy");
-        FilePath diffChannelCopyP = new FilePath(channels.british, diffChannelCopy.getPath());
-        originalP.copyToWithPermission(diffChannelCopyP);
-        assertEquals("Special permissions should not be copied across machines", 00777, PosixAPI.jnr().stat(diffChannelCopy.getAbsolutePath()).mode() & 07777);
-    }
-
     @Test public void symlinkInTar() throws Exception {
         assumeFalse(Functions.isWindows());
 
@@ -660,7 +640,7 @@ public class FilePathTest {
         String message = "going ahead";
         assertFalse(d.installIfNecessaryFrom(url, new StreamTaskListener(baos, Charset.defaultCharset()), message));
         verify(con).setIfModifiedSince(123000);
-        String log = baos.toString(Charset.defaultCharset().name());
+        String log = baos.toString(Charset.defaultCharset());
         assertFalse(log, log.contains(message));
         assertTrue(log, log.contains("504 Gateway Timeout"));
     }

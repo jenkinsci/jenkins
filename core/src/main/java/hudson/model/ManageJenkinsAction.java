@@ -46,7 +46,7 @@ public class ManageJenkinsAction implements RootAction, StaplerFallback, ModelOb
     @Override
     public String getIconFileName() {
         if (Jenkins.get().hasAnyPermission(Jenkins.MANAGE, Jenkins.SYSTEM_READ))
-            return "gear.png";
+            return "symbol-settings";
         else
             return null;
     }
@@ -76,13 +76,13 @@ public class ManageJenkinsAction implements RootAction, StaplerFallback, ModelOb
      * menu.
      */
     @Restricted(NoExternalUse.class)
-    public void addContextMenuItem(ContextMenu menu, String url, String icon, String text, boolean post, boolean requiresConfirmation) {
+    public void addContextMenuItem(ContextMenu menu, String url, String icon, String iconXml, String text, boolean post, boolean requiresConfirmation) {
         if (Stapler.getCurrentRequest().findAncestorObject(this.getClass()) != null || !Util.isSafeToRedirectTo(url)) {
             // Default behavior if the URL is absolute or scheme-relative, or the current object is an ancestor (i.e. would resolve correctly)
-            menu.add(url, icon, text, post, requiresConfirmation);
+            menu.add(url, icon, iconXml, text, post, requiresConfirmation);
             return;
         }
         // If neither is the case, rewrite the relative URL to point to inside the /manage/ URL space
-        menu.add("manage/" + url, icon, text, post, requiresConfirmation);
+        menu.add("manage/" + url, icon, iconXml, text, post, requiresConfirmation);
     }
 }

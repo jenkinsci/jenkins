@@ -70,7 +70,7 @@ public class LoadDetachedPluginsTest {
     @Test
     @LocalData
     public void upgradeFromJenkins1() throws IOException {
-        VersionNumber since = new VersionNumber("1.550");
+        VersionNumber since = new VersionNumber("1.490");
         rr.then(r -> {
             List<DetachedPlugin> detachedPlugins = DetachedPluginsUtil.getDetachedPlugins(since);
             assertThat("Plugins have been detached since the pre-upgrade version",

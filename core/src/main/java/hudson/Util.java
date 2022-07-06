@@ -57,6 +57,7 @@ import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.CopyOption;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.FileSystemException;
 import java.nio.file.FileSystems;
@@ -624,7 +625,7 @@ public class Util {
      */
     @NonNull
     public static String getDigestOf(@NonNull InputStream source) throws IOException {
-        try {
+        try (source) {
             MessageDigest md5 = getMd5();
             DigestInputStream in = new DigestInputStream(source, md5);
             // Note: IOUtils.copy() buffers the input internally, so there is no
@@ -633,8 +634,6 @@ public class Util {
             return toHexString(md5.digest());
         } catch (NoSuchAlgorithmException e) {
             throw new IOException("MD5 not installed", e);    // impossible
-        } finally {
-            source.close();
         }
         /* JENKINS-18178: confuses Maven 2 runner
         try {
@@ -1071,7 +1070,12 @@ public class Util {
 
     /**
      * Copies a single file by using Ant.
+     *
+     * @deprecated since 2.335; use {@link Files#copy(Path, Path, CopyOption...)} directly
      */
+    @Deprecated
+    @Restricted(NoExternalUse.class)
+    @RestrictedSince("2.335")
     public static void copyFile(@NonNull File src, @NonNull File dst) throws BuildException {
         Copy cp = new Copy();
         cp.setProject(new Project());

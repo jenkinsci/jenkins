@@ -42,7 +42,9 @@ import com.thoughtworks.xstream.io.ExtendedHierarchicalStreamWriterHelper;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import com.thoughtworks.xstream.mapper.Mapper;
+import com.thoughtworks.xstream.security.InputManipulationException;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.diagnosis.OldDataMonitor;
 import hudson.model.Saveable;
 import hudson.security.ACL;
@@ -76,6 +78,7 @@ import org.acegisecurity.Authentication;
  * </ul>
  *
  */
+@SuppressFBWarnings(value = "THROWS_METHOD_THROWS_RUNTIMEEXCEPTION", justification = "TODO needs triage")
 @SuppressWarnings({"rawtypes", "unchecked"})
 public class RobustReflectionConverter implements Converter {
 
@@ -369,6 +372,12 @@ public class RobustReflectionConverter implements Converter {
                 }
             } catch (CriticalXStreamException e) {
                 throw e;
+            } catch (InputManipulationException e) {
+                LOGGER.warning(
+                        "DoS detected and prevented. If the heuristic was too aggressive, " +
+                                "you can customize the behavior by setting the hudson.util.XStream2.collectionUpdateLimit system property. " +
+                                "See https://www.jenkins.io/redirect/xstream-dos-prevention for more information.");
+                throw new CriticalXStreamException(e);
             } catch (XStreamException e) {
                 if (critical) {
                     throw new CriticalXStreamException(e);

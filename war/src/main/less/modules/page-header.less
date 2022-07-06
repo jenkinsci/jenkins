@@ -16,7 +16,7 @@
 
 .page-header__brand {
     display: inline-block;
-    height: 100%;
+    height: 3.5rem;
     position: relative;
     flex: 1; // push controls to the end of the block
 }
@@ -51,26 +51,25 @@ a.page-header__brand-link {
 }
 
 .page-header__hyperlinks a {
+    --text-color: var(--header-link-color);
+
     display: inline-flex;
     align-items: center;
 
     // need to override an existing rule
     padding-right: 0.5rem;
     padding: 0.5rem;
-    margin-right: 0.25rem;
+    margin-right: 0.25rem !important;
     font-weight: bold;
     outline-color: var(--header-link-outline);
 
-    &:link,
-    &:visited {
+    &:link, &:visited {
         color: var(--header-link-color);
         border-radius: var(--header-item-border-radius);
         text-decoration: none;
     }
 
-    &:hover,
-    &:focus,
-    &.mouseIsOverMenuSelector {
+    &:hover, &:focus, &.mouseIsOverMenuSelector {
         color: var(--header-link-color-active);
         background-color: var(--header-link-bg-classic-hover);
         text-decoration: underline;
@@ -80,6 +79,17 @@ a.page-header__brand-link {
     &:active {
         background-color: var(--header-link-bg-classic-active);
     }
+
+  .jenkins-menu-dropdown-chevron {
+    position: relative;
+    top: unset !important;
+    right: unset !important;
+    margin-left: 0.5rem;
+
+    &::after {
+      opacity: 1;
+    }
+  }
 }
 
 .page-header__hyperlinks a span {
@@ -114,18 +124,20 @@ a.page-header__brand-link {
     border-radius: var(--form-input-border-radius);
     border: 2px solid var(--header-search-border);
     outline: none;
+    box-shadow: 0 0 0 10px transparent;
+    transition: 0.2s ease;
 
     &::placeholder {
         font-weight: normal;
     }
 
-    &:focus {
-        border-color: var(--header-link-outline);
+    &:active, &:focus {
+        border-color: var(--focus-input-border);
+        box-shadow: 0 0 0 5px var(--focus-input-glow);
     }
 }
 
-.main-search__icon-leading,
-.main-search__icon-trailing {
+.main-search__icon-leading, .main-search__icon-trailing {
     position: absolute;
     display: inline-flex;
     height: 2.5rem;
@@ -149,13 +161,11 @@ a.page-header__brand-link {
     right: 0;
     outline-color: var(--header-link-outline);
 
-    &:link,
-    &:visited {
+    &:link, &:visited {
         color: var(--search-input-color);
     }
 
-    &:hover,
-    &:focus {
+    &:hover, &:focus {
         color: var(--header-link-bg-classic-hover);
     }
 

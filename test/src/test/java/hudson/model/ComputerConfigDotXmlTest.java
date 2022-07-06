@@ -144,7 +144,7 @@ public class ComputerConfigDotXmlTest {
         final String out = outputStream.toString();
         assertThat(out, startsWith("<?xml version=\"1.1\" encoding=\"UTF-8\"?>"));
         assertThat(out, containsString("<name>slave0</name>"));
-        assertThat(out, containsString("<description>dummy</description>"));
+        assertThat(out, containsString("<mode>NORMAL</mode>"));
     }
 
     @Test
@@ -219,7 +219,7 @@ public class ComputerConfigDotXmlTest {
         FailingHttpStatusCodeException e = assertThrows(FailingHttpStatusCodeException.class, () -> wc.getPage(req));
         assertThat(e.getStatusCode(), equalTo(400));
         File configDotXml = new File(rule.jenkins.getRootDir(), "config.xml");
-        String configDotXmlContents = new String(Files.readAllBytes(configDotXml.toPath()), StandardCharsets.UTF_8);
+        String configDotXmlContents = Files.readString(configDotXml.toPath(), StandardCharsets.UTF_8);
 
         assertThat(configDotXmlContents, not(containsString("<name>../</name>")));
     }

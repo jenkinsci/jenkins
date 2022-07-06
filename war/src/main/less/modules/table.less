@@ -1,12 +1,13 @@
 .jenkins-table {
-  width: calc(100% - 10px);
-  background: var(--table-background);
-  border-collapse: collapse;
-  border-radius: 6px;
-  overflow: hidden;
-  box-shadow: 0 0 0 5px var(--table-background);
-  margin: 5px;
   --table-padding: 0.55rem;
+
+  width: 100%;
+  background: var(--table-background);
+  border-radius: calc(var(--table-border-radius) + 2px);
+  border: 5px solid var(--table-background);
+  border-bottom-width: 3px;
+  border-spacing: 0 2px;
+  margin-bottom: var(--section-padding);
 
   * {
     -webkit-border-horizontal-spacing: 0;
@@ -18,8 +19,8 @@
       & > th {
         color: var(--table-header-foreground);
         text-align: left;
-        padding-top: calc((var(--table-padding) * 1.7) - 5px);
-        padding-bottom: calc(var(--table-padding) * 1.7);
+        padding-top: calc((var(--table-padding) * 1.7) - 7.5px);
+        padding-bottom: calc((var(--table-padding) * 1.7) - 2.5px);
         padding-left: var(--table-padding);
         font-weight: 600;
         font-size: 0.85rem;
@@ -52,7 +53,6 @@
     & > tr {
       background: var(--table-body-background);
       color: var(--table-body-foreground);
-      border-bottom: 2px solid var(--table-background);
 
       & > td {
         vertical-align: middle;
@@ -61,36 +61,45 @@
         height: 50px;
 
         &:first-of-type {
-          border-radius: var(--table-body-radius) 0 0 var(--table-body-radius);
           padding-left: calc(var(--table-padding) * 2);
         }
 
         &:last-of-type {
-          border-radius: 0 var(--table-body-radius) var(--table-body-radius) 0;
           padding-right: var(--table-padding);
         }
       }
 
+      // Style the rows so that the first and last have a larger border radius
+      & > td:first-of-type {
+        border-top-left-radius: var(--table-row-border-radius);
+        border-bottom-left-radius: var(--table-row-border-radius);
+      }
+
+      & > td:last-of-type {
+        border-top-right-radius: var(--table-row-border-radius);
+        border-bottom-right-radius: var(--table-row-border-radius);
+      }
+
+      // First row
+      &:first-of-type {
+        & > td:first-of-type {
+          border-top-left-radius: var(--table-border-radius);
+        }
+
+        & > td:last-of-type {
+          border-top-right-radius: var(--table-border-radius);
+        }
+      }
+
+      // Last row
       &:last-of-type {
-        border-bottom: none;
-      }
-    }
+        & > td:first-of-type {
+          border-bottom-left-radius: var(--table-border-radius);
+        }
 
-    & > tr:first-of-type {
-      & > td:first-of-type {
-        border-radius: var(--table-border-radius) 0 0 var(--table-body-radius);
-      }
-      & > td:last-of-type {
-        border-radius: 0 var(--table-border-radius) var(--table-body-radius) 0;
-      }
-    }
-
-    & > tr:last-of-type {
-      & > td:first-of-type {
-        border-radius: var(--table-body-radius) 0 0 var(--table-border-radius);
-      }
-      & > td:last-of-type {
-        border-radius: 0 var(--table-body-radius) var(--table-border-radius) 0;
+        & > td:last-of-type {
+          border-bottom-right-radius: var(--table-border-radius);
+        }
       }
     }
   }
@@ -102,10 +111,16 @@
   }
 
   &__cell--tight {
-    padding-left: 0!important;
-    text-align: center!important;
+    padding-left: 0 !important;
+    text-align: center !important;
     white-space: nowrap;
-    width: 60px;
+    width: 3.5rem;
+  }
+
+  &__cell--checkbox {
+    padding: calc(var(--table-padding) * 2) !important;
+    vertical-align: top !important;
+    width: calc((var(--table-padding) * 2) + 22px);
   }
 
   &__cell--no-wrap {
@@ -120,15 +135,21 @@
     display: inline-flex;
   }
 
-  &__button, &__link, &__icon {
+  &__link {
+    .jenkins-menu-dropdown-chevron {
+      top: 0;
+    }
+  }
+
+  &__button, &__icon {
     svg, .build-status-icon__wrapper, img {
-      width: 24px!important;
-      height: 24px!important;
+      width: 24px !important;
+      height: 24px !important;
     }
   }
 
   &--medium {
-    --table-padding: 0.4rem!important;
+    --table-padding: 0.4rem !important;
 
     tbody > tr > td {
       height: 40px;
@@ -136,8 +157,8 @@
 
     .jenkins-table__button, .jenkins-table__link, .jenkins-table__icon {
       svg, .build-status-icon__wrapper, img {
-        width: 20px!important;
-        height: 20px!important;
+        width: 20px !important;
+        height: 20px !important;
       }
     }
   }
@@ -151,79 +172,46 @@
 
     .jenkins-table__button, .jenkins-table__link, .jenkins-table__icon {
       svg, .build-status-icon__wrapper, img {
-        width: 16px!important;
-        height: 16px!important;
+        width: 16px !important;
+        height: 16px !important;
       }
     }
   }
 
   &__button, &__link {
-    color: var(--link-color)!important;
+    color: var(--link-color);
   }
 
   &__button, .sortheader, &__link {
+    .item();
+
     align-items: center;
     justify-content: center;
     appearance: none;
-    position: relative;
     outline: none;
     border: none;
     margin: 0;
     padding: 0;
-    z-index: 0;
     cursor: pointer;
     color: inherit;
     font-weight: inherit;
     font-size: inherit;
     background: transparent;
-    text-decoration: none!important;
-    line-height: 1!important;
+    text-decoration: none !important;
+    line-height: 1 !important;
+    transition: var(--standard-transition);
 
-    &::before {
-      content: "";
-      position: absolute;
+    &::before, &::after {
       top: -7px;
       left: -10px;
       bottom: -7px;
       right: -10px;
-      border-radius: 5px;
-      background: var(--text-color);
-      z-index: -1;
-      opacity: 0;
-      transition: 0.2s ease;
-    }
-
-    &:hover {
-      &::before {
-        opacity: 0.05!important;
-        border-radius: 5px;
-        background: var(--text-color);
-      }
-    }
-
-    &:focus, &:active {
-      &::before {
-        opacity: 0.1!important;
-        border-radius: 5px;
-        background: var(--text-color);
-      }
-    }
-
-    &--green {
-      color: var(--green)!important;
-    }
-
-    &--orange {
-      color: var(--orange)!important;
-    }
-
-    &--red {
-      color: var(--red)!important;
+      border-radius: 6px;
     }
   }
 
   &__badge {
-    margin-left: 1rem!important;
+    margin-left: 1rem !important;
 
     &::before {
       top: -5px;
@@ -231,8 +219,36 @@
       bottom: -5px;
       right: -8px;
       border-radius: 13px;
-      background: var(--link-color);
+      background: currentColor;
       opacity: 0.05;
+    }
+
+    &::after {
+      top: -5px;
+      left: -8px;
+      bottom: -5px;
+      right: -8px;
+      box-shadow: 0 0 0 10px currentColor;
+      opacity: 0;
+    }
+
+    &:hover {
+      &::before {
+        background: currentColor;
+        border-radius: 6px;
+      }
+    }
+
+    &:active, &:focus {
+      &::before {
+        background: currentColor;
+        border-radius: 6px;
+      }
+
+      &::after {
+        box-shadow: 0 0 0 5px currentColor;
+        opacity: 0.025;
+      }
     }
   }
 }

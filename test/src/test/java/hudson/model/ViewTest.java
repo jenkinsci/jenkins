@@ -41,8 +41,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.mock;
 
 import com.cloudbees.hudson.plugins.folder.Folder;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
@@ -55,10 +53,10 @@ import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlLabel;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.html.HtmlRadioButtonInput;
 import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLElement;
 import com.gargoylesoftware.htmlunit.util.NameValuePair;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionList;
 import hudson.XmlFile;
 import hudson.diagnosis.OldDataMonitor;
@@ -77,9 +75,9 @@ import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -175,9 +173,9 @@ public class ViewTest {
         HtmlAnchor privateViewsLink = userPage.getAnchorByText("My Views");
         assertNotNull("My Views link not available", privateViewsLink);
 
-        HtmlPage privateViewsPage = (HtmlPage) privateViewsLink.click();
+        HtmlPage privateViewsPage = privateViewsLink.click();
 
-        Text viewLabel = (Text) privateViewsPage.getFirstByXPath("//div[@class='tabBar']//div[@class='tab active']/a/text()");
+        Text viewLabel = privateViewsPage.getFirstByXPath("//div[@class='tabBar']//div[@class='tab active']/a/text()");
         assertTrue("'All' view should be selected", viewLabel.getTextContent().contains(Hudson_ViewName()));
 
         View listView = listView("listView");
@@ -185,7 +183,7 @@ public class ViewTest {
         HtmlPage newViewPage = wc.goTo("user/me/my-views/newView");
         HtmlForm form = newViewPage.getFormByName("createItem");
         form.getInputByName("name").setValueAttribute("proxy-view");
-        ((HtmlRadioButtonInput) form.getInputByValue("hudson.model.ProxyView")).setChecked(true);
+        form.getInputByValue("hudson.model.ProxyView").setChecked(true);
         HtmlPage proxyViewConfigurePage = j.submit(form);
         View proxyView = user.getProperty(MyViewsProperty.class).getView("proxy-view");
         assertNotNull(proxyView);
@@ -384,7 +382,7 @@ public class ViewTest {
         MatrixProject matrixJob = j.jenkins.createProject(MatrixProject.class, "matrix");
         view1.add(matrixJob);
         matrixJob.setAxes(new AxisList(
-                new LabelAxis("label", Collections.singletonList("label1"))
+                new LabelAxis("label", List.of("label1"))
         ));
 
         FreeStyleProject noLabelJob = j.createFreeStyleProject("not-assigned-label");
@@ -498,7 +496,7 @@ public class ViewTest {
     @Test
     public void testGetProperties() throws Exception {
         View view = listView("foo");
-        Thread.sleep(100000);
+        Thread.sleep(1000);
         HtmlForm f = j.createWebClient().getPage(view, "configure").getFormByName("viewConfig");
         ((HtmlLabel) DomNodeUtil.selectSingleNode(f, ".//LABEL[text()='Test property']")).click();
         j.submit(f);
@@ -521,6 +519,7 @@ public class ViewTest {
 
         @TestExtension
         public static class DescriptorImpl extends ViewPropertyDescriptor {
+            @NonNull
             @Override
             public String getDisplayName() {
                 return "Test property";
@@ -648,9 +647,9 @@ public class ViewTest {
     public void shouldFindNestedViewByName() throws Exception {
         //given
         String testNestedViewName = "right2ndNestedView";
-        View right2ndNestedView = mockedViewWithName(testNestedViewName);
+        View right2ndNestedView = new ListView(testNestedViewName);
         //and
-        View left2ndNestedView = mockedViewWithName("left2ndNestedView");
+        View left2ndNestedView = new ListView("left2ndNestedView");
         DummyCompositeView rightNestedGroupView = new DummyCompositeView("rightNestedGroupView", left2ndNestedView, right2ndNestedView);
         //and
         listView("leftTopLevelView");
@@ -659,10 +658,6 @@ public class ViewTest {
         View foundNestedView = j.jenkins.getView(testNestedViewName);
         //then
         assertEquals(right2ndNestedView, foundNestedView);
-    }
-
-    private View mockedViewWithName(String viewName) {
-        return given(mock(View.class).getViewName()).willReturn(viewName).getMock();
     }
 
     public void prepareSec1923() {
@@ -893,7 +888,7 @@ public class ViewTest {
         JenkinsRule.WebClient wc = j.createWebClient();
         WebRequest req = new WebRequest(wc.createCrumbedUrl("createView"), HttpMethod.POST);
         req.setEncodingType(FormEncodingType.URL_ENCODED);
-        req.setRequestBody("name=ViewName&mode=hudson.model.ListView&json=" + URLEncoder.encode("{\"mode\":\"hudson.model.ListView\",\"name\":\"DifferentViewName\"}", "UTF-8"));
+        req.setRequestBody("name=ViewName&mode=hudson.model.ListView&json=" + URLEncoder.encode("{\"mode\":\"hudson.model.ListView\",\"name\":\"DifferentViewName\"}", StandardCharsets.UTF_8));
         wc.getPage(req);
         assertNull(j.jenkins.getView("DifferentViewName"));
         assertNotNull(j.jenkins.getView("ViewName"));
@@ -960,6 +955,7 @@ public class ViewTest {
             return customId;
         }
 
+        @NonNull
         @Override
         public String getDisplayName() {
             return customDisplayName;

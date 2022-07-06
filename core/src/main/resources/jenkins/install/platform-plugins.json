@@ -86,8 +86,7 @@
             { "name": "pam-auth", "suggested": true },
             { "name": "ldap", "suggested": true },
             { "name": "role-strategy" },
-            { "name": "active-directory" },
-            { "name": "authorize-project" }
+            { "name": "active-directory" }
         ]
     },
     {
@@ -95,8 +94,7 @@
         "plugins": [
             { "name": "email-ext", "suggested": true },
             { "name": "emailext-template" },
-            { "name": "mailer", "suggested": true },
-            { "name": "ssh" }
+            { "name": "mailer", "suggested": true }
         ]
     },
     {

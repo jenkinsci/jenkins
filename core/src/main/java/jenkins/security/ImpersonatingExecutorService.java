@@ -24,6 +24,7 @@
 
 package jenkins.security;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
 import java.util.concurrent.Callable;
@@ -36,6 +37,7 @@ import org.springframework.security.core.Authentication;
  * @see SecurityContextExecutorService
  * @since 2.51
  */
+@SuppressFBWarnings(value = "THROWS_METHOD_THROWS_CLAUSE_BASIC_EXCEPTION", justification = "TODO needs triage")
 public final class ImpersonatingExecutorService extends InterceptingExecutorService {
 
     private final Authentication authentication;
@@ -73,7 +75,7 @@ public final class ImpersonatingExecutorService extends InterceptingExecutorServ
 
     @Override
     protected <V> Callable<V> wrap(final Callable<V> r) {
-        return new Callable<V>() {
+        return new Callable<>() {
             @Override
             public V call() throws Exception {
                 try (ACLContext ctxt = ACL.as2(authentication)) {

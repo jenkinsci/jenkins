@@ -73,9 +73,6 @@ THE SOFTWARE.
             <j:forEach var="col" items="${columnExtensions}">
               <st:include page="columnHeader.jelly" it="${col}" />
             </j:forEach>
-            <th>
-              <st:nbsp/>
-            </th>
           </tr>
         </thead>
 

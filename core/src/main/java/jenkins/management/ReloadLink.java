@@ -39,7 +39,7 @@ public class ReloadLink extends ManagementLink {
 
     @Override
     public String getIconFileName() {
-        return "refresh.svg";
+        return "symbol-reload";
     }
 
     @Override

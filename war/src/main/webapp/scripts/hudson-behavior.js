@@ -1,19 +1,19 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
  * Daniel Dyer, Yahoo! Inc., Alan Harder, InfraDNA, Inc.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -154,7 +154,7 @@ var crumb = {
     // else, the instance is starting, restarting, etc.
 })();
 
-var isRunAsTest = undefined; 
+var isRunAsTest = undefined;
 // Be careful, this variable does not include the absolute root URL as in Java part of Jenkins,
 // but the contextPath only, like /jenkins
 var rootURL = 'not-defined-yet';
@@ -232,7 +232,7 @@ var FormChecker = {
         this.sendRequest(next.url, {
             method : next.method,
             onComplete : function(x) {
-                applyErrorMessage(next.target, x);
+                updateValidationArea(next.target, x.responseText);
                 FormChecker.inProgress--;
                 FormChecker.schedule();
                 layoutUpdateCallback.call();
@@ -429,7 +429,7 @@ function findNext(src,filter) {
 
 function findFormItem(src,name,directionF) {
     var name2 = "_."+name; // handles <textbox field="..." /> notation silently
-    return directionF(src,function(e){ 
+    return directionF(src,function(e){
         if (e.tagName == "INPUT" && e.type=="radio" && e.checked==true) {
             var r = 0;
             while (e.name.substring(r,r+8)=='removeme') //radio buttons have must be unique in repeatable blocks so name is prefixed
@@ -500,16 +500,53 @@ var tooltip;
 // Behavior rules
 //========================================================
 // using tag names in CSS selector makes the processing faster
+
+
+/**
+ * Updates the validation area for a form element
+ * @param {HTMLElement} validationArea The validation area for a given form element
+ * @param {string} content The content to update the validation area with
+ */
+function updateValidationArea(validationArea, content) {
+  validationArea.classList.add("validation-error-area--visible");
+
+  if (content === "<div/>") {
+    validationArea.classList.remove("validation-error-area--visible");
+    validationArea.style.height = "0px";
+    validationArea.innerHTML = content;
+  } else {
+    // Only change content if different, causes an unnecessary animation otherwise
+    if (validationArea.innerHTML !== content) {
+      validationArea.innerHTML = content;
+      validationArea.style.height = validationArea.children[0].offsetHeight + "px";
+
+      // Only include the notice in the validation-error-area, move all other elements out
+      if (validationArea.children.length > 1) {
+        Array.from(validationArea.children).slice(1).forEach((element) => {
+          validationArea.after(element);
+        })
+      }
+
+      Behaviour.applySubtree(validationArea);
+      // For errors with additional details, apply the subtree to the expandable details pane
+      if (validationArea.nextElementSibling) {
+        Behaviour.applySubtree(validationArea.nextElementSibling);
+      }
+    }
+  }
+}
+
 function registerValidator(e) {
 
     // Retrieve the validation error area
-    var tr = findFollowingTR(e, "validation-error-area");
+    var tr = e.closest(".jenkins-form-item").querySelector(".validation-error-area");
     if (!tr) {
-        console.warn("Couldn't find the expected parent element (.setting-main) for element", e)
+        console.warn("Couldn't find the expected validation element (.validation-error-area) for element",
+          e.closest(".jenkins-form-item"))
         return;
     }
     // find the validation-error-area
-    e.targetElement = tr.firstElementChild.nextSibling;
+    e.targetElement = tr;
 
     e.targetUrl = function() {
         var url = this.getAttribute("checkUrl");
@@ -545,19 +582,13 @@ function registerValidator(e) {
     }
 
     var checker = function() {
-        var target = this.targetElement;
+        const validationArea = this.targetElement;
         FormChecker.sendRequest(this.targetUrl(), {
             method : method,
-            onComplete : function(x) {
-                if (x.status == 200) {
-                    // All FormValidation responses are 200
-                    target.innerHTML = x.responseText;
-                } else {
-                    // Content is taken from FormValidation#_errorWithMarkup
-                    // TODO Add i18n support
-                    target.innerHTML = "<div class='error'>An internal error occurred during form field validation (HTTP " + x.status + "). Please reload the page and if the problem persists, ask the administrator for help.</div>";
-                }
-                Behaviour.applySubtree(target);
+            onComplete: function({status, responseText}) {
+              // TODO Add i18n support
+              const errorMessage = `<div class="error">An internal error occurred during form field validation (HTTP ${status}). Please reload the page and if the problem persists, ask the administrator for help.</div>`;
+              updateValidationArea(validationArea, status === 200 ? responseText : errorMessage);
             }
         });
     }
@@ -584,22 +615,25 @@ function registerValidator(e) {
 }
 
 function registerRegexpValidator(e,regexp,message) {
-    var tr = findFollowingTR(e, "validation-error-area");
+    var tr = e.closest(".jenkins-form-item").querySelector( ".validation-error-area");
     if (!tr) {
-        console.warn("Couldn't find the expected parent element (.setting-main) for element", e)
+        console.warn("Couldn't find the expected parent element (.setting-main) for element",
+          e.closest(".jenkins-form-item"))
         return;
     }
     // find the validation-error-area
-    e.targetElement = tr.firstElementChild.nextSibling;
+    e.targetElement = tr;
     var checkMessage = e.getAttribute('checkMessage');
     if (checkMessage) message = checkMessage;
     var oldOnchange = e.onchange;
     e.onchange = function() {
         var set = oldOnchange != null ? oldOnchange.call(this) : false;
         if (this.value.match(regexp)) {
-            if (!set) this.targetElement.innerHTML = "<div/>";
+            if (!set) {
+                updateValidationArea(this.targetElement, `<div/>`)
+            }
         } else {
-            this.targetElement.innerHTML = "<div class=error>" + message + "</div>";
+            updateValidationArea(this.targetElement, `<div class="error">${message}</div>`);
             set = true;
         }
         return set;
@@ -613,13 +647,14 @@ function registerRegexpValidator(e,regexp,message) {
  * @param e Input element
  */
 function registerMinMaxValidator(e) {
-    var tr = findFollowingTR(e, "validation-error-area");
+    var tr = e.closest(".jenkins-form-item").querySelector( ".validation-error-area");
     if (!tr) {
-        console.warn("Couldn't find the expected parent element (.setting-main) for element", e)
+        console.warn("Couldn't find the expected parent element (.setting-main) for element",
+          e.closest(".jenkins-form-item"))
         return;
     }
     // find the validation-error-area
-    e.targetElement = tr.firstElementChild.nextSibling;
+    e.targetElement = tr;
     var checkMessage = e.getAttribute('checkMessage');
     if (checkMessage) message = checkMessage;
     var oldOnchange = e.onchange;
@@ -638,29 +673,35 @@ function registerMinMaxValidator(e) {
 
                 if (min <= max) {  // Add the validator if min <= max
                     if (parseInt(min) > parseInt(this.value) || parseInt(this.value) > parseInt(max)) {  // The value is out of range
-                        this.targetElement.innerHTML = "<div class=error>This value should be between " + min + " and " + max + "</div>";
+                        updateValidationArea(this.targetElement, `<div class="error">This value should be between ${min} and ${max}</div>`);
                         set = true;
                     } else {
-                        if (!set) this.targetElement.innerHTML = "<div/>";  // The value is valid
+                        if (!set) {
+                          updateValidationArea(this.targetElement, `<div/>`)
+                        }
                     }
                 }
 
             } else if ((min !== null && isInteger(min)) && (max === null || !isInteger(max))) {  // There is only 'min' available
 
                 if (parseInt(min) > parseInt(this.value)) {
-                    this.targetElement.innerHTML = "<div class=error>This value should be larger than " + min + "</div>";
+                    updateValidationArea(this.targetElement, `<div class="error">This value should be larger than ${min}</div>`);
                     set = true;
                 } else {
-                    if (!set) this.targetElement.innerHTML = "<div/>";
+                    if (!set) {
+                      updateValidationArea(this.targetElement, `<div/>`)
+                    }
                 }
 
             } else if ((min === null || !isInteger(min)) && (max !== null && isInteger(max))) {  // There is only 'max' available
 
                 if (parseInt(max) < parseInt(this.value)) {
-                    this.targetElement.innerHTML = "<div class=error>This value should be less than " + max + "</div>";
+                    updateValidationArea(this.targetElement, `<div class="error">This value should be less than ${max}</div>`);
                     set = true;
                 } else {
-                    if (!set) this.targetElement.innerHTML = "<div/>";
+                    if (!set) {
+                      updateValidationArea(this.targetElement, `<div/>`)
+                    }
                 }
             }
         }
@@ -779,7 +820,7 @@ function renderOnDemand(e,callback,noBehaviour) {
 }
 
 /**
- * Finds all the script tags 
+ * Finds all the script tags
  */
 function evalInnerHtmlScripts(text,callback) {
     var q = [];
@@ -835,11 +876,14 @@ function expandButton(e) {
 function labelAttachPreviousOnClick() {
     var e = $(this).previous();
     while (e!=null) {
-        if (e.tagName=="INPUT") {
-            e.click();
-            break;
-        }
-        e = e.previous();
+      if (e.classList.contains("jenkins-radio")) {
+        e = e.querySelector("input");
+      }
+      if (e.tagName=="INPUT") {
+        e.click();
+        break;
+      }
+      e = e.previous();
     }
 }
 
@@ -931,13 +975,20 @@ function makeInnerVisible(b) {
 }
 
 function updateVisibility() {
-    var display = (this.outerVisible && this.innerVisible) ? "" : "none";
+    var display = (this.outerVisible && this.innerVisible);
     for (var e=this.start; e!=this.end; e=$(e).next()) {
         if (e.rowVisibilityGroup && e!=this.start) {
             e.rowVisibilityGroup.makeOuterVisible(this.innerVisible);
             e = e.rowVisibilityGroup.end; // the above call updates visibility up to e.rowVisibilityGroup.end inclusive
         } else {
-            e.style.display = display;
+            if (display) {
+                e.style.display = ""
+                e.classList.remove("form-container--hidden")
+            } else {
+                // TODO remove display once tab bar (ConfigTableMetaData) is able to handle hidden tabs via class and not just display
+                e.style.display = "none"
+                e.classList.add("form-container--hidden")
+            }
         }
     }
     layoutUpdateCallback.call();
@@ -1015,7 +1066,7 @@ function rowvgStartEachRow(recursive,f) {
         registerRegexpValidator(e,/^[1-9]\d*$/,"Not a positive integer");
     });
 
-    Behaviour.specify("INPUT.auto-complete", "input-auto-complete", ++p, function(e) {// form field with auto-completion support 
+    Behaviour.specify("INPUT.auto-complete", "input-auto-complete", ++p, function(e) {// form field with auto-completion support
         // insert the auto-completion container
         var div = document.createElement("DIV");
         e.parentNode.insertBefore(div,$(e).next()||null);
@@ -1027,7 +1078,7 @@ function rowvgStartEachRow(recursive,f) {
             resultsList: "suggestions",
             fields: ["name"]
         };
-        
+
         // Instantiate the AutoComplete
         var ac = new YAHOO.widget.AutoComplete(e, div, ds);
         ac.generateRequest = function(query) {
@@ -1068,7 +1119,7 @@ function rowvgStartEachRow(recursive,f) {
             var cmdKeyDown = false;
             var mode = e.getAttribute("script-mode") || "text/x-groovy";
             var readOnly = eval(e.getAttribute("script-readOnly")) || false;
-            
+
             var w = CodeMirror.fromTextArea(e,{
               mode: mode,
               lineNumbers: true,
@@ -1103,7 +1154,6 @@ function rowvgStartEachRow(recursive,f) {
                 }
               }
             }).getWrapperElement();
-            w.setAttribute("style","border:1px solid black; margin-top: 1em; margin-bottom: 1em")
         })();
     });
 
@@ -1125,63 +1175,40 @@ function rowvgStartEachRow(recursive,f) {
             });
     });
 
-    // resizable text area
-    Behaviour.specify("TEXTAREA", "textarea", ++p, function(textarea) {
-        if(Element.hasClassName(textarea,"rich-editor")) {
-            // rich HTML editor
-            try {
-                var editor = new YAHOO.widget.Editor(textarea, {
-                    dompath: true,
-                    animate: true,
-                    handleSubmit: true
-                });
-                // probably due to the timing issue, we need to let the editor know
-                // that DOM is ready
-                editor.DOMReady=true;
-                editor.fireQueue();
-                editor.render();
-                layoutUpdateCallback.call();
-            } catch(e) {
-                alert(e);
-            }
-            return;
-        }
+    // Native browser resizing doesn't work for CodeMirror textboxes so let's create our own
+    Behaviour.specify(".CodeMirror", "codemirror", ++p, function(codemirror) {
+      const MIN_HEIGHT = 200;
 
-        // CodeMirror inserts a wrapper element next to the textarea.
-        // textarea.nextSibling may not be the handle.
-        var handles = findElementsBySelector(textarea.parentNode, ".textarea-handle");
-        if(handles.length != 1) return;
-        var handle = handles[0];
+      const resizer = document.createElement("div");
+      resizer.className = "jenkins-codemirror-resizer";
 
-        var Event = YAHOO.util.Event;
+      let start_x;
+      let start_y;
+      let start_h;
 
-        function getCodemirrorScrollerOrTextarea(){
-            return textarea.codemirrorObject ? textarea.codemirrorObject.getScrollerElement() : textarea;
-        }
-        handle.onmousedown = function(ev) {
-            ev = Event.getEvent(ev);
-            var s = getCodemirrorScrollerOrTextarea();
-            var offset = s.offsetHeight-Event.getPageY(ev);
-            s.style.opacity = 0.5;
-            document.onmousemove = function(ev) {
-                ev = Event.getEvent(ev);
-                function max(a,b) { if(a<b) return b; else return a; }
-                s.style.height = max(32, offset + Event.getPageY(ev)) + 'px';
-                layoutUpdateCallback.call();
-                return false;
-            };
-            document.onmouseup = function() {
-                document.onmousemove = null;
-                document.onmouseup = null;
-                var s = getCodemirrorScrollerOrTextarea();
-                s.style.opacity = 1;
-            }
-        };
-        handle.ondblclick = function() {
-            var s = getCodemirrorScrollerOrTextarea();
-            s.style.height = "1px"; // To get actual height of the textbox, shrink it and show its scrollbar
-            s.style.height = s.scrollHeight + 'px';
-        }
+      function height_of($el) {
+        return parseInt(window.getComputedStyle($el).height.replace(/px$/, ""));
+      }
+
+      function on_drag(e) {
+        codemirror.CodeMirror.setSize(null, Math.max(MIN_HEIGHT, (start_h + e.y - start_y)) + "px");
+      }
+
+      function on_release() {
+        document.body.removeEventListener("mousemove", on_drag);
+        window.removeEventListener("mouseup", on_release);
+      }
+
+      resizer.addEventListener("mousedown", function (e) {
+        start_x = e.x;
+        start_y = e.y;
+        start_h = height_of(codemirror);
+
+        document.body.addEventListener("mousemove", on_drag);
+        window.addEventListener("mouseup", on_release);
+      });
+
+      codemirror.parentNode.insertBefore(resizer, codemirror.nextSibling);
     });
 
     // structured form submission
@@ -1219,8 +1246,10 @@ function rowvgStartEachRow(recursive,f) {
     });
 
     Behaviour.specify("TR.optional-block-start,DIV.tr.optional-block-start", "tr-optional-block-start-div-tr-optional-block-start", ++p, function(e) { // see optionalBlock.jelly
-        // set start.ref to checkbox in preparation of row-set-end processing
-        var checkbox = e.down().down();
+        // Get the `input` from the checkbox container
+        var checkbox = e.querySelector("input[type='checkbox']")
+
+        // Set start.ref to checkbox in preparation of row-set-end processing
         e.setAttribute("ref", checkbox.id = "cb"+(iota++));
     });
 
@@ -1293,7 +1322,8 @@ function rowvgStartEachRow(recursive,f) {
         // this is suffixed by a pointless string so that two processing for optional-block-start
         // can sandwich row-set-end
         // this requires "TR.row-set-end" to mark rows
-        var checkbox = e.down().down();
+        // Get the `input` from the checkbox container
+        var checkbox = e.querySelector("input[type='checkbox']")
         updateOptionalBlock(checkbox,false);
     });
 
@@ -1391,7 +1421,7 @@ function rowvgStartEachRow(recursive,f) {
     });
 
     Behaviour.specify("DIV.behavior-loading", "div-behavior-loading", ++p, function(e) {
-        e.style.display = 'none';
+        e.classList.add("behavior-loading--hidden");
     });
 
     Behaviour.specify(".button-with-dropdown", "-button-with-dropdown", ++p, function (e) {
@@ -1416,89 +1446,24 @@ function rowvgStartEachRow(recursive,f) {
         });
     });
 
-    /*
-        Use on div tag to make it sticky visible on the bottom of the page.
-        When page scrolls it remains in the bottom of the page
-        Convenient on "OK" button and etc for a long form page
-     */
-    Behaviour.specify("#bottom-sticker", "-bottom-sticker", ++p, function(sticker) {
-        var DOM = YAHOO.util.Dom;
+  window.addEventListener('load', function () {
+    // Add a class to the bottom bar when it's stuck to the bottom of the screen
+    const el = document.querySelector("#bottom-sticker")
+    if (el) {
+      const observer = new IntersectionObserver(
+        ([e]) => e.target.classList.toggle("bottom-sticker-inner--stuck", e.intersectionRatio < 1),
+        {threshold: [1]}
+      );
 
-        var shadow = document.createElement("div");
-        sticker.parentNode.insertBefore(shadow,sticker);
-
-        var edge = document.createElement("div");
-        edge.className = "bottom-sticker-edge";
-        sticker.insertBefore(edge,sticker.firstElementChild);
-
-        function adjustSticker() {
-            shadow.style.height = sticker.offsetHeight + "px";
-
-            var viewport = DOM.getClientRegion();
-            var pos = DOM.getRegion(shadow);
-
-            sticker.style.position = "fixed";
-
-            var bottomPos = Math.max(0, viewport.bottom - pos.bottom);
-
-            sticker.style.bottom = bottomPos + "px"
-            sticker.style.left = Math.max(0,pos.left-viewport.left) + "px"
-        }
-
-        // react to layout change
-        Element.observe(window,"scroll",adjustSticker);
-        Element.observe(window,"resize",adjustSticker);
-        // initial positioning
-        Element.observe(window,"load",adjustSticker);
-        Event.observe(window, 'jenkins:bottom-sticker-adjust', adjustSticker);
-        adjustSticker();
-        layoutUpdateCallback.add(adjustSticker);
-    });
-
-    Behaviour.specify("#top-sticker", "-top-sticker", ++p, function(sticker) {// legacy
-        this[".top-sticker"](sticker);
-    });
-
-    /**
-     * @param {HTMLElement} sticker
-     */
-    Behaviour.specify(".top-sticker", "-top-sticker-2", ++p, function(sticker) {
-        var DOM = YAHOO.util.Dom;
-
-        var shadow = document.createElement("div");
-        sticker.parentNode.insertBefore(shadow,sticker);
-
-        var edge = document.createElement("div");
-        edge.className = "top-sticker-edge";
-        sticker.insertBefore(edge,sticker.firstElementChild);
-
-        var initialBreadcrumbPosition = DOM.getRegion(shadow);
-        function adjustSticker() {
-            shadow.style.height = sticker.offsetHeight + "px";
-
-            var viewport = DOM.getClientRegion();
-            var pos = DOM.getRegion(shadow);
-
-            sticker.style.position = "fixed";
-            if(pos.top <= initialBreadcrumbPosition.top) {
-                sticker.style.top = Math.max(0, pos.top-viewport.top) + "px"
-            }
-            sticker.style.left = Math.max(0,pos.left-viewport.left) + "px"
-        }
-
-        // react to layout change
-        Element.observe(window,"scroll",adjustSticker);
-        Element.observe(window,"resize",adjustSticker);
-        // initial positioning
-        Element.observe(window,"load",adjustSticker);
-        adjustSticker();
-    });
+      observer.observe(el);
+    }
+  })
 
     /**
      * Function that provides compatibility to the checkboxes without title on an f:entry
      *
      * When a checkbox is generated by setting the title on the f:entry like
-     *     <f:entry field="rebaseBeforePush"title="${%Rebase Before Push}">
+     *     <f:entry field="rebaseBeforePush" title="${%Rebase Before Push}">
      *         <f:checkbox />
      *     </f:entry>
      * This function will copy the title from the .setting-name field to the checkbox label.
@@ -1507,7 +1472,7 @@ function rowvgStartEachRow(recursive,f) {
      * @param {HTMLLabelElement} label
      */
     Behaviour.specify('label.js-checkbox-label-empty', 'form-fallbacks', 1000, function(label) {
-        var labelParent = label.parentElement;
+        var labelParent = label.parentElement.parentElement;
 
         if (!labelParent.classList.contains('setting-main')) return;
 
@@ -1525,6 +1490,7 @@ function rowvgStartEachRow(recursive,f) {
 
         if (helpLink) {
             labelParent.classList.add('help-sibling');
+            labelParent.classList.add('jenkins-checkbox-help-wrapper');
             labelParent.appendChild(helpLink);
         }
 
@@ -1772,18 +1738,18 @@ function expandTextArea(button,id) {
     button.style.display="none";
     var field = button.parentNode.previousSibling.children[0];
     var value = field.value.replace(/ +/g,'\n');
-    
-    var n = button; 
+
+    var n = button;
     while (!n.classList.contains("expanding-input") && n.tagName != "TABLE")
     {
         n = n.parentNode;
     }
 
     var parent = n.parentNode;
-    parent.innerHTML = "<textarea rows=8 class='setting-input'></textarea>";
+    parent.innerHTML = "<textarea rows=8 class='jenkins-input'></textarea>";
     var textArea = parent.childNodes[0];
     textArea.name = field.name;
-    textArea.innerText = value;
+    textArea.value = value;
 
     layoutUpdateCallback.call();
 }
@@ -1890,13 +1856,6 @@ Form.findMatchingInput = function(base, name) {
     return null;        // not found
 }
 
-function onBuildHistoryChange(handler) {
-    Event.observe(window, 'jenkins:buildHistoryChanged', handler);
-}
-function fireBuildHistoryChanged() {
-    Event.fire(window, 'jenkins:buildHistoryChanged');
-}
-
 function toQueryString(params) {
     var query = '';
     if (params) {
@@ -1950,52 +1909,6 @@ function getStyle(e,a){
     return e.currentStyle[a];
   return null;
 }
-
-function ElementResizeTracker() {
-    this.trackedElements = [];
-
-    if(isRunAsTest) {
-        return;
-    }
-
-    var thisTracker = this;
-    function checkForResize() {
-        for (var i = 0; i < thisTracker.trackedElements.length; i++) {
-            var element = thisTracker.trackedElements[i];
-            var currDims = Element.getDimensions(element);
-            var lastDims = element.lastDimensions;
-            if (currDims.width !== lastDims.width || currDims.height !== lastDims.height) {
-                Event.fire(element, 'jenkins:resize');
-            }
-            element.lastDimensions = currDims;
-        }
-    }
-    Event.observe(window, 'jenkins:resizeCheck', checkForResize);
-
-    function checkForResizeLoop() {
-        checkForResize();
-        setTimeout(checkForResizeLoop, 200);
-    }
-    checkForResizeLoop();
-}
-ElementResizeTracker.prototype.addElement = function(element) {
-    for (var i = 0; i < this.trackedElements.length; i++) {
-        if (this.trackedElements[i] === element) {
-            // we're already tracking it so no need to add it.
-            return;
-        }
-    }
-    this.trackedElements.push(element);
-}
-ElementResizeTracker.prototype.onResize = function(element, handler) {
-    element.lastDimensions = Element.getDimensions(element);
-    Event.observe(element, 'jenkins:resize', handler);
-    this.addElement(element);
-}
-ElementResizeTracker.fireResizeCheck = function() {
-    Event.fire(window, 'jenkins:resizeCheck');
-}
-var elementResizeTracker = new ElementResizeTracker();
 
 /**
  * Makes sure the given element is within the viewport.
@@ -2202,7 +2115,7 @@ function buildFormTree(form) {
                 addProperty(findParent(e),e.name,values);
                 continue;
             }
-                
+
             var p;
             var r;
             var type = e.getAttribute("type");
@@ -2299,7 +2212,7 @@ function buildFormTree(form) {
 var toggleCheckboxes = function(toggle) {
     var inputs = document.getElementsByTagName("input");
     for(var i=0; i<inputs.length; i++) {
-        if(inputs[i].type === "checkbox") {
+        if(inputs[i].type === "checkbox" && !inputs[i].disabled) {
             inputs[i].checked = toggle;
         }
     }
@@ -2327,7 +2240,7 @@ var hoverNotification = (function() {
         document.body.appendChild(div);
         div.innerHTML = "<div id=hoverNotification class='jenkins-tooltip'><div class=bd></div></div>";
         body = $('hoverNotification');
-        
+
         msgBox = new YAHOO.widget.Overlay(body, {
           visible:false,
           zIndex:1000,
@@ -2352,6 +2265,15 @@ var hoverNotification = (function() {
         msgBox.show();
     };
 })();
+
+// Decrease vertical padding for checkboxes
+window.addEventListener('load', function () {
+    document.querySelectorAll(".jenkins-form-item").forEach(function (element) {
+        if (element.querySelector(".optionalBlock-container > .row-group-start input[type='checkbox'], .optional-block-start input[type='checkbox'], div > .jenkins-checkbox") != null) {
+            element.classList.add("jenkins-form-item--tight")
+        }
+    });
+})
 
 /**
  * Loads the script specified by the URL.
@@ -2401,7 +2323,7 @@ function safeValidateButton(yuiButton) {
 
     // optional, by default = empty string
     var paramList = button.getAttribute('data-validate-button-with') || '';
-    
+
     validateButton(checkUrl, paramList, yuiButton);
 }
 
@@ -2420,15 +2342,16 @@ function validateButton(checkUrl,paramList,button) {
       }
   });
 
-  var spinner = $(button).up("DIV").next();
-  var target = spinner.next();
+  var spinner = button.up("DIV").children[0];
+  var target = spinner.next().next();
   spinner.style.display="block";
 
   new Ajax.Request(checkUrl, {
       parameters: parameters,
       onComplete: function(rsp) {
           spinner.style.display="none";
-          applyErrorMessage(target, rsp);
+          target.innerHTML = `<div class="validation-error-area" />`;
+          updateValidationArea(target.children[0], rsp.responseText);
           layoutUpdateCallback.call();
           var s = rsp.getResponseHeader("script");
           try {
@@ -2438,26 +2361,6 @@ function validateButton(checkUrl,paramList,button) {
           }
       }
   });
-}
-
-function applyErrorMessage(elt, rsp) {
-    if (rsp.status == 200) {
-        elt.innerHTML = rsp.responseText;
-    } else {
-        var id = 'valerr' + (iota++);
-        elt.innerHTML = '<a href="" onclick="document.getElementById(\'' + id
-        + '\').style.display=\'block\';return false">ERROR</a><div id="'
-        + id + '" style="display:none">' + rsp.responseText + '</div>';
-        var error = document.getElementById('error-description'); // cf. oops.jelly
-        if (error) {
-            var div = document.getElementById(id);
-            while (div.firstElementChild) {
-                div.removeChild(div.firstElementChild);
-            }
-            div.appendChild(error);
-        }
-    }
-    Behaviour.applySubtree(elt);
 }
 
 // create a combobox.

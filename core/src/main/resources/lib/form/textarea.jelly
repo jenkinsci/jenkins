@@ -90,7 +90,7 @@ THE SOFTWARE.
   <f:possibleReadOnlyField>
       <textarea id="${attrs.id}" style="${attrs.style}"
                 name ="${name}"
-                class="setting-input ${attrs.checkUrl!=null?'validated':''} ${attrs['codemirror-mode']!=null?'codemirror':''} ${attrs.class}"
+                class="jenkins-input ${attrs.checkUrl!=null?'validated':''} ${attrs['codemirror-mode']!=null?'codemirror':''} ${attrs.class}"
                 checkUrl="${attrs.checkUrl}" checkDependsOn="${attrs.checkDependsOn}" checkMethod="${attrs.checkMethod}"
                 rows="${h.determineRows(value)}"
                 readonly="${attrs.readonly}"
@@ -102,10 +102,8 @@ THE SOFTWARE.
     <j:if test="${customizedFields != null and attrs.field != null and value != default}">
       <j:mute>${customizedFields.add(name)}</j:mute>
     </j:if>
-    <!-- resize handle -->
-    <div class="textarea-handle"/>
   </f:possibleReadOnlyField>
-  <j:if test="${attrs.previewEndpoint!=null}">
+  <j:if test="${attrs.previewEndpoint!=null and !readOnlyMode}">
     <div class="textarea-preview-container">
       <j:if test="${attrs.previewEndpoint == '/markupFormatter/previewDescription'}">
         [${app.markupFormatter.descriptor.displayName}]<st:nbsp/>

@@ -43,11 +43,11 @@ THE SOFTWARE.
       <l:progressiveRendering handler="${it}" callback="display"/>
 
       <!-- cloned from JS -->
-      <span id="person-circle-outline" class="default-hidden">
-        <l:ionicon name="person-circle-outline" />
+      <span id="person-circle" class="default-hidden">
+        <l:icon src="symbol-person-circle" />
       </span>
 
-      <table class="jenkins-table ${iconSize == '16x16' ? 'jenkins-table--small' : iconSize == '24x24' ? 'jenkins-table--medium' : ''} sortable" id="people">
+      <table class="jenkins-table ${iconSize == '16x16' ? 'jenkins-table--small' : iconSize == '24x24' ? 'jenkins-table--medium' : ''} sortable" id="people" style="display: none;">
         <thead>
           <tr>
             <th data-sort-disable="true" class="jenkins-table__cell--tight"></th>

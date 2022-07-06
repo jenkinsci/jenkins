@@ -29,6 +29,7 @@ import hudson.model.User;
 import hudson.util.Scrambler;
 import java.io.IOException;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
@@ -67,7 +68,7 @@ import org.springframework.security.core.userdetails.UserDetails;
  * This causes the container to perform authentication, but there's no way
  * to find out whether the user has been successfully authenticated or not.
  * So to find this out, we then redirect the user to
- * {@link jenkins.model.Jenkins#doSecured(StaplerRequest, StaplerResponse) {@code /secured/...} page}.
+ * {@link jenkins.model.Jenkins#doSecured(StaplerRequest, StaplerResponse) /secured/... page}.
  *
  * <p>
  * The handler of the above URL checks if the user is authenticated,
@@ -168,7 +169,7 @@ public class BasicAuthenticationFilter implements Filter {
 
         // ... but first let the container authenticate this request
         RequestDispatcher d = servletContext.getRequestDispatcher("/j_security_check?j_username=" +
-            URLEncoder.encode(username, "UTF-8") + "&j_password=" + URLEncoder.encode(password, "UTF-8"));
+            URLEncoder.encode(username, StandardCharsets.UTF_8) + "&j_password=" + URLEncoder.encode(password, StandardCharsets.UTF_8));
         d.include(req, rsp);
     }
 

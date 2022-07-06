@@ -37,6 +37,7 @@ import static org.junit.Assert.fail;
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebRequest;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.model.Node.Mode;
@@ -57,9 +58,9 @@ import hudson.util.TagCloud;
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.Map;
 import jenkins.model.Jenkins;
 import jenkins.security.QueueItemAuthenticatorConfiguration;
 import org.junit.Before;
@@ -221,7 +222,7 @@ public class NodeTest {
         j.jenkins.setSecurityRealm(realm);
         realm.createAccount("John", "");
         notTake = false;
-        QueueItemAuthenticatorConfiguration.get().getAuthenticators().add(new MockQueueItemAuthenticator(Collections.singletonMap(project.getFullName(), user.impersonate())));
+        QueueItemAuthenticatorConfiguration.get().getAuthenticators().add(new MockQueueItemAuthenticator(Map.of(project.getFullName(), user.impersonate())));
         assertNotNull("Node should not take project because user does not have build permission.", node.canTake(item));
         message = Messages._Node_LackingBuildPermission(item.authenticate2().getName(), node.getNodeName()).toString();
         assertEquals("Cause of blockage should be build permission label.", message, node.canTake(item).getShortDescription());
@@ -429,8 +430,9 @@ public class NodeTest {
     @TestExtension
     public static class LabelFinderImpl extends LabelFinder {
 
+        @NonNull
         @Override
-        public Collection<LabelAtom> findLabels(Node node) {
+        public Collection<LabelAtom> findLabels(@NonNull Node node) {
             List<LabelAtom> atoms = new ArrayList<>();
             if (addDynamicLabel) {
                 atoms.add(Jenkins.get().getLabelAtom("dynamicLabel"));

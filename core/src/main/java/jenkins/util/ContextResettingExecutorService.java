@@ -1,5 +1,6 @@
 package jenkins.util;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 
@@ -11,6 +12,7 @@ import java.util.concurrent.ExecutorService;
  *
  * @author Kohsuke Kawaguchi
  */
+@SuppressFBWarnings(value = "THROWS_METHOD_THROWS_CLAUSE_BASIC_EXCEPTION", justification = "TODO needs triage")
 public class ContextResettingExecutorService extends InterceptingExecutorService {
     public ContextResettingExecutorService(ExecutorService base) {
         super(base);
@@ -36,7 +38,7 @@ public class ContextResettingExecutorService extends InterceptingExecutorService
 
     @Override
     protected <V> Callable<V> wrap(final Callable<V> r) {
-        return new Callable<V>() {
+        return new Callable<>() {
             @Override
             public V call() throws Exception {
                 Thread t = Thread.currentThread();

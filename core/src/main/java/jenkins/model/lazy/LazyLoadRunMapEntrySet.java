@@ -50,7 +50,7 @@ class LazyLoadRunMapEntrySet<R> extends AbstractSet<Map.Entry<Integer, R>> {
     @Override
     public boolean contains(Object o) {
         if (o instanceof Map.Entry) {
-            Map.Entry e = (Map.Entry) o;
+            Map.Entry<?, ?> e = (Map.Entry<?, ?>) o;
             Object k = e.getKey();
             if (k instanceof Integer) {
                 return owner.getByNumber((Integer) k).equals(e.getValue());
@@ -61,7 +61,7 @@ class LazyLoadRunMapEntrySet<R> extends AbstractSet<Map.Entry<Integer, R>> {
 
     @Override
     public Iterator<Map.Entry<Integer, R>> iterator() {
-        return new Iterator<Map.Entry<Integer, R>>() {
+        return new Iterator<>() {
             R last = null;
             R next = owner.newestBuild();
 

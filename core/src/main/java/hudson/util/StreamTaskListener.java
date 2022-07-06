@@ -36,7 +36,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -48,9 +47,6 @@ import java.util.logging.Logger;
 import jenkins.util.SystemProperties;
 import org.kohsuke.stapler.framework.io.WriterOutputStream;
 
-// TODO: AbstractTaskListener is empty now, but there are dependencies on that e.g. Ruby Runtime - JENKINS-48116)
-// The change needs API deprecation policy or external usages cleanup.
-
 /**
  * {@link TaskListener} that generates output into a single stream.
  *
@@ -59,6 +55,7 @@ import org.kohsuke.stapler.framework.io.WriterOutputStream;
  *
  * @author Kohsuke Kawaguchi
  */
+@SuppressWarnings("deprecation") // to preserve serial form
 public class StreamTaskListener extends AbstractTaskListener implements TaskListener, Closeable {
     @NonNull
     private PrintStream out;
@@ -88,16 +85,12 @@ public class StreamTaskListener extends AbstractTaskListener implements TaskList
     }
 
     public StreamTaskListener(@NonNull OutputStream out, @CheckForNull Charset charset) {
-        try {
-            if (charset == null)
-                this.out = out instanceof PrintStream ? (PrintStream) out : new PrintStream(out, false, Charset.defaultCharset().name());
-            else
-                this.out = new PrintStream(out, false, charset.name());
-            this.charset = charset;
-        } catch (UnsupportedEncodingException e) {
-            // it's not very pretty to do this, but otherwise we'd have to touch too many call sites.
-            throw new Error(e);
+        if (charset == null) {
+            this.out = out instanceof PrintStream ? (PrintStream) out : new PrintStream(out, false, Charset.defaultCharset());
+        } else {
+            this.out = new PrintStream(out, false, charset);
         }
+        this.charset = charset;
     }
 
     /**

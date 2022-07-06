@@ -42,7 +42,6 @@ import hudson.model.AbstractProject;
 import hudson.model.Computer;
 import hudson.model.Item;
 import hudson.model.TaskListener;
-import hudson.os.PosixException;
 import hudson.remoting.Callable;
 import hudson.remoting.Channel;
 import hudson.remoting.DelegatingCallable;
@@ -56,6 +55,7 @@ import hudson.remoting.VirtualChannel;
 import hudson.remoting.Which;
 import hudson.security.AccessControlled;
 import hudson.slaves.WorkspaceList;
+import hudson.tasks.ArtifactArchiver;
 import hudson.util.DaemonThreadFactory;
 import hudson.util.DirScanner;
 import hudson.util.ExceptionCatchingThreadFactory;
@@ -532,13 +532,10 @@ public final class FilePath implements SerializableOnlyOverRemoting {
 
         @Override
             public Integer invoke(File f, VirtualChannel channel) throws IOException {
-                Archiver a = factory.create(out);
-                try {
+                try (Archiver a = factory.create(out)) {
                     scanner.scan(f, ignoringSymlinks(a, verificationRoot, noFollowLinks));
-                } finally {
-                    a.close();
+                    return a.countEntries();
                 }
-                return a.countEntries();
             }
 
             private static final long serialVersionUID = 1L;
@@ -708,10 +705,9 @@ public final class FilePath implements SerializableOnlyOverRemoting {
 
     private static void unzip(File dir, File zipFile) throws IOException {
         dir = dir.getAbsoluteFile();    // without absolutization, getParentFile below seems to fail
-        ZipFile zip = new ZipFile(zipFile);
-        Enumeration<ZipEntry> entries = zip.getEntries();
 
-        try {
+        try (ZipFile zip = new ZipFile(zipFile)) {
+            Enumeration<ZipEntry> entries = zip.getEntries();
             while (entries.hasMoreElements()) {
                 ZipEntry e = entries.nextElement();
                 File f = new File(dir, e.getName());
@@ -740,8 +736,6 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                     Files.setLastModifiedTime(Util.fileToPath(f), e.getLastModifiedTime());
                 }
             }
-        } finally {
-            zip.close();
         }
     }
 
@@ -922,11 +916,9 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      * @since 1.292
      */
     public void untarFrom(InputStream _in, final TarCompression compression) throws IOException, InterruptedException {
-        try {
+        try (_in) {
             final InputStream in = new RemoteInputStream(_in, Flag.GREEDY);
             act(new UntarFrom(compression, in));
-        } finally {
-            _in.close();
         }
     }
 
@@ -1985,7 +1977,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      * @since 1.311
      * @see #chmod(int)
      */
-    public int mode() throws IOException, InterruptedException, PosixException {
+    public int mode() throws IOException, InterruptedException {
         if (!isUnix())   return -1;
         return act(new Mode());
     }
@@ -2382,7 +2374,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
 
         @Override
         public String invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
-            return new String(Files.readAllBytes(fileToPath(f)), Charset.defaultCharset());
+            return Files.readString(fileToPath(f), Charset.defaultCharset());
         }
     }
 
@@ -2947,10 +2939,8 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      */
     private static Integer writeToTar(File baseDir, DirScanner scanner, OutputStream out) throws IOException {
         Archiver tw = ArchiverFactory.TAR.create(out);
-        try {
+        try (tw) {
             scanner.scan(baseDir, tw);
-        } finally {
-            tw.close();
         }
         return tw.countEntries();
     }
@@ -3042,7 +3032,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     /**
      * Same as {@link #validateAntFileMask(String, int, boolean)} with the default number of operations.
      * @see #VALIDATE_ANT_FILE_MASK_BOUND
-     * @since TODO
+     * @since 2.325
      */
     public String validateAntFileMask(final String fileMasks, final boolean caseSensitive) throws IOException, InterruptedException {
         return validateAntFileMask(fileMasks, VALIDATE_ANT_FILE_MASK_BOUND, caseSensitive);
@@ -3054,6 +3044,21 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      */
     @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
     public static int VALIDATE_ANT_FILE_MASK_BOUND = SystemProperties.getInteger(FilePath.class.getName() + ".VALIDATE_ANT_FILE_MASK_BOUND", 10000);
+
+    /**
+     * A dedicated subtype of {@link InterruptedException} for when no matching Ant file mask
+     * matches are found.
+     *
+     * @see ArtifactArchiver
+     */
+    @Restricted(NoExternalUse.class)
+    public static class FileMaskNoMatchesFoundException extends InterruptedException {
+        private FileMaskNoMatchesFoundException(String message) {
+            super(message);
+        }
+
+        private static final long serialVersionUID = 1L;
+    }
 
     /**
      * Validates the ant file mask (like "foo/bar/*.txt, zot/*.jar") against this directory, and try to point out the problem.
@@ -3224,7 +3229,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                     if (ds.getIncludedFilesCount() != 0 || ds.getIncludedDirsCount() != 0) {
                         return true;
                     } else {
-                        throw (InterruptedException) new InterruptedException("no matches found within " + bound).initCause(c);
+                        throw (FileMaskNoMatchesFoundException) new FileMaskNoMatchesFoundException("no matches found within " + bound).initCause(c);
                     }
                 }
                 return ds.getIncludedFilesCount() != 0 || ds.getIncludedDirsCount() != 0;
@@ -3456,7 +3461,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     private static final long serialVersionUID = 1L;
 
     @Restricted(NoExternalUse.class)
-    @RestrictedSince("TODO")
+    @RestrictedSince("2.328")
     public static final int SIDE_BUFFER_SIZE = 1024;
 
     private static final Logger LOGGER = Logger.getLogger(FilePath.class.getName());

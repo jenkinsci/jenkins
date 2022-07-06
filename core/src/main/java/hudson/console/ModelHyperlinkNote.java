@@ -27,7 +27,7 @@ public class ModelHyperlinkNote extends HyperlinkNote {
 
     @Override
     protected String extraAttributes() {
-        return " class='model-link'";
+        return " class='model-link model-link--float'";
     }
 
     public static String encodeTo(@NonNull User u) {
@@ -72,6 +72,7 @@ public class ModelHyperlinkNote extends HyperlinkNote {
 
     @Extension @Symbol("hyperlinkToModels")
     public static class DescriptorImpl extends HyperlinkNote.DescriptorImpl {
+        @NonNull
         @Override
         public String getDisplayName() {
             return "Hyperlinks to models";

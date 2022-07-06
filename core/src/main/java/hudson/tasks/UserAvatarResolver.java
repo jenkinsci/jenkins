@@ -28,12 +28,10 @@ import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
-import hudson.Functions;
 import hudson.model.User;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import jenkins.model.Jenkins;
 
 /**
  * Infers avatar image URLs for users
@@ -87,8 +85,7 @@ public abstract class UserAvatarResolver implements ExtensionPoint {
      */
     public static String resolve(User u, String avatarSize) {
         String avatar = resolveOrNull(u, avatarSize);
-        return avatar != null ? avatar : Jenkins.get().getRootUrl() + Functions.getResourcePath() +
-            "/images/svgs/person.svg";
+        return avatar != null ? avatar : "symbol-person-circle";
     }
 
     /**

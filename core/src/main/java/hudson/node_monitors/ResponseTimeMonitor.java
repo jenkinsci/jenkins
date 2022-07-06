@@ -24,6 +24,7 @@
 
 package hudson.node_monitors;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.model.Computer;
 import hudson.remoting.Callable;
@@ -44,7 +45,7 @@ import org.kohsuke.stapler.export.ExportedBean;
  */
 public class ResponseTimeMonitor extends NodeMonitor {
     @Extension
-    public static final AbstractNodeMonitorDescriptor<Data> DESCRIPTOR = new AbstractAsyncNodeMonitorDescriptor<Data>() {
+    public static final AbstractNodeMonitorDescriptor<Data> DESCRIPTOR = new AbstractAsyncNodeMonitorDescriptor<>() {
 
         @Override
         protected Callable<Data, IOException> createCallable(Computer c) {
@@ -80,6 +81,7 @@ public class ResponseTimeMonitor extends NodeMonitor {
             return monitoringData;
         }
 
+        @NonNull
         @Override
         public String getDisplayName() {
             return Messages.ResponseTimeMonitor_DisplayName();

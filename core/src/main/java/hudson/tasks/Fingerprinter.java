@@ -24,6 +24,7 @@
 
 package hudson.tasks;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.EnvVars;
 import hudson.Extension;
@@ -331,6 +332,7 @@ public class Fingerprinter extends Recorder implements Serializable, DependencyD
 
     @Extension @Symbol("fingerprint")
     public static class DescriptorImpl extends BuildStepDescriptor<Publisher> {
+        @NonNull
         @Override
         public String getDisplayName() {
             return Messages.Fingerprinter_DisplayName();

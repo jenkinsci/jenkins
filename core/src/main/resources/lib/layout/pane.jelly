@@ -30,7 +30,7 @@ THE SOFTWARE.
     The box is drawn as a table, and the body of this tag
     is expected to draw a series of &lt;TR>s to fill in the contents
     of the box.
-    
+
     <st:attribute name="title" use="required">
       Title of the box. Can include HTML.
     </st:attribute>
@@ -63,9 +63,8 @@ THE SOFTWARE.
           <a class="collapse" href="${rootURL}/toggleCollapse?paneId=${attrs.id}"
              title="${paneIsCollapsed ? '%expand' : '%collapse'}">
 
-            <j:set var="svgIconId"
-                   value="${paneIsCollapsed ? 'ic_expand_more_24px' : 'ic_expand_less_24px'}" />
-            <l:svgIcon href="${resURL}/images/material-icons/svg-sprite-navigation-symbol.svg#${svgIconId}" />
+            <j:set var="svgIconId" value="${paneIsCollapsed ? 'chevron-up' : 'chevron-down'}" />
+            <l:icon src="symbol-${svgIconId}" />
           </a>
         </j:if>
       </div>

@@ -55,6 +55,7 @@ public class TextParameterDefinition extends StringParameterDefinition {
 
     @Extension @Symbol({"text", "textParam"})
     public static class DescriptorImpl extends ParameterDescriptor {
+        @NonNull
         @Override
         public String getDisplayName() {
             return Messages.TextParameterDefinition_DisplayName();

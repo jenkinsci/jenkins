@@ -50,6 +50,7 @@ import hudson.remoting.Channel;
 import hudson.remoting.ChannelBuilder;
 import hudson.remoting.ChannelClosedException;
 import hudson.remoting.CommandTransport;
+import hudson.remoting.Engine;
 import hudson.remoting.Launcher;
 import hudson.remoting.VirtualChannel;
 import hudson.security.ACL;
@@ -230,7 +231,7 @@ public class SlaveComputer extends Computer {
     public String getIconClassName() {
         Future<?> l = lastConnectActivity;
         if (l != null && !l.isDone())
-            return "icon-computer-flash";
+            return "symbol-computer";
         return super.getIconClassName();
     }
 
@@ -660,9 +661,29 @@ public class SlaveComputer extends Computer {
         log.println("Remoting version: " + slaveVersion);
         VersionNumber agentVersion = new VersionNumber(slaveVersion);
         if (agentVersion.isOlderThan(RemotingVersionInfo.getMinimumSupportedVersion())) {
-            log.printf("WARNING: Remoting version is older than a minimum required one (%s). " +
-                            "Connection will not be rejected, but the compatibility is NOT guaranteed%n",
-                    RemotingVersionInfo.getMinimumSupportedVersion());
+            if (!ALLOW_UNSUPPORTED_REMOTING_VERSIONS) {
+                taskListener.fatalError(
+                        "Rejecting the connection because the Remoting version is older than the"
+                            + " minimum required version (%s). To allow the connection anyway, set"
+                            + " the hudson.slaves.SlaveComputer.allowUnsupportedRemotingVersions"
+                            + " system property to true.%n",
+                        RemotingVersionInfo.getMinimumSupportedVersion());
+                disconnect(new OfflineCause.LaunchFailed());
+                return;
+            } else {
+                taskListener.error(
+                        "The Remoting version is older than the minimum required version (%s)."
+                            + " The connection will be allowed, but compatibility is NOT"
+                            + " guaranteed.%n",
+                        RemotingVersionInfo.getMinimumSupportedVersion());
+            }
+        }
+
+        log.println("Launcher: " + getLauncher().getClass().getSimpleName());
+
+        String communicationProtocol = channel.call(new CommunicationProtocol());
+        if (communicationProtocol != null) {
+            log.println("Communication Protocol: " + communicationProtocol);
         }
 
         boolean _isUnix = channel.call(new DetectOS());
@@ -900,7 +921,7 @@ public class SlaveComputer extends Computer {
         if (c != null) {
             try {
                 c.close();
-            } catch (IOException e) {
+            } catch (Exception e) {
                 logger.log(Level.SEVERE, "Failed to terminate channel to " + getDisplayName(), e);
             }
             Listeners.notify(ComputerListener.class, true, l -> l.onOffline(this, offlineCause));
@@ -1002,6 +1023,22 @@ public class SlaveComputer extends Computer {
         public String call() throws IOException {
             try { return Launcher.VERSION; }
             catch (Throwable ex) { return "< 1.335"; } // Older agent.jar won't have VERSION
+        }
+    }
+
+    private static final class CommunicationProtocol extends MasterToSlaveCallable<String, IOException> {
+        @Override
+        public String call() throws IOException {
+            try {
+                Engine engine = Engine.current();
+                if (engine != null) {
+                    return engine.getProtocolName();
+                }
+                return Launcher.getCommunicationProtocolName();
+            } catch (NoSuchMethodError ex) {
+                // Remoting does not support this feature
+                return null;
+            }
         }
     }
 
@@ -1117,6 +1154,13 @@ public class SlaveComputer extends Computer {
             return new ArrayList<>(SLAVE_LOG_HANDLER.getView());
         }
     }
+
+    /**
+     * Escape hatch for allowing connections from agents with unsupported Remoting versions.
+     */
+    @Restricted(NoExternalUse.class)
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
+    public static /* not final */ boolean ALLOW_UNSUPPORTED_REMOTING_VERSIONS = SystemProperties.getBoolean(SlaveComputer.class.getName() + ".allowUnsupportedRemotingVersions");
 
     // use RingBufferLogHandler class name to configure for backward compatibility
     private static final int DEFAULT_RING_BUFFER_SIZE = SystemProperties.getInteger(RingBufferLogHandler.class.getName() + ".defaultSize", 256);
