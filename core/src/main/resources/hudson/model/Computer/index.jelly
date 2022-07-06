@@ -32,13 +32,17 @@ THE SOFTWARE.
       <h1>
         <l:icon src="${it.iconClassName}" class="icon-xlg" />
         ${it.caption}
+        <j:if test="${it.class.name.contains('MasterComputer')}">
+          <span style="font-size:smaller">(${it.node.nodeDescription})</span>
+        </j:if>
       </h1>
 
       <!-- Node description -->
-      <j:if test="${!empty(it.node.nodeDescription)}">
-        <div style="margin-bottom: var(--section-padding);">
-          <j:out value="${app.markupFormatter.translate(it.node.nodeDescription)}" />
-        </div>
+
+      <j:if test="${!empty(it.node.nodeDescription) and !it.class.name.contains('MasterComputer')}">
+            <div style="margin-bottom: var(--section-padding);">
+              <j:out value="${app.markupFormatter.translate(it.node.nodeDescription)}" />
+            </div>
       </j:if>
 
       <!-- temporarily offline switch -->
