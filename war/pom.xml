@@ -762,7 +762,6 @@ THE SOFTWARE.
                 <goals>
                   <goal>yarn</goal>
                 </goals>
-                <phase>verify</phase>
                 <configuration>
                   <arguments>lint</arguments>
                 </configuration>
