@@ -117,12 +117,6 @@ THE SOFTWARE.
       <version>${project.version}</version>
       <type>executable-war</type>
       <scope>test</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>org.jenkins-ci.main</groupId>
-          <artifactId>websocket-jetty10</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>io.jenkins.plugins</groupId>
