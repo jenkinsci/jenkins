@@ -101,11 +101,11 @@ jenkins.post = function(url, data, success, options) {
 	else if('crumb' in wnd) {
 		crumb = wnd.crumb;
 	}
-	
+
 	if(crumb) {
 		headers[crumb.fieldName] = crumb.value;
 	}
-	
+
 	var formBody = data;
 	if(formBody instanceof Object) {
 		if(crumb) {
@@ -114,7 +114,7 @@ jenkins.post = function(url, data, success, options) {
 		}
 		formBody = jenkins.stringify(formBody);
 	}
-	
+
 	var args = {
 		url: jenkins.baseUrl() + url,
 		type: 'POST',
@@ -153,7 +153,6 @@ jenkins.loadTranslations = function(bundleName, handler, onError) {
 
 		var translations = res.data;
 
-		/* globals Proxy: true */
 		if('undefined' !== typeof Proxy) {
 			translations = new Proxy(translations, {
 				get: function(target, property) {
@@ -182,7 +181,7 @@ jenkins.testConnectivity = function(siteId, handler) {
 			if(response.status !== 'ok') {
 				handler(false, true, response.message);
 			}
-			
+
 			// Define statuses, which need additional check iteration via async job on the Jenkins master
 			// Statuses like "OK" or "SKIPPED" are considered as fine.
 			var uncheckedStatuses = ['PRECHECK', 'CHECKING', 'UNCHECKED'];
