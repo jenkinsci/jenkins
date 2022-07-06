@@ -34,7 +34,6 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.Beta;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
-import org.kohsuke.stapler.Stapler;
 
 /**
  * Support for serving WebSocket responses.
@@ -73,15 +72,18 @@ public class WebSockets {
                         session.startPings();
                         session.opened();
                     }
+
                     @Override
                     public void onWebSocketClose(int statusCode, String reason) {
                         session.stopPings();
                         session.closed(statusCode, reason);
                     }
+
                     @Override
                     public void onWebSocketError(Throwable cause) {
                         session.error(cause);
                     }
+
                     @Override
                     public void onWebSocketBinary(byte[] payload, int offset, int length) {
                         try {
@@ -90,6 +92,7 @@ public class WebSockets {
                             session.error(x);
                         }
                     }
+
                     @Override
                     public void onWebSocketText(String message) {
                         try {

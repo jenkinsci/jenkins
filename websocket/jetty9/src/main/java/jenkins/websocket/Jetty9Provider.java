@@ -81,22 +81,27 @@ public class Jetty9Provider implements Provider {
             public Future<Void> sendBinary(ByteBuffer data) throws IOException {
                 return session().getRemote().sendBytesByFuture(data);
             }
+
             @Override
             public void sendBinary(ByteBuffer partialByte, boolean isLast) throws IOException {
                 session().getRemote().sendPartialBytes(partialByte, isLast);
             }
+
             @Override
             public Future<Void> sendText(String text) throws IOException {
                 return session().getRemote().sendStringByFuture(text);
             }
+
             @Override
             public void sendPing(ByteBuffer applicationData) throws IOException {
                 session().getRemote().sendPing(applicationData);
             }
+
             @Override
             public void close() throws IOException {
                 session().close();
             }
+
             private Session session() {
                 Session session = sessions.get(listener);
                 if (session == null) {
@@ -107,7 +112,7 @@ public class Jetty9Provider implements Provider {
         };
     }
 
-    private static Object createWebSocket(ServletUpgradeRequest req, ServletUpgradeResponse resp){
+    private static Object createWebSocket(ServletUpgradeRequest req, ServletUpgradeResponse resp) {
         Listener listener = (Listener) req.getHttpServletRequest().getAttribute(ATTR_LISTENER);
         if (listener == null) {
             throw new IllegalStateException("missing listener attribute");
@@ -117,19 +122,23 @@ public class Jetty9Provider implements Provider {
             public void onWebSocketBinary(byte[] payload, int offset, int length) {
                 listener.onWebSocketBinary(payload, offset, length);
             }
+
             @Override
             public void onWebSocketText(String message) {
                 listener.onWebSocketText(message);
             }
+
             @Override
             public void onWebSocketClose(int statusCode, String reason) {
                 listener.onWebSocketClose(statusCode, reason);
             }
+
             @Override
             public void onWebSocketConnect(Session session) {
                 sessions.put(listener, session);
                 listener.onWebSocketConnect();
             }
+
             @Override
             public void onWebSocketError(Throwable cause) {
                 listener.onWebSocketError(cause);
