@@ -30,39 +30,43 @@ THE SOFTWARE.
     <h1>${%Manage Old Data}</h1>
     <p>${%blurb.1}</p>
     <p>${%blurb.2}</p>
-    <table class="sortable pane bigtable width-auto">
-      <tr>
-         <th initialSortDir="down">${%Type}</th>
-         <th>${%Name}</th>
-         <th>${%Version}</th>
-         <th>${%Error}</th>
-      </tr>
-      <j:forEach var="item" items="${it.data.entrySet()}">
-        <j:set var="obj" value="${item.key}"/>
-        <j:choose>
-          <j:when test="${item.value!=''}">
-            <tr>
-              <td>${obj.class.name}</td>
-              <!-- fullName is first to avoid calling User.get(String) for User object -->
-              <td>${obj.fullName?:obj.fullDisplayName?:obj.displayName?:obj.name}</td>
-              <td>
-                <j:choose>
-                  <j:when test="${item.value.isOld(150)}">
-                    <b title="${%Very old version}">${item.value}</b>
-                  </j:when>
-                  <j:otherwise>
-                    ${item.value}
-                  </j:otherwise>
-                </j:choose>
-              </td>
-              <td style="white-space:normal">${item.value.extra}</td>
-            </tr>
-          </j:when>
-          <j:otherwise>
-            <j:if test="${item.value.extra!=null}"><j:set var="hasExtra" value="${true}"/></j:if>
-          </j:otherwise>
-        </j:choose>
-      </j:forEach>
+    <table class="jenkins-table sortable">
+      <thead>
+        <tr>
+          <th initialSortDir="down">${%Type}</th>
+          <th>${%Name}</th>
+          <th>${%Version}</th>
+          <th>${%Error}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <j:forEach var="item" items="${it.data.entrySet()}">
+          <j:set var="obj" value="${item.key}"/>
+          <j:choose>
+            <j:when test="${item.value!=''}">
+              <tr>
+                <td>${obj.class.name}</td>
+                <!-- fullName is first to avoid calling User.get(String) for User object -->
+                <td>${obj.fullName?:obj.fullDisplayName?:obj.displayName?:obj.name}</td>
+                <td>
+                  <j:choose>
+                    <j:when test="${item.value.isOld(150)}">
+                      <b title="${%Very old version}">${item.value}</b>
+                    </j:when>
+                    <j:otherwise>
+                      ${item.value}
+                    </j:otherwise>
+                  </j:choose>
+                </td>
+                <td style="white-space:normal">${item.value.extra}</td>
+              </tr>
+            </j:when>
+            <j:otherwise>
+              <j:if test="${item.value.extra!=null}"><j:set var="hasExtra" value="${true}"/></j:if>
+            </j:otherwise>
+          </j:choose>
+        </j:forEach>
+      </tbody>
     </table>
     <j:set var="vers" value="${it.versionList}"/>
     <j:choose>
@@ -90,22 +94,26 @@ THE SOFTWARE.
       <br/>
       <h2>${%Unreadable Data}</h2>
       <p>${%blurb.6}</p>
-      <table class="sortable pane bigtable width-auto">
-        <tr>
+      <table class="jenkins-table sortable">
+        <thead>
+          <tr>
             <th initialSortDir="down">${%Type}</th>
             <th>${%Name}</th>
             <th>${%Error}</th>
-        </tr>
-        <j:forEach var="item" items="${it.data.entrySet()}">
-          <j:if test="${item.value.extra!=null and item.value==''}">
-            <j:set var="obj" value="${item.key}"/>
-            <tr>
-              <td>${obj.class.name}</td>
-              <td>${obj.fullName?:obj.fullDisplayName?:obj.displayName?:obj.name}</td>
-              <td style="white-space:normal">${item.value.extra}</td>
-            </tr>
-          </j:if>
-        </j:forEach>
+          </tr>
+        </thead>
+        <tbody>
+          <j:forEach var="item" items="${it.data.entrySet()}">
+            <j:if test="${item.value.extra!=null and item.value==''}">
+              <j:set var="obj" value="${item.key}"/>
+              <tr>
+                <td>${obj.class.name}</td>
+                <td>${obj.fullName?:obj.fullDisplayName?:obj.displayName?:obj.name}</td>
+                <td style="white-space:normal">${item.value.extra}</td>
+              </tr>
+            </j:if>
+          </j:forEach>
+        </tbody>
       </table>
       <br/>
       <form action="discard" method="POST" name="discardUnreadable">
