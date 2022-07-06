@@ -25,6 +25,7 @@
 package jenkins.websocket;
 
 import java.io.IOException;
+import java.nio.channels.ClosedChannelException;
 import java.util.Iterator;
 import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
@@ -81,7 +82,11 @@ public class WebSockets {
 
                     @Override
                     public void onWebSocketError(Throwable cause) {
-                        session.error(cause);
+                        if (cause instanceof ClosedChannelException) {
+                            onWebSocketClose(0, cause.toString());
+                        } else {
+                            session.error(cause);
+                        }
                     }
 
                     @Override
