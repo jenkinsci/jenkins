@@ -51,32 +51,19 @@ public class Jetty10Provider implements Provider {
     // TODO does not seem possible to use HttpServletRequest.get/setAttribute for this
     private static final Map<Listener, Session> sessions = new WeakHashMap<>();
 
-    private JettyWebSocketServerContainer container;
-
     public Jetty10Provider() {
         JettyWebSocketServerContainer.class.hashCode();
     }
 
-    private synchronized void init(HttpServletRequest req) throws Exception {
-        if (container == null) {
-            // TODO JettyWebSocketServletContainerInitializer.configure(context, null) but where do we get the ServletContextHandler?
-            container = JettyWebSocketServerContainer.getContainer(req.getServletContext());
-            if (container == null) {
-                throw new IllegalStateException("not initialized");
-            }
-        }
-    }
-
     @Override
     public Handler handle(HttpServletRequest req, HttpServletResponse rsp, Listener listener) throws Exception {
-        init(req);
         req.setAttribute(ATTR_LISTENER, listener);
         // TODO Jetty 10 has no obvious equivalent to WebSocketServerFactory.isUpgradeRequest; RFC6455Negotiation?
         if (!"websocket".equalsIgnoreCase(req.getHeader("Upgrade"))) {
             rsp.sendError(HttpServletResponse.SC_BAD_REQUEST, "only WS connections accepted here");
             return null;
         }
-        if (!container.upgrade(Jetty10Provider::createWebSocket, req, rsp)) {
+        if (!JettyWebSocketServerContainer.getContainer(req.getServletContext()).upgrade(Jetty10Provider::createWebSocket, req, rsp)) {
             rsp.sendError(HttpServletResponse.SC_BAD_REQUEST, "did not manage to upgrade");
             return null;
         }
