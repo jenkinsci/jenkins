@@ -17,3 +17,4 @@ jobs:
           dirtyLabel: "unresolved-merge-conflict"
           repoToken: "${{ secrets.GITHUB_TOKEN }}"
           commentOnDirty: "Please take a moment and address the merge conflicts of your pull request. Thanks!"
+          continueOnMissingPermissions: true
