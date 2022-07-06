@@ -36,7 +36,7 @@ THE SOFTWARE.
           </j:when>
           <j:otherwise>
             <li>
-              <a class="jenkins-button jenkins-button--transparent" href="${rootURL}/iconSize?${sz}" tooltip="${title}">
+              <a class="jenkins-button jenkins-button--tertiary" href="${rootURL}/iconSize?${sz}" tooltip="${title}">
                 ${title.charAt(0)}<span class="jenkins-visually-hidden">${title.substring(1)}</span>
               </a>
             </li>

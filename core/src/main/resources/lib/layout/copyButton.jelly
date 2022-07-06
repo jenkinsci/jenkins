@@ -46,7 +46,7 @@ THE SOFTWARE.
   </st:documentation>
 
   <!-- 'copy-button' class is for backwards compatability -->
-  <button class="copy-button jenkins-button ${attrs.iconOnly == 'true' ? 'jenkins-button--transparent' : ''} jenkins-copy-button ${attrs.clazz}"
+  <button class="copy-button jenkins-button ${attrs.iconOnly == 'true' ? 'jenkins-button--tertiary' : ''} jenkins-copy-button ${attrs.clazz}"
           text="${attrs.text}"
           message="${attrs.message ?: '%Copied'}"
           tooltip="${attrs.tooltip ?: '%Copy'}"
