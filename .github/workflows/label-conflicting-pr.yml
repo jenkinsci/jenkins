@@ -3,6 +3,11 @@ on:
   push:
   pull_request_target:
     types: [synchronize]
+    
+permissions:
+  pull-requests: read
+  checks: read
+  statuses: read
 
 jobs:
   main:
