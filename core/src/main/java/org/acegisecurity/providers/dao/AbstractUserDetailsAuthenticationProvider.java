@@ -24,6 +24,7 @@
 
 package org.acegisecurity.providers.dao;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.acegisecurity.AcegiSecurityException;
 import org.acegisecurity.Authentication;
 import org.acegisecurity.AuthenticationException;
@@ -35,6 +36,7 @@ import org.acegisecurity.userdetails.UserDetails;
  * @deprecated use {@link org.springframework.security.authentication.dao.AbstractUserDetailsAuthenticationProvider}
  */
 @Deprecated
+@SuppressFBWarnings(value = "THROWS_METHOD_THROWS_RUNTIMEEXCEPTION", justification = "TODO needs triage")
 public abstract class AbstractUserDetailsAuthenticationProvider implements AuthenticationProvider {
 
     private final org.springframework.security.authentication.dao.AbstractUserDetailsAuthenticationProvider delegate =

@@ -56,7 +56,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.springframework</groupId>
         <artifactId>spring-framework-bom</artifactId>
-        <version>5.3.20</version>
+        <version>5.3.21</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -64,7 +64,7 @@ THE SOFTWARE.
         <!-- https://docs.spring.io/spring-security/site/docs/5.5.4/reference/html5/#getting-maven-no-boot -->
         <groupId>org.springframework.security</groupId>
         <artifactId>spring-security-bom</artifactId>
-        <version>5.7.1</version>
+        <version>5.7.2</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -173,7 +173,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>net.java.dev.jna</groupId>
         <artifactId>jna</artifactId>
-        <version>5.11.0</version>
+        <version>5.12.1</version>
       </dependency>
       <dependency>
         <groupId>net.java.sezpoz</groupId>
@@ -255,11 +255,6 @@ THE SOFTWARE.
         <groupId>org.jenkins-ci.main</groupId>
         <artifactId>remoting</artifactId>
         <version>${remoting.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.jenkins-ci.modules</groupId>
-        <artifactId>instance-identity</artifactId>
-        <version>2.2</version>
       </dependency>
       <dependency>
         <groupId>org.jfree</groupId>

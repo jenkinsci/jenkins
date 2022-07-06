@@ -49,16 +49,15 @@ import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.Collections;
+import java.nio.file.Files;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import jenkins.model.GlobalConfiguration;
-import org.apache.commons.io.FileUtils;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.BuildWatcher;
-import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.LoggerRule;
 import org.jvnet.hudson.test.TestExtension;
@@ -153,7 +152,7 @@ public class ClassFilterImplTest {
         config.save();
         assertThat(config.getConfigFile().asString(), not(containsString("LinkedListMultimap")));
         config.unrelated = "modified";
-        FileUtils.write(config.getConfigFile().getFile(), new XStream().toXML(config), StandardCharsets.UTF_8);
+        Files.writeString(config.getConfigFile().getFile().toPath(), new XStream().toXML(config), StandardCharsets.UTF_8);
         assertThat(config.getConfigFile().asString(), allOf(containsString("LinkedListMultimap"), containsString("modified")));
         config.obj = null;
         config.unrelated = null;
@@ -161,16 +160,8 @@ public class ClassFilterImplTest {
         assertNull(config.obj);
         assertEquals("modified", config.unrelated);
         Map<Saveable, OldDataMonitor.VersionRange> data = ExtensionList.lookupSingleton(OldDataMonitor.class).getData();
-        assertEquals(Collections.singleton(config), data.keySet());
+        assertEquals(Set.of(config), data.keySet());
         assertThat(data.values().iterator().next().extra, allOf(containsString("LinkedListMultimap"), containsString("https://www.jenkins.io/redirect/class-filter/")));
-    }
-
-    @Test
-    @Issue("JENKINS-49543")
-    public void moduleClassesShouldBeWhitelisted() {
-        ClassFilterImpl filter = new ClassFilterImpl();
-        filter.check("org.jenkinsci.modules.windows_slave_installer.WindowsSlaveInstaller");
-        filter.check("org.jenkinsci.main.modules.instance_identity.PageDecoratorImpl");
     }
 
     @TestExtension("xstreamRequiresWhitelist")

@@ -69,7 +69,7 @@ public class DescribableListTest {
 
         @Override
         public Descriptor<Datum> getDescriptor() {
-            return new Descriptor<Datum>(Datum.class) {};
+            return new Descriptor<>(Datum.class) {};
         }
 
         @Override

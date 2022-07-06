@@ -7,8 +7,7 @@
   background-color: var(--danger);
   border-color: var(--danger);
 
-  &:hover,
-  &:focus {
+  &:hover, &:focus {
     color: var(--btn-text-color);
     background-color: var(--danger-hover);
     border-color: var(--danger-hover);
@@ -30,8 +29,7 @@
   background-color: var(--btn-primary-bg);
   border-color: var(--btn-primary-bg);
 
-  &:hover,
-  &:focus {
+  &:hover, &:focus {
     color: var(--btn-text-color);
     background-color: var(--btn-primary-bg-hover);
     border-color: var(--btn-primary-bg-hover);
@@ -81,8 +79,7 @@
   border-color: transparent;
   font-weight: var(--btn-link-font-weight);
 
-  &:hover,
-  &:focus {
+  &:hover, &:focus {
     color: var(--btn-link-color--hover);
     background-color: var(--btn-link-bg--hover);
     border-color: var(--btn-link-bg--hover);
@@ -114,12 +111,7 @@
   display: block;
 }
 
-.yui-button button,
-input[type="button"],
-input[type="reset"],
-input[type="submit"],
-a.yui-button:link,
-a.yui-button:visited {
+.yui-button button, input[type="button"], input[type="reset"], input[type="submit"], a.yui-button:link, a.yui-button:visited {
   box-sizing: border-box;
   // vertical padding:
   // 0.375rem == 6px == 32px (target height) - 4px (borders) - 16 (line) / 2
@@ -157,8 +149,7 @@ a.yui-button:visited {
     display: inline-block;
   }
 
-  .svg-icon,
-  i {
+  .svg-icon, i {
     width: 1rem;
     height: 1rem;
     font-size: 1rem;
@@ -181,32 +172,20 @@ a.yui-button:visited {
   }
 }
 
-.yui-button.danger button,
-input[type="button"].danger,
-input[type="reset"].danger,
-input[type="submit"].danger {
+.yui-button.danger button, input[type="button"].danger, input[type="reset"].danger, input[type="submit"].danger {
   .button-danger();
 }
 
-.yui-button.primary button,
-input[type="button"].primary,
-input[type="reset"].primary,
-input[type="submit"].primary {
+.yui-button.primary button, input[type="button"].primary, input[type="reset"].primary, input[type="submit"].primary {
   .button-primary();
 }
 
-.yui-button.link-button button,
-input[type="button"].link-button,
-input[type="reset"].link-button,
-input[type="submit"].link-button {
+.yui-button.link-button button, input[type="button"].link-button, input[type="reset"].link-button, input[type="submit"].link-button {
   .button-link();
 }
 
-.yui-button.large-button button,
-input[type="button"].large-button,
-input[type="reset"].large-button,
-input[type="submit"].large-button,
-a.yui-button.large-button {
+.yui-button.large-button button, input[type="button"].large-button,
+input[type="reset"].large-button, input[type="submit"].large-button, a.yui-button.large-button {
   // vertical padding
   // 0.5rem == 8px == 40px (target height) - 4px (borders) - 20 (line) / 2
   padding: 0.5rem 1rem;
@@ -215,8 +194,7 @@ a.yui-button.large-button {
   font-size: var(--btn-large-font-size);
   line-height: var(--btn-large-line-height);
 
-  .svg-icon,
-  i {
+  .svg-icon, i {
     vertical-align: top;
     height: 1.25rem;
     width: 1.25rem;
@@ -224,14 +202,9 @@ a.yui-button.large-button {
   }
 }
 
-.yui-button-disabled button,
-.yui-button button:disabled,
-input[type="button"]:disabled,
-input[type="reset"]:disabled,
-input[type="submit"]:disabled,
-.yui-button-disabled input[type="button"],
-.yui-button-disabled input[type="reset"],
-.yui-button-disabled input[type="submit"] {
+.yui-button-disabled button, .yui-button button:disabled, input[type="button"]:disabled,
+input[type="reset"]:disabled, input[type="submit"]:disabled, .yui-button-disabled input[type="button"],
+.yui-button-disabled input[type="reset"], .yui-button-disabled input[type="submit"] {
   .button-disabled();
 }
 
@@ -254,8 +227,7 @@ a.yui-button {
 }
 
 // Dropdown buttons
-.yui-button.yui-menu-button button,
-.yui-button.yui-split-button button {
+.yui-button.yui-menu-button button, .yui-button.yui-split-button button {
   // These buttons have a caret as the :after element
   &::after {
     display: inline-block;
@@ -269,8 +241,7 @@ a.yui-button {
   }
 }
 
-.yui-button.yui-menu-button.yui-menu-button-active button,
-.yui-button.yui-split-button.yui-split-button-active button {
+.yui-button.yui-menu-button.yui-menu-button-active button, .yui-button.yui-split-button.yui-split-button-active button {
   &::after {
     border-bottom: 0.35em solid;
     border-top: 0;
@@ -279,15 +250,12 @@ a.yui-button {
 
 // Icon buttons
 
-.yui-button.icon-button button,
-a.yui-button.icon-button:link,
-a.yui-button.icon-button:visited {
+.yui-button.icon-button button, a.yui-button.icon-button:link, a.yui-button.icon-button:visited {
   padding: 0.25rem;
   min-width: 2rem;
   height: 2rem;
 
-  .svg-icon,
-  i {
+  .svg-icon, i {
     width: 1rem;
     height: 1rem;
     font-size: 1rem;
@@ -296,15 +264,13 @@ a.yui-button.icon-button:visited {
   .button-link();
 }
 
-.yui-button.icon-button.large-button button,
-a.yui-button.icon-button.large-button {
+.yui-button.icon-button.large-button button, a.yui-button.icon-button.large-button {
   padding: 0.5rem;
   min-width: 2.5rem;
   height: 2.5rem;
   padding: 0.625rem;
 
-  .svg-icon,
-  i {
+  .svg-icon, i {
     width: 1.25rem;
     height: 1.25rem;
     font-size: 1.25rem;
@@ -316,36 +282,36 @@ a.yui-button.icon-button.large-button {
   align-items: center;
 
   .jenkins-button {
-    margin-left: 0!important;
-    margin-right: 1rem!important;
+    margin-left: 0 !important;
+    margin-right: 1rem !important;
   }
 
   .yui-button {
-    margin-left: 0!important;
-    margin-right: 0.5rem!important;
+    margin-left: 0 !important;
+    margin-right: 0.5rem !important;
   }
 
   .jenkins-table__button {
-    margin-left: 0!important;
-    margin-right: 1.5rem!important;
+    margin-left: 0 !important;
+    margin-right: 1.5rem !important;
   }
 
   &--invert {
     justify-content: flex-end;
 
     .jenkins-button {
-      margin-left: 1rem!important;
-      margin-right: 0!important;
+      margin-left: 1rem !important;
+      margin-right: 0 !important;
     }
 
     .yui-button {
-      margin-left: 0.5rem!important;
-      margin-right: 0!important;
+      margin-left: 0.5rem !important;
+      margin-right: 0 !important;
     }
 
     .jenkins-table__button {
-      margin-left: 1.5rem!important;
-      margin-right: 0!important;
+      margin-left: 1.5rem !important;
+      margin-right: 0 !important;
     }
   }
 }
