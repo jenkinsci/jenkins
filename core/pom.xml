@@ -332,6 +332,12 @@ THE SOFTWARE.
       <groupId>org.jenkins-ci.main</groupId>
       <artifactId>websocket-spi</artifactId>
       <version>${project.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>javax.servlet</groupId>
+          <artifactId>javax.servlet-api</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.jfree</groupId>
