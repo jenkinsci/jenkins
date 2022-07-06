@@ -144,7 +144,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
       <artifactId>instance-identity</artifactId>
-      <version>3.1</version>
+      <version>116.vf8f487400980</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -174,7 +174,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>matrix-auth</artifactId>
-      <version>3.1.4</version>
+      <version>3.1.5</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -205,6 +205,13 @@ THE SOFTWARE.
         <!-- Version specified in grandparent POM -->
         <extensions>true</extensions>
         <executions>
+          <execution>
+            <id>prepare-test-plugins</id>
+            <goals>
+              <goal>resolve-test-dependencies</goal>
+            </goals>
+            <phase>test-compile</phase>
+          </execution>
           <execution>
             <id>test-runtime</id>
             <goals>
