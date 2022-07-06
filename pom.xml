@@ -639,6 +639,7 @@ THE SOFTWARE.
       </activation>
       <properties>
         <failIfNoTests>false</failIfNoTests>
+        <surefire.failIfNoSpecifiedTests>false</surefire.failIfNoSpecifiedTests>
       </properties>
     </profile>
   </profiles>
