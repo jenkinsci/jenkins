@@ -142,7 +142,7 @@ THE SOFTWARE.
       <groupId>org.jenkins-ci</groupId>
       <artifactId>winstone</artifactId>
       <!-- Make sure to keep jetty-maven-plugin elsewhere in this file in sync with the Jetty release in Winstone -->
-      <version>6.1-rc729.3b_108607e447</version> <!-- TODO https://github.com/jenkinsci/winstone/pull/240 -->
+      <version>6.1</version>
       <scope>test</scope>
     </dependency>
     <dependency>
