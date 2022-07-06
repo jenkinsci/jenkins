@@ -290,7 +290,7 @@ public class RunParameterDefinitionTest {
 
         @Override
         public Descriptor<Publisher> getDescriptor() {
-            return new Descriptor<Publisher>(ResultPublisher.class) {};
+            return new Descriptor<>(ResultPublisher.class) {};
         }
     }
 }

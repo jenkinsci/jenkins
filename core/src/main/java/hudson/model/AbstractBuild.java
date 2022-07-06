@@ -158,7 +158,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P, R>, R extends A
      */
     protected transient List<Environment> buildEnvironments;
 
-    private final transient LazyBuildMixIn.RunMixIn<P, R> runMixIn = new LazyBuildMixIn.RunMixIn<P, R>() {
+    private final transient LazyBuildMixIn.RunMixIn<P, R> runMixIn = new LazyBuildMixIn.RunMixIn<>() {
         @Override protected R asRun() {
             return _this();
         }
@@ -1194,11 +1194,11 @@ public abstract class AbstractBuild<P extends AbstractProject<P, R>, R extends A
     public Iterable<AbstractBuild<?, ?>> getDownstreamBuilds(final AbstractProject<?, ?> that) {
         final Iterable<Integer> nums = getDownstreamRelationship(that).listNumbers();
 
-        return new Iterable<AbstractBuild<?, ?>>() {
+        return new Iterable<>() {
             @Override
             public Iterator<AbstractBuild<?, ?>> iterator() {
                 return Iterators.removeNull(
-                    new AdaptedIterator<Integer, AbstractBuild<?, ?>>(nums) {
+                    new AdaptedIterator<>(nums) {
                         @Override
                         protected AbstractBuild<?, ?> adapt(Integer item) {
                             return that.getBuildByNumber(item);

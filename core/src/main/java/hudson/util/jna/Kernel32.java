@@ -38,7 +38,7 @@ public interface Kernel32 extends StdCallLibrary {
     Kernel32 INSTANCE = Kernel32Utils.load();
 
     /**
-     * See http://msdn.microsoft.com/en-us/library/aa365240(VS.85).aspx
+     * See <a href="https://docs.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-movefileexa">MoveFileExA function (winbase.h)</a>
      */
     boolean MoveFileExA(String existingFileName, String newFileName, int flags);
 
