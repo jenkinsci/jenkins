@@ -87,24 +87,29 @@ public class Jetty10Provider implements Provider {
                 session().getRemote().sendBytes(data, new WriteCallbackImpl(f));
                 return f;
             }
+
             @Override
             public void sendBinary(ByteBuffer partialByte, boolean isLast) throws IOException {
                 session().getRemote().sendPartialBytes(partialByte, isLast);
             }
+
             @Override
             public Future<Void> sendText(String text) throws IOException {
                 CompletableFuture<Void> f = new CompletableFuture<>();
                 session().getRemote().sendString(text, new WriteCallbackImpl(f));
                 return f;
             }
+
             @Override
             public void sendPing(ByteBuffer applicationData) throws IOException {
                 session().getRemote().sendPing(applicationData);
             }
+
             @Override
             public void close() throws IOException {
                 session().close();
             }
+
             private Session session() {
                 Session session = sessions.get(listener);
                 if (session == null) {
@@ -117,20 +122,23 @@ public class Jetty10Provider implements Provider {
 
     private static final class WriteCallbackImpl implements WriteCallback {
         private final CompletableFuture<Void> f;
+
         WriteCallbackImpl(CompletableFuture<Void> f) {
             this.f = f;
         }
+
         @Override
         public void writeSuccess() {
             f.complete(null);
         }
+
         @Override
         public void writeFailed(Throwable x) {
             f.completeExceptionally(x);
         }
     }
 
-    private static Object createWebSocket(JettyServerUpgradeRequest req, JettyServerUpgradeResponse resp){
+    private static Object createWebSocket(JettyServerUpgradeRequest req, JettyServerUpgradeResponse resp) {
         Listener listener = (Listener) req.getHttpServletRequest().getAttribute(ATTR_LISTENER);
         if (listener == null) {
             throw new IllegalStateException("missing listener attribute");
@@ -140,19 +148,23 @@ public class Jetty10Provider implements Provider {
             public void onWebSocketBinary(byte[] payload, int offset, int length) {
                 listener.onWebSocketBinary(payload, offset, length);
             }
+
             @Override
             public void onWebSocketText(String message) {
                 listener.onWebSocketText(message);
             }
+
             @Override
             public void onWebSocketClose(int statusCode, String reason) {
                 listener.onWebSocketClose(statusCode, reason);
             }
+
             @Override
             public void onWebSocketConnect(Session session) {
                 sessions.put(listener, session);
                 listener.onWebSocketConnect();
             }
+
             @Override
             public void onWebSocketError(Throwable cause) {
                 listener.onWebSocketError(cause);
