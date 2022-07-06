@@ -24,6 +24,8 @@
 
 package hudson.util;
 
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 
@@ -33,10 +35,10 @@ public class RingBufferLogHandlerTest {
     @Issue("JENKINS-9120")
     public void tooMuchRecordsShouldNotCrashHandler() {
         final RingBufferLogHandler handler = new RingBufferLogHandler();
-
+        LogRecord lr = new LogRecord(Level.INFO, "xxx");
         for (long i = 0; i < (long) Integer.MAX_VALUE + 300; i++) {
             // throws ArrayIndexOutOfBoundsException after int-overflow
-            handler.publish(null);
+            handler.publish(lr);
         }
     }
 }

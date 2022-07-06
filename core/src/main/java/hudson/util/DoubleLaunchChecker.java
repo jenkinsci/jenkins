@@ -33,15 +33,12 @@ import hudson.init.Initializer;
 import hudson.triggers.SafeTimerTask;
 import java.io.File;
 import java.io.IOException;
-import java.lang.management.ManagementFactory;
-import java.lang.reflect.Method;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
 import jenkins.util.Timer;
@@ -62,10 +59,6 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
  * and whenever it does so, it monitors the timestamp of the file to make sure no one else is updating
  * this file. In this way, while we cannot detect the problem right away, within a reasonable time frame
  * we can detect the collision.
- *
- * <p>
- * More traditional way of doing this is to use a lock file with PID in it, but unfortunately in Java,
- * there's no reliable way to obtain PID.
  *
  * @author Kohsuke Kawaguchi
  * @since 1.178
@@ -110,6 +103,7 @@ public class DoubleLaunchChecker {
             }
             // we noticed that someone else have updated this file.
             // switch GUI to display this error.
+            // TODO seems drastic; could this just be switched to an AdministrativeMonitor?
             Jenkins.get().servletContext.setAttribute("app", this);
             LOGGER.severe("Collision detected. timestamp=" + t + ", expected=" + lastWriteTime);
             // we need to continue updating this file, so that the other Hudson would notice the problem, too.
@@ -130,20 +124,7 @@ public class DoubleLaunchChecker {
      * Figures out a string that identifies this instance of Hudson.
      */
     public String getId() {
-        Jenkins h = Jenkins.get();
-
-        // in servlet 2.5, we can get the context path
-        String contextPath = "";
-        try {
-            Method m = ServletContext.class.getMethod("getContextPath");
-            contextPath = " contextPath=\"" + m.invoke(h.servletContext) + "\"";
-        } catch (RuntimeException e) {
-            throw e;
-        } catch (Exception e) {
-            // maybe running with Servlet 2.4
-        }
-
-        return h.hashCode() + contextPath + " at " + ManagementFactory.getRuntimeMXBean().getName();
+        return Long.toString(ProcessHandle.current().pid());
     }
 
     public String getCollidingId() {
@@ -155,7 +136,7 @@ public class DoubleLaunchChecker {
      */
     public void schedule() {
         // randomize the scheduling so that multiple Hudson instances will write at the file at different time
-        long MINUTE = 1000 * 60;
+        long MINUTE = 1000 * 60; // TODO use TimeUnit.MINUTE.toMillis
 
         Timer.get()
             .schedule(new SafeTimerTask() {
@@ -168,6 +149,7 @@ public class DoubleLaunchChecker {
 
     @Initializer(after = JOB_CONFIG_ADAPTED)
     public static void init() {
+        // TODO AperiodicWork would be more idiomatic
         new DoubleLaunchChecker().schedule();
     }
 
