@@ -54,7 +54,6 @@ import hudson.Launcher;
 import hudson.Util;
 import hudson.matrix.MatrixProject;
 import hudson.scm.NullSCM;
-import hudson.scm.SCM;
 import hudson.scm.SCMDescriptor;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
 import hudson.tasks.BatchFile;
@@ -241,7 +240,7 @@ public class AbstractProjectTest {
 
             @Override
             public SCMDescriptor<?> getDescriptor() {
-                return new SCMDescriptor<SCM>(null) {
+                return new SCMDescriptor<>(null) {
                 };
             }
         });
