@@ -431,29 +431,6 @@ pre.console {
     color: white;
 }
 
-div.behavior-loading {
-  position: fixed;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 10;
-
-  &::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    right: 0;
-    background: var(--background);
-    opacity: 0.95;
-  }
-}
-
 .bottom-sticker, #bottom-sticker {
   position: sticky;
   // This has to be set to -1px so that IntersectionObserver can add the
@@ -863,7 +840,7 @@ table.parameters > tbody:hover {
 
 #buildHistoryPageNav.mouseOverSidePanel {
   visibility: visible;
-  right: -38px;
+  right: -32px;
   opacity: 1;
 }
 
