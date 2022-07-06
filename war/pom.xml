@@ -762,10 +762,9 @@ THE SOFTWARE.
                 <goals>
                   <goal>yarn</goal>
                 </goals>
-                <phase>test</phase>
+                <phase>validate</phase>
                 <configuration>
                   <arguments>lint</arguments>
-                  <skip>${skipTests}</skip>
                 </configuration>
               </execution>
             </executions>
