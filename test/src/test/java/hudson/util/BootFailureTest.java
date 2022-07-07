@@ -19,7 +19,6 @@ import java.util.List;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import jenkins.model.Jenkins;
-import org.eclipse.jetty.util.component.AbstractLifeCycle;
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
@@ -73,11 +72,11 @@ public class BootFailureTest {
                 assertNotNull(noListenerConfiguration);
                 if (noListenerConfiguration != null) {
                     context.removeBean(noListenerConfiguration);
-                    context.addBean(new AbstractLifeCycle() {
+                    context.addBean(new NoListenerConfiguration(context) {
                         @Override
                         protected void doStart() {
                             // default behavior of noListenerConfiguration
-                            context.setEventListeners(null);
+                            super.doStart();
                             // ensuring our custom context will received the contextInitialized event
                             context.addEventListener(wa);
                         }
