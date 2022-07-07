@@ -1746,7 +1746,7 @@ public abstract class AbstractProject<P extends AbstractProject<P, R>, R extends
         super.submit(req, rsp);
         JSONObject json = req.getSubmittedForm();
 
-        makeDisabled(json.optBoolean("disable"));
+        makeDisabled(!json.optBoolean("enable"));
 
         jdk = json.optString("jdk", null);
 

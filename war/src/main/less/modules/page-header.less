@@ -33,8 +33,6 @@ a.page-header__brand-link {
 }
 
 .page-header__brand-image {
-    height: 32px;
-    width: 24px;
     height: 2rem;
     width: 1.5rem;
     margin-right: 0.75rem;
@@ -57,6 +55,7 @@ a.page-header__brand-link {
     align-items: center;
 
     // need to override an existing rule
+    /* stylelint-disable declaration-block-no-shorthand-property-overrides */
     padding-right: 0.5rem;
     padding: 0.5rem;
     margin-right: 0.25rem !important;
@@ -189,7 +188,7 @@ a.page-header__brand-link {
 #search-box-completion ul {
     padding: 0.75rem 0;
     width: 100%;
-    margin: 0 0;
+    margin: 0;
     list-style: none;
 }
 

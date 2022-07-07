@@ -329,6 +329,17 @@ THE SOFTWARE.
       <artifactId>version-number</artifactId>
     </dependency>
     <dependency>
+      <groupId>org.jenkins-ci.main</groupId>
+      <artifactId>websocket-spi</artifactId>
+      <version>${project.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>javax.servlet</groupId>
+          <artifactId>javax.servlet-api</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
       <groupId>org.jfree</groupId>
       <artifactId>jfreechart</artifactId>
     </dependency>
@@ -375,10 +386,8 @@ THE SOFTWARE.
       <artifactId>j-interop</artifactId>
     </dependency>
     <dependency>
-      <!-- not in BOM, optional -->
       <groupId>org.kohsuke.metainf-services</groupId>
       <artifactId>metainf-services</artifactId>
-      <version>1.9</version>
       <optional>true</optional>
     </dependency>
     <dependency>
