@@ -47,7 +47,7 @@ public class ListPluginsCommandTest {
         CLICommandInvoker.Result result = new CLICommandInvoker(j, new ListPluginsCommand())
                 .invoke();
         assertThat(result, CLICommandInvoker.Matcher.succeeded());
-        assertThat(result, CLICommandInvoker.Matcher.hasNoStandardOutput());
+        assertThat(result, not(CLICommandInvoker.Matcher.hasNoStandardOutput()));
         assertThat(result.stdout(), not(containsString("token-macro")));
 
         assertThat(new CLICommandInvoker(j, new InstallPluginCommand()).
