@@ -1,13 +1,3 @@
-function checkPluginsWithoutWarnings() {
-    var inputs = document.getElementsByTagName('input');
-    for(var i = 0; i < inputs.length; i++) {
-        var candidate = inputs[i];
-        if(candidate.type === "checkbox" && !candidate.disabled) {
-            candidate.checked = candidate.dataset.compatWarning === 'false';
-        }
-    }
-}
-
 Behaviour.specify("#filter-box", '_table', 0, function(e) {
     function applyFilter() {
         var filter = e.value.toLowerCase().trim();
@@ -423,4 +413,14 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
 
 Element.observe(window, "load", function() {
     document.getElementById('filter-box').focus();
+
+  document.querySelector("[data-select='compatible']").addEventListener("click", () => {
+    const inputs = document.getElementsByTagName('input');
+    for (let i = 0; i < inputs.length; i++) {
+      const candidate = inputs[i];
+      if (candidate.type === "checkbox" && !candidate.disabled) {
+        candidate.checked = candidate.dataset.compatWarning === 'false';
+      }
+    }
+  })
 });
