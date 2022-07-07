@@ -1982,10 +1982,10 @@ async-each@^1.0.1:
   resolved "https://registry.yarnpkg.com/async-each/-/async-each-1.0.3.tgz#b727dbf87d7651602f06f4d4ac387f47d91b0cbf"
   integrity sha512-z/WhQ5FPySLdvREByI2vZiTWwCnF0moMJ1hK9YQwDTHKh6I7/uSckMetoRGb5UBZPC1z0jlw+n/XCgjeH7y1AQ==
 
-async@~0.2.10:
-  version "0.2.10"
-  resolved "https://registry.yarnpkg.com/async/-/async-0.2.10.tgz#b6bbe0b0674b9d719708ca38de8c237cb526c3d1"
-  integrity sha1-trvgsGdLnXGXCMo43owjfLUmw9E=
+async@^3.2.2:
+  version "3.2.4"
+  resolved "https://registry.yarnpkg.com/async/-/async-3.2.4.tgz#2d22e00f8cddeb5fde5dd33522b56d1cf569a81c"
+  integrity sha512-iAB+JbDEGXhyIUavoDl9WP/Jj106Kz9DEn1DPgYw5ruDn0e3Wgi3sKFm55sASdGBNOQB8F59d9qQ7deqrHA8wQ==
 
 asynckit@^0.4.0:
   version "0.4.0"
@@ -4436,12 +4436,12 @@ gulplog@^1.0.0:
   dependencies:
     glogg "^1.0.0"
 
-handlebars-loader@^1.7.1:
-  version "1.7.1"
-  resolved "https://registry.yarnpkg.com/handlebars-loader/-/handlebars-loader-1.7.1.tgz#07088f09d8a559344908f7c88c68c0ffdacc555d"
-  integrity sha512-Q+Z/hDPQzU8ZTlVnAe/0T1LHABlyhL7opNcSKcQDhmUXK2ByGTqib1Z2Tfv4Ic50WqDcLFWQcOb3mhjcBRbscQ==
+handlebars-loader@^1.7.2:
+  version "1.7.2"
+  resolved "https://registry.yarnpkg.com/handlebars-loader/-/handlebars-loader-1.7.2.tgz#1694cc7cb3de1d16bec718af257eed853e4af84d"
+  integrity sha512-rEzru8REzqeJlbotJD+gPQ8AHyxcAjeXbGqGmrz3+sbjecI0ungieONwMR27Htr+AoKI5W36oPLwcwGrPzO8gw==
   dependencies:
-    async "~0.2.10"
+    async "^3.2.2"
     fastparse "^1.0.0"
     loader-utils "1.0.x"
     object-assign "^4.1.0"
