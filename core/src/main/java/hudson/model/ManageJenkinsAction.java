@@ -26,8 +26,10 @@ package hudson.model;
 
 import hudson.Extension;
 import hudson.Util;
+import java.io.IOException;
 import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithContextMenu;
+import org.apache.commons.jelly.JellyException;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -67,7 +69,7 @@ public class ManageJenkinsAction implements RootAction, StaplerFallback, ModelOb
     }
 
     @Override
-    public ContextMenu doContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
+    public ContextMenu doContextMenu(StaplerRequest request, StaplerResponse response) throws JellyException, IOException {
         return new ContextMenu().from(this, request, response, "index");
     }
 
