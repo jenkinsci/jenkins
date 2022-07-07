@@ -65,7 +65,10 @@ module.exports = (env, argv) => ({
         use: [
           'style-loader',
           {
-            loader: MiniCSSExtractPlugin.loader
+            loader: MiniCSSExtractPlugin.loader,
+            options: {
+              esModule: false
+            }
           },
           {
             loader: 'css-loader',

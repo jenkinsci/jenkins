@@ -40,7 +40,7 @@
     "jest-standard-reporter": "^1.0.4",
     "less": "^3.10.3",
     "less-loader": "^5.0.0",
-    "mini-css-extract-plugin": "^1.0.0",
+    "mini-css-extract-plugin": "^1.6.2",
     "postcss": "^8.4.14",
     "postcss-loader": "^3.0.0",
     "style-loader": "^2.0.0",
