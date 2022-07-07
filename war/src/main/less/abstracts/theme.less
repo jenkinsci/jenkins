@@ -1,7 +1,8 @@
 :root, .app-theme-picker__picker[data-theme=none] {
   // Font related properties
-  --font-family-sans: system-ui, "Segoe UI", roboto, "Noto Sans", oxygen, ubuntu, cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
-  --font-family-mono: ui-monospace, SFMono-Regular, SF Mono, JetBrainsMono, Consolas, monospace;
+  --font-family-sans: system-ui, "Segoe UI", roboto, "Noto Sans", oxygen, ubuntu, cantarell,
+  "Fira Sans", "Droid Sans", "Helvetica Neue", arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+  --font-family-mono: ui-monospace, sfmono-regular, sf mono, jetbrainsmono, consolas, monospace;
   --font-size-base: 1rem; // 16px
   --font-size-sm: 0.875rem; // 14px
   --font-size-xs: 0.75rem; // 12px
@@ -29,7 +30,7 @@
   --focus-btn-primary: fade(#0b6aa2, 50%);
   --focus-btn-secondary: fade(#0b6aa2, 50%);
   --focus-btn-danger: fade(#cc0003, 50%);
-  --focus-input-border: #063F61;
+  --focus-input-border: #063f61;
   --focus-input-glow: fade(#0b6aa2, 25%);
 
   // State colors
@@ -127,9 +128,9 @@
   --btn-large-line-height: 1.25rem;
   // Button primary
   --button-color--primary: var(--background);
-  --btn-primary-bg: #063F61;
-  --btn-primary-bg-hover: lighten(#063F61, 7.5%);
-  --btn-primary-bg-active: lighten(#063F61, 12%);
+  --btn-primary-bg: #063f61;
+  --btn-primary-bg-hover: lighten(#063f61, 7.5%);
+  --btn-primary-bg-active: lighten(#063f61, 12%);
   // Button primary
   --btn-secondary-color: var(--secondary);
   --btn-secondary-bg: var(--btn-text-color);
@@ -256,8 +257,8 @@
   // Form
   --section-padding: 1.85rem;
   --input-color: var(--white);
-  --input-border: #C3CCD1;
-  --input-border-hover: #5C7889;
+  --input-border: #c3ccd1;
+  --input-border-hover: #5c7889;
   --input-hidden-password-bg-color: #f9f9f9;
   --form-item-max-width: ~"min(65vw, 1600px)";
   --form-item-max-width--medium: ~"min(50vw, 1400px)";
@@ -326,8 +327,8 @@
 
   each(@semantics, {
     --@{key}-color: @value;
-  })
-}
+  });
+ }
 
 @colors: {
   blue: #007aff;
@@ -339,7 +340,7 @@
   pink: #fb0f45;
   purple: #af52de;
   red: #e6001f;
-  yellow: #ffcc00;
+  yellow: #fc0;
 }
 
 @semantics: {

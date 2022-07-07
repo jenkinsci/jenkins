@@ -67,6 +67,8 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -82,7 +84,6 @@ import jenkins.model.ArtifactManagerFactory;
 import jenkins.model.ArtifactManagerFactoryDescriptor;
 import jenkins.model.Jenkins;
 import jenkins.util.VirtualFile;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
@@ -579,7 +580,7 @@ public class DirectoryBrowserSupportTest {
         File secretsFolder = new File(j.jenkins.getRootDir(), "secrets");
         File secretTarget = new File(secretsFolder, "goal.txt");
         String secretContent = "secret";
-        FileUtils.write(secretTarget, secretContent, StandardCharsets.UTF_8);
+        Files.writeString(secretTarget.toPath(), secretContent, StandardCharsets.UTF_8);
 
         /*
          *  secrets/
@@ -718,10 +719,10 @@ public class DirectoryBrowserSupportTest {
         File secretsFolder = new File(j.jenkins.getRootDir(), "secrets");
         File secretTarget = new File(secretsFolder, "goal.txt");
         String secretContent = "secret";
-        FileUtils.write(secretTarget, secretContent, StandardCharsets.UTF_8);
-        FileUtils.write(new File(secretsFolder, "public_fake1.key"), secretContent, StandardCharsets.UTF_8);
-        FileUtils.write(new File(secretsFolder, "public_fake2.key"), secretContent, StandardCharsets.UTF_8);
-        FileUtils.write(new File(secretsFolder, "public_fake3.key"), secretContent, StandardCharsets.UTF_8);
+        Files.writeString(secretTarget.toPath(), secretContent, StandardCharsets.UTF_8);
+        Files.writeString(secretsFolder.toPath().resolve("public_fake1.key"), secretContent, StandardCharsets.UTF_8);
+        Files.writeString(secretsFolder.toPath().resolve("public_fake2.key"), secretContent, StandardCharsets.UTF_8);
+        Files.writeString(secretsFolder.toPath().resolve("public_fake3.key"), secretContent, StandardCharsets.UTF_8);
 
         /*
          *  secrets/
@@ -792,7 +793,7 @@ public class DirectoryBrowserSupportTest {
         File secretsFolder = new File(j.jenkins.getRootDir(), "secrets");
         File secretTarget = new File(secretsFolder, "goal.txt");
         String secretContent = "secret";
-        FileUtils.write(secretTarget, secretContent, StandardCharsets.UTF_8);
+        Files.writeString(secretTarget.toPath(), secretContent, StandardCharsets.UTF_8);
 
         /*
          *  secrets/
@@ -1013,7 +1014,7 @@ public class DirectoryBrowserSupportTest {
         folderInsideWorkspace.mkdir();
         File fileTarget = new File(folderInsideWorkspace, "goal.txt");
         String publicContent = "not-secret";
-        FileUtils.write(fileTarget, publicContent, StandardCharsets.UTF_8);
+        Files.writeString(fileTarget.toPath(), publicContent, StandardCharsets.UTF_8);
 
         /*
          *  workspace/
@@ -1091,8 +1092,8 @@ public class DirectoryBrowserSupportTest {
         if (resourceUrl == null) {
             fail("The resource with fileName " + fileNameInResources + " is not present in the resources of the test");
         }
-        File resourceFile = new File(resourceUrl.toURI());
-        return FileUtils.readFileToString(resourceFile, StandardCharsets.UTF_8);
+        Path resourcePath = Paths.get(resourceUrl.toURI());
+        return Files.readString(resourcePath, StandardCharsets.UTF_8);
     }
 
     @Test
@@ -1100,12 +1101,12 @@ public class DirectoryBrowserSupportTest {
     public void windows_cannotViewAbsolutePath() throws Exception {
         Assume.assumeTrue("can only be tested this on Windows", Functions.isWindows());
 
-        File targetTmpFile = File.createTempFile("sec2481", "tmp");
+        Path targetTmpPath = Files.createTempFile("sec2481", "tmp");
         String content = "random data provided as fixed value";
-        FileUtils.writeStringToFile(targetTmpFile, content, StandardCharsets.UTF_8);
+        Files.writeString(targetTmpPath, content, StandardCharsets.UTF_8);
 
         JenkinsRule.WebClient wc = j.createWebClient().withThrowExceptionOnFailingStatusCode(false);
-        Page page = wc.goTo("userContent/" + targetTmpFile.getAbsolutePath() + "/*view*", null);
+        Page page = wc.goTo("userContent/" + targetTmpPath.toAbsolutePath() + "/*view*", null);
 
         MatcherAssert.assertThat(page.getWebResponse().getStatusCode(), CoreMatchers.equalTo(404));
     }
@@ -1118,12 +1119,12 @@ public class DirectoryBrowserSupportTest {
         String originalValue = System.getProperty(DirectoryBrowserSupport.ALLOW_ABSOLUTE_PATH_PROPERTY_NAME);
         System.setProperty(DirectoryBrowserSupport.ALLOW_ABSOLUTE_PATH_PROPERTY_NAME, "true");
         try {
-            File targetTmpFile = File.createTempFile("sec2481", "tmp");
+            Path targetTmpPath = Files.createTempFile("sec2481", "tmp");
             String content = "random data provided as fixed value";
-            FileUtils.writeStringToFile(targetTmpFile, content, StandardCharsets.UTF_8);
+            Files.writeString(targetTmpPath, content, StandardCharsets.UTF_8);
 
             JenkinsRule.WebClient wc = j.createWebClient().withThrowExceptionOnFailingStatusCode(false);
-            Page page = wc.goTo("userContent/" + targetTmpFile.getAbsolutePath() + "/*view*", null);
+            Page page = wc.goTo("userContent/" + targetTmpPath.toAbsolutePath() + "/*view*", null);
 
             MatcherAssert.assertThat(page.getWebResponse().getStatusCode(), CoreMatchers.equalTo(200));
             MatcherAssert.assertThat(page.getWebResponse().getContentAsString(), CoreMatchers.containsString(content));
@@ -1142,7 +1143,7 @@ public class DirectoryBrowserSupportTest {
         File testFile = new File(j.jenkins.getRootDir(), "userContent/test.txt");
         String content = "random data provided as fixed value";
 
-        FileUtils.writeStringToFile(testFile, content, StandardCharsets.UTF_8);
+        Files.writeString(testFile.toPath(), content, StandardCharsets.UTF_8);
 
         JenkinsRule.WebClient wc = j.createWebClient().withThrowExceptionOnFailingStatusCode(false);
         Page page = wc.goTo("userContent/test.txt/*view*", null);

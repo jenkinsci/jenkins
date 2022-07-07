@@ -10,7 +10,6 @@ import hudson.views.ViewsTabBar;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -94,7 +93,7 @@ public class ViewTest {
         final TopLevelItem rightJob = createJob("rightJob");
 
         Mockito.when(leftView.getItems()).thenReturn(Arrays.asList(leftJob, sharedJob));
-        Mockito.when(rightView.getItems()).thenReturn(Collections.singletonList(rightJob));
+        Mockito.when(rightView.getItems()).thenReturn(List.of(rightJob));
 
         final TopLevelItem[] expected = new TopLevelItem[] {rootJob, sharedJob, leftJob, rightJob};
 

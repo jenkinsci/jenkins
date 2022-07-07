@@ -229,7 +229,7 @@ public final class Secret implements Serializable {
     }
 
     /**
-     * Workaround for JENKINS-6459 / http://java.net/jira/browse/GLASSFISH-11862
+     * Workaround for <a href="https://issues.jenkins.io/browse/JENKINS-6459">JENKINS-6459</a> / <a href="https://web.archive.org/web/20110107095054/http://java.net/jira/browse/GLASSFISH-11862">GLASSFISH-11862</a>
      * This method uses specific provider selected via hudson.util.Secret.provider system property
      * to provide a workaround for the above bug where default provide gives an unusable instance.
      * (Glassfish Enterprise users should set value of this property to "SunJCE")
@@ -286,7 +286,7 @@ public final class Secret implements Serializable {
     }
 
     /**
-     * Workaround for JENKINS-6459 / http://java.net/jira/browse/GLASSFISH-11862
+     * Workaround for <a href="https://issues.jenkins.io/browse/JENKINS-6459">JENKINS-6459</a> / <a href="https://web.archive.org/web/20110107095054/http://java.net/jira/browse/GLASSFISH-11862">GLASSFISH-11862</a>
      * @see #getCipher(String)
      */
     private static final String PROVIDER = SystemProperties.getString(Secret.class.getName() + ".provider");
