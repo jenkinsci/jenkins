@@ -22,8 +22,7 @@
  * THE SOFTWARE.
  */
 
-@import '../abstracts/theme.less';
-
+@import "../abstracts/theme.less";
 
 /* Panel */
 @media (min-width: 1600px) {
@@ -352,9 +351,6 @@ pre.console {
   font-style: italic;
 }
 
-.main-table {
-}
-
 .smallfont {
   font-size: 9px;
 }
@@ -429,6 +425,19 @@ pre.console {
       If I set this to inherit, it won't work in IE7
      */
     color: white;
+}
+
+div.behavior-loading {
+  position: fixed;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  top: 56px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
+  background: var(--background);
 }
 
 .bottom-sticker, #bottom-sticker {
@@ -988,8 +997,6 @@ table.fileList td.fileSize {
   text-align: right;
 }
 
-
-
 /* ========================= test result ========================= */
 .result-passed {
   color: #3465a4;
@@ -1116,7 +1123,7 @@ table.progress-bar {
 }
 
 table.progress-bar tr.unknown {
-    background-image: url(../../images/progress-unknown.gif);
+    background-image: url("../../images/progress-unknown.gif");
 }
 
 td.progress-bar-done {
@@ -1132,7 +1139,7 @@ table.progress-bar.red {
 }
 
 table.progress-bar.red tr.unknown {
-    background-image: url(../../images/progress-unknown-red.gif);
+    background-image: url("../../images/progress-unknown-red.gif");
 }
 
 table.progress-bar.red td.progress-bar-done {
@@ -1361,7 +1368,7 @@ select.select-ajax-pending {
   padding-top: 0.5em;
   padding-bottom: 0.5em;
   color: transparent;
-  background-image: url(../../images/spinner.gif); /* this is why here and not in an adjunct */
+  background-image: url("../../images/spinner.gif"); /* this is why here and not in an adjunct */
   background-repeat: no-repeat;
   background-position: 2px;
 }
@@ -1487,7 +1494,6 @@ body.no-sticker #bottom-sticker {
 }
 
 /* -------------------------------------- */
-
 
 /* -------------- SVG icons ------------- */
 
