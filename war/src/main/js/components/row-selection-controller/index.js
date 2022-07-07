@@ -1,72 +1,72 @@
 const rowSelectionControllers = document.querySelectorAll(".jenkins-table__checkbox")
 
-rowSelectionControllers.forEach(select => {
-  const owner = select.closest(".jenkins-table");
-  const ownerCheckboxes = owner.querySelectorAll("input[type='checkbox']");
-  const moreOptionsButton = owner.querySelector(".jenkins-table__checkbox-options")
-  const allButton = owner.querySelector("[data-select='all']")
-  const noneButton = owner.querySelector("[data-select='none']")
-  const dropdown = owner.querySelector(".jenkins-table__checkbox-dropdown")
-  const dropdownButtons = owner.querySelectorAll(".jenkins-table__checkbox-dropdown button")
+rowSelectionControllers.forEach(headerCheckbox => {
+  const table = headerCheckbox.closest(".jenkins-table")
+  const tableCheckboxes = table.querySelectorAll("input[type='checkbox']")
+  const moreOptionsButton = table.querySelector(".jenkins-table__checkbox-options")
+  const moreOptionsDropdown = table.querySelector(".jenkins-table__checkbox-dropdown")
+  const moreOptionsDropdownButtons = table.querySelectorAll(".jenkins-table__checkbox-dropdown button")
+  const moreOptionsAllButton = table.querySelector("[data-select='all']")
+  const moreOptionsNoneButton = table.querySelector("[data-select='none']")
 
   const allCheckboxesSelected = () => {
-    return ownerCheckboxes.length === [...ownerCheckboxes].filter(e => e.checked).length
+    return tableCheckboxes.length === [...tableCheckboxes].filter(e => e.checked).length
   }
 
   const anyCheckboxesSelected = () => {
-    return [...ownerCheckboxes].filter(e => e.checked).length > 0
+    return [...tableCheckboxes].filter(e => e.checked).length > 0
   }
 
-  ownerCheckboxes.forEach(checkbox => {
+  tableCheckboxes.forEach(checkbox => {
     checkbox.addEventListener("change", () => {
-      updateIcon();
+      updateIcon()
     })
   })
 
-  select.addEventListener("click", () => {
+  headerCheckbox.addEventListener("click", () => {
     const newValue = !allCheckboxesSelected()
-    ownerCheckboxes.forEach(e => e.checked = newValue)
+    tableCheckboxes.forEach(e => e.checked = newValue)
     updateIcon()
   })
 
-  allButton?.addEventListener("click", () => {
-    ownerCheckboxes.forEach(e => e.checked = true)
+  moreOptionsAllButton?.addEventListener("click", () => {
+    tableCheckboxes.forEach(e => e.checked = true)
   })
 
-  noneButton?.addEventListener("click", () => {
-    ownerCheckboxes.forEach(e => e.checked = false)
+  moreOptionsNoneButton?.addEventListener("click", () => {
+    tableCheckboxes.forEach(e => e.checked = false)
   })
 
   function updateIcon() {
-    select.classList.remove("jenkins-table__checkbox--all")
-    select.classList.remove("jenkins-table__checkbox--indeterminate")
+    headerCheckbox.classList.remove("jenkins-table__checkbox--all")
+    headerCheckbox.classList.remove("jenkins-table__checkbox--indeterminate")
 
     if (allCheckboxesSelected()) {
-      select.classList.add("jenkins-table__checkbox--all")
-      return;
+      headerCheckbox.classList.add("jenkins-table__checkbox--all")
+      return
     }
 
     if (anyCheckboxesSelected()) {
-      select.classList.add("jenkins-table__checkbox--indeterminate")
+      headerCheckbox.classList.add("jenkins-table__checkbox--indeterminate")
     }
   }
 
   document.addEventListener("click", event => {
-    if (dropdown?.contains(event.target) || event.target === moreOptionsButton) {
+    if (moreOptionsDropdown?.contains(event.target) || event.target === moreOptionsButton) {
       return
     }
 
-    dropdown?.classList.remove("jenkins-table__checkbox-dropdown--visible")
+    moreOptionsDropdown?.classList.remove("jenkins-table__checkbox-dropdown--visible")
   })
 
   moreOptionsButton?.addEventListener("click", () => {
-    dropdown.classList.toggle("jenkins-table__checkbox-dropdown--visible")
+    moreOptionsDropdown.classList.toggle("jenkins-table__checkbox-dropdown--visible")
   })
 
-  dropdownButtons?.forEach(button => {
+  moreOptionsDropdownButtons?.forEach(button => {
     button.addEventListener("click", () => {
       updateIcon()
-      dropdown.classList.remove("jenkins-table__checkbox-dropdown--visible")
+      moreOptionsDropdown.classList.remove("jenkins-table__checkbox-dropdown--visible")
     })
   })
 })
