@@ -1940,11 +1940,6 @@ arrify@^1.0.0, arrify@^1.0.1:
   resolved "https://registry.yarnpkg.com/arrify/-/arrify-1.0.1.tgz#898508da2226f380df904728456849c1501a4b0d"
   integrity sha1-iYUI2iIm84DfkEcoRWhJwVAaSw0=
 
-asap@~2.0.3:
-  version "2.0.6"
-  resolved "https://registry.yarnpkg.com/asap/-/asap-2.0.6.tgz#e50347611d7e690943208bbdafebcbc2fb866d46"
-  integrity sha1-5QNHYR1+aQlDIIu9r+vLwvuGbUY=
-
 asn1.js@^4.0.0:
   version "4.10.1"
   resolved "https://registry.yarnpkg.com/asn1.js/-/asn1.js-4.10.1.tgz#b9c2bf5805f1e64aadeed6df3a2bfafb5a73f5a0"
@@ -2757,7 +2752,7 @@ clone@^1.0.0:
   resolved "https://registry.yarnpkg.com/clone/-/clone-1.0.4.tgz#da309cc263df15994c688ca902179ca3c7cd7c7e"
   integrity sha1-2jCcwmPfFZlMaIypAheco8fNfH4=
 
-clone@^2.1.1, clone@^2.1.2:
+clone@^2.1.1:
   version "2.1.2"
   resolved "https://registry.yarnpkg.com/clone/-/clone-2.1.2.tgz#1b7f4b9f591f1e8f83670401600345a02887435f"
   integrity sha1-G39Ln1kfHo+DZwQBYANFoCiHQ18=
@@ -2907,6 +2902,13 @@ convert-source-map@^1.1.0, convert-source-map@^1.4.0, convert-source-map@^1.6.0,
   integrity sha512-4FJkXzKXEDB1snCFZlLP4gpC3JILicCpGbzG9f9G7tGqGCzETQ2hWPrcinA9oU4wtf2biUaEH5065UnMeR33oA==
   dependencies:
     safe-buffer "~5.1.1"
+
+copy-anything@^2.0.1:
+  version "2.0.6"
+  resolved "https://registry.yarnpkg.com/copy-anything/-/copy-anything-2.0.6.tgz#092454ea9584a7b7ad5573062b2a87f5900fc480"
+  integrity sha512-1j20GZTsvKNkc4BY3NpMOM8tt///wY3FpIzozTOFO2ffuZcV61nojHXVKIy3WM+7ADCy5FVhdZYHYDdgTU0yJw==
+  dependencies:
+    is-what "^3.14.1"
 
 copy-concurrently@^1.0.0:
   version "1.0.5"
@@ -5164,6 +5166,11 @@ is-weakref@^1.0.2:
   dependencies:
     call-bind "^1.0.2"
 
+is-what@^3.14.1:
+  version "3.14.1"
+  resolved "https://registry.yarnpkg.com/is-what/-/is-what-3.14.1.tgz#e1222f46ddda85dead0fd1c9df131760e77755c1"
+  integrity sha512-sNxgpk9793nzSs7bA6JQJGeIuRBQhAaNGG77kzYQgMkrID+lS6SlK07K5LaptscDlSaIgH+GPFzf+d75FVxozA==
+
 is-windows@^1.0.2:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/is-windows/-/is-windows-1.0.2.tgz#d1850eb9791ecd18e6182ce12a30f396634bb19d"
@@ -5946,21 +5953,20 @@ less-loader@^5.0.0:
     loader-utils "^1.1.0"
     pify "^4.0.1"
 
-less@^3.10.3:
-  version "3.11.1"
-  resolved "https://registry.yarnpkg.com/less/-/less-3.11.1.tgz#c6bf08e39e02404fe6b307a3dfffafdc55bd36e2"
-  integrity sha512-tlWX341RECuTOvoDIvtFqXsKj072hm3+9ymRBe76/mD6O5ZZecnlAOVDlWAleF2+aohFrxNidXhv2773f6kY7g==
+less@^3.13.1:
+  version "3.13.1"
+  resolved "https://registry.yarnpkg.com/less/-/less-3.13.1.tgz#0ebc91d2a0e9c0c6735b83d496b0ab0583077909"
+  integrity sha512-SwA1aQXGUvp+P5XdZslUOhhLnClSLIjWvJhmd+Vgib5BFIr9lMNlQwmwUNOjXThF/A0x+MCYYPeWEfeWiLRnTw==
   dependencies:
-    clone "^2.1.2"
+    copy-anything "^2.0.1"
     tslib "^1.10.0"
   optionalDependencies:
     errno "^0.1.1"
     graceful-fs "^4.1.2"
     image-size "~0.5.0"
+    make-dir "^2.1.0"
     mime "^1.4.1"
-    mkdirp "^0.5.0"
-    promise "^7.1.1"
-    request "^2.83.0"
+    native-request "^1.0.5"
     source-map "~0.6.0"
 
 leven@^3.1.0:
@@ -6482,7 +6488,7 @@ mixin-deep@^1.2.0:
     for-in "^1.0.2"
     is-extendable "^1.0.1"
 
-mkdirp@^0.5.0, mkdirp@^0.5.1, mkdirp@^0.5.3:
+mkdirp@^0.5.1, mkdirp@^0.5.3:
   version "0.5.5"
   resolved "https://registry.yarnpkg.com/mkdirp/-/mkdirp-0.5.5.tgz#d91cefd62d1436ca0f41620e251288d420099def"
   integrity sha512-NKmAlESf6jMGym1++R0Ra7wvhV+wFW63FaSOFPwRahvea0gMUcGUhVeAg/0BC0wiv9ih5NYPB1Wn1UEI1/L+xQ==
@@ -6561,6 +6567,11 @@ nanomatch@^1.2.9:
     regex-not "^1.0.0"
     snapdragon "^0.8.1"
     to-regex "^3.0.1"
+
+native-request@^1.0.5:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/native-request/-/native-request-1.1.0.tgz#acdb30fe2eefa3e1bc8c54b3a6852e9c5c0d3cb0"
+  integrity sha512-uZ5rQaeRn15XmpgE0xoPL8YWqcX90VtCFglYwAgkvKM5e8fog+vePLAhHxuuv/gRkrQxIeh5U3q9sMNUrENqWw==
 
 natural-compare@^1.4.0:
   version "1.4.0"
@@ -7591,13 +7602,6 @@ promise-inflight@^1.0.1:
   resolved "https://registry.yarnpkg.com/promise-inflight/-/promise-inflight-1.0.1.tgz#98472870bf228132fcbdd868129bad12c3c029e3"
   integrity sha1-mEcocL8igTL8vdhoEputEsPAKeM=
 
-promise@^7.1.1:
-  version "7.3.1"
-  resolved "https://registry.yarnpkg.com/promise/-/promise-7.3.1.tgz#064b72602b18f90f29192b8b1bc418ffd1ebd3bf"
-  integrity sha512-nolQXZ/4L+bP/UGlkfaIujX9BKxGwmQ9OT4mOt5yvy8iK1h3wqTEJCijzGANTCCl9nWjY41juyAn2K3Q1hLLTg==
-  dependencies:
-    asap "~2.0.3"
-
 prompts@^2.0.1:
   version "2.3.2"
   resolved "https://registry.yarnpkg.com/prompts/-/prompts-2.3.2.tgz#480572d89ecf39566d2bd3fe2c9fccb7c4c0b068"
@@ -7952,7 +7956,7 @@ request-promise-native@^1.0.8:
     stealthy-require "^1.1.1"
     tough-cookie "^2.3.3"
 
-request@^2.55.0, request@^2.83.0, request@^2.88.2:
+request@^2.55.0, request@^2.88.2:
   version "2.88.2"
   resolved "https://registry.yarnpkg.com/request/-/request-2.88.2.tgz#d73c918731cb5a87da047e207234146f664d12b3"
   integrity sha512-MsvtOrfG9ZcrOwAW+Qi+F6HbD0CWXEh9ou77uOb7FM2WPhwT7smM833PzanhJLsgXjN89Ir6V2PczXNnMpwKhw==
