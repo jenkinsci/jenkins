@@ -9,6 +9,7 @@ const htmlConfigTabbedContent = fs.readFileSync(
     'utf8'
 );
 
+// eslint-disable-next-line no-unused-vars
 function getConfigTabbar() {
     // eslint-disable-next-line no-undef
     return require('../../../../main/js/config-tabbar');
