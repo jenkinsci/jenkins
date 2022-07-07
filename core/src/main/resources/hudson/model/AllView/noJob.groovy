@@ -2,6 +2,7 @@ package hudson.model.AllView
 
 import hudson.model.Computer
 import hudson.model.Item
+import hudson.model.Job
 import jenkins.model.Jenkins
 
 def l = namespace(lib.LayoutTagLib)
@@ -11,7 +12,7 @@ def canSetUpDistributedBuilds = Jenkins.get().hasPermission(Computer.CREATE) &&
         Jenkins.get().clouds.isEmpty() &&
         Jenkins.get().getNodes().isEmpty();
 def hasAdministerJenkinsPermission = Jenkins.get().hasPermission(Jenkins.ADMINISTER);
-def hasItemCreatePermission = my.owner.hasPermission(Item.CREATE);
+def hasItemCreatePermission = my.owner.itemGroup.hasPermission(Item.CREATE);
 
 div {
 
