@@ -3,16 +3,16 @@ on:
   push:
   pull_request_target:
     types: [synchronize]
-    
+
 permissions:
   pull-requests: write
 
 jobs:
   main:
+    if: github.event.pull_request.user.login != 'dependabot[bot]'
     runs-on: ubuntu-latest
     steps:
       - name: Label conflicting PRs
-        if: github.event.pull_request.user.login != "dependabot[bot]"
         uses: eps1lon/actions-label-merge-conflict@b8bf8341285ec9a4567d4318ba474fee998a6919 # v2.0.1
         with:
           dirtyLabel: "unresolved-merge-conflict"
