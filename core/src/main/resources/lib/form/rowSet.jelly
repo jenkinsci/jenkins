@@ -53,7 +53,7 @@ THE SOFTWARE.
     </j:when>
     <j:otherwise>
       <j:if test="${contents.length() != 0}">
-        <div class="${isFormItem.equals('false') ? '' : 'jenkins-form-item'} ${class}">
+        <div class="${isFormItem.equals('false') ? '' : 'jenkins-form-item'} ${attrs.class}">
           <div ref="${attrs.ref}" class="row-set-start row-group-start tr" style="display:none" name="${attrs.name}"></div>
           <j:out value="${contents}" />
           <div class="row-set-end row-group-end tr"></div>

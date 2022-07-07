@@ -1,8 +1,8 @@
-@import (css) '../fonts/font-awesome/css/font-awesome.min.css';
-@import (css) '../fonts/icomoon/css/icomoon.css';
-@import (css) '../fonts/google-fonts/roboto/css/roboto.css';
+@import (css) "../fonts/font-awesome/css/font-awesome.min.css";
+@import (css) "../fonts/icomoon/css/icomoon.css";
+@import (css) "../fonts/google-fonts/roboto/css/roboto.css";
 
-.bootstrap-3 *, .bootstrap-3 [class*='col-'] {
+.bootstrap-3 *, .bootstrap-3 [class*="col-"] {
     // simple reset
     margin: initial;
     padding: initial;
@@ -66,7 +66,7 @@
         height: 100%;
         position: relative;
         box-sizing: border-box;
-        padding: 4.2em 0 4.8em 0;
+        padding: 4.2em 0 4.8em;
     }
 
     .jenkins-version {
@@ -153,7 +153,7 @@
         border-radius: 5px 5px 0 0;
 
         .close {
-            line-height: 1.42857143;
+            line-height: 1.42857;
             margin-right: 5px;
         }
     }
@@ -203,7 +203,7 @@
                 }
 
                 a + a::before {
-                    content: '|';
+                    content: "|";
                     font-size: 11px;
                     text-decoration: none !important;
                     display: inline-block;
@@ -221,7 +221,7 @@
                     max-width: 32em;
                     margin: 0;
 
-                    input[name=searchbox] {
+                    input[name="searchbox"] {
                         display: inline-block;
                     }
                 }
@@ -270,7 +270,7 @@
             }
 
             .plugin-list-description {
-                margin: -10px -10px 0 -10px;
+                margin: -10px -10px 0;
                 padding: 10px 20px;
                 opacity: 0.7;
                 border-bottom: 1px solid rgba(0, 0, 0, 0.2);
@@ -390,7 +390,7 @@
                         margin-top: 0.5em;
                     }
 
-                    input[type=checkbox] {
+                    input[type="checkbox"] {
                         float: left;
                         margin: 3px -18px;
                         vertical-align: middle;
@@ -428,7 +428,7 @@
 						position: absolute;
 						width: 11px;
 						height: 11px;
-						content: '';
+						content: "";
 						left: 2px;
 						top: 3px;
 						background: @badge-color;
@@ -436,7 +436,7 @@
 					}
 
 					.website-link::after {
-						content: '\f14c';
+						content: "\f14c";
 						display: inline-block;
 						font: 15px FontAwesome;
 						text-indent: 0;
@@ -471,7 +471,7 @@
 						border: 0;
 						text-decoration: none;
 						padding: 5px 13px;
-						margin: 0 0;
+						margin: 0;
 						z-index: 100;
 
 						.badge {
@@ -482,7 +482,7 @@
 							box-shadow: 0 0 1px 0 rgba(0, 0, 0, 0.25);
 
 							&::after {
-								content: '\f0d9';
+								content: "\f0d9";
 								font: 15px FontAwesome;
 								display: inline-block;
 								width: 13px;
@@ -509,7 +509,7 @@
 					}
 
 					.dep-list {
-						padding: 10px 0 6px 0;
+						padding: 10px 0 6px;
 						display: none;
 
 						> h3 {
@@ -529,7 +529,7 @@
 							box-shadow: 0 0 1px 0 rgba(0, 0, 0, 0.25);
 
 							&::after {
-								content: '\f14c';
+								content: "\f14c";
 								font: 11px FontAwesome;
 							}
 
@@ -543,7 +543,7 @@
 
 					&.show-dependencies {
 						.toggle-dependency-list .badge::after {
-							content: '\f0d7';
+							content: "\f0d7";
 						}
 
 						.dep-list {
@@ -581,7 +581,7 @@
                     border-radius: none;
 
                     &::after {
-                        content: '';
+                        content: "";
                         display: none;
                         position: absolute;
                         top: 0;
@@ -660,7 +660,7 @@
             padding-left: 10px;
 
             &::before {
-                content: ' ** ';
+                content: " ** ";
             }
         }
 
@@ -726,7 +726,7 @@
                 font-family: FontAwesome;
                 font-size: 17px;
                 line-height: 17px;
-                content: '\f10c';
+                content: "\f10c";
                 color: rgba(0, 0, 0, 0.1);
                 position: absolute;
                 left: 5px;
@@ -734,7 +734,7 @@
 
             &.installing {
                 &::before {
-                    content: '\f021';
+                    content: "\f021";
                     color: rgba(0, 60, 100, 0.33);
                     .spin();
                 }
@@ -744,7 +744,7 @@
               background: #e5f9e5;
 
                 &::before {
-                    content: '\f00c';
+                    content: "\f00c";
                     color: #3c763d;
 
                     .no-spin();
@@ -755,7 +755,7 @@
               background: #fdd;
 
                 &::before {
-                    content: '\f00d';
+                    content: "\f00d";
                     color: #a94442;
                     .no-spin();
                 }
@@ -919,7 +919,7 @@ body .plugin-setup-wizard { // need specificity, revisit the CSS inclusion order
 .loader::before, .loader::after {
     position: absolute;
     top: 0;
-    content: '';
+    content: "";
 }
 
 .loader::before {
@@ -931,7 +931,7 @@ body .plugin-setup-wizard { // need specificity, revisit the CSS inclusion order
 .loader {
     text-indent: -9999em;
     top: 50%;
-    margin: -4px auto 0 auto;
+    margin: -4px auto 0;
     position: relative;
     font-size: 6px;
     -webkit-transform: translateZ(0);
@@ -970,10 +970,10 @@ body .plugin-setup-wizard { // need specificity, revisit the CSS inclusion order
 }
 
 .bootstrap-3 {
-    @import (less) '../../../node_modules/bootstrap/less/bootstrap.less';
+    @import (less) "../../../node_modules/bootstrap/less/bootstrap.less";
 }
 
-.bootstrap-3 [class*='col-'] {
+.bootstrap-3 [class*="col-"] {
     // simple reset
     margin: initial;
     padding: initial;
