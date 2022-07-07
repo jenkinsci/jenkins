@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="512px" height="512px" viewBox="0 0 512 512" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" stroke-linecap="round">
+        <path d="M448,341.339707 L448,170.579707 C447.98613,159.20656 441.936771,148.695371 432.11,142.969707 L280.11,54.5097067 C265.201263,45.8300978 246.778737,45.8300978 231.87,54.5097067 L79.89,142.969707 C70.0632289,148.695371 64.0138705,159.20656 64,170.579707 L64,341.339707 C64.0067627,352.719997 70.0570661,363.240443 79.89,368.969707 L231.89,457.429707 C246.802122,466.096765 265.217878,466.096765 280.13,457.429707 L432.13,368.969707 C441.955241,363.235397 448,352.715896 448,341.339707 Z" stroke="currentColor" stroke-width="32" stroke-linejoin="round"></path>
+        <line x1="69" y1="153.959707" x2="256" y2="263.959707" id="Path" stroke="currentColor" stroke-width="32" stroke-linejoin="round"></line>
+        <line x1="256" y1="263.959707" x2="318" y2="226" id="Path" stroke="currentColor" stroke-width="32" stroke-linejoin="round"></line>
+        <line x1="382.5" y1="190.5" x2="443" y2="153.959707" id="Path" stroke="currentColor" stroke-width="32" stroke-linejoin="round"></line>
+        <line x1="163" y1="208.959707" x2="225" y2="171" id="Path" stroke="currentColor" stroke-width="32" stroke-linejoin="round"></line>
+        <line x1="289.5" y1="135.5" x2="350" y2="98.9597067" id="Path" stroke="currentColor" stroke-width="32" stroke-linejoin="round"></line>
+        <line x1="256" y1="463.959707" x2="256" y2="263.959707" id="Path" stroke="currentColor" stroke-width="32" stroke-linejoin="round"></line>
+        <line x1="131" y1="115.959707" x2="318" y2="225.959707" id="Path" stroke="currentColor" stroke-width="32" stroke-linejoin="round"></line>
+        <line x1="191" y1="80.9597067" x2="378" y2="190.959707" id="Path" stroke="currentColor" stroke-width="32" stroke-linejoin="round"></line>
+        <line x1="318" y1="227" x2="317.991704" y2="345.768179" id="Path-3" stroke="currentColor" stroke-width="32"></line>
+        <line x1="382.876735" y1="194.959707" x2="382.876735" y2="308.645029" id="Path-4" stroke="currentColor" stroke-width="32"></line>
+        <line x1="318" y1="346" x2="382.876735" y2="308.645029" id="Path-5" stroke="currentColor" stroke-width="32"></line>
+    </g>
+</svg>
