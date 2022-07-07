@@ -31,6 +31,7 @@ import static org.junit.Assert.fail;
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.WebRequest;
+import com.gargoylesoftware.htmlunit.WebResponse;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.ExtensionList;
 import hudson.model.UnprotectedRootAction;
@@ -69,7 +70,9 @@ public class CrumbExclusionTest {
                     assertThat("error message using " + path, x.getResponse().getContentAsString(), containsString("No valid crumb was included in the request"));
                     break;
                 case 400: // from Jetty
-                    assertThat("error message using " + path, x.getResponse().getContentAsString(), containsString("Ambiguous path parameter"));
+                    WebResponse response = x.getResponse();
+                    String expected = response.getResponseHeaderValue("Server").contains("Jetty(9") ? "Ambiguous path parameter" : "Ambiguous URI path parameter";
+                    assertThat("error message using " + path, x.getResponse().getContentAsString(), containsString(expected));
                     break;
                 default:
                     fail("unexpected error code");

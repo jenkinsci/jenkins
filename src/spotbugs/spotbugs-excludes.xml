@@ -659,6 +659,7 @@
           <Class name="jenkins.slaves.StandardOutputSwapper$ChannelSwapper"/>
           <Class name="jenkins.util.ProgressiveRendering"/>
           <Class name="jenkins.websocket.Jetty9Provider"/>
+          <Class name="jenkins.websocket.Jetty10Provider"/>
           <Class name="jenkins.websocket.Provider"/>
           <Class name="jenkins.websocket.WebSockets"/>
           <Class name="jenkins.websocket.WebSocketSession"/>
