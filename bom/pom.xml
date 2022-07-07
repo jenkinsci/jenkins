@@ -40,7 +40,7 @@ THE SOFTWARE.
   <properties>
     <asm.version>9.3</asm.version>
     <slf4jVersion>1.7.36</slf4jVersion>
-    <stapler.version>1711.v5b_1b_03f0fcf2</stapler.version>
+    <stapler.version>1685.v3b_5035c4ce05</stapler.version>
     <groovy.version>2.4.21</groovy.version>
   </properties>
 
@@ -295,6 +295,11 @@ THE SOFTWARE.
         <groupId>org.kohsuke.jinterop</groupId>
         <artifactId>j-interop</artifactId>
         <version>2.0.8-kohsuke-1</version>
+      </dependency>
+      <dependency>
+        <groupId>org.kohsuke.metainf-services</groupId>
+        <artifactId>metainf-services</artifactId>
+        <version>1.9</version>
       </dependency>
       <dependency>
         <groupId>org.kohsuke.stapler</groupId>
