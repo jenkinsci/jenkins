@@ -32,6 +32,7 @@ module.exports = (env, argv) => ({
     ],
     "tooltips": [path.join(__dirname, "src/main/js/tooltips.js")],
     "sortable-drag-drop": [path.join(__dirname, "src/main/js/sortable-drag-drop.js")],
+    "section-to-sidebar-items": [path.join(__dirname, "src/main/js/section-to-sidebar-items.js")],
     "section-to-tabs": [path.join(__dirname, "src/main/js/section-to-tabs.js")],
     "filter-build-history": [path.join(__dirname, "src/main/js/filter-build-history.js")],
     "simple-page": [path.join(__dirname, "src/main/less/simple-page.less")],
