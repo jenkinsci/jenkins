@@ -1,6 +1,6 @@
-const tableSelects = document.querySelectorAll(".jenkins-table__checkbox")
+const rowSelectionControllers = document.querySelectorAll(".jenkins-table__checkbox")
 
-tableSelects.forEach(select => {
+rowSelectionControllers.forEach(select => {
   const owner = select.closest(".jenkins-table");
   const ownerCheckboxes = owner.querySelectorAll("input[type='checkbox']");
   const moreOptionsButton = owner.querySelector(".jenkins-table__checkbox-options")

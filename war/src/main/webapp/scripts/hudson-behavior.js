@@ -2205,19 +2205,6 @@ function buildFormTree(form) {
     }
 }
 
-/**
- * @param {boolean} toggle
- *      When true, will check all checkboxes in the page. When false, unchecks them all.
- */
-var toggleCheckboxes = function(toggle) {
-    var inputs = document.getElementsByTagName("input");
-    for(var i=0; i<inputs.length; i++) {
-        if(inputs[i].type === "checkbox" && !inputs[i].disabled) {
-            inputs[i].checked = toggle;
-        }
-    }
-};
-
 var hoverNotification = (function() {
     var msgBox;
     var body;

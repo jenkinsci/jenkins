@@ -64,14 +64,14 @@ THE SOFTWARE.
             <tr>
               <l:isAdmin>
                 <th data-sort-disable="true">
-                  <l:tableSelect>
+                  <l:rowSelectionController>
                     <button type="button" data-select="compatible" class="jenkins-button jenkins-button--transparent">
                       <div class="jenkins-table__checkbox-dropdown__icon">
                         <l:icon src="symbol-compatible" />
                       </div>
                       ${%Compatible}
                     </button>
-                  </l:tableSelect>
+                  </l:rowSelectionController>
                 </th>
               </l:isAdmin>
               <th initialSortDir="${isUpdates?'down':null}">${%Name}</th>
