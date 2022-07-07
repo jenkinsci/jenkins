@@ -36,7 +36,7 @@ THE SOFTWARE.
               <l:task icon="symbol-edit-note" href="${buildUrl.baseUrl}/configure" title="${%Edit Build Information}"/>
           </j:when>
           <j:otherwise>
-              <l:task icon="symbol-open-note" href="${buildUrl.baseUrl}/configure" title="${%View Build Information}"/>
+              <l:task icon="symbol-view" href="${buildUrl.baseUrl}/configure" title="${%View Build Information}"/>
            </j:otherwise>
       </j:choose>
 </j:jelly>
