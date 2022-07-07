@@ -63,8 +63,15 @@ THE SOFTWARE.
           <thead>
             <tr>
               <l:isAdmin>
-                <th data-sort-disable="true" tooltip="${%Check to install the plugin}">
-                  ${%Install}
+                <th data-sort-disable="true">
+                  <l:tableSelect>
+                    <button type="button" data-select="compatible" class="jenkins-button jenkins-button--transparent">
+                      <div class="jenkins-table__checkbox-dropdown__icon">
+                        <l:icon src="symbol-compatible" />
+                      </div>
+                      ${%Compatible}
+                    </button>
+                  </l:tableSelect>
                 </th>
               </l:isAdmin>
               <th initialSortDir="${isUpdates?'down':null}">${%Name}</th>
