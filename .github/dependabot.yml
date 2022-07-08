@@ -16,6 +16,7 @@ updates:
       # Provided by Jetty and should be aligned with the version provided by the
       # version of Jetty we deliver. See:
       # https://github.com/jenkinsci/jenkins/pull/5211
+      - dependency-name: "jakarta.servlet:jakarta.servlet-api"
       - dependency-name: "javax.servlet:javax.servlet-api"
 
       # Jetty Maven Plugin and Winstone should be upgraded in lockstep in order
