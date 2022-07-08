@@ -15,7 +15,7 @@
     "build": "yarn prod",
     "start": "yarn dev --watch",
     "test": "jest --ci --config=jest.config.json --reporters=jest-standard-reporter --reporters=jest-junit",
-    "lint:js": "eslint . --ext js",
+    "lint:js": "eslint . --ext js -f checkstyle > target/eslint-warnings.xml",
     "lint:css": "stylelint src/main/less",
     "lint:css:fix": "stylelint src/main/less --fix",
     "lint": "yarn lint:js && yarn lint:css"
