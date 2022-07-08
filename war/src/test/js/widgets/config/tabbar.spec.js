@@ -9,6 +9,7 @@ const htmlConfigTabbedContent = fs.readFileSync(
     'utf8'
 );
 
+// eslint-disable-next-line no-unused-vars
 function getConfigTabbar() {
     // eslint-disable-next-line no-undef
     return require('../../../../main/js/config-tabbar');
@@ -21,6 +22,7 @@ function getConfigTabbarWidget() {
 
 describe("tabbar-spec tests", function () {
     // Need to mock the utils/page module because we will hijack the scroll events
+    // eslint-disable-next-line no-unused-vars
     const mockPageUtils = jest.requireActual('../../../../main/js/util/page');
 
     beforeEach(() => {
