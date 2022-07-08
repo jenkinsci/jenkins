@@ -414,7 +414,7 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
 Element.observe(window, "load", function() {
     document.getElementById('filter-box').focus();
 
-  document.querySelector("[data-select='compatible']").addEventListener("click", () => {
+  document.querySelector("[data-select='compatible']")?.addEventListener("click", () => {
     const inputs = document.getElementsByTagName('input');
     for (let i = 0; i < inputs.length; i++) {
       const candidate = inputs[i];
