@@ -422,5 +422,6 @@ Element.observe(window, "load", function() {
         candidate.checked = candidate.dataset.compatWarning === 'false';
       }
     }
+    window.updateTableHeaderCheckbox();
   })
 });

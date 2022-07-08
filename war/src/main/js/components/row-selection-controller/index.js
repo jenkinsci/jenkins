@@ -5,7 +5,6 @@ rowSelectionControllers.forEach(headerCheckbox => {
   const tableCheckboxes = table.querySelectorAll("input[type='checkbox']")
   const moreOptionsButton = table.querySelector(".jenkins-table__checkbox-options")
   const moreOptionsDropdown = table.querySelector(".jenkins-table__checkbox-dropdown")
-  const moreOptionsDropdownButtons = table.querySelectorAll(".jenkins-table__checkbox-dropdown button")
   const moreOptionsAllButton = table.querySelector("[data-select='all']")
   const moreOptionsNoneButton = table.querySelector("[data-select='none']")
 
@@ -36,15 +35,18 @@ rowSelectionControllers.forEach(headerCheckbox => {
 
   moreOptionsAllButton?.addEventListener("click", () => {
     tableCheckboxes.forEach(e => e.checked = true)
+    updateIcon()
   })
 
   moreOptionsNoneButton?.addEventListener("click", () => {
     tableCheckboxes.forEach(e => e.checked = false)
+    updateIcon()
   })
 
   function updateIcon() {
     headerCheckbox.classList.remove("jenkins-table__checkbox--all")
     headerCheckbox.classList.remove("jenkins-table__checkbox--indeterminate")
+    moreOptionsDropdown.classList.remove("jenkins-table__checkbox-dropdown--visible")
 
     if (allCheckboxesSelected()) {
       headerCheckbox.classList.add("jenkins-table__checkbox--all")
@@ -68,10 +70,5 @@ rowSelectionControllers.forEach(headerCheckbox => {
     moreOptionsDropdown.classList.toggle("jenkins-table__checkbox-dropdown--visible")
   })
 
-  moreOptionsDropdownButtons?.forEach(button => {
-    button.addEventListener("click", () => {
-      updateIcon()
-      moreOptionsDropdown.classList.remove("jenkins-table__checkbox-dropdown--visible")
-    })
-  })
+  window.updateTableHeaderCheckbox = updateIcon
 })
