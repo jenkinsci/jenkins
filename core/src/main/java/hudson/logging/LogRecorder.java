@@ -574,7 +574,7 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
      * @since 1.519
      */
     public Map<Computer, List<LogRecord>> getSlaveLogRecords() {
-        Map<Computer, List<LogRecord>> result = new TreeMap<>(new Comparator<Computer>() {
+        Map<Computer, List<LogRecord>> result = new TreeMap<>(new Comparator<>() {
             final Collator COLL = Collator.getInstance();
 
             @Override

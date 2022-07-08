@@ -841,7 +841,7 @@ public class ProjectTest {
         }
 
         @Override public SCMDescriptor<?> getDescriptor() {
-            return new SCMDescriptor<SCM>(null) {};
+            return new SCMDescriptor<>(null) {};
         }
 
         @Override

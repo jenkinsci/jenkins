@@ -58,7 +58,6 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
-import org.apache.commons.io.FileUtils;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.junit.Assert;
@@ -612,7 +611,7 @@ public class UtilTest {
         File aa = new File(a, "aa");
         aa.mkdirs();
         File aaTxt = new File(aa, "aa.txt");
-        FileUtils.write(aaTxt, "aa", StandardCharsets.US_ASCII, false);
+        Files.writeString(aaTxt.toPath(), "aa", StandardCharsets.US_ASCII);
 
         File b = new File(root, "b");
         b.mkdir();
