@@ -69,6 +69,12 @@
       opacity: 1;
     }
   }
+
+  &[disabled], &:disabled {
+    pointer-events: none;
+    opacity: 0.2;
+    transition: none;
+  }
 }
 
 .jenkins-table__checkbox-options {
@@ -100,6 +106,12 @@
     svg {
       color: var(--focus-input-border);
     }
+  }
+
+  &[disabled], &:disabled {
+    pointer-events: none;
+    opacity: 0.2;
+    transition: none;
   }
 }
 

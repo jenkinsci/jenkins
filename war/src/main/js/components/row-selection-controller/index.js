@@ -9,6 +9,11 @@ rowSelectionControllers.forEach(headerCheckbox => {
   const moreOptionsAllButton = table.querySelector("[data-select='all']")
   const moreOptionsNoneButton = table.querySelector("[data-select='none']")
 
+  if (tableCheckboxes.length === 0) {
+    headerCheckbox.disabled = true;
+    moreOptionsButton.disabled = true;
+  }
+
   const allCheckboxesSelected = () => {
     return tableCheckboxes.length === [...tableCheckboxes].filter(e => e.checked).length
   }
