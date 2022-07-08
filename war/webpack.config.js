@@ -46,15 +46,17 @@ module.exports = (env, argv) => ({
     new MiniCSSExtractPlugin({
       filename: "[name].css",
     }),
-    new CopyPlugin([
+    new CopyPlugin({
       // Copies fonts to the src/main/webapp/css for compat purposes
       // Some plugins or parts of the UI try to load them from these paths
-      {
-        context: 'src/main/fonts',
-        from: "**/*",
-        to: path.join(__dirname, "src/main/webapp/css")
-      }
-    ]),
+      patterns: [
+        {
+          context: 'src/main/fonts',
+          from: "**/*",
+          to: path.join(__dirname, "src/main/webapp/css")
+        }
+      ]
+    }),
     // Clean all assets within the specified output.
     // It will not clean copied fonts
     new CleanPlugin(),

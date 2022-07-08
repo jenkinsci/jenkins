@@ -26,7 +26,7 @@
     "@jenkins-cd/js-test": "^1.2.3",
     "autoprefixer": "^9.8.0",
     "clean-webpack-plugin": "^4.0.0",
-    "copy-webpack-plugin": "^5.1.1",
+    "copy-webpack-plugin": "^6.4.1",
     "css-loader": "^3.2.0",
     "css-minimizer-webpack-plugin": "^1.0.0",
     "eslint": "^7.1.0",
