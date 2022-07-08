@@ -1845,7 +1845,7 @@ public class Functions {
 
     /**
      * Escapes the character unsafe for e-mail address.
-     * See http://en.wikipedia.org/wiki/E-mail_address for the details,
+     * See <a href="https://en.wikipedia.org/wiki/Email_address">the Wikipedia page</a> for the details,
      * but here the vocabulary is even more restricted.
      */
     public static String toEmailSafeString(String projectName) {
@@ -1936,6 +1936,13 @@ public class Functions {
         return url.endsWith(href);
     }
 
+    /**
+     * @deprecated From JEXL expressions ({@code ${…}}) in {@code *.jelly} files
+     *             you can use {@code [obj]} syntax to construct an {@code Object[]}
+     *             (which may be usable where a {@link List} is expected)
+     *             rather than {@code h.singletonList(obj)}.
+     */
+    @Deprecated
     public <T> List<T> singletonList(T t) {
         return List.of(t);
     }

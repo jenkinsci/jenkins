@@ -624,7 +624,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         return new HistoryWidget<Job, RunT>(this, getBuilds(), HISTORY_ADAPTER);
     }
 
-    public static final HistoryWidget.Adapter<Run> HISTORY_ADAPTER = new Adapter<Run>() {
+    public static final HistoryWidget.Adapter<Run> HISTORY_ADAPTER = new Adapter<>() {
         @Override
         public int compare(Run record, String key) {
             try {
@@ -1121,7 +1121,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         RSS.forwardToRss(
                 getDisplayName() + scmDisplayName + " changes",
                 getUrl() + "changes",
-                entries, new FeedAdapter<FeedItem>() {
+                entries, new FeedAdapter<>() {
                     @Override
                     public String getEntryTitle(FeedItem item) {
                         return "#" + item.getBuild().number + ' ' + item.e.getMsg() + " (" + item.e.getAuthor() + ")";

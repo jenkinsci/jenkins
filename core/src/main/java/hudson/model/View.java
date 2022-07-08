@@ -1265,7 +1265,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
     public ModelObjectWithContextMenu.ContextMenu doChildrenContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
         ModelObjectWithContextMenu.ContextMenu m = new ModelObjectWithContextMenu.ContextMenu();
         for (TopLevelItem i : getItems())
-            m.add(i.getShortUrl(), i.getDisplayName());
+            m.add(Functions.getRelativeLinkTo(i), Functions.getRelativeDisplayNameFrom(i, getOwner().getItemGroup()));
         return m;
     }
 
