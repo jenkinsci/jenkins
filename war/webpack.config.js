@@ -70,7 +70,7 @@ module.exports = (env, argv) => ({
           {
             loader: MiniCSSExtractPlugin.loader,
             options: {
-              sourceMap: true
+              esModule: false
             }
           },
           {
