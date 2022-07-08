@@ -70,11 +70,11 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
 
     /**
      * Wait for document onload.
-     */    
-    Element.observe(window, "load", function() {        
+     */
+    Element.observe(window, "load", function() {
         var pluginsTable = select('#plugins');
         var pluginTRs = selectAll('.plugin', pluginsTable);
-        
+
         if (!pluginTRs) {
             return;
         }
@@ -83,16 +83,16 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
         function i18n(messageId) {
             return pluginI18n.getAttribute('data-' + messageId);
         }
-        
+
         // Create a map of the plugin rows, making it easy to index them.
         var plugins = {};
         for (var i = 0; i < pluginTRs.length; i++) {
             var pluginTR = pluginTRs[i];
             var pluginId = pluginTR.getAttribute('data-plugin-id');
-            
+
             plugins[pluginId] = pluginTR;
         }
-        
+
         function getPluginTR(pluginId) {
             return plugins[pluginId];
         }
@@ -104,24 +104,24 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
                 return pluginId;
             }
         }
-        
+
         function processSpanSet(spans) {
             var ids = [];
             for (var i = 0; i < spans.length; i++) {
                 var span = spans[i];
                 var pluginId = span.getAttribute('data-plugin-id');
                 var pluginName = getPluginName(pluginId);
-                
+
                 span.update(pluginName);
                 ids.push(pluginId);
             }
             return ids;
         }
-        
+
         function markAllDependentsDisabled(pluginTR) {
             var jenkinsPluginMetadata = pluginTR.jenkinsPluginMetadata;
             var dependentIds = jenkinsPluginMetadata.dependentIds;
-            
+
             if (dependentIds) {
                 // If the only dependent is jenkins-core (it's a bundle plugin), then lets
                 // treat it like all its dependents are disabled. We're really only interested in
@@ -141,7 +141,7 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
                         pluginTR.removeClassName('all-dependents-disabled');
                         return;
                     }
-                    
+
                     // The dependent is a plugin....
                     var dependentPluginTr = getPluginTR(dependentId);
                     if (dependentPluginTr && dependentPluginTr.jenkinsPluginMetadata.enableInput.checked) {
@@ -151,14 +151,14 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
                     }
                 }
             }
-            
+
             pluginTR.addClassName('all-dependents-disabled');
         }
 
         function markHasDisabledDependencies(pluginTR) {
             var jenkinsPluginMetadata = pluginTR.jenkinsPluginMetadata;
             var dependencyIds = jenkinsPluginMetadata.dependencyIds;
-            
+
             if (dependencyIds) {
                 for (var i = 0; i < dependencyIds.length; i++) {
                     var dependencyPluginTr = getPluginTR(dependencyIds[i]);
@@ -169,10 +169,10 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
                     }
                 }
             }
-            
+
             pluginTR.removeClassName('has-disabled-dependency');
         }
-        
+
         function setEnableWidgetStates() {
             for (var i = 0; i < pluginTRs.length; i++) {
                 var pluginMetadata = pluginTRs[i].jenkinsPluginMetadata;
@@ -185,7 +185,7 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
                 markHasDisabledDependencies(pluginTRs[i]);
             }
         }
-        
+
         function addDependencyInfoRow(pluginTR, infoTR) {
             infoTR.addClassName('plugin-dependency-info');
             pluginTR.insert({
@@ -202,7 +202,7 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
             }
         }
 
-        function populateEnableDisableInfo(pluginTR, infoContainer) {    
+        function populateEnableDisableInfo(pluginTR, infoContainer) {
             var pluginMetadata = pluginTR.jenkinsPluginMetadata;
 
             // Remove all existing class info
@@ -214,9 +214,9 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
                 var dependencySpans = pluginMetadata.dependencies;
 
                 infoContainer.update('<div class="title">' + i18n('cannot-enable') + '</div><div class="subtitle">' + i18n('disabled-dependencies') + '.</div>');
-                
+
                 // Go through each dependency <span> element. Show the spans where the dependency is
-                // disabled. Hide the others. 
+                // disabled. Hide the others.
                 for (var i = 0; i < dependencySpans.length; i++) {
                     var dependencySpan = dependencySpans[i];
                     var pluginId = dependencySpan.getAttribute('data-plugin-id');
@@ -234,15 +234,15 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
                         dependencySpan.setStyle({display: 'inline-block'});
                     }
                 }
-                
+
                 dependenciesDiv.setStyle({display: 'inherit'});
                 infoContainer.appendChild(dependenciesDiv);
-                
+
                 return true;
             } if (pluginTR.hasClassName('has-dependents')) {
                 if (!pluginTR.hasClassName('all-dependents-disabled')) {
                     var dependentIds = pluginMetadata.dependentIds;
-                    
+
                     // If the only dependent is jenkins-core (it's a bundle plugin), then lets
                     // treat it like all its dependents are disabled. We're really only interested in
                     // dependent plugins in this case.
@@ -263,7 +263,7 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
                 infoContainer.appendChild(getDependentsDiv(pluginTR, true));
                 return true;
             }
-            
+
             return false;
         }
 
@@ -323,7 +323,7 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
             var dependentsDiv = select('.dependent-list', pluginTR);
             var enableTD = select('td.enable', pluginTR);
             var uninstallTD = select('td.uninstall', pluginTR);
-            
+
             pluginTR.jenkinsPluginMetadata = {
                 enableInput: enableInput,
                 dependenciesDiv: dependenciesDiv,
@@ -338,7 +338,7 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
                 pluginTR.jenkinsPluginMetadata.dependents = selectAll('span', dependentsDiv);
                 pluginTR.jenkinsPluginMetadata.dependentIds = processSpanSet(pluginTR.jenkinsPluginMetadata.dependents);
             }
-            
+
             // Setup event handlers...
             if (enableInput) {
                 // Toggling of the enable/disable checkbox requires a check and possible
@@ -347,8 +347,8 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
                     setEnableWidgetStates();
                 });
             }
-            
-            // 
+
+            //
             var infoTR = document.createElement("tr");
             var infoTD = document.createElement("td");
             var infoDiv = document.createElement("div");
@@ -367,7 +367,7 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
                 }
                 showInfoTimeout = undefined;
             }
-            
+
             // Handle mouse in/out of the enable/disable cell (left most cell).
             if (enableTD) {
                 Element.observe(enableTD, 'mouseenter', function() {
@@ -406,7 +406,7 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
         for (var i = 0; i < pluginTRs.length; i++) {
             initPluginRowHandling(pluginTRs[i]);
         }
-        
+
         setEnableWidgetStates();
     });
 }());
@@ -414,14 +414,17 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
 Element.observe(window, "load", function() {
     document.getElementById('filter-box').focus();
 
-  document.querySelector("[data-select='compatible']")?.addEventListener("click", () => {
-    const inputs = document.getElementsByTagName('input');
-    for (let i = 0; i < inputs.length; i++) {
-      const candidate = inputs[i];
-      if (candidate.type === "checkbox" && !candidate.disabled) {
-        candidate.checked = candidate.dataset.compatWarning === 'false';
+  const compatibleCheckbox = document.querySelector("[data-select='compatible']");
+  if (compatibleCheckbox) {
+    compatibleCheckbox.addEventListener("click", () => {
+      const inputs = document.getElementsByTagName('input');
+      for (let i = 0; i < inputs.length; i++) {
+        const candidate = inputs[i];
+        if (candidate.type === "checkbox" && !candidate.disabled) {
+          candidate.checked = candidate.dataset.compatWarning === 'false';
+        }
       }
-    }
-    window.updateTableHeaderCheckbox();
-  })
+      window.updateTableHeaderCheckbox();
+    })
+  }
 });
