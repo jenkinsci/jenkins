@@ -35,7 +35,6 @@ import hudson.model.FreeStyleProject;
 import hudson.model.Item;
 import hudson.model.Result;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import jenkins.model.Jenkins;
@@ -59,7 +58,7 @@ public class StopBuildsCommandTest {
         final FreeStyleProject project = createLongRunningProject(TEST_JOB_NAME);
         FreeStyleBuild build = project.scheduleBuild2(0).waitForStart();
         j.waitForMessage("Sleeping", build);
-        final String stdout = runWith(Collections.singletonList(TEST_JOB_NAME)).stdout();
+        final String stdout = runWith(List.of(TEST_JOB_NAME)).stdout();
 
         assertThat(stdout, equalTo("Build '#1' stopped for job 'jobName'" + LN));
 
@@ -72,7 +71,7 @@ public class StopBuildsCommandTest {
         project.getBuildersList().add(new SleepBuilder(TimeUnit.SECONDS.toMillis(1)));
         j.buildAndAssertSuccess(project);
 
-        final String out = runWith(Collections.singletonList(TEST_JOB_NAME)).stdout();
+        final String out = runWith(List.of(TEST_JOB_NAME)).stdout();
 
         assertThat(out, equalTo("No builds stopped" + LN));
     }
@@ -87,7 +86,7 @@ public class StopBuildsCommandTest {
         FreeStyleBuild b2 = project.scheduleBuild2(0).waitForStart();
         j.waitForMessage("Sleeping", b2);
 
-        final String stdout = runWith(Collections.singletonList(TEST_JOB_NAME)).stdout();
+        final String stdout = runWith(List.of(TEST_JOB_NAME)).stdout();
 
         assertThat(stdout, equalTo("Build '#2' stopped for job 'jobName'" + LN +
                 "Build '#1' stopped for job 'jobName'" + LN));
@@ -100,14 +99,14 @@ public class StopBuildsCommandTest {
         final String testFolderName = "folder";
         j.createFolder(testFolderName);
 
-        final String stderr = runWith(Collections.singletonList(testFolderName)).stderr();
+        final String stderr = runWith(List.of(testFolderName)).stderr();
 
         assertThat(stderr, equalTo(LN + "ERROR: Job not found: 'folder'" + LN));
     }
 
     @Test
     public void shouldDoNothingIfJobNotFound() throws Exception {
-        final String stderr = runWith(Collections.singletonList(TEST_JOB_NAME)).stderr();
+        final String stderr = runWith(List.of(TEST_JOB_NAME)).stderr();
 
         assertThat(stderr, equalTo(LN + "ERROR: Job not found: 'jobName'" + LN));
     }
@@ -136,7 +135,7 @@ public class StopBuildsCommandTest {
         FreeStyleBuild build = project.scheduleBuild2(0).waitForStart();
         j.waitForMessage("Sleeping", build);
 
-        final String stdout = runWith(Collections.singletonList(TEST_JOB_NAME)).stdout();
+        final String stdout = runWith(List.of(TEST_JOB_NAME)).stdout();
 
         assertThat(stdout,
                 equalTo("Exception occurred while trying to stop build '#1' for job 'jobName'. " +

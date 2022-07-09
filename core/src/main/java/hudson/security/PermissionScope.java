@@ -32,9 +32,6 @@ import hudson.model.Job;
 import hudson.model.ModelObject;
 import hudson.model.Node;
 import hudson.model.Run;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
 import jenkins.model.Jenkins;
 
@@ -71,7 +68,7 @@ public final class PermissionScope {
 
     public PermissionScope(Class<? extends ModelObject> modelClass, PermissionScope... containers) {
         this.modelClass = modelClass;
-        this.containers = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(containers)));
+        this.containers = Set.of(containers);
     }
 
     /**

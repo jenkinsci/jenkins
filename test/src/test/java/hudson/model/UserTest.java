@@ -66,6 +66,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import jenkins.model.IdStrategy;
 import jenkins.model.Jenkins;
 import jenkins.security.ApiTokenProperty;
@@ -622,7 +623,7 @@ public class UserTest {
                 } catch (IOException x) {
                     throw new RuntimeException(x);
                 }
-                return new org.springframework.security.core.userdetails.User(canonicalName, "", true, true, true, true, Collections.singleton(AUTHENTICATED_AUTHORITY2));
+                return new org.springframework.security.core.userdetails.User(canonicalName, "", true, true, true, true, Set.of(AUTHENTICATED_AUTHORITY2));
             }
         }
 
