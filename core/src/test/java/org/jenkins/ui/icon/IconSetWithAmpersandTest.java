@@ -11,7 +11,7 @@ public class IconSetWithAmpersandTest {
 
     /**
      * Culprit: https://github.com/Kevin-CB/jenkins/blob/49c4cda2d41719d66a4eb4d6f9c31ba8298f2fbf/core/src/main/java/org/jenkins/ui/icon/IconSet.java#L94
-     * If the tooltip contains an ampersand symbol (&), it won't be removed.
+     * If the tooltip contains an ampersand symbol (&amp;), it won't be removed.
      */
     @Test
     @Disabled("TODO see JENKINS-68805")
