@@ -36,7 +36,7 @@
     "handlebars-loader": "^1.7.2",
     "jest": "^26.0.1",
     "jest-handlebars": "^1.0.1",
-    "jest-junit": "^12.0.0",
+    "jest-junit": "^14.0.0",
     "jest-standard-reporter": "^1.0.4",
     "less": "^3.13.1",
     "less-loader": "^5.0.0",
