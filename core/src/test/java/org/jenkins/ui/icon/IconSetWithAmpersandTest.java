@@ -4,6 +4,7 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.not;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 public class IconSetWithAmpersandTest {
@@ -13,6 +14,7 @@ public class IconSetWithAmpersandTest {
      * If the tooltip contains an ampersand symbol (&), it won't be removed.
      */
     @Test
+    @Disabled("TODO see JENKINS-68805")
     void getSymbol_notSettingTooltipDoesntAddTooltipAttribute_evenWithAmpersand() {
         String symbolWithTooltip = IconSet.getSymbol("download", "Title", "With&Ampersand", "class1 class2", "", "id");
         String symbolWithoutTooltip = IconSet.getSymbol("download", "Title", "", "class1 class2", "", "id");
