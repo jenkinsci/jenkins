@@ -18,3 +18,4 @@ src/main/webapp/scripts/yui
 src/main/webapp/scripts/prototype.js
 src/main/webapp/scripts/*.js
 src/main/js/plugin-setup-wizard/bootstrap-detached.js
+jest.config.js
