@@ -183,7 +183,9 @@ public class Channels {
      * @return
      *      never null
      * @since 1.300
+     * @deprecated removed without replacement
      */
+    @Deprecated
     public static Channel newJVM(String displayName, TaskListener listener, FilePath workDir, ClasspathBuilder classpath, Map<String, String> systemProperties) throws IOException {
         JVMBuilder vmb = new JVMBuilder();
         vmb.systemProperties(systemProperties);
@@ -214,7 +216,9 @@ public class Channels {
      * @return
      *      never null
      * @since 1.361
+     * @deprecated removed without replacement
      */
+    @Deprecated
     public static Channel newJVM(String displayName, TaskListener listener, JVMBuilder vmb, FilePath workDir, ClasspathBuilder classpath) throws IOException {
         ServerSocket serverSocket = new ServerSocket();
         serverSocket.bind(new InetSocketAddress("localhost", 0));
