@@ -31,6 +31,7 @@ module.exports = (env, argv) => ({
       path.join(__dirname, "src/main/js/config-tabbar.less"),
     ],
     "sortable-drag-drop": [path.join(__dirname, "src/main/js/sortable-drag-drop.js")],
+    "section-to-sidebar-items": [path.join(__dirname, "src/main/js/section-to-sidebar-items.js")],
     "section-to-tabs": [path.join(__dirname, "src/main/js/section-to-tabs.js")],
     "filter-build-history": [path.join(__dirname, "src/main/js/filter-build-history.js")],
     "simple-page": [path.join(__dirname, "src/main/less/simple-page.less")],
@@ -45,15 +46,17 @@ module.exports = (env, argv) => ({
     new MiniCSSExtractPlugin({
       filename: "[name].css",
     }),
-    new CopyPlugin([
+    new CopyPlugin({
       // Copies fonts to the src/main/webapp/css for compat purposes
       // Some plugins or parts of the UI try to load them from these paths
-      {
-        context: 'src/main/fonts',
-        from: "**/*",
-        to: path.join(__dirname, "src/main/webapp/css")
-      }
-    ]),
+      patterns: [
+        {
+          context: 'src/main/fonts',
+          from: "**/*",
+          to: path.join(__dirname, "src/main/webapp/css")
+        }
+      ]
+    }),
     // Clean all assets within the specified output.
     // It will not clean copied fonts
     new CleanPlugin(),
@@ -67,7 +70,7 @@ module.exports = (env, argv) => ({
           {
             loader: MiniCSSExtractPlugin.loader,
             options: {
-              sourceMap: true
+              esModule: false
             }
           },
           {

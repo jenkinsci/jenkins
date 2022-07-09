@@ -173,7 +173,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>net.java.dev.jna</groupId>
         <artifactId>jna</artifactId>
-        <version>5.12.0</version>
+        <version>5.12.1</version>
       </dependency>
       <dependency>
         <groupId>net.java.sezpoz</groupId>
@@ -295,6 +295,11 @@ THE SOFTWARE.
         <groupId>org.kohsuke.jinterop</groupId>
         <artifactId>j-interop</artifactId>
         <version>2.0.8-kohsuke-1</version>
+      </dependency>
+      <dependency>
+        <groupId>org.kohsuke.metainf-services</groupId>
+        <artifactId>metainf-services</artifactId>
+        <version>1.9</version>
       </dependency>
       <dependency>
         <groupId>org.kohsuke.stapler</groupId>

@@ -476,7 +476,7 @@ public class PluginManagerTest {
         String pluginShortName = "require-system-during-load";
         dynamicLoad(pluginShortName + ".hpi");
         try (ACLContext context = ACL.as2(User.getById("underprivileged", true).impersonate2())) {
-            r.jenkins.pluginManager.start(Collections.singletonList(r.jenkins.pluginManager.getPlugin(pluginShortName)));
+            r.jenkins.pluginManager.start(List.of(r.jenkins.pluginManager.getPlugin(pluginShortName)));
         }
     }
 
@@ -488,7 +488,7 @@ public class PluginManagerTest {
         String pluginShortName = "require-system-in-initializer";
         dynamicLoad(pluginShortName + ".jpi");
         try (ACLContext context = ACL.as2(User.getById("underprivileged", true).impersonate2())) {
-            r.jenkins.pluginManager.start(Collections.singletonList(r.jenkins.pluginManager.getPlugin(pluginShortName)));
+            r.jenkins.pluginManager.start(List.of(r.jenkins.pluginManager.getPlugin(pluginShortName)));
         }
     }
 

@@ -78,7 +78,7 @@ for (i = 0; i < buildTypes.size(); i++) {
           if (!fileExists('test/target/surefire-reports/TEST-jenkins.Junit4TestsRanTest.xml')) {
             error 'JUnit 4 tests are no longer being run for the test package'
           }
-          // cli has been migrated to JUnit 5
+          // cli and war have been migrated to JUnit 5
           if (failFast && currentBuild.result == 'UNSTABLE') {
             error 'There were test failures; halting early'
           }
@@ -106,6 +106,13 @@ for (i = 0; i < buildTypes.size(); i++) {
                 [threshold: 1, type: 'NEW', unstable: true],
               ]])
             recordIssues([tool: checkStyle(pattern: '**/target/checkstyle-result.xml'),
+              sourceCodeEncoding: 'UTF-8',
+              skipBlames: true,
+              trendChartType: 'TOOLS_ONLY',
+              qualityGates: [
+                [threshold: 1, type: 'TOTAL', unstable: true],
+              ]])
+             recordIssues([tool: esLint(pattern: '**/target/eslint-warnings.xml'),
               sourceCodeEncoding: 'UTF-8',
               skipBlames: true,
               trendChartType: 'TOOLS_ONLY',

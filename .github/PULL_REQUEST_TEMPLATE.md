@@ -35,7 +35,7 @@ N/A
   * Fill-in the `Proposed changelog entries` section only if there are breaking changes or other changes which may require extra steps from users during the upgrade
 - [ ] Appropriate autotests or explanation to why this change has no tests
 - [ ] New public classes, fields, and methods are annotated with `@Restricted` or have `@since TODO` Javadoc, as appropriate. 
-- [ ] New deprecations are annotated with `@Deprecated(since="TODO")` or `@Deprecated(since="TODO", forRemoval=true)` if applicable.
+- [ ] New deprecations are annotated with `@Deprecated(since = "TODO")` or `@Deprecated(forRemoval = true, since = "TODO")` if applicable.
 - [ ] For dependency updates: links to external changelogs and, if possible, full diffs
 
 <!-- For new API and extension points: Link to the reference implementation in open-source (or example in Javadoc) -->
