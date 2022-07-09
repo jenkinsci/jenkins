@@ -56,6 +56,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -586,7 +587,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     }
 
     // TODO
-    private static final Collection<? extends GrantedAuthority> TEST_AUTHORITY = Collections.singleton(AUTHENTICATED_AUTHORITY2);
+    private static final Collection<? extends GrantedAuthority> TEST_AUTHORITY = Set.of(AUTHENTICATED_AUTHORITY2);
 
     public static final class SignupInfo {
         public String username, password1, password2, fullname, email, captcha;
@@ -907,7 +908,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
 
         /**
          * Returns true if the supplied hash looks like a bcrypt encoded hash value, based off of the
-         * implementation defined in jBCrypt and: https://en.wikipedia.org/wiki/Bcrypt.
+         * implementation defined in jBCrypt and <a href="https://en.wikipedia.org/wiki/Bcrypt">the Wikipedia page</a>.
          *
          */
         public boolean isHashValid(String hash) {

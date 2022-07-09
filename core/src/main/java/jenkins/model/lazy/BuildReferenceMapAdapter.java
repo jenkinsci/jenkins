@@ -182,7 +182,7 @@ class BuildReferenceMapAdapter<R> implements SortedMap<Integer, R> {
         public Iterator<R> iterator() {
             // silently drop null, as if we didn't have them in this collection in the first place
             // this shouldn't be indistinguishable from concurrent modifications to the collection
-            return Iterators.removeNull(new AdaptedIterator<BuildReference<R>, R>(core.iterator()) {
+            return Iterators.removeNull(new AdaptedIterator<>(core.iterator()) {
                 @Override
                 protected R adapt(BuildReference<R> ref) {
                     return unwrap(ref);
@@ -299,7 +299,7 @@ class BuildReferenceMapAdapter<R> implements SortedMap<Integer, R> {
 
         @Override
         public Iterator<Entry<Integer, R>> iterator() {
-            return Iterators.removeNull(new AdaptedIterator<Entry<Integer, BuildReference<R>>, Entry<Integer, R>>(core.iterator()) {
+            return Iterators.removeNull(new AdaptedIterator<>(core.iterator()) {
                 @Override
                 protected Entry<Integer, R> adapt(Entry<Integer, BuildReference<R>> e) {
                     return _unwrap(e);

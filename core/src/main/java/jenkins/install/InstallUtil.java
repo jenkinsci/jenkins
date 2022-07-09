@@ -31,6 +31,7 @@ import com.thoughtworks.xstream.XStream;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Functions;
+import hudson.Util;
 import hudson.model.UpdateCenter.DownloadJob.InstallationStatus;
 import hudson.model.UpdateCenter.DownloadJob.Installing;
 import hudson.model.UpdateCenter.InstallationJob;
@@ -40,6 +41,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -53,7 +55,6 @@ import javax.inject.Provider;
 import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
 import jenkins.util.xml.XMLUtils;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -210,7 +211,7 @@ public class InstallUtil {
         File lastExecVersionFile = getLastExecVersionFile();
         if (lastExecVersionFile.exists()) {
             try {
-                String version = FileUtils.readFileToString(lastExecVersionFile, Charset.defaultCharset());
+                String version = Files.readString(Util.fileToPath(lastExecVersionFile), Charset.defaultCharset());
                 // JENKINS-37438 blank will force the setup
                 // wizard regardless of current state of the system
                 if (StringUtils.isBlank(version)) {
@@ -253,7 +254,7 @@ public class InstallUtil {
     static void saveLastExecVersion(@NonNull String version) {
         File lastExecVersionFile = getLastExecVersionFile();
         try {
-            FileUtils.write(lastExecVersionFile, version, Charset.defaultCharset());
+            Files.writeString(Util.fileToPath(lastExecVersionFile), version, Charset.defaultCharset());
         } catch (IOException e) {
             LOGGER.log(SEVERE, "Failed to save " + lastExecVersionFile.getAbsolutePath(), e);
         }
@@ -319,7 +320,7 @@ public class InstallUtil {
         }
         try {
             String installingPluginXml = new XStream().toXML(statuses);
-            FileUtils.write(installingPluginsFile, installingPluginXml);
+            Files.writeString(Util.fileToPath(installingPluginsFile), installingPluginXml, StandardCharsets.UTF_8);
         } catch (IOException e) {
             LOGGER.log(SEVERE, "Failed to save " + installingPluginsFile.getAbsolutePath(), e);
         }

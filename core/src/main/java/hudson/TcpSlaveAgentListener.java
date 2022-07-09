@@ -313,7 +313,7 @@ public final class TcpSlaveAgentListener extends Thread {
          * Primarily used to test the low-level connectivity.
          */
         private void respondHello(String header, Socket s) throws IOException {
-            try {
+            try (s) {
                 DataOutputStream out = new DataOutputStream(s.getOutputStream());
                 String response;
                 if (header.startsWith("GET / ")) {
@@ -336,8 +336,6 @@ public final class TcpSlaveAgentListener extends Thread {
                 InputStream i = s.getInputStream();
                 IOUtils.copy(i, NullOutputStream.NULL_OUTPUT_STREAM);
                 s.shutdownInput();
-            } finally {
-                s.close();
             }
         }
 
@@ -400,20 +398,18 @@ public final class TcpSlaveAgentListener extends Thread {
 
         @Override
         public void handle(Socket socket) throws IOException, InterruptedException {
-            try {
+            try (socket) {
                 try (OutputStream stream = socket.getOutputStream()) {
                     LOGGER.log(Level.FINE, "Received ping request from {0}", socket.getRemoteSocketAddress());
                     stream.write(ping);
                     stream.flush();
                     LOGGER.log(Level.FINE, "Sent ping response to {0}", socket.getRemoteSocketAddress());
                 }
-            } finally {
-                socket.close();
             }
         }
 
         public boolean connect(Socket socket) throws IOException {
-            try {
+            try (socket) {
                 LOGGER.log(Level.FINE, "Requesting ping from {0}", socket.getRemoteSocketAddress());
                 try (DataOutputStream out = new DataOutputStream(socket.getOutputStream())) {
                     out.writeUTF("Protocol:Ping");
@@ -435,8 +431,6 @@ public final class TcpSlaveAgentListener extends Thread {
                         }
                     }
                 }
-            } finally {
-                socket.close();
             }
         }
     }
