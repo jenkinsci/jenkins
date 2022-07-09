@@ -40,6 +40,7 @@ import hudson.util.JVMBuilder;
 import hudson.util.StreamCopyThread;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.File;
 import java.io.IOError;
 import java.io.IOException;
 import java.io.InputStream;
@@ -47,6 +48,7 @@ import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -223,7 +225,7 @@ public class Channels {
         vmb.mainClass(Launcher.class);
 
         if (classpath != null)
-            java.util.Arrays.stream(classpath.toString().split(java.io.File.pathSeparator)).forEach(arg -> vmb.classpath().add(arg));
+            Arrays.stream(classpath.toString().split(File.pathSeparator)).forEach(arg -> vmb.classpath().add(arg));
         vmb.args().add("-connectTo", "localhost:" + serverSocket.getLocalPort());
 
         listener.getLogger().println("Starting " + displayName);
