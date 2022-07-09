@@ -39,7 +39,7 @@
     "jest-junit": "^14.0.0",
     "jest-standard-reporter": "^1.0.4",
     "less": "^3.13.1",
-    "less-loader": "^5.0.0",
+    "less-loader": "^7.3.0",
     "mini-css-extract-plugin": "^1.6.2",
     "postcss": "^8.4.14",
     "postcss-loader": "^3.0.0",
