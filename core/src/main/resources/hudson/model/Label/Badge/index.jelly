@@ -23,8 +23,8 @@ The MIT License
   }
   </style>
 
-  <j:set var="toolTip" value="${it.getDescription() ? app.markupFormatter.translate(it.getDescription()) : it.name}"/>
-    <a class="badge rounded-pill ${modelLink} jenkins-table__badge badge-mine-${cssSuffix}" href="${rootURL}/label/${it.name}">
+  <j:set var="toolTip" value="${!it.getDescription().isEmpty() ? app.markupFormatter.translate(it.getDescription()) : it.name}"/>
+    <a class="badge rounded-pill ${modelLink} jenkins-table__badge badge-mine-${cssSuffix}" href="${rootURL}/label/${it.name}" toolTip="${toolTip}">
       ${it.name}
     </a>
 </j:jelly>
