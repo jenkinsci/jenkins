@@ -24,7 +24,7 @@
     "@babel/cli": "^7.18.6",
     "@babel/core": "^7.18.6",
     "@jenkins-cd/js-test": "^1.2.3",
-    "autoprefixer": "^9.8.0",
+    "autoprefixer": "^10.4.7",
     "clean-webpack-plugin": "^4.0.0",
     "copy-webpack-plugin": "^6.4.1",
     "css-loader": "^5.2.7",
