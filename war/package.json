@@ -42,7 +42,7 @@
     "less-loader": "^7.3.0",
     "mini-css-extract-plugin": "^1.6.2",
     "postcss": "^8.4.14",
-    "postcss-loader": "^3.0.0",
+    "postcss-loader": "^4.3.0",
     "style-loader": "^2.0.0",
     "stylelint": "^14.9.1",
     "stylelint-config-standard": "^26.0.0",
