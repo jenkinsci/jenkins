@@ -220,7 +220,7 @@ public class LogRotatorTest {
 
         @Override
         public Descriptor<Publisher> getDescriptor() {
-            return new Descriptor<Publisher>(TestsFail.class) {};
+            return new Descriptor<>(TestsFail.class) {};
         }
     }
 

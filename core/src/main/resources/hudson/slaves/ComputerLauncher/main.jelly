@@ -29,7 +29,9 @@ THE SOFTWARE.
       <j:when test="${it.isConnecting()}">
         <p>
           ${%launchingDescription}
+          <j:if test="${it.hasPermission(it.CONFIGURE) or it.hasPermission(it.CONNECT)}">
           <a href="log">${%See log for more details}</a>
+          </j:if>
         </p>
 
         <l:hasPermission permission="${it.CONNECT}">
