@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
 public class IconSetWithAmpersandTest {
 
     /**
-     * Culprit: https://github.com/Kevin-CB/jenkins/blob/49c4cda2d41719d66a4eb4d6f9c31ba8298f2fbf/core/src/main/java/org/jenkins/ui/icon/IconSet.java#L94
+     * Culprit: https://github.com/jenkinsci/jenkins/blob/ab0bb8495819bd807a9211ac0df3f08e420226f1/core/src/main/java/org/jenkins/ui/icon/IconSet.java#L97=
      * If the tooltip contains an ampersand symbol (&amp;), it won't be removed.
      */
     @Test
