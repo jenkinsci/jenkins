@@ -1,0 +1,52 @@
+<!--
+The MIT License
+-->
+
+<!--
+  Manage node labels
+-->
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+  <l:layout permissions="${app.MANAGE_AND_SYSTEM_READ}" title="${%Node labels configuration}">
+    <j:set var="readOnlyMode" value="${!app.hasPermission(app.MANAGE)}" />
+    <st:include page="sidepanel.jelly" />
+    <l:main-panel>
+      <table id="computers" class="jenkins-table sortable">
+      <thead>
+        <tr>
+          <th align="left" initialSortDir="down">${%Name}</th>
+          <th align="right" >${%Description}</th>
+          <th align="right" tooltip="${%Count of assigned nodes}">${%Assigend nodes}</th>
+          <th align="right" class="jenkins-table__cell--tight" data-sort-disable="true"></th>
+        </tr>
+      </thead> 
+      <tbody>
+
+      <j:forEach var="label" items="${it.getAllLabels()}">
+        <tr id="label_${label.name}">
+          <td align="left">
+            <st:include it="${label}" page="../Label/Badge/index.jelly"/>
+          </td>
+          <td align="right">
+            <div class="pane desc indent-multiline">
+              <j:out value="${app.markupFormatter.translate(label.description)}"/>
+            </div>
+          </td>
+          <td align="right">
+            ${label.sortedNodes.size()}
+          </td>
+          <td class="jenkins-table__cell--tight" align="right">
+              <div class="jenkins-table__cell__button-wrapper">
+                <a href="${rootURL}/${label.url}configure" class="jenkins-table__button">
+                  <l:icon src="symbol-settings" />
+                </a>
+              </div>
+          </td>
+        </tr>
+      </j:forEach>
+      </tbody>
+      </table>
+
+    </l:main-panel>
+  </l:layout>
+</j:jelly>

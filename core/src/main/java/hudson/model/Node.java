@@ -68,6 +68,7 @@ import jenkins.util.io.OnMaster;
 import net.sf.json.JSONObject;
 import org.jvnet.localizer.Localizable;
 import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.accmod.restrictions.ProtectedExternally;
 import org.kohsuke.stapler.BindInterceptor;
 import org.kohsuke.stapler.Stapler;
@@ -322,7 +323,8 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
      * This calls all the LabelFinder implementations with the node converts
      * the results into Labels.
      */
-    private HashSet<LabelAtom> getDynamicLabels() {
+    @Restricted(NoExternalUse.class)
+    public HashSet<LabelAtom> getDynamicLabels() {
         HashSet<LabelAtom> result = new HashSet<>();
         for (LabelFinder labeler : LabelFinder.all()) {
             // Filter out any bad(null) results from plugins

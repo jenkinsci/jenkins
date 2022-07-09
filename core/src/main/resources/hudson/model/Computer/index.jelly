@@ -80,8 +80,7 @@ THE SOFTWARE.
           <j:forEach var="entry" items="${it.node.labelCloud}">
             <!-- Skip the label for this node -->
             <j:if test="${entry.item!=it.node.selfLabel}">
-              <a class="${entry.className} model-link inside" href="${rootURL}/label/${entry.item.name}">${entry.item.name}</a>
-              <wbr/>
+              <st:include it="${entry.item}" page="../Label/Badge/index.jelly"/>
             </j:if>
           </j:forEach>
         </div>

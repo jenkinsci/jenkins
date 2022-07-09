@@ -28,7 +28,15 @@ THE SOFTWARE.
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
       <h1>
-        ${it.name}
+        <j:choose>
+          <j:when test="${it.color == null or it.color == ''}">
+            ${it.name}
+          </j:when>
+            <j:otherwise>
+            <j:set var="modelLink" value=""/>
+            <st:include it="${it}" page="Badge/index.jelly"/>
+          </j:otherwise>
+        </j:choose>
       </h1>
 
       <j:if test="${it.atom}">
@@ -39,12 +47,12 @@ THE SOFTWARE.
         <st:include page="summary.jelly" from="${a}" optional="true" it="${a}" />
       </j:forEach>
 
-      <div>
-        <h2>${%Nodes}</h2>
+      <div style="padding-top:10px">
+        <h2>${%Nodes} (${it.sortedNodes.size()})</h2>
         <j:forEach var="n" items="${it.sortedNodes}">
           <j:set var="c" value="${app.getComputer(n.nodeName)}"/>
           <j:set var="url" value="${rootURL}/${c.url}"/>
-          <nobr>
+          <nobr tooltip="${n.nodeDescription}">
             <a href="${url}" class="jenkins-link--with-icon"><l:icon src="${c.iconClassName}" /></a>
             <st:nbsp/>
             <a href="${url}" class="model-link inside">${c.displayName}</a>
@@ -53,18 +61,20 @@ THE SOFTWARE.
         </j:forEach>
       </div>
 
-      <h2>${%Projects}</h2>
-      <j:set var="jobs" value="${it.tiedJobs}" />
-      <j:choose>
-        <j:when test="${empty(jobs)}">
-          <p>
-            ${%None}
-          </p>
-        </j:when>
-        <j:otherwise>
-          <t:projectView jobs="${jobs}"/>
-        </j:otherwise>
-      </j:choose>
+      <div style="padding-top:10px">
+        <h2>${%Projects}</h2>
+        <j:set var="jobs" value="${it.tiedJobs}" />
+        <j:choose>
+          <j:when test="${empty(jobs)}">
+            <p>
+              ${%None}
+            </p>
+          </j:when>
+          <j:otherwise>
+            <t:projectView jobs="${jobs}"/>
+          </j:otherwise>
+        </j:choose>
+      </div>
 
     </l:main-panel>
   </l:layout>

@@ -1,0 +1,30 @@
+<!--
+The MIT License
+-->
+
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" >
+  <st:adjunct includes="io.jenkins.plugins.bootstrap5"/>
+  
+  <j:set var="cssSuffix" value="${it.name.replace(':', '-').replace('.', '-')}"/>
+  <j:set var="modelLink" value="${modelLink}"/>
+  <j:if test="${modelLink == null}">
+    <j:set var="modelLink" value="model-link"/>
+  </j:if>
+
+  <style>
+  .badge-mine-${cssSuffix} {
+    <j:if test="${it.color != null &amp;&amp; !it.color.isEmpty()}">
+      background: ${it.color};
+    </j:if>
+    
+    margin-left: 0rem !important;
+    font-size: 1em;
+  }
+  </style>
+
+  <j:set var="toolTip" value="${it.getDescription() ? app.markupFormatter.translate(it.getDescription()) : it.name}"/>
+    <a class="badge rounded-pill ${modelLink} jenkins-table__badge badge-mine-${cssSuffix}" href="${rootURL}/label/${it.name}">
+      ${it.name}
+    </a>
+</j:jelly>
