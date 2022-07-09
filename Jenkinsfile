@@ -112,6 +112,13 @@ for (i = 0; i < buildTypes.size(); i++) {
               qualityGates: [
                 [threshold: 1, type: 'TOTAL', unstable: true],
               ]])
+             recordIssues([tool: esLint(pattern: '**/target/eslint-warnings.xml'),
+              sourceCodeEncoding: 'UTF-8',
+              skipBlames: true,
+              trendChartType: 'TOOLS_ONLY',
+              qualityGates: [
+                [threshold: 1, type: 'TOTAL', unstable: true],
+              ]])
             if (failFast && currentBuild.result == 'UNSTABLE') {
               error 'Static analysis quality gates not passed; halting early'
             }
