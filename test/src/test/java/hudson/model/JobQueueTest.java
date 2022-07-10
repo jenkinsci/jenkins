@@ -24,7 +24,7 @@ public class JobQueueTest {
 
     @Before
     public void setUp() {
-        RunListener<Run> listener = new RunListener<Run>() {
+        RunListener<Run> listener = new RunListener<>() {
             @Override public  void onCompleted(Run r, TaskListener listener) {
                 JobQueueTest.fireCompletedFlag = true;
                 try {

@@ -15,6 +15,7 @@ Sortable.mount(new AutoScroll());
 function registerSortableDragDrop(e) {
   if (!e || !e.classList.contains('with-drag-drop')) return false;
 
+  // eslint-disable-next-line no-unused-vars
   const sortableElement = new Sortable(e, {
       draggable: '.repeated-chunk',
       handle: '.dd-handle',

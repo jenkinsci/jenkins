@@ -1,6 +1,5 @@
 import $ from 'jquery';
 import jenkinsLocalStorage from './util/jenkinsLocalStorage';
-import page from './util/page';
 import * as tabBarWidget from './widgets/config/tabbar';
 
 export const tabs = []; // Useful for testing.

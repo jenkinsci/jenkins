@@ -1056,7 +1056,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
 
             @Override public InputStream open(boolean noFollowLinks) throws IOException {
                 try {
-                    return f.read(root == null ? null : root, noFollowLinks);
+                    return f.read(root, noFollowLinks);
                 } catch (InterruptedException x) {
                     throw new IOException(x);
                 }
