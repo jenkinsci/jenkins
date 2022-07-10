@@ -45,7 +45,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -319,7 +318,7 @@ public class NodeProvisioner {
             if (provisioningState != null) {
                 List<Strategy> strategies = Jenkins.get().getExtensionList(Strategy.class);
                 for (Strategy strategy : strategies.isEmpty()
-                        ? Collections.<Strategy>singletonList(new StandardStrategyImpl())
+                        ? List.of(new StandardStrategyImpl())
                         : strategies) {
                     LOGGER.log(Level.FINER, "Consulting {0} provisioning strategy with state {1}",
                             new Object[]{strategy, provisioningState});

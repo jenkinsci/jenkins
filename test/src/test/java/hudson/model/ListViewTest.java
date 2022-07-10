@@ -142,7 +142,7 @@ public class ListViewTest {
         v.setIncludeRegex(".*");
         v.setRecurse(true);
         // Note: did not manage to reproduce CCE until I changed expand to use ‘for (TopLevelItem item : items)’ rather than ‘for (Item item : items)’; perhaps a compiler-specific issue?
-        assertEquals(Collections.singletonList(mp), v.getItems());
+        assertEquals(List.of(mp), v.getItems());
     }
 
     @Issue("JENKINS-18680")
@@ -247,7 +247,7 @@ public class ListViewTest {
         try (ACLContext acl = ACL.as(User.getOrCreateByIdOrFullName("alice"))) {
             p.renameTo("p2");
         }
-        assertEquals(Collections.singletonList(p), v.getItems());
+        assertEquals(List.of(p), v.getItems());
     }
 
     @Issue("JENKINS-41128")
@@ -338,7 +338,7 @@ public class ListViewTest {
         FreeStyleProject p3 = f1.createProject(FreeStyleProject.class, "p3");
         FreeStyleProject p4 = f2.createProject(FreeStyleProject.class, "p4");
         ListView lv = new ListView("view", Jenkins.get());
-        lv.setJobFilters(Collections.singletonList(new AllFilter()));
+        lv.setJobFilters(List.of(new AllFilter()));
         lv.setRecurse(false);
         assertThat(lv.getItems(), containsInAnyOrder(f1, f2, p1, p2));
         lv.setRecurse(true);

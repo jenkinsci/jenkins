@@ -1,17 +1,16 @@
 package jenkins.security;
 
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 import hudson.FilePath;
 import hudson.Functions;
 import java.io.File;
+import java.nio.charset.MalformedInputException;
 import java.nio.charset.StandardCharsets;
-import org.apache.commons.io.FileUtils;
+import java.nio.file.Files;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -37,7 +36,7 @@ public class DefaultConfidentialStoreTest {
         assertTrue(new File(tmp, "test").exists());
         assertTrue(new File(tmp, "master.key").exists());
 
-        assertThat(FileUtils.readFileToString(new File(tmp, "test"), StandardCharsets.UTF_8), not(containsString("Hello"))); // the data shouldn't be a plain text, obviously
+        assertThrows(MalformedInputException.class, () -> Files.readString(tmp.toPath().resolve("test"), StandardCharsets.UTF_8)); // the data shouldn't be a plain text, obviously
 
         if (!Functions.isWindows()) {
             assertEquals(0700, new FilePath(tmp).mode() & 0777); // should be read only

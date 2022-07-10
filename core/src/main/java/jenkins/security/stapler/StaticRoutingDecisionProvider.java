@@ -30,11 +30,13 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.BulkChange;
 import hudson.Extension;
 import hudson.ExtensionList;
+import hudson.Util;
 import hudson.model.Saveable;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -43,7 +45,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -202,7 +203,7 @@ public class StaticRoutingDecisionProvider extends RoutingDecisionProvider imple
                     .map(signature -> "!" + signature)
                     .forEach(allSignatures::add);
 
-            FileUtils.writeLines(file, allSignatures);
+            Files.write(Util.fileToPath(file), allSignatures, StandardCharsets.UTF_8);
         } catch (IOException e) {
             LOGGER.log(Level.WARNING, "Failed to save " + file.getAbsolutePath(), e);
         }
@@ -235,7 +236,7 @@ public class StaticRoutingDecisionProvider extends RoutingDecisionProvider imple
             blacklistSignaturesFromUserControlledList = new HashSet<>();
 
             parseFileIntoList(
-                    FileUtils.readLines(file, StandardCharsets.UTF_8),
+                    Files.readAllLines(Util.fileToPath(file), StandardCharsets.UTF_8),
                     whitelistSignaturesFromUserControlledList,
                     blacklistSignaturesFromUserControlledList
             );

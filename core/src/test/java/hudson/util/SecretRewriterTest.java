@@ -10,13 +10,13 @@ import hudson.model.TaskListener;
 import java.io.File;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Base64;
 import java.util.List;
 import java.util.regex.Pattern;
 import javax.crypto.Cipher;
 import jenkins.security.ConfidentialStoreRule;
-import org.apache.commons.io.FileUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -50,11 +50,11 @@ public class SecretRewriterTest {
 
     private String roundtrip(String before) throws Exception {
         SecretRewriter sr = new SecretRewriter();
-        File f = File.createTempFile("test", "xml", tmp.getRoot());
-        FileUtils.write(f, before, Charset.defaultCharset());
-        sr.rewrite(f);
+        Path path = Files.createTempFile(tmp.getRoot().toPath(), "test", "xml");
+        Files.writeString(path, before, Charset.defaultCharset());
+        sr.rewrite(path.toFile());
         //assert after.replaceAll(System.getProperty("line.separator"), "\n").trim()==f.text.replaceAll(System.getProperty("line.separator"), "\n").trim()
-        return FileUtils.readFileToString(f, Charset.defaultCharset()).replaceAll(System.getProperty("line.separator"), "\n").trim();
+        return Files.readString(path, Charset.defaultCharset()).replaceAll(System.getProperty("line.separator"), "\n").trim();
     }
 
     @SuppressWarnings("deprecation")
@@ -83,16 +83,16 @@ public class SecretRewriterTest {
 
         // set up some directories with stuff
         File t = tmp.newFolder("t");
-        List<String> dirs = Arrays.asList("a", "b", "c", "c/d", "c/d/e");
+        List<String> dirs = List.of("a", "b", "c", "c/d", "c/d/e");
         for (String p : dirs) {
             File d = new File(t, p);
             d.mkdir();
-            FileUtils.write(new File(d, "foo.xml"), payload, Charset.defaultCharset());
+            Files.writeString(d.toPath().resolve("foo.xml"), payload, Charset.defaultCharset());
         }
 
         // stuff outside
         File t2 = tmp.newFolder("t2");
-        FileUtils.write(new File(t2, "foo.xml"), payload, Charset.defaultCharset());
+        Files.writeString(t2.toPath().resolve("foo.xml"), payload, Charset.defaultCharset());
 
         // some recursions as well as valid symlinks
         new FilePath(t).child("c/symlink").symlinkTo("..", st);
@@ -102,11 +102,11 @@ public class SecretRewriterTest {
         assertEquals(6, sw.rewriteRecursive(t, st));
 
         for (String p : dirs) {
-            assertTrue(MSG_PATTERN.matcher(FileUtils.readFileToString(new File(t, p + "/foo.xml"), Charset.defaultCharset()).trim()).matches());
+            assertTrue(MSG_PATTERN.matcher(Files.readString(new File(t, p + "/foo.xml").toPath(), Charset.defaultCharset()).trim()).matches());
         }
 
         // t2 is only reachable by following a symlink. this should be covered, too
-        assertTrue(MSG_PATTERN.matcher(FileUtils.readFileToString(new File(t2, "foo.xml"), Charset.defaultCharset()).trim()).matches());
+        assertTrue(MSG_PATTERN.matcher(Files.readString(new File(t2, "foo.xml").toPath(), Charset.defaultCharset()).trim()).matches());
     }
 
 }

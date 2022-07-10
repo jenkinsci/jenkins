@@ -90,7 +90,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>1784.v83a_b_3ce99392</version>
+      <version>1797.v711534844e8a_</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -144,7 +144,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
       <artifactId>instance-identity</artifactId>
-      <version>3.1</version>
+      <version>116.vf8f487400980</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -174,13 +174,13 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>matrix-auth</artifactId>
-      <version>3.1.3</version>
+      <version>3.1.5</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>matrix-project</artifactId>
-      <version>771.v574584b_39e60</version>
+      <version>772.v494f19991984</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -205,6 +205,13 @@ THE SOFTWARE.
         <!-- Version specified in grandparent POM -->
         <extensions>true</extensions>
         <executions>
+          <execution>
+            <id>prepare-test-plugins</id>
+            <goals>
+              <goal>resolve-test-dependencies</goal>
+            </goals>
+            <phase>test-compile</phase>
+          </execution>
           <execution>
             <id>test-runtime</id>
             <goals>
@@ -335,7 +342,6 @@ THE SOFTWARE.
         </property>
       </activation>
       <properties>
-        <maven.test.redirectTestOutputToFile>true</maven.test.redirectTestOutputToFile>
         <surefire.rerunFailingTestsCount>4</surefire.rerunFailingTestsCount>
         <surefire.skipAfterFailureCount>100</surefire.skipAfterFailureCount>
       </properties>
