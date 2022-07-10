@@ -37,7 +37,7 @@
     "jest": "^26.0.1",
     "jest-handlebars": "^1.0.1",
     "jest-junit": "^14.0.0",
-    "jest-standard-reporter": "^1.0.4",
+    "jest-standard-reporter": "^2.0.0",
     "less": "^3.13.1",
     "less-loader": "^7.3.0",
     "mini-css-extract-plugin": "^1.6.2",
