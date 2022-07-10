@@ -58,7 +58,7 @@
     "jquery": "3.6.0",
     "lodash": "^4.17.20",
     "postcss-less": "^6.0.0",
-    "sortablejs": "^1.13.0",
+    "sortablejs": "^1.15.0",
     "window-handle": "^1.0.0"
   },
   "browserslist": [

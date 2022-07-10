@@ -8148,10 +8148,10 @@ snapdragon@^0.8.1:
     source-map-resolve "^0.5.0"
     use "^3.1.0"
 
-sortablejs@^1.13.0:
-  version "1.13.0"
-  resolved "https://registry.yarnpkg.com/sortablejs/-/sortablejs-1.13.0.tgz#3ab2473f8c69ca63569e80b1cd1b5669b51269e9"
-  integrity sha512-RBJirPY0spWCrU5yCmWM1eFs/XgX2J5c6b275/YyxFRgnzPhKl/TDeU2hNR8Dt7ITq66NRPM4UlOt+e5O4CFHg==
+sortablejs@^1.15.0:
+  version "1.15.0"
+  resolved "https://registry.yarnpkg.com/sortablejs/-/sortablejs-1.15.0.tgz#53230b8aa3502bb77a29e2005808ffdb4a5f7e2a"
+  integrity sha512-bv9qgVMjUMf89wAvM6AxVvS/4MX3sPeN0+agqShejLU5z5GX4C75ow1O2e5k4L6XItUyAK3gH6AxSbXrOM5e8w==
 
 source-list-map@^2.0.0:
   version "2.0.1"
