@@ -26,32 +26,35 @@
     padding: 0;
     flex: 1;
     flex-wrap: wrap;
+    z-index: 0;
 
     & > li {
+      position: relative;
+      color: var(--text-color);
+      font-weight: 500;
+      font-size: 0.85rem;
+      padding: 0.2rem 0.4rem;
+
       & > a {
         .item();
 
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        padding: 0.2rem 0.4rem;
-        font-weight: 500;
-        font-size: 0.85rem;
-        color: var(--text-color);
-        z-index: 0;
+        font-weight: inherit;
+        font-size: inherit;
+        margin: 0;
+        padding: 0;
+        color: inherit;
         text-decoration: none;
         margin-right: 0 !important;
 
         &::before, &::after {
-          inset: -0.2rem -0.2rem;
+          inset: -0.25rem -0.6rem;
         }
       }
 
       & > .model-link {
-        .jenkins-menu-dropdown-chevron {
-          top: 6px;
-        }
-
         @media (hover: none) {
           margin-right: 30px !important;
         }
@@ -125,7 +128,6 @@
   display: inline-block;
   width: 14px;
   height: 14px;
-  top: 2px;
   right: 0;
   border: none;
   outline: none;
