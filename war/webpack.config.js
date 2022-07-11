@@ -2,8 +2,8 @@
 
 const path = require('path');
 const MiniCSSExtractPlugin = require('mini-css-extract-plugin');
-const CssMinimizerPlugin = require("css-minimizer-webpack-plugin");
-const FixStyleOnlyEntriesPlugin = require('webpack-fix-style-only-entries');
+const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
+const RemoveEmptyScriptsPlugin = require('webpack-remove-empty-scripts');
 const CopyPlugin = require('copy-webpack-plugin');
 const { CleanWebpackPlugin: CleanPlugin } = require('clean-webpack-plugin');
 
@@ -42,7 +42,7 @@ module.exports = (env, argv) => ({
   },
   devtool: argv.mode === 'production' ? 'source-map' : 'inline-cheap-module-source-map',
   plugins: [
-    new FixStyleOnlyEntriesPlugin(),
+    new RemoveEmptyScriptsPlugin({}),
     new MiniCSSExtractPlugin({
       filename: "[name].css",
     }),
@@ -104,15 +104,10 @@ module.exports = (env, argv) => ({
       },
       {
         test: /\.(woff(2)?|ttf|eot|svg)(\?v=\d+\.\d+\.\d+)?$/,
-        use: [
-          {
-            loader: 'file-loader',
-            options: {
-              name: '[name].[ext]',
-              outputPath: 'fonts/'
-            }
-          }
-        ]
+        type: "asset/resource",
+        generator: {
+          filename: 'fonts/[name].[ext]',
+        },
       },
       {
         test: /\.hbs$/,

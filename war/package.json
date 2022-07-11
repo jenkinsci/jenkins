@@ -26,12 +26,10 @@
     "@jenkins-cd/js-test": "^1.2.3",
     "autoprefixer": "^10.4.7",
     "clean-webpack-plugin": "^4.0.0",
-    "copy-webpack-plugin": "^6.4.1",
+    "copy-webpack-plugin": "^11.0.0",
     "css-loader": "^5.2.7",
-    "css-minimizer-webpack-plugin": "^1.0.0",
+    "css-minimizer-webpack-plugin": "^4.0.0",
     "eslint": "^8.19.0",
-    "eslint-plugin-only-warn": "^1.0.3",
-    "file-loader": "^6.2.0",
     "handlebars": "^3.0.8",
     "handlebars-loader": "^1.7.2",
     "jest": "^26.0.1",
@@ -46,9 +44,9 @@
     "style-loader": "^2.0.0",
     "stylelint": "^14.9.1",
     "stylelint-config-standard": "^26.0.0",
-    "webpack": "^4.46.0",
+    "webpack": "^5.73.0",
     "webpack-cli": "^4.10.0",
-    "webpack-fix-style-only-entries": "^0.5.0"
+    "webpack-remove-empty-scripts": "^0.8.1"
   },
   "dependencies": {
     "@babel/preset-env": "^7.18.6",
