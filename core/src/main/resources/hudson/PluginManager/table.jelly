@@ -65,7 +65,7 @@ THE SOFTWARE.
               <l:isAdmin>
                 <th data-sort-disable="true">
                   <l:rowSelectionController>
-                    <button type="button" data-select="compatible" class="jenkins-button jenkins-button--transparent">
+                    <button tooltip="${%CompatibleTooltip}" type="button" data-select="compatible" class="jenkins-button jenkins-button--transparent">
                       <div class="jenkins-table__checkbox-dropdown__icon">
                         <l:icon src="symbol-compatible" />
                       </div>
