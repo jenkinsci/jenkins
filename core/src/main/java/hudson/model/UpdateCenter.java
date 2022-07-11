@@ -1065,6 +1065,12 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         return new ArrayList<>(pluginMap.values());
     }
 
+    // for Jelly
+    @Restricted(NoExternalUse.class)
+    public boolean hasIncompatibleUpdates(PluginManager.MetadataCache cache) {
+        return getUpdates().stream().anyMatch(plugin -> !plugin.isCompatible(cache));
+    }
+
     @Restricted(NoExternalUse.class)
     public List<Plugin> getPluginsWithUnavailableUpdates() {
         Map<String, Plugin> pluginMap = new LinkedHashMap<>();
