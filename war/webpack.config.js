@@ -77,6 +77,8 @@ module.exports = (env, argv) => ({
             loader: 'css-loader',
             options: {
               sourceMap: true,
+              // ignore the URLS on the base styles as they are picked
+              // from the src/main/webapp/images dir
               url: {
                 filter: (url, resourcePath) => {
                   return !resourcePath.includes('styles.less');
