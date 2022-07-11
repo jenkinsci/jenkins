@@ -100,7 +100,6 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
         return Messages.ComputerSet_DisplayName();
     }
 
-    //-------------------------------------------------------------------------
     @SuppressWarnings("unused") // used by jelly view
     @Exported
     public Set<LabelAtom> getAllLabels() {

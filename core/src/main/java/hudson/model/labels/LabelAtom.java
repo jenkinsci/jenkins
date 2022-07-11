@@ -68,7 +68,6 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.kohsuke.stapler.verb.POST;
 
 
-//-----------------------------------------------------------------------------
 /**
  * Atomic single token label, like "foo" or "bar".
  *
@@ -93,12 +92,10 @@ public class LabelAtom extends Label implements Saveable {
     // label color (used in badges)
     private String color;
 
-    //-------------------------------------------------------------------------
     public LabelAtom(@NonNull String name) {
         super(name);
     }
 
-    //-------------------------------------------------------------------------
     /**
      * If the label contains 'unsafe' chars, escape them.
      */
@@ -107,11 +104,9 @@ public class LabelAtom extends Label implements Saveable {
         return escape(name);
     }
 
-    //-------------------------------------------------------------------------
     @Override
     public boolean isAtom() { return true; }
 
-    //-------------------------------------------------------------------------
     /**
      * {@inheritDoc}
      *
@@ -133,7 +128,6 @@ public class LabelAtom extends Label implements Saveable {
 
     // TODO implement addAction, addOrReplaceAction, removeAction, removeActions, replaceActions
 
-    //-------------------------------------------------------------------------
     protected void updateTransientActions() {
         Vector<Action> ta = new Vector<>();
 
@@ -143,7 +137,6 @@ public class LabelAtom extends Label implements Saveable {
         transientActions = ta;
     }
 
-    //-------------------------------------------------------------------------
     /**
      * Returns label description.
      * @since 1.580
@@ -153,7 +146,6 @@ public class LabelAtom extends Label implements Saveable {
         return description;
     }
 
-    //-------------------------------------------------------------------------
     /**
      * Set and save description
      */
@@ -163,7 +155,6 @@ public class LabelAtom extends Label implements Saveable {
         save();
     }
 
-    //-------------------------------------------------------------------------
     /**
      * Returns label color as string. In case of empty string (or null)
      * it means there are no color assigned.
@@ -173,14 +164,13 @@ public class LabelAtom extends Label implements Saveable {
         return color;
     }
 
-    //-------------------------------------------------------------------------
     /**
      * Set and save color string.
-     * The function does not checks, if the color is valid or not. 
+     * The function does not checks, if the color is valid or not.
      * That means, when you use the function in external things, you must validate
      * color-string by your self (use some color-picker tool).
      */
-    @SuppressWarnings("unused") // for external usage
+    @SuppressWarnings("unused") // used by jelly view
     public void setColor(String color) throws IOException {
         this.color = color;
         save();
@@ -257,7 +247,6 @@ public class LabelAtom extends Label implements Saveable {
         return LabelAtomProperty.all();
     }
 
-    //-------------------------------------------------------------------------
     /**
      * Accepts the update to the node configuration.
      */
