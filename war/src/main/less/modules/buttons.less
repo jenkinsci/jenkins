@@ -64,6 +64,7 @@
     &::before {
       opacity: 0.8;
     }
+
     &::after {
       box-shadow: 0 0 0 0.33rem var(--primary);
       opacity: 0.2;
@@ -79,7 +80,7 @@
 
 // Support for custom colors
 // Modifier classes must include 'color' in name to work
-.jenkins-button[class*="color"]  {
+.jenkins-button[class*="color"] {
   background: transparent;
   color: var(--color) !important;
 
@@ -104,6 +105,7 @@
     &::before {
       opacity: 0.2;
     }
+
     &::after {
       box-shadow: 0 0 0 0.33rem currentColor;
       opacity: 0.1;
@@ -136,6 +138,7 @@
     &::before {
       opacity: 0.8;
     }
+
     &::after {
       box-shadow: 0 0 0 0.33rem var(--color);
       opacity: 0.3;
@@ -143,7 +146,7 @@
   }
 }
 
-.jenkins-button--tertiary[class*="color"]  {
+.jenkins-button--tertiary[class*="color"] {
   &::before {
     opacity: 0;
   }
@@ -155,36 +158,36 @@
   align-items: center;
 
   .jenkins-button {
-    margin-left: 0!important;
-    margin-right: 0.5rem!important;
+    margin-left: 0 !important;
+    margin-right: 0.5rem !important;
   }
 
   .yui-button {
-    margin-left: 0!important;
-    margin-right: 0.5rem!important;
+    margin-left: 0 !important;
+    margin-right: 0.5rem !important;
   }
 
   .jenkins-table__button {
-    margin-left: 0!important;
-    margin-right: 1.5rem!important;
+    margin-left: 0 !important;
+    margin-right: 1.5rem !important;
   }
 
   &--invert {
     justify-content: flex-end;
 
     .jenkins-button {
-      margin-left: 0.5rem!important;
-      margin-right: 0!important;
+      margin-left: 0.5rem !important;
+      margin-right: 0 !important;
     }
 
     .yui-button {
-      margin-left: 0.5rem!important;
-      margin-right: 0!important;
+      margin-left: 0.5rem !important;
+      margin-right: 0 !important;
     }
 
     .jenkins-table__button {
-      margin-left: 1.5rem!important;
-      margin-right: 0!important;
+      margin-left: 1.5rem !important;
+      margin-right: 0 !important;
     }
   }
 }
