@@ -17,7 +17,7 @@ The MIT License
           <th align="left" initialSortDir="down">${%Name}</th>
           <th align="right" >${%Description}</th>
           <th align="right" tooltip="${%Count of assigned nodes}">${%Assigend nodes}</th>
-          <th align="right" class="jenkins-table__cell--tight" data-sort-disable="true"></th>
+          <th align="right" class="jenkins-table__cell--tight" data-sort-disable="true"/>
         </tr>
       </thead> 
       <tbody>
