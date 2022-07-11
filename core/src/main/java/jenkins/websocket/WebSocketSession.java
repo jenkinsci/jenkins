@@ -25,7 +25,6 @@
 package jenkins.websocket;
 
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledFuture;
@@ -60,48 +59,28 @@ public abstract class WebSocketSession {
 
     private static final Logger LOGGER = Logger.getLogger(WebSocketSession.class.getName());
 
-    private Object session;
-    // https://www.eclipse.org/jetty/javadoc/9.4.24.v20191120/org/eclipse/jetty/websocket/common/WebSocketRemoteEndpoint.html
-    private Object remoteEndpoint;
+    Provider.Handler handler;
     private ScheduledFuture<?> pings;
 
     protected WebSocketSession() {}
 
-    Object onWebSocketSomething(Object proxy, Method method, Object[] args) throws Exception {
-        switch (method.getName()) {
-        case "onWebSocketConnect":
-            this.session = args[0];
-            this.remoteEndpoint = session.getClass().getMethod("getRemote").invoke(args[0]);
-            if (PING_INTERVAL_SECONDS != 0) {
-                pings = Timer.get().scheduleAtFixedRate(() -> {
-                    try {
-                        remoteEndpoint.getClass().getMethod("sendPing", ByteBuffer.class).invoke(remoteEndpoint, ByteBuffer.wrap(new byte[0]));
-                    } catch (Exception x) {
-                        error(x);
-                        pings.cancel(true);
-                    }
-                }, PING_INTERVAL_SECONDS / 2, PING_INTERVAL_SECONDS, TimeUnit.SECONDS);
-            }
-            opened();
-            return null;
-        case "onWebSocketClose":
-            if (pings != null) {
-                pings.cancel(true);
-                // alternately, check Session.isOpen each time
-            }
-            closed((Integer) args[0], (String) args[1]);
-            return null;
-        case "onWebSocketError":
-            error((Throwable) args[0]);
-            return null;
-        case "onWebSocketBinary":
-            binary((byte[]) args[0], (Integer) args[1], (Integer) args[2]);
-            return null;
-        case "onWebSocketText":
-            text((String) args[0]);
-            return null;
-        default:
-            throw new AssertionError();
+    void startPings() {
+        if (PING_INTERVAL_SECONDS != 0) {
+            pings = Timer.get().scheduleAtFixedRate(() -> {
+                try {
+                    handler.sendPing(ByteBuffer.wrap(new byte[0]));
+                } catch (Exception x) {
+                    error(x);
+                    pings.cancel(true);
+                }
+            }, PING_INTERVAL_SECONDS / 2, PING_INTERVAL_SECONDS, TimeUnit.SECONDS);
+        }
+    }
+
+    void stopPings() {
+        if (pings != null) {
+            pings.cancel(true);
+            // alternately, check Session.isOpen each time
         }
     }
 
@@ -123,38 +102,20 @@ public abstract class WebSocketSession {
         LOGGER.warning("unexpected text frame");
     }
 
-    @SuppressWarnings("unchecked")
     protected final Future<Void> sendBinary(ByteBuffer data) throws IOException {
-        try {
-            return (Future<Void>) remoteEndpoint.getClass().getMethod("sendBytesByFuture", ByteBuffer.class).invoke(remoteEndpoint, data);
-        } catch (Exception x) {
-            throw new IOException(x);
-        }
+        return handler.sendBinary(data);
     }
 
     protected final void sendBinary(ByteBuffer partialByte, boolean isLast) throws IOException {
-        try {
-            remoteEndpoint.getClass().getMethod("sendPartialBytes", ByteBuffer.class, boolean.class).invoke(remoteEndpoint, partialByte, isLast);
-        } catch (Exception x) {
-            throw new IOException(x);
-        }
+        handler.sendBinary(partialByte, isLast);
     }
 
-    @SuppressWarnings("unchecked")
     protected final Future<Void> sendText(String text) throws IOException {
-        try {
-            return (Future<Void>) remoteEndpoint.getClass().getMethod("sendStringByFuture", String.class).invoke(remoteEndpoint, text);
-        } catch (Exception x) {
-            throw new IOException(x);
-        }
+        return handler.sendText(text);
     }
 
     protected final void close() throws IOException {
-        try {
-            session.getClass().getMethod("close").invoke(session);
-        } catch (Exception x) {
-            throw new IOException(x);
-        }
+        handler.close();
     }
 
 }

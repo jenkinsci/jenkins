@@ -51,6 +51,8 @@ THE SOFTWARE.
 
   <modules>
     <module>bom</module>
+    <module>websocket/spi</module>
+    <module>websocket/jetty9</module>
     <module>core</module>
     <module>war</module>
     <module>test</module>
@@ -94,7 +96,7 @@ THE SOFTWARE.
 
     <spotbugs.effort>Max</spotbugs.effort>
     <spotbugs.threshold>Medium</spotbugs.threshold>
-    <spotbugs.excludeFilterFile>${project.basedir}/../src/spotbugs/spotbugs-excludes.xml</spotbugs.excludeFilterFile>
+    <spotbugs.excludeFilterFile>${maven.multiModuleProjectDirectory}/src/spotbugs/spotbugs-excludes.xml</spotbugs.excludeFilterFile>
 
     <access-modifier.version>1.27</access-modifier.version>
     <bridge-method-injector.version>1.23</bridge-method-injector.version>
