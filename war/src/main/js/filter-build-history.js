@@ -289,6 +289,7 @@ function checkRowCellOverflows(row) {
                     detailsLessThanHalf = (detailsOverflowParams.scrollWidth < usableRowWidth/2);
                 }
             }
+            // eslint-disable-next-line no-inner-declarations
             function expandLeftWithRight(leftCellOverFlowParams, rightCellOverflowParams) {
                 // Float them left and right...
                 $(leftCellOverFlowParams.element).setStyle({float: 'left'});
@@ -330,7 +331,7 @@ function checkRowCellOverflows(row) {
                 // build name (first field) a block element, forcing the details and controls to wrap
                 // onto the next row (creating a second row).
                 buildName.classList.add('block');
-                var wrap = blockWrap(buildDetails, buildControls);
+                wrap = blockWrap(buildDetails, buildControls);
                 indentMultiline(wrap);
                 wrap.classList.add('build-details-controls');
                 detailsOverflowParams = getElementOverflowParams(buildDetails); // recalculate
@@ -357,9 +358,9 @@ function checkRowCellOverflows(row) {
     }
 
     if (buildControls && !controlsRepositioned) {
-        var buildBadge = $(buildControls).getElementsBySelector('.build-badge')[0];
+        buildBadge = $(buildControls).getElementsBySelector('.build-badge')[0];
         if (buildBadge) {
-            var badgeOverflowParams = getElementOverflowParams(buildBadge);
+            badgeOverflowParams = getElementOverflowParams(buildBadge);
 
             if (badgeOverflowParams.isOverflowed) {
                 markMultiline();
