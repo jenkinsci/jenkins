@@ -36,7 +36,7 @@ THE SOFTWARE.
             <h1>${%System Properties}</h1>
           </div>
         </div>
-        <t:propertyTable items="${h.systemProperties}" />
+        <t:propertyTable items="${h.systemProperties}" sensitive="true" />
       </l:hasPermission>
       <l:hasPermission permission="${app.SYSTEM_READ}">
         <div class="jenkins-app-bar">
@@ -44,7 +44,7 @@ THE SOFTWARE.
             <h1>${%Environment Variables}</h1>
           </div>
         </div>
-        <t:propertyTable items="${h.envVars}" />
+        <t:propertyTable items="${h.envVars}" sensitive="true" />
       </l:hasPermission>
       <div class="jenkins-app-bar">
         <div class="jenkins-app-bar__content">
