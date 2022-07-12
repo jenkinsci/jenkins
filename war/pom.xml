@@ -97,6 +97,11 @@ THE SOFTWARE.
       </exclusions>
     </dependency>
     <dependency>
+      <groupId>org.jenkins-ci.main</groupId>
+      <artifactId>websocket-jetty9</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
       <!--
         We bundle slf4j binding since we got some components (sshd for example)
         that uses slf4j.
@@ -174,6 +179,8 @@ THE SOFTWARE.
                   <excludes>
                     <exclude>org.jenkins-ci.main:cli</exclude>
                     <exclude>org.jenkins-ci.main:jenkins-core</exclude>
+                    <exclude>org.jenkins-ci.main:websocket-jetty9</exclude>
+                    <exclude>org.jenkins-ci.main:websocket-spi</exclude>
                   </excludes>
                 </enforceBytecodeVersion>
               </rules>
@@ -762,10 +769,8 @@ THE SOFTWARE.
                 <goals>
                   <goal>yarn</goal>
                 </goals>
-                <phase>test</phase>
                 <configuration>
                   <arguments>lint</arguments>
-                  <skip>${skipTests}</skip>
                 </configuration>
               </execution>
             </executions>
