@@ -36,7 +36,7 @@ THE SOFTWARE.
       If specified, this ID will be assigned to the LI element.
       This is useful for programmatically adding the context menu
     </st:attribute>
-    <st:attribute name="isMenu">
+    <st:attribute name="hasMenu">
       If true, this breadcrumb item will include a '⌄' symbol to display a dropdown menu with items
       from the '{breadcrumb.href}/contextMenu' path
     </st:attribute>
@@ -49,7 +49,7 @@ THE SOFTWARE.
           ${attrs.title}
         </j:when>
         <j:otherwise>
-          <a href="${attrs.href}" class="${attrs.isMenu ? 'model-link' : ''}">
+          <a href="${attrs.href}" class="${attrs.hasMenu ? 'model-link' : ''}">
             ${attrs.title}
           </a>
         </j:otherwise>
