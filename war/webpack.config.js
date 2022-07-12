@@ -77,14 +77,12 @@ module.exports = (env, argv) => ({
             loader: 'css-loader',
             options: {
               sourceMap: true,
-              url: (url, resourcePath) => {
-                // ignore the URLS on the base styles as they are picked
-                // from the src/main/webapp/images dir
-                if (resourcePath.includes('styles.less')) {
-                  return false;
+              // ignore the URLS on the base styles as they are picked
+              // from the src/main/webapp/images dir
+              url: {
+                filter: (url, resourcePath) => {
+                  return !resourcePath.includes('styles.less');
                 }
-
-                return true;
               }
             }
           },
