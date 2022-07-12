@@ -11,9 +11,7 @@ import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.util.NameValuePair;
 import java.io.IOException;
 import java.net.URL;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
 import javax.servlet.ServletException;
@@ -498,8 +496,6 @@ public class DoActionFilterTest extends StaplerAbstractTest {
 
         public void doWithResponseImpl(ResponseImpl response) { replyOk(); }
 
-        public void doWithRequestAndResponse(RequestAndResponse requestAndResponse) { replyOk(); }
-
         // special case to keep Groovy parameter name, but does not seem to indicate it's automatically a web method
         @CapturedParameterNames("req")
         public void doAnnotatedResponseSuccess(Object req) { replyOk(); }
@@ -507,21 +503,6 @@ public class DoActionFilterTest extends StaplerAbstractTest {
 //        // as mentioned in its documentation, it requires to have JavaScriptMethod, that has its own test
 //        @JsonOutputFilter
 //        public void doAnnotatedJsonOutputFilter() { replyOk(); }
-    }
-
-    public abstract static class RequestAndResponse implements StaplerRequest, StaplerResponse {
-        @Override
-        public CollectionAndEnumeration getHeaderNames() {
-            return null;
-        }
-
-        @Override
-        public CollectionAndEnumeration getHeaders(String name) {
-            return null;
-        }
-
-        public abstract static class CollectionAndEnumeration implements Collection, Enumeration {
-        }
     }
 
     @Test
@@ -545,12 +526,6 @@ public class DoActionFilterTest extends StaplerAbstractTest {
     @Test
     public void testNotOkSpecialCases_withResponseImpl() throws Exception {
         assertNotReachable("testNewRulesNotOkSpecialCases/withResponseImpl/");
-        assertDoActionRequestWasBlockedAndResetFlag();
-    }
-
-    @Test
-    public void testNotOkSpecialCases_withRequestAndResponse() throws Exception {
-        assertNotReachable("testNewRulesNotOkSpecialCases/withRequestAndResponse/");
         assertDoActionRequestWasBlockedAndResetFlag();
     }
 
