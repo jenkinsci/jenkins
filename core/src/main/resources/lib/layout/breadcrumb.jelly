@@ -38,7 +38,7 @@ THE SOFTWARE.
     </st:attribute>
     <st:attribute name="hasMenu">
       If true, this breadcrumb item will include a '⌄' symbol to display a dropdown menu with items
-      from the '{breadcrumb.href}/contextMenu' path
+      from the '{breadcrumb.href}/contextMenu' path. Since TODO
     </st:attribute>
   </st:documentation>
 
