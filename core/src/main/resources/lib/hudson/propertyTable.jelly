@@ -39,7 +39,7 @@ THE SOFTWARE.
   </j:if>
   <j:set var="tableId" value="${h.generateId()}"/>
   <j:if test="${attrs.sensitive}">
-    <div>
+    <div class="jenkins-!-margin-bottom-2">
       ${%redactedBlurb}
       <button class="all-hidden-info jenkins-button" data-table-id="${tableId}">
         <l:icon src="symbol-search"/>

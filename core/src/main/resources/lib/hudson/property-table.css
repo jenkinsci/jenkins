@@ -1,3 +1,4 @@
 .hidden {
   visibility: hidden;
+  margin-left: -125px; /* TODO Figure out how overlap button and hidden value */
 }
