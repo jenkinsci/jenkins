@@ -43,9 +43,10 @@ THE SOFTWARE.
   </st:documentation>
 
   <j:if test="${mode=='breadcrumbs'}">
-    <li id="${attrs.id}" class="item">
+    <li id="${attrs.id}" class="jenkins-breadcrumbs__list-item">
       <j:choose>
-        <j:when test="${attrs.href == null}">
+        <j:set var="isCurrent" value="${h.hyperlinkMatchesCurrentPage(attrs.href)}" />
+        <j:when test="${attrs.href == null or isCurrent}">
           ${attrs.title}
         </j:when>
         <j:otherwise>

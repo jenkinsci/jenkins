@@ -18,7 +18,7 @@
     opacity: 0.95;
   }
 
-  & > ul {
+  & > ol {
     display: flex;
     align-items: center;
     list-style-type: none;
@@ -68,9 +68,9 @@
     // '>' separator between two items
     .children, .separator {
       position: relative;
-      width: 14px;
-      height: 14px;
-      margin: 6px;
+      width: 0.875rem;
+      height: 0.875rem;
+      margin: 0.375rem;
 
       &::after {
         content: "";
@@ -81,7 +81,7 @@
         right: 0;
         opacity: 0.5;
         transition: var(--standard-transition);
-        background: var(--text-color);
+        background: currentColor;
         mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' class='ionicon' viewBox='0 0 512 512'%3E%3Ctitle%3EChevron Forward%3C/title%3E%3Cpath fill='none' stroke='currentColor' stroke-linecap='round' stroke-linejoin='round' stroke-width='48' d='M184 112l144 144-144 144'/%3E%3C/svg%3E");
       }
     }
@@ -115,7 +115,7 @@
       }
     }
 
-    .separator {
+    .separator, .children {
       &:last-of-type {
         display: none;
       }
