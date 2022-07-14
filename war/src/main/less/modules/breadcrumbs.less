@@ -1,34 +1,23 @@
-#breadcrumbBar {
+.jenkins-breadcrumbs {
   position: sticky;
   top: 0;
   z-index: 999;
-}
-
-.jenkins-breadcrumbs {
   display: flex;
   align-items: center;
   padding: 0.55rem 0.7rem 0.55rem 0.75rem;
   backdrop-filter: blur(15px);
+  overflow-x: auto;
+  background: var(--breadcrumbs-bar-background);
 
-  &::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: var(--table-background);
-    opacity: 0.85;
-  }
-
-  & > ol {
-    display: flex;
-    align-items: center;
+  &__list {
+    display: contents;
     list-style-type: none;
-    margin: 0;
-    padding: 0;
-    flex: 1;
-    flex-wrap: wrap;
-    z-index: 0;
 
-    & > li {
+    & > * {
+      flex-shrink: 0;
+    }
+
+    &-item {
       position: relative;
       display: inline-flex;
       align-items: center;
