@@ -1100,7 +1100,7 @@ public abstract class AbstractProject<P extends AbstractProject<P, R>, R extends
 
     /**
      * Returns the project if any of the downstream project is either
-     * building, waiting, pending or buildable.
+     * building, or queued and not blocked by an upstream/downstream project build.
      * <p>
      * This means eventually there will be an automatic triggering of
      * the given project (provided that all builds went smoothly.)
@@ -1128,7 +1128,7 @@ public abstract class AbstractProject<P extends AbstractProject<P, R>, R extends
 
     /**
      * Returns the project if any of the upstream project is either
-     * building or is in the queue.
+     * building, or queued and not blocked by an upstream/downstream project build.
      * <p>
      * This means eventually there will be an automatic triggering of
      * the given project (provided that all builds went smoothly.)
