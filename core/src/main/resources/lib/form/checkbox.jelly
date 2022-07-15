@@ -41,10 +41,10 @@ THE SOFTWARE.
       If this attribute is unspecified or null, it defaults to unchecked, otherwise checked.
     </st:attribute>
     <st:attribute name="id" />
-    <st:attribute name="onclick" />
+    <st:attribute name="onclick" deprecated="true" />
     <st:attribute name="class" />
     <st:attribute name="negative" />
-    <st:attribute name="readonly">
+    <st:attribute name="readonly" deprecated="true">
       If set to true, this will take precedence over the onclick attribute and prevent the state of the checkbox from being changed.
 
       Note: if you want an actual read only checkbox then add:
