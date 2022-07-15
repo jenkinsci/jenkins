@@ -88,11 +88,10 @@ function saveApiToken(button){
                 tokenValueSpan.addClassName('visible');
 
                 // show the copy button
-                var tokenCopyButton = repeatedChunk.querySelector('.copy-button');
+                var tokenCopyButton = repeatedChunk.querySelector('.jenkins-copy-button');
                 tokenCopyButton.setAttribute('text', tokenValue);
-                tokenCopyButton.removeClassName('invisible')
-                tokenCopyButton.addClassName('visible');
-                
+                tokenCopyButton.removeClassName('jenkins-hidden')
+
                 var tokenUuid = json.data.tokenUuid;
                 var uuidInput = repeatedChunk.querySelector('[name="tokenUuid"]');
                 uuidInput.value = tokenUuid;
