@@ -42,7 +42,7 @@ for (i = 0; i < buildTypes.size(); i++) {
         // Now run the actual build.
         stage("${buildType} Build / Test") {
           timeout(time: 6, unit: 'HOURS') {
-            realtimeJUnit(healthScaleFactor: 20.0, testResults: '*/target/surefire-reports/*.xml,war/junit.xml') {
+            realtimeJUnit(healthScaleFactor: 20.0, testResults: '*/target/surefire-reports/*.xml,war/target/jest-result.xml') {
               def mavenOptions = [
                 '-Pdebug',
                 '-Penable-jacoco',
@@ -83,11 +83,11 @@ for (i = 0; i < buildTypes.size(); i++) {
             error 'There were test failures; halting early'
           }
           if (buildType == 'Linux' && jdk == jdks[0]) {
-            publishCoverage calculateDiffForChangeRequests: true, adapters: [jacocoAdapter('coverage/target/site/jacoco-aggregate/jacoco.xml')]
             def folders = env.JOB_NAME.split('/')
             if (folders.length > 1) {
               discoverGitReferenceBuild(scm: folders[1])
             }
+            publishCoverage calculateDiffForChangeRequests: true, adapters: [jacocoAdapter('coverage/target/site/jacoco-aggregate/jacoco.xml')]
 
             echo "Recording static analysis results for '${buildType}'"
             recordIssues(
@@ -106,6 +106,13 @@ for (i = 0; i < buildTypes.size(); i++) {
                 [threshold: 1, type: 'NEW', unstable: true],
               ]])
             recordIssues([tool: checkStyle(pattern: '**/target/checkstyle-result.xml'),
+              sourceCodeEncoding: 'UTF-8',
+              skipBlames: true,
+              trendChartType: 'TOOLS_ONLY',
+              qualityGates: [
+                [threshold: 1, type: 'TOTAL', unstable: true],
+              ]])
+             recordIssues([tool: esLint(pattern: '**/target/eslint-warnings.xml'),
               sourceCodeEncoding: 'UTF-8',
               skipBlames: true,
               trendChartType: 'TOOLS_ONLY',

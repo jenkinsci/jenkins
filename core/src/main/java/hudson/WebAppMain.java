@@ -143,7 +143,7 @@ public class WebAppMain implements ServletContextListener {
                 Formatter formatter = (Formatter) Class.forName("io.jenkins.lib.support_log_formatter.SupportLogFormatter").getDeclaredConstructor().newInstance();
                 for (Handler h : Logger.getLogger("").getHandlers()) {
                     if (h instanceof ConsoleHandler) {
-                        ((ConsoleHandler) h).setFormatter(formatter);
+                        h.setFormatter(formatter);
                     }
                 }
             } catch (ClassNotFoundException x) {
