@@ -27,23 +27,7 @@ THE SOFTWARE.
   <l:layout title="${it.displayName}">
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
-
-      <!-- Node name and status -->
-      <h1>
-        <l:icon src="${it.iconClassName}" class="icon-xlg" />
-        ${it.caption}
-        <j:if test="${it.class.name.contains('MasterComputer')}">
-          <span style="font-size:smaller">(${it.node.nodeDescription})</span>
-        </j:if>
-      </h1>
-
-      <!-- Node description -->
-
-      <j:if test="${!empty(it.node.nodeDescription) and !it.class.name.contains('MasterComputer')}">
-            <div style="margin-bottom: var(--section-padding);">
-              <j:out value="${app.markupFormatter.translate(it.node.nodeDescription)}" />
-            </div>
-      </j:if>
+      <st:include page="index-top.jelly" it="${it}" />
 
       <!-- temporarily offline switch -->
       <div style="float:right">
