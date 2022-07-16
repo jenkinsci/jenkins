@@ -128,7 +128,7 @@ public interface GNUCLibrary extends Library {
     /**
      * Creates a symlink.
      *
-     * See http://linux.die.net/man/3/symlink
+     * See <a href="https://linux.die.net/man/3/symlink">symlink(3)</a>
      */
     int symlink(String oldname, String newname);
 

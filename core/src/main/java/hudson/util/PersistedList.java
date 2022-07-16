@@ -39,10 +39,7 @@ import java.io.UncheckedIOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.AbstractList;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -202,7 +199,7 @@ public class PersistedList<T> extends AbstractList<T> {
     }
 
     // TODO until https://github.com/jenkinsci/jenkins-test-harness/pull/243 is widely adopted:
-    private static final Set<String> IGNORED_CLASSES = Collections.unmodifiableSet(new HashSet<>(Arrays.asList("org.jvnet.hudson.test.TestBuilder", "org.jvnet.hudson.test.TestNotifier")));
+    private static final Set<String> IGNORED_CLASSES = Set.of("org.jvnet.hudson.test.TestBuilder", "org.jvnet.hudson.test.TestNotifier");
     // (SingleFileSCM & ExtractResourceWithChangesSCM would also be nice to suppress, but they are not kept in a PersistedList.)
 
     private static boolean ignoreSerializationErrors(Object o) {

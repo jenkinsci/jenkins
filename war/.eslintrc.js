@@ -6,11 +6,6 @@ module.exports = {
     },
     // Uses eslint default ruleset
     extends: "eslint:recommended",
-    plugins: [
-        // Keeps the default level to warn to avoid breaking the current
-        // CI build environment
-        "only-warn"
-    ],
     parserOptions: {
         ecmaVersion: 2018,
         sourceType: "module"
@@ -18,8 +13,20 @@ module.exports = {
     rules: {
     },
     globals: {
+        $: "readonly",
+        Ajax: "readonly",
         Atomics: "readonly",
+        Behaviour: "readonly",
+        getElementOverflowParams: "readonly",
+        global: "readonly",
+        Hash: "readonly",
+        isPageVisible: "readonly",
+        isRunAsTest: "readonly",
+        layoutUpdateCallback: "readonly",
+        onSetupWizardInitialized: "readonly",
+        setupWizardExtensions: "readonly",
         SharedArrayBuffer: "readonly",
+        toQueryString: "readonly",
 
         '__dirname': false,
 

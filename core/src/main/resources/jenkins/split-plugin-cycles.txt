@@ -36,3 +36,9 @@ jdk-tool jaxb
 javax-activation-api javax-mail-api
 javax-activation-api sshd
 javax-mail-api sshd
+
+# JENKINS-55582
+bouncycastle-api instance-identity
+bouncycastle-api sshd
+javax-activation-api instance-identity
+javax-mail-api instance-identity

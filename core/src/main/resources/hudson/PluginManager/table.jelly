@@ -206,7 +206,7 @@ THE SOFTWARE.
                     </j:if>
                     <j:if test="${it.hasLatestVersionNewerThanOffered(p)}">
                       <div class="alert alert-info">
-                        ${%newerVersionExists(p.latest)}
+                        ${%newerVersionExists(p.latest, p.wiki)}
                       </div>
                     </j:if>
                   </td>

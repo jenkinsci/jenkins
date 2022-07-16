@@ -16,12 +16,12 @@ import com.gargoylesoftware.htmlunit.html.HtmlInput;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.model.FreeStyleProject;
 import hudson.model.Label;
-import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.concurrent.atomic.AtomicReference;
-import org.apache.commons.io.FileUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -77,8 +77,8 @@ public class JenkinsLocationConfigurationTest {
         // no impact on the url in memory
         assertNull(JenkinsLocationConfiguration.getOrDie().getUrl());
 
-        File configFile = new File(j.jenkins.getRootDir(), "jenkins.model.JenkinsLocationConfiguration.xml");
-        String configFileContent = FileUtils.readFileToString(configFile, StandardCharsets.UTF_8);
+        Path configFile = j.jenkins.getRootDir().toPath().resolve("jenkins.model.JenkinsLocationConfiguration.xml");
+        String configFileContent = Files.readString(configFile, StandardCharsets.UTF_8);
         assertThat(configFileContent, containsString("JenkinsLocationConfiguration"));
         assertThat(configFileContent, not(containsString("javascript:alert(123);//")));
     }
@@ -103,8 +103,8 @@ public class JenkinsLocationConfigurationTest {
             // the method ensures there is an trailing slash
             assertEquals(expectedUrl + "/", JenkinsLocationConfiguration.getOrDie().getUrl());
 
-            File configFile = new File(j.jenkins.getRootDir(), "jenkins.model.JenkinsLocationConfiguration.xml");
-            String configFileContent = FileUtils.readFileToString(configFile, StandardCharsets.UTF_8);
+            Path configFile = j.jenkins.getRootDir().toPath().resolve("jenkins.model.JenkinsLocationConfiguration.xml");
+            String configFileContent = Files.readString(configFile, StandardCharsets.UTF_8);
             assertThat(configFileContent, containsString("JenkinsLocationConfiguration"));
             assertThat(configFileContent, containsString(expectedUrl));
         }

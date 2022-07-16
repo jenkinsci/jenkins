@@ -21,7 +21,7 @@ import hudson.util.ProcessTreeRemoting.IOSProcess;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
-import java.util.Collections;
+import java.util.Map;
 import org.junit.After;
 import org.junit.Assume;
 import org.junit.Rule;
@@ -142,7 +142,7 @@ public class ProcessTreeTest {
         process = pb.start();
 
         ProcessTree processTree = ProcessTree.get();
-        processTree.killAll(Collections.singletonMap("cookie", "testKeepDaemonsAlive"));
+        processTree.killAll(Map.of("cookie", "testKeepDaemonsAlive"));
         assertThrows("Process should have been excluded from the killing", IllegalThreadStateException.class, () -> process.exitValue());
     }
 
@@ -172,7 +172,7 @@ public class ProcessTreeTest {
 
         // Call killall (somewhat roundabout though) to (not) kill it
         StringWriter out = new StringWriter();
-        s.createLauncher(new StreamTaskListener(out)).kill(Collections.singletonMap("cookie", "testKeepDaemonsAlive"));
+        s.createLauncher(new StreamTaskListener(out)).kill(Map.of("cookie", "testKeepDaemonsAlive"));
 
         assertThrows("Process should have been excluded from the killing", IllegalThreadStateException.class, () -> process.exitValue());
     }
