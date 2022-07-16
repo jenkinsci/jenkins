@@ -566,6 +566,14 @@ function registerValidator(e) {
                 depends.split(" ").each(TryEach(function (n) {
                     q.nearBy(n);
                 }));
+            let self = this; // TODO This is probably done differently
+            this.getAttributeNames().forEach(function (attributeName) {
+                if (attributeName.startsWith('data-checkurlextra-')) {
+                    let name = attributeName.substring('data-checkurlextra-'.length);
+                    let value = self.getAttribute(attributeName);
+                    q.append(encodeURIComponent(name) + '=' + encodeURIComponent(value));
+                }
+            });
             return url+ q.toString();
         }
     };

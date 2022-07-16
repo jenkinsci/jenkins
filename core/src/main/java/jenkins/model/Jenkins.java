@@ -5178,20 +5178,21 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * Checks to see if the candidate displayName collides with any
      * existing display names or project names
-     * @param displayName The display name to test
+     * @param value the candidate display name
+     * @param displayName Legacy parameter for compatibility, used if value is {@code null}
      * @param jobName The name of the job the user is configuring
      */
-    public FormValidation doCheckDisplayName(@QueryParameter String displayName,
-            @QueryParameter String jobName) {
-        displayName = displayName.trim();
+    public FormValidation doCheckDisplayName(@QueryParameter final String value, @QueryParameter final String displayName,
+            @QueryParameter final String jobName) {
+        String candidateName = (value == null ? displayName : value).trim();
 
         LOGGER.fine(() -> "Current job name is " + jobName);
 
-        if (!isNameUnique(displayName, jobName)) {
-            return FormValidation.warning(Messages.Jenkins_CheckDisplayName_NameNotUniqueWarning(displayName));
+        if (!isNameUnique(candidateName, jobName)) {
+            return FormValidation.warning(Messages.Jenkins_CheckDisplayName_NameNotUniqueWarning(candidateName));
         }
-        else if (!isDisplayNameUnique(displayName, jobName)) {
-            return FormValidation.warning(Messages.Jenkins_CheckDisplayName_DisplayNameNotUniqueWarning(displayName));
+        else if (!isDisplayNameUnique(candidateName, jobName)) {
+            return FormValidation.warning(Messages.Jenkins_CheckDisplayName_DisplayNameNotUniqueWarning(candidateName));
         }
         else {
             return FormValidation.ok();

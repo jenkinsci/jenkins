@@ -211,7 +211,7 @@ public class JenkinsTest {
         p.setDisplayName("displayName");
 
         Jenkins jenkins = Jenkins.get();
-        FormValidation v = jenkins.doCheckDisplayName("1displayName", curJobName);
+        FormValidation v = jenkins.doCheckDisplayName(null, "1displayName", curJobName);
         assertEquals(FormValidation.ok(), v);
     }
 
@@ -227,7 +227,7 @@ public class JenkinsTest {
         p.setDisplayName(displayName);
 
         Jenkins jenkins = Jenkins.get();
-        FormValidation v = jenkins.doCheckDisplayName(displayName, curJobName);
+        FormValidation v = jenkins.doCheckDisplayName(null, displayName, curJobName);
         assertEquals(FormValidation.Kind.WARNING, v.kind);
     }
 
@@ -243,7 +243,7 @@ public class JenkinsTest {
         p.setDisplayName(displayName);
 
         Jenkins jenkins = Jenkins.get();
-        FormValidation v = jenkins.doCheckDisplayName(jobName, curJobName);
+        FormValidation v = jenkins.doCheckDisplayName(null, jobName, curJobName);
         assertEquals(FormValidation.Kind.WARNING, v.kind);
     }
 
