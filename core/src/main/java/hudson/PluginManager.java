@@ -1869,7 +1869,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     }
 
     @Restricted(NoExternalUse.class)
-    @RequirePOST public FormValidation doCheckPluginUrl(StaplerRequest request, @QueryParameter("pluginUrl") String value) throws IOException {
+    @RequirePOST public FormValidation doCheckPluginUrl(StaplerRequest request, @QueryParameter String value) throws IOException {
         if (StringUtils.isNotBlank(value)) {
             try {
                 URL url = new URL(value);
