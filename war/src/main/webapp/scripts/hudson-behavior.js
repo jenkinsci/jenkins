@@ -1296,6 +1296,12 @@ function rowvgStartEachRow(recursive,f) {
         };
     });
 
+    Behaviour.specify("INPUT.optional-block-event-item", "input-optional-block-event-item", ++p, function(e) {
+      e.addEventListener('click', function() {
+        updateOptionalBlock(e, true);
+      });
+    });
+
     Behaviour.specify("TR.row-set-end,DIV.tr.row-set-end", "tr-row-set-end-div-tr-row-set-end", ++p, function(e) { // see rowSet.jelly and optionalBlock.jelly
         // figure out the corresponding start block
         e = $(e);
