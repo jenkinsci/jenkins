@@ -62,7 +62,7 @@ THE SOFTWARE.
 
   <s:form class="jenkins-form" method="post" id="createItemForm" action="${attrs.action?:'createItem'}" name="createItem">
     <s:entry title="${attrs.nameTitle}" class="jenkins-form-item--medium">
-      <s:textbox id="name" name="name" checkUrl="'${h.jsStringEscape(attrs.checkUrl)}?value='+encodeURIComponent(this.value)"
+      <s:textbox id="name" name="name" checkUrl="${attrs.checkUrl}" checkDependsOn=""
                  onchange="updateOk(this.form)" onkeyup="updateOk(this.form)" />
       <script>$('name').focus();</script>
     </s:entry>
