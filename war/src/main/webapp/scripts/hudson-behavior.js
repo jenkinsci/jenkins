@@ -551,16 +551,20 @@ function registerValidator(e) {
     e.targetUrl = function() {
         var url = this.getAttribute("checkUrl");
         var depends = this.getAttribute("checkDependsOn");
+        if (depends === null) {
+            depends = '';
+        }
 
-        if (depends==null) {// legacy behaviour where checkUrl is a JavaScript
-            try {
-                return eval(url); // need access to 'this', so no 'geval'
-            } catch (e) {
-                if (window.console!=null)  console.warn("Legacy checkUrl '" + url + "' is not valid JavaScript: "+e);
-                if (window.YUI!=null)      YUI.log("Legacy checkUrl '" + url + "' is not valid JavaScript: "+e,"warn");
-                return url; // return plain url as fallback
+        try {
+            // legacy behaviour where checkUrl is a JavaScript
+            return eval(url); // need access to 'this', so no 'geval'
+        } catch (e) {
+            if (url.includes('?')) {
+              // this is a non-JS URL that includes query parameters, likely invalid legacy URL
+              if (window.console!=null)  console.warn("Legacy checkUrl '" + url + "' is not valid JavaScript: "+e);
+              if (window.YUI!=null)      YUI.log("Legacy checkUrl '" + url + "' is not valid JavaScript: "+e,"warn");
+              return url; // return plain url as fallback
             }
-        } else {
             var q = qs(this).addThis();
             if (depends.length>0)
                 depends.split(" ").each(TryEach(function (n) {
