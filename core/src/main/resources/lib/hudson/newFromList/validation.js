@@ -26,3 +26,39 @@ function updateOk() {
 }
 
 updateOk();
+
+document.addEventListener('DOMContentLoaded', function() {
+  let nameField = document.getElementById('name');
+  nameField.focus();
+  nameField.addEventListener('change', function () {
+    updateOk();
+  });
+  nameField.addEventListener('keyup', function () {
+    updateOk();
+  });
+
+  document.querySelectorAll('.mode-selection').forEach(function(el) {
+    el.addEventListener('change', function () {
+      updateOk();
+    });
+    el.addEventListener('click', function () {
+      updateOk();
+    });
+  });
+
+  let copyRadio = document.getElementById('copy');
+  if (copyRadio !== null) {
+    copyRadio.addEventListener('change', function () {
+      updateOk();
+    });
+    copyRadio.addEventListener('keyup', function () {
+      updateOk();
+    });
+
+    document.getElementById('copy').addEventListener('click', function (e) {
+      window.setTimeout(function() {
+        document.querySelector('.copy-field').focus();
+      }, 100);
+    });
+  }
+});
