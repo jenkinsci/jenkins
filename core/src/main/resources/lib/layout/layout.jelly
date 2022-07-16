@@ -134,6 +134,7 @@ THE SOFTWARE.
     <l:yui module="animation" />
     <l:yui module="dragdrop" />
     <l:yui module="container" />
+    <l:yui module="connection" />
     <l:yui module="datasource" />
     <l:yui module="autocomplete" />
     <l:yui module="menu" />
