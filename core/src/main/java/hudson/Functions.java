@@ -2167,6 +2167,13 @@ public class Functions {
         return Stapler.getCurrentRequest().createJavaScriptProxy(new RenderOnDemandClosure(context, attributesToCapture));
     }
 
+    /**
+     * @since TODO
+     */
+    public static StaplerRequest.RenderOnDemandParameters createRenderOnDemandProxyParameters(JellyContext context, String attributesToCapture) {
+        return Stapler.getCurrentRequest().createJavaScriptProxyParameters(new RenderOnDemandClosure(context, attributesToCapture));
+    }
+
     public static String getCurrentDescriptorByNameUrl() {
         return Descriptor.getCurrentDescriptorByNameUrl();
     }

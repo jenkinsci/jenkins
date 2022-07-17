@@ -790,7 +790,13 @@ function isInsideRemovable(e) {
  */
 function renderOnDemand(e,callback,noBehaviour) {
     if (!e || !Element.hasClassName(e,"render-on-demand")) return;
-    var proxy = eval(e.getAttribute("proxy"));
+
+    let proxyMethod = e.getAttribute('data-proxy-method');
+    let proxyUrl = e.getAttribute('data-proxy-url');
+    let proxyCrumb = e.getAttribute('data-proxy-crumb');
+    let proxyMethods = e.getAttribute('data-proxy-args').split(",");
+
+    var proxy = window[proxyMethod](proxyUrl, proxyCrumb, proxyMethods);
     proxy.render(function (t) {
         var contextTagName = e.parentNode.tagName;
         var c;
