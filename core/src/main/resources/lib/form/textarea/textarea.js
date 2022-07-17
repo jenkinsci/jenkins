@@ -14,7 +14,11 @@ Behaviour.specify("TEXTAREA.codemirror", 'textarea', 0, function(e) {
         if (!config) {
             config = '';
         }
-        config = eval('({'+config+'})');
+        try {
+          config = JSON.parse('{' + config + '}');
+        } catch (e) {
+          console.log("Failed to parse codemirror-config '{" + config + "}' as JSON", e);
+        }
         if (!config.onBlur) {
             config.onBlur = function(editor) { editor.save(); };
         }
