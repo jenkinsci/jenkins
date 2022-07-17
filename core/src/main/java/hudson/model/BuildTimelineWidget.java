@@ -41,7 +41,9 @@ import org.koshuke.stapler.simile.timeline.TimelineEventList;
  *
  * @author Kohsuke Kawaguchi
  * @since 1.372
+ * @deprecated since TODO
  */
+@Deprecated
 public class BuildTimelineWidget {
     protected final RunList<?> builds;
 

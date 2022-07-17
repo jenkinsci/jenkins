@@ -1166,6 +1166,8 @@ public abstract class View extends AbstractModelObject implements AccessControll
         return new RunList(this);
     }
 
+    @Deprecated
+    @Restricted(DoNotUse.class)
     public BuildTimelineWidget getTimeline() {
         return new BuildTimelineWidget(getBuilds());
     }
