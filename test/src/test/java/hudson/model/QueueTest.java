@@ -591,15 +591,17 @@ public class QueueTest {
 
     }
 
-    private void waitUntilWaitingListIsEmpty(Queue q) {
+    private void waitUntilWaitingListIsEmpty(Queue q) throws InterruptedException {
         boolean waitingItemsPresent = true;
         while (waitingItemsPresent) {
             waitingItemsPresent = false;
             for (Queue.Item i : q.getItems()) {
                 if (i instanceof WaitingItem) {
                     waitingItemsPresent = true;
+                    break;
                 }
             }
+            Thread.sleep(1000);
         }
     }
 
