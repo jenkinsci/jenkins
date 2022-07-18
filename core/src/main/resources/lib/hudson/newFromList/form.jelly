@@ -85,7 +85,7 @@ THE SOFTWARE.
 
         <j:if test="${!empty(attrs.copyNames) or attrs.showCopyOption}">
           <div class="jenkins-radio">
-            <input class="jenkins-radio__input" type="radio" id="copy" name="mode" value="copy"  />
+            <input class="jenkins-radio__input mode-selection" type="radio" id="copy" name="mode" value="copy"  />
             <label class="jenkins-radio__label" for="copy">${attrs.copyTitle}</label>
             <div class="jenkins-radio__children">
               <j:set var="descriptor" value="${it.descriptor}" />

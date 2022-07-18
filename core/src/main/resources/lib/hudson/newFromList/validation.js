@@ -45,17 +45,9 @@ document.addEventListener('DOMContentLoaded', function() {
       updateOk();
     });
   });
-
   let copyRadio = document.getElementById('copy');
   if (copyRadio !== null) {
-    copyRadio.addEventListener('change', function () {
-      updateOk();
-    });
-    copyRadio.addEventListener('keyup', function () {
-      updateOk();
-    });
-
-    document.getElementById('copy').addEventListener('click', function (e) {
+    copyRadio.addEventListener('click', function () {
       window.setTimeout(function() {
         document.querySelector('.copy-field').focus();
       }, 100);
