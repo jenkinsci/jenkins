@@ -309,16 +309,28 @@ function toValue(e) {
 
 /**
  * Builds a query string in a fluent API pattern.
+ * Retained for backward compatibility only.
  * @param {HTMLElement} owner
  *      The 'this' control.
  */
 function qs(owner) {
+  qs(owner, true);
+}
+
+/**
+ * Builds a query string in a fluent API pattern.
+ * @param {HTMLElement} owner
+ *      The 'this' control.
+ * @param {boolean} includeInitialDelimiter
+ *      Whether to include the initial '?' in the returned string
+ */
+function qs(owner, includeInitialDelimiter) {
     return {
         params : "",
 
         append : function(s) {
-            if (this.params.length==0)  this.params+='?';
-            else                        this.params+='&';
+            if (this.params.length==0 && includeInitialDelimiter)  this.params+='?';
+            else                                                   this.params+='&';
             this.params += s;
             return this;
         },
@@ -561,12 +573,15 @@ function registerValidator(e) {
                 return url; // return plain url as fallback
             }
         } else {
-            var q = qs(this).addThis();
+            var q = qs(this, false).addThis();
             if (depends.length>0)
                 depends.split(" ").each(TryEach(function (n) {
                     q.nearBy(n);
                 }));
-            return url+ q.toString();
+            if (url.includes('?')) {
+              return url + '&' + q.toString();
+            }
+            return url + '?' + q.toString();
         }
     };
     var method = e.getAttribute("checkMethod") || "post";
