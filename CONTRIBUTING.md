@@ -108,15 +108,15 @@ To submit a pull request:
 It is a good practice is to create branches instead of pushing to master.
 2. In the GitHub Web UI, click the _New Pull Request_ button.
 3. Select `jenkinsci` as _base fork_ and `master` as `base`, then click _Create Pull Request_.
-  * We integrate all changes into the master branch towards the Weekly releases.
-  * After that, the changes may be backported to the current LTS baseline by the LTS Team.
-    Read more about the [backporting process].
+   * We integrate all changes into the master branch towards the Weekly releases.
+   * After that, the changes may be backported to the current LTS baseline by the LTS Team.
+     Read more about the [backporting process].
 4. Fill in the Pull Request description according to the [proposed template].
 5. Click _Create Pull Request_.
 6. Wait for CI results/reviews, process the feedback.
-  * If you do not get feedback after 3 days, feel free to ping `@jenkinsci/core-pr-reviewers` in the comments.
-  * Usually we merge pull requests after 2 approvals from reviewers, no requested changes, and having waited some more time to give others an opportunity to provide their feedback.
-    See [this page](/docs/MAINTAINERS.adoc) for more information about our review process.
+   * If you do not get feedback after 3 days, feel free to ping `@jenkinsci/core-pr-reviewers` in the comments.
+   * Usually we merge pull requests after 2 approvals from reviewers, no requested changes, and having waited some more time to give others an opportunity to provide their feedback.
+     See [this page](/docs/MAINTAINERS.adoc) for more information about our review process.
 
 Once your Pull Request is ready to be merged,
 the repository maintainers will integrate it, prepare changelogs, and
