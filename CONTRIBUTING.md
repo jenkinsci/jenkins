@@ -9,13 +9,13 @@ This page provides information about contributing code to the Jenkins core codeb
 1. Fork the repository on GitHub
 2. Clone the forked repository to your machine
 3. Install the necessary development tools. In order to develop Jenkins, you need the following:
-  * Java Development Kit (JDK) 11 or 8.
-    In the Jenkins project we usually use [Eclipse Adoptium](https://adoptium.net/) or [OpenJDK](https://openjdk.java.net/), but you can use other JDKs as well.
-  * Apache Maven 3.8.1 or above. You can [download Maven here].
-    In the Jenkins project we usually use the most recent Maven release.
-  * Any IDE which supports importing Maven projects.
-  * Install [NodeJS](https://nodejs.org/en/). **Note:** only needed to work on the frontend assets found in the `war` module.
-    * Frontend tasks are run using [yarn](https://yarnpkg.com/lang/en/). Run `npm install -g yarn` to install it.
+   * Java Development Kit (JDK) 11 or 8.
+     In the Jenkins project we usually use [Eclipse Adoptium](https://adoptium.net/) or [OpenJDK](https://openjdk.java.net/), but you can use other JDKs as well.
+   * Apache Maven 3.8.1 or above. You can [download Maven here].
+     In the Jenkins project we usually use the most recent Maven release.
+   * Any IDE which supports importing Maven projects.
+   * Install [NodeJS](https://nodejs.org/en/). **Note:** only needed to work on the frontend assets found in the `war` module.
+     * Frontend tasks are run using [yarn](https://yarnpkg.com/lang/en/). Run `npm install -g yarn` to install it.
 4. Set up your development environment as described in [Preparing for Plugin Development]
 
 If you want to contribute to Jenkins, or just learn about the project,
