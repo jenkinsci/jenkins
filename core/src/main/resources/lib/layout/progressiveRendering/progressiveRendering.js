@@ -53,7 +53,7 @@ function progressivelyRender(handler, callback, statusId) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-  let holder = document.querySelectorAll('.progressive-rendering-information-holder').forEach(function (holder) {
+ document.querySelectorAll('.progressive-rendering-information-holder').forEach(function (holder) {
     progressivelyRender(window.proxy, window[holder.getAttribute('data-callback')], holder.getAttribute('data-id'));
   });
 });
