@@ -62,7 +62,6 @@ import java.util.TreeMap;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.tools.ant.BuildException;
 import org.kohsuke.accmod.Restricted;
@@ -109,7 +108,7 @@ public final class RunIdMigrator {
         }
         idToNumber = new TreeMap<>();
         try {
-            for (String line : FileUtils.readLines(f)) {
+            for (String line : Files.readAllLines(Util.fileToPath(f), StandardCharsets.UTF_8)) {
                 int i = line.indexOf(' ');
                 idToNumber.put(line.substring(0, i), Integer.parseInt(line.substring(i + 1)));
             }
@@ -255,7 +254,7 @@ public final class RunIdMigrator {
                     LOGGER.log(WARNING, "found no build.xml in {0}", name);
                     continue;
                 }
-                String xml = FileUtils.readFileToString(buildXml, StandardCharsets.UTF_8);
+                String xml = Files.readString(Util.fileToPath(buildXml), StandardCharsets.UTF_8);
                 Matcher m = NUMBER_ELT.matcher(xml);
                 if (!m.find()) {
                     LOGGER.log(WARNING, "could not find <number> in {0}/build.xml", name);
@@ -266,7 +265,7 @@ public final class RunIdMigrator {
                 xml = m.replaceFirst("  <id>" + name + "</id>" + nl + "  <timestamp>" + timestamp + "</timestamp>" + nl);
                 File newKid = new File(dir, Integer.toString(number));
                 move(kid, newKid);
-                FileUtils.writeStringToFile(new File(newKid, "build.xml"), xml, StandardCharsets.UTF_8);
+                Files.writeString(Util.fileToPath(newKid).resolve("build.xml"), xml, StandardCharsets.UTF_8);
                 LOGGER.log(FINE, "fully processed {0} → {1}", new Object[] {name, number});
                 idToNumber.put(name, number);
             } catch (Exception x) {
@@ -387,7 +386,7 @@ public final class RunIdMigrator {
                 System.err.println(buildXml + " did not exist");
                 continue;
             }
-            String xml = FileUtils.readFileToString(buildXml, StandardCharsets.UTF_8);
+            String xml = Files.readString(Util.fileToPath(buildXml), StandardCharsets.UTF_8);
             Matcher m = TIMESTAMP_ELT.matcher(xml);
             if (!m.find()) {
                 System.err.println(buildXml + " did not contain <timestamp> as expected");
@@ -405,7 +404,7 @@ public final class RunIdMigrator {
                 // Post-migration build. We give it a new ID based on its timestamp.
                 id = legacyIdFormatter.format(new Date(timestamp));
             }
-            FileUtils.write(buildXml, xml, StandardCharsets.UTF_8);
+            Files.writeString(Util.fileToPath(buildXml), xml, StandardCharsets.UTF_8);
             if (!build.renameTo(new File(builds, id))) {
                 System.err.println(build + " could not be renamed");
             }

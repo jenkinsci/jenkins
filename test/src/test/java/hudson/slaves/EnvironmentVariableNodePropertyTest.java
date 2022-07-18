@@ -10,8 +10,8 @@ import hudson.model.Node;
 import hudson.model.ParametersDefinitionProperty;
 import hudson.model.StringParameterDefinition;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -54,7 +54,7 @@ public class EnvironmentVariableNodePropertyTest {
     @Test
     public void testControllerPropertyOnBuiltInNode() throws Exception {
         j.jenkins.getGlobalNodeProperties().replaceBy(
-                Collections.singleton(new EnvironmentVariablesNodeProperty(
+                Set.of(new EnvironmentVariablesNodeProperty(
                         new EnvironmentVariablesNodeProperty.Entry("KEY", "globalValue"))));
 
         Map<String, String> envVars = executeBuild(j.jenkins);
@@ -68,7 +68,7 @@ public class EnvironmentVariableNodePropertyTest {
     @Test
     public void testAgentAndControllerPropertyOnAgent() throws Exception {
         j.jenkins.getGlobalNodeProperties().replaceBy(
-                Collections.singleton(new EnvironmentVariablesNodeProperty(
+                Set.of(new EnvironmentVariablesNodeProperty(
                         new EnvironmentVariablesNodeProperty.Entry("KEY", "globalValue"))));
         setVariables(agent, new EnvironmentVariablesNodeProperty.Entry("KEY", "agentValue"));
 
@@ -100,7 +100,7 @@ public class EnvironmentVariableNodePropertyTest {
     @Test
     public void testVariableResolving() throws Exception {
         j.jenkins.getGlobalNodeProperties().replaceBy(
-                Collections.singleton(new EnvironmentVariablesNodeProperty(
+                Set.of(new EnvironmentVariablesNodeProperty(
                         new EnvironmentVariablesNodeProperty.Entry("KEY1", "value"), new EnvironmentVariablesNodeProperty.Entry("KEY2", "$KEY1"))));
         Map<String, String> envVars = executeBuild(j.jenkins);
         assertEquals("value", envVars.get("KEY1"));
@@ -110,7 +110,7 @@ public class EnvironmentVariableNodePropertyTest {
     @Test
     public void testFormRoundTripForController() throws Exception {
         j.jenkins.getGlobalNodeProperties().replaceBy(
-                Collections.singleton(new EnvironmentVariablesNodeProperty(
+                Set.of(new EnvironmentVariablesNodeProperty(
                         new EnvironmentVariablesNodeProperty.Entry("KEY", "value"))));
 
         WebClient webClient = j.createWebClient();
@@ -153,7 +153,7 @@ public class EnvironmentVariableNodePropertyTest {
 
     private void setVariables(Node node, EnvironmentVariablesNodeProperty.Entry... entries) throws IOException {
         node.getNodeProperties().replaceBy(
-                Collections.singleton(new EnvironmentVariablesNodeProperty(
+                Set.of(new EnvironmentVariablesNodeProperty(
                         entries)));
 
     }

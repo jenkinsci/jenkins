@@ -1421,7 +1421,7 @@ function rowvgStartEachRow(recursive,f) {
     });
 
     Behaviour.specify("DIV.behavior-loading", "div-behavior-loading", ++p, function(e) {
-        e.style.display = 'none';
+        e.classList.add("behavior-loading--hidden");
     });
 
     Behaviour.specify(".button-with-dropdown", "-button-with-dropdown", ++p, function (e) {
@@ -2212,7 +2212,7 @@ function buildFormTree(form) {
 var toggleCheckboxes = function(toggle) {
     var inputs = document.getElementsByTagName("input");
     for(var i=0; i<inputs.length; i++) {
-        if(inputs[i].type === "checkbox") {
+        if(inputs[i].type === "checkbox" && !inputs[i].disabled) {
             inputs[i].checked = toggle;
         }
     }

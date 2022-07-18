@@ -25,18 +25,30 @@
 package jenkins;
 
 import hudson.remoting.Which;
+import java.util.Map;
 import jenkins.model.Jenkins;
 import junit.framework.Test;
 import junit.framework.TestCase;
+import junit.framework.TestSuite;
 import org.jvnet.hudson.test.JellyTestSuiteBuilder;
+import org.jvnet.hudson.test.PluginAutomaticTestBuilder;
+import org.jvnet.hudson.test.PropertiesTestSuite;
 
 /**
- * Runs Jelly checks on core.
+ * Runs checks on Jelly files and properties files in core.
  *
  * @author Kohsuke Kawaguchi
+ * @see PluginAutomaticTestBuilder
  */
-public class CoreJellyTest extends TestCase {
+public class CoreAutomaticTestBuilder extends TestCase {
+
+    /**
+     * @see PluginAutomaticTestBuilder#build(Map)
+     */
     public static Test suite() throws Exception {
-        return JellyTestSuiteBuilder.build(Which.jarFile(Jenkins.class), true);
+        TestSuite suite = new TestSuite();
+        suite.addTest(JellyTestSuiteBuilder.build(Which.jarFile(Jenkins.class), true)); // also initializes the version
+        suite.addTest(new PropertiesTestSuite(Which.jarFile(Jenkins.class)));
+        return suite;
     }
 }

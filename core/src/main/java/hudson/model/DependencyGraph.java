@@ -100,10 +100,10 @@ public class DependencyGraph implements Comparator<AbstractProject> {
     /**
      *
      *
-     * See https://en.wikipedia.org/wiki/Tarjan's_strongly_connected_components_algorithm
+     * See <a href="https://en.wikipedia.org/wiki/Tarjan%27s_strongly_connected_components_algorithm">Tarjan's strongly connected components algorithm</a>
      */
     private void topologicalDagSort() {
-        DirectedGraph<AbstractProject> g = new DirectedGraph<AbstractProject>() {
+        DirectedGraph<AbstractProject> g = new DirectedGraph<>() {
             @Override
             protected Collection<AbstractProject> nodes() {
                 final Set<AbstractProject> nodes = new HashSet<>();
@@ -342,7 +342,7 @@ public class DependencyGraph implements Comparator<AbstractProject> {
         return Collections.unmodifiableMap(m);
     }
 
-    private static final Comparator<DependencyGroup> NAME_COMPARATOR = new Comparator<DependencyGroup>() {
+    private static final Comparator<DependencyGroup> NAME_COMPARATOR = new Comparator<>() {
         @Override
         public int compare(DependencyGroup lhs, DependencyGroup rhs) {
             int cmp = lhs.getUpstreamProject().getName().compareTo(rhs.getUpstreamProject().getName());

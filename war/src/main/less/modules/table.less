@@ -85,6 +85,7 @@
         & > td:first-of-type {
           border-top-left-radius: var(--table-border-radius);
         }
+
         & > td:last-of-type {
           border-top-right-radius: var(--table-border-radius);
         }
@@ -95,6 +96,7 @@
         & > td:first-of-type {
           border-bottom-left-radius: var(--table-border-radius);
         }
+
         & > td:last-of-type {
           border-bottom-right-radius: var(--table-border-radius);
         }
@@ -182,6 +184,7 @@
 
   &__button, .sortheader, &__link {
     .item();
+
     align-items: center;
     justify-content: center;
     appearance: none;
@@ -198,8 +201,7 @@
     line-height: 1 !important;
     transition: var(--standard-transition);
 
-    &::before,
-    &::after {
+    &::before, &::after {
       top: -7px;
       left: -10px;
       bottom: -7px;
@@ -237,12 +239,12 @@
       }
     }
 
-    &:active,
-    &:focus {
+    &:active, &:focus {
       &::before {
         background: currentColor;
         border-radius: 6px;
       }
+
       &::after {
         box-shadow: 0 0 0 5px currentColor;
         opacity: 0.025;

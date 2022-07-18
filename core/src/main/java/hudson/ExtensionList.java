@@ -169,7 +169,7 @@ public class ExtensionList<T> extends AbstractList<T> implements OnMaster {
     @Override
     public @NonNull Iterator<T> iterator() {
         // we need to intercept mutation, so for now don't allow Iterator.remove
-        return new AdaptedIterator<ExtensionComponent<T>, T>(Iterators.readOnly(ensureLoaded().iterator())) {
+        return new AdaptedIterator<>(Iterators.readOnly(ensureLoaded().iterator())) {
             @Override
             protected T adapt(ExtensionComponent<T> item) {
                 return item.getInstance();
@@ -198,7 +198,7 @@ public class ExtensionList<T> extends AbstractList<T> implements OnMaster {
      * Gets the read-only view of this {@link ExtensionList} where components are reversed.
      */
     public List<T> reverseView() {
-        return new AbstractList<T>() {
+        return new AbstractList<>() {
             @Override
             public T get(int index) {
                 return ExtensionList.this.get(size() - index - 1);

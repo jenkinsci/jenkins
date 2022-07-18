@@ -1,6 +1,5 @@
 package jenkins.install;
 
-import static org.apache.commons.io.FileUtils.readFileToString;
 import static org.apache.commons.lang.StringUtils.defaultIfBlank;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
@@ -10,6 +9,7 @@ import hudson.BulkChange;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.ProxyConfiguration;
+import hudson.Util;
 import hudson.model.DownloadService;
 import hudson.model.PageDecorator;
 import hudson.model.UpdateCenter;
@@ -32,6 +32,10 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -59,7 +63,6 @@ import jenkins.util.SystemProperties;
 import jenkins.util.UrlHelper;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
@@ -229,15 +232,22 @@ public class SetupWizard extends PageDecorator {
             String plainText;
             if (sysProp.startsWith("@")) {
                 // no need for path traversal check as it's coming from the instance creator only
-                File apiTokenFile = new File(sysProp.substring(1));
-                if (!apiTokenFile.exists()) {
+                String apiTokenStr = sysProp.substring(1);
+                Path apiTokenFile;
+                try {
+                    apiTokenFile = Paths.get(apiTokenStr);
+                } catch (InvalidPathException e) {
+                    LOGGER.log(Level.WARNING, "The API Token cannot be retrieved from an invalid path: {0}", apiTokenStr);
+                    return;
+                }
+                if (!Files.exists(apiTokenFile)) {
                     LOGGER.log(Level.WARNING, "The API Token cannot be retrieved from a non-existing file: {0}", apiTokenFile);
                     return;
                 }
 
                 try {
-                    plainText = FileUtils.readFileToString(apiTokenFile, StandardCharsets.UTF_8);
-                    LOGGER.log(Level.INFO, "API Token generated using contents of file: {0}", apiTokenFile.getAbsolutePath());
+                    plainText = Files.readString(apiTokenFile, StandardCharsets.UTF_8);
+                    LOGGER.log(Level.INFO, "API Token generated using contents of file: {0}", apiTokenFile.toAbsolutePath());
                 } catch (IOException e) {
                     LOGGER.log(Level.WARNING, String.format("The API Token cannot be retrieved from the file: %s", apiTokenFile), e);
                     return;
@@ -450,7 +460,7 @@ public class SetupWizard extends PageDecorator {
     }
 
     /*package*/ void setCurrentLevel(VersionNumber v) throws IOException {
-        FileUtils.writeStringToFile(getUpdateStateFile(), v.toString(), StandardCharsets.UTF_8);
+        Files.writeString(Util.fileToPath(getUpdateStateFile()), v.toString(), StandardCharsets.UTF_8);
     }
 
     /**
@@ -474,7 +484,7 @@ public class SetupWizard extends PageDecorator {
         File state = getUpdateStateFile();
         if (state.exists()) {
             try {
-                from = new VersionNumber(defaultIfBlank(readFileToString(state), "1.0").trim());
+                from = new VersionNumber(defaultIfBlank(Files.readString(Util.fileToPath(state), StandardCharsets.UTF_8), "1.0").trim());
             } catch (IOException ex) {
                 LOGGER.log(Level.SEVERE, "Cannot read the current version file", ex);
                 return null;

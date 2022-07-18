@@ -41,7 +41,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -73,7 +72,7 @@ public class FingerprintCleanupThreadTest {
         configureLocalTestStorage(new TestFingerprint(true));
         FingerprintCleanupThread cleanupThread = new FingerprintCleanupThread();
         cleanupThread.execute(testTaskListener);
-        String logOutput = testTaskListener.outputStream.toString(Charset.defaultCharset().name());
+        String logOutput = testTaskListener.outputStream.toString(Charset.defaultCharset());
         assertFalse("Should not have logged unimportant, excessive message.", logOutput.contains("possibly trimming"));
     }
 
@@ -84,7 +83,7 @@ public class FingerprintCleanupThreadTest {
         configureLocalTestStorage(new TestFingerprint(false));
         FingerprintCleanupThread cleanupThread = new FingerprintCleanupThread();
         cleanupThread.execute(testTaskListener);
-        String logOutput = testTaskListener.outputStream.toString(Charset.defaultCharset().name());
+        String logOutput = testTaskListener.outputStream.toString(Charset.defaultCharset());
         assertFalse("Should have deleted obsolete file.", fpFile.toFile().exists());
     }
 
@@ -101,7 +100,7 @@ public class FingerprintCleanupThreadTest {
         configureLocalTestStorage(new TestFingerprint());
         FingerprintCleanupThread cleanupThread = new FingerprintCleanupThread();
         cleanupThread.execute(testTaskListener);
-        String logOutput = testTaskListener.outputStream.toString(Charset.defaultCharset().name());
+        String logOutput = testTaskListener.outputStream.toString(Charset.defaultCharset());
         assertTrue("Should have done nothing.", logOutput.startsWith("Cleaned up 0 records"));
     }
 
@@ -116,7 +115,7 @@ public class FingerprintCleanupThreadTest {
         configureLocalTestStorage(fp);
         FingerprintCleanupThread cleanupThread = new FingerprintCleanupThread();
         cleanupThread.execute(testTaskListener);
-        String logOutput = testTaskListener.outputStream.toString(Charset.defaultCharset().name());
+        String logOutput = testTaskListener.outputStream.toString(Charset.defaultCharset());
         assertThat(logOutput, containsString("blocked deletion of"));
     }
 
@@ -222,15 +221,7 @@ public class FingerprintCleanupThreadTest {
     private static class TestTaskListener implements TaskListener {
 
         private final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        private final PrintStream logStream;
-
-        {
-            try {
-                logStream = new PrintStream(outputStream, false, Charset.defaultCharset().name());
-            } catch (UnsupportedEncodingException e) {
-                throw new AssertionError(e);
-            }
-        }
+        private final PrintStream logStream = new PrintStream(outputStream, false, Charset.defaultCharset());
 
         @NonNull
         @Override

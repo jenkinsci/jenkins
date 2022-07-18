@@ -247,7 +247,7 @@ public class LogRecorderManager extends AbstractModelObject implements ModelObje
             entryType = level;
         }
 
-        RSS.forwardToRss("Jenkins:log (" + entryType + " entries)", "", logs, new FeedAdapter<LogRecord>() {
+        RSS.forwardToRss("Jenkins:log (" + entryType + " entries)", "", logs, new FeedAdapter<>() {
             @Override
             public String getEntryTitle(LogRecord entry) {
                 return entry.getMessage();

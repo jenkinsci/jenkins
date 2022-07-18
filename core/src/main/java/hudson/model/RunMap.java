@@ -101,7 +101,7 @@ public final class RunMap<R extends Run<?, R>> extends AbstractLazyLoadRunMap<R>
      */
     @Override
     public Iterator<R> iterator() {
-        return new Iterator<R>() {
+        return new Iterator<>() {
             R last = null;
             R next = newestBuild();
 
