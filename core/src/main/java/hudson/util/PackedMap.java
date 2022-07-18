@@ -76,11 +76,11 @@ public final class PackedMap<K, V> extends AbstractMap<K, V> {
         }
     }
 
-    private final Set<Entry<K, V>> entrySet = new AbstractSet<Entry<K, V>>() {
+    private final Set<Entry<K, V>> entrySet = new AbstractSet<>() {
         @NonNull
         @Override
         public Iterator<Entry<K, V>> iterator() {
-            return new Iterator<Entry<K, V>>() {
+            return new Iterator<>() {
                 int index = 0;
                 @Override
                 public boolean hasNext() {
@@ -92,7 +92,7 @@ public final class PackedMap<K, V> extends AbstractMap<K, V> {
                 public Entry<K, V> next() {
                     final K k = (K) kvpairs[index++];
                     final V v = (V) kvpairs[index++];
-                    return new Entry<K, V>() {
+                    return new Entry<>() {
                         @Override
                         public K getKey() {
                             return k;
@@ -149,7 +149,7 @@ public final class PackedMap<K, V> extends AbstractMap<K, V> {
     @Override
     @SuppressWarnings("unchecked")
     public Collection<V> values() {
-        return new AbstractList<V>() {
+        return new AbstractList<>() {
             @Override
             public V get(int index) {
                 return (V) kvpairs[index * 2];

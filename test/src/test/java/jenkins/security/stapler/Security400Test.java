@@ -53,6 +53,7 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -338,7 +339,7 @@ public class Security400Test {
 
             QueueTaskFuture<FreeStyleBuild> futureBuild = p.scheduleBuild2(0);
             FreeStyleBuild build = futureBuild.waitForStart();
-            String runExtId = URLEncoder.encode(build.getExternalizableId(), "UTF-8");
+            String runExtId = URLEncoder.encode(build.getExternalizableId(), StandardCharsets.UTF_8);
 
             WebRequest request = new WebRequest(new URL(j.getURL() + "computers/0/executors/0/stopBuild?runExtId=" + runExtId), HttpMethod.POST);
             Page page = wc.getPage(request);

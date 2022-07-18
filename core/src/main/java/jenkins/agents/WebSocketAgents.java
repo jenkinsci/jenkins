@@ -27,6 +27,7 @@ package jenkins.agents;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.ExtensionList;
+import hudson.Util;
 import hudson.model.Computer;
 import hudson.model.InvisibleAction;
 import hudson.model.UnprotectedRootAction;
@@ -89,16 +90,24 @@ public final class WebSocketAgents extends InvisibleAction implements Unprotecte
         state.setRemoteEndpointDescription(req.getRemoteAddr());
         state.fireBeforeProperties();
         LOGGER.fine(() -> "connecting " + agent);
-        // TODO or just pass all request headers?
         Map<String, String> properties = new HashMap<>();
         properties.put(JnlpConnectionState.CLIENT_NAME_KEY, agent);
         properties.put(JnlpConnectionState.SECRET_KEY, secret);
+        String unsafeCookie = req.getHeader(Engine.WEBSOCKET_COOKIE_HEADER);
+        String cookie;
+        if (unsafeCookie != null) {
+            // This will blow up if the client sent us a malformed cookie.
+            cookie = Util.toHexString(Util.fromHexString(unsafeCookie));
+        } else {
+            cookie = JnlpAgentReceiver.generateCookie();
+        }
+        properties.put(JnlpConnectionState.COOKIE_KEY, cookie);
         state.fireAfterProperties(Collections.unmodifiableMap(properties));
         Capability remoteCapability = Capability.fromASCII(remoteCapabilityStr);
         LOGGER.fine(() -> "received " + remoteCapability);
         rsp.setHeader(Capability.KEY, new Capability().toASCII());
         rsp.setHeader(Engine.REMOTING_MINIMUM_VERSION_HEADER, RemotingVersionInfo.getMinimumSupportedVersion().toString());
-        rsp.setHeader(JnlpConnectionState.COOKIE_KEY, JnlpAgentReceiver.generateCookie()); // TODO figure out what this is for, if anything
+        rsp.setHeader(Engine.WEBSOCKET_COOKIE_HEADER, cookie);
         return WebSockets.upgrade(new Session(state, agent, remoteCapability));
     }
 

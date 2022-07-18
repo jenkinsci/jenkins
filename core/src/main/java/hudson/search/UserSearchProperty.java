@@ -1,5 +1,6 @@
 package hudson.search;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.model.User;
 import hudson.model.UserProperty;
@@ -37,6 +38,7 @@ public class UserSearchProperty extends hudson.model.UserProperty {
 
     @Extension @Symbol("search")
     public static final class DescriptorImpl extends UserPropertyDescriptor {
+        @NonNull
         @Override
         public String getDisplayName() {
             return Messages.UserSearchProperty_DisplayName();

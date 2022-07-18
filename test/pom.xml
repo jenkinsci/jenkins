@@ -42,6 +42,11 @@ THE SOFTWARE.
     <mavenDebug>false</mavenDebug>
     <!-- Filled in by jacoco-maven-plugin -->
     <jacocoSurefireArgs />
+    <!--
+      Filled in by maven-hpi-plugin from the MANIFEST.MF entry in jenkins.war, but we provide a default value for the benefit of IDEs.
+      Make sure to keep the directives in core/pom.xml and war/pom.xml in sync with these.
+    -->
+    <jenkins.addOpens>--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.desktop/com.sun.beans.introspect=ALL-UNNAMED</jenkins.addOpens>
     <!-- Filled in by maven-hpi-plugin with the path to org-netbeans-insane-hook.jar extracted from jenkins-test-harness -->
     <jenkins.insaneHook />
   </properties>
@@ -70,7 +75,7 @@ THE SOFTWARE.
         <!-- requireUpperBoundDeps via matrix-project and junit -->
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>script-security</artifactId>
-        <version>1158.v7c1b_73a_69a_08</version>
+        <version>1175.v4b_d517d6db_f0</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -85,7 +90,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>1741.va_38664ed66c3</version>
+      <version>1812.v6d4e97d91fd8</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -137,6 +142,12 @@ THE SOFTWARE.
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>org.jenkins-ci.modules</groupId>
+      <artifactId>instance-identity</artifactId>
+      <version>116.vf8f487400980</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>antisamy-markup-formatter</artifactId>
       <version>2.7</version>
@@ -145,13 +156,13 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>cloudbees-folder</artifactId>
-      <version>6.714.v79e858ef76a_2</version>
+      <version>6.729.v2b_9d1a_74d673</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>junit</artifactId>
-      <version>1.63</version>
+      <version>1119.1121.vc43d0fc45561</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -163,26 +174,19 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>matrix-auth</artifactId>
-      <version>3.1.2</version>
+      <version>3.1.5</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>matrix-project</artifactId>
-      <version>771.v574584b_39e60</version>
+      <version>785.v06b_7f47b_c631</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>structs</artifactId>
       <version>318.va_f3ccb_729b_71</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <!-- for testing JNLP launch. -->
-      <groupId>org.jvnet.hudson</groupId>
-      <artifactId>netx</artifactId>
-      <version>0.5-hudson-2</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -201,6 +205,13 @@ THE SOFTWARE.
         <!-- Version specified in grandparent POM -->
         <extensions>true</extensions>
         <executions>
+          <execution>
+            <id>prepare-test-plugins</id>
+            <goals>
+              <goal>resolve-test-dependencies</goal>
+            </goals>
+            <phase>test-compile</phase>
+          </execution>
           <execution>
             <id>test-runtime</id>
             <goals>
@@ -240,7 +251,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>org.jenkins-ci.main</groupId>
                   <artifactId>remoting</artifactId>
-                  <version>3.13</version>
+                  <version>4.2</version>
                   <type>jar</type>
                   <outputDirectory>${project.build.outputDirectory}/old-remoting</outputDirectory>
                   <destFileName>remoting-unsupported.jar</destFileName>
@@ -331,7 +342,6 @@ THE SOFTWARE.
         </property>
       </activation>
       <properties>
-        <maven.test.redirectTestOutputToFile>true</maven.test.redirectTestOutputToFile>
         <surefire.rerunFailingTestsCount>4</surefire.rerunFailingTestsCount>
         <surefire.skipAfterFailureCount>100</surefire.skipAfterFailureCount>
       </properties>
@@ -367,31 +377,6 @@ THE SOFTWARE.
           </plugin>
         </plugins>
       </build>
-    </profile>
-    <profile>
-      <id>jdk-8-and-below</id>
-      <activation>
-        <jdk>(,1.8]</jdk>
-      </activation>
-      <properties>
-        <!--
-          Filled in by maven-hpi-plugin from the MANIFEST.MF entry in jenkins.war, but we provide a default value for the benefit of IDEs.
-        -->
-        <jenkins.addOpens />
-      </properties>
-    </profile>
-    <profile>
-      <id>jdk-9-and-above</id>
-      <activation>
-        <jdk>[9,)</jdk>
-      </activation>
-      <properties>
-        <!--
-          Filled in by maven-hpi-plugin from the MANIFEST.MF entry in jenkins.war, but we provide a default value for the benefit of IDEs.
-          Make sure to keep the directives in core/pom.xml and war/pom.xml in sync with these.
-        -->
-        <jenkins.addOpens>--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED</jenkins.addOpens>
-      </properties>
     </profile>
   </profiles>
 </project>

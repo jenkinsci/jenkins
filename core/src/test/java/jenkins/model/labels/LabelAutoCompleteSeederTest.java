@@ -26,7 +26,6 @@ package jenkins.model.labels;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -42,19 +41,19 @@ public class LabelAutoCompleteSeederTest {
     static Stream<Arguments> localParameters()
     {
         return Stream.of(
-                Arguments.of("", Collections.singletonList("")),
-                Arguments.of("\"", Collections.singletonList("")),
-                Arguments.of("\"\"", Collections.singletonList("")),
-                Arguments.of("freebsd", Collections.singletonList("freebsd")),
-                Arguments.of(" freebsd", Collections.singletonList("freebsd")),
-                Arguments.of("freebsd ", Collections.singletonList("")),
-                Arguments.of("freebsd 6", Collections.singletonList("6")),
-                Arguments.of("\"freebsd", Collections.singletonList("freebsd")),
-                Arguments.of("\"freebsd ", Collections.singletonList("freebsd ")),
-                Arguments.of("\"freebsd\"", Collections.singletonList("")),
-                Arguments.of("\"freebsd\" ", Collections.singletonList("")),
-                Arguments.of("\"freebsd 6", Collections.singletonList("freebsd 6")),
-                Arguments.of("\"freebsd 6\"", Collections.singletonList(""))
+                Arguments.of("", List.of("")),
+                Arguments.of("\"", List.of("")),
+                Arguments.of("\"\"", List.of("")),
+                Arguments.of("freebsd", List.of("freebsd")),
+                Arguments.of(" freebsd", List.of("freebsd")),
+                Arguments.of("freebsd ", List.of("")),
+                Arguments.of("freebsd 6", List.of("6")),
+                Arguments.of("\"freebsd", List.of("freebsd")),
+                Arguments.of("\"freebsd ", List.of("freebsd ")),
+                Arguments.of("\"freebsd\"", List.of("")),
+                Arguments.of("\"freebsd\" ", List.of("")),
+                Arguments.of("\"freebsd 6", List.of("freebsd 6")),
+                Arguments.of("\"freebsd 6\"", List.of(""))
         );
     }
 

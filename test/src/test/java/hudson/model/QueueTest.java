@@ -57,6 +57,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlFormUtil;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.xml.XmlPage;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionList;
 import hudson.Functions;
 import hudson.Launcher;
@@ -104,6 +105,7 @@ import java.io.UncheckedIOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -132,7 +134,6 @@ import org.acegisecurity.acls.sid.PrincipalSid;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
-import org.apache.commons.io.FileUtils;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.servlet.ServletHandler;
@@ -177,7 +178,7 @@ public class QueueTest {
         assertNotNull(testProject.scheduleBuild2(0, new UserIdCause()));
         q.save();
 
-        System.out.println(FileUtils.readFileToString(new File(r.jenkins.getRootDir(), "queue.xml"), StandardCharsets.UTF_8));
+        System.out.println(Files.readString(r.jenkins.getRootDir().toPath().resolve("queue.xml"), StandardCharsets.UTF_8));
 
         assertEquals(1, q.getItems().length);
         q.clear();
@@ -225,7 +226,7 @@ public class QueueTest {
         assertNotNull(testProject.scheduleBuild2(0, new UserIdCause()));
         q.save();
 
-        System.out.println(FileUtils.readFileToString(new File(r.jenkins.getRootDir(), "queue.xml")));
+        System.out.println(Files.readString(r.jenkins.getRootDir().toPath().resolve("queue.xml"), StandardCharsets.UTF_8));
 
         assertEquals(1, q.getItems().length);
         q.clear();
@@ -445,7 +446,7 @@ public class QueueTest {
         r.jenkins.setNumExecutors(0);
         r.jenkins.setNodes(Collections.emptyList());
         MatrixProject m = r.jenkins.createProject(MatrixProject.class, "p");
-        m.setAxes(new AxisList(new LabelAxis("label", Collections.singletonList("remote"))));
+        m.setAxes(new AxisList(new LabelAxis("label", List.of("remote"))));
         MatrixBuild build;
         try {
             build = m.scheduleBuild2(0).get(60, TimeUnit.SECONDS);
@@ -700,7 +701,7 @@ public class QueueTest {
      */
     @Test public void accessControl() throws Exception {
         FreeStyleProject p = r.createFreeStyleProject();
-        QueueItemAuthenticatorConfiguration.get().getAuthenticators().add(new MockQueueItemAuthenticator(Collections.singletonMap(p.getFullName(), alice)));
+        QueueItemAuthenticatorConfiguration.get().getAuthenticators().add(new MockQueueItemAuthenticator(Map.of(p.getFullName(), alice)));
         p.getBuildersList().add(new TestBuilder() {
             @Override
             public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) {
@@ -727,7 +728,7 @@ public class QueueTest {
         DumbSlave s2 = r.createSlave();
 
         FreeStyleProject p = r.createFreeStyleProject();
-        QueueItemAuthenticatorConfiguration.get().getAuthenticators().add(new MockQueueItemAuthenticator(Collections.singletonMap(p.getFullName(), alice)));
+        QueueItemAuthenticatorConfiguration.get().getAuthenticators().add(new MockQueueItemAuthenticator(Map.of(p.getFullName(), alice)));
         p.getBuildersList().add(new TestBuilder() {
             @Override
             public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) {
@@ -885,8 +886,8 @@ public class QueueTest {
         projectC.getBuildersList().add(new SleepBuilder(10000));
         projectC.setBlockBuildWhenUpstreamBuilding(true);
 
-        projectA.getPublishersList().add(new BuildTrigger(Collections.singletonList(projectB), Result.SUCCESS));
-        projectB.getPublishersList().add(new BuildTrigger(Collections.singletonList(projectC), Result.SUCCESS));
+        projectA.getPublishersList().add(new BuildTrigger(List.of(projectB), Result.SUCCESS));
+        projectB.getPublishersList().add(new BuildTrigger(List.of(projectC), Result.SUCCESS));
 
         final QueueTaskFuture<FreeStyleBuild> taskA = projectA.scheduleBuild2(0, new TimerTriggerCause());
         Thread.sleep(1000);
@@ -1031,8 +1032,8 @@ public class QueueTest {
         FreeStyleProject project = r.createFreeStyleProject("project");
 
         Map<Permission, Set<String>> permissions = new HashMap<>();
-        permissions.put(Item.READ, Collections.singleton("bob"));
-        permissions.put(Item.DISCOVER, Collections.singleton("james"));
+        permissions.put(Item.READ, Set.of("bob"));
+        permissions.put(Item.DISCOVER, Set.of("james"));
         AuthorizationMatrixProperty prop1 = new AuthorizationMatrixProperty(permissions);
         project.addProperty(prop1);
         project.getBuildersList().add(new SleepBuilder(10));
@@ -1316,6 +1317,7 @@ public class QueueTest {
                 return new BrokenAffinityKeyProject(parent, name);
             }
 
+            @NonNull
             @Override
             public String getDisplayName() {
                 return "Broken Affinity Key Project";

@@ -24,10 +24,11 @@
 
 package hudson.security;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.model.Descriptor;
 import java.util.Collection;
-import java.util.Collections;
+import java.util.Set;
 import jenkins.model.Jenkins;
 import org.acegisecurity.acls.sid.GrantedAuthoritySid;
 import org.jenkinsci.Symbol;
@@ -54,11 +55,12 @@ public final class LegacyAuthorizationStrategy extends AuthorizationStrategy {
 
     @Override
     public Collection<String> getGroups() {
-        return Collections.singleton("admin");
+        return Set.of("admin");
     }
 
     @Extension @Symbol("legacy")
     public static final class DescriptorImpl extends Descriptor<AuthorizationStrategy> {
+        @NonNull
         @Override
         public String getDisplayName() {
             return Messages.LegacyAuthorizationStrategy_DisplayName();

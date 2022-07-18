@@ -127,6 +127,7 @@ public class BooleanParameterDefinition extends SimpleParameterDefinition {
     // to avoid picking the Java reserved word "boolean" as the primary identifier
     @Extension @Symbol("booleanParam")
     public static class DescriptorImpl extends ParameterDescriptor {
+        @NonNull
         @Override
         public String getDisplayName() {
             return Messages.BooleanParameterDefinition_DisplayName();

@@ -24,14 +24,27 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:f="/lib/form">
-    <div class="alert alert-info">
-        <j:invokeStatic var="currentRuntimeJavaVersion" className="jenkins.util.java.JavaUtils" method="getCurrentRuntimeJavaVersion" />
+    <j:invokeStatic var="currentRuntimeJavaVersion" className="jenkins.util.java.JavaUtils" method="getCurrentRuntimeJavaVersion" />
+    <div class="alert alert-danger">
+        <h2>${%Recommended_Java_Version_Heading(currentRuntimeJavaVersion)}</h2>
         ${%Recommended_Java_Version(currentRuntimeJavaVersion)}
-        <form method="post" action="${rootURL}/${it.url}/act" name="${it.id}">
+      <style>
+        .manage-messages .alert #JavaVersionRecommendationAdminMonitor span,
+        .manage-messages .alert #JavaVersionRecommendationAdminMonitor,
+        .am-container .am-message .alert #JavaVersionRecommendationAdminMonitor span {
+          margin-left: 0 !important;
+        }
+      </style>
+        <form id="JavaVersionRecommendationAdminMonitor" method="post" action="${rootURL}/${it.url}/act" name="${it.id}" style="float: initial">
+          <div>
             <f:submit name="yes" value="${%More Info}"/>
             <l:isAdmin>
-                <f:submit name="no" value="${%Dismiss}"/>
+              <input type="submit"
+                     name="no"
+                     value="${%Dismiss}"
+                     class="submit-button" />
             </l:isAdmin>
+          </div>
         </form>
     </div>
 </j:jelly>

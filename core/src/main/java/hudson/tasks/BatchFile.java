@@ -25,6 +25,7 @@
 package hudson.tasks;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.Util;
@@ -113,6 +114,7 @@ public class BatchFile extends CommandInterpreter {
             return "/help/project-config/batch.html";
         }
 
+        @NonNull
         @Override
         public String getDisplayName() {
             return Messages.BatchFile_DisplayName();

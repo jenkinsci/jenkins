@@ -59,13 +59,23 @@ THE SOFTWARE.
           </div>
         </div>
 
+        <j:set var="cache" value="${it.createCache()}"/>
+
         <table id="plugins" class="jenkins-table sortable">
           <thead>
             <tr>
               <l:isAdmin>
-                <th initialSortDir="${isUpdates?null:'up'}"
-                    tooltip="${%Check to install the plugin}"
-                    width="32">${%Install}
+                <th data-sort-disable="true">
+                  <l:rowSelectionController>
+                    <j:if test="${app.updateCenter.hasIncompatibleUpdates(cache)}">
+                      <button tooltip="${%CompatibleTooltip}" type="button" data-select="compatible" class="jenkins-button jenkins-button--transparent">
+                        <div class="jenkins-table__checkbox-dropdown__icon">
+                          <l:icon src="symbol-compatible" />
+                        </div>
+                        ${%Compatible}
+                      </button>
+                    </j:if>
+                  </l:rowSelectionController>
                 </th>
               </l:isAdmin>
               <th initialSortDir="${isUpdates?'down':null}">${%Name}</th>
@@ -78,7 +88,6 @@ THE SOFTWARE.
           <j:set var="unavailableList" value="${app.updateCenter.pluginsWithUnavailableUpdates}"/>
           <j:choose>
             <j:when test="${!empty(list) or (isUpdates and !empty(unavailableList))}">
-              <j:set var="cache" value="${it.createCache()}"/>
               <j:if test="${filtered == 'true'}">
                 <tr id="hidden-by-default-instructions">
                   <td colspan="5" align="center" id="hidden-by-default-instructions-td"
@@ -96,11 +105,15 @@ THE SOFTWARE.
                   name="${p.displayName}"
                   data-plugin-id="${h.xmlEscape(p.name)}">
                   <l:isAdmin>
-                    <td align="center" data="${isUpdates ? null : it.unscientific(p.popularity)}">
-                      <input type="checkbox" name="plugin.${p.name}.${p.sourceId}"
-                             checked="${installedOk ? 'checked' : null}"
-                             disabled="${installedOk ? 'disabled' : null}"
-                             data-compat-warning="${!p.isCompatible(cache)}"/>
+                    <td class="jenkins-table__cell--checkbox">
+                      <span class="jenkins-checkbox">
+                        <input type="checkbox" name="plugin.${p.name}.${p.sourceId}"
+                               id="plugin.${p.name}.${p.sourceId}"
+                               checked="${installedOk ? 'checked' : null}"
+                               disabled="${installedOk ? 'disabled' : null}"
+                               data-compat-warning="${!p.isCompatible(cache)}"/>
+                        <label for="plugin.${p.name}.${p.sourceId}" />
+                      </span>
                     </td>
                   </l:isAdmin>
                   <td class="details"
@@ -152,9 +165,6 @@ THE SOFTWARE.
                     <j:if test="${p.isForNewerHudson()}">
                       <div class="alert alert-danger">${%coreWarning(p.requiredCore)}</div>
                     </j:if>
-                    <j:if test="${p.isForNewerJava()}">
-                      <div class="alert alert-danger">${%javaWarning(p.minimumJavaVersion)}</div>
-                    </j:if>
                     <j:if test="${p.fixesSecurityVulnerabilities()}">
                       <div class="alert alert-warning">
                         ${%Applying this update will address security vulnerabilities in the currently installed version.}
@@ -179,11 +189,6 @@ THE SOFTWARE.
                     <j:if test="${p.isNeededDependenciesForNewerJenkins(cache)}">
                       <div class="alert alert-danger">
                         ${%depCoreWarning(p.getNeededDependenciesRequiredCore().toString())}
-                      </div>
-                    </j:if>
-                    <j:if test="${p.isNeededDependenciesForNewerJava()}">
-                      <div class="alert alert-danger">
-                        ${%depJavaWarning(p.getNeededDependenciesMinimumJavaVersion().toString())}
                       </div>
                     </j:if>
                     <j:if test="${p.hasWarnings()}">
@@ -211,7 +216,7 @@ THE SOFTWARE.
                     </j:if>
                     <j:if test="${it.hasLatestVersionNewerThanOffered(p)}">
                       <div class="alert alert-info">
-                        ${%newerVersionExists(p.latest)}
+                        ${%newerVersionExists(p.latest, p.wiki)}
                       </div>
                     </j:if>
                   </td>

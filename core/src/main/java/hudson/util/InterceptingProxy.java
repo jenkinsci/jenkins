@@ -1,5 +1,6 @@
 package hudson.util;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -10,6 +11,7 @@ import java.lang.reflect.Proxy;
  *
  * @author Kohsuke Kawaguchi
  */
+@SuppressFBWarnings(value = "THROWS_METHOD_THROWS_CLAUSE_THROWABLE", justification = "TODO needs triage")
 public abstract class InterceptingProxy {
     /**
      * Intercepts every method call.

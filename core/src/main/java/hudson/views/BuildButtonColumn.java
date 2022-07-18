@@ -24,6 +24,7 @@
 
 package hudson.views;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.model.AbstractItem;
 import org.jenkinsci.Symbol;
@@ -43,6 +44,7 @@ public class BuildButtonColumn extends ListViewColumn {
 
     @Extension(ordinal = DEFAULT_COLUMNS_ORDINAL_ACTIONS_START - 1) @Symbol("buildButton")
     public static class DescriptorImpl extends ListViewColumnDescriptor {
+        @NonNull
         @Override
         public String getDisplayName() {
             return Messages.BuildButtonColumn_DisplayName();

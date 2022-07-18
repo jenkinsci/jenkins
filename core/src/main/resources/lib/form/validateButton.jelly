@@ -51,16 +51,18 @@ THE SOFTWARE.
     </st:attribute>
   </st:documentation>
   <f:entry>
-    <div style="float:right">
+    <div class="jenkins-validate-button__container">
+      <div style="display:none;">
+        <l:spinner text="${attrs.progress}" />
+      </div>
       <input type="button" value="${title}" class="yui-button validate-button ${attrs.clazz} Behaviour-validateButton"
              data-validate-button-descriptor-url="${descriptor.descriptorFullUrl}"
              data-validate-button-method="${method}"
              data-validate-button-with="${with}" />
+      <div class="jenkins-validate-button__container__status">
+        <!-- Used to display the form validation status -->
+      </div>
     </div>
-    <div style="display:none;">
-      <l:spinner text="${attrs.progress}" />
-    </div>
-    <div><!-- this is where the error message goes --></div>
     <st:adjunct includes="lib.form.validateButton.adjunct"/>
   </f:entry>
 </j:jelly>

@@ -136,7 +136,7 @@ public class CLIAction implements UnprotectedRootAction, StaplerProxy {
                 }
             }
 
-            private void doClose() {
+            private void doClose() throws IOException {
                 close();
             }
 
@@ -277,8 +277,8 @@ public class CLIAction implements UnprotectedRootAction, StaplerProxy {
                     wait();
                 }
             }
-            PrintStream stdout = new PrintStream(streamStdout(), false, encoding.name());
-            PrintStream stderr = new PrintStream(streamStderr(), true, encoding.name());
+            PrintStream stdout = new PrintStream(streamStdout(), false, encoding);
+            PrintStream stderr = new PrintStream(streamStderr(), true, encoding);
             if (args.isEmpty()) {
                 stderr.println("Connection closed before arguments received");
                 sendExit(2);
