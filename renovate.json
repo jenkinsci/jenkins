@@ -1,0 +1,23 @@
+{
+  "extends": [
+    "config:base",
+    ":disableDependencyDashboard"
+  ],
+  "enabledManagers": [
+    "npm"
+  ],
+  "ignoreDeps": [
+    "handlebars",
+    "jest"
+  ],
+  "packageRules": [
+    {
+      "matchDatasources": ["npm"],
+      "addLabels": ["javascript"],
+      "stabilityDays": 3,
+      "reviewers": ["team:sig-ux"]
+    }
+  ],
+  "labels": ["dependencies"],
+  "rebaseWhen": "conflicted"
+}
