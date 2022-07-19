@@ -29,7 +29,7 @@
     "copy-webpack-plugin": "^11.0.0",
     "css-loader": "^6.7.1",
     "css-minimizer-webpack-plugin": "^4.0.0",
-    "eslint": "^8.19.0",
+    "eslint": "^8.20.0",
     "handlebars": "^3.0.8",
     "handlebars-loader": "^1.7.2",
     "jest": "^26.0.1",
