@@ -16,7 +16,7 @@
     "start": "yarn dev --watch",
     "test": "jest --ci --config=jest.config.js",
     "lint:js": "eslint . --ext js -f checkstyle -o target/eslint-warnings.xml",
-    "lint:css": "stylelint src/main/less",
+    "lint:css": "stylelint src/main/less --custom-formatter node_modules/stylelint-checkstyle-reporter/index.js -o target/stylelint-warnings.xml",
     "lint:css:fix": "stylelint src/main/less --fix",
     "lint": "yarn lint:js && yarn lint:css"
   },
@@ -57,6 +57,7 @@
     "lodash": "^4.17.21",
     "postcss-less": "^6.0.0",
     "sortablejs": "^1.15.0",
+    "stylelint-checkstyle-reporter": "^0.2.0",
     "window-handle": "^1.0.0"
   },
   "browserslist": [
