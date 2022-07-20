@@ -18,6 +18,7 @@ window.addEventListener("load", () => {
  * @param {string} keyboardShortcut The shortcut for translation
  */
 function translateKeyboardShortcutForOS(keyboardShortcut) {
-  const isMac = navigator.platform.toUpperCase().indexOf("MAC") >= 0
-  return keyboardShortcut.replace("CMD", isMac ? "CMD" : "CTRL")
+  const useCmdKey = navigator.platform.toUpperCase().indexOf("MAC") >= 0 ||
+    navigator.platform.toUpperCase() === "IPHONE"
+  return keyboardShortcut.replace("CMD", useCmdKey ? "CMD" : "CTRL")
 }
