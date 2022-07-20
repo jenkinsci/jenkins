@@ -21,15 +21,15 @@
     "lint": "yarn lint:js && yarn lint:css"
   },
   "devDependencies": {
-    "@babel/cli": "^7.18.6",
-    "@babel/core": "^7.18.6",
+    "@babel/cli": "^7.18.9",
+    "@babel/core": "^7.18.9",
     "@jenkins-cd/js-test": "^1.2.3",
     "autoprefixer": "^10.4.7",
     "clean-webpack-plugin": "^4.0.0",
     "copy-webpack-plugin": "^11.0.0",
     "css-loader": "^6.7.1",
     "css-minimizer-webpack-plugin": "^4.0.0",
-    "eslint": "^8.19.0",
+    "eslint": "^8.20.0",
     "handlebars": "^3.0.8",
     "handlebars-loader": "^1.7.2",
     "jest": "^26.0.1",
@@ -49,7 +49,7 @@
     "webpack-remove-empty-scripts": "^0.8.1"
   },
   "dependencies": {
-    "@babel/preset-env": "^7.18.6",
+    "@babel/preset-env": "^7.18.9",
     "babel-loader": "^8.2.5",
     "bootstrap": "3.4.1",
     "jenkins-js-modules": "^1.5.0",
