@@ -1,0 +1,32 @@
+{
+  "extends": [
+    "config:base",
+    ":disableDependencyDashboard",
+    ":semanticCommitsDisabled"
+  ],
+  "enabledManagers": [
+    "npm"
+  ],
+  "packageRules": [
+    {
+      "matchDatasources": ["npm"],
+      "addLabels": ["javascript"],
+      "stabilityDays": 3,
+      "reviewers": ["team:sig-ux"]
+    },
+    {
+      "matchPackageNames": ["handlebars"],
+      "allowedVersions": "<=3.0.8",
+      "description": "https://issues.jenkins.io/browse/JENKINS-68926",
+      "enabled": false
+    },
+    {
+      "matchPackageNames": ["jest"],
+      "allowedVersions": "<=26.0.1",
+      "description": "https://issues.jenkins.io/browse/JENKINS-68975",
+      "enabled": false
+    }
+  ],
+  "labels": ["dependencies"],
+  "rebaseWhen": "conflicted"
+}
