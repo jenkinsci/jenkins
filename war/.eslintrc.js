@@ -7,7 +7,7 @@ module.exports = {
     // Uses eslint default ruleset
     extends: "eslint:recommended",
     parserOptions: {
-        ecmaVersion: 2018,
+        ecmaVersion: 2020,
         sourceType: "module"
     },
     rules: {
