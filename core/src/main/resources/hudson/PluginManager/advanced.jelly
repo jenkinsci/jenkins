@@ -78,9 +78,13 @@ THE SOFTWARE.
                 <h2 class="jenkins-section__title">${%Update Site}</h2>
                 <f:form method="post" action="siteConfigure" name="siteConfigure">
                     <f:entry title="${%URL}">
-                        <f:textbox name="site"
-                                   value="${app.updateCenter.getSite(app.updateCenter.ID_DEFAULT).url}"/>
+                      <a id="reset-to-default" href="#">${%Reset to default}</a>
+                      <f:textbox name="site"
+                                 id="update-site-url"
+                                 value="${app.updateCenter.getSite(app.updateCenter.ID_DEFAULT).url}"
+                                 checkUrl="'checkUpdateSiteUrl?value='+this.value"/>
                     </f:entry>
+                    <st:adjunct includes="hudson.PluginManager._updateSite"/>
                     <l:isAdmin>
                         <f:block>
                             <f:submit/>
