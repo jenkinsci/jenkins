@@ -86,7 +86,7 @@ public class Jenkins64991Test {
 
         final Page redirectedPage = HtmlFormUtil.submit(loginPage.getFormByName("login"));
         assertTrue(redirectedPage.isHtmlPage());
-        assertEquals(j.getURL() + "manage", redirectedPage.getUrl().toExternalForm());
+        assertEquals(j.getURL() + "manage/", redirectedPage.getUrl().toExternalForm());
         assertThat(redirectedPage.getWebResponse().getContentAsString(), containsStringIgnoringCase(Messages.GlobalSecurityConfiguration_DisplayName()));
     }
 

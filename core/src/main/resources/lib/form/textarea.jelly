@@ -102,8 +102,6 @@ THE SOFTWARE.
     <j:if test="${customizedFields != null and attrs.field != null and value != default}">
       <j:mute>${customizedFields.add(name)}</j:mute>
     </j:if>
-    <!-- resize handle -->
-    <div class="textarea-handle"/>
   </f:possibleReadOnlyField>
   <j:if test="${attrs.previewEndpoint!=null and !readOnlyMode}">
     <div class="textarea-preview-container">

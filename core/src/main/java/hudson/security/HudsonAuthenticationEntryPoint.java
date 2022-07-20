@@ -82,7 +82,7 @@ public class HudsonAuthenticationEntryPoint implements AuthenticationEntryPoint 
             String uriFrom = req.getRequestURI();
             if (req.getQueryString() != null && !req.getQueryString().isEmpty()) uriFrom += "?" + req.getQueryString();
             String loginForm = req.getContextPath() + loginFormUrl;
-            loginForm = MessageFormat.format(loginForm, URLEncoder.encode(uriFrom, "UTF-8"));
+            loginForm = MessageFormat.format(loginForm, URLEncoder.encode(uriFrom, StandardCharsets.UTF_8));
             req.setAttribute("loginForm", loginForm);
 
             rsp.setStatus(SC_FORBIDDEN);

@@ -90,6 +90,7 @@ public class TriggerTest {
                 return item instanceof BuildableItem;
             }
 
+            @NonNull
             @Override
             public String getDisplayName() {
                 return "Bad";

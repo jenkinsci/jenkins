@@ -25,11 +25,9 @@
 package hudson.model;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 
 import hudson.PluginWrapper;
 import hudson.model.UpdateSite.Data;
@@ -40,6 +38,8 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -52,7 +52,6 @@ import javax.servlet.http.HttpServletResponse;
 import jenkins.model.Jenkins;
 import jenkins.security.UpdateSiteWarningsConfiguration;
 import jenkins.security.UpdateSiteWarningsMonitor;
-import org.apache.commons.io.FileUtils;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
@@ -61,7 +60,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 
 public class UpdateSiteTest {
@@ -75,7 +73,7 @@ public class UpdateSiteTest {
     private String getResource(String resourceName) throws IOException {
         try {
             URL url = UpdateSiteTest.class.getResource(resourceName);
-            return url != null ? FileUtils.readFileToString(new File(url.toURI())) : null;
+            return url != null ? Files.readString(Paths.get(url.toURI()), StandardCharsets.UTF_8) : null;
         } catch (URISyntaxException e) {
             return null;
         }
@@ -172,36 +170,6 @@ public class UpdateSiteTest {
         overrideUpdateSite(site);
         assertEquals("number of warnings", 7, site.getData().getWarnings().size());
         assertNotEquals("plugin data is present", Collections.emptyMap(), site.getData().plugins);
-    }
-
-    @Issue("JENKINS-56477")
-    @Test
-    public void isPluginUpdateCompatible() throws Exception {
-        UpdateSite site = getUpdateSite("/plugins/minJavaVersion-update-center.json");
-        final UpdateSite.Plugin tasksPlugin = site.getPlugin("tasks");
-        assertNotNull(tasksPlugin);
-        assertFalse(tasksPlugin.isNeededDependenciesForNewerJava());
-        assertFalse(tasksPlugin.isForNewerJava());
-        assertTrue(tasksPlugin.isCompatible());
-    }
-
-    @Issue("JENKINS-55048")
-    @Test public void minimumJavaVersion() throws Exception {
-        UpdateSite site = getUpdateSite("/plugins/minJavaVersion-update-center.json");
-
-        final UpdateSite.Plugin tasksPlugin = site.getPlugin("tasks");
-        assertNotNull(tasksPlugin);
-        assertFalse(tasksPlugin.isNeededDependenciesForNewerJava());
-        assertFalse(tasksPlugin.isForNewerJava());
-
-        final UpdateSite.Plugin pluginCompiledForTooRecentJava = site.getPlugin("java-too-recent");
-        assertFalse(pluginCompiledForTooRecentJava.isNeededDependenciesForNewerJava());
-        assertTrue(pluginCompiledForTooRecentJava.isForNewerJava());
-
-        final UpdateSite.Plugin pluginDependingOnPluginCompiledForTooRecentJava = site.getPlugin("depending-on-too-recent-java");
-        assertTrue(pluginDependingOnPluginCompiledForTooRecentJava.isNeededDependenciesForNewerJava());
-        assertFalse(pluginDependingOnPluginCompiledForTooRecentJava.isForNewerJava());
-
     }
 
     @Test public void getAvailables() throws Exception {

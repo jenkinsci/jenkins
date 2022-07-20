@@ -33,6 +33,7 @@ import static org.junit.Assert.assertTrue;
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebRequest;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.cli.CLICommandInvoker;
 import hudson.diagnosis.OldDataMonitor;
 import hudson.model.AbstractDescribableImpl;
@@ -48,8 +49,8 @@ import java.io.ByteArrayInputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.Charset;
-import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.junit.Rule;
@@ -74,7 +75,7 @@ public class RobustReflectionConverterTest {
         assertTrue("There should be no triggers", p.getTriggers().isEmpty());
         OldDataMonitor odm = (OldDataMonitor) r.jenkins.getAdministrativeMonitor("OldData");
         Map<Saveable, OldDataMonitor.VersionRange> data = odm.getData();
-        assertEquals(Collections.singleton(p), data.keySet());
+        assertEquals(Set.of(p), data.keySet());
         String text = data.values().iterator().next().extra;
         assertTrue(text, text.contains("hudson.triggers.TimerTrigger.readResolve"));
     }
@@ -115,6 +116,7 @@ public class RobustReflectionConverterTest {
 
         @TestExtension
         public static class DescriptorImpl extends Descriptor<AcceptOnlySpecificKeyword> {
+            @NonNull
             @Override
             public String getDisplayName() {
                 return "AcceptOnlySpecificKeyword";
@@ -151,6 +153,7 @@ public class RobustReflectionConverterTest {
 
         @TestExtension
         public static class DescriptorImpl extends JobPropertyDescriptor {
+            @NonNull
             @Override
             public String getDisplayName() {
                 return "KeywordProperty";

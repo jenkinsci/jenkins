@@ -24,6 +24,7 @@
 
 package hudson.views;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -35,6 +36,7 @@ public class WeatherColumn extends ListViewColumn {
 
     @Extension(ordinal = DEFAULT_COLUMNS_ORDINAL_ICON_START - 2) @Symbol("weather")
     public static class DescriptorImpl extends ListViewColumnDescriptor {
+        @NonNull
         @Override
         public String getDisplayName() {
             return Messages.WeatherColumn_DisplayName();

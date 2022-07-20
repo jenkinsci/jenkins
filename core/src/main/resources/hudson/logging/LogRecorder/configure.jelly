@@ -35,13 +35,10 @@ THE SOFTWARE.
   <st:include page="sidepanel.jelly" />
 
   <l:main-panel>
-    <p>
-      ${%Enter the name of the logger you want to enable}.
-    </p>
-    <div class="alert alert-warning">
-      ${%fine_warning}
-    </div>
     <f:form method="post" name="config" action="configSubmit">
+      <div class="alert alert-info jenkins-form-item">
+        ${%fine_warning}
+      </div>
       <j:set var="instance" value="${it}" />
       <f:entry title="${%Name}" help="/help/LogRecorder/name.html">
         <f:textbox field="name"/>
@@ -52,29 +49,21 @@ THE SOFTWARE.
                help="/help/LogRecorder/logger.html">
         <j:set var="instance" value="${null}" />
         <f:repeatable var="instance" items="${it.loggers}" name="loggers">
-          <table width="100%">
-            <tr>
-              <th style="white-space:nowrap;">
-                ${%Logger}
-              </th>
-              <td width="60%">
-                <f:textbox field="name" autoCompleteUrl="autoCompleteLoggerName" />
-              </td>
-              <th style="white-space:nowrap;">
-                ${%Log level}
-              </th>
-              <td>
-                <select name="level">
+          <div>
+            <f:entry title="${%Logger}">
+              <f:textbox  field="name" checkUrl="checkName" checkDependsOn="level" autoCompleteUrl="autoCompleteLoggerName" />
+            </f:entry>
+            <f:entry title="${%Log level}">
+              <div class="jenkins-select">
+                <select class="jenkins-select__input" name="level">
                   <j:forEach var="lv" items="${it.LEVELS}">
                     <f:option value="${lv.name}" selected="${instance.level==lv}">${lv.localizedName}</f:option>
                   </j:forEach>
                 </select>
-              </td>
-              <td>
-                <f:repeatableDeleteButton/>
-              </td>
-            </tr>
-          </table>
+              </div>
+            </f:entry>
+            <f:repeatableDeleteButton/>
+          </div>
         </f:repeatable>
       </f:entry>
 

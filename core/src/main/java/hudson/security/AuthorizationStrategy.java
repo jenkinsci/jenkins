@@ -234,6 +234,7 @@ public abstract class AuthorizationStrategy extends AbstractDescribableImpl<Auth
 
         @Extension @Symbol("unsecured")
         public static final class DescriptorImpl extends Descriptor<AuthorizationStrategy> {
+            @NonNull
             @Override
             public String getDisplayName() {
                 return Messages.AuthorizationStrategy_DisplayName();

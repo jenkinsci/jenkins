@@ -44,12 +44,12 @@ import hudson.util.FormValidation;
 import hudson.util.HttpResponses;
 import hudson.util.TextFile;
 import hudson.util.VersionNumber;
-import io.jenkins.lib.versionnumber.JavaSpecificationVersion;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -80,7 +80,6 @@ import jenkins.security.UpdateSiteWarningsMonitor;
 import jenkins.util.JSONSignatureValidator;
 import jenkins.util.PluginLabelUtil;
 import jenkins.util.SystemProperties;
-import jenkins.util.java.JavaUtils;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
@@ -106,6 +105,7 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
  * @since 1.333
  */
 @ExportedBean
+@SuppressFBWarnings(value = "THROWS_METHOD_THROWS_CLAUSE_BASIC_EXCEPTION", justification = "TODO needs triage")
 public class UpdateSite {
     /**
      * What's the time stamp of data file?
@@ -216,7 +216,7 @@ public class UpdateSite {
 
     @Restricted(NoExternalUse.class)
     public @NonNull FormValidation updateDirectlyNow(boolean signatureCheck) throws IOException {
-        return updateData(DownloadService.loadJSON(new URL(getUrl() + "?id=" + URLEncoder.encode(getId(), "UTF-8") + "&version=" + URLEncoder.encode(Jenkins.VERSION, "UTF-8"))), signatureCheck);
+        return updateData(DownloadService.loadJSON(new URL(getUrl() + "?id=" + URLEncoder.encode(getId(), StandardCharsets.UTF_8) + "&version=" + URLEncoder.encode(Jenkins.VERSION, StandardCharsets.UTF_8))), signatureCheck);
     }
 
     private FormValidation updateData(String json, boolean signatureCheck)
@@ -531,7 +531,7 @@ public class UpdateSite {
      * Is this the legacy default update center site?
      * @deprecated
      *      Will be removed, currently returns always false.
-     * @since TODO
+     * @since 2.343
      */
     @Deprecated
     @Restricted(NoExternalUse.class)
@@ -1025,11 +1025,7 @@ public class UpdateSite {
             switch (this.type) {
                 case CORE:
                     VersionNumber current = Jenkins.getVersion();
-
-                    if (!isRelevantToVersion(current)) {
-                        return false;
-                    }
-                    return true;
+                    return isRelevantToVersion(current);
                 case PLUGIN:
 
                     // check whether plugin is installed
@@ -1142,13 +1138,6 @@ public class UpdateSite {
         @Exported
         public final String requiredCore;
         /**
-         * Version of Java this plugin requires to run.
-         *
-         * @since 2.158
-         */
-        @Exported
-        public final String minimumJavaVersion;
-        /**
          * Categories for grouping plugins, taken from labels assigned to wiki page.
          * Can be {@code null} if the update center does not return categories.
          */
@@ -1211,7 +1200,6 @@ public class UpdateSite {
             this.title = get(o, "title");
             this.excerpt = get(o, "excerpt");
             this.compatibleSinceVersion = Util.intern(get(o, "compatibleSinceVersion"));
-            this.minimumJavaVersion = Util.intern(get(o, "minimumJavaVersion"));
             this.latest = get(o, "latest");
             this.requiredCore = Util.intern(get(o, "requiredCore"));
             final String releaseTimestamp = get(o, "releaseTimestamp");
@@ -1224,7 +1212,7 @@ public class UpdateSite {
                 }
             }
             final String popularityFromJson = get(o, "popularity");
-            Double popularity = 0.0;
+            double popularity = 0.0;
             if (popularityFromJson != null) {
                 try {
                     popularity = Double.parseDouble(popularityFromJson);
@@ -1301,9 +1289,9 @@ public class UpdateSite {
 
         @Restricted(NoExternalUse.class) // table.jelly
         public boolean isCompatible(PluginManager.MetadataCache cache) {
-            return isCompatibleWithInstalledVersion() && !isForNewerHudson() &&  !isForNewerJava() &&
+            return isCompatibleWithInstalledVersion() && !isForNewerHudson() &&
                     isNeededDependenciesCompatibleWithInstalledVersion(cache) &&
-                    !isNeededDependenciesForNewerJenkins(cache) && !isNeededDependenciesForNewerJava();
+                    !isNeededDependenciesForNewerJenkins(cache);
         }
 
         /**
@@ -1387,21 +1375,6 @@ public class UpdateSite {
             }
         }
 
-        /**
-         * Returns true iff the plugin declares a minimum Java version and it's newer than what the Jenkins master is running on.
-         * @since 2.158
-         */
-        public boolean isForNewerJava() {
-            try {
-                final JavaSpecificationVersion currentRuntimeJavaVersion = JavaUtils.getCurrentJavaRuntimeVersionNumber();
-                return minimumJavaVersion != null && new JavaSpecificationVersion(minimumJavaVersion).isNewerThan(
-                        currentRuntimeJavaVersion);
-            } catch (NumberFormatException nfe) {
-                logBadMinJavaVersion();
-                return false; // treat this as undeclared minimum Java version
-            }
-        }
-
         public VersionNumber getNeededDependenciesRequiredCore() {
             VersionNumber versionNumber = null;
             try {
@@ -1414,36 +1387,6 @@ public class UpdateSite {
                 if (versionNumber == null || v.isNewerThan(versionNumber)) versionNumber = v;
             }
             return versionNumber;
-        }
-
-        /**
-         * Returns the minimum Java version needed to use the plugin and all its dependencies.
-         * @since 2.158
-         * @return the minimum Java version needed to use the plugin and all its dependencies, or null if unspecified.
-         */
-        @CheckForNull
-        public VersionNumber getNeededDependenciesMinimumJavaVersion() {
-            VersionNumber versionNumber = null;
-            try {
-                versionNumber = minimumJavaVersion == null ? null : new VersionNumber(minimumJavaVersion);
-            } catch (NumberFormatException nfe) {
-                logBadMinJavaVersion();
-            }
-            for (Plugin p : getNeededDependencies()) {
-                VersionNumber v = p.getNeededDependenciesMinimumJavaVersion();
-                if (v == null) {
-                    continue;
-                }
-                if (versionNumber == null || v.isNewerThan(versionNumber)) {
-                    versionNumber = v;
-                }
-            }
-            return versionNumber;
-        }
-
-        private void logBadMinJavaVersion() {
-            LOGGER.log(Level.WARNING, "minimumJavaVersion was specified for plugin {0} but unparseable (received {1})",
-                       new String[]{this.name, this.minimumJavaVersion});
         }
 
         public boolean isNeededDependenciesForNewerJenkins() {
@@ -1460,20 +1403,6 @@ public class UpdateSite {
                 }
                 return false;
             });
-        }
-
-        /**
-         * Returns true iff any of the plugin dependencies require a newer Java than Jenkins is running on.
-         *
-         * @since 2.158
-         */
-        public boolean isNeededDependenciesForNewerJava() {
-            for (Plugin p : getNeededDependencies()) {
-                if (p.isForNewerJava() || p.isNeededDependenciesForNewerJava()) {
-                    return true;
-                }
-            }
-            return false;
         }
 
         /**

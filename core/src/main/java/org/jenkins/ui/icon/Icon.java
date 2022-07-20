@@ -68,7 +68,7 @@ public class Icon {
     /**
      * Creates a {@link IconType#CORE core} icon.
      *
-     * @param classSpec The icon class names.
+     * @param classSpec The icon class names. Expected to start with `icon-`.
      * @param style     The icon style.
      */
     public Icon(String classSpec, String style) {
@@ -78,7 +78,7 @@ public class Icon {
     /**
      * Creates a {@link IconType#CORE core} icon.
      *
-     * @param classSpec The icon class names.
+     * @param classSpec The icon class names. Expected to start with `icon-`.
      * @param url       The icon image url.
      * @param style     The icon style.
      */
@@ -96,7 +96,7 @@ public class Icon {
     /**
      * Icon instance.
      *
-     * @param classSpec The icon class specification.
+     * @param classSpec The icon class specification. Expected to start with `icon-`.
      * @param url       The icon image url.
      * @param style     The icon style.
      * @param iconType  The icon type.
@@ -108,7 +108,7 @@ public class Icon {
     /**
      * Creates an icon.
      *
-     * @param classSpec The icon class names.
+     * @param classSpec The icon class names. Expected to start with `icon-`.
      * @param url       The icon image url.
      * @param style     The icon style.
      * @param iconFormat the {@link IconFormat}.

@@ -171,6 +171,7 @@ import org.springframework.security.core.Authentication;
  * @see QueueTaskDispatcher
  */
 @ExportedBean
+@SuppressFBWarnings(value = "THROWS_METHOD_THROWS_CLAUSE_BASIC_EXCEPTION", justification = "TODO needs triage")
 public class Queue extends ResourceController implements Saveable {
 
     /**
@@ -324,7 +325,7 @@ public class Queue extends ResourceController implements Saveable {
 
     private transient volatile QueueSorter sorter;
 
-    private final transient AtmostOneTaskExecutor<Void> maintainerThread = new AtmostOneTaskExecutor<>(new Callable<Void>() {
+    private final transient AtmostOneTaskExecutor<Void> maintainerThread = new AtmostOneTaskExecutor<>(new Callable<>() {
         @Override
         public Void call() throws Exception {
             maintain();
@@ -1986,7 +1987,7 @@ public class Queue extends ResourceController implements Saveable {
          * @since 1.377
          */
         default Collection<? extends SubTask> getSubTasks() {
-            return Collections.singleton(this);
+            return Set.of(this);
         }
 
         /**

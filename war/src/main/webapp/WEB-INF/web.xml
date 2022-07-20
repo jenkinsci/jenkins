@@ -223,14 +223,6 @@ THE SOFTWARE.
     </form-login-config>
   </login-config>
 
-
-  <!-- if specified, this value is used as the Hudson home directory -->
-  <env-entry>
-    <env-entry-name>HUDSON_HOME</env-entry-name>
-    <env-entry-type>java.lang.String</env-entry-type>
-    <env-entry-value></env-entry-value>
-  </env-entry>
-
   <!-- configure additional extension-content-type mappings -->
   <mime-mapping>
     <extension>xml</extension>

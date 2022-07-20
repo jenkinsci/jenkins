@@ -27,13 +27,7 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:f="/lib/form" xmlns:l="/lib/layout" xmlns:i="jelly:fmt" xmlns:d="jelly:define">
     <d:taglib uri="local">
         <d:tag name="revokeIcon">
-            <svg class="token-revoke-icon" width="22" height="24" viewBox="0 0 22 24" xmlns="http://www.w3.org/2000/svg">
-                <title>${attrs.title}</title>
-                <g fill="none" fill-rule="evenodd">
-                    <path d="M9.753 15.32H3.07v2.042h6.65v3.064H2.559A2.556 2.556 0 0 1 0 17.872V2.553A2.556 2.556 0 0 1 2.558 0H15.86a2.556 2.556 0 0 1 2.559 2.553v9.192h-4.605a4.091 4.091 0 0 0-4.061 3.574zM3.07 5.105h5.628V3.064H3.07v2.042zm0 4.085h11.256V7.15H3.07V9.19zm0 4.086h6.14v-2.043H3.07v2.043z" fill="#788594"/>
-                    <path d="M14.326 13.787h5.116A2.556 2.556 0 0 1 22 16.34v5.107A2.556 2.556 0 0 1 19.442 24h-5.116a2.556 2.556 0 0 1-2.559-2.553V16.34a2.556 2.556 0 0 1 2.559-2.553zm4.545 2.043l-1.987 1.984-1.988-1.984-1.082 1.08 1.988 1.984-1.988 1.983 1.082 1.08 1.988-1.983 1.987 1.983 1.082-1.08-1.987-1.983 1.987-1.984-1.082-1.08z" fill="#B33127"/>
-                </g>
-            </svg>
+          <l:icon src="symbol-trash" />
         </d:tag>
     </d:taglib>
     <st:adjunct includes="jenkins.security.ApiTokenProperty.resources"/>
@@ -115,7 +109,8 @@ THE SOFTWARE.
                                     </j:otherwise>
                                 </j:choose>
 
-                                <a href="#" onclick="return revokeToken(this)" class="token-revoke"
+                                <a href="#" onclick="return revokeToken(this)"
+                                   class="jenkins-button jenkins-button--transparent jenkins-button--destructive token-revoke"
                                    data-message-if-legacy-revoked="${%RevokedToken}"
                                    data-confirm="${%ConfirmRevokeSingle}"
                                    data-target-url="${descriptor.descriptorFullUrl}/revoke">
@@ -130,20 +125,23 @@ THE SOFTWARE.
                             <f:textbox name="tokenName" clazz="token-name" placeholder="${%Default name}"/>
                             <st:nbsp /><!-- without this non-breakable space, double click on the div will put the focus on the input -->
                             <span class="new-token-value"><!--will be filled by javascript--></span>
-                            <span class="yui-button token-save">
-                                <button type="button" tabindex="0" data-target-url="${descriptor.descriptorFullUrl}/generateNewToken" onclick="saveApiToken(this)">
+                            <span class="token-save">
+                                <button class="jenkins-button" type="button" tabindex="0" data-target-url="${descriptor.descriptorFullUrl}/generateNewToken" onclick="saveApiToken(this)">
                                     ${%GenerateNewToken}
                                 </button>
                             </span>
                             <span class="token-cancel">
                                 <f:repeatableDeleteButton value="${%Cancel}" />
                             </span>
-                            <a href="#" onclick="return revokeToken(this)" class="token-revoke hidden-button"
-                               data-confirm="${%ConfirmRevokeSingle}"
-                               data-target-url="${descriptor.descriptorFullUrl}/revoke">
+                            <div class="controls-container">
+                              <l:copyButton text="" clazz="jenkins-hidden" tooltip="${%CopyToken}" iconOnly="true" />
+                              <a href="#" onclick="return revokeToken(this)"
+                                 class="jenkins-button jenkins-button--transparent jenkins-button--destructive token-revoke hidden-button"
+                                 data-confirm="${%ConfirmRevokeSingle}"
+                                 data-target-url="${descriptor.descriptorFullUrl}/revoke">
                                 <local:revokeIcon title="${%RevokeToken}" />
-                            </a>
-                            <l:copyButton message="${%Copied}" text="" clazz="invisible" tooltip="${%CopyToken}" />
+                              </a>
+                            </div>
                             <div class="error token-error-message"><!-- filled in case of error --></div>
                             <div class="warning display-after-generation">${%TokenDisplayedOnce}</div>
                         </div>

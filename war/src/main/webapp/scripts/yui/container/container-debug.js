@@ -7246,7 +7246,7 @@ version: 2.9.0
     * </p>
     * <p>
     * Built-in functionality for buttons with event handlers is included. 
-    * If the optional YUI Button dependancy is included on the page, the buttons
+    * If the optional YUI Button dependency is included on the page, the buttons
     * created will be instances of YAHOO.widget.Button, otherwise regular HTML buttons
     * will be created.
     * </p>

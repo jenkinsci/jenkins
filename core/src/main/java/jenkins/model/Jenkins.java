@@ -115,6 +115,7 @@ import hudson.model.Label;
 import hudson.model.ListView;
 import hudson.model.LoadBalancer;
 import hudson.model.LoadStatistics;
+import hudson.model.ManageJenkinsAction;
 import hudson.model.ManagementLink;
 import hudson.model.Messages;
 import hudson.model.ModifiableViewGroup;
@@ -237,6 +238,7 @@ import java.util.StringTokenizer;
 import java.util.TimerTask;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
@@ -247,7 +249,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -337,6 +338,7 @@ import org.xml.sax.InputSource;
  * @author Kohsuke Kawaguchi
  */
 @ExportedBean
+@SuppressFBWarnings(value = "THROWS_METHOD_THROWS_CLAUSE_BASIC_EXCEPTION", justification = "TODO needs triage")
 public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLevelItemGroup, StaplerProxy, StaplerFallback,
         ModifiableViewGroup, AccessControlled, DescriptorByNameOwner,
         ModelObjectWithContextMenu, ModelObjectWithChildren, OnMaster {
@@ -498,7 +500,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     private volatile List<JDK> jdks = new ArrayList<>();
 
     private transient volatile DependencyGraph dependencyGraph;
-    private final transient AtomicBoolean dependencyGraphDirty = new AtomicBoolean();
+    private transient Future<DependencyGraph> scheduledFutureDependencyGraph;
+    private transient Future<DependencyGraph> calculatingFutureDependencyGraph;
+    private transient Object dependencyGraphLock = new Object();
 
     /**
      * Currently active Views tab bar.
@@ -1484,7 +1488,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      *
      * <p>
      * This form of identifier is weak in that it can be impersonated by others. See
-     * https://github.com/jenkinsci/instance-identity-plugin for more modern form of instance ID
+     * <a href="https://github.com/jenkinsci/instance-identity-plugin">the Instance Identity plugin</a> for more modern form of instance ID
      * that can be challenged and verified.
      *
      * @since 1.498
@@ -3579,6 +3583,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
             final Set<Future<?>> pending = _cleanUpDisconnectComputers(errors);
 
+            _cleanUpCancelDependencyGraphCalculation();
+
             _cleanUpInterruptReloadThread(errors);
 
             _cleanUpShutdownTriggers(errors);
@@ -3929,6 +3935,18 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         }
     }
 
+    private void _cleanUpCancelDependencyGraphCalculation() {
+        synchronized (dependencyGraphLock) {
+            LOGGER.log(Level.FINE, "Canceling internal dependency graph calculation");
+            if (scheduledFutureDependencyGraph != null && !scheduledFutureDependencyGraph.isDone()) {
+                scheduledFutureDependencyGraph.cancel(true);
+            }
+            if (calculatingFutureDependencyGraph != null && !calculatingFutureDependencyGraph.isDone()) {
+                calculatingFutureDependencyGraph.cancel(true);
+            }
+        }
+    }
+
     public Object getDynamic(String token) {
         for (Action a : getActions()) {
             String url = a.getUrlName();
@@ -4145,7 +4163,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             try {
                 r.put(e.getKey(), e.getValue().get(endTime - System.currentTimeMillis(), TimeUnit.MILLISECONDS));
             } catch (Exception x) {
-                r.put(e.getKey(), Collections.singletonMap("Failed to retrieve thread dump", Functions.printThrowable(x)));
+                r.put(e.getKey(), Map.of("Failed to retrieve thread dump", Functions.printThrowable(x)));
             }
         }
         return Collections.unmodifiableSortedMap(new TreeMap<>(r));
@@ -4398,7 +4416,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         for (MenuItem i : menu.items) {
             if (i.url.equals(request.getContextPath() + "/manage")) {
                 // add "Manage Jenkins" subitems
-                i.subMenu = new ContextMenu().from(this, request, response, "manage");
+                i.subMenu = new ContextMenu().from(ExtensionList.lookupSingleton(ManageJenkinsAction.class), request, response, "index");
             }
         }
         return menu;
@@ -4899,6 +4917,23 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         return ExtensionList.lookupSingleton(URICheckEncodingMonitor.class).isCheckEnabled();
     }
 
+    public Future<DependencyGraph> getFutureDependencyGraph() {
+        synchronized (dependencyGraphLock) {
+            // Scheduled future will be the most recent one --> Return
+            if (scheduledFutureDependencyGraph != null) {
+                return scheduledFutureDependencyGraph;
+            }
+
+            // Calculating future will be the most recent one --> Return
+            if (calculatingFutureDependencyGraph != null) {
+                return calculatingFutureDependencyGraph;
+            }
+
+            // No scheduled or calculating future --> Already completed dependency graph is the most recent one
+            return CompletableFuture.completedFuture(dependencyGraph);
+        }
+    }
+
     /**
      * Rebuilds the dependency map.
      */
@@ -4908,7 +4943,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         // volatile acts a as a memory barrier here and therefore guarantees
         // that graph is fully build, before it's visible to other threads
         dependencyGraph = graph;
-        dependencyGraphDirty.set(false);
     }
 
     /**
@@ -4921,13 +4955,44 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @since 1.522
      */
     public Future<DependencyGraph> rebuildDependencyGraphAsync() {
-        dependencyGraphDirty.set(true);
-        return Timer.get().schedule(() -> {
-            if (dependencyGraphDirty.get()) {
-                rebuildDependencyGraph();
+        synchronized (dependencyGraphLock) {
+            // Collect calls to this method to avoid unnecessary calculation of the dependency graph
+            if (scheduledFutureDependencyGraph != null) {
+                return scheduledFutureDependencyGraph;
             }
+            // Schedule new calculation
+            return scheduledFutureDependencyGraph = scheduleCalculationOfFutureDependencyGraph(500, TimeUnit.MILLISECONDS);
+        }
+    }
+
+    private Future<DependencyGraph> scheduleCalculationOfFutureDependencyGraph(int delay, TimeUnit unit) {
+        return Timer.get().schedule(() -> {
+            // Wait for the currently running calculation to finish without blocking rebuildDependencyGraphAsync()
+            Future<DependencyGraph> temp = null;
+            synchronized (dependencyGraphLock) {
+                if (calculatingFutureDependencyGraph != null) {
+                    temp = calculatingFutureDependencyGraph;
+                }
+            }
+
+            if (temp != null) {
+                temp.get();
+            }
+
+            synchronized (dependencyGraphLock) {
+                // Scheduled future becomes the currently calculating future
+                calculatingFutureDependencyGraph = scheduledFutureDependencyGraph;
+                scheduledFutureDependencyGraph = null;
+            }
+
+            rebuildDependencyGraph();
+
+            synchronized (dependencyGraphLock) {
+                calculatingFutureDependencyGraph = null;
+            }
+
             return dependencyGraph;
-        }, 500, TimeUnit.MILLISECONDS);
+        }, delay, unit);
     }
 
     public DependencyGraph getDependencyGraph() {
@@ -5480,7 +5545,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      *
      * The default value is true.
      *
-     * For detailed documentation: https://docs.microsoft.com/en-us/troubleshoot/windows-client/shell-experience/file-folder-name-whitespace-characters
+     * For detailed documentation: <a href="https://docs.microsoft.com/en-us/troubleshoot/windows-client/shell-experience/file-folder-name-whitespace-characters">Support for Whitespace characters in File and Folder names for Windows</a>
      * @see #checkGoodName(String)
      */
     @Restricted(NoExternalUse.class)
@@ -5614,7 +5679,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             new AnonymousAuthenticationToken(
                     "anonymous",
                     "anonymous",
-                    Collections.singleton(new SimpleGrantedAuthority("anonymous")));
+                    Set.of(new SimpleGrantedAuthority("anonymous")));
 
     /**
      * @deprecated use {@link #ANONYMOUS2}

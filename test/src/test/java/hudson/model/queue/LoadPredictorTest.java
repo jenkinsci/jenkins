@@ -40,7 +40,6 @@ import hudson.model.Queue.WaitingItem;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -61,7 +60,7 @@ public class LoadPredictorTest {
     public static class LoadPredictorImpl extends LoadPredictor {
         @Override
         public Iterable<FutureLoad> predict(MappingWorksheet plan, Computer computer, long start, long end) {
-            return Collections.singletonList(new FutureLoad(start + 5000, end - (start + 5000), 1));
+            return List.of(new FutureLoad(start + 5000, end - (start + 5000), 1));
         }
     }
 
@@ -77,13 +76,13 @@ public class LoadPredictorTest {
     public void test1() throws Exception {
         Task t = mock(Task.class);
         when(t.getEstimatedDuration()).thenReturn(10000L);
-        when(t.getSubTasks()).thenReturn((Collection) Collections.singletonList(t));
+        when(t.getSubTasks()).thenReturn((Collection) List.of(t));
 
         Computer c = createMockComputer(1);
 
         JobOffer o = createMockOffer(c.getExecutors().get(0));
 
-        MappingWorksheet mw = new MappingWorksheet(wrap(t), Collections.singletonList(o));
+        MappingWorksheet mw = new MappingWorksheet(wrap(t), List.of(o));
 
         // the test load predictor should have pushed down the executor count to 0
         assertTrue(mw.executors.isEmpty());

@@ -138,6 +138,7 @@ public class PasswordParameterDefinition extends SimpleParameterDefinition {
 
     @Extension @Symbol("password")
     public static final class ParameterDescriptorImpl extends ParameterDescriptor {
+        @NonNull
         @Override
         public String getDisplayName() {
             return Messages.PasswordParameterDefinition_DisplayName();

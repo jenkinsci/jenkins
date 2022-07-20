@@ -39,6 +39,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.model.Computer;
 import hudson.remoting.VirtualChannel;
+import hudson.util.FormValidation;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.util.List;
@@ -84,6 +85,34 @@ public class LogRecorderManagerTest {
         FailingHttpStatusCodeException e = assertThrows(FailingHttpStatusCodeException.class, () -> j.submit(form));
         assertThat(e.getStatusCode(), equalTo(HttpURLConnection.HTTP_BAD_REQUEST));
         assertThat(e.getResponse().getContentAsString(), containsString("A logger named \"foo.bar.zot\" does not exist"));
+    }
+
+    @Issue("JENKINS-62472")
+    @Test public void logRecorderCheckName() {
+        LogRecorder testRecorder = new LogRecorder("test");
+        String warning = FormValidation.warning(Messages.LogRecorder_Target_Empty_Warning()).toString();
+        assertEquals(warning, testRecorder.doCheckName("", null).toString());
+        assertEquals(warning, testRecorder.doCheckName("", "illegalArgument").toString());
+        assertEquals(warning, testRecorder.doCheckName("", Level.ALL.getName()).toString());
+        assertEquals(warning, testRecorder.doCheckName("", Level.FINEST.getName()).toString());
+        assertEquals(warning, testRecorder.doCheckName("", Level.FINER.getName()).toString());
+        assertEquals(warning, testRecorder.doCheckName("", Level.FINER.getName()).toString());
+        assertEquals(FormValidation.ok(), testRecorder.doCheckName("a", "illegalArgument"));
+        assertEquals(FormValidation.ok(), testRecorder.doCheckName("a", null));
+        assertEquals(FormValidation.ok(), testRecorder.doCheckName("a", Level.ALL.getName()));
+        assertEquals(FormValidation.ok(), testRecorder.doCheckName("a", Level.FINEST.getName()));
+        assertEquals(FormValidation.ok(), testRecorder.doCheckName("a", Level.FINER.getName()));
+        assertEquals(FormValidation.ok(), testRecorder.doCheckName("a", Level.FINER.getName()));
+        assertEquals(FormValidation.ok(), testRecorder.doCheckName("", Level.CONFIG.getName()));
+        assertEquals(FormValidation.ok(), testRecorder.doCheckName("", Level.INFO.getName()));
+        assertEquals(FormValidation.ok(), testRecorder.doCheckName("", Level.WARNING.getName()));
+        assertEquals(FormValidation.ok(), testRecorder.doCheckName("", Level.SEVERE.getName()));
+        assertEquals(FormValidation.ok(), testRecorder.doCheckName("", Level.OFF.getName()));
+        assertEquals(FormValidation.ok(), testRecorder.doCheckName("a", Level.CONFIG.getName()));
+        assertEquals(FormValidation.ok(), testRecorder.doCheckName("a", Level.INFO.getName()));
+        assertEquals(FormValidation.ok(), testRecorder.doCheckName("a", Level.WARNING.getName()));
+        assertEquals(FormValidation.ok(), testRecorder.doCheckName("a", Level.SEVERE.getName()));
+        assertEquals(FormValidation.ok(), testRecorder.doCheckName("a", Level.OFF.getName()));
     }
 
     @Issue({"JENKINS-18274", "JENKINS-63458"})

@@ -42,6 +42,8 @@ THE SOFTWARE.
     <staplerFork>true</staplerFork>
     <hamcrest.version>2.2</hamcrest.version>
     <xmlunit.version>2.9.0</xmlunit.version>
+    <!-- Filled in by jacoco-maven-plugin -->
+    <jacocoSurefireArgs />
   </properties>
 
   <dependencyManagement>
@@ -327,6 +329,17 @@ THE SOFTWARE.
       <artifactId>version-number</artifactId>
     </dependency>
     <dependency>
+      <groupId>org.jenkins-ci.main</groupId>
+      <artifactId>websocket-spi</artifactId>
+      <version>${project.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>javax.servlet</groupId>
+          <artifactId>javax.servlet-api</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
       <groupId>org.jfree</groupId>
       <artifactId>jfreechart</artifactId>
     </dependency>
@@ -373,10 +386,8 @@ THE SOFTWARE.
       <artifactId>j-interop</artifactId>
     </dependency>
     <dependency>
-      <!-- not in BOM, optional -->
       <groupId>org.kohsuke.metainf-services</groupId>
       <artifactId>metainf-services</artifactId>
-      <version>1.9</version>
       <optional>true</optional>
     </dependency>
     <dependency>
@@ -511,18 +522,6 @@ THE SOFTWARE.
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter-api</artifactId>
-      <version>${junit.jupiter.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter-engine</artifactId>
-      <version>${junit.jupiter.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
       <groupId>org.junit.vintage</groupId>
       <artifactId>junit-vintage-engine</artifactId>
       <version>${junit.jupiter.version}</version>
@@ -594,19 +593,6 @@ THE SOFTWARE.
               <goal>generate-taglib-interface</goal>
               <goal>record-core-location</goal>
             </goals>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.jvnet.hudson.tools</groupId>
-        <artifactId>maven-encoding-plugin</artifactId>
-        <!-- version specified in grandparent pom -->
-        <executions>
-          <execution>
-            <goals>
-              <goal>check-encoding</goal>
-            </goals>
-            <phase>compile</phase>
           </execution>
         </executions>
       </plugin>
@@ -717,6 +703,8 @@ THE SOFTWARE.
         <artifactId>maven-surefire-plugin</artifactId>
         <!-- Version specified in grandparent POM -->
         <configuration>
+          <!-- Make sure to keep the directives in test/pom.xml and war/pom.xml in sync with these. -->
+          <argLine>@{jacocoSurefireArgs} --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.desktop/com.sun.beans.introspect=ALL-UNNAMED</argLine>
           <forkCount>0.5C</forkCount>
           <reuseForks>false</reuseForks>
         </configuration>
@@ -808,29 +796,33 @@ THE SOFTWARE.
       </properties>
     </profile>
     <profile>
-      <id>all-tests</id>
-      <activation>
-        <property>
-          <name>!test</name>
-        </property>
-      </activation>
-      <properties>
-        <maven.test.redirectTestOutputToFile>true</maven.test.redirectTestOutputToFile>
-      </properties>
-    </profile>
-    <profile>
-      <id>jdk-9-and-above</id>
-      <activation>
-        <jdk>[9,)</jdk>
-      </activation>
+      <id>enable-jacoco</id>
       <build>
         <plugins>
           <plugin>
-            <artifactId>maven-surefire-plugin</artifactId>
-            <configuration>
-              <!-- Make sure to keep the directives in test/pom.xml and war/pom.xml in sync with these. -->
-              <argLine>--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED</argLine>
-            </configuration>
+            <groupId>org.jacoco</groupId>
+            <artifactId>jacoco-maven-plugin</artifactId>
+            <!-- Version specified in parent POM -->
+            <executions>
+              <execution>
+                <goals>
+                  <goal>prepare-agent</goal>
+                </goals>
+                <configuration>
+                  <propertyName>jacocoSurefireArgs</propertyName>
+                  <includes>
+                    <include>hudson/*</include>
+                    <include>hudson/**/*</include>
+                    <include>jenkins/*</include>
+                    <include>jenkins/**/*</include>
+                    <include>org/jenkins/**/*</include>
+                  </includes>
+                  <excludes>
+                    <exclude>**/Messages.class</exclude>
+                  </excludes>
+                </configuration>
+              </execution>
+            </executions>
           </plugin>
         </plugins>
       </build>

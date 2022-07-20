@@ -28,7 +28,8 @@ import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionList;
 import java.net.URL;
-import org.apache.log4j.Logger;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.kohsuke.MetaInfServices;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -53,7 +54,7 @@ public final class MetaLocaleDrivenResourceProvider extends LocaleDrivenResource
                     return url;
                 }
             } catch (RuntimeException e) {
-                LOGGER.warn("Failed to lookup URL for '" + s + "' from '" + provider.toString(), e);
+                LOGGER.log(Level.WARNING, "Failed to lookup URL for '" + s + "' from '" + provider.toString(), e);
             }
         }
         return null;

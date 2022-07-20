@@ -61,7 +61,7 @@ class LazyLoadRunMapEntrySet<R> extends AbstractSet<Map.Entry<Integer, R>> {
 
     @Override
     public Iterator<Map.Entry<Integer, R>> iterator() {
-        return new Iterator<Map.Entry<Integer, R>>() {
+        return new Iterator<>() {
             R last = null;
             R next = owner.newestBuild();
 

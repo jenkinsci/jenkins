@@ -264,6 +264,7 @@ public abstract class IdStrategy extends AbstractDescribableImpl<IdStrategy> imp
         @Extension @Symbol("caseSensitive")
         public static class DescriptorImpl extends IdStrategyDescriptor {
 
+            @NonNull
             @Override
             public String getDisplayName() {
                 return Messages.IdStrategy_CaseSensitive_DisplayName();
@@ -308,6 +309,7 @@ public abstract class IdStrategy extends AbstractDescribableImpl<IdStrategy> imp
         @Extension
         public static class DescriptorImpl extends IdStrategyDescriptor {
 
+            @NonNull
             @Override
             public String getDisplayName() {
                 return Messages.IdStrategy_CaseSensitiveEmailAddress_DisplayName();
