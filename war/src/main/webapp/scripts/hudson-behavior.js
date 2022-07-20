@@ -1421,7 +1421,7 @@ function rowvgStartEachRow(recursive,f) {
     });
 
     Behaviour.specify("DIV.behavior-loading", "div-behavior-loading", ++p, function(e) {
-        e.style.display = 'none';
+        e.classList.add("behavior-loading--hidden");
     });
 
     Behaviour.specify(".button-with-dropdown", "-button-with-dropdown", ++p, function (e) {
@@ -2204,19 +2204,6 @@ function buildFormTree(form) {
         return false;
     }
 }
-
-/**
- * @param {boolean} toggle
- *      When true, will check all checkboxes in the page. When false, unchecks them all.
- */
-var toggleCheckboxes = function(toggle) {
-    var inputs = document.getElementsByTagName("input");
-    for(var i=0; i<inputs.length; i++) {
-        if(inputs[i].type === "checkbox") {
-            inputs[i].checked = toggle;
-        }
-    }
-};
 
 var hoverNotification = (function() {
     var msgBox;

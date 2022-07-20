@@ -32,9 +32,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import hudson.EnvVars.OverrideOrderCalculator;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.TreeMap;
 import org.junit.jupiter.api.Test;
 
@@ -45,7 +45,7 @@ public class EnvVarsTest {
 
     @Test
     public void caseInsensitive() {
-        EnvVars ev = new EnvVars(Collections.singletonMap("Path", "A:B:C"));
+        EnvVars ev = new EnvVars(Map.of("Path", "A:B:C"));
         assertTrue(ev.containsKey("PATH"));
         assertEquals("A:B:C", ev.get("PATH"));
     }
@@ -122,7 +122,7 @@ public class EnvVarsTest {
 
         OverrideOrderCalculator calc = new OverrideOrderCalculator(env, overrides);
         List<String> order = calc.getOrderedVariableNames();
-        assertEquals(Collections.singletonList("PATH"), order);
+        assertEquals(List.of("PATH"), order);
     }
 
     @Test

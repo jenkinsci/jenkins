@@ -50,11 +50,12 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import jenkins.model.Jenkins;
-import org.apache.commons.io.FileUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -96,13 +97,13 @@ public class ItemGroupMixInTest {
 
     File configFile = project.getConfigFile().getFile();
 
-    List<String> lines = FileUtils.readLines(configFile, StandardCharsets.UTF_8).subList(0, 5);
+    List<String> lines = Files.readAllLines(configFile.toPath(), StandardCharsets.UTF_8).subList(0, 5);
     configFile.delete();
 
     // Remove half of the config.xml file to make "invalid" or fail to load
-    FileUtils.writeByteArrayToFile(configFile, lines.toString().getBytes(StandardCharsets.UTF_8));
+    Files.writeString(configFile.toPath(), lines.toString(), StandardCharsets.UTF_8);
     for (int i = lines.size() / 2; i < lines.size(); i++) {
-      FileUtils.writeStringToFile(configFile, lines.get(i), StandardCharsets.UTF_8, true);
+      Files.writeString(configFile.toPath(), lines.get(i), StandardCharsets.UTF_8, StandardOpenOption.APPEND);
     }
 
     // Reload Jenkins.

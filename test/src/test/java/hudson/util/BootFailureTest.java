@@ -11,14 +11,14 @@ import hudson.model.listeners.ItemListener;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import jenkins.model.Jenkins;
-import org.apache.commons.io.FileUtils;
 import org.eclipse.jetty.util.component.AbstractLifeCycle;
 import org.junit.After;
 import org.junit.Rule;
@@ -122,11 +122,11 @@ public class BootFailureTest {
         j.with(() -> home);
 
         // creates a script
-        FileUtils.write(new File(home, "boot-failure.groovy"), "hudson.util.BootFailureTest.problem = exception", StandardCharsets.UTF_8);
-        File d = new File(home, "boot-failure.groovy.d");
-        d.mkdirs();
-        FileUtils.write(new File(d, "1.groovy"), "hudson.util.BootFailureTest.runRecord << '1'", StandardCharsets.UTF_8);
-        FileUtils.write(new File(d, "2.groovy"), "hudson.util.BootFailureTest.runRecord << '2'", StandardCharsets.UTF_8);
+        Files.writeString(home.toPath().resolve("boot-failure.groovy"), "hudson.util.BootFailureTest.problem = exception", StandardCharsets.UTF_8);
+        Path d = home.toPath().resolve("boot-failure.groovy.d");
+        Files.createDirectory(d);
+        Files.writeString(d.resolve("1.groovy"), "hudson.util.BootFailureTest.runRecord << '1'", StandardCharsets.UTF_8);
+        Files.writeString(d.resolve("2.groovy"), "hudson.util.BootFailureTest.runRecord << '2'", StandardCharsets.UTF_8);
 
         // first failed boot
         makeBootFail = true;
@@ -150,7 +150,7 @@ public class BootFailureTest {
     }
 
     private static int bootFailures(File home) throws IOException {
-        return FileUtils.readLines(BootFailure.getBootFailureFile(home), StandardCharsets.UTF_8).size();
+        return new BootFailure() { }.loadAttempts(home).size();
     }
 
     @Issue("JENKINS-24696")
@@ -158,11 +158,11 @@ public class BootFailureTest {
     public void interruptedStartup() throws Exception {
         final File home = tmpDir.newFolder();
         j.with(() -> home);
-        File d = new File(home, "boot-failure.groovy.d");
-        d.mkdirs();
-        FileUtils.write(new File(d, "1.groovy"), "hudson.util.BootFailureTest.runRecord << '1'", StandardCharsets.UTF_8);
+        Path d = home.toPath().resolve("boot-failure.groovy.d");
+        Files.createDirectory(d);
+        Files.writeString(d.resolve("1.groovy"), "hudson.util.BootFailureTest.runRecord << '1'", StandardCharsets.UTF_8);
         j.newHudson();
-        assertEquals(Collections.singletonList("1"), runRecord);
+        assertEquals(List.of("1"), runRecord);
     }
 
     @TestExtension("interruptedStartup")

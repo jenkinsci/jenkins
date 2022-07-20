@@ -117,7 +117,7 @@ public class ClassFilterImpl extends ClassFilter {
 
     static {
         try (InputStream is = ClassFilterImpl.class.getResourceAsStream("whitelisted-classes.txt")) {
-            WHITELISTED_CLASSES = Collections.unmodifiableSet(IOUtils.readLines(is, StandardCharsets.UTF_8).stream().filter(line -> !line.matches("#.*|\\s*")).collect(Collectors.toSet()));
+            WHITELISTED_CLASSES = IOUtils.readLines(is, StandardCharsets.UTF_8).stream().filter(line -> !line.matches("#.*|\\s*")).collect(Collectors.toUnmodifiableSet());
         } catch (IOException x) {
             throw new ExceptionInInitializerError(x);
         }

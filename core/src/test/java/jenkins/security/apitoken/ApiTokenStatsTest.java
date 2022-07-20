@@ -41,6 +41,7 @@ import java.io.File;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.text.SimpleDateFormat;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
@@ -51,7 +52,6 @@ import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -203,10 +203,10 @@ public class ApiTokenStatsTest {
 
             { // replace the ID_1 with ID_2 in the file
                 XmlFile statsFile = ApiTokenStats.getConfigFile(tmp.getRoot());
-                String content = FileUtils.readFileToString(statsFile.getFile(), Charset.defaultCharset());
+                String content = Files.readString(statsFile.getFile().toPath(), Charset.defaultCharset());
                 // now there are multiple times the same id in the file with different stats
                 String newContentWithDuplicatedId = content.replace(ID_1, ID_2).replace(ID_3, ID_2);
-                FileUtils.write(statsFile.getFile(), newContentWithDuplicatedId, Charset.defaultCharset());
+                Files.writeString(statsFile.getFile().toPath(), newContentWithDuplicatedId, Charset.defaultCharset());
             }
 
             {

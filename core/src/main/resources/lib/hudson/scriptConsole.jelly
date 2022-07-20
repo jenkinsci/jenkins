@@ -30,6 +30,7 @@ THE SOFTWARE.
   <l:layout permission="${h.ADMINISTER}" title="${%Script Console}">
     <st:include page="sidepanel.jelly" />
 
+    <l:breadcrumb title="${%Script Console}"/>
     <l:main-panel>
       <h1>${%Script Console}</h1>
 

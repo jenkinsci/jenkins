@@ -42,9 +42,10 @@ import hudson.model.User;
 import hudson.tasks.BuildTrigger;
 import hudson.tasks.BuildTriggerTest;
 import hudson.triggers.Trigger;
-import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import jenkins.model.Jenkins;
 import jenkins.security.QueueItemAuthenticatorConfiguration;
 import org.junit.Before;
@@ -74,7 +75,7 @@ public class ReverseBuildTriggerTest {
         FreeStyleProject downstream = r.createFreeStyleProject("downstream");
         FreeStyleProject wayDownstream = r.createFreeStyleProject("wayDownstream");
         downstream.addTrigger(new ReverseBuildTrigger("upstream", Result.SUCCESS));
-        downstream.getPublishersList().add(new BuildTrigger(Collections.singleton(wayDownstream), Result.SUCCESS));
+        downstream.getPublishersList().add(new BuildTrigger(Set.of(wayDownstream), Result.SUCCESS));
         downstream.save();
         r.configRoundtrip(downstream);
         ReverseBuildTrigger rbt = downstream.getTrigger(ReverseBuildTrigger.class);
@@ -83,7 +84,7 @@ public class ReverseBuildTriggerTest {
         assertEquals(Result.SUCCESS, rbt.getThreshold());
         BuildTrigger bt = downstream.getPublishersList().get(BuildTrigger.class);
         assertNotNull(bt);
-        assertEquals(Collections.singletonList(wayDownstream), bt.getChildProjects(downstream));
+        assertEquals(List.of(wayDownstream), bt.getChildProjects(downstream));
         assertEquals(Result.SUCCESS, bt.getThreshold());
     }
 
@@ -105,7 +106,7 @@ public class ReverseBuildTriggerTest {
         downstream.addTrigger(t);
         t.start(downstream, true); // as in AbstractProject.submit
         r.jenkins.rebuildDependencyGraph(); // as in AbstractProject.doConfigSubmit
-        assertEquals(Collections.singletonList(downstream), upstream.getDownstreamProjects());
+        assertEquals(List.of(downstream), upstream.getDownstreamProjects());
         // TODO could check doCheckUpstreamProjects, though it is not terribly interesting
         // Legacy mode: alice has no read permission on upstream but it works anyway
         FreeStyleBuild b = r.buildAndAssertSuccess(upstream);

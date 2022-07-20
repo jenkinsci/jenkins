@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
-import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -64,7 +64,8 @@ public abstract class BootFailure extends ErrorObject {
                 if (f.exists()) {
                     try (BufferedReader failureFileReader = Files.newBufferedReader(f.toPath(), Charset.defaultCharset())) {
                         String line;
-                        DateFormat df = DateFormat.getDateInstance();
+                        // WebAppMain.recordBootAttempt uses Date.toString when writing, so that is the format we must parse.
+                        SimpleDateFormat df = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy");
                         while ((line = failureFileReader.readLine()) != null) {
                             try {
                                 dates.add(df.parse(line));
