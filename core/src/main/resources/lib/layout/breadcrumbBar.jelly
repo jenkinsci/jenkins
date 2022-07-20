@@ -61,7 +61,7 @@ THE SOFTWARE.
       <!-- render additional breadcrumb items -->
       <d:invokeBody />
     </ol>
-
-    <div id="breadcrumb-menu-target"/><!-- this is where the menu gets rendered -->
   </div>
+
+  <div id="breadcrumb-menu-target"/><!-- this is where the menu gets rendered -->
 </j:jelly>

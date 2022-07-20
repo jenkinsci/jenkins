@@ -82,10 +82,8 @@
         opacity: 0.6;
       }
 
-      &:hover, &:active, &:focus, &:focus-visible {
-        &::after {
-          background: var(--text-color);
-        }
+      &:last-of-type {
+        display: none;
       }
     }
 
@@ -105,6 +103,12 @@
           opacity: 0.5;
         }
       }
+      
+      &:hover, &:active, &:focus, &:focus-visible {
+        &::after {
+          background: var(--text-color);
+        }
+      }
 
       // Increase the hit target
       &::before {
@@ -115,12 +119,6 @@
         bottom: -14px;
         right: -5px;
         background: transparent;
-      }
-    }
-
-    .separator, .children {
-      &:last-of-type {
-        display: none;
       }
     }
   }
