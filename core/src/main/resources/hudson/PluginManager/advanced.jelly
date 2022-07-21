@@ -82,7 +82,7 @@ THE SOFTWARE.
                       <f:textbox name="site"
                                  id="update-site-url"
                                  value="${app.updateCenter.getSite(app.updateCenter.ID_DEFAULT).url}"
-                                 checkUrl="'checkUpdateSiteUrl?value='+this.value"/>
+                                 checkUrl="checkUpdateSiteUrl" checkDependsOn=""/>
                     </f:entry>
                     <st:adjunct includes="hudson.PluginManager._updateSite"/>
                     <l:isAdmin>
