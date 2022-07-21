@@ -20,6 +20,7 @@ window.addEventListener("load", () => {
  */
 function translateModifierKeysForUsersPlatform(keyboardShortcut) {
   const useCmdKey = navigator.platform.toUpperCase().indexOf("MAC") >= 0 ||
-    navigator.platform.toUpperCase() === "IPHONE"
+    navigator.platform.toUpperCase() === "IPHONE" ||
+    navigator.platform.toUpperCase() === "IPAD"
   return keyboardShortcut.replaceAll(/CMD|CTRL/ig, useCmdKey ? "CMD" : "CTRL")
 }
