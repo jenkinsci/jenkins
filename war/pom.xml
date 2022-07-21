@@ -722,6 +722,7 @@ THE SOFTWARE.
                       <equals arg1="${yarn.checksum.matches}" arg2="false" />
                     </condition>
                     <fail if="yarn.checksum.matches.fail">Checksum error</fail>
+                    <echo file="${project.basedir}/.yarnrc.yml">yarnPath: ${yarn.dest}</echo>
                   </tasks>
                 </configuration>
               </execution>
