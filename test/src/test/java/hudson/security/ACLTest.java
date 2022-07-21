@@ -39,6 +39,7 @@ import hudson.model.UnprotectedRootAction;
 import hudson.model.User;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import jenkins.model.Jenkins;
 import org.junit.Assert;
 import org.junit.Rule;
@@ -65,7 +66,7 @@ public class ACLTest {
         assertTrue(p.hasPermission2(ACL.SYSTEM2, Item.CONFIGURE));
         p.checkPermission(Item.CONFIGURE);
         p.checkAbortPermission();
-        assertEquals(Collections.singletonList(p), r.jenkins.getAllItems());
+        assertEquals(List.of(p), r.jenkins.getAllItems());
     }
 
     @Test

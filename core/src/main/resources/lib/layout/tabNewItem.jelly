@@ -10,7 +10,7 @@
     </st:documentation>
 
     <div class="tab">
-        <a href="${href}" class="addTab" aria-label="${attrs.title}">
+        <a href="${href}" class="addTab" aria-label="${attrs.title}" tooltip="${attrs.title}">
             <l:icon src="symbol-add" />
         </a>
     </div>

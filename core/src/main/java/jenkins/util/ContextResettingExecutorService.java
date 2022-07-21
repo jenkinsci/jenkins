@@ -38,7 +38,7 @@ public class ContextResettingExecutorService extends InterceptingExecutorService
 
     @Override
     protected <V> Callable<V> wrap(final Callable<V> r) {
-        return new Callable<V>() {
+        return new Callable<>() {
             @Override
             public V call() throws Exception {
                 Thread t = Thread.currentThread();
