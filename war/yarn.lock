@@ -5374,6 +5374,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"hotkeys-js@npm:^3.9.4":
+  version: 3.9.4
+  resolution: "hotkeys-js@npm:3.9.4"
+  checksum: 98c3121d458f960c8804f5d8d6be02c4187aaeee5a0b7df28c8d99705e5f65f67b1140658d8128401892bb07b19d18c5e9ea9e84fe170fb06206b639ad53438b
+  languageName: node
+  linkType: hard
+
 "html-encoding-sniffer@npm:^2.0.1":
   version: 2.0.1
   resolution: "html-encoding-sniffer@npm:2.0.1"
@@ -6072,6 +6079,7 @@ __metadata:
     eslint: 8.20.0
     handlebars: ^3.0.8
     handlebars-loader: 1.7.2
+    hotkeys-js: ^3.9.4
     jenkins-js-modules: 1.5.4
     jest: ^26.0.1
     jest-handlebars: 1.0.1
