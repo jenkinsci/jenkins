@@ -2,15 +2,12 @@
 module.exports = {
     env: {
         browser: true,
-        es6: true
+        es2022: true
     },
     // Uses eslint default ruleset
     extends: "eslint:recommended",
     parserOptions: {
-        ecmaVersion: 2020,
         sourceType: "module"
-    },
-    rules: {
     },
     globals: {
         $: "readonly",
