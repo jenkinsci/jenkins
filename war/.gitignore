@@ -2,6 +2,15 @@ work
 /rebel.xml
 junit.xml
 
+# Yarn
+# https://yarnpkg.com/getting-started/qa#which-files-should-be-gitignored
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/sdks
+!.yarn/versions
+
 # Node
 node/
 node_modules/

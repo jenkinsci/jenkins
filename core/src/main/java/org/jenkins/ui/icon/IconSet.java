@@ -595,6 +595,8 @@ public class IconSet {
         translations.put("icon-text", "symbol-details");
         translations.put("icon-up", "symbol-arrow-up");
         translations.put("icon-user", "symbol-people");
+        translations.put("icon-undo", "symbol-undo");
+        translations.put("icon-redo", "symbol-redo");
         ICON_TO_SYMBOL_TRANSLATIONS = translations;
     }
 
