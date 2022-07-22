@@ -31,11 +31,11 @@ THE SOFTWARE.
     <l:layout title="${%Advanced Settings} - ${%Plugin Manager}" permission="${app.SYSTEM_READ}">
         <j:set var="readOnlyMode" value="${!app.hasPermission(app.ADMINISTER)}"/>
 
-        <l:app-bar title="${%Plugin Manager}"/>
-
         <st:include page="sidepanel.jelly"/>
 
         <l:main-panel>
+            <l:app-bar title="${%Plugin Manager}" />
+
             <local:tabBar page="advanced" xmlns:local="/hudson/PluginManager"/>
 
             <section class="jenkins-section">

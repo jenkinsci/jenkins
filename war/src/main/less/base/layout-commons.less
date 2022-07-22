@@ -48,9 +48,14 @@ body {
 /* -------------------------------------- */
 
 #page-body {
-  display: flex;
-  align-items: stretch;
-  flex: 1 0 auto;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  min-height: calc(100vh - 100px);
+
+  & > .jenkins-app-bar {
+    grid-column: span 2;
+    margin: var(--section-padding) var(--section-padding) 0 var(--section-padding);
+  }
 }
 
 #page-body.clear::after {
@@ -70,7 +75,6 @@ body {
 }
 
 body.two-column #main-panel {
-  width: calc(100% - 320px);
   flex: 1;
   display: block;
 }
@@ -106,7 +110,6 @@ body.full-screen #main-panel {
   }
 
   body.two-column #main-panel {
-    width: calc(100% - 370px);
   }
 }
 

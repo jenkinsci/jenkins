@@ -31,14 +31,25 @@ THE SOFTWARE.
     Generates a row containing the page title and an optional set of controls
   </st:documentation>
 
-  <j:if test="${mode=='app-bar'}">
+  <j:if test="${(mode=='app-bar' or mode=='main-panel' or mode=='side-panel') and !hasWideAppBar}">
+    <j:if test="${mode=='app-bar'}">
+      <j:set var="hasWideAppBar" value="true" scope="parent" />
+    </j:if>
     <div class="jenkins-app-bar">
       <div class="jenkins-app-bar__content">
-        <h1>${title}</h1>
+        <j:choose>
+          <j:when test="${!hasSidebarAppBar}">
+            <h1>i am h1 - ${mode} - ${hasWideAppBar} - ${hasSidebarAppBar}</h1>
+          </j:when>
+          <j:otherwise>
+            <h2>i am h2 - ${mode} - ${hasWideAppBar} - ${hasSidebarAppBar}</h2>
+          </j:otherwise>
+        </j:choose>
       </div>
       <div class="jenkins-app-bar__controls">
         <d:invokeBody/>
       </div>
     </div>
   </j:if>
+  <j:set var="hasSidebarAppBar" value="${mode=='side-panel'}" scope="parent" />
 </j:jelly>

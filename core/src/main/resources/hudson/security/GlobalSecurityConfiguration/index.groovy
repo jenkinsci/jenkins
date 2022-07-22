@@ -18,9 +18,9 @@ l.layout(permission:app.SYSTEM_READ, title:my.displayName, cssclass:request.getP
             l.task(icon: "icon-gear icon-md", href: "${rootURL}/manage", title: _("Manage Jenkins"))
         }
     }
-    l.app_bar(title: my.displayName)
-
     l.main_panel {
+        l.app_bar(title: my.displayName)
+
         set("readOnlyMode", !app.hasPermission(app.ADMINISTER))
 
         p()
