@@ -1,4 +1,15 @@
 .hidden {
   visibility: hidden;
-  margin-left: -125px; /* TODO Figure out how overlap button and hidden value */
+}
+
+.property-table__value {
+  display: grid;
+}
+
+.hidden-info, .sensitive {
+  grid-row: 1;
+  grid-column: 1;
+}
+.sensitive {
+  padding: var(--table-padding) 0 var(--table-padding) var(--table-padding);
 }

@@ -60,18 +60,22 @@ THE SOFTWARE.
           <td>
             <st:out value="${e.key}"/>
           </td>
-          <td style="white-space: normal">
+          <td style="white-space: normal" class="property-table__value">
             <j:choose>
               <j:when test="${attrs.sensitive}">
-                <div class="hidden-info jenkins-button">
-                  ${%reveal}
+                <div class="hidden-info">
+                  <div class="jenkins-button">
+                    ${%reveal}
+                  </div>
                 </div>
                 <span class="sensitive hidden">
                   <l:breakable value="${e.value}"/>
                 </span>
               </j:when>
               <j:otherwise>
-                <l:breakable value="${e.value}"/>
+                <div>
+                  <l:breakable value="${e.value}"/>
+                </div>
               </j:otherwise>
             </j:choose>
           </td>

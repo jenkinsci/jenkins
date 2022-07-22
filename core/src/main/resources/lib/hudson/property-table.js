@@ -1,9 +1,9 @@
 (function(){
   document.addEventListener("DOMContentLoaded", function() {
-    document.querySelectorAll('.hidden-info').forEach(function(elem) {
+    document.querySelectorAll('.hidden-info .jenkins-button').forEach(function(elem) {
       elem.addEventListener('click', function() {
-        elem.style.display = 'none';
-        elem.nextSibling.classList.remove('hidden')
+        elem.parentElement.style.display = 'none';
+        elem.parentElement.nextSibling.classList.remove('hidden')
       });
     });
 
@@ -11,9 +11,9 @@
       elem.addEventListener('click', function() {
         elem.parentElement.style.display = 'none';
         let tableId = elem.getAttribute('data-table-id');
-        document.getElementById(tableId).querySelectorAll('.hidden-info').forEach(function(elem) {
-          elem.style.display = 'none';
-          elem.nextSibling.classList.remove('hidden')
+        document.getElementById(tableId).querySelectorAll('.hidden-info .jenkins-button').forEach(function(elem) {
+          elem.parentElement.style.display = 'none';
+          elem.parentElement.nextSibling.classList.remove('hidden')
         });
       });
     });
