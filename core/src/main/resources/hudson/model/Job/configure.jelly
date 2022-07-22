@@ -34,20 +34,32 @@ THE SOFTWARE.
       <script src="${resURL}/jsbundles/section-to-sidebar-items.js" type="text/javascript" defer="true" />
     </l:header>
 
-    <l:app-bar title="${%Configure}" />
-    
     <l:side-panel>
       <l:app-bar title="${%Configure}" />
+      <h1>${appBarCount}</h1>
       <div id="tasks" />
     </l:side-panel>
 
     <l:main-panel>
       <div class="behavior-loading"><l:spinner text="${%LOADING}"/></div>
 
+      <p>${appBarCount} world</p>
+
       <f:form method="post" class="jenkins-form" action="configSubmit" name="config" tableClass="config-table">
         <l:app-bar title="${%General}">
           <p:config-disableBuild />
         </l:app-bar>
+
+        <l:app-bar title="${%General}">
+          <p:config-disableBuild />
+        </l:app-bar>
+
+        <l:app-bar title="${%General}">
+          <p:config-disableBuild />
+        </l:app-bar>
+
+
+
 
         <j:set var="descriptor" value="${it.descriptor}" />
         <j:set var="instance" value="${it}" />

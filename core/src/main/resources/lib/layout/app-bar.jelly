@@ -38,11 +38,11 @@ THE SOFTWARE.
     <div class="jenkins-app-bar">
       <div class="jenkins-app-bar__content">
         <j:choose>
-          <j:when test="${!hasSidebarAppBar}">
-            <h1>i am h1 - ${mode} - ${hasWideAppBar} - ${hasSidebarAppBar}</h1>
+          <j:when test="${appBarCount == 0}">
+            <h1>i am h1 - ${appBarCount}</h1>
           </j:when>
           <j:otherwise>
-            <h2>i am h2 - ${mode} - ${hasWideAppBar} - ${hasSidebarAppBar}</h2>
+            <h2>i am h2 - ${appBarCount}</h2>
           </j:otherwise>
         </j:choose>
       </div>
@@ -51,5 +51,6 @@ THE SOFTWARE.
       </div>
     </div>
   </j:if>
-  <j:set var="hasSidebarAppBar" value="${mode=='side-panel'}" scope="parent" />
+
+  <j:set scope="parent" var="appBarCount" value="${appBarCount + 1}" />
 </j:jelly>
