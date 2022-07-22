@@ -33,8 +33,8 @@
                         <l:icon src="symbol-help-circle"/>
                     </a>
 
-                    <div id="search-box-completion" />
-                    <script>createSearchBox("${searchURL}");</script>
+                    <div id="search-box-completion" data-search-url="${searchURL}" />
+                    <st:adjunct includes="jenkins.views.JenkinsHeader.search-box" />
                 </div>
             </form>
         </div>

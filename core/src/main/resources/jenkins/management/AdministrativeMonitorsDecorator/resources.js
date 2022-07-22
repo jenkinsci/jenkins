@@ -93,3 +93,19 @@
         });
     });
 })();
+
+document.addEventListener('DOMContentLoaded', function() {
+  var amContainer = document.getElementById("visible-am-container");
+  var amInsertion = document.getElementById("visible-am-insertion");
+
+  if (amInsertion) {
+    amInsertion.appendChild(amContainer);
+  }
+
+  var secAmContainer = document.getElementById("visible-sec-am-container");
+  var secAmInsertion = document.getElementById("visible-sec-am-insertion");
+
+  if (secAmInsertion) {
+    secAmInsertion.appendChild(secAmContainer);
+  }
+});

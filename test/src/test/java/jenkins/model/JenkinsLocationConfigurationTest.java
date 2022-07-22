@@ -127,8 +127,9 @@ public class JenkinsLocationConfigurationTest {
 
     @Test
     @Issue("SECURITY-1471")
-    public void cannotInjectJavaScriptUsingRootUrl_inNewViewLinkAction() throws Exception {
+    public void cannotInjectJavaScriptUsingRootUrl_inNewViewLink() throws Exception {
         JenkinsRule.WebClient wc = j.createWebClient();
+        j.createFreeStyleProject();
 
         settingRootURL("javascript:alert(123);//");
 
