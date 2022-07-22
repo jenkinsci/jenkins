@@ -41,10 +41,16 @@ THE SOFTWARE.
       If this attribute is unspecified or null, it defaults to unchecked, otherwise checked.
     </st:attribute>
     <st:attribute name="id" />
-    <st:attribute name="onclick" />
+    <st:attribute name="onclick" deprecated="true">
+      Inline JavaScript to execute when the checkbox is clicked.
+      Deprecated because this attribute is incompatible with adding Content-Security-Policy to the Jenkins UI in the future.
+      Set 'id' or 'class' attributes as appropriate to look up this element in external Javascript files (e.g. adjuncts)
+      to add the desired behavior there (DOMContentLoaded event in static forms, Behaviour.specify if this element may be
+      dynamically added). See https://github.com/jenkinsci/jenkins/pull/6852 for an example.
+    </st:attribute>
     <st:attribute name="class" />
     <st:attribute name="negative" />
-    <st:attribute name="readonly">
+    <st:attribute name="readonly" deprecated="true">
       If set to true, this will take precedence over the onclick attribute and prevent the state of the checkbox from being changed.
 
       Note: if you want an actual read only checkbox then add:
