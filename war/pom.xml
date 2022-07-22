@@ -52,6 +52,7 @@ THE SOFTWARE.
     <!-- maven-antrun-plugin will download this Yarn version. -->
     <yarn-berry.version>3.2.1</yarn-berry.version>
     <yarn-berry.sha256sum>f1c9f039ab3b236c7abb7bafa0a0f266aa6bc5a3dbe7c684b561f03c0005d043</yarn-berry.sha256sum>
+    <yarn.lint.skip />
   </properties>
 
   <dependencyManagement>
@@ -721,6 +722,7 @@ THE SOFTWARE.
                       <equals arg1="${yarn.checksum.matches}" arg2="false" />
                     </condition>
                     <fail if="yarn.checksum.matches.fail">Checksum error</fail>
+                    <echo file="${project.basedir}/.yarnrc.yml">yarnPath: ${yarn.dest}</echo>
                   </tasks>
                 </configuration>
               </execution>
@@ -783,7 +785,8 @@ THE SOFTWARE.
                   <goal>yarn</goal>
                 </goals>
                 <configuration>
-                  <arguments>lint</arguments>
+                  <arguments>lint:ci</arguments>
+                  <skip>${yarn.lint.skip}</skip>
                 </configuration>
               </execution>
             </executions>

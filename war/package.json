@@ -15,9 +15,12 @@
     "build": "yarn prod",
     "start": "yarn dev --watch",
     "test": "jest --ci --config=jest.config.js",
-    "lint:js": "eslint . --ext js -f checkstyle -o target/eslint-warnings.xml",
-    "lint:css": "stylelint src/main/less --custom-formatter node_modules/stylelint-checkstyle-reporter/index.js -o target/stylelint-warnings.xml",
+    "lint:js": "eslint . --ext js",
+    "lint:js-ci": "eslint . --ext js -f checkstyle -o target/eslint-warnings.xml",
+    "lint:css": "stylelint src/main/less",
+    "lint:css-ci": "stylelint src/main/less --custom-formatter stylelint-formatter.js -o target/stylelint-warnings.xml",
     "lint:css:fix": "stylelint src/main/less --fix",
+    "lint:ci": "yarn lint:js-ci && yarn lint:css-ci",
     "lint": "yarn lint:js && yarn lint:css"
   },
   "devDependencies": {
