@@ -27,8 +27,6 @@ l=namespace(lib.LayoutTagLib)
 l.header()
 l.side_panel {
     l.tasks {
-        l.task(icon:"icon-up icon-md", href:rootURL+'/', title:_("Back to Dashboard"))
-        l.task(icon:"symbol-settings", href:"${rootURL}/manage", title:_("Manage Jenkins"))
         if (!app.updateCenter.jobs.isEmpty()) {
             l.task(icon: "symbol-download", href:"../updateCenter/", title:_("Update Center"))
         }

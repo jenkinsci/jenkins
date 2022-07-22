@@ -773,7 +773,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     public String getUrl() {
-        return "computer/" + Util.fullEncode(getName()) + "/";
+        return "manage/computer/" + Util.fullEncode(getName()) + "/";
     }
 
     @Exported
