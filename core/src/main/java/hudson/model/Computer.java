@@ -773,7 +773,11 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     public String getUrl() {
-        return "manage/computer/" + Util.fullEncode(getName()) + "/";
+        if (Jenkins.get().hasAnyPermission(Jenkins.MANAGE, Jenkins.SYSTEM_READ)) {
+            return "manage/computer/" + Util.fullEncode(getName()) + "/";
+        }
+
+        return "computer/" + Util.fullEncode(getName()) + "/";
     }
 
     @Exported
