@@ -42,7 +42,7 @@ THE SOFTWARE.
     <div class="jenkins-!-margin-bottom-2">
       ${%redactedBlurb}
       <button class="all-hidden-info jenkins-button" data-table-id="${tableId}">
-        <l:icon src="symbol-search"/>
+        <l:icon src="symbol-view"/>
         ${%revealAll}
       </button>
     </div>
