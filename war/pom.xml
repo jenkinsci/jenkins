@@ -527,13 +527,13 @@ THE SOFTWARE.
             </goals>
             <phase>prepare-package</phase>
             <configuration>
-              <tasks>
+              <target>
                 <move todir="${project.build.directory}/${project.build.finalName}">
                   <fileset dir="${project.build.directory}/classes">
                     <include name="executable/**/*.class" />
                   </fileset>
                 </move>
-              </tasks>
+              </target>
             </configuration>
           </execution>
         </executions>
@@ -711,7 +711,7 @@ THE SOFTWARE.
                 </goals>
                 <phase>initialize</phase>
                 <configuration>
-                  <tasks>
+                  <target>
                     <property name="yarn.dest" value="${project.basedir}/.yarn/releases/yarn-${yarn-berry.version}.cjs" />
                     <dirname file="${yarn.dest}" property="yarn.dest.dir" />
                     <mkdir dir="${yarn.dest.dir}" />
@@ -722,7 +722,7 @@ THE SOFTWARE.
                     </condition>
                     <fail if="yarn.checksum.matches.fail">Checksum error</fail>
                     <echo file="${project.basedir}/.yarnrc.yml">yarnPath: ${yarn.dest}</echo>
-                  </tasks>
+                  </target>
                 </configuration>
               </execution>
             </executions>
