@@ -36,13 +36,17 @@ THE SOFTWARE.
 
   <st:adjunct includes="lib.layout.breadcrumbs" />
 
+  <j:set var="contents" trim="true">
+    <d:invokeBody />
+  </j:set>
+
   <div id="breadcrumbBar" class="jenkins-breadcrumbs">
     <ol class="jenkins-breadcrumbs__list" id="breadcrumbs">
-      <j:forEach var="anc" items="${request.ancestors}">
+      <j:forEach var="anc" items="${request.ancestors}" indexVar="index">
         <j:if test="${h.isModel(anc.object) and anc.prev.url!=anc.url}">
           <j:set var="mode" value="breadcrumbs" />
           <l:breadcrumb title="${anc.object == app ? '%Dashboard' : anc.object.displayName}"
-                        href="${anc.url}/"
+                        href="${contents.length() == 0 and (index == request.ancestors.size() - 1) ? null : anc.url + '/'}"
                         hasMenu="${h.isModelWithContextMenu(anc.object)}" />
           <j:choose>
             <j:when test="${h.isModelWithChildren(anc.object)}">
@@ -59,7 +63,7 @@ THE SOFTWARE.
       </j:forEach>
 
       <!-- render additional breadcrumb items -->
-      <d:invokeBody />
+      <j:out value="${contents}" />
     </ol>
   </div>
 
