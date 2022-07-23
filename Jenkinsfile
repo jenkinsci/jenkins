@@ -42,7 +42,7 @@ for (i = 0; i < buildTypes.size(); i++) {
         // Now run the actual build.
         stage("${buildType} Build / Test") {
           timeout(time: 6, unit: 'HOURS') {
-            realtimeJUnit(healthScaleFactor: 20.0, testResults: '*/target/surefire-reports/*.xml,war/target/jest-result.xml') {
+            realtimeJUnit(healthScaleFactor: 20.0, testResults: '*/target/surefire-reports/*.xml') {
               def mavenOptions = [
                 '-Pdebug',
                 '-Penable-jacoco',

@@ -50,8 +50,8 @@ THE SOFTWARE.
     <!-- frontend-maven-plugin will install this Yarn version as bootstrap, then hand over control to Yarn Berry. -->
     <yarn.version>1.22.19</yarn.version>
     <!-- maven-antrun-plugin will download this Yarn version. -->
-    <yarn-berry.version>3.2.1</yarn-berry.version>
-    <yarn-berry.sha256sum>f1c9f039ab3b236c7abb7bafa0a0f266aa6bc5a3dbe7c684b561f03c0005d043</yarn-berry.sha256sum>
+    <yarn-berry.version>3.2.2</yarn-berry.version>
+    <yarn-berry.sha256sum>4bdff735211590c3591b58db2f00eb3391cc7192e5c99cd154fe59060301f5db</yarn-berry.sha256sum>
     <yarn.lint.skip />
   </properties>
 
@@ -148,7 +148,6 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter</artifactId>
-      <version>${junit.jupiter.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -764,18 +763,6 @@ THE SOFTWARE.
                 <phase>generate-sources</phase>
                 <configuration>
                   <arguments>build</arguments>
-                </configuration>
-              </execution>
-
-              <execution>
-                <id>yarn test</id>
-                <goals>
-                  <goal>yarn</goal>
-                </goals>
-                <phase>test</phase>
-                <configuration>
-                  <arguments>test</arguments>
-                  <skip>${skipTests}</skip>
                 </configuration>
               </execution>
 

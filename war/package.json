@@ -14,7 +14,6 @@
     "prod": "webpack --config webpack.config.js --mode=production",
     "build": "yarn prod",
     "start": "yarn dev --watch",
-    "test": "jest --ci --config=jest.config.js",
     "lint:js": "eslint . --ext js",
     "lint:js-ci": "eslint . --ext js -f checkstyle -o target/eslint-warnings.xml",
     "lint:css": "stylelint src/main/less",
@@ -26,7 +25,6 @@
   "devDependencies": {
     "@babel/cli": "7.18.9",
     "@babel/core": "7.18.9",
-    "@jenkins-cd/js-test": "1.2.3",
     "autoprefixer": "10.4.7",
     "clean-webpack-plugin": "4.0.0",
     "copy-webpack-plugin": "11.0.0",
@@ -35,10 +33,6 @@
     "eslint": "8.20.0",
     "handlebars": "^3.0.8",
     "handlebars-loader": "1.7.2",
-    "jest": "^26.0.1",
-    "jest-handlebars": "1.0.1",
-    "jest-junit": "14.0.0",
-    "jest-standard-reporter": "2.0.0",
     "less": "4.1.3",
     "less-loader": "11.0.0",
     "mini-css-extract-plugin": "2.6.1",
@@ -67,5 +61,5 @@
     "defaults",
     "not IE 11"
   ],
-  "packageManager": "yarn@3.2.1"
+  "packageManager": "yarn@3.2.2"
 }
