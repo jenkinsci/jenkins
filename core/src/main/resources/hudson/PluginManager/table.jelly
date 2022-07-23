@@ -59,12 +59,23 @@ THE SOFTWARE.
           </div>
         </div>
 
+        <j:set var="cache" value="${it.createCache()}"/>
+
         <table id="plugins" class="jenkins-table sortable">
           <thead>
             <tr>
               <l:isAdmin>
-                <th data-sort-disable="true" tooltip="${%Check to install the plugin}">
-                  ${%Install}
+                <th data-sort-disable="true">
+                  <l:rowSelectionController>
+                    <j:if test="${app.updateCenter.hasIncompatibleUpdates(cache)}">
+                      <button tooltip="${%CompatibleTooltip}" type="button" data-select="compatible" class="jenkins-button jenkins-button--transparent">
+                        <div class="jenkins-table__checkbox-dropdown__icon">
+                          <l:icon src="symbol-compatible" />
+                        </div>
+                        ${%Compatible}
+                      </button>
+                    </j:if>
+                  </l:rowSelectionController>
                 </th>
               </l:isAdmin>
               <th initialSortDir="${isUpdates?'down':null}">${%Name}</th>
@@ -77,7 +88,6 @@ THE SOFTWARE.
           <j:set var="unavailableList" value="${app.updateCenter.pluginsWithUnavailableUpdates}"/>
           <j:choose>
             <j:when test="${!empty(list) or (isUpdates and !empty(unavailableList))}">
-              <j:set var="cache" value="${it.createCache()}"/>
               <j:if test="${filtered == 'true'}">
                 <tr id="hidden-by-default-instructions">
                   <td colspan="5" align="center" id="hidden-by-default-instructions-td"

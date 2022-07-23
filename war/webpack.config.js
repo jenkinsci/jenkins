@@ -33,6 +33,8 @@ module.exports = (env, argv) => ({
     "sortable-drag-drop": [path.join(__dirname, "src/main/js/sortable-drag-drop.js")],
     "section-to-sidebar-items": [path.join(__dirname, "src/main/js/section-to-sidebar-items.js")],
     "section-to-tabs": [path.join(__dirname, "src/main/js/section-to-tabs.js")],
+    "components/row-selection-controller":
+      [path.join(__dirname, "src/main/js/components/row-selection-controller")],
     "filter-build-history": [path.join(__dirname, "src/main/js/filter-build-history.js")],
     "simple-page": [path.join(__dirname, "src/main/less/simple-page.less")],
     "styles": [path.join(__dirname, "src/main/less/styles.less")],
@@ -77,14 +79,12 @@ module.exports = (env, argv) => ({
             loader: 'css-loader',
             options: {
               sourceMap: true,
-              url: (url, resourcePath) => {
-                // ignore the URLS on the base styles as they are picked
-                // from the src/main/webapp/images dir
-                if (resourcePath.includes('styles.less')) {
-                  return false;
+              // ignore the URLS on the base styles as they are picked
+              // from the src/main/webapp/images dir
+              url: {
+                filter: (url, resourcePath) => {
+                  return !resourcePath.includes('styles.less');
                 }
-
-                return true;
               }
             }
           },
