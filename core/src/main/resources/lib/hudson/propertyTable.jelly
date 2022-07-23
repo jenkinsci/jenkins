@@ -40,10 +40,13 @@ THE SOFTWARE.
   <j:set var="tableId" value="${h.generateId()}"/>
   <j:if test="${attrs.sensitive}">
     <div class="jenkins-!-margin-bottom-2">
-      ${%redactedBlurb}
-      <button class="all-hidden-info jenkins-button" data-table-id="${tableId}">
+      <button class="app-all-hidden-reveal-all jenkins-button jenkins-button--transparent" data-table-id="${tableId}">
         <l:icon src="symbol-view"/>
         ${%revealAll}
+      </button>
+      <button class="app-all-hidden-hide-all jenkins-hidden jenkins-button jenkins-button--transparent" data-table-id="${tableId}">
+        <l:icon src="symbol-view"/>
+        ${%hideAll}
       </button>
     </div>
   </j:if>
@@ -51,7 +54,7 @@ THE SOFTWARE.
     <thead>
       <tr>
         <th initialSortDir="down">${%Name}</th>
-        <th>${%Value}</th>
+        <th class="app-table-full-width-column">${%Value}</th>
       </tr>
     </thead>
     <tbody>
@@ -63,14 +66,18 @@ THE SOFTWARE.
           <td style="white-space: normal" class="property-table__value">
             <j:choose>
               <j:when test="${attrs.sensitive}">
-                <div class="hidden-info">
-                  <div class="jenkins-button">
-                    ${%reveal}
-                  </div>
+                <div class="app-hidden-info-reveal">
+                  <button class="jenkins-button jenkins-button--transparent jenkins-!-color-blue">
+                    <l:icon src="symbol-view"/> ${%reveal}
+                  </button>
                 </div>
-                <span class="sensitive hidden">
-                  <l:breakable value="${e.value}"/>
-                </span>
+                <div class="app-hidden-info-hide jenkins-hidden">
+                  <button class="jenkins-button jenkins-button--transparent">
+                    <span class="jenkins-!-color-blue">
+                      <l:icon src="symbol-eye-off-outline"/><j:out value=" "/><l:breakable value="${e.value}"/>
+                    </span>
+                  </button>
+                </div>
               </j:when>
               <j:otherwise>
                 <div>

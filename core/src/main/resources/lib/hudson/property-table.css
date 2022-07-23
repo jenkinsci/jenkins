@@ -1,15 +1,11 @@
-.hidden {
-  visibility: hidden;
+.app-table-full-width-column {
+  width: 100%;
 }
 
-.property-table__value {
-  display: grid;
+.app-hidden-info-hide > button {
+  text-align: left;
 }
 
-.hidden-info, .sensitive {
-  grid-row: 1;
-  grid-column: 1;
-}
-.sensitive {
-  padding: var(--table-padding) 0 var(--table-padding) var(--table-padding);
+span.jenkins-\!-color-blue > svg {
+  vertical-align: text-top;
 }
