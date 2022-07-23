@@ -100,7 +100,6 @@ THE SOFTWARE.
 
     <access-modifier.version>1.27</access-modifier.version>
     <bridge-method-injector.version>1.23</bridge-method-injector.version>
-    <junit.jupiter.version>5.8.2</junit.jupiter.version>
     <mockito.version>4.6.1</mockito.version>
     <spotless.version>2.23.0</spotless.version>
   </properties>
@@ -108,6 +107,13 @@ THE SOFTWARE.
   <dependencyManagement>
     <!-- any dependencies that can be used by plugins must be defined in the bom and not here -->
     <dependencies>
+      <dependency>
+        <groupId>org.junit</groupId>
+        <artifactId>junit-bom</artifactId>
+        <version>5.8.2</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
       <dependency>
         <!--  make sure these old servlet versions are never used by us or by any plugins which end up depending on this version -->
         <!--  plugin-pom tries to fudge servlet support to be compatible with cores < 2.0 and JTH which needs 3.x for jetty, and ends up causing issues with some IDEs -->
