@@ -10,7 +10,7 @@ rowSelectionControllers.forEach(headerCheckbox => {
 
   if (tableCheckboxes.length === 0) {
     headerCheckbox.disabled = true;
-    moreOptionsButton.disabled = true;
+    moreOptionsButton?.disabled = true;
   }
 
   const allCheckboxesSelected = () => {
