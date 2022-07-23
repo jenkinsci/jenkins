@@ -555,9 +555,7 @@ var createPluginSetupWizard = function(appendTarget) {
 					j = jobs[i];
 					var txt = false;
 					var state = false;
-					if('true' === j.requiresRestart) {
-						restartRequired = true;
-					}
+
 
 					if(/.*Success.*/.test(j.installStatus)) {
 						txt = j.title;
@@ -1229,21 +1227,16 @@ var createPluginSetupWizard = function(appendTarget) {
 									continue;
 								}
 
-								// eslint-disable-next-line no-unused-vars
-								var txt = false;
 								var state = false;
 								var status = incompleteStatus[plugName];
 
 								if(/.*Success.*/.test(status)) {
-									txt = j.title;
 									state = 'success';
 								}
 								else if(/.*Install.*/.test(status)) {
-									txt = j.title;
 									state = 'pending';
 								}
 								else if(/.*Fail.*/.test(status)) {
-									txt = j.title;
 									state = 'fail';
 								}
 
