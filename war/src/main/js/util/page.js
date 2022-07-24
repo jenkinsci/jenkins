@@ -41,7 +41,7 @@ function onWinScroll(callback) {
 }
 
 function pageHeaderHeight() {
-    return elementHeight('#page-header') + breadcrumbBarHeight();
+    return document.querySelector('#page-header').offsetHeight + breadcrumbBarHeight();
 }
 
 function breadcrumbBarHeight() {
@@ -54,10 +54,6 @@ function removeTextHighlighting(selector) {
         highlightSplit.before(highlightSplit.text());
         highlightSplit.remove();
     });
-}
-
-function elementHeight(selector) {
-    return $(selector).height();
 }
 
 export default {
