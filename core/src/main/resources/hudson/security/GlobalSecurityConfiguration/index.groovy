@@ -11,7 +11,7 @@ def f=namespace(lib.FormTagLib)
 def l=namespace(lib.LayoutTagLib)
 def st=namespace("jelly:stapler")
 
-l.layout(permission:app.SYSTEM_READ, title:my.displayName, cssclass:request.getParameter('decorate')) {
+l.layout(permission:app.SYSTEM_READ, title:my.displayName, cssclass:request.getParameter('decorate'), type:"one-column") {
     l.app_bar(title: my.displayName)
 
     l.main_panel {
