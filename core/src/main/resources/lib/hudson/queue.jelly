@@ -103,8 +103,7 @@ THE SOFTWARE.
   </l:pane>
   <!-- schedule updates only for the full page reload -->
   <j:if test="${ajax==null and h.hasPermission(app.READ)}">
-    <script defer="defer">
-      refreshPart('buildQueue',"${rootURL}/${h.hasView(it,'ajaxBuildQueue')?it.url:''}ajaxBuildQueue");
-    </script>
+    <div class="widget-refresh-reference" data-id="buildQueue" data-url="${rootURL}/${h.hasView(it,'ajaxBuildQueue')?it.url:''}ajaxBuildQueue"/>
+    <st:adjunct includes="lib.hudson.widget-refresh"/>
   </j:if>
 </j:jelly>

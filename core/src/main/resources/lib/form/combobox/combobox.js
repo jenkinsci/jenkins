@@ -16,7 +16,7 @@ Behaviour.specify("INPUT.combobox2", 'combobox', 100, function(e) {
             new Ajax.Request(e.getAttribute("fillUrl"),{
                 parameters: params,
                 onSuccess : function(rsp) {
-                    items = eval('('+rsp.responseText+')');
+                    items = JSON.parse(rsp.responseText);
                 }
             });
         });

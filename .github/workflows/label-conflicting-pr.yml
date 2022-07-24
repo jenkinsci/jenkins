@@ -3,12 +3,13 @@ on:
   push:
   pull_request_target:
     types: [synchronize]
-    
+
 permissions:
   pull-requests: write
 
 jobs:
   main:
+    if: github.event.pull_request.user.login != 'dependabot[bot]'
     runs-on: ubuntu-latest
     steps:
       - name: Label conflicting PRs
