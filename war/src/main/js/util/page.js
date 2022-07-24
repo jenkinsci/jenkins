@@ -45,7 +45,7 @@ function pageHeaderHeight() {
 }
 
 function breadcrumbBarHeight() {
-    return elementHeight('#breadcrumbBar');
+    return document.querySelector('#breadcrumbBar').offsetHeight;
 }
 
 function removeTextHighlighting(selector) {
