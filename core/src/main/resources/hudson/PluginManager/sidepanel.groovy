@@ -28,7 +28,8 @@ l.header()
 l.side_panel {
     l.tasks {
         if (!app.updateCenter.jobs.isEmpty()) {
-            l.task(icon: "symbol-download", href:"../updateCenter/", title:_("Update Center"))
+            l.task(icon: "symbol-plugins", href: "${rootURL}/manage/pluginManager/", title:_("Plugin Manager"))
+            l.task(icon: "symbol-download", href: "${rootURL}/manage/updateCenter/", title:_("Update Center"))
         }
     }
 }
