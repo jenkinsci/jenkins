@@ -75,7 +75,7 @@ public class IconSetTest {
     @Disabled("TODO see JENKINS-68805")
     @Test
     void getSymbol_notSettingTooltipDoesntAddTooltipAttribute_evenWithAmpersand() {
-        String symbol = IconSet.getSymbol("download", "Title", "With&Ampersand", "class1 class2", "", "id");
+        String symbol = IconSet.getSymbol("download", "Title", "With&Ampersand", "class1 class2", "", "", "id");
 
         assertThat(symbol, not(containsString("tooltip")));
     }
