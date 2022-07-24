@@ -151,7 +151,7 @@ public class HudsonTest {
     public void breadcrumb() throws Exception {
         HtmlPage root = j.createWebClient().goTo("");
         DomElement navbar = root.getElementById("breadcrumbs");
-        assertEquals(1, DomNodeUtil.selectNodes(navbar, "LI/A").size());
+        assertEquals(1, DomNodeUtil.selectNodes(navbar, "LI").size());
     }
 
     /**
