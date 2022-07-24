@@ -49,6 +49,7 @@
     "@babel/preset-env": "7.18.9",
     "babel-loader": "8.2.5",
     "bootstrap": "3.4.1",
+    "hotkeys-js": "3.9.4",
     "jenkins-js-modules": "1.5.4",
     "jquery": "3.6.0",
     "lodash": "4.17.21",
