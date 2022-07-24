@@ -45,7 +45,7 @@ function updateListBox(listBox,url,config) {
 
         var selectionSet = false; // is the selection forced by the server?
         var possibleIndex = null; // if there's a new option that matches the current value, remember its index
-        var opts = eval('('+rsp.responseText+')').values;
+        var opts = JSON.parse(rsp.responseText).values;
         for( var i=0; i<opts.length; i++ ) {
             l.options[i] = new Option(opts[i].name,opts[i].value);
             if(opts[i].selected) {
