@@ -11,7 +11,6 @@ function createFilterMenuButton(button, menu, menuAlignment, menuMinScrollHeight
 
   menuButton._menu.element.appendChild(filter);
   menuButton._menu.showEvent.subscribe(function () {
-    filter.firstElementChild.value = '';
     _applyFilterKeyword(menuButton._menu, filter.firstElementChild);
     filter.style.display = (_getItemList(menuButton._menu).children.length >= MIN_NUM_OPTIONS) ? '' : 'NONE';
   });
@@ -31,7 +30,7 @@ function _createFilterMenuButton(menu) {
   filterInput.setAttribute("spellcheck", "false");
   filterInput.setAttribute("type", "search");
 
-  filterInput.addEventListener('input', (event) => _applyFilterKeyword(menu, event));
+  filterInput.addEventListener('input', (event) => _applyFilterKeyword(menu, event.currentTarget));
 
   const filterContainer = document.createElement("div");
   filterContainer.appendChild(filterInput);
@@ -40,7 +39,7 @@ function _createFilterMenuButton(menu) {
 }
 
 function _applyFilterKeyword(menu, filterInput) {
-  const filterKeyword = (filterInput.currentTarget.value || '').toLowerCase();
+  const filterKeyword = (filterInput.value || '').toLowerCase();
   const itemList = _getItemList(menu);
   let item, match;
   for (item of itemList.children) {

@@ -10,7 +10,9 @@ rowSelectionControllers.forEach(headerCheckbox => {
 
   if (tableCheckboxes.length === 0) {
     headerCheckbox.disabled = true;
-    moreOptionsButton.disabled = true;
+    if (moreOptionsButton) {
+      moreOptionsButton.disabled = true;
+    }
   }
 
   const allCheckboxesSelected = () => {
@@ -46,7 +48,7 @@ rowSelectionControllers.forEach(headerCheckbox => {
   function updateIcon() {
     headerCheckbox.classList.remove("jenkins-table__checkbox--all")
     headerCheckbox.classList.remove("jenkins-table__checkbox--indeterminate")
-    moreOptionsDropdown.classList.remove("jenkins-table__checkbox-dropdown--visible")
+    moreOptionsDropdown?.classList.remove("jenkins-table__checkbox-dropdown--visible")
 
     if (allCheckboxesSelected()) {
       headerCheckbox.classList.add("jenkins-table__checkbox--all")
