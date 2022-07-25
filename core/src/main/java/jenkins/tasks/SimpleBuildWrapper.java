@@ -58,7 +58,7 @@ import org.kohsuke.accmod.restrictions.Beta;
  * <li>Replace {@link AbstractBuild#getWorkspace} with the provided path.
  * <li>Replace {@link AbstractBuild#getProject} with {@link Run#getParent}.
  * <li>Use {@link FilePath#toComputer} rather than {@link Computer#currentComputer}.
- * <li>Do not bother with {@link AbstractBuild#getBuildVariables} if you are not passed an {@link AbstractBuild} (treat it like an empty map).
+ * <li>Do not bother with {@link AbstractBuild#getBuildVariables} if you have not passed an {@link AbstractBuild} (treat it like an empty map).
  * <li>The {@link Disposer} must be safely serializable. This means it should be a {@code static} class if nested, and define a {@code serialVersionUID}.
  * </ul>
  * @since 1.599
