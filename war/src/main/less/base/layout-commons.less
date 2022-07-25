@@ -69,6 +69,18 @@ body {
   width: 100%;
 }
 
+.app-page-body--one-column {
+  --form-item-max-width: 100%;
+
+  max-width: 85vw;
+
+  @media (max-width: 1200px) {
+    max-width: unset;
+  }
+
+  margin: auto;
+}
+
 body.two-column #main-panel {
   width: calc(100% - 320px);
   flex: 1;
