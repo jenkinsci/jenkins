@@ -56,7 +56,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.springframework</groupId>
         <artifactId>spring-framework-bom</artifactId>
-        <version>5.3.19</version>
+        <version>5.3.20</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
