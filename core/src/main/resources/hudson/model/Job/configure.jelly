@@ -43,20 +43,9 @@ THE SOFTWARE.
       <div class="behavior-loading"><l:spinner text="${%LOADING}"/></div>
 
       <f:form method="post" class="jenkins-form" action="configSubmit" name="config" tableClass="config-table">
-        <l:app-bar title="${%General}">
+        <l:app-bar title="${%General}" headingLevel="h2">
           <p:config-disableBuild />
         </l:app-bar>
-
-        <l:app-bar title="${%General}">
-          <p:config-disableBuild />
-        </l:app-bar>
-
-        <l:app-bar title="${%General}">
-          <p:config-disableBuild />
-        </l:app-bar>
-
-
-
 
         <j:set var="descriptor" value="${it.descriptor}" />
         <j:set var="instance" value="${it}" />
