@@ -36,14 +36,11 @@ THE SOFTWARE.
 
     <l:side-panel>
       <l:app-bar title="${%Configure}" />
-      <h1>${appBarCount}</h1>
       <div id="tasks" />
     </l:side-panel>
 
     <l:main-panel>
       <div class="behavior-loading"><l:spinner text="${%LOADING}"/></div>
-
-      <p>${appBarCount} world</p>
 
       <f:form method="post" class="jenkins-form" action="configSubmit" name="config" tableClass="config-table">
         <l:app-bar title="${%General}">

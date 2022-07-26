@@ -23,10 +23,13 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:x="jelly:xml">
   <st:documentation>
     <st:attribute name="title" use="required">
       The title for the application bar
+    </st:attribute>
+    <st:attribute name="headingLevel">
+      Defaults to h1
     </st:attribute>
     Generates a row containing the page title and an optional set of controls
   </st:documentation>
@@ -37,20 +40,13 @@ THE SOFTWARE.
     </j:if>
     <div class="jenkins-app-bar">
       <div class="jenkins-app-bar__content">
-        <j:choose>
-          <j:when test="${appBarCount == 0}">
-            <h1>i am h1 - ${appBarCount}</h1>
-          </j:when>
-          <j:otherwise>
-            <h2>i am h2 - ${appBarCount}</h2>
-          </j:otherwise>
-        </j:choose>
+        <x:element name="${headingLevel ?: 'h1'}">
+          ${title}
+        </x:element>
       </div>
       <div class="jenkins-app-bar__controls">
         <d:invokeBody/>
       </div>
     </div>
   </j:if>
-
-  <j:set scope="parent" var="appBarCount" value="${appBarCount + 1}" />
 </j:jelly>
