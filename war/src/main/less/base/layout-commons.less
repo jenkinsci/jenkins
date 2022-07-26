@@ -49,12 +49,20 @@ body {
 
 #page-body {
   display: grid;
-  grid-template-columns: auto 1fr;
+  grid-template-columns: 1fr;
   min-height: calc(100vh - 100px);
 
   & > .jenkins-app-bar {
     grid-column: span 2;
     margin: var(--section-padding) var(--section-padding) 0 var(--section-padding);
+  }
+
+  @media (min-width: 1170px) {
+    grid-template-columns: auto 1fr;
+
+    #side-panel {
+      width: 340px;
+    }
   }
 }
 
@@ -85,29 +93,6 @@ body.full-screen {
 
 body.full-screen #main-panel {
   padding: 0;
-}
-
-@media (max-width: 970px) {
-  body.two-column #page-body {
-    flex-wrap: wrap;
-  }
-
-  body.two-column #side-panel {
-    width: 100%;
-    padding-bottom: 20px;
-    border-right: none;
-  }
-
-  body.two-column #main-panel {
-    margin-left: 0;
-    width: 100%;
-  }
-}
-
-@media (min-width: 1170px) {
-  body.two-column #side-panel {
-    width: 340px;
-  }
 }
 
 /* -------------------------------------- */
