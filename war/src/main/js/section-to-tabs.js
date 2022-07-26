@@ -45,4 +45,4 @@ tabPanes.forEach((tabPane, index) => {
   tabBar.append(tab)
 })
 
-content.insertBefore(tabBar, content.children[0])
+content.insertBefore(tabBar, tabPanes[0])
