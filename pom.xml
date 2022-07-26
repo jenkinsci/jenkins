@@ -73,7 +73,7 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.361</revision>
+    <revision>2.362</revision>
     <changelist>-SNAPSHOT</changelist>
 
     <!-- *.html files are in UTF-8, and *.properties are in iso-8859-1, so this configuration is actually incorrect,
