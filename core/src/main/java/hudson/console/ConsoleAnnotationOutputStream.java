@@ -113,7 +113,7 @@ public class ConsoleAnnotationOutputStream<T> extends LineTransformationOutputSt
                     if (a != null) {
                         if (annotators == null)
                             annotators = new ArrayList<>();
-                        annotators.add(new ConsoleAnnotator<T>() {
+                        annotators.add(new ConsoleAnnotator<>() {
                             @Override
                             public ConsoleAnnotator<T> annotate(T context, MarkupText text) {
                                 return a.annotate(context, text, charPos);

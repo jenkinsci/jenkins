@@ -150,7 +150,7 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
         // delegate to getJobAction (singular) for backward compatible behavior
         Action a = getProjectAction();
         if (a == null)    return Collections.emptyList();
-        return Collections.singletonList(a);
+        return List.of(a);
     }
 
     @Override

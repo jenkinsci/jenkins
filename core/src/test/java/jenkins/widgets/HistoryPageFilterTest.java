@@ -341,8 +341,8 @@ public class HistoryPageFilterTest {
     @Issue("JENKINS-40718")
     public void should_search_builds_by_build_variables() {
         Iterable<ModelObject> runs = Arrays.asList(
-                new MockBuild(2).withBuildVariables(Collections.singletonMap("env", "dummyEnv")),
-                new MockBuild(1).withBuildVariables(Collections.singletonMap("env", "otherEnv")));
+                new MockBuild(2).withBuildVariables(Map.of("env", "dummyEnv")),
+                new MockBuild(1).withBuildVariables(Map.of("env", "otherEnv")));
         assertOneMatchingBuildForGivenSearchStringAndRunItems("dummyEnv", runs);
     }
 
@@ -350,8 +350,8 @@ public class HistoryPageFilterTest {
     @Issue("JENKINS-40718")
     public void should_search_builds_by_build_params() throws IOException {
         Iterable<ModelObject> runs = Arrays.asList(
-                new MockBuild(2).withBuildParameters(Collections.singletonMap("env", "dummyEnv")),
-                new MockBuild(1).withBuildParameters(Collections.singletonMap("env", "otherEnv")));
+                new MockBuild(2).withBuildParameters(Map.of("env", "dummyEnv")),
+                new MockBuild(1).withBuildParameters(Map.of("env", "otherEnv")));
         assertOneMatchingBuildForGivenSearchStringAndRunItems("dummyEnv", runs);
     }
 
@@ -359,7 +359,7 @@ public class HistoryPageFilterTest {
     @Issue("JENKINS-40718")
     public void should_ignore_sensitive_parameters_in_search_builds_by_build_params() throws IOException {
         Iterable<ModelObject> runs = Arrays.asList(
-                new MockBuild(2).withBuildParameters(Collections.singletonMap("plainPassword", "pass1plain")),
+                new MockBuild(2).withBuildParameters(Map.of("plainPassword", "pass1plain")),
                 new MockBuild(1).withSensitiveBuildParameters("password", "pass1"));
         assertOneMatchingBuildForGivenSearchStringAndRunItems("pass1", runs);
     }
@@ -507,8 +507,8 @@ public class HistoryPageFilterTest {
         }
 
         MockBuild withSensitiveBuildParameters(String paramName, String paramValue) {
-            addAction(new ParametersAction(Collections.singletonList(createSensitiveStringParameterValue(paramName, paramValue)),
-                    Collections.singletonList(paramName)));
+            addAction(new ParametersAction(List.of(createSensitiveStringParameterValue(paramName, paramValue)),
+                    List.of(paramName)));
             return this;
         }
 

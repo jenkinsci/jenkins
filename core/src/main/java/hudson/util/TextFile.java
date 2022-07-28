@@ -135,7 +135,7 @@ public class TextFile {
      * necessary chunk.
      *
      * <p>
-     * Some multi-byte encoding, such as Shift-JIS (http://en.wikipedia.org/wiki/Shift_JIS) doesn't
+     * Some multi-byte encoding, such as <a href="https://en.wikipedia.org/wiki/Shift_JIS">Shift-JIS</a>, doesn't
      * allow the first byte and the second byte of a single char to be unambiguously identified,
      * so it is possible that we end up decoding incorrectly if we start reading in the middle of a multi-byte
      * character. All the CJK multi-byte encodings that I know of are self-correcting; as they are ASCII-compatible,

@@ -54,10 +54,10 @@ public class ResourceController {
     /**
      * View of {@link #inProgress} that exposes its {@link ResourceList}.
      */
-    private final Collection<ResourceList> resourceView = new AbstractCollection<ResourceList>() {
+    private final Collection<ResourceList> resourceView = new AbstractCollection<>() {
         @Override
         public Iterator<ResourceList> iterator() {
-            return new AdaptedIterator<ResourceActivity, ResourceList>(inProgress.iterator()) {
+            return new AdaptedIterator<>(inProgress.iterator()) {
                 @Override
                 protected ResourceList adapt(ResourceActivity item) {
                     return item.getResourceList();
@@ -129,7 +129,7 @@ public class ResourceController {
      */
     public boolean canRun(final ResourceList resources) {
         try {
-            return _withLock(new Callable<Boolean>() {
+            return _withLock(new Callable<>() {
                 @Override
                 public Boolean call() {
                     return !inUse.isCollidingWith(resources);
@@ -150,7 +150,7 @@ public class ResourceController {
      */
     public Resource getMissingResource(final ResourceList resources) {
         try {
-            return _withLock(new Callable<Resource>() {
+            return _withLock(new Callable<>() {
                 @Override
                 public Resource call() {
                     return resources.getConflict(inUse);

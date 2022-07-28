@@ -4,7 +4,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import hudson.Main;
-import org.apache.commons.io.FileUtils;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -23,7 +24,7 @@ public class SetupWizardRestartTest {
         sessions.then(j -> {
                 // Modify state so that we get into the same conditions as a real start
                 Main.isUnitTest = false;
-                FileUtils.write(InstallUtil.getLastExecVersionFile(), "");
+                Files.writeString(InstallUtil.getLastExecVersionFile().toPath(), "", StandardCharsets.US_ASCII);
                 // Re-evaluate current state based on the new context
                 InstallUtil.proceedToNextStateFrom(InstallState.UNKNOWN);
                 assertEquals("Unexpected install state", InstallState.NEW, j.jenkins.getInstallState());

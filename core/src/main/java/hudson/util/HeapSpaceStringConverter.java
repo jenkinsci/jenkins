@@ -34,7 +34,7 @@ import com.thoughtworks.xstream.converters.basic.StringConverter;
  *
  * Since XStream 1.3 it use a WeakHashMap cache to always use the same String instances, but
  * this has also major problems with a single long living XStream instance (as we have in Jenkins)
- * See https://x-stream.github.io/jira/604/
+ * See <a href="https://x-stream.github.io/jira/604/">XSTR-604</a>.
  *
  * <p>
  * Use this to avoid that (instead those strings will

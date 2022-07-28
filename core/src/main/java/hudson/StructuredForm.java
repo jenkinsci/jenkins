@@ -33,7 +33,7 @@ import org.kohsuke.stapler.StaplerRequest;
 
 /**
  * Obtains the structured form data from {@link StaplerRequest}.
- * See https://www.jenkins.io/doc/developer/forms/structured-form-submission/
+ * See <a href="https://www.jenkins.io/doc/developer/forms/structured-form-submission/">the developer documentation</a>.
  *
  * @author Kohsuke Kawaguchi
  */
@@ -67,7 +67,7 @@ public class StructuredForm {
         if (v == null)
             return Collections.emptyList();
         if (v instanceof JSONObject)
-            return Collections.singletonList((JSONObject) v);
+            return List.of((JSONObject) v);
         if (v instanceof JSONArray)
             return (List) v;
 

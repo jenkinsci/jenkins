@@ -388,7 +388,7 @@ public class DownloadService {
                 }
                 String jsonString;
                 try {
-                    jsonString = loadJSONHTML(new URL(site + ".html?id=" + URLEncoder.encode(getId(), "UTF-8") + "&version=" + URLEncoder.encode(Jenkins.VERSION, "UTF-8")));
+                    jsonString = loadJSONHTML(new URL(site + ".html?id=" + URLEncoder.encode(getId(), StandardCharsets.UTF_8) + "&version=" + URLEncoder.encode(Jenkins.VERSION, StandardCharsets.UTF_8)));
                     toolInstallerMetadataExists = true;
                 } catch (Exception e) {
                     LOGGER.log(Level.FINE, "Could not load json from " + site, e);

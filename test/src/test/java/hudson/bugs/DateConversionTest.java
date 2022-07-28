@@ -50,7 +50,7 @@ public class DateConversionTest {
 
         List<Future> futures = new ArrayList<>();
         for (int i = 0; i < 10; i++) {
-            futures.add(es.submit(new Callable<Object>() {
+            futures.add(es.submit(new Callable<>() {
                 @Override
                 public Object call() {
                     for (int i = 0; i < 10000; i++)

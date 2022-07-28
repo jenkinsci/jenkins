@@ -64,7 +64,7 @@ public class ProcTest {
         for (int i = 0; i < 1000; i++) {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             launcher.launch().cmds("echo", str).stdout(baos).join();
-            assertEquals(str, baos.toString(Charset.defaultCharset().name()).trim());
+            assertEquals(str, baos.toString(Charset.defaultCharset()).trim());
         }
 
         ch.close();
@@ -116,7 +116,7 @@ public class ProcTest {
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         l.launch().cmds(ECHO_BACK_CMD).stdin(new ByteArrayInputStream("Hello".getBytes(Charset.defaultCharset()))).stdout(out).join();
-        assertEquals("Hello", out.toString(Charset.defaultCharset().name()));
+        assertEquals("Hello", out.toString(Charset.defaultCharset()));
 
         Proc p = l.launch().cmds(ECHO_BACK_CMD).stdin(new ByteArrayInputStream("Hello".getBytes(Charset.defaultCharset()))).readStdout().start();
         p.join();

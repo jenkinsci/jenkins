@@ -8,6 +8,7 @@ import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Job;
 import hudson.model.Run;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.logging.Level;
 import org.junit.Rule;
@@ -81,7 +82,7 @@ public class PeepholePermalinkTest {
     }
 
     private void assertStorage(String id, Job<?, ?> job, Run<?, ?> build) throws Exception {
-        assertThat(Files.readAllLines(PeepholePermalink.storageFor(job.getBuildDir()).toPath()),
+        assertThat(Files.readAllLines(PeepholePermalink.storageFor(job.getBuildDir()).toPath(), StandardCharsets.UTF_8),
             hasItem(id + " " + (build == null ? -1 : build.getNumber())));
     }
 
