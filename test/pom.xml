@@ -156,7 +156,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>cloudbees-folder</artifactId>
-      <version>6.729.v2b_9d1a_74d673</version>
+      <version>6.736.v5f554b_b_a_52b_3</version>
       <scope>test</scope>
     </dependency>
     <dependency>
