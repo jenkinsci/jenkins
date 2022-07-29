@@ -171,6 +171,7 @@ THE SOFTWARE.
                   <excludes>
                     <exclude>org.jenkins-ci.main:cli</exclude>
                     <exclude>org.jenkins-ci.main:jenkins-core</exclude>
+                    <exclude>org.jenkins-ci.main:remoting</exclude>
                     <exclude>org.jenkins-ci.main:websocket-jetty9</exclude>
                     <exclude>org.jenkins-ci.main:websocket-spi</exclude>
                   </excludes>
