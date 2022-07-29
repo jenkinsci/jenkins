@@ -101,7 +101,7 @@ THE SOFTWARE.
     <access-modifier.version>1.27</access-modifier.version>
     <bridge-method-injector.version>1.23</bridge-method-injector.version>
     <mockito.version>4.6.1</mockito.version>
-    <spotless.version>2.23.0</spotless.version>
+    <spotless.version>2.24.0</spotless.version>
   </properties>
 
   <dependencyManagement>
