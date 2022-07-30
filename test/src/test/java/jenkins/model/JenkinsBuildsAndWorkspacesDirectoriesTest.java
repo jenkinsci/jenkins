@@ -82,10 +82,7 @@ public class JenkinsBuildsAndWorkspacesDirectoriesTest {
             setWorkspacesDirProperty("testdir2");
         });
 
-        story.then(step -> {
-            assertTrue(logWasFoundAtLevel(LOG_WHEN_CHANGING_WORKSPACES_DIR,
-                                          Level.WARNING));
-        });
+        story.then(step -> assertTrue(logWasFoundAtLevel(LOG_WHEN_CHANGING_WORKSPACES_DIR, Level.WARNING)));
     }
 
     @Issue("JENKINS-50164")
@@ -170,10 +167,7 @@ public class JenkinsBuildsAndWorkspacesDirectoriesTest {
                 .record(Jenkins.class, Level.INFO)
                 .capture(100);
 
-        story.then(step -> {
-                       assertFalse(logWasFound("Using non default builds directories"));
-                   }
-        );
+        story.then(step -> assertFalse(logWasFound("Using non default builds directories")));
 
         story.then(steps -> {
             assertTrue(story.j.getInstance().isDefaultBuildDir());
