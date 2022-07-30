@@ -40,9 +40,11 @@ THE SOFTWARE.
     </st:attribute>
   </st:documentation>
 
+  <link rel="stylesheet" href="${resURL}/jsbundles/simple-page.css" type="text/css" />
+  
   <j:set var="actualDescription" value="${description}" defaultValue="${it.description}"/>
 
-  <div id="description" style="margin-bottom: var(--section-padding);"><!-- TODO proper CSS class -->
+  <div id="description" class="simple-page--description">
     <div>
       <j:out value="${actualDescription!=null ? app.markupFormatter.translate(actualDescription) : ''}" />
     </div>

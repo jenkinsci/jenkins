@@ -1,5 +1,6 @@
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout">
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:t="/lib/hudson">
+  <link rel="stylesheet" href="${resURL}/jsbundles/simple-page.css" type="text/css" />
   <!-- Node name and status -->
   <h1>
     <l:icon src="${it.iconClassName}" class="icon-xlg" />
@@ -7,9 +8,5 @@
   </h1>
 
   <!-- Node description -->
-  <j:if test="${!empty(it.node.nodeDescription)}">
-    <div style="margin-bottom: var(--section-padding);">
-      <j:out value="${app.markupFormatter.translate(it.node.nodeDescription)}" />
-    </div>
-  </j:if>
+  <t:editableDescription permission="${it.CONFIGURE}" description="${it.node.nodeDescription}" submissionUrl="submitDescription" />
 </j:jelly>

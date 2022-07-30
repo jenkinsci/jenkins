@@ -1,5 +1,6 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout">
+  <link rel="stylesheet" href="${resURL}/jsbundles/simple-page.css" type="text/css" />
   <!-- Node name and status -->
   <h1>
     <l:icon src="${it.iconClassName}" class="icon-xlg" />
@@ -7,7 +8,7 @@
   </h1>
 
   <!-- Node description -->
-  <div style="margin-bottom: var(--section-padding);">
+  <div class="simple-page--description">
     ${%blurb}
   </div>
 </j:jelly>
