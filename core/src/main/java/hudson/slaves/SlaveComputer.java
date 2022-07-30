@@ -80,6 +80,7 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import javax.servlet.ServletException;
 import jenkins.agents.AgentComputerUtil;
 import jenkins.model.Jenkins;
 import jenkins.security.ChannelConfigurator;
@@ -778,6 +779,20 @@ public class SlaveComputer extends Computer {
             return Collections.emptyList();
         else
             return channel.call(new SlaveLogFetcher());
+    }
+
+    /**
+     * Inline editing of description
+     */
+    @RequirePOST
+    public synchronized void doSubmitDescription(StaplerResponse rsp, @QueryParameter String description) throws IOException {
+        checkPermission(CONFIGURE);
+
+        final Slave node = this.getNode();
+        if (node != null) { // TODO consider error handling here
+            node.setNodeDescription(description);
+        }
+        rsp.sendRedirect(".");
     }
 
     @RequirePOST

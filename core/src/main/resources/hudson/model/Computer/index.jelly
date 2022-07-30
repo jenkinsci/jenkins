@@ -38,12 +38,7 @@ THE SOFTWARE.
       </h1>
 
       <!-- Node description -->
-
-      <j:if test="${!empty(it.node.nodeDescription) and !it.class.name.contains('MasterComputer')}">
-            <div style="margin-bottom: var(--section-padding);">
-              <j:out value="${app.markupFormatter.translate(it.node.nodeDescription)}" />
-            </div>
-      </j:if>
+      <t:editableDescription permission="${it.CONFIGURE}" description="${it.node.nodeDescription}" submissionUrl="submitDescription" />
 
       <!-- temporarily offline switch -->
       <div style="float:right">
