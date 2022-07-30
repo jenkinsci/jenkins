@@ -789,8 +789,10 @@ public class SlaveComputer extends Computer {
         checkPermission(CONFIGURE);
 
         final Slave node = this.getNode();
-        if (node != null) { // TODO consider error handling here
+        if (node != null) {
             node.setNodeDescription(description);
+        } else { // Node has been disabled/removed during other session tries to change the description.
+            throw new IOException("Node " + nodeName + " has been deleted during other session tries to change the description");
         }
         rsp.sendRedirect(".");
     }
