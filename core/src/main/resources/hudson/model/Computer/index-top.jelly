@@ -1,0 +1,15 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout">
+  <!-- Node name and status -->
+  <h1>
+    <l:icon src="${it.iconClassName}" class="icon-xlg" />
+    ${it.caption}
+  </h1>
+
+  <!-- Node description -->
+  <j:if test="${!empty(it.node.nodeDescription)}">
+    <div style="margin-bottom: var(--section-padding);">
+      <j:out value="${app.markupFormatter.translate(it.node.nodeDescription)}" />
+    </div>
+  </j:if>
+</j:jelly>
