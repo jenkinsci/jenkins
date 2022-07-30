@@ -1296,6 +1296,12 @@ function rowvgStartEachRow(recursive,f) {
         };
     });
 
+    Behaviour.specify("INPUT.optional-block-event-item", "input-optional-block-event-item", ++p, function(e) {
+      e.addEventListener('click', function() {
+        updateOptionalBlock(e, true);
+      });
+    });
+
     Behaviour.specify("TR.row-set-end,DIV.tr.row-set-end", "tr-row-set-end-div-tr-row-set-end", ++p, function(e) { // see rowSet.jelly and optionalBlock.jelly
         // figure out the corresponding start block
         e = $(e);
@@ -1502,6 +1508,21 @@ function rowvgStartEachRow(recursive,f) {
         var spanTag = document.createElement('span')
         spanTag.innerHTML = labelText
         label.appendChild(spanTag)
+    });
+
+    // stop button JS cannot be done as adjunct, as it can be inside an Ajax response
+    Behaviour.specify('.stop-button-link', 'stop-button-link', 0, function(link) {
+        let question = link.getAttribute('data-confirm');
+        let url = link.getAttribute('href');
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            if (question !== null) {
+                if (!confirm(question)) {
+                    return;
+                }
+            }
+            new Ajax.Request(url);
+        });
     });
 })();
 

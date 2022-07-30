@@ -5,7 +5,8 @@
     ":semanticCommitsDisabled"
   ],
   "enabledManagers": [
-    "npm"
+    "npm",
+    "regex"
   ],
   "packageRules": [
     {
@@ -21,12 +22,21 @@
       "enabled": false
     },
     {
-      "matchPackageNames": ["jest"],
-      "allowedVersions": "<=26.0.1",
-      "description": "https://issues.jenkins.io/browse/JENKINS-68975",
-      "enabled": false
+      "matchPackageNames": ["node"],
+      "allowedVersions": "/16.[0-9]+.[0-9]+(.[0-9]+)?$/"
     }
   ],
-  "labels": ["dependencies"],
+  "regexManagers": [
+    {
+      "fileMatch": ["war\/pom.xml"],
+      "matchStrings": ["<node.version>(?<currentValue>.*?)<\/node.version>"],
+      "depNameTemplate": "node",
+      "datasourceTemplate": "npm"
+    }
+  ],
+  "labels": [
+    "dependencies",
+    "skip-changelog"
+  ],
   "rebaseWhen": "conflicted"
 }
