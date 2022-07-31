@@ -31,7 +31,7 @@ THE SOFTWARE.
     <l:app-bar title="${%Manage Jenkins}" />
 
     <j:if test="${taskTags==null}">
-      <st:include page="sidepanel.jelly" />
+      <st:include page="sidepanel.jelly" it="${app}" />
     </j:if>
 
     <l:main-panel>
@@ -39,10 +39,10 @@ THE SOFTWARE.
         <j:forEach var="am" items="${app.activeAdministrativeMonitors}">
           <st:include page="message.jelly" it="${am}" />
         </j:forEach>
-        <st:include page="downgrade.jelly" />
+        <st:include page="downgrade.jelly" it="${app}" />
       </section>
 
-      <j:forEach var="category" items="${it.categorizedManagementLinks.entrySet()}">
+      <j:forEach var="category" items="${app.categorizedManagementLinks.entrySet()}">
         <section class="jenkins-section jenkins-section--bottom-padding">
           <h2 class="jenkins-section__title">${category.key.label}</h2>
           ${taskTags!=null and attrs.contextMenu!='false' ? taskTags.addHeader(category.key.label) : null}
@@ -55,7 +55,7 @@ THE SOFTWARE.
               <j:set var="iconXml">
                 <l:icon src="${m.iconFileName}" />
               </j:set>
-              ${taskTags!=null and attrs.contextMenu!='false' ? taskTags.add(m.urlName, iconSrc, iconXml, m.displayName, m.requiresPOST, m.requiresConfirmation) : null}
+              ${taskTags!=null and attrs.contextMenu!='false' ? it.addContextMenuItem(taskTags, m.urlName, iconSrc, iconXml, m.displayName, m.requiresPOST, m.requiresConfirmation) : null}
               <j:choose>
                 <j:when test="${m.requiresConfirmation}">
                   <l:confirmationLink href="${m.urlName}" post="${m.requiresPOST}" message="${%are.you.sure(m.displayName)}">
