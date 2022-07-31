@@ -66,9 +66,7 @@ public class XStream2AnnotationTest {
             // Typical content saved by Jenkins session when annotation autodetection was still enabled:
             AnnotatedUnprocessed.get().writeXml("<myconf-annotated-unprocessed><x>4</x></myconf-annotated-unprocessed>");
         });
-        rr.then(r -> {
-            assertThat("CannotResolveClassException/IOException caught in Descriptor.load", AnnotatedUnprocessed.get().x, is(0));
-        });
+        rr.then(r -> assertThat("CannotResolveClassException/IOException caught in Descriptor.load", AnnotatedUnprocessed.get().x, is(0)));
     }
 
     @XStreamAlias("myconf-annotated-processed")
