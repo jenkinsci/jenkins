@@ -27,6 +27,7 @@ package jenkins.websocket;
 import hudson.Extension;
 import hudson.model.InvisibleAction;
 import hudson.model.RootAction;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import jenkins.model.Jenkins;
 import org.kohsuke.accmod.Restricted;
@@ -46,12 +47,12 @@ public class WebSocketEcho  extends InvisibleAction implements RootAction {
             Jenkins.get().checkPermission(Jenkins.ADMINISTER);
             return WebSockets.upgrade(new WebSocketSession() {
                 @Override
-                protected void text(String message) {
+                protected void text(String message) throws IOException {
                     sendText("hello " + message);
                 }
 
                 @Override
-                protected void binary(byte[] payload, int offset, int len) {
+                protected void binary(byte[] payload, int offset, int len) throws IOException {
                     ByteBuffer data = ByteBuffer.allocate(len);
                     for (int i = 0; i < len; i++) {
                         byte b = payload[offset + i];

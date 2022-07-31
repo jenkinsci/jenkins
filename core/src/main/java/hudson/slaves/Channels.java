@@ -40,6 +40,7 @@ import hudson.util.JVMBuilder;
 import hudson.util.StreamCopyThread;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.File;
 import java.io.IOError;
 import java.io.IOException;
 import java.io.InputStream;
@@ -47,6 +48,7 @@ import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -181,7 +183,9 @@ public class Channels {
      * @return
      *      never null
      * @since 1.300
+     * @deprecated removed without replacement
      */
+    @Deprecated
     public static Channel newJVM(String displayName, TaskListener listener, FilePath workDir, ClasspathBuilder classpath, Map<String, String> systemProperties) throws IOException {
         JVMBuilder vmb = new JVMBuilder();
         vmb.systemProperties(systemProperties);
@@ -212,7 +216,9 @@ public class Channels {
      * @return
      *      never null
      * @since 1.361
+     * @deprecated removed without replacement
      */
+    @Deprecated
     public static Channel newJVM(String displayName, TaskListener listener, JVMBuilder vmb, FilePath workDir, ClasspathBuilder classpath) throws IOException {
         ServerSocket serverSocket = new ServerSocket();
         serverSocket.bind(new InetSocketAddress("localhost", 0));
@@ -223,7 +229,7 @@ public class Channels {
         vmb.mainClass(Launcher.class);
 
         if (classpath != null)
-            vmb.args().add("-cp").add(classpath);
+            Arrays.stream(classpath.toString().split(File.pathSeparator)).forEach(arg -> vmb.classpath().add(arg));
         vmb.args().add("-connectTo", "localhost:" + serverSocket.getLocalPort());
 
         listener.getLogger().println("Starting " + displayName);

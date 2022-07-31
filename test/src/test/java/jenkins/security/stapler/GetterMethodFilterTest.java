@@ -144,11 +144,11 @@ public class GetterMethodFilterTest extends StaplerAbstractTest {
 
         // as we cannot determine the element class due to type erasure, this is reachable
         public List<? extends Point> getListOfPoint() {
-            return Collections.singletonList(new RenderablePoint());
+            return List.of(new RenderablePoint());
         }
 
         public List<List<Renderable>> getListOfList() {
-            return Collections.singletonList(Arrays.asList(new Renderable(), new Renderable()));
+            return List.of(Arrays.asList(new Renderable(), new Renderable()));
         }
 
         public Renderable[] getArray() {
@@ -176,7 +176,7 @@ public class GetterMethodFilterTest extends StaplerAbstractTest {
         @SuppressWarnings("unchecked")
         public List<Renderable>[] getArrayOfList() {
             List<Renderable> list = Arrays.asList(new Renderable(), new Renderable());
-            return (List<Renderable>[]) Collections.singletonList(list).toArray(new List[0]);
+            return (List<Renderable>[]) List.of(list).toArray(new List[0]);
         }
 
         public List<Renderable[]> getListOfArray() {
@@ -186,7 +186,7 @@ public class GetterMethodFilterTest extends StaplerAbstractTest {
         }
 
         public Map<String, Renderable> getMap() {
-            return Collections.singletonMap("a", new Renderable());
+            return Map.of("a", new Renderable());
         }
     }
 

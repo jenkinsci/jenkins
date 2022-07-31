@@ -177,7 +177,7 @@ public class SlaveTest {
 
         // Access from a Web client
         JenkinsRule.WebClient client = j.createWebClient();
-        assertEquals(200, client.getPage(client.getContextPath() + "jnlpJars/" + URLEncoder.encode(url, "UTF-8")).getWebResponse().getStatusCode());
+        assertEquals(200, client.getPage(client.getContextPath() + "jnlpJars/" + URLEncoder.encode(url, StandardCharsets.UTF_8)).getWebResponse().getStatusCode());
         assertEquals(200, client.getPage(jnlpJar.getURL()).getWebResponse().getStatusCode());
     }
 

@@ -24,6 +24,7 @@
 
 package hudson.model;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.model.Descriptor.FormException;
 import java.io.IOException;
@@ -99,6 +100,7 @@ public class MyView extends View {
             return Jenkins.get().isUseSecurity();
         }
 
+        @NonNull
         @Override
         public String getDisplayName() {
             return Messages.MyView_DisplayName();

@@ -46,8 +46,8 @@ import hudson.model.queue.FoldableAction;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import org.hamcrest.Matchers;
 import org.junit.Rule;
 import org.junit.Test;
@@ -75,7 +75,7 @@ public class TransientActionFactoryTest {
         }
 
         @Override public Collection<? extends MyAction> createFor(AbstractItem i) {
-            return Collections.singleton(new MyAction());
+            return Set.of(new MyAction());
         }
     }
 
@@ -144,7 +144,7 @@ public class TransientActionFactoryTest {
 
         @Override public Collection<? extends Action> createFor(AbstractProject p) {
             count++;
-            return Collections.singleton(new MyProminentProjectAction());
+            return Set.of(new MyProminentProjectAction());
         }
     }
 
@@ -178,7 +178,7 @@ public class TransientActionFactoryTest {
 
         @Override public Collection<? extends Action> createFor(FreeStyleProject p) {
             count++;
-            return Collections.singleton(new MyProminentProjectAction());
+            return Set.of(new MyProminentProjectAction());
         }
     }
 
@@ -203,7 +203,7 @@ public class TransientActionFactoryTest {
         @NonNull
         @Override
         public Collection<? extends Action> createFor(@NonNull Actionable target) {
-            return Collections.singleton(new MyProminentProjectAction());
+            return Set.of(new MyProminentProjectAction());
         }
     }
 

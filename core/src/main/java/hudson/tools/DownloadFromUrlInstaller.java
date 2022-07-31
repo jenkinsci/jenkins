@@ -103,7 +103,7 @@ public abstract class DownloadFromUrlInstaller extends ToolInstaller {
      * @param root
      *      The directory that contains the extracted archive. This directory contains nothing but the
      *      extracted archive. For example, if the user installed
-     *      https://archive.apache.org/dist/ant/binaries/jakarta-ant-1.1.zip , this directory would contain
+     *      <a href="https://archive.apache.org/dist/ant/binaries/jakarta-ant-1.1.zip">jakarta-ant-1.1.zip</a> , this directory would contain
      *      a single directory "jakarta-ant".
      *
      * @return

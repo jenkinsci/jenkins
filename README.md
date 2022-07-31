@@ -1,4 +1,9 @@
-[![][ButlerImage]][website] 
+<a href="https://jenkins.io">
+  <picture>
+    <source width="400" media="(prefers-color-scheme: dark)" srcset="https://www.jenkins.io/images/jenkins-logo-title-dark.svg">
+    <img width="400" src="https://www.jenkins.io/images/jenkins-logo-title.svg">
+  </picture>
+</a>
 
 # About
 
@@ -8,7 +13,7 @@
 [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/3538/badge)](https://bestpractices.coreinfrastructure.org/projects/3538)
 
 In a nutshell, Jenkins is the leading open-source automation server. 
-Built with Java, it provides over 1,700 [plugins](https://plugins.jenkins.io/) to support automating virtually anything, 
+Built with Java, it provides over 1,800 [plugins](https://plugins.jenkins.io/) to support automating virtually anything, 
 so that humans can spend their time doing things machines cannot.
 
 # What to Use Jenkins for and When to Use It
@@ -40,7 +45,7 @@ Latest releases:
 
 
 # Source
-Our latest and greatest source of Jenkins can be found on [GitHub]. Fork us!
+Our latest and greatest source of Jenkins can be found on [GitHub](https://github.com/jenkinsci/jenkins). Fork us!
 
 # Contributing to Jenkins
 
@@ -52,7 +57,7 @@ Documentation for Jenkins core maintainers is in the [maintainers guidelines](do
 
 # News and Website
 
-All information about Jenkins can be found on our [website].
+All information about Jenkins can be found on our [website](https://www.jenkins.io/).
 Follow us on [Twitter](https://twitter.com/jenkinsci) or [LinkedIn](https://www.linkedin.com/company/jenkins-project/).
 
 # Governance
@@ -66,11 +71,4 @@ Jenkins is used by millions of users and thousands of companies.
 See [adopters](https://www.jenkins.io/project/adopters/) for the list of Jenkins adopters and their success stories.
 
 # License
-Jenkins is **licensed** under the **[MIT License]**.
-
-
-[ButlerImage]: https://www.jenkins.io/sites/default/files/jenkins_logo.png
-[MIT License]: https://github.com/jenkinsci/jenkins/blob/master/LICENSE.txt
-[Mirrors]: http://mirrors.jenkins-ci.org
-[GitHub]: https://github.com/jenkinsci/jenkins
-[website]: https://www.jenkins.io/
+Jenkins is **licensed** under the **[MIT License](https://github.com/jenkinsci/jenkins/blob/master/LICENSE.txt)**.

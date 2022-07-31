@@ -43,7 +43,6 @@ import hudson.model.StringParameterValue;
 import hudson.tasks.BatchFile;
 import hudson.tasks.Shell;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.junit.Rule;
@@ -70,7 +69,7 @@ public class RetainVariablesLocalRuleTest {
         { // the rule allows the user to retain only a subset of variable
             RetainVariablesLocalRule localRule = new RetainVariablesLocalRule();
             localRule.setVariables("what");
-            batch.setConfiguredLocalRules(Collections.singletonList(localRule));
+            batch.setConfiguredLocalRules(List.of(localRule));
 
             FreeStyleBuild build = j.assertBuildStatus(Result.SUCCESS, p.scheduleBuild2(0, (Cause) null, new ParametersAction(
                     new StringParameterValue("what", "hello"),
@@ -84,7 +83,7 @@ public class RetainVariablesLocalRuleTest {
         { // the rule allows the user to retain only a subset of variable (second example)
             RetainVariablesLocalRule localRule = new RetainVariablesLocalRule();
             localRule.setVariables("who");
-            batch.setConfiguredLocalRules(Collections.singletonList(localRule));
+            batch.setConfiguredLocalRules(List.of(localRule));
 
             FreeStyleBuild build = j.assertBuildStatus(Result.SUCCESS, p.scheduleBuild2(0, (Cause) null, new ParametersAction(
                     new StringParameterValue("what", "hello"),
@@ -114,7 +113,7 @@ public class RetainVariablesLocalRuleTest {
         { // no attempt to modify path (except other plugin)
             RetainVariablesLocalRule localRule = new RetainVariablesLocalRule();
             localRule.setVariables("what");
-            batch.setConfiguredLocalRules(Collections.singletonList(localRule));
+            batch.setConfiguredLocalRules(List.of(localRule));
 
             FreeStyleBuild build = j.assertBuildStatus(Result.SUCCESS, p.scheduleBuild2(0, (Cause) null, new ParametersAction(
                     new StringParameterValue("what", "hello")
@@ -127,7 +126,7 @@ public class RetainVariablesLocalRuleTest {
         { // does not accept modification of path
             RetainVariablesLocalRule localRule = new RetainVariablesLocalRule();
             localRule.setVariables("what");
-            batch.setConfiguredLocalRules(Collections.singletonList(localRule));
+            batch.setConfiguredLocalRules(List.of(localRule));
 
             FreeStyleBuild build = j.assertBuildStatus(Result.SUCCESS, p.scheduleBuild2(0, (Cause) null, new ParametersAction(
                     new StringParameterValue("what", "hello"),
@@ -143,7 +142,7 @@ public class RetainVariablesLocalRuleTest {
         { // accept modification of path
             RetainVariablesLocalRule localRule = new RetainVariablesLocalRule();
             localRule.setVariables("what path");
-            batch.setConfiguredLocalRules(Collections.singletonList(localRule));
+            batch.setConfiguredLocalRules(List.of(localRule));
 
             FreeStyleBuild build = j.assertBuildStatus(Result.SUCCESS, p.scheduleBuild2(0, (Cause) null, new ParametersAction(
                     new StringParameterValue("what", "hello"),
@@ -174,7 +173,7 @@ public class RetainVariablesLocalRuleTest {
         { // no attempt to modify path (except other plugin)
             RetainVariablesLocalRule localRule = new RetainVariablesLocalRule();
             localRule.setVariables("what");
-            batch.setConfiguredLocalRules(Collections.singletonList(localRule));
+            batch.setConfiguredLocalRules(List.of(localRule));
 
             FreeStyleBuild build = j.assertBuildStatus(Result.SUCCESS, p.scheduleBuild2(0, (Cause) null, new ParametersAction(
                     new StringParameterValue("what", "hello")
@@ -187,7 +186,7 @@ public class RetainVariablesLocalRuleTest {
         { // does not accept modification of path
             RetainVariablesLocalRule localRule = new RetainVariablesLocalRule();
             localRule.setVariables("what");
-            batch.setConfiguredLocalRules(Collections.singletonList(localRule));
+            batch.setConfiguredLocalRules(List.of(localRule));
 
             FreeStyleBuild build = j.assertBuildStatus(Result.SUCCESS, p.scheduleBuild2(0, (Cause) null, new ParametersAction(
                     new StringParameterValue("what", "hello"),
@@ -203,7 +202,7 @@ public class RetainVariablesLocalRuleTest {
         { // accept modification of path
             RetainVariablesLocalRule localRule = new RetainVariablesLocalRule();
             localRule.setVariables("what path");
-            batch.setConfiguredLocalRules(Collections.singletonList(localRule));
+            batch.setConfiguredLocalRules(List.of(localRule));
 
             FreeStyleBuild build = j.assertBuildStatus(Result.SUCCESS, p.scheduleBuild2(0, (Cause) null, new ParametersAction(
                     new StringParameterValue("what", "hello"),
@@ -231,7 +230,7 @@ public class RetainVariablesLocalRuleTest {
         { // the rule allows the user to retain only a subset of variable
             RetainVariablesLocalRule localRule = new RetainVariablesLocalRule();
             localRule.setVariables("what");
-            shell.setConfiguredLocalRules(Collections.singletonList(localRule));
+            shell.setConfiguredLocalRules(List.of(localRule));
 
             FreeStyleBuild build = j.assertBuildStatus(Result.SUCCESS, p.scheduleBuild2(0, (Cause) null, new ParametersAction(
                     new StringParameterValue("what", "hello"),
@@ -262,7 +261,7 @@ public class RetainVariablesLocalRuleTest {
         localRule.setVariables("path"); // seems to work without but may be env dependent
         localRule.setRetainCharacteristicEnvVars(false);
         localRule.setProcessVariablesHandling(RetainVariablesLocalRule.ProcessVariablesHandling.REMOVE);
-        filteredShell.setConfiguredLocalRules(Collections.singletonList(localRule));
+        filteredShell.setConfiguredLocalRules(List.of(localRule));
         p.getBuildersList().add(filteredShell);
 
         build = j.buildAndAssertSuccess(p);
@@ -295,12 +294,12 @@ public class RetainVariablesLocalRuleTest {
             RetainVariablesLocalRule localRule1 = new RetainVariablesLocalRule();
             // take care to allow the PATH to be used, without that the cmd is not found
             localRule1.setVariables("what");
-            batch1.setConfiguredLocalRules(Collections.singletonList(localRule1));
+            batch1.setConfiguredLocalRules(List.of(localRule1));
 
             RetainVariablesLocalRule localRule2 = new RetainVariablesLocalRule();
             // take care to allow the PATH to be used, without that the cmd is not found
             localRule2.setVariables("who");
-            batch2.setConfiguredLocalRules(Collections.singletonList(localRule2));
+            batch2.setConfiguredLocalRules(List.of(localRule2));
 
             FreeStyleBuild build = j.assertBuildStatus(Result.SUCCESS, p.scheduleBuild2(0, (Cause) null, new ParametersAction(
                     new StringParameterValue("what", "hello"),
@@ -332,12 +331,12 @@ public class RetainVariablesLocalRuleTest {
             RetainVariablesLocalRule localRule1 = new RetainVariablesLocalRule();
             // take care to allow the PATH to be used, without that the cmd is not found
             localRule1.setVariables("what");
-            batch1.setConfiguredLocalRules(Collections.singletonList(localRule1));
+            batch1.setConfiguredLocalRules(List.of(localRule1));
 
             RetainVariablesLocalRule localRule2 = new RetainVariablesLocalRule();
             // take care to allow the PATH to be used, without that the cmd is not found
             localRule2.setVariables("who");
-            batch2.setConfiguredLocalRules(Collections.singletonList(localRule2));
+            batch2.setConfiguredLocalRules(List.of(localRule2));
 
             FreeStyleBuild build = j.assertBuildStatus(Result.SUCCESS, p.scheduleBuild2(0, (Cause) null, new ParametersAction(
                     new StringParameterValue("what", "hello"),

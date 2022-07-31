@@ -24,6 +24,7 @@
 
 package hudson.tools;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.model.Descriptor;
@@ -118,6 +119,7 @@ public class ToolLocationNodeProperty extends NodeProperty<Node> {
     @Extension @Symbol("toolLocation")
     public static class DescriptorImpl extends NodePropertyDescriptor {
 
+        @NonNull
         @Override
         public String getDisplayName() {
             return Messages.ToolLocationNodeProperty_displayName();

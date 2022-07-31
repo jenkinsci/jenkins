@@ -45,7 +45,7 @@ import com.gargoylesoftware.htmlunit.xml.XmlPage;
 import hudson.model.User;
 import java.io.File;
 import java.net.URL;
-import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import jenkins.security.ApiTokenProperty;
 import net.sf.json.JSONObject;
@@ -86,7 +86,7 @@ public class ApiTokenStatsRestartTest {
                    wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
 
                    WebRequest request = new WebRequest(new URL(j.getURL() + "user/" + u.getId() + "/descriptorByName/" + ApiTokenProperty.class.getName() + "/generateNewToken"), HttpMethod.POST);
-                   request.setRequestParameters(Collections.singletonList(new NameValuePair("newTokenName", TOKEN_NAME)));
+                   request.setRequestParameters(List.of(new NameValuePair("newTokenName", TOKEN_NAME)));
 
                    Page page = wc.getPage(request);
                    assertEquals(200, page.getWebResponse().getStatusCode());

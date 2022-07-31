@@ -1,4 +1,4 @@
-/* 
+/*
  * The MIT License
  *
  * Copyright 2012 Jesse Glick.
@@ -51,3 +51,9 @@ function progressivelyRender(handler, callback, statusId) {
         checkNewsLater(0);
     });
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+ document.querySelectorAll('.progressive-rendering-information-holder').forEach(function (holder) {
+    progressivelyRender(window.proxy, window[holder.getAttribute('data-callback')], holder.getAttribute('data-id'));
+  });
+});
