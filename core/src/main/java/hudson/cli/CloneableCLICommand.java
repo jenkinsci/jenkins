@@ -31,7 +31,7 @@ package hudson.cli;
  *
  * @author Kohsuke Kawaguchi
  */
-public abstract class CloneableCLICommand extends CLICommand implements Cloneable {
+public abstract class CloneableCLICommand extends CLICommand {
     @Override
     protected CLICommand createClone() {
         try {
