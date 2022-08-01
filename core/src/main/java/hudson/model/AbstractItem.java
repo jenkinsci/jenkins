@@ -55,6 +55,8 @@ import hudson.util.Secret;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -78,7 +80,6 @@ import jenkins.model.queue.ItemDeletion;
 import jenkins.security.NotReallyRoleSensitiveCallable;
 import jenkins.util.SystemProperties;
 import jenkins.util.xml.XMLUtils;
-import org.apache.commons.io.FileUtils;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Copy;
 import org.apache.tools.ant.types.FileSet;
@@ -110,6 +111,7 @@ import org.xml.sax.SAXException;
 // Item doesn't necessarily have to be Actionable, but
 // Java doesn't let multiple inheritance.
 @ExportedBean
+@SuppressFBWarnings(value = "THROWS_METHOD_THROWS_CLAUSE_THROWABLE", justification = "TODO needs triage")
 public abstract class AbstractItem extends Actionable implements Item, HttpDeletable, AccessControlled, DescriptorByNameOwner, StaplerProxy {
 
     private static final Logger LOGGER = Logger.getLogger(AbstractItem.class.getName());
@@ -850,9 +852,9 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
             IOUtils.copy(configFile.getFile(), os);
         } else {
             String encoding = configFile.sniffEncoding();
-            String xml = FileUtils.readFileToString(configFile.getFile(), encoding);
+            String xml = Files.readString(Util.fileToPath(configFile.getFile()), Charset.forName(encoding));
             Matcher matcher = SECRET_PATTERN.matcher(xml);
-            StringBuffer cleanXml = new StringBuffer();
+            StringBuilder cleanXml = new StringBuilder();
             while (matcher.find()) {
                 if (Secret.decrypt(matcher.group(1)) != null) {
                     matcher.appendReplacement(cleanXml, ">********<");

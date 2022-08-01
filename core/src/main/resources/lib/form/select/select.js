@@ -11,12 +11,12 @@ function updateListBox(listBox,url,config) {
     // form entry using tables-to-divs markup.
     function getStatusElement() {
         function getStatusForTabularForms() {
-            return findFollowingTR(listBox, "validation-error-area").firstElementChild.nextSibling;
+            return listBox.parentNode.querySelector(".validation-error-area");
         }
         function getStatusForDivBasedForms() {
             var settingMain = listBox.closest('.setting-main')
             if (!settingMain) {
-                console.warn("Couldn't find the expected parent element (.setting-main) for element", listBox)
+                console.warn("Couldn't find the expected validation element (.validation-error-area) for element", listBox.parentNode)
                 return;
             }
 
@@ -45,7 +45,7 @@ function updateListBox(listBox,url,config) {
 
         var selectionSet = false; // is the selection forced by the server?
         var possibleIndex = null; // if there's a new option that matches the current value, remember its index
-        var opts = eval('('+rsp.responseText+')').values;
+        var opts = JSON.parse(rsp.responseText).values;
         for( var i=0; i<opts.length; i++ ) {
             l.options[i] = new Option(opts[i].name,opts[i].value);
             if(opts[i].selected) {

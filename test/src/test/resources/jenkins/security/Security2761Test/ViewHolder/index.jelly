@@ -1,0 +1,8 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout">
+  <l:layout>
+    <l:main-panel>
+      <l:icon src="symbol-play" alt="${it.title}" />
+    </l:main-panel>
+  </l:layout>
+</j:jelly>

@@ -2,7 +2,8 @@
 
 const path = require('path');
 const MiniCSSExtractPlugin = require('mini-css-extract-plugin');
-const FixStyleOnlyEntriesPlugin = require('webpack-fix-style-only-entries');
+const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
+const RemoveEmptyScriptsPlugin = require('webpack-remove-empty-scripts');
 const CopyPlugin = require('copy-webpack-plugin');
 const { CleanWebpackPlugin: CleanPlugin } = require('clean-webpack-plugin');
 
@@ -29,8 +30,12 @@ module.exports = (env, argv) => ({
       path.join(__dirname, "src/main/js/config-tabbar.js"),
       path.join(__dirname, "src/main/js/config-tabbar.less"),
     ],
+    "keyboard-shortcuts": [path.join(__dirname, "src/main/js/keyboard-shortcuts.js")],
     "sortable-drag-drop": [path.join(__dirname, "src/main/js/sortable-drag-drop.js")],
+    "section-to-sidebar-items": [path.join(__dirname, "src/main/js/section-to-sidebar-items.js")],
     "section-to-tabs": [path.join(__dirname, "src/main/js/section-to-tabs.js")],
+    "components/row-selection-controller":
+      [path.join(__dirname, "src/main/js/components/row-selection-controller")],
     "filter-build-history": [path.join(__dirname, "src/main/js/filter-build-history.js")],
     "simple-page": [path.join(__dirname, "src/main/less/simple-page.less")],
     "styles": [path.join(__dirname, "src/main/less/styles.less")],
@@ -40,19 +45,21 @@ module.exports = (env, argv) => ({
   },
   devtool: argv.mode === 'production' ? 'source-map' : 'inline-cheap-module-source-map',
   plugins: [
-    new FixStyleOnlyEntriesPlugin(),
+    new RemoveEmptyScriptsPlugin({}),
     new MiniCSSExtractPlugin({
       filename: "[name].css",
     }),
-    new CopyPlugin([
+    new CopyPlugin({
       // Copies fonts to the src/main/webapp/css for compat purposes
       // Some plugins or parts of the UI try to load them from these paths
-      {
-        context: 'src/main/fonts',
-        from: "**/*",
-        to: path.join(__dirname, "src/main/webapp/css")
-      }
-    ]),
+      patterns: [
+        {
+          context: 'src/main/fonts',
+          from: "**/*",
+          to: path.join(__dirname, "src/main/webapp/css")
+        }
+      ]
+    }),
     // Clean all assets within the specified output.
     // It will not clean copied fonts
     new CleanPlugin(),
@@ -66,21 +73,19 @@ module.exports = (env, argv) => ({
           {
             loader: MiniCSSExtractPlugin.loader,
             options: {
-              sourceMap: true
+              esModule: false
             }
           },
           {
             loader: 'css-loader',
             options: {
               sourceMap: true,
-              url: (url, resourcePath) => {
-                // ignore the URLS on the base styles as they are picked
-                // from the src/main/webapp/images dir
-                if (resourcePath.includes('styles.less')) {
-                  return false;
+              // ignore the URLS on the base styles as they are picked
+              // from the src/main/webapp/images dir
+              url: {
+                filter: (url, resourcePath) => {
+                  return !resourcePath.includes('styles.less');
                 }
-
-                return true;
               }
             }
           },
@@ -100,15 +105,10 @@ module.exports = (env, argv) => ({
       },
       {
         test: /\.(woff(2)?|ttf|eot|svg)(\?v=\d+\.\d+\.\d+)?$/,
-        use: [
-          {
-            loader: 'file-loader',
-            options: {
-              name: '[name].[ext]',
-              outputPath: 'fonts/'
-            }
-          }
-        ]
+        type: "asset/resource",
+        generator: {
+          filename: 'fonts/[name].[ext]',
+        },
       },
       {
         test: /\.hbs$/,
@@ -150,7 +150,19 @@ module.exports = (env, argv) => ({
            chunks: 'all'
          }
        }
-    }
+    },
+    minimizer: [
+      new CssMinimizerPlugin({
+        minimizerOptions: {
+          preset: [
+            "default",
+            {
+              svgo: {"exclude": true},
+            },
+          ],
+        },
+      }),
+    ],
   },
   resolve: {
     alias:{

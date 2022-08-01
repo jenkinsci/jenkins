@@ -81,7 +81,7 @@ public abstract class Telemetry implements ExtensionPoint {
      *
      * Good IDs are globally unique and human readable (i.e. no UUIDs).
      *
-     * For a periodically updated list of all public implementations, see https://www.jenkins.io/doc/developer/extensions/jenkins-core/#telemetry
+     * For a periodically updated list of all public implementations, see <a href="https://www.jenkins.io/doc/developer/extensions/jenkins-core/#telemetry">the developer documentation</a>.
      *
      * @return ID of the collector, never null or empty
      */

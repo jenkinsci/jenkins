@@ -100,8 +100,8 @@ THE SOFTWARE.
 <x:doctype name="html" />
 <html>
   <head data-rooturl="${rootURL}" data-resurl="${resURL}" data-imagesurl="${imagesURL}" resURL="${resURL}"
-        data-extensions-available="${extensionsAvailable}" 
-        data-crumb-header="${h.getCrumbRequestField()}" data-crumb-value="${h.getCrumb(request)}" 
+        data-extensions-available="${extensionsAvailable}"
+        data-crumb-header="${h.getCrumbRequestField()}" data-crumb-value="${h.getCrumb(request)}"
         data-unit-test="${h.isUnitTest}">
     ${h.checkPermission(it,permission)}
     ${h.checkAnyPermission(it, permissions)}
@@ -141,7 +141,6 @@ THE SOFTWARE.
     <l:yui module="element" />
     <l:yui module="button" />
     <l:yui module="storage" />
-    <!--l:yui module="editor" suffix="-beta" /-->
 
     <script src="${resURL}/scripts/hudson-behavior.js" type="text/javascript"></script>
     <script src="${resURL}/scripts/sortable.js" type="text/javascript"/>
@@ -149,7 +148,6 @@ THE SOFTWARE.
     <link rel="stylesheet" href="${resURL}/scripts/yui/container/assets/container.css" type="text/css"/>
     <link rel="stylesheet" href="${resURL}/scripts/yui/container/assets/skins/sam/container.css" type="text/css"/>
     <link rel="stylesheet" href="${resURL}/scripts/yui/menu/assets/skins/sam/menu.css" type="text/css" />
-    <!--link rel="stylesheet" href="${resURL}/scripts/yui/editor/assets/skins/sam/editor.css" type="text/css" /-->
 
     <l:hasPermission permission="${app.READ}">
       <link rel="search" type="application/opensearchdescription+xml" href="${rootURL}/opensearch.xml" title="Jenkins" />
@@ -238,6 +236,8 @@ THE SOFTWARE.
       </div>
     </footer>
     </j:if>
+
+    <script src="${resURL}/jsbundles/keyboard-shortcuts.js" type="text/javascript"/>
   </body>
 </html>
 </l:view>

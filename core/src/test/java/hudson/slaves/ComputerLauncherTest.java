@@ -143,8 +143,8 @@ public class ComputerLauncherTest {
 
     private static void assertChecked(String text, String spec) throws IOException {
         ByteArrayOutputStream os = new ByteArrayOutputStream();
-        ComputerLauncher.checkJavaVersion(new PrintStream(os, false, Charset.defaultCharset().name()), "bin/java", new BufferedReader(new StringReader(text)));
-        String logged = os.toString(Charset.defaultCharset().name());
+        ComputerLauncher.checkJavaVersion(new PrintStream(os, false, Charset.defaultCharset()), "bin/java", new BufferedReader(new StringReader(text)));
+        String logged = os.toString(Charset.defaultCharset());
         assertTrue(logged.contains(Messages.ComputerLauncher_JavaVersionResult("bin/java", spec)), logged);
     }
 }

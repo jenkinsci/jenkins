@@ -40,6 +40,7 @@ import hudson.util.StreamTaskListener;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -53,7 +54,7 @@ public class InstallerTranslatorTest {
     @Test public void offlineNodeForJDK() throws Exception {
         Node slave = new DumbSlave("disconnected-slave", null, "/wherever", "1", Node.Mode.NORMAL, null, new JNLPLauncher(true), RetentionStrategy.NOOP, Collections.emptyList());
         String globalDefaultLocation = "/usr/lib/jdk";
-        JDK jdk = new JDK("my-jdk", globalDefaultLocation, Collections.singletonList(new InstallSourceProperty(Collections.singletonList(new CommandInstaller(null, "irrelevant", "/opt/jdk")))));
+        JDK jdk = new JDK("my-jdk", globalDefaultLocation, List.of(new InstallSourceProperty(List.of(new CommandInstaller(null, "irrelevant", "/opt/jdk")))));
         r.jenkins.getJDKs().add(jdk);
         FreeStyleProject p = r.createFreeStyleProject();
         p.setJDK(jdk);
@@ -72,14 +73,14 @@ public class InstallerTranslatorTest {
         JDK jdk1 = new JDK(
                 "jdk1",
                 null,
-                Collections.singletonList(new InstallSourceProperty(Collections.singletonList(
+                List.of(new InstallSourceProperty(List.of(
                         Functions.isWindows()
                                 ? new BatchCommandInstaller(null, "echo installed jdk1", jdk1Path)
                                 : new CommandInstaller(null, "echo installed jdk1", jdk1Path)))));
         JDK jdk2 = new JDK(
                 "jdk2",
                 null,
-                Collections.singletonList(new InstallSourceProperty(Collections.singletonList(
+                List.of(new InstallSourceProperty(List.of(
                         Functions.isWindows()
                                 ? new BatchCommandInstaller(null, "echo installed jdk2", jdk2Path)
                                 : new CommandInstaller(null, "echo installed jdk2", jdk2Path)))));
@@ -120,7 +121,7 @@ public class InstallerTranslatorTest {
         final BatchCommandInstaller bci = new BatchCommandInstaller("wrong2", "echo hello", "/opt/jdk2");
         InstallSourceProperty isp = new InstallSourceProperty(Arrays.asList(ci, bci));
 
-        JDK jdk = new JDK("jdk", null, Collections.singletonList(isp));
+        JDK jdk = new JDK("jdk", null, List.of(isp));
         r.jenkins.getJDKs().add(jdk);
 
 
@@ -143,7 +144,7 @@ public class InstallerTranslatorTest {
                 : new CommandInstaller("built-in", "echo hello", "/opt/jdk2");
         InstallSourceProperty isp = new InstallSourceProperty(Arrays.asList(ci, ci2));
 
-        JDK jdk = new JDK("jdk", null, Collections.singletonList(isp));
+        JDK jdk = new JDK("jdk", null, List.of(isp));
         r.jenkins.getJDKs().add(jdk);
 
 

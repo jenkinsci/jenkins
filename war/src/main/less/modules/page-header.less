@@ -33,8 +33,6 @@ a.page-header__brand-link {
 }
 
 .page-header__brand-image {
-    height: 32px;
-    width: 24px;
     height: 2rem;
     width: 1.5rem;
     margin-right: 0.75rem;
@@ -52,26 +50,25 @@ a.page-header__brand-link {
 
 .page-header__hyperlinks a {
     --text-color: var(--header-link-color);
+
     display: inline-flex;
     align-items: center;
 
     // need to override an existing rule
+    /* stylelint-disable declaration-block-no-shorthand-property-overrides */
     padding-right: 0.5rem;
     padding: 0.5rem;
-    margin-right: 0.25rem !important;
+    margin-right: 0 !important;
     font-weight: bold;
     outline-color: var(--header-link-outline);
 
-    &:link,
-    &:visited {
+    &:link, &:visited {
         color: var(--header-link-color);
         border-radius: var(--header-item-border-radius);
         text-decoration: none;
     }
 
-    &:hover,
-    &:focus,
-    &.mouseIsOverMenuSelector {
+    &:hover, &:focus, &.mouseIsOverMenuSelector {
         color: var(--header-link-color-active);
         background-color: var(--header-link-bg-classic-hover);
         text-decoration: underline;
@@ -139,8 +136,7 @@ a.page-header__brand-link {
     }
 }
 
-.main-search__icon-leading,
-.main-search__icon-trailing {
+.main-search__icon-leading, .main-search__icon-trailing {
     position: absolute;
     display: inline-flex;
     height: 2.5rem;
@@ -164,13 +160,11 @@ a.page-header__brand-link {
     right: 0;
     outline-color: var(--header-link-outline);
 
-    &:link,
-    &:visited {
+    &:link, &:visited {
         color: var(--search-input-color);
     }
 
-    &:hover,
-    &:focus {
+    &:hover, &:focus {
         color: var(--header-link-bg-classic-hover);
     }
 
@@ -194,7 +188,7 @@ a.page-header__brand-link {
 #search-box-completion ul {
     padding: 0.75rem 0;
     width: 100%;
-    margin: 0 0;
+    margin: 0;
     list-style: none;
 }
 

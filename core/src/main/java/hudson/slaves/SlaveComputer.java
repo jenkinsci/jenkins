@@ -666,7 +666,7 @@ public class SlaveComputer extends Computer {
                         "Rejecting the connection because the Remoting version is older than the"
                             + " minimum required version (%s). To allow the connection anyway, set"
                             + " the hudson.slaves.SlaveComputer.allowUnsupportedRemotingVersions"
-                            + " system property to true.%n",
+                            + " system property to true.",
                         RemotingVersionInfo.getMinimumSupportedVersion());
                 disconnect(new OfflineCause.LaunchFailed());
                 return;
@@ -674,7 +674,7 @@ public class SlaveComputer extends Computer {
                 taskListener.error(
                         "The Remoting version is older than the minimum required version (%s)."
                             + " The connection will be allowed, but compatibility is NOT"
-                            + " guaranteed.%n",
+                            + " guaranteed.",
                         RemotingVersionInfo.getMinimumSupportedVersion());
             }
         }
@@ -921,7 +921,7 @@ public class SlaveComputer extends Computer {
         if (c != null) {
             try {
                 c.close();
-            } catch (IOException e) {
+            } catch (Exception e) {
                 logger.log(Level.SEVERE, "Failed to terminate channel to " + getDisplayName(), e);
             }
             Listeners.notify(ComputerListener.class, true, l -> l.onOffline(this, offlineCause));

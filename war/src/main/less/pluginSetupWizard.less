@@ -1,9 +1,8 @@
-@import (css) '../fonts/font-awesome/css/font-awesome.min.css';
-@import (css) '../fonts/icomoon/css/icomoon.css';
-@import (css) '../fonts/google-fonts/roboto/css/roboto.css';
+@import (css) "../fonts/font-awesome/css/font-awesome.min.css";
+@import (css) "../fonts/icomoon/css/icomoon.css";
+@import (css) "../fonts/google-fonts/roboto/css/roboto.css";
 
-.bootstrap-3 *,
-.bootstrap-3 [class*='col-'] {
+.bootstrap-3 *, .bootstrap-3 [class*="col-"] {
     // simple reset
     margin: initial;
     padding: initial;
@@ -20,16 +19,13 @@
     text-align: initial;
     font-size: 13px;
 
-    input,
-password { // get rid of the ms X (it doesn't fire a change event!), we provide our own
+    input, password { // get rid of the ms X (it doesn't fire a change event!), we provide our own
         &::-ms-clear { width: 0; height: 0; }
         &::-ms-reveal { width: 0; height: 0; }
     }
 
-    a,
- button {
-        &:focus,
- &:active { outline: 0; }
+    a, button {
+        &:focus, &:active { outline: 0; }
     }
 
     .spin(@duration: 2s) {
@@ -70,7 +66,7 @@ password { // get rid of the ms X (it doesn't fire a change event!), we provide 
         height: 100%;
         position: relative;
         box-sizing: border-box;
-        padding: 4.2em 0 4.8em 0;
+        padding: 4.2em 0 4.8em;
     }
 
     .jenkins-version {
@@ -157,7 +153,7 @@ password { // get rid of the ms X (it doesn't fire a change event!), we provide 
         border-radius: 5px 5px 0 0;
 
         .close {
-            line-height: 1.42857143;
+            line-height: 1.42857;
             margin-right: 5px;
         }
     }
@@ -195,8 +191,7 @@ password { // get rid of the ms X (it doesn't fire a change event!), we provide 
               margin-top: 0;
             }
 
-            .plugin-select-actions,
- .plugin-selected-info {
+            .plugin-select-actions, .plugin-selected-info {
                 position: absolute;
                 top: 0;
                 left: 10px;
@@ -208,7 +203,7 @@ password { // get rid of the ms X (it doesn't fire a change event!), we provide 
                 }
 
                 a + a::before {
-                    content: '|';
+                    content: "|";
                     font-size: 11px;
                     text-decoration: none !important;
                     display: inline-block;
@@ -226,7 +221,7 @@ password { // get rid of the ms X (it doesn't fire a change event!), we provide 
                     max-width: 32em;
                     margin: 0;
 
-                    input[name=searchbox] {
+                    input[name="searchbox"] {
                         display: inline-block;
                     }
                 }
@@ -244,8 +239,7 @@ password { // get rid of the ms X (it doesn't fire a change event!), we provide 
                     text-decoration: none;
                     font-weight: bold;
 
-                    &:hover,
- &:focus {
+                    &:hover, &:focus {
                         color: #444;
                     }
                 }
@@ -276,7 +270,7 @@ password { // get rid of the ms X (it doesn't fire a change event!), we provide 
             }
 
             .plugin-list-description {
-                margin: -10px -10px 0 -10px;
+                margin: -10px -10px 0;
                 padding: 10px 20px;
                 opacity: 0.7;
                 border-bottom: 1px solid rgba(0, 0, 0, 0.2);
@@ -396,7 +390,7 @@ password { // get rid of the ms X (it doesn't fire a change event!), we provide 
                         margin-top: 0.5em;
                     }
 
-                    input[type=checkbox] {
+                    input[type="checkbox"] {
                         float: left;
                         margin: 3px -18px;
                         vertical-align: middle;
@@ -434,7 +428,7 @@ password { // get rid of the ms X (it doesn't fire a change event!), we provide 
 						position: absolute;
 						width: 11px;
 						height: 11px;
-						content: '';
+						content: "";
 						left: 2px;
 						top: 3px;
 						background: @badge-color;
@@ -442,7 +436,7 @@ password { // get rid of the ms X (it doesn't fire a change event!), we provide 
 					}
 
 					.website-link::after {
-						content: '\f14c';
+						content: "\f14c";
 						display: inline-block;
 						font: 15px FontAwesome;
 						text-indent: 0;
@@ -455,13 +449,11 @@ password { // get rid of the ms X (it doesn't fire a change event!), we provide 
 						color: @badge-background;
 					}
 
-					.website-link:hover::before,
- .website-link:focus::before {
+					.website-link:hover::before, .website-link:focus::before {
 						background: #fff;
 					}
 
-					.website-link:hover::after,
- .website-link:focus::after {
+					.website-link:hover::after, .website-link:focus::after {
 						color: @link-color;
 						width: 16px;
 						height: 16px;
@@ -479,7 +471,7 @@ password { // get rid of the ms X (it doesn't fire a change event!), we provide 
 						border: 0;
 						text-decoration: none;
 						padding: 5px 13px;
-						margin: 0 0;
+						margin: 0;
 						z-index: 100;
 
 						.badge {
@@ -490,7 +482,7 @@ password { // get rid of the ms X (it doesn't fire a change event!), we provide 
 							box-shadow: 0 0 1px 0 rgba(0, 0, 0, 0.25);
 
 							&::after {
-								content: '\f0d9';
+								content: "\f0d9";
 								font: 15px FontAwesome;
 								display: inline-block;
 								width: 13px;
@@ -500,9 +492,7 @@ password { // get rid of the ms X (it doesn't fire a change event!), we provide 
 							}
 						}
 
-						&:hover,
- &.active,
- &:focus {
+						&:hover, &.active, &:focus {
 							text-decoration: none;
 							outline: none;
 
@@ -519,7 +509,7 @@ password { // get rid of the ms X (it doesn't fire a change event!), we provide 
 					}
 
 					.dep-list {
-						padding: 10px 0 6px 0;
+						padding: 10px 0 6px;
 						display: none;
 
 						> h3 {
@@ -539,13 +529,11 @@ password { // get rid of the ms X (it doesn't fire a change event!), we provide 
 							box-shadow: 0 0 1px 0 rgba(0, 0, 0, 0.25);
 
 							&::after {
-								content: '\f14c';
+								content: "\f14c";
 								font: 11px FontAwesome;
 							}
 
-							&:hover,
- &:active,
- &:focus {
+							&:hover, &:active, &:focus {
 								color: #fff;
 								background: @link-color;
 								text-decoration: none;
@@ -555,7 +543,7 @@ password { // get rid of the ms X (it doesn't fire a change event!), we provide 
 
 					&.show-dependencies {
 						.toggle-dependency-list .badge::after {
-							content: '\f0d7';
+							content: "\f0d7";
 						}
 
 						.dep-list {
@@ -593,7 +581,7 @@ password { // get rid of the ms X (it doesn't fire a change event!), we provide 
                     border-radius: none;
 
                     &::after {
-                        content: '';
+                        content: "";
                         display: none;
                         position: absolute;
                         top: 0;
@@ -603,8 +591,7 @@ password { // get rid of the ms X (it doesn't fire a change event!), we provide 
                         background: #337ab7;
                     }
 
-                    &:hover,
- &:focus {
+                    &:hover, &:focus {
                       background: rgba(100, 200, 255, 0.1);
                       box-shadow: inset -200px 0 200px -200px rgba(100, 200, 255, 0.33);
                         color: #337ab7;
@@ -673,7 +660,7 @@ password { // get rid of the ms X (it doesn't fire a change event!), we provide 
             padding-left: 10px;
 
             &::before {
-                content: ' ** ';
+                content: " ** ";
             }
         }
 
@@ -739,7 +726,7 @@ password { // get rid of the ms X (it doesn't fire a change event!), we provide 
                 font-family: FontAwesome;
                 font-size: 17px;
                 line-height: 17px;
-                content: '\f10c';
+                content: "\f10c";
                 color: rgba(0, 0, 0, 0.1);
                 position: absolute;
                 left: 5px;
@@ -747,7 +734,7 @@ password { // get rid of the ms X (it doesn't fire a change event!), we provide 
 
             &.installing {
                 &::before {
-                    content: '\f021';
+                    content: "\f021";
                     color: rgba(0, 60, 100, 0.33);
                     .spin();
                 }
@@ -757,7 +744,7 @@ password { // get rid of the ms X (it doesn't fire a change event!), we provide 
               background: #e5f9e5;
 
                 &::before {
-                    content: '\f00c';
+                    content: "\f00c";
                     color: #3c763d;
 
                     .no-spin();
@@ -768,7 +755,7 @@ password { // get rid of the ms X (it doesn't fire a change event!), we provide 
               background: #fdd;
 
                 &::before {
-                    content: '\f00d';
+                    content: "\f00d";
                     color: #a94442;
                     .no-spin();
                 }
@@ -876,8 +863,7 @@ password { // get rid of the ms X (it doesn't fire a change event!), we provide 
     }
 
     .security-panel {
-        &.security-panel,
- > iframe {
+        &.security-panel, > iframe {
             position: absolute;
             top: 0;
             left: 0;
@@ -922,9 +908,7 @@ body .plugin-setup-wizard { // need specificity, revisit the CSS inclusion order
 
 @fb-loader-color: #E6E6E6;
 
-.loader,
-.loader::before,
-.loader::after {
+.loader, .loader::before, .loader::after {
     background: @fb-loader-color;
     -webkit-animation: fb-loader 1s infinite ease-in-out;
     animation: fb-loader 1s infinite ease-in-out;
@@ -932,11 +916,10 @@ body .plugin-setup-wizard { // need specificity, revisit the CSS inclusion order
     height: 8px;
 }
 
-.loader::before,
-.loader::after {
+.loader::before, .loader::after {
     position: absolute;
     top: 0;
-    content: '';
+    content: "";
 }
 
 .loader::before {
@@ -948,7 +931,7 @@ body .plugin-setup-wizard { // need specificity, revisit the CSS inclusion order
 .loader {
     text-indent: -9999em;
     top: 50%;
-    margin: -4px auto 0 auto;
+    margin: -4px auto 0;
     position: relative;
     font-size: 6px;
     -webkit-transform: translateZ(0);
@@ -963,9 +946,7 @@ body .plugin-setup-wizard { // need specificity, revisit the CSS inclusion order
 }
 
 @-webkit-keyframes fb-loader {
-    0%,
-    80%,
-    100% {
+    0%, 80%, 100% {
         box-shadow: 0 0 @fb-loader-color;
         height: 4em;
     }
@@ -977,9 +958,7 @@ body .plugin-setup-wizard { // need specificity, revisit the CSS inclusion order
 }
 
 @keyframes fb-loader {
-    0%,
-    80%,
-    100% {
+    0%, 80%, 100% {
         box-shadow: 0 0 @fb-loader-color;
         height: 4em;
     }
@@ -991,17 +970,16 @@ body .plugin-setup-wizard { // need specificity, revisit the CSS inclusion order
 }
 
 .bootstrap-3 {
-    @import (less) '../../../node_modules/bootstrap/less/bootstrap.less';
+    @import (less) "~bootstrap/less/bootstrap.less";
 }
 
-.bootstrap-3 [class*='col-'] {
+.bootstrap-3 [class*="col-"] {
     // simple reset
     margin: initial;
     padding: initial;
 }
 
-.bootstrap-3 .categories,
-.bootstrap-3 .plugins {
+.bootstrap-3 .categories, .bootstrap-3 .plugins {
     padding-left: 0;
     padding-right: 0;
 }
