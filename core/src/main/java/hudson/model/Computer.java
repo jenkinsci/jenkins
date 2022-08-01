@@ -782,7 +782,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     @Exported
     public String getIcon() {
         // The machine was taken offline by someone
-        if (isTemporarilyOffline() && getOfflineCause() instanceof OfflineCause.UserCause) return "symbol-computer-disconnected";
+        if (isTemporarilyOffline() && getTemporarilyOfflineCause() instanceof OfflineCause.UserCause) return "symbol-computer-disconnected";
         // There is a "technical" reason the computer will not accept new builds
         if (isOffline() || !isAcceptingTasks()) return "symbol-computer-offline";
         return "symbol-computer";
@@ -802,7 +802,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     @Exported
     public String getIconClassName() {
         // The machine was taken offline by someone
-        if (isTemporarilyOffline() && getOfflineCause() instanceof OfflineCause.UserCause) return "symbol-computer-disconnected";
+        if (isTemporarilyOffline() && getTemporarilyOfflineCause() instanceof OfflineCause.UserCause) return "symbol-computer-disconnected";
         // There is a "technical" reason the computer will not accept new builds
         if (isOffline() || !isAcceptingTasks()) return "symbol-computer-offline";
         return "symbol-computer";
@@ -810,7 +810,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
 
     public String getIconAltText() {
         // The machine was taken offline by someone
-        if (isTemporarilyOffline() && getOfflineCause() instanceof OfflineCause.UserCause) return "[temporarily offline by user]";
+        if (isTemporarilyOffline() && getTemporarilyOfflineCause() instanceof OfflineCause.UserCause) return "[temporarily offline by user]";
         // There is a "technical" reason the computer will not accept new builds
         if (isOffline() || !isAcceptingTasks()) return "[offline]";
         return "[online]";
