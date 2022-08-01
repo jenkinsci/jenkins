@@ -198,6 +198,13 @@ var FormChecker = {
     // won't work.
     inProgress : 0,
 
+    // defines the maximum number of parallel checks to be run
+    // plugins that intend to to change this should be aware that when using http1.1 the
+    // browsers will usually throttle the number of connections and having a higher value
+    // can even have a negative impact. But with http2 enabled, this can be a great
+    // performance improvement
+    maxParallel : 1,
+
     /**
      * Schedules a form field check. Executions are serialized to reduce the bandwidth impact.
      *
@@ -225,7 +232,7 @@ var FormChecker = {
     },
 
     schedule : function() {
-        if (this.inProgress>0)  return;
+        if (this.inProgress>=this.maxParallel)  return;
         if (this.queue.length == 0) return;
 
         var next = this.queue.shift();
