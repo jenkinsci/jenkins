@@ -5,7 +5,7 @@ module.exports = {
         es2022: true
     },
     // Uses eslint default ruleset
-    extends: "eslint:recommended",
+    extends: ["eslint:recommended", "prettier"],
     parserOptions: {
         sourceType: "module"
     },
