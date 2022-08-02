@@ -450,9 +450,10 @@ public class ListView extends View implements DirectlyModifiableView {
             } else {
                 items = getOwner().getItemGroup().getItems();
             }
+            JSONObject submittedItems = json.getJSONObject("items");
             for (TopLevelItem item : items) {
                 String relativeNameFrom = item.getRelativeNameFrom(getOwner().getItemGroup());
-                if (req.getParameter(relativeNameFrom) != null) {
+                if (submittedItems.opt(relativeNameFrom) != null) {
                     jobNames.add(relativeNameFrom);
                 }
             }

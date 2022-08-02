@@ -35,7 +35,7 @@ THE SOFTWARE.
   </f:entry>
 
   <f:entry title="${%Jobs}">
-    <div class="listview-jobs">
+    <div class="listview-jobs" name="items">
       <j:forEach var="job" items="${h.getAllTopLevelItems(it.ownerItemGroup)}">
         <j:set var="spanClass" value=""/>
         <j:set var="spanStyle" value=""/>
@@ -44,7 +44,7 @@ THE SOFTWARE.
           <j:set var="spanStyle" value="${it.recurse?'':'display:none'}"/>
         </j:if>
         <span class="${spanClass}" style="${spanStyle}">
-          <f:checkbox name="${job.getRelativeNameFromGroup(it.ownerItemGroup)}" checked="${it.jobNamesContains(job)}" title="${h.getRelativeDisplayNameFrom(job,it.ownerItemGroup)}" tooltip="${job.fullName}" json="true"/>
+          <f:checkbox name="_.${job.getRelativeNameFromGroup(it.ownerItemGroup)}" checked="${it.jobNamesContains(job)}" title="${h.getRelativeDisplayNameFrom(job,it.ownerItemGroup)}" tooltip="${job.fullName}" json="true"/>
           <br/>
         </span>
       </j:forEach>
