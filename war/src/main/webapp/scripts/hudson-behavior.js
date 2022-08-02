@@ -249,7 +249,7 @@ var FormChecker = {
     }
 }
 
-if (performance.getEntries()[0].nextHopProtocol === "h2") {
+if (performance.getEntriesByType("resource")[0].nextHopProtocol === "h2") {
    FormChecker.maxParallel = 30;
 }
 
