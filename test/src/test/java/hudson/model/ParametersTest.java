@@ -270,7 +270,7 @@ public class ParametersTest {
         @Override
         public void translate(String markup, @NonNull Writer output) throws IOException {
             Matcher m = Pattern.compile("[<>]").matcher(markup);
-            StringBuffer buf = new StringBuffer();
+            StringBuilder buf = new StringBuilder();
             while (m.find()) {
                 m.appendReplacement(buf, m.group().equals("<") ? "<b>[</b>" : "<b>]</b>");
             }

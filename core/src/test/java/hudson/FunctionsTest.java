@@ -401,6 +401,13 @@ public class FunctionsTest {
         assertThat(result, is(equalTo("design-library")));
     }
 
+    @Test
+    public void extractPluginNameFromIconSrcWhichContainsPluginWordInThePluginName() {
+        String result = Functions.extractPluginNameFromIconSrc("symbol-padlock plugin-design-library-plugin");
+
+        assertThat(result, is(equalTo("design-library-plugin")));
+    }
+
     @Issue("JDK-6507809")
     @Test public void printThrowable() {
         // Basics: a single exception. No change.
