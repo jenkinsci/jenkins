@@ -78,11 +78,7 @@ public class RunTest {
                 }).get();
                 TimeZone.setDefault(TimeZone.getTimeZone("America/Los_Angeles"));
                 id = r.getId();
-                assertEquals(id, svc.submit(new Callable<String>() {
-                    @Override public String call() {
-                        return r.getId();
-                    }
-                }).get());
+                assertEquals(id, svc.submit(r::getId).get());
             } finally {
                 svc.shutdown();
             }
@@ -90,12 +86,7 @@ public class RunTest {
             svc = Executors.newSingleThreadExecutor();
             try {
                 assertEquals(id, r.getId());
-                assertEquals(id, svc.submit(new Callable<String>() {
-                    @Override
-                    public String call() {
-                        return r.getId();
-                    }
-                }).get());
+                assertEquals(id, svc.submit(r::getId).get());
             } finally {
                 svc.shutdown();
             }
