@@ -249,6 +249,10 @@ var FormChecker = {
     }
 }
 
+if (performance.getEntries()[0].nextHopProtocol === "h2") {
+   FormChecker.maxParallel = 30;
+}
+
 /**
  * Find the sibling (in the sense of the structured form submission) form item of the given name,
  * and returns that DOM node.
