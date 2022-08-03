@@ -252,11 +252,15 @@ var FormChecker = {
  * Detects if http2 protocol is enabled.
  */
 function isHttp2Enabled() {
-  const p = performance.getEntriesByType("resource");
-  if (p.length > 0) {
-    if ("nextHopProtocol" in p[0] && p[0].nextHopProtocol === "h2") {
-      return true;
+  try {
+    const p = performance.getEntriesByType("resource");
+    if (p.length > 0) {
+      if ("nextHopProtocol" in p[0] && p[0].nextHopProtocol === "h2") {
+        return true;
+      }
     }
+  } catch(e) {
+    cosole.error(e.stack || e)
   }
   return false;
 }
