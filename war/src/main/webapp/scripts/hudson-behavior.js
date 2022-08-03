@@ -199,10 +199,9 @@ var FormChecker = {
     inProgress : 0,
 
     // defines the maximum number of parallel checks to be run
-    // plugins that intend to to change this should be aware that when using http1.1 the
-    // browsers will usually throttle the number of connections and having a higher value
-    // can even have a negative impact. But with http2 enabled, this can be a great
-    // performance improvement
+    // should be '1' when http1.1 is used as browsers will usually throttle the number of connections 
+    // and having a higher value can even have a negative impact. But with http2 enabled, this can 
+    // be a great performance improvement
     maxParallel : 1,
 
     /**
@@ -249,7 +248,22 @@ var FormChecker = {
     }
 }
 
-if (performance.getEntriesByType("resource")[0].nextHopProtocol === "h2") {
+/**
+ * Detects if http2 protocol is enabled.
+ */
+function isHttp2Enabled() {
+  const p = performance.getEntriesByType("resource");
+  if (p.length > 0) {
+    if ("nextHopProtocol" in p[0] && p[0].nextHopProtocol === "h2") {
+      return true;
+    }
+  }
+  return false;
+}
+
+// detect if we're using http2 and if yes increase the maxParallel connections
+// of the FormChecker
+if (isHttp2Enabled()) {
    FormChecker.maxParallel = 30;
 }
 
