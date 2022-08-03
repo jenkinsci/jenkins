@@ -260,7 +260,7 @@ function isHttp2Enabled() {
       }
     }
   } catch(e) {
-    cosole.error(e.stack || e)
+    console.error(e.stack || e)
   }
   return false;
 }
