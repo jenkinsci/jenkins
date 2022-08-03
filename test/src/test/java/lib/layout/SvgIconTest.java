@@ -93,9 +93,7 @@ public class SvgIconTest  {
         JenkinsRule.WebClient wc = j.createWebClient();
 
         AtomicBoolean alertTriggered = new AtomicBoolean(false);
-        wc.setAlertHandler((p, s) -> {
-            alertTriggered.set(true);
-        });
+        wc.setAlertHandler((p, s) -> alertTriggered.set(true));
 
         HtmlPage page = wc.goTo(testRootAction.getUrlName());
 
