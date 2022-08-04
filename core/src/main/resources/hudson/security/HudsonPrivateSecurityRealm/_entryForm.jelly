@@ -45,53 +45,48 @@ THE SOFTWARE.
 
   <h1>${title}</h1>
   <div class="form-content">
-    <j:if test="${data.errorMessage!=null}">
-      <div class="error">
-        ${data.errorMessage}
-      </div>
-    </j:if>
-    <j:forEach var="error" items="${data.errors}">
-      <div class="error">
-        ${error.value}
-      </div>
-    </j:forEach>
-      <table>
+    <table>
+      <tr>
+        <f:entry title="${%Username}${data.errors.containsKey('username') ? ' - ' +  data.errors.get('username') : ''}"
+                 class="${data.errors.containsKey('username') ? 'form-error' : ''}"  >
+          <input class="jenkins-input ${data.errors.containsKey('username') ? 'danger' : ''}" type="text" name="username" id="username" value="${data.username}" autofocus="autofocus" />
+        </f:entry>
+      </tr>
+      <tr>
+        <f:entry title="${%Password}${data.errors.containsKey('password1') ? ' - ' +  data.errors.get('password1') : ''}"
+                 class="${data.errors.containsKey('password1') ? 'form-error' : ''}"  >
+          <input class="jenkins-input ${data.errors.containsKey('password1') ? 'danger' : ''}" type="password" name="password1" value="${data.password1}" />
+        </f:entry>
+      </tr>
+      <tr>
+        <f:entry title="${%Confirm password}${data.errors.containsKey('password1') ? ' - ' +  data.errors.get('password1') : ''}"
+                 class="${data.errors.containsKey('password1') ? 'form-error' : ''}"  >
+          <input class="jenkins-input ${data.errors.containsKey('password1') ? 'danger' : ''}" type="password" name="password2" value="${data.password2}" />
+        </f:entry>
+      </tr>
+      <tr>
+        <f:entry title="${%Full name}${data.errors.containsKey('fullname') ? ' - ' +  data.errors.get('fullname') : ''}"
+                 class="${data.errors.containsKey('fullname') ? 'form-error' : ''}"  >
+          <input class="jenkins-input ${data.errors.containsKey('fullname') ? 'danger' : ''}" type="text" name="fullname" value="${data.fullname}" />
+        </f:entry>
+      </tr>
+      <j:if test="${it.mailerPluginPresent}">
         <tr>
-          <f:entry title="${%Username}:">
-            <input class="jenkins-input" type="text" name="username" id="username" value="${data.username}" autofocus="autofocus" />
+          <f:entry title="${%E-mail address}${data.errors.containsKey('email') ? ' - ' +  data.errors.get('email') : ''}"
+                   class="${data.errors.containsKey('email') ? 'form-error' : ''}">
+            <input class="jenkins-input ${data.errors.containsKey('email') ? 'danger' : ''}" type="text" name="email" value="${data.email}" />
           </f:entry>
         </tr>
+      </j:if>
+      <j:if test="${captcha}">
         <tr>
-          <f:entry title="${%Password}:">
-            <input class="jenkins-input" type="password" name="password1" value="${data.password1}" />
-          </f:entry>
+          <td>${%Enter text as shown}:</td>
+          <td>
+            <input class="jenkins-input" type="text" name="captcha" autocomplete="off" /><br />
+            <img src="${rootURL}/securityRealm/captcha" alt="[${%captcha}]" />
+          </td>
         </tr>
-        <tr>
-          <f:entry title="${%Confirm password}:">
-            <input class="jenkins-input" type="password" name="password2" value="${data.password2}" />
-          </f:entry>
-        </tr>
-        <tr>
-          <f:entry title="${%Full name}:">
-            <input class="jenkins-input" type="text" name="fullname" value="${data.fullname}" />
-          </f:entry>
-        </tr>
-        <j:if test="${it.mailerPluginPresent}">
-          <tr>
-            <f:entry title="${%E-mail address}:">
-              <input class="jenkins-input" type="text" name="email" value="${data.email}" />
-            </f:entry>
-          </tr>
-        </j:if>
-        <j:if test="${captcha}">
-          <tr>
-            <td>${%Enter text as shown}:</td>
-            <td>
-              <input class="jenkins-input" type="text" name="captcha" autocomplete="off" /><br />
-              <img src="${rootURL}/securityRealm/captcha" alt="[${%captcha}]" />
-            </td>
-          </tr>
-        </j:if>
-      </table>
+      </j:if>
+    </table>
   </div>
 </j:jelly>
