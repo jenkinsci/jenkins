@@ -49,8 +49,6 @@ THE SOFTWARE.
     <jenkins.addOpens>--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.desktop/com.sun.beans.introspect=ALL-UNNAMED</jenkins.addOpens>
     <!-- Filled in by maven-hpi-plugin with the path to org-netbeans-insane-hook.jar extracted from jenkins-test-harness -->
     <jenkins.insaneHook />
-    <!-- TODO bootstrapping test harness -->
-    <maven.test.skip>true</maven.test.skip>
   </properties>
 
   <dependencyManagement>
@@ -93,7 +91,7 @@ THE SOFTWARE.
       <groupId>${project.groupId}</groupId>
       <artifactId>jenkins-test-harness</artifactId>
       <!-- TODO https://github.com/jenkinsci/jenkins-test-harness/pull/367 -->
-      <version>1823.v946a_e8946f61</version>
+      <version>1823.va_10320245da_c</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>

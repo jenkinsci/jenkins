@@ -75,6 +75,9 @@ for (i = 0; i < buildTypes.size(); i++) {
           if (!fileExists('core/target/surefire-reports/TEST-jenkins.Junit4TestsRanTest.xml')) {
             error 'JUnit 4 tests are no longer being run for the core package'
           }
+          if (!fileExists('test/target/surefire-reports/TEST-jenkins.Junit4TestsRanTest.xml')) {
+            error 'JUnit 4 tests are no longer being run for the test package'
+          }
           // cli and war have been migrated to JUnit 5
           if (failFast && currentBuild.result == 'UNSTABLE') {
             error 'There were test failures; halting early'
