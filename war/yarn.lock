@@ -3563,7 +3563,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"handlebars-loader@npm:^1.7.2":
+"handlebars-loader@npm:1.7.2":
   version: 1.7.2
   resolution: "handlebars-loader@npm:1.7.2"
   dependencies:
@@ -3577,7 +3577,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"handlebars@npm:^4.7.7":
+"handlebars@npm:4.7.7":
   version: 4.7.7
   resolution: "handlebars@npm:4.7.7"
   dependencies:
@@ -3999,8 +3999,8 @@ __metadata:
     css-loader: 6.7.1
     css-minimizer-webpack-plugin: 4.0.0
     eslint: 8.21.0
-    handlebars: ^4.7.7
-    handlebars-loader: ^1.7.2
+    handlebars: 4.7.7
+    handlebars-loader: 1.7.2
     hotkeys-js: 3.9.4
     jenkins-js-modules: 1.5.4
     jquery: 3.6.0
