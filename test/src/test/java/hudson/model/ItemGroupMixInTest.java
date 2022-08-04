@@ -227,7 +227,7 @@ public class ItemGroupMixInTest {
 
     Project goodProject = r.jenkins.createProject(FreeStyleProject.class, goodName);
 
-    Failure exception = assertThrows(Failure.class, () -> { r.jenkins.copy(goodProject, badName); });
+    Failure exception = assertThrows(Failure.class, () -> r.jenkins.copy(goodProject, badName));
     assertEquals(exception.getMessage(), Messages.Hudson_UnsafeChar("@"));
   }
 
@@ -236,7 +236,7 @@ public class ItemGroupMixInTest {
   public void createProject_checkGoodName() {
     final String badName = "calvin@jenkins";
 
-    Failure exception = assertThrows(Failure.class, () -> { r.jenkins.createProject(MockFolder.class, badName); });
+    Failure exception = assertThrows(Failure.class, () -> r.jenkins.createProject(MockFolder.class, badName));
     assertEquals(exception.getMessage(), Messages.Hudson_UnsafeChar("@"));
   }
 
@@ -262,9 +262,7 @@ public class ItemGroupMixInTest {
             "  <buildWrappers/>\n" +
             "</project>";
 
-    Failure exception = assertThrows(Failure.class, () -> {
-      r.jenkins.createProjectFromXML(badName, new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8)));
-    });
+    Failure exception = assertThrows(Failure.class, () -> r.jenkins.createProjectFromXML(badName, new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8))));
     assertEquals(exception.getMessage(), Messages.Hudson_UnsafeChar("@"));
   }
 

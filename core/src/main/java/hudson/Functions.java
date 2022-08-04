@@ -2341,7 +2341,7 @@ public class Functions {
         String[] arr = iconSrc.split(" ");
         for (String element : arr) {
             if (element.startsWith("plugin-")) {
-                return element.replace("plugin-", "");
+                return element.replaceFirst("plugin-", "");
             }
         }
 
