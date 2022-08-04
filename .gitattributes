@@ -38,3 +38,7 @@
 *.png           binary
 *.war           binary
 *.zip           binary
+
+# Yarn
+# https://yarnpkg.com/getting-started/qa#which-files-should-be-gitignored
+/war/.yarn/plugins/** binary
