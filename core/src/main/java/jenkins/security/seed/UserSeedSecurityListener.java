@@ -27,7 +27,7 @@ package jenkins.security.seed;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.model.User;
-import javax.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpSession;
 import jenkins.security.SecurityListener;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;

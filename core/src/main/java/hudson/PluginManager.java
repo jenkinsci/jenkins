@@ -65,6 +65,8 @@ import hudson.util.Retrier;
 import hudson.util.Service;
 import hudson.util.VersionNumber;
 import hudson.util.XStream2;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FilenameFilter;
@@ -109,8 +111,6 @@ import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
 import javax.xml.XMLConstants;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParserFactory;
@@ -130,10 +130,10 @@ import jenkins.util.io.OnMaster;
 import jenkins.util.xml.RestrictiveEntityResolver;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import org.apache.commons.fileupload.FileItem;
-import org.apache.commons.fileupload.FileUploadException;
-import org.apache.commons.fileupload.disk.DiskFileItemFactory;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.commons.fileupload2.FileItem;
+import org.apache.commons.fileupload2.FileUploadException;
+import org.apache.commons.fileupload2.disk.DiskFileItemFactory;
+import org.apache.commons.fileupload2.jaksrvlt.JakSrvltFileUpload;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
@@ -231,7 +231,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             @Override
             @NonNull PluginManager doCreate(@NonNull Class<? extends PluginManager> klass,
                                             @NonNull Jenkins jenkins) throws ReflectiveOperationException {
-                return klass.getConstructor(ServletContext.class, File.class).newInstance(jenkins.servletContext, jenkins.getRootDir());
+                return klass.getConstructor(ServletContext.class, File.class).newInstance(jenkins.getServletContext(), jenkins.getRootDir());
             }
         },
         FILE {
@@ -634,7 +634,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     protected @NonNull Set<String> loadPluginsFromWar(@NonNull String fromPath, @CheckForNull FilenameFilter filter) {
         Set<String> names = new HashSet<>();
 
-        ServletContext context = Jenkins.get().servletContext;
+        ServletContext context = Jenkins.get().getServletContext();
         Set<String> plugins = Util.fixNull(context.getResourcePaths(fromPath));
         Set<URL> copiedPlugins = new HashSet<>();
         Set<URL> dependencies = new HashSet<>();
@@ -698,7 +698,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         String dependencySpec = manifest.getMainAttributes().getValue("Plugin-Dependencies");
         if (dependencySpec != null) {
             String[] dependencyTokens = dependencySpec.split(",");
-            ServletContext context = Jenkins.get().servletContext;
+            ServletContext context = Jenkins.get().getServletContext();
 
             for (String dependencyToken : dependencyTokens) {
                 if (dependencyToken.endsWith(";resolution:=optional")) {
@@ -1793,7 +1793,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
             String fileName = "";
             PluginCopier copier;
-            ServletFileUpload upload = new ServletFileUpload(new DiskFileItemFactory());
+            JakSrvltFileUpload upload = new JakSrvltFileUpload(new DiskFileItemFactory());
             List<FileItem> items = upload.parseRequest(req);
             if (StringUtils.isNotBlank(items.get(1).getString())) {
                 // this is a URL deployment

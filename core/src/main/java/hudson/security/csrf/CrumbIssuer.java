@@ -13,11 +13,11 @@ import hudson.model.Api;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.util.MultipartFormDataParser;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
 import jenkins.model.Jenkins;
 import jenkins.security.stapler.StaplerAccessibleType;
 import org.kohsuke.accmod.Restricted;
@@ -157,7 +157,7 @@ public abstract class CrumbIssuer implements Describable<CrumbIssuer>, Extension
      */
     @Initializer
     public static void initStaplerCrumbIssuer() {
-        WebApp.get(Jenkins.get().servletContext).setCrumbIssuer(new org.kohsuke.stapler.CrumbIssuer() {
+        WebApp.get(Jenkins.get().getServletContext()).setCrumbIssuer(new org.kohsuke.stapler.CrumbIssuer() {
             @Override
             public String issueCrumb(StaplerRequest request) {
                 CrumbIssuer ci = Jenkins.get().getCrumbIssuer();

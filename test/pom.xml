@@ -49,6 +49,8 @@ THE SOFTWARE.
     <jenkins.addOpens>--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.desktop/com.sun.beans.introspect=ALL-UNNAMED</jenkins.addOpens>
     <!-- Filled in by maven-hpi-plugin with the path to org-netbeans-insane-hook.jar extracted from jenkins-test-harness -->
     <jenkins.insaneHook />
+    <!-- TODO bootstrapping test harness -->
+    <maven.test.skip>true</maven.test.skip>
   </properties>
 
   <dependencyManagement>
@@ -90,12 +92,17 @@ THE SOFTWARE.
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>1816.v8138d8056949</version>
+      <!-- TODO https://github.com/jenkinsci/jenkins-test-harness/pull/367 -->
+      <version>1823.v946a_e8946f61</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
           <groupId>${project.groupId}</groupId>
           <artifactId>jenkins-war</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-api</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -209,6 +216,22 @@ THE SOFTWARE.
 
   <build>
     <plugins>
+      <!-- TODO pending parent POM -->
+      <plugin>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>display-info</id>
+            <configuration>
+              <rules>
+                <enforceBytecodeVersion>
+                  <maxJdkVersion>17</maxJdkVersion>
+                </enforceBytecodeVersion>
+              </rules>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
       <plugin>
         <groupId>org.jenkins-ci.tools</groupId>
         <artifactId>maven-hpi-plugin</artifactId>

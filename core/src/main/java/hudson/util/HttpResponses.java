@@ -25,11 +25,11 @@
 package hudson.util;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
+import jakarta.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
-import javax.servlet.ServletException;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.HttpResponse;

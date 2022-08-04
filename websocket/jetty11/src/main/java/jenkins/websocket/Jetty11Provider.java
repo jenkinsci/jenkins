@@ -24,14 +24,14 @@
 
 package jenkins.websocket;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.WebSocketListener;
 import org.eclipse.jetty.websocket.api.WriteCallback;
@@ -44,26 +44,26 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 @Restricted(NoExternalUse.class)
 @MetaInfServices(Provider.class)
-public class Jetty10Provider implements Provider {
+public class Jetty11Provider implements Provider {
 
-    private static final String ATTR_LISTENER = Jetty10Provider.class.getName() + ".listener";
+    private static final String ATTR_LISTENER = Jetty11Provider.class.getName() + ".listener";
 
     // TODO does not seem possible to use HttpServletRequest.get/setAttribute for this
     private static final Map<Listener, Session> sessions = new WeakHashMap<>();
 
-    public Jetty10Provider() {
+    public Jetty11Provider() {
         JettyWebSocketServerContainer.class.hashCode();
     }
 
     @Override
     public Handler handle(HttpServletRequest req, HttpServletResponse rsp, Listener listener) throws Exception {
         req.setAttribute(ATTR_LISTENER, listener);
-        // TODO Jetty 10 has no obvious equivalent to WebSocketServerFactory.isUpgradeRequest; RFC6455Negotiation?
+        // TODO Jetty 11 has no obvious equivalent to WebSocketServerFactory.isUpgradeRequest; RFC6455Negotiation?
         if (!"websocket".equalsIgnoreCase(req.getHeader("Upgrade"))) {
             rsp.sendError(HttpServletResponse.SC_BAD_REQUEST, "only WS connections accepted here");
             return null;
         }
-        if (!JettyWebSocketServerContainer.getContainer(req.getServletContext()).upgrade(Jetty10Provider::createWebSocket, req, rsp)) {
+        if (!JettyWebSocketServerContainer.getContainer(req.getServletContext()).upgrade(Jetty11Provider::createWebSocket, req, rsp)) {
             rsp.sendError(HttpServletResponse.SC_BAD_REQUEST, "did not manage to upgrade");
             return null;
         }

@@ -7,6 +7,14 @@
 package hudson.security.csrf;
 
 import hudson.util.MultipartFormDataParser;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.FilterConfig;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequestWrapper;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -14,20 +22,12 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletRequestWrapper;
-import javax.servlet.http.HttpServletResponse;
 import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
 import org.kohsuke.MetaInfServices;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.CompatibleFilter;
 import org.kohsuke.stapler.ForwardToView;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
@@ -38,7 +38,7 @@ import org.springframework.security.authentication.AnonymousAuthenticationToken;
  *
  * @author dty
  */
-public class CrumbFilter implements Filter {
+public class CrumbFilter implements CompatibleFilter {
     /**
      * Because servlet containers generally don't specify the ordering of the initialization
      * (and different implementations indeed do this differently --- See JENKINS-3878),

@@ -33,15 +33,15 @@ import hudson.model.Descriptor.FormException;
 import hudson.model.Saveable;
 import hudson.model.listeners.ItemListener;
 import hudson.model.listeners.SaveableListener;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletResponse;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
@@ -95,7 +95,7 @@ public abstract class Plugin implements Saveable, StaplerProxy {
      *      can be replaced by {@link GlobalConfiguration}
      * <li>{@link #start} and {@link #postInitialize} can be replaced by {@link Initializer} (or {@link ItemListener#onLoaded})
      * <li>{@link #stop} can be replaced by {@link Terminator}
-     * <li>{@link #setServletContext} can be replaced by {@link Jenkins#servletContext}
+     * <li>{@link #setServletContext} can be replaced by {@link Jenkins#getServletContext}
      * </ul>
      * Note that every plugin gets a {@link DummyImpl} by default,
      * which will still route the URL space, serve {@link #getWrapper}, and so on.

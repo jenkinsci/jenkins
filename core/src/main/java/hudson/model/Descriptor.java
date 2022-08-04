@@ -25,7 +25,7 @@
 package hudson.model;
 
 import static hudson.util.QuotedStringTokenizer.quote;
-import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
+import static jakarta.servlet.http.HttpServletResponse.SC_NOT_FOUND;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -44,6 +44,8 @@ import hudson.util.FormValidation.CheckMethod;
 import hudson.util.ReflectionUtils;
 import hudson.util.ReflectionUtils.Parameter;
 import hudson.views.ListViewColumn;
+import jakarta.servlet.RequestDispatcher;
+import jakarta.servlet.ServletException;
 import java.beans.Introspector;
 import java.io.File;
 import java.io.IOException;
@@ -69,8 +71,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.servlet.RequestDispatcher;
-import javax.servlet.ServletException;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.GlobalConfigurationCategory;
 import jenkins.model.Jenkins;
@@ -889,7 +889,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
 
     protected List<String> getPossibleViewNames(String baseName) {
         List<String> names = new ArrayList<>();
-        for (Facet f : WebApp.get(Jenkins.get().servletContext).facets) {
+        for (Facet f : WebApp.get(Jenkins.get().getServletContext()).facets) {
             if (f instanceof JellyCompatibleFacet) {
                 JellyCompatibleFacet jcf = (JellyCompatibleFacet) f;
                 for (String ext : jcf.getScriptExtensions())

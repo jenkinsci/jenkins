@@ -24,17 +24,17 @@
 
 package hudson.util;
 
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.FilterConfig;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
 import jenkins.util.SystemProperties;
+import org.kohsuke.stapler.CompatibleFilter;
 
 /**
  * Filter that sets the character encoding to be used in parsing the request
@@ -42,7 +42,7 @@ import jenkins.util.SystemProperties;
  *
  * @author Seiji Sogabe
  */
-public class CharacterEncodingFilter implements Filter {
+public class CharacterEncodingFilter implements CompatibleFilter {
 
     /**
      * The default character encoding.

@@ -107,6 +107,13 @@
     </dependency>
   </dependencies>
 
+  <pluginRepositories>
+    <pluginRepository>
+      <id>apache.snapshots</id>
+      <url>https://repository.apache.org/snapshots/</url>
+    </pluginRepository>
+  </pluginRepositories>
+
   <build>
     <plugins>
       <plugin>
@@ -119,7 +126,8 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>
-        <version>3.3.0</version>
+        <!-- TODO https://github.com/apache/maven-shade-plugin/pull/106 -->
+        <version>3.3.1-SNAPSHOT</version>
         <executions>
           <execution>
             <goals>

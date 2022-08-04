@@ -1,7 +1,7 @@
 package jenkins.security;
 
+import jakarta.servlet.Filter;
 import java.util.List;
-import javax.servlet.Filter;
 
 /**
  * {@link Filter} that performs HTTP basic authentication based on API token.

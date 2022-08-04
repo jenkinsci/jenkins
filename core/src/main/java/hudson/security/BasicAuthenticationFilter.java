@@ -27,22 +27,22 @@ package hudson.security;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.model.User;
 import hudson.util.Scrambler;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.FilterConfig;
+import jakarta.servlet.RequestDispatcher;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.RequestDispatcher;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import jenkins.model.Jenkins;
 import jenkins.security.BasicApiTokenHelper;
 import jenkins.security.SecurityListener;
+import org.kohsuke.stapler.CompatibleFilter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.springframework.security.core.Authentication;
@@ -91,7 +91,7 @@ import org.springframework.security.core.userdetails.UserDetails;
  *
  * @author Kohsuke Kawaguchi
  */
-public class BasicAuthenticationFilter implements Filter {
+public class BasicAuthenticationFilter implements CompatibleFilter {
     private ServletContext servletContext;
 
     @Override

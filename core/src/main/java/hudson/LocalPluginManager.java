@@ -26,11 +26,11 @@ package hudson;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import jakarta.servlet.ServletContext;
 import java.io.File;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.logging.Logger;
-import javax.servlet.ServletContext;
 import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
 
@@ -54,7 +54,7 @@ public class LocalPluginManager extends PluginManager {
      * @param jenkins Jenkins instance that will use the plugin manager.
      */
     public LocalPluginManager(@NonNull Jenkins jenkins) {
-        this(jenkins.servletContext, jenkins.getRootDir());
+        this(jenkins.getServletContext(), jenkins.getRootDir());
     }
 
     /**

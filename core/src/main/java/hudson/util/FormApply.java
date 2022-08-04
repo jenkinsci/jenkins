@@ -24,8 +24,8 @@
 
 package hudson.util;
 
+import jakarta.servlet.ServletException;
 import java.io.IOException;
-import javax.servlet.ServletException;
 import org.kohsuke.stapler.HttpResponses.HttpResponseException;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;

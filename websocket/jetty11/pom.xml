@@ -32,9 +32,9 @@ THE SOFTWARE.
     <relativePath>../..</relativePath>
   </parent>
 
-  <artifactId>websocket-jetty9</artifactId>
-  <name>Jetty 9 implementation for WebSocket</name>
-  <description>An implementation of the WebSocket handler that works with Jetty 9.</description>
+  <artifactId>websocket-jetty11</artifactId>
+  <name>Jetty 11 implementation for WebSocket</name>
+  <description>An implementation of the WebSocket handler that works with Jetty 11.</description>
 
   <dependencyManagement>
     <dependencies>
@@ -52,7 +52,8 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>winstone</artifactId>
-      <version>5.25</version>
+      <!-- TODO https://github.com/jenkinsci/winstone/pull/180 -->
+      <version>6.2-rc738.0498c958d900</version>
       <optional>true</optional>
     </dependency>
     <dependency>

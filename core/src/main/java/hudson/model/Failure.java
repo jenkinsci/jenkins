@@ -25,8 +25,8 @@
 package hudson.model;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
+import jakarta.servlet.ServletException;
 import java.io.IOException;
-import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;

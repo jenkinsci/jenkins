@@ -24,8 +24,8 @@
 
 package hudson.model;
 
-import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
-import static javax.servlet.http.HttpServletResponse.SC_NO_CONTENT;
+import static jakarta.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
+import static jakarta.servlet.http.HttpServletResponse.SC_NO_CONTENT;
 
 import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
@@ -69,6 +69,7 @@ import hudson.util.TextFile;
 import hudson.widgets.HistoryWidget;
 import hudson.widgets.HistoryWidget.Adapter;
 import hudson.widgets.Widget;
+import jakarta.servlet.ServletException;
 import java.awt.Color;
 import java.awt.Paint;
 import java.io.File;
@@ -85,7 +86,6 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.servlet.ServletException;
 import jenkins.model.BuildDiscarder;
 import jenkins.model.BuildDiscarderProperty;
 import jenkins.model.DirectlyModifiableTopLevelItemGroup;

@@ -25,14 +25,14 @@
 package hudson.util;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.Map;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import org.apache.commons.fileupload.FileItem;
-import org.apache.commons.fileupload.FileUploadException;
-import org.apache.commons.fileupload.disk.DiskFileItemFactory;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.commons.fileupload2.FileItem;
+import org.apache.commons.fileupload2.FileUploadException;
+import org.apache.commons.fileupload2.disk.DiskFileItemFactory;
+import org.apache.commons.fileupload2.jaksrvlt.JakSrvltFileUpload;
 import org.apache.commons.lang.ArrayUtils;
 
 /**
@@ -42,7 +42,7 @@ import org.apache.commons.lang.ArrayUtils;
  * @author Kohsuke Kawaguchi
  */
 public class MultipartFormDataParser implements AutoCloseable {
-    private final ServletFileUpload upload = new ServletFileUpload(new DiskFileItemFactory());
+    private final JakSrvltFileUpload upload = new JakSrvltFileUpload(new DiskFileItemFactory());
     private final Map<String, FileItem> byName = new HashMap<>();
 
     public MultipartFormDataParser(HttpServletRequest request) throws ServletException {

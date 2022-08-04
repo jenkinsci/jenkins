@@ -135,7 +135,7 @@ public class UsageStatistics extends PageDecorator implements PersistentDescript
         JSONObject o = new JSONObject();
         o.put("stat", 1);
         o.put("install", j.getLegacyInstanceId());
-        o.put("servletContainer", j.servletContext.getServerInfo());
+        o.put("servletContainer", j.getServletContext().getServerInfo());
         o.put("version", Jenkins.VERSION);
 
         List<JSONObject> nodes = new ArrayList<>();

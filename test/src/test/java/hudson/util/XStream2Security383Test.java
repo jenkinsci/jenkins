@@ -5,14 +5,14 @@ import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.when;
 
 import hudson.model.Items;
+import jakarta.servlet.ReadListener;
+import jakarta.servlet.ServletInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.logging.Level;
-import javax.servlet.ReadListener;
-import javax.servlet.ServletInputStream;
 import jenkins.security.ClassFilterImpl;
 import org.apache.commons.io.IOUtils;
 import org.junit.After;

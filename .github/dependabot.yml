@@ -35,9 +35,6 @@ updates:
       # Fails test automation; needs further investigation.
       - dependency-name: "com.google.inject:guice-bom"
 
-      # Contains incompatible API changes and needs compatibility work.
-      - dependency-name: "jakarta.servlet.jsp.jstl:jakarta.servlet.jsp.jstl-api"
-
       # This is a banned dependency, and we have a redundant trick in our POM to
       # prevent it from being pulled in. If and when the reference is removed in
       # our POM, this exclusion can also be removed.

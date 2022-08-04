@@ -25,8 +25,8 @@
 
 package hudson.model;
 
-import static javax.servlet.http.HttpServletResponse.SC_CREATED;
-import static javax.servlet.http.HttpServletResponse.SC_SEE_OTHER;
+import static jakarta.servlet.http.HttpServletResponse.SC_CREATED;
+import static jakarta.servlet.http.HttpServletResponse.SC_SEE_OTHER;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -34,6 +34,7 @@ import hudson.Extension;
 import hudson.Util;
 import hudson.model.Queue.WaitingItem;
 import hudson.model.queue.ScheduleResult;
+import jakarta.servlet.ServletException;
 import java.io.IOException;
 import java.util.AbstractList;
 import java.util.ArrayList;
@@ -42,7 +43,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
 import jenkins.model.OptionalJobProperty;
 import jenkins.model.ParameterizedJobMixIn;

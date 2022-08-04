@@ -25,6 +25,8 @@
 package hudson.model;
 
 import hudson.ExtensionList;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringReader;
@@ -34,8 +36,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletResponse;
 import javax.xml.transform.stream.StreamResult;
 import jenkins.model.Jenkins;
 import jenkins.security.SecureRequester;

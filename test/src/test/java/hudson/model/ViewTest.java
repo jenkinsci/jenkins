@@ -487,7 +487,7 @@ public class ViewTest {
         view.save();
         j.jenkins.doReload();
         //wait until all configuration are reloaded
-        if (j.jenkins.servletContext.getAttribute("app") instanceof HudsonIsLoading) {
+        if (j.jenkins.getServletContext().getAttribute("app") instanceof HudsonIsLoading) {
             Thread.sleep(500);
         }
         assertTrue("View does not contains job free after load.", j.jenkins.getView(view.getDisplayName()).contains(j.jenkins.getItem(job.getName())));

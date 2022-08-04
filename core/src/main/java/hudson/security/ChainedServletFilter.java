@@ -24,27 +24,28 @@
 
 package hudson.security;
 
+import jakarta.servlet.Filter;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.FilterConfig;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import org.kohsuke.stapler.CompatibleFilter;
 
 /**
  * Servlet {@link Filter} that chains multiple {@link Filter}s.
  *
  * @author Kohsuke Kawaguchi
  */
-public class ChainedServletFilter implements Filter {
+public class ChainedServletFilter implements CompatibleFilter {
     // array is assumed to be immutable once set
     protected volatile Filter[] filters;
 

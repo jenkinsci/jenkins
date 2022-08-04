@@ -26,7 +26,7 @@
 
 package hudson.model;
 
-import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
+import static jakarta.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -69,6 +69,7 @@ import hudson.util.NamingThreadFactory;
 import hudson.util.RemotingDiagnostics;
 import hudson.util.RemotingDiagnostics.HeapDump;
 import hudson.util.RunList;
+import jakarta.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -100,7 +101,6 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
 import jenkins.security.ImpersonatingExecutorService;
 import jenkins.security.MasterToSlaveCallable;

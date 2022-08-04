@@ -26,11 +26,11 @@ package hudson.util;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.ModelObject;
+import jakarta.servlet.ServletException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import javax.servlet.ServletException;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;

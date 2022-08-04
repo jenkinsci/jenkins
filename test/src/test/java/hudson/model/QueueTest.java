@@ -99,6 +99,10 @@ import hudson.triggers.SCMTrigger.SCMTriggerCause;
 import hudson.triggers.TimerTrigger.TimerTriggerCause;
 import hudson.util.OneShotEvent;
 import hudson.util.XStream2;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -121,19 +125,15 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.logging.Level;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import jenkins.model.BlockedBecauseOfBuildInProgress;
 import jenkins.model.Jenkins;
 import jenkins.security.QueueItemAuthenticatorConfiguration;
 import jenkins.security.apitoken.ApiTokenTestHelper;
 import jenkins.triggers.ReverseBuildTrigger;
 import org.acegisecurity.acls.sid.PrincipalSid;
-import org.apache.commons.fileupload.FileUploadException;
-import org.apache.commons.fileupload.disk.DiskFileItemFactory;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.commons.fileupload2.FileUploadException;
+import org.apache.commons.fileupload2.disk.DiskFileItemFactory;
+import org.apache.commons.fileupload2.jaksrvlt.JakSrvltFileUpload;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.servlet.ServletHandler;
@@ -307,7 +307,7 @@ public class QueueTest {
 
         @Override protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException {
             try {
-                ServletFileUpload f = new ServletFileUpload(new DiskFileItemFactory());
+                JakSrvltFileUpload f = new JakSrvltFileUpload(new DiskFileItemFactory());
                 List<?> v = f.parseRequest(req);
                 assertEquals(1, v.size());
                 XStream2 xs = new XStream2();

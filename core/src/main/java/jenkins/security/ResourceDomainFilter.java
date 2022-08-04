@@ -27,21 +27,21 @@ package jenkins.security;
 import hudson.init.InitMilestone;
 import hudson.init.Initializer;
 import hudson.util.PluginServletFilter;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.FilterConfig;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Logger;
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.CompatibleFilter;
 
 /**
  * Prohibit requests to Jenkins coming through a resource domain URL configured with
@@ -50,7 +50,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  * @since 2.200
  */
 @Restricted(NoExternalUse.class)
-public class ResourceDomainFilter implements Filter {
+public class ResourceDomainFilter implements CompatibleFilter {
 
     private static final Logger LOGGER = Logger.getLogger(ResourceDomainFilter.class.getName());
 

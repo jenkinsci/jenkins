@@ -26,6 +26,8 @@ package hudson.cli;
 
 import hudson.Extension;
 import hudson.model.UnprotectedRootAction;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -45,8 +47,6 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletResponse;
 import jenkins.model.Jenkins;
 import jenkins.util.FullDuplexHttpService;
 import jenkins.websocket.WebSocketSession;

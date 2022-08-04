@@ -24,9 +24,9 @@
 
 package jenkins;
 
+import jakarta.servlet.http.HttpSessionEvent;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.servlet.http.HttpSessionEvent;
 import jenkins.util.HttpSessionListener;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -37,7 +37,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
 @Restricted(NoExternalUse.class)
-public final class JenkinsHttpSessionListener implements javax.servlet.http.HttpSessionListener {
+public final class JenkinsHttpSessionListener implements jakarta.servlet.http.HttpSessionListener {
 
     // TODO: Seems like classes like this should live in the /war/src/java
     // But that applies to a number of other classes too and it has never happened, so will

@@ -28,8 +28,8 @@ import hudson.Extension;
 import hudson.model.AbstractProject;
 import hudson.model.Descriptor.FormException;
 import hudson.util.DescriptorList;
+import jakarta.servlet.ServletException;
 import java.util.List;
-import javax.servlet.ServletException;
 import org.kohsuke.stapler.StaplerRequest;
 
 /**

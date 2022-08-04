@@ -26,6 +26,7 @@ package hudson.model;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.model.Descriptor.FormException;
+import jakarta.servlet.ServletException;
 import java.io.IOException;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -33,7 +34,6 @@ import java.util.SortedMap;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
 import org.kohsuke.stapler.StaplerRequest;

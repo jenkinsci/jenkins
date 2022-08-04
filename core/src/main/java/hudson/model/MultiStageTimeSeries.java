@@ -26,6 +26,7 @@ package hudson.model;
 
 import hudson.util.ChartUtil;
 import hudson.util.NoOverlapCategoryAxis;
+import jakarta.servlet.ServletException;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
@@ -39,7 +40,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
-import javax.servlet.ServletException;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.CategoryAxis;

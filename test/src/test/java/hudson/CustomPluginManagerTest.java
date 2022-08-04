@@ -30,10 +30,10 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import jakarta.servlet.ServletContext;
 import java.io.File;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
-import javax.servlet.ServletContext;
 import jenkins.model.Jenkins;
 import org.junit.Rule;
 import org.junit.Test;

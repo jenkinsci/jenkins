@@ -2,14 +2,14 @@ package hudson.init.impl;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.init.Initializer;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.EOFException;
 import java.io.IOException;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import jenkins.model.Jenkins;
 import org.kohsuke.MetaInfServices;
 import org.kohsuke.accmod.Restricted;
@@ -30,7 +30,7 @@ public class InstallUncaughtExceptionHandler {
 
     @Initializer
     public static void init(final Jenkins j) throws IOException {
-        CompressionFilter.setUncaughtExceptionHandler(j.servletContext, (e, context, req, rsp) -> handleException(j, e, req, rsp, 500));
+        CompressionFilter.setUncaughtExceptionHandler(j.getServletContext(), (e, context, req, rsp) -> handleException(j, e, req, rsp, 500));
         try {
             Thread.setDefaultUncaughtExceptionHandler(new DefaultUncaughtExceptionHandler());
             LOGGER.log(Level.FINE, "Successfully installed a global UncaughtExceptionHandler.");
@@ -53,10 +53,10 @@ public class InstallUncaughtExceptionHandler {
         String id = UUID.randomUUID().toString();
         LOGGER.log(isEOFException(e) ? Level.FINE : Level.WARNING, "Caught unhandled exception with ID " + id, e);
         req.setAttribute("jenkins.exception.id", id);
-        req.setAttribute("javax.servlet.error.exception", e);
+        req.setAttribute("jakarta.servlet.error.exception", e);
         rsp.setStatus(code);
         try {
-            WebApp.get(j.servletContext).getSomeStapler().invoke(req, rsp, j, "/oops");
+            WebApp.get(j.getServletContext()).getSomeStapler().invoke(req, rsp, j, "/oops");
         } catch (ServletException | IOException x) {
             if (!Stapler.isSocketException(x)) {
                 throw x;

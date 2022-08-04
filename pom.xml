@@ -52,8 +52,7 @@ THE SOFTWARE.
   <modules>
     <module>bom</module>
     <module>websocket/spi</module>
-    <module>websocket/jetty9</module>
-    <module>websocket/jetty10</module>
+    <module>websocket/jetty11</module>
     <module>core</module>
     <module>war</module>
     <module>test</module>
@@ -155,6 +154,24 @@ THE SOFTWARE.
       <id>repo.jenkins-ci.org</id>
       <url>https://repo.jenkins-ci.org/public/</url>
       <!-- allow snapshots -->
+    </repository>
+    <repository>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+      <id>apache-snapshots</id>
+      <url>https://repository.apache.org/content/repositories/snapshots</url>
+    </repository>
+    <repository>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+      <id>spring-snapshots</id>
+      <url>https://repo.spring.io/snapshot</url>
+    </repository>
+    <repository>
+      <id>spring-milestones</id>
+      <url>https://repo.spring.io/milestone</url>
     </repository>
   </repositories>
 

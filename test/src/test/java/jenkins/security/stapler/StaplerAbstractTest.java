@@ -69,7 +69,7 @@ public abstract class StaplerAbstractTest {
         j.jenkins.setCrumbIssuer(null);
         wc = j.createWebClient();
 
-        this.webApp = (WebApp) j.jenkins.servletContext.getAttribute(WebApp.class.getName());
+        this.webApp = (WebApp) j.jenkins.getServletContext().getAttribute(WebApp.class.getName());
 
         webApp.setFilteredGetterTriggerListener((f, req, rst, node, expression) -> {
             filteredGetMethodTriggered = true;

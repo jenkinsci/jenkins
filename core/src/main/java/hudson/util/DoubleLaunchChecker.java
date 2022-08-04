@@ -25,12 +25,13 @@
 package hudson.util;
 
 import static hudson.init.InitMilestone.JOB_CONFIG_ADAPTED;
-import static javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
+import static jakarta.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Util;
 import hudson.init.Initializer;
 import hudson.triggers.SafeTimerTask;
+import jakarta.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -39,7 +40,6 @@ import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
 import jenkins.util.Timer;
 import org.kohsuke.stapler.StaplerRequest;
@@ -104,7 +104,7 @@ public class DoubleLaunchChecker {
             // we noticed that someone else have updated this file.
             // switch GUI to display this error.
             // TODO seems drastic; could this just be switched to an AdministrativeMonitor?
-            Jenkins.get().servletContext.setAttribute("app", this);
+            Jenkins.get().getServletContext().setAttribute("app", this);
             LOGGER.severe("Collision detected. timestamp=" + t + ", expected=" + lastWriteTime);
             // we need to continue updating this file, so that the other Hudson would notice the problem, too.
         }
@@ -167,7 +167,7 @@ public class DoubleLaunchChecker {
     @RequirePOST
     public void doIgnore(StaplerRequest req, StaplerResponse rsp) throws IOException {
         ignore = true;
-        Jenkins.get().servletContext.setAttribute("app", Jenkins.get());
+        Jenkins.get().getServletContext().setAttribute("app", Jenkins.get());
         rsp.sendRedirect2(req.getContextPath() + '/');
     }
 

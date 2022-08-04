@@ -24,8 +24,8 @@
 
 package jenkins.model;
 
-import static javax.servlet.http.HttpServletResponse.SC_CONFLICT;
-import static javax.servlet.http.HttpServletResponse.SC_CREATED;
+import static jakarta.servlet.http.HttpServletResponse.SC_CONFLICT;
+import static jakarta.servlet.http.HttpServletResponse.SC_CREATED;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.Util;
@@ -52,6 +52,7 @@ import hudson.triggers.Trigger;
 import hudson.triggers.TriggerDescriptor;
 import hudson.util.AlternativeUiTextProvider;
 import hudson.views.BuildButtonColumn;
+import jakarta.servlet.ServletException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -59,7 +60,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import javax.servlet.ServletException;
 import jenkins.model.lazy.LazyBuildMixIn;
 import jenkins.triggers.SCMTriggerItem;
 import jenkins.util.TimeDuration;

@@ -26,8 +26,8 @@ package jenkins.model;
 
 import hudson.Extension;
 import hudson.model.AdministrativeMonitor;
+import jakarta.servlet.ServletException;
 import java.io.IOException;
-import javax.servlet.ServletException;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;

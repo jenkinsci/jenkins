@@ -116,7 +116,7 @@ public class UsageStatisticsTest {
         // that would cause issues with parsing/analyzing uploaded usage statistics
         assertEquals(1, o.getInt("stat"));
         assertEquals(jenkins.getLegacyInstanceId(), o.getString("install"));
-        assertEquals(jenkins.servletContext.getServerInfo(), o.getString("servletContainer"));
+        assertEquals(jenkins.getServletContext().getServerInfo(), o.getString("servletContainer"));
         assertEquals(Jenkins.VERSION, o.getString("version"));
 
         assertTrue(o.has("plugins"));
