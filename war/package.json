@@ -14,12 +14,13 @@
     "prod": "webpack --config webpack.config.js --mode=production",
     "build": "yarn prod",
     "start": "yarn dev --watch",
-    "lint:js": "eslint . --ext js",
-    "lint:js-ci": "eslint . --ext js -f checkstyle -o target/eslint-warnings.xml",
+    "lint:js": "eslint --config .eslintrc.js ../ --ext js",
+    "lint:js-ci": "eslint --config .eslintrc.js ../ --ext js -f checkstyle -o target/eslint-warnings.xml",
     "lint:css": "stylelint src/main/less",
     "lint:css-ci": "stylelint src/main/less --custom-formatter stylelint-formatter.js -o target/stylelint-warnings.xml",
     "lint:css:fix": "stylelint src/main/less --fix",
     "lint:ci": "yarn lint:js-ci && yarn lint:css-ci",
+    "lint:fix": "stylelint src/main/less --fix && eslint --config .eslintrc.js --fix ../",
     "lint": "yarn lint:js && yarn lint:css"
   },
   "devDependencies": {

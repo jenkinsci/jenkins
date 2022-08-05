@@ -13,10 +13,11 @@ import Sortable, { AutoScroll } from 'sortablejs/modular/sortable.core.esm.js';
 Sortable.mount(new AutoScroll());
 
 function registerSortableDragDrop(e) {
-  if (!e || !e.classList.contains('with-drag-drop')) return false;
+  if (!e || !e.classList.contains("with-drag-drop")) {
+    return false;
+  }
 
-  // eslint-disable-next-line no-unused-vars
-  const sortableElement = new Sortable(e, {
+  new Sortable(e, {
       draggable: '.repeated-chunk',
       handle: '.dd-handle',
       ghostClass: 'repeated-chunk--sortable-ghost',

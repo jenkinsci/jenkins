@@ -21,21 +21,21 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-function resetSeed(button){
+window.resetSeed = function(button) {
     var userSeedPanel = button.up('.user-seed-panel');
     var confirmMessage = button.getAttribute('data-confirm');
     var targetUrl = button.getAttribute('data-target-url');
     var redirectAfterClick = button.getAttribute('data-redirect-url');
-    
+
     var warningMessage = userSeedPanel.querySelector('.display-after-reset');
     if (warningMessage.hasClassName('visible')) {
         warningMessage.removeClassName('visible');
     }
-    
+
     if (confirm(confirmMessage)) {
         new Ajax.Request(targetUrl, {
             method: "post",
-            onSuccess: function(rsp, _) {
+            onSuccess: function() {
                 if (redirectAfterClick) {
                     window.location.href = redirectAfterClick;
                 } else {

@@ -1,4 +1,4 @@
-function submitScheduleForm(el) {
+window.submitScheduleForm = function(el) {
     var form = document.getElementById("scheduleRestart");
     form.action = el.checked ? "safeRestart" : "cancelRestart";
     crumb.appendToForm(form);

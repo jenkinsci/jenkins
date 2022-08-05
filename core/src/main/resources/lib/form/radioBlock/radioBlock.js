@@ -3,8 +3,9 @@ var radioBlockSupport = {
     buttons : null, // set of functions, one for updating one radio block each
 
     updateButtons : function() {
-        for( var i=0; i<this.buttons.length; i++ )
-            this.buttons[i]();
+      for (var i = 0; i < this.buttons.length; i++) {
+        this.buttons[i]();
+      }
     },
 
     // update one block based on the status of the given radio button
@@ -12,6 +13,7 @@ var radioBlockSupport = {
         var show = radio.checked;
         blockStart = $(blockStart);
 
+        let n;
         if (blockStart.getAttribute('hasHelp') == 'true') {
             n = blockStart.next();
         } else {
@@ -40,8 +42,9 @@ Behaviour.specify("INPUT.radio-block-control", 'radioBlock', -100, function(r) {
         // radio buttons with the same name together and hang it under the form object
         var f = r.form;
         var radios = f.radios;
-        if (radios == null)
-            f.radios = radios = {};
+        if (radios == null) {
+          f.radios = radios = {};
+        }
 
         var g = radios[r.name];
         if (g == null) {
@@ -57,11 +60,13 @@ Behaviour.specify("INPUT.radio-block-control", 'radioBlock', -100, function(r) {
             var e = s;
             var cnt=1;
             while(cnt>0) {
-                e = $(e).next();
-                if (Element.hasClassName(e,"radio-block-start"))
-                    cnt++;
-                if (Element.hasClassName(e,"radio-block-end"))
-                    cnt--;
+              e = $(e).next();
+              if (Element.hasClassName(e, "radio-block-start")) {
+                cnt++;
+              }
+              if (Element.hasClassName(e, "radio-block-end")) {
+                cnt--;
+              }
             }
             return e;
         })();

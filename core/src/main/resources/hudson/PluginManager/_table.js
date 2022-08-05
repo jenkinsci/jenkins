@@ -403,8 +403,8 @@ Behaviour.specify("#filter-box", '_table', 0, function(e) {
             }
         }
 
-        for (var i = 0; i < pluginTRs.length; i++) {
-            initPluginRowHandling(pluginTRs[i]);
+        for (let j = 0; j < pluginTRs.length; j++) {
+            initPluginRowHandling(pluginTRs[j]);
         }
 
         setEnableWidgetStates();

@@ -1,4 +1,4 @@
-var section = (function (){
+window.section = (function (){
 
     var SectionNode = function(e) {
         this.section = e;

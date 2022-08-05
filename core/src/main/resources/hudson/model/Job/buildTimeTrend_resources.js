@@ -1,11 +1,11 @@
 /**
  * Public method to be called by progressiveRendering's callback
  */
-function buildTimeTrend_displayBuilds(data) {
+window.buildTimeTrend_displayBuilds = function(data) {
 	var p = document.getElementById('trend');
 	var isDistributedBuildsEnabled = 'true' === p.getAttribute("data-is-distributed-build-enabled");
 	var rootURL = document.head.getAttribute('data-rooturl');
-	
+
 	for (var x = 0; data.length > x; x++) {
 		var e = data[x];
 		var tr = new Element('tr');

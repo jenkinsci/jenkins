@@ -24,7 +24,9 @@
 
 Behaviour.specify('.secret', 'secret-button', 0, function (e) {
     var secretUpdateBtn = e.querySelector('.secret-update-btn');
-    if (secretUpdateBtn === null) return;
+    if (secretUpdateBtn === null) {
+      return;
+    }
 
     var id = 'secret-' + (iota++);
     var name = e.getAttribute('data-name');
