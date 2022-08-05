@@ -13,7 +13,7 @@ function updateOk() {
             return true;
         }
 
-        for (i = 0; i < radios.length; i++) {
+        for (let i = 0; i < radios.length; i++) {
             if (radios[i].checked) {
                 return false;
             }

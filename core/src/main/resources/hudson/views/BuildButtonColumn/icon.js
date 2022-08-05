@@ -4,7 +4,7 @@ Behaviour.specify(".build-button-column-icon-reference-holder", 'build-button-co
     var id = e.getAttribute('data-id');
     var icon = document.getElementById(id);
 
-    icon.onclick = function(el) {
+    icon.onclick = function() {
         new Ajax.Request(url);
         hoverNotification(message, this, -100);
         return false;

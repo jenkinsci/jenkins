@@ -465,7 +465,9 @@ document.addEventListener("DOMContentLoaded", function () {
         debouncedFilter();
     })
 
-    if(isRunAsTest) return;
+    if (isRunAsTest) {
+      return;
+    }
 
     // If the build history pane is collapsed, just return immediately and don't set up
     // the build history refresh.

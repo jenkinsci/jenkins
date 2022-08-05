@@ -16,8 +16,10 @@ document.addEventListener("DOMContentLoaded", function(){
         function addProperty(parent, name, value) {
             name = shortenName(name);
             if (parent[name] != null) {
-                if (parent[name].push == null) // is this array?
-                    parent[name] = [parent[name]];
+                // is this array?
+                if (parent[name].push == null) {
+                  parent[name] = [parent[name]];
+                }
                 parent[name].push(value);
             } else {
                 parent[name] = value;
@@ -28,7 +30,9 @@ document.addEventListener("DOMContentLoaded", function(){
         // then return the corresponding object in the map
         function findParent(e) {
             var p = findFormParent(e, form);
-            if (p == null) return {};
+            if (p == null) {
+              return {};
+            }
 
             var m = p.formDom;
             if (m == null) {
@@ -40,16 +44,14 @@ document.addEventListener("DOMContentLoaded", function(){
             return m;
         }
 
-        var jsonElement = null;
-
-        for (var i = 0; i < form.elements.length; i++) {
+        for (let i = 0; i < form.elements.length; i++) {
             var e = form.elements[i];
             if (e.name == "json") {
-                jsonElement = e;
                 continue;
             }
-            if (e.tagName == "FIELDSET")
+            if (e.tagName == "FIELDSET") {
                 continue;
+            }
             if (e.tagName == "SELECT" && e.multiple) {
                 addProperty(findParent(e), e.name, e);
                 continue;
@@ -57,7 +59,9 @@ document.addEventListener("DOMContentLoaded", function(){
 
             var p;
             var type = e.getAttribute("type");
-            if (type == null) type = "";
+            if (type == null) {
+              type = "";
+            }
             switch (type.toLowerCase()) {
                 case "button":
                     var element
@@ -124,37 +128,43 @@ document.addEventListener("DOMContentLoaded", function(){
         function annotate(e, path) {
             e.setAttribute("path", path);
             var o = e.formDom || {};
-            for (var key in o) {
+
+          function child(v, i, key) {
+            var suffix = null;
+            var newKey = key;
+            if (v.parentNode.className && v.parentNode.className.indexOf("one-each") > -1 && v.parentNode.className.indexOf("honor-order") > -1) {
+              suffix = v.getAttribute("descriptorId").split(".").pop()
+            } else if (v.getAttribute("type") == "radio") {
+              suffix = v.value
+              while (newKey.substring(0, 8) == "removeme") {
+                newKey = newKey.substring(newKey.indexOf("_", 8) + 1);
+              }
+            } else if (v.getAttribute("suffix") != null) {
+              suffix = v.getAttribute("suffix")
+            } else {
+              if (i > 0) {
+                suffix = i;
+              }
+            }
+            if (suffix == null) {
+              suffix = "";
+            } else {
+              suffix = "[" + suffix + "]";
+            }
+
+            annotate(v, path + "/" + newKey + suffix);
+          }
+
+          for (let key in o) {
                 var v = o[key];
-
-                function child(v, i) {
-                    var suffix = null;
-                    var newKey = key;
-                    if (v.parentNode.className && v.parentNode.className.indexOf("one-each") > -1 && v.parentNode.className.indexOf("honor-order") > -1) {
-                        suffix = v.getAttribute("descriptorId").split(".").pop()
-                    } else if (v.getAttribute("type") == "radio") {
-                        suffix = v.value
-                        while (newKey.substring(0, 8) == 'removeme')
-                            newKey = newKey.substring(newKey.indexOf('_', 8) + 1);
-                    } else if (v.getAttribute("suffix") != null) {
-                        suffix = v.getAttribute("suffix")
-                    } else {
-                        if (i > 0)
-                            suffix = i;
-                    }
-                    if (suffix == null) suffix = "";
-                    else suffix = '[' + suffix + ']';
-
-                    annotate(v, path + "/" + newKey + suffix);
-                }
 
                 if (v instanceof Array) {
                     var i = 0;
                     v.forEach(function (v) {
-                        child(v, i++)
+                        child(v, i++, key)
                     })
                 } else {
-                    child(v, 0)
+                    child(v, 0, key)
                 }
             }
 
@@ -163,8 +173,9 @@ document.addEventListener("DOMContentLoaded", function(){
         annotate(form, "");
 
         // clean up
-        for (i = 0; i < doms.length; i++)
-            doms[i].formDom = null;
+        for (let i = 0; i < doms.length; i++) {
+          doms[i].formDom = null;
+        }
 
         return true;
     }

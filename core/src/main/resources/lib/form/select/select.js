@@ -41,7 +41,9 @@ function updateListBox(listBox,url,config) {
         var currentSelection = l.value;
 
         // clear the contents
-        while(l.length>0)   l.options[0] = null;
+        while (l.length > 0) {
+          l.options[0] = null;
+        }
 
         var selectionSet = false; // is the selection forced by the server?
         var possibleIndex = null; // if there's a new option that matches the current value, remember its index
@@ -52,16 +54,18 @@ function updateListBox(listBox,url,config) {
                 l.selectedIndex = i;
                 selectionSet = true;
             }
-            if (opts[i].value==currentSelection)
-                possibleIndex = i;
+            if (opts[i].value == currentSelection) {
+              possibleIndex = i;
+            }
         }
 
         // if no value is explicitly selected by the server, try to select the same value
         if (!selectionSet && possibleIndex!=null)
-            l.selectedIndex = possibleIndex;
+            {l.selectedIndex = possibleIndex;}
 
-        if (originalOnSuccess!=undefined)
-            originalOnSuccess(rsp);
+      if (originalOnSuccess !== undefined) {
+        originalOnSuccess(rsp);
+      }
     };
     config.onFailure = function (rsp) {
         l.removeClassName("select-ajax-pending");
@@ -74,7 +78,9 @@ function updateListBox(listBox,url,config) {
         var header = rsp.getResponseHeader('X-Jenkins-Select-Error');
         if (header && "clear" === header.toLowerCase()) {
             // clear the contents
-            while (l.length > 0)   l.options[0] = null;
+          while (l.length > 0) {
+            l.options[0] = null;
+          }
         }
 
     };
@@ -87,8 +93,9 @@ Behaviour.specify("SELECT.select", 'select', 1000, function(e) {
 
         function hasChanged(selectEl, originalValue) {
             // seems like a race condition allows this to fire before the 'selectEl' is defined. If that happens, exit..
-            if(!selectEl || !selectEl.options || !selectEl.options.length > 0)
+            if (!selectEl || !selectEl.options || !selectEl.options.length > 0) {
               return false;
+            }
             var firstValue = selectEl.options[0].value;
             var selectedValue = selectEl.value;
             if (originalValue == "" && selectedValue == firstValue) {
@@ -98,7 +105,7 @@ Behaviour.specify("SELECT.select", 'select', 1000, function(e) {
             } else {
                 return originalValue != selectedValue;
             }
-        };
+        }
 
         // controls that this SELECT box depends on
         refillOnChange(e,function(params) {
@@ -112,7 +119,10 @@ Behaviour.specify("SELECT.select", 'select', 1000, function(e) {
                         var v = e.getAttribute("value");
                         if (v) {
                             e.value = v;
-                            if (e.value==v) e.removeAttribute("value"); // we were able to apply our initial value
+                            // we were able to apply our initial value
+                            if (e.value == v) {
+                              e.removeAttribute("value");
+                            }
                         }
                     }
 

@@ -1,4 +1,4 @@
-function display(data) {
+window.display = function(data) {
     var p = document.getElementById('people');
     p.show();
     var rootURL = document.head.getAttribute('data-rooturl');

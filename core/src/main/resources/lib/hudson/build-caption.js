@@ -2,7 +2,7 @@
   function updateBuildCaptionIcon(){
     new Ajax.Request("statusIcon",{
       method: "get",
-      onComplete: function(rsp,_) {
+      onComplete: function(rsp) {
         var isBuilding = rsp.getResponseHeader("X-Building");
         if (isBuilding == "true") {
           setTimeout(updateBuildCaptionIcon, 5000)

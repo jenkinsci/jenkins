@@ -4,7 +4,9 @@
 // other behavior rules change them (like YUI buttons.)
 Behaviour.specify("DIV.hetero-list-container", 'hetero-list', -100, function(e) {
         e=$(e);
-        if(isInsideRemovable(e))    return;
+        if (isInsideRemovable(e)) {
+          return;
+        }
 
         // components for the add button
         var menu = document.createElement("SELECT");
@@ -16,8 +18,9 @@ Behaviour.specify("DIV.hetero-list-container", 'hetero-list', -100, function(e) 
         YAHOO.util.Dom.insertAfter(menu,btn);
 
         var prototypes = $(e.lastElementChild);
-        while(!prototypes.hasClassName("prototypes"))
-            prototypes = prototypes.previous();
+        while (!prototypes.hasClassName("prototypes")) {
+          prototypes = prototypes.previous();
+        }
         var insertionPoint = prototypes.previous();    // this is where the new item is inserted.
 
         // extract templates
@@ -45,9 +48,11 @@ Behaviour.specify("DIV.hetero-list-container", 'hetero-list', -100, function(e) 
         var menuButton = createFilterMenuButton(btn, menu, menuAlign.split("-"), 250);
         $(menuButton._button).addClassName(btn.className);    // copy class names
         $(menuButton._button).setAttribute("suffix",btn.getAttribute("suffix"));
-        menuButton.getMenu().clickEvent.subscribe(function(type,args,value) {
+        menuButton.getMenu().clickEvent.subscribe(function(type,args) {
             var item = args[1];
-            if (item.cfg.getProperty("disabled"))   return;
+            if (item.cfg.getProperty("disabled")) {
+              return;
+            }
             var t = templates[parseInt(item.value)];
 
             var nc = document.createElement("div");
@@ -56,8 +61,6 @@ Behaviour.specify("DIV.hetero-list-container", 'hetero-list', -100, function(e) 
             nc.setAttribute("descriptorId",t.descriptorId);
             nc.innerHTML = t.html;
             $(nc).setOpacity(0);
-
-            var scroll = document.body.scrollTop;
 
             renderOnDemand(findElementsBySelector(nc,"div.config-page")[0],function() {
                 function findInsertionPoint() {
@@ -70,8 +73,9 @@ Behaviour.specify("DIV.hetero-list-container", 'hetero-list', -100, function(e) 
                         function desirability(pos) {
                             var count=0;
                             for (var i=0; i<current.length; i++) {
-                                if ((i<pos) == (order(current[i])<=order(prospect)))
-                                    count++;
+                              if ((i < pos) == (order(current[i]) <= order(prospect))) {
+                                count++;
+                              }
                             }
                             return count;
                         }
@@ -91,24 +95,30 @@ Behaviour.specify("DIV.hetero-list-container", 'hetero-list', -100, function(e) 
                     var current = e.childElements().findAll(function(e) {return e.match("DIV.repeated-chunk")});
 
                     function o(did) {
-                        if (Object.isElement(did))
-                            did = did.getAttribute("descriptorId");
-                        for (var i=0; i<templates.length; i++)
-                            if (templates[i].descriptorId==did)
-                                return i;
-                        return 0; // can't happen
+                      if (Object.isElement(did)) {
+                        did = did.getAttribute("descriptorId");
+                      }
+                      for (var i = 0; i < templates.length; i++) {
+                        if (templates[i].descriptorId == did) {
+                          return i;
+                        }
+                      }
+                      return 0; // can't happen
                     }
 
                     var bestPos = findBestPosition(t.descriptorId, current, o);
-                    if (bestPos<current.length)
-                        return current[bestPos];
-                    else
-                        return insertionPoint;
+                    if (bestPos < current.length) {
+                      return current[bestPos];
+                    } else {
+                      return insertionPoint;
+                    }
                 }
                 (e.hasClassName("honor-order") ? findInsertionPoint() : insertionPoint).insert({before:nc});
 
                 // Initialize drag & drop for this component
-                if(withDragDrop) registerSortableDragDrop(nc);
+                if (withDragDrop) {
+                  registerSortableDragDrop(nc);
+                }
 
                 new YAHOO.util.Anim(nc, {
                     opacity: { to:1 }
@@ -125,16 +135,18 @@ Behaviour.specify("DIV.hetero-list-container", 'hetero-list', -100, function(e) 
             var items = menuButton.getMenu().getItems();
             for(i=0; i<items.length; i++) {
                 var t = templates[i].tooltip;
-                if(t!=null)
-                    applyTooltip(items[i].element,t);
+                if (t != null) {
+                  applyTooltip(items[i].element, t);
+                }
             }
         });
 
-        if (e.hasClassName("one-each")) {
-            // does this container already has a configured instance of the specified descriptor ID?
-            function has(id) {
-                return Prototype.Selector.find(e.childElements(),"DIV.repeated-chunk[descriptorId=\""+id+"\"]")!=null;
-            }
+  // does this container already has a configured instance of the specified descriptor ID?
+  function has(id) {
+    return Prototype.Selector.find(e.childElements(),"DIV.repeated-chunk[descriptorId=\""+id+"\"]")!=null;
+  }
+
+  if (e.hasClassName("one-each")) {
 
             menuButton.getMenu().showEvent.subscribe(function() {
                 var items = menuButton.getMenu().getItems();

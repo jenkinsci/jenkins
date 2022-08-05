@@ -1,3 +1,5 @@
+/* global Timeline */
+
 var targetDiv = document.querySelector('#build-timeline-div');
 var tz = targetDiv.getAttribute('data-hour-local-timezone');
 var tl = null;
@@ -96,7 +98,7 @@ function doLoad() {
         window.onresize = doResize;
     }
 
-};
+}
 
 if (window.addEventListener) {
     window.addEventListener("load", doLoad, false);
@@ -108,13 +110,10 @@ if (window.addEventListener) {
 
 //add resize handle
 (function () {
-    var Dom = YAHOO.util.Dom,
-        Event = YAHOO.util.Event;
-
     var resize = new YAHOO.util.Resize('resizeContainer', {
         handles: 'b',
         minHeight: 300 // this should be the same as the height of the container div,
-        // to fix a issue when it's resized to be smaller than the original height
+        // to fix an issue when it's resized to be smaller than the original height
     });
 
     //update timeline after resizing

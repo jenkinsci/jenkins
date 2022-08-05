@@ -51,7 +51,8 @@ Behaviour.specify("INPUT.apply-button", 'apply', 0, function (e) {
                         contentWidth = r.width*3/4;
                     }
 
-                    if (oldError = $('error-description')) {
+                    let oldError = $('error-description')
+                    if (oldError) {
                         // Remove old error if there is any
                         $(containerId).removeChild(oldError);
                     }

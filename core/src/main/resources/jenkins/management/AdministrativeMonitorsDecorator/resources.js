@@ -2,7 +2,9 @@
     function initializeAmMonitor(amMonitorRoot, options) {
         var button = amMonitorRoot.querySelector('.am-button');
         var amList = amMonitorRoot.querySelector('.am-list');
-        if (button === null || amList === null) return null;
+        if (button === null || amList === null) {
+          return null;
+        }
 
         var url = button.getAttribute('data-href');
 
@@ -25,7 +27,9 @@
         }
 
         function show() {
-            if (options.closeAll) options.closeAll();
+            if (options.closeAll) {
+              options.closeAll();
+            }
 
             new Ajax.Request(url, {
                 method: "GET",
