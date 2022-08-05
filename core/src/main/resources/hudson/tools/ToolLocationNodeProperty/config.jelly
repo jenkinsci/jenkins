@@ -29,7 +29,7 @@
 			<table width="100%">
 				<f:entry title="${%Name}">
 				        <div class="jenkins-select">
-                  <select class="jenkins-select__input dropdownList" name="locations.key">
+                  <select class="jenkins-select__input" name="locations.key">
                     <j:forEach var="toolDescriptor" items="${descriptor.toolDescriptors}">
                         <j:forEach var="toolInstallation" items="${toolDescriptor.installations}">
                             <f:option selected="${descriptor.getKey(toolInstallation)==location.key}" value="${descriptor.getKey(toolInstallation)}">(${toolDescriptor.displayName}) ${toolInstallation.name}</f:option>
