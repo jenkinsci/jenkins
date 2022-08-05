@@ -1,4 +1,4 @@
-function createFilterMenuButton(button, menu, menuAlignment, menuMinScrollHeight) {
+window.createFilterMenuButton = function(button, menu, menuAlignment, menuMinScrollHeight) {
   var MIN_NUM_OPTIONS = 5;
   var menuButton = new YAHOO.widget.Button(button, {
     type: "menu",

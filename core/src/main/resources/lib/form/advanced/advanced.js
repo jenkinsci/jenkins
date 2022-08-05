@@ -17,8 +17,10 @@ Behaviour.specify("INPUT.advanced-button", 'advanced', 0, function(e) {
             var nameRef = tr.getAttribute("nameref");
             while (container.lastElementChild != null) {
                 var row = container.lastElementChild;
-                if(nameRef!=null && row.getAttribute("nameref")==null)
-                    row.setAttribute("nameref",nameRef); // to handle inner rowSets, don't override existing values
+                // to handle inner rowSets, don't override existing values
+                if (nameRef != null && row.getAttribute("nameref") == null) {
+                  row.setAttribute("nameref", nameRef);
+                }
                 $(row).setOpacity(0);
 
                 tr.parentNode.insertBefore(row, $(tr).next());

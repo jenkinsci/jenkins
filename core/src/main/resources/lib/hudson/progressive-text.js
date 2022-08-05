@@ -15,14 +15,15 @@ Behaviour.specify('.progressiveText-holder', 'progressive-text', 0, function (ho
   */
   function fetchNext(e,href,onFinishEvent) {
     var headers = {};
-    if (e.consoleAnnotator!=undefined)
+    if (e.consoleAnnotator !== undefined) {
       headers["X-ConsoleAnnotator"] = e.consoleAnnotator;
+    }
 
     new Ajax.Request(href,{
       method: "post",
       parameters: {"start":e.fetchedBytes},
       requestHeaders: headers,
-      onComplete: function(rsp,_) {
+      onComplete: function(rsp) {
         /* append text and do autoscroll if applicable */
         var stickToBottom = scroller.isSticking();
         var text = rsp.responseText;
@@ -31,7 +32,9 @@ Behaviour.specify('.progressiveText-holder', 'progressive-text', 0, function (ho
           e.appendChild(p); // Needs to be first for IE
           p.innerHTML = text;
           Behaviour.applySubtree(p);
-          if(stickToBottom) scroller.scrollToBottom();
+          if (stickToBottom) {
+            scroller.scrollToBottom();
+          }
         }
 
         e.fetchedBytes     = rsp.getResponseHeader("X-Text-Size");

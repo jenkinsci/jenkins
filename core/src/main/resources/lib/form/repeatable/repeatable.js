@@ -57,7 +57,9 @@ var repeatableSupport = {
             this.container.insertBefore(nc, children[0]);
         }
         // Initialize drag & drop for this element
-        if (this.withDragDrop) registerSortableDragDrop(nc);
+        if (this.withDragDrop) {
+          registerSortableDragDrop(nc);
+        }
 
         new YAHOO.util.Anim(nc, {
             opacity: { to:1 }
@@ -85,13 +87,13 @@ var repeatableSupport = {
             }
         } else {
             if (children.length == 1) {
-                var addButtonElements = $(this.container).childElements().findAll(function (b) {
+                addButtonElements = $(this.container).childElements().findAll(function (b) {
                     return b.hasClassName("repeatable-add");
                 });
 
                 if (addButtonElements.length == 1 && this.enableTopButton) {
-                    var buttonElement = addButtonElements[0];
-                    var parentOfButton = buttonElement.parentNode;
+                    buttonElement = addButtonElements[0];
+                    parentOfButton = buttonElement.parentNode;
                     var addTopButton = document.createElement('input');
                     addTopButton.type = 'button';
                     addTopButton.value = buttonElement.textContent || buttonElement.innerText;
@@ -102,8 +104,9 @@ var repeatableSupport = {
                 children[0].className = "repeated-chunk first last only";
             } else {
                 children[0].className = "repeated-chunk first";
-                for (var i = 1; i < children.length - 1; i++)
-                    children[i].className = "repeated-chunk middle";
+                for (var i = 1; i < children.length - 1; i++) {
+                  children[i].className = "repeated-chunk middle";
+                }
                 children[children.length - 1].className = "repeated-chunk last";
             }
         }
@@ -155,12 +158,15 @@ var repeatableSupport = {
 // do the ones that extract innerHTML so that they can get their original HTML before
 // other behavior rules change them (like YUI buttons.)
 Behaviour.specify("DIV.repeated-container", 'repeatable', -100, function(e) {
-        if(isInsideRemovable(e))    return;
+        if (isInsideRemovable(e)) {
+          return;
+        }
 
         // compute the insertion point
         var ip = $(e.lastElementChild);
-        while (!ip.hasClassName("repeatable-insertion-point"))
-            ip = ip.previous();
+        while (!ip.hasClassName("repeatable-insertion-point")) {
+          ip = ip.previous();
+        }
         // set up the logic
         object(repeatableSupport).init(e, e.firstChild, ip);
 });
@@ -215,7 +221,9 @@ Behaviour.specify("DIV.repeated-chunk", 'repeatable', -200, function(d) {
                 }
                 inputs[i].name = prefix + inputs[i].name;
                 // Reselect anything unselected by browser before names uniquified:
-                if (inputs[i].defaultChecked) inputs[i].checked = true;
+                if (inputs[i].defaultChecked) {
+                  inputs[i].checked = true;
+                }
             }
         }
 });

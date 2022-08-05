@@ -1,5 +1,5 @@
 Behaviour.specify("A.confirmation-link", 'confirmation-link', 0, function (element) {
-    element.onclick = function(event) {
+    element.onclick = function() {
         var post = element.getAttribute('data-post');
         var href = element.getAttribute('data-url');
         var message = element.getAttribute('data-message');

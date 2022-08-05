@@ -1,6 +1,4 @@
-var breadcrumbs = (function() {
-    var Dom = YAHOO.util.Dom;
-
+window.breadcrumbs = (function() {
     /**
      * This component actually renders the menu.
      *
@@ -18,6 +16,7 @@ var breadcrumbs = (function() {
      *
      * @type {YAHOO.util.Point}
      */
+    // eslint-disable-next-line no-unused-vars
     var mouse;
 
     var logger = function() {};
@@ -30,7 +29,9 @@ var breadcrumbs = (function() {
           return iconXml + displaynameSpan;
         }
 
-        if (icon === null) return "<span style='margin: 2px 4px 2px 2px;' />" + displaynameSpan;
+        if (icon === null) {
+          return "<span style='margin: 2px 4px 2px 2px;' />" + displaynameSpan;
+        }
 
         // TODO: move this to the API response in a clean way
         var isSvgSprite = icon.toLowerCase().indexOf('svg#') !== -1;
@@ -50,17 +51,25 @@ var breadcrumbs = (function() {
         mouse = new YAHOO.util.Point(ev.pageX,ev.pageY);
     });
 
-    function combinePath(a,b) {
-        var qs;
-        var i = a.indexOf('?');
-        if (i>=0)  { qs=a.substring(i); a=a.substring(0,i); }
-        else        qs="";
+    function combinePath(a, b) {
+      var qs;
+      var i = a.indexOf("?");
+      if (i >= 0) {
+        qs = a.substring(i);
+        a = a.substring(0, i);
+      } else {
+        qs = "";
+      }
 
-        i=a.indexOf('#');
-        if (i>=0)   a=a.substring(0,i);
+      i = a.indexOf("#");
+      if (i >= 0) {
+        a = a.substring(0, i);
+      }
 
-        if (a.endsWith('/'))    return a+b+qs;
-        return a+'/'+b+qs;
+      if (a.endsWith("/")) {
+        return a + b + qs;
+      }
+      return a + "/" + b + qs;
     }
 
     function postRequest(action, event, url) {
@@ -86,6 +95,8 @@ var breadcrumbs = (function() {
     /**
      * Wraps a delayed action and its cancellation.
      */
+    // unsure if used in plugins
+    // eslint-disable-next-line no-unused-vars
     function Delayed(action, timeout) {
         this.schedule = function () {
             this.cancel();
@@ -120,7 +131,9 @@ var breadcrumbs = (function() {
         function showMenu(items) {
             menu.hide();
             var pos = [e, "tl", "bl"];
-            if ($(e).hasClassName("tl-tr"))  pos = [e,"tl","tr"];
+            if ($(e).hasClassName("tl-tr")) {
+              pos = [e, "tl", "tr"];
+            }
             menu.cfg.setProperty("context", pos);
             menu.clearContent();
             menu.addItems(items);
@@ -128,9 +141,11 @@ var breadcrumbs = (function() {
             menu.show();
         }
 
-        if (xhr)
-            xhr.options.onComplete = function () {
-            };   // ignore the currently pending call
+        // ignore the currently pending call
+        if (xhr) {
+          xhr.options.onComplete = function() {
+          };
+        }
 
         if (e.items) {// use what's already loaded
             showMenu(e.items());
@@ -149,8 +164,9 @@ var breadcrumbs = (function() {
                         } else {
                           e.text = makeMenuHtml(e.icon, e.iconXml, e.displayName);
                         }
-                        if (e.subMenu!=null)
-                            e.subMenu = {id:"submenu"+(iota++), itemdata:e.subMenu.items.each(fillMenuItem)};
+                        if (e.subMenu != null) {
+                          e.subMenu = { id: "submenu" + (iota++), itemdata: e.subMenu.items.each(fillMenuItem) };
+                        }
                         if (e.requiresConfirmation) {
                             e.onclick = {fn: requireConfirmation, obj: {url: e.url, displayName: e.displayName, post: e.post}};
                             delete e.url;

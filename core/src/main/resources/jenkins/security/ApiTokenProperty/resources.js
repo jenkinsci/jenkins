@@ -21,12 +21,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-function revokeToken(anchorRevoke){
+window.revokeToken = function(anchorRevoke){
     var repeatedChunk = anchorRevoke.up('.repeated-chunk');
     var tokenList = repeatedChunk.up('.token-list');
     var confirmMessage = anchorRevoke.getAttribute('data-confirm');
     var targetUrl = anchorRevoke.getAttribute('data-target-url');
-    
+
     var inputUuid = repeatedChunk.querySelector('input.token-uuid-input');
     var tokenUuid = inputUuid.value;
 
@@ -34,17 +34,17 @@ function revokeToken(anchorRevoke){
         new Ajax.Request(targetUrl, {
             method: "post",
             parameters: {tokenUuid: tokenUuid},
-            onSuccess: function(rsp,_) {
+            onSuccess: function() {
                 if(repeatedChunk.querySelectorAll('.legacy-token').length > 0){
                     // we are revoking the legacy token
                     var messageIfLegacyRevoked = anchorRevoke.getAttribute('data-message-if-legacy-revoked');
-                    
+
                     var legacyInput = document.getElementById('apiToken');
                     legacyInput.value = messageIfLegacyRevoked;
                 }
                 repeatedChunk.remove();
                 adjustTokenEmptyListMessage(tokenList);
-                
+
             }
         });
     }
@@ -52,7 +52,7 @@ function revokeToken(anchorRevoke){
     return false;
 }
 
-function saveApiToken(button){
+window.saveApiToken = function(button){
     if(button.hasClassName('request-pending')){
         // avoid multiple requests to be sent if user is clicking multiple times
         return;
@@ -63,11 +63,11 @@ function saveApiToken(button){
     var tokenList = repeatedChunk.up('.token-list');
     var nameInput = repeatedChunk.querySelector('[name="tokenName"]');
     var tokenName = nameInput.value;
-    
+
     new Ajax.Request(targetUrl, {
         method: "post",
         parameters: {"newTokenName": tokenName},
-        onSuccess: function(rsp,_) {
+        onSuccess: function(rsp) {
             var json = rsp.responseJSON;
             var errorSpan = repeatedChunk.querySelector('.error');
             if(json.status === 'error'){
@@ -77,11 +77,11 @@ function saveApiToken(button){
                 button.removeClassName('request-pending');
             }else{
                 errorSpan.removeClassName('visible');
-                
+
                 var tokenName = json.data.tokenName;
                 // in case the name was empty, the application will propose a default one
                 nameInput.value = tokenName;
-                
+
                 var tokenValue = json.data.tokenValue;
                 var tokenValueSpan = repeatedChunk.querySelector('.new-token-value');
                 tokenValueSpan.innerText = tokenValue;
@@ -101,15 +101,15 @@ function saveApiToken(button){
 
                 // we do not want to allow user to create twice a token using same name by mistake
                 button.remove();
-                
+
                 var revokeButton = repeatedChunk.querySelector('.token-revoke');
                 revokeButton.removeClassName('hidden-button');
-                
+
                 var cancelButton = repeatedChunk.querySelector('.token-cancel');
                 cancelButton.addClassName('hidden-button')
-                
+
                 repeatedChunk.addClassName('token-list-fresh-item');
-                
+
                 adjustTokenEmptyListMessage(tokenList);
             }
         }

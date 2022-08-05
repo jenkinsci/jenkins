@@ -47,7 +47,7 @@ function progressivelyRender(handler, callback, statusId) {
             handler.news(checkNews);
         }, timeout);
     }
-    handler.start(function(response) {
+    handler.start(function() {
         checkNewsLater(0);
     });
 }
