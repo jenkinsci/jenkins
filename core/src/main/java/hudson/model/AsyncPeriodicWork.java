@@ -96,7 +96,7 @@ public abstract class AsyncPeriodicWork extends PeriodicWork {
                 long startTime = System.currentTimeMillis();
                 long stopTime;
 
-                LazyTaskListener l = new LazyTaskListener(() -> createListener(), String.format("Started at %tc", new Date(startTime)));
+                LazyTaskListener l = new LazyTaskListener(this::createListener, String.format("Started at %tc", new Date(startTime)));
                 try {
                     try (ACLContext ctx = ACL.as2(ACL.SYSTEM2)) {
                         execute(l);
