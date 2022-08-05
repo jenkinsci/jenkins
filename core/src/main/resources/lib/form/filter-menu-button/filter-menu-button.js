@@ -31,6 +31,11 @@ function _createFilterMenuButton(menu) {
   filterInput.setAttribute("type", "search");
 
   filterInput.addEventListener('input', (event) => _applyFilterKeyword(menu, event.currentTarget));
+  filterInput.addEventListener("keypress", (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+    }
+  });
 
   const filterContainer = document.createElement("div");
   filterContainer.appendChild(filterInput);
