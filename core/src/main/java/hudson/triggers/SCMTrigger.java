@@ -745,6 +745,7 @@ public class SCMTrigger extends Trigger<Item> {
             this.run = build;
             try {
                 BuildAction a = new BuildAction(build);
+                // pollingLog can be null when rebuilding a job that was initially triggered by polling.
                 if (pollingLog != null) {
                     Files.writeString(Util.fileToPath(a.getPollingLogFile()), pollingLog, Charset.defaultCharset());
                 }
