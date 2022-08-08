@@ -87,6 +87,8 @@ import jenkins.model.lazy.BuildReference;
 import jenkins.model.lazy.LazyBuildMixIn;
 import jenkins.scm.RunWithSCM;
 import jenkins.util.SystemProperties;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
@@ -271,8 +273,10 @@ public abstract class AbstractBuild<P extends AbstractProject<P, R>, R extends A
      * <p>
      * If you override this method, you'll most likely also want to override
      * {@link #getDisplayName()}.
+     * @deprecated navigation through a hierarchy should be done through breadcrumbs, do not add a link using this method
      */
-    @Deprecated
+    @Deprecated(since = "TODO")
+    @Restricted(DoNotUse.class)
     public String getUpUrl() {
         return Functions.getNearestAncestorUrl(Stapler.getCurrentRequest(), getParent()) + '/';
     }
