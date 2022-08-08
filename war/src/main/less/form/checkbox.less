@@ -27,6 +27,16 @@
   clip-path: inset(50%);
 
   &:checked {
+    &:active, &:focus {
+      & + label {
+        &::before {
+          box-shadow: 0 0 0 5px var(--focus-input-glow), inset 0 0 0 12px var(--focus-input-border);
+        }
+      }
+    }
+  }
+
+  &:checked {
     & + label {
       &:active, &:focus {
         &::before {
