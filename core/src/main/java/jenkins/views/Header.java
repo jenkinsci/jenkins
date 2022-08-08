@@ -51,7 +51,7 @@ public abstract class Header implements ExtensionPoint {
     @Restricted(NoExternalUse.class)
     public static Header get() {
         Optional<Header> header = ExtensionList.lookup(Header.class).stream().filter(Header::isAvailable).findFirst();
-        return header.orElseGet(() -> new JenkinsHeader());
+        return header.orElseGet(JenkinsHeader::new);
     }
 
 }
