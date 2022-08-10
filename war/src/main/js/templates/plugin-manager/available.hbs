@@ -65,12 +65,14 @@
                 </div>
             {{/if}}
         </td>
-        <td width="25%">
-            {{#if this.releaseTimestamp }}
+        {{#if this.releaseTimestamp }}
+            <td style="width: 25%" data="{{ this.releaseTimestamp.iso8601 }}">
                 <time datetime="{{ this.releaseTimestamp.iso8601 }}">
                     {{ this.releaseTimestamp.displayValue }}
                 </time>
-            {{/if}}
-        </td>
+            </td>
+        {{else}}
+            <td style="width: 25%"></td>
+        {{/if}}
     </tr>
 {{/each}}
