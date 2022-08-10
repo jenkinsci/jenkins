@@ -536,7 +536,7 @@ public class SCMTrigger extends Trigger<Item> {
         }
 
         public String getLog() throws IOException {
-            return Util.loadFile(getLogFile());
+            return Util.loadFile(getLogFile(), Charset.defaultCharset());
         }
 
         /**
