@@ -4041,7 +4041,7 @@ __metadata:
     style-loader: 3.3.1
     stylelint: 14.9.1
     stylelint-checkstyle-reporter: 0.2.0
-    stylelint-config-standard: 26.0.0
+    stylelint-config-standard: 27.0.0
     webpack: 5.74.0
     webpack-cli: 4.10.0
     webpack-remove-empty-scripts: 0.8.1
@@ -6130,23 +6130,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"stylelint-config-recommended@npm:^8.0.0":
-  version: 8.0.0
-  resolution: "stylelint-config-recommended@npm:8.0.0"
+"stylelint-config-recommended@npm:^9.0.0":
+  version: 9.0.0
+  resolution: "stylelint-config-recommended@npm:9.0.0"
   peerDependencies:
-    stylelint: ^14.8.0
-  checksum: 0c5ca94625e5308a7afb8315bb350a2b48f46fdd8d8922dd9a8c2e37b3407f2294794d930726ad6bf2007abcde1abd34084808cf83adf150efe3a643e0eb5ac4
+    stylelint: ^14.10.0
+  checksum: 6d94582cb6ef0ba7d0181f0ff500fb12092e465915730d0a7f6b6e8d16e8c920658f18bb2c670115cd177f5d3b481609ff3a91bcee083d546ae31d94fdc03261
   languageName: node
   linkType: hard
 
-"stylelint-config-standard@npm:26.0.0":
-  version: 26.0.0
-  resolution: "stylelint-config-standard@npm:26.0.0"
+"stylelint-config-standard@npm:27.0.0":
+  version: 27.0.0
+  resolution: "stylelint-config-standard@npm:27.0.0"
   dependencies:
-    stylelint-config-recommended: ^8.0.0
+    stylelint-config-recommended: ^9.0.0
   peerDependencies:
-    stylelint: ^14.9.0
-  checksum: c1fe44df1755bcccc740b385a24acffa922d331d9f9ba39dafad81cc9643e6c1f870abd1ee73b2737d6903e06efb83b2a1ee26d786faef0123fc22e1f09c13fe
+    stylelint: ^14.10.0
+  checksum: e0f1308d4c020ffebcc47f691c9ea06964e6f5d1600525a45de22ce66b6d20e2fba7509e98ef3b45a1db385e20514f5d3d8059105249482e89a64e3f826e5a85
   languageName: node
   linkType: hard
 
