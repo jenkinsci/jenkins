@@ -1726,7 +1726,7 @@ function AutoScroller(scrollContainer) {
             var scrollDiv = $(this.scrollContainer);
             var currentHeight = this.getCurrentHeight();
             if(document.documentElement) document.documentElement.scrollTop = currentHeight
-            scrollDiv.scrollTop = currentHeight;
+            window.scrollTo({"top": currentHeight, "left": scrollDiv.scrollLeft, "behavior": "instant"});
         }
     };
 }

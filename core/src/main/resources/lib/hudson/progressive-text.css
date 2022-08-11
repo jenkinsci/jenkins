@@ -1,0 +1,12 @@
+div.progressiveText-block:not(:first-child) {
+  animation: progressiveText_highlight 1s;
+}
+
+@keyframes progressiveText_highlight {
+  0% {
+    background: rgba(0, 0, 100, 0.2);
+  }
+  100% {
+    background: rgba(0, 0, 100, 0);
+  }
+}

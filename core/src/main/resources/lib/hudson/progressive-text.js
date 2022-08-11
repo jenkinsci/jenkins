@@ -28,6 +28,7 @@ Behaviour.specify('.progressiveText-holder', 'progressive-text', 0, function (ho
         var text = rsp.responseText;
         if(text!="") {
           var p = document.createElement("DIV");
+          p.setAttribute('class', 'progressiveText-block')
           e.appendChild(p); // Needs to be first for IE
           p.innerHTML = text;
           Behaviour.applySubtree(p);
