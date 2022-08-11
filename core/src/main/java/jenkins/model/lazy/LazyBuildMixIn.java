@@ -160,7 +160,8 @@ public abstract class LazyBuildMixIn<JobT extends Job<JobT, RunT> & Queue.Task &
 
     /**
      * Loads an existing build record from disk.
-     * The default implementation just calls the ({@link Job}, {@link File}) constructor of {@link #getBuildClass}.
+     * The default implementation just calls the ({@link Job}, {@link File}) constructor of {@link #getBuildClass},
+     * which will call {@link Run#Run(Job, File)}.
      */
     public RunT loadBuild(File dir) throws IOException {
         try {
@@ -174,7 +175,7 @@ public abstract class LazyBuildMixIn<JobT extends Job<JobT, RunT> & Queue.Task &
 
     /**
      * Creates a new build of this project for immediate execution.
-     * Calls the ({@link Job}) constructor of {@link #getBuildClass}.
+     * Calls the ({@link Job}) constructor of {@link #getBuildClass}, which will call {@link Run#Run(Job)}.
      * Suitable for {@link SubTask#createExecutable}.
      */
     public final synchronized RunT newBuild() throws IOException {

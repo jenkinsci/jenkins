@@ -44,6 +44,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import jenkins.model.Jenkins;
@@ -291,7 +292,7 @@ public abstract class BuildWrapper extends AbstractDescribableImpl<BuildWrapper>
         // delegate to getJobAction (singular) for backward compatible behavior
         Action a = getProjectAction(job);
         if (a == null)    return Collections.emptyList();
-        return Collections.singletonList(a);
+        return List.of(a);
     }
 
     /**

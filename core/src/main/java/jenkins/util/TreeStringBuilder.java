@@ -141,7 +141,7 @@ public class TreeStringBuilder {
      * multiple {@link TreeString}s.
      */
     public void dedup() {
-        root.dedup(new HashMap<String, char[]>());
+        root.dedup(new HashMap<>());
     }
 
     /**

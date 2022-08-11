@@ -219,7 +219,7 @@ public class ComputerConfigDotXmlTest {
         FailingHttpStatusCodeException e = assertThrows(FailingHttpStatusCodeException.class, () -> wc.getPage(req));
         assertThat(e.getStatusCode(), equalTo(400));
         File configDotXml = new File(rule.jenkins.getRootDir(), "config.xml");
-        String configDotXmlContents = new String(Files.readAllBytes(configDotXml.toPath()), StandardCharsets.UTF_8);
+        String configDotXmlContents = Files.readString(configDotXml.toPath(), StandardCharsets.UTF_8);
 
         assertThat(configDotXmlContents, not(containsString("<name>../</name>")));
     }

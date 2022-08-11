@@ -25,8 +25,6 @@
 
 package jenkins.util.xml;
 
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
 import org.jaxen.Function;
@@ -51,9 +49,7 @@ public class FilteredFunctionContext implements FunctionContext {
     /**
      * Default set of "bad" function names.
      */
-    private static final Set<String> DEFAULT_ILLEGAL_FUNCTIONS = Collections.unmodifiableSet(new HashSet<>(
-            Collections.singletonList("document")
-    ));
+    private static final Set<String> DEFAULT_ILLEGAL_FUNCTIONS = Set.of("document");
     private final FunctionContext base;
     private final Set<String> illegalFunctions;
 

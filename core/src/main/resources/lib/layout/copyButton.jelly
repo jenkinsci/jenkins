@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi,
+Copyright (c) 2004-2022, Sun Microsystems, Inc., Kohsuke Kawaguchi,
 Daniel Dyer, Seiji Sogabe, Tom Huybrechts, Manufacture Francaise des Pneumatiques
 Michelin, Romain Seguy, CloudBees, Inc.
 
@@ -26,30 +26,33 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:i="jelly:fmt" xmlns:x="jelly:xml">
   <st:documentation>
-    Creates a small button that lets the user copies a text into clipboard
+    Button that copies text into the user's clipboard upon click
 
-    <st:attribute name="tooltip">
-      Tooltip of the button.
-    </st:attribute>
     <st:attribute name="text" use="required">
       Text to be copied into the clipboard.
     </st:attribute>
-    <st:attribute name="message" use="required">
+    <st:attribute name="message">
       Confirmation message to be shown once the text is copied.
-      This is required as in some browsers, button doesn't properly provide feedback to user actions
-      due to the nature of the hack needed to make copy work.
     </st:attribute>
-    <st:attribute name="style">
-      Additional CSS styles to apply.
+    <st:attribute name="tooltip">
+      Tooltip of the button.
+    </st:attribute>
+    <st:attribute name="iconOnly">
+      Hides the background plate of the button
     </st:attribute>
     <st:attribute name="clazz">
-      Additional CSS class names, so that you can discover this tag more easily from your JavaScript.
+      Additional CSS class names
     </st:attribute>
   </st:documentation>
 
-  <span class="copy-button ${attrs.clazz}" title="${attrs.tooltip}" text="${attrs.text}"
-    message="${attrs.message}" style="${attrs.style}">
-    <input type="button"/>
-  </span>
+  <!-- 'copy-button' class is for backwards compatability -->
+  <button class="copy-button jenkins-button ${attrs.iconOnly == 'true' ? 'jenkins-button--transparent' : ''} jenkins-copy-button ${attrs.clazz}"
+          text="${attrs.text}"
+          message="${attrs.message ?: '%Copied'}"
+          tooltip="${attrs.tooltip ?: '%Copy'}"
+          type="button">
+    <span class="jenkins-copy-button__icon" />
+  </button>
+
   <st:adjunct includes="lib.layout.copyButton.copyButton"/>
 </j:jelly>

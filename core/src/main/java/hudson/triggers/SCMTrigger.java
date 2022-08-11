@@ -28,6 +28,7 @@ package hudson.triggers;
 import static java.util.logging.Level.WARNING;
 
 import antlr.ANTLRException;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
@@ -57,6 +58,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -79,7 +81,6 @@ import jenkins.scm.SCMDecisionHandler;
 import jenkins.triggers.SCMTriggerItem;
 import jenkins.util.SystemProperties;
 import net.sf.json.JSONObject;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.jelly.XMLOutput;
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
@@ -205,7 +206,7 @@ public class SCMTrigger extends Trigger<Item> {
             return Collections.emptyList();
         }
 
-        return Collections.singleton(new SCMAction());
+        return Set.of(new SCMAction());
     }
 
     /**
@@ -711,13 +712,14 @@ public class SCMTrigger extends Trigger<Item> {
          * Only used while ths cause is in the queue.
          * Once attached to the build, we'll move this into a file to reduce the memory footprint.
          */
+        @CheckForNull
         private String pollingLog;
 
         private transient Run run;
 
         public SCMTriggerCause(File logFile) throws IOException {
             // TODO: charset of this log file?
-            this(FileUtils.readFileToString(logFile));
+            this(Files.readString(Util.fileToPath(logFile), Charset.defaultCharset()));
         }
 
         public SCMTriggerCause(String pollingLog) {
@@ -743,7 +745,10 @@ public class SCMTrigger extends Trigger<Item> {
             this.run = build;
             try {
                 BuildAction a = new BuildAction(build);
-                FileUtils.writeStringToFile(a.getPollingLogFile(), pollingLog);
+                // pollingLog can be null when rebuilding a job that was initially triggered by polling.
+                if (pollingLog != null) {
+                    Files.writeString(Util.fileToPath(a.getPollingLogFile()), pollingLog, Charset.defaultCharset());
+                }
                 build.replaceAction(a);
             } catch (IOException e) {
                 LOGGER.log(WARNING, "Failed to persist the polling log", e);

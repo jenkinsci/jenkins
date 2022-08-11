@@ -563,7 +563,10 @@
       </And>
       <And>
         <Bug pattern="SSD_DO_NOT_USE_INSTANCE_LOCK_ON_SHARED_STATIC_DATA"/>
-        <Class name="hudson.model.ViewJob"/>
+        <Or>
+          <Class name="hudson.model.ViewJob"/>
+          <Class name="hudson.TcpSlaveAgentListener$ConnectionHandler"/>
+        </Or>
       </And>
       <And>
         <Bug pattern="STATIC_IV"/>
@@ -655,6 +658,9 @@
           <Class name="jenkins.slaves.restarter.WinswSlaveRestarter"/>
           <Class name="jenkins.slaves.StandardOutputSwapper$ChannelSwapper"/>
           <Class name="jenkins.util.ProgressiveRendering"/>
+          <Class name="jenkins.websocket.Jetty9Provider"/>
+          <Class name="jenkins.websocket.Jetty10Provider"/>
+          <Class name="jenkins.websocket.Provider"/>
           <Class name="jenkins.websocket.WebSockets"/>
           <Class name="jenkins.websocket.WebSocketSession"/>
           <Class name="jenkins.widgets.RunListProgressiveRendering"/>

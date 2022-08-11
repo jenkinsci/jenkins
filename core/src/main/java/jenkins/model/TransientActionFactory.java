@@ -105,11 +105,11 @@ public abstract class TransientActionFactory<T> implements ExtensionPoint {
 
     @SuppressWarnings("rawtypes")
     private static final LoadingCache<ExtensionList<TransientActionFactory>, LoadingCache<CacheKey, List<TransientActionFactory<?>>>> cache =
-        CacheBuilder.newBuilder().weakKeys().build(new CacheLoader<ExtensionList<TransientActionFactory>, LoadingCache<CacheKey, List<TransientActionFactory<?>>>>() {
+        CacheBuilder.newBuilder().weakKeys().build(new CacheLoader<>() {
         @Override
         public LoadingCache<CacheKey, List<TransientActionFactory<?>>> load(final ExtensionList<TransientActionFactory> allFactories) throws Exception {
             final LoadingCache<CacheKey, List<TransientActionFactory<?>>> perJenkinsCache =
-                CacheBuilder.newBuilder().build(new CacheLoader<CacheKey, List<TransientActionFactory<?>>>() {
+                CacheBuilder.newBuilder().build(new CacheLoader<>() {
                 @Override
                 public List<TransientActionFactory<?>> load(CacheKey key) throws Exception {
                     List<TransientActionFactory<?>> factories = new ArrayList<>();

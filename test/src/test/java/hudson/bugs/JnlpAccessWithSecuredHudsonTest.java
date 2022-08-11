@@ -44,6 +44,7 @@ import java.io.File;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Collections;
+import java.util.List;
 import java.util.Locale;
 import jenkins.security.apitoken.ApiTokenTestHelper;
 import jenkins.security.s2m.AdminWhitelistRule;
@@ -86,7 +87,7 @@ public class JnlpAccessWithSecuredHudsonTest {
     public void anonymousCanAlwaysLoadJARs() throws Exception {
         ApiTokenTestHelper.enableLegacyBehavior();
 
-        r.jenkins.setNodes(Collections.singletonList(createNewJnlpSlave("test")));
+        r.jenkins.setNodes(List.of(createNewJnlpSlave("test")));
         JenkinsRule.WebClient wc = r.createWebClient();
         HtmlPage p = wc.withBasicApiToken(User.getById("alice", true)).goTo("computer/test/");
 
@@ -110,7 +111,7 @@ public class JnlpAccessWithSecuredHudsonTest {
     @PresetData(DataSet.ANONYMOUS_READONLY)
     @Test
     public void anonymousCannotGetSecrets() throws Exception {
-        r.jenkins.setNodes(Collections.singletonList(createNewJnlpSlave("test")));
+        r.jenkins.setNodes(List.of(createNewJnlpSlave("test")));
         r.createWebClient().assertFails("computer/test/jenkins-agent.jnlp", HttpURLConnection.HTTP_FORBIDDEN);
     }
 
@@ -119,7 +120,7 @@ public class JnlpAccessWithSecuredHudsonTest {
     @Test
     public void serviceUsingDirectSecret() throws Exception {
         Slave slave = createNewJnlpSlave("test");
-        r.jenkins.setNodes(Collections.singletonList(slave));
+        r.jenkins.setNodes(List.of(slave));
         r.createWebClient().goTo("computer/test/jenkins-agent.jnlp?encrypt=true", "application/octet-stream");
         String secret = slave.getComputer().getJnlpMac();
         // To watch it fail: secret = secret.replace('1', '2');
