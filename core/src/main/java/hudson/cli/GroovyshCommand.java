@@ -43,7 +43,6 @@ import jenkins.model.Jenkins;
 import jenkins.model.ScriptListener;
 import jline.TerminalFactory;
 import jline.UnsupportedTerminal;
-import org.codehaus.groovy.runtime.InvokerHelper;
 import org.codehaus.groovy.tools.shell.Groovysh;
 import org.codehaus.groovy.tools.shell.IO;
 import org.codehaus.groovy.tools.shell.Shell;
@@ -126,6 +125,7 @@ public class GroovyshCommand extends CLICommand {
         shell.getImports().add("hudson.model.*");
         return shell;
     }
+
     private static class LoggingGroovySh extends Groovysh {
         LoggingGroovySh(ClassLoader cl, Binding binding, IO io, Closure registrar) {
             super(cl, binding, io, registrar);
