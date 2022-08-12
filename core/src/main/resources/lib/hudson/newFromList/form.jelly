@@ -62,9 +62,7 @@ THE SOFTWARE.
 
   <s:form class="jenkins-form" method="post" id="createItemForm" action="${attrs.action?:'createItem'}" name="createItem">
     <s:entry title="${attrs.nameTitle}" class="jenkins-form-item--medium">
-      <s:textbox id="name" name="name" checkUrl="'${h.jsStringEscape(attrs.checkUrl)}?value='+encodeURIComponent(this.value)"
-                 onchange="updateOk(this.form)" onkeyup="updateOk(this.form)" />
-      <script>$('name').focus();</script>
+      <s:textbox id="name" name="name" checkUrl="${attrs.checkUrl}" checkDependsOn=""/>
     </s:entry>
 
     <div class="jenkins-form-item jenkins-form-item--medium">
@@ -75,7 +73,7 @@ THE SOFTWARE.
 
         <j:forEach var="descriptor" items="${descriptors}">
           <div class="jenkins-radio">
-            <input class="jenkins-radio__input" type="radio" name="mode" id="${descriptor.id}" value="${descriptor.id}" onchange="updateOk()" onclick="updateOk()" />
+            <input class="jenkins-radio__input mode-selection" type="radio" name="mode" id="${descriptor.id}" value="${descriptor.id}"/>
             <label for="${descriptor.id}" class="jenkins-radio__label">
               ${descriptor.displayName}
             </label>
@@ -87,12 +85,12 @@ THE SOFTWARE.
 
         <j:if test="${!empty(attrs.copyNames) or attrs.showCopyOption}">
           <div class="jenkins-radio">
-            <input class="jenkins-radio__input" type="radio" id="copy" name="mode" value="copy" onchange="updateOk()" onclick="updateOk()" />
+            <input class="jenkins-radio__input mode-selection" type="radio" id="copy" name="mode" value="copy"  />
             <label class="jenkins-radio__label" for="copy">${attrs.copyTitle}</label>
             <div class="jenkins-radio__children">
               <j:set var="descriptor" value="${it.descriptor}" />
               <div class="jenkins-search">
-                <s:textbox placeholder="${%Type for suggestions}" clazz="jenkins-search__input"  name="from" field="copyNewItemFrom" onfocus="$('copy').click()" />
+                <s:textbox placeholder="${%Type for suggestions}" clazz="jenkins-search__input copy-field" name="from" field="copyNewItemFrom" />
                 <div class="jenkins-search__icon">
                   <l:icon src="symbol-search" />
                 </div>
