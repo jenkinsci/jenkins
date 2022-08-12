@@ -237,6 +237,7 @@ THE SOFTWARE.
     </footer>
     </j:if>
     <script src="${resURL}/jsbundles/tooltips.js" type="text/javascript" />
+    <script src="${resURL}/jsbundles/keyboard-shortcuts.js" type="text/javascript"/>
   </body>
 </html>
 </l:view>
