@@ -1,0 +1,36 @@
+{
+  "extends": [
+    "config:base",
+    ":disableDependencyDashboard",
+    ":semanticCommitsDisabled"
+  ],
+  "enabledManagers": [
+    "npm",
+    "regex"
+  ],
+  "packageRules": [
+    {
+      "matchDatasources": ["npm"],
+      "addLabels": ["javascript"],
+      "stabilityDays": 3,
+      "reviewers": ["team:sig-ux"]
+    },
+    {
+      "matchPackageNames": ["node"],
+      "allowedVersions": "/16.[0-9]+.[0-9]+(.[0-9]+)?$/"
+    }
+  ],
+  "regexManagers": [
+    {
+      "fileMatch": ["war\/pom.xml"],
+      "matchStrings": ["<node.version>(?<currentValue>.*?)<\/node.version>"],
+      "depNameTemplate": "node",
+      "datasourceTemplate": "npm"
+    }
+  ],
+  "labels": [
+    "dependencies",
+    "skip-changelog"
+  ],
+  "rebaseWhen": "conflicted"
+}
