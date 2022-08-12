@@ -20,8 +20,10 @@ var radioBlockSupport = {
         while((n = n.next()) != blockEnd) {
             if (show) {
                 n.classList.remove("form-container--hidden")
+                n.style.position = "";
             } else {
                 n.classList.add("form-container--hidden")
+                n.style.position = "absolute";
             }
         }
         layoutUpdateCallback.call();
