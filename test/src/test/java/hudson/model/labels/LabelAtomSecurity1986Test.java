@@ -153,7 +153,7 @@ public class LabelAtomSecurity1986Test {
     @Issue("SECURITY-1986")
     public void programmaticCreationInvalidName() {
         LabelAtom label = new LabelAtom("foo/../goo");
-        assertThrows(IOException.class, () -> label.save());
+        assertThrows(IOException.class, label::save);
     }
 
     @Test

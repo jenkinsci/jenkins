@@ -854,7 +854,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
             String encoding = configFile.sniffEncoding();
             String xml = Files.readString(Util.fileToPath(configFile.getFile()), Charset.forName(encoding));
             Matcher matcher = SECRET_PATTERN.matcher(xml);
-            StringBuffer cleanXml = new StringBuffer();
+            StringBuilder cleanXml = new StringBuilder();
             while (matcher.find()) {
                 if (Secret.decrypt(matcher.group(1)) != null) {
                     matcher.appendReplacement(cleanXml, ">********<");
