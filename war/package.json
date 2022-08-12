@@ -39,8 +39,8 @@
     "postcss": "8.4.16",
     "postcss-loader": "7.0.1",
     "style-loader": "3.3.1",
-    "stylelint": "14.9.1",
-    "stylelint-config-standard": "26.0.0",
+    "stylelint": "14.10.0",
+    "stylelint-config-standard": "27.0.0",
     "webpack": "5.74.0",
     "webpack-cli": "4.10.0",
     "webpack-remove-empty-scripts": "0.8.1"
