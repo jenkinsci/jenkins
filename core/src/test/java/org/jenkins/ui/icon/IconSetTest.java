@@ -1,7 +1,9 @@
 package org.jenkins.ui.icon;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.hamcrest.Matchers.not;
 
 import java.util.Map;
 import org.junit.jupiter.api.Disabled;
