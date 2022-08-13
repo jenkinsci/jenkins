@@ -1,6 +1,5 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:t="/lib/hudson">
-  <link rel="stylesheet" href="${resURL}/jsbundles/simple-page.css" type="text/css" />
   <!-- Node name and status -->
   <h1>
     <l:icon src="${it.iconClassName}" class="icon-xlg" />
