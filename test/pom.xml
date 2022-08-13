@@ -90,7 +90,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>1812.v6d4e97d91fd8</version>
+      <version>1827.v6b_cc1a_74b_ed5</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -121,7 +121,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>io.jenkins.plugins</groupId>
       <artifactId>javax-mail-api</artifactId>
-      <version>1.6.2-6</version>
+      <version>1.6.2-7</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -156,7 +156,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>cloudbees-folder</artifactId>
-      <version>6.729.v2b_9d1a_74d673</version>
+      <version>6.758.vfd75d09eea_a_1</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -168,7 +168,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>mailer</artifactId>
-      <version>414.vcc4c33714601</version>
+      <version>438.v02c7f0a_12fa_4</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -186,7 +186,17 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>structs</artifactId>
-      <version>318.va_f3ccb_729b_71</version>
+      <version>324.va_f5d6774f3a_d</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.vintage</groupId>
+      <artifactId>junit-vintage-engine</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>

@@ -1100,16 +1100,27 @@ public abstract class AbstractProject<P extends AbstractProject<P, R>, R extends
 
     /**
      * Returns the project if any of the downstream project is either
-     * building, waiting, pending or buildable.
+     * building, or queued and not blocked by an upstream/downstream project build.
      * <p>
      * This means eventually there will be an automatic triggering of
      * the given project (provided that all builds went smoothly.)
      */
     public AbstractProject getBuildingDownstream() {
-        Set<Task> unblockedTasks = Jenkins.get().getQueue().getUnblockedTasks();
+        // Unblocked downstream tasks must block this project.
+        Set<Task> tasks = Jenkins.get().getQueue().getUnblockedTasks();
+        // Blocked downstream tasks must block this project.
+        // Projects blocked by upstream or downstream builds
+        // are ignored to break deadlocks.
+        for (Queue.Item item : Jenkins.get().getQueue().getBlockedItems()) {
+            if (item.getCauseOfBlockage() instanceof AbstractProject.BecauseOfUpstreamBuildInProgress ||
+                    item.getCauseOfBlockage() instanceof AbstractProject.BecauseOfDownstreamBuildInProgress) {
+                continue;
+            }
+            tasks.add(item.task);
+        }
 
         for (AbstractProject tup : getTransitiveDownstreamProjects()) {
-            if (tup != this && (tup.isBuilding() || unblockedTasks.contains(tup)))
+            if (tup != this && (tup.isBuilding() || tasks.contains(tup)))
                 return tup;
         }
         return null;
@@ -1117,16 +1128,27 @@ public abstract class AbstractProject<P extends AbstractProject<P, R>, R extends
 
     /**
      * Returns the project if any of the upstream project is either
-     * building or is in the queue.
+     * building, or queued and not blocked by an upstream/downstream project build.
      * <p>
      * This means eventually there will be an automatic triggering of
      * the given project (provided that all builds went smoothly.)
      */
     public AbstractProject getBuildingUpstream() {
-        Set<Task> unblockedTasks = Jenkins.get().getQueue().getUnblockedTasks();
+        // Unblocked upstream tasks must block this project.
+        Set<Task> tasks = Jenkins.get().getQueue().getUnblockedTasks();
+        // Blocked upstream tasks must block this project.
+        // Projects blocked by upstream or downstream builds
+        // are ignored to break deadlocks.
+        for (Queue.Item item : Jenkins.get().getQueue().getBlockedItems()) {
+            if (item.getCauseOfBlockage() instanceof AbstractProject.BecauseOfUpstreamBuildInProgress ||
+                    item.getCauseOfBlockage() instanceof AbstractProject.BecauseOfDownstreamBuildInProgress) {
+                continue;
+            }
+            tasks.add(item.task);
+        }
 
         for (AbstractProject tup : getTransitiveUpstreamProjects()) {
-            if (tup != this && (tup.isBuilding() || unblockedTasks.contains(tup)))
+            if (tup != this && (tup.isBuilding() || tasks.contains(tup)))
                 return tup;
         }
         return null;
