@@ -78,7 +78,9 @@ THE SOFTWARE.
                 <h2 class="jenkins-section__title">${%Update Site}</h2>
                 <f:form method="post" action="siteConfigure" name="siteConfigure">
                     <f:entry title="${%URL}">
-                      <a id="reset-to-default" href="#">${%Reset to default}</a>
+                      <j:if test="${app.updateCenter.sites.size() == 1}">
+                        <a id="reset-to-default" href="#">${%Reset to default}</a>
+                      </j:if>
                       <f:textbox name="site"
                                  id="update-site-url"
                                  value="${app.updateCenter.getSite(app.updateCenter.ID_DEFAULT).url}"
