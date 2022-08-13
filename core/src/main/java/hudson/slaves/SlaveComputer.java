@@ -792,7 +792,7 @@ public class SlaveComputer extends Computer {
         if (node != null) {
             node.setNodeDescription(description);
         } else { // Node has been disabled/removed during other session tries to change the description.
-            throw new IOException("Node " + nodeName + " has been deleted during other session tries to change the description");
+            throw new IOException("Description will be not set. The node " + nodeName + " does not exist (anymore).");
         }
         rsp.sendRedirect(".");
     }
