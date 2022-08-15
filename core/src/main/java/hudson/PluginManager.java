@@ -1378,7 +1378,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             }
             // TODO: Disabled but cannot be enabled
             for (Dependency d : p.getMandatoryDependencies()) {
-                PluginWrapper dependency = getPlugin(d.shortName))
+                PluginWrapper dependency = getPlugin(d.shortName);
                 if (dependency == null || !dependency.isEnabled()) {
                     return 3;
                 }
