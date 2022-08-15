@@ -1368,7 +1368,27 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      */
     @Restricted(NoExternalUse.class) // Jelly only
     public int getSortIndex(PluginWrapper p) {
-        return p.isDeleted() ? 1 : (!p.isEnabled() ? (p.isActive() ? 3 : 2) : (p.isActive() ? (p.hasMandatoryDependents() ? 7 : (p.hasImpliedDependents() ? 6 : 5)) : 4));
+        if (p.isDeleted()) {
+            return 1; // temporary status
+        }
+        if (!p.isEnabled()) {
+            if (p.isActive()) {
+                return 3; // temporary status
+            }
+            return 2;
+        } else {
+            // enabled
+            if (p.isActive()) {
+                if (p.hasMandatoryDependents()) {
+                    return 7;
+                }
+                if (p.hasImpliedDependents()) {
+                    return 6;
+                }
+                return 5;
+            }
+            return 4; // temporary status
+        }
     }
 
     @Restricted(NoExternalUse.class)
