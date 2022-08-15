@@ -1350,6 +1350,27 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         return !("adopt-this-plugin".equals(label) || "deprecated".equals(label));
     }
 
+    /**
+     Returns the sort order index for the given {@link PluginWrapper} on {@code installed.jelly}.
+     <ol>
+     <li>Plugins marked for deletion (temporary until restart)</li>
+     <li>Inactive and disabled plugins (often present for a while before uninstalled)</li>
+     <li>Active plugins that have been disabled (temporary until restart)</li>
+     <li>Inactive plugins that have just been enabled (temporary until restart)</li>
+     <li>Enabled and active plugins that can be freely disabled/uninstalled from a dependency POV</li>
+     <li>Enabled and active plugins with implied dependants, can be disabled but might be unsafe</li>
+     <li>Enabled and active plugins with mandatory dependants, cannot be disabled.</li>
+     </ol>
+     <p>
+        This groups by visual presentation, with the states that can be more readily interacted with towards the top, pushing required dependencies to the bottom.
+        Only '1' / '2-3' / '4-7' is trivially reflected on the UI through the state/existence of the toggle button.
+     </p>
+     */
+    @Restricted(NoExternalUse.class) // Jelly only
+    public int getSortIndex(PluginWrapper p) {
+        return p.isDeleted() ? 1 : (!p.isEnabled() ? (p.isActive() ? 3 : 2) : (p.isActive() ? (p.hasMandatoryDependents() ? 7 : (p.hasImpliedDependents() ? 6 : 5)) : 4));
+    }
+
     @Restricted(NoExternalUse.class)
     public HttpResponse doPluginsSearch(@QueryParameter String query, @QueryParameter Integer limit) {
         List<JSONObject> plugins = new ArrayList<>();

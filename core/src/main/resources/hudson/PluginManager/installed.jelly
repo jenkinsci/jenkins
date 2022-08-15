@@ -162,18 +162,7 @@ THE SOFTWARE.
                     </j:if>
                   </td>
                   <j:set var="state" value="${p.enabled?'true':null}"/>
-<!--
-Sort order (only '1' / '2-3' / '4-7' is trivially reflected on the UI through the state/existence of the toggle button):
-1. Plugins marked for deletion (temporary until restart)
-2. Inactive and disabled plugins (often present for a while before uninstalled)
-3. Active plugins that have been disabled (temporary until restart)
-4. Inactive plugins that have just been enabled (temporary until restart)
-5. Enabled and active plugins that can be freely disabled/uninstalled from a dependency POV
-6. Enabled and active plugins with implied dependants, can be disabled but might be unsafe
-7. Enabled and active plugins with mandatory dependants, cannot be disabled.
-This groups by visual presentation, with the states that can be more readily interacted with towards the top, pushing required dependencies to the bottom.
--->
-                  <td class="jenkins-table__cell--tight enable" data="${p.isDeleted() ? '1' : (!p.enabled ? (p.active ? '3' : '2') : (p.active ? (p.hasMandatoryDependents() ? '7' : (p.hasImpliedDependents() ? '6' : '5')) : '4'))}">
+                  <td class="jenkins-table__cell--tight enable" data="${it.getSortIndex(p)}">
                     <div class="jenkins-table__cell__button-wrapper">
                       <span class="jenkins-toggle-switch">
                         <input type="checkbox" checked="${state}" onclick="flip(event)"
