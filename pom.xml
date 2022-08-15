@@ -74,7 +74,7 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.363</revision>
+    <revision>2.364</revision>
     <changelist>-SNAPSHOT</changelist>
 
     <!-- *.html files are in UTF-8, and *.properties are in iso-8859-1, so this configuration is actually incorrect,
@@ -101,8 +101,8 @@ THE SOFTWARE.
 
     <access-modifier.version>1.27</access-modifier.version>
     <bridge-method-injector.version>1.23</bridge-method-injector.version>
-    <mockito.version>4.6.1</mockito.version>
-    <spotless.version>2.24.0</spotless.version>
+    <mockito.version>4.7.0</mockito.version>
+    <spotless.version>2.24.1</spotless.version>
   </properties>
 
   <dependencyManagement>
