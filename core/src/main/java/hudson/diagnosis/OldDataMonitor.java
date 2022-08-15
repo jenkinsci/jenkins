@@ -471,5 +471,19 @@ public class OldDataMonitor extends AdministrativeMonitor {
         public String getDisplayName() {
             return Messages.OldDataMonitor_DisplayName();
         }
-    }
+
+        @Override
+        public String getBadge() {
+            int size = get(Jenkins.get()).data.size();
+            if (size > 0) {
+                return Integer.toString(size);
+            }
+            return null;
+        }
+
+        @Override
+        public String getBadgeTooltip() {
+            return Messages.OldDataMonitor_OldDataTooltip();
+        }
+}
 }

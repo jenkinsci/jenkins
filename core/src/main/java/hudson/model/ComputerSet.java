@@ -32,6 +32,8 @@ import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.Util;
 import hudson.XmlFile;
+import hudson.cli.handlers.DoNotUse;
+import hudson.cli.handlers.Restricted;
 import hudson.init.Initializer;
 import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.SaveableListener;
@@ -198,6 +200,19 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
             if ((c.isOnline() || c.isConnecting()) && c.isAcceptingTasks())
                 r += c.countIdle();
         return r;
+    }
+
+    /**
+     * Number of nodes that are not connected.
+     */
+    @Restricted(DoNotUse.class)
+    public int getOfflineNodeCount() {
+        int count = 0;
+        for (Computer c : get_all())
+            if (c.isOffline() && !c.isConnecting() && c.isAcceptingTasks()) {
+                count++;
+            }
+        return count;
     }
 
     @Override
