@@ -32,8 +32,6 @@ import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.Util;
 import hudson.XmlFile;
-import hudson.cli.handlers.DoNotUse;
-import hudson.cli.handlers.Restricted;
 import hudson.init.Initializer;
 import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.SaveableListener;
@@ -60,6 +58,8 @@ import jenkins.model.ModelObjectWithChildren;
 import jenkins.model.ModelObjectWithContextMenu.ContextMenu;
 import jenkins.util.Timer;
 import net.sf.json.JSONObject;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
@@ -205,7 +205,7 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
     /**
      * Number of nodes that are not connected.
      */
-    @Restricted(DoNotUse.class)
+    @Restricted(NoExternalUse.class)
     public int getOfflineNodeCount() {
         int count = 0;
         for (Computer c : get_all())

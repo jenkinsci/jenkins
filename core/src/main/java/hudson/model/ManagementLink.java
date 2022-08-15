@@ -226,13 +226,12 @@ public abstract class ManagementLink implements ExtensionPoint, Action {
 
     /**
      * The tooltip to show for the badge on "Manage Jenkins".
-     * When a badge is shown this should not be an empty string.
      *
-     * @return badge tooltip
+     * @return badge tooltip or null when no tooltip should be shown
      * @since TODO
      */
-    public @NonNull String getBadgeTooltip() {
-        return "";
+    public @CheckForNull String getBadgeTooltip() {
+        return null;
     }
 
     private static final Logger LOGGER = Logger.getLogger(ManagementLink.class.getName());
