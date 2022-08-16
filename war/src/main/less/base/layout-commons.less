@@ -47,21 +47,6 @@ body {
 
 /* -------------------------------------- */
 
-#page-body {
-  min-height: calc(100vh - 100px);
-  
-  & > .jenkins-app-bar {
-    grid-column: span 2;
-    margin: var(--section-padding) var(--section-padding) 0 var(--section-padding);
-  }
-}
-
-#page-body.clear::after {
-  clear: both;
-  content: "";
-  display: table;
-}
-
 #side-panel {
   align-self: start;
 }
@@ -70,6 +55,20 @@ body {
   padding: 2rem;
   display: inline-block;
   width: 100%;
+  min-height: calc(100vh - 100px);
+}
+
+.app-page-body {
+  & > .jenkins-app-bar {
+    width: 100vw;
+    margin: var(--section-padding) var(--section-padding) 0 var(--section-padding);
+  }
+
+  &.clear::after {
+    clear: both;
+    content: "";
+    display: table;
+  }
 }
 
 .app-page-body--one-column {
@@ -91,10 +90,9 @@ body {
 
 .app-page-body--two-column {
   @media (min-width: 1170px) {
-    display: grid;
-    align-items: start;
-    justify-items: start;
-    grid-template-columns: auto 1fr;
+    display: flex;
+    align-items: stretch;
+    flex-wrap: wrap;
 
     #side-panel {
       width: 340px;
