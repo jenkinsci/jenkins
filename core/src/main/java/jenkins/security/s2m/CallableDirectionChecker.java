@@ -52,7 +52,7 @@ public class CallableDirectionChecker extends RoleChecker {
             return;
         }
 
-        throw new SecurityException("Sending " + name + " from agent to controller is prohibited.\nSee https://www.jenkins.io/redirect/security-144 for more details");
+        throw new SecurityException("Sending " + name + " from agent to controller is prohibited.");
     }
 
     /**
