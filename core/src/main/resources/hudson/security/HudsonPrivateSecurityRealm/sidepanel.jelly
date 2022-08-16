@@ -27,8 +27,6 @@ THE SOFTWARE.
   <l:header />
   <l:side-panel>
     <l:tasks>
-      <l:task href="${rootURL}/" icon="icon-up icon-md" title="${%Back to Dashboard}" />
-      <l:task href="${rootURL}/manage" icon="symbol-settings" permission="${app.MANAGE}" title="${%Manage Jenkins}" />
       <l:task href="." icon="symbol-people" permission="${app.ADMINISTER}" title="${%Users}" />
       <l:task href="addUser" icon="symbol-add" permission="${app.ADMINISTER}" title="${%Create User}" />
     </l:tasks>
