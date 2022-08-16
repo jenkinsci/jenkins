@@ -25,6 +25,7 @@
 package hudson.util.io;
 
 import hudson.Functions;
+import hudson.Util;
 import hudson.util.FileVisitor;
 import hudson.util.IOUtils;
 import java.io.File;
@@ -34,7 +35,6 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.attribute.BasicFileAttributes;
-
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.archivers.tar.TarConstants;
@@ -84,7 +84,7 @@ final class TarArchiver extends Archiver {
         if (Functions.isWindows())
             relativePath = relativePath.replace('\\', '/');
 
-        BasicFileAttributes basicFileAttributes = Files.readAttributes(file.toPath(), BasicFileAttributes.class);
+        BasicFileAttributes basicFileAttributes = Files.readAttributes(Util.fileToPath(file), BasicFileAttributes.class);
         if (basicFileAttributes.isDirectory())
             relativePath += '/';
         TarArchiveEntry te = new TarArchiveEntry(relativePath);
