@@ -295,7 +295,7 @@ THE SOFTWARE.
             <dependency>
               <groupId>org.jvnet.maven-jellydoc-plugin</groupId>
               <artifactId>maven-jellydoc-plugin</artifactId>
-              <version>1.5</version>
+              <version>1.9</version>
             </dependency>
           </dependencies>
         </plugin>
