@@ -45,7 +45,6 @@ import hudson.FilePath;
 import hudson.Functions;
 import hudson.Launcher;
 import hudson.Launcher.RemoteLauncher;
-import hudson.Util;
 import hudson.model.AbstractProject.BecauseOfDownstreamBuildInProgress;
 import hudson.model.AbstractProject.BecauseOfUpstreamBuildInProgress;
 import hudson.model.Cause.UserIdCause;
@@ -78,6 +77,7 @@ import hudson.triggers.SCMTrigger;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.io.UncheckedIOException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -523,7 +523,7 @@ public class ProjectTest {
                     try {
                         Files.copy(a.getFile().toPath(), new File(build.getWorkspace().child(a.getFileName()).getRemote()).toPath(), REPLACE_EXISTING);
                     } catch (IOException e) {
-                        throw new RuntimeException(e);
+                        throw new UncheckedIOException(e);
                     }
                 }
                 return true;
