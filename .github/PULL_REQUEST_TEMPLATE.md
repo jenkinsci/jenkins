@@ -36,6 +36,7 @@ N/A
 - [ ] Appropriate autotests or explanation to why this change has no tests
 - [ ] New public classes, fields, and methods are annotated with `@Restricted` or have `@since TODO` Javadoc, as appropriate. 
 - [ ] New deprecations are annotated with `@Deprecated(since = "TODO")` or `@Deprecated(forRemoval = true, since = "TODO")` if applicable.
+- [ ] New or substantially changed JavaScript is not defined inline and does not call `eval` to ease future introduction of Content-Security-Policy directives (see [documentation on jenkins.io](https://www.jenkins.io/doc/developer/security/csp/)).
 - [ ] For dependency updates: links to external changelogs and, if possible, full diffs
 
 <!-- For new API and extension points: Link to the reference implementation in open-source (or example in Javadoc) -->

@@ -39,14 +39,14 @@ THE SOFTWARE.
     </st:documentation>
     <j:choose>
       <j:when test="${confirm == null}">
-        <a class="stop-button-link" href="${href}" onclick='new Ajax.Request("${h.jsStringEscape(href)}"); return false;'>
+        <a class="stop-button-link" href="${href}">
           <l:icon class="icon-stop icon-sm" alt="${alt}"/>
         </a>
       </j:when>
       <j:otherwise>
-          <a class="stop-button-link" href="${href}" onclick='if(confirm("${h.jsStringEscape(confirm)}"))new Ajax.Request("${h.jsStringEscape(href)}"); return false;'>
-            <l:icon class="icon-stop icon-sm" alt="${alt}"/>
-          </a>
+        <a class="stop-button-link" href="${href}" data-confirm="${confirm}">
+          <l:icon class="icon-stop icon-sm" alt="${alt}"/>
+        </a>
       </j:otherwise>
     </j:choose>
 </j:jelly>

@@ -50,7 +50,7 @@ THE SOFTWARE.
     <l:hasPermission permission="${permission}">
       <div class="jenkins-buttons-row jenkins-buttons-row--invert">
         <st:adjunct includes="lib.hudson.editable-description"/>
-        <a class="yui-button link-button" id="description-link" href="editDescription" data-description="${actualDescription}" data-url="${submissionUrl}">
+        <a class="jenkins-button jenkins-button--tertiary" id="description-link" href="editDescription" data-description="${actualDescription}" data-url="${submissionUrl}">
           <span class="leading-icon">
             <l:icon src="symbol-edit" />
           </span>
