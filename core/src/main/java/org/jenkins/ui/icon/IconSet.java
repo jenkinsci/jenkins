@@ -71,7 +71,7 @@ public class IconSet {
     @Restricted(NoExternalUse.class)
     public static String getSymbol(String name, String title, String tooltip, String classes, String pluginName, String id) {
         return Symbol.get(new SymbolRequest.Builder()
-                                 .withName(name)
+                                 .withName(IconSet.cleanName(name))
                                  .withTitle(title)
                                  .withTooltip(tooltip)
                                  .withClasses(classes)
@@ -552,8 +552,7 @@ public class IconSet {
         return tangoIcon == null ? null : ICON_TO_SYMBOL_TRANSLATIONS.getOrDefault(cleanName(tangoIcon), defaultValueSupplier.get());
     }
 
-    @Restricted(NoExternalUse.class) // only for Symbol.get()
-    public static String cleanName(String tangoIcon) {
+    private static String cleanName(String tangoIcon) {
         if (tangoIcon != null) {
             tangoIcon = tangoIcon.split(" ")[0];
         }

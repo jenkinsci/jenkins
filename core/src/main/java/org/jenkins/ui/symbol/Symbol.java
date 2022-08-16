@@ -49,13 +49,12 @@ public final class Symbol {
         String classes = request.getClasses();
         String pluginName = request.getPluginName();
         String id = request.getId();
-        String translatedName = IconSet.cleanName(name);
 
         String identifier = StringUtils.defaultIfBlank(pluginName, "core");
 
         String symbol = SYMBOLS
                 .computeIfAbsent(identifier, key -> new ConcurrentHashMap<>())
-                .computeIfAbsent(translatedName, key -> loadSymbol(identifier, key));
+                .computeIfAbsent(name, key -> loadSymbol(identifier, key));
         if (StringUtils.isNotBlank(tooltip)) {
             symbol = symbol.replaceAll("<svg", "<svg tooltip=\"" + Functions.htmlAttributeEscape(tooltip) + "\"");
         }
