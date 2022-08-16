@@ -48,21 +48,11 @@ body {
 /* -------------------------------------- */
 
 #page-body {
-  display: grid;
-  grid-template-columns: 1fr;
   min-height: calc(100vh - 100px);
-
+  
   & > .jenkins-app-bar {
     grid-column: span 2;
     margin: var(--section-padding) var(--section-padding) 0 var(--section-padding);
-  }
-
-  @media (min-width: 1170px) {
-    grid-template-columns: auto 1fr;
-
-    #side-panel {
-      width: 340px;
-    }
   }
 }
 
@@ -85,11 +75,8 @@ body {
 .app-page-body--one-column {
   --form-item-max-width: calc(85vw - 4rem);
 
+  width: 100%;
   max-width: 85vw;
-
-  #main-panel {
-    width: 100vw;
-  }
 
   .jenkins-section {
     max-width: unset;
@@ -99,7 +86,20 @@ body {
     max-width: unset;
   }
 
-  margin: auto;
+  margin: 0 auto;
+}
+
+.app-page-body--two-column {
+  @media (min-width: 1170px) {
+    display: grid;
+    align-items: start;
+    justify-items: start;
+    grid-template-columns: auto 1fr;
+
+    #side-panel {
+      width: 340px;
+    }
+  }
 }
 
 body.two-column #main-panel {
