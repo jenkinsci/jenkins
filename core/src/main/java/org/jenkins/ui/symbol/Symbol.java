@@ -16,7 +16,6 @@ import java.util.logging.Logger;
 import jenkins.model.Jenkins;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
-import org.jenkins.ui.icon.IconSet;
 
 /**
  * Helper class to load symbols from Jenkins core or plugins.

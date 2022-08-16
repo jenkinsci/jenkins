@@ -3,6 +3,13 @@ package org.jenkins.ui.symbol;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 
+/**
+ * <p>A Symbol specification, to be passed to {@link Symbol#get(SymbolRequest)}.
+ *
+ * <p>Create an instance using {@link Builder}.
+ *
+ * @since TODO
+ */
 public final class SymbolRequest {
     /**
      * The name of the symbol.

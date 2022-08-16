@@ -6,6 +6,7 @@ import static org.hamcrest.Matchers.not;
 
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.jupiter.api.DisplayName;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.RealJenkinsRule;
 
@@ -14,7 +15,7 @@ public class SymbolJenkinsTest {
     public RealJenkinsRule rjr = new RealJenkinsRule().addPlugins("plugins/design-library.jpi");
 
     @Test
-    // @DisplayName("When resolving a symbol from a missing plugin, the placeholder is generated instead")
+    @DisplayName("When resolving a symbol from a missing plugin, the placeholder is generated instead")
     public void missingSymbolFromPluginDefaultsToPlaceholder() throws Throwable {
         rjr.then(SymbolJenkinsTest::_missingSymbolFromPluginDefaultsToPlaceholder);
     }
@@ -29,7 +30,7 @@ public class SymbolJenkinsTest {
     }
 
     @Test
-    /// @DisplayName("Resolving a valid symbol from an installed plugin does not return the placeholder")
+    @DisplayName("Resolving a valid symbol from an installed plugin does not return the placeholder")
     public void resolvingSymbolFromPlugin() throws Throwable {
         rjr.then(SymbolJenkinsTest::_resolvingSymbolFromPlugin);
     }
