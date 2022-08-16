@@ -12,7 +12,6 @@ l.layout(norefresh:true, permission:app.SYSTEM_READ, title:my.displayName) {
     set("readOnlyMode", !app.hasPermission(app.ADMINISTER))
     l.side_panel {
         l.tasks {
-            l.task(icon:"icon-up icon-md", href:rootURL+'/', title:_("Back to Dashboard"))
             l.task(icon:"symbol-settings", href: "../computer/", title:_("Manage Nodes"))
         }
     }

@@ -27,7 +27,7 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-<l:layout permissions="${app.MANAGE_AND_SYSTEM_READ}" title="${%Configure System}">
+<l:layout permissions="${app.MANAGE_AND_SYSTEM_READ}" title="${%Configure System}" type="one-column">
   <st:include page="sidepanel.jelly" />
   <f:breadcrumb-config-outline title="${%Configure System}" />
 
