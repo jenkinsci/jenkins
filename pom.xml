@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.85</version>
+    <version>1.86</version>
     <relativePath />
   </parent>
 
@@ -74,7 +74,7 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.364</revision>
+    <revision>2.365</revision>
     <changelist>-SNAPSHOT</changelist>
 
     <!-- *.html files are in UTF-8, and *.properties are in iso-8859-1, so this configuration is actually incorrect,
@@ -295,7 +295,7 @@ THE SOFTWARE.
             <dependency>
               <groupId>org.jvnet.maven-jellydoc-plugin</groupId>
               <artifactId>maven-jellydoc-plugin</artifactId>
-              <version>1.5</version>
+              <version>1.9</version>
             </dependency>
           </dependencies>
         </plugin>
