@@ -40,7 +40,7 @@ THE SOFTWARE.
   <properties>
     <asm.version>9.3</asm.version>
     <slf4jVersion>1.7.36</slf4jVersion>
-    <stapler.version>1728.v56ec83576669</stapler.version>
+    <stapler.version>1730.v43d2c7b_11a_27</stapler.version>
     <groovy.version>2.4.21</groovy.version>
   </properties>
 
@@ -64,7 +64,7 @@ THE SOFTWARE.
         <!-- https://docs.spring.io/spring-security/site/docs/5.5.4/reference/html5/#getting-maven-no-boot -->
         <groupId>org.springframework.security</groupId>
         <artifactId>spring-security-bom</artifactId>
-        <version>5.7.2</version>
+        <version>5.7.3</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>

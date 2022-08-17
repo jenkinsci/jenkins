@@ -25,6 +25,7 @@
 package hudson.util.io;
 
 import hudson.Functions;
+import hudson.Util;
 import hudson.util.FileVisitor;
 import hudson.util.IOUtils;
 import java.io.File;
@@ -33,6 +34,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
+import java.nio.file.attribute.BasicFileAttributes;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.archivers.tar.TarConstants;
@@ -82,21 +84,22 @@ final class TarArchiver extends Archiver {
         if (Functions.isWindows())
             relativePath = relativePath.replace('\\', '/');
 
-        if (file.isDirectory())
+        BasicFileAttributes basicFileAttributes = Files.readAttributes(Util.fileToPath(file), BasicFileAttributes.class);
+        if (basicFileAttributes.isDirectory())
             relativePath += '/';
         TarArchiveEntry te = new TarArchiveEntry(relativePath);
         int mode = IOUtils.mode(file);
         if (mode != -1)   te.setMode(mode);
-        te.setModTime(file.lastModified());
+        te.setModTime(basicFileAttributes.lastModifiedTime().toMillis());
         long size = 0;
 
-        if (!file.isDirectory()) {
-            size = file.length();
+        if (!basicFileAttributes.isDirectory()) {
+            size = basicFileAttributes.size();
             te.setSize(size);
         }
         tar.putArchiveEntry(te);
         try {
-            if (!file.isDirectory()) {
+            if (!basicFileAttributes.isDirectory()) {
                 // ensure we don't write more bytes than the declared when we created the entry
 
                 try (InputStream fin = Files.newInputStream(file.toPath());
