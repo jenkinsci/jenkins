@@ -94,7 +94,7 @@ THE SOFTWARE.
     <j:if test="${!app.updateCenter.jobs.isEmpty()}">
       <div class="task">
         <span class="task-link-wrapper">
-          <a href="${rootURL}/manage/updateCenter" class="task-link ${page == 'updateCenter' ? 'task-link--active' : ''}">
+          <a href="${rootURL}/manage/pluginManager/updates/" class="task-link ${page == 'updateCenter' ? 'task-link--active' : ''}">
             <div class="task-icon-link">
               <l:icon src="symbol-list" />
             </div>
