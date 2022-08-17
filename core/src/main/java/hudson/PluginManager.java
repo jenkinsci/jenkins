@@ -72,6 +72,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.lang.reflect.Method;
+import java.net.HttpURLConnection;
 import java.net.JarURLConnection;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
@@ -1891,10 +1892,21 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     @RequirePOST public FormValidation doCheckUpdateSiteUrl(StaplerRequest request, @QueryParameter String value) throws IOException {
         if (StringUtils.isNotBlank(value)) {
             try {
-                new URL(value);
-                return FormValidation.ok();
-            } catch (MalformedURLException e) {
-                return FormValidation.error(e.getMessage());
+                value += "?version=" + Jenkins.VERSION;
+
+                URL url = new URL(value);
+
+                // Connect to the URL
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("HEAD");
+                conn.setConnectTimeout(5000);
+                if (100 <= conn.getResponseCode() && conn.getResponseCode() <= 399) {
+                    return FormValidation.ok();
+                } else {
+                    return FormValidation.error(Messages.PluginManager_connectionFailed());
+                }
+            } catch (Exception e) {
+                return FormValidation.error(Messages.PluginManager_connectionFailed());
             }
         } else {
             return FormValidation.error(Messages.PluginManager_emptyUpdateSiteUrl());
