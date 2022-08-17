@@ -515,7 +515,6 @@ public class IconSet {
         images.add("folder");
         images.add("gear");
         images.add("gear2");
-        images.add("glasses");
         images.add("go-down");
         images.add("go-up");
         images.add("graph");
@@ -598,7 +597,6 @@ public class IconSet {
         translations.put("icon-user", "symbol-people");
         translations.put("icon-undo", "symbol-undo");
         translations.put("icon-redo", "symbol-redo");
-        translations.put("icon-glasses", "symbol-glasses");
         ICON_TO_SYMBOL_TRANSLATIONS = translations;
     }
 
