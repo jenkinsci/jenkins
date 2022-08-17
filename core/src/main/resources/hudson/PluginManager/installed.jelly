@@ -30,6 +30,8 @@ THE SOFTWARE.
   <l:layout title="${%Installed plugins} - ${%Plugin Manager}" permission="${app.SYSTEM_READ}">
     <j:set var="readOnlyMode" value="${!app.hasPermission(app.ADMINISTER)}"/>
 
+    <l:app-bar title="${%Plugins}" />
+
     <l:side-panel>
       <local:sidepanel xmlns:local="/hudson/PluginManager" page="installed" />
     </l:side-panel>

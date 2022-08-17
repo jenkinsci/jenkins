@@ -34,15 +34,9 @@ THE SOFTWARE.
   </st:documentation>
 
   <div id="tasks" class="app-plugin-manager__sidebar">
-    <div class="jenkins-app-bar">
-      <div class="jenkins-app-bar__content">
-        <h1>${%Plugins}</h1>
-      </div>
-    </div>
-
     <div class="task">
       <span class="task-link-wrapper">
-        <a href="./" class="task-link ${page == 'updates' ? 'task-link--active' : ''}">
+        <a href="${rootURL}/manage/pluginManager/" class="task-link ${page == 'updates' ? 'task-link--active' : ''}">
           <div class="task-icon-link">
             <l:icon src="symbol-download" />
           </div>
@@ -60,7 +54,7 @@ THE SOFTWARE.
 
     <div class="task">
       <span class="task-link-wrapper">
-        <a href="./available" class="task-link ${page == 'available' ? 'task-link--active' : ''}">
+        <a href="${rootURL}/manage/pluginManager/available" class="task-link ${page == 'available' ? 'task-link--active' : ''}">
           <div class="task-icon-link">
             <l:icon src="symbol-shopping-bag" />
           </div>
@@ -73,7 +67,7 @@ THE SOFTWARE.
 
     <div class="task">
       <span class="task-link-wrapper">
-        <a href="./installed" class="task-link ${page == 'installed' ? 'task-link--active' : ''}">
+        <a href="${rootURL}/manage/pluginManager/installed" class="task-link ${page == 'installed' ? 'task-link--active' : ''}">
           <div class="task-icon-link">
             <l:icon src="symbol-plugins" />
           </div>
@@ -86,7 +80,7 @@ THE SOFTWARE.
 
     <div class="task">
       <span class="task-link-wrapper">
-        <a href="./advanced" class="task-link ${page == 'advanced' ? 'task-link--active' : ''}">
+        <a href="${rootURL}/manage/pluginManager/advanced" class="task-link ${page == 'advanced' ? 'task-link--active' : ''}">
           <div class="task-icon-link">
             <l:icon src="symbol-settings" />
           </div>
@@ -98,16 +92,14 @@ THE SOFTWARE.
     </div>
 
     <j:if test="${!app.updateCenter.jobs.isEmpty()}">
-      <hr />
-
       <div class="task">
         <span class="task-link-wrapper">
-          <a href="../updateCenter" class="task-link">
+          <a href="${rootURL}/manage/updateCenter" class="task-link ${page == 'updateCenter' ? 'task-link--active' : ''}">
             <div class="task-icon-link">
               <l:icon src="symbol-list" />
             </div>
             <span class="task-icon-text">
-              ${%Update Center}
+              ${%Download progress}
             </span>
           </a>
         </span>

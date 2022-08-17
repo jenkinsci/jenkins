@@ -30,9 +30,11 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
 <l:layout title="${%Update Center}" permission="${app.SYSTEM_READ}">
   <st:adjunct includes="hudson.model.UpdateCenter.update-center" />
-  <st:include page="sidepanel.jelly" />
+  <l:side-panel>
+    <local:sidepanel xmlns:local="/hudson/PluginManager" page="updateCenter" />
+  </l:side-panel>
   <l:main-panel>
-    <h1>${%Installing Plugins/Upgrades}</h1>
+    <h1>${%Download progress}</h1>
     <st:include page="body.jelly" />
   </l:main-panel>
 </l:layout>

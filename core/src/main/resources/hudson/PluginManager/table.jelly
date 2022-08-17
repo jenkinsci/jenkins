@@ -37,6 +37,9 @@ THE SOFTWARE.
     </st:attribute>
   </st:documentation>
   <l:layout title="${%Updates} - ${%Plugin Manager}" permission="${app.SYSTEM_READ}">
+
+    <l:app-bar title="${%Plugins}" />
+
     <l:side-panel>
       <local:sidepanel xmlns:local="/hudson/PluginManager" page="updates" />
     </l:side-panel>
