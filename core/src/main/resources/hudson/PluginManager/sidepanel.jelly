@@ -26,84 +26,16 @@ THE SOFTWARE.
   Sidepanel component for Plugins Manager
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
-  <st:documentation>
-    <st:attribute name="page">
-      Adds the highlighted class to the current page item in the list
-    </st:attribute>
-  </st:documentation>
-
-  <div id="tasks" class="app-plugin-manager__sidebar">
-    <div class="task">
-      <span class="task-link-wrapper">
-        <a href="${rootURL}/manage/pluginManager/" class="task-link ${page == 'updates' ? 'task-link--active' : ''}">
-          <div class="task-icon-link">
-            <l:icon src="symbol-download" />
-          </div>
-          <span class="task-icon-text">
-            ${%Updates}
-          </span>
-          <j:if test="${app.updateCenter.updates.size() != 0}">
-            <span class="task-icon-badge">
-              ${app.updateCenter.updates.size()}
-            </span>
-          </j:if>
-        </a>
-      </span>
-    </div>
-
-    <div class="task">
-      <span class="task-link-wrapper">
-        <a href="${rootURL}/manage/pluginManager/available" class="task-link ${page == 'available' ? 'task-link--active' : ''}">
-          <div class="task-icon-link">
-            <l:icon src="symbol-shopping-bag" />
-          </div>
-          <span class="task-icon-text">
-            ${%Available plugins}
-          </span>
-        </a>
-      </span>
-    </div>
-
-    <div class="task">
-      <span class="task-link-wrapper">
-        <a href="${rootURL}/manage/pluginManager/installed" class="task-link ${page == 'installed' ? 'task-link--active' : ''}">
-          <div class="task-icon-link">
-            <l:icon src="symbol-plugins" />
-          </div>
-          <span class="task-icon-text">
-            ${%Installed plugins}
-          </span>
-        </a>
-      </span>
-    </div>
-
-    <div class="task">
-      <span class="task-link-wrapper">
-        <a href="${rootURL}/manage/pluginManager/advanced" class="task-link ${page == 'advanced' ? 'task-link--active' : ''}">
-          <div class="task-icon-link">
-            <l:icon src="symbol-settings" />
-          </div>
-          <span class="task-icon-text">
-            ${%Advanced settings}
-          </span>
-        </a>
-      </span>
-    </div>
-
-    <j:if test="${!app.updateCenter.jobs.isEmpty()}">
-      <div class="task">
-        <span class="task-link-wrapper">
-          <a href="${rootURL}/manage/pluginManager/updates/" class="task-link ${page == 'updateCenter' ? 'task-link--active' : ''}">
-            <div class="task-icon-link">
-              <l:icon src="symbol-list" />
-            </div>
-            <span class="task-icon-text">
-              ${%Download progress}
-            </span>
-          </a>
-        </span>
-      </div>
-    </j:if>
-  </div>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+  <l:side-panel>
+    <l:tasks>
+      <l:task href="${rootURL}/manage/pluginManager/" icon="symbol-download" title="${%Updates}"/>
+      <l:task href="${rootURL}/manage/pluginManager/available" icon="symbol-shopping-bag" title="${%Available plugins}"/>
+      <l:task href="${rootURL}/manage/pluginManager/installed" icon="symbol-plugins" title="${%Installed plugins}"/>
+      <l:task href="${rootURL}/manage/pluginManager/advanced" icon="symbol-settings" title="${%Advanced settings}"/>
+      <j:if test="${!app.updateCenter.jobs.isEmpty()}">
+        <l:task href="${rootURL}/manage/pluginManager/updates/" icon="symbol-list" title="${%Download progress}"/>
+      </j:if>
+    </l:tasks>
+  </l:side-panel>
 </j:jelly>

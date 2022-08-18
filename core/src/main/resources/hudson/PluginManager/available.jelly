@@ -31,9 +31,7 @@ THE SOFTWARE.
 
     <l:app-bar title="${%Plugins}" />
 
-    <l:side-panel>
-      <local:sidepanel xmlns:local="/hudson/PluginManager" page="available" />
-    </l:side-panel>
+    <st:include page="sidepanel.jelly"/>
 
     <l:main-panel>
       <div class="jenkins-app-bar jenkins-app-bar--sticky">

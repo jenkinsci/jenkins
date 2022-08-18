@@ -33,9 +33,7 @@ THE SOFTWARE.
 
         <l:app-bar title="${%Advanced settings}"/>
 
-        <l:side-panel>
-          <local:sidepanel xmlns:local="/hudson/PluginManager" page="advanced" />
-        </l:side-panel>
+      <st:include page="sidepanel.jelly"/>
 
         <l:main-panel>
             <section class="jenkins-section jenkins-!-margin-bottom-5">
