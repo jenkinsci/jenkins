@@ -37,7 +37,7 @@ THE SOFTWARE.
 
         <l:main-panel>
             <local:tabBar page="advanced" xmlns:local="/hudson/PluginManager"/>
-          <f:form method="post" class="jenkins-form" action="configSubmit" name="config" tableClass="config-table">
+          <f:form method="post" class="jenkins-form" action="advancedSubmit" name="advanced" tableClass="advanced-table">
             <section class="jenkins-section jenkins-!-margin-bottom-5">
                 <h2 class="jenkins-section__title">${%HTTP Proxy Configuration}</h2>
                 <f:form method="post" action="proxyConfigure" name="proxyConfigure">
