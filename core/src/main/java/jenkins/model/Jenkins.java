@@ -5095,7 +5095,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     private boolean isAgentJnlpPath(String restOfPath, String prefix) {
-        return restOfPath.matches("/computer/[^/]+/" + prefix + "-agent[.]jnlp");
+        return restOfPath.matches("(?:/manage)?/computer/[^/]+/" + prefix + "-agent[.]jnlp");
     }
 
     /**
