@@ -21,7 +21,7 @@ l.layout(norefresh:true, permission:app.SYSTEM_READ, title:my.displayName) {
         if (!clouds.isEmpty()) {
             p()
             div(class:"behavior-loading") {
-                l.spinner(text: _("LOADING"))
+                l.spinner(text: _("Loading"))
             }
 
             f.form(method:"post",name:"config",action:"configure", class: "jenkins-form") {
