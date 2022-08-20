@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.82</version>
+    <version>1.85</version>
     <relativePath />
   </parent>
 
@@ -53,6 +53,7 @@ THE SOFTWARE.
     <module>bom</module>
     <module>websocket/spi</module>
     <module>websocket/jetty9</module>
+    <module>websocket/jetty10</module>
     <module>core</module>
     <module>war</module>
     <module>test</module>
@@ -90,7 +91,7 @@ THE SOFTWARE.
     <changelog.url>https://www.jenkins.io/changelog</changelog.url>
 
     <!-- Bundled Remoting version -->
-    <remoting.version>3028.va_a_436db_35078</remoting.version>
+    <remoting.version>3044.vb_940a_a_e4f72e</remoting.version>
     <!-- Minimum Remoting version, which is tested for API compatibility -->
     <remoting.minimum.supported.version>4.2.1</remoting.minimum.supported.version>
 
