@@ -3672,10 +3672,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"hotkeys-js@npm:3.9.4":
-  version: 3.9.4
-  resolution: "hotkeys-js@npm:3.9.4"
-  checksum: 98c3121d458f960c8804f5d8d6be02c4187aaeee5a0b7df28c8d99705e5f65f67b1140658d8128401892bb07b19d18c5e9ea9e84fe170fb06206b639ad53438b
+"hotkeys-js@npm:3.9.5":
+  version: 3.9.5
+  resolution: "hotkeys-js@npm:3.9.5"
+  checksum: b9c5b98a5c745b77444e23c655c1c011c76fc29f8aff46d8a1be243b25b5cae70bae88b75816dedeffa2f1f24257e7cdef4c1666e49287c443eb44f3c9e14e4b
   languageName: node
   linkType: hard
 
@@ -4002,7 +4002,7 @@ __metadata:
     eslint: 8.22.0
     handlebars: 4.7.7
     handlebars-loader: 1.7.2
-    hotkeys-js: 3.9.4
+    hotkeys-js: 3.9.5
     jenkins-js-modules: 1.5.4
     jquery: 3.6.0
     less: 4.1.3
