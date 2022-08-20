@@ -6,6 +6,7 @@ import hudson.console.AnnotatedLargeText;
 import hudson.security.ACL;
 import hudson.security.Permission;
 import java.io.ByteArrayOutputStream;
+import java.nio.charset.StandardCharsets;
 import org.junit.Test;
 
 /**
@@ -68,6 +69,6 @@ public class TaskActionTest {
         final long length = annotatedText.writeLogTo(0, os);
         // Windows based systems will be 220, linux base 219
         assertTrue("length should be longer or even 219", length >= 219);
-        assertTrue(os.toString("UTF-8").startsWith("a linkCompleted"));
+        assertTrue(os.toString(StandardCharsets.UTF_8).startsWith("a linkCompleted"));
     }
 }

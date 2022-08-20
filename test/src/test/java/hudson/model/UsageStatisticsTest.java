@@ -59,7 +59,6 @@ import org.apache.commons.io.IOUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.TestPluginManager;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -74,8 +73,6 @@ public class UsageStatisticsTest {
      */
     @Test
     public void roundtrip() throws Exception {
-        ((TestPluginManager) j.jenkins.pluginManager).installDetachedPlugin("matrix-auth");
-
         j.createOnlineSlave();
         warmUpNodeMonitorCache();
 
@@ -188,7 +185,7 @@ public class UsageStatisticsTest {
     private void compareWithFile(String fileName, Object object) throws IOException, URISyntaxException {
 
         Class clazz = this.getClass();
-        String fileContent = new String(Files.readAllBytes(Paths.get(clazz.getResource(clazz.getSimpleName() + "/" + fileName).toURI())), StandardCharsets.UTF_8);
+        String fileContent = Files.readString(Paths.get(clazz.getResource(clazz.getSimpleName() + "/" + fileName).toURI()), StandardCharsets.UTF_8);
         fileContent = fileContent.replace("JVMVENDOR", System.getProperty("java.vm.vendor"));
         fileContent = fileContent.replace("JVMNAME", System.getProperty("java.vm.name"));
         fileContent = fileContent.replace("JVMVERSION", System.getProperty("java.version"));

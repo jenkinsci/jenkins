@@ -30,7 +30,7 @@ import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.util.NameValuePair;
 import java.net.URL;
-import java.util.Collections;
+import java.util.List;
 import jenkins.model.JenkinsLocationConfiguration;
 import org.junit.Before;
 import org.junit.Rule;
@@ -84,7 +84,7 @@ public class ReverseProxySetupMonitorTest {
                 request.setAdditionalHeader("Referer", j.getURL() + "manage");
 
                 // As the context was already set inside the referer, adding another one will fail
-                request.setRequestParameters(Collections.singletonList(new NameValuePair("testWithContext", "true")));
+                request.setRequestParameters(List.of(new NameValuePair("testWithContext", "true")));
                 assertThrows(FailingHttpStatusCodeException.class, () -> wc.getPage(request));
             }
         });
@@ -138,7 +138,7 @@ public class ReverseProxySetupMonitorTest {
                 assertThrows(FailingHttpStatusCodeException.class, () -> wc.getPage(request));
 
                 // When testing with the context, it will be OK, allowing to display an additional message
-                request.setRequestParameters(Collections.singletonList(new NameValuePair("testWithContext", "true")));
+                request.setRequestParameters(List.of(new NameValuePair("testWithContext", "true")));
                 wc.getPage(request);
             }
         });
@@ -161,7 +161,7 @@ public class ReverseProxySetupMonitorTest {
 
                 assertThrows(FailingHttpStatusCodeException.class, () -> wc.getPage(request));
 
-                request.setRequestParameters(Collections.singletonList(new NameValuePair("testWithContext", "true")));
+                request.setRequestParameters(List.of(new NameValuePair("testWithContext", "true")));
                 assertThrows(FailingHttpStatusCodeException.class, () -> wc.getPage(request));
             }
         });
@@ -182,7 +182,7 @@ public class ReverseProxySetupMonitorTest {
                 wc.getPage(request);
 
                 // adding the context does not have any impact as there is no configured context
-                request.setRequestParameters(Collections.singletonList(new NameValuePair("testWithContext", "true")));
+                request.setRequestParameters(List.of(new NameValuePair("testWithContext", "true")));
                 wc.getPage(request);
             }
         });
@@ -272,7 +272,7 @@ public class ReverseProxySetupMonitorTest {
                 assertThrows(FailingHttpStatusCodeException.class, () -> wc.getPage(request));
 
                 // When testing with the context, it will be OK, allowing to display an additional message
-                request.setRequestParameters(Collections.singletonList(new NameValuePair("testWithContext", "true")));
+                request.setRequestParameters(List.of(new NameValuePair("testWithContext", "true")));
                 wc.getPage(request);
             }
         });

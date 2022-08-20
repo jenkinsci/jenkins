@@ -31,8 +31,8 @@ import com.thoughtworks.xstream.annotations.XStreamAlias;
 import hudson.ExtensionList;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import jenkins.model.GlobalConfiguration;
-import org.apache.commons.io.FileUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsSessionRule;
@@ -66,9 +66,7 @@ public class XStream2AnnotationTest {
             // Typical content saved by Jenkins session when annotation autodetection was still enabled:
             AnnotatedUnprocessed.get().writeXml("<myconf-annotated-unprocessed><x>4</x></myconf-annotated-unprocessed>");
         });
-        rr.then(r -> {
-            assertThat("CannotResolveClassException/IOException caught in Descriptor.load", AnnotatedUnprocessed.get().x, is(0));
-        });
+        rr.then(r -> assertThat("CannotResolveClassException/IOException caught in Descriptor.load", AnnotatedUnprocessed.get().x, is(0)));
     }
 
     @XStreamAlias("myconf-annotated-processed")
@@ -108,7 +106,7 @@ public class XStream2AnnotationTest {
         }
 
         void writeXml(String xml) throws IOException {
-            FileUtils.write(getConfigFile().getFile(), xml, StandardCharsets.UTF_8);
+            Files.writeString(getConfigFile().getFile().toPath(), xml, StandardCharsets.UTF_8);
         }
     }
 

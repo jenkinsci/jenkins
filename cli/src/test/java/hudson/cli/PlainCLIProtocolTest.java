@@ -157,9 +157,9 @@ public class PlainCLIProtocolTest {
         while (server.stdin.size() == 0) {
             Thread.sleep(100);
         }
-        assertEquals("hello", server.stdin.toString(Charset.defaultCharset().name()));
+        assertEquals("hello", server.stdin.toString(Charset.defaultCharset()));
         assertEquals("command", server.arg);
-        assertEquals("goodbye", client.stdout.toString(Charset.defaultCharset().name()));
+        assertEquals("goodbye", client.stdout.toString(Charset.defaultCharset()));
         assertEquals(2, client.code);
     }
 

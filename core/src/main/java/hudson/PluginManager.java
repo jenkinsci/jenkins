@@ -79,7 +79,10 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.net.URLConnection;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Paths;
 import java.nio.file.attribute.FileTime;
+import java.security.CodeSource;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -467,7 +470,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                                 @Override
                                 public void run(Reactor reactor) throws Exception {
                                     try {
-                                        CyclicGraphDetector<PluginWrapper> cgd = new CyclicGraphDetector<PluginWrapper>() {
+                                        CyclicGraphDetector<PluginWrapper> cgd = new CyclicGraphDetector<>() {
                                             @Override
                                             protected List<PluginWrapper> getEdges(PluginWrapper p) {
                                                 List<PluginWrapper> next = new ArrayList<>();
@@ -930,7 +933,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                 if (batch != null) {
                     batch.add(p);
                 } else {
-                    start(Collections.singletonList(p));
+                    start(List.of(p));
                 }
 
             } catch (Exception e) {
@@ -1324,6 +1327,39 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                 oneAndOnly = p;
             }
         }
+        if (oneAndOnly == null && Main.isUnitTest) {
+            // compare jenkins.security.ClassFilterImpl
+            CodeSource cs = c.getProtectionDomain().getCodeSource();
+            if (cs != null) {
+                URL loc = cs.getLocation();
+                if (loc != null) {
+                    if ("file".equals(loc.getProtocol())) {
+                        File file;
+                        try {
+                            file = Paths.get(loc.toURI()).toFile();
+                        } catch (InvalidPathException | URISyntaxException e) {
+                            LOGGER.log(Level.WARNING, "could not inspect " + loc, e);
+                            return null;
+                        }
+                        if (file.isFile()) { // ignore directories
+                            try (JarFile jf = new JarFile(file)) {
+                                Manifest mf = jf.getManifest();
+                                if (mf != null) {
+                                    java.util.jar.Attributes attr = mf.getMainAttributes();
+                                    if (attr.getValue("Plugin-Version") != null) {
+                                        String shortName = attr.getValue("Short-Name");
+                                        LOGGER.fine(() -> "found " + shortName + " for " + c);
+                                        return getPlugin(shortName);
+                                    }
+                                }
+                            } catch (IOException e) {
+                                LOGGER.log(Level.WARNING, "could not inspect " + loc, e);
+                            }
+                        }
+                    }
+                }
+            }
+        }
         return oneAndOnly;
     }
 
@@ -1437,7 +1473,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                         jsonObject.put("releaseTimestamp", releaseTimestamp);
                     }
                     if (hasLatestVersionNewerThanOffered(plugin)) {
-                        jsonObject.put("newerVersionAvailableNotOffered", Messages.PluginManager_newerVersionExists(plugin.latest));
+                        jsonObject.put("newerVersionAvailableNotOffered", Messages.PluginManager_newerVersionExists(plugin.latest, plugin.wiki));
                     }
                     return jsonObject;
                 })

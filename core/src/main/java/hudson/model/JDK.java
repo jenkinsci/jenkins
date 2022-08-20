@@ -197,7 +197,7 @@ public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, En
                 Class<? extends ToolInstaller> jdkInstallerClass = Jenkins.get().getPluginManager()
                         .uberClassLoader.loadClass("hudson.tools.JDKInstaller").asSubclass(ToolInstaller.class);
                 Constructor<? extends ToolInstaller> constructor = jdkInstallerClass.getConstructor(String.class, boolean.class);
-                return Collections.singletonList(constructor.newInstance(null, false));
+                return List.of(constructor.newInstance(null, false));
             } catch (ClassNotFoundException e) {
                 return Collections.emptyList();
             } catch (Exception e) {

@@ -115,6 +115,7 @@ import hudson.model.Label;
 import hudson.model.ListView;
 import hudson.model.LoadBalancer;
 import hudson.model.LoadStatistics;
+import hudson.model.ManageJenkinsAction;
 import hudson.model.ManagementLink;
 import hudson.model.Messages;
 import hudson.model.ModifiableViewGroup;
@@ -1487,7 +1488,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      *
      * <p>
      * This form of identifier is weak in that it can be impersonated by others. See
-     * https://github.com/jenkinsci/instance-identity-plugin for more modern form of instance ID
+     * <a href="https://github.com/jenkinsci/instance-identity-plugin">the Instance Identity plugin</a> for more modern form of instance ID
      * that can be challenged and verified.
      *
      * @since 1.498
@@ -4162,7 +4163,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             try {
                 r.put(e.getKey(), e.getValue().get(endTime - System.currentTimeMillis(), TimeUnit.MILLISECONDS));
             } catch (Exception x) {
-                r.put(e.getKey(), Collections.singletonMap("Failed to retrieve thread dump", Functions.printThrowable(x)));
+                r.put(e.getKey(), Map.of("Failed to retrieve thread dump", Functions.printThrowable(x)));
             }
         }
         return Collections.unmodifiableSortedMap(new TreeMap<>(r));
@@ -4415,7 +4416,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         for (MenuItem i : menu.items) {
             if (i.url.equals(request.getContextPath() + "/manage")) {
                 // add "Manage Jenkins" subitems
-                i.subMenu = new ContextMenu().from(this, request, response, "manage");
+                i.subMenu = new ContextMenu().from(ExtensionList.lookupSingleton(ManageJenkinsAction.class), request, response, "index");
             }
         }
         return menu;
@@ -5094,7 +5095,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     private boolean isAgentJnlpPath(String restOfPath, String prefix) {
-        return restOfPath.matches("/computer/[^/]+/" + prefix + "-agent[.]jnlp");
+        return restOfPath.matches("(/manage)?/computer/[^/]+/" + prefix + "-agent[.]jnlp");
     }
 
     /**
@@ -5229,6 +5230,10 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
         @Override
         public String getUrl() {
+            if (Jenkins.get().hasAnyPermission(Jenkins.MANAGE, Jenkins.SYSTEM_READ)) {
+                return "manage/computer/(built-in)/";
+            }
+
             return "computer/(built-in)/";
         }
 
@@ -5544,7 +5549,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      *
      * The default value is true.
      *
-     * For detailed documentation: https://docs.microsoft.com/en-us/troubleshoot/windows-client/shell-experience/file-folder-name-whitespace-characters
+     * For detailed documentation: <a href="https://docs.microsoft.com/en-us/troubleshoot/windows-client/shell-experience/file-folder-name-whitespace-characters">Support for Whitespace characters in File and Folder names for Windows</a>
      * @see #checkGoodName(String)
      */
     @Restricted(NoExternalUse.class)
@@ -5678,7 +5683,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             new AnonymousAuthenticationToken(
                     "anonymous",
                     "anonymous",
-                    Collections.singleton(new SimpleGrantedAuthority("anonymous")));
+                    Set.of(new SimpleGrantedAuthority("anonymous")));
 
     /**
      * @deprecated use {@link #ANONYMOUS2}

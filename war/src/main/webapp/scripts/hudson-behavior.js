@@ -1175,63 +1175,40 @@ function rowvgStartEachRow(recursive,f) {
             });
     });
 
-    // resizable text area
-    Behaviour.specify("TEXTAREA", "textarea", ++p, function(textarea) {
-        if(Element.hasClassName(textarea,"rich-editor")) {
-            // rich HTML editor
-            try {
-                var editor = new YAHOO.widget.Editor(textarea, {
-                    dompath: true,
-                    animate: true,
-                    handleSubmit: true
-                });
-                // probably due to the timing issue, we need to let the editor know
-                // that DOM is ready
-                editor.DOMReady=true;
-                editor.fireQueue();
-                editor.render();
-                layoutUpdateCallback.call();
-            } catch(e) {
-                alert(e);
-            }
-            return;
-        }
+    // Native browser resizing doesn't work for CodeMirror textboxes so let's create our own
+    Behaviour.specify(".CodeMirror", "codemirror", ++p, function(codemirror) {
+      const MIN_HEIGHT = 200;
 
-        // CodeMirror inserts a wrapper element next to the textarea.
-        // textarea.nextSibling may not be the handle.
-        var handles = findElementsBySelector(textarea.parentNode, ".textarea-handle");
-        if(handles.length != 1) return;
-        var handle = handles[0];
+      const resizer = document.createElement("div");
+      resizer.className = "jenkins-codemirror-resizer";
 
-        var Event = YAHOO.util.Event;
+      let start_x;
+      let start_y;
+      let start_h;
 
-        function getCodemirrorScrollerOrTextarea(){
-            return textarea.codemirrorObject ? textarea.codemirrorObject.getScrollerElement() : textarea;
-        }
-        handle.onmousedown = function(ev) {
-            ev = Event.getEvent(ev);
-            var s = getCodemirrorScrollerOrTextarea();
-            var offset = s.offsetHeight-Event.getPageY(ev);
-            s.style.opacity = 0.5;
-            document.onmousemove = function(ev) {
-                ev = Event.getEvent(ev);
-                function max(a,b) { if(a<b) return b; else return a; }
-                s.style.height = max(32, offset + Event.getPageY(ev)) + 'px';
-                layoutUpdateCallback.call();
-                return false;
-            };
-            document.onmouseup = function() {
-                document.onmousemove = null;
-                document.onmouseup = null;
-                var s = getCodemirrorScrollerOrTextarea();
-                s.style.opacity = 1;
-            }
-        };
-        handle.ondblclick = function() {
-            var s = getCodemirrorScrollerOrTextarea();
-            s.style.height = "1px"; // To get actual height of the textbox, shrink it and show its scrollbar
-            s.style.height = s.scrollHeight + 'px';
-        }
+      function height_of($el) {
+        return parseInt(window.getComputedStyle($el).height.replace(/px$/, ""));
+      }
+
+      function on_drag(e) {
+        codemirror.CodeMirror.setSize(null, Math.max(MIN_HEIGHT, (start_h + e.y - start_y)) + "px");
+      }
+
+      function on_release() {
+        document.body.removeEventListener("mousemove", on_drag);
+        window.removeEventListener("mouseup", on_release);
+      }
+
+      resizer.addEventListener("mousedown", function (e) {
+        start_x = e.x;
+        start_y = e.y;
+        start_h = height_of(codemirror);
+
+        document.body.addEventListener("mousemove", on_drag);
+        window.addEventListener("mouseup", on_release);
+      });
+
+      codemirror.parentNode.insertBefore(resizer, codemirror.nextSibling);
     });
 
     // structured form submission
@@ -1317,6 +1294,12 @@ function rowvgStartEachRow(recursive,f) {
              */
             eachRow: rowvgStartEachRow
         };
+    });
+
+    Behaviour.specify("INPUT.optional-block-event-item", "input-optional-block-event-item", ++p, function(e) {
+      e.addEventListener('click', function() {
+        updateOptionalBlock(e, true);
+      });
     });
 
     Behaviour.specify("TR.row-set-end,DIV.tr.row-set-end", "tr-row-set-end-div-tr-row-set-end", ++p, function(e) { // see rowSet.jelly and optionalBlock.jelly
@@ -1444,7 +1427,7 @@ function rowvgStartEachRow(recursive,f) {
     });
 
     Behaviour.specify("DIV.behavior-loading", "div-behavior-loading", ++p, function(e) {
-        e.style.display = 'none';
+        e.classList.add("behavior-loading--hidden");
     });
 
     Behaviour.specify(".button-with-dropdown", "-button-with-dropdown", ++p, function (e) {
@@ -1525,6 +1508,21 @@ function rowvgStartEachRow(recursive,f) {
         var spanTag = document.createElement('span')
         spanTag.innerHTML = labelText
         label.appendChild(spanTag)
+    });
+
+    // stop button JS cannot be done as adjunct, as it can be inside an Ajax response
+    Behaviour.specify('.stop-button-link', 'stop-button-link', 0, function(link) {
+        let question = link.getAttribute('data-confirm');
+        let url = link.getAttribute('href');
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            if (question !== null) {
+                if (!confirm(question)) {
+                    return;
+                }
+            }
+            new Ajax.Request(url);
+        });
     });
 })();
 
@@ -2227,19 +2225,6 @@ function buildFormTree(form) {
         return false;
     }
 }
-
-/**
- * @param {boolean} toggle
- *      When true, will check all checkboxes in the page. When false, unchecks them all.
- */
-var toggleCheckboxes = function(toggle) {
-    var inputs = document.getElementsByTagName("input");
-    for(var i=0; i<inputs.length; i++) {
-        if(inputs[i].type === "checkbox") {
-            inputs[i].checked = toggle;
-        }
-    }
-};
 
 var hoverNotification = (function() {
     var msgBox;

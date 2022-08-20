@@ -32,9 +32,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import java.io.File;
 import java.nio.charset.StandardCharsets;
-import org.apache.commons.io.FileUtils;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.For;
@@ -164,26 +164,26 @@ public class StaticRoutingDecisionProvider2Test {
 
     @Test
     public void userControlledWhitelist_savedCorrectly() throws Exception {
-        File whitelistUserControlledList = new File(j.jenkins.getRootDir(), "stapler-whitelist.txt");
+        Path whitelistUserControlledList = j.jenkins.getRootDir().toPath().resolve("stapler-whitelist.txt");
 
-        assertFalse(whitelistUserControlledList.exists());
+        assertFalse(Files.exists(whitelistUserControlledList));
 
         StaticRoutingDecisionProvider wl = new StaticRoutingDecisionProvider();
 
-        assertFalse(whitelistUserControlledList.exists());
+        assertFalse(Files.exists(whitelistUserControlledList));
 
         assertThat(wl.decide("nothing"), is(RoutingDecisionProvider.Decision.UNKNOWN));
 
         wl.save();
-        assertTrue(whitelistUserControlledList.exists());
-        assertThat(FileUtils.readFileToString(whitelistUserControlledList, StandardCharsets.UTF_8), is(""));
+        assertTrue(Files.exists(whitelistUserControlledList));
+        assertThat(Files.readString(whitelistUserControlledList, StandardCharsets.UTF_8), is(""));
 
         wl.add("white-1");
 
         assertThat(wl.decide("white-1"), is(RoutingDecisionProvider.Decision.ACCEPTED));
 
-        assertTrue(whitelistUserControlledList.exists());
-        assertThat(FileUtils.readFileToString(whitelistUserControlledList, StandardCharsets.UTF_8), containsString("white-1"));
+        assertTrue(Files.exists(whitelistUserControlledList));
+        assertThat(Files.readString(whitelistUserControlledList, StandardCharsets.UTF_8), containsString("white-1"));
         {
             StaticRoutingDecisionProvider temp = new StaticRoutingDecisionProvider();
             assertThat(temp.decide("white-1"), is(RoutingDecisionProvider.Decision.ACCEPTED));
@@ -193,7 +193,7 @@ public class StaticRoutingDecisionProvider2Test {
 
         assertThat(wl.decide("white-1"), is(RoutingDecisionProvider.Decision.ACCEPTED));
         assertThat(wl.decide("black-2"), is(RoutingDecisionProvider.Decision.REJECTED));
-        assertThat(FileUtils.readFileToString(whitelistUserControlledList, StandardCharsets.UTF_8), allOf(
+        assertThat(Files.readString(whitelistUserControlledList, StandardCharsets.UTF_8), allOf(
                 containsString("white-1"),
                 containsString("!black-2")
         ));
@@ -208,7 +208,7 @@ public class StaticRoutingDecisionProvider2Test {
 
         assertThat(wl.decide("white-1"), is(RoutingDecisionProvider.Decision.ACCEPTED));
         assertThat(wl.decide("black-2"), is(RoutingDecisionProvider.Decision.UNKNOWN));
-        assertThat(FileUtils.readFileToString(whitelistUserControlledList, StandardCharsets.UTF_8), allOf(
+        assertThat(Files.readString(whitelistUserControlledList, StandardCharsets.UTF_8), allOf(
                 containsString("white-1"),
                 not(containsString("black-2"))
         ));
@@ -223,7 +223,7 @@ public class StaticRoutingDecisionProvider2Test {
 
         assertThat(wl.decide("white-1"), is(RoutingDecisionProvider.Decision.UNKNOWN));
         assertThat(wl.decide("black-2"), is(RoutingDecisionProvider.Decision.UNKNOWN));
-        assertThat(FileUtils.readFileToString(whitelistUserControlledList, StandardCharsets.UTF_8), allOf(
+        assertThat(Files.readString(whitelistUserControlledList, StandardCharsets.UTF_8), allOf(
                 not(containsString("white-1")),
                 not(containsString("black-2"))
         ));

@@ -37,7 +37,7 @@ import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPrivateKey;
-import java.util.Collections;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -103,11 +103,11 @@ public class JnlpSlaveAgentProtocol4 extends AgentProtocol {
         // prepare our local identity and certificate
         X509Certificate identityCertificate = InstanceIdentityProvider.RSA.getCertificate();
         if (identityCertificate == null) {
-            throw new KeyStoreException("JENKINS-41987: no X509Certificate found; perhaps instance-identity module is missing or too old");
+            throw new KeyStoreException("JENKINS-41987: no X509Certificate found; perhaps instance-identity plugin is not installed");
         }
         RSAPrivateKey privateKey = InstanceIdentityProvider.RSA.getPrivateKey();
         if (privateKey == null) {
-            throw new KeyStoreException("JENKINS-41987: no RSAPrivateKey found; perhaps instance-identity module is missing or too old");
+            throw new KeyStoreException("JENKINS-41987: no RSAPrivateKey found; perhaps instance-identity plugin is not installed");
         }
 
         // prepare our keyStore so we can provide our authentication
@@ -194,7 +194,7 @@ public class JnlpSlaveAgentProtocol4 extends AgentProtocol {
             LOGGER.log(Level.FINEST, "Ignored", e);
         }
         handler.handle(socket,
-                Collections.singletonMap(JnlpConnectionState.COOKIE_KEY, JnlpAgentReceiver.generateCookie()),
+                Map.of(JnlpConnectionState.COOKIE_KEY, JnlpAgentReceiver.generateCookie()),
                 ExtensionList.lookup(JnlpAgentReceiver.class));
     }
 

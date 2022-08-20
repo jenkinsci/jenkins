@@ -24,6 +24,7 @@
 
 package hudson.model;
 
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -44,7 +45,6 @@ import hudson.FilePath;
 import hudson.Functions;
 import hudson.Launcher;
 import hudson.Launcher.RemoteLauncher;
-import hudson.Util;
 import hudson.model.AbstractProject.BecauseOfDownstreamBuildInProgress;
 import hudson.model.AbstractProject.BecauseOfUpstreamBuildInProgress;
 import hudson.model.Cause.UserIdCause;
@@ -77,13 +77,16 @@ import hudson.triggers.SCMTrigger;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.io.UncheckedIOException;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -380,7 +383,7 @@ public class ProjectTest {
 
         FreeStyleProject downstream = j.createFreeStyleProject("project-downstream");
         downstream.getBuildersList().add(Functions.isWindows() ? new BatchFile("ping -n 10 127.0.0.1 >nul") : new Shell("sleep 10"));
-        p.getPublishersList().add(new BuildTrigger(Collections.singleton(downstream), Result.SUCCESS));
+        p.getPublishersList().add(new BuildTrigger(Set.of(downstream), Result.SUCCESS));
         Jenkins.get().rebuildDependencyGraph();
         p.setBlockBuildWhenDownstreamBuilding(true);
         QueueTaskFuture<FreeStyleBuild> b2 = waitForStart(downstream);
@@ -517,7 +520,11 @@ public class ProjectTest {
         downstream.getBuildersList().add(new TestBuilder() {
             @Override public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) {
                 for (Run<?, ?>.Artifact a : upstream.getLastBuild().getArtifacts()) {
-                    Util.copyFile(a.getFile(), new File(build.getWorkspace().child(a.getFileName()).getRemote()));
+                    try {
+                        Files.copy(a.getFile().toPath(), new File(build.getWorkspace().child(a.getFileName()).getRemote()).toPath(), REPLACE_EXISTING);
+                    } catch (IOException e) {
+                        throw new UncheckedIOException(e);
+                    }
                 }
                 return true;
             }
@@ -840,7 +847,7 @@ public class ProjectTest {
         }
 
         @Override public SCMDescriptor<?> getDescriptor() {
-            return new SCMDescriptor<SCM>(null) {};
+            return new SCMDescriptor<>(null) {};
         }
 
         @Override

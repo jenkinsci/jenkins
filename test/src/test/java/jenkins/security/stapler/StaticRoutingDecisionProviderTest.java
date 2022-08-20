@@ -30,12 +30,13 @@ import static org.junit.Assert.assertTrue;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.ExtensionList;
 import hudson.model.FreeStyleProject;
-import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Set;
 import jenkins.model.Jenkins;
-import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -122,8 +123,8 @@ public class StaticRoutingDecisionProviderTest extends StaplerAbstractTest {
     @Test
     public void test_objectCustom_withUserControlledSavedWhitelist() throws Throwable {
         String whitelist = ContentProvider.OBJECT_CUSTOM_SIGNATURE + "\n";
-        File whitelistFile = new File(j.jenkins.getRootDir(), "stapler-whitelist.txt");
-        FileUtils.write(whitelistFile, whitelist);
+        Path whitelistFile = j.jenkins.getRootDir().toPath().resolve("stapler-whitelist.txt");
+        Files.writeString(whitelistFile, whitelist, StandardCharsets.UTF_8);
         ExtensionList.lookupSingleton(StaticRoutingDecisionProvider.class).reload();
         try {
             assertNotReachable("contentProvider/objectString/");
@@ -132,7 +133,7 @@ public class StaticRoutingDecisionProviderTest extends StaplerAbstractTest {
             assertReachable("contentProvider/objectCustom/");
             assertTrue(ContentProvider.called);
         } finally {
-            whitelistFile.delete();
+            Files.deleteIfExists(whitelistFile);
             ExtensionList.lookupSingleton(StaticRoutingDecisionProvider.class).reload();
         }
     }

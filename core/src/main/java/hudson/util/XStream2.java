@@ -96,7 +96,7 @@ public class XStream2 extends XStream {
     private static final Logger LOGGER = Logger.getLogger(XStream2.class.getName());
     /**
      * Determine what is the value (in seconds) of the "collectionUpdateLimit" added by XStream
-     * to protect against http://x-stream.github.io/CVE-2021-43859.html.
+     * to protect against <a href="http://x-stream.github.io/CVE-2021-43859.html">CVE-2021-43859</a>.
      * It corresponds to the accumulated timeout when adding an item to a collection.
      *
      * Default: 5 seconds (in contrary to XStream default to 20 which is a bit too tolerant)
