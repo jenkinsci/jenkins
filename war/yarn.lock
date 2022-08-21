@@ -4016,7 +4016,7 @@ __metadata:
     style-loader: 3.3.1
     stylelint: 14.10.0
     stylelint-checkstyle-reporter: 0.2.0
-    stylelint-config-standard: 27.0.0
+    stylelint-config-standard: 28.0.0
     webpack: 5.74.0
     webpack-cli: 4.10.0
     webpack-remove-empty-scripts: 0.8.1
@@ -6114,14 +6114,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"stylelint-config-standard@npm:27.0.0":
-  version: 27.0.0
-  resolution: "stylelint-config-standard@npm:27.0.0"
+"stylelint-config-standard@npm:28.0.0":
+  version: 28.0.0
+  resolution: "stylelint-config-standard@npm:28.0.0"
   dependencies:
     stylelint-config-recommended: ^9.0.0
   peerDependencies:
-    stylelint: ^14.10.0
-  checksum: e0f1308d4c020ffebcc47f691c9ea06964e6f5d1600525a45de22ce66b6d20e2fba7509e98ef3b45a1db385e20514f5d3d8059105249482e89a64e3f826e5a85
+    stylelint: ^14.11.0
+  checksum: 1de7fdd773435e79a8d3ab6d084509cac5352c1a71e9417d8b2c6b37e2352289265d2957d5f0be1f21a851f4b10c5bb236b33e42a6628bcd9355dd6b6a3236c7
   languageName: node
   linkType: hard
 
