@@ -48,7 +48,7 @@
   "dependencies": {
     "@babel/preset-env": "7.18.10",
     "babel-loader": "8.2.5",
-    "bootstrap": "3.4.1",
+    "bootstrap": "5.2.0",
     "hotkeys-js": "3.9.5",
     "jenkins-js-modules": "1.5.4",
     "jquery": "3.6.0",
