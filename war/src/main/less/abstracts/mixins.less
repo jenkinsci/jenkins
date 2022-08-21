@@ -53,7 +53,7 @@
     content: "";
     inset: 0;
     z-index: -1;
-    border-radius: 10px;
+    border-radius: 0.66rem;
     transition: var(--standard-transition);
     pointer-events: none;
   }
@@ -87,7 +87,8 @@
 
   &:focus-visible {
     &::after {
-      box-shadow: 0 0 0 0.33rem var(--text-color);
+      box-shadow: 0 0 0 0.33rem var(--text-color) !important;
+      opacity: 1 !important;
     }
   }
 }
