@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.85</version>
+    <version>1.86</version>
     <relativePath />
   </parent>
 
@@ -74,12 +74,8 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.364</revision>
+    <revision>2.365</revision>
     <changelist>-SNAPSHOT</changelist>
-
-    <!-- *.html files are in UTF-8, and *.properties are in iso-8859-1, so this configuration is actually incorrect,
-    but this suppresses a warning from Maven, and as long as we don't do filtering we should be OK. -->
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
     <!-- configuration for patch tracker plugin  -->
     <project.patchManagement.system>github</project.patchManagement.system>
@@ -101,7 +97,7 @@ THE SOFTWARE.
 
     <access-modifier.version>1.27</access-modifier.version>
     <bridge-method-injector.version>1.23</bridge-method-injector.version>
-    <mockito.version>4.6.1</mockito.version>
+    <mockito.version>4.7.0</mockito.version>
     <spotless.version>2.24.1</spotless.version>
   </properties>
 
@@ -295,7 +291,7 @@ THE SOFTWARE.
             <dependency>
               <groupId>org.jvnet.maven-jellydoc-plugin</groupId>
               <artifactId>maven-jellydoc-plugin</artifactId>
-              <version>1.5</version>
+              <version>1.9</version>
             </dependency>
           </dependencies>
         </plugin>

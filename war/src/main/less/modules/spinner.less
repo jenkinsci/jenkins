@@ -52,21 +52,15 @@
   display: flex !important;
   align-items: center;
   justify-content: center;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
   z-index: 999;
   backdrop-filter: blur(15px);
-  transition: 0.3s ease;
+  transition: var(--standard-transition);
 
   &::before {
     content: "";
     position: absolute;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    right: 0;
+    inset: 0;
     background: var(--background);
     opacity: 0.95;
   }
