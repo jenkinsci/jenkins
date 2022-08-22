@@ -28,12 +28,6 @@ THE SOFTWARE.
     <l:header>
       <!-- RSS? -->
     </l:header>
-    <l:side-panel>
-      <l:tasks>
-        <l:task href="${rootURL}/" icon="icon-up icon-md" title="${%Back to Dashboard}"/>
-        <t:actions/>
-      </l:tasks>
-    </l:side-panel>
     <l:main-panel>
       <h1>
         <l:icon class="icon-fingerprint icon-xlg"/>
@@ -77,9 +71,9 @@ THE SOFTWARE.
                     <td>
                       <t:buildRangeLink job="${job}" range="${range}" />
                     </td>
-                  </td>  
+                  </td>
                 </tr>
-              </j:if>    
+              </j:if>
             </j:forEach>
           </table>
         </j:otherwise>

@@ -52,7 +52,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>winstone</artifactId>
-      <version>6.1</version>
+      <version>6.2</version>
       <optional>true</optional>
     </dependency>
     <dependency>

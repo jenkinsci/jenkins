@@ -427,19 +427,6 @@ pre.console {
     color: white;
 }
 
-div.behavior-loading {
-  position: fixed;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  top: 56px;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 1000;
-  background: var(--background);
-}
-
 .bottom-sticker, #bottom-sticker {
   position: sticky;
   // This has to be set to -1px so that IntersectionObserver can add the
@@ -1295,6 +1282,7 @@ table.progress-bar.red td.progress-bar-done {
 .logrecord-container {
   border-radius: 10px;
   overflow: hidden;
+  margin-bottom: var(--section-padding);
 
   pre {
     padding-top: 0;
