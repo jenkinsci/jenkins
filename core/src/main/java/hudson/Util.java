@@ -1781,8 +1781,12 @@ public class Util {
                 try {
                     return Files.createDirectory(dir, attrs);
                 } catch (FileAlreadyExistsException e) {
-                    // a concurrent caller won the race
-                    return dir;
+                    if (Files.isDirectory(dir, LinkOption.NOFOLLOW_LINKS)) {
+                        // a concurrent caller won the race
+                        return dir;
+                    } else {
+                        throw e;
+                    }
                 }
             }
         }
@@ -1794,7 +1798,11 @@ public class Util {
                 try {
                     Files.createDirectory(child, attrs);
                 } catch (FileAlreadyExistsException e) {
-                    // a concurrent caller won the race
+                    if (Files.isDirectory(child, LinkOption.NOFOLLOW_LINKS)) {
+                        // a concurrent caller won the race
+                    } else {
+                        throw e;
+                    }
                 }
             }
         }
