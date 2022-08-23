@@ -24,7 +24,7 @@
   },
   "devDependencies": {
     "@babel/cli": "7.18.10",
-    "@babel/core": "7.18.10",
+    "@babel/core": "7.18.13",
     "autoprefixer": "10.4.8",
     "clean-webpack-plugin": "4.0.0",
     "copy-webpack-plugin": "11.0.0",
