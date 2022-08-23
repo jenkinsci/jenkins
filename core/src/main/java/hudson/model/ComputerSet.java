@@ -109,6 +109,7 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
             Set<LabelAtom> assignedNodeLabels = Label.parse(c.getNode().getLabelString());
             // + dynamic labels (some plugins use it)
             assignedNodeLabels.addAll(c.getNode().getDynamicLabels());
+            labels.addAll(assignedNodeLabels);
         }
         return Collections.unmodifiableSet(labels);
     }
