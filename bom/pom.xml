@@ -402,13 +402,6 @@ THE SOFTWARE.
         <scope>provided</scope>
         <optional>true</optional>
       </dependency>
-      <dependency>
-        <!-- provided by log4j-over-slf4j -->
-        <groupId>log4j</groupId>
-        <artifactId>log4j</artifactId>
-        <version>1.2.17</version>
-        <scope>provided</scope>
-      </dependency>
     </dependencies>
   </dependencyManagement>
 
