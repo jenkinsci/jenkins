@@ -1778,7 +1778,16 @@ public class Util {
             if (Files.isDirectory(dir)) {
                 return dir;
             } else {
-                return Files.createDirectory(dir, attrs);
+                try {
+                    return Files.createDirectory(dir, attrs);
+                } catch (FileAlreadyExistsException e) {
+                    if (Files.isDirectory(dir)) {
+                        // a concurrent caller won the race
+                        return dir;
+                    } else {
+                        throw e;
+                    }
+                }
             }
         }
 
@@ -1786,7 +1795,15 @@ public class Util {
         for (Path name : parent.relativize(dir)) {
             child = child.resolve(name);
             if (!Files.isDirectory(child)) {
-                Files.createDirectory(child, attrs);
+                try {
+                    Files.createDirectory(child, attrs);
+                } catch (FileAlreadyExistsException e) {
+                    if (Files.isDirectory(child)) {
+                        // a concurrent caller won the race
+                    } else {
+                        throw e;
+                    }
+                }
             }
         }
 
