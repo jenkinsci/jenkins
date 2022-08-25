@@ -9,19 +9,19 @@ This page provides information about contributing code to the Jenkins core codeb
 1. Fork the repository on GitHub
 2. Clone the forked repository to your machine
 3. Install the necessary development tools. In order to develop Jenkins, you need the following:
-   * Java Development Kit (JDK) 11 or 17.
+   - Java Development Kit (JDK) 11 or 17.
      In the Jenkins project we usually use [Eclipse Temurin](https://adoptium.net/) or [OpenJDK](https://openjdk.java.net/), but you can use other JDKs as well.
-   * Apache Maven 3.8.1 or above. You can [download Maven here](https://maven.apache.org/download.cgi).
+   - Apache Maven 3.8.1 or above. You can [download Maven here](https://maven.apache.org/download.cgi).
      In the Jenkins project we usually use the most recent Maven release.
-   * Any IDE which supports importing Maven projects.
-   * Install [NodeJS 16.x](https://nodejs.org/en/). **Note:** only needed to work on the frontend assets found in the `war` module.
-     * Frontend tasks are run using [yarn](https://yarnpkg.com/). Run `npm install -g yarn` to install it.
+   - Any IDE which supports importing Maven projects.
+   - Install [NodeJS 16.x](https://nodejs.org/en/). **Note:** only needed to work on the frontend assets found in the `war` module.
+     - Frontend tasks are run using [yarn](https://yarnpkg.com/). Run `npm install -g yarn` to install it.
 4. Set up your development environment as described in [Preparing for Plugin Development](https://www.jenkins.io/doc/developer/tutorial/prepare/)
 
 If you want to contribute to Jenkins, or just learn about the project,
 you can start by fixing some easier issues.
 In the Jenkins issue tracker we mark such issues as `newbie-friendly`.
-You can find them by using this query (check the link) for [newbie friendly issues](https://issues.jenkins.io/issues/?jql=project%20%3D%20JENKINS%20AND%20status%20in%20(Open%2C%20%22In%20Progress%22%2C%20Reopened)%20AND%20component%20%3D%20core%20AND%20labels%20in%20(newbie-friendly)).
+You can find them by using this query (check the link) for [newbie friendly issues](<https://issues.jenkins.io/issues/?jql=project%20%3D%20JENKINS%20AND%20status%20in%20(Open%2C%20%22In%20Progress%22%2C%20Reopened)%20AND%20component%20%3D%20core%20AND%20labels%20in%20(newbie-friendly)>).
 
 ## Building and Debugging
 
@@ -53,11 +53,13 @@ mvn -pl war jetty:run
 To work on the `war` module frontend assets, two processes are needed at the same time:
 
 On one terminal, start a development server that will not process frontend assets:
+
 ```sh
 mvn -pl war jetty:run -Dskip.yarn
 ```
 
 On another terminal, move to the war folder and start a [webpack](https://webpack.js.org/) dev server:
+
 ```sh
 cd war; yarn start
 ```
@@ -82,9 +84,9 @@ so there is no strict need to run full test suites before proposing a pull reque
 
 There are 3 profiles for tests:
 
-* `light-test` - runs only unit tests, no functional tests
-* `smoke-test` - runs unit tests + a number of functional tests
-* `all-tests` - runs all tests, with re-run (default)
+- `light-test` - runs only unit tests, no functional tests
+- `smoke-test` - runs unit tests + a number of functional tests
+- `all-tests` - runs all tests, with re-run (default)
 
 In addition to the included tests, you can also find extra integration and UI
 tests in the [Acceptance Test Harness (ATH)](https://github.com/jenkinsci/acceptance-test-harness) repository.
@@ -93,6 +95,7 @@ If you propose complex UI changes, you should create new ATH tests for them.
 ### JavaScript unit tests
 
 In case there's only need to run the JS tests:
+
 ```sh
 cd war; yarn test
 ```
@@ -105,17 +108,17 @@ All proposed changes are submitted, and code reviewed, using a [GitHub pull requ
 To submit a pull request:
 
 1. Commit your changes and push them to your fork on GitHub.
-It is a good practice is to create branches instead of pushing to master.
+   It is a good practice is to create branches instead of pushing to master.
 2. In the GitHub Web UI, click the _New Pull Request_ button.
 3. Select `jenkinsci` as _base fork_ and `master` as `base`, then click _Create Pull Request_.
-   * We integrate all changes into the master branch towards the Weekly releases.
-   * After that, the changes may be backported to the current LTS baseline by the LTS Team.
+   - We integrate all changes into the master branch towards the Weekly releases.
+   - After that, the changes may be backported to the current LTS baseline by the LTS Team.
      Read more about the [backporting process](https://www.jenkins.io/download/lts/).
 4. Fill in the Pull Request description according to the [proposed template](.github/PULL_REQUEST_TEMPLATE.md).
 5. Click _Create Pull Request_.
 6. Wait for CI results/reviews, process the feedback.
-   * If you do not get feedback after 3 days, feel free to ping `@jenkinsci/core-pr-reviewers` in the comments.
-   * Usually we merge pull requests after 2 approvals from reviewers, no requested changes, and having waited some more time to give others an opportunity to provide their feedback.
+   - If you do not get feedback after 3 days, feel free to ping `@jenkinsci/core-pr-reviewers` in the comments.
+   - Usually we merge pull requests after 2 approvals from reviewers, no requested changes, and having waited some more time to give others an opportunity to provide their feedback.
      See [this page](/docs/MAINTAINERS.adoc) for more information about our review process.
 
 Once your Pull Request is ready to be merged,
@@ -130,26 +133,26 @@ The complete list of labels can be found at https://github.com/jenkinsci/jenkins
 These labels are defined as follows:
 
 - `needs-docs` marks a pull request as lacking documentation, either for developers (e.g., Javadoc) or users (e.g., changes to the [Jenkins handbook](https://www.jenkins.io/doc/book/)).
-For such pull requests to be approved and merged, the corresponding changes to the documentation should be proposed.
-If those changes belong to a separate repository (e.g., `jenkins-infra/jenkins.io`), a secondary pull request should be created in draft state in the other repository and reviewed in tandem with the primary pull request that proposes the code change.
+  For such pull requests to be approved and merged, the corresponding changes to the documentation should be proposed.
+  If those changes belong to a separate repository (e.g., `jenkins-infra/jenkins.io`), a secondary pull request should be created in draft state in the other repository and reviewed in tandem with the primary pull request that proposes the code change.
 - `needs-fix` marks a pull request which has pending requests for change that have not yet been addressed.
-Such pull requests will not be merged until the code has been fixed and the tests pass.
+  Such pull requests will not be merged until the code has been fixed and the tests pass.
 - `needs-justification` marks a pull request where the reasoning is unclear, incomplete or not entirely cogent.
-To properly evaluate the solution provided in a pull request, maintainers must be able to understand the high-level problem that the pull request attempts to solve.
-While the context might be obvious to the author, it is not always apparent to reviewers and maintainers.
-The use of design documents, high-level tracking epics, [minimal reproducible examples (MREs)](https://en.wikipedia.org/wiki/Minimal_reproducible_example), etc. is strongly encouraged.
+  To properly evaluate the solution provided in a pull request, maintainers must be able to understand the high-level problem that the pull request attempts to solve.
+  While the context might be obvious to the author, it is not always apparent to reviewers and maintainers.
+  The use of design documents, high-level tracking epics, [minimal reproducible examples (MREs)](https://en.wikipedia.org/wiki/Minimal_reproducible_example), etc. is strongly encouraged.
 - `needs-more-review` marks a pull request as lacking a sufficient number of reviews from subject-matter expert(s) (SME), either because the changes are complex and not sufficiently explained or because there is a lack of consensus regarding the proposed solution.
 - `on-hold` marks a pull request that depends on another event and cannot be merged until the completion of that event.
-When the dependent task has been completed, the pull request will be ready for merge.
+  When the dependent task has been completed, the pull request will be ready for merge.
 - `proposed-for-close` marks a pull request where there is either no consensus on the next steps or where the next steps have not been taken and an extended period of time has elapsed.
-Such pull requests are typically closed approximately one week after the label has been applied.
-They can always be reopened once consensus has been reached on the next steps or when action is taken regarding these next steps.
+  Such pull requests are typically closed approximately one week after the label has been applied.
+  They can always be reopened once consensus has been reached on the next steps or when action is taken regarding these next steps.
 - `ready-for-merge` marks a pull request that has met the acceptance criteria, as defined elsewhere in this document.
-If there is no negative feedback, such pull requests are typically merged within approximately 24 hours.
+  If there is no negative feedback, such pull requests are typically merged within approximately 24 hours.
 - `stalled` marks a pull request that is off to a promising start but requires additional effort to reach completion - effort that appears to have been abandoned.
-If the original author lacks the time and interest to continue the original effort, we suggest that someone else pick up where the original author left off to drive the effort to completion.
+  If the original author lacks the time and interest to continue the original effort, we suggest that someone else pick up where the original author left off to drive the effort to completion.
 - `work-in-progress` marks a pull request that remains under active development.
-Such pull requests are not ready for final review.
+  Such pull requests are not ready for final review.
 
 To ensure that pull requests are processed efficiently, the `ready-for-merge`, `stalled`, and `proposed-for-close` labels are subject to time constraints.
 
@@ -172,7 +175,7 @@ The setting can be found in Settings -> Editor -> General -> On Save -> Remove t
 This will help minimize the diff, which makes reviewing PRs easier.
 
 We also do not recommend `*` imports in the production code.
-Please disable them in Settings > Editor > Codestyle > Java by setting _Class count to use import with '*'_ and Names count to use import with '*'_ to a high value, e.g. 100. 
+Please disable them in Settings > Editor > Codestyle > Java by setting _Class count to use import with '\*'_ and Names count to use import with '\*'\_ to a high value, e.g. 100.
 
 The addition of `@{jenkins.addOpens}` to `argLine` exposes a bug in IntelliJ IDEA.
 A patch has been proposed in [JetBrains/intellij-community#1976](https://github.com/JetBrains/intellij-community/pull/1976).
@@ -209,7 +212,7 @@ just submit a pull request.
 
 # Links
 
-* [Jenkins Contribution Landing Page](https://www.jenkins.io/participate/)
-* [Jenkins Chat Channels](https://www.jenkins.io/chat/)
-* [Beginners Guide To Contributing](https://www.jenkins.io/participate/)
-* [List of newbie-friendly issues in the core](https://issues.jenkins.io/issues/?jql=project%20%3D%20JENKINS%20AND%20status%20in%20(Open%2C%20%22In%20Progress%22%2C%20Reopened)%20AND%20component%20%3D%20core%20AND%20labels%20in%20(newbie-friendly))
+- [Jenkins Contribution Landing Page](https://www.jenkins.io/participate/)
+- [Jenkins Chat Channels](https://www.jenkins.io/chat/)
+- [Beginners Guide To Contributing](https://www.jenkins.io/participate/)
+- [List of newbie-friendly issues in the core](<https://issues.jenkins.io/issues/?jql=project%20%3D%20JENKINS%20AND%20status%20in%20(Open%2C%20%22In%20Progress%22%2C%20Reopened)%20AND%20component%20%3D%20core%20AND%20labels%20in%20(newbie-friendly)>)

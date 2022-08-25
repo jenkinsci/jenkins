@@ -1,29 +1,38 @@
 <div>
-    Accepts a file submission from a browser as a build parameter. The uploaded
-    file will be placed at the specified location in the workspace, which your
-    build can then access and use.
-    <p>This is useful for many situations, such as:<ol>
+  Accepts a file submission from a browser as a build parameter. The uploaded
+  file will be placed at the specified location in the workspace, which your
+  build can then access and use.
+  <p>This is useful for many situations, such as:</p>
+  <ol>
     <li>Letting people run tests on the artifacts they built.</li>
-    <li>Automating the upload/release/deployment process by allowing the user to
-    place the file.</li>
+    <li>
+      Automating the upload/release/deployment process by allowing the user to
+      place the file.
+    </li>
     <li>Perform data processing by uploading a dataset.</li>
-    </ol>
-    <p>
-        The name of the submitted file is available in the environment variable
-        whose name is the same as file location. For example, if you set the file
-        location to be <code>abc.zip</code>, then <code>${abc.zip}</code> would give you
-        the original file name passed from the browser (such as <code>my.zip</code>.)
-        The name will not include the directory name portion.
-    </p>
-    <p>
-        File upload is optional. If a user chooses not to upload anything,
-        Jenkins will simply skips this parameter and will not place
-        anything (but it also will not delete anything that's already in the
-        workspace.)
-    </p>
-    <p>
-        From the CLI, the <code>-p</code> option to the <code>build</code> command
-        should take an empty value to read from standard input.
-        (Only one file parameter can be defined this way.)
-    </p>
+  </ol>
+  <p>
+    The name of the submitted file is available in the environment variable
+    whose name is the same as file location. For example, if you set the file
+    location to be
+    <code>abc.zip</code>
+    , then
+    <code>${abc.zip}</code>
+    would give you the original file name passed from the browser (such as
+    <code>my.zip</code>
+    .) The name will not include the directory name portion.
+  </p>
+  <p>
+    File upload is optional. If a user chooses not to upload anything, Jenkins
+    will simply skips this parameter and will not place anything (but it also
+    will not delete anything that's already in the workspace.)
+  </p>
+  <p>
+    From the CLI, the
+    <code>-p</code>
+    option to the
+    <code>build</code>
+    command should take an empty value to read from standard input. (Only one
+    file parameter can be defined this way.)
+  </p>
 </div>
