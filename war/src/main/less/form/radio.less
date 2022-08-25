@@ -19,58 +19,65 @@
     &:hover {
       & + label {
         &::before {
-          box-shadow: 0 0 0 10px transparent, inset 0 0 0 5px var(--input-border-hover);
+          box-shadow: 0 0 0 10px transparent,
+            inset 0 0 0 5px var(--input-border-hover);
         }
       }
     }
 
-      &:not(:disabled) {
-        &:focus, &:active {
-          & + label {
-            &::before {
-              transition: box-shadow var(--elastic-transition);
-              box-shadow: 0 0 0 5px var(--focus-input-glow), inset 0 0 0 5px var(--focus-input-border);
-            }
-          }
-        }
-
-        &:checked {
-          &:focus, &:active {
-            & + label {
-              &::before {
-                box-shadow: 0 0 0 5px var(--focus-input-glow), inset 0 0 0 8px var(--focus-input-border);
-              }
-            }
+    &:not(:disabled) {
+      &:focus,
+      &:active {
+        & + label {
+          &::before {
+            transition: box-shadow var(--elastic-transition);
+            box-shadow: 0 0 0 5px var(--focus-input-glow),
+              inset 0 0 0 5px var(--focus-input-border);
           }
         }
       }
 
       &:checked {
-        & + label {
-          &:active, &:focus {
+        &:focus,
+        &:active {
+          & + label {
             &::before {
-              box-shadow: 0 0 0 5px var(--focus-input-glow), inset 0 0 0 12px var(--focus-input-border);
+              box-shadow: 0 0 0 5px var(--focus-input-glow),
+                inset 0 0 0 8px var(--focus-input-border);
             }
-          }
-        }
-
-        & + label {
-          &::before {
-            box-shadow: inset 0 0 0 8px var(--focus-input-border);
-          }
-        }
-      }
-
-      &:disabled {
-        & + label {
-          cursor: not-allowed;
-
-          &::before {
-            opacity: 0.35;
           }
         }
       }
     }
+
+    &:checked {
+      & + label {
+        &:active,
+        &:focus {
+          &::before {
+            box-shadow: 0 0 0 5px var(--focus-input-glow),
+              inset 0 0 0 12px var(--focus-input-border);
+          }
+        }
+      }
+
+      & + label {
+        &::before {
+          box-shadow: inset 0 0 0 8px var(--focus-input-border);
+        }
+      }
+    }
+
+    &:disabled {
+      & + label {
+        cursor: not-allowed;
+
+        &::before {
+          opacity: 0.35;
+        }
+      }
+    }
+  }
 
   &__label {
     position: relative;

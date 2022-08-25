@@ -9,42 +9,81 @@
   margin-top: 1rem;
 }
 
-.repeated-chunk .show-if-last { visibility: hidden; }
-.repeated-chunk.last .show-if-last { visibility: visible; }
+.repeated-chunk .show-if-last {
+  visibility: hidden;
+}
 
-.repeated-chunk .show-if-not-last { visibility: visible; }
-.repeated-chunk.last .show-if-not-last { visibility: hidden; }
+.repeated-chunk.last .show-if-last {
+  visibility: visible;
+}
 
-.repeated-chunk .show-if-not-only { visibility: visible; }
+.repeated-chunk .show-if-not-last {
+  visibility: visible;
+}
+
+.repeated-chunk.last .show-if-not-last {
+  visibility: hidden;
+}
+
+.repeated-chunk .show-if-not-only {
+  visibility: visible;
+}
 
 /* == nested repeatable elements / 2 deep == */
-.repeated-chunk .repeated-chunk .show-if-last { visibility: hidden; }
-.repeated-chunk .repeated-chunk.last .show-if-last { visibility: visible; }
+.repeated-chunk .repeated-chunk .show-if-last {
+  visibility: hidden;
+}
 
-.repeated-chunk .repeated-chunk .show-if-not-last { visibility: visible; }
-.repeated-chunk .repeated-chunk.last .show-if-not-last { visibility: hidden; }
+.repeated-chunk .repeated-chunk.last .show-if-last {
+  visibility: visible;
+}
 
-.repeated-chunk .repeated-chunk .show-if-not-only { visibility: visible; }
+.repeated-chunk .repeated-chunk .show-if-not-last {
+  visibility: visible;
+}
+
+.repeated-chunk .repeated-chunk.last .show-if-not-last {
+  visibility: hidden;
+}
+
+.repeated-chunk .repeated-chunk .show-if-not-only {
+  visibility: visible;
+}
 
 /* == nested repeatable elements / 3 deep == */
-.repeated-chunk .repeated-chunk .repeated-chunk .show-if-last { visibility: hidden; }
-.repeated-chunk .repeated-chunk .repeated-chunk.last .show-if-last { visibility: visible; }
+.repeated-chunk .repeated-chunk .repeated-chunk .show-if-last {
+  visibility: hidden;
+}
 
-.repeated-chunk .repeated-chunk .repeated-chunk .show-if-not-last { visibility: visible; }
-.repeated-chunk .repeated-chunk .repeated-chunk.last .show-if-not-last { visibility: hidden; }
+.repeated-chunk .repeated-chunk .repeated-chunk.last .show-if-last {
+  visibility: visible;
+}
 
-.repeated-chunk .repeated-chunk .show-if-not-only { visibility: visible; }
+.repeated-chunk .repeated-chunk .repeated-chunk .show-if-not-last {
+  visibility: visible;
+}
+
+.repeated-chunk .repeated-chunk .repeated-chunk.last .show-if-not-last {
+  visibility: hidden;
+}
+
+.repeated-chunk .repeated-chunk .show-if-not-only {
+  visibility: visible;
+}
 
 /*
     <DIV>s marked with to-be-removed is used in conjunction with repeatable.jelly and hetero-list.jelly
     and represents a master copy that gets pulled out from HTML, then inserted later upon demand multiple times
     when the user does "Add".
 */
-div.to-be-removed { display: none; }
+div.to-be-removed {
+  display: none;
+}
 
 /* ========================= D&D support in heterogenous/repeatable lists = */
 
-.hetero-list-container.with-drag-drop .repeated-chunk, .repeated-container.with-drag-drop .repeated-chunk {
+.hetero-list-container.with-drag-drop .repeated-chunk,
+.repeated-container.with-drag-drop .repeated-chunk {
   margin-bottom: 1rem;
 }
 
@@ -180,7 +219,8 @@ div.to-be-removed { display: none; }
       }
     }
 
-    &:active, &:focus {
+    &:active,
+    &:focus {
       &::before {
         opacity: 0.15;
       }

@@ -8,30 +8,31 @@
  * corresponds to the sortable.js file that deals with table sorting.
  */
 
-import Sortable, { AutoScroll } from 'sortablejs/modular/sortable.core.esm.js';
+import Sortable, { AutoScroll } from "sortablejs/modular/sortable.core.esm.js";
 
 Sortable.mount(new AutoScroll());
 
 function registerSortableDragDrop(e) {
-  if (!e || !e.classList.contains('with-drag-drop')) return false;
+  if (!e || !e.classList.contains("with-drag-drop")) {
+    return false;
+  }
 
-  // eslint-disable-next-line no-unused-vars
-  const sortableElement = new Sortable(e, {
-      draggable: '.repeated-chunk',
-      handle: '.dd-handle',
-      ghostClass: 'repeated-chunk--sortable-ghost',
-      chosenClass: 'repeated-chunk--sortable-chosen',
-      forceFallback: true, // Do not use html5 drag & drop behaviour because it does not work with autoscroll
-      scroll: true,
-      bubbleScroll: true,
-      onChoose: function (event) {
-        const draggableDiv = event.item;
-        const height = draggableDiv.clientHeight;
-        draggableDiv.style.height = `${height}px`;
-      },
-      onUnchoose: function (event) {
-        event.item.style.removeProperty('height');
-      }
+  new Sortable(e, {
+    draggable: ".repeated-chunk",
+    handle: ".dd-handle",
+    ghostClass: "repeated-chunk--sortable-ghost",
+    chosenClass: "repeated-chunk--sortable-chosen",
+    forceFallback: true, // Do not use html5 drag & drop behaviour because it does not work with autoscroll
+    scroll: true,
+    bubbleScroll: true,
+    onChoose: function (event) {
+      const draggableDiv = event.item;
+      const height = draggableDiv.clientHeight;
+      draggableDiv.style.height = `${height}px`;
+    },
+    onUnchoose: function (event) {
+      event.item.style.removeProperty("height");
+    },
   });
 }
 

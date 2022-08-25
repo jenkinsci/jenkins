@@ -22,31 +22,31 @@
  * THE SOFTWARE.
  */
 .legacy-token-usage table .no-token {
-    padding: 8px 12px;
-    font-style: italic;
+  padding: 8px 12px;
+  font-style: italic;
 }
 .legacy-token-usage table tr.selected {
-    background-color: #f9f8de;
+  background-color: #f9f8de;
 }
 
-.legacy-token-usage .selection-panel{
-    margin-top: 8px;
+.legacy-token-usage .selection-panel {
+  margin-top: 8px;
 }
 
-.legacy-token-usage .selection-panel .action{
-    margin-left: 4px;
-    margin-right: 4px;
-    text-decoration: none;
-    color: #204A87;
+.legacy-token-usage .selection-panel .action {
+  margin-left: 4px;
+  margin-right: 4px;
+  text-decoration: none;
+  color: #204a87;
 }
-.legacy-token-usage .selection-panel .action:hover{
-    text-decoration: underline;
+.legacy-token-usage .selection-panel .action:hover {
+  text-decoration: underline;
 }
-.legacy-token-usage .selection-panel .action:visited{
-    /* avoid visited behavior */
-    color: #204A87;
+.legacy-token-usage .selection-panel .action:visited {
+  /* avoid visited behavior */
+  color: #204a87;
 }
 
-.legacy-token-usage .action-panel{
-    margin-top: 8px;
+.legacy-token-usage .action-panel {
+  margin-top: 8px;
 }
