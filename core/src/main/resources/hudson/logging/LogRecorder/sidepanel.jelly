@@ -30,7 +30,6 @@ THE SOFTWARE.
   <l:header />
   <l:side-panel>
     <l:tasks>
-      <l:task href=".." icon="icon-up icon-md" title="${%Back to Loggers}"/>
       <l:task href="." icon="symbol-file-tray" title="${%Log records}"/>
       <l:isAdmin>
         <l:task href="configure" icon="symbol-settings" title="${%Configure}"/>

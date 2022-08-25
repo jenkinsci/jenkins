@@ -30,7 +30,6 @@ THE SOFTWARE.
   <l:header />
   <l:side-panel>
     <l:tasks>
-      <l:task contextMenu="false" href="${rootURL}/computer" icon="icon-up icon-md" title="${%Back to List}"/>
       <l:task contextMenu="false" href="${rootURL}/${it.url}" icon="symbol-computer" title="${%Status}"/>
       <l:task href="${rootURL}/${it.url}delete" icon="icon-edit-delete icon-md" permission="${it.DELETE}" title="${%Delete Agent}"/>
       <l:task href="${rootURL}/${it.url}configure" icon="symbol-settings" permission="${it.EXTENDED_READ}"
