@@ -198,7 +198,7 @@ public abstract class FormValidation extends IOException implements HttpResponse
         if (e == null)    return _errorWithMarkup(Util.escape(message), kind);
 
         return _errorWithMarkup(Util.escape(message) +
-            " <a href='#' class='showDetails'>"
+            " </div><div><a href='#' class='showDetails'>"
             + Messages.FormValidation_Error_Details()
             + "</a><pre style='display:none'>"
             + Util.escape(Functions.printThrowable(e)) +
@@ -272,9 +272,7 @@ public abstract class FormValidation extends IOException implements HttpResponse
                 if (req == null) { // being called from some other context
                     return message;
                 }
-                // 1x16 spacer needed for IE since it doesn't support min-height
-                return "<div class=" + kind.name().toLowerCase(Locale.ENGLISH) + "><img src='" +
-                        req.getContextPath() + Jenkins.RESOURCE_PATH + "/images/none.gif' height=16 width=1>" +
+                return "<div class=\"" + kind.name().toLowerCase(Locale.ENGLISH) + "\">" +
                         message + "</div>";
             }
 

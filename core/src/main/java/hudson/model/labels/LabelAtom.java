@@ -170,7 +170,7 @@ public class LabelAtom extends Label implements Saveable {
 
     @Override
     public Set<LabelAtom> listAtoms() {
-        return Collections.singleton(this);
+        return Set.of(this);
     }
 
     @Override

@@ -31,7 +31,7 @@ import java.util.Map;
  */
 @SuppressFBWarnings(value = "MS_OOI_PKGPROTECT", justification = "for backward compatibility")
 public interface Options {
-  Map<String, Object> UNICODE_OPTIONS = new HashMap<String, Object>() {
+  Map<String, Object> UNICODE_OPTIONS = new HashMap<>() {
     {
       put(OPTION_TYPE_MAPPER, W32APITypeMapper.UNICODE);
       put(OPTION_FUNCTION_MAPPER, W32APIFunctionMapper.UNICODE);

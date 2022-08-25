@@ -150,7 +150,7 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
      * Gets all the agent names.
      */
     public List<String> get_slaveNames() {
-        return new AbstractList<String>() {
+        return new AbstractList<>() {
             final List<Node> nodes = Jenkins.get().getNodes();
 
             @Override

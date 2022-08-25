@@ -25,6 +25,7 @@
 package jenkins.util;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.model.AbstractItem;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
@@ -73,6 +74,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
  * {@code ui-samples-plugin} demonstrates all this.
  * @since 1.484
  */
+@SuppressFBWarnings(value = "THROWS_METHOD_THROWS_CLAUSE_THROWABLE", justification = "TODO needs triage")
 public abstract class ProgressiveRendering {
 
     private static final Logger LOG = Logger.getLogger(ProgressiveRendering.class.getName());

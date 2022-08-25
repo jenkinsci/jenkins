@@ -320,12 +320,10 @@ public abstract class Proc {
         @Override
         public int join() throws InterruptedException, IOException {
             // show what we are waiting for in the thread title
-            // since this involves some native work, let's have some soak period before enabling this by default
             Thread t = Thread.currentThread();
             String oldName = t.getName();
             if (SHOW_PID) {
-                ProcessTree.OSProcess p = ProcessTree.get().get(proc);
-                t.setName(oldName + " " + (p != null ? "waiting for pid=" + p.getPid() : "waiting for " + name));
+                t.setName(oldName + " waiting for pid=" + proc.pid());
             }
 
             try {
@@ -506,7 +504,7 @@ public abstract class Proc {
      * Debug switch to have the thread display the process it's waiting for.
      */
     @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for debugging")
-    public static boolean SHOW_PID = false;
+    public static boolean SHOW_PID = true;
 
     /**
     * An instance of {@link Proc}, which has an internal workaround for JENKINS-23271.

@@ -14,7 +14,6 @@ and hence the Jenkins core pull request review and merge process is more sophist
 This document applies to the following components:
 
 * Jenkins core
-* Jenkins modules
 * Libraries included into the Jenkins core
 * Core components like Winstone, Executable WAR, etc.
 

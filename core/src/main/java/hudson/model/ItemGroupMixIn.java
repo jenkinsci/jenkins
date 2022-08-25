@@ -24,6 +24,7 @@
 
 package hudson.model;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Util;
 import hudson.XmlFile;
 import hudson.model.listeners.ItemListener;
@@ -61,6 +62,7 @@ import org.xml.sax.SAXException;
  * @author Kohsuke Kawaguchi
  * @see ViewGroupMixIn
  */
+@SuppressFBWarnings(value = "THROWS_METHOD_THROWS_CLAUSE_THROWABLE", justification = "TODO needs triage")
 public abstract class ItemGroupMixIn {
     /**
      * {@link ItemGroup} for which we are working.

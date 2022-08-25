@@ -248,7 +248,7 @@ public class ArgumentListBuilder implements Serializable, Cloneable {
      */
     private static VariableResolver<String> propertiesGeneratingResolver(final VariableResolver<String> original) {
 
-        return new VariableResolver<String>() {
+        return new VariableResolver<>() {
 
             @Override
             public String resolve(String name) {
