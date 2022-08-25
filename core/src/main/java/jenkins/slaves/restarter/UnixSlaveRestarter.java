@@ -13,6 +13,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.logging.Logger;
 import jenkins.util.JavaVMArguments;
@@ -67,20 +69,30 @@ public class UnixSlaveRestarter extends SlaveRestarter {
      * Gets the current executable name.
      */
     private static String getCurrentExecutable() {
-        long pid = ProcessHandle.current().pid();
-        String name = "/proc/" + pid + "/exe";
-        File exe = new File(name);
-        if (exe.exists()) {
-            try {
-                return Files.readSymbolicLink(exe.toPath()).toString();
-            } catch (IOException | InvalidPathException | UnsupportedOperationException e) {
-                LOGGER.log(FINE, "Failed to resolve symlink " + exe, e);
-            }
-            return name;
+        ProcessHandle.Info info = ProcessHandle.current().info();
+        if (info.command().isPresent()) {
+            // Java 9+ approach
+            return info.command().get();
         }
 
-        // cross-platform fallback
-        return System.getProperty("java.home") + "/bin/java";
+        // Native approach
+        long pid = ProcessHandle.current().pid();
+        String name = "/proc/" + pid + "/exe";
+        try {
+            Path exe = Paths.get(name);
+            if (Files.exists(exe)) {
+                if (Files.isSymbolicLink(exe)) {
+                    return Files.readSymbolicLink(exe).toString();
+                } else {
+                    return exe.toString();
+                }
+            }
+        } catch (IOException | InvalidPathException | UnsupportedOperationException e) {
+            LOGGER.log(FINE, "Failed to resolve " + name, e);
+        }
+
+        // Legacy approach of last resort
+        return Paths.get(System.getProperty("java.home")).resolve("bin").resolve("java").toString();
     }
 
     private static final Logger LOGGER = Logger.getLogger(UnixSlaveRestarter.class.getName());

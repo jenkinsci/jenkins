@@ -34,7 +34,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.TestPluginManager;
 
 public class PluginTest {
 
@@ -42,9 +41,8 @@ public class PluginTest {
 
     @Issue({"SECURITY-131", "SECURITY-155", "SECURITY-705"})
     @Test public void doDynamic() throws Exception {
-        ((TestPluginManager) r.jenkins.pluginManager).installDetachedPlugin("matrix-auth");
-        r.createWebClient().goTo("plugin/matrix-auth/images/user-disabled.png", "image/png");
-        r.createWebClient().goTo("plugin/matrix-auth/images/../images/user-disabled.png", "image/png"); // collapsed somewhere before it winds up in restOfPath
+        r.createWebClient().goTo("plugin/matrix-auth/images/select-all.svg", "image/svg+xml");
+        r.createWebClient().goTo("plugin/matrix-auth/images/../images/select-all.svg", "image/svg+xml"); // collapsed somewhere before it winds up in restOfPath
         /* TODO https://github.com/apache/httpcomponents-client/commit/8c04c6ae5e5ba1432e40684428338ce68431766b#r32873542
         r.createWebClient().assertFails("plugin/matrix-auth/images/%2E%2E/images/user-disabled.png", HttpServletResponse.SC_INTERNAL_SERVER_ERROR); // IAE from TokenList.<init>
         r.createWebClient().assertFails("plugin/matrix-auth/images/%252E%252E/images/user-disabled.png", HttpServletResponse.SC_BAD_REQUEST); // SECURITY-131
@@ -77,4 +75,5 @@ public class PluginTest {
         }
         r.createWebClient().assertFails("plugin/matrix-auth/.timestamp2", HttpServletResponse.SC_BAD_REQUEST);
     }
+
 }

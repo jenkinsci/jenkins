@@ -613,7 +613,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
             synchronized (this) {
               localTransitiveDependencies = transitiveDependencies;
               if (localTransitiveDependencies == null) {
-                CyclicGraphDetector<PluginWrapper> cgd = new CyclicGraphDetector<PluginWrapper>() {
+                CyclicGraphDetector<PluginWrapper> cgd = new CyclicGraphDetector<>() {
                     @Override
                     protected List<PluginWrapper> getEdges(PluginWrapper pw) {
                         List<PluginWrapper> dep = new ArrayList<>();

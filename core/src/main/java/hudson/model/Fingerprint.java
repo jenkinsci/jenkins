@@ -362,10 +362,10 @@ public class Fingerprint implements ModelObject, Saveable {
          */
         public Iterable<Integer> listNumbers() {
             final List<Range> ranges = getRanges();
-            return new Iterable<Integer>() {
+            return new Iterable<>() {
                 @Override
                 public Iterator<Integer> iterator() {
-                    return new Iterators.FlattenIterator<Integer, Range>(ranges) {
+                    return new Iterators.FlattenIterator<>(ranges) {
                         @Override
                         protected Iterator<Integer> expand(Range range) {
                             return Iterators.sequence(range.start, range.end).iterator();
@@ -380,10 +380,10 @@ public class Fingerprint implements ModelObject, Saveable {
          */
         public Iterable<Integer> listNumbersReverse() {
             final List<Range> ranges = getRanges();
-            return new Iterable<Integer>() {
+            return new Iterable<>() {
                 @Override
                 public Iterator<Integer> iterator() {
-                    return new Iterators.FlattenIterator<Integer, Range>(Iterators.reverse(ranges)) {
+                    return new Iterators.FlattenIterator<>(Iterators.reverse(ranges)) {
                         @Override
                         protected Iterator<Integer> expand(Range range) {
                             return Iterators.reverseSequence(range.start, range.end).iterator();
@@ -1164,7 +1164,7 @@ public class Fingerprint implements ModelObject, Saveable {
             this.transientFacets = Collections.unmodifiableList(transientFacets);
         }
 
-        return new AbstractCollection<FingerprintFacet>() {
+        return new AbstractCollection<>() {
             @Override
             public Iterator<FingerprintFacet> iterator() {
                 return Iterators.sequence(facets.iterator(), transientFacets.iterator());
@@ -1208,7 +1208,7 @@ public class Fingerprint implements ModelObject, Saveable {
      */
     public @NonNull Collection<FingerprintFacet> getSortedFacets() {
         List<FingerprintFacet> r = new ArrayList<>(getFacets());
-        r.sort(new Comparator<FingerprintFacet>() {
+        r.sort(new Comparator<>() {
             @Override
             public int compare(FingerprintFacet o1, FingerprintFacet o2) {
                 long a = o1.getTimestamp();

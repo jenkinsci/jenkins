@@ -59,7 +59,7 @@ public class PluginSubtypeMarker extends AbstractProcessor {
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
         try {
-            ElementScanner9<Void, Void> scanner = new ElementScanner9<Void, Void>() {
+            ElementScanner9<Void, Void> scanner = new ElementScanner9<>() {
                 @Override
                 public Void visitType(TypeElement e, Void aVoid) {
                     if (!e.getModifiers().contains(Modifier.ABSTRACT)) {

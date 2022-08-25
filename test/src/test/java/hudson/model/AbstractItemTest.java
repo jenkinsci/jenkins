@@ -14,14 +14,14 @@ import hudson.security.ACL;
 import hudson.security.ACLContext;
 import hudson.security.AccessDeniedException3;
 import hudson.util.FormValidation;
-import java.io.File;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import jenkins.model.Jenkins;
 import jenkins.model.ProjectNamingStrategy;
-import org.apache.commons.io.FileUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -47,8 +47,8 @@ public class AbstractItemTest {
         b.setDescription("This is my build");
 
         // update on disk representation
-        File f = p.getConfigFile().getFile();
-        FileUtils.writeStringToFile(f, FileUtils.readFileToString(f, StandardCharsets.UTF_8).replaceAll("Hello World", "Good Evening"), StandardCharsets.UTF_8);
+        Path path = p.getConfigFile().getFile().toPath();
+        Files.writeString(path, Files.readString(path, StandardCharsets.UTF_8).replaceAll("Hello World", "Good Evening"), StandardCharsets.UTF_8);
 
         // reload away
         p.doReload();

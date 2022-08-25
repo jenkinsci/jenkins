@@ -105,6 +105,7 @@ import java.io.UncheckedIOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -133,7 +134,6 @@ import org.acegisecurity.acls.sid.PrincipalSid;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
-import org.apache.commons.io.FileUtils;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.servlet.ServletHandler;
@@ -178,7 +178,7 @@ public class QueueTest {
         assertNotNull(testProject.scheduleBuild2(0, new UserIdCause()));
         q.save();
 
-        System.out.println(FileUtils.readFileToString(new File(r.jenkins.getRootDir(), "queue.xml"), StandardCharsets.UTF_8));
+        System.out.println(Files.readString(r.jenkins.getRootDir().toPath().resolve("queue.xml"), StandardCharsets.UTF_8));
 
         assertEquals(1, q.getItems().length);
         q.clear();
@@ -226,7 +226,7 @@ public class QueueTest {
         assertNotNull(testProject.scheduleBuild2(0, new UserIdCause()));
         q.save();
 
-        System.out.println(FileUtils.readFileToString(new File(r.jenkins.getRootDir(), "queue.xml")));
+        System.out.println(Files.readString(r.jenkins.getRootDir().toPath().resolve("queue.xml"), StandardCharsets.UTF_8));
 
         assertEquals(1, q.getItems().length);
         q.clear();
@@ -568,6 +568,111 @@ public class QueueTest {
         assertThat("The cycle should have been defanged and chain3 executed", queue.getItem(chain3), nullValue());
     }
 
+
+    @TestExtension({"upstreamProjectsInQueueBlock", "downstreamProjectsInQueueBlock"})
+    public static class BlockingQueueTaskDispatcher extends QueueTaskDispatcher {
+
+        public static final String NAME_OF_BLOCKED_PROJECT = "blocked project";
+
+        @Override
+        public CauseOfBlockage canRun(hudson.model.Queue.Item item) {
+            if (item.task.getOwnerTask().getDisplayName().equals(NAME_OF_BLOCKED_PROJECT)) {
+                return new CauseOfBlockage() {
+
+                    @Override
+                    public String getShortDescription() {
+                        return NAME_OF_BLOCKED_PROJECT + " is permanently blocked.";
+                    }
+
+                };
+            }
+            return super.canRun(item);
+        }
+
+    }
+
+    private void waitUntilWaitingListIsEmpty(Queue q) throws InterruptedException {
+        boolean waitingItemsPresent = true;
+        while (waitingItemsPresent) {
+            waitingItemsPresent = false;
+            for (Queue.Item i : q.getItems()) {
+                if (i instanceof WaitingItem) {
+                    waitingItemsPresent = true;
+                    break;
+                }
+            }
+            Thread.sleep(1000);
+        }
+    }
+
+    @Issue("JENKINS-68780")
+    @Test
+    public void upstreamProjectsInQueueBlock() throws Exception {
+
+       FreeStyleProject a = r.createFreeStyleProject(BlockingQueueTaskDispatcher.NAME_OF_BLOCKED_PROJECT);
+       FreeStyleProject b = r.createFreeStyleProject();
+       a.getPublishersList().add(new BuildTrigger(b.getName(), true));
+       b.setBlockBuildWhenUpstreamBuilding(true);
+
+       r.jenkins.rebuildDependencyGraph();
+
+       a.scheduleBuild(0, new UserIdCause());
+
+       Queue q = r.jenkins.getQueue();
+
+       waitUntilWaitingListIsEmpty(q);
+
+       b.scheduleBuild(0, new UserIdCause());
+
+       waitUntilWaitingListIsEmpty(q);
+
+       // This call is necessary because the queue blocks projects
+       // at first only temporarily. By calling the maintain method
+       // all temporarily blocked projects either become buildable or
+       // become permanently blocked
+       q.scheduleMaintenance().get();
+
+       assertEquals("Queue should contain two blocked items but didn't.", 2, q.getBlockedItems().size());
+
+       //Ensure orderly shutdown
+       q.clear();
+       r.waitUntilNoActivity();
+    }
+
+    @Issue("JENKINS-68780")
+    @Test
+    public void downstreamProjectsInQueueBlock() throws Exception {
+
+       FreeStyleProject a = r.createFreeStyleProject();
+       FreeStyleProject b = r.createFreeStyleProject(BlockingQueueTaskDispatcher.NAME_OF_BLOCKED_PROJECT);
+       a.getPublishersList().add(new BuildTrigger(b.getName(), true));
+       a.setBlockBuildWhenDownstreamBuilding(true);
+
+       r.jenkins.rebuildDependencyGraph();
+
+       b.scheduleBuild(0, new UserIdCause());
+
+       Queue q = r.jenkins.getQueue();
+
+       waitUntilWaitingListIsEmpty(q);
+
+       a.scheduleBuild(0, new UserIdCause());
+
+       waitUntilWaitingListIsEmpty(q);
+
+       // This call is necessary because the queue blocks projects
+       // at first only temporarily. By calling the maintain method
+       // all temporarily blocked projects either become buildable or
+       // become permanently blocked
+       q.scheduleMaintenance().get();
+
+       assertEquals("Queue should contain two blocked items but didn't.", 2, q.getBlockedItems().size());
+
+       //Ensure orderly shutdown
+       q.clear();
+       r.waitUntilNoActivity();
+    }
+
     public static class TestFlyweightTask extends TestTask implements Queue.FlyweightTask {
         Executor exec;
         private final Label assignedLabel;
@@ -866,7 +971,7 @@ public class QueueTest {
             }
             }, 2, TimeUnit.SECONDS);
 
-        assertThrows(CancellationException.class, () -> f.waitForStart());
+        assertThrows(CancellationException.class, f::waitForStart);
     }
 
     @Ignore("TODO flakes in CI")

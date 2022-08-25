@@ -59,7 +59,6 @@ import org.apache.commons.io.IOUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.TestPluginManager;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -74,8 +73,6 @@ public class UsageStatisticsTest {
      */
     @Test
     public void roundtrip() throws Exception {
-        ((TestPluginManager) j.jenkins.pluginManager).installDetachedPlugin("matrix-auth");
-
         j.createOnlineSlave();
         warmUpNodeMonitorCache();
 

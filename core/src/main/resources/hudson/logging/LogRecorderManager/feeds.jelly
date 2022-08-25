@@ -25,23 +25,17 @@ THE SOFTWARE.
 <!-- list of feed links -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
-    <div align="right">
-        <a href="rss" class="yui-button link-button">
-            <span class="leading-icon">
-              <l:icon src="symbol-rss" />
-            </span>
+    <div class="jenkins-buttons-row jenkins-buttons-row--invert">
+        <a href="rss" class="jenkins-button jenkins-button--tertiary">
+            <l:icon src="symbol-rss" />
             <span>${%All}</span>
         </a>
-        <a href="rss?level=SEVERE" class="yui-button link-button">
-            <span class="leading-icon">
-              <l:icon src="symbol-rss" />
-            </span>
+        <a href="rss?level=SEVERE" class="jenkins-button jenkins-button--tertiary">
+            <l:icon src="symbol-rss" />
             <span>${%SEVERE}</span>
         </a>
-        <a href="rss?level=WARNING" class="yui-button link-button">
-            <span class="leading-icon">
-              <l:icon src="symbol-rss" />
-            </span>
+        <a href="rss?level=WARNING" class="jenkins-button jenkins-button--tertiary">
+            <l:icon src="symbol-rss" />
             <span>${%WARNING}</span>
         </a>
     </div>

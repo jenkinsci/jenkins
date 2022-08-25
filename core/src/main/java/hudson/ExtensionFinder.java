@@ -179,8 +179,8 @@ public abstract class ExtensionFinder implements ExtensionPoint {
      * from here.
      *
      * <p>
-     * See https://bugs.openjdk.java.net/browse/JDK-4993813 for how to force a class initialization.
-     * Also see http://kohsuke.org/2010/09/01/deadlock-that-you-cant-avoid/ for how class initialization
+     * See <a href="https://bugs.openjdk.org/browse/JDK-4993813">JDK-4993813</a> for how to force a class initialization.
+     * Also see <a href="https://kohsuke.org/2010/09/01/deadlock-that-you-cant-avoid/">this blog post</a> for how class initialization
      * can results in a dead lock.
      */
     public void scout(Class extensionType, Hudson hudson) {

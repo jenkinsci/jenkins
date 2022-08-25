@@ -1025,11 +1025,7 @@ public class UpdateSite {
             switch (this.type) {
                 case CORE:
                     VersionNumber current = Jenkins.getVersion();
-
-                    if (!isRelevantToVersion(current)) {
-                        return false;
-                    }
-                    return true;
+                    return isRelevantToVersion(current);
                 case PLUGIN:
 
                     // check whether plugin is installed

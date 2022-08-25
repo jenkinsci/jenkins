@@ -29,7 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Represents an order-preserving tag cloud (http://en.wikipedia.org/wiki/Tag_cloud)
+ * Represents an order-preserving <a href="https://en.wikipedia.org/wiki/Tag_cloud">tag cloud</a>
  * where each keyword gets a weight and displayed according to their weight.
  *
  * TODO: define a view on its own.

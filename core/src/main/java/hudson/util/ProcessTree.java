@@ -29,6 +29,7 @@ import static hudson.util.jna.GNUCLibrary.LIBC;
 import static java.util.logging.Level.FINER;
 import static java.util.logging.Level.FINEST;
 
+import com.google.common.primitives.Ints;
 import com.sun.jna.LastErrorException;
 import com.sun.jna.Memory;
 import com.sun.jna.Native;
@@ -56,9 +57,6 @@ import java.io.InputStream;
 import java.io.ObjectStreamException;
 import java.io.RandomAccessFile;
 import java.io.Serializable;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
@@ -69,7 +67,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Optional;
 import java.util.SortedMap;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
@@ -78,7 +75,6 @@ import java.util.logging.Logger;
 import jenkins.agents.AgentComputerUtil;
 import jenkins.security.SlaveToMasterCallable;
 import jenkins.util.SystemProperties;
-import jenkins.util.java.JavaUtils;
 import org.apache.commons.io.FileUtils;
 import org.jenkinsci.remoting.SerializableOnlyOverRemoting;
 import org.jvnet.winp.WinProcess;
@@ -756,7 +752,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
         @CheckForNull
         @Override
         public OSProcess get(@NonNull Process proc) {
-            return get(UnixReflection.pid(proc));
+            return get(Ints.checkedCast(proc.pid()));
         }
 
         @Override
@@ -824,33 +820,20 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
         private void kill(long deadline) throws InterruptedException {
             if (getVeto() != null)
                 return;
-            try {
-                int pid = getPid();
-                LOGGER.fine("Killing pid=" + pid);
-                UnixReflection.destroy(pid);
-                // after sending SIGTERM, wait for the process to cease to exist
-                int sleepTime = 10; // initially we sleep briefly, then sleep up to 1sec
-                File status = getFile("status");
-                do {
-                    if (!status.exists()) {
-                        break; // status is gone, process therefore as well
-                    }
+            int pid = getPid();
+            LOGGER.fine("Killing pid=" + pid);
+            ProcessHandle.of(pid).ifPresent(ProcessHandle::destroy);
+            // after sending SIGTERM, wait for the process to cease to exist
+            int sleepTime = 10; // initially we sleep briefly, then sleep up to 1sec
+            File status = getFile("status");
+            do {
+                if (!status.exists()) {
+                    break; // status is gone, process therefore as well
+                }
 
-                    Thread.sleep(sleepTime);
-                    sleepTime = Math.min(sleepTime * 2, 1000);
-                } while (System.nanoTime() < deadline);
-            } catch (IllegalAccessException e) {
-                // this is impossible
-                IllegalAccessError x = new IllegalAccessError();
-                x.initCause(e);
-                throw x;
-            } catch (InvocationTargetException e) {
-                // tunnel serious errors
-                if (e.getTargetException() instanceof Error)
-                    throw (Error) e.getTargetException();
-                // otherwise log and let go. I need to see when this happens
-                LOGGER.log(Level.INFO, "Failed to terminate pid=" + getPid(), e);
-            }
+                Thread.sleep(sleepTime);
+                sleepTime = Math.min(sleepTime * 2, 1000);
+            } while (System.nanoTime() < deadline);
             killByKiller();
         }
 
@@ -885,91 +868,6 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
         @NonNull
         public abstract List<String> getArguments();
     }
-
-    //TODO: can be replaced by multi-release JAR
-    /**
-     * Reflection used in the Unix support.
-     */
-    private static final class UnixReflection {
-        /**
-         * Field to access the PID of the process.
-         * Required for Java 8 and older JVMs.
-         */
-        private static final Field JAVA8_PID_FIELD;
-
-        /**
-         * Field to access the PID of the process.
-         * Required for Java 9 and above until this is replaced by multi-release JAR.
-         */
-        private static final Method JAVA9_PID_METHOD;
-
-        /**
-         * Method to destroy a process, given pid.
-         *
-         * Looking at the JavaSE source code, this is using SIGTERM (15)
-         */
-        private static final Method JAVA8_DESTROY_PROCESS;
-        private static final Method JAVA_9_PROCESSHANDLE_OF;
-        private static final Method JAVA_9_PROCESSHANDLE_DESTROY;
-
-        static {
-            try {
-                if (JavaUtils.isRunningWithPostJava8()) {
-                    Class<?> clazz = Process.class;
-                    JAVA9_PID_METHOD = clazz.getMethod("pid");
-                    JAVA8_PID_FIELD = null;
-                    Class<?> processHandleClazz = Class.forName("java.lang.ProcessHandle");
-                    JAVA_9_PROCESSHANDLE_OF = processHandleClazz.getMethod("of", long.class);
-                    JAVA_9_PROCESSHANDLE_DESTROY = processHandleClazz.getMethod("destroy");
-                    JAVA8_DESTROY_PROCESS = null;
-                } else {
-                    Class<?> clazz = Class.forName("java.lang.UNIXProcess");
-                    JAVA8_PID_FIELD = clazz.getDeclaredField("pid");
-                    JAVA8_PID_FIELD.setAccessible(true);
-                    JAVA9_PID_METHOD = null;
-
-                    JAVA8_DESTROY_PROCESS = clazz.getDeclaredMethod("destroyProcess", int.class, boolean.class);
-                    JAVA8_DESTROY_PROCESS.setAccessible(true);
-                    JAVA_9_PROCESSHANDLE_OF = null;
-                    JAVA_9_PROCESSHANDLE_DESTROY = null;
-                }
-            } catch (ClassNotFoundException | NoSuchFieldException | NoSuchMethodException e) {
-                throw new LinkageError("Cannot initialize reflection for Unix Processes", e);
-            }
-        }
-
-        public static void destroy(int pid) throws IllegalAccessException,
-                InvocationTargetException {
-            if (JAVA8_DESTROY_PROCESS != null) {
-                JAVA8_DESTROY_PROCESS.invoke(null, pid, false);
-            } else {
-                final Optional handle = (Optional) JAVA_9_PROCESSHANDLE_OF.invoke(null, pid);
-                if (handle.isPresent()) {
-                    JAVA_9_PROCESSHANDLE_DESTROY.invoke(handle.get());
-                }
-            }
-        }
-
-        //TODO: We ideally need to update ProcessTree APIs to Support Long (JENKINS-53799).
-        public static int pid(@NonNull Process proc) {
-            try {
-                if (JAVA8_PID_FIELD != null) {
-                    return JAVA8_PID_FIELD.getInt(proc);
-                } else {
-                    long pid = (long) JAVA9_PID_METHOD.invoke(proc);
-                    if (pid > Integer.MAX_VALUE) {
-                        throw new IllegalAccessError("Java 9+ support error (JENKINS-53799). PID is out of Jenkins API bounds: " + pid);
-                    }
-                    return (int) pid;
-                }
-            } catch (IllegalAccessException | InvocationTargetException e) { // impossible
-                IllegalAccessError x = new IllegalAccessError();
-                x.initCause(e);
-                throw x;
-            }
-        }
-    }
-
 
     static class Linux extends ProcfsUnix {
         Linux(boolean vetoersExist) {
