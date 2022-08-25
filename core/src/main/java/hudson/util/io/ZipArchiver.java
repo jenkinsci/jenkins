@@ -35,6 +35,7 @@ import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.LinkOption;
 import java.nio.file.OpenOption;
+import java.nio.file.attribute.BasicFileAttributes;
 import org.apache.commons.lang.StringUtils;
 import org.apache.tools.zip.Zip64Mode;
 import org.apache.tools.zip.ZipEntry;
@@ -81,19 +82,20 @@ final class ZipArchiver extends Archiver {
         // by forward-slashes (/)
         String relativePath = _relativePath.replace('\\', '/');
 
-        if (f.isDirectory()) {
+        BasicFileAttributes basicFileAttributes = Files.readAttributes(Util.fileToPath(f), BasicFileAttributes.class);
+        if (basicFileAttributes.isDirectory()) {
             ZipEntry dirZipEntry = new ZipEntry(this.prefix + relativePath + '/');
             // Setting this bit explicitly is needed by some unzipping applications (see JENKINS-3294).
             dirZipEntry.setExternalAttributes(BITMASK_IS_DIRECTORY);
             if (mode != -1)   dirZipEntry.setUnixMode(mode);
-            dirZipEntry.setTime(f.lastModified());
+            dirZipEntry.setTime(basicFileAttributes.lastModifiedTime().toMillis());
             zip.putNextEntry(dirZipEntry);
             zip.closeEntry();
         } else {
             ZipEntry fileZipEntry = new ZipEntry(this.prefix + relativePath);
             if (mode != -1)   fileZipEntry.setUnixMode(mode);
-            fileZipEntry.setTime(f.lastModified());
-            fileZipEntry.setSize(f.length());
+            fileZipEntry.setTime(basicFileAttributes.lastModifiedTime().toMillis());
+            fileZipEntry.setSize(basicFileAttributes.size());
             zip.putNextEntry(fileZipEntry);
             try (InputStream in = Files.newInputStream(f.toPath(), openOptions)) {
                 int len;

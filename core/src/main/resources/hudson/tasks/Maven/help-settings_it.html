@@ -1,25 +1,43 @@
 <div>
-  L'elemento <code>settings</code> nel file <code>settings.xml</code> contiene
-  degli elementi utilizzati per definire valori che configurano l'esecuzione
-  di Maven in vari modi, come accade per il file <code>pom.xml</code>, ma
-  non dovrebbe essere incorporato in un progetto specifico o distribuito
+  L'elemento
+  <code>settings</code>
+  nel file
+  <code>settings.xml</code>
+  contiene degli elementi utilizzati per definire valori che configurano
+  l'esecuzione di Maven in vari modi, come accade per il file
+  <code>pom.xml</code>
+  , ma non dovrebbe essere incorporato in un progetto specifico o distribuito
   pubblicamente. Questi elementi includono valori come il percorso del
   repository locale, server repository remoti alternativi e informazioni di
   autenticazione.
-  <br>
-  Ci sono due percorsi dove può essere collocato un file <code>settings.xml</code>
+  <br />
+  Ci sono due percorsi dove può essere collocato un file
+  <code>settings.xml</code>
   per impostazione predefinita:
 
   <ul>
-    <li>Il percorso di installazione di Maven - impostazione predefinita: <code>$M2_HOME/conf/settings.xml</code></li>
-    <li>Il percorso di installazione utente - impostazione predefinita: <code>${user.home}/.m2/settings.xml</code></li>
+    <li>
+      Il percorso di installazione di Maven - impostazione predefinita:
+      <code>$M2_HOME/conf/settings.xml</code>
+    </li>
+    <li>
+      Il percorso di installazione utente - impostazione predefinita:
+      <code>${user.home}/.m2/settings.xml</code>
+    </li>
   </ul>
 
-  Il primo file <code>settings.xml</code> contiene quelle che vengono chiamate
-  impostazioni globali, il secondo quelle a cui si fa riferimento come
-  impostazioni utente. Se esistono entrambi i file, i loro contenuti vengono
-  uniti e prevarranno le impostazioni del file <code>settings.xml</code>
+  Il primo file
+  <code>settings.xml</code>
+  contiene quelle che vengono chiamate impostazioni globali, il secondo quelle a
+  cui si fa riferimento come impostazioni utente. Se esistono entrambi i file, i
+  loro contenuti vengono uniti e prevarranno le impostazioni del file
+  <code>settings.xml</code>
   dell'utente.
   <p>
-  Si veda anche: <a href="https://maven.apache.org/settings.html">Informazioni di riferimento <code>settings.xml</code></a>
+    Si veda anche:
+    <a href="https://maven.apache.org/settings.html">
+      Informazioni di riferimento
+      <code>settings.xml</code>
+    </a>
+  </p>
 </div>
