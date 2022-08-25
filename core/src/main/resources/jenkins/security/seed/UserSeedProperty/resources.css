@@ -22,13 +22,13 @@
  * THE SOFTWARE.
  */
 .user-seed-panel .seed-message {
-    margin-bottom: 5px;
-} 
+  margin-bottom: 5px;
+}
 .user-seed-panel .display-after-reset {
-    display: none;
+  display: none;
 }
 .user-seed-panel .display-after-reset.visible {
-    display: block;
-    margin-top: 5px;
-    margin-bottom: 5px;
+  display: block;
+  margin-top: 5px;
+  margin-bottom: 5px;
 }
