@@ -1,31 +1,46 @@
-<div> 
-  Jenkins kann &quot;Fingerabdr&uuml;cke&quot; von Dateien aufzeichnen (in den meisten F&auml;llen von 
-  JAR-Dateien), um nachzuvollziehen, wann in welchen Builds diese Dateien  
-  erstellt oder verwendet wurden. Wenn Sie untereinander abh&auml;ngige Projekte in 
-  Jenkins bauen, k&ouml;nnen Sie dadurch schnell Antworten finden auf Fragen wie: 
+<div>
+  Jenkins kann &quot;Fingerabdr&uuml;cke&quot; von Dateien aufzeichnen (in den
+  meisten F&auml;llen von JAR-Dateien), um nachzuvollziehen, wann in welchen
+  Builds diese Dateien erstellt oder verwendet wurden. Wenn Sie untereinander
+  abh&auml;ngige Projekte in Jenkins bauen, k&ouml;nnen Sie dadurch schnell
+  Antworten finden auf Fragen wie:
   <ul>
     <li>
-      Ich habe <code>foo.jar</code> auf meiner Festplatte - aber aus welchem Build
-      des Projekts FOO stammt es? 
+      Ich habe
+      <code>foo.jar</code>
+      auf meiner Festplatte - aber aus welchem Build des Projekts FOO stammt es?
     </li>
     <li>
-      Mein Projekt BAR hängt von <code>foo.jar</code> des Projekts FOO ab.
+      Mein Projekt BAR hängt von
+      <code>foo.jar</code>
+      des Projekts FOO ab.
     </li>
-    <li><ul>
-      <li>
-        Welcher Build von <code>foo.jar</code> wurde in BAR #51 verwendet?
-      </li>
-      <li>
-        Welcher Build von BAR beinhaltet meine Fehlerkorrektur für
-        <code>foo.jar</code> #32?
-      </li>
-    </ul></li>
+    <li>
+      <ul>
+        <li>
+          Welcher Build von
+          <code>foo.jar</code>
+          wurde in BAR #51 verwendet?
+        </li>
+        <li>
+          Welcher Build von BAR beinhaltet meine Fehlerkorrektur für
+          <code>foo.jar</code>
+          #32?
+        </li>
+      </ul>
+    </li>
   </ul>
 
-  <p> 
-  Um dieses Merkmal zu n&uuml;tzen, m&uuml;ssen alle Projekte (also nicht nur das 
-  Projekt, in dem eine Datei produziert wird, sondern alle Projekte, welche 
-  die Datei verwenden) diese Funktion verwenden und Fingerabdr&uuml;cke aufzeichnen.
   <p>
-  <a href="https://www.jenkins.io/redirect/fingerprint">Weitere Informationen (auf Englisch)</a>
+    Um dieses Merkmal zu n&uuml;tzen, m&uuml;ssen alle Projekte (also nicht nur
+    das Projekt, in dem eine Datei produziert wird, sondern alle Projekte,
+    welche die Datei verwenden) diese Funktion verwenden und Fingerabdr&uuml;cke
+    aufzeichnen.
+  </p>
+
+  <p>
+    <a href="https://www.jenkins.io/redirect/fingerprint">
+      Weitere Informationen (auf Englisch)
+    </a>
+  </p>
 </div>

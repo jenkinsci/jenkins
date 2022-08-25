@@ -2,29 +2,24 @@
   Steuert, wie Jenkins Builds an diesen Knoten zuweist.
 
   <dl>
-    <dt><b>
-      Diesen Knoten so viel wie möglich verwenden
-    </b></dt>
+    <dt><b>Diesen Knoten so viel wie möglich verwenden</b></dt>
     <dd>
-      Dies ist die Vorgabe- und Normaleinstellung.
-      In diesem Modus verwendet Jenkins den Knoten ohne Einschränkungen.
-      Wann immer ein Build ansteht, der von diesem Knoten übernommen 
-      werden kann, wird Jenkins den Knoten verwenden.
+      Dies ist die Vorgabe- und Normaleinstellung. In diesem Modus verwendet
+      Jenkins den Knoten ohne Einschränkungen. Wann immer ein Build ansteht, der
+      von diesem Knoten übernommen werden kann, wird Jenkins den Knoten
+      verwenden.
     </dd>
 
-    <dt><b>
-      Diesen Knoten exklusiv für gebundene Jobs reservieren
-    </b></dt>
+    <dt><b>Diesen Knoten exklusiv für gebundene Jobs reservieren</b></dt>
     <dd>
       In diesem Modus wird Jenkins auf diesem Knoten nur dann einen Build
-      starten, wenn das Projekt explizit an diesen Knoten gebunden wurde.
-    
-      Damit können Sie einen Agenten-Knoten für bestimmte Jobs reservieren.
-      Beispiel: Um Leistungsmessungen kontinuierlich per Jenkins durchzuführen,
-      legen Sie die Anzahl von Build-Prozessoren auf 1 fest, so dass zu jedem
-      Zeitpunkt nur jeweils ein Leistungstest durchgeführt wird. Gleichzeitig
-      blockiert der Build-Prozessor keine Builds, die auch auf anderen 
-      Knoten durchgeführt werden können.
+      starten, wenn das Projekt explizit an diesen Knoten gebunden wurde. Damit
+      können Sie einen Agenten-Knoten für bestimmte Jobs reservieren. Beispiel:
+      Um Leistungsmessungen kontinuierlich per Jenkins durchzuführen, legen Sie
+      die Anzahl von Build-Prozessoren auf 1 fest, so dass zu jedem Zeitpunkt
+      nur jeweils ein Leistungstest durchgeführt wird. Gleichzeitig blockiert
+      der Build-Prozessor keine Builds, die auch auf anderen Knoten durchgeführt
+      werden können.
     </dd>
   </dl>
 </div>
