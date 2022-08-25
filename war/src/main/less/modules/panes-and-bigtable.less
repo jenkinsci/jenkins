@@ -5,7 +5,8 @@
   border-radius: var(--table-border-radius);
 }
 
-.pane-header, .pane-footer {
+.pane-header,
+.pane-footer {
   padding: 8px 0;
   color: var(--pane-header-text-color);
   background: var(--pane-header-bg);
@@ -58,7 +59,9 @@ table.stripped-odd tr:nth-child(odd) {
   background: var(--even-row-color);
 }
 
-table.stripped tr:hover, table.stripped-even tr:hover, table.stripped-odd tr:hover {
+table.stripped tr:hover,
+table.stripped-even tr:hover,
+table.stripped-odd tr:hover {
   background: var(--table-striped-bg--hover) !important;
 }
 
@@ -89,12 +92,14 @@ table.bigtable {
 }
 
 // Keep this for tables still wrapped by .pane-frame
-.pane-frame table:not(.jenkins-table), .pane-frame .bigtable tr {
+.pane-frame table:not(.jenkins-table),
+.pane-frame .bigtable tr {
   border: none; /* Border will be provided by the pane-frame */
 }
 
 // Avoid overriding .pane-header cells inside .bigtables with wrong styles
-.bigtable .pane-header, .bigtable th {
+.bigtable .pane-header,
+.bigtable th {
   font-weight: var(--bigtable-header-font-weight);
   color: var(--bigtable-header-text-color);
   background: var(--bigtable-header-bg);
@@ -114,36 +119,43 @@ table.bigtable {
   }
 }
 
-.bigtable tfoot th, .bigtable .sortbottom th {
+.bigtable tfoot th,
+.bigtable .sortbottom th {
   color: var(--text-color);
   background-color: var(--background);
 }
 
 .bigtable td {
-  border-top: var(--bigtable-border-width) solid var(--bigtable-row-border-color);
+  border-top: var(--bigtable-border-width) solid
+    var(--bigtable-row-border-color);
   vertical-align: middle;
 }
 
 .bigtable tr:last-child td {
-  border-bottom: var(--bigtable-border-width) solid var(--bigtable-row-border-color);
+  border-bottom: var(--bigtable-border-width) solid
+    var(--bigtable-row-border-color);
 }
 
-.bigtable td, .bigtable th {
+.bigtable td,
+.bigtable th {
   padding: var(--bigtable-cell-padding-y) var(--bigtable-cell-padding-x);
 }
 
-.bigtable .pane-header, .bigtable .pane-footer {
+.bigtable .pane-header,
+.bigtable .pane-footer {
   border-radius: 0;
 }
 
 /* ========================= sortable table ========================= */
-table.bigtable.sortable a.sortheader, table.bigtable.sortable span.sortarrow {
+table.bigtable.sortable a.sortheader,
+table.bigtable.sortable span.sortarrow {
   color: var(--bigtable-header-text-color);
 }
 
 /* ========================= Bigtable variants ========================= */
 
-.bigtable--compact th, .bigtable--compact td {
+.bigtable--compact th,
+.bigtable--compact td {
   padding-top: 0.25rem;
   padding-bottom: 0.25rem;
 }

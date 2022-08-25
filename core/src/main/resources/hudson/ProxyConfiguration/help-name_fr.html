@@ -1,15 +1,22 @@
 <div>
-  Si votre serveur Jenkins se trouve derrière un firewall, qu'il n'a pas d'accès direct à internet et
-  que la JVM de votre serveur n'est pas configurée de façon à permettre l'accès à internet (voir
-  <a  href="https://docs.oracle.com/javase/8/docs/technotes/guides/net/properties.html">les propriétés réseau du JDK pour plus d'informations</a>),
-  vous pouvez spécifier le nom d'un serveur proxy HTTP pour permettre à Jenkins
-  d'installer des plugins pour vous.
-  Notez que Jenkins utilise HTTPS pour communiquer avec le serveur de mise à jour pour télécharger les plugins.
+  Si votre serveur Jenkins se trouve derrière un firewall, qu'il n'a pas d'accès
+  direct à internet et que la JVM de votre serveur n'est pas configurée de façon
+  à permettre l'accès à internet (voir
+  <a
+    href="https://docs.oracle.com/javase/8/docs/technotes/guides/net/properties.html"
+  >
+    les propriétés réseau du JDK pour plus d'informations
+  </a>
+  ), vous pouvez spécifier le nom d'un serveur proxy HTTP pour permettre à
+  Jenkins d'installer des plugins pour vous. Notez que Jenkins utilise HTTPS
+  pour communiquer avec le serveur de mise à jour pour télécharger les plugins.
 
   <p>
-  Si ce champ est vide Jenkins tentera de se
-  connecter directement au site.
+    Si ce champ est vide Jenkins tentera de se connecter directement au site.
+  </p>
 
   <p>
-  Si vous ne savez pas quelle valeur indiquer, regardez la configuration proxy de votre navigateur web.
+    Si vous ne savez pas quelle valeur indiquer, regardez la configuration proxy
+    de votre navigateur web.
+  </p>
 </div>
