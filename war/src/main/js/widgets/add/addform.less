@@ -1,7 +1,6 @@
-@import '../../../less/abstracts/theme.less';
+@import "../../../less/abstracts/theme.less";
 
 #add-item-panel {
-
   form > .header {
     position: relative;
     border: 1px solid var(--input-border);
@@ -33,10 +32,10 @@
       background: var(--add-item-btn-decorator-bg-color);
       text-align: center;
       z-index: 10;
-      display:flex;
-      align-items:center;
+      display: flex;
+      align-items: center;
 
-      input[type=checkbox] {
+      input[type="checkbox"] {
         width: auto;
         min-width: auto;
         margin-right: 0px;
@@ -72,7 +71,7 @@
       /* This is needed because <s:textbox /> included YUI styles and we need to override this one */
       font-family: var(--font-family-sans) !important;
 
-      input[type=radio] {
+      input[type="radio"] {
         display: none;
       }
 
@@ -92,7 +91,8 @@
     }
   }
 
-  .add-item-name, .add-item-copy {
+  .add-item-name,
+  .add-item-copy {
     .input-help {
       color: #666;
       font-style: italic;
@@ -111,7 +111,6 @@
     }
   }
 
-
   .icon {
     position: absolute;
     left: 10px;
@@ -121,7 +120,7 @@
     background: var(--input-color);
     border: 1px solid #6699cc;
     border-radius: 50%;
-    opacity: .9;
+    opacity: 0.9;
 
     img {
       position: relative;
@@ -129,7 +128,7 @@
   }
 
   .icon:before {
-    content: ' ';
+    content: " ";
     display: block;
     position: absolute;
     top: 0;
@@ -138,7 +137,7 @@
     height: 24px;
     border-top-left-radius: 24px;
     border-top-right-radius: 24px;
-    background: #C0D8E2;
+    background: #c0d8e2;
   }
 
   .default-icon {
@@ -154,7 +153,7 @@
     font-size: 175%;
     color: #ffffff;
     text-shadow: rgba(0, 0, 0, 0.25) 0 -1px 1px;
-    opacity: .75;
+    opacity: 0.75;
 
     .b {
       text-transform: lowercase;
@@ -163,51 +162,36 @@
 
   .c-D33833 {
     border: 1px solid #900;
-    box-shadow:
-      inset #900 0 0 1px,
-      inset #fff 0 0 0 1px,
-      0 5px 3px -2px rgba(0, 0, 0, 0.25),
-      inset -5px -5px 10px 2px #903,
-      inset -5px -10px 15px 14px #D33833
+    box-shadow: inset #900 0 0 1px, inset #fff 0 0 0 1px,
+      0 5px 3px -2px rgba(0, 0, 0, 0.25), inset -5px -5px 10px 2px #903,
+      inset -5px -10px 15px 14px #d33833;
   }
 
   .c-6D6B6D {
     border: 1px solid #000;
-    box-shadow:
-      inset #333 0 0 1px,
-      inset #fff 0 0 0 1px,
-      0 5px 3px -2px rgba(0, 0, 0, 0.25),
-      inset -5px -5px 10px 2px #222,
-      inset -5px -10px 15px 14px #555
+    box-shadow: inset #333 0 0 1px, inset #fff 0 0 0 1px,
+      0 5px 3px -2px rgba(0, 0, 0, 0.25), inset -5px -5px 10px 2px #222,
+      inset -5px -10px 15px 14px #555;
   }
 
   .c-335061 {
     border: 1px solid #356;
-    box-shadow:
-      inset #024 0 0 1px,
-      inset #fff 0 0 0 1px,
-      0 5px 3px -2px rgba(0, 0, 0, 0.25),
-      inset -5px -5px 10px 2px #012,
-      inset -5px -10px 15px 14px #335061
+    box-shadow: inset #024 0 0 1px, inset #fff 0 0 0 1px,
+      0 5px 3px -2px rgba(0, 0, 0, 0.25), inset -5px -5px 10px 2px #012,
+      inset -5px -10px 15px 14px #335061;
   }
 
   .c-49728B {
     border: 1px solid #036;
-    box-shadow:
-      inset #036 0 0 1px,
-      inset #fff 0 0 0 1px,
-      0 5px 3px -2px rgba(0, 0, 0, 0.25),
-      inset -5px -5px 10px 2px #036,
-      inset -5px -10px 15px 14px #49728B
+    box-shadow: inset #036 0 0 1px, inset #fff 0 0 0 1px,
+      0 5px 3px -2px rgba(0, 0, 0, 0.25), inset -5px -5px 10px 2px #036,
+      inset -5px -10px 15px 14px #49728b;
   }
 
   .c-6699CC {
     border: 1px solid #6699cc;
-    box-shadow:
-      inset #003399 0 0 1px,
-      inset #ffffff 0 0 0 1px,
-      0 5px 3px -2px rgba(0, 0, 0, 0.25),
-      inset -5px -5px 10px 2px #336699,
+    box-shadow: inset #003399 0 0 1px, inset #ffffff 0 0 0 1px,
+      0 5px 3px -2px rgba(0, 0, 0, 0.25), inset -5px -5px 10px 2px #336699,
       inset -5px -10px 15px 14px #6699cc;
   }
 
@@ -261,10 +245,10 @@
       padding: 0 10px 10px 10px;
     }
   }
-
 }
 
-.j-item-options li, .j-item-options {
+.j-item-options li,
+.j-item-options {
   display: block;
   margin: 0;
   padding: 0;
@@ -273,8 +257,8 @@
 }
 
 .j-item-options {
-
-  li:hover, li:focus {
+  li:hover,
+  li:focus {
     border-color: var(--input-border);
     background: var(--light-bg-color--hover);
     outline: 0;
@@ -291,13 +275,13 @@
     -moz-user-select: text;
     -ms-user-select: text;
     user-select: text;
-    -moz-transition: .5s;
-    -webkit-transition: .5s;
-    -o-transition: .5s;
-    transition: .5s;
+    -moz-transition: 0.5s;
+    -webkit-transition: 0.5s;
+    -o-transition: 0.5s;
+    transition: 0.5s;
 
     .icon {
-      opacity: 1
+      opacity: 1;
     }
   }
 
