@@ -24,6 +24,7 @@
 
 package hudson.model;
 
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.notNullValue;
@@ -490,7 +491,7 @@ public class FingerprintTest {
         Fingerprint fp = getFingerprint(build, "test.txt");
         File sourceFile = new File(rule.jenkins.getRootDir(), "config.xml");
         File targetFile = new File(rule.jenkins.getRootDir(), "../cf3.xml");
-        Util.copyFile(sourceFile, targetFile);
+        Files.copy(sourceFile.toPath(), targetFile.toPath(), REPLACE_EXISTING);
         targetFile.deleteOnExit();
         String first = fp.getHashString().substring(0, 2);
         String second = fp.getHashString().substring(2, 4);
@@ -517,7 +518,7 @@ public class FingerprintTest {
         Fingerprint fp = getFingerprint(build, "test.txt");
         File sourceFile = new File(rule.jenkins.getRootDir(), "config.xml");
         File targetFile = new File(rule.jenkins.getRootDir(), "../cf4.xml");
-        Util.copyFile(sourceFile, targetFile);
+        Files.copy(sourceFile.toPath(), targetFile.toPath(), REPLACE_EXISTING);
         targetFile.deleteOnExit();
         String first = fp.getHashString().substring(0, 2);
         String second = fp.getHashString().substring(2, 4);
