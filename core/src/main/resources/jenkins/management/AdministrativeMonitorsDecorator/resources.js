@@ -1,100 +1,108 @@
 (function () {
-    function initializeAmMonitor(amMonitorRoot, options) {
-        var button = amMonitorRoot.querySelector('.am-button');
-        var amList = amMonitorRoot.querySelector('.am-list');
-        if (button === null || amList === null) return null;
+  function initializeAmMonitor(amMonitorRoot, options) {
+    var button = amMonitorRoot.querySelector(".am-button");
+    var amList = amMonitorRoot.querySelector(".am-list");
+    if (button === null || amList === null) return null;
 
-        var url = button.getAttribute('data-href');
+    var url = button.getAttribute("data-href");
 
-        function onClose(e) {
-            var list = amList;
-            var el = e.target;
-            while (el) {
-                if (el === list) {
-                    return; // clicked in the list
-                }
-                el = el.parentElement;
-            }
-            close();
+    function onClose(e) {
+      var list = amList;
+      var el = e.target;
+      while (el) {
+        if (el === list) {
+          return; // clicked in the list
         }
-        function onEscClose(e) {
-            var escapeKeyCode = 27;
-            if (e.keyCode === escapeKeyCode) {
-                close();
-            }
-        }
-
-        function show() {
-            if (options.closeAll) options.closeAll();
-
-            new Ajax.Request(url, {
-                method: "GET",
-                onSuccess: function(rsp) {
-                    var popupContent = rsp.responseText;
-                    amList.innerHTML = popupContent;
-                    amMonitorRoot.classList.add('visible');
-                    document.addEventListener('click', onClose);
-                    document.addEventListener('keydown', onEscClose);
-
-                    // Applies all initialization code to the elements within the popup
-                    // Among other things, this sets the CSRF crumb to the forms within
-                    Behaviour.applySubtree(amList);
-                }
-            });
-        }
-
-        function close() {
-            amMonitorRoot.classList.remove('visible');
-            amList.innerHTML = '';
-            document.removeEventListener('click', onClose);
-            document.removeEventListener('keydown', onEscClose);
-        }
-
-        function toggle(e) {
-            if (amMonitorRoot.classList.contains('visible')) {
-                close();
-            } else {
-                show();
-            }
-            e.preventDefault();
-        }
-
-        function startListeners() {
-            button.addEventListener('click', toggle);
-        }
-
-        return {
-            close: close,
-            startListeners: startListeners,
-        }
+        el = el.parentElement;
+      }
+      close();
+    }
+    function onEscClose(e) {
+      var escapeKeyCode = 27;
+      if (e.keyCode === escapeKeyCode) {
+        close();
+      }
     }
 
-    document.addEventListener('DOMContentLoaded', function () {
-        var monitorWidgets;
+    function show() {
+      if (options.closeAll) options.closeAll();
 
-        function closeAll() {
-            monitorWidgets.forEach(function (widget) {
-                widget.close();
-            })
-        }
+      new Ajax.Request(url, {
+        method: "GET",
+        onSuccess: function (rsp) {
+          var popupContent = rsp.responseText;
+          amList.innerHTML = popupContent;
+          amMonitorRoot.classList.add("visible");
+          document.addEventListener("click", onClose);
+          document.addEventListener("keydown", onEscClose);
 
-        var normalMonitors = initializeAmMonitor(document.getElementById('visible-am-container'), {
-            closeAll: closeAll,
-        });
-        var securityMonitors = initializeAmMonitor(document.getElementById('visible-sec-am-container'), {
-            closeAll: closeAll,
-        });
-        monitorWidgets = [normalMonitors, securityMonitors].filter(function (widget) {
-            return widget !== null;
-        });
+          // Applies all initialization code to the elements within the popup
+          // Among other things, this sets the CSRF crumb to the forms within
+          Behaviour.applySubtree(amList);
+        },
+      });
+    }
 
-        monitorWidgets.forEach(function (widget) {
-            widget.startListeners();
-        });
+    function close() {
+      amMonitorRoot.classList.remove("visible");
+      amList.innerHTML = "";
+      document.removeEventListener("click", onClose);
+      document.removeEventListener("keydown", onEscClose);
+    }
+
+    function toggle(e) {
+      if (amMonitorRoot.classList.contains("visible")) {
+        close();
+      } else {
+        show();
+      }
+      e.preventDefault();
+    }
+
+    function startListeners() {
+      button.addEventListener("click", toggle);
+    }
+
+    return {
+      close: close,
+      startListeners: startListeners,
+    };
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    var monitorWidgets;
+
+    function closeAll() {
+      monitorWidgets.forEach(function (widget) {
+        widget.close();
+      });
+    }
+
+    var normalMonitors = initializeAmMonitor(
+      document.getElementById("visible-am-container"),
+      {
+        closeAll: closeAll,
+      }
+    );
+    var securityMonitors = initializeAmMonitor(
+      document.getElementById("visible-sec-am-container"),
+      {
+        closeAll: closeAll,
+      }
+    );
+    monitorWidgets = [normalMonitors, securityMonitors].filter(function (
+      widget
+    ) {
+      return widget !== null;
     });
+
+    monitorWidgets.forEach(function (widget) {
+      widget.startListeners();
+    });
+  });
 })();
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener("DOMContentLoaded", function () {
   var amContainer = document.getElementById("visible-am-container");
   var amInsertion = document.getElementById("visible-am-insertion");
 

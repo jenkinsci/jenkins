@@ -4,10 +4,7 @@
     ":disableDependencyDashboard",
     ":semanticCommitsDisabled"
   ],
-  "enabledManagers": [
-    "npm",
-    "regex"
-  ],
+  "enabledManagers": ["npm", "regex"],
   "packageRules": [
     {
       "matchDatasources": ["npm"],
@@ -28,15 +25,12 @@
   ],
   "regexManagers": [
     {
-      "fileMatch": ["war\/pom.xml"],
-      "matchStrings": ["<node.version>(?<currentValue>.*?)<\/node.version>"],
+      "fileMatch": ["war/pom.xml"],
+      "matchStrings": ["<node.version>(?<currentValue>.*?)</node.version>"],
       "depNameTemplate": "node",
       "datasourceTemplate": "npm"
     }
   ],
-  "labels": [
-    "dependencies",
-    "skip-changelog"
-  ],
+  "labels": ["dependencies", "skip-changelog"],
   "rebaseWhen": "conflicted"
 }
