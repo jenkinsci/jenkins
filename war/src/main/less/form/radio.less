@@ -14,11 +14,13 @@
   &__input {
     position: absolute;
     opacity: 0;
+    margin-top: 10px;
 
     &:hover {
       & + label {
         &::before {
-          box-shadow: 0 0 0 10px transparent, inset 0 0 0 5px var(--input-border-hover);
+          box-shadow: 0 0 0 10px transparent,
+            inset 0 0 0 5px var(--input-border-hover);
         }
       }
     }
@@ -28,7 +30,8 @@
       & + label {
         &::before {
           transition: box-shadow var(--elastic-transition);
-          box-shadow: 0 0 0 5px var(--focus-input-glow), inset 0 0 0 8px var(--focus-input-border);
+          box-shadow: 0 0 0 5px var(--focus-input-glow),
+            inset 0 0 0 8px var(--focus-input-border);
         }
       }
     }
@@ -36,7 +39,8 @@
     &:checked {
       & + label {
         &::before {
-          box-shadow: 0 0 0 10px transparent, inset 0 0 0 8px var(--focus-input-border);
+          box-shadow: 0 0 0 10px transparent,
+            inset 0 0 0 8px var(--focus-input-border);
         }
       }
     }
@@ -54,7 +58,9 @@
 
   &__label {
     position: relative;
+    top: -5px;
     display: inline-block;
+    margin-top: 10px;
     margin-bottom: 0;
     padding: 0 0 5px 32px;
     cursor: pointer;
@@ -68,14 +74,11 @@
       position: absolute;
       top: 0;
       left: 0;
-
       width: 22px;
       height: 22px;
-
       border-radius: 50%;
       background: transparent;
       box-shadow: 0 0 0 10px transparent, inset 0 0 0 2px var(--input-border);
-
       transition: box-shadow var(--standard-transition);
     }
   }
@@ -88,7 +91,7 @@
 
   &__children {
     position: relative;
-    margin-top: 0;
+    margin-top: 10px;
     opacity: 0;
     padding-left: 32px;
     transition: var(--standard-transition);
@@ -116,7 +119,6 @@
 
   &__input:checked + &__label + &__children {
     visibility: visible;
-    margin-top: 10px;
     opacity: 1;
     max-height: none;
   }

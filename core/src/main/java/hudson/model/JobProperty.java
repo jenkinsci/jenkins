@@ -36,6 +36,7 @@ import hudson.tasks.Publisher;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import jenkins.model.Jenkins;
 import jenkins.model.OptionalJobProperty;
 import net.sf.json.JSONObject;
@@ -134,7 +135,7 @@ public abstract class JobProperty<J extends Job<?, ?>> implements Reconfigurable
         // delegate to getJobAction (singular) for backward compatible behavior
         Action a = getJobAction(job);
         if (a == null)    return Collections.emptyList();
-        return Collections.singletonList(a);
+        return List.of(a);
     }
 
 //

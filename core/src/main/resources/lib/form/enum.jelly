@@ -40,13 +40,14 @@ THE SOFTWARE.
   <j:if test="${attrs.field==null}">
     <j:set target="${attrs}" property="field" value="${entry.field}" />
   </j:if>
-
-  <select class="jenkins-input" name="${attrs.field}">
-    <j:forEach var="it" items="${descriptor.getPropertyType(instance,attrs.field).getEnumConstants()}">
-      <f:option value="${it.name()}" selected="${instance[attrs.field]!=null ? it==instance[attrs.field] : it.name()==attrs.default}">
-        <d:invokeBody />
-      </f:option>
-    </j:forEach>
-  </select>
+  <div class="jenkins-select">
+    <select class="jenkins-select__input" name="${attrs.field}">
+      <j:forEach var="it" items="${descriptor.getPropertyType(instance,attrs.field).getEnumConstants()}">
+        <f:option value="${it.name()}" selected="${instance[attrs.field]!=null ? it==instance[attrs.field] : it.name()==attrs.default}">
+          <d:invokeBody />
+        </f:option>
+      </j:forEach>
+    </select>
+  </div>
   <!-- TODO consider customizedFields -->
 </j:jelly>

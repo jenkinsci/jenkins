@@ -33,58 +33,30 @@ THE SOFTWARE.
     </j:when>
     <j:when test="${it.offline and !it.temporarilyOffline}">
       <j:if test="${h.hasPermission(it, it.CONNECT)}">
-        <p>
-          ${%Connect agent to Jenkins one of these ways:}
-        </p>
-        <ul>
-          <j:if test="${it.launcher.javaWebStartSupported}">
-            <li>
-              <p>
-                <a href="jenkins-agent.jnlp" id="jnlp-link">
-                  <img src="${imagesURL}/webstart.gif" alt="${%launch agent}" />
-                </a>
-                ${%Launch agent from browser}
-              </p>
-            </li>
-          </j:if>
+          <j:set var="jenkinsURL" value="${h.inferHudsonURL(request)}"/>
           <j:choose>
             <j:when test="${it.ACL.hasPermission(app.ANONYMOUS, it.CONNECT)}">
-              <li>
                 <p>
                   ${%Run from agent command line:}
                 </p>
-                <pre>javaws ${h.inferHudsonURL(request)}${it.url}jenkins-agent.jnlp</pre>
-              </li>
-              <li>
-                <p>
-                  ${%Or if the agent is headless:}
-                </p>
-                <pre>java${it.launcher.vmargs == null ? '' : ' ' + it.launcher.vmargs} -jar <a href="${rootURL}/jnlpJars/agent.jar">agent.jar</a> -jnlpUrl ${h.inferHudsonURL(request)}${it.url}jenkins-agent.jnlp ${it.launcher.getWorkDirOptions(it)}</pre>
-              </li>
+                <pre>curl -sO ${jenkinsURL}jnlpJars/agent.jar
+java -jar <a href="${rootURL}/jnlpJars/agent.jar">agent.jar</a> -jnlpUrl ${jenkinsURL}${it.url}jenkins-agent.jnlp ${it.launcher.getWorkDirOptions(it)}</pre>
             </j:when>
             <j:otherwise>
-              <li>
                 <p>
                   ${%Run from agent command line:}
                 </p>
                 <!-- TODO conceal secret w/ JS if possible -->
-                <pre>java${it.launcher.vmargs == null ? '' : ' ' + it.launcher.vmargs} -jar <a href="${rootURL}/jnlpJars/agent.jar">agent.jar</a> -jnlpUrl ${h.inferHudsonURL(request)}${it.url}jenkins-agent.jnlp -secret ${it.jnlpMac} ${it.launcher.getWorkDirOptions(it)}</pre>
+                <pre>curl -sO ${jenkinsURL}jnlpJars/agent.jar
+java -jar <a href="${rootURL}/jnlpJars/agent.jar">agent.jar</a> -jnlpUrl ${jenkinsURL}${it.url}jenkins-agent.jnlp -secret ${it.jnlpMac} ${it.launcher.getWorkDirOptions(it)}</pre>
                 <p>
-                  ${%Run from agent command line, with the secret stored in a file:}
+                  ${%Or run from agent command line, with the secret stored in a file:}
                 </p>
                 <pre>echo ${it.jnlpMac} > secret-file
-java${it.launcher.vmargs == null ? '' : ' ' + it.launcher.vmargs} -jar <a href="${rootURL}/jnlpJars/agent.jar">agent.jar</a> -jnlpUrl ${h.inferHudsonURL(request)}${it.url}jenkins-agent.jnlp -secret @secret-file ${it.launcher.getWorkDirOptions(it)}</pre>
-              </li>
+curl -sO ${jenkinsURL}jnlpJars/agent.jar
+java -jar <a href="${rootURL}/jnlpJars/agent.jar">agent.jar</a> -jnlpUrl ${jenkinsURL}${it.url}jenkins-agent.jnlp -secret @secret-file ${it.launcher.getWorkDirOptions(it)}</pre>
             </j:otherwise>
           </j:choose>
-        </ul>
-        <!--
-        <p>
-          <a href="custom-jnlp" style="margin-left:3em">
-            (tweak launch parameters)
-          </a>
-        </p>
-        -->
       </j:if>
     </j:when>
     <j:otherwise>

@@ -9,6 +9,7 @@ import hudson.TcpSlaveAgentListener.ConnectionFromCurrentPeer;
 import hudson.model.Computer;
 import hudson.model.Slave;
 import hudson.remoting.Channel;
+import hudson.remoting.ChannelClosedException;
 import hudson.slaves.ComputerLauncher;
 import hudson.slaves.ComputerLauncherFilter;
 import hudson.slaves.DelegatingComputerLauncher;
@@ -149,14 +150,14 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
     }
 
     @Override
+    @SuppressFBWarnings(value = "OS_OPEN_STREAM", justification = "Closed by hudson.slaves.SlaveComputer#kill")
     public void beforeChannel(@NonNull JnlpConnectionState event) {
         DefaultJnlpSlaveReceiver.State state = event.getStash(DefaultJnlpSlaveReceiver.State.class);
         final SlaveComputer computer = state.getNode();
         final OutputStream log = computer.openLogFile();
         state.setLog(log);
-        try (PrintWriter logw = new PrintWriter(new OutputStreamWriter(log, /* TODO switch agent logs to UTF-8 */ Charset.defaultCharset()), true)) {
-            logw.println("Inbound agent connected from " + event.getRemoteEndpointDescription());
-        }
+        PrintWriter logw = new PrintWriter(new OutputStreamWriter(log, /* TODO switch agent logs to UTF-8 */ Charset.defaultCharset()), true); // Closed by hudson.slaves.SlaveComputer#kill
+        logw.println("Inbound agent connected from " + event.getRemoteEndpointDescription());
         for (ChannelConfigurator cc : ChannelConfigurator.all()) {
             cc.onChannelBuilding(event.getChannelBuilder(), computer);
         }
@@ -188,7 +189,7 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
     public void channelClosed(@NonNull JnlpConnectionState event) {
         final String nodeName = event.getProperty(JnlpConnectionState.CLIENT_NAME_KEY);
         IOException cause = event.getCloseCause();
-        if (cause instanceof ClosedChannelException) {
+        if (cause instanceof ClosedChannelException || cause instanceof ChannelClosedException) {
             LOGGER.log(Level.INFO, "{0} for {1} terminated: {2}", new Object[] {Thread.currentThread().getName(), nodeName, cause});
         } else if (cause != null) {
             LOGGER.log(Level.WARNING, Thread.currentThread().getName() + " for " + nodeName + " terminated",

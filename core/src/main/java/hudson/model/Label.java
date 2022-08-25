@@ -185,7 +185,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
      * {@link LabelAtom}s.
      */
     public final boolean matches(final Collection<LabelAtom> labels) {
-        return matches(new VariableResolver<Boolean>() {
+        return matches(new VariableResolver<>() {
             @Override
             public Boolean resolve(String name) {
                 for (LabelAtom a : labels)
@@ -619,7 +619,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
     /**
      * Collects all the atoms in the expression.
      */
-    private static final LabelVisitor<Void, Set<LabelAtom>> ATOM_COLLECTOR = new LabelVisitor<Void, Set<LabelAtom>>() {
+    private static final LabelVisitor<Void, Set<LabelAtom>> ATOM_COLLECTOR = new LabelVisitor<>() {
         @Override
         public Void onAtom(LabelAtom a, Set<LabelAtom> param) {
             param.add(a);

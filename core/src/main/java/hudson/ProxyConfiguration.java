@@ -26,6 +26,7 @@ package hudson;
 
 import com.thoughtworks.xstream.XStream;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.Descriptor;
 import hudson.model.Saveable;
@@ -400,6 +401,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
 
     @Extension @Symbol("proxy")
     public static class DescriptorImpl extends Descriptor<ProxyConfiguration> {
+        @NonNull
         @Override
         public String getDisplayName() {
             return "Proxy Configuration";

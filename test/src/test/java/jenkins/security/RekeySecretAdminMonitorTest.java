@@ -22,11 +22,12 @@ import java.io.IOException;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Base64;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import javax.crypto.Cipher;
-import org.apache.commons.io.FileUtils;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.Before;
@@ -89,13 +90,13 @@ public class RekeySecretAdminMonitorTest {
 
     private static void putSomeOldData(File dir) throws Exception {
         File xml = new File(dir, "foo.xml");
-        FileUtils.writeStringToFile(xml, "<foo>" + encryptOld(TEST_KEY) + "</foo>", StandardCharsets.UTF_8);
+        Files.writeString(xml.toPath(), "<foo>" + encryptOld(TEST_KEY) + "</foo>", StandardCharsets.UTF_8);
     }
 
     private void verifyRewrite(File dir) throws Exception {
-        File xml = new File(dir, "foo.xml");
+        Path xml = dir.toPath().resolve("foo.xml");
         Pattern pattern = Pattern.compile("<foo>" + plain_regex_match + "</foo>");
-        MatcherAssert.assertThat(FileUtils.readFileToString(xml, StandardCharsets.UTF_8).trim(), Matchers.matchesRegex(pattern));
+        MatcherAssert.assertThat(Files.readString(xml, StandardCharsets.UTF_8).trim(), Matchers.matchesRegex(pattern));
     }
 
     @WithTestSecret

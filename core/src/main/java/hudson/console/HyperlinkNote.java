@@ -24,6 +24,7 @@
 
 package hudson.console;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.MarkupText;
 import hudson.Util;
@@ -102,6 +103,7 @@ public class HyperlinkNote extends ConsoleNote {
 
     @Extension @Symbol("hyperlink")
     public static class DescriptorImpl extends ConsoleAnnotationDescriptor {
+        @NonNull
         @Override
         public String getDisplayName() {
             return "Hyperlinks";

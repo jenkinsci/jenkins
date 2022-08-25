@@ -24,6 +24,7 @@
 
 package hudson.tasks._maven;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.MarkupText;
 import hudson.console.ConsoleAnnotationDescriptor;
@@ -52,6 +53,7 @@ public class MavenMojoNote extends ConsoleNote {
 
     @Extension @Symbol("mavenMojos")
     public static final class DescriptorImpl extends ConsoleAnnotationDescriptor {
+        @NonNull
         @Override
         public String getDisplayName() {
             return "Maven Mojos";

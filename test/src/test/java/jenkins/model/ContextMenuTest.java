@@ -55,7 +55,7 @@ public class ContextMenuTest {
     @Issue("JENKINS-19173")
     @Test public void contextMenuVisibility() throws Exception {
         final FreeStyleProject p = j.createFreeStyleProject("p");
-        Callable<ContextMenu> doContextMenu = new Callable<ContextMenu>() {
+        Callable<ContextMenu> doContextMenu = new Callable<>() {
             @Override public ContextMenu call() throws Exception {
                 return p.doContextMenu(Stapler.getCurrentRequest(), Stapler.getCurrentResponse());
             }

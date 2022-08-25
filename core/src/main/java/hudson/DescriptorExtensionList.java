@@ -251,7 +251,7 @@ public class DescriptorExtensionList<T extends Describable<T>, D extends Descrip
      * List up all the legacy instances currently in use.
      */
     public static Iterable<Descriptor> listLegacyInstances() {
-        return new Iterable<Descriptor>() {
+        return new Iterable<>() {
             @Override
             public Iterator<Descriptor> iterator() {
                 return new AdaptedIterator<ExtensionComponent<Descriptor>, Descriptor>(

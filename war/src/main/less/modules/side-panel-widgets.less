@@ -1,4 +1,4 @@
-@import '../abstracts/theme.less';
+@import "../abstracts/theme.less";
 
 #side-panel .pane-frame {
   border-radius: 0;
@@ -111,7 +111,7 @@
  * Build history
  */
 .build-row {
-  padding: 3px 4px 3px 4px;
+  padding: 3px 4px;
 }
 
 .build-row.model-link-active {
@@ -123,7 +123,7 @@
 }
 
 .build-row-cell .pane.build-name {
-  width: 25%;
+  width: 30%;
   font-weight: bold;
   vertical-align: top;
 }
@@ -133,7 +133,7 @@
 }
 
 .build-row-cell .pane.build-controls {
-  width: 25%;
+  width: 20%;
   text-align: right;
 }
 
@@ -223,7 +223,7 @@
 }
 
 .build-row-cell .indent-multiline {
-  padding-left: 20px !important;  /* Sync changes with func expandControlsTo50Percent in hudson-behavior.js */
+  padding-left: 20px !important; /* Sync changes with func expandControlsTo50Percent in hudson-behavior.js */
 }
 
 .build-row.overflow-checked .build-row-cell {
@@ -256,7 +256,7 @@
 .jenkins-pane__header--build-history {
   display: grid;
   grid-template-columns: auto 1fr auto;
-  font-weight: bold!important;
+  font-weight: bold !important;
 
   .jenkins-table__cell--tight {
     width: auto;

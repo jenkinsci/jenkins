@@ -47,7 +47,7 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 public class JavaVersionRecommendationAdminMonitor extends AdministrativeMonitor {
 
     public JavaVersionRecommendationAdminMonitor() {
-        super(JavaVersionRecommendationAdminMonitor.class.getName() + "-2");
+        super(JavaVersionRecommendationAdminMonitor.class.getName() + "-3");
     }
 
     private static Boolean disabled = SystemProperties.getBoolean(JavaVersionRecommendationAdminMonitor.class.getName() + ".disabled", false);

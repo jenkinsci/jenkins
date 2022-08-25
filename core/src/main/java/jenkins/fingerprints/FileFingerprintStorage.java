@@ -368,6 +368,7 @@ public class FileFingerprintStorage extends FingerprintStorage {
     @Extension
     public static class DescriptorImpl extends FingerprintStorageDescriptor {
 
+        @NonNull
         @Override
         public String getDisplayName() {
             return Messages.FileFingerprintStorage_DisplayName();

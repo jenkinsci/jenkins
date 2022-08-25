@@ -28,6 +28,7 @@ package hudson.tasks;
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.FINER;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.model.Job;
 import hudson.model.Run;
@@ -296,6 +297,7 @@ public class LogRotator extends BuildDiscarder {
 
     @Extension @Symbol("logRotator")
     public static final class LRDescriptor extends BuildDiscarderDescriptor {
+        @NonNull
         @Override
         public String getDisplayName() {
             return "Log Rotation";
