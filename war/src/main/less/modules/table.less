@@ -6,6 +6,7 @@
   overflow: hidden;
   box-shadow: 0 0 0 5px var(--table-background);
   margin: 5px;
+
   --table-padding: 0.55rem;
 
   * {
@@ -56,7 +57,9 @@
 
       & > td {
         vertical-align: middle;
-        padding: var(--table-padding) 0 var(--table-padding) var(--table-padding);
+        padding:
+ var(--table-padding) 0 var(--table-padding)
+          var(--table-padding);
         font-weight: 500;
         height: 50px;
 
@@ -80,6 +83,7 @@
       & > td:first-of-type {
         border-radius: var(--table-border-radius) 0 0 var(--table-body-radius);
       }
+
       & > td:last-of-type {
         border-radius: 0 var(--table-border-radius) var(--table-body-radius) 0;
       }
@@ -89,6 +93,7 @@
       & > td:first-of-type {
         border-radius: var(--table-body-radius) 0 0 var(--table-border-radius);
       }
+
       & > td:last-of-type {
         border-radius: 0 var(--table-body-radius) var(--table-border-radius) 0;
       }
@@ -102,8 +107,8 @@
   }
 
   &__cell--tight {
-    padding-left: 0!important;
-    text-align: center!important;
+    padding-left: 0 !important;
+    text-align: center !important;
     white-space: nowrap;
     width: 60px;
   }
@@ -116,28 +121,37 @@
     display: inline-flex;
   }
 
-  &__link, .sortheader {
+  &__link,
+  .sortheader {
     display: inline-flex;
   }
 
-  &__button, &__link, &__icon {
-    svg, .build-status-icon__wrapper, img {
-      width: 24px!important;
-      height: 24px!important;
+  &__button,
+  &__link,
+  &__icon {
+    svg,
+    .build-status-icon__wrapper,
+    img {
+      width: 24px !important;
+      height: 24px !important;
     }
   }
 
   &--medium {
-    --table-padding: 0.4rem!important;
+    --table-padding: 0.4rem !important;
 
     tbody > tr > td {
       height: 40px;
     }
 
-    .jenkins-table__button, .jenkins-table__link, .jenkins-table__icon {
-      svg, .build-status-icon__wrapper, img {
-        width: 20px!important;
-        height: 20px!important;
+    .jenkins-table__button,
+    .jenkins-table__link,
+    .jenkins-table__icon {
+      svg,
+      .build-status-icon__wrapper,
+      img {
+        width: 20px !important;
+        height: 20px !important;
       }
     }
   }
@@ -149,19 +163,26 @@
       height: 34px;
     }
 
-    .jenkins-table__button, .jenkins-table__link, .jenkins-table__icon {
-      svg, .build-status-icon__wrapper, img {
-        width: 16px!important;
-        height: 16px!important;
+    .jenkins-table__button,
+    .jenkins-table__link,
+    .jenkins-table__icon {
+      svg,
+      .build-status-icon__wrapper,
+      img {
+        width: 16px !important;
+        height: 16px !important;
       }
     }
   }
 
-  &__button, &__link {
-    color: var(--link-color)!important;
+  &__button,
+  &__link {
+    color: var(--link-color) !important;
   }
 
-  &__button, .sortheader, &__link {
+  &__button,
+  .sortheader,
+  &__link {
     align-items: center;
     justify-content: center;
     appearance: none;
@@ -176,8 +197,8 @@
     font-weight: inherit;
     font-size: inherit;
     background: transparent;
-    text-decoration: none!important;
-    line-height: 1!important;
+    text-decoration: none !important;
+    line-height: 1 !important;
 
     &::before {
       content: "";
@@ -195,35 +216,36 @@
 
     &:hover {
       &::before {
-        opacity: 0.05!important;
+        opacity: 0.05 !important;
         border-radius: 5px;
         background: var(--text-color);
       }
     }
 
-    &:focus, &:active {
+    &:focus,
+    &:active {
       &::before {
-        opacity: 0.1!important;
+        opacity: 0.1 !important;
         border-radius: 5px;
         background: var(--text-color);
       }
     }
 
     &--green {
-      color: var(--green)!important;
+      color: var(--green) !important;
     }
 
     &--orange {
-      color: var(--orange)!important;
+      color: var(--orange) !important;
     }
 
     &--red {
-      color: var(--red)!important;
+      color: var(--red) !important;
     }
   }
 
   &__badge {
-    margin-left: 1rem!important;
+    margin-left: 1rem !important;
 
     &::before {
       top: -5px;

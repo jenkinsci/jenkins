@@ -21,14 +21,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-.signup{
+.signup {
   max-width: 480px;
   width: 100%;
 }
 .signupIntroDefault {
   text-align: center;
 }
-form.signup{
+form.signup {
   max-width: 480px;
   width: 100%;
   text-align: left;
@@ -42,7 +42,7 @@ form.signup{
   width: unset;
   margin-right: 5px;
 }
-.combinedElement{
+.combinedElement {
   display: flex;
   align-items: center;
 }
