@@ -21,31 +21,39 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-(function(){
-    document.addEventListener("DOMContentLoaded", function() {
-        const graphLocation = document.querySelector('.js-load-graph');
-        if (graphLocation) {
-            const type = graphLocation.getAttribute("data-graph-type");
-            const parentSelector = graphLocation.getAttribute("data-graph-parent-selector");
-            const baseUrl = graphLocation.getAttribute("data-graph-base-url");
-            const graphAlt = graphLocation.getAttribute("data-graph-alt");
-            
-            const parent = document.querySelector(parentSelector);
-            if (parent) {
-                const availableWidth = parent.offsetWidth;
-                const padding = 30;
-                // for some browsers, the perfect width is not enough
-                const quirkyBrowserAdjustment = 15;
-                const graphWidth = availableWidth - padding - quirkyBrowserAdjustment;
+(function () {
+  document.addEventListener("DOMContentLoaded", function () {
+    const graphLocation = document.querySelector(".js-load-graph");
+    if (graphLocation) {
+      const type = graphLocation.getAttribute("data-graph-type");
+      const parentSelector = graphLocation.getAttribute(
+        "data-graph-parent-selector"
+      );
+      const baseUrl = graphLocation.getAttribute("data-graph-base-url");
+      const graphAlt = graphLocation.getAttribute("data-graph-alt");
 
-                // type in {sec10, min, hour}
-                const graphUrl = baseUrl + "/graph?type=" + type + "&width=" + graphWidth + "&height=500";
-                const graphImgTag = document.createElement("img");
-                graphImgTag.src = graphUrl;
-                graphImgTag.srcset = graphUrl + "&scale=2 2x";
-                graphImgTag.alt = graphAlt;
-                graphLocation.appendChild(graphImgTag);
-            }
-        }
-    });
+      const parent = document.querySelector(parentSelector);
+      if (parent) {
+        const availableWidth = parent.offsetWidth;
+        const padding = 30;
+        // for some browsers, the perfect width is not enough
+        const quirkyBrowserAdjustment = 15;
+        const graphWidth = availableWidth - padding - quirkyBrowserAdjustment;
+
+        // type in {sec10, min, hour}
+        const graphUrl =
+          baseUrl +
+          "/graph?type=" +
+          type +
+          "&width=" +
+          graphWidth +
+          "&height=500";
+        const graphImgTag = document.createElement("img");
+        graphImgTag.src = graphUrl;
+        graphImgTag.srcset = graphUrl + "&scale=2 2x";
+        graphImgTag.alt = graphAlt;
+        graphLocation.appendChild(graphImgTag);
+      }
+    }
+  });
 })();
