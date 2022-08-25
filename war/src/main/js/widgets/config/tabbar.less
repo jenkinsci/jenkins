@@ -2,36 +2,37 @@
  * Tab bar specific rules.
  */
 
-@import '../../../less/abstracts/theme.less';
+@import "../../../less/abstracts/theme.less";
 
 .jenkins-config-widgets {
   position: relative;
-  border:1px solid var(--input-border);
-  border-bottom:none;
+  border: 1px solid var(--input-border);
+  border-bottom: none;
   background: var(--light-grey);
-  min-height:2.5em;
+  min-height: 2.5em;
   .border-radius-top(@border-radius);
-  z-index:5;
+  z-index: 5;
 
-  nav:before, nav:after {
+  nav:before,
+  nav:after {
     display: none;
   }
 
-  :hover .noTabs{
-    color:#bbb;
+  :hover .noTabs {
+    color: #bbb;
   }
   .noTabs:hover,
   .showTabs:hover {
     opacity: 0.8;
-    background:#bbb;
-    color:var(--light-bg-color);
-     text-shadow:none;
+    background: #bbb;
+    color: var(--light-bg-color);
+    text-shadow: none;
   }
 
   @find-container-width: 200px;
   .find-container {
-    margin:0;
-    display:none;
+    margin: 0;
+    display: none;
   }
 
   .showTabs,
@@ -45,7 +46,7 @@
     text-shadow: var(--brightest-bg-color 0 1px 2px);
     font-size: var(--font-size-sm);
     padding: 3px 7px;
-    display:none;
+    display: none;
   }
 
   .form-config.tabBarFrame {
@@ -72,19 +73,18 @@
       .tab:hover {
         background: var(--very-light-grey);
         color: var(--text-color-secondary);
-        border:1px solid var(--medium-grey);
-        border-bottom:1px solid var(--bright-bg-color);
+        border: 1px solid var(--medium-grey);
+        border-bottom: 1px solid var(--bright-bg-color);
       }
       .tab.active {
         background: var(--background);
         color: var(--text-color);
         font-weight: bold;
         z-index: 2;
-        border:1px solid var(--medium-grey);
-        border-bottom:1px solid var(--bright-bg-color);
+        border: 1px solid var(--medium-grey);
+        border-bottom: 1px solid var(--bright-bg-color);
       }
     }
-
   }
 
   .form-config.tabBarFrame.mouse-over {
@@ -95,20 +95,18 @@
       opacity: 0.8;
     }
   }
-
 }
-#jenkins{
+#jenkins {
   .jenkins-config {
-    border:1px solid var(--input-border);
-    padding:10px;
-    border-top:none;
-    background:var(--bright-bg-color);
+    border: 1px solid var(--input-border);
+    padding: 10px;
+    border-top: none;
+    background: var(--bright-bg-color);
     .border-radius-bottom(@border-radius);
 
-    .showTabs{
-      display:block;
-      text-align:right;
-
+    .showTabs {
+      display: block;
+      text-align: right;
     }
 
     table {
@@ -143,9 +141,9 @@
       }
 
       // Input elements
-      input[type='email'].setting-input,
-      input[type='password'].setting-input,
-      input[type='text'].setting-input {
+      input[type="email"].setting-input,
+      input[type="password"].setting-input,
+      input[type="text"].setting-input {
         height: var(--input-line-height);
         line-height: var(--input-line-height);
         padding: 0 5px;
@@ -164,9 +162,9 @@
 
       // Bottom buttons
       .bottom-sticker-edge {
-        display:none;
+        display: none;
       }
-      .bottom-sticker-inner{
+      .bottom-sticker-inner {
         padding: 20px 10px 25px 20px;
         border-top-right-radius: 10px;
         border: 1px solid var(--configure-job-bottom-sticker-border-color);
@@ -174,21 +172,21 @@
       }
 
       .bottom-sticker,
-      #bottom-sticker{
+      #bottom-sticker {
         width: auto;
         margin-left: -10px;
         overflow: hidden;
         padding-bottom: 10px;
         margin: 30px 30px -25px -15px;
-        z-index:9;
+        z-index: 9;
 
-        .cover{
-          position:absolute;
-          top:0;
-          bottom:0;
-          left:0;
-          right:0;
-          z-index:2;
+        .cover {
+          position: absolute;
+          top: 0;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          z-index: 2;
         }
       }
 
@@ -221,9 +219,10 @@
 
       .repeated-chunk.hover {
         border-color: var(--line-blue);
-        box-shadow: 0 2px 10px var(--shade), inset 0 200px 200px -200px var(--brightest-bg-color);
+        box-shadow: 0 2px 10px var(--shade),
+          inset 0 200px 200px -200px var(--brightest-bg-color);
         position: relative;
-        z-index: 2
+        z-index: 2;
       }
 
       .repeated-chunk {
@@ -271,7 +270,7 @@
         }
 
         &:before {
-          content: 'X';
+          content: "X";
           font-weight: bold;
           position: absolute;
           display: block;
@@ -302,9 +301,9 @@
 }
 
 .yui-skin-sam .yuimenu {
-  z-index: 9999 !important
+  z-index: 9999 !important;
 }
 
 .yui-skin-sam .yui-button-disabled {
-  opacity: .75
+  opacity: 0.75;
 }

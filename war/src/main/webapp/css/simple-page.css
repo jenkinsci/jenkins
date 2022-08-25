@@ -25,7 +25,8 @@
 
 html {
   height: 100vh;
-  font-family: "LatoLatinWeb", "Lato", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: "LatoLatinWeb", "Lato", "Helvetica Neue", Helvetica, Arial,
+    sans-serif;
   font-size: 14px;
   line-height: 18px;
   color: #4a4a4a;
@@ -89,9 +90,9 @@ a {
   color: var(--text-color);
 }
 
-.simple-page input[type=text],
-.simple-page input[type=password],
-.simple-page input[type=submit] {
+.simple-page input[type="text"],
+.simple-page input[type="password"],
+.simple-page input[type="submit"] {
   width: 100%;
   box-sizing: border-box;
 }
@@ -103,7 +104,7 @@ a {
   margin-top: 16px;
 }
 
-.simple-page input[type=submit] {
+.simple-page input[type="submit"] {
   text-align: center;
 }
 
@@ -127,7 +128,7 @@ a {
 .simple-page .login .Checkbox-wrapper {
   margin-top: 20px;
 }
-#remember_me{
+#remember_me {
   width: unset;
   margin-right: 5px;
 }
@@ -146,13 +147,13 @@ a {
 }
 
 .layout-small {
-    font-size: 12px;
+  font-size: 12px;
 }
 
 .layout-medium {
-    font-size: 14px;
+  font-size: 14px;
 }
 
 .layout-large {
-    font-size: 18px;
+  font-size: 18px;
 }

@@ -74,12 +74,14 @@
   height: 1.25rem;
 }
 
-.tabBar .tab [type=radio] {
+.tabBar .tab [type="radio"] {
   display: none;
 }
 
 .tabBar .tab.active a {
-  border: var(--tab-link-border-width) solid var(--tab-link-checked-border-color);
+  border:
+ var(--tab-link-border-width) solid
+    var(--tab-link-checked-border-color);
   background: var(--tab-link-checked-bg);
   color: var(--tab-link-checked-text-color);
   z-index: 2;

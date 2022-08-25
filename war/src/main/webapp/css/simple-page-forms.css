@@ -72,7 +72,7 @@ fieldset[disabled] .Checkbox input ~ .Checkbox-text {
     box-shadow: inset 0 0 1px 3px var(--box-shadow);
   }
 }
-@supports (-ms-ime-align:auto) {
+@supports (-ms-ime-align: auto) {
   .Checkbox input[type="checkbox"]:focus + .Checkbox-indicator,
   .Checkbox.focus .Checkbox-indicator {
     box-shadow: inset 0 0 1px 3px rgba(0, 0, 0, 0.2);

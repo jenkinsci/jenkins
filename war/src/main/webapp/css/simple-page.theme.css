@@ -33,7 +33,7 @@ html {
 }
 
 .simple-page .logo {
-  background-image: url('../images/jenkins.svg');
+  background-image: url("../images/jenkins.svg");
   background-repeat: no-repeat;
   background-position: 50% 0;
   height: 130px;
@@ -57,13 +57,13 @@ html {
 
 .simple-page form .submit input:focus,
 .simple-page input.normal:focus {
-    border: solid 1px;
-    border-color: #3fb3f7;
-    border-color: var(--focus);
-    outline: 0;
+  border: solid 1px;
+  border-color: #3fb3f7;
+  border-color: var(--focus);
+  outline: 0;
 }
 
- .simple-page .danger {
+.simple-page .danger {
   border: 1px solid;
   border-color: #c4000a;
   border-color: var(--danger-color);
