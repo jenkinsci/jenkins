@@ -5,5 +5,8 @@ export function createElementFromHtml(html) {
 }
 
 export function toId(string) {
-  return string.trim().replace(/[\W_]+/g, "-").toLowerCase();
+  return string
+    .trim()
+    .replace(/[\W_]+/g, "-")
+    .toLowerCase();
 }
