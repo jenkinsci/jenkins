@@ -188,7 +188,7 @@ THE SOFTWARE.
       </div>
     </j:if>
 
-    <div id="page-body" class="clear">
+    <div id="page-body" class="app-page-body app-page-body--${layoutType} clear">
       <j:if test="${layoutType=='two-column'}">
         <div id="side-panel">
           <j:set var="mode" value="side-panel" />

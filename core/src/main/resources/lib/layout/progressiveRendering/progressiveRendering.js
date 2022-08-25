@@ -23,37 +23,45 @@
  */
 
 function progressivelyRender(handler, callback, statusId) {
-    function checkNews(response) {
-        var r = response.responseObject();
-        if (r.status == 'done') {
-            callback(r.data);
-            $(statusId).style.display = 'none';
-        } else if (r.status == 'canceled') {
-            // TODO ugly; replace with single tr of class=unknown?
-            $$('#' + statusId + ' .progress-bar-done')[0].innerHTML = 'Aborted.';
-        } else if (r.status == 'error') {
-            $$('#' + statusId + ' .progress-bar-done')[0].style.width = '100%';
-            $$('#' + statusId + ' .progress-bar-left')[0].style.width = '0%';
-            $(statusId).className = 'progress-bar red';
-        } else {
-            callback(r.data);
-            $$('#' + statusId + ' .progress-bar-done')[0].style.width = (100 * r.status) + '%';
-            $$('#' + statusId + ' .progress-bar-left')[0].style.width = (100 - 100 * r.status) + '%';
-            checkNewsLater(500);
-        }
+  function checkNews(response) {
+    var r = response.responseObject();
+    if (r.status == "done") {
+      callback(r.data);
+      $(statusId).style.display = "none";
+    } else if (r.status == "canceled") {
+      // TODO ugly; replace with single tr of class=unknown?
+      $$("#" + statusId + " .progress-bar-done")[0].innerHTML = "Aborted.";
+    } else if (r.status == "error") {
+      $$("#" + statusId + " .progress-bar-done")[0].style.width = "100%";
+      $$("#" + statusId + " .progress-bar-left")[0].style.width = "0%";
+      $(statusId).className = "progress-bar red";
+    } else {
+      callback(r.data);
+      $$("#" + statusId + " .progress-bar-done")[0].style.width =
+        100 * r.status + "%";
+      $$("#" + statusId + " .progress-bar-left")[0].style.width =
+        100 - 100 * r.status + "%";
+      checkNewsLater(500);
     }
-    function checkNewsLater(timeout) {
-        setTimeout(function() {
-            handler.news(checkNews);
-        }, timeout);
-    }
-    handler.start(function(response) {
-        checkNewsLater(0);
-    });
+  }
+  function checkNewsLater(timeout) {
+    setTimeout(function () {
+      handler.news(checkNews);
+    }, timeout);
+  }
+  handler.start(function () {
+    checkNewsLater(0);
+  });
 }
 
-document.addEventListener('DOMContentLoaded', function() {
- document.querySelectorAll('.progressive-rendering-information-holder').forEach(function (holder) {
-    progressivelyRender(window.proxy, window[holder.getAttribute('data-callback')], holder.getAttribute('data-id'));
-  });
+document.addEventListener("DOMContentLoaded", function () {
+  document
+    .querySelectorAll(".progressive-rendering-information-holder")
+    .forEach(function (holder) {
+      progressivelyRender(
+        window.proxy,
+        window[holder.getAttribute("data-callback")],
+        holder.getAttribute("data-id")
+      );
+    });
 });
