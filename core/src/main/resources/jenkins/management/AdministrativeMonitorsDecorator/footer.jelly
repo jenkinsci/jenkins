@@ -27,7 +27,7 @@ THE SOFTWARE.
 
     <j:if test="${activeMonitors != null and activeMonitors.size() > 0}">
         <st:adjunct includes="jenkins.management.AdministrativeMonitorsDecorator.resources"/>
-    
+
         <j:set var="activeNonSecurityAM" value="${it.filterNonSecurityAdministrativeMonitors(activeMonitors)}" />
         <j:set var="activeNonSecurityAMCount" value="${activeNonSecurityAM.size()}" />
         <j:set var="activeSecurityAM" value="${it.filterSecurityAdministrativeMonitors(activeMonitors)}" />
@@ -69,22 +69,5 @@ THE SOFTWARE.
                 </div>
             </j:if>
         </div>
-        <script type="text/javascript">
-            (function() {
-                var amContainer = document.getElementById("visible-am-container");
-                var amInsertion = document.getElementById("visible-am-insertion");
-
-                if (amInsertion) {
-                    amInsertion.appendChild(amContainer);
-                }
-
-                var secAmContainer = document.getElementById("visible-sec-am-container");
-                var secAmInsertion = document.getElementById("visible-sec-am-insertion");
-
-                if (secAmInsertion) {
-                    secAmInsertion.appendChild(secAmContainer);
-                }
-            })();
-        </script>
     </j:if>
 </j:jelly>
