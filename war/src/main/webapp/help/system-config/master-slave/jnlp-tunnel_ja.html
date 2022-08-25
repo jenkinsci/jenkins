@@ -1,18 +1,38 @@
 <div>
-    エージェントがJNLPで起動するとき、エージェントは通信チャネルを確立するために、Jenkinsのある特定のTCPポートに接続しようとします。
-    しかし、セキュリティに神経質なネットワークでは接続できないことがあります。
-    これは、Jenkinsがロードバランサーや
-    <a href="https://ja.wikipedia.org/wiki/%E9%9D%9E%E6%AD%A6%E8%A3%85%E5%9C%B0%E5%B8%AF_(%E3%82%B3%E3%83%B3%E3%83%94%E3%83%A5%E3%83%BC%E3%82%BF%E3%82%BB%E3%82%AD%E3%83%A5%E3%83%AA%E3%83%86%E3%82%A3)">DMZ</a>への
-    <a href="https://www.jenkins.io/doc/book/system-administration/reverse-proxy-configuration-apache/">Apacheリバースプロクシー</a>の背後にある場合などにも生じます。
+  エージェントがJNLPで起動するとき、エージェントは通信チャネルを確立するために、Jenkinsのある特定のTCPポートに接続しようとします。
+  しかし、セキュリティに神経質なネットワークでは接続できないことがあります。
+  これは、Jenkinsがロードバランサーや
+  <a
+    href="https://ja.wikipedia.org/wiki/%E9%9D%9E%E6%AD%A6%E8%A3%85%E5%9C%B0%E5%B8%AF_(%E3%82%B3%E3%83%B3%E3%83%94%E3%83%A5%E3%83%BC%E3%82%BF%E3%82%BB%E3%82%AD%E3%83%A5%E3%83%AA%E3%83%86%E3%82%A3)"
+  >
+    DMZ
+  </a>
+  への
+  <a
+    href="https://www.jenkins.io/doc/book/system-administration/reverse-proxy-configuration-apache/"
+  >
+    Apacheリバースプロクシー
+  </a>
+  の背後にある場合などにも生じます。
 
-    <p>
+  <p>
     このトンネルオプションを設定すると、コネクションを他のホストやポート経由にすることができ、上記のような状況で役に立ちます。
-    この項目には、"<code>ホスト:ポート</code>"、"<code>:ポート</code>"および "<code>ホスト:</code>"の形式で設定できます。
+    この項目には、"
+    <code>ホスト:ポート</code>
+    "、"
+    <code>:ポート</code>
+    "および "
+    <code>ホスト:</code>
+    "の形式で設定できます。
     一番最初の形式では、指定したホストのポートに接続します。このポートがコネクションをJenkinsのJNLPのエージェント用TCPポートにフォワードするように、
     ネットワークが設定されていることが前提です。
+  </p>
 
-    <p>
+  <p>
     残りの2つの形式では、設定していないホストもしくはポートの値に、デフォルトのホスト名やポート番号
     (すなわち、Jenkinsが動作しているホスト名やJenkinsがオープンしているTCPポート)を追加します。
-    特に、HTTPリバースプロクシーを使用していて、実際にはJenkinsが他のシステムで動作している場合には、"<code>ホスト:</code>"の形式は役に立ちます。
+    特に、HTTPリバースプロクシーを使用していて、実際にはJenkinsが他のシステムで動作している場合には、"
+    <code>ホスト:</code>
+    "の形式は役に立ちます。
+  </p>
 </div>
