@@ -5,7 +5,7 @@ module.exports = {
         es6: true
     },
     // Uses eslint default ruleset
-    extends: "eslint:recommended",
+    extends: ["eslint:recommended", "prettier"],
     plugins: [
         // Keeps the default level to warn to avoid breaking the current
         // CI build environment
