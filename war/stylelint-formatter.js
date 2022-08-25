@@ -1,13 +1,14 @@
 /* eslint-env node */
-const reporter = require('stylelint-checkstyle-reporter')
+// TODO remove this file once https://github.com/stylelint/stylelint/issues/6100 is released
+const reporter = require("stylelint-checkstyle-reporter");
 
 /**
- * @type {import('stylelint').Formatter}
+ * @type {import("stylelint").Formatter}
  */
 function formatter(results, returnValue) {
-  returnValue.output = reporter(results)
+  returnValue.output = reporter(results);
 
-  return returnValue.output
+  return returnValue.output;
 }
 
 module.exports = formatter;
