@@ -1,19 +1,24 @@
 <div>
   Se il server Jenkins è protetto da un firewall e non dispone di accesso
   diretto a Internet, e se la JVM del server non è configurata in modo
-  appropriato per consentire la connessione a Internet
-  (<a href="https://docs.oracle.com/javase/8/docs/technotes/guides/net/properties.html">
-  si vedano le proprietà di rete del JDK per ulteriori dettagli</a>), è
-  possibile specificare in questo campo il nome del server proxy HTTP per
-  consentire a Jenkins di installare componenti aggiuntivi per proprio conto.
-  Si noti che Jenkins utilizza HTTPS per comunicare con il Centro aggiornamenti
-  per scaricare i componenti aggiuntivi.
+  appropriato per consentire la connessione a Internet (
+  <a
+    href="https://docs.oracle.com/javase/8/docs/technotes/guides/net/properties.html"
+  >
+    si vedano le proprietà di rete del JDK per ulteriori dettagli
+  </a>
+  ), è possibile specificare in questo campo il nome del server proxy HTTP per
+  consentire a Jenkins di installare componenti aggiuntivi per proprio conto. Si
+  noti che Jenkins utilizza HTTPS per comunicare con il Centro aggiornamenti per
+  scaricare i componenti aggiuntivi.
 
   <p>
-  Se si lascia questo campo vuoto, Jenkins proverà a collegarsi a Internet
-  direttamente.
+    Se si lascia questo campo vuoto, Jenkins proverà a collegarsi a Internet
+    direttamente.
+  </p>
 
   <p>
-  Se non si è sicuri del valore da immettere, verificare la configurazione
-  proxy del browser.
+    Se non si è sicuri del valore da immettere, verificare la configurazione
+    proxy del browser.
+  </p>
 </div>
