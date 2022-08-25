@@ -1998,6 +1998,7 @@ function AutoScroller(scrollContainer) {
         left: scrollDiv.scrollLeft,
         behavior: "instant",
       });
+      scrollDiv.scrollTop = currentHeight;
     },
   };
 }
