@@ -1177,7 +1177,7 @@ function rowvgStartEachRow(recursive,f) {
 
     // Native browser resizing doesn't work for CodeMirror textboxes so let's create our own
     Behaviour.specify(".CodeMirror", "codemirror", ++p, function(codemirror) {
-      const MIN_HEIGHT = 200;
+      const MIN_HEIGHT = Math.min(200, codemirror.clientHeight);
 
       const resizer = document.createElement("div");
       resizer.className = "jenkins-codemirror-resizer";

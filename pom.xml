@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.84</version>
+    <version>1.86</version>
     <relativePath />
   </parent>
 
@@ -53,6 +53,7 @@ THE SOFTWARE.
     <module>bom</module>
     <module>websocket/spi</module>
     <module>websocket/jetty9</module>
+    <module>websocket/jetty10</module>
     <module>core</module>
     <module>war</module>
     <module>test</module>
@@ -73,12 +74,8 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.363</revision>
+    <revision>2.366</revision>
     <changelist>-SNAPSHOT</changelist>
-
-    <!-- *.html files are in UTF-8, and *.properties are in iso-8859-1, so this configuration is actually incorrect,
-    but this suppresses a warning from Maven, and as long as we don't do filtering we should be OK. -->
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
     <!-- configuration for patch tracker plugin  -->
     <project.patchManagement.system>github</project.patchManagement.system>
@@ -100,20 +97,13 @@ THE SOFTWARE.
 
     <access-modifier.version>1.27</access-modifier.version>
     <bridge-method-injector.version>1.23</bridge-method-injector.version>
-    <mockito.version>4.6.1</mockito.version>
-    <spotless.version>2.24.0</spotless.version>
+    <mockito.version>4.7.0</mockito.version>
+    <spotless.version>2.24.1</spotless.version>
   </properties>
 
   <dependencyManagement>
     <!-- any dependencies that can be used by plugins must be defined in the bom and not here -->
     <dependencies>
-      <dependency>
-        <groupId>org.junit</groupId>
-        <artifactId>junit-bom</artifactId>
-        <version>5.9.0</version>
-        <type>pom</type>
-        <scope>import</scope>
-      </dependency>
       <dependency>
         <!--  make sure these old servlet versions are never used by us or by any plugins which end up depending on this version -->
         <!--  plugin-pom tries to fudge servlet support to be compatible with cores < 2.0 and JTH which needs 3.x for jetty, and ends up causing issues with some IDEs -->
@@ -294,7 +284,7 @@ THE SOFTWARE.
             <dependency>
               <groupId>org.jvnet.maven-jellydoc-plugin</groupId>
               <artifactId>maven-jellydoc-plugin</artifactId>
-              <version>1.5</version>
+              <version>1.9</version>
             </dependency>
           </dependencies>
         </plugin>

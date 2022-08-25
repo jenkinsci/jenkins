@@ -1,288 +1,165 @@
-@import "../abstracts/theme.less";
+.jenkins-button {
+  --item-background--hover: var(--button-background--hover);
+  --item-background--active: var(--button-background--active);
+  --item-box-shadow--focus: var(--button-box-shadow--focus);
 
-// Button: variant mixins
+  .item();
 
-.button-danger() {
-  color: var(--btn-text-color);
-  background-color: var(--danger);
-  border-color: var(--danger);
-
-  &:hover, &:focus {
-    color: var(--btn-text-color);
-    background-color: var(--danger-hover);
-    border-color: var(--danger-hover);
-  }
-
-  &:focus {
-    box-shadow: 0 0 0 0.2rem var(--focus-btn-danger);
-  }
-
-  &:active {
-    color: var(--btn-text-color);
-    background-color: var(--danger-active);
-    border-color: var(--danger-active);
-  }
-}
-
-.button-primary() {
-  color: var(--btn-text-color);
-  background-color: var(--btn-primary-bg);
-  border-color: var(--btn-primary-bg);
-
-  &:hover, &:focus {
-    color: var(--btn-text-color);
-    background-color: var(--btn-primary-bg-hover);
-    border-color: var(--btn-primary-bg-hover);
-  }
-
-  &:focus {
-    box-shadow: 0 0 0 0.2rem var(--focus-btn-primary);
-  }
-
-  &:active {
-    color: var(--btn-text-color);
-    background-color: var(--btn-primary-bg-active);
-    border-color: var(--btn-primary-bg-active);
-  }
-}
-
-.button-secondary() {
-  color: var(--btn-secondary-color);
-  border-color: var(--btn-secondary-border);
-  background-color: var(--btn-secondary-bg);
-
-  &:focus {
-    color: var(--btn-secondary-color--focus);
-    border-color: var(--btn-secondary-border--focus);
-    background-color: var(--btn-secondary-bg--focus);
-    box-shadow: 0 0 0 0.2rem var(--focus-btn-secondary);
-  }
-
-  // Hover MUST be AFTER the focus declaration for this outlined button.
-  // Otherwise, the hover styles will not be applied when hovering over a focused element
-  &:hover {
-    color: var(--btn-secondary-color--hover);
-    border-color: var(--btn-secondary-border--hover);
-    background-color: var(--btn-secondary-bg--hover);
-  }
-
-  &:active {
-    color: var(--btn-secondary-color--active);
-    border-color: var(--btn-secondary-border--active);
-    background-color: var(--btn-secondary-bg--active);
-  }
-}
-
-.button-link {
-  color: var(--primary);
-  background-color: transparent;
-  border-color: transparent;
-  font-weight: var(--btn-link-font-weight);
-
-  &:hover, &:focus {
-    color: var(--btn-link-color--hover);
-    background-color: var(--btn-link-bg--hover);
-    border-color: var(--btn-link-bg--hover);
-  }
-
-  &:focus {
-    box-shadow: none;
-  }
-
-  &:active {
-    color: var(--btn-link-color--active);
-    background-color: var(--btn-link-bg--active);
-    border-color: var(--btn-link-bg--active);
-  }
-}
-
-.button-disabled {
-  opacity: 0.5;
-  pointer-events: none;
-}
-
-// Button styles
-
-.yui-button {
-  display: inline-block;
-}
-
-.yui-button .first-child {
-  display: block;
-}
-
-.yui-button button, input[type="button"], input[type="reset"], input[type="submit"], a.yui-button:link, a.yui-button:visited {
-  box-sizing: border-box;
-  // vertical padding:
-  // 0.375rem == 6px == 32px (target height) - 4px (borders) - 16 (line) / 2
-  padding: 0.375rem 1rem;
-  margin-right: 0.25rem;
-  margin-left: 0.25rem;
-  min-width: 4.5rem;
-  min-height: 2rem;
-  cursor: pointer;
-  user-select: none;
-  font-size: var(--btn-font-size);
-  line-height: var(--btn-line-height);
-  font-weight: var(--btn-font-weight);
-  text-align: center;
-  vertical-align: middle;
-  text-decoration: none;
-  border: 2px solid;
-  border-radius: 4px;
-  transition:
-  color 0.15s ease-in-out,
-  background-color 0.15s ease-in-out,
-  border-color 0.15s ease-in-out;
-
-  .button-secondary();
-
-  &:focus {
-    outline: none;
-  }
-
+  appearance: none;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  border: none;
+  outline: none;
+  margin: 0;
+  padding: 0.5rem 0.85rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-decoration: none !important;
+  background: transparent;
+  color: var(--text-color) !important;
+  border-radius: 0.66rem;
+  cursor: pointer;
+  min-height: 36px;
+  white-space: nowrap;
+  gap: 1ch;
 
-  & > span {
-    display: inline-block;
+  &::before {
+    background: var(--button-background);
   }
 
-  .svg-icon, i {
-    width: 1rem;
-    height: 1rem;
-    font-size: 1rem;
-    vertical-align: top;
-    flex-shrink: 1;
+  svg {
+    width: 1.1rem;
+    height: 1.1rem;
   }
 
-  .leading-icon {
-    display: flex;
-    margin-right: 0.25rem;
+  &:disabled {
+    pointer-events: none;
+    opacity: 0.5;
+    filter: saturate(0.6);
+  }
+}
 
-    svg {
-      width: 16px;
-      height: 16px;
+.jenkins-button--primary {
+  color: var(--button-color--primary) !important;
+  font-weight: 600;
+
+  &::before {
+    background: var(--primary) !important;
+  }
+
+  &::after {
+    box-shadow: 0 0 0 0.66rem var(--primary);
+    opacity: 0;
+  }
+
+  &:hover {
+    &::before {
+      opacity: 0.9;
     }
   }
 
-  .trailing-icon {
-    margin-left: 0.25rem;
+  &:active,
+  &:focus {
+    &::before {
+      opacity: 0.8;
+    }
+
+    &::after {
+      box-shadow: 0 0 0 0.33rem var(--primary);
+      opacity: 0.2;
+    }
   }
 }
 
-.yui-button.danger button, input[type="button"].danger, input[type="reset"].danger, input[type="submit"].danger {
-  .button-danger();
-}
-
-.yui-button.primary button, input[type="button"].primary, input[type="reset"].primary, input[type="submit"].primary {
-  .button-primary();
-}
-
-.yui-button.link-button button, input[type="button"].link-button, input[type="reset"].link-button, input[type="submit"].link-button {
-  .button-link();
-}
-
-.yui-button.large-button button, input[type="button"].large-button,
-input[type="reset"].large-button, input[type="submit"].large-button, a.yui-button.large-button {
-  // vertical padding
-  // 0.5rem == 8px == 40px (target height) - 4px (borders) - 20 (line) / 2
-  padding: 0.5rem 1rem;
-  min-width: 6.5rem;
-  min-height: 2.5rem;
-  font-size: var(--btn-large-font-size);
-  line-height: var(--btn-large-line-height);
-
-  .svg-icon, i {
-    vertical-align: top;
-    height: 1.25rem;
-    width: 1.25rem;
-    font-size: 1.25rem;
+.jenkins-button--tertiary {
+  &::before {
+    background: transparent;
   }
 }
 
-.yui-button-disabled button, .yui-button button:disabled, input[type="button"]:disabled,
-input[type="reset"]:disabled, input[type="submit"]:disabled, .yui-button-disabled input[type="button"],
-.yui-button-disabled input[type="reset"], .yui-button-disabled input[type="submit"] {
-  .button-disabled();
-}
+// Support for custom colors
+// Modifier classes must include 'color' in name to work
+.jenkins-button[class*="color"] {
+  background: transparent;
+  color: var(--color) !important;
 
-a.yui-button {
-  &.primary {
-    .button-primary();
+  &::before {
+    background: currentColor !important;
+    opacity: 0.1;
   }
 
-  &.danger {
-    .button-danger();
-  }
-
-  &.link-button {
-    .button-link();
-  }
-
-  &.disabled {
-    .button-disabled();
-  }
-}
-
-// Dropdown buttons
-.yui-button.yui-menu-button button, .yui-button.yui-split-button button {
-  // These buttons have a caret as the :after element
   &::after {
-    display: inline-block;
-    margin-left: 0.4em;
-    vertical-align: 0.1875em;
-    content: "";
-    border-top: 0.35em solid;
-    border-right: 0.35em solid transparent;
-    border-bottom: 0;
-    border-left: 0.35em solid transparent;
+    box-shadow: 0 0 0 0.66rem currentColor;
+    opacity: 0;
+  }
+
+  &:hover {
+    &::before {
+      opacity: 0.15;
+    }
+  }
+
+  &:active,
+  &:focus {
+    &::before {
+      opacity: 0.2;
+    }
+
+    &::after {
+      box-shadow: 0 0 0 0.33rem currentColor;
+      opacity: 0.1;
+    }
   }
 }
 
-.yui-button.yui-menu-button.yui-menu-button-active button, .yui-button.yui-split-button.yui-split-button-active button {
+.jenkins-button--primary[class*="color"] {
+  background: transparent;
+  color: var(--background) !important;
+
+  &::before {
+    background: var(--color) !important;
+    opacity: 1;
+  }
+
   &::after {
-    border-bottom: 0.35em solid;
-    border-top: 0;
+    box-shadow: 0 0 0 0.66rem var(--color);
+    opacity: 0;
+  }
+
+  &:hover {
+    &::before {
+      opacity: 0.9;
+    }
+  }
+
+  &:active,
+  &:focus {
+    &::before {
+      opacity: 0.8;
+    }
+
+    &::after {
+      box-shadow: 0 0 0 0.33rem var(--color);
+      opacity: 0.3;
+    }
   }
 }
 
-// Icon buttons
-
-.yui-button.icon-button button, a.yui-button.icon-button:link, a.yui-button.icon-button:visited {
-  padding: 0.25rem;
-  min-width: 2rem;
-  height: 2rem;
-
-  .svg-icon, i {
-    width: 1rem;
-    height: 1rem;
-    font-size: 1rem;
-  }
-
-  .button-link();
-}
-
-.yui-button.icon-button.large-button button, a.yui-button.icon-button.large-button {
-  min-width: 2.5rem;
-  height: 2.5rem;
-  padding: 0.625rem;
-
-  .svg-icon, i {
-    width: 1.25rem;
-    height: 1.25rem;
-    font-size: 1.25rem;
+.jenkins-button--tertiary[class*="color"] {
+  &::before {
+    opacity: 0;
   }
 }
 
+// Additional button related classes
 .jenkins-buttons-row {
   display: flex;
   align-items: center;
 
   .jenkins-button {
     margin-left: 0 !important;
-    margin-right: 1rem !important;
+    margin-right: 0.5rem !important;
   }
 
   .yui-button {
@@ -299,7 +176,7 @@ a.yui-button {
     justify-content: flex-end;
 
     .jenkins-button {
-      margin-left: 1rem !important;
+      margin-left: 0.5rem !important;
       margin-right: 0 !important;
     }
 
@@ -312,5 +189,70 @@ a.yui-button {
       margin-left: 1.5rem !important;
       margin-right: 0 !important;
     }
+  }
+}
+
+.jenkins-copy-button {
+  .jenkins-copy-button__icon {
+    position: relative;
+    width: 0.9rem;
+    height: 1.125rem;
+    transition: var(--standard-transition);
+
+    &::before,
+    &::after {
+      content: "";
+      position: absolute;
+      width: 75%;
+      height: 75%;
+      border: 0.1rem solid currentColor;
+      border-radius: 0.2rem;
+      transition: var(--standard-transition);
+    }
+
+    &::before {
+      top: 4%;
+      left: 1%;
+      clip-path: polygon(100% 0, 100% 22.5%, 22.5% 22.5%, 32.5% 100%, 0 100%, 0 0);
+    }
+
+    &::after {
+      bottom: 4%;
+      right: 1%;
+    }
+  }
+
+  &:hover {
+    .jenkins-copy-button__icon {
+      &::before {
+        transform: translate(7%, 4.5%);
+      }
+
+      &::after {
+        transform: translate(-7%, -4.5%);
+      }
+    }
+  }
+
+  &:active {
+    .jenkins-copy-button__icon {
+      transform: scale(0.85);
+    }
+  }
+}
+
+.jenkins-validate-button__container {
+  &__status {
+    .validation-error-area {
+      min-height: 36px !important;
+    }
+  }
+
+  .validation-error-area--visible {
+    margin-top: 0;
+  }
+
+  & > span {
+    float: right;
   }
 }
