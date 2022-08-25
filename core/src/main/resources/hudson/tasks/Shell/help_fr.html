@@ -1,19 +1,29 @@
 <div>
-  Lance un script Shell (par défaut à l'aide de <code>sh</code>, mais cela est configurable) pour construire le projet.
-  Le script sera lancé avec le workspace comme répertoire courant.
-  Entrez le contenu de votre script shell. Si votre script n'a pas de ligne de titre du type <code>#!/bin/sh</code>,
-  alors le shell configuré pour l'ensemble du système sera utilisé.
-  Si votre script contient une telle ligne, vous pourrez utiliser un autre langage de script
-  (comme <code>#!/bin/perl</code>) ou contrôler les options que le shell utilise.
+  Lance un script Shell (par défaut à l'aide de
+  <code>sh</code>
+  , mais cela est configurable) pour construire le projet. Le script sera lancé
+  avec le workspace comme répertoire courant. Entrez le contenu de votre script
+  shell. Si votre script n'a pas de ligne de titre du type
+  <code>#!/bin/sh</code>
+  , alors le shell configuré pour l'ensemble du système sera utilisé. Si votre
+  script contient une telle ligne, vous pourrez utiliser un autre langage de
+  script (comme
+  <code>#!/bin/perl</code>
+  ) ou contrôler les options que le shell utilise.
 
   <p>
-  Par défaut, le shell sera invoqué avec l'option "-ex". Par conséquent, toutes les commandes seront
-  affichées avant d'être exécutées et le build sera considéré en èchec si l'une de ces commandes
-  renvoie un code de retour différent de zéro.
-  Encore une fois, vous pouvez ajouter la ligne <code>#!/bin/...</code> pour modifier ce comportement.
+    Par défaut, le shell sera invoqué avec l'option "-ex". Par conséquent,
+    toutes les commandes seront affichées avant d'être exécutées et le build
+    sera considéré en èchec si l'une de ces commandes renvoie un code de retour
+    différent de zéro. Encore une fois, vous pouvez ajouter la ligne
+    <code>#!/bin/...</code>
+    pour modifier ce comportement.
+  </p>
 
   <p>
-  Une bonne pratique est de ne pas mettre un long script ici. A la place, pensez à ajouter le script shell
-  dans l'outil de gestion de configuration et appelez simplement ce script depuis Jenkins.
-  Ainsi, vous garderez trace des changements apportés à votre script.
+    Une bonne pratique est de ne pas mettre un long script ici. A la place,
+    pensez à ajouter le script shell dans l'outil de gestion de configuration et
+    appelez simplement ce script depuis Jenkins. Ainsi, vous garderez trace des
+    changements apportés à votre script.
+  </p>
 </div>
