@@ -21,130 +21,139 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-function selectAll(anchor){
-    var parent = anchor.up('.legacy-token-usage');
-    var allCheckBoxes = parent.querySelectorAll('.token-to-revoke');
-    var concernedCheckBoxes = allCheckBoxes;
-    
-    checkTheDesiredOne(allCheckBoxes, concernedCheckBoxes);
-}
+window.selectAll = function (anchor) {
+  var parent = anchor.up(".legacy-token-usage");
+  var allCheckBoxes = parent.querySelectorAll(".token-to-revoke");
+  var concernedCheckBoxes = allCheckBoxes;
 
-function selectFresh(anchor){
-    var parent = anchor.up('.legacy-token-usage');
-    var allCheckBoxes = parent.querySelectorAll('.token-to-revoke');
-    var concernedCheckBoxes = parent.querySelectorAll('.token-to-revoke.fresh-token');
-    
-    checkTheDesiredOne(allCheckBoxes, concernedCheckBoxes);
-}
+  checkTheDesiredOne(allCheckBoxes, concernedCheckBoxes);
+};
 
-function selectRecent(anchor){
-    var parent = anchor.up('.legacy-token-usage');
-    var allCheckBoxes = parent.querySelectorAll('.token-to-revoke');
-    var concernedCheckBoxes = parent.querySelectorAll('.token-to-revoke.recent-token');
-    
-    checkTheDesiredOne(allCheckBoxes, concernedCheckBoxes);
-}
+window.selectFresh = function (anchor) {
+  var parent = anchor.up(".legacy-token-usage");
+  var allCheckBoxes = parent.querySelectorAll(".token-to-revoke");
+  var concernedCheckBoxes = parent.querySelectorAll(
+    ".token-to-revoke.fresh-token"
+  );
 
-function checkTheDesiredOne(allCheckBoxes, concernedCheckBoxes){
-    var mustCheck = false;
-    for(var i = 0; i < concernedCheckBoxes.length && !mustCheck ; i++){
-        var checkBox = concernedCheckBoxes[i];
-        if(!checkBox.checked){
-            mustCheck = true;
-        }
-    }
-    
-    for(var i = 0; i < allCheckBoxes.length ; i++){
-        var checkBox = allCheckBoxes[i];
-        checkBox.checked = false;
-    }
-    
-    for(var i = 0; i < concernedCheckBoxes.length ; i++){
-        var checkBox = concernedCheckBoxes[i];
-        checkBox.checked = mustCheck;
-    }
-    
-    for(var i = 0; i < allCheckBoxes.length ; i++){
-        var checkBox = allCheckBoxes[i];
-        onCheckChanged(checkBox);
-    }
-}
+  checkTheDesiredOne(allCheckBoxes, concernedCheckBoxes);
+};
 
-function confirmAndRevokeAllSelected(button){
-    var parent = button.up('.legacy-token-usage');
-    var allCheckBoxes = parent.querySelectorAll('.token-to-revoke');
-    var allCheckedCheckBoxes = [];
-    for(var i = 0; i < allCheckBoxes.length ; i++){
-        var checkBox = allCheckBoxes[i];
-        if(checkBox.checked){
-            allCheckedCheckBoxes.push(checkBox);
-        }
-    }
-    
-    if(allCheckedCheckBoxes.length == 0){
-        var nothingSelected = button.getAttribute('data-nothing-selected');
-        alert(nothingSelected);
-    }else{
-        var confirmMessageTemplate = button.getAttribute('data-confirm-template');
-        var confirmMessage = confirmMessageTemplate.replace('%num%', allCheckedCheckBoxes.length);
-        if(confirm(confirmMessage)){
-            var url = button.getAttribute('data-url');
-            var selectedValues = [];
-            
-            for(var i = 0; i < allCheckedCheckBoxes.length ; i++){
-                var checkBox = allCheckedCheckBoxes[i];
-                var userId = checkBox.getAttribute('data-user-id');
-                var uuid = checkBox.getAttribute('data-uuid');
-                selectedValues.push({userId: userId, uuid: uuid});
-            }
-            
-            var params = {values: selectedValues}
-            new Ajax.Request(url, {
-                postBody: Object.toJSON(params),
-                contentType:"application/json",
-                encoding:"UTF-8",
-                onComplete: function(rsp) {
-                    window.location.reload();
-                }
-            });
-        }
-    }
-}
+window.selectRecent = function (anchor) {
+  var parent = anchor.up(".legacy-token-usage");
+  var allCheckBoxes = parent.querySelectorAll(".token-to-revoke");
+  var concernedCheckBoxes = parent.querySelectorAll(
+    ".token-to-revoke.recent-token"
+  );
 
-function onLineClicked(event){
-    var line = this;
-    var checkBox = line.querySelector('.token-to-revoke');
-    // to allow click on checkbox to act normally
-    if(event.target === checkBox){
-        return;
+  checkTheDesiredOne(allCheckBoxes, concernedCheckBoxes);
+};
+
+function checkTheDesiredOne(allCheckBoxes, concernedCheckBoxes) {
+  var mustCheck = false;
+  for (let i = 0; i < concernedCheckBoxes.length && !mustCheck; i++) {
+    let checkBox = concernedCheckBoxes[i];
+    if (!checkBox.checked) {
+      mustCheck = true;
     }
-    checkBox.checked = !checkBox.checked;
+  }
+
+  for (let i = 0; i < allCheckBoxes.length; i++) {
+    let checkBox = allCheckBoxes[i];
+    checkBox.checked = false;
+  }
+
+  for (let i = 0; i < concernedCheckBoxes.length; i++) {
+    let checkBox = concernedCheckBoxes[i];
+    checkBox.checked = mustCheck;
+  }
+
+  for (let i = 0; i < allCheckBoxes.length; i++) {
+    let checkBox = allCheckBoxes[i];
     onCheckChanged(checkBox);
+  }
 }
 
-function onCheckChanged(checkBox){
-    var line = checkBox.up('tr');
-    if(checkBox.checked){
-        line.addClassName('selected');
-    }else{
-        line.removeClassName('selected');
+window.confirmAndRevokeAllSelected = function (button) {
+  var parent = button.up(".legacy-token-usage");
+  var allCheckBoxes = parent.querySelectorAll(".token-to-revoke");
+  var allCheckedCheckBoxes = [];
+  for (let i = 0; i < allCheckBoxes.length; i++) {
+    let checkBox = allCheckBoxes[i];
+    if (checkBox.checked) {
+      allCheckedCheckBoxes.push(checkBox);
     }
+  }
+
+  if (allCheckedCheckBoxes.length === 0) {
+    var nothingSelected = button.getAttribute("data-nothing-selected");
+    alert(nothingSelected);
+  } else {
+    var confirmMessageTemplate = button.getAttribute("data-confirm-template");
+    var confirmMessage = confirmMessageTemplate.replace(
+      "%num%",
+      allCheckedCheckBoxes.length
+    );
+    if (confirm(confirmMessage)) {
+      var url = button.getAttribute("data-url");
+      var selectedValues = [];
+
+      for (var i = 0; i < allCheckedCheckBoxes.length; i++) {
+        var checkBox = allCheckedCheckBoxes[i];
+        var userId = checkBox.getAttribute("data-user-id");
+        var uuid = checkBox.getAttribute("data-uuid");
+        selectedValues.push({ userId: userId, uuid: uuid });
+      }
+
+      var params = { values: selectedValues };
+      new Ajax.Request(url, {
+        postBody: Object.toJSON(params),
+        contentType: "application/json",
+        encoding: "UTF-8",
+        onComplete: function () {
+          window.location.reload();
+        },
+      });
+    }
+  }
+};
+
+function onLineClicked(event) {
+  var line = this;
+  var checkBox = line.querySelector(".token-to-revoke");
+  // to allow click on checkbox to act normally
+  if (event.target === checkBox) {
+    return;
+  }
+  checkBox.checked = !checkBox.checked;
+  onCheckChanged(checkBox);
 }
 
-(function(){
-    document.addEventListener("DOMContentLoaded", function() {
-        var allLines = document.querySelectorAll('.legacy-token-usage table tr');
-        for(var i = 0; i < allLines.length; i++){
-            var line = allLines[i];
-            if(!line.hasClassName('no-token-line')){
-                line.onclick = onLineClicked;
-            }
-        }
-        
-        var allCheckBoxes = document.querySelectorAll('.token-to-revoke');
-        for(var i = 0; i < allCheckBoxes.length; i++){
-            var checkBox = allCheckBoxes[i];
-            checkBox.onchange = function(){ onCheckChanged(this); };
-        }
-    });
-})()
+function onCheckChanged(checkBox) {
+  var line = checkBox.up("tr");
+  if (checkBox.checked) {
+    line.addClassName("selected");
+  } else {
+    line.removeClassName("selected");
+  }
+}
+
+(function () {
+  document.addEventListener("DOMContentLoaded", function () {
+    var allLines = document.querySelectorAll(".legacy-token-usage table tr");
+    for (let i = 0; i < allLines.length; i++) {
+      let line = allLines[i];
+      if (!line.hasClassName("no-token-line")) {
+        line.onclick = onLineClicked;
+      }
+    }
+
+    var allCheckBoxes = document.querySelectorAll(".token-to-revoke");
+    for (let i = 0; i < allCheckBoxes.length; i++) {
+      let checkBox = allCheckBoxes[i];
+      checkBox.onchange = function () {
+        onCheckChanged(this);
+      };
+    }
+  });
+})();

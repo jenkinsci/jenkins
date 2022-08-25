@@ -38,7 +38,7 @@ THE SOFTWARE.
         <l:main-panel>
             <local:tabBar page="advanced" xmlns:local="/hudson/PluginManager"/>
 
-            <section class="jenkins-section">
+            <section class="jenkins-section jenkins-!-margin-bottom-5">
                 <h2 class="jenkins-section__title">${%HTTP Proxy Configuration}</h2>
                 <f:form method="post" action="proxyConfigure" name="proxyConfigure">
                     <j:scope>
@@ -55,7 +55,7 @@ THE SOFTWARE.
             </section>
 
             <l:isAdmin>
-                <section class="jenkins-section">
+                <section class="jenkins-section jenkins-!-margin-bottom-5">
                     <h2 class="jenkins-section__title">${%Deploy Plugin}</h2>
                     <f:form method="post" action="uploadPlugin" name="uploadPlugin" enctype="multipart/form-data">
                         <div style="margin-bottom: 1em;">
@@ -74,7 +74,7 @@ THE SOFTWARE.
                 </section>
             </l:isAdmin>
 
-            <section class="jenkins-section">
+            <section class="jenkins-section jenkins-!-margin-bottom-5">
                 <h2 class="jenkins-section__title">${%Update Site}</h2>
                 <f:form method="post" action="siteConfigure" name="siteConfigure">
                     <f:entry title="${%URL}">
@@ -96,7 +96,7 @@ THE SOFTWARE.
             </section>
 
             <j:if test="${hasNonDefault}">
-                <section class="jenkins-section">
+                <section class="jenkins-section jenkins-!-margin-bottom-5">
                     <h2 class="jenkins-section__title">${%Other Sites}</h2>
                     <ul>
                         <j:forEach var="site" items="${app.updateCenter.sites}">

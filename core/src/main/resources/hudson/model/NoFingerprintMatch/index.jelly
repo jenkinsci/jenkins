@@ -26,11 +26,6 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <l:layout title="${%No matching record found}">
-    <l:side-panel>
-      <l:tasks>
-        <l:task href="${rootURL}/" icon="icon-up icon-md" title="${%Back to Dashboard}"/>
-      </l:tasks>
-    </l:side-panel>
     <l:main-panel>
       <h1>
         ${title}

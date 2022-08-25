@@ -1,41 +1,77 @@
-
 <div>
-  Lorsque cette option est coch&eacute;e, plusieurs constructions de ce projet peuvent 
-  &ecirc;tre ex&eacute;cut&eacute;es en parall&egrave;le.
+  Lorsque cette option est coch&eacute;e, plusieurs constructions de ce projet
+  peuvent &ecirc;tre ex&eacute;cut&eacute;es en parall&egrave;le.
   <p>
-  Par d&eacute;faut, une seule construction du projet est ex&eacute;cut&eacute;e &agrave; la fois &mdash; toutes
-  les autres demandes pour ex&eacute;cuter la construction de ce projet resteront dans la file d'attente
-  jusqu'&agrave; ce que la premi&egrave;re construction soit termin&eacute;e.<br>
-  Ce choix par d&eacute;faut est une pr&eacute;caution, car les projets exigent souvent un acc&egrave;s exclusif &agrave;
-  certaines ressources, telles qu'une base de donn&eacute;es ou un hardware sp&eacute;cifique.
+    Par d&eacute;faut, une seule construction du projet est
+    ex&eacute;cut&eacute;e &agrave; la fois &mdash; toutes les autres demandes
+    pour ex&eacute;cuter la construction de ce projet resteront dans la file
+    d'attente jusqu'&agrave; ce que la premi&egrave;re construction soit
+    termin&eacute;e.
+    <br />
+    Ce choix par d&eacute;faut est une pr&eacute;caution, car les projets
+    exigent souvent un acc&egrave;s exclusif &agrave; certaines ressources,
+    telles qu'une base de donn&eacute;es ou un hardware sp&eacute;cifique.
+  </p>
+
   <p>
-  Si cette option est activ&eacute;e, et s'il y a suffisamment d'ex&eacute;cuteurs disponibles
-  sachant g&eacute;rer ce projet, alors les multiples constructions de ce projet tourneront
-  en parall&egrave;le. S'il n'y a pas assez d'ex&eacute;cuteurs disponibles &agrave; un moment donn&eacute;,
-  toute autre demande de construction sera maintenue dans la file d'attente de construction 
-  comme normalement.
+    Si cette option est activ&eacute;e, et s'il y a suffisamment
+    d'ex&eacute;cuteurs disponibles sachant g&eacute;rer ce projet, alors les
+    multiples constructions de ce projet tourneront en parall&egrave;le. S'il
+    n'y a pas assez d'ex&eacute;cuteurs disponibles &agrave; un moment
+    donn&eacute;, toute autre demande de construction sera maintenue dans la
+    file d'attente de construction comme normalement.
+  </p>
+
   <p>
-  Activer les constructions simultan&eacute;es est utile pour les projets qui ex&eacute;cutent de longs tests
-  car elle permet &agrave; chaque construction de contenir un plus petit nombre de modifications, tandis que
-  le temps d'ex&eacute;cution total diminue car les constructions suivantes n'ont pas besoin d'attendre
-  que les tests pr&eacute;c&eacute;dents soient termin&eacute;s.<br>
-  Cette fonctionnalit&eacute; est &eacute;galement utile pour les projets param&eacute;tr&eacute;s, 
-  dont les diff&eacute;rentes constructions &mdash; en fonction des param&egrave;tres utilis&eacute;s &mdash; 
-  peuvent &ecirc;tre totalement ind&eacute;pendantes les unes des autres.
+    Activer les constructions simultan&eacute;es est utile pour les projets qui
+    ex&eacute;cutent de longs tests car elle permet &agrave; chaque construction
+    de contenir un plus petit nombre de modifications, tandis que le temps
+    d'ex&eacute;cution total diminue car les constructions suivantes n'ont pas
+    besoin d'attendre que les tests pr&eacute;c&eacute;dents soient
+    termin&eacute;s.
+    <br />
+    Cette fonctionnalit&eacute; est &eacute;galement utile pour les projets
+    param&eacute;tr&eacute;s, dont les diff&eacute;rentes constructions &mdash;
+    en fonction des param&egrave;tres utilis&eacute;s &mdash; peuvent &ecirc;tre
+    totalement ind&eacute;pendantes les unes des autres.
+  </p>
+
   <p>
-  Chaque construction ex&eacute;cut&eacute;e en parall&egrave;le se produit dans son propre espace de travail, 
-  isol&eacute; des autres constructions.
-  Par d&eacute;faut, Jenkins ajoute "<code>@&lt;num&gt;</code>" au nom du r&eacute;pertoire de l'espace
-  de travail, par exemple "<code>@2</code>".<br>
-  Le s&eacute;parateur "<code>@</code>" est modifiable en renseignant la valeur de la propri&eacute;t&eacute; syst&egrave;me Java
-  <code>hudson.slaves.WorkspaceList</code> au d&eacute;marrage de jenkins.
-  Par exemple, "<code>hudson.slaves.WorkspaceList=-</code>" modifierait
-  le s&eacute;parateur &agrave; un trait d'union.<br>
-  Pour plus d'informations sur le param&eacute;trage des propri&eacute;t&eacute;s syst&egrave;me, voir la <a
-  href="https://www.jenkins.io/redirect/setting-system-properties"
-  rel="noopener noreferrer" target="_blank">page du wiki</a>.
+    Chaque construction ex&eacute;cut&eacute;e en parall&egrave;le se produit
+    dans son propre espace de travail, isol&eacute; des autres constructions.
+    Par d&eacute;faut, Jenkins ajoute "
+    <code>@&lt;num&gt;</code>
+    " au nom du r&eacute;pertoire de l'espace de travail, par exemple "
+    <code>@2</code>
+    ".
+    <br />
+    Le s&eacute;parateur "
+    <code>@</code>
+    " est modifiable en renseignant la valeur de la propri&eacute;t&eacute;
+    syst&egrave;me Java
+    <code>hudson.slaves.WorkspaceList</code>
+    au d&eacute;marrage de jenkins. Par exemple, "
+    <code>hudson.slaves.WorkspaceList=-</code>
+    " modifierait le s&eacute;parateur &agrave; un trait d'union.
+    <br />
+    Pour plus d'informations sur le param&eacute;trage des
+    propri&eacute;t&eacute;s syst&egrave;me, voir la
+    <a
+      href="https://www.jenkins.io/redirect/setting-system-properties"
+      rel="noopener noreferrer"
+      target="_blank"
+    >
+      page du wiki
+    </a>
+    .
+  </p>
+
   <p>
-  En revanche, si vous activez l'option <i>Utiliser un espace de travail personnalis&eacute;</i>, toutes les constructions 
-  seront ex&eacute;cut&eacute;es  dans le m&ecirc;me espace de travail. La prudence est donc de mise, car plusieurs 
-  constructions peuvent finir par modifier le m&ecirc;me r&eacute;pertoire en m&ecirc;me temps.
+    En revanche, si vous activez l'option
+    <i>Utiliser un espace de travail personnalis&eacute;</i>
+    , toutes les constructions seront ex&eacute;cut&eacute;es dans le m&ecirc;me
+    espace de travail. La prudence est donc de mise, car plusieurs constructions
+    peuvent finir par modifier le m&ecirc;me r&eacute;pertoire en m&ecirc;me
+    temps.
+  </p>
 </div>

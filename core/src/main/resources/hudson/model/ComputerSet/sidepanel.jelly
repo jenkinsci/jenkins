@@ -31,8 +31,6 @@ THE SOFTWARE.
   <l:side-panel>
     <j:getStatic var="createPermission" className="hudson.model.Computer" field="CREATE"/>
     <l:tasks>
-      <l:task href="${rootURL}/" icon="icon-up icon-md" title="${%Back to Dashboard}"/>
-      <l:task href="${rootURL}/manage" icon="symbol-settings" permissions="${app.MANAGE_AND_SYSTEM_READ}" title="${%Manage Jenkins}"/>
       <l:task href="new" icon="symbol-add" permission="${createPermission}" title="${%New Node}"/>
       <l:task href="../configureClouds" icon="symbol-cloud" permission="${app.SYSTEM_READ}"
               title="${app.hasPermission(app.ADMINISTER) ? '%Configure Clouds' : '%View Clouds'}"/>
