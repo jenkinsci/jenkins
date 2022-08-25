@@ -1,13 +1,11 @@
 {
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "config:base",
     ":disableDependencyDashboard",
     ":semanticCommitsDisabled"
   ],
-  "enabledManagers": [
-    "npm",
-    "regex"
-  ],
+  "enabledManagers": ["npm", "regex"],
   "packageRules": [
     {
       "matchDatasources": ["npm"],
@@ -16,9 +14,9 @@
       "reviewers": ["team:sig-ux"]
     },
     {
-      "matchPackageNames": ["handlebars"],
-      "allowedVersions": "<=3.0.8",
-      "description": "https://issues.jenkins.io/browse/JENKINS-68926",
+      "matchPackageNames": ["bootstrap"],
+      "allowedVersions": "<=3.4.1",
+      "description": "https://issues.jenkins.io/browse/JENKINS-69409",
       "enabled": false
     },
     {
@@ -28,15 +26,12 @@
   ],
   "regexManagers": [
     {
-      "fileMatch": ["war\/pom.xml"],
-      "matchStrings": ["<node.version>(?<currentValue>.*?)<\/node.version>"],
+      "fileMatch": ["war/pom.xml"],
+      "matchStrings": ["<node.version>(?<currentValue>.*?)</node.version>"],
       "depNameTemplate": "node",
       "datasourceTemplate": "npm"
     }
   ],
-  "labels": [
-    "dependencies",
-    "skip-changelog"
-  ],
+  "labels": ["dependencies", "skip-changelog"],
   "rebaseWhen": "conflicted"
 }

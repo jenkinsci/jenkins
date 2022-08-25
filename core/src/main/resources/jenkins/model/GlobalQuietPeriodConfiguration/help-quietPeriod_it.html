@@ -1,24 +1,27 @@
 <div>
   Quando quest'opzione è impostata a un valore diverso da zero, le nuove
   compilazioni di questo progetto saranno aggiunte alla coda, ma Jenkins
-  attenderà per il periodo di tempo specificato (in secondi) prima di avviare
-  la compilazione.
+  attenderà per il periodo di tempo specificato (in secondi) prima di avviare la
+  compilazione.
   <p>
-  Ad esempio, se le compilazioni richiedono molto tempo per essere eseguite,
-  si potrebbe voler far sì che più commit nel sistema di gestione del codice
-  sorgente, eseguiti più o meno nello stesso momento, scatenino più
-  compilazioni. L'abilitazione del periodo di quiete farebbe sì che una
-  compilazione non parta nel momento in cui Jenkins rileva il primo commit;
-  ciò darebbe allo sviluppatore la possibilità di eseguire il push di più
-  commit, che sarebbero inclusi nella compilazione al suo avvio. Ciò diminuisce
-  le dimensioni della coda, il che significa che gli sviluppatori otterrebbero
-  un feedback più velocemente per le loro serie di commit, e il carico di
-  lavoro su Jenkins sarebbe ridotto.
+    Ad esempio, se le compilazioni richiedono molto tempo per essere eseguite,
+    si potrebbe voler far sì che più commit nel sistema di gestione del codice
+    sorgente, eseguiti più o meno nello stesso momento, scatenino più
+    compilazioni. L'abilitazione del periodo di quiete farebbe sì che una
+    compilazione non parta nel momento in cui Jenkins rileva il primo commit;
+    ciò darebbe allo sviluppatore la possibilità di eseguire il push di più
+    commit, che sarebbero inclusi nella compilazione al suo avvio. Ciò
+    diminuisce le dimensioni della coda, il che significa che gli sviluppatori
+    otterrebbero un feedback più velocemente per le loro serie di commit, e il
+    carico di lavoro su Jenkins sarebbe ridotto.
+  </p>
+
   <p>
-  Se viene scatenata una nuova compilazione di questo progetto finché una
-  compilazione è già in coda e in attesa che il suo periodo di quiete finisca,
-  il periodo di quiete non sarà reimpostato. La nuova compilazione scatenata
-  non sarà aggiunta alla coda, a meno che questo progetto non sia
-  parametrizzato e che la compilazione abbia dei parametri differenti da
-  quelli della compilazione già in coda.
+    Se viene scatenata una nuova compilazione di questo progetto finché una
+    compilazione è già in coda e in attesa che il suo periodo di quiete finisca,
+    il periodo di quiete non sarà reimpostato. La nuova compilazione scatenata
+    non sarà aggiunta alla coda, a meno che questo progetto non sia
+    parametrizzato e che la compilazione abbia dei parametri differenti da
+    quelli della compilazione già in coda.
+  </p>
 </div>
