@@ -225,7 +225,7 @@ public class MyViewsProperty extends UserProperty implements ModifiableViewGroup
 
     @Override
     public String getIconFileName() {
-        return "user.png";
+        return "symbol-browsers";
     }
 
     @Override
