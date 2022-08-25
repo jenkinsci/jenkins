@@ -86,10 +86,10 @@ public class VirtualFileTest {
     @Test public void outsideSymlinks() throws Exception {
         assumeFalse(Functions.isWindows());
         File ws = tmp.newFolder("ws");
-        FileUtils.write(new File(ws, "safe"), "safe", StandardCharsets.US_ASCII, false);
+        Files.writeString(ws.toPath().resolve("safe"), "safe", StandardCharsets.US_ASCII);
         Util.createSymlink(ws, "safe", "supported", TaskListener.NULL);
         File other = tmp.newFolder("other");
-        FileUtils.write(new File(other, "secret"), "s3cr3t", StandardCharsets.US_ASCII, false);
+        Files.writeString(other.toPath().resolve("secret"), "s3cr3t", StandardCharsets.US_ASCII);
         Util.createSymlink(ws, "../other/secret", "hack", TaskListener.NULL);
         VirtualFile root = VirtualFile.forFile(ws);
         VirtualFile supported = root.child("supported");
@@ -759,19 +759,19 @@ public class VirtualFileTest {
         File aaa = new File(aa, "aaa");
         aaa.mkdirs();
         File aaTxt = new File(aa, "aa.txt");
-        FileUtils.write(aaTxt, "aa", StandardCharsets.US_ASCII, false);
+        Files.writeString(aaTxt.toPath(), "aa", StandardCharsets.US_ASCII);
 
         File ab = new File(a, "ab");
         ab.mkdirs();
         File abTxt = new File(ab, "ab.txt");
-        FileUtils.write(abTxt, "ab", StandardCharsets.US_ASCII, false);
+        Files.writeString(abTxt.toPath(), "ab", StandardCharsets.US_ASCII);
 
         File b = new File(root, "b");
 
         File ba = new File(b, "ba");
         ba.mkdirs();
         File baTxt = new File(ba, "ba.txt");
-        FileUtils.write(baTxt, "ba", StandardCharsets.US_ASCII, false);
+        Files.writeString(baTxt.toPath(), "ba", StandardCharsets.US_ASCII);
 
         File _a = new File(b, "_a");
         new FilePath(_a).symlinkTo(a.getAbsolutePath(), TaskListener.NULL);
@@ -1041,7 +1041,7 @@ public class VirtualFileTest {
     public void testLength_FileVF() throws IOException {
         File ws = tmp.newFolder("ws");
         String childString = "child";
-        FileUtils.write(new File(ws, childString), childString);
+        Files.writeString(ws.toPath().resolve(childString), childString, StandardCharsets.US_ASCII);
         VirtualFile child = VirtualFile.forFile(ws).child(childString);
         assertThat(child.length(), is((long) childString.length()));
     }
@@ -1120,7 +1120,7 @@ public class VirtualFileTest {
         // which generally does nothing.
         File ws = tmp.newFolder("ws");
         String childString = "child";
-        FileUtils.write(new File(ws, childString), childString);
+        Files.writeString(ws.toPath().resolve(childString), childString, StandardCharsets.US_ASCII);
         VirtualFile child = new VirtualFileMinimalImplementation(ws).child(childString);
         String fileContents = IOUtils.toString(child.open());
         assertThat(childString, is(fileContents));
@@ -1134,7 +1134,7 @@ public class VirtualFileTest {
         // which generally does nothing.
         File ws = tmp.newFolder("ws");
         String childString = "child";
-        FileUtils.write(new File(ws, childString), childString);
+        Files.writeString(ws.toPath().resolve(childString), childString, StandardCharsets.US_ASCII);
         String linkString = "link";
         Util.createSymlink(ws, childString, linkString, TaskListener.NULL);
 
@@ -1148,7 +1148,7 @@ public class VirtualFileTest {
     public void testOpenNoFollowLinks_NoFollowsLink_FileVF() throws Exception {
         File ws = tmp.newFolder("ws");
         String childString = "child";
-        FileUtils.write(new File(ws, childString), childString);
+        Files.writeString(ws.toPath().resolve(childString), childString, StandardCharsets.US_ASCII);
         String linkString = "link";
         Util.createSymlink(ws, childString, linkString, TaskListener.NULL);
 
@@ -1164,7 +1164,7 @@ public class VirtualFileTest {
         String symlinkName = "symlink";
         Util.createSymlink(tmp.getRoot(), ws.getName(), symlinkName, null);
         String childString = "child";
-        FileUtils.write(new File(ws, childString), childString);
+        Files.writeString(ws.toPath().resolve(childString), childString, StandardCharsets.US_ASCII);
         File childThroughSymlink = new File(tmp.getRoot(), "/" + symlinkName + "/" + childString);
         VirtualFile child = rootVirtualFile.child(symlinkName).child(childString);
         assertThrows("Should have not followed links", IOException.class, () -> child.open(true));
@@ -1177,7 +1177,7 @@ public class VirtualFileTest {
         String symlinkName = "symlink";
         Util.createSymlink(tmp.getRoot(), ws.getName(), symlinkName, null);
         String childString = "child";
-        FileUtils.write(new File(ws, childString), childString);
+        Files.writeString(ws.toPath().resolve(childString), childString, StandardCharsets.US_ASCII);
         VirtualFile rootVirtualPath = VirtualFile.forFilePath(new FilePath(tmp.getRoot()));
         VirtualFile childVirtualPath = rootVirtualPath.child(symlinkName).child(childString);
         assertThrows("Should have not followed links", IOException.class, () -> childVirtualPath.open(true));
@@ -1188,7 +1188,7 @@ public class VirtualFileTest {
     public void testOpenNoFollowLinks_NoFollowsLink_FilePathVF() throws Exception {
         File ws = tmp.newFolder("ws");
         String childString = "child";
-        FileUtils.write(new File(ws, childString), childString);
+        Files.writeString(ws.toPath().resolve(childString), childString, StandardCharsets.US_ASCII);
         String linkString = "link";
         Util.createSymlink(ws, childString, linkString, TaskListener.NULL);
 
@@ -1236,7 +1236,7 @@ public class VirtualFileTest {
     public void testLength_FilePathVF() throws IOException {
         File ws = tmp.newFolder("ws");
         String childString = "child";
-        FileUtils.write(new File(ws, childString), childString);
+        Files.writeString(ws.toPath().resolve(childString), childString, StandardCharsets.US_ASCII);
         VirtualFile child = VirtualFile.forFilePath(new FilePath(ws)).child(childString);
         assertThat(child.length(), is((long) childString.length()));
     }
@@ -1493,7 +1493,7 @@ public class VirtualFileTest {
         String externalFolderName = "external";
         File externalFile = tmp.newFolder(externalFolderName);
         String childString = "child";
-        FileUtils.write(new File(externalFile, childString), childString);
+        Files.writeString(externalFile.toPath().resolve(childString), childString, StandardCharsets.US_ASCII);
         Util.createSymlink(ws, "../" + externalFolderName, "invalidSymlink", TaskListener.NULL);
         return ws;
     }

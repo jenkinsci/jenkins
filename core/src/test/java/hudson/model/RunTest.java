@@ -78,11 +78,7 @@ public class RunTest {
                 }).get();
                 TimeZone.setDefault(TimeZone.getTimeZone("America/Los_Angeles"));
                 id = r.getId();
-                assertEquals(id, svc.submit(new Callable<String>() {
-                    @Override public String call() {
-                        return r.getId();
-                    }
-                }).get());
+                assertEquals(id, svc.submit(r::getId).get());
             } finally {
                 svc.shutdown();
             }
@@ -90,12 +86,7 @@ public class RunTest {
             svc = Executors.newSingleThreadExecutor();
             try {
                 assertEquals(id, r.getId());
-                assertEquals(id, svc.submit(new Callable<String>() {
-                    @Override
-                    public String call() {
-                        return r.getId();
-                    }
-                }).get());
+                assertEquals(id, svc.submit(r::getId).get());
             } finally {
                 svc.shutdown();
             }
@@ -176,7 +167,7 @@ public class RunTest {
         Run<? extends Job<?, ?>, ? extends Run<?, ?>> r = new Run(j, 0) {};
         File f = r.getLogFile();
         f.getParentFile().mkdirs();
-        PrintWriter w = new PrintWriter(f, "utf-8");
+        PrintWriter w = new PrintWriter(f, StandardCharsets.UTF_8);
         w.println("dummy");
         w.close();
         List<String> logLines = r.getLog(0);
@@ -192,7 +183,7 @@ public class RunTest {
         Run<? extends Job<?, ?>, ? extends Run<?, ?>> r = new Run(j, 0) {};
         File f = r.getLogFile();
         f.getParentFile().mkdirs();
-        PrintWriter w = new PrintWriter(f, "utf-8");
+        PrintWriter w = new PrintWriter(f, StandardCharsets.UTF_8);
         for (int i = 0; i < 20; i++) {
             w.println("dummy" + i);
         }
@@ -217,7 +208,7 @@ public class RunTest {
         Run<? extends Job<?, ?>, ? extends Run<?, ?>> r = new Run(j, 0) {};
         File f = r.getLogFile();
         f.getParentFile().mkdirs();
-        PrintWriter w = new PrintWriter(f, "utf-8");
+        PrintWriter w = new PrintWriter(f, StandardCharsets.UTF_8);
         w.print("a1\nb2\n\nc3");
         w.close();
         List<String> logLines = r.getLog(10);

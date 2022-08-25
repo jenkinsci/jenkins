@@ -174,7 +174,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     private final List<Dependency> optionalDependencies;
 
     public List<String> getDependencyErrors() {
-        return Collections.unmodifiableList(new ArrayList<>(dependencyErrors.keySet()));
+        return List.copyOf(dependencyErrors.keySet());
     }
 
     @Restricted(NoExternalUse.class) // Jelly use
@@ -222,7 +222,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      * The core can depend on a plugin if it is bundled. Sometimes it's the only thing that
      * depends on the plugin e.g. UI support library bundle plugin.
      */
-    private static Set<String> CORE_ONLY_DEPENDANT = Collections.singleton("jenkins-core");
+    private static Set<String> CORE_ONLY_DEPENDANT = Set.of("jenkins-core");
 
     /**
      * Set the list of components that depend on this plugin.

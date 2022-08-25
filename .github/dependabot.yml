@@ -16,6 +16,7 @@ updates:
       # Provided by Jetty and should be aligned with the version provided by the
       # version of Jetty we deliver. See:
       # https://github.com/jenkinsci/jenkins/pull/5211
+      - dependency-name: "jakarta.servlet:jakarta.servlet-api"
       - dependency-name: "javax.servlet:javax.servlet-api"
 
       # Jetty Maven Plugin and Winstone should be upgraded in lockstep in order
@@ -26,17 +27,12 @@ updates:
       # Log4j 1.2.17 is the final 1.x release.
       - dependency-name: "log4j:log4j"
 
-
       # Here lies technical debt. Exclusions in this section have been triaged
       # and determined to be temporary. Exclusions should be removed from this
       # section once the remaining action items have been completed.
 
       # Fails test automation; needs further investigation.
       - dependency-name: "com.google.inject:guice-bom"
-
-      # Requires Java 11 starting with version 10.0.
-      - dependency-name: "com.puppycrawl.tools:checkstyle"
-        versions: [">=10.0"]
 
       # Contains incompatible API changes and needs compatibility work.
       - dependency-name: "jakarta.servlet.jsp.jstl:jakarta.servlet.jsp.jstl-api"
@@ -55,10 +51,6 @@ updates:
       # Consumed by Groovy and should be updated in lockstep with Groovy. See:
       # https://github.com/jenkinsci/jenkins/pull/5184
       - dependency-name: "org.fusesource.jansi:jansi"
-
-      # Requires Java 11 starting with version 2.0.2.
-      - dependency-name: "org.glassfish.tyrus.bundles:tyrus-standalone-client-jdk"
-        versions: [">=2.0.2"]
 
       # Contains incompatible API changes and needs compatibility work. See:
       # https://github.com/jenkinsci/jenkins/pull/4224

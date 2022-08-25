@@ -114,7 +114,7 @@ table.bigtable {
     width: 1px;
   }
 
-  &[align=right] {
+  &[align="right"] {
     text-align: right;
   }
 }
@@ -126,12 +126,14 @@ table.bigtable {
 }
 
 .bigtable td {
-  border-top: var(--bigtable-border-width) solid var(--bigtable-row-border-color);
+  border-top: var(--bigtable-border-width) solid
+    var(--bigtable-row-border-color);
   vertical-align: middle;
 }
 
 .bigtable tr:last-child td {
-  border-bottom: var(--bigtable-border-width) solid var(--bigtable-row-border-color);
+  border-bottom: var(--bigtable-border-width) solid
+    var(--bigtable-row-border-color);
 }
 
 .bigtable td,

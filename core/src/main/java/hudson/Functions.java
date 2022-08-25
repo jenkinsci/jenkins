@@ -100,7 +100,6 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.Serializable;
 import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
 import java.lang.management.LockInfo;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MonitorInfo;
@@ -747,10 +746,7 @@ public class Functions {
     public static String nbspIndent(String size) {
         int i = size.indexOf('x');
         i = Integer.parseInt(i > 0 ? size.substring(0, i) : size) / 10;
-        StringBuilder buf = new StringBuilder(30);
-        for (int j = 2; j <= i; j++)
-            buf.append("&nbsp;");
-        return buf.toString();
+        return "&nbsp;".repeat(Math.max(0, i - 1));
     }
 
     public static String getWin32ErrorMessage(IOException e) {
@@ -777,11 +773,7 @@ public class Functions {
         if (s == null) {
             return "";
         }
-        try {
-            return URLEncoder.encode(s, StandardCharsets.UTF_8.name());
-        } catch (UnsupportedEncodingException e) {
-            throw new Error(e); // impossible
-        }
+        return URLEncoder.encode(s, StandardCharsets.UTF_8);
     }
 
     public static String escape(String s) {
@@ -1853,7 +1845,7 @@ public class Functions {
 
     /**
      * Escapes the character unsafe for e-mail address.
-     * See http://en.wikipedia.org/wiki/E-mail_address for the details,
+     * See <a href="https://en.wikipedia.org/wiki/Email_address">the Wikipedia page</a> for the details,
      * but here the vocabulary is even more restricted.
      */
     public static String toEmailSafeString(String projectName) {
@@ -1933,19 +1925,26 @@ public class Functions {
      *
      * Used in {@code task.jelly} to decide if the page should be highlighted.
      */
-    public boolean hyperlinkMatchesCurrentPage(String href) throws UnsupportedEncodingException {
+    public boolean hyperlinkMatchesCurrentPage(String href) {
         String url = Stapler.getCurrentRequest().getRequestURL().toString();
         if (href == null || href.length() <= 1) return ".".equals(href) && url.endsWith("/");
-        url = URLDecoder.decode(url, "UTF-8");
-        href = URLDecoder.decode(href, "UTF-8");
+        url = URLDecoder.decode(url, StandardCharsets.UTF_8);
+        href = URLDecoder.decode(href, StandardCharsets.UTF_8);
         if (url.endsWith("/")) url = url.substring(0, url.length() - 1);
         if (href.endsWith("/")) href = href.substring(0, href.length() - 1);
 
         return url.endsWith(href);
     }
 
+    /**
+     * @deprecated From JEXL expressions ({@code ${…}}) in {@code *.jelly} files
+     *             you can use {@code [obj]} syntax to construct an {@code Object[]}
+     *             (which may be usable where a {@link List} is expected)
+     *             rather than {@code h.singletonList(obj)}.
+     */
+    @Deprecated
     public <T> List<T> singletonList(T t) {
-        return Collections.singletonList(t);
+        return List.of(t);
     }
 
     /**
@@ -2342,7 +2341,7 @@ public class Functions {
         String[] arr = iconSrc.split(" ");
         for (String element : arr) {
             if (element.startsWith("plugin-")) {
-                return element.replace("plugin-", "");
+                return element.replaceFirst("plugin-", "");
             }
         }
 
@@ -2360,33 +2359,34 @@ public class Functions {
         }
 
         StaplerRequest currentRequest = Stapler.getCurrentRequest();
-        currentRequest.getWebApp().getDispatchValidator().allowDispatch(currentRequest, Stapler.getCurrentResponse());
         String rootURL = currentRequest.getContextPath();
         Icon iconMetadata = tryGetIcon(iconGuess);
-        String iconSource = null;
 
+        String iconSource;
         if (iconMetadata != null) {
-            iconSource = iconMetadata.getQualifiedUrl(context);
+            iconSource = IconSet.tryTranslateTangoIconToSymbol(iconMetadata.getClassSpec(), () -> iconMetadata.getQualifiedUrl(context));
+        } else {
+            iconSource = guessIcon(iconGuess, rootURL);
         }
+        return iconSource;
+    }
 
-        if (iconMetadata == null) {
-            //noinspection HttpUrlsUsage
-            if (iconGuess.startsWith("http://") || iconGuess.startsWith("https://")) {
-                return iconGuess;
-            }
+    static String guessIcon(String iconGuess, String rootURL) {
+        String iconSource;
+        //noinspection HttpUrlsUsage
+        if (iconGuess.startsWith("http://") || iconGuess.startsWith("https://")) {
+            iconSource = iconGuess;
+        } else {
             if (!iconGuess.startsWith("/")) {
                 iconGuess = "/" + iconGuess;
             }
+            if (iconGuess.startsWith(rootURL)) {
+                if ((!rootURL.equals("/images") && !rootURL.equals("/plugin")) || iconGuess.startsWith(rootURL + rootURL)) {
+                    iconGuess = iconGuess.substring(rootURL.length());
+                }
+            }
             iconSource = rootURL + (iconGuess.startsWith("/images/") || iconGuess.startsWith("/plugin/") ? getResourcePath() : "") + iconGuess;
         }
-
-        if (iconMetadata != null && iconMetadata.getClassSpec() != null) {
-            String translatedIcon = IconSet.tryTranslateTangoIconToSymbol(iconMetadata.getClassSpec());
-            if (translatedIcon != null) {
-                return translatedIcon;
-            }
-        }
-
         return iconSource;
     }
 

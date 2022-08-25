@@ -145,7 +145,7 @@ public class CLIActionTest {
                 "-webSocket", // TODO as above
                 "-s", j.getURL().toString()./* just checking */replaceFirst("/$", ""), "test-diagnostic").
             stdout(baos).stderr(System.err).join());
-        assertEquals("encoding=ISO-8859-2 locale=cs_CZ", baos.toString(Charset.forName("ISO-8859-2").name()).trim());
+        assertEquals("encoding=ISO-8859-2 locale=cs_CZ", baos.toString(Charset.forName("ISO-8859-2")).trim());
         // TODO test that stdout/stderr are in expected encoding (not true of -remoting mode!)
         // -ssh mode does not pass client locale or encoding
     }
@@ -165,15 +165,15 @@ public class CLIActionTest {
                 "-webSocket", // TODO as above
                 "groovysh").
             stdout(new TeeOutputStream(baos, System.out)).stderr(System.err).stdin(pis).start();
-        while (!baos.toString(Charset.defaultCharset().name()).contains("000")) { // cannot just search for, say, "groovy:000> " since there are ANSI escapes there (cf. StringEscapeUtils.escapeJava)
+        while (!baos.toString(Charset.defaultCharset()).contains("000")) { // cannot just search for, say, "groovy:000> " since there are ANSI escapes there (cf. StringEscapeUtils.escapeJava)
             Thread.sleep(100);
         }
         pw.println("11 * 11");
-        while (!baos.toString(Charset.defaultCharset().name()).contains("121")) { // ditto not "===> 121"
+        while (!baos.toString(Charset.defaultCharset()).contains("121")) { // ditto not "===> 121"
             Thread.sleep(100);
         }
         pw.println("11 * 11 * 11");
-        while (!baos.toString(Charset.defaultCharset().name()).contains("1331")) {
+        while (!baos.toString(Charset.defaultCharset()).contains("1331")) {
             Thread.sleep(100);
         }
         pw.println(":q");
@@ -247,7 +247,7 @@ public class CLIActionTest {
                 "large-upload").
             stdin(new NullInputStream(size)).
             stdout(baos).stderr(System.err).join());
-        assertEquals("received " + size + " bytes", baos.toString(Charset.defaultCharset().name()).trim());
+        assertEquals("received " + size + " bytes", baos.toString(Charset.defaultCharset()).trim());
     }
 
     @TestExtension("largeTransferWebSocket")

@@ -59,7 +59,7 @@ public class DefaultUserCanonicalIdResolver extends User.CanonicalIdResolver {
         return DESCRIPTOR;
     }
 
-    public static final Descriptor<User.CanonicalIdResolver> DESCRIPTOR = new Descriptor<User.CanonicalIdResolver>() {
+    public static final Descriptor<User.CanonicalIdResolver> DESCRIPTOR = new Descriptor<>() {
         @NonNull
         @Override
         public String getDisplayName() {

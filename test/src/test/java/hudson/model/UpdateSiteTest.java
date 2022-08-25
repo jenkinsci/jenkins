@@ -38,6 +38,8 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -50,7 +52,6 @@ import javax.servlet.http.HttpServletResponse;
 import jenkins.model.Jenkins;
 import jenkins.security.UpdateSiteWarningsConfiguration;
 import jenkins.security.UpdateSiteWarningsMonitor;
-import org.apache.commons.io.FileUtils;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
@@ -72,7 +73,7 @@ public class UpdateSiteTest {
     private String getResource(String resourceName) throws IOException {
         try {
             URL url = UpdateSiteTest.class.getResource(resourceName);
-            return url != null ? FileUtils.readFileToString(new File(url.toURI())) : null;
+            return url != null ? Files.readString(Paths.get(url.toURI()), StandardCharsets.UTF_8) : null;
         } catch (URISyntaxException e) {
             return null;
         }

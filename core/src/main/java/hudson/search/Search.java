@@ -339,7 +339,7 @@ public class Search implements StaplerProxy {
          * (both end inclusive.)
          */
         public List<String> subSequence(final int start) {
-            return new AbstractList<String>() {
+            return new AbstractList<>() {
                 @Override
                 public String get(int index) {
                     StringBuilder buf = new StringBuilder();

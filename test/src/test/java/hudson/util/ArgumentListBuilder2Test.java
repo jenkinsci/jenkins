@@ -148,6 +148,6 @@ public class ArgumentListBuilder2Test {
         listener.close();
 
         assumeThat("Failed to run " + args, code, equalTo(0));
-        return out.toString(Charset.defaultCharset().name());
+        return out.toString(Charset.defaultCharset());
     }
 }

@@ -30,6 +30,10 @@ THE SOFTWARE.
     <st:attribute name="title">
       Human readable title of the section to be rendered in HTML.
     </st:attribute>
+    <st:attribute name="icon">
+      Sets the icon on the sidebar item for the section anchor link
+      The icon isn't visible in the section itself
+    </st:attribute>
     <st:attribute name="descriptors" use="required">
       hudson.model.Descriptor collection whose configuration page is rendered.
     </st:attribute>
@@ -65,7 +69,7 @@ THE SOFTWARE.
   <j:set var="instances" value="${attrs.instances ?: instance[field] ?: descriptor['default'+h.capitalize(field)]}"/>
 
   <j:if test="${!empty(descriptors) or context['org.apache.commons.jelly.body']!=null}">
-    <f:section title="${attrs.title}" name="${attrs.field?:attrs.name}">
+    <f:section title="${attrs.title}" name="${attrs.field?:attrs.name}" icon="${attrs.icon}">
       <j:if test="${attrs.field!=null}">
         <div class="stapler-class-bag tr">
           <div>

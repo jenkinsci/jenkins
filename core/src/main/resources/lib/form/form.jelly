@@ -59,7 +59,7 @@ THE SOFTWARE.
       Default: false
     </st:attribute>
   </st:documentation>
-  <form id="${id}" class="${class}" action="${action}" method="${method}" enctype="${attrs.enctype}" name="${name}" target="${attrs.target}" autocomplete="${attrs.autocomplete==true?'on':'off'}">
+  <form id="${id}" class="${attrs.class}" action="${action}" method="${method}" enctype="${attrs.enctype}" name="${name}" target="${attrs.target}" autocomplete="${attrs.autocomplete==true?'on':'off'}">
     <div width="100%" class="${attrs.tableClass}">
       <d:invokeBody/>
     </div>
