@@ -79,20 +79,20 @@ public abstract class ToolDescriptor<T extends ToolInstallation> extends Descrip
             ParameterizedType pt = (ParameterizedType) bt;
             // this 't' is the closest approximation of T of Descriptor<T>.
             Class t = Types.erasure(pt.getActualTypeArguments()[0]);
-            return (T[])Array.newInstance(t,0);
+            return (T[]) Array.newInstance(t, 0);
         } else {
             // can't infer the type. Fallback
             return emptyArray_unsafeCast();
         }
     }
-    
-    //TODO: Get rid of it? 
+
+    //TODO: Get rid of it?
     //It's unsafe according to http://stackoverflow.com/questions/2927391/whats-the-reason-i-cant-create-generic-array-types-in-java
     @SuppressWarnings("unchecked")
     @SuppressFBWarnings(value = "BC_IMPOSSIBLE_DOWNCAST",
             justification = "Such casting is generally unsafe, but we use it as a last resort.")
     private T[] emptyArray_unsafeCast() {
-        return (T[])new Object[0];
+        return (T[]) new Object[0];
     }
 
     /**
@@ -132,12 +132,12 @@ public abstract class ToolDescriptor<T extends ToolInstallation> extends Descrip
      * Default value for {@link ToolInstallation#getProperties()} used in the form binding.
      * @since 1.305
      */
-    public DescribableList<ToolProperty<?>,ToolPropertyDescriptor> getDefaultProperties() throws IOException {
-        DescribableList<ToolProperty<?>,ToolPropertyDescriptor> r
+    public DescribableList<ToolProperty<?>, ToolPropertyDescriptor> getDefaultProperties() throws IOException {
+        DescribableList<ToolProperty<?>, ToolPropertyDescriptor> r
                 = new DescribableList<>(NOOP);
 
         List<? extends ToolInstaller> installers = getDefaultInstallers();
-        if(!installers.isEmpty())
+        if (!installers.isEmpty())
             r.add(new InstallSourceProperty(installers));
 
         return r;

@@ -68,7 +68,7 @@ THE SOFTWARE.
         <div class="expanding-input">
           <div class="expanding-input__input">
             <j:set var="name" value="${attrs.name ?: '_.'+attrs.field}" />
-            <input class="setting-input" type="text"
+            <input class="jenkins-input" type="text"
                    name="${name}" value="${value}"
                    id="textarea.${name}" />
             <j:if test="${customizedFields != null and attrs.field != null and (value ?: '') != ''}">

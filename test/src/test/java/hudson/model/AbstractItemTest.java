@@ -14,14 +14,14 @@ import hudson.security.ACL;
 import hudson.security.ACLContext;
 import hudson.security.AccessDeniedException3;
 import hudson.util.FormValidation;
-import java.io.File;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.Collections;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
 import jenkins.model.Jenkins;
 import jenkins.model.ProjectNamingStrategy;
-import org.apache.commons.io.FileUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -43,12 +43,12 @@ public class AbstractItemTest {
         FreeStyleProject p = jenkins.createProject(FreeStyleProject.class, "foo");
         p.setDescription("Hello World");
 
-        FreeStyleBuild b = j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        FreeStyleBuild b = j.buildAndAssertSuccess(p);
         b.setDescription("This is my build");
 
         // update on disk representation
-        File f = p.getConfigFile().getFile();
-        FileUtils.writeStringToFile(f, FileUtils.readFileToString(f, StandardCharsets.UTF_8).replaceAll("Hello World", "Good Evening"), StandardCharsets.UTF_8);
+        Path path = p.getConfigFile().getFile().toPath();
+        Files.writeString(path, Files.readString(path, StandardCharsets.UTF_8).replaceAll("Hello World", "Good Evening"), StandardCharsets.UTF_8);
 
         // reload away
         p.doReload();
@@ -76,8 +76,9 @@ public class AbstractItemTest {
         j.jenkins.setProjectNamingStrategy(new ProjectNamingStrategy.PatternProjectNamingStrategy("bar", "", false));
         assertThat(checkNameAndReturnError(p, "foo1"), equalTo(jenkins.model.Messages.Hudson_JobNameConventionNotApplyed("foo1", "bar")));
 
-        p.scheduleBuild2(0).waitForStart();
+        FreeStyleBuild b = p.scheduleBuild2(0).waitForStart();
         assertThat(checkNameAndReturnError(p, "bar"), equalTo(Messages.Job_NoRenameWhileBuilding()));
+        j.assertBuildStatusSuccess(j.waitForCompletion(b));
     }
 
     @Test
@@ -113,14 +114,14 @@ public class AbstractItemTest {
 
         WebClient w = j.createWebClient();
         WebRequest wr = new WebRequest(w.createCrumbedUrl(p.getUrl() + "confirmRename"), HttpMethod.POST);
-        wr.setRequestParameters(Collections.singletonList(new NameValuePair("newName", "bar")));
+        wr.setRequestParameters(List.of(new NameValuePair("newName", "bar")));
         w.login("alice", "alice");
         Page page = w.getPage(wr);
         assertThat(getPath(page.getUrl()), equalTo(p.getUrl()));
         assertThat(p.getName(), equalTo("bar"));
 
         wr = new WebRequest(w.createCrumbedUrl(p.getUrl() + "confirmRename"), HttpMethod.POST);
-        wr.setRequestParameters(Collections.singletonList(new NameValuePair("newName", "baz")));
+        wr.setRequestParameters(List.of(new NameValuePair("newName", "baz")));
         w.login("bob", "bob");
 
         w.setThrowExceptionOnFailingStatusCode(false);

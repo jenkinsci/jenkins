@@ -1,8 +1,9 @@
 /*
- * Copyright (c) 2008-2009 Yahoo! Inc. 
- * All rights reserved. 
+ * Copyright (c) 2008-2009 Yahoo! Inc.
+ * All rights reserved.
  * The copyrights to the contents of this file are licensed under the MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
+
 package hudson.security.csrf;
 
 import hudson.util.MultipartFormDataParser;
@@ -34,7 +35,7 @@ import org.springframework.security.authentication.AnonymousAuthenticationToken;
 /**
  * Checks for and validates crumbs on requests that cause state changes, to
  * protect against cross site request forgeries.
- * 
+ *
  * @author dty
  */
 public class CrumbFilter implements Filter {
@@ -45,7 +46,7 @@ public class CrumbFilter implements Filter {
      */
     public CrumbIssuer getCrumbIssuer() {
         Jenkins h = Jenkins.getInstanceOrNull();
-        if(h==null)     return null;    // before Jenkins is initialized?
+        if (h == null)     return null;    // before Jenkins is initialized?
         return h.getCrumbIssuer();
     }
 
@@ -77,16 +78,16 @@ public class CrumbFilter implements Filter {
         // Copied from Stapler#canonicalPath
         private static String canonicalPath(String path) {
             List<String> r = new ArrayList<>(Arrays.asList(path.split("/+")));
-            for (int i=0; i<r.size(); ) {
-                if (r.get(i).length()==0 || r.get(i).equals(".")) {
+            for (int i = 0; i < r.size(); ) {
+                if (r.get(i).length() == 0 || r.get(i).equals(".")) {
                     // empty token occurs for example, "".split("/+") is [""]
                     r.remove(i);
                 } else
                 if (r.get(i).equals("..")) {
                     // i==0 means this is a broken URI.
                     r.remove(i);
-                    if (i>0) {
-                        r.remove(i-1);
+                    if (i > 0) {
+                        r.remove(i - 1);
                         i--;
                     }
                 } else {
@@ -104,7 +105,7 @@ public class CrumbFilter implements Filter {
                 buf.append(token);
             }
             // translation: if (path.endsWith("/") && !buf.endsWith("/"))
-            if (path.endsWith("/") && (buf.length()==0 || buf.charAt(buf.length()-1)!='/'))
+            if (path.endsWith("/") && (buf.length() == 0 || buf.charAt(buf.length() - 1) != '/'))
                 buf.append('/');
             return buf.toString();
         }
@@ -124,7 +125,7 @@ public class CrumbFilter implements Filter {
         if ("POST".equals(httpRequest.getMethod())) {
             HttpServletRequest wrappedRequest = UNPROCESSED_PATHINFO ? httpRequest : new Security1774ServletRequest(httpRequest);
             for (CrumbExclusion e : CrumbExclusion.all()) {
-                if (e.process(wrappedRequest,httpResponse,chain))
+                if (e.process(wrappedRequest, httpResponse, chain))
                     return;
             }
 
@@ -153,7 +154,7 @@ public class CrumbFilter implements Filter {
                 chain.doFilter(request, response);
             } else {
                 LOGGER.log(level, "No valid crumb was included in request for {0} by {1}. Returning {2}.", new Object[] {httpRequest.getRequestURI(), Jenkins.getAuthentication2().getName(), HttpServletResponse.SC_FORBIDDEN});
-                httpResponse.sendError(HttpServletResponse.SC_FORBIDDEN,"No valid crumb was included in the request");
+                httpResponse.sendError(HttpServletResponse.SC_FORBIDDEN, "No valid crumb was included in the request");
             }
         } else {
             chain.doFilter(request, response);

@@ -68,7 +68,7 @@ public abstract class ConfidentialStore {
      * Retrieves the currently active singleton instance of {@link ConfidentialStore}.
      */
     public static @NonNull ConfidentialStore get() {
-        if (TEST!=null) return TEST.get();
+        if (TEST != null) return TEST.get();
 
         Jenkins j = Jenkins.getInstanceOrNull();
         if (j == null) {
@@ -76,18 +76,18 @@ public abstract class ConfidentialStore {
         }
         Lookup lookup = j.lookup;
         ConfidentialStore cs = lookup.get(ConfidentialStore.class);
-        if (cs==null) {
+        if (cs == null) {
             try {
                 Iterator<ConfidentialStore> it = ServiceLoader.load(ConfidentialStore.class, ConfidentialStore.class.getClassLoader()).iterator();
                 if (it.hasNext()) {
                     cs = it.next();
                 }
             } catch (ServiceConfigurationError e) {
-                LOGGER.log(Level.WARNING, "Failed to list up ConfidentialStore implementations",e);
+                LOGGER.log(Level.WARNING, "Failed to list up ConfidentialStore implementations", e);
                 // fall through
             }
 
-            if (cs==null)
+            if (cs == null)
                 try {
                     cs = new DefaultConfidentialStore();
                 } catch (Exception e) {
@@ -95,7 +95,7 @@ public abstract class ConfidentialStore {
                     throw new Error(e);
                 }
 
-            cs = lookup.setIfNull(ConfidentialStore.class,cs);
+            cs = lookup.setIfNull(ConfidentialStore.class, cs);
         }
         return cs;
     }

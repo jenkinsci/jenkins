@@ -21,38 +21,39 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.security.stapler;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assume.assumeTrue;
 
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebRequest;
 import hudson.Functions;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import org.junit.Assume;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.TestPluginManager;
+import org.jvnet.hudson.test.recipes.WithPlugin;
 
 @Issue("SECURITY-914")
 public class Security914Test {
-    
+
     @Rule
     public JenkinsRule j = new JenkinsRule();
-    
+
     @Test
+    @WithPlugin("credentials.hpi")
     public void cannotUseInvalidLocale_toTraverseFolder() throws Exception {
-        Assume.assumeTrue(Functions.isWindows());
-        
-        if (j.jenkins.pluginManager.getPlugin("credentials") == null) {
-            ((TestPluginManager) j.jenkins.pluginManager).installDetachedPlugin("credentials");
-        }
+        assumeTrue(Functions.isWindows());
+
+        assertNotNull(j.getPluginManager().getPlugin("credentials"));
         j.createWebClient().goTo("plugin/credentials/images/24x24/credentials.png", "image/png");
-        
+
         JenkinsRule.WebClient wc = j.createWebClient()
                 .withThrowExceptionOnFailingStatusCode(false);
         WebRequest request = new WebRequest(new URL(j.getURL() + "plugin/credentials/.xml"));
@@ -60,27 +61,26 @@ public class Security914Test {
         // rootDir is in     : test\target\jenkinsTests.tmp\jenkins1274934531848159942test
         // j.jenkins.getRootDir().getName() = jenkins1274934531848159942test
         request.setAdditionalHeader("Accept-Language", "../../../../jenkinsTests.tmp/" + j.jenkins.getRootDir().getName() + "/config");
-        
+
         Page p = wc.getPage(request);
         assertEquals(HttpURLConnection.HTTP_NOT_FOUND, p.getWebResponse().getStatusCode());
         assertNotEquals(p.getWebResponse().getContentType(), "application/xml");
     }
-    
+
     @Test
+    @WithPlugin("credentials.hpi")
     public void cannotUseInvalidLocale_toAnyFileInSystem() throws Exception {
-        Assume.assumeTrue(Functions.isWindows());
-        
-        if (j.jenkins.pluginManager.getPlugin("credentials") == null) {
-            ((TestPluginManager) j.jenkins.pluginManager).installDetachedPlugin("credentials");
-        }
+        assumeTrue(Functions.isWindows());
+
+        assertNotNull(j.getPluginManager().getPlugin("credentials"));
         j.createWebClient().goTo("plugin/credentials/images/24x24/credentials.png", "image/png");
-        
+
         JenkinsRule.WebClient wc = j.createWebClient()
                 .withThrowExceptionOnFailingStatusCode(false);
         WebRequest request = new WebRequest(new URL(j.getURL() + "plugin/credentials/.ini"));
         // ../ can be multiply to infinity, no impact, we just need to have enough to reach the root
         request.setAdditionalHeader("Accept-Language", "../../../../../../../../../../../../windows/win");
-        
+
         Page p = wc.getPage(request);
         assertEquals(HttpURLConnection.HTTP_NOT_FOUND, p.getWebResponse().getStatusCode());
         assertEquals("text/html", p.getWebResponse().getContentType());

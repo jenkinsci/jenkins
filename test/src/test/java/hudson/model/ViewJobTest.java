@@ -50,14 +50,14 @@ public class ViewJobTest {
     }
 
     @SuppressWarnings({"rawtypes", "deprecation"})
-    public static final class J extends ViewJob<J,R> implements TopLevelItem {
+    public static final class J extends ViewJob<J, R> implements TopLevelItem {
 
         public J(ItemGroup parent, String name) {
             super(parent, name);
         }
 
         @Override protected void reload() {
-            runs.load(this, new RunMap.Constructor<R>() {
+            runs.load(this, new RunMap.Constructor<>() {
                 @Override public R create(File d) throws IOException {
                     return new R(J.this, d);
                 }
@@ -85,7 +85,7 @@ public class ViewJobTest {
 
     }
 
-    public static final class R extends Run<J,R> {
+    public static final class R extends Run<J, R> {
 
         public R(J j) throws IOException {
             super(j);

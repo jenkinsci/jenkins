@@ -26,9 +26,10 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+<st:adjunct includes="hudson.model.ListView.configure-entries-resources" />
 
  <f:section title="${%Job Filters}">
-  
+
   <f:entry field="recurse">
     <f:checkbox title="${%Recurse in subfolders}" id="recurse" />
   </f:entry>
@@ -70,18 +71,5 @@ THE SOFTWARE.
       <f:repeatableHeteroProperty field="columns" hasHeader="true" addCaption="${%Add column}"/>
     </f:block>
   </f:section>
-  
-  <script>
-    (function() {
-      Behaviour.specify("#recurse", 'ListView', 0, function(e) {
-        var nestedElements = $$('SPAN.nested')
-        e.onclick = function() {
-          nestedElements.each(function(el) {
-            e.checked ? el.show() : el.hide();
-          });
-        }
-      });
-    }());	
-  </script>
 
 </j:jelly>

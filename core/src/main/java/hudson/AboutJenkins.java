@@ -11,14 +11,14 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Show "About Jenkins" link.
- * 
+ *
  * @author Kohsuke Kawaguchi
  */
 @Extension @Symbol("about")
 public class AboutJenkins extends ManagementLink {
     @Override
     public String getIconFileName() {
-        return "help.png";
+        return "symbol-jenkins";
     }
 
     @Override

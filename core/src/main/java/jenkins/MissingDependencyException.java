@@ -31,7 +31,7 @@ import java.util.stream.Collectors;
 
 /**
  * Exception thrown if plugin resolution fails due to missing dependencies
- * 
+ *
  * @author Carlos Sanchez
  * @since 2.4
  *

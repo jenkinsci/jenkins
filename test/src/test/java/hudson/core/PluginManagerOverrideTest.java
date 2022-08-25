@@ -22,7 +22,7 @@ public class PluginManagerOverrideTest {
     @Test
     public void testViewOverrides() throws Exception {
         // Verify extension registered correctly and comes back in overrides
-        assertEquals(1,PluginManagerStaplerOverride.all().size());
+        assertEquals(1, PluginManagerStaplerOverride.all().size());
         assertTrue(PluginManagerStaplerOverride.all().get(0) instanceof BasicPluginManagerOverride);
 
         // Verify we can load untouched resources

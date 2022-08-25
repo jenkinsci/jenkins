@@ -50,7 +50,7 @@ public class PrivateKeyProviderTest {
         String password = "password";
         assertKeyPairNotNull(file, password);
     }
-    
+
     /**
     key command: ssh-keygen -f rsa -t rsa -b 1024 -m PEM
     */
@@ -69,7 +69,7 @@ public class PrivateKeyProviderTest {
         String password = "password";
         assertKeyPairNotNull(file, password);
     }
-    
+
     /**
     key command: ssh-keygen -f openssh -t rsa -b 1024
     */
@@ -78,7 +78,7 @@ public class PrivateKeyProviderTest {
         File file = new File(this.getClass().getResource("openssh").getFile());
         assertKeyPairNotNull(file, null);
     }
-    
+
     /**
      key command: ssh-keygen -f openssh-unsupported -t rsa -b 1024 -m PKCS8 -p password
      */
@@ -123,7 +123,7 @@ public class PrivateKeyProviderTest {
     /**
     key command: ssh-keygen -f openssh -t rsa -b 1024
     in this key we remove some lines to break the key.
-    */    
+    */
     @Test
     public void loadKeyBroken() throws IOException, GeneralSecurityException {
         File file = new File(this.getClass().getResource("openssh-broken").getFile());

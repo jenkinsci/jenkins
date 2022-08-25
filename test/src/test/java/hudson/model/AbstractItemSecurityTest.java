@@ -60,7 +60,7 @@ public class AbstractItemSecurityTest {
         FreeStyleProject project = jenkinsRule.createFreeStyleProject("security-167");
         project.setDescription("Wibble");
         try {
-            project.updateByXml((Source)new StreamSource(new StringReader(xml)));
+            project.updateByXml((Source) new StreamSource(new StringReader(xml)));
             // if we didn't fail JAXP has thrown away the entity.
             assertThat(project.getDescription(), emptyOrNullString());
         } catch (IOException ex) {

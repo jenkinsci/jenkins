@@ -31,14 +31,11 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <j:if test="${it.due}">
-    <j:set var="statData" value="${it.statData}"/>
-    <j:if test="${statData != null}">
-      <script>
-        Behaviour.addLoadEvent(function() {
-          loadScript("https://usage.jenkins.io/usage-stats.js?${statData}");
-        });
-      </script>
+    <j:if test="${it.due}">
+      <j:set var="statData" value="${it.statData}"/>
+      <j:if test="${statData != null}">
+        <div id="usage-stats-div" data-inserted-from-java="${statData}"></div>
+        <st:adjunct includes="hudson.model.UsageStatistics.footer-resources" />
+      </j:if>
     </j:if>
-  </j:if>
 </j:jelly>

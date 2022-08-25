@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import static org.junit.Assert.assertFalse;
@@ -126,7 +127,7 @@ public class ResourceListTest {
         assertFalse(z.isCollidingWith(y));
         assertFalse(y.isCollidingWith(z));
 
-        ResourceList w = ResourceList.union(x,y);
+        ResourceList w = ResourceList.union(x, y);
         assertTrue(w.isCollidingWith(z));
         assertTrue(z.isCollidingWith(w));
 
@@ -195,7 +196,7 @@ public class ResourceListTest {
         assertFalse("Using less than the limit of child resources should not be a problem", z.isCollidingWith(y));
         assertFalse("Using less than the limit of child resources should not be a problem", y.isCollidingWith(z));
 
-        ResourceList w = ResourceList.union(x,y);
+        ResourceList w = ResourceList.union(x, y);
 
         assertFalse("Using less than the limit of child resources should not be a problem", w.isCollidingWith(z));
         assertFalse("Using less than the limit of child resources should not be a problem", z.isCollidingWith(w));
@@ -203,11 +204,11 @@ public class ResourceListTest {
         assertFalse("Total count = 2, limit is 3", w.isCollidingWith(x));
         assertFalse("Total count = 2, limit is 3", x.isCollidingWith(w));
 
-        ResourceList v = ResourceList.union(x,x);  // write count is two
+        ResourceList v = ResourceList.union(x, x);  // write count is two
         assertFalse("Total count = 3, limit is 3", v.isCollidingWith(x));
         assertFalse("Total count = 3, limit is 3", x.isCollidingWith(v));
 
-        v = ResourceList.union(v,x);  // write count is three
+        v = ResourceList.union(v, x);  // write count is three
         assertTrue("Total count = 4, limit is 3", v.isCollidingWith(x));
         assertTrue("Total count = 4, limit is 3", x.isCollidingWith(v));
     }
@@ -234,7 +235,7 @@ public class ResourceListTest {
     @Test
     public void multiWriteN() {
         y.w(f);
-        for (int i=0; i<f.numConcurrentWrite; i++) {
+        for (int i = 0; i < f.numConcurrentWrite; i++) {
             assertFalse("Total = W" + i + ", Limit = W" + f.numConcurrentWrite, x.isCollidingWith(y));
             assertFalse("Total = W" + i + ", Limit = W" + f.numConcurrentWrite, y.isCollidingWith(x));
             x.w(f);

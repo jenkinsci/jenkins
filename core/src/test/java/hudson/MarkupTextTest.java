@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -40,7 +41,7 @@ public class MarkupTextTest {
         MarkupText t = new MarkupText("I fixed issue #155. The rest is trick text: xissue #155 issue #123x");
         for (SubText st : t.findTokens(pattern)) {
             assertEquals(1, st.groupCount());
-            st.surroundWith("<$1>","<$1>");
+            st.surroundWith("<$1>", "<$1>");
         }
 
         assertEquals("I fixed <155>issue #155<155>. The rest is trick text: xissue #155 issue #123x", t.toString(false));
@@ -50,7 +51,7 @@ public class MarkupTextTest {
     public void boundary() {
         MarkupText t = new MarkupText("issue #155---issue #123");
         for (SubText st : t.findTokens(pattern))
-            st.surroundWith("<$1>","<$1>");
+            st.surroundWith("<$1>", "<$1>");
 
         assertEquals("<155>issue #155<155>---<123>issue #123<123>", t.toString(false));
     }
@@ -62,7 +63,7 @@ public class MarkupTextTest {
         assertEquals(1, tokens.size(), "Expected one token");
         assertEquals("issue 155, 145", tokens.get(0).group(0), "Expected single token was incorrect");
         for (SubText st : tokens.get(0).findTokens(Pattern.compile("([0-9]+)")))
-            st.surroundWith("<$1>","<$1>");
+            st.surroundWith("<$1>", "<$1>");
 
         assertEquals("Fixed 2 issues in this commit, fixing issue <155>155<155>, <145>145<145>", t.toString(false));
     }
@@ -70,10 +71,10 @@ public class MarkupTextTest {
     @Test
     public void literalTextSurround() {
         MarkupText text = new MarkupText("AAA test AAA");
-        for(SubText token : text.findTokens(Pattern.compile("AAA"))) {
-            token.surroundWithLiteral("$9","$9");
+        for (SubText token : text.findTokens(Pattern.compile("AAA"))) {
+            token.surroundWithLiteral("$9", "$9");
         }
-        assertEquals("$9AAA$9 test $9AAA$9",text.toString(false));
+        assertEquals("$9AAA$9 test $9AAA$9", text.toString(false));
     }
 
     /**
@@ -82,24 +83,24 @@ public class MarkupTextTest {
     @Test
     public void adjacent() {
         MarkupText text = new MarkupText("abcdef");
-        text.addMarkup(0,3,"$","$");
-        text.addMarkup(3,6,"#","#");
-        assertEquals("$abc$#def#",text.toString(false));
+        text.addMarkup(0, 3, "$", "$");
+        text.addMarkup(3, 6, "#", "#");
+        assertEquals("$abc$#def#", text.toString(false));
 
         text = new MarkupText("abcdef");
-        text.addMarkup(3,6,"#","#");
-        text.addMarkup(0,3,"$","$");
-        assertEquals("$abc$#def#",text.toString(false));
+        text.addMarkup(3, 6, "#", "#");
+        text.addMarkup(0, 3, "$", "$");
+        assertEquals("$abc$#def#", text.toString(false));
     }
 
     @Test
     public void escape() {
         MarkupText text = new MarkupText("&&&");
-        assertEquals("&amp;&amp;&amp;",text.toString(false));
+        assertEquals("&amp;&amp;&amp;", text.toString(false));
 
-        text.addMarkup(1,"<foo>");
-        text.addMarkup(2,"&nbsp;");
-        assertEquals("&amp;<foo>&amp;&nbsp;&amp;",text.toString(false));
+        text.addMarkup(1, "<foo>");
+        text.addMarkup(2, "&nbsp;");
+        assertEquals("&amp;<foo>&amp;&nbsp;&amp;", text.toString(false));
     }
 
     @Test

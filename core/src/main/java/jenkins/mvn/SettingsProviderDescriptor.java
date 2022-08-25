@@ -14,7 +14,7 @@ public abstract class SettingsProviderDescriptor extends Descriptor<SettingsProv
 
 
     @WithBridgeMethods(List.class)
-    public static DescriptorExtensionList<SettingsProvider,SettingsProviderDescriptor> all() {
+    public static DescriptorExtensionList<SettingsProvider, SettingsProviderDescriptor> all() {
         return Jenkins.get().getDescriptorList(SettingsProvider.class);
     }
 }

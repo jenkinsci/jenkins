@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.node_monitors;
 
 import hudson.Functions;
@@ -54,7 +55,7 @@ public abstract class DiskSpaceMonitorDescriptor extends AbstractAsyncNodeMonito
         private final String path;
         @Exported
         public final long size;
-        
+
         private boolean triggered;
         private Class<? extends AbstractDiskSpaceMonitor> trigger;
 
@@ -69,12 +70,12 @@ public abstract class DiskSpaceMonitorDescriptor extends AbstractAsyncNodeMonito
 
         @Override
         public String toString() {
-            if(triggered) {
+            if (triggered) {
                 return Messages.DiskSpaceMonitorDescriptor_DiskSpace_FreeSpaceTooLow(getGbLeft(), path);
             }
             return Messages.DiskSpaceMonitorDescriptor_DiskSpace_FreeSpace(getGbLeft(), path);
         }
-        
+
         /**
          * The path that was checked
          */
@@ -96,8 +97,8 @@ public abstract class DiskSpaceMonitorDescriptor extends AbstractAsyncNodeMonito
          */
         public String getGbLeft() {
             long space = size;
-            space/=1024L;   // convert to KB
-            space/=1024L;   // convert to MB
+            space /= 1024L;   // convert to KB
+            space /= 1024L;   // convert to MB
 
             return new BigDecimal(space).scaleByPowerOfTen(-3).toPlainString();
         }
@@ -107,33 +108,33 @@ public abstract class DiskSpaceMonitorDescriptor extends AbstractAsyncNodeMonito
          */
         public String toHtml() {
             String humanReadableSpace = Functions.humanReadableByteSize(size);
-            if(triggered) {
+            if (triggered) {
                 return Util.wrapToErrorSpan(humanReadableSpace);
             }
             return humanReadableSpace;
         }
-        
+
         /**
          * Sets whether this disk space amount should be treated as outside
          * the acceptable conditions or not.
          */
         protected void setTriggered(boolean triggered) {
-        	this.triggered = triggered;
+            this.triggered = triggered;
         }
 
-        /** 
+        /**
          * Same as {@link DiskSpace#setTriggered(boolean)}, also sets the trigger class which made the decision
          */
         protected void setTriggered(Class<? extends AbstractDiskSpaceMonitor> trigger, boolean triggered) {
             this.trigger = trigger;
             this.triggered = triggered;
         }
-        
+
         @Override
         public Class<? extends AbstractDiskSpaceMonitor> getTrigger() {
             return trigger;
         }
-        
+
         /**
          * Parses a human readable size description like "1GB", "0.5m", etc. into {@link DiskSpace}
          *
@@ -143,23 +144,23 @@ public abstract class DiskSpaceMonitorDescriptor extends AbstractAsyncNodeMonito
         public static DiskSpace parse(String size) throws ParseException {
             size = size.toUpperCase(Locale.ENGLISH).trim();
             if (size.endsWith("B"))    // cut off 'B' from KB, MB, etc.
-                size = size.substring(0,size.length()-1);
+                size = size.substring(0, size.length() - 1);
 
-            long multiplier=1;
+            long multiplier = 1;
 
             // look for the size suffix. The goal here isn't to detect all invalid size suffix,
             // so we ignore double suffix like "10gkb" or anything like that.
             String suffix = "KMGT";
-            for (int i=0; i<suffix.length(); i++) {
-                if (size.endsWith(suffix.substring(i,i+1))) {
+            for (int i = 0; i < suffix.length(); i++) {
+                if (size.endsWith(suffix.substring(i, i + 1))) {
                     multiplier = 1;
-                    for (int j=0; j<=i; j++ )
-                        multiplier*=1024;
-                    size = size.substring(0,size.length()-1);
+                    for (int j = 0; j <= i; j++)
+                        multiplier *= 1024;
+                    size = size.substring(0, size.length() - 1);
                 }
             }
 
-            return new DiskSpace("", (long)(Double.parseDouble(size.trim())*multiplier));
+            return new DiskSpace("", (long) (Double.parseDouble(size.trim()) * multiplier));
         }
 
         private static final long serialVersionUID = 2L;
@@ -167,12 +168,14 @@ public abstract class DiskSpaceMonitorDescriptor extends AbstractAsyncNodeMonito
 
     protected static final class GetUsableSpace extends MasterToSlaveFileCallable<DiskSpace> {
         public GetUsableSpace() {}
+
         @Override
         public DiskSpace invoke(File f, VirtualChannel channel) throws IOException {
                 long s = f.getUsableSpace();
-                if(s<=0)    return null;
+                if (s <= 0)    return null;
                 return new DiskSpace(f.getCanonicalPath(), s);
         }
+
         private static final long serialVersionUID = 1L;
     }
 }

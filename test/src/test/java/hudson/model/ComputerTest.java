@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -98,7 +99,7 @@ public class ComputerTest {
 
         Page page = j.submit(form);
         assertEquals(NOTE, HttpURLConnection.HTTP_BAD_REQUEST, page.getWebResponse().getStatusCode());
-        assertThat(NOTE, page.getWebResponse().getContentAsString(), 
+        assertThat(NOTE, page.getWebResponse().getContentAsString(),
                 containsString("Agent called ‘nodeA’ already exists"));
     }
 
@@ -130,6 +131,7 @@ public class ComputerTest {
     public void addAction() throws Exception {
         Computer c = j.createSlave().toComputer();
         class A extends InvisibleAction {}
+
         assertEquals(0, c.getActions(A.class).size());
         c.addAction(new A());
         assertEquals(1, c.getActions(A.class).size());

@@ -6,15 +6,13 @@ def l = namespace(lib.LayoutTagLib)
 def f = namespace(lib.FormTagLib)
 
 l.layout(permission: Jenkins.ADMINISTER) {
-    def title = _("title", my.shortName)
+    def title = _("title", my.displayName)
     l.header(title:title)
     l.main_panel {
         h1 {
-            l.icon(class: 'icon-error icon-xlg')
-            text(" ")
             text(title)
         }
-        p { raw _("msg",my.shortName) }
+        p { raw _("msg", my.displayName) }
         f.form(method:"post",action:"doUninstall") {
             f.submit(value:_("Yes"))
         }

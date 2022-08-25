@@ -30,31 +30,31 @@ public class DiskSpaceMonitorDescriptorTest {
         DumbSlave s = j.createSlave();
         SlaveComputer c = s.getComputer();
         c.connect(false).get(); // wait until it's connected
-        if(c.isOffline())
-            fail("Slave failed to go online: "+c.getLog());
+        if (c.isOffline())
+            fail("Slave failed to go online: " + c.getLog());
 
         DiskSpace du = TemporarySpaceMonitor.DESCRIPTOR.monitor(c);
         du.toHtml();
-        assertTrue(du.size>0);
+        assertTrue(du.size > 0);
     }
 
     @Test
     @WithoutJenkins
     public void parse() throws Exception {
-        assertEquals(1,DiskSpace.parse("1").size);
-        assertEquals(1024,DiskSpace.parse("1KB").size);
-        assertEquals(1024,DiskSpace.parse("1K").size);
-        assertEquals(1024,DiskSpace.parse("1kb").size);
-        assertEquals(1024*1024,DiskSpace.parse("1MB").size);
-        assertEquals(1024*1024*1024,DiskSpace.parse("1GB").size);
-        assertEquals(512*1024*1024,DiskSpace.parse("0.5GB").size);
+        assertEquals(1, DiskSpace.parse("1").size);
+        assertEquals(1024, DiskSpace.parse("1KB").size);
+        assertEquals(1024, DiskSpace.parse("1K").size);
+        assertEquals(1024, DiskSpace.parse("1kb").size);
+        assertEquals(1024 * 1024, DiskSpace.parse("1MB").size);
+        assertEquals(1024 * 1024 * 1024, DiskSpace.parse("1GB").size);
+        assertEquals(512 * 1024 * 1024, DiskSpace.parse("0.5GB").size);
     }
 
     @Test
     @WithoutJenkins
     @Issue("JENKINS-59383")
     public void string() {
-        DiskSpace du = new DiskSpace("/tmp", 123*1024*1024);
+        DiskSpace du = new DiskSpace("/tmp", 123 * 1024 * 1024);
         assertEquals("0.123GB left on /tmp.", du.toString());
         du.setTriggered(true);
         assertEquals("Disk space is too low. Only 0.123GB left on /tmp.", du.toString());

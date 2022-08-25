@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2011, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
@@ -43,7 +44,7 @@ import jenkins.model.Jenkins;
  * @author Kohsuke Kawaguchi
  * @see Jenkins#getFingerprintMap()
  */
-public final class FingerprintMap extends KeyedDataStorage<Fingerprint,FingerprintMap.FingerprintParams> {
+public final class FingerprintMap extends KeyedDataStorage<Fingerprint, FingerprintMap.FingerprintParams> {
 
     /**
      * Returns true if there's some data in the fingerprint database.
@@ -60,25 +61,25 @@ public final class FingerprintMap extends KeyedDataStorage<Fingerprint,Fingerpri
      * @throws IOException Loading error
      */
     public @NonNull Fingerprint getOrCreate(@CheckForNull AbstractBuild build, @NonNull String fileName, @NonNull byte[] md5sum) throws IOException {
-        return getOrCreate(build,fileName, Util.toHexString(md5sum));
+        return getOrCreate(build, fileName, Util.toHexString(md5sum));
     }
 
     public @NonNull Fingerprint getOrCreate(@CheckForNull AbstractBuild build, @NonNull String fileName, @NonNull String md5sum) throws IOException {
-        return super.getOrCreate(md5sum, new FingerprintParams(build,fileName));
+        return super.getOrCreate(md5sum, new FingerprintParams(build, fileName));
     }
 
     public @NonNull Fingerprint getOrCreate(@CheckForNull Run build, @NonNull String fileName, @NonNull String md5sum) throws IOException {
-        return super.getOrCreate(md5sum, new FingerprintParams(build,fileName));
+        return super.getOrCreate(md5sum, new FingerprintParams(build, fileName));
     }
 
     @Override
     protected Fingerprint get(String md5sum, boolean createIfNotExist, FingerprintParams createParams) throws IOException {
         // sanity check
-        if(md5sum.length()!=32)
+        if (md5sum.length() != 32)
             return null;    // illegal input
         md5sum = md5sum.toLowerCase(Locale.ENGLISH);
 
-        return super.get(md5sum,createIfNotExist,createParams);
+        return super.get(md5sum, createIfNotExist, createParams);
     }
 
     @Override
@@ -102,7 +103,7 @@ static class FingerprintParams {
         this.build = build;
         this.fileName = fileName;
 
-        assert fileName!=null;
+        assert fileName != null;
     }
 }
 }

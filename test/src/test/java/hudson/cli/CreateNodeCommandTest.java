@@ -37,6 +37,8 @@ import hudson.model.Computer;
 import hudson.model.Messages;
 import hudson.model.Node;
 import hudson.model.Slave;
+import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
 import jenkins.model.Jenkins;
 import org.junit.Before;
 import org.junit.Rule;
@@ -55,7 +57,7 @@ public class CreateNodeCommandTest {
         command = new CLICommandInvoker(j, new CreateNodeCommand());
     }
 
-    @Test public void createNodeShouldFailWithoutComputerCreatePermission() throws Exception {
+    @Test public void createNodeShouldFailWithoutComputerCreatePermission() {
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ)
@@ -68,7 +70,7 @@ public class CreateNodeCommandTest {
         assertThat(result, failedWith(6));
     }
 
-    @Test public void createNode() throws Exception {
+    @Test public void createNode() {
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Computer.CREATE, Jenkins.READ)
@@ -83,7 +85,7 @@ public class CreateNodeCommandTest {
         assertThat(updated.getNumExecutors(), equalTo(42));
     }
 
-    @Test public void createNodeSpecifyingNameExplicitly() throws Exception {
+    @Test public void createNodeSpecifyingNameExplicitly() {
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Computer.CREATE, Jenkins.READ)
@@ -166,5 +168,74 @@ public class CreateNodeCommandTest {
 
         // ensure not side effects
         assertEquals(nodeListSizeBefore, j.jenkins.getNodes().size());
+    }
+
+    @Test
+    @Issue("SECURITY-2424")
+    public void cannotCreateNodeWithTrailingDot_withoutOtherNode() {
+        int nodeListSizeBefore = j.jenkins.getNodes().size();
+
+        CLICommandInvoker.Result result = command
+                .withStdin(new ByteArrayInputStream("<slave/>".getBytes(StandardCharsets.UTF_8)))
+                .invokeWithArgs("nodeA.")
+                ;
+
+        assertThat(result.stderr(), containsString(Messages.Hudson_TrailingDot()));
+        assertThat(result, hasNoStandardOutput());
+        assertThat(result, failedWith(1));
+
+        // ensure not side effects
+        assertEquals(nodeListSizeBefore, j.jenkins.getNodes().size());
+    }
+
+    @Test
+    @Issue("SECURITY-2424")
+    public void cannotCreateNodeWithTrailingDot_withExistingNode() {
+        int nodeListSizeBefore = j.jenkins.getNodes().size();
+
+        assertThat(command.withStdin(new ByteArrayInputStream("<slave/>".getBytes(StandardCharsets.UTF_8))).invokeWithArgs("nodeA"), succeededSilently());
+        assertEquals(nodeListSizeBefore + 1, j.jenkins.getNodes().size());
+
+        CLICommandInvoker.Result result = command
+                .withStdin(new ByteArrayInputStream("<slave/>".getBytes(StandardCharsets.UTF_8)))
+                .invokeWithArgs("nodeA.")
+                ;
+
+        assertThat(result.stderr(), containsString(Messages.Hudson_TrailingDot()));
+        assertThat(result, hasNoStandardOutput());
+        assertThat(result, failedWith(1));
+
+        // ensure not side effects
+        assertEquals(nodeListSizeBefore + 1, j.jenkins.getNodes().size());
+    }
+
+    @Test
+    @Issue("SECURITY-2424")
+    public void cannotCreateNodeWithTrailingDot_exceptIfEscapeHatchIsSet() {
+        String propName = Jenkins.NAME_VALIDATION_REJECTS_TRAILING_DOT_PROP;
+        String initialValue = System.getProperty(propName);
+        System.setProperty(propName, "false");
+        try {
+            int nodeListSizeBefore = j.jenkins.getNodes().size();
+
+            assertThat(command.withStdin(new ByteArrayInputStream("<slave/>".getBytes(StandardCharsets.UTF_8))).invokeWithArgs("nodeA"), succeededSilently());
+            assertEquals(nodeListSizeBefore + 1, j.jenkins.getNodes().size());
+
+            CLICommandInvoker.Result result = command
+                    .withStdin(new ByteArrayInputStream("<slave/>".getBytes(StandardCharsets.UTF_8)))
+                    .invokeWithArgs("nodeA.")
+                    ;
+
+            assertThat(result, succeededSilently());
+
+            assertEquals(nodeListSizeBefore + 2, j.jenkins.getNodes().size());
+        }
+        finally {
+            if (initialValue == null) {
+                System.clearProperty(propName);
+            } else {
+                System.setProperty(propName, initialValue);
+            }
+        }
     }
 }

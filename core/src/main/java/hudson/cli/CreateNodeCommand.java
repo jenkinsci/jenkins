@@ -37,7 +37,7 @@ import org.kohsuke.args4j.Argument;
 @Extension
 public class CreateNodeCommand extends CLICommand {
 
-    @Argument(metaVar="NODE", usage="Name of the node")
+    @Argument(metaVar = "NODE", usage = "Name of the node")
     public String nodeName;
 
     @Override

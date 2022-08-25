@@ -28,15 +28,15 @@ THE SOFTWARE.
   <dl>
     <dt><a href="../buildNumber">Build number</a></dt>
     <dd>
-      This URL returns the build number in <tt>text/plain</tt> format.
+      This URL returns the build number in <code>text/plain</code> format.
     </dd>
     <dt><a href="../buildTimestamp">Build timestamp</a></dt>
     <dd>
-      This URL returns the build timestamp. You can also use the <tt>format</tt> query parameter
+      This URL returns the build timestamp. You can also use the <code>format</code> query parameter
       to control the date format, which follows
-      <a href="https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html">the <tt>SimpleDateFormat</tt> format pattern</a>.
+      <a href="https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html">the <code>SimpleDateFormat</code> format pattern</a>.
       (<a href="../buildTimestamp?format=yyyy/MM/dd">example</a>)
-      You can also use the <tt>Accept-Language</tt> HTTP header to control the locale
+      You can also use the <code>Accept-Language</code> HTTP header to control the locale
       in which the date is formatted.
     </dd>
   </dl>
@@ -47,13 +47,13 @@ THE SOFTWARE.
     You'll basically send GET request to
     <a href="../logText/progressiveText?start=0">this URL</a> (or <a href="../logText/progressiveHtml?start=0">this URL</a> if you
     want HTML that can be put into &amp;lt;pre> tag.)
-    The <tt>start</tt> parameter controls the byte offset of where you start.
+    The <code>start</code> parameter controls the byte offset of where you start.
   </p><p>
-    The response will contain a chunk of the console output, as well as the <tt>X-Text-Size</tt> header that represents
+    The response will contain a chunk of the console output, as well as the <code>X-Text-Size</code> header that represents
     the bytes offset (of the raw log file).
-    This is the number you want to use as the <tt>start</tt> parameter for the next call.
+    This is the number you want to use as the <code>start</code> parameter for the next call.
   </p><p>
-    If the response also contains the <tt>X-More-Data: true</tt> header, the server is indicating that the build
+    If the response also contains the <code>X-More-Data: true</code> header, the server is indicating that the build
     is in progress, and you need to repeat the request after some delay. The Jenkins UI waits 5 seconds before making
     the next call. When this header is not present, you know that you've retrieved all the data and the build is complete.
   </p>

@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.slaves;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -28,9 +29,8 @@ import hudson.model.Computer;
 import hudson.model.Descriptor.FormException;
 import hudson.model.Slave;
 import hudson.model.TaskListener;
-import hudson.util.StreamTaskListener;
+import hudson.util.LogTaskListener;
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -44,7 +44,7 @@ import jenkins.model.Jenkins;
  */
 public abstract class AbstractCloudSlave extends Slave {
 
-    public AbstractCloudSlave(@NonNull String name, String remoteFS, ComputerLauncher launcher)
+    protected AbstractCloudSlave(@NonNull String name, String remoteFS, ComputerLauncher launcher)
             throws FormException, IOException {
         super(name, remoteFS, launcher);
     }
@@ -54,7 +54,7 @@ public abstract class AbstractCloudSlave extends Slave {
      * @deprecated since 2.184
      */
     @Deprecated
-    public AbstractCloudSlave(String name, String nodeDescription, String remoteFS, String numExecutors,
+    protected AbstractCloudSlave(String name, String nodeDescription, String remoteFS, String numExecutors,
                               Mode mode, String labelString, ComputerLauncher launcher,
                               RetentionStrategy retentionStrategy, List<? extends NodeProperty<?>> nodeProperties)
             throws FormException, IOException {
@@ -66,7 +66,7 @@ public abstract class AbstractCloudSlave extends Slave {
      * @deprecated since 2.184
      */
     @Deprecated
-    public AbstractCloudSlave(String name, String nodeDescription, String remoteFS, int numExecutors,
+    protected AbstractCloudSlave(String name, String nodeDescription, String remoteFS, int numExecutors,
                               Mode mode, String labelString, ComputerLauncher launcher,
                               RetentionStrategy retentionStrategy, List<? extends NodeProperty<?>> nodeProperties)
             throws FormException, IOException {
@@ -85,13 +85,12 @@ public abstract class AbstractCloudSlave extends Slave {
             computer.recordTermination();
         }
         try {
-            // TODO: send the output to somewhere real
-            _terminate(new StreamTaskListener(System.out, Charset.defaultCharset()));
+            _terminate(computer instanceof SlaveComputer ? ((SlaveComputer) computer).getListener() : new LogTaskListener(LOGGER, Level.INFO));
         } finally {
             try {
                 Jenkins.get().removeNode(this);
             } catch (IOException e) {
-                LOGGER.log(Level.WARNING, "Failed to remove "+name,e);
+                LOGGER.log(Level.WARNING, "Failed to remove " + name, e);
             }
         }
     }

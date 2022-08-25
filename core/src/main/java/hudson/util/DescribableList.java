@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.util;
 
 import com.thoughtworks.xstream.converters.Converter;
@@ -70,7 +71,7 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
 
     /**
      * @deprecated since 2008-08-15.
-     *      Use {@link #DescribableList(Saveable)} 
+     *      Use {@link #DescribableList(Saveable)}
      */
     @Deprecated
     public DescribableList(Owner owner) {
@@ -99,7 +100,7 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
      * Removes all instances of the same type, then add the new one.
      */
     public void replace(T item) throws IOException {
-        removeAll((Class)item.getClass());
+        removeAll((Class) item.getClass());
         data.add(item);
         onModified();
     }
@@ -110,7 +111,7 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
     public T getDynamic(String id) {
         // by ID
         for (T t : data)
-            if(t.getDescriptor().getId().equals(id))
+            if (t.getDescriptor().getId().equals(id))
                 return t;
 
         // by position
@@ -125,18 +126,18 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
 
     public T get(D descriptor) {
         for (T t : data)
-            if(t.getDescriptor()==descriptor)
+            if (t.getDescriptor() == descriptor)
                 return t;
         return null;
     }
 
     public boolean contains(D d) {
-        return get(d)!=null;
+        return get(d) != null;
     }
 
     public void remove(D descriptor) throws IOException {
         for (T t : data) {
-            if(t.getDescriptor()==descriptor) {
+            if (t.getDescriptor() == descriptor) {
                 data.remove(t);
                 onModified();
                 return;
@@ -148,8 +149,8 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
      * Creates a detached map from the current snapshot of the data, keyed from a descriptor to an instance.
      */
     @SuppressWarnings("unchecked")
-    public Map<D,T> toMap() {
-        return (Map)Descriptor.toMap(data);
+    public Map<D, T> toMap() {
+        return (Map) Descriptor.toMap(data);
     }
 
     /**
@@ -166,22 +167,22 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
         List<T> newList = new ArrayList<>();
 
         for (Descriptor<T> d : descriptors) {
-            T existing = get((D)d);
+            T existing = get((D) d);
             String name = d.getJsonSafeClassName();
             JSONObject o = json.optJSONObject(name);
 
             T instance = null;
-            if (o!=null) {
+            if (o != null) {
                 if (existing instanceof ReconfigurableDescribable)
-                    instance = (T)((ReconfigurableDescribable)existing).reconfigure(req,o);
+                    instance = (T) ((ReconfigurableDescribable) existing).reconfigure(req, o);
                 else
                     instance = d.newInstance(req, o);
             } else {
                 if (existing instanceof ReconfigurableDescribable)
-                    instance = (T)((ReconfigurableDescribable)existing).reconfigure(req,null);
+                    instance = (T) ((ReconfigurableDescribable) existing).reconfigure(req, null);
             }
 
-            if (instance!=null)
+            if (instance != null)
                 newList.add(instance);
         }
 
@@ -194,7 +195,7 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
      */
     @Deprecated
     public void rebuild(StaplerRequest req, JSONObject json, List<? extends Descriptor<T>> descriptors, String prefix) throws FormException, IOException {
-        rebuild(req,json,descriptors);
+        rebuild(req, json, descriptors);
     }
 
     /**
@@ -206,20 +207,20 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
      * significant.
      */
     public void rebuildHetero(StaplerRequest req, JSONObject formData, Collection<? extends Descriptor<T>> descriptors, String key) throws FormException, IOException {
-        replaceBy(Descriptor.newInstancesFromHeteroList(req,formData,key,descriptors));
+        replaceBy(Descriptor.newInstancesFromHeteroList(req, formData, key, descriptors));
     }
 
     /**
      * Picks up {@link DependencyDeclarer}s and allow it to build dependencies.
      */
-    public void buildDependencyGraph(AbstractProject owner,DependencyGraph graph) {
+    public void buildDependencyGraph(AbstractProject owner, DependencyGraph graph) {
         for (Object o : this) {
             if (o instanceof DependencyDeclarer) {
                 DependencyDeclarer dd = (DependencyDeclarer) o;
                 try {
-                    dd.buildDependencyGraph(owner,graph);
+                    dd.buildDependencyGraph(owner, graph);
                 } catch (RuntimeException e) {
-                    LOGGER.log(Level.SEVERE, "Failed to build dependency graph for " + owner,e);
+                    LOGGER.log(Level.SEVERE, "Failed to build dependency graph for " + owner, e);
                 }
             }
         }

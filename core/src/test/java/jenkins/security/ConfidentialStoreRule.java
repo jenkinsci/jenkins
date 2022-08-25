@@ -8,7 +8,7 @@ import org.junit.rules.ExternalResource;
 public class ConfidentialStoreRule extends ExternalResource {
 
     @Override
-    protected void before() throws Throwable {
+    protected void before() {
         ConfidentialStore.Mock.INSTANCE.clear();
     }
 

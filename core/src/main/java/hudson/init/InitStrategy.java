@@ -28,7 +28,7 @@ import org.kohsuke.MetaInfServices;
  *
  * <p>
  * To register, put {@link MetaInfServices} on your implementation.
- * 
+ *
  * @author Kohsuke Kawaguchi
  */
 public class InitStrategy {
@@ -58,10 +58,10 @@ public class InitStrategy {
 
         return r;
     }
-    
+
     private void listPluginFiles(PluginManager pm, String extension, Collection<File> all) throws IOException {
         File[] files = pm.rootDir.listFiles(new FilterByExtension(extension));
-        if (files==null)
+        if (files == null)
             throw new IOException("Jenkins is unable to create " + pm.rootDir + "\nPerhaps its security privilege is insufficient");
 
         all.addAll(Arrays.asList(files));
@@ -99,7 +99,7 @@ public class InitStrategy {
 
     /**
      * Selectively skip some of the initialization tasks.
-     * 
+     *
      * @return
      *      true to skip the execution.
      */

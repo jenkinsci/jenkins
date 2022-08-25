@@ -98,7 +98,7 @@ public abstract class AsynchronousExecution extends RuntimeException {
 
     /**
      * Obtains the associated executor.
-     * @return Associated Executor. May be {@code null} if {@link #setExecutorWithoutCompleting(hudson.model.Executor)} 
+     * @return Associated Executor. May be {@code null} if {@link #setExecutorWithoutCompleting(hudson.model.Executor)}
      * has not been called yet.
      */
     @CheckForNull
@@ -135,7 +135,7 @@ public abstract class AsynchronousExecution extends RuntimeException {
      * @param error normally null (preferable to handle errors yourself), but may be specified to simulate an exception from {@link Executable#run}, as per {@link ExecutorListener#taskCompletedWithProblems}
      */
     public final synchronized void completed(@CheckForNull Throwable error) {
-        if (executor!=null) {
+        if (executor != null) {
             executor.completedAsynchronous(error);
         } else {
             result = error == null ? NULL : error;

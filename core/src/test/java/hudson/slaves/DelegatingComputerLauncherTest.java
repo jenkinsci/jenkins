@@ -3,25 +3,20 @@ package hudson.slaves;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
-import static org.powermock.api.mockito.PowerMockito.mock;
-import static org.powermock.api.mockito.PowerMockito.when;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.when;
 
 import hudson.DescriptorExtensionList;
 import hudson.model.Descriptor;
 import java.util.ArrayList;
 import jenkins.model.Jenkins;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
+import org.mockito.MockedStatic;
 
 /**
  * @author peppelan
  */
-@RunWith(PowerMockRunner.class)
-@PowerMockIgnore({"com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*"})
 public class DelegatingComputerLauncherTest {
 
     public static class DummyOne extends DelegatingComputerLauncher {
@@ -48,25 +43,25 @@ public class DelegatingComputerLauncherTest {
     // Ensure that by default a DelegatingComputerLauncher subclass doesn't advertise the option to delegate another
     // DelegatingComputerLauncher
     @Test
-    @PrepareForTest(Jenkins.class)
     public void testRecursionAvoidance() {
-        PowerMockito.mockStatic(Jenkins.class);
-        Jenkins mockJenkins = mock(Jenkins.class);
-        PowerMockito.when(Jenkins.get()).thenReturn(mockJenkins);
+        Jenkins jenkins = mock(Jenkins.class);
+        try (MockedStatic<Jenkins> mocked = mockStatic(Jenkins.class)) {
+            mocked.when(Jenkins::get).thenReturn(jenkins);
 
-        DescriptorExtensionList<ComputerLauncher, Descriptor<ComputerLauncher>> mockList =
-                mock(DescriptorExtensionList.class);
-        doReturn(mockList).when(mockJenkins).getDescriptorList(eq(ComputerLauncher.class));
-        ArrayList<Descriptor<ComputerLauncher>> returnedList = new ArrayList<>();
+            DescriptorExtensionList<ComputerLauncher, Descriptor<ComputerLauncher>> mockList =
+                    mock(DescriptorExtensionList.class);
+            doReturn(mockList).when(jenkins).getDescriptorList(eq(ComputerLauncher.class));
+            ArrayList<Descriptor<ComputerLauncher>> returnedList = new ArrayList<>();
 
-        returnedList.add(new DummyOne.DummyOneDescriptor());
-        returnedList.add(new DummyTwo.DummyTwoDescriptor());
+            returnedList.add(new DummyOne.DummyOneDescriptor());
+            returnedList.add(new DummyTwo.DummyTwoDescriptor());
 
-        when(mockList.iterator()).thenReturn(returnedList.iterator());
+            when(mockList.iterator()).thenReturn(returnedList.iterator());
 
-        assertTrue("DelegatingComputerLauncher should filter out other DelegatingComputerLauncher instances " +
-                   "from its descriptor's getApplicableDescriptors() method",
-                new DummyTwo.DummyTwoDescriptor().applicableDescriptors(null, new DumbSlave.DescriptorImpl()).isEmpty());
+            assertTrue("DelegatingComputerLauncher should filter out other DelegatingComputerLauncher instances " +
+                            "from its descriptor's getApplicableDescriptors() method",
+                    new DummyTwo.DummyTwoDescriptor().applicableDescriptors(null, new DumbSlave.DescriptorImpl()).isEmpty());
+        }
     }
 
 }

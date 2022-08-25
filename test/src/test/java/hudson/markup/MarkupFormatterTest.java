@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.markup;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -65,6 +66,7 @@ public class MarkupFormatterTest {
 
     public static class DummyMarkupImpl extends MarkupFormatter {
         public final String prefix;
+
         @DataBoundConstructor
         public DummyMarkupImpl(String prefix) {
             this.prefix = prefix;
@@ -72,7 +74,7 @@ public class MarkupFormatterTest {
 
         @Override
         public void translate(String markup, Writer output) throws IOException {
-            output.write(prefix+"["+markup+"]");
+            output.write(prefix + "[" + markup + "]");
         }
 
         @TestExtension

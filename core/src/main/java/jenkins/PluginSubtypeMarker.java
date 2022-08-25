@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins;
 
 import hudson.Functions;
@@ -40,7 +41,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.ElementScanner6;
+import javax.lang.model.util.ElementScanner9;
 import javax.tools.Diagnostic;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
@@ -54,17 +55,16 @@ import org.kohsuke.MetaInfServices;
  */
 @SupportedAnnotationTypes("*")
 @MetaInfServices(Processor.class)
-@SuppressWarnings("Since15")
 public class PluginSubtypeMarker extends AbstractProcessor {
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
         try {
-            ElementScanner6<Void,Void> scanner = new ElementScanner6<Void, Void>() {
+            ElementScanner9<Void, Void> scanner = new ElementScanner9<>() {
                 @Override
                 public Void visitType(TypeElement e, Void aVoid) {
-                    if(!e.getModifiers().contains(Modifier.ABSTRACT)) {
+                    if (!e.getModifiers().contains(Modifier.ABSTRACT)) {
                         Element sc = asElement(e.getSuperclass());
-                        if (sc!=null && ((TypeElement)sc).getQualifiedName().contentEquals("hudson.Plugin")) {
+                        if (sc != null && ((TypeElement) sc).getQualifiedName().contentEquals("hudson.Plugin")) {
                             try {
                                 write(e);
                             } catch (IOException x) {

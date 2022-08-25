@@ -29,21 +29,22 @@ public class AdvancedButtonTest {
 
     @Test
     public void testNestedOptionalBlock() throws Exception {
-        HtmlPage p = j.createWebClient().goTo("self/testNestedOptionalBlock");
-        HtmlForm f = p.getFormByName("config");
-        HtmlFormUtil.getButtonByCaption(f, "Advanced...").click();
-        f.getInputByName("c").click();
-        j.submit(f);
+        HtmlPage page = j.createWebClient().goTo("self/testNestedOptionalBlock");
+        HtmlForm form = page.getFormByName("config");
+        HtmlFormUtil.getButtonByCaption(form, "Advanced...").click();
+        form.getInputByName("c").click();
+
+        j.submit(form);
     }
 
     @Issue("JENKINS-14632")
     @Test
     public void testSectionInsideOfAdvanced() throws Exception {
-        HtmlPage p = j.createWebClient().goTo("self/testSectionInsideOfAdvanced");
-        HtmlForm f = p.getFormByName("config");
-        assertFalse(f.getInputByName("b").isDisplayed());
-        HtmlFormUtil.getButtonByCaption(f, "Advanced...").click();
-        assertTrue(f.getInputByName("b").isDisplayed());
+        HtmlPage page = j.createWebClient().goTo("self/testSectionInsideOfAdvanced");
+        HtmlForm form = page.getFormByName("config");
+        assertFalse(form.getInputByName("b").isDisplayed());
+        HtmlFormUtil.getButtonByCaption(form, "Advanced...").click();
+        assertTrue(form.getInputByName("b").isDisplayed());
     }
 
     @TestExtension
@@ -55,7 +56,6 @@ public class AdvancedButtonTest {
 
         public FormValidation doSubmitNestedOptionalBlock(StaplerRequest req) throws Exception {
             JSONObject f = req.getSubmittedForm();
-            System.out.println(f);
             assertEquals("avalue", f.getString("a"));
             assertEquals("bvalue", f.getString("b"));
             JSONObject c = f.getJSONObject("c");

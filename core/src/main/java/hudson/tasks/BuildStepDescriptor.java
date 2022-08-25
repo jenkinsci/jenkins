@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.tasks;
 
 import hudson.model.AbstractProject;
@@ -60,7 +61,7 @@ public abstract class BuildStepDescriptor<T extends BuildStep & Describable<T>> 
      *
      * @return
      *      true to allow user to configure this post-promotion task for the given project.
-     * @see AbstractProjectDescriptor#isApplicable(Descriptor) 
+     * @see AbstractProjectDescriptor#isApplicable(Descriptor)
      */
     public abstract boolean isApplicable(Class<? extends AbstractProject> jobType);
 
@@ -68,19 +69,19 @@ public abstract class BuildStepDescriptor<T extends BuildStep & Describable<T>> 
     /**
      * Filters a descriptor for {@link BuildStep}s by using {@link BuildStepDescriptor#isApplicable(Class)}.
      */
-    public static <T extends BuildStep&Describable<T>>
+    public static <T extends BuildStep & Describable<T>>
     List<Descriptor<T>> filter(List<Descriptor<T>> base, Class<? extends AbstractProject> type) {
         // descriptor of the project
         Descriptor pd = Jenkins.get().getDescriptor((Class) type);
 
         List<Descriptor<T>> r = new ArrayList<>(base.size());
         for (Descriptor<T> d : base) {
-            if (pd instanceof AbstractProjectDescriptor && !((AbstractProjectDescriptor)pd).isApplicable(d))
+            if (pd instanceof AbstractProjectDescriptor && !((AbstractProjectDescriptor) pd).isApplicable(d))
                 continue;
 
             if (d instanceof BuildStepDescriptor) {
                 BuildStepDescriptor<T> bd = (BuildStepDescriptor<T>) d;
-                if(!bd.isApplicable(type))  continue;
+                if (!bd.isApplicable(type))  continue;
                 r.add(bd);
             } else {
                 // old plugins built before 1.150 may not implement BuildStepDescriptor

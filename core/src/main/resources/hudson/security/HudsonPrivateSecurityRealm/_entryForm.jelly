@@ -24,7 +24,7 @@ THE SOFTWARE.
 
 <!-- tag file used by both signup.jelly and addUser.jelly -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:f="/lib/form">
   <st:documentation>
     <st:attribute name="it" use="required" type="hudson.security.HudsonPrivateSecurityRealm">
       Context where the page is loaded.
@@ -57,32 +57,37 @@ THE SOFTWARE.
     </j:forEach>
       <table>
         <tr>
-          <td>${%Username}:</td>
-          <td><input type="text" name="username" id="username" value="${data.username}" autofocus="autofocus" /></td>
+          <f:entry title="${%Username}:">
+            <input class="jenkins-input" type="text" name="username" id="username" value="${data.username}" autofocus="autofocus" />
+          </f:entry>
         </tr>
         <tr>
-          <td>${%Password}:</td>
-          <td><input type="password" name="password1" value="${data.password1}" /></td>
+          <f:entry title="${%Password}:">
+            <input class="jenkins-input" type="password" name="password1" value="${data.password1}" />
+          </f:entry>
         </tr>
         <tr>
-          <td>${%Confirm password}:</td>
-          <td><input type="password" name="password2" value="${data.password2}" /></td>
+          <f:entry title="${%Confirm password}:">
+            <input class="jenkins-input" type="password" name="password2" value="${data.password2}" />
+          </f:entry>
         </tr>
         <tr>
-          <td>${%Full name}:</td>
-          <td><input type="text" name="fullname" value="${data.fullname}" /></td>
+          <f:entry title="${%Full name}:">
+            <input class="jenkins-input" type="text" name="fullname" value="${data.fullname}" />
+          </f:entry>
         </tr>
         <j:if test="${it.mailerPluginPresent}">
           <tr>
-            <td>${%E-mail address}:</td>
-            <td><input type="text" name="email" value="${data.email}" /></td>
+            <f:entry title="${%E-mail address}:">
+              <input class="jenkins-input" type="text" name="email" value="${data.email}" />
+            </f:entry>
           </tr>
         </j:if>
         <j:if test="${captcha}">
           <tr>
             <td>${%Enter text as shown}:</td>
             <td>
-              <input type="text" name="captcha" autocomplete="off" /><br />
+              <input class="jenkins-input" type="text" name="captcha" autocomplete="off" /><br />
               <img src="${rootURL}/securityRealm/captcha" alt="[${%captcha}]" />
             </td>
           </tr>

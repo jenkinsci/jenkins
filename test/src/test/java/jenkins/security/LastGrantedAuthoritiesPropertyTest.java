@@ -72,7 +72,7 @@ public class LastGrantedAuthoritiesPropertyTest {
         _assertAuthorities(auth.getAuthorities(), expected);
     }
 
-    private void _assertAuthorities(Collection<? extends GrantedAuthority> grantedAuthorities, String expected){
+    private void _assertAuthorities(Collection<? extends GrantedAuthority> grantedAuthorities, String expected) {
         List<String> authorities = grantedAuthorities.stream().map(GrantedAuthority::getAuthority).sorted().collect(Collectors.toList());
 
         assertEquals(expected, String.join(":", authorities));

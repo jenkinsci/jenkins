@@ -22,8 +22,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.model;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.Functions;
 import hudson.model.Descriptor;
@@ -41,9 +43,9 @@ public class DefaultUserCanonicalIdResolver extends User.CanonicalIdResolver {
 
     @Override
     public String resolveCanonicalId(String idOrFullName, Map<String, ?> context) {
-        String id = idOrFullName.replace('\\', '_').replace('/', '_').replace('<','_')
+        String id = idOrFullName.replace('\\', '_').replace('/', '_').replace('<', '_')
                 .replace('>', '_');  // 4 replace() still faster than regex
-        if (Functions.isWindows()) id = id.replace(':','_');
+        if (Functions.isWindows()) id = id.replace(':', '_');
         return id;
     }
 
@@ -57,7 +59,8 @@ public class DefaultUserCanonicalIdResolver extends User.CanonicalIdResolver {
         return DESCRIPTOR;
     }
 
-    public static final Descriptor<User.CanonicalIdResolver> DESCRIPTOR = new Descriptor<User.CanonicalIdResolver>() {
+    public static final Descriptor<User.CanonicalIdResolver> DESCRIPTOR = new Descriptor<>() {
+        @NonNull
         @Override
         public String getDisplayName() {
             return "compute default user ID";

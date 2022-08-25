@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.model;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -32,10 +33,10 @@ import hudson.model.AbstractDescribableImpl;
 import java.io.Serializable;
 import java.util.Comparator;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.ProtectedExternally;
@@ -112,9 +113,9 @@ public abstract class IdStrategy extends AbstractDescribableImpl<IdStrategy> imp
      * Compare two IDs and return {@code true} IFF the two ids are the same. Normally we expect that this should be
      * the same as {@link #compare(String, String)} being equal to {@code 0}, however there may be a specific reason
      * for going beyond that, such as sorting id's case insensitively while treating them as case sensitive.
-     * 
+     *
      * Subclasses may want to override this naïve implementation that calls {@code compare(id1, id2) == 0} for a more performant implementation.
-     * 
+     *
      * @param id1 the first id.
      * @param id2 the second id.
      * @return {@code true} if and only if the two ids are the same.
@@ -252,7 +253,7 @@ public abstract class IdStrategy extends AbstractDescribableImpl<IdStrategy> imp
 
         @Override
         public boolean equals(@NonNull String id1, @NonNull String id2) {
-            return StringUtils.equals(id1, id2);
+            return Objects.equals(id1, id2);
         }
 
         @Override
@@ -263,6 +264,7 @@ public abstract class IdStrategy extends AbstractDescribableImpl<IdStrategy> imp
         @Extension @Symbol("caseSensitive")
         public static class DescriptorImpl extends IdStrategyDescriptor {
 
+            @NonNull
             @Override
             public String getDisplayName() {
                 return Messages.IdStrategy_CaseSensitive_DisplayName();
@@ -288,7 +290,7 @@ public abstract class IdStrategy extends AbstractDescribableImpl<IdStrategy> imp
 
         @Override
         public boolean equals(@NonNull String id1, @NonNull String id2) {
-            return StringUtils.equals(keyFor(id1), keyFor(id2));
+            return Objects.equals(keyFor(id1), keyFor(id2));
         }
 
         @Override
@@ -307,6 +309,7 @@ public abstract class IdStrategy extends AbstractDescribableImpl<IdStrategy> imp
         @Extension
         public static class DescriptorImpl extends IdStrategyDescriptor {
 
+            @NonNull
             @Override
             public String getDisplayName() {
                 return Messages.IdStrategy_CaseSensitiveEmailAddress_DisplayName();

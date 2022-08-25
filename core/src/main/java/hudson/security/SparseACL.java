@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,10 +21,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.security;
 
 import static java.util.logging.Level.FINE;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -65,30 +67,31 @@ public class SparseACL extends SidACL {
     }
 
     public void add(Sid sid, Permission permission, boolean allowed) {
-        add(new Entry(sid,permission,allowed));
+        add(new Entry(sid, permission, allowed));
     }
 
     @Override
     public boolean hasPermission2(Authentication a, Permission permission) {
-        if(a.equals(SYSTEM2))   return true;
-        Boolean b = _hasPermission(a,permission);
-        if(b!=null) return b;
+        if (a.equals(SYSTEM2))   return true;
+        Boolean b = _hasPermission(a, permission);
+        if (b != null) return b;
 
-        if(parent!=null) {
-            if(LOGGER.isLoggable(FINE))
-                LOGGER.fine("hasPermission("+a+","+permission+") is delegating to parent ACL: "+parent);
-            return parent.hasPermission2(a,permission);
+        if (parent != null) {
+            if (LOGGER.isLoggable(FINE))
+                LOGGER.fine("hasPermission(" + a + "," + permission + ") is delegating to parent ACL: " + parent);
+            return parent.hasPermission2(a, permission);
         }
 
         // the ultimate default is to reject everything
         return false;
     }
 
+    @SuppressFBWarnings(value = "NP_BOOLEAN_RETURN_NULL", justification = "converting this to YesNoMaybe would break backward compatibility")
     @Override
     protected Boolean hasPermission(Sid p, Permission permission) {
-        for( ; permission!=null; permission=permission.impliedBy ) {
+        for ( ; permission != null; permission = permission.impliedBy) {
             for (Entry e : entries) {
-                if(e.permission==permission && e.sid.equals(p))
+                if (e.permission == permission && e.sid.equals(p))
                     return e.allowed;
             }
         }

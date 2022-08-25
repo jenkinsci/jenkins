@@ -9,7 +9,7 @@ import org.jvnet.hudson.test.Issue;
 public class TimeDurationTest {
 
     @Test
-    public void fromString() throws Exception {
+    public void fromString() {
         assertEquals(1, TimeDuration.fromString("1").getTimeInMillis());
 
         assertEquals(1000, TimeDuration.fromString("1sec").getTimeInMillis());

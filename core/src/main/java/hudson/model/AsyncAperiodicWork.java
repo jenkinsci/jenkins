@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import hudson.Functions;
@@ -37,8 +38,8 @@ import jenkins.util.SystemProperties;
 
 /**
  * {@link AperiodicWork} that takes a long time to run. Similar to {@link AsyncPeriodicWork}, see {@link AsyncPeriodicWork} for
- * details and {@link AperiodicWork} for differences between {@link AperiodicWork} and {@link PeriodicWork}. 
- * 
+ * details and {@link AperiodicWork} for differences between {@link AperiodicWork} and {@link PeriodicWork}.
+ *
  * @author vjuranek
  * @since 1.410
  */
@@ -94,8 +95,8 @@ public abstract class AsyncAperiodicWork extends AperiodicWork {
     protected AsyncAperiodicWork(String name) {
         this.name = name;
         this.logRotateMillis = TimeUnit.MINUTES.toMillis(
-                SystemProperties.getLong(getClass().getName()+".logRotateMinutes", LOG_ROTATE_MINUTES));
-        this.logRotateSize = SystemProperties.getLong(getClass().getName() +".logRotateSize", LOG_ROTATE_SIZE);
+                SystemProperties.getLong(getClass().getName() + ".logRotateMinutes", LOG_ROTATE_MINUTES));
+        this.logRotateSize = SystemProperties.getLong(getClass().getName() + ".logRotateSize", LOG_ROTATE_SIZE);
     }
 
     /**
@@ -104,7 +105,7 @@ public abstract class AsyncAperiodicWork extends AperiodicWork {
     @Override
     public final void doAperiodicRun() {
         try {
-            if(thread!=null && thread.isAlive()) {
+            if (thread != null && thread.isAlive()) {
                 logger.log(getSlowLoggingLevel(), "{0} thread is still running. Execution aborted.", name);
                 return;
             }
@@ -113,29 +114,24 @@ public abstract class AsyncAperiodicWork extends AperiodicWork {
                 long startTime = System.currentTimeMillis();
                 long stopTime;
 
-                StreamTaskListener l = createListener();
+                AsyncPeriodicWork.LazyTaskListener l = new AsyncPeriodicWork.LazyTaskListener(this::createListener, String.format("Started at %tc", new Date(startTime)));
                 try (ACLContext ctx = ACL.as2(ACL.SYSTEM2)) {
-                    l.getLogger().printf("Started at %tc%n", new Date(startTime));
-                        execute(l);
+                    execute(l);
                 } catch (IOException e) {
                     Functions.printStackTrace(e, l.fatalError(e.getMessage()));
                 } catch (InterruptedException e) {
                     Functions.printStackTrace(e, l.fatalError("aborted"));
                 } finally {
                     stopTime = System.currentTimeMillis();
-                    try {
-                        l.getLogger().printf("Finished at %tc. %dms%n", new Date(stopTime), stopTime - startTime);
-                    } finally {
-                        l.closeQuietly();
-                    }
+                    l.close(String.format("Finished at %tc. %dms", new Date(stopTime), stopTime - startTime));
                 }
 
                 logger.log(getNormalLoggingLevel(), "Finished {0}. {1,number} ms",
                         new Object[]{name, stopTime - startTime});
-            },name+" thread");
-            thread.start(); 
+            }, name + " thread");
+            thread.start();
         } catch (Throwable t) {
-            logger.log(Level.SEVERE, name+" thread failed with error", t);
+            logger.log(Level.SEVERE, name + " thread failed with error", t);
         }
     }
 

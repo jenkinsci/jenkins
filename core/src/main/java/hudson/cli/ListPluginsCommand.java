@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.cli;
 
 import hudson.Extension;
@@ -50,7 +51,7 @@ public class ListPluginsCommand extends CLICommand {
     protected int run() {
         Jenkins h = Jenkins.get();
         h.checkPermission(Jenkins.ADMINISTER);
-        
+
         PluginManager pluginManager = h.getPluginManager();
 
         if (this.name != null) {

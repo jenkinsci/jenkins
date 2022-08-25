@@ -20,21 +20,21 @@ import org.jenkinsci.Symbol;
  *
  * @author Kohsuke Kawaguchi
  */
-@Extension(ordinal=-100) @Symbol("core")
+@Extension(ordinal = -100) @Symbol("core")
 public class CoreEnvironmentContributor extends EnvironmentContributor {
     @Override
     public void buildEnvironmentFor(Run r, EnvVars env, TaskListener listener) throws IOException, InterruptedException {
         Computer c = Computer.currentComputer();
-        if (c!=null){
+        if (c != null) {
             EnvVars compEnv = c.getEnvironment().overrideAll(env);
             env.putAll(compEnv);
         }
-        env.put("BUILD_DISPLAY_NAME",r.getDisplayName());
+        env.put("BUILD_DISPLAY_NAME", r.getDisplayName());
 
         Jenkins j = Jenkins.get();
         String rootUrl = j.getRootUrl();
-        if(rootUrl!=null) {
-            env.put("BUILD_URL", rootUrl+r.getUrl());
+        if (rootUrl != null) {
+            env.put("BUILD_URL", rootUrl + r.getUrl());
         }
     }
 
@@ -44,10 +44,10 @@ public class CoreEnvironmentContributor extends EnvironmentContributor {
 
         Jenkins jenkins = Jenkins.get();
         String rootUrl = jenkins.getRootUrl();
-        if(rootUrl!=null) {
+        if (rootUrl != null) {
             env.put("JENKINS_URL", rootUrl);
             env.put("HUDSON_URL", rootUrl); // Legacy compatibility
-            env.put("JOB_URL", rootUrl+j.getUrl());
+            env.put("JOB_URL", rootUrl + j.getUrl());
         }
 
         String root = jenkins.getRootDir().getPath();

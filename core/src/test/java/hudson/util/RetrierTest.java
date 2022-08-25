@@ -23,9 +23,8 @@ public class RetrierTest {
         RingBufferLogHandler handler = new RingBufferLogHandler(20);
         Logger.getLogger(Retrier.class.getName()).addHandler(handler);
 
-        Retrier<Boolean> r = new Retrier.Builder<>
-                // Set the required params
-                (
+        // Set the required params
+        Retrier<Boolean> r = new Retrier.Builder<>(
                         // action to perform
                         () -> {
                             LOG.info("action performed");
@@ -65,9 +64,8 @@ public class RetrierTest {
         retrierLogger.setLevel(Level.FINE);
         retrierLogger.addHandler(handler);
 
-        Retrier<Boolean> r = new Retrier.Builder<>
-                // Set the required params
-                (
+        // Set the required params
+        Retrier<Boolean> r = new Retrier.Builder<>(
                         // action to perform
                         () -> {
                             LOG.info("action performed");
@@ -117,9 +115,8 @@ public class RetrierTest {
         RingBufferLogHandler handler = new RingBufferLogHandler(20);
         Logger.getLogger(Retrier.class.getName()).addHandler(handler);
 
-        Retrier<Boolean> r = new Retrier.Builder<>
-                // Set the required params
-                (
+        // Set the required params
+        Retrier<Boolean> r = new Retrier.Builder<>(
                         // action to perform
                         () -> {
                             LOG.info("action performed");
@@ -156,9 +153,8 @@ public class RetrierTest {
         RingBufferLogHandler handler = new RingBufferLogHandler(20);
         Logger.getLogger(Retrier.class.getName()).addHandler(handler);
 
-        Retrier<Boolean> r = new Retrier.Builder<>
-                // Set the required params
-                (
+        // Set the required params
+        Retrier<Boolean> r = new Retrier.Builder<>(
                         // action to perform
                         (Callable<Boolean>) () -> {
                             throw new IndexOutOfBoundsException("Exception allowed considered as failure");
@@ -196,9 +192,8 @@ public class RetrierTest {
         RingBufferLogHandler handler = new RingBufferLogHandler(20);
         Logger.getLogger(Retrier.class.getName()).addHandler(handler);
 
-        Retrier<Boolean> r = new Retrier.Builder<>
-                // Set the required params
-                (
+        // Set the required params
+        Retrier<Boolean> r = new Retrier.Builder<>(
                         // action to perform
                         (Callable<Boolean>) () -> {
                             throw new IndexOutOfBoundsException("Exception allowed considered as failure");
@@ -239,9 +234,8 @@ public class RetrierTest {
         RingBufferLogHandler handler = new RingBufferLogHandler(20);
         Logger.getLogger(Retrier.class.getName()).addHandler(handler);
 
-        Retrier<Boolean> r = new Retrier.Builder<>
-                // Set the required params
-                (
+        // Set the required params
+        Retrier<Boolean> r = new Retrier.Builder<>(
                         // action to perform
                         (Callable<Boolean>) () -> {
                             // This one is allowed because we allow IndexOutOfBoundsException (parent exception)
@@ -283,9 +277,8 @@ public class RetrierTest {
         RingBufferLogHandler handler = new RingBufferLogHandler(20);
         Logger.getLogger(Retrier.class.getName()).addHandler(handler);
 
-        Retrier<Boolean> r = new Retrier.Builder<>
-                // Set the required params
-                (
+        // Set the required params
+        Retrier<Boolean> r = new Retrier.Builder<>(
                         // action to perform
                         (Callable<Boolean>) () -> {
                             // This one is not allowed, so it is raised out of the start method

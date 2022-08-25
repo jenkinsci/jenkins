@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.util;
 
 import java.io.FilterInputStream;
@@ -50,7 +51,7 @@ public class HeadBufferingStream extends FilterInputStream {
     @Override
     public int read() throws IOException {
         int i = in.read();
-        if(i>=0 && space()>0)
+        if (i >= 0 && space() > 0)
             side.write(i);
         return i;
     }
@@ -58,10 +59,10 @@ public class HeadBufferingStream extends FilterInputStream {
     @Override
     public int read(byte[] b, int off, int len) throws IOException {
         int r = in.read(b, off, len);
-        if(r>0) {
+        if (r > 0) {
             int sp = space();
-            if(sp>0)
-                side.write(b,off,Math.min(r, sp));
+            if (sp > 0)
+                side.write(b, off, Math.min(r, sp));
         }
         return r;
     }
@@ -70,7 +71,7 @@ public class HeadBufferingStream extends FilterInputStream {
      * Available space in the {@link #side} buffer.
      */
     private int space() {
-        return sideBufferSize-side.size();
+        return sideBufferSize - side.size();
     }
 
     /**
@@ -78,8 +79,8 @@ public class HeadBufferingStream extends FilterInputStream {
      */
     public void fillSide() throws IOException {
         byte[] buf = new byte[space()];
-        while(space()>0) {
-            if(read(buf)<0)
+        while (space() > 0) {
+            if (read(buf) < 0)
                 return;
         }
     }

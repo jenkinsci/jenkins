@@ -84,7 +84,7 @@ public class FileChannelWriter extends Writer {
 
     @Override
     public void close() throws IOException {
-        if(channel.isOpen()) {
+        if (channel.isOpen()) {
             if (forceOnClose) {
                 channel.force(true);
             }

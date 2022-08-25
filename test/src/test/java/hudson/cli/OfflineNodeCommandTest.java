@@ -76,7 +76,7 @@ public class OfflineNodeCommandTest {
     }
 
     @Test
-    public void offlineNodeShouldFailIfNodeDoesNotExist() throws Exception {
+    public void offlineNodeShouldFailIfNodeDoesNotExist() {
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Computer.DISCONNECT, Jenkins.READ)
                 .invokeWithArgs("never_created");
@@ -451,7 +451,7 @@ public class OfflineNodeCommandTest {
     }
 
     @Test
-    public void offlineNodeShouldSucceedOnMaster() throws Exception {
+    public void offlineNodeShouldSucceedOnMaster() {
         final Computer masterComputer = Jenkins.get().getComputer("");
 
         final CLICommandInvoker.Result result = command
@@ -465,7 +465,7 @@ public class OfflineNodeCommandTest {
     }
 
     @Test
-    public void offlineNodeShouldSucceedOnMasterWithCause() throws Exception {
+    public void offlineNodeShouldSucceedOnMasterWithCause() {
         final Computer masterComputer = Jenkins.get().getComputer("");
 
         final CLICommandInvoker.Result result = command

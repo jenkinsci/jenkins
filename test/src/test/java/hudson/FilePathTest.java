@@ -97,11 +97,11 @@ public class FilePathTest {
         FilePath zipFile = r.jenkins.getRootPath().child("zip-slip-win.zip");
 
         FilePath targetLocation = r.jenkins.getRootPath().child("unzip-target");
- 
+
         FilePath good = targetLocation.child("good.txt");
 
         assertThat(good.exists(), is(false));
-        
+
         IOException e = assertThrows(IOException.class, () -> zipFile.unzip(targetLocation));
         assertThat(e.getMessage(), containsString("contains illegal file name that breaks out of the target directory"));
 
@@ -155,7 +155,7 @@ public class FilePathTest {
 
         assertThat(simple3.exists(), is(false));
     }
-    
+
     @Test
     @Issue("XXX")
     @LocalData("zip_with_relative")

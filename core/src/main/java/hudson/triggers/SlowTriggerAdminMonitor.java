@@ -28,7 +28,7 @@ public class SlowTriggerAdminMonitor extends AdministrativeMonitor {
     @NonNull
     private final Map<String, Value> errors = new ConcurrentHashMap<>();
 
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
     public static /* Script Console modifiable */ int MAX_ENTRIES = SystemProperties.getInteger(SlowTriggerAdminMonitor.class.getName() + ".maxEntries", 10);
 
     @NonNull
@@ -94,7 +94,7 @@ public class SlowTriggerAdminMonitor extends AdministrativeMonitor {
         return HttpResponses.redirectViaContextPath("/manage");
     }
 
-    public class Value {
+    public static class Value {
 
         private final LocalDateTime time;
         private Class<? extends TriggerDescriptor> trigger;

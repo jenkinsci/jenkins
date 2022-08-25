@@ -63,7 +63,7 @@ public class InitReactorRunner {
     private ReactorListener buildReactorListener() throws IOException {
         List<ReactorListener> r = StreamSupport.stream(ServiceLoader.load(InitReactorListener.class, Thread.currentThread().getContextClassLoader()).spliterator(), false).collect(Collectors.toList());
         r.add(new ReactorListener() {
-            final Level level = Level.parse( SystemProperties.getString(Jenkins.class.getName() + "." + "initLogLevel", "FINE") );
+            final Level level = Level.parse(SystemProperties.getString(Jenkins.class.getName() + "." + "initLogLevel", "FINE"));
             @Override
             public void onTaskStarted(Task t) {
                 LOGGER.log(level, "Started {0}", getDisplayName(t));
@@ -82,13 +82,13 @@ public class InitReactorRunner {
             @Override
             public void onAttained(Milestone milestone) {
                 Level lv = level;
-                String s = "Attained "+milestone.toString();
+                String s = "Attained " + milestone.toString();
                 if (milestone instanceof InitMilestone) {
                     lv = Level.INFO; // noteworthy milestones --- at least while we debug problems further
                     onInitMilestoneAttained((InitMilestone) milestone);
                     s = milestone.toString();
                 }
-                LOGGER.log(lv,s);
+                LOGGER.log(lv, s);
             }
         });
         return new ReactorListener.Aggregator(r);
@@ -112,7 +112,7 @@ public class InitReactorRunner {
     }
 
     private static final int TWICE_CPU_NUM = SystemProperties.getInteger(
-            InitReactorRunner.class.getName()+".concurrency",
+            InitReactorRunner.class.getName() + ".concurrency",
             Runtime.getRuntime().availableProcessors() * 2);
 
     private static final Logger LOGGER = Logger.getLogger(InitReactorRunner.class.getName());

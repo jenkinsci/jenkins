@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.cli;
 
 import hudson.Extension;
@@ -65,7 +66,7 @@ public class DeleteBuildsCommand extends RunRangeCommand {
             }
         }
 
-        stdout.println("Deleted "+hsBuilds.size()+" builds");
+        stdout.println("Deleted " + hsBuilds.size() + " builds");
 
         return 0;
     }

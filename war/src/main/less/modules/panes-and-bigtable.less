@@ -2,7 +2,7 @@
 
 .pane-frame {
   border: var(--pane-border-width) solid var(--pane-border-color);
-  border-radius: 4px;
+  border-radius: var(--table-border-radius);
 }
 
 .pane-header,
@@ -92,7 +92,7 @@ table.bigtable {
 }
 
 // Keep this for tables still wrapped by .pane-frame
-.pane-frame table,
+.pane-frame table:not(.jenkins-table),
 .pane-frame .bigtable tr {
   border: none; /* Border will be provided by the pane-frame */
 }
@@ -114,7 +114,7 @@ table.bigtable {
     width: 1px;
   }
 
-  &[align=right] {
+  &[align="right"] {
     text-align: right;
   }
 }
@@ -126,12 +126,14 @@ table.bigtable {
 }
 
 .bigtable td {
-  border-top: var(--bigtable-border-width) solid var(--bigtable-row-border-color);
+  border-top: var(--bigtable-border-width) solid
+    var(--bigtable-row-border-color);
   vertical-align: middle;
 }
 
 .bigtable tr:last-child td {
-  border-bottom: var(--bigtable-border-width) solid var(--bigtable-row-border-color);
+  border-bottom: var(--bigtable-border-width) solid
+    var(--bigtable-row-border-color);
 }
 
 .bigtable td,
@@ -145,19 +147,6 @@ table.bigtable {
 }
 
 /* ========================= sortable table ========================= */
-table.sortable a.sortheader {
-  text-decoration: none;
-  display: block;
-  color: var(--pane-header-text-color);
-  font-weight: var(--pane-header-font-weight);  // Should we use the bigtable one here?
-}
-
-table.sortable span.sortarrow {
-  text-decoration: none;
-  color: var(--pane-header-text-color);
-  font-weight: var(--pane-header-font-weight); // Should we use the bigtable one here?
-}
-
 table.bigtable.sortable a.sortheader,
 table.bigtable.sortable span.sortarrow {
   color: var(--bigtable-header-text-color);

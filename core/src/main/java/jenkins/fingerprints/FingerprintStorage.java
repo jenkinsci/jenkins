@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.fingerprints;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
@@ -55,9 +56,11 @@ public abstract class FingerprintStorage extends AbstractDescribableImpl<Fingerp
 
     /**
      * Returns the file system based {@link FileFingerprintStorage} configured on the system.
+     * @deprecated since 2.324, use {@code ExtensionList.lookupSingleton(FileFingerprintStorage.class)} instead.
      */
+    @Deprecated
     public static FingerprintStorage getFileFingerprintStorage() {
-        return ExtensionList.lookup(FingerprintStorage.class).get(ExtensionList.lookup(FingerprintStorage.class).size()-1);
+        return ExtensionList.lookupSingleton(FileFingerprintStorage.class);
     }
 
     /**

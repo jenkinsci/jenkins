@@ -70,7 +70,7 @@ public class PluginManagerCheckUpdateCenterTest {
             //Avoid CertPathValidatorException: Algorithm constraints check failed on signature algorithm: MD5withRSA
             DownloadService.signatureCheck = false;
             // Have to end in update-center.json or it fails. See UpdateSite#getMetadataUrlForDownloadable
-            checkUpdateSite(Jenkins.get().getRootUrl() + "updateSiteRightJson/update-center.json", "", true );
+            checkUpdateSite(Jenkins.get().getRootUrl() + "updateSiteRightJson/update-center.json", "", true);
         } finally {
             DownloadService.signatureCheck = oldValueSignatureCheck;
         }
@@ -108,7 +108,7 @@ public class PluginManagerCheckUpdateCenterTest {
         }
     }
 
-    private HtmlAnchor getCheckNow(HtmlPage page){
+    private HtmlAnchor getCheckNow(HtmlPage page) {
         List<HtmlElement> elements = page.getElementById("bottom-sticker")
                 .getElementsByTagName("a")
                 .stream()

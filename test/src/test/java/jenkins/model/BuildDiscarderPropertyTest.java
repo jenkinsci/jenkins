@@ -73,7 +73,7 @@ public class BuildDiscarderPropertyTest {
     @LocalData
     @Test
     public void logRotatorField() throws Exception {
-        AbstractProject<?,?> p = r.jenkins.getItemByFullName("foo", AbstractProject.class);
+        AbstractProject<?, ?> p = r.jenkins.getItemByFullName("foo", AbstractProject.class);
         verifyLogRotatorSanity(p);
 
         // now persist in the new format
@@ -89,7 +89,7 @@ public class BuildDiscarderPropertyTest {
         assertTrue(xml, xml.contains("<logRotator class=\"" + LogRotator.class.getName() + "\">"));
     }
 
-    private static void verifyLogRotatorSanity(AbstractProject<?,?> p) {
+    private static void verifyLogRotatorSanity(AbstractProject<?, ?> p) {
         LogRotator d = (LogRotator) p.getBuildDiscarder();
         assertEquals(4, d.getDaysToKeep());
         assertEquals(3, d.getNumToKeep());

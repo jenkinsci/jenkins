@@ -21,7 +21,7 @@ public class DynamicTest {
     public JenkinsRule j = new JenkinsRule();
 
     @Test
-    public void testRequestsDispatchedToEligibleDynamic() throws Exception {
+    public void testRequestsDispatchedToEligibleDynamic() {
         JenkinsRule.WebClient wc = j.createWebClient();
         Stream.of("whatever", "displayName", "iconFileName", "urlName", "response1", "response2").forEach(url ->
         {

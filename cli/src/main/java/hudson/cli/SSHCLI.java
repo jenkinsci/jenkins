@@ -35,7 +35,6 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.security.KeyPair;
 import java.security.PublicKey;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
@@ -49,8 +48,8 @@ import org.apache.sshd.client.keyverifier.KnownHostsServerKeyVerifier;
 import org.apache.sshd.client.keyverifier.ServerKeyVerifier;
 import org.apache.sshd.client.session.ClientSession;
 import org.apache.sshd.common.future.WaitableFuture;
-import org.apache.sshd.common.util.io.NoCloseInputStream;
-import org.apache.sshd.common.util.io.NoCloseOutputStream;
+import org.apache.sshd.common.util.io.input.NoCloseInputStream;
+import org.apache.sshd.common.util.io.output.NoCloseOutputStream;
 import org.apache.sshd.common.util.security.SecurityUtils;
 
 /**
@@ -85,7 +84,7 @@ class SSHCLI {
             command.append(' ');
         }
 
-        try(SshClient client = SshClient.setUpDefaultClient()) {
+        try (SshClient client = SshClient.setUpDefaultClient()) {
 
             KnownHostsServerKeyVerifier verifier = new DefaultKnownHostsServerKeyVerifier(new ServerKeyVerifier() {
                 @Override
@@ -114,9 +113,9 @@ class SSHCLI {
                     WaitableFuture wf = channel.open();
                     wf.await();
 
-                    Set<ClientChannelEvent> waitMask = channel.waitFor(Collections.singletonList(ClientChannelEvent.CLOSED), 0L);
+                    Set<ClientChannelEvent> waitMask = channel.waitFor(List.of(ClientChannelEvent.CLOSED), 0L);
 
-                    if(waitMask.contains(ClientChannelEvent.TIMEOUT)) {
+                    if (waitMask.contains(ClientChannelEvent.TIMEOUT)) {
                         throw new SocketTimeoutException("Failed to retrieve command result in time: " + command);
                     }
 

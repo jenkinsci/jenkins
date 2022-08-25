@@ -102,6 +102,6 @@ public abstract class QueueItemAuthenticator extends AbstractDescribableImpl<Que
 
     @Override
     public QueueItemAuthenticatorDescriptor getDescriptor() {
-        return (QueueItemAuthenticatorDescriptor)super.getDescriptor();
+        return (QueueItemAuthenticatorDescriptor) super.getDescriptor();
     }
 }

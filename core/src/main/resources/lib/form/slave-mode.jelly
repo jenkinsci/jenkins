@@ -42,11 +42,13 @@ THE SOFTWARE.
       </j:when>
       <j:otherwise>
 
-        <select class="setting-input" name="${name}">
-          <j:forEach var="m" items="${h.getNodeModes()}">
-            <f:option value="${m.name}" selected="${m==node.mode}">${m.description}</f:option>
-          </j:forEach>
-        </select>
+        <div class="jenkins-select">
+          <select class="jenkins-select__input" name="${name}">
+            <j:forEach var="m" items="${h.getNodeModes()}">
+              <f:option value="${m.name}" selected="${m==node.mode}">${m.description}</f:option>
+            </j:forEach>
+          </select>
+        </div>
 
       </j:otherwise>
     </j:choose>

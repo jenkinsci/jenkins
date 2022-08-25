@@ -32,7 +32,6 @@ import static org.junit.Assert.assertTrue;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.console.AnnotatedLargeText;
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
@@ -73,17 +72,13 @@ public class RunTest {
             ExecutorService svc = Executors.newSingleThreadExecutor();
             try {
                 r = svc.submit(new Callable<Run>() {
-                    @Override public Run call() throws Exception {
+                    @Override public Run call() {
                         return new Run(new StubJob(), 1234567890) {};
                     }
                 }).get();
                 TimeZone.setDefault(TimeZone.getTimeZone("America/Los_Angeles"));
                 id = r.getId();
-                assertEquals(id, svc.submit(new Callable<String>() {
-                    @Override public String call() throws Exception {
-                        return r.getId();
-                    }
-                }).get());
+                assertEquals(id, svc.submit(r::getId).get());
             } finally {
                 svc.shutdown();
             }
@@ -91,12 +86,7 @@ public class RunTest {
             svc = Executors.newSingleThreadExecutor();
             try {
                 assertEquals(id, r.getId());
-                assertEquals(id, svc.submit(new Callable<String>() {
-                    @Override
-                    public String call() throws Exception {
-                        return r.getId();
-                    }
-                }).get());
+                assertEquals(id, svc.submit(r::getId).get());
             } finally {
                 svc.shutdown();
             }
@@ -106,7 +96,7 @@ public class RunTest {
     }
 
 
-    private List<? extends Run<?, ?>.Artifact> createArtifactList(String... paths) throws Exception {
+    private List<? extends Run<?, ?>.Artifact> createArtifactList(String... paths) {
         Run r = new Run(new StubJob(), 0) {};
         Run.ArtifactList list = r.new ArtifactList();
         for (String p : paths) {
@@ -142,7 +132,7 @@ public class RunTest {
     @Issue("JENKINS-26777")
     @SuppressWarnings({"unchecked", "rawtypes", "deprecation"})
     @Test
-    public void getDurationString() throws IOException {
+    public void getDurationString() {
       LocaleProvider providerToRestore = LocaleProvider.getProvider();
       try {
         // This test expects English texts.
@@ -177,7 +167,7 @@ public class RunTest {
         Run<? extends Job<?, ?>, ? extends Run<?, ?>> r = new Run(j, 0) {};
         File f = r.getLogFile();
         f.getParentFile().mkdirs();
-        PrintWriter w = new PrintWriter(f, "utf-8");
+        PrintWriter w = new PrintWriter(f, StandardCharsets.UTF_8);
         w.println("dummy");
         w.close();
         List<String> logLines = r.getLog(0);
@@ -193,7 +183,7 @@ public class RunTest {
         Run<? extends Job<?, ?>, ? extends Run<?, ?>> r = new Run(j, 0) {};
         File f = r.getLogFile();
         f.getParentFile().mkdirs();
-        PrintWriter w = new PrintWriter(f, "utf-8");
+        PrintWriter w = new PrintWriter(f, StandardCharsets.UTF_8);
         for (int i = 0; i < 20; i++) {
             w.println("dummy" + i);
         }
@@ -203,10 +193,10 @@ public class RunTest {
         assertFalse(logLines.isEmpty());
 
         for (int i = 1; i < 10; i++) {
-            assertEquals("dummy" + (10+i), logLines.get(i));
+            assertEquals("dummy" + (10 + i), logLines.get(i));
         }
-        int truncatedCount = 10* ("dummyN".length() + System.getProperty("line.separator").length()) - 2;
-        assertEquals("[...truncated "+truncatedCount+" B...]", logLines.get(0));
+        int truncatedCount = 10 * ("dummyN".length() + System.getProperty("line.separator").length()) - 2;
+        assertEquals("[...truncated " + truncatedCount + " B...]", logLines.get(0));
     }
 
     @SuppressWarnings("deprecation")
@@ -218,7 +208,7 @@ public class RunTest {
         Run<? extends Job<?, ?>, ? extends Run<?, ?>> r = new Run(j, 0) {};
         File f = r.getLogFile();
         f.getParentFile().mkdirs();
-        PrintWriter w = new PrintWriter(f, "utf-8");
+        PrintWriter w = new PrintWriter(f, StandardCharsets.UTF_8);
         w.print("a1\nb2\n\nc3");
         w.close();
         List<String> logLines = r.getLog(10);
@@ -233,10 +223,11 @@ public class RunTest {
     @Test
     public void compareRunsFromSameJobWithDifferentNumbers() throws Exception {
         final Jenkins group = Mockito.mock(Jenkins.class);
+        Mockito.when(group.getFullName()).thenReturn("j");
         final Job j = Mockito.mock(Job.class);
 
         Mockito.when(j.getParent()).thenReturn(group);
-        Mockito.when(group.getFullName()).thenReturn("j");
+        Mockito.when(j.getFullName()).thenReturn("Mock job");
         Mockito.when(j.assignBuildNumber()).thenReturn(1, 2);
 
         Run r1 = new Run(j) {};
@@ -258,7 +249,9 @@ public class RunTest {
         final Job j1 = Mockito.mock(Job.class);
         final Job j2 = Mockito.mock(Job.class);
         Mockito.when(j1.getParent()).thenReturn(group1);
+        Mockito.when(j1.getFullName()).thenReturn("Mock job");
         Mockito.when(j2.getParent()).thenReturn(group2);
+        Mockito.when(j2.getFullName()).thenReturn("Mock job2");
         Mockito.when(group1.getFullName()).thenReturn("g1");
         Mockito.when(group2.getFullName()).thenReturn("g2");
         Mockito.when(j1.assignBuildNumber()).thenReturn(1);
@@ -310,7 +303,7 @@ public class RunTest {
 
                 @NonNull
                 @Override
-                public InputStream getLogInputStream() throws IOException {
+                public InputStream getLogInputStream() {
                     return buf.newInputStream();
                 }
             };

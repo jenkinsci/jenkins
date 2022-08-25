@@ -31,6 +31,7 @@ import static org.junit.Assert.assertNotNull;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlHiddenInput;
 import com.gargoylesoftware.htmlunit.html.HtmlTextInput;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.AbstractProject;
 import hudson.model.Project;
 import hudson.tasks.BuildStepDescriptor;
@@ -160,6 +161,7 @@ public class SecretTextareaTest {
 
         @TestExtension
         public static class DescriptorImpl extends BuildStepDescriptor<Builder> {
+            @NonNull
             @Override
             public String getDisplayName() {
                 return "Test Secret";

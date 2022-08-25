@@ -94,7 +94,7 @@ public class UpdateViewCommandTest {
                 ;
 
         assertThat(result, failedWith(1));
-        assertThat(result.stderr(), containsString("Expecting view type: "+ myView.getClass()
+        assertThat(result.stderr(), containsString("Expecting view type: " + myView.getClass()
                 + " but got: class hudson.model.ListView instead."));
     }
 

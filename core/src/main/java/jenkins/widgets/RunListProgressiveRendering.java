@@ -48,16 +48,16 @@ public abstract class RunListProgressiveRendering extends ProgressiveRendering {
      */
     private static final double MAX_LIKELY_RUNS = 20;
     private final List<JSONObject> results = new ArrayList<>();
-    private Iterable<? extends Run<?,?>> builds;
+    private Iterable<? extends Run<?, ?>> builds;
 
     /** Jelly cannot call a constructor with arguments. */
-    public void setBuilds(Iterable<? extends Run<?,?>> builds) {
+    public void setBuilds(Iterable<? extends Run<?, ?>> builds) {
         this.builds = builds;
     }
 
     @Override protected void compute() throws Exception {
         double decay = 1;
-        for (Run<?,?> build : builds) {
+        for (Run<?, ?> build : builds) {
             if (canceled()) {
                 return;
             }
@@ -77,5 +77,5 @@ public abstract class RunListProgressiveRendering extends ProgressiveRendering {
         return d;
     }
 
-    protected abstract void calculate(Run<?,?> build, JSONObject element);
+    protected abstract void calculate(Run<?, ?> build, JSONObject element);
 }

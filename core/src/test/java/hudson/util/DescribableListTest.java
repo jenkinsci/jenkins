@@ -50,7 +50,7 @@ public class DescribableListTest {
 
     private static final class Data {
 
-        final DescribableList<Datum,Descriptor<Datum>> list = new DescribableList<>();
+        final DescribableList<Datum, Descriptor<Datum>> list = new DescribableList<>();
 
         @Override
         public String toString() {
@@ -69,7 +69,7 @@ public class DescribableListTest {
 
         @Override
         public Descriptor<Datum> getDescriptor() {
-            return new Descriptor<Datum>(Datum.class) {};
+            return new Descriptor<>(Datum.class) {};
         }
 
         @Override

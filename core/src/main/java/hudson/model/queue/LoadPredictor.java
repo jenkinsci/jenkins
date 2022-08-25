@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model.queue;
 
 import hudson.Extension;
@@ -55,12 +56,12 @@ public abstract class LoadPredictor implements ExtensionPoint {
      *      This is the execution plan for which we are making a load prediction. Never null. While
      *      this object is still being partially constructed when this method is called, some
      *      of its properties (like {@link MappingWorksheet#item} provide access to more contextual
-     *      information. 
+     *      information.
      * @since 1.380
      */
     public Iterable<FutureLoad> predict(MappingWorksheet plan, Computer computer, long start, long end) {
         // maintain backward compatibility by calling the old signature.
-        return predict(computer,start,end);
+        return predict(computer, start, end);
     }
 
     /**
@@ -96,9 +97,9 @@ public abstract class LoadPredictor implements ExtensionPoint {
                 if (e.isIdle())     continue;
 
                 long eta = e.getEstimatedRemainingTimeMillis();
-                long end = eta<0 ? eternity : now + eta; // when does this task end?
+                long end = eta < 0 ? eternity : now + eta; // when does this task end?
                 if (end < start)    continue;   // should be over by the 'start' time.
-                fl.add(new FutureLoad(start, end-start, 1));
+                fl.add(new FutureLoad(start, end - start, 1));
             }
             return fl;
         }

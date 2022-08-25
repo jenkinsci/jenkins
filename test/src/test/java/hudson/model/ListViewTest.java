@@ -87,7 +87,7 @@ public class ListViewTest {
     @Test public void nullJobNames() {
         assertTrue(j.jenkins.getView("v").getItems().isEmpty());
     }
-    
+
     @Test
     public void testJobLinksAreValid() throws Exception {
       /*
@@ -101,7 +101,7 @@ public class ListViewTest {
       FreeStyleProject job1 = folder1.createProject(FreeStyleProject.class, "job1");
       MockFolder folder2 = folder1.createProject(MockFolder.class, "folder2");
       FreeStyleProject job2 = folder2.createProject(FreeStyleProject.class, "job2");
-      
+
       ListView lv = new ListView("myview");
       lv.setRecurse(true);
       lv.setIncludeRegex(".*");
@@ -119,7 +119,7 @@ public class ListViewTest {
       checkLinkFromItemExistsAndIsValid(folder2, folder1, folder1, webClient);
       checkLinkFromViewExistsAndIsValid(job2, folder1, lv2, webClient);
     }
-    
+
     private void checkLinkFromViewExistsAndIsValid(Item item, ItemGroup ig, View view, WebClient webClient) throws IOException, SAXException {
       HtmlPage page = webClient.goTo(view.getUrl());
       HtmlAnchor link = page.getAnchorByText(Functions.getRelativeDisplayNameFrom(item, ig));
@@ -142,7 +142,7 @@ public class ListViewTest {
         v.setIncludeRegex(".*");
         v.setRecurse(true);
         // Note: did not manage to reproduce CCE until I changed expand to use ‘for (TopLevelItem item : items)’ rather than ‘for (Item item : items)’; perhaps a compiler-specific issue?
-        assertEquals(Collections.singletonList(mp), v.getItems());
+        assertEquals(List.of(mp), v.getItems());
     }
 
     @Issue("JENKINS-18680")
@@ -247,7 +247,7 @@ public class ListViewTest {
         try (ACLContext acl = ACL.as(User.getOrCreateByIdOrFullName("alice"))) {
             p.renameTo("p2");
         }
-        assertEquals(Collections.singletonList(p), v.getItems());
+        assertEquals(List.of(p), v.getItems());
     }
 
     @Issue("JENKINS-41128")
@@ -306,7 +306,7 @@ public class ListViewTest {
         names.add("f1/p3");
         names.add("f2/p4");
         lv.setJobNames(names);
-        assertThat(lv.getItems(), containsInAnyOrder(p1,p2));
+        assertThat(lv.getItems(), containsInAnyOrder(p1, p2));
         lv.setRecurse(true);
         assertThat(lv.getItems(), containsInAnyOrder(p1, p2, p3, p4));
     }
@@ -338,7 +338,7 @@ public class ListViewTest {
         FreeStyleProject p3 = f1.createProject(FreeStyleProject.class, "p3");
         FreeStyleProject p4 = f2.createProject(FreeStyleProject.class, "p4");
         ListView lv = new ListView("view", Jenkins.get());
-        lv.setJobFilters(Collections.singletonList(new AllFilter()));
+        lv.setJobFilters(List.of(new AllFilter()));
         lv.setRecurse(false);
         assertThat(lv.getItems(), containsInAnyOrder(f1, f2, p1, p2));
         lv.setRecurse(true);
@@ -366,9 +366,11 @@ public class ListViewTest {
         @Override public ACL getRootACL() {
             return UNSECURED.getRootACL();
         }
+
         @Override public Collection<String> getGroups() {
             return Collections.emptyList();
         }
+
         @Override public ACL getACL(View item) {
             return new ACL() {
                 @Override public boolean hasPermission2(Authentication a, Permission permission) {
@@ -389,6 +391,7 @@ public class ListViewTest {
         public int read() throws IOException {
             return inner.read();
         }
+
         @Override
         public int read(byte[] b) throws IOException {
             return inner.read(b);
@@ -398,14 +401,17 @@ public class ListViewTest {
         public int read(byte[] b, int off, int len) throws IOException {
             return inner.read(b, off, len);
         }
+
         @Override
         public boolean isFinished() {
             throw new UnsupportedOperationException();
         }
+
         @Override
         public boolean isReady() {
             throw new UnsupportedOperationException();
         }
+
         @Override
         public void setReadListener(ReadListener readListener) {
             throw new UnsupportedOperationException();

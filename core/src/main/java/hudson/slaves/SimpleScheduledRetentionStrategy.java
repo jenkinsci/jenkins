@@ -21,12 +21,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.slaves;
 
 import static hudson.Util.fixNull;
 import static java.util.logging.Level.INFO;
 
 import antlr.ANTLRException;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.model.Computer;
 import hudson.model.Descriptor;
@@ -239,7 +241,7 @@ public class SimpleScheduledRetentionStrategy extends RetentionStrategy<SlaveCom
         return 1;
     }
 
-    private boolean isOnlineScheduled() {
+    private synchronized boolean isOnlineScheduled() {
         updateStartStopWindow();
         long now = System.currentTimeMillis();
         return (lastStart < now && lastStop > now) || (nextStart < now && nextStop > now);
@@ -247,6 +249,7 @@ public class SimpleScheduledRetentionStrategy extends RetentionStrategy<SlaveCom
 
     @Extension @Symbol("schedule")
     public static class DescriptorImpl extends Descriptor<RetentionStrategy<?>> {
+        @NonNull
         @Override
         public String getDisplayName() {
             return Messages.SimpleScheduledRetentionStrategy_displayName();

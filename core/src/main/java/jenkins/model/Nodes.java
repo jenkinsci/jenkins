@@ -21,10 +21,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.model;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.BulkChange;
 import hudson.Util;
 import hudson.XmlFile;
@@ -60,6 +62,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  * @since 1.607
  */
 @Restricted(NoExternalUse.class) // for now, we may make it public later
+@SuppressFBWarnings(value = "THROWS_METHOD_THROWS_CLAUSE_BASIC_EXCEPTION", justification = "TODO needs triage")
 public class Nodes implements Saveable {
 
     /**
@@ -141,7 +144,7 @@ public class Nodes implements Saveable {
             AtomicReference<Node> old = new AtomicReference<>();
             old.set(nodes.put(node.getNodeName(), node));
             jenkins.updateNewComputer(node);
-            jenkins.trimLabels();
+            jenkins.trimLabels(node, oldNode);
             // TODO there is a theoretical race whereby the node instance is updated/removed after lock release
             try {
                 persistNode(node);
@@ -153,7 +156,7 @@ public class Nodes implements Saveable {
                     public void run() {
                         nodes.compute(node.getNodeName(), (ignoredNodeName, ignoredNode) -> oldNode);
                         jenkins.updateComputerList();
-                        jenkins.trimLabels();
+                        jenkins.trimLabels(node, oldNode);
                     }
                 });
                 throw e;
@@ -197,11 +200,11 @@ public class Nodes implements Saveable {
     public boolean updateNode(final @NonNull Node node) throws IOException {
         boolean exists;
         try {
-            exists = Queue.withLock(new Callable<Boolean>() {
+            exists = Queue.withLock(new Callable<>() {
                 @Override
                 public Boolean call() throws Exception {
                     if (node == nodes.get(node.getNodeName())) {
-                        jenkins.trimLabels();
+                        jenkins.trimLabels(node);
                         return true;
                     }
                     return false;
@@ -242,7 +245,7 @@ public class Nodes implements Saveable {
                     Nodes.this.nodes.remove(oldOne.getNodeName());
                     Nodes.this.nodes.put(newOne.getNodeName(), newOne);
                     jenkins.updateComputerList();
-                    jenkins.trimLabels();
+                    jenkins.trimLabels(oldOne, newOne);
                 }
             });
             updateNode(newOne);
@@ -276,7 +279,7 @@ public class Nodes implements Saveable {
                     }
                     if (node == nodes.remove(node.getNodeName())) {
                         jenkins.updateComputerList();
-                        jenkins.trimLabels();
+                        jenkins.trimLabels(node);
                     }
                 }
             });

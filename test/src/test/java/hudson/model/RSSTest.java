@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -182,7 +183,7 @@ public class RSSTest {
     public void checkWithSingleBuild_Rss_All_Computer() throws Exception {
         runSuccessfulBuild();
 
-        String pathPrefix = "computer/(built-in)/";
+        String pathPrefix = "manage/computer/(built-in)/";
         String displayName = Messages.Hudson_Computer_DisplayName();
         String buildType = ALL_BUILD_TYPE;
         String buildTitle = STABLE_BUILD_TITLE;
@@ -194,7 +195,7 @@ public class RSSTest {
     public void checkWithSingleBuild_Rss_Failed_Computer() throws Exception {
         runFailingBuild();
 
-        String pathPrefix = "computer/(built-in)/";
+        String pathPrefix = "manage/computer/(built-in)/";
         String displayName = Messages.Hudson_Computer_DisplayName();
         String buildType = FAILED_BUILD_TYPE;
         String buildTitle = FAILED_BUILD_TITLE;
@@ -204,7 +205,7 @@ public class RSSTest {
 
     @Test
     public void latestBuilds_Computer() throws Exception {
-        String pathPrefix = "computer/(built-in)/";
+        String pathPrefix = "manage/computer/(built-in)/";
         String displayName = Messages.Hudson_Computer_DisplayName();
         String buildType = LATEST_BUILD_TYPE;
         int expectedLinks = 3;
@@ -465,7 +466,7 @@ public class RSSTest {
 
     private FreeStyleProject runSuccessfulBuild() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
-        j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        j.buildAndAssertSuccess(p);
         return p;
     }
 
@@ -478,7 +479,7 @@ public class RSSTest {
     private void runFailingBuild() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildersList().add(new FailureBuilder());
-        j.assertBuildStatus(Result.FAILURE, p.scheduleBuild2(0).get());
+        j.buildAndAssertStatus(Result.FAILURE, p);
     }
 
     private void runFailingBuild(String userId) throws Exception {

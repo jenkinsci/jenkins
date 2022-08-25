@@ -34,7 +34,7 @@ public class TooManyJobsButNoViewTest {
     @Rule public JenkinsRule r = new JenkinsRule();
     private TooManyJobsButNoView mon;
 
-    @Before public void setUp() throws Exception {
+    @Before public void setUp() {
         mon = AdministrativeMonitor.all().get(TooManyJobsButNoView.class);
     }
 
@@ -59,7 +59,7 @@ public class TooManyJobsButNoViewTest {
      * Once we have enough jobs, it should kick in
      */
     @Test public void activated() throws Exception {
-        for( int i=0; i<=TooManyJobsButNoView.THRESHOLD; i++ )
+        for (int i = 0; i <= TooManyJobsButNoView.THRESHOLD; i++)
             r.createFreeStyleProject();
 
         HtmlPage p = r.createWebClient().goTo("manage");
@@ -67,8 +67,8 @@ public class TooManyJobsButNoViewTest {
         assertNotNull(f);
 
         // this should take us to the new view page
-        URL url = r.submit(f,"yes").getUrl();
-        assertTrue(url.toExternalForm(),url.toExternalForm().endsWith("/newView"));
+        URL url = r.submit(f, "yes").getUrl();
+        assertTrue(url.toExternalForm(), url.toExternalForm().endsWith("/newView"));
 
         // since we didn't create a view, if we go back, we should see the warning again
         p = r.createWebClient().goTo("manage");
@@ -79,7 +79,7 @@ public class TooManyJobsButNoViewTest {
 
         verifyNoForm();
     }
-    
+
     @Test
     public void systemReadNoViewAccessVerifyNoForm() throws Exception {
         final String READONLY = "readonly";
@@ -104,7 +104,7 @@ public class TooManyJobsButNoViewTest {
         DomElement adminMonitorDiv = p.getElementById("tooManyJobsButNoView");
         assertThat(adminMonitorDiv, is(nullValue()));
     }
-    
+
     @Test
     public void systemReadVerifyForm() throws Exception {
         final String READONLY = "readonly";
@@ -132,5 +132,5 @@ public class TooManyJobsButNoViewTest {
         assertThat(adminMonitorDiv, is(notNullValue()));
         assertThat(adminMonitorDiv.getTextContent(), is(notNullValue()));
     }
-    
+
 }

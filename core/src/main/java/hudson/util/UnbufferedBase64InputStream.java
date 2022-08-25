@@ -35,13 +35,13 @@ public class UnbufferedBase64InputStream extends FilterInputStream {
 
     @Override
     public int read() throws IOException {
-        if (decoded.length==0)
+        if (decoded.length == 0)
             return -1; // EOF
 
-        if (pos==decoded.length) {
+        if (pos == decoded.length) {
             din.readFully(encoded);
             decoded = decoder.decode(encoded);
-            if (decoded.length==0)  return -1; // EOF
+            if (decoded.length == 0)  return -1; // EOF
             pos = 0;
         }
 
@@ -51,20 +51,20 @@ public class UnbufferedBase64InputStream extends FilterInputStream {
     @Override
     public int read(byte[] b, int off, int len) throws IOException {
         int i;
-        for (i=0; i<len; i++) {
+        for (i = 0; i < len; i++) {
             int ch = read();
-            if (ch<0)   break;
-            b[off+i] = (byte)ch;
+            if (ch < 0)   break;
+            b[off + i] = (byte) ch;
         }
-        return i==0 ? -1 : i;
+        return i == 0 ? -1 : i;
     }
 
     @Override
     public long skip(long n) throws IOException {
-        long r=0;
-        while (n>0) {
+        long r = 0;
+        while (n > 0) {
             int ch = read();
-            if (ch<0)   break;
+            if (ch < 0)   break;
             n--;
             r++;
         }

@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.cli;
 
 import static hudson.cli.CLICommandInvoker.Matcher.succeededSilently;
@@ -147,7 +148,7 @@ public class ComputerStateTest {
 
         assertLinkDoesNotExist(page, "System Information");
         HtmlPage info = wc.getPage(slave, "systemInfo");
-        assertThat(info.asText(), not(containsString("Environment Variables")));
+        assertThat(info.asNormalizedText(), not(containsString("Environment Variables")));
     }
 
     private void assertConnected(WebClient wc, DumbSlave slave) throws Exception {
@@ -160,7 +161,7 @@ public class ComputerStateTest {
 
         main.getAnchorByText("System Information");
         HtmlPage info = wc.getPage(slave, "systemInfo");
-        assertThat(info.asText(), containsString("Environment Variables"));
+        assertThat(info.asNormalizedText(), containsString("Environment Variables"));
     }
 
     private void assertLinkDoesNotExist(HtmlPage page, String text) {

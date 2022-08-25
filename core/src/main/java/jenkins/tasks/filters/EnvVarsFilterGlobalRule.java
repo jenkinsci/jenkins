@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.tasks.filters;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
@@ -57,5 +58,5 @@ public interface EnvVarsFilterGlobalRule extends Describable<EnvVarsFilterGlobal
      * @param launcher The launcher that will be used to run the command
      * @return true iff the rule can be applied to that builder
      */
-    boolean isApplicable(@CheckForNull Run<?,?> run, @NonNull Object builder, @NonNull Launcher launcher);
+    boolean isApplicable(@CheckForNull Run<?, ?> run, @NonNull Object builder, @NonNull Launcher launcher);
 }

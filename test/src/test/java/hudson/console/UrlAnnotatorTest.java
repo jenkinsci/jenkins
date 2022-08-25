@@ -47,9 +47,9 @@ public class UrlAnnotatorTest {
      * Mark up of URL should consider surrounding markers, if any.
      */
     @Test
-    public void test2() throws Exception {
+    public void test2() {
         MarkupText m = new MarkupText("{abc='http://url/',def='ghi'}");
-        new UrlAnnotator().newInstance(null).annotate(null,m);
+        new UrlAnnotator().newInstance(null).annotate(null, m);
         String html = m.toString(false);
         assertTrue(html.contains("<a href='http://url/'>http://url/</a>"));
         System.out.println(html);

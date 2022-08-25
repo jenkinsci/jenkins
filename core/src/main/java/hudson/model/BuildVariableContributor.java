@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import hudson.ExtensionList;
@@ -62,7 +63,7 @@ public abstract class BuildVariableContributor implements ExtensionPoint {
      *      Partially built variable map. Implementation of this method is expected to
      *      add additional variables here. Never null.
      */
-    public abstract void buildVariablesFor(AbstractBuild build, Map<String,String> variables);
+    public abstract void buildVariablesFor(AbstractBuild build, Map<String, String> variables);
 
     /**
      * Returns all the registered {@link BuildVariableContributor}s.

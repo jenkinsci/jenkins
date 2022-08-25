@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.views;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -60,7 +61,7 @@ public final class StatusFilter extends ViewJobFilter {
         List<TopLevelItem> filtered = new ArrayList<>();
         for (TopLevelItem item : added) {
             if (!(item instanceof ParameterizedJobMixIn.ParameterizedJob) // TODO or better to call the more generic Job.isBuildable?
-                    || ((ParameterizedJobMixIn.ParameterizedJob<?,?>) item).isDisabled() ^ statusFilter)
+                    || ((ParameterizedJobMixIn.ParameterizedJob<?, ?>) item).isDisabled() ^ statusFilter)
                 filtered.add(item);
         }
         return filtered;

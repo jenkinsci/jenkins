@@ -35,8 +35,5 @@ THE SOFTWARE.
     <f:entry title="${%Tunnel connection through}" help="/help/system-config/master-slave/jnlp-tunnel.html">
       <f:textbox field="tunnel"/>
     </f:entry>
-    <f:entry title="${%JVM options}" field="vmargs">
-      <f:textbox />
-    </f:entry>
   </f:advanced>
 </j:jelly>

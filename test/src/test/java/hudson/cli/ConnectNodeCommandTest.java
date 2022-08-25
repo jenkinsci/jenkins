@@ -65,7 +65,7 @@ public class ConnectNodeCommandTest {
         assertThat(result.stderr(), not(containsString("ERROR: " + CLICommand.CLI_LISTPARAM_SUMMARY_ERROR_TEXT)));
     }
 
-    @Test public void connectNodeShouldFailIfNodeDoesNotExist() throws Exception {
+    @Test public void connectNodeShouldFailIfNodeDoesNotExist() {
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Computer.CONNECT, Jenkins.READ)
                 .invokeWithArgs("never_created");
@@ -172,7 +172,7 @@ public class ConnectNodeCommandTest {
         assertThat(slave2.toComputer().isOnline(), equalTo(true));
     }
 
-    @Test public void connectNodeShouldSucceedOnMaster() throws Exception {
+    @Test public void connectNodeShouldSucceedOnMaster() {
         final Computer masterComputer = j.jenkins.getComputer("");
 
         CLICommandInvoker.Result result = command

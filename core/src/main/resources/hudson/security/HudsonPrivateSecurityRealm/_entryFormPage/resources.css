@@ -1,12 +1,12 @@
-input {
-	/* match width with captcha image */
-	width:200px;
+.form-content input {
+  /* match width with captcha image */
+  width: 200px;
 }
 
 .form-content {
-	margin: 2em;
+  margin: 2em;
 }
 
 .form-content .error {
-	margin-bottom: 1em;
+  margin-bottom: 1em;
 }

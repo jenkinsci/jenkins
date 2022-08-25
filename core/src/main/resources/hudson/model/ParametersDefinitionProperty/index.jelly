@@ -38,7 +38,7 @@ THE SOFTWARE.
   <l:layout title="${it.displayName}">
     <st:include page="sidepanel.jelly" it="${it.job}"/>
     <l:main-panel>
-      <div class="behavior-loading">${%LOADING}</div>
+      <div class="behavior-loading"><l:spinner text="${%LOADING}"/></div>
       <h1>${it.job.pronoun} ${it.job.displayName}</h1>
       <p>${%description}</p>
       <j:set var="delay" value="${request.getParameter('delay')}" />

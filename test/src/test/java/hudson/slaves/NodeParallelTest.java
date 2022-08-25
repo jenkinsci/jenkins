@@ -37,9 +37,9 @@ public class NodeParallelTest {
                 LOGGER.log(Level.INFO, "Creating slave " + i);
                 // JenkinsRule sync on Jenkins singleton, so this doesn't work
                 // r.createSlave();
-                DumbSlave agent = new DumbSlave("agent-"+i, "/tmp", new JNLPLauncher(true));
+                DumbSlave agent = new DumbSlave("agent-" + i, "/tmp", new JNLPLauncher(true));
                 r.jenkins.addNode(agent);
-                agent.setNodeProperties(Collections.singletonList(new EnvironmentVariablesNodeProperty(new EnvironmentVariablesNodeProperty.Entry("foo", "" + i))));
+                agent.setNodeProperties(List.of(new EnvironmentVariablesNodeProperty(new EnvironmentVariablesNodeProperty.Entry("foo", "" + i))));
                 return null;
             } catch (Exception e1) {
                 throw new RuntimeException(e1);

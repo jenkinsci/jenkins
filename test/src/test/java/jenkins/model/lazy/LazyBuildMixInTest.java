@@ -90,9 +90,10 @@ public class LazyBuildMixInTest {
     @Test public void newRunningBuildRelationFromPrevious() throws Exception {
         FreeStyleProject p = r.createFreeStyleProject();
         p.getBuildersList().add(new SleepBuilder(1000));
-        FreeStyleBuild b1 = p.scheduleBuild2(0).get();
+        FreeStyleBuild b1 = r.buildAndAssertSuccess(p);
         assertNull(b1.getNextBuild());
         FreeStyleBuild b2 = p.scheduleBuild2(0).waitForStart();
         assertSame(b2, b1.getNextBuild());
+        r.assertBuildStatusSuccess(r.waitForCompletion(b2));
     }
 }

@@ -43,9 +43,14 @@ THE SOFTWARE.
       toggles the radio.
     </st:attribute>
   </st:documentation>
-  <input type="radio" name="${attrs.name}" onclick="${attrs.onclick}" id="${attrs.id}" value="${attrs.value}"
-        checked="${attrs.checked?'true':null}" disabled="${readOnlyMode?'true':null}" />
-  <j:if test="${attrs.title!=null}">
-    <label class="attach-previous">${attrs.title}</label>
-  </j:if>
+  <j:set var="itemId" value="${attrs.id ?: h.generateItemId()}" />
+    <div class="jenkins-radio">
+        <input class="jenkins-radio__input" type="radio" name="${attrs.name}" onclick="${attrs.onclick}"
+               id="${itemId}" value="${attrs.value}" checked="${attrs.checked?'true':null}"
+               disabled="${readOnlyMode?'true':null}" />
+        <label class="jenkins-radio__label" for="${itemId}">${attrs.title}</label>
+        <div class="jenkins-radio__children">
+            <d:invokeBody />
+        </div>
+    </div>
 </j:jelly>

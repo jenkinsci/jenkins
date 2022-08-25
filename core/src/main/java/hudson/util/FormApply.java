@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.util;
 
 import java.io.IOException;
@@ -49,8 +50,8 @@ public class FormApply {
             public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
                 if (isApply(req)) {
                     // if the submission is via 'apply', show a response in the notification bar
-                    applyResponse("notificationBar.show('"+Messages.HttpResponses_Saved()+"',notificationBar.OK)")
-                            .generateResponse(req,rsp,node);
+                    applyResponse("notificationBar.show('" + Messages.HttpResponses_Saved() + "',notificationBar.OK)")
+                            .generateResponse(req, rsp, node);
                 } else {
                     rsp.sendRedirect(destination);
                 }

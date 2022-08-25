@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson;
 
 import hudson.MarkupText.SubText;
@@ -74,15 +75,15 @@ public abstract class AbstractMarkupText {
      * For example, if the text was "abc", then {@code addMarkup(1,2,"<b>","</b>")}
      * would generate {@code "a<b>b</b>c"}
      */
-    public abstract void addMarkup( int startPos, int endPos, String startTag, String endTag );
+    public abstract void addMarkup(int startPos, int endPos, String startTag, String endTag);
 
     /**
      * Inserts an A tag that surrounds the given position.
      *
      * @since 1.349
      */
-    public void addHyperlink( int startPos, int endPos, String url ) {
-        addMarkup(startPos,endPos,"<a href='"+url+"'>","</a>");
+    public void addHyperlink(int startPos, int endPos, String url) {
+        addMarkup(startPos, endPos, "<a href='" + url + "'>", "</a>");
     }
 
     /**
@@ -91,22 +92,22 @@ public abstract class AbstractMarkupText {
      *
      * @since 1.395
      */
-    public void addHyperlinkLowKey( int startPos, int endPos, String url ) {
-        addMarkup(startPos,endPos,"<a class='lowkey' href='"+url+"'>","</a>");
+    public void addHyperlinkLowKey(int startPos, int endPos, String url) {
+        addMarkup(startPos, endPos, "<a class='lowkey' href='" + url + "'>", "</a>");
     }
 
     /**
      * Hides the given text.
      */
-    public void hide( int startPos, int endPos ) {
-        addMarkup(startPos,endPos,"<span style='display:none'>","</span>");
+    public void hide(int startPos, int endPos) {
+        addMarkup(startPos, endPos, "<span style='display:none'>", "</span>");
     }
 
     /**
      * Adds a start tag and end tag around the entire text
      */
     public final void wrapBy(String startTag, String endTag) {
-        addMarkup(0,length(),startTag,endTag);
+        addMarkup(0, length(), startTag, endTag);
     }
 
     /**
@@ -118,7 +119,7 @@ public abstract class AbstractMarkupText {
         String text = getText();
         Matcher m = pattern.matcher(text);
 
-        if(m.find())
+        if (m.find())
             return createSubText(m);
 
         return null;
@@ -142,17 +143,17 @@ public abstract class AbstractMarkupText {
         Matcher m = pattern.matcher(text);
         List<SubText> r = new ArrayList<>();
 
-        while(m.find()) {
+        while (m.find()) {
             int idx = m.start();
-            if(idx>0) {
-                char ch = text.charAt(idx-1);
-                if(Character.isLetter(ch) || Character.isDigit(ch))
+            if (idx > 0) {
+                char ch = text.charAt(idx - 1);
+                if (Character.isLetter(ch) || Character.isDigit(ch))
                     continue;   // not at a word boundary
             }
             idx = m.end();
-            if(idx<text.length()) {
+            if (idx < text.length()) {
                 char ch = text.charAt(idx);
-                if(Character.isLetter(ch) || Character.isDigit(ch))
+                if (Character.isLetter(ch) || Character.isDigit(ch))
                     continue;   // not at a word boundary
             }
             r.add(createSubText(m));

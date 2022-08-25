@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.diagnosis;
 
 import static hudson.init.InitMilestone.EXTENSIONS_AUGMENTED;
@@ -65,7 +66,7 @@ public class NullIdDescriptorMonitor extends AdministrativeMonitor {
         return Collections.unmodifiableList(problems);
     }
 
-    @Initializer(after=EXTENSIONS_AUGMENTED)
+    @Initializer(after = EXTENSIONS_AUGMENTED)
     public void verify() {
         Jenkins h = Jenkins.get();
         for (Descriptor d : h.getExtensionList(Descriptor.class)) {
@@ -74,14 +75,14 @@ public class NullIdDescriptorMonitor extends AdministrativeMonitor {
             try {
                 id = d.getId();
             } catch (Throwable t) {
-                LOGGER.log(Level.SEVERE,MessageFormat.format("Descriptor {0} from plugin {1} with display name {2} reported an exception for ID",
-                        d, p == null ? "???" : p.getLongName(), d.getDisplayName()),t);
+                LOGGER.log(Level.SEVERE, MessageFormat.format("Descriptor {0} from plugin {1} with display name {2} reported an exception for ID",
+                        d, p == null ? "???" : p.getLongName(), d.getDisplayName()), t);
                 problems.add(d);
                 continue;
             }
-            if (id==null) {
+            if (id == null) {
                 LOGGER.severe(MessageFormat.format("Descriptor {0} from plugin {1} with display name {2} has null ID",
-                        d, p==null?"???":p.getLongName(), d.getDisplayName()));
+                        d, p == null ? "???" : p.getLongName(), d.getDisplayName()));
                 problems.add(d);
             }
         }

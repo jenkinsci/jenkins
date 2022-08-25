@@ -86,14 +86,14 @@ public abstract class OfflineCause {
             this.description = description;
         }
 
-        @Exported(name="description") @Override
+        @Exported(name = "description") @Override
         public String toString() {
             return description.toString();
         }
     }
 
     public static OfflineCause create(Localizable d) {
-        if (d==null)    return null;
+        if (d == null)    return null;
         return new SimpleOfflineCause(d);
     }
 
@@ -188,7 +188,7 @@ public abstract class OfflineCause {
      * @since 1.644
      */
     public static class IdleOfflineCause extends SimpleOfflineCause {
-        public IdleOfflineCause () {
+        public IdleOfflineCause() {
             super(hudson.slaves.Messages._RetentionStrategy_Demand_OfflineIdle());
         }
     }

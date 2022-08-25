@@ -71,7 +71,7 @@ public class DisconnectNodeCommandTest {
     }
 
     @Test
-    public void disconnectNodeShouldFailIfNodeDoesNotExist() throws Exception {
+    public void disconnectNodeShouldFailIfNodeDoesNotExist() {
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Computer.DISCONNECT, Jenkins.READ)
                 .invokeWithArgs("never_created");

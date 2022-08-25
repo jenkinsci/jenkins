@@ -30,7 +30,7 @@ public class CommandInterpreterTest {
             Assert.fail("getConfiguredLocalRules must not return null");
         }
         try {
-            ((TestCommandInterpreter)builder).buildEnvVarsFilterRules();
+            ((TestCommandInterpreter) builder).buildEnvVarsFilterRules();
         } catch (NullPointerException ex) {
             Assert.fail("buildEnvVarsFilterRules must not throw");
         }

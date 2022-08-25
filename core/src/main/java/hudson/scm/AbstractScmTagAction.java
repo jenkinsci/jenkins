@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.scm;
 
 import hudson.model.AbstractBuild;
@@ -47,14 +48,14 @@ import org.kohsuke.stapler.StaplerResponse;
  */
 public abstract class AbstractScmTagAction extends TaskAction implements BuildBadgeAction, RunAction2 {
 
-    private transient /*final*/ Run<?,?> run;
+    private transient /*final*/ Run<?, ?> run;
     @Deprecated
     protected transient /*final*/ AbstractBuild build;
 
     /**
      * @since 1.568
      */
-    protected AbstractScmTagAction(Run<?,?> run) {
+    protected AbstractScmTagAction(Run<?, ?> run) {
         this.run = run;
         this.build = run instanceof AbstractBuild ? (AbstractBuild) run : null;
     }
@@ -81,7 +82,7 @@ public abstract class AbstractScmTagAction extends TaskAction implements BuildBa
     /**
      * @since 1.568
      */
-    public Run<?,?> getRun() {
+    public Run<?, ?> getRun() {
         return run;
     }
 
@@ -108,11 +109,11 @@ public abstract class AbstractScmTagAction extends TaskAction implements BuildBa
     }
 
     public void doIndex(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        req.getView(this,chooseAction()).forward(req,rsp);
+        req.getView(this, chooseAction()).forward(req, rsp);
     }
 
     protected synchronized String chooseAction() {
-        if(workerThread!=null)
+        if (workerThread != null)
             return "inProgress.jelly";
         return "tagForm.jelly";
     }

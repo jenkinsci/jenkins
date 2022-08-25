@@ -22,6 +22,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.util.xstream;
 
 import com.google.common.collect.ImmutableList;
@@ -48,12 +49,12 @@ public class ImmutableListConverter extends CollectionConverter {
     private final SerializableConverter sc;
 
     public ImmutableListConverter(XStream xs) {
-        this(xs.getMapper(),xs.getReflectionProvider());
+        this(xs.getMapper(), xs.getReflectionProvider());
     }
 
     public ImmutableListConverter(Mapper mapper, ReflectionProvider reflectionProvider) {
         super(mapper);
-        sc = new SerializableConverter(mapper,reflectionProvider);
+        sc = new SerializableConverter(mapper, reflectionProvider);
     }
 
     @Override
@@ -69,26 +70,26 @@ public class ImmutableListConverter extends CollectionConverter {
             List items = new ArrayList();
             if (reader.hasMoreChildren()) {
                 reader.moveDown();
-	            // read the individual items from xml into a list
-	            while (reader.hasMoreChildren()) {
-	                reader.moveDown();
-	                try {
-	                    Object item = readItem(reader, context, items);
-	                    items.add(item);
-	                } catch (CriticalXStreamException e) {
-	                    throw e;
-	                } catch (XStreamException | LinkageError e) {
-	                    RobustReflectionConverter.addErrorInContext(context, e);
-	                }
+                // read the individual items from xml into a list
+                while (reader.hasMoreChildren()) {
+                    reader.moveDown();
+                    try {
+                        Object item = readItem(reader, context, items);
+                        items.add(item);
+                    } catch (CriticalXStreamException e) {
+                        throw e;
+                    } catch (XStreamException | LinkageError e) {
+                        RobustReflectionConverter.addErrorInContext(context, e);
+                    }
                     reader.moveUp();
-	            }
+                }
 
                 // move back up past the elements element.
                 reader.moveUp();
             }
             return ImmutableList.copyOf(items);
         } else {
-            return ImmutableList.copyOf((List)super.unmarshal(reader, context));
+            return ImmutableList.copyOf((List) super.unmarshal(reader, context));
         }
     }
 

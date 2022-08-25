@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.tools;
 
 import hudson.DescriptorExtensionList;
@@ -68,9 +69,9 @@ public abstract class ToolProperty<T extends ToolInstallation> implements Descri
     /**
      * Lists up all the registered {@link ToolPropertyDescriptor}s in the system.
      *
-     * @see ToolDescriptor#getPropertyDescriptors() 
+     * @see ToolDescriptor#getPropertyDescriptors()
      */
-    public static DescriptorExtensionList<ToolProperty<?>,ToolPropertyDescriptor> all() {
+    public static DescriptorExtensionList<ToolProperty<?>, ToolPropertyDescriptor> all() {
         return (DescriptorExtensionList) Jenkins.get().getDescriptorList(ToolProperty.class);
     }
 }

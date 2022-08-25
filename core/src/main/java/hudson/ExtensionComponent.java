@@ -50,11 +50,11 @@ public class ExtensionComponent<T> implements Comparable<ExtensionComponent<T>> 
     }
 
     public ExtensionComponent(T instance, Extension annotation) {
-        this(instance,annotation.ordinal());
+        this(instance, annotation.ordinal());
     }
 
     public ExtensionComponent(T instance) {
-        this(instance,0);
+        this(instance, 0);
     }
 
     /**
@@ -79,7 +79,7 @@ public class ExtensionComponent<T> implements Comparable<ExtensionComponent<T>> 
      * For example, {@code component.isDescriptorOf(Builder.class)}
      */
     public boolean isDescriptorOf(Class<? extends Describable> c) {
-        return instance instanceof Descriptor && ((Descriptor)instance).isSubTypeOf(c);
+        return instance instanceof Descriptor && ((Descriptor) instance).isSubTypeOf(c);
     }
 
     /**

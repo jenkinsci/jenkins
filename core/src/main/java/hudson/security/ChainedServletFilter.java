@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.security;
 
 import java.io.IOException;
@@ -74,6 +75,7 @@ public class ChainedServletFilter implements Filter {
     }
 
     private static final Pattern UNINTERESTING_URIS = Pattern.compile("/(images|jsbundles|css|scripts|adjuncts)/|/favicon[.]ico|/ajax");
+
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, final FilterChain chain) throws IOException, ServletException {
         String uri = request instanceof HttpServletRequest ? ((HttpServletRequest) request).getRequestURI() : "?";
@@ -81,20 +83,20 @@ public class ChainedServletFilter implements Filter {
         LOGGER.log(level, () -> "starting filter on " + uri);
 
         new FilterChain() {
-            private int position=0;
+            private int position = 0;
             // capture the array for thread-safety
             private final Filter[] filters = ChainedServletFilter.this.filters;
 
             @Override
             public void doFilter(ServletRequest request, ServletResponse response) throws IOException, ServletException {
-                if(position==filters.length) {
+                if (position == filters.length) {
                     LOGGER.log(level, () -> uri + " end: " + status());
-                    chain.doFilter(request,response);
+                    chain.doFilter(request, response);
                 } else {
                     Filter next = filters[position++];
                     try {
                         LOGGER.log(level, () -> uri + " @" + position + " " + next + " »");
-                        next.doFilter(request,response,this);
+                        next.doFilter(request, response, this);
                         LOGGER.log(level, () -> uri + " @" + position + " " + next + " « success: " + status());
                     } catch (IOException | ServletException | RuntimeException x) {
                         LOGGER.log(level, () -> uri + " @" + position + " " + next + " « " + x + ": " + status());
@@ -106,7 +108,7 @@ public class ChainedServletFilter implements Filter {
             private int status() {
                 return response instanceof HttpServletResponse ? ((HttpServletResponse) response).getStatus() : 0;
             }
-        }.doFilter(request,response);
+        }.doFilter(request, response);
 
     }
 

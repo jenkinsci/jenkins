@@ -31,17 +31,11 @@ THE SOFTWARE.
                field="childProjects"/>
 	</f:entry>
   <j:if test="${descriptor.showEvenIfUnstableOption(targetType)}"> <!-- TODO JENKINS-16444 this will always be true when first adding step -->
-  	<f:entry title="">
       <f:radio name="BuildTrigger.threshold" checked="${instance.threshold==null || instance.threshold.toString()=='SUCCESS'}"
-              title="${%Trigger only if build is stable}" value="SUCCESS"/>
-    </f:entry>
-    <f:entry title="">
+              title="${%Trigger only if build is stable}" id="threshold-SUCCESS" value="SUCCESS"/>
       <f:radio name="BuildTrigger.threshold" checked="${instance.threshold.toString()=='UNSTABLE'}"
-              title="${%Trigger even if the build is unstable}" value="UNSTABLE"/>
-    </f:entry>
-    <f:entry title="">
+              title="${%Trigger even if the build is unstable}" id="threshold-UNSTABLE" value="UNSTABLE"/>
       <f:radio name="BuildTrigger.threshold" checked="${instance.threshold.toString()=='FAILURE'}"
-              title="${%Trigger even if the build fails}" value="FAILURE"/>
-    </f:entry>
+              title="${%Trigger even if the build fails}" id="threshold-FAILURE" value="FAILURE"/>
   </j:if>
 </j:jelly>

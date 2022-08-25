@@ -83,7 +83,7 @@ public class GetNodeCommandTest {
         assertThat(result, succeeded());
     }
 
-    @Test public void getNodeShouldFailIfNodeDoesNotExist() throws Exception {
+    @Test public void getNodeShouldFailIfNodeDoesNotExist() {
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Computer.EXTENDED_READ, Jenkins.READ)
@@ -97,7 +97,7 @@ public class GetNodeCommandTest {
 
     @Issue("SECURITY-281")
     @Test
-    public void getNodeShouldFailForBuiltInNode() throws Exception {
+    public void getNodeShouldFailForBuiltInNode() {
         CLICommandInvoker.Result result = command.authorizedTo(Computer.EXTENDED_READ, Jenkins.READ).invokeWithArgs("");
         assertThat(result.stderr(), containsString("No such node ''"));
         assertThat(result, failedWith(3));

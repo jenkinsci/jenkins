@@ -29,6 +29,7 @@ import hudson.model.AbstractItem;
 import hudson.model.Action;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Set;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -61,7 +62,7 @@ public class RenameAction implements Action {
         @Override
         public Collection<? extends Action> createFor(AbstractItem target) {
             if (target.isNameEditable()) {
-                return Collections.singleton(new RenameAction());
+                return Set.of(new RenameAction());
             } else {
                 return Collections.emptyList();
             }

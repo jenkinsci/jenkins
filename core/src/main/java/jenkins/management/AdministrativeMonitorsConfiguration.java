@@ -45,9 +45,9 @@ public class AdministrativeMonitorsConfiguration extends GlobalConfiguration {
         for (AdministrativeMonitor am : AdministrativeMonitor.all()) {
             try {
                 boolean disable;
-                if(monitors != null) {
+                if (monitors != null) {
                     disable = !monitors.contains(am.id);
-                }else {
+                } else {
                     disable = !am.id.equals(json.optString("administrativeMonitor"));
                 }
                 am.disable(disable);

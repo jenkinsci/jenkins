@@ -79,7 +79,7 @@ public class WhoAmITest {
 
         assertThat(sessionId, not(nullValue()));
 
-        // dangerous stuff in Regular Login mode: 
+        // dangerous stuff in Regular Login mode:
         /*
          * <td>Details:</td>
          * <td>org.acegisecurity.ui.WebAuthenticationDetails@12afc: RemoteIpAddress: 127.0.0.1; SessionId: node0gbmv9ly0f3h517eppoupykq6n0</td>
@@ -120,7 +120,7 @@ public class WhoAmITest {
 
         assertThat(sessionId, not(nullValue()));
 
-        // dangerous stuff in Regular Login mode with the api/json call: 
+        // dangerous stuff in Regular Login mode with the api/json call:
         /*
          * {
          *    "_class": "hudson.security.WhoAmI",
@@ -129,7 +129,10 @@ public class WhoAmITest {
          *    "authorities": [],
          *    "details": "org.acegisecurity.ui.WebAuthenticationDetails@fffc7f0c: RemoteIpAddress: 127.0.0.1; SessionId: node0g4xbfaaq1qb91pwyv0ctilrfu0",
          *    "name": "user",
-         *    "toString": "org.acegisecurity.providers.UsernamePasswordAuthenticationToken@66074b8a: Username: [toString()=S3cr3t]; Password: [PROTECTED]; Authenticated: true; Details: org.acegisecurity.ui.WebAuthenticationDetails@fffc7f0c: RemoteIpAddress: 127.0.0.1; SessionId: node0g4xbfaaq1qb91pwyv0ctilrfu0; Granted Authorities: "
+         *    "toString": "org.acegisecurity.providers.UsernamePasswordAuthenticationToken@66074b8a:
+         *        Username: [toString()=S3cr3t]; Password: [PROTECTED]; Authenticated: true;
+         *        Details: org.acegisecurity.ui.WebAuthenticationDetails@fffc7f0c: RemoteIpAddress: 127.0.0.1; SessionId: node0g4xbfaaq1qb91pwyv0ctilrfu0;
+         *        Granted Authorities: "
          * }
          */
         assertThat(content, not(anyOf(
@@ -153,7 +156,7 @@ public class WhoAmITest {
         HtmlPage whoAmIPage = wc.goTo("whoAmI");
         String content = whoAmIPage.getWebResponse().getContentAsString();
 
-        // dangerous stuff in Basic mode: 
+        // dangerous stuff in Basic mode:
         /*
          * <td>toString:</td>
          * <td>org.acegisecurity.providers.UsernamePasswordAuthenticationToken@e8fd00a7: Username: [toString()=S3cr3t];
@@ -188,7 +191,7 @@ public class WhoAmITest {
         HtmlPage whoAmIPage = wc.goTo("whoAmI");
         String content = whoAmIPage.getWebResponse().getContentAsString();
 
-        // dangerous stuff in API Token mode: 
+        // dangerous stuff in API Token mode:
         /*
          * <td rowspan="1">Authorization</td>
          * <td>Basic dXNlcjoxMTRiNGRmMWNhZTVkNDQ2MjgxZTJkZWEzMDY1NTEyZDBi</td>

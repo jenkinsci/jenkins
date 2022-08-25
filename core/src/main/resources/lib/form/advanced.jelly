@@ -40,8 +40,8 @@ THE SOFTWARE.
     </st:attribute>
   </st:documentation>
 
-	<div class='tr'>
-          <st:adjunct includes="lib.form.advanced.advanced"/>
+	<div class='jenkins-form-item tr'>
+        <st:adjunct includes="lib.form.advanced.advanced"/>
 
 	    <div class="advancedLink" style="${attrs.align!=null?('text-align:'+attrs.align):''}">
               <j:set var="id" value="${h.generateId()}"/>
@@ -57,16 +57,7 @@ THE SOFTWARE.
 	      <d:invokeBody/>
 	    </div></div>
             <j:if test="${!customizedFields.isEmpty()}">
-              <script>
-                  {
-                      var span = $$('${id}');
-                      if (span != null) {
-                          span.style.display = '';
-                      } else if (console &amp;&amp; console.log) {
-                          console.log('no element ${id} for ${customizedFields}');
-                      }
-                  }
-              </script>
+                <div class="advanced-customized-fields-info" data-id="${id}" data-customized-fields="${customizedFields}"/>
             </j:if>
 	</div>
 </j:jelly>

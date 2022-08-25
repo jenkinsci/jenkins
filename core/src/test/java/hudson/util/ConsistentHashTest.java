@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.util;
 
 import static org.junit.Assert.assertEquals;
@@ -78,15 +79,15 @@ public class ConsistentHashTest {
     @Test
     public void unevenDistribution() {
         ConsistentHash<String> hash = new ConsistentHash<>();
-        hash.add("Even",10);
-        hash.add("Odd",100);
+        hash.add("Even", 10);
+        hash.add("Odd", 100);
 
         Random r = new Random(0);
         int even = 0;
         int odd = 0;
-        for(int i = 0; i < 1000; i++) {
+        for (int i = 0; i < 1000; i++) {
             String v = hash.lookup(r.nextInt());
-            if(v.equals("Even")) {
+            if (v.equals("Even")) {
                 even++;
             } else {
                 odd++;
@@ -119,7 +120,7 @@ public class ConsistentHashTest {
         hash.remove(0);
 
         // verify that the mapping remains consistent
-        for (Map.Entry<Integer,Integer> e : before.entrySet()) {
+        for (Map.Entry<Integer, Integer> e : before.entrySet()) {
             int m = hash.lookup(e.getKey());
             assertTrue(e.getValue() == 0 || e.getValue() == m);
         }
@@ -169,10 +170,8 @@ public class ConsistentHashTest {
             throw exception;
         };
 
-        final RuntimeException e = assertThrows(RuntimeException.class, () -> {
-            ConsistentHash<String> hash = new ConsistentHash<>(hashFunction);
-            hash.add("foo");
-        });
+        ConsistentHash<String> hash = new ConsistentHash<>(hashFunction);
+        final RuntimeException e = assertThrows(RuntimeException.class, () -> hash.add("foo"));
         assertSame(exception, e);
     }
 
@@ -182,7 +181,7 @@ public class ConsistentHashTest {
     @Test
     @Ignore("Helper test for performance, no assertion")
     public void speed() {
-        Map<String,Integer> data = new CopyOnWriteMap.Hash<>();
+        Map<String, Integer> data = new CopyOnWriteMap.Hash<>();
         for (int i = 0; i < 1000; i++) {
             data.put("node" + i, 100);
         }

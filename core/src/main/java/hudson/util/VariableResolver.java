@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.util;
 
 import java.util.Collection;
@@ -45,7 +46,7 @@ public interface VariableResolver<V> {
      *      Never null, never empty. The name shouldn't include the syntactic
      *      marker of an expression. IOW, it should be "foo" but not "${foo}".
      *      A part of the goal of this design is to abstract away the expression
-     *      marker syntax. 
+     *      marker syntax.
      * @return
      *      Object referenced by the name.
      *      Null if not found.
@@ -61,7 +62,7 @@ public interface VariableResolver<V> {
      * {@link VariableResolver} backed by a {@link Map}.
      */
     final class ByMap<V> implements VariableResolver<V> {
-        private final Map<String,V> data;
+        private final Map<String, V> data;
 
         public ByMap(Map<String, V> data) {
             this.data = data;
@@ -91,7 +92,7 @@ public interface VariableResolver<V> {
         public V resolve(String name) {
             for (VariableResolver<? extends V> r : resolvers) {
                 V v = r.resolve(name);
-                if(v!=null) return v;
+                if (v != null) return v;
             }
             return null;
         }

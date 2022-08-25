@@ -49,7 +49,7 @@ public class GlobalCloudConfiguration implements RootAction {
     public void doConfigure(StaplerRequest req, StaplerResponse rsp) throws Descriptor.FormException, IOException, ServletException {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         JSONObject json = req.getSubmittedForm();
-        Jenkins.get().clouds.rebuildHetero(req,json, Cloud.all(), "cloud");
+        Jenkins.get().clouds.rebuildHetero(req, json, Cloud.all(), "cloud");
         FormApply.success(req.getContextPath() + "/manage").generateResponse(req, rsp, null);
     }
 }

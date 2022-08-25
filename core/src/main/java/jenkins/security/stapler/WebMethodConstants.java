@@ -21,10 +21,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.security.stapler;
 
 import java.lang.annotation.Annotation;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -48,30 +48,31 @@ final class WebMethodConstants {
     /**
      * If a method has at least one of those parameters, it is considered as an implicit web method
      */
-    private static final List<Class<?>> WEB_METHOD_PARAMETERS = Collections.unmodifiableList(Arrays.asList(
+    private static final List<Class<?>> WEB_METHOD_PARAMETERS = List.of(
             StaplerRequest.class,
             HttpServletRequest.class,
             StaplerResponse.class,
             HttpServletResponse.class
-    ));
-    
+    );
+
     static final Set<String> WEB_METHOD_PARAMETERS_NAMES = Collections.unmodifiableSet(
             WEB_METHOD_PARAMETERS.stream()
                     .map(Class::getName)
                     .collect(Collectors.toSet())
     );
-    
+
     /**
      * If a method is annotated with one of those annotations,
      * the method is considered as an explicit web method
      */
-    static final List<Class<? extends Annotation>> WEB_METHOD_ANNOTATIONS = Collections.singletonList(
+    static final List<Class<? extends Annotation>> WEB_METHOD_ANNOTATIONS = List.of(
             WebMethod.class
             // plus every annotation that's annotated with InterceptorAnnotation
             // JavaScriptMethod.class not taken here because it's a special case
     );
-    
+
     static final Set<String> WEB_METHOD_ANNOTATION_NAMES;
+
     static {
         Set<String> webMethodAnnotationNames = WEB_METHOD_ANNOTATIONS.stream()
                 .map(Class::getName)
@@ -79,19 +80,19 @@ final class WebMethodConstants {
         webMethodAnnotationNames.add(JavaScriptMethod.class.getName());
         WEB_METHOD_ANNOTATION_NAMES = Collections.unmodifiableSet(webMethodAnnotationNames);
     }
-    
+
     /**
-     * If at least one parameter of the method is annotated with one of those annotations, 
+     * If at least one parameter of the method is annotated with one of those annotations,
      * the method is considered as an implicit web method
      */
-    private static final List<Class<? extends Annotation>> WEB_METHOD_PARAMETER_ANNOTATIONS = Collections.unmodifiableList(Arrays.asList(
+    private static final List<Class<? extends Annotation>> WEB_METHOD_PARAMETER_ANNOTATIONS = List.of(
             QueryParameter.class,
             AncestorInPath.class,
             Header.class,
             JsonBody.class,
             SubmittedForm.class
-    ));
-    
+    );
+
     static final Set<String> WEB_METHOD_PARAMETER_ANNOTATION_NAMES = Collections.unmodifiableSet(
             WEB_METHOD_PARAMETER_ANNOTATIONS.stream()
                     .map(Class::getName)

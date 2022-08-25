@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.security;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -34,7 +35,6 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.util.Cookie;
 import hudson.model.Descriptor;
 import hudson.security.captcha.CaptchaSupport;
-import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Calendar;
 import java.util.Collections;
@@ -85,12 +85,12 @@ public class SecurityRealmTest {
         }
 
         @Override
-        public void generateImage(String id, OutputStream ios) throws IOException {
+        public void generateImage(String id, OutputStream ios) {
         }
     }
 
     static void addSessionCookie(CookieManager manager, String domain, String path, Date date) {
-        manager.addCookie(new Cookie(domain, "JSESSIONID."+Integer.toHexString(new Random().nextInt()),
+        manager.addCookie(new Cookie(domain, "JSESSIONID." + Integer.toHexString(new Random().nextInt()),
                 "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
                 path,
                 date,
@@ -159,18 +159,23 @@ public class SecurityRealmTest {
             return null;
         });
     }
+
     @SuppressWarnings("deprecation")
     public static final class OldSecurityRealm extends SecurityRealm {
         boolean special;
+
         @DataBoundConstructor public OldSecurityRealm() {}
+
         @Override
         public SecurityRealm.SecurityComponents createSecurityComponents() {
             return new SecurityComponents();
         }
+
         @Override
         protected String getPostLogOutUrl(StaplerRequest req, org.acegisecurity.Authentication auth) {
             return special ? req.getContextPath() + "/custom" : super.getPostLogOutUrl(req, auth);
         }
+
         @TestExtension("getPostLogOutUrl")
         public static final class DescriptorImpl extends Descriptor<SecurityRealm> {}
     }

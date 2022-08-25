@@ -110,7 +110,7 @@ public class Security2278Test {
         assertNotNull(computer);
         final List<Executor> executors = computer.getExecutors();
         int found = -1;
-        for (int i = 0; i < computer.getNumExecutors(); i ++) {
+        for (int i = 0; i < computer.getNumExecutors(); i++) {
             if (executors.get(i) == busyExecutor) {
                 found = i;
                 break;

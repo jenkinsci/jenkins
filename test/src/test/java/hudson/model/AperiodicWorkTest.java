@@ -24,7 +24,7 @@ public class AperiodicWorkTest {
         int size = AperiodicWork.all().size();
         ExtensionList.lookup(AperiodicWork.class).add(tapw);
 
-        assertThat("we have one new AperiodicWork", AperiodicWork.all(), hasSize(size+1));
+        assertThat("we have one new AperiodicWork", AperiodicWork.all(), hasSize(size + 1));
         assertThat("The task was run within 15 seconds", tapw.doneSignal.await(15, TimeUnit.SECONDS), is(true));
     }
 

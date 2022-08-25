@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.model;
 
 import hudson.ExtensionPoint;
@@ -53,8 +54,9 @@ public class SimplePageDecorator extends Descriptor<SimplePageDecorator> impleme
      * Every {@link SimplePageDecorator} is bound to URL via {@link Jenkins#getDescriptor()}.
      * This method returns such an URL.
      */
+
     public final String getUrl() {
-        return "descriptor/"+clazz.getName();
+        return "descriptor/" + clazz.getName();
     }
 
     /**
@@ -69,7 +71,7 @@ public class SimplePageDecorator extends Descriptor<SimplePageDecorator> impleme
      * The first found LoginDecorator, there can only be one.
      * @return the first found {@link SimplePageDecorator}
      */
-    public static SimplePageDecorator first(){
+    public static SimplePageDecorator first() {
         List<SimplePageDecorator> decorators = all();
         return decorators.isEmpty() ? null : decorators.get(0);
     }

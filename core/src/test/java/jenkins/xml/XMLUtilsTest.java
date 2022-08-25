@@ -114,7 +114,7 @@ public class XMLUtilsTest {
         Assert.assertEquals("1.480.1", XMLUtils.getValue("/hudson/version", configFile));
         Assert.assertEquals("", XMLUtils.getValue("/hudson/unknown-element", configFile));
     }
-    
+
     @Test
     public void testParse_with_XXE() {
         final String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
@@ -126,5 +126,5 @@ public class XMLUtilsTest {
         StringReader stringReader = new StringReader(xml);
         final SAXException e = assertThrows(SAXException.class, () -> XMLUtils.parse(stringReader));
         assertThat(e.getMessage(), containsString("\"http://apache.org/xml/features/disallow-doctype-decl\""));
-    }    
+    }
 }

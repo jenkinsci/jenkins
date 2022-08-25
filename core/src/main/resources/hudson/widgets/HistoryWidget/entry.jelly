@@ -40,14 +40,14 @@ THE SOFTWARE.
         <div class="build-icon">
           <a class="build-status-link" href="${link}console"><l:icon alt="${build.iconColor.description} &gt; ${%Console Output}" class="${build.buildStatusIconClassName} icon-sm" tooltip="${build.iconColor.description} &gt; ${%Console Output}"/></a>
         </div>
-        <a class="tip model-link inside build-link display-name" update-parent-class=".build-row" href="${link}">${build.displayName}</a>
+        <a class="model-link inside build-link display-name" update-parent-class=".build-row" href="${link}">${build.displayName}</a>
       </div>
       <div class="pane build-details" time="${build.timestamp.time.time}">
         <j:set var="linkTitleAttr" value=""/> 
         <j:if test="${!build.building}">
           <j:set var="linkTitleAttr">${%Took} ${build.durationString}</j:set>
         </j:if>
-        <a class="tip model-link inside build-link" href="${link}" update-parent-class=".build-row" tooltip="${linkTitleAttr}">
+        <a class="model-link inside build-link" href="${link}" update-parent-class=".build-row" tooltip="${linkTitleAttr}">
           <i:formatDate value="${build.timestamp.time}" type="both" dateStyle="medium" timeStyle="short" /> ${h.getUserTimeZonePostfix()}
         </a>
         <j:if test="${build.building}">

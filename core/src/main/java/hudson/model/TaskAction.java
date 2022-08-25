@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Jorg Heymans
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import hudson.console.AnnotatedLargeText;
@@ -96,7 +97,7 @@ public abstract class TaskAction extends AbstractModelObject implements Action {
      */
     public AnnotatedLargeText obtainLog() {
         WeakReference<AnnotatedLargeText> l = log;
-        if(l==null) return null;
+        if (l == null) return null;
         return l.get();
     }
 
@@ -112,10 +113,10 @@ public abstract class TaskAction extends AbstractModelObject implements Action {
     /**
      * Handles incremental log output.
      */
-    public void doProgressiveLog( StaplerRequest req, StaplerResponse rsp) throws IOException {
+    public void doProgressiveLog(StaplerRequest req, StaplerResponse rsp) throws IOException {
         AnnotatedLargeText text = obtainLog();
-        if(text!=null) {
-            text.doProgressText(req,rsp);
+        if (text != null) {
+            text.doProgressText(req, rsp);
             return;
         }
         rsp.setStatus(HttpServletResponse.SC_OK);
@@ -124,10 +125,10 @@ public abstract class TaskAction extends AbstractModelObject implements Action {
     /**
      * Handles incremental log output.
      */
-    public void doProgressiveHtml( StaplerRequest req, StaplerResponse rsp) throws IOException {
+    public void doProgressiveHtml(StaplerRequest req, StaplerResponse rsp) throws IOException {
         AnnotatedLargeText text = obtainLog();
-        if(text!=null) {
-            text.doProgressiveHtml(req,rsp);
+        if (text != null) {
+            text.doProgressiveHtml(req, rsp);
             return;
         }
         rsp.setStatus(HttpServletResponse.SC_OK);
@@ -140,7 +141,7 @@ public abstract class TaskAction extends AbstractModelObject implements Action {
     public synchronized void doClearError(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         getACL().checkPermission(getPermission());
 
-        if(workerThread!=null && !workerThread.isRunning())
+        if (workerThread != null && !workerThread.isRunning())
             workerThread = null;
         rsp.sendRedirect(".");
     }

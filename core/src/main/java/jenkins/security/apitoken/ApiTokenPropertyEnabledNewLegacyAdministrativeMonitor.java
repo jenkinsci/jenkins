@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.security.apitoken;
 
 import hudson.Extension;
@@ -45,7 +46,7 @@ public class ApiTokenPropertyEnabledNewLegacyAdministrativeMonitor extends Admin
     public String getDisplayName() {
         return Messages.ApiTokenPropertyEnabledNewLegacyAdministrativeMonitor_displayName();
     }
-    
+
     @Override
     public boolean isActivated() {
         return ApiTokenPropertyConfiguration.get().isCreationOfLegacyTokenEnabled();

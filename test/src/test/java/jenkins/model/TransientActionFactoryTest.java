@@ -46,8 +46,8 @@ import hudson.model.queue.FoldableAction;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import org.hamcrest.Matchers;
 import org.junit.Rule;
 import org.junit.Test;
@@ -64,11 +64,18 @@ public class TransientActionFactoryTest {
         assertNotNull(r.createFolder("d").getAction(MyAction.class));
         assertNotNull(r.createFreeStyleProject().getAction(MyAction.class));
     }
+
     @TestExtension("addedToAbstractItem") public static class TestItemFactory extends TransientActionFactory<AbstractItem> {
-        @Override public Class<AbstractItem> type() {return AbstractItem.class;}
-        @Override public Class<MyAction> actionType() {return MyAction.class;}
+        @Override public Class<AbstractItem> type() {
+            return AbstractItem.class;
+        }
+
+        @Override public Class<MyAction> actionType() {
+            return MyAction.class;
+        }
+
         @Override public Collection<? extends MyAction> createFor(AbstractItem i) {
-            return Collections.singleton(new MyAction());
+            return Set.of(new MyAction());
         }
     }
 
@@ -76,9 +83,11 @@ public class TransientActionFactoryTest {
         @Override public String getIconFileName() {
             return null;
         }
+
         @Override public String getDisplayName() {
             return null;
         }
+
         @Override public String getUrlName() {
             return null;
         }
@@ -120,14 +129,22 @@ public class TransientActionFactoryTest {
         assertThat(d.getActions(ProminentProjectAction.class), Matchers.iterableWithSize(0));
         assertEquals(0, LazyFactory.count);
     }
+
     @SuppressWarnings("rawtypes")
     @TestExtension("laziness") public static class LazyFactory extends TransientActionFactory<AbstractProject> {
         static int count;
-        @Override public Class<AbstractProject> type() {return AbstractProject.class;}
-        @Override public Class<? extends Action> actionType() {return ProminentProjectAction.class;}
+
+        @Override public Class<AbstractProject> type() {
+            return AbstractProject.class;
+        }
+
+        @Override public Class<? extends Action> actionType() {
+            return ProminentProjectAction.class;
+        }
+
         @Override public Collection<? extends Action> createFor(AbstractProject p) {
             count++;
-            return Collections.singleton(new MyProminentProjectAction());
+            return Set.of(new MyProminentProjectAction());
         }
     }
 
@@ -151,12 +168,17 @@ public class TransientActionFactoryTest {
         assertThat(p.getActions(ProminentProjectAction.class), Matchers.iterableWithSize(1));
         assertEquals(2, OldFactory.count);
     }
+
     @TestExtension("compatibility") public static class OldFactory extends TransientActionFactory<FreeStyleProject> {
         static int count;
-        @Override public Class<FreeStyleProject> type() {return FreeStyleProject.class;}
+
+        @Override public Class<FreeStyleProject> type() {
+            return FreeStyleProject.class;
+    }
+
         @Override public Collection<? extends Action> createFor(FreeStyleProject p) {
             count++;
-            return Collections.singleton(new MyProminentProjectAction());
+            return Set.of(new MyProminentProjectAction());
         }
     }
 
@@ -181,7 +203,7 @@ public class TransientActionFactoryTest {
         @NonNull
         @Override
         public Collection<? extends Action> createFor(@NonNull Actionable target) {
-            return Collections.singleton(new MyProminentProjectAction());
+            return Set.of(new MyProminentProjectAction());
         }
     }
 

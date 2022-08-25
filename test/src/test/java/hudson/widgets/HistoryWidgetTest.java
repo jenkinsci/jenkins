@@ -16,7 +16,7 @@ public class HistoryWidgetTest {
     public void moreLink() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         for (int x = 0; x < 3; x++) {
-            j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+            j.buildAndAssertSuccess(p);
         }
 
         JenkinsRule.WebClient wc = j.createWebClient();

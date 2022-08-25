@@ -45,7 +45,7 @@ public class FieldUtilsTest {
         public String getMyField() {
             return myField;
         }
-        
+
     }
 
     public class InnerClassWithProtectedField {

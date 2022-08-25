@@ -36,7 +36,7 @@ THE SOFTWARE.
           <f:textbox field="fullName"/>
         </f:entry>
         <f:entry title="${%Description}" help="/help/user/description.html">
-          <f:textarea field="description"/>
+          <f:textarea field="description" codemirror-mode="${app.markupFormatter.codeMirrorMode}" codemirror-config="${app.markupFormatter.codeMirrorConfig}" previewEndpoint="/markupFormatter/previewDescription"/>
         </f:entry>
 
         <!-- user property configurations -->

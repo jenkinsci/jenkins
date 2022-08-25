@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.util;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -41,28 +42,28 @@ import org.jvnet.hudson.test.JenkinsRule;
  * @author Oleg Nenashev
  */
 public class SystemPropertiesTest {
-    
+
     @Rule
     public JenkinsRule j = new JenkinsRule();
-    
+
     @Before
     public void setUp() {
         new SystemProperties.Listener().contextInitialized(new ServletContextEvent(j.jenkins.servletContext));
     }
-    
+
     @Test
     public void shouldReturnNullIfUndefined() throws Exception {
-        assertThat("Properties should be null by default", 
+        assertThat("Properties should be null by default",
                 SystemProperties.getString("foo.bar"), nullValue());
     }
-    
+
     @Test
     public void shouldInitializeFromSystemProperty() throws Exception {
         System.setProperty("foo.bar", "myVal");
-        assertThat("System property should assign the value", 
+        assertThat("System property should assign the value",
                 SystemProperties.getString("foo.bar"), equalTo("myVal"));
     }
-    
+
     @Test
     public void shouldInitializeFromWebAppProperty() throws Exception {
         assertThat("Property is undefined before test",
@@ -76,7 +77,7 @@ public class SystemPropertiesTest {
     public void shouldUseSystemPropertyAsAHighPriority() throws Exception {
         setWebAppInitParameter("install-wizard-path", "myVal1");
         System.setProperty("install-wizard-path", "myVal2");
-        assertThat("System property should take system property with a high priority", 
+        assertThat("System property should take system property with a high priority",
                 SystemProperties.getString("install-wizard-path"), equalTo("myVal2"));
     }
 
@@ -87,6 +88,6 @@ public class SystemPropertiesTest {
      */
     protected void setWebAppInitParameter(String property, String value) {
         Assume.assumeThat(j.jenkins.servletContext, Matchers.instanceOf(ContextHandler.Context.class));
-        ((ContextHandler.Context)j.jenkins.servletContext).getContextHandler().getInitParams().put(property, value);
+        ((ContextHandler.Context) j.jenkins.servletContext).getContextHandler().getInitParams().put(property, value);
     }
 }

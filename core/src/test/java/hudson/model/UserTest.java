@@ -35,7 +35,7 @@ import org.jvnet.hudson.test.Issue;
  * @author Oleg Nenashev
  */
 public class UserTest {
-    
+
     @Test
     @Issue("JENKINS-33600")
     public void blankIdsOrFullNamesShouldNotBeAllowed() {
@@ -43,7 +43,7 @@ public class UserTest {
         assertThat("Empty user IDs should not be allowed", User.isIdOrFullnameAllowed(""), is(false));
         assertThat("Blank user IDs should not be allowed", User.isIdOrFullnameAllowed("      "), is(false));
     }
-    
+
     @Test
     @Issue("JENKINS-35967")
     public void shouldNotAllowIllegalRestrictedNamesInWrongCase() {
@@ -53,7 +53,7 @@ public class UserTest {
         assertIdOrFullNameNotAllowed("syStem");
         assertIdOrFullNameNotAllowed("sYstEm");
     }
-    
+
     @Test
     @Issue("JENKINS-35967")
     public void shouldNotAllowIllegalRestrictedNamesEvenIfTrimmed() {
@@ -62,13 +62,13 @@ public class UserTest {
             assertIdOrFullNameNotAllowed(" " + username);
             assertIdOrFullNameNotAllowed(username + " ");
             assertIdOrFullNameNotAllowed("      " + username + "    ");
-            assertIdOrFullNameNotAllowed("\t" + username + "\t");  
+            assertIdOrFullNameNotAllowed("\t" + username + "\t");
         }
     }
-    
+
     private void assertIdOrFullNameNotAllowed(String id) {
-        assertThat("User ID or full name '" + id + "' should not be allowed", 
+        assertThat("User ID or full name '" + id + "' should not be allowed",
                 User.isIdOrFullnameAllowed(id), is(false));
     }
-    
+
 }

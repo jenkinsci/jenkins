@@ -8,9 +8,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeFalse;
 import static org.junit.Assume.assumeThat;
 
 import edu.umd.cs.findbugs.annotations.Nullable;
+import hudson.Functions;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -20,7 +22,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.Set;
-import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -67,12 +68,13 @@ public class AtomicFileWriterTest {
     @Before
     public void setUp() throws IOException {
         af = tmp.newFile();
-        FileUtils.writeStringToFile(af, PREVIOUS, Charset.defaultCharset());
+        Files.writeString(af.toPath(), PREVIOUS, Charset.defaultCharset());
         afw = new AtomicFileWriter(af.toPath(), Charset.defaultCharset());
     }
 
     @Test
     public void symlinkToDirectory() throws Exception {
+        assumeFalse(Functions.isWindows());
         final File folder = tmp.newFolder();
         final File containingSymlink = tmp.newFolder();
         final Path zeSymlink = Files.createSymbolicLink(Paths.get(containingSymlink.getAbsolutePath(), "ze_symlink"),
@@ -102,7 +104,7 @@ public class AtomicFileWriterTest {
 
         // Then
         assertEquals("File writer did not properly flush to temporary file",
-                expectedContent.length()*2+1, Files.size(afw.getTemporaryPath()));
+                expectedContent.length() * 2 + 1, Files.size(afw.getTemporaryPath()));
     }
 
     @Test
@@ -115,8 +117,8 @@ public class AtomicFileWriterTest {
         afw.commit();
 
         // Then
-        assertEquals(expectedContent.length()+3, Files.size(af.toPath()));
-        assertEquals(expectedContent+"hey", FileUtils.readFileToString(af, Charset.defaultCharset()));
+        assertEquals(expectedContent.length() + 3, Files.size(af.toPath()));
+        assertEquals(expectedContent + "hey", Files.readString(af.toPath(), Charset.defaultCharset()));
     }
 
     @Test
@@ -129,15 +131,16 @@ public class AtomicFileWriterTest {
 
         // Then
         assertTrue(Files.notExists(afw.getTemporaryPath()));
-        assertEquals(PREVIOUS, FileUtils.readFileToString(af, Charset.defaultCharset()));
+        assertEquals(PREVIOUS, Files.readString(af.toPath(), Charset.defaultCharset()));
     }
 
     @Test
     public void indexOutOfBoundsLeavesOriginalUntouched() throws Exception {
         // Given
         assertThrows(IndexOutOfBoundsException.class, () -> afw.write(expectedContent, 0, expectedContent.length() + 10));
-        assertEquals(PREVIOUS, FileUtils.readFileToString(af, Charset.defaultCharset()));
+        assertEquals(PREVIOUS, Files.readString(af.toPath(), Charset.defaultCharset()));
     }
+
     @Test
     public void badPath() throws Exception {
         final File newFile = tmp.newFile();

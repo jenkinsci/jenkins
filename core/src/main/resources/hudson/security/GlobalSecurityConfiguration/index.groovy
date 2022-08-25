@@ -11,17 +11,17 @@ def f=namespace(lib.FormTagLib)
 def l=namespace(lib.LayoutTagLib)
 def st=namespace("jelly:stapler")
 
-l.layout(permission:app.SYSTEM_READ, title:my.displayName, cssclass:request.getParameter('decorate')) {
+l.layout(permission:app.SYSTEM_READ, title:my.displayName, cssclass:request.getParameter('decorate'), type:"one-column") {
+    l.app_bar(title: my.displayName)
+
     l.main_panel {
-        h1 {
-            l.icon(class: 'icon-secure icon-xlg')
-            text(my.displayName)
-        }
         set("readOnlyMode", !app.hasPermission(app.ADMINISTER))
 
         p()
-        div(class:"behavior-loading", _("LOADING"))
-        f.form(method:"post",name:"config",action:"configure") {
+        div(class:"behavior-loading") {
+            l.spinner(text: _("LOADING"))
+        }
+        f.form(method:"post",name:"config",action:"configure", class: "jenkins-form") {
             set("instance",my)
             set("descriptor", my.descriptor)
 
@@ -29,14 +29,8 @@ l.layout(permission:app.SYSTEM_READ, title:my.displayName, cssclass:request.getP
                 f.entry() {
                     f.checkbox(title:_("Disable remember me"), field: "disableRememberMe")
                 }
-
-                div(style:"width:100%") {
-                    f.descriptorRadioList(title:_("Security Realm"), varName:"realm", instance:app.securityRealm, descriptors: h.filterDescriptors(app, SecurityRealm.all()))
-                }
-            }
-
-            div(style:"width:100%") {
-                f.descriptorRadioList(title:_("Authorization"), varName:"authorization", instance:app.authorizationStrategy, descriptors:h.filterDescriptors(app, AuthorizationStrategy.all()))
+                f.dropdownDescriptorSelector(title: _("Security Realm"), field: 'securityRealm', descriptors: h.filterDescriptors(app, SecurityRealm.all()))
+                f.dropdownDescriptorSelector(title: _("Authorization"), field: 'authorizationStrategy', descriptors: h.filterDescriptors(app, AuthorizationStrategy.all()))
             }
 
             f.section(title: _("Markup Formatter")) {

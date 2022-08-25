@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package lib.form;
 
 import static org.junit.Assert.assertEquals;
@@ -120,14 +121,14 @@ public class OptionTest {
         }
     }
 
-    private String escapeForBody(String str){
+    private String escapeForBody(String str) {
         return str
                 .replace("&", "&amp;")
                 .replace("<", "&lt;")
                 ;
     }
 
-    private String escapeForBody_alternate(String str){
+    private String escapeForBody_alternate(String str) {
         return str
                 .replace("&", "&amp;")
                 .replace("<", "&lt;")
@@ -137,7 +138,7 @@ public class OptionTest {
 
 
 
-    private String escapeForValue(String str){
+    private String escapeForValue(String str) {
         return str
                 .replace("&", "&amp;")
                 .replace("<", "&lt;")
@@ -146,7 +147,7 @@ public class OptionTest {
                 ;
     }
 
-    private String escapeForBody_uglyButSafe(String str){
+    private String escapeForBody_uglyButSafe(String str) {
         return str
                 .replace("&", "&amp;")
                 .replace("<", "&lt;")
@@ -157,7 +158,7 @@ public class OptionTest {
                 ;
     }
 
-    private String escapeForValue_uglyButSafe(String str){
+    private String escapeForValue_uglyButSafe(String str) {
         return str
                 .replace("&", "&amp;")
                 .replace("<", "&lt;")
@@ -219,11 +220,11 @@ public class OptionTest {
         view.setMode(mode);
         view.setInjection(msgToInject);
 
-        if(withValueTrue){
+        if (withValueTrue) {
             view.setWithValue(true);
             callPageAndCheckIfResultContainsExpected("usingJelly", bodyContainsExpected, valueContainsExpected, checkExactCharacters);
         }
-        if(withValueFalse){
+        if (withValueFalse) {
             view.setWithValue(false);
             callPageAndCheckIfResultContainsExpected("usingJelly", bodyContainsExpected, valueContainsExpected, checkExactCharacters);
         }
@@ -245,11 +246,11 @@ public class OptionTest {
         view.setMode(mode);
         view.setInjection(msgToInject);
 
-        if(withValueTrue){
+        if (withValueTrue) {
             view.setWithValue(true);
             callPageAndCheckIfResultContainsExpected("usingGroovy", bodyContainsExpected, valueContainsExpected, checkExactCharacters);
         }
-        if(withValueFalse){
+        if (withValueFalse) {
             view.setWithValue(false);
             callPageAndCheckIfResultContainsExpected("usingGroovy", bodyContainsExpected, valueContainsExpected, checkExactCharacters);
         }
@@ -259,7 +260,7 @@ public class OptionTest {
         HtmlPage page = (HtmlPage) j.createWebClient().goTo(url, null);
         String responseContent = page.getWebResponse().getContentAsString();
 
-        if(checkExactCharacters){
+        if (checkExactCharacters) {
             // in this mode, we check the data directly received by the response,
             // without any un-escaping done by HtmlElement
 
@@ -275,7 +276,7 @@ public class OptionTest {
             // also check there is no "<script>" present in the answer
             int indexOfScript = responseContent.indexOf("<script>");
             assertEquals(-1, indexOfScript);
-        }else{
+        } else {
             // in this mode, we check the content as displayed to the user, converting all the escaped characters to
             // their un-escaped equivalent, done by com.gargoylesoftware.htmlunit.html.HtmlSerializer#cleanUp(String)
 

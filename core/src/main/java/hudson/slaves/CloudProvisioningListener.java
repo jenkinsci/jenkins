@@ -7,7 +7,6 @@ import hudson.Util;
 import hudson.model.Label;
 import hudson.model.Node;
 import hudson.model.queue.CauseOfBlockage;
-import hudson.slaves.Cloud.CloudState;
 import java.util.Collection;
 import java.util.concurrent.Future;
 import jenkins.model.Jenkins;
@@ -36,7 +35,7 @@ public abstract class CloudProvisioningListener implements ExtensionPoint {
      * @return {@code null} if provisioning can proceed, or a
      * {@link CauseOfBlockage} reason why it cannot be provisioned.
      *
-     * @deprecated Use {@link #canProvision(Cloud, CloudState, int)} instead.
+     * @deprecated Use {@link #canProvision(Cloud, Cloud.CloudState, int)} )} instead.
      */
     @Deprecated
     public CauseOfBlockage canProvision(Cloud cloud, Label label, int numExecutors) {
@@ -44,9 +43,9 @@ public abstract class CloudProvisioningListener implements ExtensionPoint {
                 getClass(),
                 "canProvision",
                 Cloud.class,
-                CloudState.class,
+                Cloud.CloudState.class,
                 int.class)) {
-            return canProvision(cloud, new CloudState(label, 0), numExecutors);
+            return canProvision(cloud, new Cloud.CloudState(label, 0), numExecutors);
         } else {
             return null;
         }
@@ -64,7 +63,7 @@ public abstract class CloudProvisioningListener implements ExtensionPoint {
      * @return {@code null} if provisioning can proceed, or a
      * {@link CauseOfBlockage} reason why it cannot be provisioned.
      */
-    public CauseOfBlockage canProvision(Cloud cloud, CloudState state, int numExecutors) {
+    public CauseOfBlockage canProvision(Cloud cloud, Cloud.CloudState state, int numExecutors) {
         return canProvision(cloud, state.getLabel(), numExecutors);
     }
 

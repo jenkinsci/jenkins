@@ -27,10 +27,9 @@ l=namespace(lib.LayoutTagLib)
 l.header()
 l.side_panel {
     l.tasks {
-        l.task(icon:"icon-up icon-md", href:rootURL+'/', title:_("Back to Dashboard"))
-        l.task(icon:"icon-gear icon-md", href:"${rootURL}/manage", title:_("Manage Jenkins"))
         if (!app.updateCenter.jobs.isEmpty()) {
-            l.task(icon:"icon-plugin icon-md", href:"${rootURL}/updateCenter/", title:_("Update Center"))
+            l.task(icon: "symbol-plugins", href: "${rootURL}/manage/pluginManager/", title:_("Plugin Manager"))
+            l.task(icon: "symbol-download", href: "${rootURL}/manage/updateCenter/", title:_("Update Center"))
         }
     }
 }

@@ -36,7 +36,7 @@ import org.kohsuke.stapler.StaplerRequest;
  * May define {@code help.html}.
  * @since 1.637
  */
-public abstract class OptionalJobProperty<J extends Job<?,?>> extends JobProperty<J> {
+public abstract class OptionalJobProperty<J extends Job<?, ?>> extends JobProperty<J> {
 
     @Override
     public OptionalJobPropertyDescriptor getDescriptor() {

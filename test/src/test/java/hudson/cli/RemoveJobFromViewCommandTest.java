@@ -84,7 +84,7 @@ public class RemoveJobFromViewCommandTest extends ViewManipulationTestBase {
         assertThat(result, succeededSilently());
         assertThat(j.jenkins.getView("aView").getAllItems().size(), equalTo(0));
         assertThat(j.jenkins.getView("aView").contains(project1), equalTo(false));
-        assertThat(j.jenkins.getView("aView").contains(project2 ), equalTo(false));
+        assertThat(j.jenkins.getView("aView").contains(project2), equalTo(false));
     }
 
     @Test public void removeJobManyShouldSucceedEvenAJobIsSpecifiedTwice() throws Exception {

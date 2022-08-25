@@ -53,7 +53,7 @@ public class PasswordParameterDefinitionTest {
     @Issue("JENKINS-36476")
     @Test public void defaultValueAlwaysAvailable() throws Exception {
         ApiTokenTestHelper.enableLegacyBehavior();
-        
+
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().
             grant(Jenkins.ADMINISTER).everywhere().to("admin").

@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model.labels;
 
 import hudson.DescriptorExtensionList;
@@ -59,7 +60,7 @@ public class LabelAtomProperty extends AbstractDescribableImpl<LabelAtomProperty
     /**
      * Lists up all the registered {@link LabelAtomPropertyDescriptor}s in the system.
      */
-    public static DescriptorExtensionList<LabelAtomProperty,LabelAtomPropertyDescriptor> all() {
+    public static DescriptorExtensionList<LabelAtomProperty, LabelAtomPropertyDescriptor> all() {
         return Jenkins.get().getDescriptorList(LabelAtomProperty.class);
     }
 }

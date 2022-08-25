@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins;
 
 import hudson.Extension;
@@ -107,7 +108,7 @@ public class I18n implements RootAction {
             }
 
             return HttpResponses.okJSON(ResourceBundleUtil.getBundle(baseName, locale));
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             return HttpResponses.errorJSON(e.getMessage());
         }
     }

@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -64,8 +65,10 @@ public class AbstractItem2Test {
                 assertEquals(/* does not work yet: p1 */ null, p2.getProperty(BadProperty.class).other);
         });
     }
+
     static class BadProperty extends JobProperty<FreeStyleProject> {
         final FreeStyleProject other;
+
         BadProperty(FreeStyleProject other) {
             this.other = other;
         }

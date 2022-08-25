@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins;
 
 import hudson.Extension;
@@ -81,7 +82,7 @@ public final class DailyCheck extends AsyncPeriodicWork {
                 if (d.getDue() <= now) {
                     try {
                         d.updateNow();
-                    } catch(Exception e) {
+                    } catch (Exception e) {
                         LOGGER.log(Level.WARNING, String.format("Unable to update downloadable [%s]", d.getId()), e);
                     }
                 }

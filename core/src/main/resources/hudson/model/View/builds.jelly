@@ -28,15 +28,17 @@ THE SOFTWARE.
   <l:layout title="${it.displayName}">
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
-      <h1>
-        <l:icon class="icon-notepad icon-xlg"/>
-        ${%buildHistory(it.class.name=='hudson.model.AllView' ? app.displayName : it.displayName)}
-      </h1>
+      <div class="jenkins-app-bar">
+        <div class="jenkins-app-bar__content">
+          <h1>
+            ${%buildHistory(it.class.name=='hudson.model.AllView' ? app.displayName : it.displayName)}
+          </h1>
+        </div>
+      </div>
 
       <j:if test="${!request.getParameter('suppressTimelineControl')}"> <!-- cf. BuildListTableTest; breaks HtmlUnit -->
         <st:include page="control.jelly" it="${it.timeline}"/>
       </j:if>
-      <div class="spacer" />
 
       <t:buildListTable builds="${it.builds}"/>
     </l:main-panel>

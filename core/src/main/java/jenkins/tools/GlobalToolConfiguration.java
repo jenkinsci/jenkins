@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.tools;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -50,7 +51,7 @@ public class GlobalToolConfiguration extends ManagementLink {
 
     @Override
     public String getIconFileName() {
-        return "setting.png";
+        return "symbol-hammer";
     }
 
     @Override
@@ -82,7 +83,7 @@ public class GlobalToolConfiguration extends ManagementLink {
     @POST
     public synchronized void doConfigure(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, Descriptor.FormException {
         boolean result = configure(req, req.getSubmittedForm());
-        LOGGER.log(Level.FINE, "tools saved: "+result);
+        LOGGER.log(Level.FINE, "tools saved: " + result);
         FormApply.success(req.getContextPath() + "/manage").generateResponse(req, rsp, null);
     }
 
@@ -107,7 +108,7 @@ public class GlobalToolConfiguration extends ManagementLink {
     }
 
     @Restricted(NoExternalUse.class)
-    @RestrictedSince("2.TODO")
+    @RestrictedSince("2.301")
     public static final Predicate<Descriptor> FILTER = input -> input.getCategory() instanceof ToolConfigurationCategory;
 
     private static final Logger LOGGER = Logger.getLogger(GlobalToolConfiguration.class.getName());

@@ -24,14 +24,13 @@
 
 package hudson.cli;
 
-import static org.junit.Assert.assertEquals;
+import static hudson.cli.CLICommandInvoker.Matcher.hasNoErrorOutput;
+import static hudson.cli.CLICommandInvoker.Matcher.succeeded;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 
 import hudson.model.FreeStyleProject;
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
-import java.util.Collections;
-import java.util.Locale;
-import org.apache.commons.io.input.NullInputStream;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -40,27 +39,28 @@ import org.jvnet.hudson.test.MockFolder;
 
 public class GetJobCommandTest {
 
+    private CLICommandInvoker command;
+
     @Rule public JenkinsRule j = new JenkinsRule();
+
+    @Before
+    public void setUp() {
+        command = new CLICommandInvoker(j, new GetJobCommand());
+    }
 
     @Issue("JENKINS-20236")
     @Test public void withFolders() throws Exception {
         MockFolder d = j.createFolder("d");
         FreeStyleProject p = d.createProject(FreeStyleProject.class, "p");
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        PrintStream outS = new PrintStream(out);
-        // TODO switch to CLICommandInvoker
-        int result = new GetJobCommand().main(Collections.singletonList("d/p"), Locale.ENGLISH, new NullInputStream(0), outS, outS);
-        outS.flush();
-        String output = out.toString();
-        assertEquals(output, 0, result);
-        assertEquals(p.getConfigFile().asString(), output);
-        out = new ByteArrayOutputStream();
-        outS = new PrintStream(out);
-        result = new GetJobCommand().main(Collections.singletonList("d"), Locale.ENGLISH, new NullInputStream(0), outS, outS);
-        outS.flush();
-        output = out.toString();
-        assertEquals(output, 0, result);
-        assertEquals(d.getConfigFile().asString(), output);
+        CLICommandInvoker.Result result = command.invokeWithArgs("d/p");
+        assertThat(result.stdout(), equalTo(p.getConfigFile().asString()));
+        assertThat(result, hasNoErrorOutput());
+        assertThat(result, succeeded());
+
+        result = command.invokeWithArgs("d");
+        assertThat(result.stdout(), equalTo(d.getConfigFile().asString()));
+        assertThat(result, hasNoErrorOutput());
+        assertThat(result, succeeded());
     }
 
 }

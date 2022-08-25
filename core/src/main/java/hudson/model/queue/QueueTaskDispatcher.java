@@ -98,7 +98,7 @@ public abstract class QueueTaskDispatcher implements ExtensionPoint {
      * @since 1.413
      */
     public @CheckForNull CauseOfBlockage canTake(Node node, BuildableItem item) {
-        return canTake(node,item.task); // backward compatible behaviour
+        return canTake(node, item.task); // backward compatible behaviour
     }
 
     /**

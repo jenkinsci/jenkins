@@ -21,9 +21,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import com.google.common.collect.Maps;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.ExtensionPoint;
 import hudson.model.Queue.Task;
@@ -57,7 +60,7 @@ public abstract class LoadBalancer implements ExtensionPoint {
      * The thread that invokes this method always holds a lock to {@link Queue}, so queue contents
      * can be safely introspected from this method, if that information is necessary to make
      * decisions.
-     * 
+     *
      * @param  task
      *      The task whose execution is being considered. Never null.
      * @param worksheet
@@ -70,24 +73,26 @@ public abstract class LoadBalancer implements ExtensionPoint {
      *      Return null if you don't want the task to be executed right now,
      *      in which case this method will be called some time later with the same task.
      */
-    public abstract Mapping map(Task task, MappingWorksheet worksheet);
+    @CheckForNull
+    public abstract Mapping map(@NonNull Task task, MappingWorksheet worksheet);
 
     /**
      * Uses a consistent hash for scheduling.
      */
     public static final LoadBalancer CONSISTENT_HASH = new LoadBalancer() {
+        @CheckForNull
         @Override
-        public Mapping map(Task task, MappingWorksheet ws) {
+        public Mapping map(@NonNull Task task, MappingWorksheet ws) {
             // build consistent hash for each work chunk
             List<ConsistentHash<ExecutorChunk>> hashes = new ArrayList<>(ws.works.size());
-            for (int i=0; i<ws.works.size(); i++) {
+            for (int i = 0; i < ws.works.size(); i++) {
                 ConsistentHash<ExecutorChunk> hash = new ConsistentHash<>(ExecutorChunk::getName);
 
                 // Build a Map to pass in rather than repeatedly calling hash.add() because each call does lots of expensive work
                 List<ExecutorChunk> chunks = ws.works(i).applicableExecutorChunks();
                 Map<ExecutorChunk, Integer> toAdd = Maps.newHashMapWithExpectedSize(chunks.size());
                 for (ExecutorChunk ec : chunks) {
-                    toAdd.put(ec, ec.size()*100);
+                    toAdd.put(ec, ec.size() * 100);
                 }
                 hash.addAll(toAdd);
 
@@ -96,9 +101,9 @@ public abstract class LoadBalancer implements ExtensionPoint {
 
             // do a greedy assignment
             Mapping m = ws.new Mapping();
-            assert m.size()==ws.works.size();   // just so that you the reader of the source code don't get confused with the for loop index
+            assert m.size() == ws.works.size();   // just so that you the reader of the source code don't get confused with the for loop index
 
-            if (assignGreedily(m,task,hashes,0)) {
+            if (assignGreedily(m, task, hashes, 0)) {
                 assert m.isCompletelyValid();
                 return m;
             } else
@@ -106,7 +111,7 @@ public abstract class LoadBalancer implements ExtensionPoint {
         }
 
         private boolean assignGreedily(Mapping m, Task task, List<ConsistentHash<ExecutorChunk>> hashes, int i) {
-            if (i==hashes.size())   return true;    // fully assigned
+            if (i == hashes.size())   return true;    // fully assigned
 
             String key;
             try {
@@ -120,16 +125,16 @@ public abstract class LoadBalancer implements ExtensionPoint {
 
             for (ExecutorChunk ec : hashes.get(i).list(key)) {
                 // let's attempt this assignment
-                m.assign(i,ec);
+                m.assign(i, ec);
 
-                if (m.isPartiallyValid() && assignGreedily(m,task,hashes,i+1))
+                if (m.isPartiallyValid() && assignGreedily(m, task, hashes, i + 1))
                     return true;    // successful greedily allocation
 
                 // otherwise 'ec' wasn't a good fit for us. try next.
             }
 
             // every attempt failed
-            m.assign(i,null);
+            m.assign(i, null);
             return false;
         }
     };
@@ -151,8 +156,9 @@ public abstract class LoadBalancer implements ExtensionPoint {
     protected LoadBalancer sanitize() {
         final LoadBalancer base = this;
         return new LoadBalancer() {
+            @CheckForNull
             @Override
-            public Mapping map(Task task, MappingWorksheet worksheet) {
+            public Mapping map(@NonNull Task task, MappingWorksheet worksheet) {
                 if (Queue.isBlockedByShutdown(task)) {
                     // if we are quieting down, don't start anything new so that
                     // all executors will be eventually free.

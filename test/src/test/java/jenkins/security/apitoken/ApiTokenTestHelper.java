@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.security.apitoken;
 
 import hudson.model.User;
@@ -31,7 +32,7 @@ public class ApiTokenTestHelper {
      * @deprecated No longer needed just to use {@link JenkinsRule.WebClient#withBasicApiToken(User)}.
      */
     @Deprecated
-    public static void enableLegacyBehavior(){
+    public static void enableLegacyBehavior() {
         ApiTokenPropertyConfiguration config = ApiTokenPropertyConfiguration.get();
         config.setTokenGenerationOnCreationEnabled(true);
         config.setCreationOfLegacyTokenEnabled(true);

@@ -6,13 +6,15 @@ import static hudson.util.jna.GNUCLibrary.F_SETFD;
 import static hudson.util.jna.GNUCLibrary.LIBC;
 import static java.util.logging.Level.FINE;
 
-import com.sun.jna.Memory;
 import com.sun.jna.Native;
-import com.sun.jna.NativeLong;
 import com.sun.jna.StringArray;
 import hudson.Extension;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.logging.Logger;
 import jenkins.util.JavaVMArguments;
@@ -27,7 +29,7 @@ public class UnixSlaveRestarter extends SlaveRestarter {
     @Override
     public boolean canWork() {
         try {
-            if (File.pathSeparatorChar!=':')
+            if (File.pathSeparatorChar != ':')
                 return false;     // quick test to reject non-Unix without loading all the rest of the classes
 
             args = JavaVMArguments.current();
@@ -38,11 +40,11 @@ public class UnixSlaveRestarter extends SlaveRestarter {
             LIBC.fcntl(99999, F_SETFD, v);
 
             getCurrentExecutable();
-            LIBC.execv("positively/no/such/executable", new StringArray(new String[]{"a","b","c"}));
+            LIBC.execv("positively/no/such/executable", new StringArray(new String[]{"a", "b", "c"}));
 
             return true;
         } catch (UnsupportedOperationException | LinkageError e) {
-            LOGGER.log(FINE, getClass()+" unsuitable", e);
+            LOGGER.log(FINE, getClass() + " unsuitable", e);
             return false;
         }
     }
@@ -67,50 +69,30 @@ public class UnixSlaveRestarter extends SlaveRestarter {
      * Gets the current executable name.
      */
     private static String getCurrentExecutable() {
-        int pid = LIBC.getpid();
+        ProcessHandle.Info info = ProcessHandle.current().info();
+        if (info.command().isPresent()) {
+            // Java 9+ approach
+            return info.command().get();
+        }
+
+        // Native approach
+        long pid = ProcessHandle.current().pid();
         String name = "/proc/" + pid + "/exe";
-        File exe = new File(name);
-        if (exe.exists()) {
-            try {
-                String path = resolveSymlink(exe);
-                if (path != null) {
-                    return path;
+        try {
+            Path exe = Paths.get(name);
+            if (Files.exists(exe)) {
+                if (Files.isSymbolicLink(exe)) {
+                    return Files.readSymbolicLink(exe).toString();
+                } else {
+                    return exe.toString();
                 }
-            } catch (IOException e) {
-                LOGGER.log(FINE, "Failed to resolve symlink " + exe, e);
             }
-            return name;
+        } catch (IOException | InvalidPathException | UnsupportedOperationException e) {
+            LOGGER.log(FINE, "Failed to resolve " + name, e);
         }
 
-        // cross-platform fallback
-        return System.getProperty("java.home") + "/bin/java";
-    }
-
-    private static String resolveSymlink(File link) throws IOException {
-        String filename = link.getAbsolutePath();
-
-        for (int sz = 512; sz < 65536; sz *= 2) {
-            Memory m = new Memory(sz);
-            int r = LIBC.readlink(filename, m, new NativeLong(sz));
-            if (r < 0) {
-                int err = Native.getLastError();
-                if (err == 22 /*EINVAL --- but is this really portable?*/) {
-                    return null; // this means it's not a symlink
-                }
-                throw new IOException(
-                        "Failed to readlink " + link + " error=" + err + " " + LIBC.strerror(err));
-            }
-
-            if (r == sz) {
-                continue; // buffer too small
-            }
-
-            byte[] buf = new byte[r];
-            m.read(0, buf, 0, r);
-            return new String(buf);
-        }
-
-        throw new IOException("Failed to readlink " + link);
+        // Legacy approach of last resort
+        return Paths.get(System.getProperty("java.home")).resolve("bin").resolve("java").toString();
     }
 
     private static final Logger LOGGER = Logger.getLogger(UnixSlaveRestarter.class.getName());

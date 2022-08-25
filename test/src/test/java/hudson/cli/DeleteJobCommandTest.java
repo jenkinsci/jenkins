@@ -144,7 +144,7 @@ public class DeleteJobCommandTest {
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Item.READ, Item.DELETE, Jenkins.READ)
-                .invokeWithArgs("aProject1","never_created", "aProject2");
+                .invokeWithArgs("aProject1", "never_created", "aProject2");
 
         assertThat(result, failedWith(5));
         assertThat(result, hasNoStandardOutput());

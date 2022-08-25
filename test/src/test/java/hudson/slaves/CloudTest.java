@@ -35,7 +35,7 @@ public class CloudTest {
     @Rule public JenkinsRule j = new JenkinsRule();
 
     @Test @WithoutJenkins @Issue("JENKINS-37616")
-    public void provisionPermissionShouldBeIndependentFromAdminister() throws Exception {
+    public void provisionPermissionShouldBeIndependentFromAdminister() {
         SidACL acl = new SidACL() {
             @Override protected Boolean hasPermission(Sid p, Permission permission) {
                 return permission == Cloud.PROVISION;
@@ -48,7 +48,7 @@ public class CloudTest {
     }
 
     @Test @Issue("JENKINS-37616")
-    public void ensureProvisionPermissionIsLoadable() throws Exception {
+    public void ensureProvisionPermissionIsLoadable() {
         // Name introduced by JENKINS-37616
         Permission p = Permission.fromId("hudson.model.Computer.Provision");
         assertEquals("Provision", p.name);
