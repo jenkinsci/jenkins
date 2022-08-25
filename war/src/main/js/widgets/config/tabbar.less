@@ -2,37 +2,38 @@
  * Tab bar specific rules.
  */
 
-@import '../../../less/abstracts/theme.less';
+@import "../../../less/abstracts/theme.less";
 
 .jenkins-config-widgets {
   position: relative;
-  border:1px solid var(--input-border);
-  border-bottom:none;
+  border: 1px solid var(--input-border);
+  border-bottom: none;
   background: var(--light-grey);
-  min-height:2.5em;
+  min-height: 2.5em;
   .border-radius-top(@border-radius);
-  z-index:5;
+  z-index: 5;
   overflow: hidden;
 
-  nav:before, nav:after {
+  nav:before,
+  nav:after {
     display: none;
   }
 
-  :hover .noTabs{
-    color:#bbb;
+  :hover .noTabs {
+    color: #bbb;
   }
   .noTabs:hover,
   .showTabs:hover {
     opacity: 0.8;
-    background:#bbb;
-    color:var(--light-bg-color);
-     text-shadow:none;
+    background: #bbb;
+    color: var(--light-bg-color);
+    text-shadow: none;
   }
 
   @find-container-width: 200px;
   .find-container {
-    margin:0;
-    display:none;
+    margin: 0;
+    display: none;
   }
 
   .showTabs,
@@ -46,7 +47,7 @@
     text-shadow: var(--brightest-bg-color 0 1px 2px);
     font-size: var(--font-size-sm);
     padding: 3px 7px;
-    display:none;
+    display: none;
   }
 
   .form-config.tabBarFrame {
@@ -72,19 +73,18 @@
       .tab:hover {
         background: var(--very-light-grey);
         color: var(--text-color-secondary);
-        border:1px solid var(--medium-grey);
-        border-bottom:1px solid var(--bright-bg-color);
+        border: 1px solid var(--medium-grey);
+        border-bottom: 1px solid var(--bright-bg-color);
       }
       .tab.active {
         background: var(--background);
         color: var(--text-color);
         font-weight: bold;
         z-index: 2;
-        border:1px solid var(--medium-grey);
-        border-bottom:1px solid var(--bright-bg-color);
+        border: 1px solid var(--medium-grey);
+        border-bottom: 1px solid var(--bright-bg-color);
       }
     }
-
   }
 
   .form-config.tabBarFrame.mouse-over {
@@ -95,7 +95,6 @@
       opacity: 0.8;
     }
   }
-
 }
 
 #jenkins .jenkins-config-container {
@@ -104,7 +103,7 @@
   margin: auto;
 }
 
-#jenkins{
+#jenkins {
   .jenkins-config {
     border: 1px solid var(--input-border);
     padding: 2rem 2rem 0 2rem;
@@ -112,10 +111,9 @@
     background: var(--bright-bg-color);
     .border-radius-bottom(@border-radius);
 
-    .showTabs{
-      display:block;
-      text-align:right;
-
+    .showTabs {
+      display: block;
+      text-align: right;
     }
 
     table {
@@ -173,9 +171,9 @@
 }
 
 .yui-skin-sam .yuimenu {
-  z-index: 9999 !important
+  z-index: 9999 !important;
 }
 
 .yui-skin-sam .yui-button-disabled {
-  opacity: .75
+  opacity: 0.75;
 }

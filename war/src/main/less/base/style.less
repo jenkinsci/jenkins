@@ -22,8 +22,7 @@
  * THE SOFTWARE.
  */
 
-@import '../abstracts/theme.less';
-
+@import "../abstracts/theme.less";
 
 /* Panel */
 @media (min-width: 1600px) {
@@ -73,7 +72,7 @@ td.center-align {
 }
 
 .no-wrap td,
- td.no-wrap {
+td.no-wrap {
   white-space: nowrap;
 }
 
@@ -83,19 +82,19 @@ td.center-align {
 }
 
 .skiplink {
-    position: absolute;
-    left: -20000px;
+  position: absolute;
+  left: -20000px;
 }
 
 #shutdown-msg {
-    font-weight: bold;
-    color: white;
-    background-color: #ef2929;
-    text-align: center;
-    margin-bottom: var(--section-padding);
-    padding: 0.5em;
-    -moz-border-radius: 0.5em;
-    border-radius: var(--form-input-border-radius)
+  font-weight: bold;
+  color: white;
+  background-color: #ef2929;
+  text-align: center;
+  margin-bottom: var(--section-padding);
+  padding: 0.5em;
+  -moz-border-radius: 0.5em;
+  border-radius: var(--form-input-border-radius);
 }
 
 /* #header .login {
@@ -199,8 +198,8 @@ img {
 }
 
 div.disabled {
-    opacity: 0.4;
-    background-color: #000;
+  opacity: 0.4;
+  background-color: #000;
 }
 
 table.tab {
@@ -255,7 +254,7 @@ pre.console {
     display: block;
     height: 0;
     clear: both;
- }
+  }
 }
 
 .setting-leftspace {
@@ -387,8 +386,13 @@ pre.console {
   text-decoration: none;
 }
 
-#foldertab li a:link { color: white; }
-#foldertab li a:visited { color: white; }
+#foldertab li a:link {
+  color: white;
+}
+
+#foldertab li a:visited {
+  color: white;
+}
 
 #foldertab li a:hover {
   color: white;
@@ -419,9 +423,9 @@ pre.console {
 }
 
 #login-field {
-    vertical-align: middle;
-    padding-right: 1em;
-    width: 1px;
+  vertical-align: middle;
+  padding-right: 1em;
+  width: 1px;
 }
 
 #login-field span {
@@ -430,11 +434,11 @@ pre.console {
 }
 
 #login-field a {
-    /*
+  /*
       link inside login field should be always white.
       If I set this to inherit, it won't work in IE7
      */
-    color: white;
+  color: white;
 }
 
 div.behavior-loading {
@@ -468,7 +472,11 @@ div.behavior-loading {
   // https://css-tricks.com/how-to-detect-when-a-sticky-element-gets-pinned/
   bottom: -1px;
   margin-left: -2rem;
-  width: calc(100% + 4rem);   /* it needs to occupy the entire width or else the underlying content will see through */
+  width:
+ calc(
+    100% + 4rem
+  ); /* it needs to occupy the entire width or else the underlying content will see through */
+
   z-index: 998; /* behind top-sticker */
 }
 
@@ -495,12 +503,19 @@ div.behavior-loading {
     top: -30px;
     left: 0;
     right: 0;
-    background: linear-gradient(rgba(black, 0), rgba(#555566, 0.075) 110%);
+    background: linear-gradient(rgba(black, 0), rgba(#556, 0.075) 110%);
     max-width: 100%;
     height: 30px;
     opacity: 0;
     transition: var(--standard-transition);
-    mask-image: linear-gradient(to right, transparent, white 2rem, white calc(100% - 2rem), transparent);
+    mask-image:
+ linear-gradient(
+      to right,
+      transparent,
+      white 2rem,
+      white calc(100% - 2rem),
+      transparent
+    );
     pointer-events: none;
   }
 
@@ -530,52 +545,51 @@ div.behavior-loading {
 
 .top-sticker,
 #top-sticker {
-    width: 100%;   /* it needs to occupy the entire width or else the underlying content will see through */
-    z-index: 999;
+  width: 100%; /* it needs to occupy the entire width or else the underlying content will see through */
+  z-index: 999;
 }
 
 .top-sticker.noedge > .top-sticker-edge {
-    display: none;
+  display: none;
 }
 
 .top-sticker.noedge > .top-sticker-inner {
-    padding: 0;
+  padding: 0;
 }
-
 
 /* ======================== error/warning message (mainly in the form.) Use them on block elements ======================== */
 .error {
-    color: #c00;
-    font-weight: bold;
-    padding-left: 20px;
-    min-height: 16px;
-    line-height: 16px;
-    background-image: url("../../images/svgs/error.svg");
-    background-position: left top;
-    background-repeat: no-repeat;
-    background-size: 16px 16px;
+  color: #c00;
+  font-weight: bold;
+  padding-left: 20px;
+  min-height: 16px;
+  line-height: 16px;
+  background-image: url("../../images/svgs/error.svg");
+  background-position: left top;
+  background-repeat: no-repeat;
+  background-size: 16px 16px;
 }
 
 .error-inline {
-    color: #c00;
-    font-weight: bold;
+  color: #c00;
+  font-weight: bold;
 }
 
 .warning {
-    color: #c4a000;
-    font-weight: bold;
-    padding-left: 20px;
-    min-height: 16px;
-    line-height: 16px;
-    background-image: url("../../images/svgs/warning.svg");
-    background-position: left top;
-    background-repeat: no-repeat;
-    background-size: 16px 16px;
+  color: #c4a000;
+  font-weight: bold;
+  padding-left: 20px;
+  min-height: 16px;
+  line-height: 16px;
+  background-image: url("../../images/svgs/warning.svg");
+  background-position: left top;
+  background-repeat: no-repeat;
+  background-size: 16px 16px;
 }
 
 .warning-inline {
-    color: #c4a000;
-    font-weight: bold;
+  color: #c4a000;
+  font-weight: bold;
 }
 
 .info {
@@ -601,25 +615,25 @@ div.behavior-loading {
 }
 
 .icon16x16 {
-    width: 16px;
-    height: 16px;
+  width: 16px;
+  height: 16px;
 }
 
 .icon24x24 {
-    width: 24px;
-    height: 24px;
+  width: 24px;
+  height: 24px;
 }
 
 .icon32x32 {
-    width: 32px;
-    height: 32px;
+  width: 32px;
+  height: 32px;
 }
 
 /* ====================== help ===================================== */
 
 .help {
   position: relative;
-  display: none;  /* hidden until loaded */
+  display: none; /* hidden until loaded */
   padding: 1rem;
   margin: 1rem 0;
   word-break: break-word;
@@ -653,8 +667,8 @@ div.behavior-loading {
 }
 
 .help .from-plugin {
-    text-align: right;
-    color: #666;
+  text-align: right;
+  color: #666;
 }
 
 .help-area {
@@ -768,7 +782,7 @@ table.parameters > tbody:hover {
 /* ============================ health report hover ========================== */
 
 .healthReport a {
-    text-decoration: none;
+  text-decoration: none;
 }
 
 #side-panel .healthReport a {
@@ -779,6 +793,7 @@ table.parameters > tbody:hover {
   display: none;
   margin-left: 20px;
   padding: 0;
+
   --table-border-radius: 7px;
 
   table {
@@ -805,7 +820,7 @@ table.parameters > tbody:hover {
 }
 
 #buildHistory tr.no-wrap td.middle-align {
-    padding: 0;
+  padding: 0;
 }
 
 #buildHistory .desc {
@@ -844,7 +859,8 @@ table.parameters > tbody:hover {
 #buildHistoryPage {
   position: relative;
 
-  .build-search-row, .build-search-no-results-row {
+  .build-search-row,
+  .build-search-no-results-row {
     &:hover {
       background: transparent !important;
     }
@@ -855,12 +871,12 @@ table.parameters > tbody:hover {
   }
 
   .build-search-no-results-row {
-    border: none!important;
-    width: 100%!important;
+    border: none !important;
+    width: 100% !important;
     background: transparent;
 
     td {
-      padding-top: 0!important;
+      padding-top: 0 !important;
     }
   }
 }
@@ -899,7 +915,7 @@ table.parameters > tbody:hover {
     padding: 0 8px;
     height: 30px;
     cursor: pointer;
-    transition: opacity .2s ease;
+    transition: opacity 0.2s ease;
 
     &:hover {
       opacity: 0.5;
@@ -1084,8 +1100,6 @@ table.fileList td.fileSize {
   text-align: right;
 }
 
-
-
 /* ========================= test result ========================= */
 .result-passed {
   color: #3465a4;
@@ -1176,28 +1190,32 @@ table.fingerprint-in-build td {
   overflow: hidden;
 }
 
-.row-set-end { display: none; }
+.row-set-end {
+  display: none;
+}
 
 /* ========================= resizable text area ========================= */
 
 textarea {
-    margin-bottom: 0;
-    resize: vertical;
+  margin-bottom: 0;
+  resize: vertical;
 }
 
 // Remove styling + textarea-handle.gif when IE11 is no longer supported
 div.textarea-handle {
-    height: 6px;
-    font-size: 0;
-    background: var(--light-grey) url(../../images/textarea-handle.gif) no-repeat 50% 1px;
-    border: 1px solid var(--medium-grey);
-    border-top: none;
-    cursor: s-resize;
+  height: 6px;
+  font-size: 0;
+  background:
+ var(--light-grey) url(../../images/textarea-handle.gif) no-repeat
+    50% 1px;
+  border: 1px solid var(--medium-grey);
+  border-top: none;
+  cursor: s-resize;
 
-    // Hide .textarea-handle on devices that support native textarea resizing
-    @supports (resize: both) {
-        display: none;
-    }
+  // Hide .textarea-handle on devices that support native textarea resizing
+  @supports (resize: both) {
+    display: none;
+  }
 }
 
 textarea.rich-editor {
@@ -1209,17 +1227,17 @@ textarea.rich-editor {
  *                  remove once there are no more dependencies
  */
 #plugins .compatWarning {
-    white-space: normal;
-    margin-top: 0.5em;
-    padding-left: 2em;
-    color: #f00;
+  white-space: normal;
+  margin-top: 0.5em;
+  padding-left: 2em;
+  color: #f00;
 }
 
 #plugins .securityWarning {
-    white-space: normal;
-    margin-top: 0.5em;
-    padding-left: 2em;
-    color: #f00;
+  white-space: normal;
+  margin-top: 0.5em;
+  padding-left: 2em;
+  color: #f00;
 }
 
 /* ========================= progress bar ========================= */
@@ -1233,7 +1251,7 @@ table.progress-bar {
 }
 
 table.progress-bar tr.unknown {
-    background-image: url(../../images/progress-unknown.gif);
+  background-image: url(../../images/progress-unknown.gif);
 }
 
 td.progress-bar-done {
@@ -1249,7 +1267,7 @@ table.progress-bar.red {
 }
 
 table.progress-bar.red tr.unknown {
-    background-image: url(../../images/progress-unknown-red.gif);
+  background-image: url(../../images/progress-unknown-red.gif);
 }
 
 table.progress-bar.red td.progress-bar-done {
@@ -1258,17 +1276,17 @@ table.progress-bar.red td.progress-bar-done {
 
 /* ========================= notification bar ========================= */
 #notification-bar {
-    width: 100%;
-    position: fixed;
-    text-align: center;
-    left: 0;
-    font-size: 1.75rem;
-    z-index: 1000;
-    border-bottom: 1px solid var(--black);
-    line-height: 3.5rem;
-    height: 3.5rem;
-    display: block;
-    will-change: opacity;
+  width: 100%;
+  position: fixed;
+  text-align: center;
+  left: 0;
+  font-size: 1.75rem;
+  z-index: 1000;
+  border-bottom: 1px solid var(--black);
+  line-height: 3.5rem;
+  height: 3.5rem;
+  display: block;
+  will-change: opacity;
 }
 
 #notification-bar .svg-icon {
@@ -1348,13 +1366,23 @@ table.progress-bar.red td.progress-bar-done {
 }
 
 @keyframes spin {
-  from { transform: rotate(0deg) translateZ(0); }
-  to { transform: rotate(360deg) translateZ(0); }
+  from {
+    transform: rotate(0deg) translateZ(0);
+  }
+
+  to {
+    transform: rotate(360deg) translateZ(0);
+  }
 }
 
 @keyframes spin-reverse {
-  from { transform: rotate(360deg); }
-  to { transform: rotate(0deg); }
+  from {
+    transform: rotate(360deg);
+  }
+
+  to {
+    transform: rotate(0deg);
+  }
 }
 
 /* ========================= YUI dialog ========================= */
@@ -1362,42 +1390,71 @@ table.progress-bar.red td.progress-bar-done {
 /* discovered this margin fix by a trial and error. This can very well be a totally wrong fix, or perhaps updating
  to the latest YUI will fix this? */
 .dialog .hd {
-    margin: 0 !important;
-    font-size: var(--font-size-xs) !important;
+  margin: 0 !important;
+  font-size: var(--font-size-xs) !important;
 }
 
 .dialog .bd {
-    margin: 0 !important;
+  margin: 0 !important;
 }
 
 .dialog .ft {
-    margin: 0 !important;
+  margin: 0 !important;
 }
 
 /* ========================= tags/labels ================== */
 
 /* tag0 is the least important tag in a tag cloud */
-.tag0 { font-size: 1em; }
-.tag1 { font-size: 1.1em; }
-.tag2 { font-size: 1.2em; }
-.tag3 { font-size: 1.3em; }
-.tag4 { font-size: 1.4em; }
-.tag5 { font-size: 1.5em; }
-.tag6 { font-size: 1.6em; }
-.tag7 { font-size: 1.7em; }
-.tag8 { font-size: 1.8em; }
-.tag9 { font-size: 1.9em; }
+.tag0 {
+  font-size: 1em;
+}
+
+.tag1 {
+  font-size: 1.1em;
+}
+
+.tag2 {
+  font-size: 1.2em;
+}
+
+.tag3 {
+  font-size: 1.3em;
+}
+
+.tag4 {
+  font-size: 1.4em;
+}
+
+.tag5 {
+  font-size: 1.5em;
+}
+
+.tag6 {
+  font-size: 1.6em;
+}
+
+.tag7 {
+  font-size: 1.7em;
+}
+
+.tag8 {
+  font-size: 1.8em;
+}
+
+.tag9 {
+  font-size: 1.9em;
+}
 
 /* ========================= textarea.jelly ================== */
 
 .textarea-preview-container {
-    text-align: left;
+  text-align: left;
 }
 
 .textarea-preview {
-    background-color: var(--very-light-grey);
-    padding: 0.5em;
-    border-radius: 10px;
+  background-color: var(--very-light-grey);
+  padding: 0.5em;
+  border-radius: 10px;
 }
 
 /* ========================= logRecords.jelly ================== */
@@ -1423,15 +1480,15 @@ table.progress-bar.red td.progress-bar-done {
 }
 
 .logrecord-metadata {
-    font-size: var(--font-size-xs);
+  font-size: var(--font-size-xs);
 }
 
 .logrecord-metadata-new {
-    color: #8a8;
+  color: #8a8;
 }
 
 .logrecord-metadata-old {
-    color: #aaa;
+  color: #aaa;
 }
 
 /* ========================= matrix configuration table ================== */
@@ -1490,19 +1547,19 @@ select.select-ajax-pending {
 }
 
 #disable-project {
-    margin-top: 6px;
+  margin-top: 6px;
 }
 
 .i18n {
-    display: none;
+  display: none;
 }
 
 .alert {
-    font-size: var(--font-size-sm);
-    padding: 15px;
-    margin-bottom: 20px;
-    border: 1px solid transparent;
-    border-radius: var(--form-input-border-radius);
+  font-size: var(--font-size-sm);
+  padding: 15px;
+  margin-bottom: 20px;
+  border: 1px solid transparent;
+  border-radius: var(--form-input-border-radius);
 }
 
 .alert a {
@@ -1529,45 +1586,45 @@ select.select-ajax-pending {
 }
 
 .alert-warning {
-    color: var(--alert-warning-text-color);
-    background-color: var(--alert-warning-bg-color);
-    border-color: var(--alert-warning-border-color);
+  color: var(--alert-warning-text-color);
+  background-color: var(--alert-warning-bg-color);
+  border-color: var(--alert-warning-border-color);
 }
 
 .alert-warning p {
-    color: var(--alert-warning-text-color);
+  color: var(--alert-warning-text-color);
 }
 
 .alert-danger {
-    color: var(--alert-danger-text-color);
-    background-color: var(--alert-danger-bg-color);
-    border-color: var(--alert-danger-border-color);
+  color: var(--alert-danger-text-color);
+  background-color: var(--alert-danger-bg-color);
+  border-color: var(--alert-danger-border-color);
 }
 
 .alert-danger p {
-    color: var(--alert-danger-text-color);
+  color: var(--alert-danger-text-color);
 }
 
 body.no-decoration #main-panel {
-    margin: 0 auto !important;
+  margin: 0 auto !important;
 }
 
 body.no-decoration #page-header,
 body.no-decoration #side-panel,
 body.no-decoration footer {
-    display: none;
+  display: none;
 }
 
 body.no-sticker #bottom-sticker {
-    display: none;
+  display: none;
 }
 
 /* see the Icon class for the definition of these CSS classes */
 .icon-sm,
 svg.icon-sm {
-    width: 16px;
-    height: 16px;
-    vertical-align: middle;
+  width: 16px;
+  height: 16px;
+  vertical-align: middle;
 
   svg {
     width: 16px;
@@ -1577,9 +1634,9 @@ svg.icon-sm {
 
 .icon-md,
 svg.icon-md {
-    width: 24px;
-    height: 24px;
-    vertical-align: middle;
+  width: 24px;
+  height: 24px;
+  vertical-align: middle;
 
   svg {
     width: 24px;
@@ -1589,9 +1646,9 @@ svg.icon-md {
 
 .icon-lg,
 svg.icon-lg {
-    width: 32px;
-    height: 32px;
-    vertical-align: middle;
+  width: 32px;
+  height: 32px;
+  vertical-align: middle;
 
   svg {
     width: 32px;
@@ -1601,9 +1658,9 @@ svg.icon-lg {
 
 .icon-xlg,
 svg.icon-xlg {
-    width: 48px;
-    height: 48px;
-    vertical-align: middle;
+  width: 48px;
+  height: 48px;
+  vertical-align: middle;
 
   svg {
     width: 48px;
@@ -1612,7 +1669,6 @@ svg.icon-xlg {
 }
 
 /* -------------------------------------- */
-
 
 /* -------------- SVG icons ------------- */
 
