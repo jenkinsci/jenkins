@@ -1,47 +1,73 @@
-
 <div>
-  Quando quest'opzione è selezionata è possibile eseguire compilazioni
-  multiple di questo progetto in parallelo.
+  Quando quest'opzione è selezionata è possibile eseguire compilazioni multiple
+  di questo progetto in parallelo.
   <p>
-  Per impostazione predefinita viene eseguita solo una singola compilazione di
-  un progetto per volta &mdash; qualunque altra richiesta di avvio della
-  compilazione di tale progetto rimarrà in coda finché la prima compilazione
-  non sarà stata completata.<br>
-  Questa è un'impostazione predefinita sicura, in quanto i progetti spesso
-  possono chiedere accesso esclusivo a determinate risorse, come un database
-  o una periferica hardware.
+    Per impostazione predefinita viene eseguita solo una singola compilazione di
+    un progetto per volta &mdash; qualunque altra richiesta di avvio della
+    compilazione di tale progetto rimarrà in coda finché la prima compilazione
+    non sarà stata completata.
+    <br />
+    Questa è un'impostazione predefinita sicura, in quanto i progetti spesso
+    possono chiedere accesso esclusivo a determinate risorse, come un database o
+    una periferica hardware.
+  </p>
+
   <p>
-  Con quest'opzione abilitata, tuttavia, se sono disponibili abbastanza
-  esecutori compilazione in grado di gestire questo progetto, allora verranno
-  eseguite più compilazioni di questo progetto in parallelo. Se in un dato
-  momento non è disponibile un numero sufficiente di esecutori, tutte le
-  ulteriori richieste di compilazione verranno mantenute nella coda di
-  compilazione come al solito.
+    Con quest'opzione abilitata, tuttavia, se sono disponibili abbastanza
+    esecutori compilazione in grado di gestire questo progetto, allora verranno
+    eseguite più compilazioni di questo progetto in parallelo. Se in un dato
+    momento non è disponibile un numero sufficiente di esecutori, tutte le
+    ulteriori richieste di compilazione verranno mantenute nella coda di
+    compilazione come al solito.
+  </p>
+
   <p>
-  Abilitare le compilazioni concorrenti è utile per i progetti che eseguono
-  suite di test lunghe, in quanto consente a ogni compilazione di contenere
-  un numero minore di modifiche, riducendo al contempo il tempo totale di
-  esecuzione in quanto le compilazioni seguenti non avranno la necessità di
-  attendere che le precedenti esecuzioni dei test giungano a termine.<br>
-  Questa funzionalità è utile anche per i progetti parametrizzati, le cui
-  esecuzioni di compilazione individuali &mdash; a seconda dei parametri
-  utilizzati &mdash; possono essere completamente indipendenti l'una
-  dall'altra.
+    Abilitare le compilazioni concorrenti è utile per i progetti che eseguono
+    suite di test lunghe, in quanto consente a ogni compilazione di contenere un
+    numero minore di modifiche, riducendo al contempo il tempo totale di
+    esecuzione in quanto le compilazioni seguenti non avranno la necessità di
+    attendere che le precedenti esecuzioni dei test giungano a termine.
+    <br />
+    Questa funzionalità è utile anche per i progetti parametrizzati, le cui
+    esecuzioni di compilazione individuali &mdash; a seconda dei parametri
+    utilizzati &mdash; possono essere completamente indipendenti l'una
+    dall'altra.
+  </p>
+
   <p>
-  Ogni compilazione eseguita concorrentemente viene eseguita nel proprio
-  spazio di lavoro, isolata da tutte le altre compilazioni. Per impostazione
-  predefinita, Jenkins aggiunge "<code>@&lt;numero&gt;</code>" alla fine del nome
-  della directory dello spazio di lavoro, ad es. "<code>@2</code>".<br>
-  Il separatore "<code>@</code>" può essere modificato impostando la proprietà di
-  sistema Java <code>hudson.slaves.WorkspaceList</code> all'avvio di Jenkins. Ad
-  esempio, "<code>hudson.slaves.WorkspaceList=-</code>" modificherebbe il
-  separatore in un trattino.<br>
-  Per ulteriori informazioni sull'impostazione delle proprietà di sistema, si
-  veda la <a href="https://www.jenkins.io/redirect/setting-system-properties"
-  rel="noopener noreferrer" target="_blank">pagina wiki</a>.
+    Ogni compilazione eseguita concorrentemente viene eseguita nel proprio
+    spazio di lavoro, isolata da tutte le altre compilazioni. Per impostazione
+    predefinita, Jenkins aggiunge "
+    <code>@&lt;numero&gt;</code>
+    " alla fine del nome della directory dello spazio di lavoro, ad es. "
+    <code>@2</code>
+    ".
+    <br />
+    Il separatore "
+    <code>@</code>
+    " può essere modificato impostando la proprietà di sistema Java
+    <code>hudson.slaves.WorkspaceList</code>
+    all'avvio di Jenkins. Ad esempio, "
+    <code>hudson.slaves.WorkspaceList=-</code>
+    " modificherebbe il separatore in un trattino.
+    <br />
+    Per ulteriori informazioni sull'impostazione delle proprietà di sistema, si
+    veda la
+    <a
+      href="https://www.jenkins.io/redirect/setting-system-properties"
+      rel="noopener noreferrer"
+      target="_blank"
+    >
+      pagina wiki
+    </a>
+    .
+  </p>
+
   <p>
-  Ciò nonostante, se si abilita l'opzione <i>Utilizza spazio di lavoro
-  personalizzato</i>, tutte le compilazioni saranno eseguite nello stesso
-  spazio di lavoro. Pertanto è richiesta attenzione in quanto più compilazioni
-  potrebbero modificare la stessa directory nello stesso momento.
+    Ciò nonostante, se si abilita l'opzione
+    <i>Utilizza spazio di lavoro personalizzato</i>
+    , tutte le compilazioni saranno eseguite nello stesso spazio di lavoro.
+    Pertanto è richiesta attenzione in quanto più compilazioni potrebbero
+    modificare la stessa directory nello stesso momento.
+  </p>
 </div>
