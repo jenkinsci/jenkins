@@ -28,16 +28,15 @@ THE SOFTWARE.
   <div class="jenkins-icon-size">
     <d:taglib uri="local">
       <d:tag name="iconSizeLink">
-        <st:nbsp/>
         <j:choose>
           <j:when test="${sz==iconSize}">
-            <li class="jenkins-icon-size__items-item">
+            <li class="jenkins-icon-size__items-item" tooltip="${title}">
               ${title.charAt(0)}<span class="jenkins-visually-hidden">${title.substring(1)}</span>
             </li>
           </j:when>
           <j:otherwise>
             <li>
-              <a class="yui-button link-button" href="${rootURL}/iconSize?${sz}">
+              <a class="jenkins-button jenkins-button--tertiary" href="${rootURL}/iconSize?${sz}" tooltip="${title}">
                 ${title.charAt(0)}<span class="jenkins-visually-hidden">${title.substring(1)}</span>
               </a>
             </li>
@@ -55,8 +54,6 @@ THE SOFTWARE.
       </ol>
     </div>
 
-    <div>
-      <d:invokeBody />
-    </div>
+    <d:invokeBody />
   </div>
 </j:jelly>

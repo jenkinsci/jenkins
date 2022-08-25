@@ -110,7 +110,7 @@ THE SOFTWARE.
                                 </j:choose>
 
                                 <a href="#" onclick="return revokeToken(this)"
-                                   class="jenkins-button jenkins-button--transparent jenkins-button--destructive token-revoke"
+                                   class="jenkins-button jenkins-button--tertiary jenkins-button--destructive token-revoke"
                                    data-message-if-legacy-revoked="${%RevokedToken}"
                                    data-confirm="${%ConfirmRevokeSingle}"
                                    data-target-url="${descriptor.descriptorFullUrl}/revoke">
@@ -136,7 +136,7 @@ THE SOFTWARE.
                             <div class="controls-container">
                               <l:copyButton text="" clazz="jenkins-hidden" tooltip="${%CopyToken}" iconOnly="true" />
                               <a href="#" onclick="return revokeToken(this)"
-                                 class="jenkins-button jenkins-button--transparent jenkins-button--destructive token-revoke hidden-button"
+                                 class="jenkins-button jenkins-button--tertiary jenkins-button--destructive token-revoke hidden-button"
                                  data-confirm="${%ConfirmRevokeSingle}"
                                  data-target-url="${descriptor.descriptorFullUrl}/revoke">
                                 <local:revokeIcon title="${%RevokeToken}" />

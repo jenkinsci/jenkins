@@ -28,13 +28,15 @@
 		<f:repeatable var="location" name="locations" items="${instance.locations}">
 			<table width="100%">
 				<f:entry title="${%Name}">
-                  <select class="jenkins-input" name="locations.key">
+				        <div class="jenkins-select">
+                  <select class="jenkins-select__input" name="locations.key">
                     <j:forEach var="toolDescriptor" items="${descriptor.toolDescriptors}">
                         <j:forEach var="toolInstallation" items="${toolDescriptor.installations}">
                             <f:option selected="${descriptor.getKey(toolInstallation)==location.key}" value="${descriptor.getKey(toolInstallation)}">(${toolDescriptor.displayName}) ${toolInstallation.name}</f:option>
                         </j:forEach>
                     </j:forEach>
                   </select>
+                </div>
 				</f:entry>
 				<f:entry title="${%Home}">
 					<f:textbox name="locations.home" value="${location.home}" />

@@ -27,10 +27,10 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:t="/lib/hudson">
-<l:layout title="Log">
-  <st:include page="sidepanel.jelly" />
+<l:layout title="${%All Jenkins Logs}">
+  <l:breadcrumb title="${%All Jenkins Logs}" />
   <l:main-panel>
-    <h1>${%Jenkins Log}</h1>
+    <h1>${%All Jenkins Logs}</h1>
     <div class="alert alert-info">
       Log messages at a level lower than INFO are never recorded in the Jenkins log. Use <a href=".">log recorders</a> to record these log messages.
     </div>
