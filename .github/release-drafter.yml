@@ -10,5 +10,5 @@ template: |
   See https://www.jenkins.io/changelog/ for the official changelogs._
 
   $CHANGES
-  
+
   All contributors: $CONTRIBUTORS
