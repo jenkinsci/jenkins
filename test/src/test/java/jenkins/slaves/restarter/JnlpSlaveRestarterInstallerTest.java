@@ -87,7 +87,7 @@ public class JnlpSlaveRestarterInstallerTest {
                 ).stdout(System.out).start());
                 r.waitOnline(s);
                 assertEquals(1, s.getChannel().call(new JVMCount()).intValue());
-                while (!logging.getMessages().stream().anyMatch(msg -> msg.contains("Effective SlaveRestarter on remote:"))) {
+                while (logging.getMessages().stream().noneMatch(msg -> msg.contains("Effective SlaveRestarter on remote:"))) {
                     Thread.sleep(100);
                 }
                 // Likely true on Unix, likely false on Windows (not under winsw):

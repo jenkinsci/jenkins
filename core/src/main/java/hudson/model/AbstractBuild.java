@@ -271,7 +271,9 @@ public abstract class AbstractBuild<P extends AbstractProject<P, R>, R extends A
      * <p>
      * If you override this method, you'll most likely also want to override
      * {@link #getDisplayName()}.
+     * @deprecated navigation through a hierarchy should be done through breadcrumbs, do not add a link using this method
      */
+    @Deprecated(since = "TODO")
     public String getUpUrl() {
         return Functions.getNearestAncestorUrl(Stapler.getCurrentRequest(), getParent()) + '/';
     }

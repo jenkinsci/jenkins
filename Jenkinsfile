@@ -42,7 +42,7 @@ for (i = 0; i < buildTypes.size(); i++) {
         // Now run the actual build.
         stage("${buildType} Build / Test") {
           timeout(time: 6, unit: 'HOURS') {
-            realtimeJUnit(healthScaleFactor: 20.0, testResults: '*/target/surefire-reports/*.xml,war/target/jest-result.xml') {
+            realtimeJUnit(healthScaleFactor: 20.0, testResults: '*/target/surefire-reports/*.xml') {
               def mavenOptions = [
                 '-Pdebug',
                 '-Penable-jacoco',
@@ -113,6 +113,13 @@ for (i = 0; i < buildTypes.size(); i++) {
                 [threshold: 1, type: 'TOTAL', unstable: true],
               ]])
              recordIssues([tool: esLint(pattern: '**/target/eslint-warnings.xml'),
+              sourceCodeEncoding: 'UTF-8',
+              skipBlames: true,
+              trendChartType: 'TOOLS_ONLY',
+              qualityGates: [
+                [threshold: 1, type: 'TOTAL', unstable: true],
+              ]])
+              recordIssues([tool: styleLint(pattern: '**/target/stylelint-warnings.xml'),
               sourceCodeEncoding: 'UTF-8',
               skipBlames: true,
               trendChartType: 'TOOLS_ONLY',

@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.80</version>
+    <version>1.86</version>
     <relativePath />
   </parent>
 
@@ -53,6 +53,7 @@ THE SOFTWARE.
     <module>bom</module>
     <module>websocket/spi</module>
     <module>websocket/jetty9</module>
+    <module>websocket/jetty10</module>
     <module>core</module>
     <module>war</module>
     <module>test</module>
@@ -73,12 +74,8 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.360</revision>
+    <revision>2.366</revision>
     <changelist>-SNAPSHOT</changelist>
-
-    <!-- *.html files are in UTF-8, and *.properties are in iso-8859-1, so this configuration is actually incorrect,
-    but this suppresses a warning from Maven, and as long as we don't do filtering we should be OK. -->
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
     <!-- configuration for patch tracker plugin  -->
     <project.patchManagement.system>github</project.patchManagement.system>
@@ -90,7 +87,7 @@ THE SOFTWARE.
     <changelog.url>https://www.jenkins.io/changelog</changelog.url>
 
     <!-- Bundled Remoting version -->
-    <remoting.version>3028.va_a_436db_35078</remoting.version>
+    <remoting.version>3046.v38db_38a_b_7a_86</remoting.version>
     <!-- Minimum Remoting version, which is tested for API compatibility -->
     <remoting.minimum.supported.version>4.2.1</remoting.minimum.supported.version>
 
@@ -100,9 +97,8 @@ THE SOFTWARE.
 
     <access-modifier.version>1.27</access-modifier.version>
     <bridge-method-injector.version>1.23</bridge-method-injector.version>
-    <junit.jupiter.version>5.8.2</junit.jupiter.version>
-    <mockito.version>4.6.1</mockito.version>
-    <spotless.version>2.23.0</spotless.version>
+    <mockito.version>4.7.0</mockito.version>
+    <spotless.version>2.24.1</spotless.version>
   </properties>
 
   <dependencyManagement>
@@ -288,7 +284,7 @@ THE SOFTWARE.
             <dependency>
               <groupId>org.jvnet.maven-jellydoc-plugin</groupId>
               <artifactId>maven-jellydoc-plugin</artifactId>
-              <version>1.5</version>
+              <version>1.9</version>
             </dependency>
           </dependencies>
         </plugin>
@@ -401,7 +397,7 @@ THE SOFTWARE.
             <dependency>
               <groupId>com.puppycrawl.tools</groupId>
               <artifactId>checkstyle</artifactId>
-              <version>10.3.1</version>
+              <version>10.3.2</version>
             </dependency>
           </dependencies>
           <executions>

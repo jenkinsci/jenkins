@@ -643,7 +643,7 @@ public class UtilTest {
         //          /a1
         //          /a2 => symlink to a1
         //      /b => symlink to a
-        Path root = tmp.getRoot().toPath();
+        Path root = tmp.getRoot().toPath().toRealPath();
         Path a = root.resolve("a");
         Path a1 = a.resolve("a1");
         Files.createDirectories(a1);
