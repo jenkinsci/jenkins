@@ -1,18 +1,33 @@
 <div>
-  A cross site request forgery (or CSRF/XSRF) is an exploit that enables
-  an unauthorized third party to take actions on a web site as you. In Jenkins,
-  this could allow someone to delete jobs, builds or change Jenkins' configuration.
+  A cross site request forgery (or CSRF/XSRF) is an exploit that enables an
+  unauthorized third party to take actions on a web site as you. In Jenkins,
+  this could allow someone to delete jobs, builds or change Jenkins'
+  configuration.
   <p>
-  When this option is enabled, Jenkins will check for a generated nonce value, or
-  "crumb", on any request that may cause a change on the Jenkins server. This
-  includes any form submission and calls to the remote API.
-  <p>
-  Enabling this option can result in some problems, like the following:
+    When this option is enabled, Jenkins will check for a generated nonce value,
+    or "crumb", on any request that may cause a change on the Jenkins server.
+    This includes any form submission and calls to the remote API.
+  </p>
+
+  <p>Enabling this option can result in some problems, like the following:</p>
+
   <ul>
-    <li>Some Jenkins features (like the remote API) are more difficult to use when this option is enabled.</li>
-    <li>Some features, especially in plugins not tested with this option enabled, may not work at all.</li>
-    <li>If you are accessing Jenkins through a reverse proxy, it may strip the CSRF HTTP header, resulting in some protected actions failing.</li>
+    <li>
+      Some Jenkins features (like the remote API) are more difficult to use when
+      this option is enabled.
+    </li>
+    <li>
+      Some features, especially in plugins not tested with this option enabled,
+      may not work at all.
+    </li>
+    <li>
+      If you are accessing Jenkins through a reverse proxy, it may strip the
+      CSRF HTTP header, resulting in some protected actions failing.
+    </li>
   </ul>
   <p>
-  More information about CSRF exploits can be found <a href="https://owasp.org/www-community/attacks/csrf">here</a>.
+    More information about CSRF exploits can be found
+    <a href="https://owasp.org/www-community/attacks/csrf">here</a>
+    .
+  </p>
 </div>

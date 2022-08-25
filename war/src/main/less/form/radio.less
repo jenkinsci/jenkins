@@ -19,16 +19,19 @@
     &:hover {
       & + label {
         &::before {
-          box-shadow: 0 0 0 10px transparent, inset 0 0 0 5px var(--input-border-hover);
+          box-shadow: 0 0 0 10px transparent,
+            inset 0 0 0 5px var(--input-border-hover);
         }
       }
     }
 
-    &:focus, &:active {
+    &:focus,
+    &:active {
       & + label {
         &::before {
           transition: box-shadow var(--elastic-transition);
-          box-shadow: 0 0 0 5px var(--focus-input-glow), inset 0 0 0 8px var(--focus-input-border);
+          box-shadow: 0 0 0 5px var(--focus-input-glow),
+            inset 0 0 0 8px var(--focus-input-border);
         }
       }
     }
@@ -36,7 +39,8 @@
     &:checked {
       & + label {
         &::before {
-          box-shadow: 0 0 0 10px transparent, inset 0 0 0 8px var(--focus-input-border);
+          box-shadow: 0 0 0 10px transparent,
+            inset 0 0 0 8px var(--focus-input-border);
         }
       }
     }
