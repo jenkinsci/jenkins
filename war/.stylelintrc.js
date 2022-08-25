@@ -2,8 +2,8 @@ module.exports = {
   extends: "stylelint-config-standard",
   customSyntax: "postcss-less",
   rules: {
-    "indentation": null,
-    "linebreaks": "unix",
+    indentation: null,
+    linebreaks: "unix",
     "max-line-length": 150,
     "selector-list-comma-newline-after": null,
     "selector-list-comma-space-after": null,
@@ -17,8 +17,8 @@ module.exports = {
     "value-keyword-case": [
       "lower",
       {
-        "camelCaseSvgKeywords": true
-      }
+        camelCaseSvgKeywords: true,
+      },
     ],
     "string-quotes": "double",
     "property-no-vendor-prefix": null,
@@ -34,5 +34,5 @@ module.exports = {
     "no-duplicate-selectors": null,
     "no-invalid-position-at-import-rule": null,
     "hue-degree-notation": "number",
-  }
-}
+  },
+};

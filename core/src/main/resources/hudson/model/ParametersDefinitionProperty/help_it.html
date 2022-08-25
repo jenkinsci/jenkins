@@ -3,40 +3,68 @@
   forniti a una compilazione. Ad esempio, si potrebbe avere un progetto che
   esegue test su richiesta consentendo agli utenti di caricare un file ZIP
   contenente i binari da testare. Si potrebbe ottenere tale risultato
-  aggiungendo qui un <i>Parametro file</i>.
-  <br>
+  aggiungendo qui un
+  <i>Parametro file</i>
+  .
+  <br />
   Oppure si potrebbe avere un progetto che rilascia del software e si desidera
   che gli utenti immettano delle note di rilascio che saranno caricate insieme
   al software. Si potrebbe ottenere tale risultato aggiungendo qui un
-  <i>Parametro stringa multiriga</i>.
+  <i>Parametro stringa multiriga</i>
+  .
   <p>
-  Ogni parametro ha un <i>Nome</i> e qualche tipo di <i>Valore</i> che
-  dipende dal tipo del parametro. Queste coppie nome-valore saranno esportate
-  come variabili d'ambiente all'avvio della compilazione, consentendo ai
-  passaggi successivi della configurazione della compilazione (come le
-  istruzioni di compilazione) di accedere a tali valori, ad esempio utilizzando
-  la sintassi <code>${NOME_PARAMETRO}</code> (o <code>%NOME_PARAMETRO%</code> su
-  Windows).
-  <br>
-  Ciò implica anche che ogni parametro definito qui debba avere un
-  <i>Nome</i> univoco.
+    Ogni parametro ha un
+    <i>Nome</i>
+    e qualche tipo di
+    <i>Valore</i>
+    che dipende dal tipo del parametro. Queste coppie nome-valore saranno
+    esportate come variabili d'ambiente all'avvio della compilazione,
+    consentendo ai passaggi successivi della configurazione della compilazione
+    (come le istruzioni di compilazione) di accedere a tali valori, ad esempio
+    utilizzando la sintassi
+    <code>${NOME_PARAMETRO}</code>
+    (o
+    <code>%NOME_PARAMETRO%</code>
+    su Windows).
+    <br />
+    Ciò implica anche che ogni parametro definito qui debba avere un
+    <i>Nome</i>
+    univoco.
+  </p>
+
   <p>
-  Quando un progetto è parametrizzato, il collegamento <i>Compila ora</i>
-  usuale sarà sostituito da un collegamento <i>Compila con parametri</i> dove
-  agli utenti verrà chiesto di specificare i valori per ognuno dei parametri
-  definiti. Se questi scelgono di non immettere nulla, la compilazione verrà
-  avviata con il valore predefinito per ogni parametro.
+    Quando un progetto è parametrizzato, il collegamento
+    <i>Compila ora</i>
+    usuale sarà sostituito da un collegamento
+    <i>Compila con parametri</i>
+    dove agli utenti verrà chiesto di specificare i valori per ognuno dei
+    parametri definiti. Se questi scelgono di non immettere nulla, la
+    compilazione verrà avviata con il valore predefinito per ogni parametro.
+  </p>
+
   <p>
-  Se una compilazione è avviata automaticamente, ad esempio se è avviata da
-  un trigger del sistema di gestione del codice sorgente, saranno utilizzati i
-  valori predefiniti per ogni parametro.
+    Se una compilazione è avviata automaticamente, ad esempio se è avviata da un
+    trigger del sistema di gestione del codice sorgente, saranno utilizzati i
+    valori predefiniti per ogni parametro.
+  </p>
+
   <p>
-  Quando una compilazione parametrizzata è in coda, i tentativi di avvio di
-  un'altra compilazione dello stesso progetto avranno successo solo se i valori
-  dei parametri sono diversi, o se l'opzione <i>Esegui compilazioni concorrenti
-  se necessario</i> è abilitata.
+    Quando una compilazione parametrizzata è in coda, i tentativi di avvio di
+    un'altra compilazione dello stesso progetto avranno successo solo se i
+    valori dei parametri sono diversi, o se l'opzione
+    <i>Esegui compilazioni concorrenti se necessario</i>
+    è abilitata.
+  </p>
+
   <p>
-  Si veda la <a href="https://www.jenkins.io/redirect/parameterized-builds"
-  rel="noopener noreferrer" target="_blank">documentazione sulle compilazioni parametrizzate</a> per
-  ulteriori informazioni su questa funzionalità.
+    Si veda la
+    <a
+      href="https://www.jenkins.io/redirect/parameterized-builds"
+      rel="noopener noreferrer"
+      target="_blank"
+    >
+      documentazione sulle compilazioni parametrizzate
+    </a>
+    per ulteriori informazioni su questa funzionalità.
+  </p>
 </div>

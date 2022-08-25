@@ -207,12 +207,7 @@ public final class TreeString implements Serializable {
 
                 // dedup at the end
                 final TreeStringBuilder _builder = builder;
-                context.addCompletionCallback(new Runnable() {
-                    @Override
-                    public void run() {
-                        _builder.dedup();
-                    }
-                }, 0);
+                context.addCompletionCallback(_builder::dedup, 0);
             }
             return builder.intern(reader.getValue());
         }

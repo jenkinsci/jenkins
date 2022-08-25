@@ -26,6 +26,9 @@ THE SOFTWARE.
   <st:documentation>
     Used inside &lt;l:layout> to render additional breadcrumb items.
 
+    <st:attribute name="title" use="required">
+      Display name of the breadcrumb.
+    </st:attribute>
     <st:attribute name="href">
       URL that the breadcrumb item links to. Can be omitted.
     </st:attribute>
@@ -33,16 +36,24 @@ THE SOFTWARE.
       If specified, this ID will be assigned to the LI element.
       This is useful for programmatically adding the context menu
     </st:attribute>
-    <st:attribute name="title" use="required">
-      Display name of the breadcrumb.
+    <st:attribute name="hasMenu">
+      If true, this breadcrumb item will include a '⌄' symbol to display a dropdown menu with items
+      from the '{breadcrumb.href}/contextMenu' path. Since TODO
     </st:attribute>
   </st:documentation>
 
   <j:if test="${mode=='breadcrumbs'}">
     <li id="${attrs.id}" class="item">
-      <a href="${attrs.href}">
-        ${attrs.title}
-      </a>
+      <j:choose>
+        <j:when test="${attrs.href == null}">
+          ${attrs.title}
+        </j:when>
+        <j:otherwise>
+          <a href="${attrs.href}" class="${attrs.hasMenu ? 'model-link' : ''}">
+            ${attrs.title}
+          </a>
+        </j:otherwise>
+      </j:choose>
     </li>
   </j:if>
 </j:jelly>

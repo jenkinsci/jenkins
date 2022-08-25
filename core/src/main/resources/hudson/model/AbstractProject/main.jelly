@@ -31,25 +31,16 @@ THE SOFTWARE.
   <p:projectActionFloatingBox />
 
   <table style="margin-top: 1em; margin-left:1em;">
-
     <j:forEach var="act" items="${it.prominentActions}">
       <j:set var="icon" value="${act.iconClassName != null ? act.iconClassName : act.iconFileName}"/>
       <t:summary icon="${icon}" href="${act.urlName}">
         ${act.displayName}
       </t:summary>
     </j:forEach>
-    <t:summary icon="symbol-folder" href="ws/" permission="${it.WORKSPACE}">
-      ${%Workspace}
-    </t:summary>
 
     <t:artifactList caption="${%Last Successful Artifacts}"
         build="${it.lastSuccessfulBuild}" baseURL="lastSuccessfulBuild/"
         permission="${it.lastSuccessfulBuild.ARTIFACTS}"/>
-
-    <t:summary icon="symbol-changes" href="changes">
-      ${%Recent Changes}
-    </t:summary>
-
   </table>
 
   <!-- merge fragments from the actions -->

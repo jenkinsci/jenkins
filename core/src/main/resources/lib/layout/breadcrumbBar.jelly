@@ -42,19 +42,10 @@ THE SOFTWARE.
         <ul id="breadcrumbs">
           <j:forEach var="anc" items="${request.ancestors}">
             <j:if test="${h.isModel(anc.object) and anc.prev.url!=anc.url}">
-              <li class="item">
-                <a href="${anc.url}/" class="${h.isModelWithContextMenu(anc.object)?'model-link':null}">
-                  <!-- Workaround to set desired name to first breadcrumb (instead of Jenkins) -->
-                  <j:choose>
-                    <j:when test="${anc.object == app}">
-                      ${%Dashboard}
-                    </j:when>
-                    <j:otherwise>
-                      ${anc.object.displayName}
-                    </j:otherwise>
-                  </j:choose>
-                </a>
-              </li>
+              <j:set var="mode" value="breadcrumbs" />
+              <l:breadcrumb title="${anc.object == app ? '%Dashboard' : anc.object.displayName}"
+                            href="${anc.url}/"
+                            hasMenu="${h.isModelWithContextMenu(anc.object)}" />
               <j:choose>
                 <j:when test="${h.isModelWithChildren(anc.object)}">
                   <li class="children" href="${anc.url}/">

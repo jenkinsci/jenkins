@@ -1,8 +1,8 @@
-import $ from 'jquery';
-import { getWindow } from 'window-handle';
+import $ from "jquery";
+import { getWindow } from "window-handle";
 
-var timestamp = (new Date().getTime());
-var loadedClass = 'jenkins-loaded-' + timestamp;
+var timestamp = new Date().getTime();
+var loadedClass = "jenkins-loaded-" + timestamp;
 
 /**
  * Wait for the specified element to be added to the DOM.
@@ -14,57 +14,57 @@ var loadedClass = 'jenkins-loaded-' + timestamp;
  * @param contextEl The jQuery selector context (optional).
  */
 function onload(selector, callback, contextEl) {
-    function registerRescan() {
-        setTimeout(scan, 50);
+  function registerRescan() {
+    setTimeout(scan, 50);
+  }
+  function scan() {
+    var elements = $(selector, contextEl).not(loadedClass);
+    if (elements.length > 0) {
+      elements.addClass(loadedClass);
+      if (callback(elements) === true) {
+        registerRescan();
+      }
+    } else {
+      registerRescan();
     }
-    function scan() {
-        var elements = $(selector, contextEl).not(loadedClass);
-        if (elements.length > 0) {
-            elements.addClass(loadedClass);
-            if (callback(elements) === true) {
-                registerRescan();
-            }
-        } else {
-            registerRescan();
-        }
-    }
-    scan();
+  }
+  scan();
 }
 
 function winScrollTop() {
-    var win = $(getWindow());
-    return win.scrollTop();
+  var win = $(getWindow());
+  return win.scrollTop();
 }
 
 function onWinScroll(callback) {
-    $(getWindow()).on('scroll', callback);
+  $(getWindow()).on("scroll", callback);
 }
 
 function pageHeaderHeight() {
-    return elementHeight('#page-header') + breadcrumbBarHeight();
+  return elementHeight("#page-header") + breadcrumbBarHeight();
 }
 
 function breadcrumbBarHeight() {
-    return elementHeight('#breadcrumbBar');
+  return elementHeight("#breadcrumbBar");
 }
 
 function removeTextHighlighting(selector) {
-    $('span.highlight-split', selector).each(function() {
-        var highlightSplit = $(this);
-        highlightSplit.before(highlightSplit.text());
-        highlightSplit.remove();
-    });
+  $("span.highlight-split", selector).each(function () {
+    var highlightSplit = $(this);
+    highlightSplit.before(highlightSplit.text());
+    highlightSplit.remove();
+  });
 }
 
 function elementHeight(selector) {
-    return $(selector).height();
+  return $(selector).height();
 }
 
 export default {
-    onload,
-    winScrollTop,
-    onWinScroll,
-    pageHeaderHeight,
-    breadcrumbBarHeight,
-    removeTextHighlighting
-}
+  onload,
+  winScrollTop,
+  onWinScroll,
+  pageHeaderHeight,
+  breadcrumbBarHeight,
+  removeTextHighlighting,
+};
