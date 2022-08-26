@@ -168,6 +168,7 @@ import hudson.security.csrf.CrumbIssuer;
 import hudson.security.csrf.GlobalCrumbIssuerConfiguration;
 import hudson.slaves.Cloud;
 import hudson.slaves.ComputerListener;
+import hudson.slaves.ComputerRetentionWork;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.NodeDescriptor;
 import hudson.slaves.NodeList;
@@ -583,6 +584,11 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Global default for {@link AbstractProject#getScmCheckoutRetryCount()}
      */
     /*package*/ int scmCheckoutRetryCount;
+
+    /**
+     * For {@link hudson.slaves.ComputerRetentionWork#getRecurrencePeriod()}
+     */
+    /*package*/ int computerRetentionCheckInterval = 60;
 
     /**
      * {@link View}s.
@@ -2372,6 +2378,16 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     public void setScmCheckoutRetryCount(int scmCheckoutRetryCount) throws IOException {
         this.scmCheckoutRetryCount = scmCheckoutRetryCount;
         save();
+    }
+
+    public int getComputerRetentionCheckInterval() {
+        return computerRetentionCheckInterval;
+    }
+
+    public void setComputerRetentionCheckInterval(int interval) throws IOException {
+        this.computerRetentionCheckInterval = interval;
+        save();
+        ExtensionList.lookupSingleton(ComputerRetentionWork.class).restart();
     }
 
     @Override

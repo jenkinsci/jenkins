@@ -107,12 +107,12 @@ public abstract class PeriodicWork extends SafeTimerTask implements ExtensionPoi
         ExtensionList<PeriodicWork> extensionList = all();
         extensionList.addListener(new PeriodicWorkExtensionListListener(extensionList));
         for (PeriodicWork p : extensionList) {
-            schedulePeriodicWork(p);
+            p.schedulePeriodicWork();
         }
     }
 
-    private static void schedulePeriodicWork(PeriodicWork p) {
-        Timer.get().scheduleAtFixedRate(p, p.getInitialDelay(), p.getRecurrencePeriod(), TimeUnit.MILLISECONDS);
+    protected void schedulePeriodicWork() {
+        Timer.get().scheduleAtFixedRate(this, this.getInitialDelay(), this.getRecurrencePeriod(), TimeUnit.MILLISECONDS);
     }
 
     // time constants
@@ -140,7 +140,7 @@ public abstract class PeriodicWork extends SafeTimerTask implements ExtensionPoi
                 for (PeriodicWork p : PeriodicWork.all()) {
                     // it is possibly to programatically remove Extensions but that is rarely used.
                     if (!registered.contains(p)) {
-                        schedulePeriodicWork(p);
+                        p.schedulePeriodicWork();
                         registered.add(p);
                     }
                 }

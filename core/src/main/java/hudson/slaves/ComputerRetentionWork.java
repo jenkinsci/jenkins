@@ -31,8 +31,10 @@ import hudson.model.PeriodicWork;
 import hudson.model.Queue;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import jenkins.model.Jenkins;
+import jenkins.util.Timer;
 import org.jenkinsci.Symbol;
 
 /**
@@ -49,9 +51,29 @@ public class ComputerRetentionWork extends PeriodicWork {
      */
     private final Map<Computer, Long> nextCheck = new WeakHashMap<>();
 
+    private ScheduledFuture<?> pending;
+
+    @Override
+    protected void schedulePeriodicWork() {
+        pending = Timer.get().scheduleAtFixedRate(this, this.getInitialDelay(), this.getRecurrencePeriod(), TimeUnit.MILLISECONDS);
+    }
+
+    /**
+     * Restart the periodic check.
+     * The previous run may still be pending. We do not need to wait for its completion as all calls of
+     * {@link RetentionStrategy#check} inside the runner are performed in a queue with a lock.
+     * Per the docs on {@link RetentionStrategy#check}, it is OK to recheck earlier or later than requested.
+     */
+    public synchronized void restart() {
+        if (pending != null) {
+            pending.cancel(false);
+        }
+        schedulePeriodicWork();
+    }
+
     @Override
     public long getRecurrencePeriod() {
-        return MIN;
+        return Jenkins.get().getComputerRetentionCheckInterval() * 1000L;
     }
 
     @SuppressWarnings("unchecked")
@@ -67,8 +89,7 @@ public class ComputerRetentionWork extends PeriodicWork {
                         return;
                     if (!nextCheck.containsKey(c) || startRun > nextCheck.get(c)) {
                         // at the moment I don't trust strategies to wait more than 60 minutes
-                        // strategies need to wait at least one minute
-                        final long waitInMins = Math.max(1, Math.min(60, c.getRetentionStrategy().check(c)));
+                        final long waitInMins = Math.max(0, Math.min(60, c.getRetentionStrategy().check(c)));
                         nextCheck.put(c, startRun + TimeUnit.MINUTES.toMillis(waitInMins));
                     }
                 }
