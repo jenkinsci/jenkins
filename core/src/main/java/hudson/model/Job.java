@@ -1427,7 +1427,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
                     public float[] getDataPoints(int i) {
                         float[] ret = new float[builds.size()];
                         int idx = 0;
-                        for (Run<?, ?> r: builds) {
+                        for (Run<?, ?> r : builds) {
                             ret[idx++] = ((float) r.getDuration()) / (1000 * 60);
                         }
                         return ret;
