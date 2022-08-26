@@ -1,3 +1,4 @@
+/* global replaceDescription */
 (function () {
   document.addEventListener("DOMContentLoaded", function () {
     let descriptionLink = document.querySelector("#description-link");
