@@ -30,9 +30,8 @@ THE SOFTWARE.
   <l:header />
   <l:side-panel>
     <l:tasks>
-      <l:task href="${rootURL}/" icon="icon-up icon-md" title="${%Back to Dashboard}"/>
-      <l:task href="${rootURL}/manage" icon="symbol-settings" title="${%Manage Jenkins}"/>
-      <l:task href="../pluginManager/" icon="icon-plugin icon-lg" title="${%Manage Plugins}"/>
+      <l:task href="${rootURL}/manage/pluginManager/" icon="symbol-plugins" title="${%Plugin Manager}"/>
+      <l:task href="${rootURL}/manage/updateCenter/" icon="symbol-download" title="${%Update Center}"/>
     </l:tasks>
   </l:side-panel>
 </j:jelly>
