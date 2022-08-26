@@ -3017,6 +3017,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"eslint-config-prettier@npm:8.5.0":
+  version: 8.5.0
+  resolution: "eslint-config-prettier@npm:8.5.0"
+  peerDependencies:
+    eslint: ">=7.0.0"
+  bin:
+    eslint-config-prettier: bin/cli.js
+  checksum: 0d0f5c32e7a0ad91249467ce71ca92394ccd343178277d318baf32063b79ea90216f4c81d1065d60f96366fdc60f151d4d68ae7811a58bd37228b84c2083f893
+  languageName: node
+  linkType: hard
+
 "eslint-scope@npm:5.1.1":
   version: 5.1.1
   resolution: "eslint-scope@npm:5.1.1"
@@ -3983,6 +3994,7 @@ __metadata:
     css-loader: 6.7.1
     css-minimizer-webpack-plugin: 4.0.0
     eslint: 8.20.0
+    eslint-config-prettier: 8.5.0
     handlebars: ^3.0.8
     handlebars-loader: 1.7.2
     hotkeys-js: 3.9.4
@@ -3995,6 +4007,7 @@ __metadata:
     postcss: 8.4.14
     postcss-less: 6.0.0
     postcss-loader: 7.0.1
+    prettier: 2.7.1
     sortablejs: 1.15.0
     style-loader: 3.3.1
     stylelint: 14.9.1
@@ -5414,6 +5427,15 @@ __metadata:
   version: 1.2.1
   resolution: "prelude-ls@npm:1.2.1"
   checksum: cd192ec0d0a8e4c6da3bb80e4f62afe336df3f76271ac6deb0e6a36187133b6073a19e9727a1ff108cd8b9982e4768850d413baa71214dd80c7979617dca827a
+  languageName: node
+  linkType: hard
+
+"prettier@npm:2.7.1":
+  version: 2.7.1
+  resolution: "prettier@npm:2.7.1"
+  bin:
+    prettier: bin-prettier.js
+  checksum: 55a4409182260866ab31284d929b3cb961e5fdb91fe0d2e099dac92eaecec890f36e524b4c19e6ceae839c99c6d7195817579cdffc8e2c80da0cb794463a748b
   languageName: node
   linkType: hard
 

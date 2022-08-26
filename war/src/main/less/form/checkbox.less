@@ -28,16 +28,19 @@
 
   &:checked {
     & + label {
-      &:active, &:focus {
+      &:active,
+      &:focus {
         &::before {
-          box-shadow: 0 0 0 5px var(--focus-input-glow), inset 0 0 0 12px var(--focus-input-border);
+          box-shadow: 0 0 0 5px var(--focus-input-glow),
+            inset 0 0 0 12px var(--focus-input-border);
         }
       }
     }
 
     & + label {
       &::before {
-        box-shadow: 0 0 0 10px transparent, inset 0 0 0 12px var(--focus-input-border);
+        box-shadow: 0 0 0 10px transparent,
+          inset 0 0 0 12px var(--focus-input-border);
       }
 
       &::after {
@@ -59,7 +62,8 @@
     &:checked {
       & + label {
         &::before {
-          box-shadow: 0 0 0 10px transparent, inset 0 0 0 12px var(--focus-input-border) !important;
+          box-shadow: 0 0 0 10px transparent,
+            inset 0 0 0 12px var(--focus-input-border) !important;
         }
 
         &::after {
@@ -119,13 +123,16 @@
 
   &:hover {
     &::before {
-      box-shadow: 0 0 0 10px transparent, inset 0 0 0 5px var(--input-border-hover);
+      box-shadow: 0 0 0 10px transparent,
+        inset 0 0 0 5px var(--input-border-hover);
     }
   }
 
-  &:active, &:focus {
+  &:active,
+  &:focus {
     &::before {
-      box-shadow: 0 0 0 5px var(--focus-input-glow), inset 0 0 0 5px var(--focus-input-border);
+      box-shadow: 0 0 0 5px var(--focus-input-glow),
+        inset 0 0 0 5px var(--focus-input-border);
     }
   }
 }
