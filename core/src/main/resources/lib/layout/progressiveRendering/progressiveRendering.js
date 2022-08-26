@@ -22,6 +22,7 @@
  * THE SOFTWARE.
  */
 
+/* global registerTooltips */
 function progressivelyRender(handler, callback, statusId) {
   function checkNews(response) {
     var r = response.responseObject();
