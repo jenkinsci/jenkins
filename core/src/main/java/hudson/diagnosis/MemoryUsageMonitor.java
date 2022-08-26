@@ -29,7 +29,6 @@ import hudson.model.MultiStageTimeSeries;
 import hudson.model.MultiStageTimeSeries.TimeScale;
 import hudson.model.PeriodicWork;
 import hudson.model.Result;
-import hudson.util.ColorPalette;
 import hudson.util.Graph;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;

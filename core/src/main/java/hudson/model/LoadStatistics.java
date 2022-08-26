@@ -30,19 +30,18 @@ import hudson.Extension;
 import hudson.model.MultiStageTimeSeries.TimeScale;
 import hudson.model.queue.SubTask;
 import hudson.util.Graph;
-import jenkins.model.Jenkins;
-import jenkins.util.SystemProperties;
-import org.jenkinsci.Symbol;
-import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.export.Exported;
-import org.kohsuke.stapler.export.ExportedBean;
-
 import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import jenkins.model.Jenkins;
+import jenkins.util.SystemProperties;
+import org.jenkinsci.Symbol;
+import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
 
 /**
  * Utilization statistics for a node or a set of nodes.

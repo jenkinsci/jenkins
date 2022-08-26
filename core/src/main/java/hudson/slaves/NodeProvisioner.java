@@ -40,7 +40,7 @@ import hudson.model.MultiStageTimeSeries.TimeScale;
 import hudson.model.Node;
 import hudson.model.PeriodicWork;
 import hudson.model.Queue;
-import java.awt.Color;
+import hudson.model.Result;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -55,8 +55,6 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import hudson.model.Result;
 import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
 import jenkins.util.Timer;

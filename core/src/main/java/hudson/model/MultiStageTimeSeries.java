@@ -25,12 +25,7 @@
 package hudson.model;
 
 import hudson.util.Graph;
-import org.jvnet.localizer.Localizable;
-import org.kohsuke.stapler.export.Exported;
-import org.kohsuke.stapler.export.ExportedBean;
-
 import java.awt.Color;
-import java.awt.Paint;
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -40,6 +35,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
+import org.jvnet.localizer.Localizable;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
 
 /**
  * Maintains several {@link TimeSeries} with different update frequencies to satisfy three goals;
