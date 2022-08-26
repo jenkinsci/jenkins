@@ -1925,7 +1925,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     }
 
     @Restricted(NoExternalUse.class)
-    @RequirePOST public FormValidation doCheckUpdateSiteUrl(StaplerRequest request, @QueryParameter String value) throws IOException {
+    @RequirePOST public FormValidation doCheckUpdateSiteUrl(StaplerRequest request, @QueryParameter String value) {
         if (StringUtils.isNotBlank(value)) {
             try {
                 value += "?version=" + Jenkins.VERSION;
@@ -1941,7 +1941,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                 } else {
                     return FormValidation.error(Messages.PluginManager_connectionFailed());
                 }
-            } catch (Exception e) {
+            } catch (IOException e) {
                 return FormValidation.error(Messages.PluginManager_connectionFailed());
             }
         } else {
