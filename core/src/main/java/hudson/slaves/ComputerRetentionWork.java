@@ -63,6 +63,8 @@ public class ComputerRetentionWork extends PeriodicWork {
      * The previous run may still be pending. We do not need to wait for its completion as all calls of
      * {@link RetentionStrategy#check} inside the runner are performed in a queue with a lock.
      * Per the docs on {@link RetentionStrategy#check}, it is OK to recheck earlier or later than requested.
+     *
+     * @since TODO
      */
     public synchronized void restart() {
         if (pending != null) {

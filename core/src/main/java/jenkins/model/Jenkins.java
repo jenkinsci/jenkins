@@ -2380,10 +2380,22 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         save();
     }
 
+    /**
+     * Gets the check interval for computer retention.
+     *
+     * @since TODO
+     */
     public int getComputerRetentionCheckInterval() {
         return computerRetentionCheckInterval;
     }
 
+    /**
+     * Updates the check interval for computer retention and restarts the check cycle.
+     *
+     * @param interval new check interval in seconds
+     * @throws IOException saving config to disk failed
+     * @since TODO
+     */
     public void setComputerRetentionCheckInterval(int interval) throws IOException {
         this.computerRetentionCheckInterval = interval;
         save();
