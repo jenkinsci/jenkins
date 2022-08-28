@@ -24,8 +24,8 @@ public class GlobalComputerRetentionCheckIntervalConfiguration extends GlobalCon
     public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
         try {
             final int interval = json.getInt("computerRetentionCheckInterval");
-            if (interval <= 1) {
-                throw new FormException("must be greater than one", "computerRetentionCheckInterval");
+            if (interval <= 0) {
+                throw new FormException("must be greater than zero", "computerRetentionCheckInterval");
             }
             Jenkins.get().setComputerRetentionCheckInterval(interval);
             return true;
