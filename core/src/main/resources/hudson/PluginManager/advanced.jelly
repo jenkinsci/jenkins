@@ -36,6 +36,7 @@ THE SOFTWARE.
       <st:include page="sidepanel.jelly"/>
 
         <l:main-panel>
+          <div class="jenkins-form">
             <section class="jenkins-section jenkins-!-margin-bottom-5">
                 <h2 class="jenkins-section__title">${%HTTP Proxy Configuration}</h2>
                 <f:form method="post" action="proxyConfigure" name="proxyConfigure">
@@ -105,6 +106,7 @@ THE SOFTWARE.
                     </ul>
                 </section>
             </j:if>
+          </div>
         </l:main-panel>
     </l:layout>
 </j:jelly>
