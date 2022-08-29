@@ -1,31 +1,31 @@
-import tippy from "tippy.js"
+import tippy from "tippy.js";
 
 const TOOLTIP_BASE = {
   arrow: false,
   theme: "tooltip",
   animation: "tooltip",
-  appendTo: document.body
-}
+  appendTo: document.body,
+};
 
-let tooltipInstances = []
+let tooltipInstances = [];
 const globalPlugin = {
   fn(instance) {
     return {
       onCreate() {
-        tooltipInstances = tooltipInstances.concat(instance)
+        tooltipInstances = tooltipInstances.concat(instance);
       },
       onDestroy() {
-        tooltipInstances = tooltipInstances.filter(i => i !== instance)
-      }
-    }
-  }
-}
+        tooltipInstances = tooltipInstances.filter((i) => i !== instance);
+      },
+    };
+  },
+};
 
 tippy.setDefaultProps({
-  plugins: [globalPlugin]
-})
+  plugins: [globalPlugin],
+});
 
-registerTooltips()
+registerTooltips();
 
 /**
  * Registers tooltips for the page
@@ -34,34 +34,49 @@ registerTooltips()
  */
 function registerTooltips(container) {
   if (!container) {
-    container = document
+    container = document;
   }
 
-  tooltipInstances.forEach(instance => {
+  tooltipInstances.forEach((instance) => {
     if (instance.props.container === container) {
-      instance.destroy()
+      instance.destroy();
     }
-  })
+  });
 
-  tippy(container.querySelectorAll("[tooltip]:not([tooltip=\"\"]):not([data-html-tooltip])"), Object.assign({
-    content: element => element.getAttribute("tooltip").replace(/<br[ /]?\/?>|\\n/g, '\n'),
-    container: container,
-    onCreate(instance) {
-      instance.reference.setAttribute("title", instance.props.content)
-    },
-    onShow(instance) {
-      instance.reference.removeAttribute("title")
-    },
-    onHidden(instance) {
-      instance.reference.setAttribute("title", instance.props.content)
-    }
-  }, TOOLTIP_BASE))
+  tippy(
+    container.querySelectorAll(
+      '[tooltip]:not([tooltip=""]):not([data-html-tooltip])'
+    ),
+    Object.assign(
+      {
+        content: (element) =>
+          element.getAttribute("tooltip").replace(/<br[ /]?\/?>|\\n/g, "\n"),
+        container: container,
+        onCreate(instance) {
+          instance.reference.setAttribute("title", instance.props.content);
+        },
+        onShow(instance) {
+          instance.reference.removeAttribute("title");
+        },
+        onHidden(instance) {
+          instance.reference.setAttribute("title", instance.props.content);
+        },
+      },
+      TOOLTIP_BASE
+    )
+  );
 
-  tippy(container.querySelectorAll("[data-html-tooltip]"), Object.assign({
-    content: element => element.getAttribute("data-html-tooltip"),
-    allowHTML: true,
-    container: container,
-  }, TOOLTIP_BASE))
+  tippy(
+    container.querySelectorAll("[data-html-tooltip]"),
+    Object.assign(
+      {
+        content: (element) => element.getAttribute("data-html-tooltip"),
+        allowHTML: true,
+        container: container,
+      },
+      TOOLTIP_BASE
+    )
+  );
 }
 
 /**
@@ -70,18 +85,24 @@ function registerTooltips(container) {
  * @param {HTMLElement} element - The element to show the tooltip
  */
 function hoverNotification(text, element) {
-  const tooltip = tippy(element, Object.assign({
-    trigger: "hover",
-    offset: [0, 0],
-    content: text,
-    onShow(instance) {
-      setTimeout(() => {
-        instance.hide()
-      }, 3000)
-    },
-  }, TOOLTIP_BASE))
-  tooltip.show()
+  const tooltip = tippy(
+    element,
+    Object.assign(
+      {
+        trigger: "hover",
+        offset: [0, 0],
+        content: text,
+        onShow(instance) {
+          setTimeout(() => {
+            instance.hide();
+          }, 3000);
+        },
+      },
+      TOOLTIP_BASE
+    )
+  );
+  tooltip.show();
 }
 
-window.registerTooltips = registerTooltips
-window.hoverNotification = hoverNotification
+window.registerTooltips = registerTooltips;
+window.hoverNotification = hoverNotification;

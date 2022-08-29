@@ -12,8 +12,8 @@
 [![Docker Pulls](https://img.shields.io/docker/pulls/jenkins/jenkins.svg)](https://hub.docker.com/r/jenkins/jenkins/)
 [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/3538/badge)](https://bestpractices.coreinfrastructure.org/projects/3538)
 
-In a nutshell, Jenkins is the leading open-source automation server. 
-Built with Java, it provides over 1,800 [plugins](https://plugins.jenkins.io/) to support automating virtually anything, 
+In a nutshell, Jenkins is the leading open-source automation server.
+Built with Java, it provides over 1,800 [plugins](https://plugins.jenkins.io/) to support automating virtually anything,
 so that humans can spend their time doing things machines cannot.
 
 # What to Use Jenkins for and When to Use It
@@ -34,17 +34,17 @@ See the [Downloads](https://www.jenkins.io/download) page for references.
 
 For all distributions Jenkins offers two release lines:
 
-* [Weekly](https://www.jenkins.io/download/weekly/) -
+- [Weekly](https://www.jenkins.io/download/weekly/) -
   Frequent releases which include all new features, improvements, and bug fixes.
-* [Long-Term Support (LTS)](https://www.jenkins.io/download/lts/) -
+- [Long-Term Support (LTS)](https://www.jenkins.io/download/lts/) -
   Older release line which gets periodically updated via bug fix backports.
 
 Latest releases:
 [![Jenkins Regular Release](https://img.shields.io/endpoint?url=https%3A%2F%2Fwww.jenkins.io%2Fchangelog%2Fbadge.json)](https://www.jenkins.io/changelog)
 [![Jenkins LTS Release](https://img.shields.io/endpoint?url=https%3A%2F%2Fwww.jenkins.io%2Fchangelog-stable%2Fbadge.json)](https://www.jenkins.io/changelog-stable)
 
-
 # Source
+
 Our latest and greatest source of Jenkins can be found on [GitHub](https://github.com/jenkinsci/jenkins). Fork us!
 
 # Contributing to Jenkins
@@ -71,4 +71,5 @@ Jenkins is used by millions of users and thousands of companies.
 See [adopters](https://www.jenkins.io/project/adopters/) for the list of Jenkins adopters and their success stories.
 
 # License
+
 Jenkins is **licensed** under the **[MIT License](https://github.com/jenkinsci/jenkins/blob/master/LICENSE.txt)**.
