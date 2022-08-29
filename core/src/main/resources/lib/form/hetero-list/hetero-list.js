@@ -2,7 +2,6 @@
 
 // do the ones that extract innerHTML so that they can get their original HTML before
 // other behavior rules change them (like YUI buttons.)
-/* global registerTooltips */
 Behaviour.specify(
   "DIV.hetero-list-container",
   "hetero-list",
@@ -158,7 +157,6 @@ Behaviour.specify(
           Behaviour.applySubtree(nc, true);
           ensureVisible(nc);
           layoutUpdateCallback.call();
-          registerTooltips(nc);
         },
         true
       );

@@ -22,14 +22,12 @@
  * THE SOFTWARE.
  */
 
-/* global registerTooltips */
 function progressivelyRender(handler, callback, statusId) {
   function checkNews(response) {
     var r = response.responseObject();
     if (r.status == "done") {
       callback(r.data);
       $(statusId).style.display = "none";
-      registerTooltips();
     } else if (r.status == "canceled") {
       // TODO ugly; replace with single tr of class=unknown?
       $$("#" + statusId + " .progress-bar-done")[0].innerHTML = "Aborted.";
@@ -44,7 +42,6 @@ function progressivelyRender(handler, callback, statusId) {
       $$("#" + statusId + " .progress-bar-left")[0].style.width =
         100 - 100 * r.status + "%";
       checkNewsLater(500);
-      registerTooltips();
     }
   }
   function checkNewsLater(timeout) {

@@ -104,5 +104,8 @@ function hoverNotification(text, element) {
   tooltip.show();
 }
 
-window.registerTooltips = registerTooltips;
+Behaviour.specify("[tooltip]:not([tooltip=\"\"]), [data-html-tooltip]", "-tooltip-", 1000000, function (e) {
+  registerTooltips(e);
+});
+
 window.hoverNotification = hoverNotification;
