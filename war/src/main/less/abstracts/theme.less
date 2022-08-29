@@ -313,10 +313,16 @@
   --call-to-action-link-color: #000;
   --call-to-action-text-color: var(--alert-info-text-color);
 
+  // Default button
+  --button-background: hsla(240, 0.25, 0.75, 0.1);
+  --button-background--hover: hsla(240, 0.25, 0.75, 0.175);
+  --button-background--active: hsla(240, 0.25, 0.75, 0.25);
+  --button-box-shadow--focus: hsla(240, 0.25, 0.75, 0.1);
+
   // Variables for sidebar items, card items
-  --item-background--hover: hsla(240, 0.15, 0.6, 0.075);
-  --item-background--active: hsla(240, 0.15, 0.6, 0.15);
-  --item-box-shadow--focus: var(--item-background--hover);
+  --item-background--hover: hsla(240, 0.25, 0.75, 0.15);
+  --item-background--active: hsla(240, 0.25, 0.75, 0.225);
+  --item-box-shadow--focus: hsla(240, 0.25, 0.75, 0.105);
 
   // Colors
   each(@colors, {

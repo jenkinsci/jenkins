@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2011, CloudBees, Inc.
+ * Copyright 2022 CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,15 +21,25 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package hudson.PluginManager
-l=namespace(lib.LayoutTagLib)
 
-l.header()
-l.side_panel {
-    l.tasks {
-        if (!app.updateCenter.jobs.isEmpty()) {
-            l.task(icon: "symbol-plugins", href: "${rootURL}/manage/pluginManager/", title:_("Plugin Manager"))
-            l.task(icon: "symbol-download", href: "${rootURL}/manage/updateCenter/", title:_("Update Center"))
-        }
+package hudson;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
+import com.cloudbees.hudson.plugins.folder.Folder;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.JenkinsRule;
+
+public class PluginManagerWhichTest {
+
+    @Rule public JenkinsRule r = new JenkinsRule();
+
+    @Test
+    public void whichPlugin() throws Exception {
+        PluginWrapper expected = r.getPluginManager().getPlugin("cloudbees-folder");
+        assertNotNull(expected);
+        assertEquals(expected, r.getPluginManager().whichPlugin(Folder.class));
     }
 }
