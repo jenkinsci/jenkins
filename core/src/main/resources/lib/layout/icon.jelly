@@ -46,7 +46,7 @@ THE SOFTWARE.
     <st:attribute name="title" deprecated="true">title, deprecated use tooltip instead, or htmlTooltip if you intend to pass HTML.</st:attribute>
     <st:attribute name="style">style</st:attribute>
     <st:attribute name="tooltip">
-      Adds a tooltip to the icon, ignores HTML except 'br'.</st:attribute>
+      Adds a tooltip to the icon, ignores HTML except 'br' tags (but '\n' should be preferred for line breaks).</st:attribute>
     <st:attribute name="htmlTooltip">
       Tooltip but with HTML support. Make sure to call h.htmlAttributeEscape on all user-specified parts of the value to prevent cross-site scripting.
       Use 'tooltip' if you don't need to pass HTML.</st:attribute>
