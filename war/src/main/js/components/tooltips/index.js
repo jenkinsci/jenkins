@@ -1,5 +1,5 @@
 import tippy from "tippy.js";
-import behaviorShim from "util/behavior-shim";
+import behaviorShim from "@/util/behavior-shim";
 
 const TOOLTIP_BASE = {
   arrow: false,
@@ -25,8 +25,6 @@ const globalPlugin = {
 tippy.setDefaultProps({
   plugins: [globalPlugin],
 });
-
-registerTooltips(null);
 
 /**
  * Registers tooltips for the page
@@ -105,8 +103,16 @@ function hoverNotification(text, element) {
   tooltip.show();
 }
 
-behaviorShim.specify("[tooltip]:not([tooltip=\"\"]), [data-html-tooltip]", "-tooltip-", 1000, function (e) {
-  registerTooltips(e);
-});
+function init() {
+  behaviorShim.specify(
+    "[tooltip], [data-html-tooltip]",
+    "-tooltip-",
+    1000,
+    function () {
+      registerTooltips(null);
+      window.hoverNotification = hoverNotification;
+    }
+  );
+}
 
-window.hoverNotification = hoverNotification;
+export default { init };
