@@ -16,7 +16,7 @@ Behaviour.specify("TEXTAREA.codemirror", "textarea", 0, function (e) {
   }
   try {
     config = JSON.parse("{" + config + "}");
-  } catch (e) {
+  } catch (ex) {
     /*
      * Attempt to parse fairly common legacy format whose exact content is:
      * mode:'<MIME>'
@@ -31,7 +31,7 @@ Behaviour.specify("TEXTAREA.codemirror", "textarea", 0, function (e) {
     } else {
       console.log(
         "Failed to parse codemirror-config '{" + config + "}' as JSON",
-        e
+        ex
       );
       config = {};
     }
