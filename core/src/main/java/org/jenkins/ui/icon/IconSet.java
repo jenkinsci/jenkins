@@ -95,7 +95,7 @@ public class IconSet {
             String symbol = symbolsForLookup.get(translatedName);
             symbol = symbol.replaceAll("(class=\")[^&]*?(\")", "$1$2");
             symbol = symbol.replaceAll("(tooltip=\")[^&]*?(\")", "");
-            symbol = symbol.replaceAll("(data-html-tooltip=\")[^&]*?(\")", "");
+            symbol = symbol.replaceAll("(data-html-tooltip=\").*?(\")", "");
             symbol = symbol.replaceAll("(id=\")[^&]*?(\")", "");
             if (!tooltip.isEmpty() && htmlTooltip.isEmpty()) {
                 symbol = symbol.replaceAll("<svg", "<svg tooltip=\"" + Functions.htmlAttributeEscape(tooltip) + "\"");
@@ -128,7 +128,7 @@ public class IconSet {
         symbol = symbol.replaceAll("(<title>)[^&]*(</title>)", "$1$2");
         symbol = symbol.replaceAll("(class=\")[^&]*?(\")", "$1$2");
         symbol = symbol.replaceAll("(tooltip=\")[^&]*?(\")", "$1$2");
-        symbol = symbol.replaceAll("(data-html-tooltip=\")[^&]*?(\")", "$1$2");
+        symbol = symbol.replaceAll("(data-html-tooltip=\").*?(\")", "$1$2");
         symbol = symbol.replaceAll("(id=\")[^&]*?(\")", "");
         if (!tooltip.isEmpty()) {
             symbol = symbol.replaceAll("<svg", "<svg tooltip=\"" + Functions.htmlAttributeEscape(tooltip) + "\"");
