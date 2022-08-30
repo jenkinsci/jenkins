@@ -15,11 +15,6 @@ function applyFilter(searchQuery) {
       var selectedPlugins = [];
 
       var filterInput = document.getElementById("filter-box");
-      filterInput.addEventListener("keypress", (event) => {
-        if (event.key === "Enter") {
-          event.preventDefault();
-        }
-      });
       filterInput.parentElement.classList.remove("jenkins-search--loading");
 
       function clearOldResults() {
