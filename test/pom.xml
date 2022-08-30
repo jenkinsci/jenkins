@@ -150,7 +150,6 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>antisamy-markup-formatter</artifactId>
-      <!-- TODO https://github.com/jenkinsci/antisamy-markup-formatter-plugin/pull/91 -->
       <version>2.7</version>
       <scope>test</scope>
     </dependency>
