@@ -74,7 +74,7 @@ THE SOFTWARE.
           <div id="bottom-sticker">
             <div class="bottom-sticker-inner">
               <l:isAdmin>
-                <f:submit value="${%Install without restart}" name="dynamicLoad"/>
+                <f:submit value="${%Install without restart}"/>
                 <span style="margin-left:2em;"></span>
                 <f:submit value="${%Download now and install after restart}"/>
               </l:isAdmin>
