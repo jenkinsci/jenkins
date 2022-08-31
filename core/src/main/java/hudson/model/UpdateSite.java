@@ -894,6 +894,13 @@ public class UpdateSite {
         }
     }
 
+    @Restricted(NoExternalUse.class)
+    public enum WarningType {
+        CORE,
+        PLUGIN,
+        UNKNOWN
+    }
+
     /**
      * Represents a warning about a certain component, mostly related to known security issues.
      *
@@ -903,19 +910,13 @@ public class UpdateSite {
      * @since 2.40
      */
     @Restricted(NoExternalUse.class)
-    public static final class Warning {
-
-        public enum Type {
-            CORE,
-            PLUGIN,
-            UNKNOWN
-        }
+    public final class Warning {
 
         /**
          * The type classifier for this warning.
          */
         @NonNull
-        public /* final */ Type type;
+        public /* final */ WarningType type;
 
         /**
          * The globally unique ID of this warning.
@@ -970,9 +971,9 @@ public class UpdateSite {
         @Restricted(NoExternalUse.class)
         public Warning(JSONObject o) {
             try {
-                this.type = Type.valueOf(o.getString("type").toUpperCase(Locale.US));
+                this.type = WarningType.valueOf(o.getString("type").toUpperCase(Locale.US));
             } catch (IllegalArgumentException ex) {
-                this.type = Type.UNKNOWN;
+                this.type = WarningType.UNKNOWN;
             }
             this.id = o.getString("id");
             this.component = Util.intern(o.getString("name"));
@@ -1014,7 +1015,7 @@ public class UpdateSite {
         }
 
         public boolean isPluginWarning(@NonNull String pluginName) {
-            return type == Type.PLUGIN && pluginName.equals(this.component);
+            return type == WarningType.PLUGIN && pluginName.equals(this.component);
         }
 
         /**
@@ -1044,6 +1045,33 @@ public class UpdateSite {
                 default:
                     return false;
             }
+        }
+
+        public Boolean isFixable() {
+            final Data data = UpdateSite.this.data;
+            if (data == null) {
+                return null;
+            }
+            switch (this.type) {
+                case CORE: {
+                    final Entry core = data.core;
+                    if (core == null) {
+                        return null;
+                    }
+                    final VersionNumber latestCoreVersion = new VersionNumber(core.version);
+                    return !isRelevantToVersion(latestCoreVersion);
+                }
+                case PLUGIN: {
+                    final Entry plugin = data.plugins.get(component);
+                    if (plugin == null) {
+                        return null;
+                    }
+                    final VersionNumber latestCoreVersion = new VersionNumber(plugin.version);
+                    return !isRelevantToVersion(latestCoreVersion);
+                }
+                // No handling for 'OTHER'
+            }
+            return null;
         }
 
         public boolean isRelevantToVersion(@NonNull VersionNumber version) {

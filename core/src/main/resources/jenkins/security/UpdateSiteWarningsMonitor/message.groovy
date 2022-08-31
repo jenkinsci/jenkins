@@ -31,6 +31,14 @@ def listWarnings(warnings) {
     warnings.each { warning ->
         dd {
             a(warning.message, href: warning.url, rel: 'noopener noreferrer', target: "_blank")
+            def fixable = warning.isFixable()
+            if (fixable != null) {
+                if (fixable) {
+                    raw(_("fixable", rootURL))
+                } else {
+                    raw(_("unfixable", rootURL))
+                }
+            }
         }
     }
 }
