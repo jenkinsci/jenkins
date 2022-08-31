@@ -47,14 +47,14 @@ def listWarnings(warnings) {
     if (fixables == warnings.size) {
         dd {
             if (fixables == 1) {
-                raw(_("allFixable1"))
+                raw(_("allFixable1", rootURL))
             } else {
-                raw(_("allFixable"))
+                raw(_("allFixable", rootURL))
             }
         }
     } else if (fixables > 0) {
         dd {
-            raw(_("someFixable"))
+            raw(_("someFixable", rootURL))
         }
     } else {
         dd {
