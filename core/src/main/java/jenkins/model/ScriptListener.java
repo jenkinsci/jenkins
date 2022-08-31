@@ -1,8 +1,13 @@
 package jenkins.model;
 
+import hudson.Extension;
 import hudson.ExtensionPoint;
 import hudson.model.User;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import jenkins.util.Listeners;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.StaplerRequest;
 
 /**
@@ -34,5 +39,16 @@ public interface ScriptListener extends ExtensionPoint {
      */
     static void fireScriptEvent(String script, String origin, User u) {
         Listeners.notify(ScriptListener.class, true, listener -> listener.onScript(script, origin, u));
+    }
+
+    @Extension
+    @Restricted(NoExternalUse.class)
+    class LoggingListener implements ScriptListener {
+        public static final Logger LOGGER = Logger.getLogger(LoggingListener.class.getName());
+
+        @Override
+        public void onScript(String script, String origin, User u) {
+            LOGGER.log(Level.FINE, () -> "Script: '" + script + "' from origin: '" + origin + "' by user: '" + u + "'");
+        }
     }
 }
