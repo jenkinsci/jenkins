@@ -1047,6 +1047,13 @@ public class UpdateSite {
             }
         }
 
+        /**
+         * Returns whether this warning is fixable by updating the affected component.
+         * @return {@code true} if the warning does not apply to the latest offered version of core or the affected plugin;
+         * {@code false} if it does; and {@code null} when the affected component isn't being offered, or it's a warning
+         * for something other than core or a plugin.
+         */
+        @SuppressFBWarnings(value = "NP_BOOLEAN_RETURN_NULL")
         public Boolean isFixable() {
             final Data data = UpdateSite.this.data;
             if (data == null) {
@@ -1069,9 +1076,9 @@ public class UpdateSite {
                     final VersionNumber latestCoreVersion = new VersionNumber(plugin.version);
                     return !isRelevantToVersion(latestCoreVersion);
                 }
-                // No handling for 'OTHER'
+                default:
+                    return null;
             }
-            return null;
         }
 
         public boolean isRelevantToVersion(@NonNull VersionNumber version) {

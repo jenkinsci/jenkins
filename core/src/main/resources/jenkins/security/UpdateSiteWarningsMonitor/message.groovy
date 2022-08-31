@@ -29,7 +29,6 @@ def l = namespace(lib.LayoutTagLib)
 
 def listWarnings(warnings) {
     def fixables = 0
-    def unfixables = 0
     warnings.each { warning ->
         dd {
             a(warning.message, href: warning.url, rel: 'noopener noreferrer', target: "_blank")
@@ -38,7 +37,6 @@ def listWarnings(warnings) {
                 if (fixable) {
                     fixables++
                 } else {
-                    unfixables++
                     raw(_("unfixable"))
                 }
             }
