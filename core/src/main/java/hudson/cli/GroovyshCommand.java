@@ -80,6 +80,8 @@ public class GroovyshCommand extends CLICommand {
             commandLine.append(arg);
         }
 
+        // TODO Add binding
+        ScriptListener.fireScriptEvent(null, null, ScriptListener.Usage.OTHER, GroovyshCommand.class, "Session: " + System.identityHashCode(this), User.current());
         Groovysh shell = createShell(stdin, stdout, stderr);
         return shell.run(commandLine.toString());
     }
@@ -98,11 +100,13 @@ public class GroovyshCommand extends CLICommand {
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
-        binding.setProperty("out", new PrintWriter(new OutputStreamWriter(stdout, charset), true));
+        binding.setProperty("out", new PrintWriter(new OutputStreamWriter(new ScriptListener.LoggingOutputStream(stdout, GroovyshCommand.class, "Session: " + System.identityHashCode(this)), charset), true));
         binding.setProperty("hudson", Jenkins.get()); // backward compatibility
         binding.setProperty("jenkins", Jenkins.get());
 
-        IO io = new IO(new BufferedInputStream(stdin), stdout, stderr);
+        IO io = new IO(new BufferedInputStream(stdin),
+                new ScriptListener.LoggingOutputStream(stdout, GroovyshCommand.class, "Session: " + System.identityHashCode(this)),
+                new ScriptListener.LoggingOutputStream(stderr, GroovyshCommand.class, "Session: " + System.identityHashCode(this)));
 
         final ClassLoader cl = Jenkins.get().pluginManager.uberClassLoader;
         Closure registrar = new Closure(null, null) {
@@ -126,14 +130,16 @@ public class GroovyshCommand extends CLICommand {
         return shell;
     }
 
-    private static class LoggingGroovySh extends Groovysh {
+    private class LoggingGroovySh extends Groovysh {
+        private Binding binding;
         LoggingGroovySh(ClassLoader cl, Binding binding, IO io, Closure registrar) {
             super(cl, binding, io, registrar);
+            this.binding = binding;
         }
 
         @Override
         protected void maybeRecordInput(String line) {
-            ScriptListener.fireScriptEvent(line, "CLI/GroovySh", User.current());
+            ScriptListener.fireScriptEvent(line, binding, ScriptListener.Usage.EXECUTION, GroovyshCommand.class, "Session: " + System.identityHashCode(GroovyshCommand.this), User.current());
             super.maybeRecordInput(line);
         }
     }

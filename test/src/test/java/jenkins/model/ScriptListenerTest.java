@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import groovy.lang.Binding;
 import hudson.ExtensionList;
 import hudson.cli.GroovyCommand;
 import hudson.cli.GroovyshCommand;
@@ -74,12 +75,12 @@ public class ScriptListenerTest {
 
     private class DummyScriptUsageListener implements ScriptListener {
         @Override
-        public void onScript(String script, String origin, User u) {
+        public void onScriptEvent(String script, Binding binding, Usage usage, Object context, String description, User u) {
             String username = "null";
             if (u != null) {
                 username = u.getFullName();
             }
-            ps.println(String.format(expectedOutFormat, script, origin, username));
+            ps.println(String.format(expectedOutFormat, script, context, username));
         }
     }
 }

@@ -66,14 +66,14 @@ public class GroovyCommand extends CLICommand {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
 
         Binding binding = new Binding();
-        binding.setProperty("out", new PrintWriter(new OutputStreamWriter(stdout, getClientCharset()), true));
+        binding.setProperty("out", new ScriptListener.LoggingWriter(new PrintWriter(new OutputStreamWriter(stdout, getClientCharset()), true), GroovyCommand.class, "GroovyCommand:" + System.identityHashCode(this)));
         binding.setProperty("stdin", stdin);
         binding.setProperty("stdout", stdout);
         binding.setProperty("stderr", stderr);
 
         GroovyShell groovy = new GroovyShell(Jenkins.get().getPluginManager().uberClassLoader, binding);
         String script = loadScript();
-        ScriptListener.fireScriptEvent(script, "CLI/GroovyCommand", User.current());
+        ScriptListener.fireScriptEvent(script, binding, ScriptListener.Usage.EXECUTION, GroovyCommand.class, "GroovyCommand:" + System.identityHashCode(this), User.current());
         groovy.run(script, "RemoteClass", remaining.toArray(new String[0]));
         return 0;
     }

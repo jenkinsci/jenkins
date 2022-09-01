@@ -31,9 +31,12 @@ import groovy.lang.GroovyShell;
 import hudson.FilePath;
 import hudson.Functions;
 import hudson.Util;
+import hudson.model.User;
 import hudson.remoting.AsyncFutureImpl;
+import hudson.remoting.Channel;
 import hudson.remoting.DelegatingCallable;
 import hudson.remoting.Future;
+import hudson.remoting.LocalChannel;
 import hudson.remoting.VirtualChannel;
 import hudson.security.AccessControlled;
 import java.io.File;
@@ -50,6 +53,7 @@ import javax.management.JMException;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 import jenkins.model.Jenkins;
+import jenkins.model.ScriptListener;
 import jenkins.security.MasterToSlaveCallable;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
@@ -112,7 +116,10 @@ public final class RemotingDiagnostics {
      * Executes Groovy script remotely.
      */
     public static String executeGroovy(String script, @NonNull VirtualChannel channel) throws IOException, InterruptedException {
-        return channel.call(new Script(script));
+        ScriptListener.fireScriptEvent(script, new Binding(), ScriptListener.Usage.EXECUTION, RemotingDiagnostics.class, "Execute " + channel.toString(), User.current());
+        final String output = channel.call(new Script(script));
+        ScriptListener.fireScriptEvent(output, null, ScriptListener.Usage.OTHER, RemotingDiagnostics.class, "Output " + channel.toString(), User.current());
+        return output;
     }
 
     private static final class Script extends MasterToSlaveCallable<String, RuntimeException> implements DelegatingCallable<String, RuntimeException> {
