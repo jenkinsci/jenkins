@@ -193,9 +193,6 @@ THE SOFTWARE.
     </j:if>
 
     <div id="page-body" class="app-page-body app-page-body--${layoutType} clear">
-      <j:set var="mode" value="app-bar" />
-      <d:invokeBody/>
-
       <j:if test="${layoutType=='two-column'}">
         <div id="side-panel" class="app-page-body__sidebar">
           <j:set var="mode" value="side-panel" />
