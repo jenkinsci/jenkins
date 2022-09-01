@@ -1,17 +1,18 @@
-import hotkeys from "hotkeys-js"
+import hotkeys from "hotkeys-js";
 
 window.addEventListener("load", () => {
-  const searchBar = document.querySelector("#search-box")
-  searchBar.placeholder = searchBar.placeholder + ` (${translateModifierKeysForUsersPlatform("CMD+K")
-    .replace("CMD", "⌘")})`
+  const searchBar = document.querySelector("#search-box");
+  searchBar.placeholder =
+    searchBar.placeholder +
+    ` (${translateModifierKeysForUsersPlatform("CMD+K").replace("CMD", "⌘")})`;
 
   hotkeys(translateModifierKeysForUsersPlatform("CMD+K"), () => {
-    searchBar.focus()
+    searchBar.focus();
 
     // Returning false stops the event and prevents default browser events
-    return false
-  })
-})
+    return false;
+  });
+});
 
 /**
  * Given a keyboard shortcut, e.g. CMD+K, replace any included modifier keys for the user's
@@ -19,8 +20,9 @@ window.addEventListener("load", () => {
  * @param {string} keyboardShortcut The shortcut to translate
  */
 function translateModifierKeysForUsersPlatform(keyboardShortcut) {
-  const useCmdKey = navigator.platform.toUpperCase().indexOf("MAC") >= 0 ||
+  const useCmdKey =
+    navigator.platform.toUpperCase().indexOf("MAC") >= 0 ||
     navigator.platform.toUpperCase() === "IPHONE" ||
-    navigator.platform.toUpperCase() === "IPAD"
-  return keyboardShortcut.replace(/CMD|CTRL/ig, useCmdKey ? "CMD" : "CTRL")
+    navigator.platform.toUpperCase() === "IPAD";
+  return keyboardShortcut.replace(/CMD|CTRL/gi, useCmdKey ? "CMD" : "CTRL");
 }
