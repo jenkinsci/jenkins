@@ -43,7 +43,6 @@ import java.io.StringWriter;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
 import java.nio.file.Files;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.TreeMap;
@@ -70,7 +69,7 @@ import org.kohsuke.stapler.WebMethod;
 public final class RemotingDiagnostics {
     public static Map<Object, Object> getSystemProperties(VirtualChannel channel) throws IOException, InterruptedException {
         if (channel == null)
-            return Collections.singletonMap("N/A", "N/A");
+            return Map.of("N/A", "N/A");
         return channel.call(new GetSystemProperties());
     }
 
@@ -85,13 +84,13 @@ public final class RemotingDiagnostics {
 
     public static Map<String, String> getThreadDump(VirtualChannel channel) throws IOException, InterruptedException {
         if (channel == null)
-            return Collections.singletonMap("N/A", "N/A");
+            return Map.of("N/A", "N/A");
         return channel.call(new GetThreadDump());
     }
 
     public static Future<Map<String, String>> getThreadDumpAsync(VirtualChannel channel) throws IOException, InterruptedException {
         if (channel == null)
-            return new AsyncFutureImpl<>(Collections.singletonMap("N/A", "offline"));
+            return new AsyncFutureImpl<>(Map.of("N/A", "offline"));
         return channel.callAsync(new GetThreadDump());
     }
 

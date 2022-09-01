@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  */
 
-form.signup{
+form.signup {
   max-width: 480px;
   width: 100%;
 }
@@ -35,7 +35,7 @@ form.signup{
   width: unset;
   margin-right: 5px;
 }
-.combinedElement{
+.combinedElement {
   display: flex;
   align-items: center;
 }

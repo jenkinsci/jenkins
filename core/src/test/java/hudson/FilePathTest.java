@@ -640,7 +640,7 @@ public class FilePathTest {
         String message = "going ahead";
         assertFalse(d.installIfNecessaryFrom(url, new StreamTaskListener(baos, Charset.defaultCharset()), message));
         verify(con).setIfModifiedSince(123000);
-        String log = baos.toString(Charset.defaultCharset().name());
+        String log = baos.toString(Charset.defaultCharset());
         assertFalse(log, log.contains(message));
         assertTrue(log, log.contains("504 Gateway Timeout"));
     }

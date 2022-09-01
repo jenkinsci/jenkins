@@ -58,7 +58,6 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
-import org.apache.commons.io.FileUtils;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.junit.Assert;
@@ -246,7 +245,7 @@ public class UtilTest {
                 buf.append((char) ('0' + (i % 10)));
             Util.createSymlink(d, buf.toString(), "x", l);
 
-            String log = baos.toString(Charset.defaultCharset().name());
+            String log = baos.toString(Charset.defaultCharset());
             if (log.length() > 0)
                 System.err.println("log output: " + log);
 
@@ -612,7 +611,7 @@ public class UtilTest {
         File aa = new File(a, "aa");
         aa.mkdirs();
         File aaTxt = new File(aa, "aa.txt");
-        FileUtils.write(aaTxt, "aa", StandardCharsets.US_ASCII, false);
+        Files.writeString(aaTxt.toPath(), "aa", StandardCharsets.US_ASCII);
 
         File b = new File(root, "b");
         b.mkdir();
@@ -644,7 +643,7 @@ public class UtilTest {
         //          /a1
         //          /a2 => symlink to a1
         //      /b => symlink to a
-        Path root = tmp.getRoot().toPath();
+        Path root = tmp.getRoot().toPath().toRealPath();
         Path a = root.resolve("a");
         Path a1 = a.resolve("a1");
         Files.createDirectories(a1);

@@ -70,7 +70,7 @@ public class HeteroListTest {
 
         RootActionImpl rootAction = ExtensionList.lookupSingleton(RootActionImpl.class);
         TestItemDescribable.DynamicDisplayNameDescriptor dynamic = ExtensionList.lookupSingleton(TestItemDescribable.DynamicDisplayNameDescriptor.class);
-        rootAction.descriptorList = Collections.singletonList(dynamic);
+        rootAction.descriptorList = List.of(dynamic);
 
         dynamic.displayName = "Display<strong>Name</strong>";
 

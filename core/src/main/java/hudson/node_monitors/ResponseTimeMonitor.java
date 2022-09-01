@@ -45,7 +45,7 @@ import org.kohsuke.stapler.export.ExportedBean;
  */
 public class ResponseTimeMonitor extends NodeMonitor {
     @Extension
-    public static final AbstractNodeMonitorDescriptor<Data> DESCRIPTOR = new AbstractAsyncNodeMonitorDescriptor<Data>() {
+    public static final AbstractNodeMonitorDescriptor<Data> DESCRIPTOR = new AbstractAsyncNodeMonitorDescriptor<>() {
 
         @Override
         protected Callable<Data, IOException> createCallable(Computer c) {
