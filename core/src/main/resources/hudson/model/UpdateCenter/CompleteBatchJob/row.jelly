@@ -2,6 +2,7 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
     <tr id="row${it.id}">
         <j:set var="status" value="${it.status}"/>
+        <td style="vertical-align: top; padding-right:1em">${%Loading plugin extensions}</td>
         <td id="status${status.id}">
             <st:include it="${status}" page="status.jelly"/>
         </td>
