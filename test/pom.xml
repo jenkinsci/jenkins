@@ -232,12 +232,6 @@ THE SOFTWARE.
         </executions>
       </plugin>
       <plugin>
-        <groupId>org.kohsuke.stapler</groupId>
-        <artifactId>maven-stapler-plugin</artifactId>
-        <!-- version specified in grandparent pom -->
-        <extensions>true</extensions>
-      </plugin>
-      <plugin>
         <artifactId>maven-dependency-plugin</artifactId>
         <!-- Version specified in grandparent POM -->
         <executions>
