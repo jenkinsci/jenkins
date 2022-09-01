@@ -197,7 +197,7 @@ THE SOFTWARE.
       <d:invokeBody/>
 
       <j:if test="${layoutType=='two-column'}">
-        <div id="side-panel">
+        <div id="side-panel" class="app-page-body__sidebar">
           <j:set var="mode" value="side-panel" />
           <d:invokeBody />
 

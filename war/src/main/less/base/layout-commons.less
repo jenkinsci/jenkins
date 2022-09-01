@@ -49,10 +49,20 @@ body {
 
 /* -------------------------------------- */
 
-#page-body {
+.app-page-body {
   display: flex;
-  align-items: stretch;
+  justify-content: flex-start;
+  align-items: flex-start;
   flex: 1 0 auto;
+}
+
+.app-page-body__sidebar {
+  @media (min-width: 970px) {
+    &--sticky {
+      position: sticky;
+      top: 44px;
+    }
+  }
 }
 
 #page-body.clear::after {

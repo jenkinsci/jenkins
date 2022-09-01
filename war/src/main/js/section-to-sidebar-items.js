@@ -11,8 +11,7 @@ window.addEventListener("load", function () {
   const sectionHeaders = document.querySelectorAll(HEADER_SELECTOR);
 
   // Ensure sidebar is sticky
-  sidebar.style.position = "sticky";
-  sidebar.style.top = `${page.breadcrumbBarHeight()}px`;
+  sidebar.classList.add("app-page-body__sidebar--sticky");
 
   // Create the sidebar items
   sectionHeaders.forEach(function (header, i) {
