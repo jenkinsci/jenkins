@@ -34,7 +34,7 @@ THE SOFTWARE.
         <st:include page="sidepanel.jelly"/>
 
         <l:main-panel>
-            <l:app-bar title="${%Plugin Manager}" />
+          <l:app-bar title="${%Plugin Manager}" />
 
             <local:tabBar page="advanced" xmlns:local="/hudson/PluginManager"/>
           <div class="jenkins-form">

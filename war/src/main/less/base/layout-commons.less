@@ -49,35 +49,36 @@ body {
 
 /* -------------------------------------- */
 
+#page-body {
+  display: flex;
+  align-items: stretch;
+  flex: 1 0 auto;
+}
+
+#page-body.clear::after {
+  clear: both;
+  content: "";
+  display: table;
+}
+
 #side-panel {
-  align-self: start;
+  flex-shrink: 0;
 }
 
 #main-panel {
-  padding: var(--section-padding);
+  padding: 2rem;
   display: inline-block;
   width: 100%;
-  min-height: calc(100vh - 100px);
-}
-
-.app-page-body {
-  & > .jenkins-app-bar {
-    width: calc(100% - var(--section-padding));
-    margin: var(--section-padding) var(--section-padding) 0 var(--section-padding);
-  }
-
-  &.clear::after {
-    clear: both;
-    content: "";
-    display: table;
-  }
 }
 
 .app-page-body--one-column {
   --form-item-max-width: calc(85vw - 4rem);
 
-  width: 100%;
   max-width: 85vw;
+
+  #main-panel {
+    width: 100vw;
+  }
 
   .jenkins-section {
     max-width: unset;
@@ -87,22 +88,11 @@ body {
     max-width: unset;
   }
 
-  margin: 0 auto;
-}
-
-.app-page-body--two-column {
-  @media (min-width: 1170px) {
-    display: flex;
-    align-items: stretch;
-    flex-wrap: wrap;
-
-    #side-panel {
-      width: 340px;
-    }
-  }
+  margin: auto;
 }
 
 body.two-column #main-panel {
+  width: calc(100% - 320px);
   flex: 1;
   display: block;
 }
@@ -113,6 +103,33 @@ body.full-screen {
 
 body.full-screen #main-panel {
   padding: 0;
+}
+
+@media (max-width: 970px) {
+  body.two-column #page-body {
+    flex-wrap: wrap;
+  }
+
+  body.two-column #side-panel {
+    width: 100%;
+    padding-bottom: 20px;
+    border-right: none;
+  }
+
+  body.two-column #main-panel {
+    margin-left: 0;
+    width: 100%;
+  }
+}
+
+@media (min-width: 1170px) {
+  body.two-column #side-panel {
+    width: 340px;
+  }
+
+  body.two-column #main-panel {
+    width: calc(100% - 370px);
+  }
 }
 
 /* -------------------------------------- */

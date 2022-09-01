@@ -34,10 +34,7 @@ THE SOFTWARE.
     Generates a row containing the page title and an optional set of controls
   </st:documentation>
 
-  <j:if test="${(mode=='app-bar' or mode=='main-panel' or mode=='side-panel') and !hasWideAppBar}">
-    <j:if test="${mode=='app-bar'}">
-      <j:set var="hasWideAppBar" value="true" scope="parent" />
-    </j:if>
+  <j:if test="${mode=='main-panel' or mode=='side-panel'}">
     <div class="jenkins-app-bar">
       <div class="jenkins-app-bar__content">
         <x:element name="${headingLevel ?: 'h1'}">
