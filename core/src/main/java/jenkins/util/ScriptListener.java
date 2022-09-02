@@ -26,12 +26,14 @@ package jenkins.util;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import groovy.lang.Binding;
 import hudson.ExtensionPoint;
 import hudson.model.User;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Writer;
+import java.nio.charset.Charset;
 import org.kohsuke.stapler.StaplerRequest;
 
 /**
@@ -173,6 +175,7 @@ public interface ScriptListener extends ExtensionPoint {
         private final String correlationId;
         private final User user;
 
+        @SuppressFBWarnings("EI_EXPOSE_REP2")
         public ListenerWriter(Writer writer, Object feature, Object context, String correlationId, User user) {
             this.writer = writer;
             this.feature = feature;
@@ -206,13 +209,16 @@ public interface ScriptListener extends ExtensionPoint {
     class ListenerOutputStream extends OutputStream {
 
         private final OutputStream os;
+        private final Charset charset;
         private final Object feature;
         private final Object context;
         private final String correlationId;
         private final User user;
 
-        public ListenerOutputStream(OutputStream os, Object feature, Object context, String correlationId, User user) {
+        @SuppressFBWarnings("EI_EXPOSE_REP2")
+        public ListenerOutputStream(OutputStream os, Charset charset, Object feature, Object context, String correlationId, User user) {
             this.os = os;
+            this.charset = charset;
             this.feature = feature;
             this.context = context;
             this.correlationId = correlationId;
@@ -222,13 +228,13 @@ public interface ScriptListener extends ExtensionPoint {
         @Override
         public void write(int b) throws IOException {
             // Let's hope for verbosity's sake that nobody calls this directly, #write(byte[], int, int) should take care of regular calls.
-            ScriptListener.fireScriptOutput(new String(new byte[] { (byte) b }), feature, context, correlationId, user);
+            ScriptListener.fireScriptOutput(new String(new byte[] { (byte) b }, charset), feature, context, correlationId, user);
             os.write(b);
         }
 
         @Override
         public void write(@NonNull byte[] b, int off, int len) throws IOException {
-            final String writtenString = new String(b).substring(off, len - off);
+            final String writtenString = new String(b, charset).substring(off, len - off);
             ScriptListener.fireScriptOutput(writtenString, feature, context, correlationId, user);
             os.write(b, off, len);
         }

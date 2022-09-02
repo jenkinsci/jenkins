@@ -104,13 +104,13 @@ public class GroovyshCommand extends CLICommand {
             throw new RuntimeException(e);
         }
 
-        binding.setProperty("out", new PrintWriter(new OutputStreamWriter(new ScriptListener.ListenerOutputStream(stdout, GroovyshCommand.class, null, scriptListenerCorrelationId, User.current()), charset), true));
+        binding.setProperty("out", new PrintWriter(new OutputStreamWriter(new ScriptListener.ListenerOutputStream(stdout, charset, GroovyshCommand.class, null, scriptListenerCorrelationId, User.current()), charset), true));
         binding.setProperty("hudson", Jenkins.get()); // backward compatibility
         binding.setProperty("jenkins", Jenkins.get());
 
         IO io = new IO(new BufferedInputStream(stdin),
-                new ScriptListener.ListenerOutputStream(stdout, GroovyshCommand.class, null, scriptListenerCorrelationId, User.current()),
-                new ScriptListener.ListenerOutputStream(stderr, GroovyshCommand.class, null, scriptListenerCorrelationId, User.current()));
+                new ScriptListener.ListenerOutputStream(stdout, charset, GroovyshCommand.class, null, scriptListenerCorrelationId, User.current()),
+                new ScriptListener.ListenerOutputStream(stderr, charset, GroovyshCommand.class, null, scriptListenerCorrelationId, User.current()));
 
         final ClassLoader cl = Jenkins.get().pluginManager.uberClassLoader;
         Closure registrar = new Closure(null, null) {
