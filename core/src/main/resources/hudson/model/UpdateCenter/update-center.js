@@ -1,9 +1,16 @@
-window.submitScheduleForm = function (el) {
-  var form = document.getElementById("scheduleRestart");
-  form.action = el.checked ? "safeRestart" : "cancelRestart";
-  crumb.appendToForm(form);
-  form.submit();
-};
+Behaviour.specify(
+  "#scheduleRestartCheckbox",
+  "scheduleRestartCheckbox",
+  0,
+  function (el) {
+    el.addEventListener("click", function () {
+      var form = document.getElementById("scheduleRestart");
+      form.action = el.checked ? "safeRestart" : "cancelRestart";
+      crumb.appendToForm(form);
+      form.submit();
+    });
+  }
+);
 
 function refresh() {
   window.setTimeout(function () {
@@ -29,6 +36,7 @@ function refresh() {
         }
         var scheduleDiv = document.getElementById("scheduleRestartBlock");
         scheduleDiv.innerHTML = div.lastElementChild.innerHTML;
+        Behaviour.applySubtree(scheduleDiv);
         refresh();
       },
     });
