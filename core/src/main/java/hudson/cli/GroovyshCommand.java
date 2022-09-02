@@ -57,7 +57,7 @@ import org.kohsuke.args4j.Argument;
 @Extension
 public class GroovyshCommand extends CLICommand {
 
-    private final String scriptListenerCorrelationId = "Session:" + System.identityHashCode(this);
+    private final String scriptListenerCorrelationId = String.valueOf(System.identityHashCode(this));
 
     @Override
     public String getShortDescription() {
@@ -135,7 +135,7 @@ public class GroovyshCommand extends CLICommand {
     }
 
     private class LoggingGroovySh extends Groovysh {
-        private Binding binding;
+        private final Binding binding;
 
         LoggingGroovySh(ClassLoader cl, Binding binding, IO io, Closure registrar) {
             super(cl, binding, io, registrar);

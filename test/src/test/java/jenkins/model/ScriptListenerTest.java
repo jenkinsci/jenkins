@@ -14,6 +14,7 @@ import hudson.cli.GroovyshCommand;
 import hudson.model.User;
 import hudson.util.RemotingDiagnostics;
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import jenkins.util.ScriptListener;
@@ -28,7 +29,7 @@ public class ScriptListenerTest {
     public JenkinsRule j = new JenkinsRule();
 
     @Test
-    public void consoleUsageIsLogged() throws Exception {
+    public void consoleUsageIsLogged() throws IOException {
         final String output = "hello from script console";
         final String script = "println '" + output + "'";
 
@@ -45,7 +46,7 @@ public class ScriptListenerTest {
     }
 
     @Test
-    public void groovyCliUsageIsLogged() throws Exception {
+    public void groovyCliUsageIsLogged() {
         final String output = "hello from groovy CLI";
         final String script = "println '" + output + "'";
 
@@ -61,7 +62,7 @@ public class ScriptListenerTest {
     }
 
     @Test
-    public void groovyShCliUsageIsLogged() throws Exception {
+    public void groovyShCliUsageIsLogged() {
         // TODO more comprehensive test of this
         final String output = "hello from groovysh CLI";
         final String script = "println '" + output + "'";

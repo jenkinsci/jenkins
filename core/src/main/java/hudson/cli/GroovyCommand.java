@@ -65,7 +65,7 @@ public class GroovyCommand extends CLICommand {
         // this allows the caller to manipulate the JVM state, so require the execute script privilege.
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
 
-        final String scriptListenerCorrelationId = "GroovyCommand:" + System.identityHashCode(this);
+        final String scriptListenerCorrelationId = String.valueOf(System.identityHashCode(this));
 
         Binding binding = new Binding();
         binding.setProperty("out", new ScriptListener.ListenerWriter(new PrintWriter(new OutputStreamWriter(stdout, getClientCharset()), true), GroovyCommand.class, null, scriptListenerCorrelationId, User.current()));
