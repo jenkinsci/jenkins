@@ -39,7 +39,6 @@ THE SOFTWARE.
   <url>https://github.com/jenkinsci/jenkins</url>
 
   <properties>
-    <staplerFork>true</staplerFork>
     <hamcrest.version>2.2</hamcrest.version>
     <xmlunit.version>2.9.0</xmlunit.version>
     <!-- Filled in by jacoco-maven-plugin -->
@@ -604,16 +603,6 @@ THE SOFTWARE.
             </goals>
           </execution>
         </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.kohsuke.stapler</groupId>
-        <artifactId>maven-stapler-plugin</artifactId>
-        <!-- version specified in grandparent pom -->
-        <configuration>
-          <!-- the source code is big enough now that otherwise it fails with OutOfMemoryError -->
-          <fork>${staplerFork}</fork>
-          <maxmem>128m</maxmem>
-        </configuration>
       </plugin>
       <plugin>
         <groupId>org.jvnet.localizer</groupId>
