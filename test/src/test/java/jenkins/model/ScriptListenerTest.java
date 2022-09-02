@@ -2,28 +2,25 @@ package jenkins.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
+import com.gargoylesoftware.htmlunit.HttpMethod;
+import com.gargoylesoftware.htmlunit.WebRequest;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import groovy.lang.Binding;
 import hudson.ExtensionList;
+import hudson.cli.CLICommandInvoker;
 import hudson.cli.GroovyCommand;
 import hudson.cli.GroovyshCommand;
 import hudson.model.User;
 import hudson.util.RemotingDiagnostics;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Locale;
-import javax.servlet.RequestDispatcher;
+import java.net.URL;
 import jenkins.util.ScriptListener;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
 
 public class ScriptListenerTest {
 
@@ -32,17 +29,12 @@ public class ScriptListenerTest {
 
     @Test
     public void consoleUsageIsLogged() throws Exception {
-        RequestDispatcher view = mock(RequestDispatcher.class);
-        StaplerRequest req = mock(StaplerRequest.class);
-        StaplerResponse rsp = mock(StaplerResponse.class);
-
         final String output = "hello from script console";
         final String script = "println '" + output + "'";
 
-        when(req.getMethod()).thenReturn("POST");
-        when(req.getParameter("script")).thenReturn(script);
-        when(req.getView(j.jenkins, "_scriptText.jelly")).thenReturn(view);
-        j.jenkins.doScriptText(req, rsp);
+        final JenkinsRule.WebClient wc = j.createWebClient();
+        final WebRequest request = new WebRequest(new URL(wc.getContextPath() + "scriptText?script=" + script), HttpMethod.POST);
+        wc.getPage(wc.addCrumb(request));
 
         final DummyScriptUsageListener listener = ExtensionList.lookupSingleton(DummyScriptUsageListener.class);
         String execution = listener.getExecutionString();
@@ -54,14 +46,11 @@ public class ScriptListenerTest {
 
     @Test
     public void groovyCliUsageIsLogged() throws Exception {
-        GroovyCommand cmd = new GroovyCommand();
-        cmd.script = "=";
-
         final String output = "hello from groovy CLI";
         final String script = "println '" + output + "'";
 
         InputStream scriptStream = new ByteArrayInputStream(script.getBytes());
-        cmd.main(new ArrayList<>(), Locale.ENGLISH, scriptStream, System.out, System.err);
+        new CLICommandInvoker(j, "groovy").withArgs("=").withStdin(scriptStream).invoke();
 
         final DummyScriptUsageListener listener = ExtensionList.lookupSingleton(DummyScriptUsageListener.class);
         String execution = listener.getExecutionString();
@@ -74,14 +63,11 @@ public class ScriptListenerTest {
     @Test
     public void groovyShCliUsageIsLogged() throws Exception {
         // TODO more comprehensive test of this
-        GroovyshCommand cmd = new GroovyshCommand();
-
         final String output = "hello from groovysh CLI";
         final String script = "println '" + output + "'";
 
         InputStream scriptStream = new ByteArrayInputStream(script.getBytes());
-
-        cmd.main(new ArrayList<>(), Locale.ENGLISH, scriptStream, System.out, System.err);
+        new CLICommandInvoker(j, "groovysh").withStdin(scriptStream).invoke();
 
         final DummyScriptUsageListener listener = ExtensionList.lookupSingleton(DummyScriptUsageListener.class);
         String execution = listener.getExecutionString();
