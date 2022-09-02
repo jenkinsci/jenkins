@@ -16,6 +16,7 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Locale;
 import javax.servlet.RequestDispatcher;
+import jenkins.util.ScriptListener;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -75,7 +76,7 @@ public class ScriptListenerTest {
 
     private class DummyScriptUsageListener implements ScriptListener {
         @Override
-        public void onScriptEvent(String script, Binding binding, Usage usage, Object context, String description, User u) {
+        public void onScriptExecution(String script, Binding binding, Object context, String description, User u) {
             String username = "null";
             if (u != null) {
                 username = u.getFullName();

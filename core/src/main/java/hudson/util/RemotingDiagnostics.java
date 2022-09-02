@@ -33,10 +33,8 @@ import hudson.Functions;
 import hudson.Util;
 import hudson.model.User;
 import hudson.remoting.AsyncFutureImpl;
-import hudson.remoting.Channel;
 import hudson.remoting.DelegatingCallable;
 import hudson.remoting.Future;
-import hudson.remoting.LocalChannel;
 import hudson.remoting.VirtualChannel;
 import hudson.security.AccessControlled;
 import java.io.File;
@@ -49,11 +47,12 @@ import java.nio.file.Files;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.UUID;
 import javax.management.JMException;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 import jenkins.model.Jenkins;
-import jenkins.model.ScriptListener;
+import jenkins.util.ScriptListener;
 import jenkins.security.MasterToSlaveCallable;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
@@ -116,9 +115,10 @@ public final class RemotingDiagnostics {
      * Executes Groovy script remotely.
      */
     public static String executeGroovy(String script, @NonNull VirtualChannel channel) throws IOException, InterruptedException {
-        ScriptListener.fireScriptEvent(script, new Binding(), ScriptListener.Usage.EXECUTION, RemotingDiagnostics.class, "Execute " + channel.toString(), User.current());
+        final String correlationId = "Script console:" + channel.toString() + " " + UUID.randomUUID().toString();
+        ScriptListener.fireScriptExecution(script, new Binding(), RemotingDiagnostics.class, correlationId, User.current());
         final String output = channel.call(new Script(script));
-        ScriptListener.fireScriptEvent(output, null, ScriptListener.Usage.OTHER, RemotingDiagnostics.class, "Output " + channel.toString(), User.current());
+        ScriptListener.fireScriptOutput(output, RemotingDiagnostics.class, correlationId, User.current());
         return output;
     }
 

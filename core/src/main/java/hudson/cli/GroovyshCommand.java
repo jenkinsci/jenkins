@@ -40,7 +40,7 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import jenkins.model.Jenkins;
-import jenkins.model.ScriptListener;
+import jenkins.util.ScriptListener;
 import jline.TerminalFactory;
 import jline.UnsupportedTerminal;
 import org.codehaus.groovy.tools.shell.Groovysh;
@@ -56,6 +56,9 @@ import org.kohsuke.args4j.Argument;
  */
 @Extension
 public class GroovyshCommand extends CLICommand {
+
+    private final String scriptListenerCorrelationId = "groovysh Session: " + System.identityHashCode(this);
+
     @Override
     public String getShortDescription() {
         return Messages.GroovyshCommand_ShortDescription();
@@ -81,7 +84,7 @@ public class GroovyshCommand extends CLICommand {
         }
 
         // TODO Add binding
-        ScriptListener.fireScriptEvent(null, null, ScriptListener.Usage.OTHER, GroovyshCommand.class, "Session: " + System.identityHashCode(this), User.current());
+        ScriptListener.fireScriptExecution(null, null, GroovyshCommand.class, "Session: " + System.identityHashCode(this), User.current());
         Groovysh shell = createShell(stdin, stdout, stderr);
         return shell.run(commandLine.toString());
     }
@@ -100,13 +103,14 @@ public class GroovyshCommand extends CLICommand {
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
-        binding.setProperty("out", new PrintWriter(new OutputStreamWriter(new ScriptListener.LoggingOutputStream(stdout, GroovyshCommand.class, "Session: " + System.identityHashCode(this)), charset), true));
+
+        binding.setProperty("out", new PrintWriter(new OutputStreamWriter(new ScriptListener.ListenerOutputStream(stdout, GroovyshCommand.class, scriptListenerCorrelationId, User.current()), charset), true));
         binding.setProperty("hudson", Jenkins.get()); // backward compatibility
         binding.setProperty("jenkins", Jenkins.get());
 
         IO io = new IO(new BufferedInputStream(stdin),
-                new ScriptListener.LoggingOutputStream(stdout, GroovyshCommand.class, "Session: " + System.identityHashCode(this)),
-                new ScriptListener.LoggingOutputStream(stderr, GroovyshCommand.class, "Session: " + System.identityHashCode(this)));
+                new ScriptListener.ListenerOutputStream(stdout, GroovyshCommand.class, scriptListenerCorrelationId, User.current()),
+                new ScriptListener.ListenerOutputStream(stderr, GroovyshCommand.class, scriptListenerCorrelationId, User.current()));
 
         final ClassLoader cl = Jenkins.get().pluginManager.uberClassLoader;
         Closure registrar = new Closure(null, null) {
@@ -139,7 +143,7 @@ public class GroovyshCommand extends CLICommand {
 
         @Override
         protected void maybeRecordInput(String line) {
-            ScriptListener.fireScriptEvent(line, binding, ScriptListener.Usage.EXECUTION, GroovyshCommand.class, "Session: " + System.identityHashCode(GroovyshCommand.this), User.current());
+            ScriptListener.fireScriptExecution(line, binding, GroovyshCommand.class, scriptListenerCorrelationId, User.current());
             super.maybeRecordInput(line);
         }
     }
