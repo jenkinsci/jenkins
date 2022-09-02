@@ -28,10 +28,9 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import groovy.lang.Binding;
 import hudson.Extension;
 import hudson.model.User;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
+import org.codehaus.groovy.runtime.InvokerHelper;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -59,25 +58,10 @@ public class DefaultScriptListener implements ScriptListener {
         LOGGER.log(Level.FINER, LOGGER.isLoggable(Level.FINEST) ? new Exception() : null, () -> "Script output: '" + output + "' in context: '" + context + "' with correlation: '" + correlationId + "' for user: '" + user + "'");
     }
 
-    @SuppressWarnings("unchecked")
     private static String stringifyBinding(Binding binding) {
         if (binding == null) {
             return null;
         }
-        StringBuilder sb = new StringBuilder();
-        sb.append("[");
-
-        sb.append(binding.getVariables().entrySet().stream().map(o -> {
-            if (o instanceof Map.Entry) {
-                Map.Entry<?, ?> entry = (Map.Entry<?, ?>) o;
-                return entry.getKey() + ":" + entry.getValue();
-            } else {
-                return o.toString();
-            }
-        }).collect(Collectors.joining(",")));
-
-        sb.append("]");
-
-        return sb.toString();
+        return InvokerHelper.toString(binding.getVariables());
     }
 }
