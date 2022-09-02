@@ -130,6 +130,7 @@ public interface ScriptListener extends ExtensionPoint {
      *                      (if applicable), execution and output. Related events should have identical values.
      * @param u If available, the user who caused this event. Can be {@code null}.
      */
+    // TODO Should null script be allowed? Do we care about e.g. someone starting groovysh but not actually executing a command (yet)?
     static void fireScriptExecution(@CheckForNull String script, @CheckForNull Binding binding, @CheckForNull Object context, @NonNull String correlationId, @CheckForNull User user) {
         Listeners.notify(ScriptListener.class, true, listener -> listener.onScriptExecution(script, binding, context, correlationId, user));
     }
@@ -168,7 +169,7 @@ public interface ScriptListener extends ExtensionPoint {
         }
 
         @Override
-        public void write(char[] cbuf, int off, int len) throws IOException {
+        public void write(@NonNull char[] cbuf, int off, int len) throws IOException {
             ScriptListener.fireScriptOutput(String.copyValueOf(cbuf, off, len), context, correlationId, user);
             writer.write(cbuf, off, len);
         }
@@ -211,7 +212,7 @@ public interface ScriptListener extends ExtensionPoint {
         }
 
         @Override
-        public void write(byte[] b, int off, int len) throws IOException {
+        public void write(@NonNull byte[] b, int off, int len) throws IOException {
             final String writtenString = new String(b).substring(off, len - off);
             ScriptListener.fireScriptOutput(writtenString, context, correlationId, user);
             os.write(b, off, len);
