@@ -222,7 +222,7 @@ public interface ScriptListener extends ExtensionPoint {
         @Override
         public void write(int b) throws IOException {
             // Let's hope for verbosity's sake that nobody calls this directly, #write(byte[], int, int) should take care of regular calls.
-            ScriptListener.fireScriptOutput(new String(new byte[] { (byte)b }), feature, context, correlationId, user);
+            ScriptListener.fireScriptOutput(new String(new byte[] { (byte) b }), feature, context, correlationId, user);
             os.write(b);
         }
 

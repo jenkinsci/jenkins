@@ -136,6 +136,7 @@ public class GroovyshCommand extends CLICommand {
 
     private class LoggingGroovySh extends Groovysh {
         private Binding binding;
+
         LoggingGroovySh(ClassLoader cl, Binding binding, IO io, Closure registrar) {
             super(cl, binding, io, registrar);
             this.binding = binding;
