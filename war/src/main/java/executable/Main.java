@@ -89,7 +89,7 @@ public class Main {
      * In such case it becomes configurable via
      * <a href="http://www.eclipse.org/jetty/documentation/9.4.x/jetty-xml-config.html">Jetty XML Config file</a>>
      * or via system properties.
-     * @since 2.358
+     * @since 2.66
      */
     private static final boolean DISABLE_CUSTOM_JSESSIONID_COOKIE_NAME =
             Boolean.getBoolean("executableWar.jetty.disableCustomSessionIdCookieName");
