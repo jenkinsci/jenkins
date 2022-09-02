@@ -135,7 +135,7 @@ public class GroovyHookScript {
     @SuppressFBWarnings(value = "GROOVY_SHELL", justification = "Groovy hook scripts are a feature, not a bug")
     protected void execute(GroovyCodeSource s) {
         try {
-            ScriptListener.fireScriptExecution(s.getScriptText(), bindings, s.getFile(), this.getClass().getName() + ":" + hook, User.current());
+            ScriptListener.fireScriptExecution(s.getScriptText(), bindings, this.getClass(), s.getFile(), this.getClass().getName() + ":" + hook, User.current());
             createShell().evaluate(s);
         } catch (RuntimeException x) {
             LOGGER.log(WARNING, "Failed to run script " + s.getName(), x);

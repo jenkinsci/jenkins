@@ -76,7 +76,7 @@ public class ScriptListenerTest {
 
     private class DummyScriptUsageListener implements ScriptListener {
         @Override
-        public void onScriptExecution(String script, Binding binding, Object context, String description, User u) {
+        public void onScriptExecution(String script, Binding binding, Object feature, Object context, String description, User u) {
             String username = "null";
             if (u != null) {
                 username = u.getFullName();

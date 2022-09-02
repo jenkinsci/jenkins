@@ -44,18 +44,18 @@ public class DefaultScriptListener implements ScriptListener {
     public static final Logger LOGGER = Logger.getLogger(DefaultScriptListener.class.getName());
 
     @Override
-    public void onScriptExecution(String script, Binding binding, Object context, @NonNull String correlationId, User user) {
-        LOGGER.log(Level.FINE, LOGGER.isLoggable(Level.FINEST) ? new Exception() : null, () -> "Execution of script: '" + script + "' with binding: '" + stringifyBinding(binding) + "' in context: '" + context + "' with correlation: '" + correlationId + "' by user: '" + user + "'");
+    public void onScriptExecution(String script, Binding binding, @NonNull Object feature, Object context, @NonNull String correlationId, User user) {
+        LOGGER.log(Level.FINE, LOGGER.isLoggable(Level.FINEST) ? new Exception() : null, () -> "Execution of script: '" + script + "' with binding: '" + stringifyBinding(binding) + "' in feature: '" + feature + "' and context: '" + context + "' with correlation: '" + correlationId + "' by user: '" + user + "'");
     }
 
     @Override
-    public void onScriptDefinition(@NonNull String script, Object context, @NonNull String correlationId, User user) {
-        LOGGER.log(Level.CONFIG, LOGGER.isLoggable(Level.FINEST) ? new Exception() : null, () -> "Definition of script: '" + script + "' in context: '" + context + "' with correlation: '" + correlationId + "' by user: '" + user + "'");
+    public void onScriptDefinition(@NonNull String script, @NonNull Object feature, Object context, @NonNull String correlationId, User user) {
+        LOGGER.log(Level.CONFIG, LOGGER.isLoggable(Level.FINEST) ? new Exception() : null, () -> "Definition of script: '" + script + "' in feature: '" + feature + "' and context: '" + context + "' with correlation: '" + correlationId + "' by user: '" + user + "'");
     }
 
     @Override
-    public void onScriptOutput(String output, Object context, @NonNull String correlationId, User user) {
-        LOGGER.log(Level.FINER, LOGGER.isLoggable(Level.FINEST) ? new Exception() : null, () -> "Script output: '" + output + "' in context: '" + context + "' with correlation: '" + correlationId + "' for user: '" + user + "'");
+    public void onScriptOutput(String output, @NonNull Object feature, Object context, @NonNull String correlationId, User user) {
+        LOGGER.log(Level.FINER, LOGGER.isLoggable(Level.FINEST) ? new Exception() : null, () -> "Script output: '" + output + "' in feature: '" + feature + "' and context: '" + context + "' with correlation: '" + correlationId + "' for user: '" + user + "'");
     }
 
     private static String stringifyBinding(Binding binding) {

@@ -115,10 +115,11 @@ public final class RemotingDiagnostics {
      * Executes Groovy script remotely.
      */
     public static String executeGroovy(String script, @NonNull VirtualChannel channel) throws IOException, InterruptedException {
-        final String correlationId = "Script console:" + channel.toString() + " " + UUID.randomUUID().toString();
-        ScriptListener.fireScriptExecution(script, new Binding(), RemotingDiagnostics.class, correlationId, User.current());
+        final String correlationId = UUID.randomUUID().toString();
+        final String context = channel.toString();
+        ScriptListener.fireScriptExecution(script, new Binding(), RemotingDiagnostics.class, context, correlationId, User.current());
         final String output = channel.call(new Script(script));
-        ScriptListener.fireScriptOutput(output, RemotingDiagnostics.class, correlationId, User.current());
+        ScriptListener.fireScriptOutput(output, RemotingDiagnostics.class, context, correlationId, User.current());
         return output;
     }
 

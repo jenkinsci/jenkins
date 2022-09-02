@@ -68,14 +68,14 @@ public class GroovyCommand extends CLICommand {
         final String scriptListenerCorrelationId = "GroovyCommand:" + System.identityHashCode(this);
 
         Binding binding = new Binding();
-        binding.setProperty("out", new ScriptListener.ListenerWriter(new PrintWriter(new OutputStreamWriter(stdout, getClientCharset()), true), GroovyCommand.class, scriptListenerCorrelationId, User.current()));
+        binding.setProperty("out", new ScriptListener.ListenerWriter(new PrintWriter(new OutputStreamWriter(stdout, getClientCharset()), true), GroovyCommand.class, null, scriptListenerCorrelationId, User.current()));
         binding.setProperty("stdin", stdin);
         binding.setProperty("stdout", stdout);
         binding.setProperty("stderr", stderr);
 
         GroovyShell groovy = new GroovyShell(Jenkins.get().getPluginManager().uberClassLoader, binding);
         String script = loadScript();
-        ScriptListener.fireScriptExecution(script, binding, GroovyCommand.class, scriptListenerCorrelationId, User.current());
+        ScriptListener.fireScriptExecution(script, binding, GroovyCommand.class, null, scriptListenerCorrelationId, User.current());
         groovy.run(script, "RemoteClass", remaining.toArray(new String[0]));
         return 0;
     }
