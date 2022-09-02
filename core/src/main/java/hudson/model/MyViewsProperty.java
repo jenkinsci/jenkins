@@ -289,7 +289,7 @@ public class MyViewsProperty extends UserProperty implements ModifiableViewGroup
                 return null;
             }
 
-            return "user.png";
+            return "symbol-browsers";
         }
 
         @Override

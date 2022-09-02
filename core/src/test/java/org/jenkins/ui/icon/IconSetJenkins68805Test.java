@@ -4,7 +4,6 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.not;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 
@@ -18,7 +17,6 @@ public class IconSetJenkins68805Test {
      */
     @Test
     @Issue("JENKINS-68805")
-    @Disabled("Issue is not fixed")
     void getSymbol_notSettingTooltipDoesntAddTooltipAttribute_evenWithAmpersand() {
         // cache a symbol with tooltip containing ampersand:
         String symbolWithTooltip = IconSet.getSymbol("download", "Title", "With&Ampersand", "", "class1 class2", "", "id");

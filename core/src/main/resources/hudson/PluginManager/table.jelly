@@ -68,7 +68,7 @@ THE SOFTWARE.
                 <th data-sort-disable="true">
                   <l:rowSelectionController>
                     <j:if test="${app.updateCenter.hasIncompatibleUpdates(cache)}">
-                      <button tooltip="${%CompatibleTooltip}" type="button" data-select="compatible" class="jenkins-button jenkins-button--transparent">
+                      <button tooltip="${%CompatibleTooltip}" type="button" data-select="compatible" class="jenkins-button jenkins-button--tertiary">
                         <div class="jenkins-table__checkbox-dropdown__icon">
                           <l:icon src="symbol-compatible" />
                         </div>
