@@ -78,7 +78,7 @@ public class Main {
      * Sets custom session cookie name.
      * It may be used to prevent randomization of JSESSIONID cookies and issues like
      * <a href="https://issues.jenkins-ci.org/browse/JENKINS-25046">JENKINS-25046</a>.
-     * @since 2.358
+     * @since 2.66
      */
     private static final String JSESSIONID_COOKIE_NAME =
             System.getProperty("executableWar.jetty.sessionIdCookieName");
