@@ -46,33 +46,27 @@ THE SOFTWARE.
           padding-bottom: 2px;
         }
 
-        #configure-instance tr td, #configure-instance input {
+        #configure-instance tr td {
           line-height: 25px;
           margin-bottom: 6px;
         }
 
-        #configure-instance input[type=text], #configure-instance input[type=password] {
-          border: 1px solid #ddd;
-          border-radius: 2px;
-          padding: 1px 8px;
-        }
-
-        #configure-instance tr.has-error label{
+        #configure-instance tr.has-error label {
           color: #CC0000;
         }
-        
-        #configure-instance tr.has-error td input[type=text], 
+
+        #configure-instance tr.has-error td input[type=text],
         #configure-instance tr.has-error td input[type=password],
         #configure-instance tr.has-error td textarea {
-          border-color: #CC0000;
-          background-color: #fdeaea;
+          border: 1px solid;
+          border-color: var(--danger-color, #c4000a);
         }
-        
+
         #configure-instance tr td .help-text{
           color: #999;
           font-size: 12px;
         }
-  
+
         #configure-instance tr td .error-panel{
           display: none;
         }
@@ -89,7 +83,7 @@ THE SOFTWARE.
             <tr>
               <td><label for="root-url">${%Jenkins URL}:</label></td>
               <td>
-                <input type="text" name="rootUrl" id="root-url" class="root-url" value="" />
+                <input type="text" name="rootUrl" id="root-url" class="jenkins-input" value="" />
                 <div class="error-panel error" />
               </td>
             </tr>
@@ -102,7 +96,7 @@ THE SOFTWARE.
           </div>
          <script>
             var rootUrlField = $('root-url');
-            
+
             rootUrlField.focus();
             rootUrlField.onkeydown = function(event) {
                 if (event.keyCode == 13){
@@ -112,7 +106,7 @@ THE SOFTWARE.
 
             (function setInitialRootUrlFieldValue(){
               var iframeUrl = window.location.href;
-              // will let the trailing slash in the rootUrl 
+              // will let the trailing slash in the rootUrl
               var iframeRelativeUrl = 'setupWizard/setupWizardConfigureInstance';
               var rootUrl = iframeUrl.substr(0, iframeUrl.length - iframeRelativeUrl.length);
               // to keep only the root url

@@ -27,7 +27,7 @@
                     <div class="form-group ${error ? 'has-error' : ''}">
                       <label class="control-label" for="security-token">${%authenticate-security-token.password.administrator}</label>
                       <input name="j_username" value="${app.setupWizard.initialSetupAdminUserName}" type="hidden"/>
-                      <input id="security-token" class="form-control" type="password" name="j_password"/>
+                      <input id="security-token" class="jenkins-input ${error ? 'danger' : ''}" type="password" name="j_password"/>
                     </div>
                   </div>
                 </div>
