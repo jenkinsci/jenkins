@@ -104,6 +104,11 @@
     }
   }
 
+  &::before,
+  &::after {
+    border-radius: 0.33rem;
+  }
+
   &:hover {
     svg {
       color: var(--input-border-hover);
@@ -131,7 +136,7 @@
   left: 1.375rem;
   display: flex;
   flex-direction: column;
-  border-radius: 10px;
+  border-radius: 0.8rem;
   z-index: 999;
   padding: 0.4rem;
   box-shadow: inset 0 0 0 2px rgba(white, 0.05), 0 0 0 1px rgba(black, 0.05),
