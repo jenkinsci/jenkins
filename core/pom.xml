@@ -745,35 +745,6 @@ THE SOFTWARE.
       </activation>
     </profile>
     <profile>
-      <id>release</id>
-      <build>
-        <plugins>
-          <plugin>
-            <!--
-              generate jelly taglib docs from src/main/resources.
-              this is necessary in addition to the <reporting> configuration
-              to get the results deployed.
-            -->
-            <groupId>org.kohsuke.stapler</groupId>
-            <artifactId>maven-stapler-plugin</artifactId>
-            <!-- version specified in grandparent pom -->
-            <executions>
-              <execution>
-                <goals>
-                  <goal>jelly-taglibdoc</goal>
-                </goals>
-                <configuration>
-                  <patterns>
-                    <pattern>/lib/.*</pattern>
-                  </patterns>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-    <profile>
       <!-- Run SpotBugs for better error detection. Run as "mvn -Pspotbugs verify". -->
       <!-- SpotBugs has been moved to the default build flow, but here we fail the build on errors-->
       <id>spotbugs</id>
