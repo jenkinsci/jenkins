@@ -90,7 +90,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>1834.v91a_a_5f4b_6529</version>
+      <version>1837.vb_6efb_1790942</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -230,12 +230,6 @@ THE SOFTWARE.
             <phase>test</phase>
           </execution>
         </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.kohsuke.stapler</groupId>
-        <artifactId>maven-stapler-plugin</artifactId>
-        <!-- version specified in grandparent pom -->
-        <extensions>true</extensions>
       </plugin>
       <plugin>
         <artifactId>maven-dependency-plugin</artifactId>
