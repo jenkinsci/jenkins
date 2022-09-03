@@ -236,8 +236,6 @@ THE SOFTWARE.
       </div>
     </footer>
     </j:if>
-
-    <script src="${resURL}/jsbundles/keyboard-shortcuts.js" type="text/javascript"/>
   </body>
 </html>
 </l:view>
