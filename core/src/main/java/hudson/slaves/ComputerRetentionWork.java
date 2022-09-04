@@ -25,6 +25,7 @@
 package hudson.slaves;
 
 import hudson.Extension;
+import hudson.ExtensionList;
 import hudson.model.Computer;
 import hudson.model.Node;
 import hudson.model.PeriodicWork;
@@ -33,6 +34,7 @@ import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import jenkins.model.GlobalComputerRetentionCheckIntervalConfiguration;
 import jenkins.model.Jenkins;
 import jenkins.util.Timer;
 import org.jenkinsci.Symbol;
@@ -75,7 +77,7 @@ public class ComputerRetentionWork extends PeriodicWork {
 
     @Override
     public long getRecurrencePeriod() {
-        return Jenkins.get().getComputerRetentionCheckInterval() * 1000L;
+        return ExtensionList.lookupSingleton(GlobalComputerRetentionCheckIntervalConfiguration.class).getComputerRetentionCheckInterval() * 1000L;
     }
 
     @SuppressWarnings("unchecked")
