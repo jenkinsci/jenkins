@@ -5,6 +5,8 @@ target/
 work/
 node/
 
+.git
+
 .yarnrc.yml
 
 # libraries / external deps / generated files
