@@ -111,6 +111,11 @@ public abstract class PeriodicWork extends SafeTimerTask implements ExtensionPoi
         }
     }
 
+    /**
+     * Schedule periodic execution of work with fixed interval.
+     *
+     * @since TODO
+     */
     protected void schedulePeriodicWork() {
         Timer.get().scheduleAtFixedRate(this, this.getInitialDelay(), this.getRecurrencePeriod(), TimeUnit.MILLISECONDS);
     }
