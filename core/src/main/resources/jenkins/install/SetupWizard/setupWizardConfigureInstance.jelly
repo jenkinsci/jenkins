@@ -34,7 +34,7 @@ THE SOFTWARE.
             <tr>
               <td><label for="root-url">${%Jenkins URL}:</label></td>
               <td>
-                <input type="text" name="rootUrl" id="root-url" class="root-url" value="" />
+                <input type="text" name="rootUrl" id="root-url" class="jenkins-input" value="" />
                 <div class="error-panel error" />
               </td>
             </tr>
