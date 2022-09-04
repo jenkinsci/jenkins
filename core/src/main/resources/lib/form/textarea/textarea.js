@@ -1,15 +1,4 @@
 Behaviour.specify("TEXTAREA.codemirror", "textarea", 0, function (e) {
-  //ensure, that textarea is visible, when obtaining its height, see JENKINS-25455
-  function getTextareaHeight() {
-    var p = e.parentNode.parentNode; //first parent is CodeMirror div, second is actual element which needs to be visible
-    var display = p.style.display;
-    p.style.display = "";
-    var h = e.clientHeight;
-    p.style.display = display;
-    return h;
-  }
-
-  var h = e.clientHeight || getTextareaHeight();
   var config = e.getAttribute("codemirror-config");
   if (!config) {
     config = "";
@@ -31,9 +20,12 @@ Behaviour.specify("TEXTAREA.codemirror", "textarea", 0, function (e) {
       )[0];
     };
   }
+  var lineCount = codemirror.lineCount();
+  var lineHeight = codemirror.defaultTextHeight();
+
   var scroller = codemirror.getScrollerElement();
   scroller.setAttribute("style", "border:none;");
-  scroller.style.height = h + "px";
+  scroller.style.height = Math.max(lineHeight * lineCount + 30, 130) + "px";
 
   // the form needs to be populated before the "Apply" button
   if (e.up("form")) {

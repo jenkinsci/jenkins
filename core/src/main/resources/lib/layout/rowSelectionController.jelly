@@ -39,20 +39,20 @@ THE SOFTWARE.
     </j:set>
 
     <j:if test="${contents.length() != 0}">
-      <button type="button" class="jenkins-button jenkins-button--transparent jenkins-table__checkbox-options">
+      <button type="button" class="jenkins-button jenkins-button--tertiary jenkins-table__checkbox-options">
         <l:icon src="symbol-chevron-down" />
       </button>
 
       <div class="jenkins-table__checkbox-dropdown">
         <span>${%Select}</span>
-        <button type="button" data-select="all" class="jenkins-button jenkins-button--transparent">
+        <button type="button" data-select="all" class="jenkins-button jenkins-button--tertiary">
           <div class="jenkins-table__checkbox-dropdown__icon">
             <l:icon src="symbol-check" />
           </div>
           ${%All}
         </button>
         <j:out value="${contents}" />
-        <button type="button" data-select="none" class="jenkins-button jenkins-button--transparent">
+        <button type="button" data-select="none" class="jenkins-button jenkins-button--tertiary">
           <div class="jenkins-table__checkbox-dropdown__icon">
             <l:icon src="symbol-close" />
           </div>
