@@ -1,5 +1,4 @@
 import { createElementFromHtml, toId } from "./util/dom";
-import page from "./util/page";
 
 const HEADER_SELECTOR =
   ".config-table .jenkins-app-bar h2, .config-table > .jenkins-section > .jenkins-section__title";
