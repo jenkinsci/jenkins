@@ -18,35 +18,24 @@
   z-index: 999;
   cursor: pointer;
   transition: filter var(--standard-transition);
+  backdrop-filter: brightness(2) blur(30px);
 
   svg {
     width: 1.4rem;
     height: 1.4rem;
   }
 
-  &::before,
   &::after {
     content: "";
     position: absolute;
     inset: 0;
     border-radius: inherit;
     z-index: -1;
-  }
-
-  &::before {
-    backdrop-filter: brightness(2) blur(30px);
-  }
-
-  &::after {
     background: var(--background);
     opacity: 0.3;
   }
 
   @supports not (backdrop-filter: blur(15px)) {
-    &::before {
-      background: white;
-    }
-
     &::after {
       opacity: 0.9;
     }
