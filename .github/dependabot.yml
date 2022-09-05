@@ -61,6 +61,7 @@ updates:
     target-branch: "stable-2.361"
     labels:
       - "into-lts"
+      - "needs-justification"
     schedule:
       interval: "daily"
     # Include only security updates and exclude version updates.
