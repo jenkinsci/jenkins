@@ -14,7 +14,7 @@
     margin: 0;
     padding: 0 0.5rem 0 var(--search-bar-height);
     line-height: 1;
-    box-shadow: var(--form-input-glow);
+    box-shadow: 0 0 0 2px transparent, 0 0 0 12px transparent;
     transition: var(--standard-transition);
     font-weight: 500;
     height: var(--search-bar-height);
@@ -61,7 +61,7 @@
     &:focus {
       outline: none;
       background: var(--item-background--active);
-      box-shadow: var(--form-input-glow--focus);
+      box-shadow: 0 0 0 2px var(--focus-input-border), 0 0 0 7px var(--focus-input-glow);
 
       &::-webkit-search-cancel-button {
         opacity: 0.5;
