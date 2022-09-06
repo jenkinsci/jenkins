@@ -33,7 +33,6 @@ THE SOFTWARE.
     <l:main-panel>
       <l:app-bar title="${%Plugins}" />
 
-    <l:main-panel>
       <div class="jenkins-app-bar jenkins-app-bar--sticky">
         <div class="jenkins-app-bar__content">
           <div class="app-plugin-manager__search">
