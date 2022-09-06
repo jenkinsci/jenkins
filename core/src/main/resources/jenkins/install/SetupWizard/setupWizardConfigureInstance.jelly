@@ -26,7 +26,7 @@ THE SOFTWARE.
 
   <l:layout norefresh="true" type="full-screen" title="${it.displayName}">
     <l:main-panel>
-     <div class="configure-instance">
+     <div class="configure-instance setup-wizard-heading">
        <form action="${rootURL}/setupWizard/configureInstance" method="post">
           <h1>${%Instance Configuration}</h1>
           <div style="margin: 2em;">
