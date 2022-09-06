@@ -52,7 +52,6 @@ THE SOFTWARE.
     <!-- maven-antrun-plugin will download this Yarn version. -->
     <yarn-berry.version>3.2.3</yarn-berry.version>
     <yarn-berry.sha256sum>311cd84f5f144680cc21b4bbbdeba97d1a5f32ee8a2eae7037ccbdeff8a3c1ce</yarn-berry.sha256sum>
-    <yarn.lint.skip />
   </properties>
 
   <dependencyManagement>

@@ -28,16 +28,15 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
          xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-    <l:layout title="${%Advanced Settings} - ${%Plugin Manager}" permission="${app.SYSTEM_READ}">
+    <l:layout title="${%Advanced settings} - ${%Plugin Manager}" permission="${app.SYSTEM_READ}">
         <j:set var="readOnlyMode" value="${!app.hasPermission(app.ADMINISTER)}"/>
 
-        <l:app-bar title="${%Plugin Manager}"/>
+        <l:app-bar title="${%Advanced settings}"/>
 
-        <st:include page="sidepanel.jelly"/>
+      <st:include page="sidepanel.jelly"/>
 
         <l:main-panel>
-            <local:tabBar page="advanced" xmlns:local="/hudson/PluginManager"/>
-
+          <div class="jenkins-form">
             <section class="jenkins-section jenkins-!-margin-bottom-5">
                 <h2 class="jenkins-section__title">${%HTTP Proxy Configuration}</h2>
                 <f:form method="post" action="proxyConfigure" name="proxyConfigure">
@@ -107,6 +106,7 @@ THE SOFTWARE.
                     </ul>
                 </section>
             </j:if>
+          </div>
         </l:main-panel>
     </l:layout>
 </j:jelly>
