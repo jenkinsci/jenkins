@@ -20,7 +20,8 @@
     "lint:css-ci": "stylelint src/main/less --custom-formatter stylelint-formatter.js -o target/stylelint-warnings.xml",
     "lint:ci": "yarn lint:js-ci && yarn lint:css-ci",
     "lint:fix": "prettier --write ../ && stylelint src/main/less --fix && eslint --config .eslintrc.js --fix ../",
-    "lint": "yarn lint:js && yarn lint:css"
+    "lint": "yarn lint:js && yarn lint:css",
+    "postinstall": "cd .. && husky install war/.husky"
   },
   "devDependencies": {
     "@babel/cli": "7.18.10",
@@ -34,8 +35,10 @@
     "eslint-config-prettier": "8.5.0",
     "handlebars": "4.7.7",
     "handlebars-loader": "1.7.2",
+    "husky": ">=6",
     "less": "4.1.3",
     "less-loader": "11.0.0",
+    "lint-staged": ">=10",
     "mini-css-extract-plugin": "2.6.1",
     "postcss": "8.4.16",
     "postcss-loader": "7.0.1",
@@ -64,5 +67,10 @@
     "defaults",
     "not IE 11"
   ],
-  "packageManager": "yarn@3.2.3"
+  "packageManager": "yarn@3.2.3",
+  "lint-staged": {
+    "*.{html,css,less,md,js}": "prettier --write",
+    "*.js": "eslint --fix",
+    "*.{less,css}": "stylelint --fix"
+  }
 }
