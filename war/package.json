@@ -24,7 +24,7 @@
   },
   "devDependencies": {
     "@babel/cli": "7.18.10",
-    "@babel/core": "7.18.13",
+    "@babel/core": "7.19.0",
     "autoprefixer": "10.4.8",
     "clean-webpack-plugin": "4.0.0",
     "copy-webpack-plugin": "11.0.0",
@@ -48,7 +48,7 @@
     "webpack-remove-empty-scripts": "0.8.3"
   },
   "dependencies": {
-    "@babel/preset-env": "7.18.10",
+    "@babel/preset-env": "7.19.0",
     "babel-loader": "8.2.5",
     "bootstrap": "3.4.1",
     "hotkeys-js": "3.9.5",
