@@ -15,7 +15,7 @@ window.addEventListener("load", () => {
 
   const pageSearchBar = document.querySelectorAll(".jenkins-search__input");
   if (pageSearchBar.length === 1) {
-    hotkeys(translateModifierKeysForUsersPlatform("CMD+/,/"), () => {
+    hotkeys(translateModifierKeysForUsersPlatform("CMD+/"), () => {
       pageSearchBar[0].focus();
 
       // Returning false stops the event and prevents default browser events
