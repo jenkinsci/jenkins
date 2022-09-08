@@ -79,7 +79,7 @@ THE SOFTWARE.
     </st:attribute>
     <st:attribute name="badge">
       If set, displays a small badge on the right side of the sidebar item.
-      (since TODO)
+      (@since TODO)
     </st:attribute>
     <st:attribute name="confirmationMessage">
       Message to use for confirmation, if requested; defaults to title.
