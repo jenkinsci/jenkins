@@ -1933,7 +1933,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                 URL url = new URL(value);
 
                 // Connect to the URL
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                HttpURLConnection conn = (HttpURLConnection) ProxyConfiguration.open(url);
                 conn.setRequestMethod("HEAD");
                 conn.setConnectTimeout(5000);
                 if (100 <= conn.getResponseCode() && conn.getResponseCode() <= 399) {
