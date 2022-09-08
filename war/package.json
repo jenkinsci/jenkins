@@ -69,7 +69,7 @@
   ],
   "packageManager": "yarn@3.2.3",
   "lint-staged": {
-    "*.{html,css,less,md,js}": "prettier --write",
+    "*.{html,css,less,md,js,json}": "prettier --write",
     "*.js": "eslint --fix",
     "*.{less,css}": "stylelint --fix"
   }
