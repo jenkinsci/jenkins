@@ -77,6 +77,10 @@ THE SOFTWARE.
       (onclick supersedes this except in the context menu.)
       (since 1.512)
     </st:attribute>
+    <st:attribute name="badge">
+      If set, displays a small badge on the right side of the sidebar item.
+      (since TODO)
+    </st:attribute>
     <st:attribute name="confirmationMessage">
       Message to use for confirmation, if requested; defaults to title.
       (since 1.512)
@@ -136,6 +140,11 @@ THE SOFTWARE.
                 <l:icon src="${icon}" />
               </span>
               <span class="task-link-text">${title}</span>
+              <j:if test="${attrs.badge != null}">
+                <span class="task-icon-badge">
+                  ${attrs.badge}
+                </span>
+              </j:if>
             </span>
           </span>
         </div>
@@ -167,6 +176,11 @@ THE SOFTWARE.
                     <l:icon src="${icon}" />
                   </span>
                   <span>${title}</span>
+                  <j:if test="${attrs.badge != null}">
+                    <span class="task-icon-badge">
+                      ${attrs.badge}
+                    </span>
+                  </j:if>
                 </l:confirmationLink>
               </j:when>
 
@@ -176,6 +190,11 @@ THE SOFTWARE.
                     <l:icon src="${icon}" />
                   </span>
                   <span class="task-link-text">${title}</span>
+                  <j:if test="${attrs.badge != null}">
+                    <span class="task-icon-badge">
+                      ${attrs.badge}
+                    </span>
+                  </j:if>
                 </a>
               </j:otherwise>
             </j:choose>
