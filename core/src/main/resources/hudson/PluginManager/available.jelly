@@ -75,7 +75,7 @@ THE SOFTWARE.
             <div class="bottom-sticker-inner">
               <l:isAdmin>
                 <f:submit value="${%Install without restart}" name="dynamicLoad" />
-                <span style="margin-left:2em;"></span>
+                <span style="margin-left:2em;"/>
                 <f:submit value="${%Download now and install after restart}"/>
               </l:isAdmin>
               <st:include page="check.jelly"/>
