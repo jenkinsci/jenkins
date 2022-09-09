@@ -6,7 +6,7 @@
         When enabled, Jenkins periodically sends information to the Jenkins project.
         The Jenkins project uses this information to set development priorities.
     </div>
-    <h1>General usage statistics</h1>
+    <h3>General usage statistics</h3>
     <div>
         <p>Jenkins reports the following general usage statistics:</p>
         <ul>
@@ -21,7 +21,7 @@
             These usage statistics are aggregated, updated monthly, and published to <a href="https://stats.jenkins.io">stats.jenkins.io</a>
         </p>
     </div>
-    <h1>Telemetry collection</h1>
+    <h3>Telemetry collection</h3>
     <div>
         <p>
             In addition to the general usage statistics listed above, the Jenkins project collects telemetry data from specific trials to inform future development.
