@@ -78,7 +78,7 @@ THE SOFTWARE.
       (since 1.512)
     </st:attribute>
     <st:attribute name="badge">
-      If set, displays a small badge on the right side of the sidebar item.
+      If set, displays the value as a small badge on the right side of the sidepanel item.
       (@since TODO)
     </st:attribute>
     <st:attribute name="confirmationMessage">
