@@ -1928,7 +1928,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     @RequirePOST public FormValidation doCheckUpdateSiteUrl(StaplerRequest request, @QueryParameter String value) {
         if (StringUtils.isNotBlank(value)) {
             try {
-                value += ((value.contains("?")) ? "&": "?") + "version=" + Jenkins.VERSION + "&uctest";
+                value += ((value.contains("?")) ? "&" : "?") + "version=" + Jenkins.VERSION + "&uctest";
 
                 URL url = new URL(value);
 
