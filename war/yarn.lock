@@ -2736,9 +2736,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"css-minimizer-webpack-plugin@npm:4.0.0":
-  version: 4.0.0
-  resolution: "css-minimizer-webpack-plugin@npm:4.0.0"
+"css-minimizer-webpack-plugin@npm:4.1.0":
+  version: 4.1.0
+  resolution: "css-minimizer-webpack-plugin@npm:4.1.0"
   dependencies:
     cssnano: ^5.1.8
     jest-worker: ^27.5.1
@@ -2757,7 +2757,9 @@ __metadata:
       optional: true
     esbuild:
       optional: true
-  checksum: 18487ee9aacdb0cc4e9fc1921f5d7a519c94203332b845b9a6d95434365d275fafff7dbfe21355347b8bbb8266078b7e60f7bac771f15eb30dfed5a29016debc
+    lightningcss:
+      optional: true
+  checksum: bf3c9e9ca4ab23ab139dac2fdfb1daeee2c60455aa314c91745038d01c188107a2108269ff2f2c82c41bc0d342b636a962826646c3c098946f15edd8ed98f42e
   languageName: node
   linkType: hard
 
@@ -3784,10 +3786,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"hotkeys-js@npm:3.9.5":
-  version: 3.9.5
-  resolution: "hotkeys-js@npm:3.9.5"
-  checksum: b9c5b98a5c745b77444e23c655c1c011c76fc29f8aff46d8a1be243b25b5cae70bae88b75816dedeffa2f1f24257e7cdef4c1666e49287c443eb44f3c9e14e4b
+"hotkeys-js@npm:3.10.0":
+  version: 3.10.0
+  resolution: "hotkeys-js@npm:3.10.0"
+  checksum: 4bb3db45514a18b8dd17a7544d4db3f31a4da08ef918671bc552be828f323796fcaf7f616d8530a2839c9dd04739047090ea106210b2b4da520c7db5cf63744c
   languageName: node
   linkType: hard
 
@@ -4110,12 +4112,12 @@ __metadata:
     clean-webpack-plugin: 4.0.0
     copy-webpack-plugin: 11.0.0
     css-loader: 6.7.1
-    css-minimizer-webpack-plugin: 4.0.0
+    css-minimizer-webpack-plugin: 4.1.0
     eslint: 8.23.0
     eslint-config-prettier: 8.5.0
     handlebars: 4.7.7
     handlebars-loader: 1.7.2
-    hotkeys-js: 3.9.5
+    hotkeys-js: 3.10.0
     jenkins-js-modules: 1.5.4
     jquery: 3.6.1
     less: 4.1.3

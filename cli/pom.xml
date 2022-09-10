@@ -15,7 +15,7 @@
   <url>https://github.com/jenkinsci/jenkins</url>
 
   <properties>
-    <mina-sshd.version>2.9.0</mina-sshd.version>
+    <mina-sshd.version>2.9.1</mina-sshd.version>
     <!-- Filled in by jacoco-maven-plugin -->
     <jacocoSurefireArgs />
   </properties>
