@@ -26,6 +26,7 @@ package jenkins.websocket;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.Collections;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.concurrent.Future;
@@ -48,7 +49,7 @@ public class Jetty9Provider implements Provider {
     private static final String ATTR_LISTENER = Jetty9Provider.class.getName() + ".listener";
 
     // TODO does not seem possible to use HttpServletRequest.get/setAttribute for this
-    private static final Map<Listener, Session> sessions = new WeakHashMap<>();
+    private static final Map<Listener, Session> sessions = Collections.synchronizedMap(new WeakHashMap<>());
 
     private WebSocketServletFactory factory;
 

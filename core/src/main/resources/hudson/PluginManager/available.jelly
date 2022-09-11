@@ -27,31 +27,30 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:f="/lib/form">
-  <l:layout title="${%Available Plugins} - ${%Plugin Manager}" permission="${app.SYSTEM_READ}">
-    <j:set var="page" value="available"/>
+  <l:layout title="${%Available plugins} - ${%Plugin Manager}" permission="${app.SYSTEM_READ}">
 
-    <l:app-bar title="${%Plugin Manager}" />
+    <l:app-bar title="${%Plugins}" />
 
     <st:include page="sidepanel.jelly"/>
 
     <l:main-panel>
+      <div class="jenkins-app-bar jenkins-app-bar--sticky">
+        <div class="jenkins-app-bar__content">
+          <div class="app-plugin-manager__search">
+            <span class="app-plugin-manager__search__icon">
+              <l:icon src="symbol-search"/>
+            </span>
+            <input type="search"
+                   placeholder="Search available plugins"
+                   id="filter-box"
+                   value="${request.getParameter('filter')}" />
+          </div>
+        </div>
+      </div>
+
       <script src="${resURL}/jsbundles/plugin-manager-ui.js" type="text/javascript"/>
 
       <form method="post" action="install">
-        <local:tabBar page="${page}" xmlns:local="/hudson/PluginManager"/>
-
-        <div class="jenkins-form-item jenkins-search">
-          <input
-            class="jenkins-search__input"
-            type="search"
-            id="filter-box"
-            value="${request.getParameter('filter')}"
-            placeholder="${%Search}"/>
-          <div class="jenkins-search__icon">
-            <l:icon src="symbol-search"/>
-          </div>
-        </div>
-
         <table id="plugins" class="jenkins-table sortable"
                data-hasAdmin="${h.hasPermission(app.ADMINISTER)}">
           <thead>
