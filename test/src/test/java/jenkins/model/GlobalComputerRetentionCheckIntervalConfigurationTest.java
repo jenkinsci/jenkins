@@ -1,0 +1,132 @@
+package jenkins.model;
+
+import static org.junit.Assert.assertEquals;
+
+import hudson.ExtensionList;
+import hudson.model.Descriptor;
+import hudson.slaves.ComputerRetentionWork;
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.util.logging.Level;
+import net.sf.json.JSONObject;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.LoggerRule;
+import org.kohsuke.stapler.Stapler;
+
+
+/**
+ * Ensure interval bounds are enforced when re-configuring and loading from disk. Also ensure default value handling.
+ *
+ * @author Jakob Ackermann
+ */
+public class GlobalComputerRetentionCheckIntervalConfigurationTest {
+    @Rule
+    public JenkinsRule j = new JenkinsRule();
+    @Rule
+    public LoggerRule logging = new LoggerRule();
+
+    private File getConfig(GlobalComputerRetentionCheckIntervalConfiguration c) {
+        return new File(j.jenkins.getRootDir(), c.getId() + ".xml");
+    }
+
+    private void recordWarnings() {
+        logging.record(GlobalComputerRetentionCheckIntervalConfiguration.class, Level.INFO).capture(100);
+    }
+
+    @Test
+    public void bootWithMissingCfg() {
+        recordWarnings();
+        GlobalComputerRetentionCheckIntervalConfiguration c = new GlobalComputerRetentionCheckIntervalConfiguration();
+        c.load();
+        assertEquals("default", 60, c.getComputerRetentionCheckInterval());
+        assertEquals("no fallback message", logging.getRecords().size(), 0);
+    }
+
+    private void writeConfig(GlobalComputerRetentionCheckIntervalConfiguration c, int interval) throws IOException {
+        String bad = "" +
+                "<?xml version='1.1' encoding='UTF-8'?>\n" +
+                "<jenkins.model.GlobalComputerRetentionCheckIntervalConfiguration>\n" +
+                "  <computerRetentionCheckInterval>" + interval + "</computerRetentionCheckInterval>\n" +
+                "</jenkins.model.GlobalComputerRetentionCheckIntervalConfiguration>";
+        Files.writeString(getConfig(c).toPath(), bad, StandardCharsets.UTF_8);
+    }
+
+    private void checkUsesFallbackAfterLoadOf(int interval) throws IOException {
+        recordWarnings();
+        GlobalComputerRetentionCheckIntervalConfiguration c = new GlobalComputerRetentionCheckIntervalConfiguration();
+        writeConfig(c, interval);
+        c.load();
+        assertEquals("uses default", 60, c.getComputerRetentionCheckInterval());
+        assertEquals("prints one fallback message", 1, logging.getRecords().size());
+        assertEquals("fallback message content", "computerRetentionCheckInterval must be greater than zero, falling back to 60s", logging.getRecords().get(0).getMessage());
+    }
+
+    @Test
+    public void bootWithNegative() throws IOException {
+        checkUsesFallbackAfterLoadOf(-1);
+    }
+
+    @Test
+    public void bootWithZero() throws IOException {
+        checkUsesFallbackAfterLoadOf(0);
+    }
+
+    @Test
+    public void bootWithPositive() throws IOException {
+        recordWarnings();
+        GlobalComputerRetentionCheckIntervalConfiguration c = new GlobalComputerRetentionCheckIntervalConfiguration();
+        writeConfig(c, 1);
+        c.load();
+        assertEquals("uses default", 1, c.getComputerRetentionCheckInterval());
+        assertEquals("no fallback message", 0, logging.getRecords().size());
+    }
+
+    @Test
+    public void saveCycle() {
+        recordWarnings();
+        GlobalComputerRetentionCheckIntervalConfiguration c = new GlobalComputerRetentionCheckIntervalConfiguration();
+
+        // Register the instances for cross lookup
+        ExtensionList.lookup(ComputerRetentionWork.class).add(0, new ComputerRetentionWork());
+        ExtensionList.lookup(GlobalComputerRetentionCheckIntervalConfiguration.class).add(0, c);
+
+        JSONObject json = new JSONObject();
+        json.element("computerRetentionCheckInterval", 5);
+        try {
+            c.configure(Stapler.getCurrentRequest(), json);
+        } catch (Descriptor.FormException e) {
+            throw new RuntimeException(e);
+        }
+        assertEquals("stores value", 5, c.getComputerRetentionCheckInterval());
+
+        GlobalComputerRetentionCheckIntervalConfiguration c2 = new GlobalComputerRetentionCheckIntervalConfiguration();
+        c2.load();
+        assertEquals("round trip value", 5, c2.getComputerRetentionCheckInterval());
+        assertEquals("no fallback message", 0, logging.getRecords().size());
+    }
+
+    @Test
+    public void saveInvalidValue() {
+        recordWarnings();
+        GlobalComputerRetentionCheckIntervalConfiguration c = new GlobalComputerRetentionCheckIntervalConfiguration();
+
+        JSONObject json = new JSONObject();
+        json.element("computerRetentionCheckInterval", 0);
+        try {
+            c.configure(Stapler.getCurrentRequest(), json);
+            throw new RuntimeException("expected .configure() to throw");
+        } catch (Descriptor.FormException e) {
+            assertEquals(e.getMessage(), "java.lang.IllegalArgumentException: interval must be greater than zero");
+        }
+        assertEquals("does not store value", 60, c.getComputerRetentionCheckInterval());
+
+        GlobalComputerRetentionCheckIntervalConfiguration c2 = new GlobalComputerRetentionCheckIntervalConfiguration();
+        c2.load();
+        assertEquals("does not persist value", 60, c2.getComputerRetentionCheckInterval());
+        assertEquals("no fallback message", 0, logging.getRecords().size());
+    }
+}
