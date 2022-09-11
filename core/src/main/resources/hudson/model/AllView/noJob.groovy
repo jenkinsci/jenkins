@@ -31,9 +31,9 @@ div {
                             a(href: "newJob", class: "content-block__link") {
                                 span(_("createJob"))
                                 span(class: "trailing-icon") {
-                                    l.svgIcon(
-                                            class: "icon-sm",
-                                            href: "${resURL}/images/material-icons/svg-sprite-navigation-symbol.svg#ic_arrow_forward_24px")
+                                    l.icon(
+                                            class: "icon-md",
+                                            src: "symbol-arrow-right")
                                 }
                             }
                         }
@@ -48,9 +48,9 @@ div {
                                 a(href: "computer/new", class: "content-block__link") {
                                     span(_("setUpAgent"))
                                     span(class: "trailing-icon") {
-                                        l.svgIcon(
-                                                class: "icon-sm",
-                                                href: "${resURL}/images/material-icons/svg-sprite-navigation-symbol.svg#ic_arrow_forward_24px")
+                                        l.icon(
+                                                class: "icon-md",
+                                                src: "symbol-arrow-right")
                                     }
                                 }
                             }
@@ -60,9 +60,9 @@ div {
                                     a(href: "configureClouds", class: "content-block__link") {
                                         span(_("setUpCloud"))
                                         span(class: "trailing-icon") {
-                                            l.svgIcon(
-                                                    class: "icon-sm",
-                                                    href: "${resURL}/images/material-icons/svg-sprite-navigation-symbol.svg#ic_arrow_forward_24px")
+                                            l.icon(
+                                                    class: "icon-md",
+                                                    src: "symbol-arrow-right")
                                         }
                                     }
                                 }
@@ -96,9 +96,9 @@ div {
                         a(href: "newJob", class: "content-block__link") {
                             span(_("createJob"))
                             span(class: "trailing-icon") {
-                                l.svgIcon(
-                                        class: "icon-sm",
-                                        href: "${resURL}/images/material-icons/svg-sprite-navigation-symbol.svg#ic_arrow_forward_24px")
+                                l.icon(
+                                        class: "icon-md",
+                                        src: "symbol-arrow-right")
                             }
                         }
                     }
@@ -125,9 +125,9 @@ div {
                                 class: "content-block__link") {
                             span(_("Log in to Jenkins"))
                             span(class: "trailing-icon") {
-                                l.svgIcon(
-                                        class: "icon-sm",
-                                        href: "${resURL}/images/material-icons/svg-sprite-navigation-symbol.svg#ic_arrow_forward_24px")
+                                l.icon(
+                                        class: "icon-md",
+                                        src: "symbol-arrow-right")
                             }
                         }
                     }
@@ -137,9 +137,9 @@ div {
                             a(href: "signup", class: "content-block__link") {
                                 span(_("Sign up for Jenkins"))
                                 span(class: "trailing-icon") {
-                                    l.svgIcon(
-                                            class: "icon-sm",
-                                            href: "${resURL}/images/material-icons/svg-sprite-navigation-symbol.svg#ic_arrow_forward_24px")
+                                    l.icon(
+                                            class: "icon-md",
+                                            src: "symbol-arrow-right")
                                 }
 
                             }

@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.86</version>
+    <version>1.87</version>
     <relativePath />
   </parent>
 
@@ -74,7 +74,7 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.366</revision>
+    <revision>2.368</revision>
     <changelist>-SNAPSHOT</changelist>
 
     <!-- configuration for patch tracker plugin  -->
@@ -239,11 +239,6 @@ THE SOFTWARE.
           </configuration>
         </plugin>
         <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-assembly-plugin</artifactId>
-          <!-- Version specified in parent POM -->
-        </plugin>
-        <plugin>
           <artifactId>maven-jarsigner-plugin</artifactId>
           <version>3.0.0</version>
           <configuration>
@@ -262,31 +257,6 @@ THE SOFTWARE.
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-resources-plugin</artifactId>
           <!-- Version specified in parent POM -->
-        </plugin>
-        <plugin>
-          <!--
-            Both test harness and core uses stapler as an extension,
-            and apparently without having extension preloaded at the parent, the main artifact of the 'test' module
-            ends up installed with 'stapler-jar' extension (which normally is an indication that the ArtifactTypeHandler
-            defined in this extension is not getting picked up.)
-
-            To avoid this problem, I'm defining an extension here. Not sure if the nested <dependencies> is necessary.
-            It's also possible that I misdiagnosed the problem and the root cause is something entirely different.
-
-            To test if you can remove this work around, do a rebuild from main and see if the test harness
-            is installed with the right extension into the local repository.
-          -->
-          <groupId>org.kohsuke.stapler</groupId>
-          <artifactId>maven-stapler-plugin</artifactId>
-          <!-- version specified in parent pom -->
-          <extensions>true</extensions>
-          <dependencies>
-            <dependency>
-              <groupId>org.jvnet.maven-jellydoc-plugin</groupId>
-              <artifactId>maven-jellydoc-plugin</artifactId>
-              <version>1.9</version>
-            </dependency>
-          </dependencies>
         </plugin>
         <plugin>
           <groupId>org.kohsuke</groupId>
@@ -397,7 +367,7 @@ THE SOFTWARE.
             <dependency>
               <groupId>com.puppycrawl.tools</groupId>
               <artifactId>checkstyle</artifactId>
-              <version>10.3.2</version>
+              <version>10.3.3</version>
             </dependency>
           </dependencies>
           <executions>
@@ -555,25 +525,6 @@ THE SOFTWARE.
       <id>release</id>
       <build>
         <plugins>
-          <plugin>
-            <artifactId>maven-assembly-plugin</artifactId>
-            <!-- Version specified in parent POM -->
-            <inherited>false</inherited>
-            <executions>
-              <execution>
-                <goals>
-                  <goal>single</goal>
-                </goals>
-                <phase>package</phase>
-                <configuration>
-                  <finalName>jenkins-${project.version}</finalName>
-                  <descriptors>
-                    <descriptor>assembly-src.xml</descriptor>
-                  </descriptors>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
           <plugin>
             <artifactId>maven-gpg-plugin</artifactId>
             <!-- Version specified in parent POM -->
