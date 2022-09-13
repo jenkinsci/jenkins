@@ -21,24 +21,24 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.diagnosis;
+
+import static org.junit.Assert.assertThrows;
 
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.WebRequest;
-import java.net.URL;
-import java.util.Collections;
-
 import com.gargoylesoftware.htmlunit.util.NameValuePair;
+import java.net.URL;
+import java.util.List;
 import jenkins.model.JenkinsLocationConfiguration;
 import org.junit.Before;
-import org.junit.Test;
 import org.junit.Rule;
+import org.junit.Test;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.RestartableJenkinsRule;
-
-import static org.junit.Assert.assertThrows;
 
 public class ReverseProxySetupMonitorTest {
 
@@ -51,9 +51,9 @@ public class ReverseProxySetupMonitorTest {
             return j;
         }
     };
-    
+
     private String desiredContextPath;
-    
+
     @Before
     public void resetContextPath() {
         this.desiredContextPath = "/jenkins";
@@ -84,7 +84,7 @@ public class ReverseProxySetupMonitorTest {
                 request.setAdditionalHeader("Referer", j.getURL() + "manage");
 
                 // As the context was already set inside the referer, adding another one will fail
-                request.setRequestParameters(Collections.singletonList(new NameValuePair("testWithContext", "true")));
+                request.setRequestParameters(List.of(new NameValuePair("testWithContext", "true")));
                 assertThrows(FailingHttpStatusCodeException.class, () -> wc.getPage(request));
             }
         });
@@ -134,11 +134,11 @@ public class ReverseProxySetupMonitorTest {
                 WebRequest request = new WebRequest(new URL(j.getURL(), getAdminMonitorTestUrl(j)));
                 request.setAdditionalHeader("Referer", j.getURL() + "manage");
 
-                // As the rootURL is missing the context, a regular test will fail 
+                // As the rootURL is missing the context, a regular test will fail
                 assertThrows(FailingHttpStatusCodeException.class, () -> wc.getPage(request));
 
                 // When testing with the context, it will be OK, allowing to display an additional message
-                request.setRequestParameters(Collections.singletonList(new NameValuePair("testWithContext", "true")));
+                request.setRequestParameters(List.of(new NameValuePair("testWithContext", "true")));
                 wc.getPage(request);
             }
         });
@@ -161,7 +161,7 @@ public class ReverseProxySetupMonitorTest {
 
                 assertThrows(FailingHttpStatusCodeException.class, () -> wc.getPage(request));
 
-                request.setRequestParameters(Collections.singletonList(new NameValuePair("testWithContext", "true")));
+                request.setRequestParameters(List.of(new NameValuePair("testWithContext", "true")));
                 assertThrows(FailingHttpStatusCodeException.class, () -> wc.getPage(request));
             }
         });
@@ -182,7 +182,7 @@ public class ReverseProxySetupMonitorTest {
                 wc.getPage(request);
 
                 // adding the context does not have any impact as there is no configured context
-                request.setRequestParameters(Collections.singletonList(new NameValuePair("testWithContext", "true")));
+                request.setRequestParameters(List.of(new NameValuePair("testWithContext", "true")));
                 wc.getPage(request);
             }
         });
@@ -226,7 +226,7 @@ public class ReverseProxySetupMonitorTest {
                 WebRequest request = new WebRequest(new URL(getRootUrlWithIp(j), getAdminMonitorTestUrl(j)));
                 // referer using IP
                 request.setAdditionalHeader("Referer", getRootUrlWithIp(j) + "manage");
-                
+
                 // by default the JenkinsRule set the rootURL to localhost:<port>/jenkins
                 // even with similar request and referer, if the root URL is set, this will show a wrong proxy setting
                 assertThrows(FailingHttpStatusCodeException.class, () -> wc.getPage(request));
@@ -268,20 +268,20 @@ public class ReverseProxySetupMonitorTest {
                 // referer using IP
                 request.setAdditionalHeader("Referer", getRootUrlWithIp(j) + "manage");
 
-                // As the rootURL is missing the context, a regular test will fail 
+                // As the rootURL is missing the context, a regular test will fail
                 assertThrows(FailingHttpStatusCodeException.class, () -> wc.getPage(request));
 
                 // When testing with the context, it will be OK, allowing to display an additional message
-                request.setRequestParameters(Collections.singletonList(new NameValuePair("testWithContext", "true")));
+                request.setRequestParameters(List.of(new NameValuePair("testWithContext", "true")));
                 wc.getPage(request);
             }
         });
     }
 
     private String getAdminMonitorTestUrl(JenkinsRule j) {
-        return j.jenkins.getAdministrativeMonitor(ReverseProxySetupMonitor.class.getName()).getUrl() + "/test";   
+        return j.jenkins.getAdministrativeMonitor(ReverseProxySetupMonitor.class.getName()).getUrl() + "/test";
     }
-    
+
     private URL getRootUrlWithIp(JenkinsRule j) throws Exception {
         return new URL(j.getURL().toString().replace("localhost", "127.0.0.1"));
     }

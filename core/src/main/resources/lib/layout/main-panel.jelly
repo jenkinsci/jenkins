@@ -30,7 +30,11 @@ THE SOFTWARE.
 
   <j:if test="${mode=='main-panel'}">
     <j:if test="${app.isQuietingDown()}">
-      <div id='shutdown-msg'>${%Jenkins is going to shut down}</div>
+      <div id='shutdown-msg'>${%Jenkins is going to shut down}
+        <j:if test="${app.getQuietDownReason() != null}">
+          <br/> ${%Shut down reason}: ${app.getQuietDownReason()}
+        </j:if>
+      </div>
     </j:if>
     <a name="skip2content" />
     <d:invokeBody />

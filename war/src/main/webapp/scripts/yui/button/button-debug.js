@@ -1974,8 +1974,10 @@ version: 2.9.0
 
 				if (p_oEvent.returnValue !== false) {
 
-					this.submitForm();
-
+					if (this.submitForm() == "requestSubmit") {
+						// avoid double form submission in HtmlUnit
+						Event.preventDefault(p_oEvent);
+					}
 				}
 
 				break;
@@ -2425,11 +2427,18 @@ version: 2.9.0
         
             var sNodeName = this.NODE_NAME,
                 oElement = document.createElement(sNodeName);
-        
-            oElement.innerHTML =  "<" + sNodeName + " class=\"first-child\">" + 
-                (p_sType == "link" ? "<a></a>" : 
-                "<button type=\"button\"></button>") + "</" + sNodeName + ">";
-        
+
+            var childHTML;
+            if (p_sType == "link") {
+                childHTML = "<a></a>";
+            } else if (p_sType == "submit") {
+                childHTML = "<button type=\"submit\"></button>";
+            } else {
+                childHTML = "<button type=\"button\"></button>";
+            }
+            oElement.innerHTML =  "<" + sNodeName + " class=\"first-child\">" +
+                childHTML + "</" + sNodeName + ">";
+
             return oElement;
         
         },
@@ -2695,7 +2704,25 @@ version: 2.9.0
                     m_oSubmitTrigger = this;
                     
                 }
-        
+
+                if (oForm.requestSubmit) {
+                    /*
+                        If 'requestSubmit' is defined, use that instead of manually firing the event and then calling 'submit'.
+                        See https://caniuse.com/mdn-api_htmlformelement_requestsubmit
+                        */
+                    if (this.get("type") == "submit") {
+                        /* Trying very hard to find the right button...
+                        See https://issues.jenkins.io/browse/JENKINS-65585 */
+                        var buttons = this.getElementsByTagName('button');
+                        if (buttons.length == 1 && buttons[0].type == 'submit') {
+                            buttons[0].formNoValidate = true; // we used to not validate forms, so keep things this way
+                            oForm.requestSubmit(buttons[0]);
+                            return "requestSubmit";
+                        }
+                    }
+                    oForm.requestSubmit();
+                    return "requestSubmit";
+                }
         
                 if (UA.ie && (UA.ie < 9)) {
         
@@ -2723,7 +2750,7 @@ version: 2.9.0
                     https://bugzilla.mozilla.org/show_bug.cgi?id=1370630
                     In the mean time, we should not make a redundant call to "submit",
                     because it leads to the form being submitted twice in some cases:
-                    https://issues.jenkins-ci.org/browse/JENKINS-58296
+                    https://issues.jenkins.io/browse/JENKINS-58296
                     TODO: once we know the exact Firefox version which will change this
                     behavior, we should add a "UA.gecko >= XX" condition and call "submit".
                 */

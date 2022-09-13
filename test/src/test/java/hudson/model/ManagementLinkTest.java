@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import static org.junit.Assert.assertNull;
@@ -29,14 +30,13 @@ import static org.junit.Assert.assertTrue;
 import com.gargoylesoftware.htmlunit.html.DomNodeUtil;
 import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import java.util.List;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.TestExtension;
-
-import java.util.List;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -53,18 +53,18 @@ public class ManagementLinkTest {
     public void links() throws Exception {
         WebClient wc = j.createWebClient();
 
-        for (int i=0; ; i++) {
+        for (int i = 0; ; i++) {
             HtmlPage page = wc.goTo("manage");
-            List<?> anchors = DomNodeUtil.selectNodes(page, "//div[contains(@class,'manage-option')]/a[not(@onclick)]");
-            assertTrue(anchors.size()>=8);
-            if (i==anchors.size())  return; // done
+            List<?> anchors = DomNodeUtil.selectNodes(page, "//div[contains(@class,'jenkins-section__item')]/a[not(contains(@class,'confirmation-link'))]");
+            assertTrue(anchors.size() >= 8);
+            if (i == anchors.size())  return; // done
 
-            ((HtmlAnchor)anchors.get(i)).click();
+            ((HtmlAnchor) anchors.get(i)).click();
         }
     }
 
     @Test @Issue("JENKINS-33683")
-    public void invisibleLinks() throws Exception {
+    public void invisibleLinks() {
         assertNull(j.jenkins.getDynamic("and_fail_trying"));
     }
 

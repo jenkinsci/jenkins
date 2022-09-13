@@ -172,7 +172,7 @@ THE SOFTWARE.
   </listener>
 
   <!--
-    HUDSON-1235 suggests containers interpret '*' as "all roles defined in web.xml"
+    JENKINS-1235 suggests containers interpret '*' as "all roles defined in web.xml"
     as opposed to "all roles defined in the security realm", so we need to list some
     common names in the hope that users will have at least one of those roles.
   -->
@@ -222,14 +222,6 @@ THE SOFTWARE.
       <form-error-page>/loginError</form-error-page>
     </form-login-config>
   </login-config>
-
-
-  <!-- if specified, this value is used as the Hudson home directory -->
-  <env-entry>
-    <env-entry-name>HUDSON_HOME</env-entry-name>
-    <env-entry-type>java.lang.String</env-entry-type>
-    <env-entry-value></env-entry-value>
-  </env-entry>
 
   <!-- configure additional extension-content-type mappings -->
   <mime-mapping>

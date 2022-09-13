@@ -13,7 +13,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -38,9 +37,9 @@ public class NodeParallelTest {
                 LOGGER.log(Level.INFO, "Creating slave " + i);
                 // JenkinsRule sync on Jenkins singleton, so this doesn't work
                 // r.createSlave();
-                DumbSlave agent = new DumbSlave("agent-"+i, "/tmp", new JNLPLauncher(true));
+                DumbSlave agent = new DumbSlave("agent-" + i, "/tmp", new JNLPLauncher(true));
                 r.jenkins.addNode(agent);
-                agent.setNodeProperties(Collections.singletonList(new EnvironmentVariablesNodeProperty(new EnvironmentVariablesNodeProperty.Entry("foo", "" + i))));
+                agent.setNodeProperties(List.of(new EnvironmentVariablesNodeProperty(new EnvironmentVariablesNodeProperty.Entry("foo", "" + i))));
                 return null;
             } catch (Exception e1) {
                 throw new RuntimeException(e1);

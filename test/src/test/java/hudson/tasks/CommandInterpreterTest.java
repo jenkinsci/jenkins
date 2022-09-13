@@ -3,7 +3,6 @@ package hudson.tasks;
 import hudson.FilePath;
 import hudson.model.AbstractProject;
 import hudson.model.FreeStyleProject;
-import org.hamcrest.MatcherAssert;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -31,7 +30,7 @@ public class CommandInterpreterTest {
             Assert.fail("getConfiguredLocalRules must not return null");
         }
         try {
-            ((TestCommandInterpreter)builder).buildEnvVarsFilterRules();
+            ((TestCommandInterpreter) builder).buildEnvVarsFilterRules();
         } catch (NullPointerException ex) {
             Assert.fail("buildEnvVarsFilterRules must not throw");
         }

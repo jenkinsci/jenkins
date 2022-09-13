@@ -27,7 +27,7 @@ THE SOFTWARE.
   <h2>Uploading a plugin</h2>
   <p>Permission required: <code>Overall/Administer</code></p>
   <p>
-    You can upload a plugin from HTTP client by POST to <a href="../uploadPlugin">this URL</a> with <a href="http://tools.ietf.org/html/rfc2388">multipart/form-data</a> MIME type.
+    You can upload a plugin from HTTP client by POST to <a href="../uploadPlugin">this URL</a> with <a href="https://datatracker.ietf.org/doc/html/rfc2388">multipart/form-data</a> MIME type.
   </p>
 
   <h2>Making sure all the needed plugins are installed</h2>

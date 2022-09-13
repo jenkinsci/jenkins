@@ -1,5 +1,7 @@
 package jenkins.util;
 
+import static org.junit.Assert.assertThrows;
+
 import org.junit.Test;
 
 public class JenkinsJVMTest {
@@ -9,16 +11,16 @@ public class JenkinsJVMTest {
         JenkinsJVM.checkNotJenkinsJVM();
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void checkJenkinsJVM_WhenNotInAJenkinsJVM() {
-        JenkinsJVM.checkJenkinsJVM();
+        assertThrows(IllegalStateException.class, JenkinsJVM::checkJenkinsJVM);
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void checkNotJenkinsJVM_WhenInAJenkinsJVM() {
         JenkinsJVM.setJenkinsJVM(true);
         try {
-            JenkinsJVM.checkNotJenkinsJVM();
+            assertThrows(IllegalStateException.class, JenkinsJVM::checkNotJenkinsJVM);
         } finally {
             JenkinsJVM.setJenkinsJVM(false);
         }

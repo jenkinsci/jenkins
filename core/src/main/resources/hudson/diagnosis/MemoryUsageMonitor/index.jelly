@@ -29,7 +29,6 @@ THE SOFTWARE.
     <!-- TODO: st:include page="sidepanel.jelly" /-->
     <l:main-panel>
       <h1>
-        <l:icon class="icon-monitor icon-xlg"/>
         ${%JVM Memory Usage}
       </h1>
       <j:set var="type" value="${request.getParameter('type') ?: 'min'}" />

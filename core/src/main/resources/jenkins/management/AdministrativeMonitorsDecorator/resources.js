@@ -1,39 +1,123 @@
-function amCloser(e) {
-    var list = document.getElementById('visible-am-list');
-    var el = e.target;
-    while (el) {
+(function () {
+  function initializeAmMonitor(amMonitorRoot, options) {
+    var button = amMonitorRoot.querySelector(".am-button");
+    var amList = amMonitorRoot.querySelector(".am-list");
+    if (button === null || amList === null) {
+      return null;
+    }
+
+    var url = button.getAttribute("data-href");
+
+    function onClose(e) {
+      var list = amList;
+      var el = e.target;
+      while (el) {
         if (el === list) {
-            return; // clicked in the list
+          return; // clicked in the list
         }
         el = el.parentElement;
+      }
+      close();
     }
-    hideVisibleAmList();
-};
-function amEscCloser(e) {
-    if (e.keyCode == 27) {
-        amCloser(e);
+    function onEscClose(e) {
+      var escapeKeyCode = 27;
+      if (e.keyCode === escapeKeyCode) {
+        close();
+      }
     }
-};
-function amContainer() {
-    return document.getElementById('visible-am-container');
-};
-function hideVisibleAmList(e) {
-    amContainer().classList.remove('visible');
-    document.removeEventListener('click', amCloser);
-    document.removeEventListener('keydown', amEscCloser);
-}
-function showVisibleAmList(e) {
-    amContainer().classList.add('visible');
-    setTimeout(function() {
-        document.addEventListener('click', amCloser);
-        document.addEventListener('keydown', amEscCloser);
-    }, 1);
-}
-function toggleVisibleAmList(e) {
-    if (amContainer().classList.contains('visible')) {
-        hideVisibleAmList(e);
-    } else {
-        showVisibleAmList(e);
+
+    function show() {
+      if (options.closeAll) {
+        options.closeAll();
+      }
+
+      new Ajax.Request(url, {
+        method: "GET",
+        onSuccess: function (rsp) {
+          var popupContent = rsp.responseText;
+          amList.innerHTML = popupContent;
+          amMonitorRoot.classList.add("visible");
+          document.addEventListener("click", onClose);
+          document.addEventListener("keydown", onEscClose);
+
+          // Applies all initialization code to the elements within the popup
+          // Among other things, this sets the CSRF crumb to the forms within
+          Behaviour.applySubtree(amList);
+        },
+      });
     }
-    e.preventDefault();
-}
+
+    function close() {
+      amMonitorRoot.classList.remove("visible");
+      amList.innerHTML = "";
+      document.removeEventListener("click", onClose);
+      document.removeEventListener("keydown", onEscClose);
+    }
+
+    function toggle(e) {
+      if (amMonitorRoot.classList.contains("visible")) {
+        close();
+      } else {
+        show();
+      }
+      e.preventDefault();
+    }
+
+    function startListeners() {
+      button.addEventListener("click", toggle);
+    }
+
+    return {
+      close: close,
+      startListeners: startListeners,
+    };
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    var monitorWidgets;
+
+    function closeAll() {
+      monitorWidgets.forEach(function (widget) {
+        widget.close();
+      });
+    }
+
+    var normalMonitors = initializeAmMonitor(
+      document.getElementById("visible-am-container"),
+      {
+        closeAll: closeAll,
+      }
+    );
+    var securityMonitors = initializeAmMonitor(
+      document.getElementById("visible-sec-am-container"),
+      {
+        closeAll: closeAll,
+      }
+    );
+    monitorWidgets = [normalMonitors, securityMonitors].filter(function (
+      widget
+    ) {
+      return widget !== null;
+    });
+
+    monitorWidgets.forEach(function (widget) {
+      widget.startListeners();
+    });
+  });
+})();
+
+document.addEventListener("DOMContentLoaded", function () {
+  var amContainer = document.getElementById("visible-am-container");
+  var amInsertion = document.getElementById("visible-am-insertion");
+
+  if (amInsertion) {
+    amInsertion.appendChild(amContainer);
+  }
+
+  var secAmContainer = document.getElementById("visible-sec-am-container");
+  var secAmInsertion = document.getElementById("visible-sec-am-insertion");
+
+  if (secAmInsertion) {
+    secAmInsertion.appendChild(secAmContainer);
+  }
+});

@@ -29,7 +29,7 @@ able to use WebSphere's provided deployment script as-is.
 E.g., on WAS 7.0 and using jython:
 AdminApplication.installWarFile('hudson','/blabla/hudson.war','localhostNode01','server1','hudson')
 
-See https://jenkins-ci.org/issue/3270
+See https://issues.jenkins.io/browse/JENKINS-3270
 -->
 <webappbnd:WebAppBinding
   xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI"

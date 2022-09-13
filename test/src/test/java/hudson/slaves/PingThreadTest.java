@@ -21,27 +21,27 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.slaves;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assume.assumeFalse;
 
 import hudson.Functions;
 import hudson.model.Computer;
 import hudson.remoting.Channel;
 import hudson.remoting.ChannelClosedException;
 import hudson.remoting.PingThread;
+import java.io.IOException;
+import java.lang.reflect.Method;
+import java.util.concurrent.TimeoutException;
 import jenkins.security.MasterToSlaveCallable;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
-
-import java.io.IOException;
-import java.lang.management.ManagementFactory;
-import java.lang.reflect.Method;
-import java.util.concurrent.TimeoutException;
-
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeFalse;
 
 /**
  * @author ogondza.
@@ -58,10 +58,10 @@ public class PingThreadTest {
         DumbSlave slave = j.createOnlineSlave();
         Computer computer = slave.toComputer();
         Channel channel = (Channel) slave.getChannel();
-        String pid = channel.call(new GetPid());
+        long pid = channel.call(new GetPid());
 
         PingThread pingThread = null;
-        for (Thread it: Thread.getAllStackTraces().keySet()) {
+        for (Thread it : Thread.getAllStackTraces().keySet()) {
             if (it instanceof PingThread && it.getName().endsWith(channel.toString())) {
                 pingThread = (PingThread) it;
             }
@@ -69,30 +69,25 @@ public class PingThreadTest {
         assertNotNull(pingThread);
 
         // Simulate lost connection
-        assert new ProcessBuilder("kill", "-TSTP", pid).start().waitFor() == 0;
+        assertEquals(0, new ProcessBuilder("kill", "-TSTP", Long.toString(pid)).start().waitFor());
         try {
             // ... do not wait for Ping Thread to notice
             Method onDead = PingThread.class.getDeclaredMethod("onDead", Throwable.class);
             onDead.setAccessible(true);
             onDead.invoke(pingThread, new TimeoutException("No ping"));
 
-            try {
-                channel.call(new GetPid());
-                fail();
-            } catch (ChannelClosedException ex) {
-                // Expected
-            }
+            assertThrows(ChannelClosedException.class, () -> channel.call(new GetPid()));
 
             assertNull(slave.getComputer().getChannel());
             assertNull(computer.getChannel());
         } finally {
-            assert new ProcessBuilder("kill", "-CONT", pid).start().waitFor() == 0;
+            assertEquals(0, new ProcessBuilder("kill", "-CONT", Long.toString(pid)).start().waitFor());
         }
     }
 
-    private static final class GetPid extends MasterToSlaveCallable<String, IOException> {
-        @Override public String call() throws IOException {
-            return ManagementFactory.getRuntimeMXBean().getName().replaceAll("@.*", "");
+    private static final class GetPid extends MasterToSlaveCallable<Long, IOException> {
+        @Override public Long call() {
+            return ProcessHandle.current().pid();
         }
     }
 }

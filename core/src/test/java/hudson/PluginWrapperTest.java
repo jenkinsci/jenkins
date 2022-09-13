@@ -1,37 +1,42 @@
 package hudson;
 
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import hudson.remoting.Callable;
+import hudson.remoting.Which;
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
-
 import jenkins.model.Jenkins;
+import jenkins.util.AntClassLoader;
+import jenkins.util.URLClassLoader2;
+import org.apache.commons.lang.StringUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
-
 import org.jvnet.hudson.test.Issue;
-
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import org.mockito.stubbing.Answer;
 
 public class PluginWrapperTest {
 
     private static Locale loc;
-    
+
     @BeforeAll
     public static void before() {
         Jenkins.VERSION = "2.0"; // Some value needed - tests will overwrite if necessary
@@ -41,9 +46,11 @@ public class PluginWrapperTest {
 
     @AfterAll
     public static void after() {
-        Locale.setDefault(loc);
+        if (loc != null) {
+            Locale.setDefault(loc);
+        }
     }
-    
+
     @Test
     public void dependencyTest() {
         String version = "plugin:0.0.2";
@@ -65,47 +72,64 @@ public class PluginWrapperTest {
     @Test
     public void jenkinsCoreTooOld() {
         PluginWrapper pw = pluginWrapper("fake").requiredCoreVersion("3.0").buildLoaded();
-        try {
-            pw.resolvePluginDependencies();
-            fail();
-        } catch (IOException ex) {
-            assertContains(ex, "Failed to load: fake (42)", "Jenkins (3.0) or higher required");
-        }
+
+        final IOException ex = assertThrows(IOException.class, pw::resolvePluginDependencies);
+        assertContains(ex, "Failed to load: Fake (fake 42)", "Jenkins (3.0) or higher required");
     }
 
     @Test
     public void dependencyNotInstalled() {
         PluginWrapper pw = pluginWrapper("dependee").deps("dependency:42").buildLoaded();
-        try {
-            pw.resolvePluginDependencies();
-            fail();
-        } catch (IOException ex) {
-            assertContains(ex, "Failed to load: dependee (42)", "Plugin is missing: dependency (42)");
-        }
+
+        final IOException ex = assertThrows(IOException.class, pw::resolvePluginDependencies);
+        assertContains(ex, "Failed to load: Dependee (dependee 42)", "Plugin is missing: dependency (42)");
     }
 
     @Test
     public void dependencyOutdated() {
         pluginWrapper("dependency").version("3").buildLoaded();
         PluginWrapper pw = pluginWrapper("dependee").deps("dependency:5").buildLoaded();
-        try {
-            pw.resolvePluginDependencies();
-            fail();
-        } catch (IOException ex) {
-            assertContains(ex, "Failed to load: dependee (42)", "Update required: dependency (3) to be updated to 5 or higher");
-        }
+
+        final IOException ex = assertThrows(IOException.class, pw::resolvePluginDependencies);
+        assertContains(ex, "Failed to load: Dependee (dependee 42)", "Update required: Dependency (dependency 3) to be updated to 5 or higher");
     }
 
     @Test
     public void dependencyFailedToLoad() {
         pluginWrapper("dependency").version("5").buildFailed();
         PluginWrapper pw = pluginWrapper("dependee").deps("dependency:3").buildLoaded();
-        try {
-            pw.resolvePluginDependencies();
-            fail();
-        } catch (IOException ex) {
-            assertContains(ex, "Failed to load: dependee (42)", "Failed to load: dependency (5)");
+
+        final IOException ex = assertThrows(IOException.class, pw::resolvePluginDependencies);
+        assertContains(ex, "Failed to load: Dependee (dependee 42)", "Failed to load: Dependency (dependency 5)");
+    }
+
+    @Issue("JENKINS-66563")
+    @Test
+    public void insertJarsIntoClassPath() throws Exception {
+        try (AntClassLoader cl = new AntClassLoader()) {
+            assertInjectingJarsWorks(cl);
         }
+    }
+
+    @Issue("JENKINS-66563")
+    @Test
+    public void insertJarsIntoClassPathURLCL() throws Exception {
+        try (URLClassLoader2 cl = new URLClassLoader2(new URL[0])) {
+            assertInjectingJarsWorks(cl);
+        }
+    }
+
+    private void assertInjectingJarsWorks(ClassLoader cl) throws Exception {
+        PluginWrapper pw = pluginWrapper("pw").version("1").classloader(cl).build();
+        Enumeration<?> e1 = pw.classLoader.getResources("META-INF/MANIFEST.MF");
+        int e1size = countEnumerationElements(e1);
+        // insert the jar with the resource (lets pick on remoting as it should be very stable)
+        File jarFile = Which.jarFile(Callable.class);
+        pw.injectJarsToClasspath(jarFile);
+        Enumeration<?> e2 = pw.classLoader.getResources("META-INF/MANIFEST.MF");
+        int e2size = countEnumerationElements(e2);
+        assertThat("expect one more element from the updated classloader",
+                   e2size - e1size, is(1));
     }
 
     private void assertContains(Throwable ex, String... patterns) {
@@ -122,19 +146,18 @@ public class PluginWrapperTest {
     // per test
     private final HashMap<String, PluginWrapper> plugins = new HashMap<>();
     private final PluginManager pm = mock(PluginManager.class);
+
     {
-        when(pm.getPlugin(any(String.class))).thenAnswer(new Answer<PluginWrapper>() {
-            @Override public PluginWrapper answer(InvocationOnMock invocation) throws Throwable {
-                return plugins.get(invocation.getArguments()[0]);
-            }
-        });
+        when(pm.getPlugin(any(String.class))).thenAnswer((Answer<PluginWrapper>) invocation -> plugins.get(invocation.getArguments()[0]));
     }
+
     private final class PluginWrapperBuilder {
-        private String name;
+        private final String name;
         private String version = "42";
         private String requiredCoreVersion = "1.0";
-        private List<PluginWrapper.Dependency> deps = new ArrayList<>();
-        private List<PluginWrapper.Dependency> optDeps = new ArrayList<>();
+        private final List<PluginWrapper.Dependency> deps = new ArrayList<>();
+        private final List<PluginWrapper.Dependency> optDeps = new ArrayList<>();
+        private ClassLoader cl = null;
 
         private PluginWrapperBuilder(String name) {
             this.name = name;
@@ -150,16 +173,14 @@ public class PluginWrapperTest {
             return this;
         }
 
-        public PluginWrapperBuilder deps(String... deps) {
-            for (String dep: deps) {
-                this.deps.add(new PluginWrapper.Dependency(dep));
-            }
+        public PluginWrapperBuilder classloader(ClassLoader classloader) {
+            this.cl = classloader;
             return this;
         }
 
-        public PluginWrapperBuilder optDeps(String... optDeps) {
-            for (String dep: optDeps) {
-                this.optDeps.add(new PluginWrapper.Dependency(dep));
+        public PluginWrapperBuilder deps(String... deps) {
+            for (String dep : deps) {
+                this.deps.add(new PluginWrapper.Dependency(dep));
             }
             return this;
         }
@@ -179,15 +200,16 @@ public class PluginWrapperTest {
         private PluginWrapper build() {
             Manifest manifest = new Manifest();
             Attributes attributes = manifest.getMainAttributes();
-            attributes.put(new Attributes.Name("Short-Name"), name);
-            attributes.put(new Attributes.Name("Jenkins-Version"), requiredCoreVersion);
-            attributes.put(new Attributes.Name("Plugin-Version"), version);
+            attributes.putValue("Short-Name", name);
+            attributes.putValue("Long-Name", StringUtils.capitalize(name));
+            attributes.putValue("Jenkins-Version", requiredCoreVersion);
+            attributes.putValue("Plugin-Version", version);
             return new PluginWrapper(
                     pm,
                     new File("/tmp/" + name + ".jpi"),
                     manifest,
                     null,
-                    null,
+                    cl,
                     new File("/tmp/" + name + ".jpi.disabled"),
                     deps,
                     optDeps
@@ -204,6 +226,12 @@ public class PluginWrapperTest {
         assertTrue(PluginWrapper.isSnapshot("1.0-SNAPSHOT"));
         assertTrue(PluginWrapper.isSnapshot("1.0-20180719.153600-1"));
         assertTrue(PluginWrapper.isSnapshot("1.0-SNAPSHOT (private-abcd1234-jqhacker)"));
+    }
+
+    private static int countEnumerationElements(Enumeration<?> enumeration) {
+        int elements = 0;
+        for (; enumeration.hasMoreElements(); elements++, enumeration.nextElement()) {}
+        return elements;
     }
 
 }

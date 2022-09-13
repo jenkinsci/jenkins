@@ -27,6 +27,8 @@ package jenkins.model;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.ExtensionList;
 import hudson.ExtensionListListener;
 import hudson.ExtensionPoint;
@@ -37,7 +39,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import edu.umd.cs.findbugs.annotations.NonNull;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -48,6 +49,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  * @see Actionable#getAllActions
  * @since 1.548
  */
+@SuppressFBWarnings(value = "THROWS_METHOD_THROWS_CLAUSE_BASIC_EXCEPTION", justification = "TODO needs triage")
 public abstract class TransientActionFactory<T> implements ExtensionPoint {
 
     /**
@@ -84,26 +86,30 @@ public abstract class TransientActionFactory<T> implements ExtensionPoint {
     private static class CacheKey {
         private final Class<?> type;
         private final Class<? extends Action> actionType;
+
         CacheKey(Class<?> type, Class<? extends Action> actionType) {
             this.type = type;
             this.actionType = actionType;
         }
+
         @Override
         public boolean equals(Object obj) {
             return obj instanceof CacheKey && type == ((CacheKey) obj).type && actionType == ((CacheKey) obj).actionType;
         }
+
         @Override
         public int hashCode() {
             return type.hashCode() ^ actionType.hashCode();
         }
     }
+
     @SuppressWarnings("rawtypes")
     private static final LoadingCache<ExtensionList<TransientActionFactory>, LoadingCache<CacheKey, List<TransientActionFactory<?>>>> cache =
-        CacheBuilder.newBuilder().weakKeys().build(new CacheLoader<ExtensionList<TransientActionFactory>, LoadingCache<CacheKey, List<TransientActionFactory<?>>>>() {
+        CacheBuilder.newBuilder().weakKeys().build(new CacheLoader<>() {
         @Override
         public LoadingCache<CacheKey, List<TransientActionFactory<?>>> load(final ExtensionList<TransientActionFactory> allFactories) throws Exception {
             final LoadingCache<CacheKey, List<TransientActionFactory<?>>> perJenkinsCache =
-                CacheBuilder.newBuilder().build(new CacheLoader<CacheKey, List<TransientActionFactory<?>>>() {
+                CacheBuilder.newBuilder().build(new CacheLoader<>() {
                 @Override
                 public List<TransientActionFactory<?>> load(CacheKey key) throws Exception {
                     List<TransientActionFactory<?>> factories = new ArrayList<>();

@@ -1,12 +1,11 @@
 package hudson.os;
 
+import java.util.Properties;
 import ndr.NdrObject;
 import ndr.NetworkDataRepresentation;
 import org.jinterop.dcom.transport.JIComTransportFactory;
 import rpc.Endpoint;
 import rpc.Stub;
-
-import java.util.Properties;
 
 /**
  * My attempt to see if ServerAlive calls can be used to detect an authentication failure
@@ -35,18 +34,19 @@ public class DCOMSandbox {
         private static Properties defaults = new Properties();
 
         static {
-                defaults.put("rpc.ntlm.lanManagerKey","false");
-                defaults.put("rpc.ntlm.sign","false");
-                defaults.put("rpc.ntlm.seal","false");
-                defaults.put("rpc.ntlm.keyExchange","false");
-                defaults.put("rpc.connectionContext","rpc.security.ntlm.NtlmConnectionContext");
+                defaults.put("rpc.ntlm.lanManagerKey", "false");
+                defaults.put("rpc.ntlm.sign", "false");
+                defaults.put("rpc.ntlm.seal", "false");
+                defaults.put("rpc.ntlm.keyExchange", "false");
+                defaults.put("rpc.connectionContext", "rpc.security.ntlm.NtlmConnectionContext");
         }
 
+        @Override
         protected String getSyntax() {
             return "99fcfec4-5260-101b-bbcb-00aa0021347a:0.0";
         }
 
-        public JIComOxidStub(String address, String domain, String username, String password) {
+        JIComOxidStub(String address, String domain, String username, String password) {
             setTransportFactory(JIComTransportFactory.getSingleTon());
             setProperties(new Properties(defaults));
             getProperties().setProperty("rpc.security.username", username);
@@ -64,14 +64,17 @@ public class DCOMSandbox {
     static class ServerAlive extends NdrObject {
         // see http://www.hsc.fr/ressources/articles/win_net_srv/rpcss_dcom_interfaces.html
 
+        @Override
         public int getOpnum() {
             return 3;
         }
 
+        @Override
         public void write(NetworkDataRepresentation ndr) {
             // no parameter
         }
 
+        @Override
         public void read(NetworkDataRepresentation ndr) {
             System.out.println("Got " + ndr.readUnsignedLong());
         }

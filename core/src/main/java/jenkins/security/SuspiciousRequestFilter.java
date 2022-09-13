@@ -1,9 +1,8 @@
 package jenkins.security;
 
-import jenkins.util.SystemProperties;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.io.IOException;
+import java.util.logging.Logger;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
@@ -12,14 +11,17 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.util.logging.Logger;
+import jenkins.util.SystemProperties;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 @Restricted(NoExternalUse.class)
 public class SuspiciousRequestFilter implements Filter {
 
     /** System property name set to true or false to indicate whether or not semicolons should be allowed in URL paths. */
     public static final String ALLOW_SEMICOLONS_IN_PATH = SuspiciousRequestFilter.class.getName() + ".allowSemicolonsInPath";
+
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
     public static boolean allowSemicolonsInPath = SystemProperties.getBoolean(ALLOW_SEMICOLONS_IN_PATH, false);
     private static final Logger LOGGER = Logger.getLogger(SuspiciousRequestFilter.class.getName());
 
@@ -30,7 +32,7 @@ public class SuspiciousRequestFilter implements Filter {
         if (!allowSemicolonsInPath && httpRequest.getRequestURI().contains(";")) {
             LOGGER.warning(() -> "Denying HTTP " + httpRequest.getMethod() + " to " + httpRequest.getRequestURI() +
                     " as it has an illegal semicolon in the path. This behavior can be overridden by setting the system property " +
-                    ALLOW_SEMICOLONS_IN_PATH + " to true. For more information, see https://jenkins.io/redirect/semicolons-in-urls");
+                    ALLOW_SEMICOLONS_IN_PATH + " to true. For more information, see https://www.jenkins.io/redirect/semicolons-in-urls");
             httpResponse.sendError(HttpServletResponse.SC_BAD_REQUEST, "Semicolons are not allowed in the request URI");
         } else {
             chain.doFilter(request, response);

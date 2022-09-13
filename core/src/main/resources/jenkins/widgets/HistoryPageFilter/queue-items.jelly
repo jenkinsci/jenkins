@@ -38,7 +38,7 @@ THE SOFTWARE.
 	<td class="build-row-cell">
 	  <div class="pane build-name">
 	    <div class="build-icon">
-	      <l:icon class="icon-grey icon-sm"/>
+	      <l:icon class="icon-nobuilt icon-sm"/>
 	    </div>
 	    <!-- Don't use math unless needed, in case nextBuildNumber is not numeric -->
 	    <div class="display-name" title="${%Expected build number}">

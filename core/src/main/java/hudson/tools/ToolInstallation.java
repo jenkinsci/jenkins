@@ -24,25 +24,36 @@
 
 package hudson.tools;
 
+import com.thoughtworks.xstream.converters.UnmarshallingContext;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.DescriptorExtensionList;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.ExtensionPoint;
 import hudson.diagnosis.OldDataMonitor;
-import hudson.model.*;
+import hudson.model.AbstractBuild;
+import hudson.model.AbstractDescribableImpl;
+import hudson.model.EnvironmentSpecific;
+import hudson.model.Node;
+import hudson.model.Saveable;
+import hudson.model.TaskListener;
+import hudson.remoting.Channel;
 import hudson.slaves.NodeSpecific;
 import hudson.util.DescribableList;
 import hudson.util.XStream2;
-
-import java.io.Serializable;
 import java.io.IOException;
+import java.io.Serializable;
+import java.io.StringReader;
 import java.util.List;
-
-import com.thoughtworks.xstream.annotations.XStreamSerializable;
-import com.thoughtworks.xstream.converters.UnmarshallingContext;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import jenkins.model.Jenkins;
+import jenkins.util.Timer;
+import org.dom4j.Document;
+import org.dom4j.Element;
+import org.dom4j.io.SAXReader;
 
 /**
  * Formalization of a tool installed in nodes used for builds.
@@ -54,7 +65,7 @@ import jenkins.model.Jenkins;
  *
  * <ul>
  * <li>Hudson allows admins to specify different locations for tools on some agents.
- *     For example, JDK on the master might be on /usr/local/java but on a Windows agent
+ *     For example, JDK on the controller might be on /usr/local/java but on a Windows agent
  *     it could be at c:\Program Files\Java
  * <li>Hudson can verify the existence of tools and provide warnings and diagnostics for
  *     admins. (TBD)
@@ -76,34 +87,36 @@ import jenkins.model.Jenkins;
  * @since 1.286
  */
 public abstract class ToolInstallation extends AbstractDescribableImpl<ToolInstallation> implements Serializable, ExtensionPoint {
+
+    private static final Logger LOGGER = Logger.getLogger(ToolInstallation.class.getName());
+
     private final String name;
     private /*almost final*/ String home;
 
     /**
      * {@link ToolProperty}s that are associated with this tool.
      */
-    @XStreamSerializable
-    private transient /*almost final*/ DescribableList<ToolProperty<?>,ToolPropertyDescriptor> properties
+    private /*almost final*/ DescribableList<ToolProperty<?>, ToolPropertyDescriptor> properties
             = new DescribableList<>(Saveable.NOOP);
 
     /**
      * @deprecated
-     *      as of 1.302. Use {@link #ToolInstallation(String, String, List)} 
+     *      as of 1.302. Use {@link #ToolInstallation(String, String, List)}
      */
     @Deprecated
-    public ToolInstallation(String name, String home) {
+    protected ToolInstallation(String name, String home) {
         this.name = name;
         this.home = home;
     }
 
-    public ToolInstallation(String name, String home, List<? extends ToolProperty<?>> properties) {
+    protected ToolInstallation(String name, String home, List<? extends ToolProperty<?>> properties) {
         this.name = name;
         this.home = home;
-        if(properties!=null) {
+        if (properties != null) {
             try {
                 this.properties.replaceBy(properties);
                 for (ToolProperty<?> p : properties)
-                    _setTool(p,this);
+                    _setTool(p, this);
             } catch (IOException e) {
                 throw new AssertionError(e); // no Saveable, so can't happen
             }
@@ -124,10 +137,10 @@ public abstract class ToolInstallation extends AbstractDescribableImpl<ToolInsta
 
     /**
      * Gets the home directory of this tool.
-     * 
+     *
      * The path can be in Unix format as well as in Windows format.
      * Must be absolute.
-     * @return the home directory location, if defined (may only be defined on the result of {@link #translate(Node, EnvVars, TaskListener)}, e.g. if unavailable on master)
+     * @return the home directory location, if defined (may only be defined on the result of {@link #translate(Node, EnvVars, TaskListener)}, e.g. if unavailable on controller)
      */
     public @CheckForNull String getHome() {
         return home;
@@ -145,8 +158,10 @@ public abstract class ToolInstallation extends AbstractDescribableImpl<ToolInsta
     public void buildEnvVars(EnvVars env) {
     }
 
-    public DescribableList<ToolProperty<?>,ToolPropertyDescriptor> getProperties() {
-        assert properties!=null;
+    public synchronized DescribableList<ToolProperty<?>, ToolPropertyDescriptor> getProperties() {
+        if (properties == null) {
+            properties = new DescribableList<>(Saveable.NOOP);
+        }
         return properties;
     }
 
@@ -169,11 +184,11 @@ public abstract class ToolInstallation extends AbstractDescribableImpl<ToolInsta
         ToolInstallation t = this;
         if (t instanceof NodeSpecific) {
             NodeSpecific n = (NodeSpecific) t;
-            t = (ToolInstallation)n.forNode(node,listener);
+            t = (ToolInstallation) n.forNode(node, listener);
         }
         if (t instanceof EnvironmentSpecific) {
             EnvironmentSpecific e = (EnvironmentSpecific) t;
-            t = (ToolInstallation)e.forEnvironment(envs);
+            t = (ToolInstallation) e.forEnvironment(envs);
         }
         return t;
     }
@@ -182,9 +197,9 @@ public abstract class ToolInstallation extends AbstractDescribableImpl<ToolInsta
      * Convenient version of {@link #translate(Node, EnvVars, TaskListener)} that just takes a build object in progress.
      * @since 1.460
      */
-    public ToolInstallation translate(AbstractBuild<?,?> buildInProgress, TaskListener listener) throws IOException, InterruptedException {
+    public ToolInstallation translate(AbstractBuild<?, ?> buildInProgress, TaskListener listener) throws IOException, InterruptedException {
         assert buildInProgress.isBuilding();
-        return translate(buildInProgress.getBuiltOn(),buildInProgress.getEnvironment(listener),listener);
+        return translate(buildInProgress.getBuiltOn(), buildInProgress.getEnvironment(listener), listener);
     }
 
     /**
@@ -209,12 +224,32 @@ public abstract class ToolInstallation extends AbstractDescribableImpl<ToolInsta
     /**
      * Invoked by XStream when this object is read into memory.
      */
+    @SuppressFBWarnings(value = "IS2_INCONSISTENT_SYNC", justification = "nothing should be competing with XStream during deserialization")
     protected Object readResolve() {
-        if(properties==null)
-            properties = new DescribableList<>(Saveable.NOOP);
-        for (ToolProperty<?> p : properties)
-            _setTool(p, this);
+        if (properties != null) {
+            for (ToolProperty<?> p : properties) {
+                _setTool(p, this);
+            }
+        }
         return this;
+    }
+
+    protected Object writeReplace() throws Exception {
+        if (Channel.current() == null) { // XStream
+            return this;
+        } else { // Remoting
+            LOGGER.log(Level.WARNING, "Serialization of " + getClass().getSimpleName() + " extends ToolInstallation over Remoting is deprecated", new Throwable());
+            // Hack: properties is not serializable, so try to serialize as XML (in another thread); delete <properties/>; deserialize; then load a clone
+            String xml1 = Timer.get().submit(() -> Jenkins.XSTREAM2.toXML(this)).get();
+            Document dom = new SAXReader().read(new StringReader(xml1));
+            Element properties = dom.getRootElement().element("properties");
+            if (properties != null) {
+                dom.getRootElement().remove(properties);
+            }
+            String xml2 = dom.asXML();
+            ToolInstallation clone = (ToolInstallation) Timer.get().submit(() -> Jenkins.XSTREAM2.fromXML(xml2)).get();
+            return clone;
+        }
     }
 
     @Override public String toString() {
@@ -224,8 +259,10 @@ public abstract class ToolInstallation extends AbstractDescribableImpl<ToolInsta
     /**
      * Subclasses can extend this for data migration from old field storing home directory.
      */
-    protected static abstract class ToolConverter extends XStream2.PassthruConverter<ToolInstallation> {
-        public ToolConverter(XStream2 xstream) { super(xstream); }
+    protected abstract static class ToolConverter extends XStream2.PassthruConverter<ToolInstallation> {
+        protected ToolConverter(XStream2 xstream) { super(xstream); }
+
+        @Override
         protected void callback(ToolInstallation obj, UnmarshallingContext context) {
             String s;
             if (obj.home == null && (s = oldHomeField(obj)) != null) {
@@ -233,16 +270,16 @@ public abstract class ToolInstallation extends AbstractDescribableImpl<ToolInsta
                 OldDataMonitor.report(context, "1.286");
             }
         }
+
         protected abstract String oldHomeField(ToolInstallation obj);
     }
 
     /**
      * Returns all the registered {@link ToolDescriptor}s.
      */
-    public static DescriptorExtensionList<ToolInstallation,ToolDescriptor<?>> all() {
+    public static DescriptorExtensionList<ToolInstallation, ToolDescriptor<?>> all() {
         // use getDescriptorList and not getExtensionList to pick up legacy instances
         return Jenkins.get().getDescriptorList(ToolInstallation.class);
     }
 
-    private static final long serialVersionUID = 1L;
 }

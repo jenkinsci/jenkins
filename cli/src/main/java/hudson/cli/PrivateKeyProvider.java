@@ -21,27 +21,32 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.cli;
 
 import static java.util.logging.Level.FINE;
-import static java.nio.charset.StandardCharsets.UTF_8;
 
+import java.io.ByteArrayInputStream;
 import java.io.Console;
 import java.io.DataInputStream;
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
+import java.nio.file.Paths;
 import java.security.GeneralSecurityException;
+import java.security.InvalidKeyException;
 import java.security.KeyPair;
+import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
-
+import java.util.stream.StreamSupport;
 import org.apache.sshd.common.config.keys.FilePasswordProvider;
+import org.apache.sshd.common.util.io.resource.PathResource;
 import org.apache.sshd.common.util.security.SecurityUtils;
 
 /**
@@ -52,7 +57,7 @@ import org.apache.sshd.common.util.security.SecurityUtils;
  */
 public class PrivateKeyProvider {
 
-    private List<KeyPair> privateKeys = new ArrayList<>();
+    private final List<KeyPair> privateKeys = new ArrayList<>();
 
     /**
      * Get keys read so far.
@@ -106,15 +111,15 @@ public class PrivateKeyProvider {
         privateKeys.add(loadKey(keyFile, password));
     }
 
-    private static boolean isPemEncrypted(File f) throws IOException{
+    private static boolean isPemEncrypted(File f) throws IOException {
         //simple check if the file is encrypted
         return readPemFile(f).contains("4,ENCRYPTED");
     }
 
-    private static String askForPasswd(String filePath){
+    private static String askForPasswd(String filePath) {
         Console cons = System.console();
         String passwd = null;
-        if (cons != null){
+        if (cons != null) {
             char[] p = cons.readPassword("%s", "Enter passphrase for " + filePath + ":");
             passwd = String.valueOf(p);
         }
@@ -125,21 +130,30 @@ public class PrivateKeyProvider {
         return loadKey(readPemFile(f), passwd);
     }
 
-    private static String readPemFile(File f) throws IOException{
+    private static String readPemFile(File f) throws IOException {
         try (InputStream is = Files.newInputStream(f.toPath());
              DataInputStream dis = new DataInputStream(is)) {
             byte[] bytes = new byte[(int) f.length()];
             dis.readFully(bytes);
-            return new String(bytes);
+            return new String(bytes, StandardCharsets.UTF_8);
         } catch (InvalidPathException e) {
             throw new IOException(e);
         }
     }
 
     public static KeyPair loadKey(String pemString, String passwd) throws IOException, GeneralSecurityException {
-        return SecurityUtils.loadKeyPairIdentity("key",
-                new ByteArrayInputStream(pemString.getBytes(UTF_8)),
+        Iterable<KeyPair> itr = SecurityUtils.loadKeyPairIdentities(null,
+                new PathResource(Paths.get("key")),
+                new ByteArrayInputStream(pemString.getBytes(StandardCharsets.UTF_8)),
                 FilePasswordProvider.of(passwd));
+        long numLoaded = itr == null ? 0 : StreamSupport.stream(itr.spliterator(), false).count();
+        if (numLoaded <= 0) {
+            throw new InvalidKeyException("Unsupported private key file format: key");
+        }
+        if (numLoaded != 1) {
+            throw new InvalidKeySpecException("Multiple private key pairs N/A: key");
+        }
+        return itr.iterator().next();
     }
 
     private static final Logger LOGGER = Logger.getLogger(PrivateKeyProvider.class.getName());

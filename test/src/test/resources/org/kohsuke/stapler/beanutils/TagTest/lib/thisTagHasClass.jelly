@@ -1,0 +1,13 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
+    <st:documentation>
+        A tag with an attribute
+
+        <st:attribute name="class" use="required">
+            A string.
+        </st:attribute>
+    </st:documentation>
+    <p>
+        The class:${attrs.class}
+    </p>
+</j:jelly>

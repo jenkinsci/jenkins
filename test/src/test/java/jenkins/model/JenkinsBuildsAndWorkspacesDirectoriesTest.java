@@ -1,38 +1,36 @@
 package jenkins.model;
 
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeFalse;
+
 import hudson.Functions;
 import hudson.init.InitMilestone;
-import hudson.maven.MavenModuleSet;
-import hudson.maven.MavenModuleSetBuild;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
-import org.apache.commons.io.FileUtils;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.jvnet.hudson.test.ExtractResourceSCM;
-import org.jvnet.hudson.test.Issue;
-import org.jvnet.hudson.test.LoggerRule;
-import org.jvnet.hudson.test.MockFolder;
-import org.jvnet.hudson.test.RestartableJenkinsRule;
-import org.jvnet.hudson.test.recipes.LocalData;
-
 import java.io.File;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.stream.Stream;
-
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeFalse;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.LoggerRule;
+import org.jvnet.hudson.test.MockFolder;
+import org.jvnet.hudson.test.RestartableJenkinsRule;
+import org.jvnet.hudson.test.recipes.LocalData;
 
 /**
  * Since JENKINS-50164, Jenkins#workspacesDir and Jenkins#buildsDir had their associated UI deleted.
@@ -84,16 +82,13 @@ public class JenkinsBuildsAndWorkspacesDirectoriesTest {
             setWorkspacesDirProperty("testdir2");
         });
 
-        story.then(step -> {
-            assertTrue(logWasFoundAtLevel(LOG_WHEN_CHANGING_WORKSPACES_DIR,
-                                          Level.WARNING));
-        });
+        story.then(step -> assertTrue(logWasFoundAtLevel(LOG_WHEN_CHANGING_WORKSPACES_DIR, Level.WARNING)));
     }
 
     @Issue("JENKINS-50164")
     @Test
     public void badValueForBuildsDir() {
-        story.then((rule) -> {
+        story.then(rule -> {
             final List<String> badValues = new ArrayList<>(Arrays.asList(
                     "blah",
                     "$JENKINS_HOME",
@@ -108,12 +103,7 @@ public class JenkinsBuildsAndWorkspacesDirectoriesTest {
             } // else perhaps running as root
 
             for (String badValue : badValues) {
-                try {
-                    Jenkins.checkRawBuildsDir(badValue);
-                    fail(badValue + " should have been rejected");
-                } catch (InvalidBuildsDir invalidBuildsDir) {
-                    // expected failure
-                }
+                assertThrows(badValue + " should have been rejected", InvalidBuildsDir.class, () -> Jenkins.checkRawBuildsDir(badValue));
             }
         });
     }
@@ -121,7 +111,7 @@ public class JenkinsBuildsAndWorkspacesDirectoriesTest {
     @Issue("JENKINS-50164")
     @Test
     public void goodValueForBuildsDir() {
-        story.then((rule) -> {
+        story.then(rule -> {
             final List<String> badValues = Arrays.asList(
                     "$JENKINS_HOME/foo/$ITEM_FULL_NAME",
                     "${ITEM_ROOTDIR}/builds");
@@ -161,10 +151,10 @@ public class JenkinsBuildsAndWorkspacesDirectoriesTest {
             assertTrue(story.j.getInstance().isDefaultBuildDir());
 
             // Now screw up the value by writing into the file directly, like one could do using external XML manipulation tools
-            final File configFile = new File(rule.jenkins.getRootDir(), "config.xml");
-            final String screwedUp = FileUtils.readFileToString(configFile).
+            final Path configFile = rule.jenkins.getRootDir().toPath().resolve("config.xml");
+            final String screwedUp = Files.readString(configFile, StandardCharsets.UTF_8).
                     replaceFirst("<buildsDir>.*</buildsDir>", "<buildsDir>eeeeeeeeek</buildsDir>");
-            FileUtils.write(configFile, screwedUp);
+            Files.writeString(configFile, screwedUp, StandardCharsets.UTF_8);
         });
 
         story.thenDoesNotStart();
@@ -177,10 +167,7 @@ public class JenkinsBuildsAndWorkspacesDirectoriesTest {
                 .record(Jenkins.class, Level.INFO)
                 .capture(100);
 
-        story.then(step -> {
-                       assertFalse(logWasFound("Using non default builds directories"));
-                   }
-        );
+        story.then(step -> assertFalse(logWasFound("Using non default builds directories")));
 
         story.then(steps -> {
             assertTrue(story.j.getInstance().isDefaultBuildDir());
@@ -250,7 +237,7 @@ public class JenkinsBuildsAndWorkspacesDirectoriesTest {
 
             // ** HACK AROUND JENKINS-50422: manually restarting ** //
             // Check the disk (cannot just restart normally with the rule, )
-            assertThat(FileUtils.readFileToString(new File(j.jenkins.getRootDir(), "config.xml")),
+            assertThat(Files.readString(j.jenkins.getRootDir().toPath().resolve("config.xml"), StandardCharsets.UTF_8),
                        containsString("<buildsDir>" + newBuildsDirValueBySysprop + "</buildsDir>"));
 
             String rootDirBeforeRestart = j.jenkins.getRootDir().toString();
@@ -263,7 +250,7 @@ public class JenkinsBuildsAndWorkspacesDirectoriesTest {
             }
 
             assertEquals(rootDirBeforeRestart, j.jenkins.getRootDir().toString());
-            assertThat(FileUtils.readFileToString(new File(j.jenkins.getRootDir(), "config.xml")),
+            assertThat(Files.readString(j.jenkins.getRootDir().toPath().resolve("config.xml"), StandardCharsets.UTF_8),
                        containsString("<buildsDir>" + newBuildsDirValueBySysprop + "</buildsDir>"));
             assertEquals(newBuildsDirValueBySysprop, j.jenkins.getRawBuildsDir());
             // ** END HACK ** //
@@ -284,40 +271,9 @@ public class JenkinsBuildsAndWorkspacesDirectoriesTest {
                 .anyMatch(record -> record.getMessage().contains(searched));
     }
 
-	private boolean logWasFoundAtLevel(String searched, Level level) {
-		return loggerRule.getRecords().stream()
+    private boolean logWasFoundAtLevel(String searched, Level level) {
+        return loggerRule.getRecords().stream()
                 .filter(record -> record.getMessage().contains(searched)).anyMatch(record -> record.getLevel().equals(level));
-	}
-
-    @Test
-    @Issue("JENKINS-12251")
-    public void testItemFullNameExpansion() throws Exception {
-        loggerRule.record(Jenkins.class, Level.WARNING)
-                .record(Jenkins.class, Level.INFO)
-                .capture(1000);
-
-        story.then(steps -> {
-            assertTrue(story.j.getInstance().isDefaultBuildDir());
-            assertTrue(story.j.getInstance().isDefaultWorkspaceDir());
-            setBuildsDirProperty("${JENKINS_HOME}/test12251_builds/${ITEM_FULL_NAME}");
-            setWorkspacesDirProperty("${JENKINS_HOME}/test12251_ws/${ITEM_FULL_NAME}");
-        });
-
-        story.then(steps -> {
-            assertTrue(JenkinsBuildsAndWorkspacesDirectoriesTest.this.logWasFound("Changing builds directories from "));
-            assertFalse(story.j.getInstance().isDefaultBuildDir());
-            assertFalse(story.j.getInstance().isDefaultWorkspaceDir());
-
-            // build a dummy project
-            MavenModuleSet m = story.j.jenkins.createProject(MavenModuleSet.class, "p");
-            m.setScm(new ExtractResourceSCM(getClass().getResource("/simple-projects.zip")));
-            MavenModuleSetBuild b = m.scheduleBuild2(0).get();
-
-            // make sure these changes are effective
-            assertTrue(b.getWorkspace().getRemote().contains("test12251_ws"));
-            assertTrue(b.getRootDir().toString().contains("test12251_builds"));
-        });
-
     }
 
     @Test

@@ -1,5 +1,5 @@
 // this is the DSL descriptor to support the creation of groovy views in eclipse
-// for more information about the groovy DSL support in eclipse see: http://groovy.codehaus.org/DSL+Descriptors+for+Groovy-Eclipse
+// for more information about the groovy DSL support in eclipse see: https://github.com/groovy/groovy-eclipse/wiki/DSL-Descriptors
 // fileExtension(...) and fileName(...)
 (isScript() /*& sourceFolderOfCurrentFile("src/main/resources")*/).accept {
 	provider "Jenkins Groovy View";

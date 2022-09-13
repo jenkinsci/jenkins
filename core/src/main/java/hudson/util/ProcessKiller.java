@@ -26,7 +26,6 @@ package hudson.util;
 
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
-
 import java.io.IOException;
 import java.io.Serializable;
 

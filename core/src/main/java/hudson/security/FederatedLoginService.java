@@ -21,25 +21,25 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package hudson.security;
 
-import hudson.ExtensionList;
-import hudson.ExtensionPoint;
-import jenkins.model.Jenkins;
-import hudson.model.User;
-import hudson.model.UserProperty;
-import org.acegisecurity.context.SecurityContextHolder;
-import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
-import org.acegisecurity.userdetails.UserDetails;
-import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+package hudson.security;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
-import javax.servlet.ServletException;
+import hudson.ExtensionList;
+import hudson.ExtensionPoint;
+import hudson.model.User;
+import hudson.model.UserProperty;
 import java.io.IOException;
 import java.io.Serializable;
+import javax.servlet.ServletException;
+import jenkins.model.Jenkins;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 
 /**
  * Abstraction for a login mechanism through external authenticator/identity provider
@@ -183,20 +183,19 @@ public abstract class FederatedLoginService implements ExtensionPoint {
          *      to the caller of your "doXyz" method, it will either render an error page or initiate
          *      a user registration session (provided that {@link SecurityRealm} supports that.)
          */
-        @SuppressWarnings("ACL.impersonate")
         @NonNull
         public User signin() throws UnclaimedIdentityException {
             User u = locateUser();
-            if (u!=null) {
+            if (u != null) {
                 // login as this user
-                UserDetails d = Jenkins.get().getSecurityRealm().loadUserByUsername(u.getId());
+                UserDetails d = Jenkins.get().getSecurityRealm().loadUserByUsername2(u.getId());
 
-                UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(d,"",d.getAuthorities());
+                UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(d, "", d.getAuthorities());
                 token.setDetails(d);
                 SecurityContextHolder.getContext().setAuthentication(token);
                 return u;
             } else {
-                // Unassociated identity. 
+                // Unassociated identity.
                 throw new UnclaimedIdentityException(this);
             }
         }
@@ -211,7 +210,7 @@ public abstract class FederatedLoginService implements ExtensionPoint {
          */
         public void addToCurrentUser() throws IOException {
             User u = User.current();
-            if (u==null)    throw new IllegalStateException("Current request is unauthenticated");
+            if (u == null)    throw new IllegalStateException("Current request is unauthenticated");
 
             addTo(u);
         }
@@ -221,7 +220,7 @@ public abstract class FederatedLoginService implements ExtensionPoint {
          */
         public void addTo(User u) throws IOException {
             FederatedLoginServiceUserProperty p = u.getProperty(getUserPropertyClass());
-            if (p==null) {
+            if (p == null) {
                 p = (FederatedLoginServiceUserProperty) UserProperty.all().find(getUserPropertyClass()).newInstance(u);
                 u.addProperty(p);
             }
@@ -245,11 +244,12 @@ public abstract class FederatedLoginService implements ExtensionPoint {
             this.identity = identity;
         }
 
+        @Override
         public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
             SecurityRealm sr = Jenkins.get().getSecurityRealm();
             if (sr.allowsSignup()) {
                 try {
-                    sr.commenceSignup(identity).generateResponse(req,rsp,node);
+                    sr.commenceSignup(identity).generateResponse(req, rsp, node);
                     return;
                 } catch (UnsupportedOperationException e) {
                     // fall through
@@ -258,7 +258,7 @@ public abstract class FederatedLoginService implements ExtensionPoint {
 
             // this security realm doesn't support user registration.
             // just report an error
-            req.getView(this,"error").forward(req,rsp);
+            req.getView(this, "error").forward(req, rsp);
         }
     }
 

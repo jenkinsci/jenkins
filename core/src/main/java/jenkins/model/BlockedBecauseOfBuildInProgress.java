@@ -24,11 +24,11 @@
 
 package jenkins.model;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.Executor;
 import hudson.model.Job;
 import hudson.model.Run;
 import hudson.model.queue.CauseOfBlockage;
-import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * Indicates that a new build is blocked because the previous build is already in progress.
@@ -36,7 +36,7 @@ import edu.umd.cs.findbugs.annotations.NonNull;
  * @since 1.624
  */
 public class BlockedBecauseOfBuildInProgress extends CauseOfBlockage {
-    
+
     @NonNull
     private final Run<?, ?> build;
 

@@ -21,19 +21,17 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.lifecycle;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
-
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import jenkins.model.Configuration;
 import jenkins.model.Jenkins;
+import jenkins.util.SystemProperties;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * {@link Lifecycle} that delegates the responsibility to restart Jenkins to an external
@@ -56,7 +54,7 @@ public class ExitLifecycle extends Lifecycle {
     private Integer exitOnRestart;
 
     public ExitLifecycle() {
-        exitOnRestart = Integer.parseInt(Configuration.getStringConfigParameter(EXIT_CODE_ON_RESTART, DEFAULT_EXIT_CODE));
+        exitOnRestart = Integer.parseInt(SystemProperties.getString(Jenkins.class.getName() + "." + EXIT_CODE_ON_RESTART, DEFAULT_EXIT_CODE));
     }
 
     @Override
@@ -68,7 +66,7 @@ public class ExitLifecycle extends Lifecycle {
             if (jenkins != null) {
                 jenkins.cleanUp();
             }
-        } catch (Exception e) {
+        } catch (Throwable e) {
             LOGGER.log(Level.SEVERE, "Failed to clean up. Restart will continue.", e);
         }
 

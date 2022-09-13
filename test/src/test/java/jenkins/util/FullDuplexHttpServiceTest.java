@@ -21,7 +21,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.util;
+
+import static org.junit.Assert.assertEquals;
 
 import hudson.cli.FullDuplexHttpStream;
 import hudson.model.InvisibleAction;
@@ -39,9 +42,8 @@ import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.junit.Test;
-import static org.junit.Assert.assertEquals;
 import org.junit.Rule;
+import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.LoggerRule;
 import org.jvnet.hudson.test.TestExtension;
@@ -68,13 +70,16 @@ public class FullDuplexHttpServiceTest {
         assertEquals(0, is.read()); // see FullDuplexHttpStream.getInputStream
         assertEquals(66, is.read());
     }
+
     @TestExtension("smokes")
     public static class Endpoint extends InvisibleAction implements RootAction {
-        private transient final Map<UUID, FullDuplexHttpService> duplexServices = new HashMap<>();
+        private final transient Map<UUID, FullDuplexHttpService> duplexServices = new HashMap<>();
+
         @Override
         public String getUrlName() {
             return "test";
         }
+
         public HttpResponse doIndex() {
             return new FullDuplexHttpService.Response(duplexServices) {
                 @Override
@@ -90,6 +95,7 @@ public class FullDuplexHttpServiceTest {
             };
         }
     }
+
     @TestExtension("smokes")
     public static class EndpointCrumbExclusion extends CrumbExclusion {
         @Override

@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,27 +21,29 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.util;
 
-import org.jfree.chart.axis.CategoryAxis;
-import org.jfree.chart.axis.AxisState;
-import org.jfree.chart.axis.CategoryTick;
-import org.jfree.chart.axis.CategoryLabelPosition;
-import org.jfree.chart.plot.PlotRenderingInfo;
-import org.jfree.chart.entity.EntityCollection;
-import org.jfree.chart.entity.CategoryLabelEntity;
-import org.jfree.ui.RectangleEdge;
-import org.jfree.ui.RectangleAnchor;
-import org.jfree.text.TextBlock;
-
-import java.awt.*;
-import java.awt.geom.Rectangle2D;
+import java.awt.Graphics2D;
+import java.awt.Shape;
 import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
+import java.util.List;
+import org.jfree.chart.axis.AxisState;
+import org.jfree.chart.axis.CategoryAxis;
+import org.jfree.chart.axis.CategoryLabelPosition;
+import org.jfree.chart.axis.CategoryTick;
+import org.jfree.chart.entity.CategoryLabelEntity;
+import org.jfree.chart.entity.EntityCollection;
+import org.jfree.chart.plot.PlotRenderingInfo;
+import org.jfree.text.TextBlock;
+import org.jfree.ui.RectangleAnchor;
+import org.jfree.ui.RectangleEdge;
 
 /**
  * This class implements X-axis label skipping algorithm to
  * avoid drawing overlapping labels.
- * 
+ *
  * @author Kohsuke Kawaguchi
  */
 public class NoOverlapCategoryAxis extends CategoryAxis {
@@ -62,7 +64,7 @@ public class NoOverlapCategoryAxis extends CategoryAxis {
         }
 
         if (isTickLabelsVisible()) {
-            java.util.List ticks = refreshTicks(g2, state, plotArea, edge);
+            List ticks = refreshTicks(g2, state, plotArea, edge);
             state.setTicks(ticks);
 
             // remember the last drawn label so that we can avoid drawing overlapping labels.
@@ -110,8 +112,8 @@ public class NoOverlapCategoryAxis extends CategoryAxis {
                     x0 = state.getCursor() + this.getCategoryLabelPositionOffset();
                     x1 = x0 - state.getMax();
                 }
-                Rectangle2D area = new Rectangle2D.Double(x0, y0, (x1 - x0),
-                        (y1 - y0));
+                Rectangle2D area = new Rectangle2D.Double(x0, y0, x1 - x0,
+                        y1 - y0);
                 if (r == null || !r.intersects(area)) {
                     Point2D anchorPoint = RectangleAnchor.coordinates(area,
                             position.getCategoryAnchor());

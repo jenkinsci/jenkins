@@ -1,15 +1,14 @@
 package hudson.core;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.PluginManagerStaplerOverride;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 
 /**
  * Verify that the PluginManagerStaplerOverride extensions register and allow safely modifying PluginManager views
@@ -23,7 +22,7 @@ public class PluginManagerOverrideTest {
     @Test
     public void testViewOverrides() throws Exception {
         // Verify extension registered correctly and comes back in overrides
-        assertEquals(1,PluginManagerStaplerOverride.all().size());
+        assertEquals(1, PluginManagerStaplerOverride.all().size());
         assertTrue(PluginManagerStaplerOverride.all().get(0) instanceof BasicPluginManagerOverride);
 
         // Verify we can load untouched resources

@@ -127,7 +127,7 @@ a.ygtvspacer {
     margin-left:2px;
     text-decoration: none;
     background-color: white; /* workaround for IE font smoothing bug */
-	cursor:pointer;
+    cursor:pointer;
 }
 
 .ygtvcontent {
@@ -140,6 +140,7 @@ a.ygtvspacer {
 	background-color: #c0e0e0;
 	border: none;
 }
+
 .ygtvfocus .ygtvlabel, .ygtvfocus .ygtvlabel:link, .ygtvfocus .ygtvlabel:visited, .ygtvfocus .ygtvlabel:hover {
 	background-color: #c0e0e0;
 }

@@ -21,7 +21,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package lib.layout;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.html.DomNodeList;
@@ -29,8 +35,10 @@ import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlElementUtil;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.model.UnprotectedRootAction;
 import hudson.util.HttpResponses;
+import java.net.HttpURLConnection;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -39,23 +47,14 @@ import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.WebMethod;
 
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-
-import java.net.HttpURLConnection;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
 public class ConfirmationLinkTest {
     @Rule
     public JenkinsRule j = new JenkinsRule();
-    
+
     private static final String hrefPayload = "',document.title='hacked'+'";
     private static final String messagePayload = "',document.title='hacked'+'";
     private static final String postPayload = "document.title='hacked'";
-    
+
     @Test
     public void noInjectionArePossible() throws Exception {
         TestRootAction testParams = j.jenkins.getExtensionList(UnprotectedRootAction.class).get(TestRootAction.class);
@@ -67,138 +66,135 @@ public class ConfirmationLinkTest {
         checkInjectionInMessage(testParams);
         checkInjectionInPost(testParams);
     }
-    
+
     private void checkRegularCase(TestRootAction testParams) throws Exception {
         testParams.paramHref = "#";
         testParams.paramMessage = "Message to confirm the click";
         testParams.paramClass = null;
         testParams.paramPost = null;
-        
+
         HtmlPage p = j.createWebClient().goTo("test");
         assertTrue(p.getWebResponse().getContentAsString().contains("Message to confirm the click"));
     }
-    
+
     private void checkRegularCasePost(TestRootAction testParams) throws Exception {
         testParams.paramHref = "submit";
         testParams.paramMessage = "Message to confirm the click";
         testParams.paramClass = null;
-        
+
         testParams.paramPost = true;
         assertMethodPostAfterClick();
-    
+
         testParams.paramPost = "true";
         assertMethodPostAfterClick();
-    
-        testParams.paramPost = "TruE";
-        assertMethodPostAfterClick();
-    
+
         testParams.paramPost = false;
         assertMethodGetAfterClick();
-    
+
         testParams.paramPost = "false";
         assertMethodGetAfterClick();
-        
+
         testParams.paramPost = "any other string";
         assertMethodGetAfterClick();
     }
-    
+
     private void assertMethodGetAfterClick() throws Exception {
         Page pageAfterClick = getPageAfterClick();
         assertTrue(pageAfterClick.getWebResponse().getContentAsString().contains("method:GET"));
     }
-    
+
     private void assertMethodPostAfterClick() throws Exception {
         Page pageAfterClick = getPageAfterClick();
         assertTrue(pageAfterClick.getWebResponse().getContentAsString().contains("method:POST"));
     }
-    
+
     private Page getPageAfterClick() throws Exception {
         JenkinsRule.WebClient wc = j.createWebClient()
                 .withThrowExceptionOnFailingStatusCode(false);
         HtmlPage p = wc.goTo("test");
-    
+
         return HtmlElementUtil.click(getClickableLink(p));
     }
-    
+
     private void checkInjectionInHref(TestRootAction testParams) throws Exception {
         testParams.paramHref = hrefPayload;
         testParams.paramMessage = "Message to confirm the click";
         testParams.paramClass = null;
         testParams.paramPost = null;
-        
+
         JenkinsRule.WebClient wc = j.createWebClient()
                 .withThrowExceptionOnFailingStatusCode(false);
         HtmlPage p = wc.goTo("test");
-        
+
         Page pageAfterClick = HtmlElementUtil.click(getClickableLink(p));
         assertNotEquals("hacked", p.getTitleText());
         assertTrue(p.getWebResponse().getContentAsString().contains("Message to confirm the click"));
         // the url it clicks on is escaped and so does not exist
         assertEquals(HttpURLConnection.HTTP_NOT_FOUND, pageAfterClick.getWebResponse().getStatusCode());
     }
-    
+
     private void checkInjectionInMessage(TestRootAction testParams) throws Exception {
         testParams.paramHref = "#";
         testParams.paramMessage = messagePayload;
         testParams.paramClass = null;
         testParams.paramPost = null;
-        
+
         JenkinsRule.WebClient wc = j.createWebClient()
                 .withThrowExceptionOnFailingStatusCode(false);
         HtmlPage p = wc.goTo("test");
-    
+
         Page pageAfterClick = HtmlElementUtil.click(getClickableLink(p));
         assertNotEquals("hacked", p.getTitleText());
         // the url is normally the same page so it's ok
         assertEquals(HttpURLConnection.HTTP_OK, pageAfterClick.getWebResponse().getStatusCode());
     }
-    
+
     private void checkInjectionInPost(TestRootAction testParams) throws Exception {
         testParams.paramHref = "#";
         testParams.paramMessage = "Message to confirm the click";
         testParams.paramClass = null;
         testParams.paramPost = postPayload;
-        
+
         JenkinsRule.WebClient wc = j.createWebClient()
                 .withThrowExceptionOnFailingStatusCode(false);
         HtmlPage p = wc.goTo("test");
-        
+
         Page pageAfterClick = HtmlElementUtil.click(getClickableLink(p));
         assertNotEquals("hacked", p.getTitleText());
         assertTrue(p.getWebResponse().getContentAsString().contains("Message to confirm the click"));
         // the url is normally the same page so it's ok
         assertEquals(HttpURLConnection.HTTP_OK, pageAfterClick.getWebResponse().getStatusCode());
     }
-    
-    private HtmlAnchor getClickableLink(HtmlPage page){
+
+    private HtmlAnchor getClickableLink(HtmlPage page) {
         DomNodeList<HtmlElement> anchors = page.getElementById("test-panel").getElementsByTagName("a");
         assertEquals(1, anchors.size());
         return (HtmlAnchor) anchors.get(0);
     }
-    
+
     @TestExtension("noInjectionArePossible")
     public static final class TestRootAction implements UnprotectedRootAction {
-        
+
         public String paramHref = "";
         public String paramMessage = "";
         public String paramClass;
         public Object paramPost;
-        
+
         @Override
         public @CheckForNull String getIconFileName() {
             return null;
         }
-        
+
         @Override
         public @CheckForNull String getDisplayName() {
             return null;
         }
-        
+
         @Override
         public String getUrlName() {
             return "test";
         }
-        
+
         @WebMethod(name = "submit")
         public HttpResponse doSubmit(StaplerRequest request) {
             return HttpResponses.plainText("method:" + request.getMethod());

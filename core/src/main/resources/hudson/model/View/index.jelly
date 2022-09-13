@@ -37,18 +37,15 @@ THE SOFTWARE.
               <t:editableDescription permission="${it.CONFIGURE}"/>
             </div>
           </st:include>
-          
+
           <j:set var="items" value="${it.items}"/>
           <st:include page="main.jelly" />
         </l:main-panel>
         <l:header>
-            <!-- for screen resolution detection -->
-            <l:yui module="cookie" />
-            <script>
-              YAHOO.util.Cookie.set("screenResolution", screen.width+"x"+screen.height, {
-                path: "/"
-              });
-            </script>
+          <!-- for screen resolution detection -->
+          <l:yui module="cookie" />
+          <script id="screenResolution-script" data-use-secure-cookie="${request.secure}"/>
+          <st:adjunct includes="hudson.model.View.screen-resolution"/>
         </l:header>
     </l:layout>
 </st:compress>

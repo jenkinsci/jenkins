@@ -28,22 +28,20 @@ import hudson.Functions;
 import hudson.Util;
 import hudson.model.BallColor;
 import hudson.model.Run;
-import net.sf.json.JSONObject;
-
 import java.util.Date;
-
+import net.sf.json.JSONObject;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 
 @Restricted(DoNotUse.class) // only for buildListTable.jelly
 public class BuildListTable extends RunListProgressiveRendering {
 
-    @Override protected void calculate(Run<?,?> build, JSONObject element) {
+    @Override protected void calculate(Run<?, ?> build, JSONObject element) {
         BallColor iconColor = build.getIconColor();
         element.put("iconColorOrdinal", iconColor.ordinal());
         element.put("iconColorDescription", iconColor.getDescription());
         element.put("url", build.getUrl());
-        element.put("buildStatusUrl", build.getBuildStatusUrl());
+        element.put("iconName", build.getIconColor().getIconName());
         element.put("parentUrl", build.getParent().getUrl());
         element.put("parentFullDisplayName", Functions.breakableString(Functions.escape(build.getParent().getFullDisplayName())));
         element.put("displayName", build.getDisplayName());

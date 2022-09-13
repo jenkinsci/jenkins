@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.markup;
 
 import hudson.DescriptorExtensionList;
@@ -37,7 +38,7 @@ public abstract class MarkupFormatterDescriptor extends Descriptor<MarkupFormatt
     /**
      * Returns all the registered {@link MarkupFormatterDescriptor}s.
      */
-    public static DescriptorExtensionList<MarkupFormatter,MarkupFormatterDescriptor> all() {
+    public static DescriptorExtensionList<MarkupFormatter, MarkupFormatterDescriptor> all() {
         return Jenkins.get().
                 getDescriptorList(MarkupFormatter.class);
     }

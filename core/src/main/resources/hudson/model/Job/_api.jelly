@@ -47,18 +47,18 @@ THE SOFTWARE.
   <p>
     To programmatically schedule a new build, post to <a href="../build">this URL</a>. 
     If the build has parameters, post to <a href="../buildWithParameters">this URL</a> and provide the parameters as form data.
-    Either way, the successful queueing will result in 201 status code with <tt>Location</tt> HTTP header
-    pointing the URL of the item in the queue. By polling the <tt>api/xml</tt> sub-URL of the queue item,
+    Either way, the successful queueing will result in 201 status code with <code>Location</code> HTTP header
+    pointing the URL of the item in the queue. By polling the <code>api/xml</code> sub-URL of the queue item,
     you can track the status of the queued task. Generally, the task will go through some state transitions,
     then eventually it becomes either cancelled (look for the "cancelled" boolean property), or gets executed
-    (look for the "executable" property that typically points to the <tt>AbstractBuild</tt> object.)
+    (look for the "executable" property that typically points to the <code>AbstractBuild</code> object.)
   </p>
   <p>
     To programmatically schedule SCM polling, post to <a href="../polling">this URL</a>.
   </p>
   <p>
     If security is enabled, the recommended method is to provide the username/password of an
-    account with build permission in the request.  Tools such as <tt>curl</tt> and <tt>wget</tt>
+    account with build permission in the request.  Tools such as <code>curl</code> and <code>wget</code>
     have parameters to specify these credentials.  Another alternative (but deprecated) is to
     configure the 'Trigger builds remotely' section in the job configuration.  Then building
     or polling can be triggered by including a parameter called <i>token</i> in the request.

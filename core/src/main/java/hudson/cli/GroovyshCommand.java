@@ -21,26 +21,30 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.cli;
 
-import hudson.Extension;
-import jenkins.model.Jenkins;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import groovy.lang.Binding;
 import groovy.lang.Closure;
+import hudson.Extension;
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.io.UncheckedIOException;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.List;
+import jenkins.model.Jenkins;
+import jline.TerminalFactory;
+import jline.UnsupportedTerminal;
 import org.codehaus.groovy.tools.shell.Groovysh;
 import org.codehaus.groovy.tools.shell.IO;
 import org.codehaus.groovy.tools.shell.Shell;
 import org.codehaus.groovy.tools.shell.util.XmlCommandRegistrar;
-
-import java.util.List;
-import java.io.PrintStream;
-import java.io.InputStream;
-import java.io.BufferedInputStream;
-import java.io.PrintWriter;
-import java.util.ArrayList;
-
-import jline.UnsupportedTerminal;
-import jline.TerminalFactory;
 import org.kohsuke.args4j.Argument;
 
 /**
@@ -55,7 +59,7 @@ public class GroovyshCommand extends CLICommand {
         return Messages.GroovyshCommand_ShortDescription();
     }
 
-    @Argument(metaVar="ARGS") public List<String> args = new ArrayList<>();
+    @Argument(metaVar = "ARGS") public List<String> args = new ArrayList<>();
 
     @Override
     protected int run() {
@@ -78,29 +82,37 @@ public class GroovyshCommand extends CLICommand {
         return shell.run(commandLine.toString());
     }
 
-    @SuppressWarnings({"rawtypes"})
+    @SuppressWarnings("rawtypes")
     protected Groovysh createShell(InputStream stdin, PrintStream stdout,
         PrintStream stderr) {
 
         Binding binding = new Binding();
         // redirect "println" to the CLI
-        binding.setProperty("out", new PrintWriter(stdout,true));
+        Charset charset;
+        try {
+            charset = getClientCharset();
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        binding.setProperty("out", new PrintWriter(new OutputStreamWriter(stdout, charset), true));
         binding.setProperty("hudson", Jenkins.get()); // backward compatibility
         binding.setProperty("jenkins", Jenkins.get());
 
-        IO io = new IO(new BufferedInputStream(stdin),stdout,stderr);
+        IO io = new IO(new BufferedInputStream(stdin), stdout, stderr);
 
         final ClassLoader cl = Jenkins.get().pluginManager.uberClassLoader;
         Closure registrar = new Closure(null, null) {
             private static final long serialVersionUID = 1L;
 
             @SuppressWarnings("unused")
-            @edu.umd.cs.findbugs.annotations.SuppressFBWarnings(value="UMAC_UNCALLABLE_METHOD_OF_ANONYMOUS_CLASS",justification="Closure invokes this via reflection")
+            @SuppressFBWarnings(value = "UMAC_UNCALLABLE_METHOD_OF_ANONYMOUS_CLASS", justification = "Closure invokes this via reflection")
             public Object doCall(Object[] args) {
-                assert(args.length == 1);
-                assert(args[0] instanceof Shell);
+                assert args.length == 1;
+                assert args[0] instanceof Shell;
 
-                Shell shell = (Shell)args[0];
+                Shell shell = (Shell) args[0];
                 XmlCommandRegistrar r = new XmlCommandRegistrar(shell, cl);
                 r.register(GroovyshCommand.class.getResource("commands.xml"));
 

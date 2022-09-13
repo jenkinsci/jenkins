@@ -1,8 +1,7 @@
 package jenkins.util;
 
-import org.jvnet.localizer.Localizable;
-
 import java.util.Locale;
+import org.jvnet.localizer.Localizable;
 
 /**
  * {@link Localizable} implementation that actually doesn't localize.

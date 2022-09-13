@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson;
 
 import com.thoughtworks.xstream.XStream;
@@ -33,16 +34,6 @@ import hudson.diagnosis.OldDataMonitor;
 import hudson.model.Descriptor;
 import hudson.util.AtomicFileWriter;
 import hudson.util.XStream2;
-import java.nio.file.Files;
-import java.nio.file.InvalidPathException;
-import org.xml.sax.Attributes;
-import org.xml.sax.InputSource;
-import org.xml.sax.Locator;
-import org.xml.sax.SAXException;
-import org.xml.sax.ext.Locator2;
-import org.xml.sax.helpers.DefaultHandler;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParserFactory;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -50,15 +41,28 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.Serializable;
-import java.io.Writer;
 import java.io.StringWriter;
+import java.io.Writer;
+import java.nio.channels.FileChannel;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.xml.XMLConstants;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParserFactory;
 import org.apache.commons.io.IOUtils;
+import org.xml.sax.Attributes;
+import org.xml.sax.InputSource;
+import org.xml.sax.Locator;
+import org.xml.sax.SAXException;
+import org.xml.sax.ext.Locator2;
+import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * Represents an XML data file that Jenkins uses as a data file.
@@ -112,22 +116,34 @@ import org.apache.commons.io.IOUtils;
  * There's a few other possibilities, such as implementing a custom
  * {@link Converter} for XStream, or {@link XStream#alias(String, Class) registering an alias}.
  *
- * @see <a href="https://wiki.jenkins-ci.org/display/JENKINS/Architecture#Architecture-Persistence">Architecture » Persistence</a>
+ * @see <a href="https://www.jenkins.io/doc/developer/persistence/">Architecture » Persistence</a>
  * @author Kohsuke Kawaguchi
  */
 public final class XmlFile {
     private final XStream xs;
     private final File file;
+    private final boolean force;
     private static final Map<Object, Void> beingWritten = Collections.synchronizedMap(new IdentityHashMap<>());
     private static final ThreadLocal<File> writing = new ThreadLocal<>();
 
     public XmlFile(File file) {
-        this(DEFAULT_XSTREAM,file);
+        this(DEFAULT_XSTREAM, file);
     }
 
     public XmlFile(XStream xs, File file) {
+        this(xs, file, true);
+    }
+
+    /**
+     * @param force Whether or not to flush the page cache to the storage device with {@link
+     *     FileChannel#force} (i.e., {@code fsync}} or {@code FlushFileBuffers}) before this method
+     *     returns. If you set this to {@code false}, you will lose data integrity.
+     * @since 2.304
+     */
+    public XmlFile(XStream xs, File file, boolean force) {
         this.xs = xs;
         this.file = file;
+        this.force = force;
     }
 
     public File getFile() {
@@ -143,12 +159,12 @@ public final class XmlFile {
      */
     public Object read() throws IOException {
         if (LOGGER.isLoggable(Level.FINE)) {
-            LOGGER.fine("Reading "+file);
+            LOGGER.fine("Reading " + file);
         }
         try (InputStream in = new BufferedInputStream(Files.newInputStream(file.toPath()))) {
             return xs.fromXML(in);
         } catch (RuntimeException | Error e) {
-            throw new IOException("Unable to read "+file,e);
+            throw new IOException("Unable to read " + file, e);
         }
     }
 
@@ -159,7 +175,7 @@ public final class XmlFile {
      *      The unmarshalled object. Usually the same as {@code o}, but would be different
      *      if the XML representation is completely new.
      */
-    public Object unmarshal( Object o ) throws IOException {
+    public Object unmarshal(Object o) throws IOException {
         return unmarshal(o, false);
     }
 
@@ -180,13 +196,15 @@ public final class XmlFile {
                 return xs.unmarshal(DEFAULT_DRIVER.createReader(in), o);
             }
         } catch (RuntimeException | Error e) {
-            throw new IOException("Unable to read "+file,e);
+            throw new IOException("Unable to read " + file, e);
         }
     }
 
-    public void write( Object o ) throws IOException {
+    public void write(Object o) throws IOException {
         mkdirs();
-        AtomicFileWriter w = new AtomicFileWriter(file);
+        AtomicFileWriter w = force
+                ? new AtomicFileWriter(file)
+                : new AtomicFileWriter(file.toPath(), StandardCharsets.UTF_8, false, false);
         try {
             w.write("<?xml version='1.1' encoding='UTF-8'?>\n");
             beingWritten.put(o, null);
@@ -198,7 +216,7 @@ public final class XmlFile {
                 writing.set(null);
             }
             w.commit();
-        } catch(RuntimeException e) {
+        } catch (RuntimeException e) {
             throw new IOException(e);
         } finally {
             w.abort();
@@ -230,12 +248,12 @@ public final class XmlFile {
         return file.exists();
     }
 
-    public void delete() {
-        file.delete();
+    public void delete() throws IOException {
+        Files.deleteIfExists(Util.fileToPath(file));
     }
-    
-    public void mkdirs() {
-        file.getParentFile().mkdirs();
+
+    public void mkdirs() throws IOException {
+        Util.createDirectories(Util.fileToPath(file.getParentFile()));
     }
 
     @Override
@@ -247,8 +265,8 @@ public final class XmlFile {
      * Opens a {@link Reader} that loads XML.
      * This method uses {@link #sniffEncoding() the right encoding},
      * not just the system default encoding.
-     * @throws IOException Encoding issues
      * @return Reader for the file. should be close externally once read.
+     * @throws IOException Encoding issues
      */
     public Reader readRaw() throws IOException {
         try {
@@ -288,15 +306,16 @@ public final class XmlFile {
     /**
      * Parses the beginning of the file and determines the encoding.
      *
-     * @throws IOException
-     *      if failed to detect encoding.
      * @return
      *      always non-null.
+     * @throws IOException
+     *      if failed to detect encoding.
      */
     public String sniffEncoding() throws IOException {
         class Eureka extends SAXException {
             final String encoding;
-            public Eureka(String encoding) {
+
+            Eureka(String encoding) {
                 this.encoding = encoding;
             }
         }
@@ -304,7 +323,11 @@ public final class XmlFile {
         try (InputStream in = Files.newInputStream(file.toPath())) {
             InputSource input = new InputSource(file.toURI().toASCIIString());
             input.setByteStream(in);
-            JAXP.newSAXParser().parse(input,new DefaultHandler() {
+            SAXParserFactory spf = SAXParserFactory.newInstance();
+            spf.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+            spf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+            spf.setNamespaceAware(true);
+            spf.newSAXParser().parse(input, new DefaultHandler() {
                 private Locator loc;
                 @Override
                 public void setDocumentLocator(Locator locator) {
@@ -324,11 +347,11 @@ public final class XmlFile {
                 }
 
                 private void attempt() throws Eureka {
-                    if(loc==null)   return;
+                    if (loc == null)   return;
                     if (loc instanceof Locator2) {
                         Locator2 loc2 = (Locator2) loc;
                         String e = loc2.getEncoding();
-                        if(e!=null)
+                        if (e != null)
                             throw new Eureka(e);
                     }
                 }
@@ -336,7 +359,7 @@ public final class XmlFile {
             // can't reach here
             throw new AssertionError();
         } catch (Eureka e) {
-            if(e.encoding!=null)
+            if (e.encoding != null)
                 return e.encoding;
             // the environment can contain old version of Xerces and others that do not support Locator2
             // in such a case, assume UTF-8 rather than fail, since Jenkins internally always write XML in UTF-8
@@ -356,13 +379,7 @@ public final class XmlFile {
 
     private static final Logger LOGGER = Logger.getLogger(XmlFile.class.getName());
 
-    private static final SAXParserFactory JAXP = SAXParserFactory.newInstance();
-
     private static final HierarchicalStreamDriver DEFAULT_DRIVER = XStream2.getDefaultDriver();
 
     private static final XStream DEFAULT_XSTREAM = new XStream2(DEFAULT_DRIVER);
-
-    static {
-        JAXP.setNamespaceAware(true);
-    }
 }

@@ -21,21 +21,20 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.cli;
 
 import hudson.AbortException;
 import hudson.Extension;
 import hudson.model.AbstractItem;
 import hudson.model.Item;
-
 import hudson.model.Items;
-import jenkins.model.Jenkins;
-import org.kohsuke.args4j.Argument;
-
 import java.util.HashSet;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import jenkins.model.Jenkins;
+import org.kohsuke.args4j.Argument;
 
 /**
  * Reloads job from the disk.
@@ -45,7 +44,7 @@ import java.util.logging.Logger;
 @Extension
 public class ReloadJobCommand extends CLICommand {
 
-    @Argument(usage="Name of the job(s) to reload", required=true, multiValued=true)
+    @Argument(usage = "Name of the job(s) to reload", required = true, multiValued = true)
     private List<String> jobs;
 
     private static final Logger LOGGER = Logger.getLogger(ReloadJobCommand.class.getName());
@@ -64,7 +63,7 @@ public class ReloadJobCommand extends CLICommand {
 
         final HashSet<String> hs = new HashSet<>(jobs);
 
-        for (String job_s: hs) {
+        for (String job_s : hs) {
             AbstractItem job = null;
 
             try {
@@ -75,7 +74,7 @@ public class ReloadJobCommand extends CLICommand {
                     LOGGER.log(Level.WARNING, "Unsupported item type: {0}", item.getClass().getName());
                 }
 
-                if(job == null) {
+                if (job == null) {
                     AbstractItem project = Items.findNearest(AbstractItem.class, job_s, jenkins);
                     throw new IllegalArgumentException(project == null ?
                         "No such item \u2018" + job_s + "\u2019 exists." :
@@ -83,10 +82,10 @@ public class ReloadJobCommand extends CLICommand {
                                 job_s, project.getFullName()));
                 }
 
-                job.checkPermission(AbstractItem.CONFIGURE);
+                job.checkPermission(Item.CONFIGURE);
                 job.doReload();
             } catch (Exception e) {
-                if(hs.size() == 1) {
+                if (hs.size() == 1) {
                     throw e;
                 }
 

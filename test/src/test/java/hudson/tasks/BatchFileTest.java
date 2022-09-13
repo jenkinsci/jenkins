@@ -4,21 +4,18 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assume.assumeTrue;
 
-import java.io.IOException;
-
-import org.junit.Rule;
-import org.junit.Test;
-import org.jvnet.hudson.test.Issue;
-import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.FakeLauncher;
-import org.jvnet.hudson.test.PretendSlave;
 import hudson.Functions;
 import hudson.Launcher.ProcStarter;
 import hudson.Proc;
-import hudson.model.Result;
 import hudson.model.FreeStyleProject;
+import hudson.model.Result;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.FakeLauncher;
+import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.PretendSlave;
 import org.jvnet.hudson.test.recipes.LocalData;
-
 
 /**
  * Tests for the BatchFile tasks class.
@@ -32,13 +29,13 @@ public class BatchFileTest {
 
     @Issue("JENKINS-7478")
     @Test
-    public void validateBatchFileCommandEOL() throws Exception {
+    public void validateBatchFileCommandEOL() {
         BatchFile obj = new BatchFile("echo A\necho B\recho C");
         rule.assertStringContains(obj.getCommand(), "echo A\r\necho B\r\necho C");
     }
 
     @Test
-    public void validateBatchFileContents() throws Exception {
+    public void validateBatchFileContents() {
         BatchFile obj = new BatchFile("echo A\necho B\recho C");
         rule.assertStringContains(obj.getContents(), "echo A\r\necho B\r\necho C\r\nexit %ERRORLEVEL%");
     }
@@ -49,12 +46,11 @@ public class BatchFileTest {
 
         ReturnCodeFakeLauncher(int code)
         {
-            super();
             this.code = code;
         }
 
         @Override
-        public Proc onLaunch(ProcStarter p) throws IOException {
+        public Proc onLaunch(ProcStarter p) {
             return new FinishedProc(this.code);
         }
     }
@@ -71,14 +67,14 @@ public class BatchFileTest {
         FreeStyleProject p = rule.createFreeStyleProject();
         p.getBuildersList().add(createNewBatchTask("", exitCode));
         p.setAssignedNode(slave);
-        rule.assertBuildStatus(Result.UNSTABLE, p.scheduleBuild2(0).get());
+        rule.buildAndAssertStatus(Result.UNSTABLE, p);
     }
 
     @Test
     @Issue("JENKINS-23786")
     public void windowsNonZeroErrorlevelsShouldMakeBuildUnstable() throws Exception {
         assumeTrue(Functions.isWindows());
-        for( int exitCode: new int [] {Integer.MIN_VALUE, -1, 1, Integer.MAX_VALUE}) {
+        for (int exitCode : new int [] {Integer.MIN_VALUE, -1, 1, Integer.MAX_VALUE}) {
             nonZeroErrorlevelShouldMakeBuildUnstable(exitCode);
         }
     }
@@ -91,19 +87,19 @@ public class BatchFileTest {
         p = rule.createFreeStyleProject();
         p.getBuildersList().add(createNewBatchTask("", null));
         p.setAssignedNode(slave);
-        rule.assertBuildStatus(Result.FAILURE, p.scheduleBuild2(0).get());
+        rule.buildAndAssertStatus(Result.FAILURE, p);
 
         p = rule.createFreeStyleProject();
         p.getBuildersList().add(createNewBatchTask("", 0));
         p.setAssignedNode(slave);
-        rule.assertBuildStatus(Result.FAILURE, p.scheduleBuild2(0).get());
+        rule.buildAndAssertStatus(Result.FAILURE, p);
     }
 
     @Test
     @Issue("JENKINS-23786")
     public void windowsNonZeroErrorlevelsShouldBreakTheBuildByDefault() throws Exception {
         assumeTrue(Functions.isWindows());
-        for( int exitCode: new int [] {Integer.MIN_VALUE, -1, 1, Integer.MAX_VALUE}) {
+        for (int exitCode : new int [] {Integer.MIN_VALUE, -1, 1, Integer.MAX_VALUE}) {
             nonZeroErrorlevelShouldBreakTheBuildByDefault(exitCode);
         }
     }
@@ -116,14 +112,14 @@ public class BatchFileTest {
         FreeStyleProject p = rule.createFreeStyleProject();
         p.getBuildersList().add(createNewBatchTask("", notMatchingExitCode));
         p.setAssignedNode(slave);
-        rule.assertBuildStatus(Result.FAILURE, p.scheduleBuild2(0).get());
+        rule.buildAndAssertStatus(Result.FAILURE, p);
     }
 
     @Test
     @Issue("JENKINS-23786")
     public void windowsErrorlevelsShouldBreakTheBuildIfNotMatching() throws Exception {
         assumeTrue(Functions.isWindows());
-        for( int exitCode: new int [] {Integer.MIN_VALUE, -1, 1, Integer.MAX_VALUE}) {
+        for (int exitCode : new int [] {Integer.MIN_VALUE, -1, 1, Integer.MAX_VALUE}) {
             nonZeroErrorlevelShouldBreakTheBuildIfNotMatching(exitCode);
         }
     }
@@ -134,29 +130,29 @@ public class BatchFileTest {
         assumeTrue(Functions.isWindows());
 
         PretendSlave slave = rule.createPretendSlave(new BatchFileTest.ReturnCodeFakeLauncher(0));
-        for( Integer unstableReturn: new Integer [] {null, 0, 1}) {
+        for (Integer unstableReturn : new Integer [] {null, 0, 1}) {
             FreeStyleProject p = rule.createFreeStyleProject();
             p.getBuildersList().add(createNewBatchTask("", unstableReturn));
             p.setAssignedNode(slave);
-            rule.assertBuildStatus(Result.SUCCESS, p.scheduleBuild2(0).get());
+            rule.buildAndAssertSuccess(p);
         }
     }
 
     @Issue("JENKINS-23786")
     @Test
-    public void windowsUnstableCodeZeroIsSameAsUnset() throws Exception {
+    public void windowsUnstableCodeZeroIsSameAsUnset() {
         assumeTrue(Functions.isWindows());
 
         /* Creating unstable=0 produces unstable=null */
-        assertNull( createNewBatchTask("",0).getUnstableReturn() );
+        assertNull(createNewBatchTask("", 0).getUnstableReturn());
     }
 
     @Issue("JENKINS-40894")
     @Test
     @LocalData
-    public void canLoadUnstableReturnFromDisk() throws Exception {
+    public void canLoadUnstableReturnFromDisk() {
         FreeStyleProject p = (FreeStyleProject) rule.jenkins.getItemByFullName("batch");
         BatchFile batchFile = (BatchFile) p.getBuildersList().get(0);
-        assertEquals("unstable return", Integer.valueOf(1), batchFile.getUnstableReturn());
+        assertEquals("unstable return", (Integer) 1, batchFile.getUnstableReturn());
     }
 }

@@ -1,0 +1,38 @@
+updateCenter.post(
+{"connectionCheckUrl":"http://www.google.com/", 
+    "core": {
+        "buildDate": "Dec 31, 1969",
+        "name": "core",
+        "url": "jenkins.war",
+        "version": "23"
+    },
+    "id": "secondary",
+    "plugins": {
+		"hello-huston": {
+			"buildDate": "Dec 17, 2008",
+			"dependencies": [],
+			"developers": [],
+			"excerpt": "…",
+			"name": "hello-huston",
+			"requiredCore": "1.100",
+			"sha1": "wtzlcjUKiMcg90H5CTYkGX6+r8Y=",
+			"title": "Hello Huston",
+			"url": "http://nowhere.net/hello-huston.hpi",
+			"version": "1.0"
+		},
+        "dummy": {
+            "buildDate": "Dec 17, 2008",
+            "dependencies": [],
+            "developers": [],
+            "excerpt": "…",
+            "name": "dummy",
+            "requiredCore": "1.100",
+            "sha1": "wtzlcjUKiMcg90H5CTYkGX6+r8Y=",
+            "title": "Dummy",
+            "url": "http://nowhere.net/dummy.hpi",
+            "version": "1.0"
+        }
+    },
+    "updateCenterVersion": 1
+}
+);

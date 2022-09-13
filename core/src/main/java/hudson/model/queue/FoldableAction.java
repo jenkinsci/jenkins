@@ -21,12 +21,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model.queue;
 
-import hudson.model.Queue.Task;
 import hudson.model.Action;
 import hudson.model.Queue;
-
+import hudson.model.Queue.Task;
 import java.util.List;
 
 /**

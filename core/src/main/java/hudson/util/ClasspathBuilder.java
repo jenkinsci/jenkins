@@ -1,14 +1,12 @@
 package hudson.util;
 
 import hudson.FilePath;
-import hudson.Util;
 import hudson.remoting.Which;
-
-import java.io.Serializable;
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
+import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Used to build up an argument in the classpath format.
@@ -52,10 +50,10 @@ public class ClasspathBuilder implements Serializable {
     /**
      * Adds all the files that matches the given glob in the directory.
      *
-     * @see FilePath#list(String)  
+     * @see FilePath#list(String)
      */
     public ClasspathBuilder addAll(FilePath base, String glob) throws IOException, InterruptedException {
-        for(FilePath item : base.list(glob))
+        for (FilePath item : base.list(glob))
             add(item);
         return this;
     }
@@ -65,6 +63,6 @@ public class ClasspathBuilder implements Serializable {
      */
     @Override
     public String toString() {
-        return Util.join(args,File.pathSeparator);
+        return String.join(File.pathSeparator, args);
     }
 }

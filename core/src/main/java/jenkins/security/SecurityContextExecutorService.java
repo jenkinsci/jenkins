@@ -21,15 +21,17 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.security;
 
-import jenkins.util.InterceptingExecutorService;
-import org.acegisecurity.context.SecurityContext;
+import static org.springframework.security.core.context.SecurityContextHolder.getContext;
+import static org.springframework.security.core.context.SecurityContextHolder.setContext;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
-
-import static org.acegisecurity.context.SecurityContextHolder.*;
+import jenkins.util.InterceptingExecutorService;
+import org.springframework.security.core.context.SecurityContext;
 
 /**
  * Creates a delegating {@link ExecutorService}
@@ -42,6 +44,7 @@ import static org.acegisecurity.context.SecurityContextHolder.*;
  * @author Kohsuke Kawaguchi
  * @since 1.561
  */
+@SuppressFBWarnings(value = "THROWS_METHOD_THROWS_CLAUSE_BASIC_EXCEPTION", justification = "TODO needs triage")
 public class SecurityContextExecutorService extends InterceptingExecutorService {
 
     public SecurityContextExecutorService(ExecutorService service) {
@@ -52,6 +55,7 @@ public class SecurityContextExecutorService extends InterceptingExecutorService 
     protected Runnable wrap(final Runnable r) {
         final SecurityContext callingContext = getContext();
         return new Runnable() {
+            @Override
             public void run() {
                 SecurityContext old = getContext();
                 setContext(callingContext);
@@ -67,7 +71,8 @@ public class SecurityContextExecutorService extends InterceptingExecutorService 
     @Override
     protected <V> Callable<V> wrap(final Callable<V> c) {
         final SecurityContext callingContext = getContext();
-        return new Callable<V>() {
+        return new Callable<>() {
+            @Override
             public V call() throws Exception {
                 SecurityContext old = getContext();
                 setContext(callingContext);

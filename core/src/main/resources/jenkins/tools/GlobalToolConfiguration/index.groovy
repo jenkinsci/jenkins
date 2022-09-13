@@ -7,29 +7,19 @@ def f=namespace(lib.FormTagLib)
 def l=namespace(lib.LayoutTagLib)
 def st=namespace("jelly:stapler")
 
-l.layout(permission:app.SYSTEM_READ, title:my.displayName) {
-    l.side_panel {
-        l.tasks {
-            l.task(icon:"icon-up icon-md", href:rootURL+'/', title:_("Back to Dashboard"))
-            l.task(icon:"icon-gear2 icon-md", href:"${rootURL}/manage", title:_("Manage Jenkins"))
-        }
-    }
+l.layout(permission:app.SYSTEM_READ, title:my.displayName, type:"one-column") {
+    l.app_bar(title: my.displayName)
     set("readOnlyMode", !app.hasPermission(app.ADMINISTER))
     l.main_panel {
-        h1 {
-            l.icon(class: 'icon-setting icon-xlg')
-            // TODO more appropriate icon
-            text(my.displayName)
+        div(class:"behavior-loading") {
+            l.spinner(text: _("LOADING"))
         }
 
-        p()
-        div(class:"behavior-loading", _("LOADING"))
-
-        f.form(method:"post",name:"config",action:"configure") {
+        f.form(method:"post",name:"config",action:"configure", class: "jenkins-form") {
             Functions.getSortedDescriptorsForGlobalConfigByDescriptor(my.FILTER).each { Descriptor descriptor ->
                 set("descriptor",descriptor)
                 set("instance",descriptor)
-                f.rowSet(name:descriptor.jsonSafeClassName) {
+                f.rowSet(name:descriptor.jsonSafeClassName, class: "jenkins-!-margin-bottom-0") {
                     st.include(from:descriptor, page:descriptor.globalConfigPage)
                 }
             }

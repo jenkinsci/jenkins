@@ -3,19 +3,20 @@ package hudson.cli;
 import hudson.Extension;
 import hudson.model.Run;
 import hudson.scm.ChangeLogSet;
-import hudson.scm.ChangeLogSet.Entry;
 import hudson.util.QuotedStringTokenizer;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.io.UncheckedIOException;
+import java.nio.charset.Charset;
+import java.util.List;
 import jenkins.scm.RunWithSCM;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.args4j.Option;
 import org.kohsuke.stapler.export.Flavor;
 import org.kohsuke.stapler.export.Model;
 import org.kohsuke.stapler.export.ModelBuilder;
-
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.List;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Retrieves a change list for the specified builds.
@@ -39,7 +40,7 @@ public class ListChangesCommand extends RunRangeCommand {
         XML, CSV, PLAIN
     }
 
-    @Option(name="-format",usage="Controls how the output from this command is printed.")
+    @Option(name = "-format", usage = "Controls how the output from this command is printed.")
     public Format format = Format.PLAIN;
 
     @Override
@@ -48,7 +49,15 @@ public class ListChangesCommand extends RunRangeCommand {
         // No other permission check needed.
         switch (format) {
         case XML:
-            PrintWriter w = new PrintWriter(stdout);
+            Charset charset;
+            try {
+                charset = getClientCharset();
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            PrintWriter w = new PrintWriter(new OutputStreamWriter(stdout, charset));
             w.println("<changes>");
             for (Run<?, ?> build : builds) {
                 if (build instanceof RunWithSCM) {
@@ -67,7 +76,7 @@ public class ListChangesCommand extends RunRangeCommand {
             for (Run<?, ?> build : builds) {
                 if (build instanceof RunWithSCM) {
                     for (ChangeLogSet<?> cs : ((RunWithSCM<?, ?>) build).getChangeSets()) {
-                        for (Entry e : cs) {
+                        for (ChangeLogSet.Entry e : cs) {
                             stdout.printf("%s,%s%n",
                                     QuotedStringTokenizer.quote(e.getAuthor().getId()),
                                     QuotedStringTokenizer.quote(e.getMsg()));
@@ -80,7 +89,7 @@ public class ListChangesCommand extends RunRangeCommand {
             for (Run<?, ?> build : builds) {
                 if (build instanceof RunWithSCM) {
                     for (ChangeLogSet<?> cs : ((RunWithSCM<?, ?>) build).getChangeSets()) {
-                        for (Entry e : cs) {
+                        for (ChangeLogSet.Entry e : cs) {
                             stdout.printf("%s\t%s%n", e.getAuthor(), e.getMsg());
                             for (String p : e.getAffectedPaths()) {
                                 stdout.println("  " + p);
@@ -90,6 +99,8 @@ public class ListChangesCommand extends RunRangeCommand {
                 }
             }
             break;
+        default:
+            throw new AssertionError("Unknown format: " + format);
         }
 
         return 0;

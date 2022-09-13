@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.slaves;
 
 import hudson.Extension;
@@ -37,7 +38,7 @@ import jenkins.model.Jenkins;
  * @since 1.286
  * @see NodeProperty
  */
-public abstract class NodePropertyDescriptor extends PropertyDescriptor<NodeProperty<?>,Node> {
+public abstract class NodePropertyDescriptor extends PropertyDescriptor<NodeProperty<?>, Node> {
     protected NodePropertyDescriptor(Class<? extends NodeProperty<?>> clazz) {
         super(clazz);
     }

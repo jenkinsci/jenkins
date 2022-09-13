@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.scm;
 
 import hudson.Extension;
@@ -31,7 +32,6 @@ import hudson.MarkupText;
 import hudson.Util;
 import hudson.model.AbstractBuild;
 import hudson.model.Run;
-import hudson.scm.ChangeLogSet.Entry;
 import hudson.util.CopyOnWriteList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -75,11 +75,11 @@ public abstract class ChangeLogAnnotator implements ExtensionPoint {
      *      add additional annotations into this object. If other annotators
      *      are registered, the object may already contain some markups when this
      *      method is invoked. Never null. {@link MarkupText#getText()} on this instance
-     *      will return the same string as {@link Entry#getMsgEscaped()}.
+     *      will return the same string as {@link ChangeLogSet.Entry#getMsgEscaped()}.
      * @since 1.568
      */
-    public void annotate(Run<?,?> build, Entry change, MarkupText text) {
-        if (build instanceof AbstractBuild && Util.isOverridden(ChangeLogAnnotator.class, getClass(), "annotate", AbstractBuild.class, Entry.class, MarkupText.class)) {
+    public void annotate(Run<?, ?> build, ChangeLogSet.Entry change, MarkupText text) {
+        if (build instanceof AbstractBuild && Util.isOverridden(ChangeLogAnnotator.class, getClass(), "annotate", AbstractBuild.class, ChangeLogSet.Entry.class, MarkupText.class)) {
             annotate((AbstractBuild) build, change, text);
         } else {
             Logger.getLogger(ChangeLogAnnotator.class.getName()).log(Level.WARNING, "You must override the newer overload of annotate from {0}", getClass().getName());
@@ -87,7 +87,7 @@ public abstract class ChangeLogAnnotator implements ExtensionPoint {
     }
 
     @Deprecated
-    public void annotate(AbstractBuild<?,?> build, Entry change, MarkupText text) {
+    public void annotate(AbstractBuild<?, ?> build, ChangeLogSet.Entry change, MarkupText text) {
         annotate((Run) build, change, text);
     }
 

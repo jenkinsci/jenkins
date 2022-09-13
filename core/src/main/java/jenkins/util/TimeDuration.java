@@ -1,10 +1,9 @@
 package jenkins.util;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import java.util.concurrent.TimeUnit;
 import org.apache.commons.beanutils.Converter;
 import org.kohsuke.stapler.QueryParameter;
-
-import java.util.concurrent.TimeUnit;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
 
 /**
  * Represents a length of something, like {@code 3sec}.
@@ -31,7 +30,7 @@ public class TimeDuration {
      */
     @Deprecated
     public int getTime() {
-        return (int)millis;
+        return (int) millis;
     }
 
     /**
@@ -51,7 +50,7 @@ public class TimeDuration {
 
 
     public long as(TimeUnit t) {
-        return t.convert(millis,TimeUnit.MILLISECONDS);
+        return t.convert(millis, TimeUnit.MILLISECONDS);
     }
 
     /**
@@ -76,13 +75,14 @@ public class TimeDuration {
             }
             return new TimeDuration(Long.parseLong(delay.trim()) * unitMultiplier);
         } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("Invalid time duration value: "+delay);
+            throw new IllegalArgumentException("Invalid time duration value: " + delay, e);
         }
     }
 
     public static class StaplerConverterImpl implements Converter {
+        @Override
         public Object convert(Class type, Object value) {
-            if (value==null)
+            if (value == null)
                 return null;
             if (value instanceof String) {
                 return fromString((String) value);

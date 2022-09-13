@@ -21,14 +21,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package hudson.util;
 
-import net.sf.json.JSONObject;
-import org.junit.Assert;
-import org.junit.Test;
+package hudson.util;
 
 import java.util.HashMap;
 import java.util.Map;
+import net.sf.json.JSONObject;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>

@@ -14,15 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/* Copied from commons-validator:commons-validator:1.6, with [PATCH] modifications */
-package jenkins.org.apache.commons.validator.routines;
+/* Copied from commons-validator:commons-validator:1.7, with [PATCH] modifications */
 
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
+package jenkins.org.apache.commons.validator.routines;
 
 import java.io.Serializable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * <b>Regular Expression</b> validation (using JDK 1.4+ regex support).
@@ -44,7 +44,7 @@ import java.util.regex.Pattern;
  *   <li>Validate {@code true} or {@code false}:</li>
  *   <li>
  *     <ul>
- *       <li>{@code boolean valid = validator.isValidRootUrl(value);}</li>
+ *       <li>{@code boolean valid = validator.isValid(value);}</li>
  *     </ul>
  *   </li>
  *   <li>Validate returning an aggregated String of the matched groups:</li>
@@ -68,7 +68,7 @@ import java.util.regex.Pattern;
  * to the {@link Pattern} API are safe to use in a multi-threaded environment.
  * </p>
  *
- * @version $Revision: 1739356 $
+ * @version $Revision$
  * @since Validator 1.4
  */
 //[PATCH]
@@ -129,7 +129,7 @@ public class RegexValidator implements Serializable {
             throw new IllegalArgumentException("Regular expressions are missing");
         }
         patterns = new Pattern[regexs.length];
-        int flags =  (caseSensitive ? 0: Pattern.CASE_INSENSITIVE);
+        int flags = caseSensitive ? 0 : Pattern.CASE_INSENSITIVE;
         for (int i = 0; i < regexs.length; i++) {
             if (regexs[i] == null || regexs[i].length() == 0) {
                 throw new IllegalArgumentException("Regular expression[" + i + "] is missing");

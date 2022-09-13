@@ -21,11 +21,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -63,13 +63,13 @@ public abstract class TransientComputerActionFactory implements ExtensionPoint {
     /**
      * Creates {@link Action}s for a node, using all registered {@link TransientComputerActionFactory}s.
      */
-	public static List<Action> createAllFor(Computer target) {
-		List<Action> result = new ArrayList<>();
-		for (TransientComputerActionFactory f: all()) {
-			result.addAll(f.createFor(target));
-		}
-		return result;
-	}
+    public static List<Action> createAllFor(Computer target) {
+        List<Action> result = new ArrayList<>();
+        for (TransientComputerActionFactory f : all()) {
+            result.addAll(f.createFor(target));
+        }
+        return result;
+    }
 
 
 }

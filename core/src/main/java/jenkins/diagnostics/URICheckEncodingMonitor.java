@@ -1,20 +1,19 @@
 package jenkins.diagnostics;
 
+import static hudson.Util.fixEmpty;
+
 import hudson.Extension;
 import hudson.Util;
 import hudson.model.AdministrativeMonitor;
 import hudson.util.FormValidation;
-import jenkins.model.Jenkins;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.stapler.StaplerRequest;
-
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import static hudson.Util.fixEmpty;
+import jenkins.model.Jenkins;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.StaplerRequest;
 
 @Restricted(NoExternalUse.class)
 @Extension

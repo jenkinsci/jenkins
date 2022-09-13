@@ -1,19 +1,21 @@
 package hudson.security;
 
+import static org.junit.Assert.assertNull;
+
 import com.gargoylesoftware.htmlunit.html.HtmlButton;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.model.Item;
 import java.net.HttpURLConnection;
+import jenkins.model.Jenkins;
 import org.junit.AfterClass;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.recipes.LocalData;
+import org.jvnet.hudson.test.MockAuthorizationStrategy;
 
 /**
  *
@@ -34,43 +36,38 @@ public class ExtendedReadPermissionTest {
         Item.EXTENDED_READ.setEnabled(enabled);
     }
 
-    /**
-     * alice: Job/Configure+Read
-     * bob: Job/Read
-     * charlie: Job/ExtendedRead+Read
-     */
+    @Before public void security() throws Exception {
+        r.createFreeStyleProject("a");
+        r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
+        r.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().
+            grant(Jenkins.ADMINISTER).everywhere().to("admin").
+            grant(Jenkins.READ, Item.READ, Item.CONFIGURE).everywhere().to("alice").
+            grant(Jenkins.READ, Item.READ).everywhere().to("bob").
+            grant(Jenkins.READ, Item.READ, Item.EXTENDED_READ).everywhere().to("charlie"));
+    }
 
-    private void setPermissionEnabled(boolean enabled) throws Exception {
+    private void setPermissionEnabled(boolean enabled) {
         Item.EXTENDED_READ.setEnabled(enabled);
     }
 
-
-    @LocalData
     @Test public void readOnlyConfigAccessWithPermissionEnabled() throws Exception {
         setPermissionEnabled(true);
-
-        AuthorizationStrategy as = r.jenkins.getAuthorizationStrategy();
-        assertTrue("Expecting GlobalMatrixAuthorizationStrategy", (as instanceof GlobalMatrixAuthorizationStrategy));
-        GlobalMatrixAuthorizationStrategy gas = (GlobalMatrixAuthorizationStrategy)as;
-        assertTrue("Charlie should have extended read for this test", gas.hasExplicitPermission("charlie",Item.EXTENDED_READ));
 
         JenkinsRule.WebClient wc = r.createWebClient();
         wc.withBasicCredentials("charlie");
 
         HtmlPage page = wc.goTo("job/a/configure");
         HtmlForm form = page.getFormByName("config");
-        HtmlButton saveButton = r.getButtonByCaption(form,"Save");
+        HtmlButton saveButton = r.getButtonByCaption(form, "Save");
         assertNull(saveButton);
     }
 
-    @LocalData
+    @Ignore(
+            "This was actually testing a design of matrix-auth rather than core: that permissions, though formerly granted, are ignored if currently disabled."
+                + " Permission.enabled Javadoc only discusses visibility."
+                + " MockAuthorizationStrategy does not implement this check.")
     @Test public void readOnlyConfigAccessWithPermissionDisabled() throws Exception {
         setPermissionEnabled(false);
-        
-        AuthorizationStrategy as = r.jenkins.getAuthorizationStrategy();
-        assertTrue("Expecting GlobalMatrixAuthorizationStrategy", (as instanceof GlobalMatrixAuthorizationStrategy));
-        GlobalMatrixAuthorizationStrategy gas = (GlobalMatrixAuthorizationStrategy)as;
-        assertFalse("Charlie should not have extended read for this test", gas.hasExplicitPermission("charlie",Item.EXTENDED_READ));
 
         JenkinsRule.WebClient wc = r.createWebClient();
         wc.withBasicCredentials("charlie");
@@ -78,14 +75,8 @@ public class ExtendedReadPermissionTest {
         wc.assertFails("job/a/configure", HttpURLConnection.HTTP_FORBIDDEN);
     }
 
-    @LocalData
     @Test public void noConfigAccessWithPermissionEnabled() throws Exception {
         setPermissionEnabled(true);
-
-        AuthorizationStrategy as = r.jenkins.getAuthorizationStrategy();
-        assertTrue("Expecting GlobalMatrixAuthorizationStrategy", (as instanceof GlobalMatrixAuthorizationStrategy));
-        GlobalMatrixAuthorizationStrategy gas = (GlobalMatrixAuthorizationStrategy)as;
-        assertFalse("Bob should not have extended read for this test", gas.hasExplicitPermission("bob",Item.EXTENDED_READ));
 
         JenkinsRule.WebClient wc = r.createWebClient();
         wc.withBasicCredentials("bob");

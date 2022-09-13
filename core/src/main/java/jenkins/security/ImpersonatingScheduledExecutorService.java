@@ -24,17 +24,19 @@
 
 package jenkins.security;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ScheduledExecutorService;
 import jenkins.util.InterceptingScheduledExecutorService;
-import org.acegisecurity.Authentication;
+import org.springframework.security.core.Authentication;
 
 /**
  * Variant of {@link ImpersonatingExecutorService} for scheduled services.
  * @since 2.51
  */
+@SuppressFBWarnings(value = "THROWS_METHOD_THROWS_CLAUSE_BASIC_EXCEPTION", justification = "TODO needs triage")
 public final class ImpersonatingScheduledExecutorService extends InterceptingScheduledExecutorService {
 
     private final Authentication authentication;
@@ -42,11 +44,20 @@ public final class ImpersonatingScheduledExecutorService extends InterceptingSch
     /**
      * Creates a wrapper service.
      * @param base the base service
-     * @param authentication for example {@link ACL#SYSTEM}
+     * @param authentication for example {@link ACL#SYSTEM2}
+     * @since 2.266
      */
     public ImpersonatingScheduledExecutorService(ScheduledExecutorService base, Authentication authentication) {
         super(base);
         this.authentication = authentication;
+    }
+
+    /**
+     * @deprecated use {@link #ImpersonatingScheduledExecutorService(ScheduledExecutorService, Authentication)}
+     */
+    @Deprecated
+    public ImpersonatingScheduledExecutorService(ScheduledExecutorService base, org.acegisecurity.Authentication authentication) {
+        this(base, authentication.toSpring());
     }
 
     @Override
@@ -54,7 +65,7 @@ public final class ImpersonatingScheduledExecutorService extends InterceptingSch
         return new Runnable() {
             @Override
             public void run() {
-                try (ACLContext ctxt = ACL.as(authentication)) {
+                try (ACLContext ctxt = ACL.as2(authentication)) {
                     r.run();
                 }
             }
@@ -63,10 +74,10 @@ public final class ImpersonatingScheduledExecutorService extends InterceptingSch
 
     @Override
     protected <V> Callable<V> wrap(final Callable<V> r) {
-        return new Callable<V>() {
+        return new Callable<>() {
             @Override
             public V call() throws Exception {
-                try (ACLContext ctxt = ACL.as(authentication)) {
+                try (ACLContext ctxt = ACL.as2(authentication)) {
                     return r.call();
                 }
             }

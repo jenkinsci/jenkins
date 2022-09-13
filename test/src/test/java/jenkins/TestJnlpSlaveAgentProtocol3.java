@@ -21,12 +21,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins;
 
 import hudson.Extension;
-import org.jenkinsci.Symbol;
-
 import java.net.Socket;
+import org.jenkinsci.Symbol;
 
 @Extension
 @Symbol("jnlp3")

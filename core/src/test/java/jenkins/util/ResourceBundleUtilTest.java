@@ -21,14 +21,16 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.util;
 
-import net.sf.json.JSONObject;
-import org.junit.Assert;
-import org.junit.Test;
+import static org.junit.Assert.assertThrows;
 
 import java.util.Locale;
 import java.util.MissingResourceException;
+import net.sf.json.JSONObject;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
@@ -42,11 +44,11 @@ public class ResourceBundleUtilTest {
     public void test_known_locale() {
         JSONObject bundle = ResourceBundleUtil.getBundle("hudson.logging.Messages", Locale.GERMAN);
         Assert.assertEquals("Initialisiere Log-Rekorder", bundle.getString("LogRecorderManager.init"));
-        bundle = ResourceBundleUtil.getBundle("hudson.logging.Messages", new Locale("pt"));
-        Assert.assertEquals("Inicializando registros de log", bundle.getString("LogRecorderManager.init"));
+        bundle = ResourceBundleUtil.getBundle("hudson.logging.Messages", new Locale("de"));
+        Assert.assertEquals("Initialisiere Log-Rekorder", bundle.getString("LogRecorderManager.init"));
 
         // Test caching - should get the same bundle instance back...
-        Assert.assertTrue(ResourceBundleUtil.getBundle("hudson.logging.Messages", new Locale("pt")) == bundle);
+        Assert.assertSame(ResourceBundleUtil.getBundle("hudson.logging.Messages", new Locale("de")), bundle);
     }
 
     /**
@@ -60,8 +62,8 @@ public class ResourceBundleUtilTest {
             Locale.setDefault(new Locale("en", "US"));
 
             JSONObject bundle = ResourceBundleUtil.getBundle("hudson.logging.Messages", new Locale("kok")); // konkani
-            Assert.assertEquals("Initialing log recorders", bundle.getString("LogRecorderManager.init"));
-        }finally{
+            Assert.assertEquals("Initializing log recorders", bundle.getString("LogRecorderManager.init"));
+        } finally {
             Locale.setDefault(defaultOSLocale);
         }
     }
@@ -69,8 +71,8 @@ public class ResourceBundleUtilTest {
     /**
      * Test unknown bundle.
      */
-    @Test(expected = MissingResourceException.class)
+    @Test
     public void test_unknown_bundle() {
-        ResourceBundleUtil.getBundle("hudson.blah.Whatever");
+        assertThrows(MissingResourceException.class, () -> ResourceBundleUtil.getBundle("hudson.blah.Whatever"));
     }
 }

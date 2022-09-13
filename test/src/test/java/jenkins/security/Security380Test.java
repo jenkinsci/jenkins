@@ -29,7 +29,7 @@ public class Security380Test {
         Jenkins.get().setSecurityRealm(j.createDummySecurityRealm());
 
         j.createFreeStyleProject();
-        ACL.impersonate(Jenkins.ANONYMOUS, new Runnable() {
+        ACL.impersonate2(Jenkins.ANONYMOUS2, new Runnable() {
             @Override
             public void run() {
                 Assert.assertEquals("no items", 0, Jenkins.get().getItems().size());
@@ -47,7 +47,7 @@ public class Security380Test {
         Jenkins.get().setSecurityRealm(j.createDummySecurityRealm());
 
         j.createFreeStyleProject();
-        ACL.impersonate(Jenkins.ANONYMOUS, new Runnable() {
+        ACL.impersonate2(Jenkins.ANONYMOUS2, new Runnable() {
             @Override
             public void run() {
                 Assert.assertEquals("one item", 1, Jenkins.get().getItems().size());
@@ -90,7 +90,7 @@ public class Security380Test {
         }
 
         public HttpResponse doIndex() throws Exception {
-            return HttpResponses.plainText(Integer.toString(Jenkins.get().getItems().size()));
+            return HttpResponses.text(Integer.toString(Jenkins.get().getItems().size()));
         }
     }
 }

@@ -1,8 +1,8 @@
-import $ from 'jquery';
-import { getWindow } from 'window-handle';
+import $ from "jquery";
+import { getWindow } from "window-handle";
 
-var timestamp = (new Date().getTime());
-var loadedClass = 'jenkins-loaded-' + timestamp;
+var timestamp = new Date().getTime();
+var loadedClass = "jenkins-loaded-" + timestamp;
 
 /**
  * Wait for the specified element to be added to the DOM.
@@ -14,83 +14,57 @@ var loadedClass = 'jenkins-loaded-' + timestamp;
  * @param contextEl The jQuery selector context (optional).
  */
 function onload(selector, callback, contextEl) {
-    function registerRescan() {
-        setTimeout(scan, 50);
+  function registerRescan() {
+    setTimeout(scan, 50);
+  }
+  function scan() {
+    var elements = $(selector, contextEl).not(loadedClass);
+    if (elements.length > 0) {
+      elements.addClass(loadedClass);
+      if (callback(elements) === true) {
+        registerRescan();
+      }
+    } else {
+      registerRescan();
     }
-    function scan() {
-        var elements = $(selector, contextEl).not(loadedClass);
-        if (elements.size() > 0) {
-            elements.addClass(loadedClass);
-            if (callback(elements) === true) {
-                registerRescan();
-            }
-        } else {
-            registerRescan();
-        }
-    }
-    scan();
+  }
+  scan();
 }
 
 function winScrollTop() {
-    var win = $(getWindow());
-    return win.scrollTop();
+  var win = $(getWindow());
+  return win.scrollTop();
 }
 
 function onWinScroll(callback) {
-    $(getWindow()).on('scroll', callback);
+  $(getWindow()).on("scroll", callback);
 }
 
 function pageHeaderHeight() {
-    return elementHeight('#page-head');
+  return elementHeight("#page-header") + breadcrumbBarHeight();
 }
 
 function breadcrumbBarHeight() {
-    return elementHeight('#breadcrumbBar');
-}
-
-function fireBottomStickerAdjustEvent() {
-    Event.fire(window, 'jenkins:bottom-sticker-adjust'); // jshint ignore:line
-}
-
-// YUI Drag widget does not like to work on elements with a relative position.
-// This tells the element to switch to static position at the start of the drag, so it can work.
-function fixDragEvent(handle) {
-    var isReady = false;
-    var $handle = $(handle);
-    var $chunk = $handle.closest('.repeated-chunk');
-    $handle.add('#ygddfdiv')
-	.mousedown(function(){
-	    isReady = true;
-	})
-	.mousemove(function(){
-	    if(isReady && !$chunk.hasClass('dragging')){
-		$chunk.addClass('dragging');
-	    }
-	}).mouseup(function(){
-	    isReady = false;
-	    $chunk.removeClass('dragging');
-	});
+  return elementHeight("#breadcrumbBar");
 }
 
 function removeTextHighlighting(selector) {
-    $('span.highlight-split', selector).each(function() {
-        var highlightSplit = $(this);
-        highlightSplit.before(highlightSplit.text());
-        highlightSplit.remove();
-    });
+  $("span.highlight-split", selector).each(function () {
+    var highlightSplit = $(this);
+    highlightSplit.before(highlightSplit.text());
+    highlightSplit.remove();
+  });
 }
 
 function elementHeight(selector) {
-    return $(selector).height();
+  return $(selector).height();
 }
 
 export default {
-    onload,
-    winScrollTop,
-    onWinScroll,
-    pageHeaderHeight,
-    breadcrumbBarHeight,
-    fireBottomStickerAdjustEvent,
-    fixDragEvent,
-    removeTextHighlighting
-}
+  onload,
+  winScrollTop,
+  onWinScroll,
+  pageHeaderHeight,
+  breadcrumbBarHeight,
+  removeTextHighlighting,
+};

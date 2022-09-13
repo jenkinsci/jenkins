@@ -21,23 +21,30 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.util.AdaptedIterator;
-
-import java.util.Set;
-import java.util.Collection;
 import java.util.AbstractCollection;
+import java.util.Collection;
 import java.util.Iterator;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CopyOnWriteArraySet;
-import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.security.NotReallyRoleSensitiveCallable;
 
 /**
  * Controls mutual exclusion of {@link ResourceList}.
  * @author Kohsuke Kawaguchi
  */
+@SuppressFBWarnings(
+        value = {
+            "THROWS_METHOD_THROWS_CLAUSE_BASIC_EXCEPTION",
+            "THROWS_METHOD_THROWS_CLAUSE_THROWABLE"
+        },
+        justification = "TODO needs triage")
 public class ResourceController {
     /**
      * {@link ResourceList}s that are used by activities that are in progress.
@@ -47,15 +54,18 @@ public class ResourceController {
     /**
      * View of {@link #inProgress} that exposes its {@link ResourceList}.
      */
-    private final Collection<ResourceList> resourceView = new AbstractCollection<ResourceList>() {
+    private final Collection<ResourceList> resourceView = new AbstractCollection<>() {
+        @Override
         public Iterator<ResourceList> iterator() {
-            return new AdaptedIterator<ResourceActivity,ResourceList>(inProgress.iterator()) {
+            return new AdaptedIterator<>(inProgress.iterator()) {
+                @Override
                 protected ResourceList adapt(ResourceActivity item) {
                     return item.getResourceList();
                 }
             };
         }
 
+        @Override
         public int size() {
             return inProgress.size();
         }
@@ -76,9 +86,9 @@ public class ResourceController {
      * @throws InterruptedException
      *      the thread can be interrupted while waiting for the available resources.
      */
-    public void execute(@NonNull Runnable task, final ResourceActivity activity ) throws InterruptedException {
+    public void execute(@NonNull Runnable task, final ResourceActivity activity) throws InterruptedException {
         final ResourceList resources = activity.getResourceList();
-        _withLock(new NotReallyRoleSensitiveCallable<Void,InterruptedException>() {
+        _withLock(new NotReallyRoleSensitiveCallable<Void, InterruptedException>() {
             @Override
             public Void call() throws InterruptedException {
                 while (inUse.isCollidingWith(resources)) {
@@ -119,14 +129,14 @@ public class ResourceController {
      */
     public boolean canRun(final ResourceList resources) {
         try {
-            return _withLock(new Callable<Boolean>() {
+            return _withLock(new Callable<>() {
                 @Override
                 public Boolean call() {
                     return !inUse.isCollidingWith(resources);
                 }
             });
         } catch (Exception e) {
-            throw new IllegalStateException("Inner callable does not throw exception");
+            throw new IllegalStateException("Inner callable does not throw exception", e);
         }
     }
 
@@ -140,14 +150,14 @@ public class ResourceController {
      */
     public Resource getMissingResource(final ResourceList resources) {
         try {
-            return _withLock(new Callable<Resource>() {
+            return _withLock(new Callable<>() {
                 @Override
                 public Resource call() {
                     return resources.getConflict(inUse);
                 }
             });
         } catch (Exception e) {
-            throw new IllegalStateException("Inner callable does not throw exception");
+            throw new IllegalStateException("Inner callable does not throw exception", e);
         }
     }
 
@@ -159,11 +169,12 @@ public class ResourceController {
     public ResourceActivity getBlockingActivity(ResourceActivity activity) {
         ResourceList res = activity.getResourceList();
         for (ResourceActivity a : inProgress)
-            if(res.isCollidingWith(a.getResourceList()))
+            if (res.isCollidingWith(a.getResourceList()))
                 return a;
         return null;
     }
 
+    @SuppressFBWarnings(value = "WA_NOT_IN_LOOP", justification = "the caller does indeed call this method in a loop")
     protected void _await() throws InterruptedException {
         wait();
     }
@@ -184,10 +195,9 @@ public class ResourceController {
         }
     }
 
-    protected <V, T extends Throwable> V _withLock(hudson.remoting.Callable<V,T> callable) throws T {
+    protected <V, T extends Throwable> V _withLock(hudson.remoting.Callable<V, T> callable) throws T {
         synchronized (this) {
             return callable.call();
         }
     }
 }
-

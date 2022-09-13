@@ -24,13 +24,12 @@
 
 package jenkins.management;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.model.ManagementLink;
 import hudson.security.Permission;
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * @author <a href="mailto:nicolas.deloof@gmail.com">Nicolas De Loof</a>
@@ -40,9 +39,10 @@ public class ReloadLink extends ManagementLink {
 
     @Override
     public String getIconFileName() {
-        return "refresh.png";
+        return "symbol-reload";
     }
 
+    @Override
     public String getDisplayName() {
         return Messages.ReloadLink_DisplayName();
     }

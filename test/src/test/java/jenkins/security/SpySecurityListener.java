@@ -21,18 +21,18 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.security;
 
-import org.acegisecurity.userdetails.UserDetails;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import org.springframework.security.core.userdetails.UserDetails;
 
 //TODO temporary solution, should be moved to Jenkins Test Harness project
 /**
@@ -46,55 +46,55 @@ public abstract class SpySecurityListener extends SecurityListener {
     public final EventQueue<String> loggedInCalls = new EventQueue<>();
     public final EventQueue<String> failedToLogInCalls = new EventQueue<>();
     public final EventQueue<String> loggedOutCalls = new EventQueue<>();
-    
-    public void clearPreviousCalls(){
+
+    public void clearPreviousCalls() {
         this.authenticatedCalls.clear();
         this.failedToAuthenticateCalls.clear();
         this.loggedInCalls.clear();
         this.failedToLogInCalls.clear();
         this.loggedOutCalls.clear();
     }
-    
+
     @Override
-    protected void authenticated(@NonNull UserDetails details) {
+    protected void authenticated2(@NonNull UserDetails details) {
         this.authenticatedCalls.add(details);
     }
-    
+
     @Override
     protected void failedToAuthenticate(@NonNull String username) {
         this.failedToAuthenticateCalls.add(username);
     }
-    
+
     @Override
     protected void loggedIn(@NonNull String username) {
         this.loggedInCalls.add(username);
     }
-    
+
     @Override
     protected void failedToLogIn(@NonNull String username) {
         this.failedToLogInCalls.add(username);
     }
-    
+
     @Override
     protected void loggedOut(@NonNull String username) {
         this.loggedOutCalls.add(username);
-    
+
     }
 
     public static class EventQueue<T> {
         private final List<T> eventList = new ArrayList<>();
 
-        private EventQueue add(T t){
+        private EventQueue add(T t) {
             eventList.add(t);
             return this;
         }
 
-        public void assertLastEventIsAndThenRemoveIt(T expected){
+        public void assertLastEventIsAndThenRemoveIt(T expected) {
             assertLastEventIsAndThenRemoveIt(expected::equals);
         }
 
-        public void assertLastEventIsAndThenRemoveIt(Predicate<T> predicate){
-            if(eventList.isEmpty()){
+        public void assertLastEventIsAndThenRemoveIt(Predicate<T> predicate) {
+            if (eventList.isEmpty()) {
                 fail("event list is empty");
             }
 
@@ -103,13 +103,12 @@ public abstract class SpySecurityListener extends SecurityListener {
             eventList.clear();
         }
 
-        public void assertNoNewEvents(){
-            assertEquals("list of event should be empty", eventList.size(), 0);
+        public void assertNoNewEvents() {
+            assertEquals("list of event should be empty", 0, eventList.size());
         }
 
-        public void clear(){
+        public void clear() {
             eventList.clear();
         }
     }
 }
-

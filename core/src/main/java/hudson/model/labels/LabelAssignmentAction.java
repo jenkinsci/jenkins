@@ -1,5 +1,6 @@
 package hudson.model.labels;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.Action;
 import hudson.model.Label;
 import hudson.model.LoadBalancer;
@@ -7,7 +8,6 @@ import hudson.model.Queue;
 import hudson.model.Queue.QueueDecisionHandler;
 import hudson.model.Queue.Task;
 import hudson.model.queue.SubTask;
-import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * {@link Action} that can be submitted to {@link Queue} that controls where

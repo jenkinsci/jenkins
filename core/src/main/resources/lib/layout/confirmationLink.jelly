@@ -41,21 +41,6 @@ THE SOFTWARE.
             A CSS class to use to style the link.
         </st:attribute>
     </st:documentation>
-    <j:set var="id" value="${h.generateId()}"/>
-    <a href="#" class="${class}" onclick="confirmPOST_${id}(${post ? 'true' : 'false'}, '${h.jsStringEscape(attrs.href)}', '${h.jsStringEscape(message)}')"><d:invokeBody/></a>
-    <script>
-        function confirmPOST_${id}(post, href, message) {
-            if (confirm(message)) {
-                var form = document.createElement('form');
-                form.setAttribute('method', post ? 'POST' : 'GET');
-                form.setAttribute('action', href);
-                if (post) {
-                    crumb.appendToForm(form);
-                }
-                document.body.appendChild(form);
-                form.submit();
-            }
-            return false;
-        }
-    </script>
+    <a href="#" class="${class} confirmation-link" data-post="${post}" data-url="${attrs.href}" data-message="${message}"><d:invokeBody/></a>
+    <st:adjunct includes="lib.layout.confirmationLink.adjunct "/>
 </j:jelly>

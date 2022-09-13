@@ -24,16 +24,18 @@
 
 package jenkins.security;
 
+import static org.junit.Assert.assertEquals;
+
 import hudson.FilePath;
 import hudson.slaves.DumbSlave;
 import hudson.util.DirScanner;
 import java.io.OutputStream;
-import org.junit.Test;
-import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Rule;
+import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 
+// TODO What is this even testing?
 public class FilePathSecureTest {
 
     @Rule public JenkinsRule r = new JenkinsRule();

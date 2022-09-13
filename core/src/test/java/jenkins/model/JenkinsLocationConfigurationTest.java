@@ -21,64 +21,63 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.model;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
-import static org.powermock.api.mockito.PowerMockito.mock;
 
 /**
  * Tests for {@link JenkinsLocationConfiguration}.
  * @author Oleg Nenashev
  */
 public class JenkinsLocationConfigurationTest {
-    
+
     JenkinsLocationConfiguration config;
-    
+
     @Before
     public void setUp() {
         config = mock(JenkinsLocationConfiguration.class, Mockito.CALLS_REAL_METHODS);
-        Answer<String> mockVoid = new Answer<String>() {
-            @Override
-            public String answer(InvocationOnMock invocation) throws Throwable {
-                return "stub";
-            }
-        };
-        Mockito.doAnswer(mockVoid).when(config).save();      
+        Answer<String> mockVoid = invocation -> "stub";
+        Mockito.doAnswer(mockVoid).when(config).save();
         Mockito.doAnswer(mockVoid).when(config).save();
     }
-    
+
     @Test
     public void setAdminEmail() {
-        final String email="test@foo.bar";
-        final String email2="test@bar.foo";
-        
+        final String email = "test@foo.bar";
+        final String email2 = "test@bar.foo";
+
         // Assert the default value
         assertEquals(Messages.Mailer_Address_Not_Configured(), config.getAdminAddress());
-        
+
         // Basic case
         config.setAdminAddress(email);
         assertEquals(email, config.getAdminAddress());
-        
+
         // Quoted value
-        config.setAdminAddress("\""+email2+"\"");
+        config.setAdminAddress("\"" + email2 + "\"");
         assertEquals(email2, config.getAdminAddress());
+
+        config.setAdminAddress("    test@foo.bar     ");
+        assertEquals(email, config.getAdminAddress());
     }
-    
+
     @Test
     @Issue("JENKINS-28419")
     public void resetAdminEmail() {
-        final String email="test@foo.bar";
-        
+        final String email = "test@foo.bar";
+
         // Set the e-mail
         config.setAdminAddress(email);
         assertEquals(email, config.getAdminAddress());
-        
+
         // Reset it
         config.setAdminAddress(null);
         assertEquals(Messages.Mailer_Address_Not_Configured(), config.getAdminAddress());

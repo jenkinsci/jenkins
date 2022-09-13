@@ -24,6 +24,14 @@
 
 package hudson.model;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.WebRequest;
@@ -34,7 +42,6 @@ import hudson.cli.CLICommandInvoker;
 import hudson.cli.CopyJobCommand;
 import hudson.cli.CreateJobCommand;
 import hudson.security.ACL;
-
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.net.HttpURLConnection;
@@ -43,25 +50,16 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import jenkins.model.Jenkins;
 import jenkins.security.apitoken.ApiTokenTestHelper;
-import org.acegisecurity.context.SecurityContext;
-import org.acegisecurity.context.SecurityContextHolder;
-
 import org.junit.Before;
-import org.junit.Test;
-
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import org.junit.Rule;
+import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.MockFolder;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 public class ItemsTest {
 
@@ -69,10 +67,10 @@ public class ItemsTest {
     @Rule public TemporaryFolder tmpRule = new TemporaryFolder();
 
     @Before
-    public void setupLegacyBehavior(){
+    public void setupLegacyBehavior() {
         ApiTokenTestHelper.enableLegacyBehavior();
     }
-    
+
     @Test public void getAllItems() throws Exception {
         MockFolder d = r.createFolder("d");
         MockFolder sub2 = d.createProject(MockFolder.class, "sub2");
@@ -136,7 +134,7 @@ public class ItemsTest {
         FreeStyleProject sub2charlie = sub2.createProject(FreeStyleProject.class, "charlie");
         assertThat(d.allItems(FreeStyleProject.class), containsInAnyOrder(dp, sub1p, sub1q, sub2ap, sub2alpha,
                 sub2bp, sub2BRAVO, sub2cp, sub2charlie));
-        assertThat(sub2.allItems(Item.class), containsInAnyOrder((Item)sub2a, sub2ap, sub2alpha, sub2b, sub2bp,
+        assertThat(sub2.allItems(Item.class), containsInAnyOrder((Item) sub2a, sub2ap, sub2alpha, sub2b, sub2bp,
                 sub2BRAVO, sub2c, sub2cp, sub2charlie));
     }
 
@@ -164,16 +162,16 @@ public class ItemsTest {
     @Issue("JENKINS-24825")
     @Test public void moveItem() throws Exception {
         File tmp = tmpRule.getRoot();
-        r.jenkins.setRawBuildsDir(tmp.getAbsolutePath()+"/${ITEM_FULL_NAME}");
+        r.jenkins.setRawBuildsDir(tmp.getAbsolutePath() + "/${ITEM_FULL_NAME}");
         MockFolder foo = r.createFolder("foo");
         MockFolder bar = r.createFolder("bar");
         FreeStyleProject test = foo.createProject(FreeStyleProject.class, "test");
-        test.scheduleBuild2(0).get();
+        r.buildAndAssertSuccess(test);
         Items.move(test, bar);
         assertFalse(new File(tmp, "foo/test/1").exists());
         assertTrue(new File(tmp, "bar/test/1").exists());
     }
-    
+
     // TODO would be more efficient to run these all as a single test case, but after a few Jetty seems to stop serving new content and new requests just hang.
 
     private void overwriteTargetSetUp() throws Exception {
@@ -292,7 +290,7 @@ public class ItemsTest {
             @Override void run(JenkinsRule r, String target) throws Exception {
                 CLICommand cmd = new CreateJobCommand();
                 CLICommandInvoker invoker = new CLICommandInvoker(r, cmd);
-                cmd.setTransportAuth(User.getOrCreateByIdOrFullName("attacker").impersonate());
+                cmd.setTransportAuth2(User.getOrCreateByIdOrFullName("attacker").impersonate2());
                 int status = invoker.withStdin(new ByteArrayInputStream("<project/>".getBytes(StandardCharsets.UTF_8))).invokeWithArgs(target).returnCode();
                 if (status != 0) {
                     throw new AbortException("CLI command failed with status " + status);
@@ -305,7 +303,7 @@ public class ItemsTest {
                 r.createFreeStyleProject("dupe");
                 CLICommand cmd = new CopyJobCommand();
                 CLICommandInvoker invoker = new CLICommandInvoker(r, cmd);
-                cmd.setTransportAuth(User.getOrCreateByIdOrFullName("attacker").impersonate());
+                cmd.setTransportAuth2(User.getOrCreateByIdOrFullName("attacker").impersonate2());
                 int status = invoker.invokeWithArgs("dupe", target).returnCode();
                 r.jenkins.getItem("dupe").delete();
                 if (status != 0) {
@@ -317,7 +315,7 @@ public class ItemsTest {
         MOVE {
             @Override void run(JenkinsRule r, String target) throws Exception {
                 try {
-                    SecurityContext orig = ACL.impersonate(User.getOrCreateByIdOrFullName("attacker").impersonate());
+                    SecurityContext orig = ACL.impersonate2(User.getOrCreateByIdOrFullName("attacker").impersonate2());
                     try {
                         Items.move(r.jenkins.getItemByFullName("d", MockFolder.class).createProject(FreeStyleProject.class, target), r.jenkins);
                     } finally {
@@ -331,6 +329,7 @@ public class ItemsTest {
             }
         };
         abstract void run(JenkinsRule r, String target) throws Exception;
+
         private static JenkinsRule.WebClient wc(JenkinsRule r) {
             return r.createWebClient().withBasicApiToken("attacker");
         }

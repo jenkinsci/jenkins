@@ -1,8 +1,7 @@
 package hudson.tasks;
 
-import static org.junit.Assert.assertNull;
-
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeFalse;
 
@@ -12,21 +11,18 @@ import hudson.Proc;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Result;
-
-import org.apache.commons.io.FileUtils;
-import org.jvnet.hudson.test.FakeLauncher;
-import org.jvnet.hudson.test.Issue;
-import org.jvnet.hudson.test.PretendSlave;
-
 import java.io.File;
-import java.io.IOException;
 import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
-
+import org.apache.commons.io.IOUtils;
 import org.junit.Assume;
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.FakeLauncher;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.PretendSlave;
 import org.jvnet.hudson.test.recipes.LocalData;
 
 /**
@@ -40,13 +36,13 @@ public class ShellTest {
     public JenkinsRule rule = new JenkinsRule();
 
     @Test
-    public void validateShellCommandEOL() throws Exception {
+    public void validateShellCommandEOL() {
         Shell obj = new Shell("echo A\r\necho B\recho C");
         rule.assertStringContains(obj.getCommand(), "echo A\necho B\necho C");
     }
 
     @Test
-    public void validateShellContents() throws Exception {
+    public void validateShellContents() {
         Shell obj = new Shell("echo A\r\necho B\recho C");
         rule.assertStringContains(obj.getContents(), "\necho A\necho B\necho C");
     }
@@ -57,11 +53,12 @@ public class ShellTest {
 
         // TODO: define a FakeLauncher implementation with easymock so that this kind of assertions can be simplified.
         PretendSlave s = rule.createPretendSlave(new FakeLauncher() {
-            public Proc onLaunch(ProcStarter p) throws IOException {
+            @Override
+            public Proc onLaunch(ProcStarter p) {
                 // test the command line argument.
                 List<String> cmds = p.cmds();
-                rule.assertStringContains("/bin/sh",cmds.get(0));
-                rule.assertStringContains("-xe",cmds.get(1));
+                rule.assertStringContains("/bin/sh", cmds.get(0));
+                rule.assertStringContains("-xe", cmds.get(1));
                 assertTrue(new File(cmds.get(2)).exists());
 
                 // fake the execution
@@ -76,10 +73,10 @@ public class ShellTest {
         p.getBuildersList().add(new Shell("echo abc"));
         p.setAssignedNode(s);
 
-        FreeStyleBuild b = rule.assertBuildStatusSuccess(p.scheduleBuild2(0).get());
+        FreeStyleBuild b = rule.buildAndAssertSuccess(p);
 
-        assertEquals(1,s.numLaunch);
-        assertTrue(FileUtils.readFileToString(b.getLogFile()).contains("Hudson was here"));
+        assertEquals(1, s.numLaunch);
+        assertTrue(IOUtils.toString(b.getLogInputStream(), StandardCharsets.UTF_8).contains("Hudson was here"));
     }
 
     /* A FakeLauncher that just returns the specified error code */
@@ -88,12 +85,11 @@ public class ShellTest {
 
         ReturnCodeFakeLauncher(int code)
         {
-            super();
             this.code = code;
         }
 
         @Override
-        public Proc onLaunch(ProcStarter p) throws IOException {
+        public Proc onLaunch(ProcStarter p) {
             return new FinishedProc(this.code);
         }
     }
@@ -110,14 +106,14 @@ public class ShellTest {
         FreeStyleProject p = rule.createFreeStyleProject();
         p.getBuildersList().add(createNewShell("", exitCode));
         p.setAssignedNode(slave);
-        rule.assertBuildStatus(Result.UNSTABLE, p.scheduleBuild2(0).get());
+        rule.buildAndAssertStatus(Result.UNSTABLE, p);
     }
 
     @Test
     @Issue("JENKINS-23786")
     public void unixExitCodes1To255ShouldMakeBuildUnstable() throws Exception {
         assumeFalse(Functions.isWindows());
-        for( int exitCode: new int [] {1, 2, 255}) {
+        for (int exitCode : new int [] {1, 2, 255}) {
             nonZeroExitCodeShouldMakeBuildUnstable(exitCode);
         }
     }
@@ -130,12 +126,12 @@ public class ShellTest {
         p = rule.createFreeStyleProject();
         p.getBuildersList().add(createNewShell("", null));
         p.setAssignedNode(slave);
-        rule.assertBuildStatus(Result.FAILURE, p.scheduleBuild2(0).get());
+        rule.buildAndAssertStatus(Result.FAILURE, p);
 
         p = rule.createFreeStyleProject();
         p.getBuildersList().add(createNewShell("", 0));
         p.setAssignedNode(slave);
-        rule.assertBuildStatus(Result.FAILURE, p.scheduleBuild2(0).get());
+        rule.buildAndAssertStatus(Result.FAILURE, p);
     }
 
     @Test
@@ -143,7 +139,7 @@ public class ShellTest {
     public void unixExitCodes1To255ShouldBreakTheBuildByDefault() throws Exception {
         assumeFalse(Functions.isWindows());
 
-        for( int exitCode: new int [] {1, 2, 255}) {
+        for (int exitCode : new int [] {1, 2, 255}) {
             nonZeroExitCodeShouldBreakTheBuildByDefault(exitCode);
         }
     }
@@ -156,14 +152,14 @@ public class ShellTest {
         FreeStyleProject p = rule.createFreeStyleProject();
         p.getBuildersList().add(createNewShell("", notMatchingExitCode));
         p.setAssignedNode(slave);
-        rule.assertBuildStatus(Result.FAILURE, p.scheduleBuild2(0).get());
+        rule.buildAndAssertStatus(Result.FAILURE, p);
     }
 
     @Test
     @Issue("JENKINS-23786")
     public void unixExitCodes1To255ShouldBreakTheBuildIfNotMatching() throws Exception {
         assumeFalse(Functions.isWindows());
-        for( int exitCode: new int [] {1, 2, 255}) {
+        for (int exitCode : new int [] {1, 2, 255}) {
             nonZeroExitCodeShouldBreakTheBuildIfNotMatching(exitCode);
         }
     }
@@ -174,30 +170,30 @@ public class ShellTest {
         assumeFalse(Functions.isWindows());
 
         PretendSlave slave = rule.createPretendSlave(new ReturnCodeFakeLauncher(0));
-        for( Integer unstableReturn: new Integer [] {null, 0, 1}) {
+        for (Integer unstableReturn : new Integer [] {null, 0, 1}) {
             FreeStyleProject p = rule.createFreeStyleProject();
             p.getBuildersList().add(createNewShell("", unstableReturn));
             p.setAssignedNode(slave);
-            rule.assertBuildStatus(Result.SUCCESS, p.scheduleBuild2(0).get());
+            rule.buildAndAssertSuccess(p);
         }
     }
 
     @Issue("JENKINS-23786")
     @Test
-    public void unixUnstableCodeZeroIsSameAsUnset() throws Exception {
+    public void unixUnstableCodeZeroIsSameAsUnset() {
         assumeFalse(Functions.isWindows());
 
         /* Creating unstable=0 produces unstable=null */
-        assertNull( createNewShell("",0).getUnstableReturn() );
+        assertNull(createNewShell("", 0).getUnstableReturn());
     }
 
     @Issue("JENKINS-40894")
     @Test
     @LocalData
-    public void canLoadUnstableReturnFromDisk() throws Exception {
+    public void canLoadUnstableReturnFromDisk() {
         FreeStyleProject p = (FreeStyleProject) rule.jenkins.getItemByFullName("test");
         Shell shell = (Shell) p.getBuildersList().get(0);
-        assertEquals("unstable return", Integer.valueOf(1), shell.getUnstableReturn());
+        assertEquals("unstable return", (Integer) 1, shell.getUnstableReturn());
     }
 
 }

@@ -21,40 +21,29 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.tools;
 
 import static org.junit.Assert.assertEquals;
 
-import hudson.Functions;
-import hudson.model.*;
-import hudson.model.labels.LabelAtom;
-import hudson.slaves.DumbSlave;
-import hudson.tasks.Maven;
-import hudson.tasks.BatchFile;
-import hudson.tasks.Ant;
-import hudson.tasks.Shell;
-import hudson.tasks.Ant.AntInstallation;
-import hudson.tasks.Maven.MavenInstallation;
-import hudson.EnvVars;
-import hudson.maven.MavenModuleSet;
-
-import java.io.IOException;
-
-import jenkins.model.Jenkins;
-
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
-import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.JenkinsRule.WebClient;
-import org.jvnet.hudson.test.SingleFileSCM;
-import org.jvnet.hudson.test.ExtractResourceSCM;
-
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import hudson.EnvVars;
+import hudson.Functions;
+import hudson.model.FreeStyleProject;
+import hudson.model.JDK;
+import hudson.model.labels.LabelAtom;
+import hudson.slaves.DumbSlave;
+import hudson.tasks.Ant.AntInstallation;
+import hudson.tasks.BatchFile;
+import hudson.tasks.Maven.MavenInstallation;
+import hudson.tasks.Shell;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.jvnet.hudson.test.ToolInstallations;
+import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.JenkinsRule.WebClient;
 
 /**
  * This class tests that environment variables from node properties are applied,
@@ -74,9 +63,9 @@ public class ToolLocationNodePropertyTest {
     @Test
     public void formRoundTrip() throws Exception {
         MavenInstallation.DescriptorImpl mavenDescriptor = j.jenkins.getDescriptorByType(MavenInstallation.DescriptorImpl.class);
-        mavenDescriptor.setInstallations(new MavenInstallation("maven", "XXX", j.NO_PROPERTIES));
+        mavenDescriptor.setInstallations(new MavenInstallation("maven", "XXX", JenkinsRule.NO_PROPERTIES));
         AntInstallation.DescriptorImpl antDescriptor = j.jenkins.getDescriptorByType(AntInstallation.DescriptorImpl.class);
-        antDescriptor.setInstallations(new AntInstallation("ant", "XXX", j.NO_PROPERTIES));
+        antDescriptor.setInstallations(new AntInstallation("ant", "XXX", JenkinsRule.NO_PROPERTIES));
         JDK.DescriptorImpl jdkDescriptor = j.jenkins.getDescriptorByType(JDK.DescriptorImpl.class);
         jdkDescriptor.setInstallations(new JDK("jdk", "XXX"));
 
@@ -112,81 +101,11 @@ public class ToolLocationNodePropertyTest {
         assertEquals("zotfoo", location.getHome());
     }
 
-    @Test
-    public void maven() throws Exception {
-        MavenInstallation maven = ToolInstallations.configureDefaultMaven();
-        String mavenPath = maven.getHome();
-        Jenkins.get().getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(new MavenInstallation("maven", "THIS IS WRONG", j.NO_PROPERTIES));
-
-        project.getBuildersList().add(new Maven("--version", "maven"));
-        configureDumpEnvBuilder();
-
-        Build build = project.scheduleBuild2(0).get();
-        j.assertBuildStatus(Result.FAILURE, build);
-
-        ToolLocationNodeProperty property = new ToolLocationNodeProperty(
-                new ToolLocationNodeProperty.ToolLocation(j.jenkins.getDescriptorByType(MavenInstallation.DescriptorImpl.class), "maven", mavenPath));
-        slave.getNodeProperties().add(property);
-
-        build = project.scheduleBuild2(0).get();
-        j.assertBuildStatus(Result.SUCCESS, build);
-    }
-
-    private void configureDumpEnvBuilder() throws IOException {
-        if(Functions.isWindows())
+    private void configureDumpEnvBuilder() {
+        if (Functions.isWindows())
             project.getBuildersList().add(new BatchFile("set"));
         else
             project.getBuildersList().add(new Shell("export"));
-    }
-
-    @Test
-    public void ant() throws Exception {
-        Ant.AntInstallation ant = ToolInstallations.configureDefaultAnt(tmp);
-        String antPath = ant.getHome();
-        Jenkins.get().getDescriptorByType(Ant.DescriptorImpl.class).setInstallations(new AntInstallation("ant", "THIS IS WRONG"));
-
-        project.setScm(new SingleFileSCM("build.xml", "<project name='foo'/>"));
-        project.getBuildersList().add(new Ant("-version", "ant", null,null,null));
-        configureDumpEnvBuilder();
-
-        Build build = project.scheduleBuild2(0).get();
-        j.assertBuildStatus(Result.FAILURE, build);
-
-        ToolLocationNodeProperty property = new ToolLocationNodeProperty(
-                new ToolLocationNodeProperty.ToolLocation(j.jenkins.getDescriptorByType(AntInstallation.DescriptorImpl.class), "ant", antPath));
-        slave.getNodeProperties().add(property);
-
-        build = project.scheduleBuild2(0).get();
-        System.out.println(build.getLog());
-        j.assertBuildStatus(Result.SUCCESS, build);
-    }
-
-    @Test
-    @Ignore("Fails on CI due to maven trying to download from maven central on http, which is no longer supported")
-    public void nativeMaven() throws Exception {
-        MavenInstallation maven = ToolInstallations.configureDefaultMaven();
-        String mavenPath = maven.getHome();
-        Jenkins.get().getDescriptorByType(Maven.DescriptorImpl.class).setInstallations(new MavenInstallation("maven", "THIS IS WRONG", j.NO_PROPERTIES));
-
-        MavenModuleSet project = j.jenkins.createProject(MavenModuleSet.class, "p");
-        project.setScm(new ExtractResourceSCM(getClass().getResource(
-                "/simple-projects.zip")));
-        project.setAssignedLabel(slave.getSelfLabel());
-        project.setJDK(j.jenkins.getJDK("default"));
-
-        project.setMaven("maven");
-        project.setGoals("clean");
-
-        Run build = project.scheduleBuild2(0).get();
-        j.assertBuildStatus(Result.FAILURE, build);
-
-        ToolLocationNodeProperty property = new ToolLocationNodeProperty(
-                new ToolLocationNodeProperty.ToolLocation(j.jenkins.getDescriptorByType(MavenInstallation.DescriptorImpl.class), "maven", mavenPath));
-        slave.getNodeProperties().add(property);
-
-        build = project.scheduleBuild2(0).get();
-        System.out.println(build.getLog());
-        j.assertBuildStatus(Result.SUCCESS, build);
     }
 
     @Before

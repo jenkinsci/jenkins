@@ -9,7 +9,6 @@ import hudson.model.Queue.BuildableItem;
 import hudson.model.Queue.Item;
 import hudson.model.Queue.LeftItem;
 import hudson.model.Queue.WaitingItem;
-
 import java.util.concurrent.Executor;
 
 /**

@@ -1,8 +1,5 @@
 package hudson.util;
 
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import java.util.Arrays;
@@ -12,6 +9,8 @@ import java.util.function.BiPredicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * This class implements a process of doing some action repeatedly synchronously until it is performed successfully.
@@ -23,7 +22,7 @@ import java.util.stream.Stream;
 
 // Limit the use of this class until it is mature enough
 @Restricted(NoExternalUse.class)
-public class Retrier <V>{
+public class Retrier<V> {
     private static final Logger LOGGER = Logger.getLogger(Retrier.class.getName());
 
     private int attempts;
@@ -33,8 +32,8 @@ public class Retrier <V>{
     private String action;
     private BiFunction<Integer, Exception, V> duringActionExceptionListener;
     private Class<?>[] duringActionExceptions;
-    
-    private Retrier(Builder<V> builder){
+
+    private Retrier(Builder<V> builder) {
         this.attempts = builder.attempts;
         this.delay = builder.delay;
         this.callable = builder.callable;
@@ -63,7 +62,7 @@ public class Retrier <V>{
                 result = callable.call();
 
             } catch (Exception e) {
-                if(duringActionExceptions == null || Stream.of(duringActionExceptions).noneMatch(exception -> exception.isAssignableFrom(e.getClass()))) {
+                if (duringActionExceptions == null || Stream.of(duringActionExceptions).noneMatch(exception -> exception.isAssignableFrom(e.getClass()))) {
                     // if the raised exception is not considered as a controlled exception doing the action, rethrow it
                     LOGGER.log(Level.WARNING, Messages.Retrier_ExceptionThrown(currentAttempt, action), e);
                     throw e;
@@ -107,7 +106,7 @@ public class Retrier <V>{
      * successful and the name of the action are required.
      * @param <V> The return type of the action to perform.
      */
-    public static class Builder <V> {
+    public static class Builder<V> {
         private Callable<V> callable;
         private String action;
         private BiPredicate<Integer, V> checkResult;
@@ -166,7 +165,7 @@ public class Retrier <V>{
          * @param checkResult Method to check if the result of the action was a success
          * @param action name of the action to perform, for messages purposes.
          */
-        
+
         public Builder(@NonNull Callable<V> callable, @NonNull BiPredicate<Integer, V> checkResult, @NonNull String action) {
             this.callable = callable;
             this.action = action;

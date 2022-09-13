@@ -6,12 +6,11 @@ import static org.junit.Assert.assertNull;
 import com.gargoylesoftware.htmlunit.WebResponse;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.util.NameValuePair;
+import java.io.IOException;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.xml.sax.SAXException;
-
-import java.io.IOException;
 
 public class FrameOptionsPageDecoratorTest {
     @Rule
@@ -21,7 +20,7 @@ public class FrameOptionsPageDecoratorTest {
     public void defaultHeaderPresent() throws IOException, SAXException {
         JenkinsRule.WebClient wc = j.createWebClient();
         HtmlPage page = wc.goTo("");
-        assertEquals("Expected different X-Frame-Options value", getFrameOptionsFromResponse(page.getWebResponse()), "sameorigin");
+        assertEquals("Expected different X-Frame-Options value", "sameorigin", getFrameOptionsFromResponse(page.getWebResponse()));
     }
 
     @Test

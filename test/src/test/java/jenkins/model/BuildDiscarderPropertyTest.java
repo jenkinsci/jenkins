@@ -24,18 +24,19 @@
 
 package jenkins.model;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import hudson.model.AbstractProject;
 import hudson.model.FreeStyleProject;
 import hudson.tasks.LogRotator;
 import java.io.StringReader;
 import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
-import org.junit.Test;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 import org.junit.Rule;
+import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.recipes.LocalData;
@@ -72,7 +73,7 @@ public class BuildDiscarderPropertyTest {
     @LocalData
     @Test
     public void logRotatorField() throws Exception {
-        AbstractProject<?,?> p = r.jenkins.getItemByFullName("foo", AbstractProject.class);
+        AbstractProject<?, ?> p = r.jenkins.getItemByFullName("foo", AbstractProject.class);
         verifyLogRotatorSanity(p);
 
         // now persist in the new format
@@ -88,7 +89,7 @@ public class BuildDiscarderPropertyTest {
         assertTrue(xml, xml.contains("<logRotator class=\"" + LogRotator.class.getName() + "\">"));
     }
 
-    private static void verifyLogRotatorSanity(AbstractProject<?,?> p) {
+    private static void verifyLogRotatorSanity(AbstractProject<?, ?> p) {
         LogRotator d = (LogRotator) p.getBuildDiscarder();
         assertEquals(4, d.getDaysToKeep());
         assertEquals(3, d.getNumToKeep());

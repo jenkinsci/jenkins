@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model.labels;
 
 import static org.junit.Assert.assertEquals;
@@ -65,7 +66,7 @@ public class LabelAtomPropertyTest {
 
         // it should survive the configuration roundtrip
         j.submit(j.createWebClient().goTo("label/foo/configure").getFormByName("config"));
-        assertEquals(1,foo.getProperties().size());
+        assertEquals(1, foo.getProperties().size());
         j.assertEqualDataBoundBeans(old, foo.getProperties().get(LabelAtomPropertyImpl.class));
     }
 }

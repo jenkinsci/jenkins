@@ -21,11 +21,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
-import java.io.IOException;
-
 import edu.umd.cs.findbugs.annotations.NonNull;
+import java.io.IOException;
 
 /**
  * {@link ViewGroup} that can be modified.

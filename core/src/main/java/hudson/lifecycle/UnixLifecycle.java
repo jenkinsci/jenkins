@@ -21,20 +21,23 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.lifecycle;
 
-import com.sun.akuma.JavaVMArguments;
+import static hudson.util.jna.GNUCLibrary.FD_CLOEXEC;
+import static hudson.util.jna.GNUCLibrary.F_GETFD;
+import static hudson.util.jna.GNUCLibrary.F_SETFD;
+import static hudson.util.jna.GNUCLibrary.LIBC;
+
 import com.sun.jna.Native;
 import com.sun.jna.StringArray;
-
+import hudson.Platform;
 import java.io.IOException;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import static hudson.util.jna.GNUCLibrary.*;
-
-import hudson.Platform;
 import jenkins.model.Jenkins;
+import jenkins.util.JavaVMArguments;
 
 /**
  * {@link Lifecycle} implementation when Hudson runs on the embedded
@@ -47,17 +50,14 @@ import jenkins.model.Jenkins;
  * @since 1.304
  */
 public class UnixLifecycle extends Lifecycle {
-    private JavaVMArguments args;
+    private List<String> args;
     private Throwable failedToObtainArgs;
 
     public UnixLifecycle() throws IOException {
         try {
             args = JavaVMArguments.current();
-
-            // if we are running as daemon, don't fork into background one more time during restart
-            args.remove("--daemon");
         } catch (UnsupportedOperationException | LinkageError e) {
-            // can't restart / see HUDSON-3875
+            // can't restart / see JENKINS-3875
             failedToObtainArgs = e;
         }
     }
@@ -69,22 +69,22 @@ public class UnixLifecycle extends Lifecycle {
             if (jenkins != null) {
                 jenkins.cleanUp();
             }
-        } catch (Exception e) {
+        } catch (Throwable e) {
             LOGGER.log(Level.SEVERE, "Failed to clean up. Restart will continue.", e);
         }
 
         // close all files upon exec, except stdin, stdout, and stderr
         int sz = LIBC.getdtablesize();
-        for(int i=3; i<sz; i++) {
+        for (int i = 3; i < sz; i++) {
             int flags = LIBC.fcntl(i, F_GETFD);
-            if(flags<0) continue;
-            LIBC.fcntl(i, F_SETFD,flags| FD_CLOEXEC);
+            if (flags < 0) continue;
+            LIBC.fcntl(i, F_SETFD, flags | FD_CLOEXEC);
         }
 
         // exec to self
         String exe = args.get(0);
         LIBC.execvp(exe, new StringArray(args.toArray(new String[0])));
-        throw new IOException("Failed to exec '"+exe+"' "+LIBC.strerror(Native.getLastError()));
+        throw new IOException("Failed to exec '" + exe + "' " + LIBC.strerror(Native.getLastError()));
     }
 
     @Override
@@ -97,8 +97,8 @@ public class UnixLifecycle extends Lifecycle {
         // according to http://www.mail-archive.com/wine-devel@winehq.org/msg66797.html this now works on Snow Leopard
         if (Platform.isDarwin() && !Platform.isSnowLeopardOrLater())
             throw new RestartNotSupportedException("Restart is not supported on Mac OS X");
-        if (args==null)
-            throw new RestartNotSupportedException("Failed to obtain the command line arguments of the process",failedToObtainArgs);
+        if (args == null)
+            throw new RestartNotSupportedException("Failed to obtain the command line arguments of the process", failedToObtainArgs);
     }
 
     private static final Logger LOGGER = Logger.getLogger(UnixLifecycle.class.getName());

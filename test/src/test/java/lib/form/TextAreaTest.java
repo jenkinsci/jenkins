@@ -1,12 +1,13 @@
 package lib.form;
 
+import static org.junit.Assert.assertEquals;
+
 import hudson.model.AbstractProject;
 import hudson.model.FreeStyleProject;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import hudson.util.FormValidation;
 import javax.inject.Inject;
-import static org.junit.Assert.assertEquals;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -42,13 +43,14 @@ public class TextAreaTest {
         public String getText1() {
             return "This is text1";
         }
+
         public String getText2() {
             return "This is text2";
         }
 
         @TestExtension
         public static class DescriptorImpl extends BuildStepDescriptor<Builder> {
-            
+
             String text1, text2;
 
             @Override
@@ -72,7 +74,7 @@ public class TextAreaTest {
     @Issue("JENKINS-27505")
     @Test
     public void text() throws Exception {
-        T1: {
+        {
             String TEXT_TO_TEST = "some\nvalue\n";
             FreeStyleProject p = j.createFreeStyleProject();
             TextareaTestBuilder target = new TextareaTestBuilder(TEXT_TO_TEST);
@@ -82,7 +84,7 @@ public class TextAreaTest {
         }
 
         // test for a textarea beginning with a empty line.
-        T2: {
+        {
             String TEXT_TO_TEST = "\nbegin\n\nwith\nempty\nline\n\n";
             FreeStyleProject p = j.createFreeStyleProject();
             TextareaTestBuilder target = new TextareaTestBuilder(TEXT_TO_TEST);
@@ -92,7 +94,7 @@ public class TextAreaTest {
         }
 
         // test for a textarea beginning with two empty lines.
-        T3: {
+        {
             String TEXT_TO_TEST = "\n\nbegin\n\nwith\ntwo\nempty\nline\n\n";
             FreeStyleProject p = j.createFreeStyleProject();
             TextareaTestBuilder target = new TextareaTestBuilder(TEXT_TO_TEST);

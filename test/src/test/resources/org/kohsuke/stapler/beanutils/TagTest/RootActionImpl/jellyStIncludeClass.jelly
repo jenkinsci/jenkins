@@ -1,0 +1,5 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
+    <st:contentType value="text/html"/>
+    <st:include page="_included" class="${it.class}" />
+</j:jelly>

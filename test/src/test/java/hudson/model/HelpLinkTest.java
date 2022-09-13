@@ -4,22 +4,18 @@ import static org.junit.Assert.assertTrue;
 
 import com.gargoylesoftware.htmlunit.WebResponseListener;
 import com.gargoylesoftware.htmlunit.html.DomNodeUtil;
+import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
 import com.gargoylesoftware.htmlunit.html.HtmlElementUtil;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import hudson.matrix.MatrixProject;
+import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildStepMonitor;
+import hudson.tasks.Publisher;
+import java.util.List;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
-import hudson.matrix.MatrixProject;
-import hudson.maven.MavenModuleSet;
-
-import java.util.List;
-
-import hudson.tasks.Publisher;
-import hudson.tasks.BuildStepDescriptor;
-import hudson.model.HelpLinkTest.HelpNotFoundBuilder.DescriptorImpl;
 import org.jvnet.hudson.test.JenkinsRule;
 
 /**
@@ -36,15 +32,15 @@ import org.jvnet.hudson.test.JenkinsRule;
 
     "Executing negative(hudson.model.HelpLinkTest)@1" prio=5 tid=0x1 nid=NA waiting
       java.lang.Thread.State: WAITING
-    	  at java.lang.Object.wait(Object.java:-1)
-    	  at com.gargoylesoftware.htmlunit.javascript.background.JavaScriptJobManagerImpl.waitForJobs(JavaScriptJobManagerImpl.java:200)
-    	  at com.gargoylesoftware.htmlunit.WebClient.waitForBackgroundJavaScript(WebClient.java:1843)
-    	  at com.gargoylesoftware.htmlunit.WebClientUtil.waitForJSExec(WebClientUtil.java:57)
-    	  at com.gargoylesoftware.htmlunit.WebClientUtil.waitForJSExec(WebClientUtil.java:46)
-    	  at com.gargoylesoftware.htmlunit.html.HtmlElementUtil.click(HtmlElementUtil.java:61)
-    	  at hudson.model.HelpLinkTest.clickAllHelpLinks(HelpLinkTest.java:70)
-    	  at hudson.model.HelpLinkTest.clickAllHelpLinks(HelpLinkTest.java:61)
-    	  at hudson.model.HelpLinkTest.negative(HelpLinkTest.java:106)
+          at java.lang.Object.wait(Object.java:-1)
+          at com.gargoylesoftware.htmlunit.javascript.background.JavaScriptJobManagerImpl.waitForJobs(JavaScriptJobManagerImpl.java:200)
+          at com.gargoylesoftware.htmlunit.WebClient.waitForBackgroundJavaScript(WebClient.java:1843)
+          at com.gargoylesoftware.htmlunit.WebClientUtil.waitForJSExec(WebClientUtil.java:57)
+          at com.gargoylesoftware.htmlunit.WebClientUtil.waitForJSExec(WebClientUtil.java:46)
+          at com.gargoylesoftware.htmlunit.html.HtmlElementUtil.click(HtmlElementUtil.java:61)
+          at hudson.model.HelpLinkTest.clickAllHelpLinks(HelpLinkTest.java:70)
+          at hudson.model.HelpLinkTest.clickAllHelpLinks(HelpLinkTest.java:61)
+          at hudson.model.HelpLinkTest.negative(HelpLinkTest.java:106)
 
     In debugger, I can see that JavaScriptJobManagerImpl.waitForJobs is looping through yet each time getJobCount()>0
     because there's always some window.setTimeout activities that appear to be scheduled. Common ones are:
@@ -82,11 +78,6 @@ public class HelpLinkTest {
     }
 
     @Test
-    public void mavenConfig() throws Exception {
-        clickAllHelpLinks(j.jenkins.createProject(MavenModuleSet.class, "mms"));
-    }
-
-    @Test
     public void matrixConfig() throws Exception {
         clickAllHelpLinks(j.jenkins.createProject(MatrixProject.class, "mp"));
     }
@@ -102,17 +93,18 @@ public class HelpLinkTest {
     }
 
     private void clickAllHelpLinks(HtmlPage p) throws Exception {
-        List<?> helpLinks = DomNodeUtil.selectNodes(p, "//a[@class='help-button']");
-        assertTrue(helpLinks.size()>0);
-        System.out.println("Clicking "+helpLinks.size()+" help links");
+        List<?> helpLinks = DomNodeUtil.selectNodes(p, "//a[@class='jenkins-help-button']");
+        assertTrue(helpLinks.size() > 0);
+        System.out.println("Clicking " + helpLinks.size() + " help links");
 
-        for (HtmlAnchor helpLink : (List<HtmlAnchor>)helpLinks) {
+        for (HtmlAnchor helpLink : (List<HtmlAnchor>) helpLinks) {
             HtmlElementUtil.click(helpLink);
         }
     }
 
     public static class HelpNotFoundBuilder extends Publisher {
         public static final class DescriptorImpl extends BuildStepDescriptor {
+            @Override
             public boolean isApplicable(Class jobType) {
                 return true;
             }
@@ -123,6 +115,7 @@ public class HelpLinkTest {
             }
         }
 
+        @Override
         public BuildStepMonitor getRequiredMonitorService() {
             return BuildStepMonitor.BUILD;
         }
@@ -134,7 +127,7 @@ public class HelpLinkTest {
      */
     @Test
     public void negative() throws Exception {
-        DescriptorImpl d = new DescriptorImpl();
+        HelpNotFoundBuilder.DescriptorImpl d = new HelpNotFoundBuilder.DescriptorImpl();
         Publisher.all().add(d);
         try {
             FreeStyleProject p = j.createFreeStyleProject();

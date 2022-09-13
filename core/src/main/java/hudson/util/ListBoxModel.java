@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,21 +21,22 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.util;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.ModelObject;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import javax.servlet.ServletException;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.export.Flavor;
-
-import javax.servlet.ServletException;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 
 /**
  * Model object of dynamically filled list box.
@@ -80,7 +81,7 @@ import java.util.Collection;
  * <pre>
  * public ListBoxModel doOptionValues(&#64;QueryParameter("value") String value) throws IOException, ServletException {
  *   ListBoxModel m = new ListBoxModel();
- *   for(int i=0; i&lt;5; i++)
+ *   for (int i=0; i&lt;5; i++)
  *     m.add(value+i,value+i);
  *   // make the third option selected initially
  *   m.get(3).selected = true;
@@ -93,17 +94,19 @@ import java.util.Collection;
 @ExportedBean
 public class ListBoxModel extends ArrayList<ListBoxModel.Option> implements HttpResponse {
 
-    @ExportedBean(defaultVisibility=999)
+    @ExportedBean(defaultVisibility = 999)
     public static final class Option {
         /**
          * Text to be displayed to user.
          */
         @Exported
+        @NonNull
         public String name;
         /**
          * The value that gets sent to the server when the form is submitted.
          */
         @Exported
+        @NonNull
         public String value;
 
         /**
@@ -112,15 +115,15 @@ public class ListBoxModel extends ArrayList<ListBoxModel.Option> implements Http
         @Exported
         public boolean selected;
 
-        public Option(String name, String value) {
-            this(name,value,false);
+        public Option(@NonNull String name, @NonNull String value) {
+            this(name, value, false);
         }
 
-        public Option(String name) {
-            this(name,name,false);
+        public Option(@NonNull String name) {
+            this(name, name, false);
         }
 
-        public Option(String name, String value, boolean selected) {
+        public Option(@NonNull String name, @NonNull String value, boolean selected) {
             this.name = name;
             this.value = value;
             this.selected = selected;
@@ -147,28 +150,29 @@ public class ListBoxModel extends ArrayList<ListBoxModel.Option> implements Http
         super(Arrays.asList(data));
     }
 
-    public void add(String displayName, String value) {
-        add(new Option(displayName,value));
+    public void add(@NonNull String displayName, @NonNull String value) {
+        add(new Option(displayName, value));
     }
 
-    public void add(ModelObject usedForDisplayName, String value) {
+    public void add(ModelObject usedForDisplayName, @NonNull String value) {
         add(usedForDisplayName.getDisplayName(), value);
     }
 
     /**
-     * A version of the {@link #add(String, String)} method where the display name and the value are the same. 
+     * A version of the {@link #add(String, String)} method where the display name and the value are the same.
      */
-    public ListBoxModel add(String nameAndValue) {
-        add(nameAndValue,nameAndValue);
+    public ListBoxModel add(@NonNull String nameAndValue) {
+        add(nameAndValue, nameAndValue);
         return this;
     }
 
-    public void writeTo(StaplerRequest req,StaplerResponse rsp) throws IOException, ServletException {
-        rsp.serveExposedBean(req,this,Flavor.JSON);
+    public void writeTo(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        rsp.serveExposedBean(req, this, Flavor.JSON);
     }
 
+    @Override
     public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
-        writeTo(req,rsp);
+        writeTo(req, rsp);
     }
 
     /**

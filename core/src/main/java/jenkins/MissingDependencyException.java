@@ -24,15 +24,14 @@
 
 package jenkins;
 
+import hudson.PluginWrapper.Dependency;
 import java.io.IOException;
 import java.util.List;
-
-import hudson.PluginWrapper.Dependency;
-import hudson.Util;
+import java.util.stream.Collectors;
 
 /**
  * Exception thrown if plugin resolution fails due to missing dependencies
- * 
+ *
  * @author Carlos Sanchez
  * @since 2.4
  *
@@ -44,7 +43,7 @@ public class MissingDependencyException extends IOException {
 
     public MissingDependencyException(String pluginShortName, List<Dependency> missingDependencies) {
         super("One or more dependencies could not be resolved for " + pluginShortName + " : "
-                + Util.join(missingDependencies, ", "));
+                + missingDependencies.stream().map(Object::toString).collect(Collectors.joining(", ")));
         this.pluginShortName = pluginShortName;
         this.missingDependencies = missingDependencies;
     }

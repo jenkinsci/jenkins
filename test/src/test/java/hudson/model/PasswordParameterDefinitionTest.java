@@ -24,13 +24,13 @@
 
 package hudson.model;
 
+import static org.junit.Assert.assertEquals;
+
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPasswordInput;
 import hudson.Launcher;
 import java.io.IOException;
 import jenkins.model.Jenkins;
-import static org.junit.Assert.assertEquals;
-
 import jenkins.security.apitoken.ApiTokenTestHelper;
 import org.junit.Rule;
 import org.junit.Test;
@@ -53,7 +53,7 @@ public class PasswordParameterDefinitionTest {
     @Issue("JENKINS-36476")
     @Test public void defaultValueAlwaysAvailable() throws Exception {
         ApiTokenTestHelper.enableLegacyBehavior();
-        
+
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().
             grant(Jenkins.ADMINISTER).everywhere().to("admin").

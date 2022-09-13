@@ -21,15 +21,15 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.tasks.filters;
 
 import hudson.ExtensionPoint;
 import hudson.model.Describable;
+import java.io.Serializable;
 import jenkins.model.Jenkins;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.Beta;
-
-import java.io.Serializable;
 
 /**
  * Environment variables filter rule that is specific to a job configuration, using script-specific variables, etc.<p>
@@ -41,6 +41,7 @@ import java.io.Serializable;
  */
 @Restricted(Beta.class)
 public interface EnvVarsFilterLocalRule extends Describable<EnvVarsFilterLocalRule>, EnvVarsFilterRule, ExtensionPoint, Serializable {
+    @Override
     default EnvVarsFilterLocalRuleDescriptor getDescriptor() {
         return (EnvVarsFilterLocalRuleDescriptor) Jenkins.get().getDescriptorOrDie(getClass());
     }
