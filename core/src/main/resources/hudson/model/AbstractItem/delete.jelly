@@ -25,7 +25,7 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:f="/lib/form">
 	<st:documentation>
-		Use a &lt;l:confirmationLink/> directly to /job/*/doDelete.
+		Deprecated. Instead use a &lt;l:confirmationLink/> directly to /job/*/doDelete.
 	</st:documentation>
   <l:layout>
 		<st:include page="sidepanel.jelly" />
