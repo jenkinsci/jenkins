@@ -1443,9 +1443,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@eslint/eslintrc@npm:^1.3.1":
-  version: 1.3.1
-  resolution: "@eslint/eslintrc@npm:1.3.1"
+"@eslint/eslintrc@npm:^1.3.2":
+  version: 1.3.2
+  resolution: "@eslint/eslintrc@npm:1.3.2"
   dependencies:
     ajv: ^6.12.4
     debug: ^4.3.2
@@ -1456,7 +1456,7 @@ __metadata:
     js-yaml: ^4.1.0
     minimatch: ^3.1.2
     strip-json-comments: ^3.1.1
-  checksum: 9844dcc58a44399649926d5a17a2d53d529b80d3e8c3e9d0964ae198bac77ee6bb1cf44940f30cd9c2e300f7568ec82500be42ace6cacefb08aebf9905fe208e
+  checksum: 2074dca47d7e1c5c6323ff353f690f4b25d3ab53fe7d27337e2592d37a894cf60ca0e85ca66b50ff2db0bc7e630cc1e9c7347d65bb185b61416565584c38999c
   languageName: node
   linkType: hard
 
@@ -2097,10 +2097,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ansis@npm:1.4.0":
-  version: 1.4.0
-  resolution: "ansis@npm:1.4.0"
-  checksum: d8cda1d5f65a35d37f65dc4a2a3a8bbde13907e05a96865392ba5e83e380803cb7ddcc2ceae108cda9ce2d41eca27ca90c52be438403664eb01d64724f348e8e
+"ansis@npm:1.5.2":
+  version: 1.5.2
+  resolution: "ansis@npm:1.5.2"
+  checksum: 32761e4c412336c7a4d7529374655fca6ee38929f05719bc73fb3398b5439368f228cc675afa877653c4e6f7335c83fc057ebcc58c24044c1fdd346084864de1
   languageName: node
   linkType: hard
 
@@ -2191,12 +2191,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"autoprefixer@npm:10.4.8":
-  version: 10.4.8
-  resolution: "autoprefixer@npm:10.4.8"
+"autoprefixer@npm:10.4.11":
+  version: 10.4.11
+  resolution: "autoprefixer@npm:10.4.11"
   dependencies:
     browserslist: ^4.21.3
-    caniuse-lite: ^1.0.30001373
+    caniuse-lite: ^1.0.30001399
     fraction.js: ^4.2.0
     normalize-range: ^0.1.2
     picocolors: ^1.0.0
@@ -2205,7 +2205,7 @@ __metadata:
     postcss: ^8.1.0
   bin:
     autoprefixer: bin/autoprefixer
-  checksum: 06cb4c497bb948714d5b1b4f7e7465fd88c50f90788fc2020b3d97d7661fb4dd0d9918c1b09dd3e909acd4485cbb27ad99085487d8ed5d75915e646d2b535770
+  checksum: fb8b2abbb0ce5e3c6bc957ffb714b84aa2e6a9f24cf9c139bcfec33ba5e3334f61a132c606a621e04097d026c1f653fe1bda2d1c3dc47b87c9f6b00d90732daa
   languageName: node
   linkType: hard
 
@@ -2440,10 +2440,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"caniuse-lite@npm:^1.0.0, caniuse-lite@npm:^1.0.30001370, caniuse-lite@npm:^1.0.30001373":
+"caniuse-lite@npm:^1.0.0, caniuse-lite@npm:^1.0.30001370":
   version: 1.0.30001373
   resolution: "caniuse-lite@npm:1.0.30001373"
   checksum: cd2f027e2fcf66ed3b0e3eccec89df871f951f2e7600944fae2c3f6f1c37ac82392e573c279e15bf851b75f9696472e38d33fd52d964819ffb8af7af4078ceba
+  languageName: node
+  linkType: hard
+
+"caniuse-lite@npm:^1.0.30001399":
+  version: 1.0.30001399
+  resolution: "caniuse-lite@npm:1.0.30001399"
+  checksum: dd105b06fbbdc89867780a2f4debc3ecb184cff82f35b34aaac486628fcc9cf6bacf37573a9cc22dedc661178d460fa8401374a933cb9d2f8ee67316d98b2a8f
   languageName: node
   linkType: hard
 
@@ -3193,11 +3200,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint@npm:8.23.0":
-  version: 8.23.0
-  resolution: "eslint@npm:8.23.0"
+"eslint@npm:8.23.1":
+  version: 8.23.1
+  resolution: "eslint@npm:8.23.1"
   dependencies:
-    "@eslint/eslintrc": ^1.3.1
+    "@eslint/eslintrc": ^1.3.2
     "@humanwhocodes/config-array": ^0.10.4
     "@humanwhocodes/gitignore-to-minimatch": ^1.0.2
     "@humanwhocodes/module-importer": ^1.0.1
@@ -3216,7 +3223,6 @@ __metadata:
     fast-deep-equal: ^3.1.3
     file-entry-cache: ^6.0.1
     find-up: ^5.0.0
-    functional-red-black-tree: ^1.0.1
     glob-parent: ^6.0.1
     globals: ^13.15.0
     globby: ^11.1.0
@@ -3225,6 +3231,7 @@ __metadata:
     import-fresh: ^3.0.0
     imurmurhash: ^0.1.4
     is-glob: ^4.0.0
+    js-sdsl: ^4.1.4
     js-yaml: ^4.1.0
     json-stable-stringify-without-jsonify: ^1.0.1
     levn: ^0.4.1
@@ -3238,7 +3245,7 @@ __metadata:
     text-table: ^0.2.0
   bin:
     eslint: bin/eslint.js
-  checksum: ff6075daa28d817a7ac4508f31bc108a04d9ab5056608c8651b5bf9cfea5d708ca16dea6cdab2c3c0ae99b0bf0e726af8504eaa8e17c8e12e242cb68237ead64
+  checksum: a727e15492786a03b438bcf021db49f715680679846a7b8d79b98ad34576f2a570404ffe882d3c3e26f6359bff7277ef11fae5614bfe8629adb653f20d018c71
   languageName: node
   linkType: hard
 
@@ -3492,13 +3499,6 @@ __metadata:
   version: 1.1.1
   resolution: "function-bind@npm:1.1.1"
   checksum: b32fbaebb3f8ec4969f033073b43f5c8befbb58f1a79e12f1d7490358150359ebd92f49e72ff0144f65f2c48ea2a605bff2d07965f548f6474fd8efd95bf361a
-  languageName: node
-  linkType: hard
-
-"functional-red-black-tree@npm:^1.0.1":
-  version: 1.0.1
-  resolution: "functional-red-black-tree@npm:1.0.1"
-  checksum: ca6c170f37640e2d94297da8bb4bf27a1d12bea3e00e6a3e007fd7aa32e37e000f5772acf941b4e4f3cf1c95c3752033d0c509af157ad8f526e7f00723b9eb9f
   languageName: node
   linkType: hard
 
@@ -4106,14 +4106,14 @@ __metadata:
     "@babel/cli": 7.18.10
     "@babel/core": 7.19.0
     "@babel/preset-env": 7.19.0
-    autoprefixer: 10.4.8
+    autoprefixer: 10.4.11
     babel-loader: 8.2.5
     bootstrap: 3.4.1
     clean-webpack-plugin: 4.0.0
     copy-webpack-plugin: 11.0.0
     css-loader: 6.7.1
     css-minimizer-webpack-plugin: 4.1.0
-    eslint: 8.23.0
+    eslint: 8.23.1
     eslint-config-prettier: 8.5.0
     handlebars: 4.7.7
     handlebars-loader: 1.7.2
@@ -4135,7 +4135,7 @@ __metadata:
     stylelint-config-standard: 28.0.0
     webpack: 5.74.0
     webpack-cli: 4.10.0
-    webpack-remove-empty-scripts: 0.8.4
+    webpack-remove-empty-scripts: 1.0.0
     window-handle: 1.0.1
   languageName: unknown
   linkType: soft
@@ -4155,6 +4155,13 @@ __metadata:
   version: 3.6.1
   resolution: "jquery@npm:3.6.1"
   checksum: 6177d866a74f1137cad800f142c7cdbd5ab19cd4282546f8bdb4890c9f933b1d542ab96f2aa15d007e43c98de7315b0513e849ec5359d3ac5640f720892fe547
+  languageName: node
+  linkType: hard
+
+"js-sdsl@npm:^4.1.4":
+  version: 4.1.4
+  resolution: "js-sdsl@npm:4.1.4"
+  checksum: 1977cea4ab18e0e03e28bdf0371d8b443fad65ca0988e0faa216406faf6bb943714fe8f7cc7a5bfe5f35ba3d94ddae399f4d10200f547f2c3320688b0670d726
   languageName: node
   linkType: hard
 
@@ -6668,14 +6675,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"webpack-remove-empty-scripts@npm:0.8.4":
-  version: 0.8.4
-  resolution: "webpack-remove-empty-scripts@npm:0.8.4"
+"webpack-remove-empty-scripts@npm:1.0.0":
+  version: 1.0.0
+  resolution: "webpack-remove-empty-scripts@npm:1.0.0"
   dependencies:
-    ansis: 1.4.0
+    ansis: 1.5.2
   peerDependencies:
     webpack: ">=5.32.0"
-  checksum: 8831524d75208347887b2401cf53be12785287d9fa70d34e39b9644f007d72b0cf224c571a32068eb80a4f5d31513db11a6e292ad23ca26be8d046d4bcf6c277
+  checksum: be2c62d90ad13c68854118c024cc1af220c86b4c2577135521377a3d6b8ebe32e1e0c9b7aa3a06f7cf396e204fe1bac18286d0a23c521de42f233fec315ee286
   languageName: node
   linkType: hard
 
