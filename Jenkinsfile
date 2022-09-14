@@ -12,7 +12,8 @@ properties([
   disableConcurrentBuilds(abortPrevious: true)
 ])
 
-def buildTypes = ['Linux', 'Windows']
+// TODO Restore Windows once https://github.com/jenkins-infra/helpdesk/issues/3117 finds a suitable solution
+def buildTypes = ['Linux']
 def jdks = [11, 17]
 
 def builds = [:]
@@ -20,15 +21,9 @@ for (i = 0; i < buildTypes.size(); i++) {
   for (j = 0; j < jdks.size(); j++) {
     def buildType = buildTypes[i]
     def jdk = jdks[j]
-    if (buildType == 'Windows' && jdk == 17) {
-      continue // TODO pending jenkins-infra/helpdesk#2822
-    }
     builds["${buildType}-jdk${jdk}"] = {
       // see https://github.com/jenkins-infra/documentation/blob/master/ci.adoc#node-labels for information on what node types are available
       def agentContainerLabel = 'maven-' + jdk
-      if (buildType == 'Windows') {
-        agentContainerLabel += '-windows'
-      }
       node(agentContainerLabel) {
         // First stage is actually checking out the source. Since we're using Multibranch
         // currently, we can use "checkout scm".
