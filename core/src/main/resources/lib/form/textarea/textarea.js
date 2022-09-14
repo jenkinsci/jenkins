@@ -7,6 +7,7 @@ Behaviour.specify("TEXTAREA.codemirror", "textarea", 0, function (e) {
   if (!config.onBlur) {
     config.onBlur = function (editor) {
       editor.save();
+      editor.getTextArea().dispatchEvent(new Event("change"));
     };
   }
   var codemirror = CodeMirror.fromTextArea(e, config);

@@ -22,11 +22,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<!--
-@deprecated Use a l:confirmationLink directly to /job/*/doDelete.
--->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:f="/lib/form">
+	<st:documentation>
+		Deprecated. Instead use a &lt;l:confirmationLink/> directly to /job/*/doDelete.
+	</st:documentation>
   <l:layout>
 		<st:include page="sidepanel.jelly" />
 		<l:main-panel>
