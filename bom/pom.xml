@@ -40,7 +40,7 @@ THE SOFTWARE.
   <properties>
     <asm.version>9.3</asm.version>
     <slf4jVersion>2.0.0</slf4jVersion>
-    <stapler.version>1733.v981fdd98007e</stapler.version>
+    <stapler.version>1736.vb_1e05c4231b_c</stapler.version>
     <groovy.version>2.4.21</groovy.version>
   </properties>
 
@@ -234,7 +234,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jenkins-ci</groupId>
         <artifactId>memory-monitor</artifactId>
-        <version>1.11</version>
+        <version>1.12</version>
       </dependency>
       <dependency>
         <groupId>org.jenkins-ci</groupId>
@@ -244,7 +244,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jenkins-ci</groupId>
         <artifactId>task-reactor</artifactId>
-        <version>1.7</version>
+        <version>1.8</version>
       </dependency>
       <dependency>
         <groupId>org.jenkins-ci</groupId>

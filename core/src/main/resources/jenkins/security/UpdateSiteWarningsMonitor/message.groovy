@@ -28,9 +28,35 @@ def f = namespace(lib.FormTagLib)
 def l = namespace(lib.LayoutTagLib)
 
 def listWarnings(warnings) {
+    def fixables = 0
     warnings.each { warning ->
         dd {
             a(warning.message, href: warning.url, rel: 'noopener noreferrer', target: "_blank")
+            def fixable = warning.isFixable()
+            if (fixable != null) {
+                if (fixable) {
+                    fixables++
+                } else {
+                    raw(_("unfixable"))
+                }
+            }
+        }
+    }
+    if (fixables == warnings.size) {
+        dd {
+            if (fixables == 1) {
+                raw(_("allFixable1", rootURL))
+            } else {
+                raw(_("allFixable", rootURL))
+            }
+        }
+    } else if (fixables > 0) {
+        dd {
+            raw(_("someFixable", rootURL))
+        }
+    } else {
+        dd {
+            raw(_("noneFixable"))
         }
     }
 }
