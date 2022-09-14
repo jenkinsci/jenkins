@@ -924,6 +924,8 @@ public class Util {
      * All characters outside numbers and letters without diacritic are encoded.
      * Note that slash ({@code /}) is encoded, so the given string should be a
      * single path component used in constructing a URL.
+     *
+     * @since 2.308
      */
     @NonNull
     public static String fullEncode(@NonNull String s) {
@@ -1778,7 +1780,16 @@ public class Util {
             if (Files.isDirectory(dir)) {
                 return dir;
             } else {
-                return Files.createDirectory(dir, attrs);
+                try {
+                    return Files.createDirectory(dir, attrs);
+                } catch (FileAlreadyExistsException e) {
+                    if (Files.isDirectory(dir)) {
+                        // a concurrent caller won the race
+                        return dir;
+                    } else {
+                        throw e;
+                    }
+                }
             }
         }
 
@@ -1786,7 +1797,15 @@ public class Util {
         for (Path name : parent.relativize(dir)) {
             child = child.resolve(name);
             if (!Files.isDirectory(child)) {
-                Files.createDirectory(child, attrs);
+                try {
+                    Files.createDirectory(child, attrs);
+                } catch (FileAlreadyExistsException e) {
+                    if (Files.isDirectory(child)) {
+                        // a concurrent caller won the race
+                    } else {
+                        throw e;
+                    }
+                }
             }
         }
 

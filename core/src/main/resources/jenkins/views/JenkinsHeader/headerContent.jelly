@@ -57,10 +57,7 @@
                             </j:otherwise>
                         </j:choose>
                         <a href="${rootURL}/${user.url}" class="model-link">
-                            <l:svgIcon
-                                       class="am-monitor-icon" >
-                                <use href="${resURL}/images/material-icons/svg-sprite-social-symbol.svg#ic_person_24px"></use>
-                            </l:svgIcon>
+                            <l:icon src="symbol-person-circle" class="icon-md"/>
                             <span class="hidden-xs hidden-sm">${userName}</span>
                         </a>
                         <j:if test="${app.securityRealm.canLogOut()}">
@@ -77,4 +74,5 @@
             </j:if>
         </div>
     </header>
+    <script src="${resURL}/jsbundles/keyboard-shortcuts.js" type="text/javascript"/>
 </j:jelly>

@@ -36,28 +36,31 @@ THE SOFTWARE.
       If true, will hide all rows by default, and only the filter field will show them.
     </st:attribute>
   </st:documentation>
-  <l:layout title="${%Update Center} - ${%Plugin Manager}" permission="${app.SYSTEM_READ}">
-    <l:app-bar title="${%Plugin Manager}" />
+  <l:layout title="${%Updates} - ${%Plugin Manager}" permission="${app.SYSTEM_READ}">
+
+    <l:app-bar title="${%Plugins}" />
 
     <st:include page="sidepanel.jelly"/>
+
     <l:main-panel>
+      <div class="jenkins-app-bar jenkins-app-bar--sticky">
+        <div class="jenkins-app-bar__content">
+          <div class="app-plugin-manager__search">
+            <span class="app-plugin-manager__search__icon">
+              <l:icon src="symbol-search"/>
+            </span>
+            <input type="search"
+                   placeholder="Search plugin updates"
+                   id="filter-box"
+                   value="${request.getParameter('filter')}" />
+          </div>
+        </div>
+      </div>
+
       <st:adjunct includes="hudson.PluginManager._table"/>
 
       <form method="post" action="install">
         <j:set var="isUpdates" value="${attrs.page=='updates'}"/>
-        <local:tabBar xmlns:local="/hudson/PluginManager" page="${attrs.page}"/>
-
-        <div class="jenkins-form-item jenkins-search">
-          <input
-            class="jenkins-search__input"
-            type="search"
-            id="filter-box"
-            value="${request.getParameter('filter')}"
-            placeholder="${filtered == 'true' ? '%Search' : '%Filter'}"/>
-          <div class="jenkins-search__icon">
-            <l:icon src="symbol-search"/>
-          </div>
-        </div>
 
         <j:set var="cache" value="${it.createCache()}"/>
 
@@ -68,7 +71,7 @@ THE SOFTWARE.
                 <th data-sort-disable="true">
                   <l:rowSelectionController>
                     <j:if test="${app.updateCenter.hasIncompatibleUpdates(cache)}">
-                      <button tooltip="${%CompatibleTooltip}" type="button" data-select="compatible" class="jenkins-button jenkins-button--transparent">
+                      <button tooltip="${%CompatibleTooltip}" type="button" data-select="compatible" class="jenkins-button jenkins-button--tertiary">
                         <div class="jenkins-table__checkbox-dropdown__icon">
                           <l:icon src="symbol-compatible" />
                         </div>

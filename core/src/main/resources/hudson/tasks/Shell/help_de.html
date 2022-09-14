@@ -1,16 +1,20 @@
-<div><!-- OUT OF DATE -->
+<div>
+  <!-- OUT OF DATE -->
   Führt ein Shell-Skript aus, um das Projekt zu bauen (Vorgabewert für die Shell
   ist
-  <code>sh</code>, aber dies ist konfigurierbar). Das Skript wird im Arbeitsbereich
-  als aktuelles Verzeichnis ausgeführt. Geben Sie den Inhalt Ihres
-  Shell-Skriptes direkt in die Textbox ein, jedoch ohne die Kopfzeile
-  <code>#!/bin/sh</code> &mdash; diese wird von Jenkins, entsprechend der
-  systemweiten Konfiguration, hinzugefügt.
+  <code>sh</code>
+  , aber dies ist konfigurierbar). Das Skript wird im Arbeitsbereich als
+  aktuelles Verzeichnis ausgeführt. Geben Sie den Inhalt Ihres Shell-Skriptes
+  direkt in die Textbox ein, jedoch ohne die Kopfzeile
+  <code>#!/bin/sh</code>
+  &mdash; diese wird von Jenkins, entsprechend der systemweiten Konfiguration,
+  hinzugefügt.
   <p>
     Die Shell wird mit der Option
-    <code>-ex</code> ausgeführt. Dadurch werden alle Kommandos ausgegeben, bevor sie
-    ausgeführt werden. Der Build gilt als fehlgeschlagen, wenn einer der
-    Kommandos in der Befehlszeile einen Ergebniscode ungleich 0 liefert.
+    <code>-ex</code>
+    ausgeführt. Dadurch werden alle Kommandos ausgegeben, bevor sie ausgeführt
+    werden. Der Build gilt als fehlgeschlagen, wenn einer der Kommandos in der
+    Befehlszeile einen Ergebniscode ungleich 0 liefert.
   </p>
   <p>
     Es hat sich in der Praxis nicht bewährt, allzulange Skripte an dieser Stelle
@@ -18,4 +22,5 @@
     als Teil Ihres Codes unter Versionskontrolle zu stellen und lediglich von
     hier aus aufzurufen. Dadurch können Sie Änderungen in Ihrem Skript
     wesentlich leichter nachverfolgen.
+  </p>
 </div>

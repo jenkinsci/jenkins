@@ -39,7 +39,6 @@ THE SOFTWARE.
   <url>https://github.com/jenkinsci/jenkins</url>
 
   <properties>
-    <staplerFork>true</staplerFork>
     <hamcrest.version>2.2</hamcrest.version>
     <xmlunit.version>2.9.0</xmlunit.version>
     <!-- Filled in by jacoco-maven-plugin -->
@@ -606,16 +605,6 @@ THE SOFTWARE.
         </executions>
       </plugin>
       <plugin>
-        <groupId>org.kohsuke.stapler</groupId>
-        <artifactId>maven-stapler-plugin</artifactId>
-        <!-- version specified in grandparent pom -->
-        <configuration>
-          <!-- the source code is big enough now that otherwise it fails with OutOfMemoryError -->
-          <fork>${staplerFork}</fork>
-          <maxmem>128m</maxmem>
-        </configuration>
-      </plugin>
-      <plugin>
         <groupId>org.jvnet.localizer</groupId>
         <artifactId>localizer-maven-plugin</artifactId>
         <!-- version specified in grandparent pom -->
@@ -754,35 +743,6 @@ THE SOFTWARE.
       <activation>
         <activeByDefault>true</activeByDefault>
       </activation>
-    </profile>
-    <profile>
-      <id>release</id>
-      <build>
-        <plugins>
-          <plugin>
-            <!--
-              generate jelly taglib docs from src/main/resources.
-              this is necessary in addition to the <reporting> configuration
-              to get the results deployed.
-            -->
-            <groupId>org.kohsuke.stapler</groupId>
-            <artifactId>maven-stapler-plugin</artifactId>
-            <!-- version specified in grandparent pom -->
-            <executions>
-              <execution>
-                <goals>
-                  <goal>jelly-taglibdoc</goal>
-                </goals>
-                <configuration>
-                  <patterns>
-                    <pattern>/lib/.*</pattern>
-                  </patterns>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
     </profile>
     <profile>
       <!-- Run SpotBugs for better error detection. Run as "mvn -Pspotbugs verify". -->
