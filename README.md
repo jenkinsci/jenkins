@@ -11,6 +11,7 @@
 [![Jenkins LTS Release](https://img.shields.io/endpoint?url=https%3A%2F%2Fwww.jenkins.io%2Fchangelog-stable%2Fbadge.json)](https://www.jenkins.io/changelog-stable)
 [![Docker Pulls](https://img.shields.io/docker/pulls/jenkins/jenkins.svg)](https://hub.docker.com/r/jenkins/jenkins/)
 [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/3538/badge)](https://bestpractices.coreinfrastructure.org/projects/3538)
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/jenkinsci/jenkins/badge)](https://api.securityscorecards.dev/projects/github.com/jenkinsci/jenkins)
 
 In a nutshell, Jenkins is the leading open-source automation server.
 Built with Java, it provides over 1,800 [plugins](https://plugins.jenkins.io/) to support automating virtually anything,
