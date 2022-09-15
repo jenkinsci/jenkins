@@ -438,10 +438,8 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
             }
 
             URI uri;
-            String host;
             try {
                 uri = new URI(testUrl);
-                host = uri.getHost();
             } catch (URISyntaxException e) {
                 return FormValidation.error(Messages.ProxyConfiguration_MalformedTestUrl(testUrl));
             }
@@ -452,7 +450,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
                         DEFAULT_CONNECT_TIMEOUT_MILLIS > 0
                                 ? Duration.ofMillis(DEFAULT_CONNECT_TIMEOUT_MILLIS)
                                 : Duration.ofSeconds(30));
-                if (Util.fixEmptyAndTrim(name) != null && !isNoProxyHost(host, noProxyHost)) {
+                if (Util.fixEmptyAndTrim(name) != null && !isNoProxyHost(uri.getHost(), noProxyHost)) {
                     builder.proxy(ProxySelector.of(new InetSocketAddress(name, port)));
                     Authenticator authenticator =
                             newValidationAuthenticator(
