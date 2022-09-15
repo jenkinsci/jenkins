@@ -49,7 +49,7 @@ for (i = 0; i < buildTypes.size(); i++) {
                 '--update-snapshots',
                 "-Dmaven.repo.local=$m2repo",
                 '-Dmaven.test.failure.ignore',
-                '-DforkCount=0.5C',
+                '-DforkCount=2',
                 '-Dspotbugs.failOnError=false',
                 '-Dcheckstyle.failOnViolation=false',
                 '-Dset.changelist',
