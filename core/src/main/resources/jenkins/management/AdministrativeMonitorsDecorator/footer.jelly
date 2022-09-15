@@ -57,7 +57,7 @@ THE SOFTWARE.
                    href="#"
                    data-href="${rootURL}/administrativeMonitorsApi/securityPopupContent"
                    title="${%tooltipSec(activeSecurityAMCount)}">
-                    <l:icon src="symbol-warning" class="icon-md"/>
+                    <l:icon src="symbol-shield-warning" class="icon-md"/>
                     <div class="am-monitor__indicator-mobile"/>
                     <span class="am-monitor__count">
                         ${activeSecurityAMCount}
