@@ -97,7 +97,7 @@ THE SOFTWARE.
       <j:otherwise>
         <j:choose>
           <j:when test="${attrs.help!=null}">
-            <div class="setting-main help-sibling" style="display: inline-flex; align-items: center;">
+            <div class="setting-main help-sibling" style="display: flex; align-items: center;">
               <d:invokeBody />
               <f:helpLink url="${attrs.help}" featureName="${attrs.title}"/>
             </div>
