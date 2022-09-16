@@ -2,7 +2,7 @@ package jenkins.security;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertThrows;
 
 import hudson.model.Node.Mode;
 import hudson.model.Slave;
@@ -11,6 +11,7 @@ import hudson.slaves.DumbSlave;
 import hudson.slaves.JNLPLauncher;
 import hudson.slaves.RetentionStrategy;
 import java.io.File;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.logging.Level;
@@ -72,12 +73,11 @@ public class Security218Test implements Serializable {
      */
     @SuppressWarnings("ConstantConditions")
     private void check(DumbSlave s) {
-        try {
-            Object o = s.getComputer().getChannel().call(new EvilReturnValue());
-            fail("Expected the connection to die: " + o);
-        } catch (Exception e) {
-            assertThat(e.getMessage(), containsString(MethodClosure.class.getName()));
-        }
+        IOException e = assertThrows(
+                "Expected the connection to die",
+                IOException.class,
+                () -> s.getComputer().getChannel().call(new EvilReturnValue()));
+        assertThat(e.getMessage(), containsString(MethodClosure.class.getName()));
     }
 
     private static class EvilReturnValue extends MasterToSlaveCallable<Object, RuntimeException> {
