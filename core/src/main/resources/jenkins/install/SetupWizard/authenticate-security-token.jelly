@@ -13,7 +13,7 @@
                 <div class="modal-header">
                   <h4 class="modal-title">${%authenticate-security-token.getting.started}</h4>
                 </div>
-                <div class="modal-body">
+                <div class="modal-body setup-wizard-heading">
                   <i class="water-mark icon-service"></i>
                   <div class="jumbotron welcome-panel offline">
                     <h1>${%authenticate-security-token.unlock.jenkins}</h1>
@@ -27,7 +27,7 @@
                     <div class="form-group ${error ? 'has-error' : ''}">
                       <label class="control-label" for="security-token">${%authenticate-security-token.password.administrator}</label>
                       <input name="j_username" value="${app.setupWizard.initialSetupAdminUserName}" type="hidden"/>
-                      <input id="security-token" class="form-control" type="password" name="j_password"/>
+                      <input id="security-token" class="jenkins-input ${error ? 'danger' : ''}" type="password" name="j_password"/>
                     </div>
                   </div>
                 </div>
