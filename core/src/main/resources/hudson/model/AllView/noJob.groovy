@@ -74,9 +74,9 @@ div {
                                         class: "content-block__link content-block__help-link") {
                                     span(_("learnMoreDistributedBuilds"))
                                     span(class: "trailing-icon") {
-                                        l.svgIcon(
-                                                class: "icon-sm",
-                                                href: "${resURL}/images/material-icons/svg-sprite-content-symbol.svg#ic_link_24px")
+                                        l.icon(
+                                                class: "icon-md",
+                                                src: "symbol-link")
                                     }
                                 }
                             }
