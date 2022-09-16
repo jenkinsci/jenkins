@@ -36,15 +36,11 @@ THE SOFTWARE.
     <l:main-panel>
       <div class="jenkins-app-bar jenkins-app-bar--sticky">
         <div class="jenkins-app-bar__content">
-          <div class="app-plugin-manager__search">
-            <span class="app-plugin-manager__search__icon">
-              <l:icon src="symbol-search"/>
-            </span>
-            <input type="search"
-                   placeholder="Search available plugins"
-                   id="filter-box"
-                   value="${request.getParameter('filter')}" />
-          </div>
+          <l:search-bar clazz="jenkins-search--app-bar"
+                        placeholder="${%Search available plugins}"
+                        id="filter-box"
+                        autofocus="true"
+                        value="${request.getParameter('filter')}" />
         </div>
       </div>
 

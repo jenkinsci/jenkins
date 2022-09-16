@@ -79,12 +79,7 @@ THE SOFTWARE.
     <l:pane width="3" title="${h.runScript(paneTitle)}" footer="${h.runScript(paneFooter)}" id="buildHistory" class="jenkins-pane stripped">
       <tr class="build-search-row">
         <td>
-          <div class="jenkins-search">
-            <input type="search" placeholder="${%find}" class="jenkins-search__input" />
-            <div class="jenkins-search__icon">
-              <l:icon src="symbol-search" />
-            </div>
-          </div>
+          <l:search-bar placeholder="${%find}" />
           <div id="no-builds" class="jenkins-pane__information" style="${page.runs.isEmpty() and page.queueItems.isEmpty() ? '' : 'display: none;'}">
             ${%No builds}
           </div>
