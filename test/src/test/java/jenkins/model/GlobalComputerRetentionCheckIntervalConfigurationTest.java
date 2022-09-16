@@ -79,8 +79,19 @@ public class GlobalComputerRetentionCheckIntervalConfigurationTest {
         GlobalComputerRetentionCheckIntervalConfiguration c = new GlobalComputerRetentionCheckIntervalConfiguration();
         writeConfig(c, 1);
         c.load();
-        assertEquals("uses default", 1, c.getComputerRetentionCheckInterval());
+        assertEquals("uses custom value", 1, c.getComputerRetentionCheckInterval());
         assertEquals("no fallback message", 0, logging.getRecords().size());
+    }
+
+    @Test
+    public void bootWithTooLargeValue() throws IOException {
+        recordWarnings();
+        GlobalComputerRetentionCheckIntervalConfiguration c = new GlobalComputerRetentionCheckIntervalConfiguration();
+        writeConfig(c, 1337);
+        c.load();
+        assertEquals("uses default", 60, c.getComputerRetentionCheckInterval());
+        assertEquals("prints one fallback message", 1, logging.getRecords().size());
+        assertEquals("fallback message content", "computerRetentionCheckInterval is limited to 60s", logging.getRecords().get(0).getMessage());
     }
 
     @Test
@@ -103,18 +114,17 @@ public class GlobalComputerRetentionCheckIntervalConfigurationTest {
         assertEquals("no fallback message", 0, logging.getRecords().size());
     }
 
-    @Test
-    public void saveInvalidValue() {
+    private void checkSaveInvalidValueOf(int interval, String message) {
         recordWarnings();
         GlobalComputerRetentionCheckIntervalConfiguration c = new GlobalComputerRetentionCheckIntervalConfiguration();
 
         JSONObject json = new JSONObject();
-        json.element("computerRetentionCheckInterval", 0);
+        json.element("computerRetentionCheckInterval", interval);
         try {
             c.configure(Stapler.getCurrentRequest(), json);
             throw new RuntimeException("expected .configure() to throw");
         } catch (Descriptor.FormException e) {
-            assertEquals(e.getMessage(), "java.lang.IllegalArgumentException: interval must be greater than zero");
+            assertEquals(e.getMessage(), message);
         }
         assertEquals("does not store value", 60, c.getComputerRetentionCheckInterval());
 
@@ -122,5 +132,15 @@ public class GlobalComputerRetentionCheckIntervalConfigurationTest {
         c2.load();
         assertEquals("does not persist value", 60, c2.getComputerRetentionCheckInterval());
         assertEquals("no fallback message", 0, logging.getRecords().size());
+    }
+
+    @Test
+    public void saveInvalidValueTooLow() {
+        checkSaveInvalidValueOf(0, "java.lang.IllegalArgumentException: interval must be greater than zero");
+    }
+
+    @Test
+    public void saveInvalidValueTooHigh() {
+        checkSaveInvalidValueOf(1337, "java.lang.IllegalArgumentException: interval must be below or equal 60s");
     }
 }

@@ -32,6 +32,10 @@ public class GlobalComputerRetentionCheckIntervalConfiguration extends GlobalCon
             LOGGER.info("computerRetentionCheckInterval must be greater than zero, falling back to 60s");
             return 60;
         }
+        if (computerRetentionCheckInterval > 60) {
+            LOGGER.info("computerRetentionCheckInterval is limited to 60s");
+            return 60;
+        }
         return computerRetentionCheckInterval;
     }
 
@@ -45,6 +49,9 @@ public class GlobalComputerRetentionCheckIntervalConfiguration extends GlobalCon
     private void setComputerRetentionCheckInterval(int interval) throws IllegalArgumentException {
         if (interval <= 0) {
             throw new IllegalArgumentException("interval must be greater than zero");
+        }
+        if (interval > 60) {
+            throw new IllegalArgumentException("interval must be below or equal 60s");
         }
         computerRetentionCheckInterval = interval;
         save();
