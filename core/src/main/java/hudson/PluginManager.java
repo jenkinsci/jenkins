@@ -1940,9 +1940,12 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                 if (100 <= conn.getResponseCode() && conn.getResponseCode() <= 399) {
                     return FormValidation.ok();
                 } else {
+                    LOGGER.log(Level.FINE, "Obtained a non OK ({0}) response from the update center",
+                            new Object[]{conn.getResponseCode(), url});
                     return FormValidation.error(Messages.PluginManager_connectionFailed());
                 }
             } catch (IOException e) {
+                LOGGER.log(Level.FINE, "Failed to check update site", e);
                 return FormValidation.error(Messages.PluginManager_connectionFailed());
             }
         } else {
