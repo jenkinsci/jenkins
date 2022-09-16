@@ -39,7 +39,7 @@ THE SOFTWARE.
 
   <properties>
     <asm.version>9.3</asm.version>
-    <slf4jVersion>2.0.0</slf4jVersion>
+    <slf4jVersion>2.0.1</slf4jVersion>
     <stapler.version>1736.vb_1e05c4231b_c</stapler.version>
     <groovy.version>2.4.21</groovy.version>
   </properties>
@@ -401,13 +401,6 @@ THE SOFTWARE.
         -->
         <scope>provided</scope>
         <optional>true</optional>
-      </dependency>
-      <dependency>
-        <!-- provided by log4j-over-slf4j -->
-        <groupId>log4j</groupId>
-        <artifactId>log4j</artifactId>
-        <version>1.2.17</version>
-        <scope>provided</scope>
       </dependency>
     </dependencies>
   </dependencyManagement>
