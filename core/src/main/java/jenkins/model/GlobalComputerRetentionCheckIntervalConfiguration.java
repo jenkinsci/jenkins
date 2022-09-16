@@ -2,10 +2,8 @@ package jenkins.model;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
-import hudson.ExtensionList;
 import hudson.model.PersistentDescriptor;
 import hudson.security.Permission;
-import hudson.slaves.ComputerRetentionWork;
 import java.util.logging.Logger;
 import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
@@ -50,7 +48,6 @@ public class GlobalComputerRetentionCheckIntervalConfiguration extends GlobalCon
         }
         computerRetentionCheckInterval = interval;
         save();
-        ExtensionList.lookupSingleton(ComputerRetentionWork.class).restart();
     }
 
     @Override

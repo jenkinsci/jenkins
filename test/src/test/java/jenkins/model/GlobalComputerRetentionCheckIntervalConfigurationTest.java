@@ -2,9 +2,7 @@ package jenkins.model;
 
 import static org.junit.Assert.assertEquals;
 
-import hudson.ExtensionList;
 import hudson.model.Descriptor;
-import hudson.slaves.ComputerRetentionWork;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -89,10 +87,6 @@ public class GlobalComputerRetentionCheckIntervalConfigurationTest {
     public void saveCycle() {
         recordWarnings();
         GlobalComputerRetentionCheckIntervalConfiguration c = new GlobalComputerRetentionCheckIntervalConfiguration();
-
-        // Register the instances for cross lookup
-        ExtensionList.lookup(ComputerRetentionWork.class).add(0, new ComputerRetentionWork());
-        ExtensionList.lookup(GlobalComputerRetentionCheckIntervalConfiguration.class).add(0, c);
 
         JSONObject json = new JSONObject();
         json.element("computerRetentionCheckInterval", 5);
