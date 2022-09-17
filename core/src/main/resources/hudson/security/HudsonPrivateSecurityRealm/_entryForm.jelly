@@ -29,8 +29,9 @@ THE SOFTWARE.
     <st:attribute name="it" use="required" type="hudson.security.HudsonPrivateSecurityRealm">
       Context where the page is loaded.
     </st:attribute>
-    <st:attribute name="title" use="required">
-      Title of the HTML page. Rendered in the page content inside a &lt;h1>.
+    <st:attribute name="title" use="required"> <![CDATA[
+      Title of the HTML page. Rendered in the page content inside a <h1>.
+    ]]>
     </st:attribute>
     <st:attribute name="action" use="required">
       The method to call from within the HudsonPrivateSecurityRealm.
