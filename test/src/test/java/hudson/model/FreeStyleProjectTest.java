@@ -33,7 +33,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
 
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
@@ -253,13 +252,11 @@ public class FreeStyleProjectTest {
     @Issue("SECURITY-2424")
     public void cannotCreateJobWithTrailingDot_withoutOtherJob() throws Exception {
         assertThat(j.jenkins.getItems(), hasSize(0));
-        try {
-            j.jenkins.createProjectFromXML("jobA.", new ByteArrayInputStream("<project/>".getBytes(StandardCharsets.UTF_8)));
-            fail("Adding the job should have thrown an exception during checkGoodName");
-        }
-        catch (Failure e) {
-            assertEquals(Messages.Hudson_TrailingDot(), e.getMessage());
-        }
+        Failure e = assertThrows(
+                "Adding the job should have thrown an exception during checkGoodName",
+                Failure.class,
+                () -> j.jenkins.createProjectFromXML("jobA.", new ByteArrayInputStream("<project/>".getBytes(StandardCharsets.UTF_8))));
+        assertEquals(Messages.Hudson_TrailingDot(), e.getMessage());
         assertThat(j.jenkins.getItems(), hasSize(0));
     }
 
@@ -269,13 +266,11 @@ public class FreeStyleProjectTest {
         assertThat(j.jenkins.getItems(), hasSize(0));
         j.createFreeStyleProject("jobA");
         assertThat(j.jenkins.getItems(), hasSize(1));
-        try {
-            j.jenkins.createProjectFromXML("jobA.", new ByteArrayInputStream("<project/>".getBytes(StandardCharsets.UTF_8)));
-            fail("Adding the job should have thrown an exception during checkGoodName");
-        }
-        catch (Failure e) {
-            assertEquals(Messages.Hudson_TrailingDot(), e.getMessage());
-        }
+        Failure e = assertThrows(
+                "Adding the job should have thrown an exception during checkGoodName",
+                Failure.class,
+                () -> j.jenkins.createProjectFromXML("jobA.", new ByteArrayInputStream("<project/>".getBytes(StandardCharsets.UTF_8))));
+        assertEquals(Messages.Hudson_TrailingDot(), e.getMessage());
         assertThat(j.jenkins.getItems(), hasSize(1));
     }
 

@@ -34,7 +34,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.fail;
 
 import hudson.ExtensionList;
 import hudson.model.Descriptor;
@@ -59,7 +58,10 @@ public class NodesTest {
     @Issue("JENKINS-50599")
     public void addNodeShouldFailAtomically() throws Exception {
         InvalidNode node = new InvalidNode("foo", "temp", r.createComputerLauncher(null));
-        IOException e = assertThrows("Adding the node should have thrown an exception during serialization", IOException.class, () -> r.jenkins.addNode(node));
+        IOException e = assertThrows(
+                "Adding the node should have thrown an exception during serialization",
+                IOException.class,
+                () -> r.jenkins.addNode(node));
         String className = InvalidNode.class.getName();
         assertThat("The exception should be from failing to serialize the node",
                 e.getMessage(), containsString("Failed to serialize " + className + "#cl for class " + className));
@@ -73,7 +75,10 @@ public class NodesTest {
         Node oldNode = r.createSlave("foo", "", null);
         r.jenkins.addNode(oldNode);
         InvalidNode newNode = new InvalidNode("foo", "temp", r.createComputerLauncher(null));
-        IOException e = assertThrows("Adding the node should have thrown an exception during serialization", IOException.class, () -> r.jenkins.addNode(newNode));
+        IOException e = assertThrows(
+                "Adding the node should have thrown an exception during serialization",
+                IOException.class,
+                () -> r.jenkins.addNode(newNode));
         String className = InvalidNode.class.getName();
         assertThat("The exception should be from failing to serialize the node",
                 e.getMessage(), containsString("Failed to serialize " + className + "#cl for class " + className));
@@ -152,12 +157,11 @@ public class NodesTest {
         assertThat(r.jenkins.getNodes(), hasSize(0));
 
         DumbSlave node = new DumbSlave("nodeA.", "temp", r.createComputerLauncher(null));
-        try {
-            r.jenkins.addNode(node);
-            fail("Adding the node should have thrown an exception during checkGoodName");
-        } catch (Failure e) {
-            assertEquals(hudson.model.Messages.Hudson_TrailingDot(), e.getMessage());
-        }
+        Failure e = assertThrows(
+                "Adding the node should have thrown an exception during checkGoodName",
+                Failure.class,
+                () -> r.jenkins.addNode(node));
+        assertEquals(hudson.model.Messages.Hudson_TrailingDot(), e.getMessage());
 
         assertThat(r.jenkins.getNodes(), hasSize(0));
     }
@@ -170,12 +174,11 @@ public class NodesTest {
         assertThat(r.jenkins.getNodes(), hasSize(1));
 
         DumbSlave node = new DumbSlave("nodeA.", "temp", r.createComputerLauncher(null));
-        try {
-            r.jenkins.addNode(node);
-            fail("Adding the node should have thrown an exception during checkGoodName");
-        } catch (Failure e) {
-            assertEquals(hudson.model.Messages.Hudson_TrailingDot(), e.getMessage());
-        }
+        Failure e = assertThrows(
+                "Adding the node should have thrown an exception during checkGoodName",
+                Failure.class,
+                () -> r.jenkins.addNode(node));
+        assertEquals(hudson.model.Messages.Hudson_TrailingDot(), e.getMessage());
 
         assertThat(r.jenkins.getNodes(), hasSize(1));
     }
