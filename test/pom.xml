@@ -37,8 +37,6 @@ THE SOFTWARE.
   <description>Functional tests for Jenkins core</description>
 
   <properties>
-    <!-- may use e.g. 2C for 2 × (number of cores) -->
-    <concurrency>2</concurrency>
     <mavenDebug>false</mavenDebug>
     <!-- Filled in by jacoco-maven-plugin -->
     <jacocoSurefireArgs />
@@ -276,7 +274,6 @@ THE SOFTWARE.
             <buildDirectory>${project.build.directory}</buildDirectory>
           </systemPropertyVariables>
           <reuseForks>false</reuseForks>
-          <forkCount>${concurrency}</forkCount>
         </configuration>
         <executions>
           <!-- Unbind the default execution so that it does not run before test-runtime. -->
