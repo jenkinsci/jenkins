@@ -62,7 +62,7 @@
                         </a>
                         <j:if test="${app.securityRealm.canLogOut()}">
                             <a href="${rootURL}/logout">
-                                <l:svgIcon href="${resURL}/images/material-icons/svg-sprite-action-symbol.svg#ic_input_24px" />
+                                <l:icon src="symbol-log-out" class="icon-md" />
                                 <span class="hidden-xs hidden-sm">${logout}</span>
                             </a>
                         </j:if>
