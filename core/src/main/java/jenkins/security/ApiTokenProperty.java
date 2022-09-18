@@ -175,6 +175,7 @@ public class ApiTokenProperty extends UserProperty {
 
     @NonNull
     @Restricted(NoExternalUse.class)
+    @SuppressFBWarnings(value = "UNSAFE_HASH_EQUALS", justification = "Only used to generate new token.")
     /*package*/ String getApiTokenInsecure() {
         if (apiToken == null) {
             return Messages.ApiTokenProperty_NoLegacyToken();
