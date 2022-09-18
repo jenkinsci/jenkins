@@ -25,6 +25,7 @@
 package hudson.model;
 
 import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -137,7 +138,7 @@ public class CauseTest {
     @LocalData
     public void xssInRemoteCause() throws IOException, SAXException {
         final Item item = j.jenkins.getItemByFullName("fs");
-        Assert.assertTrue(item instanceof FreeStyleProject);
+        assertThat(item, instanceOf(FreeStyleProject.class));
         FreeStyleProject fs = (FreeStyleProject) item;
         final FreeStyleBuild build = fs.getBuildByNumber(1);
 

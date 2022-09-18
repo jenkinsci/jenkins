@@ -191,7 +191,7 @@ public class ViewTest {
         form.getSelectByName("proxiedViewName").setSelectedAttribute("listView", true);
         j.submit(form);
 
-        assertTrue(proxyView instanceof ProxyView);
+        assertThat(proxyView, instanceOf(ProxyView.class));
         assertEquals("listView", ((ProxyView) proxyView).getProxiedViewName());
         assertEquals(((ProxyView) proxyView).getProxiedView(), listView);
     }

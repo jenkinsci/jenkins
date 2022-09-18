@@ -25,6 +25,7 @@
 package hudson.util;
 
 import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -195,8 +196,8 @@ public class RobustReflectionConverterTest {
 
         CriticalXStreamException e = assertThrows(CriticalXStreamException.class, () -> xstream2.fromXML(xml));
         Throwable cause = e.getCause();
-        assertNotNull("A non-null cause of CriticalXStreamException is expected", cause);
-        assertTrue("Cause of CriticalXStreamException is expected to be InputManipulationException", cause instanceof InputManipulationException);
+        assertNotNull(cause);
+        assertThat(cause, instanceOf(InputManipulationException.class));
         InputManipulationException ime = (InputManipulationException) cause;
         assertTrue("Limit expected in message", ime.getMessage().contains("exceeds 5 seconds"));
     }
@@ -234,8 +235,8 @@ public class RobustReflectionConverterTest {
         // the parsing is continued despite the DoS prevention being triggered due to the robustness
         CriticalXStreamException e = assertThrows(CriticalXStreamException.class, () -> xstream2.fromXML(xml));
         Throwable cause = e.getCause();
-        assertNotNull("A non-null cause of CriticalXStreamException is expected", cause);
-        assertTrue("Cause of CriticalXStreamException is expected to be InputManipulationException", cause instanceof InputManipulationException);
+        assertNotNull(cause);
+        assertThat(cause, instanceOf(InputManipulationException.class));
         InputManipulationException ime = (InputManipulationException) cause;
         assertTrue("Limit expected in message", ime.getMessage().contains("exceeds 5 seconds"));
     }
