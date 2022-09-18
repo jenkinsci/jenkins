@@ -6,7 +6,6 @@
 .bootstrap-3 [class*="col-"] {
   // simple reset
   margin: initial;
-  padding: initial;
 }
 
 .plugin-setup-wizard() {
@@ -100,6 +99,11 @@
 
   .error {
     margin-bottom: 1em;
+  }
+
+  .danger {
+    border: 1px solid;
+    border-color: var(--danger-color, #c4000a);
   }
 
   .modal-body {
@@ -1050,4 +1054,8 @@ body .plugin-setup-wizard {
 .bootstrap-3 .plugins {
   padding-left: 0;
   padding-right: 0;
+}
+
+.setup-wizard-heading {
+  margin-top: -24px;
 }

@@ -115,7 +115,11 @@ THE SOFTWARE.
     <j:if test="${attrs.css!=null}">
       <link rel="stylesheet" href="${resURL}${attrs.css}" type="text/css" />
     </j:if>
-    <link rel="shortcut icon" href="${resURL}/favicon.ico" type="image/vnd.microsoft.icon" />
+    <link rel="icon" href="${resURL}/favicon.svg" type="image/svg+xml" />
+    <link rel="alternate icon" href="${resURL}/favicon.ico" sizes="any" />
+    <link rel="apple-touch-icon" href="${resURL}/apple-touch-icon.png" sizes="180x180" />
+    <link rel="mask-icon" href="${resURL}/mask-icon.svg" color="#5bbad5" />
+    <meta name="theme-color" content="#ffffff" />
 
     <script src="${resURL}/scripts/prototype.js" type="text/javascript"/>
     <script src="${resURL}/scripts/behavior.js" type="text/javascript"/>
@@ -236,8 +240,6 @@ THE SOFTWARE.
       </div>
     </footer>
     </j:if>
-
-    <script src="${resURL}/jsbundles/keyboard-shortcuts.js" type="text/javascript"/>
   </body>
 </html>
 </l:view>

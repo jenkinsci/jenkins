@@ -240,6 +240,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
@@ -529,7 +530,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * {@link Computer}s in this Jenkins system. Read-only.
      */
-    protected final transient Map<Node, Computer> computers = new CopyOnWriteMap.Hash<>();
+    protected final transient ConcurrentMap<Node, Computer> computers = new ConcurrentHashMap<>();
 
     /**
      * Active {@link Cloud}s.
@@ -2178,7 +2179,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     @Override
-    protected Map<Node, Computer> getComputerMap() {
+    protected ConcurrentMap<Node, Computer> getComputerMap() {
         return computers;
     }
 

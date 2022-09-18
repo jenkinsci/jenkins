@@ -28,8 +28,8 @@ import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
 
 import antlr.ANTLRException;
@@ -340,12 +340,10 @@ public class LabelExpressionTest {
     }
 
     private void parseShouldFail(String expr) {
-        try {
-            Label.parseExpression(expr);
-            fail(expr + " should fail to parse");
-        } catch (ANTLRException e) {
-            // expected
-        }
+        assertThrows(
+                expr + " should fail to parse",
+                ANTLRException.class,
+                () -> Label.parseExpression(expr));
     }
 
     @Test
