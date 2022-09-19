@@ -5,8 +5,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import com.gargoylesoftware.htmlunit.ElementNotFoundException;
 import com.gargoylesoftware.htmlunit.html.DomElement;
@@ -47,12 +47,7 @@ public class TooManyJobsButNoViewTest {
 
     private void verifyNoForm() throws IOException, SAXException {
         HtmlPage p = r.createWebClient().goTo("manage");
-        try {
-            p.getFormByName(mon.id);
-            fail();
-        } catch (ElementNotFoundException e) {
-            // shouldn't find it
-        }
+        assertThrows(ElementNotFoundException.class, () -> p.getFormByName(mon.id));
     }
 
     /**
