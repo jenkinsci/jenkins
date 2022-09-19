@@ -61,7 +61,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>ant</artifactId>
-        <version>475.vf34069fef73c</version>
+        <version>481.v7b_09e538fcca</version>
       </dependency>
       <dependency>
         <!-- RequireUpperBoundDeps via mailer and junit -->
@@ -73,7 +73,7 @@ THE SOFTWARE.
         <!-- requireUpperBoundDeps via matrix-project and junit -->
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>script-security</artifactId>
-        <version>1175.v4b_d517d6db_f0</version>
+        <version>1183.v774b_0b_0a_a_451</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -88,7 +88,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>1837.vb_6efb_1790942</version>
+      <version>1847.v10c7a_4c2e344</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -200,7 +200,6 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-inline</artifactId>
-      <version>${mockito.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>

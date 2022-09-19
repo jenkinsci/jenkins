@@ -31,7 +31,7 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.xml.HasXPath.hasXPath;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertThrows;
 
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.HttpMethod;
@@ -126,12 +126,8 @@ public class ApiTokenStatsTest {
     }
 
     private void checkUserIsNotConnected(WebClient wc) throws Exception {
-        try {
-            wc.goToXml("whoAmI/api/xml");
-            fail();
-        } catch (FailingHttpStatusCodeException e) {
-            assertEquals(401, e.getStatusCode());
-        }
+        FailingHttpStatusCodeException e = assertThrows(FailingHttpStatusCodeException.class, () -> wc.goToXml("whoAmI/api/xml"));
+        assertEquals(401, e.getStatusCode());
     }
 
     private void revokeToken(WebClient wc, String login, String tokenUuid) throws Exception {

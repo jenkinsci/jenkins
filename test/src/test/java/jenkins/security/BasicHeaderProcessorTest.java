@@ -1,7 +1,7 @@
 package jenkins.security;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertThrows;
 
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.Page;
@@ -164,12 +164,10 @@ public class BasicHeaderProcessorTest {
     }
 
     private void makeRequestWithAuthCodeAndFail(String authCode) throws IOException {
-        try {
-            makeRequestWithAuthCodeAndVerify(authCode, "-");
-            fail();
-        } catch (FailingHttpStatusCodeException e) {
-            assertEquals(401, e.getStatusCode());
-        }
+        FailingHttpStatusCodeException e = assertThrows(
+                FailingHttpStatusCodeException.class,
+                () -> makeRequestWithAuthCodeAndVerify(authCode, "-"));
+        assertEquals(401, e.getStatusCode());
     }
 
     @TestExtension
