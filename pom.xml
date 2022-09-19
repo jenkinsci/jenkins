@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.87</version>
+    <version>1.88</version>
     <relativePath />
   </parent>
 
@@ -97,7 +97,6 @@ THE SOFTWARE.
 
     <access-modifier.version>1.27</access-modifier.version>
     <bridge-method-injector.version>1.23</bridge-method-injector.version>
-    <mockito.version>4.8.0</mockito.version>
     <spotless.version>2.26.0</spotless.version>
   </properties>
 
