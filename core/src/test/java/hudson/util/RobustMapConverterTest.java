@@ -24,6 +24,8 @@
 
 package hudson.util;
 
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
@@ -53,8 +55,8 @@ public class RobustMapConverterTest {
         final String xml = xstream2.toXML(map);
         CriticalXStreamException e = assertThrows(CriticalXStreamException.class, () -> xstream2.fromXML(xml));
         Throwable cause = e.getCause();
-        assertNotNull("A non-null cause of CriticalXStreamException is expected", cause);
-        assertTrue("Cause of CriticalXStreamException is expected to be InputManipulationException", cause instanceof InputManipulationException);
+        assertNotNull(cause);
+        assertThat(cause, instanceOf(InputManipulationException.class));
         InputManipulationException ime = (InputManipulationException) cause;
         assertTrue("Limit expected in message", ime.getMessage().contains("exceeds 3 seconds"));
     }
@@ -73,8 +75,8 @@ public class RobustMapConverterTest {
             final String xml = xstream2.toXML(map);
             CriticalXStreamException e = assertThrows(CriticalXStreamException.class, () -> xstream2.fromXML(xml));
             Throwable cause = e.getCause();
-            assertNotNull("A non-null cause of CriticalXStreamException is expected", cause);
-            assertTrue("Cause of CriticalXStreamException is expected to be InputManipulationException", cause instanceof InputManipulationException);
+            assertNotNull(cause);
+            assertThat(cause, instanceOf(InputManipulationException.class));
             InputManipulationException ime = (InputManipulationException) cause;
             assertTrue("Limit expected in message", ime.getMessage().contains("exceeds 4 seconds"));
         } finally {
@@ -97,8 +99,8 @@ public class RobustMapConverterTest {
         final String xml = xstream2.toXML(map);
         CriticalXStreamException e = assertThrows(CriticalXStreamException.class, () -> xstream2.fromXML(xml));
         Throwable cause = e.getCause();
-        assertNotNull("A non-null cause of CriticalXStreamException is expected", cause);
-        assertTrue("Cause of CriticalXStreamException is expected to be InputManipulationException", cause instanceof InputManipulationException);
+        assertNotNull(cause);
+        assertThat(cause, instanceOf(InputManipulationException.class));
         InputManipulationException ime = (InputManipulationException) cause;
         assertTrue("Limit expected in message", ime.getMessage().contains("exceeds 5 seconds"));
     }
