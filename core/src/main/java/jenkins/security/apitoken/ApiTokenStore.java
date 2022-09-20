@@ -194,7 +194,7 @@ public class ApiTokenStore {
      * Be careful with this method. Depending on how the tokenPlainValue was stored/sent to this method,
      * it could be a good idea to generate a new token randomly and revoke this one.
      */
-    @SuppressFBWarnings(value = "UNSAFE_HASH_EQUALS", justification = "Only used to generate a new token.")
+    @SuppressFBWarnings(value = "UNSAFE_HASH_EQUALS", justification = "Comparison only validates version of the specified token")
     public synchronized @NonNull String addFixedNewToken(@NonNull String name, @NonNull String tokenPlainValue) {
         if (tokenPlainValue.length() != VERSION_LENGTH + HEX_CHAR_LENGTH) {
             LOGGER.log(Level.INFO, "addFixedNewToken, length received: {0}" + tokenPlainValue.length());
