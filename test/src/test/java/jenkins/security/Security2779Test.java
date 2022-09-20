@@ -27,7 +27,11 @@ public class Security2779Test {
     @Rule
     public JenkinsRule j = new JenkinsRule();
 
-    @Parameterized.Parameters
+    // Dynamic tests are not fully supported by the maven surefire plugin
+    // Failures of one parameter are treated as "flakes" of the named test
+    // instead of being treated as failures.
+    // Test output includes the test number and argument to make it a little easier to diagnose
+    @Parameterized.Parameters(name = "test:{index}  arg:\"{0}\"")
     public static Collection<String> getSelectors() {
         return Arrays.asList("#link-panel a", "#icon-panel svg");
     }
@@ -47,7 +51,8 @@ public class Security2779Test {
         assertThat(eventResult, instanceOf(boolean.class));
         Assert.assertTrue((boolean) eventResult);
         webClient.waitForBackgroundJavaScript(2000);
-        Assert.assertEquals(0, alerts.get());
+        // Assertion includes the selector for easier diagnosis
+        Assert.assertEquals("Alert with selector '" + selector + "'", 0, alerts.get());
 
         final ScriptResult innerHtmlScript = page.executeJavaScript("document.querySelector('#tt').innerHTML");
         Object jsResult = innerHtmlScript.getJavaScriptResult();
