@@ -1,4 +1,5 @@
 #!/usr/bin/env sh
+# https://typicode.github.io/husky/
 . "$(dirname -- "$0")/_/husky.sh"
 
 cd war || exit 1
