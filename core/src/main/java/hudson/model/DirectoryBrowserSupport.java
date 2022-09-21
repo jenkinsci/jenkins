@@ -375,6 +375,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
         if (LOGGER.isLoggable(Level.FINE))
             LOGGER.fine("Serving " + baseFile + " with lastModified=" + lastModified + ", length=" + length);
 
+        rsp.setContentType("text/plain;charset=UTF-8");
         if (view) {
             InputStream in;
             try {
