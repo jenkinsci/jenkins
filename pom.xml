@@ -425,8 +425,6 @@ THE SOFTWARE.
         <artifactId>maven-release-plugin</artifactId>
         <!-- Version specified in parent POM -->
         <configuration>
-          <!-- enable release profile during the release, create IPS package, and sign bits. -->
-          <arguments>-P release,sign</arguments>
           <!-- work around for a bug in javadoc plugin that causes the release to fail. see MRELEASE-271 -->
           <preparationGoals>clean install</preparationGoals>
           <goals>-DskipTests -Dspotbugs.skip -Dmaven.checkstyle.skip -Dspotless.check.skip generate-resources javadoc:javadoc deploy</goals>
