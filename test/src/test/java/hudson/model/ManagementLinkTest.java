@@ -37,6 +37,7 @@ import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.recipes.WithTimeout;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -50,6 +51,7 @@ public class ManagementLinkTest {
      * Makes sure every link works.
      */
     @Test
+    @WithTimeout(300)
     public void links() throws Exception {
         WebClient wc = j.createWebClient();
 
