@@ -136,6 +136,7 @@
           <Class name="hudson.scm.ChangeLogSet"/>
           <Class name="hudson.security.ACLContext"/>
           <Class name="hudson.security.ContainerAuthentication"/>
+          <Class name="hudson.security.LegacyAuthorizationStrategy"/>
           <Class name="hudson.slaves.Cloud$CloudState"/>
           <Class name="hudson.slaves.EnvironmentVariablesNodeProperty"/>
           <Class name="hudson.slaves.NodeProvisioner$StrategyState"/>

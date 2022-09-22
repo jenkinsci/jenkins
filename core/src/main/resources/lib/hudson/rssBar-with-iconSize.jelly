@@ -24,8 +24,9 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:t="/lib/hudson">
-  <st:documentation>
-    Deprecated since 1.345: use &lt;t:iconSize>&lt;t:rssBar/>&lt;/t:iconSize>
+  <st:documentation> <![CDATA[
+    Deprecated since 1.345: use <t:iconSize><t:rssBar/></t:iconSize>
+    ]]>
   </st:documentation>
   <t:iconSize><t:rssBar/></t:iconSize>
 </j:jelly>
