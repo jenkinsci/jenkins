@@ -24,6 +24,7 @@
 
 package hudson.slaves;
 
+import static org.awaitility.Awaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -37,6 +38,7 @@ import hudson.remoting.ChannelClosedException;
 import hudson.remoting.PingThread;
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import jenkins.security.MasterToSlaveCallable;
 import org.junit.Rule;
@@ -76,6 +78,9 @@ public class PingThreadTest {
             onDead.setAccessible(true);
             onDead.invoke(pingThread, new TimeoutException("No ping"));
 
+            await().pollInterval(250, TimeUnit.MILLISECONDS)
+                    .atMost(10, TimeUnit.SECONDS)
+                    .until(channel::isClosingOrClosed);
             assertThrows(ChannelClosedException.class, () -> channel.call(new GetPid()));
 
             assertNull(slave.getComputer().getChannel());
