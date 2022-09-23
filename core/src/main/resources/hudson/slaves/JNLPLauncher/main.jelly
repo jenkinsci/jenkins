@@ -57,9 +57,9 @@ curl -sO ${jenkinsURL}jnlpJars/agent.jar
 java -jar <a href="${rootURL}/jnlpJars/agent.jar">agent.jar</a> -jnlpUrl ${jenkinsURL}${it.url}jenkins-agent.jnlp -secret @secret-file ${it.launcher.getWorkDirOptions(it)}</pre>
             </j:otherwise>
           </j:choose>
-               <p>
-                 ${%Please note: Powershell users must use curl.exe instead of curl due to the default Powershell cmd-let alias for curl}
-               </p>
+          <p>
+            ${%Please note: Powershell users must use curl.exe instead of curl due to the default Powershell cmd-let alias for curl}
+          </p>
       </j:if>
     </j:when>
     <j:otherwise>
