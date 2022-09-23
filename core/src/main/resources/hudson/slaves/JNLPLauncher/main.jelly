@@ -58,7 +58,7 @@ java -jar <a href="${rootURL}/jnlpJars/agent.jar">agent.jar</a> -jnlpUrl ${jenki
             </j:otherwise>
           </j:choose>
           <p>
-            ${%Please note: PowerShell users must use curl.exe instead of curl due to the default PowerShell cmdlet alias for curl}
+            ${%Note: PowerShell users must use curl.exe instead of curl due to the default PowerShell cmdlet alias for curl}
           </p>
       </j:if>
     </j:when>
