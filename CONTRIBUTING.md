@@ -78,10 +78,12 @@ which will open the workspace in IntelliJ IDEA using JetBrains Gateway.
 
 For linting we use a number of tools:
 
+- [checkstyle](https://checkstyle.sourceforge.io/)
 - [eslint](https://eslint.org/)
-- [stylelint](https://stylelint.io/)
 - [prettier](https://prettier.io/)
 - [spotless](https://github.com/diffplug/spotless)
+- [stylelint](https://stylelint.io/)
+
 
 These are all configured to run as part of the Maven build, although they will be skipped if you are building with the `quick-build` profile.
 
