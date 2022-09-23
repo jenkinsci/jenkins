@@ -39,6 +39,7 @@ import hudson.remoting.PingThread;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import jenkins.security.MasterToSlaveCallable;
@@ -92,12 +93,15 @@ public class PingThreadTest {
             assertNull(slave.getComputer().getChannel());
             assertNull(computer.getChannel());
         } finally {
-            process = new ProcessBuilder("kill", "-CONT", Long.toString(pid))
-                    .redirectErrorStream(true)
-                    .start();
-            result = process.waitFor();
-            output = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
-            assertEquals(output, 0, result);
+            Optional<ProcessHandle> handle = ProcessHandle.of(pid);
+            if (handle.isPresent()) {
+                process = new ProcessBuilder("kill", "-CONT", Long.toString(pid))
+                        .redirectErrorStream(true)
+                        .start();
+                result = process.waitFor();
+                output = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+                assertEquals(output, 0, result);
+            }
         }
     }
 
