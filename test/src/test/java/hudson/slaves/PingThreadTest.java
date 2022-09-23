@@ -38,6 +38,7 @@ import hudson.remoting.ChannelClosedException;
 import hudson.remoting.PingThread;
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import jenkins.security.MasterToSlaveCallable;
@@ -71,7 +72,12 @@ public class PingThreadTest {
         assertNotNull(pingThread);
 
         // Simulate lost connection
-        assertEquals(0, new ProcessBuilder("kill", "-TSTP", Long.toString(pid)).start().waitFor());
+        Process process = new ProcessBuilder("kill", "-TSTP", Long.toString(pid))
+                .redirectErrorStream(true)
+                .start();
+        int result = process.waitFor();
+        String output = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+        assertEquals(output, 0, result);
         try {
             // ... do not wait for Ping Thread to notice
             Method onDead = PingThread.class.getDeclaredMethod("onDead", Throwable.class);
@@ -86,7 +92,12 @@ public class PingThreadTest {
             assertNull(slave.getComputer().getChannel());
             assertNull(computer.getChannel());
         } finally {
-            assertEquals(0, new ProcessBuilder("kill", "-CONT", Long.toString(pid)).start().waitFor());
+            process = new ProcessBuilder("kill", "-CONT", Long.toString(pid))
+                    .redirectErrorStream(true)
+                    .start();
+            result = process.waitFor();
+            output = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+            assertEquals(output, 0, result);
         }
     }
 
