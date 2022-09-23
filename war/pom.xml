@@ -182,6 +182,7 @@ THE SOFTWARE.
                     <exclude>org.jenkins-ci.main:websocket-jetty10</exclude>
                     <exclude>org.jenkins-ci.main:websocket-spi</exclude>
                     <exclude>org.jenkins-ci:memory-monitor</exclude>
+                    <exclude>org.jvnet.winp:winp</exclude>
                     <exclude>org.kohsuke.stapler:stapler</exclude>
                     <exclude>org.kohsuke.stapler:stapler-groovy</exclude>
                     <exclude>org.kohsuke.stapler:stapler-jelly</exclude>
