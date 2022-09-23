@@ -39,6 +39,8 @@ import hudson.remoting.PingThread;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import jenkins.security.MasterToSlaveCallable;
@@ -78,6 +80,11 @@ public class PingThreadTest {
         int result = process.waitFor();
         String output = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
         assertEquals(output, 0, result);
+
+        await().pollInterval(250, TimeUnit.MILLISECONDS)
+                .atMost(10, TimeUnit.SECONDS)
+                .until(() -> Files.readString(Paths.get("/proc/" + pid + "/stat"), StandardCharsets.UTF_8).split(" ")[2].equals("T"));
+
         try {
             // ... do not wait for Ping Thread to notice
             Method onDead = PingThread.class.getDeclaredMethod("onDead", Throwable.class);
