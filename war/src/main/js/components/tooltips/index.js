@@ -110,9 +110,10 @@ function init() {
     1000,
     function () {
       registerTooltips(null);
-      window.hoverNotification = hoverNotification;
     }
   );
+
+  window.hoverNotification = hoverNotification;
 }
 
 export default { init };
