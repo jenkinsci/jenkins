@@ -42,7 +42,7 @@ public class Security2776Test {
         final HtmlPage page = wc.goTo(URL_NAME);
         page.executeJavaScript("document.querySelector('" + selector + "').dispatchEvent(new Event('mouseover'));");
         wc.waitForBackgroundJavaScript(2000L);
-        ScriptResult result = page.executeJavaScript("document.querySelector('#tt').innerHTML;");
+        ScriptResult result = page.executeJavaScript("document.querySelector('.tippy-content').innerHTML;");
         Object jsResult = result.getJavaScriptResult();
         assertThat(jsResult, instanceOf(String.class));
         String jsResultString = (String) jsResult;
