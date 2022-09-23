@@ -39,9 +39,8 @@ THE SOFTWARE.
                    class="am-button"
                    href="#"
                    data-href="${rootURL}/administrativeMonitorsApi/nonSecurityPopupContent"
-                   tooltip="${%tooltip(activeNonSecurityAMCount)}">
-                    <l:svgIcon
-                            href="${resURL}/images/material-icons/svg-sprite-social-symbol.svg#ic_notifications_24px"/>
+                   title="${%tooltip(activeNonSecurityAMCount)}">
+                    <l:icon src="symbol-notifications" class="icon-md"/>
                     <div class="am-monitor__indicator-mobile"/>
                     <span class="am-monitor__count">
                         ${activeNonSecurityAMCount}
@@ -57,9 +56,8 @@ THE SOFTWARE.
                    class="am-button security-am"
                    href="#"
                    data-href="${rootURL}/administrativeMonitorsApi/securityPopupContent"
-                   tooltip="${%tooltipSec(activeSecurityAMCount)}">
-                    <l:svgIcon
-                            href="${resURL}/images/material-icons/svg-sprite-action-symbol.svg#ic_warning_shield_24px"/>
+                   title="${%tooltipSec(activeSecurityAMCount)}">
+                    <l:icon src="symbol-shield-warning" class="icon-md"/>
                     <div class="am-monitor__indicator-mobile"/>
                     <span class="am-monitor__count">
                         ${activeSecurityAMCount}

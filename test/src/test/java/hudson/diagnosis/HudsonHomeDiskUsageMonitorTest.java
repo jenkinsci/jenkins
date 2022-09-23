@@ -2,8 +2,8 @@ package hudson.diagnosis;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import com.gargoylesoftware.htmlunit.ElementNotFoundException;
 import com.gargoylesoftware.htmlunit.HttpMethod;
@@ -50,11 +50,7 @@ public class HudsonHomeDiskUsageMonitorTest {
         assertFalse(mon.isEnabled());
 
         // and make sure it's gone
-        try {
-            fail(getForm(mon) + " shouldn't be there");
-        } catch (ElementNotFoundException e) {
-            // as expected
-        }
+        assertThrows(ElementNotFoundException.class, () -> getForm(mon));
     }
 
     @Issue("SECURITY-371")
