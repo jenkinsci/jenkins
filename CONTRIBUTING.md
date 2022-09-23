@@ -84,7 +84,6 @@ For linting we use a number of tools:
 - [spotless](https://github.com/diffplug/spotless)
 - [stylelint](https://stylelint.io/)
 
-
 These are all configured to run as part of the Maven build, although they will be skipped if you are building with the `quick-build` profile.
 
 To automatically fix most issues run:
