@@ -25,7 +25,6 @@
 package hudson.slaves;
 
 import static org.awaitility.Awaitility.await;
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -41,6 +40,7 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Paths;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -104,12 +104,22 @@ public class PingThreadTest {
         String output = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
         assertEquals(output, 0, result);
 
-        String status =
-                Files.readString(Paths.get("/proc/" + pid + "/stat"), StandardCharsets.UTF_8);
-        char actualState = status.charAt(status.lastIndexOf(')') + 2);
         await().pollInterval(250, TimeUnit.MILLISECONDS)
                 .atMost(10, TimeUnit.SECONDS)
-                .until(() -> actualState, equalTo(expectedState));
+                .until(() -> {
+                    try {
+                        String status = Files.readString(Paths.get("/proc/" + pid + "/stat"), StandardCharsets.UTF_8);
+                        char actualState = status.charAt(status.lastIndexOf(')') + 2);
+                        return actualState == expectedState;
+                    } catch (NoSuchFileException e) {
+                        if (expectedState == 'S') {
+                            // As soon as the process resumes, it is going to exit. Do not treat as failure.
+                            return true;
+                        } else {
+                            throw e;
+                        }
+                    }
+                });
     }
 
     private static final class GetPid extends MasterToSlaveCallable<Long, IOException> {
