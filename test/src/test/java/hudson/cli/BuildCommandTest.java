@@ -242,11 +242,9 @@ public class BuildCommandTest {
         // Warmup
         j.buildAndAssertSuccess(project);
 
-        for (Executor exec : slave.toComputer().getExecutors()) {
-            await().pollInterval(250, TimeUnit.MILLISECONDS)
-                    .atMost(10, TimeUnit.SECONDS)
-                    .until(exec::isActive);
-        }
+        await().pollInterval(250, TimeUnit.MILLISECONDS)
+                .atMost(10, TimeUnit.SECONDS)
+                .until(() -> slave.toComputer().getExecutors().stream().map(Executor::isActive).allMatch(Boolean::valueOf));
 
         // Create CLI & run command
         CLICommandInvoker invoker = new CLICommandInvoker(j, new BuildCommand());
@@ -259,9 +257,9 @@ public class BuildCommandTest {
         assertNull("Build should not be scheduled", project.getBuildByNumber(2));
 
         // Check executors health after a timeout
-        for (Executor exec : slave.toComputer().getExecutors()) {
-            assertTrue("Executor is dead: " + exec, exec.isActive());
-        }
+        await().pollInterval(250, TimeUnit.MILLISECONDS)
+                .atMost(10, TimeUnit.SECONDS)
+                .until(() -> slave.toComputer().getExecutors().stream().map(Executor::isActive).allMatch(Boolean::valueOf));
     }
 
     public static final class NullDefaultValueParameterDefinition extends SimpleParameterDefinition {
