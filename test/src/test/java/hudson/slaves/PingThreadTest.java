@@ -74,17 +74,7 @@ public class PingThreadTest {
         assertNotNull(pingThread);
 
         // Simulate lost connection
-        Process process = new ProcessBuilder("kill", "-TSTP", Long.toString(pid))
-                .redirectErrorStream(true)
-                .start();
-        int result = process.waitFor();
-        String output = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
-        assertEquals(output, 0, result);
-
-        await().pollInterval(250, TimeUnit.MILLISECONDS)
-                .atMost(10, TimeUnit.SECONDS)
-                .until(() -> Files.readString(Paths.get("/proc/" + pid + "/stat"), StandardCharsets.UTF_8).split(" ")[2].equals("T"));
-
+        kill(pid, "-TSTP", 'T');
         try {
             // ... do not wait for Ping Thread to notice
             Method onDead = PingThread.class.getDeclaredMethod("onDead", Throwable.class);
@@ -99,13 +89,26 @@ public class PingThreadTest {
             assertNull(slave.getComputer().getChannel());
             assertNull(computer.getChannel());
         } finally {
-            process = new ProcessBuilder("kill", "-CONT", Long.toString(pid))
-                    .redirectErrorStream(true)
-                    .start();
-            result = process.waitFor();
-            output = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
-            assertEquals(output, 0, result);
+            kill(pid, "-CONT", 'S');
         }
+    }
+
+    private static void kill(long pid, String signal, char expectedState)
+            throws IOException, InterruptedException {
+        Process process =
+                new ProcessBuilder("kill", signal, Long.toString(pid))
+                        .redirectErrorStream(true)
+                        .start();
+        int result = process.waitFor();
+        String output = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+        assertEquals(output, 0, result);
+
+        String status =
+                Files.readString(Paths.get("/proc/" + pid + "/stat"), StandardCharsets.UTF_8);
+        char actualState = status.charAt(status.lastIndexOf(')') + 2);
+        await().pollInterval(250, TimeUnit.MILLISECONDS)
+                .atMost(10, TimeUnit.SECONDS)
+                .until(() -> actualState == expectedState);
     }
 
     private static final class GetPid extends MasterToSlaveCallable<Long, IOException> {
