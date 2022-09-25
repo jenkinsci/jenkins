@@ -25,6 +25,7 @@
 package hudson.slaves;
 
 import static org.awaitility.Awaitility.await;
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -108,7 +109,7 @@ public class PingThreadTest {
         char actualState = status.charAt(status.lastIndexOf(')') + 2);
         await().pollInterval(250, TimeUnit.MILLISECONDS)
                 .atMost(10, TimeUnit.SECONDS)
-                .until(() -> actualState == expectedState);
+                .until(() -> actualState, equalTo(expectedState));
     }
 
     private static final class GetPid extends MasterToSlaveCallable<Long, IOException> {
