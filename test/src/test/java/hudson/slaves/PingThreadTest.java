@@ -74,6 +74,9 @@ public class PingThreadTest {
         }
         assertNotNull(pingThread);
 
+        String status = Files.readString(Paths.get("/proc/" + pid + "/stat"), StandardCharsets.UTF_8);
+        assertEquals("basil", status);
+
         // Simulate lost connection
         kill(pid, "-TSTP", 'T');
         try {
