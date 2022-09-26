@@ -59,7 +59,7 @@ public class PingThreadTest {
 
     @Test
     public void failedPingThreadResetsComputerChannel() throws Exception {
-        assumeFalse("We simulate hung agent by sending the SIGTSTP signal", Functions.isWindows());
+        assumeFalse("We simulate hung agent by sending the SIGSTOP signal", Functions.isWindows());
 
         DumbSlave slave = j.createOnlineSlave();
         Computer computer = slave.toComputer();
@@ -74,7 +74,7 @@ public class PingThreadTest {
         }
         assertNotNull(pingThread);
 
-        new ProcessBuilder("kill", "-TSTP", Long.toString(pid)).redirectErrorStream(true).start().waitFor();
+        new ProcessBuilder("kill", "-STOP", Long.toString(pid)).redirectErrorStream(true).start().waitFor();
         Thread.sleep(10000);
         String status = Files.readString(Paths.get("/proc/" + pid + "/stat"), StandardCharsets.UTF_8);
         try {
@@ -85,7 +85,7 @@ public class PingThreadTest {
         }
 
         // Simulate lost connection
-        kill(pid, "-TSTP", 'T');
+        kill(pid, "-STOP", 'T');
         try {
             // ... do not wait for Ping Thread to notice
             Method onDead = PingThread.class.getDeclaredMethod("onDead", Throwable.class);
