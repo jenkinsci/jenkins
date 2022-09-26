@@ -30,6 +30,7 @@ import static hudson.cli.CLICommandInvoker.Matcher.succeeded;
 import static hudson.cli.DisablePluginCommand.RETURN_CODE_NOT_DISABLED_DEPENDANTS;
 import static hudson.cli.DisablePluginCommand.RETURN_CODE_NO_SUCH_PLUGIN;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.emptyOrNullString;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertEquals;
@@ -293,7 +294,7 @@ public class DisablePluginCommandTest {
         assertPluginDisabled("depender");
         assertPluginDisabled("mandatory-depender");
 
-        assertTrue("No log in quiet mode if all plugins disabled", StringUtils.isEmpty(result.stdout()));
+        assertThat("No log in quiet mode if all plugins disabled", result.stdout(), is(emptyOrNullString()));
     }
 
     /**

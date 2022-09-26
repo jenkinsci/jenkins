@@ -73,6 +73,7 @@ public class FileParameterDefinition extends ParameterDefinition {
 
     @Extension @Symbol({"file", "fileParam"})
     public static class DescriptorImpl extends ParameterDescriptor {
+        @NonNull
         @Override
         public String getDisplayName() {
             return Messages.FileParameterDefinition_DisplayName();

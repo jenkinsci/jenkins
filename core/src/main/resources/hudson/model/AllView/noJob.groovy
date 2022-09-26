@@ -2,6 +2,7 @@ package hudson.model.AllView
 
 import hudson.model.Computer
 import hudson.model.Item
+import hudson.model.Job
 import jenkins.model.Jenkins
 
 def l = namespace(lib.LayoutTagLib)
@@ -11,7 +12,7 @@ def canSetUpDistributedBuilds = Jenkins.get().hasPermission(Computer.CREATE) &&
         Jenkins.get().clouds.isEmpty() &&
         Jenkins.get().getNodes().isEmpty();
 def hasAdministerJenkinsPermission = Jenkins.get().hasPermission(Jenkins.ADMINISTER);
-def hasItemCreatePermission = my.owner.hasPermission(Item.CREATE);
+def hasItemCreatePermission = my.owner.itemGroup.hasPermission(Item.CREATE);
 
 div {
 
@@ -30,9 +31,9 @@ div {
                             a(href: "newJob", class: "content-block__link") {
                                 span(_("createJob"))
                                 span(class: "trailing-icon") {
-                                    l.svgIcon(
-                                            class: "icon-sm",
-                                            href: "${resURL}/images/material-icons/svg-sprite-navigation-symbol.svg#ic_arrow_forward_24px")
+                                    l.icon(
+                                            class: "icon-md",
+                                            src: "symbol-arrow-right")
                                 }
                             }
                         }
@@ -47,9 +48,9 @@ div {
                                 a(href: "computer/new", class: "content-block__link") {
                                     span(_("setUpAgent"))
                                     span(class: "trailing-icon") {
-                                        l.svgIcon(
-                                                class: "icon-sm",
-                                                href: "${resURL}/images/material-icons/svg-sprite-navigation-symbol.svg#ic_arrow_forward_24px")
+                                        l.icon(
+                                                class: "icon-md",
+                                                src: "symbol-arrow-right")
                                     }
                                 }
                             }
@@ -59,9 +60,9 @@ div {
                                     a(href: "configureClouds", class: "content-block__link") {
                                         span(_("setUpCloud"))
                                         span(class: "trailing-icon") {
-                                            l.svgIcon(
-                                                    class: "icon-sm",
-                                                    href: "${resURL}/images/material-icons/svg-sprite-navigation-symbol.svg#ic_arrow_forward_24px")
+                                            l.icon(
+                                                    class: "icon-md",
+                                                    src: "symbol-arrow-right")
                                         }
                                     }
                                 }
@@ -73,9 +74,9 @@ div {
                                         class: "content-block__link content-block__help-link") {
                                     span(_("learnMoreDistributedBuilds"))
                                     span(class: "trailing-icon") {
-                                        l.svgIcon(
-                                                class: "icon-sm",
-                                                href: "${resURL}/images/material-icons/svg-sprite-content-symbol.svg#ic_link_24px")
+                                        l.icon(
+                                                class: "icon-md",
+                                                src: "symbol-link")
                                     }
                                 }
                             }
@@ -95,9 +96,9 @@ div {
                         a(href: "newJob", class: "content-block__link") {
                             span(_("createJob"))
                             span(class: "trailing-icon") {
-                                l.svgIcon(
-                                        class: "icon-sm",
-                                        href: "${resURL}/images/material-icons/svg-sprite-navigation-symbol.svg#ic_arrow_forward_24px")
+                                l.icon(
+                                        class: "icon-md",
+                                        src: "symbol-arrow-right")
                             }
                         }
                     }
@@ -124,9 +125,9 @@ div {
                                 class: "content-block__link") {
                             span(_("Log in to Jenkins"))
                             span(class: "trailing-icon") {
-                                l.svgIcon(
-                                        class: "icon-sm",
-                                        href: "${resURL}/images/material-icons/svg-sprite-navigation-symbol.svg#ic_arrow_forward_24px")
+                                l.icon(
+                                        class: "icon-md",
+                                        src: "symbol-arrow-right")
                             }
                         }
                     }
@@ -136,9 +137,9 @@ div {
                             a(href: "signup", class: "content-block__link") {
                                 span(_("Sign up for Jenkins"))
                                 span(class: "trailing-icon") {
-                                    l.svgIcon(
-                                            class: "icon-sm",
-                                            href: "${resURL}/images/material-icons/svg-sprite-navigation-symbol.svg#ic_arrow_forward_24px")
+                                    l.icon(
+                                            class: "icon-md",
+                                            src: "symbol-arrow-right")
                                 }
 
                             }

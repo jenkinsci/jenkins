@@ -28,8 +28,8 @@ import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
 
 import com.gargoylesoftware.htmlunit.ScriptResult;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
@@ -93,9 +93,7 @@ public class SvgIconTest  {
         JenkinsRule.WebClient wc = j.createWebClient();
 
         AtomicBoolean alertTriggered = new AtomicBoolean(false);
-        wc.setAlertHandler((p, s) -> {
-            alertTriggered.set(true);
-        });
+        wc.setAlertHandler((p, s) -> alertTriggered.set(true));
 
         HtmlPage page = wc.goTo(testRootAction.getUrlName());
 

@@ -24,11 +24,9 @@
 
 package hudson.util;
 
-import java.lang.ref.SoftReference;
 import java.util.AbstractList;
 import java.util.List;
 import java.util.logging.Handler;
-import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
 /**
@@ -40,14 +38,8 @@ public class RingBufferLogHandler extends Handler {
 
     private static final int DEFAULT_RING_BUFFER_SIZE = Integer.getInteger(RingBufferLogHandler.class.getName() + ".defaultSize", 256);
 
-    private static final class LogRecordRef extends SoftReference<LogRecord> {
-        LogRecordRef(LogRecord referent) {
-            super(referent);
-        }
-    }
-
     private int start = 0;
-    private final LogRecordRef[] records;
+    private final LogRecord[] records;
     private int size;
 
     /**
@@ -61,7 +53,7 @@ public class RingBufferLogHandler extends Handler {
     }
 
     public RingBufferLogHandler(int ringSize) {
-        records = new LogRecordRef[ringSize];
+        records = new LogRecord[ringSize];
     }
 
     /**
@@ -74,13 +66,18 @@ public class RingBufferLogHandler extends Handler {
     }
 
     @Override
-    public synchronized void publish(LogRecord record) {
-        int len = records.length;
-        records[(start + size) % len] = new LogRecordRef(record);
-        if (size == len) {
-            start = (start + 1) % len;
-        } else {
-            size++;
+    public void publish(LogRecord record) {
+        if (record == null) {
+            return;
+        }
+        synchronized (this) {
+            int len = records.length;
+            records[(start + size) % len] = record;
+            if (size == len) {
+                start = (start + 1) % len;
+            } else {
+                size++;
+            }
         }
     }
 
@@ -97,14 +94,12 @@ public class RingBufferLogHandler extends Handler {
      */
     public List<LogRecord> getView() {
         // Since Jenkins.logRecords is a field used as an API, we are forced to implement a dynamic list.
-        return new AbstractList<LogRecord>() {
+        return new AbstractList<>() {
             @Override
             public LogRecord get(int index) {
                 // flip the order
                 synchronized (RingBufferLogHandler.this) {
-                    LogRecord r = records[(start + (size - (index + 1))) % records.length].get();
-                    // We cannot just omit collected entries due to the List interface.
-                    return r != null ? r : new LogRecord(Level.OFF, "<discarded>");
+                    return records[(start + (size - (index + 1))) % records.length];
                 }
             }
 

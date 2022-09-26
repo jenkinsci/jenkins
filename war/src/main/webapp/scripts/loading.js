@@ -22,42 +22,42 @@
  * THE SOFTWARE.
  */
 const Fetch = {
-    get: function (url, callback) {
-        const xhr = new XMLHttpRequest();
-        xhr.open('GET', url, true);
-        xhr.onload = function () {
-            const status = xhr.status;
-            if(callback) {
-                callback(null, status);
-            }
-        };
-        xhr.onerror = function(){
-            const message = xhr.responseText;
-            const status = xhr.status;
-            if(callback) {
-                callback(message, status);
-            }
-        };
-        xhr.send();
-    }
+  get: function (url, callback) {
+    const xhr = new XMLHttpRequest();
+    xhr.open("GET", url, true);
+    xhr.onload = function () {
+      const status = xhr.status;
+      if (callback) {
+        callback(null, status);
+      }
+    };
+    xhr.onerror = function () {
+      const message = xhr.responseText;
+      const status = xhr.status;
+      if (callback) {
+        callback(message, status);
+      }
+    };
+    xhr.send();
+  },
 };
 
 function safeRedirector(url) {
-    const timeout = 5000;
-    window.setTimeout(function() {
-        const statusChecker = arguments.callee;
-        Fetch.get(url, function(error, status) {
-            if((status >= 502 && status <= 504) || status === 0) {
-                window.setTimeout(statusChecker, timeout)
-            } else {
-                window.location.replace(url);
-            }
-            if(error) {
-                console.error(error);
-            }
-        })
-    }, timeout);
+  const timeout = 5000;
+  window.setTimeout(function () {
+    const statusChecker = arguments.callee;
+    Fetch.get(url, function (error, status) {
+      if ((status >= 502 && status <= 504) || status === 0) {
+        window.setTimeout(statusChecker, timeout);
+      } else {
+        window.location.replace(url);
+      }
+      if (error) {
+        console.error(error);
+      }
+    });
+  }, timeout);
 }
 
 const rootUrl = document.head.getAttribute("data-rooturl");
-safeRedirector(rootUrl + '/');
+safeRedirector(rootUrl + "/");

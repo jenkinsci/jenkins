@@ -305,6 +305,7 @@ public abstract class ParameterDefinition implements
             return getViewPage(clazz, "index.jelly");
         }
 
+        @NonNull
         @Override
         public String getDisplayName() {
             return "Parameter";

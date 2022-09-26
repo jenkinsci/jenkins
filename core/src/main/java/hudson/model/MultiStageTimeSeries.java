@@ -74,17 +74,17 @@ public class MultiStageTimeSeries implements Serializable {
     public final Color color;
 
     /**
-     * Updated every 10 seconds. Keep data up to 1 hour.
+     * Updated every 10 seconds. Keep data up to 6 hours.
      */
     @Exported
     public final TimeSeries sec10;
     /**
-     * Updated every 1 min. Keep data up to 1 day.
+     * Updated every 1 min. Keep data up to 2 days.
      */
     @Exported
     public final TimeSeries min;
     /**
-     * Updated every 1 hour. Keep data up to 4 weeks.
+     * Updated every 1 hour. Keep data up to 8 weeks.
      */
     @Exported
     public final TimeSeries hour;
@@ -169,7 +169,7 @@ public class MultiStageTimeSeries implements Serializable {
         public DateFormat createDateFormat() {
             switch (this) {
             case HOUR:  return new SimpleDateFormat("MMM/dd HH");
-            case MIN:   return new SimpleDateFormat("HH:mm");
+            case MIN:   return new SimpleDateFormat("E HH:mm");
             case SEC10: return new SimpleDateFormat("HH:mm:ss");
             default:    throw new AssertionError();
             }

@@ -73,6 +73,7 @@ class PlainCLIProtocol {
         STDERR(false);
         /** True if sent from the client to the server; false if sent from the server to the client. */
         final boolean clientSide;
+
         Op(boolean clientSide) {
             this.clientSide = clientSide;
         }

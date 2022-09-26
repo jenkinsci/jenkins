@@ -58,7 +58,7 @@ THE SOFTWARE.
           permission="${it.ARTIFACTS}" />
 
         <j:set var="set" value="${it.changeSet}" />
-        <t:summary icon="notepad.png">
+        <t:summary icon="symbol-changes">
           <j:choose>
             <j:when test="${it.hasChangeSetComputed()}">
               <st:include it="${set}" page="digest.jelly" />

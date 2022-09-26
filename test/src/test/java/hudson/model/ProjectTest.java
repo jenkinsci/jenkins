@@ -24,13 +24,15 @@
 
 package hudson.model;
 
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import antlr.ANTLRException;
 import com.gargoylesoftware.htmlunit.HttpMethod;
@@ -44,7 +46,6 @@ import hudson.FilePath;
 import hudson.Functions;
 import hudson.Launcher;
 import hudson.Launcher.RemoteLauncher;
-import hudson.Util;
 import hudson.model.AbstractProject.BecauseOfDownstreamBuildInProgress;
 import hudson.model.AbstractProject.BecauseOfUpstreamBuildInProgress;
 import hudson.model.Cause.UserIdCause;
@@ -77,13 +78,16 @@ import hudson.triggers.SCMTrigger;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.io.UncheckedIOException;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -247,7 +251,7 @@ public class ProjectTest {
     public void testGetScmCheckoutStrategy() throws IOException {
         FreeStyleProject p = j.createFreeStyleProject("project");
         p.setScmCheckoutStrategy(null);
-        assertTrue("Project should return default checkout strategy if scm checkout strategy is not set.", p.getScmCheckoutStrategy() instanceof DefaultSCMCheckoutStrategyImpl);
+        assertThat("Project should return default checkout strategy if scm checkout strategy is not set.", p.getScmCheckoutStrategy(), instanceOf(DefaultSCMCheckoutStrategyImpl.class));
         SCMCheckoutStrategy strategy = new SCMCheckoutStrategyImpl();
         p.setScmCheckoutStrategy(strategy);
         assertEquals("Project should return its scm checkout strategy if this strategy is not null", strategy, p.getScmCheckoutStrategy());
@@ -306,7 +310,7 @@ public class ProjectTest {
     }
 
     @Test
-    public void testScheduleBuild2() throws IOException, InterruptedException {
+    public void testScheduleBuild2() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject("project");
         p.setAssignedLabel(j.jenkins.getLabel("nonExist"));
         p.scheduleBuild(0, new UserIdCause());
@@ -317,7 +321,9 @@ public class ProjectTest {
             Thread.sleep(1000); //give some time to start build
             count++;
         }
-        assertNotNull("Build should be done or in progress.", p.getLastBuild());
+        FreeStyleBuild b = p.getLastBuild();
+        assertNotNull("Build should be done or in progress.", b);
+        j.assertBuildStatusSuccess(j.waitForCompletion(b));
     }
 
 
@@ -347,7 +353,7 @@ public class ProjectTest {
         p.setCustomWorkspace("/some/path");
         j.jenkins.reload();
         assertNotNull("Project did not save scm.", p.getScm());
-        assertTrue("Project did not save scm checkout strategy.", p.getScmCheckoutStrategy() instanceof SCMCheckoutStrategyImpl);
+        assertThat("Project did not save scm checkout strategy.", p.getScmCheckoutStrategy(), instanceOf(SCMCheckoutStrategyImpl.class));
         assertEquals("Project did not save quiet period.", 15, p.getQuietPeriod());
         assertTrue("Project did not save block if downstream is building.", p.blockBuildWhenDownstreamBuilding());
         assertTrue("Project did not save block if upstream is building.", p.blockBuildWhenUpstreamBuilding());
@@ -374,23 +380,23 @@ public class ProjectTest {
         FreeStyleProject p = j.createFreeStyleProject("project");
         p.getBuildersList().add(Functions.isWindows() ? new BatchFile("ping -n 10 127.0.0.1 >nul") : new Shell("sleep 10"));
         QueueTaskFuture<FreeStyleBuild> b1 = waitForStart(p);
-        assertInstanceOf("Build can not start because previous build has not finished: " + p.getCauseOfBlockage(), p.getCauseOfBlockage(), BlockedBecauseOfBuildInProgress.class);
+        assertThat("Build can not start because previous build has not finished: " + p.getCauseOfBlockage(), p.getCauseOfBlockage(), instanceOf(BlockedBecauseOfBuildInProgress.class));
         p.getLastBuild().getExecutor().interrupt();
         b1.get();   // wait for it to finish
 
         FreeStyleProject downstream = j.createFreeStyleProject("project-downstream");
         downstream.getBuildersList().add(Functions.isWindows() ? new BatchFile("ping -n 10 127.0.0.1 >nul") : new Shell("sleep 10"));
-        p.getPublishersList().add(new BuildTrigger(Collections.singleton(downstream), Result.SUCCESS));
+        p.getPublishersList().add(new BuildTrigger(Set.of(downstream), Result.SUCCESS));
         Jenkins.get().rebuildDependencyGraph();
         p.setBlockBuildWhenDownstreamBuilding(true);
         QueueTaskFuture<FreeStyleBuild> b2 = waitForStart(downstream);
-        assertInstanceOf("Build can not start because build of downstream project has not finished.", p.getCauseOfBlockage(), BecauseOfDownstreamBuildInProgress.class);
+        assertThat("Build can not start because build of downstream project has not finished.", p.getCauseOfBlockage(), instanceOf(BecauseOfDownstreamBuildInProgress.class));
         downstream.getLastBuild().getExecutor().interrupt();
         b2.get();
 
         downstream.setBlockBuildWhenUpstreamBuilding(true);
         QueueTaskFuture<FreeStyleBuild> b3 = waitForStart(p);
-        assertInstanceOf("Build can not start because build of upstream project has not finished.", downstream.getCauseOfBlockage(), BecauseOfUpstreamBuildInProgress.class);
+        assertThat("Build can not start because build of upstream project has not finished.", downstream.getCauseOfBlockage(), instanceOf(BecauseOfUpstreamBuildInProgress.class));
         b3.get();
     }
 
@@ -403,12 +409,6 @@ public class ProjectTest {
         f.waitForStart();
         LOGGER.info("Wait:" + TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start));
         return f;
-    }
-
-    private void assertInstanceOf(String msg, Object o, Class t) {
-        if (t.isInstance(o))
-            return;
-        fail(msg + ": " + o);
     }
 
     @Test
@@ -517,7 +517,11 @@ public class ProjectTest {
         downstream.getBuildersList().add(new TestBuilder() {
             @Override public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) {
                 for (Run<?, ?>.Artifact a : upstream.getLastBuild().getArtifacts()) {
-                    Util.copyFile(a.getFile(), new File(build.getWorkspace().child(a.getFileName()).getRemote()));
+                    try {
+                        Files.copy(a.getFile().toPath(), new File(build.getWorkspace().child(a.getFileName()).getRemote()).toPath(), REPLACE_EXISTING);
+                    } catch (IOException e) {
+                        throw new UncheckedIOException(e);
+                    }
                 }
                 return true;
             }
@@ -840,7 +844,7 @@ public class ProjectTest {
         }
 
         @Override public SCMDescriptor<?> getDescriptor() {
-            return new SCMDescriptor<SCM>(null) {};
+            return new SCMDescriptor<>(null) {};
         }
 
         @Override

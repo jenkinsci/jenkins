@@ -59,13 +59,13 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -553,12 +553,8 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
      * So there's no need to check that in the implementation.
      *
      * <p>
-     * Starting 1.206, the default implementation of this method does the following:
-     * <pre>
-     * req.bindJSON(clazz,formData);
-     * </pre>
-     * <p>
-     * ... which performs the databinding on the constructor of {@link #clazz}.
+     * The default implementation of this method uses {@link #bindJSON}
+     * which performs the databinding on the constructor of {@link #clazz}.
      *
      * <p>
      * For some types of {@link Describable}, such as {@link ListViewColumn}, this method
@@ -572,7 +568,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
      *      Always non-null (see note above.) This object includes represents the entire submission.
      * @param formData
      *      The JSON object that captures the configuration data for this {@link Descriptor}.
-     *      See https://www.jenkins.io/doc/developer/forms/structured-form-submission/
+     *      See <a href="https://www.jenkins.io/doc/developer/forms/structured-form-submission/">the developer documentation</a>.
      *      Always non-null.
      *
      * @throws FormException
@@ -592,25 +588,39 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
                     // yes, req is supposed to be always non-null, but see the note above
                     return verifyNewInstance(clazz.getDeclaredConstructor().newInstance());
                 }
-
-                // new behavior as of 1.206
-                BindInterceptor oldInterceptor = req.getBindInterceptor();
-                try {
-                    NewInstanceBindInterceptor interceptor;
-                    if (oldInterceptor instanceof NewInstanceBindInterceptor) {
-                        interceptor = (NewInstanceBindInterceptor) oldInterceptor;
-                    } else {
-                        interceptor = new NewInstanceBindInterceptor(oldInterceptor);
-                        req.setBindInterceptor(interceptor);
-                    }
-                    interceptor.processed.put(formData, true);
-                    return verifyNewInstance(req.bindJSON(clazz, formData));
-                } finally {
-                    req.setBindInterceptor(oldInterceptor);
-                }
+                return verifyNewInstance(bindJSON(req, clazz, formData, true));
             }
         } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException | RuntimeException e) {
             throw new LinkageError("Failed to instantiate " + clazz + " from " + RedactSecretJsonInErrorMessageSanitizer.INSTANCE.sanitize(formData), e);
+        }
+    }
+
+    /**
+     * Replacement for {@link StaplerRequest#bindJSON(Class, JSONObject)} which honors {@link #newInstance(StaplerRequest, JSONObject)}.
+     * This is automatically used inside {@link #newInstance(StaplerRequest, JSONObject)} so a direct call would only be necessary
+     * in case the top level binding might use a {@link Descriptor} which overrides {@link #newInstance(StaplerRequest, JSONObject)}.
+     * @since 2.342
+     */
+    public static <T> T bindJSON(StaplerRequest req, Class<T> type, JSONObject src) {
+        return bindJSON(req, type, src, false);
+    }
+
+    private static <T> T bindJSON(StaplerRequest req, Class<T> type, JSONObject src, boolean fromNewInstance) {
+        BindInterceptor oldInterceptor = req.getBindInterceptor();
+        try {
+            NewInstanceBindInterceptor interceptor;
+            if (oldInterceptor instanceof NewInstanceBindInterceptor) {
+                interceptor = (NewInstanceBindInterceptor) oldInterceptor;
+            } else {
+                interceptor = new NewInstanceBindInterceptor(oldInterceptor);
+                req.setBindInterceptor(interceptor);
+            }
+            if (fromNewInstance) {
+                interceptor.processed.put(src, true);
+            }
+            return req.bindJSON(type, src);
+        } finally {
+            req.setBindInterceptor(oldInterceptor);
         }
     }
 
@@ -810,7 +820,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
      *
      * @param json
      *      The JSON object that captures the configuration data for this {@link Descriptor}.
-     *      See https://www.jenkins.io/doc/developer/forms/structured-form-submission/
+     *      See <a href="https://www.jenkins.io/doc/developer/forms/structured-form-submission/">the developer documentation</a>.
      * @return false
      *      to keep the client in the same config page.
      */
@@ -853,7 +863,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
     }
 
     private String getViewPage(Class<?> clazz, String pageName, String defaultValue) {
-        return getViewPage(clazz, Collections.singleton(pageName), defaultValue);
+        return getViewPage(clazz, Set.of(pageName), defaultValue);
     }
 
     private String getViewPage(Class<?> clazz, Collection<String> pageNames, String defaultValue) {
@@ -968,7 +978,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
                 rsp.setContentType("text/html;charset=UTF-8");
                 try (InputStream in = url.openStream()) {
                     String literal = IOUtils.toString(in, StandardCharsets.UTF_8);
-                    rsp.getWriter().println(Util.replaceMacro(literal, Collections.singletonMap("rootURL", req.getContextPath())));
+                    rsp.getWriter().println(Util.replaceMacro(literal, Map.of("rootURL", req.getContextPath())));
                 }
                 return;
             }

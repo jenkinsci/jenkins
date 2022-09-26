@@ -7,7 +7,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
-import com.gargoylesoftware.htmlunit.html.HtmlCheckBoxInput;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlFormUtil;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
@@ -86,7 +85,7 @@ public class LoginTest {
         HtmlForm form = page.getFormByName("login");
         form.getInputByName("j_username").setValueAttribute("alice");
         form.getInputByName("j_password").setValueAttribute("alice");
-        ((HtmlCheckBoxInput) form.getInputByName("remember_me")).setChecked(true);
+        form.getInputByName("remember_me").setChecked(true);
         return form;
     }
 

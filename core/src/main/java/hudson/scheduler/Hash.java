@@ -33,15 +33,11 @@ import java.util.Random;
 /**
  * Generates a pseudo-random sequence of integers in the specified range.
  *
- * <p>
- * {@link CronTab} supports tokens like '@daily', which means "do it once a day".
+ * <p>{@link CronTab} supports tokens like '@daily', which means "do it once a day".
  * Exactly which time of the day this gets scheduled is randomized --- randomized
  * in the sense that it's spread out when many jobs choose @daily, but it's at
  * the same time stable so that every job sticks to a specific time of the day
  * even after the configuration is updated.
- *
- * <p>
- *
  *
  * @author Kohsuke Kawaguchi
  * @since 1.448

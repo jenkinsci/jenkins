@@ -24,6 +24,7 @@
 
 package hudson.node_monitors;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.model.Computer;
@@ -72,6 +73,7 @@ public class ClockMonitor extends NodeMonitor {
             return n.getClockDifferenceCallable();
         }
 
+        @NonNull
         @Override
         public String getDisplayName() {
             return Messages.ClockMonitor_DisplayName();

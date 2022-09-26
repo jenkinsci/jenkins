@@ -271,12 +271,12 @@ public class ResourceDomainTest {
     }
 
 //    @Test
-    public void indexFileIsUsedIfDefined() throws Exception {
+    public void indexFileIsUsedIfDefined() {
         // TODO Test with DBS with and without directory index file
     }
 
     @Test
-    public void adminMonitorShowsUpWithOverriddenCSP() throws Exception {
+    public void adminMonitorShowsUpWithOverriddenCSP() {
         ResourceDomainRecommendation monitor = ExtensionList.lookupSingleton(ResourceDomainRecommendation.class);
         Assert.assertFalse(monitor.isActivated());
         System.setProperty(DirectoryBrowserSupport.class.getName() + ".CSP", "");
@@ -310,7 +310,7 @@ public class ResourceDomainTest {
     }
 
     @Test
-    public void testRedirectUrls() throws Exception {
+    public void testRedirectUrls() {
         ResourceDomainRootAction rootAction = ResourceDomainRootAction.get();
         String url = rootAction.getRedirectUrl(new ResourceDomainRootAction.Token("foo", "bar", Instant.now()), "foo bar baz");
         Assert.assertFalse("urlencoded", url.contains(" "));

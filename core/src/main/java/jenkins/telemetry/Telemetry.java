@@ -81,7 +81,7 @@ public abstract class Telemetry implements ExtensionPoint {
      *
      * Good IDs are globally unique and human readable (i.e. no UUIDs).
      *
-     * For a periodically updated list of all public implementations, see https://www.jenkins.io/doc/developer/extensions/jenkins-core/#telemetry
+     * For a periodically updated list of all public implementations, see <a href="https://www.jenkins.io/doc/developer/extensions/jenkins-core/#telemetry">the developer documentation</a>.
      *
      * @return ID of the collector, never null or empty
      */
@@ -160,7 +160,7 @@ public abstract class Telemetry implements ExtensionPoint {
      * Produces a list of Jenkins core and plugin version numbers
      * to include in telemetry implementations for which this would be relevant.
      * @return a map in a format suitable for a value of {@link #createContent}
-     * @since TODO
+     * @since 2.325
      */
     protected final Map<String, String> buildComponentInformation() {
         Map<String, String> components = new TreeMap<>();

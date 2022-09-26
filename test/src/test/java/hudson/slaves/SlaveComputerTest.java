@@ -24,6 +24,7 @@
 
 package hudson.slaves;
 
+import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsString;
@@ -35,6 +36,7 @@ import hudson.model.Computer;
 import hudson.model.Node;
 import hudson.model.TaskListener;
 import hudson.model.User;
+import hudson.remoting.Launcher;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
 import java.io.IOError;
@@ -48,6 +50,7 @@ import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
+import org.jvnet.hudson.test.SimpleCommandLauncher;
 import org.jvnet.hudson.test.TestExtension;
 import org.xml.sax.SAXException;
 
@@ -57,6 +60,16 @@ import org.xml.sax.SAXException;
 public class SlaveComputerTest {
     @Rule
     public JenkinsRule j = new JenkinsRule();
+
+    @Test
+    public void testAgentLogs() throws Exception {
+        DumbSlave node = j.createOnlineSlave();
+        String log = node.getComputer().getLog();
+        Assert.assertTrue(log.contains("Remoting version: " + Launcher.VERSION));
+        Assert.assertTrue(log.contains("Launcher: " + SimpleCommandLauncher.class.getSimpleName()));
+        Assert.assertTrue(log.contains("Communication Protocol: Standard in/out"));
+        Assert.assertTrue(log.contains(String.format("This is a %s agent", Functions.isWindows() ? "Windows" : "Unix")));
+    }
 
     @Test
     public void testGetAbsoluteRemotePath() throws Exception {
@@ -93,7 +106,7 @@ public class SlaveComputerTest {
     @Issue("JENKINS-57111")
     public void startupShouldNotFailOnExceptionOnlineListener() throws Exception {
         DumbSlave nodeA = j.createOnlineSlave();
-        Assert.assertTrue(nodeA.getComputer() instanceof SlaveComputer);
+        assertThat(nodeA.getComputer(), instanceOf(SlaveComputer.class));
 
         int retries = 10;
         while (IOExceptionOnOnlineListener.onOnlineCount == 0 && retries > 0) {
@@ -149,7 +162,7 @@ public class SlaveComputerTest {
     public void startupShouldFailOnErrorOnlineListener() throws Exception {
         assumeFalse("TODO: Windows container agents do not have enough resources to run this test", Functions.isWindows() && System.getenv("CI") != null);
         DumbSlave nodeA = j.createSlave();
-        Assert.assertTrue(nodeA.getComputer() instanceof SlaveComputer);
+        assertThat(nodeA.getComputer(), instanceOf(SlaveComputer.class));
         int retries = 10;
         while (ErrorOnOnlineListener.onOnlineCount == 0 && retries > 0) {
             retries--;

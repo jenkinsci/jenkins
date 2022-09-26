@@ -28,7 +28,6 @@ THE SOFTWARE.
     <st:include page="sidepanel.jelly" />
     <l:main-panel>
       <h1>
-        <l:icon class="icon-notepad icon-xlg"/>
         ${%title(it.displayName)}
       </h1>
       <p>

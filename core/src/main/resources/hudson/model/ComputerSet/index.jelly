@@ -64,9 +64,9 @@ THE SOFTWARE.
 
       <j:forEach var="c" items="${it._all}">
         <tr id="node_${c.name}">
-          <td data="${c.icon}" class="jenkins-table__cell--tight">
+          <td data="${c.icon}" class="jenkins-table__cell--tight jenkins-table__icon">
             <div class="jenkins-table__cell__button-wrapper">
-              <l:icon class="${c.iconClassName} icon-lg" alt="${c.iconAltText}"/>
+              <l:icon src="${c.iconClassName}" alt="${c.iconAltText}"/>
             </div>
           </td>
 
@@ -85,7 +85,7 @@ THE SOFTWARE.
             <j:if test="${c.hasPermission(c.EXTENDED_READ)}">
               <div class="jenkins-table__cell__button-wrapper">
                 <a href="${rootURL}/${c.url}configure" class="jenkins-table__button">
-                  <l:ionicon name="settings-outline" />
+                  <l:icon src="symbol-settings" />
                 </a>
               </div>
             </j:if>

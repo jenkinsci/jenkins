@@ -27,26 +27,24 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:s="/lib/form">
-  <l:layout title="${%Installed Plugins} - ${%Plugin Manager}" permission="${app.SYSTEM_READ}">
+  <l:layout title="${%Installed plugins} - ${%Plugin Manager}" permission="${app.SYSTEM_READ}">
     <j:set var="readOnlyMode" value="${!app.hasPermission(app.ADMINISTER)}"/>
 
-    <l:app-bar title="${%Plugin Manager}">
-      <div class="jenkins-search">
-        <input
-          class="jenkins-search__input"
-          type="search"
-          id="filter-box"
-          value="${request.getParameter('filter')}"
-          placeholder="${filtered == 'true' ? '%Search' : '%Filter'}"/>
-        <div class="jenkins-search__icon">
-          <l:ionicon name="search-outline"/>
-        </div>
-      </div>
-    </l:app-bar>
+    <l:app-bar title="${%Plugins}" />
 
     <st:include page="sidepanel.jelly"/>
 
     <l:main-panel>
+      <div class="jenkins-app-bar jenkins-app-bar--sticky">
+        <div class="jenkins-app-bar__content">
+          <l:search-bar clazz="jenkins-search--app-bar"
+                        placeholder="${%Search installed plugins}"
+                        id="filter-box"
+                        autofocus="true"
+                        value="${request.getParameter('filter')}" />
+        </div>
+      </div>
+
       <st:adjunct includes="hudson.PluginManager._table"/>
 
       <j:if test="${app.updateCenter.isRestartRequiredForCompletion()}">
@@ -64,8 +62,6 @@ THE SOFTWARE.
            data-detached-uninstall="${%detached-uninstall}"
            data-detached-possible-dependents="${%detached-possible-dependents}"
       />
-
-      <local:tabBar page="installed" xmlns:local="/hudson/PluginManager" />
 
       <table id="plugins" class="jenkins-table sortable">
         <j:choose>
@@ -179,8 +175,8 @@ THE SOFTWARE.
                         <j:if test="${p.downgradable}">
                           <form class="jenkins-buttons-row" method="post"
                                 action="${rootURL}/updateCenter/plugin/${p.shortName}/downgrade">
-                            <button class="jenkins-table__button  jenkins-table__button--orange" tooltip="${%downgradeTo(p.backupVersion)}">
-                              <l:ionicon name="downgrade-circle-outline"/>
+                            <button class="jenkins-table__button jenkins-!-color-orange" tooltip="${%downgradeTo(p.backupVersion)}">
+                              <l:icon src="symbol-downgrade-circle"/>
                               <span class="jenkins-!-margin-left-1"
                                     style="font-size: 0.75rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 50px;">
                                 ${p.backupVersion}
@@ -225,8 +221,8 @@ THE SOFTWARE.
                               </div>
                             </j:if>
                             <form class="jenkins-buttons-row" method="post" action="plugin/${p.shortName}/uninstall">
-                              <button class="jenkins-table__button jenkins-table__button--red uninstall" tooltip="${%Uninstall} ${p.updateInfo.displayName?:p.displayName}">
-                                <l:ionicon name="close-circle-outline"/>
+                              <button class="jenkins-table__button jenkins-!-destructive-color uninstall" tooltip="${%Uninstall} ${p.updateInfo.displayName?:p.displayName}">
+                                <l:icon src="symbol-close-circle"/>
                               </button>
                             </form>
                           </j:otherwise>

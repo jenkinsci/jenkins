@@ -54,9 +54,9 @@ public class RowVisibilityGroupTest {
     public void test1() throws Exception {
         HtmlPage p = j.createWebClient().goTo("self/test1");
 
-        HtmlElement outer = (HtmlElement) DomNodeUtil.selectSingleNode(p, "//INPUT[@name='outer']");
-        HtmlElement inner = (HtmlElement) DomNodeUtil.selectSingleNode(p, "//INPUT[@name='inner']");
-        HtmlInput field = (HtmlInput) DomNodeUtil.selectSingleNode(p, "//INPUT[@type='text'][@name='_.field']");
+        HtmlElement outer = DomNodeUtil.selectSingleNode(p, "//INPUT[@name='outer']");
+        HtmlElement inner = DomNodeUtil.selectSingleNode(p, "//INPUT[@name='inner']");
+        HtmlInput field = DomNodeUtil.selectSingleNode(p, "//INPUT[@type='text'][@name='_.field']");
 
         // outer gets unfolded, but inner should be still folded
         outer.click();
@@ -80,7 +80,7 @@ public class RowVisibilityGroupTest {
     public void test2() throws Exception {
         HtmlPage p = j.createWebClient().goTo("self/test2");
 
-        HtmlSelect s = (HtmlSelect) DomNodeUtil.selectSingleNode(p, "//SELECT");
+        HtmlSelect s = DomNodeUtil.selectSingleNode(p, "//SELECT");
         List<HtmlOption> opts = s.getOptions();
 
         // those first selections will load additional HTMLs

@@ -516,9 +516,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
         // Check root project for sub-job projects (e.g. matrix jobs).
         if (item.task instanceof AbstractProject<?, ?>) {
             AbstractProject<?, ?> project = (AbstractProject<?, ?>) item.task;
-            if (viewItems.contains(project.getRootProject())) {
-                return true;
-            }
+            return viewItems.contains(project.getRootProject());
         }
         return false;
     }
@@ -622,6 +620,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
     /**
      * Returns the {@link ACL} for this object.
      */
+    @NonNull
     @Override
     public ACL getACL() {
         return Jenkins.get().getAuthorizationStrategy().getACL(this);
@@ -914,6 +913,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
             }
         }
 
+        @NonNull
         @Override protected synchronized JSON data() {
             JSONArray r = new JSONArray();
             for (User u : modified) {
@@ -1085,7 +1085,8 @@ public abstract class View extends AbstractModelObject implements AccessControll
         try {
             Jenkins.checkGoodName(value);
             value = value.trim(); // why trim *after* checkGoodName? not sure, but ItemGroupMixIn.createTopLevelItem does the same
-            Jenkins.get().getProjectNamingStrategy().checkName(value);
+            ItemGroup<?> parent = getOwner().getItemGroup();
+            Jenkins.get().getProjectNamingStrategy().checkName(parent.getFullName(), value);
         } catch (Failure e) {
             return FormValidation.error(e.getMessage());
         }
@@ -1263,7 +1264,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
     public ModelObjectWithContextMenu.ContextMenu doChildrenContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
         ModelObjectWithContextMenu.ContextMenu m = new ModelObjectWithContextMenu.ContextMenu();
         for (TopLevelItem i : getItems())
-            m.add(i.getShortUrl(), i.getDisplayName());
+            m.add(Functions.getRelativeLinkTo(i), Functions.getRelativeDisplayNameFrom(i, getOwner().getItemGroup()));
         return m;
     }
 

@@ -30,7 +30,9 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assume.assumeNoException;
 
+import hudson.EnvVars;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
@@ -45,7 +47,6 @@ import java.net.URLStreamHandler;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-import org.apache.commons.lang.StringUtils;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
@@ -62,7 +63,7 @@ public class Security637Test {
     @Issue("SECURITY-637")
     public void urlSafeDeserialization_handler_inSameJVMRemotingContext() throws Throwable {
         sessions.then(j -> {
-                DumbSlave slave = j.createOnlineSlave();
+                DumbSlave slave = j.createOnlineSlave(null, new EnvVars("JAVA_TOOL_OPTIONS", "--add-opens=java.base/java.net=ALL-UNNAMED"));
                 String unsafeHandlerClassName = slave.getChannel().call(new URLHandlerCallable(new URL("https://www.google.com/")));
                 assertThat(unsafeHandlerClassName, containsString("SafeURLStreamHandler"));
 
@@ -188,12 +189,16 @@ public class Security637Test {
                 assertNotNull(project);
 
                 Field handlerField = URL.class.getDeclaredField("handler");
-                handlerField.setAccessible(true);
+                try {
+                    handlerField.setAccessible(true);
+                } catch (RuntimeException e) {
+                    assumeNoException(e);
+                }
 
                 URLJobProperty urlJobProperty = project.getProperty(URLJobProperty.class);
                 for (URL url : urlJobProperty.urlSet) {
                     URLStreamHandler handler = (URLStreamHandler) handlerField.get(url);
-                    if (StringUtils.isEmpty(url.getHost())) {
+                    if (url.getHost() == null || url.getHost().isEmpty()) {
                         assertThat(handler.getClass().getName(), not(containsString("SafeURLStreamHandler")));
                     } else {
                         assertThat(handler.getClass().getName(), containsString("SafeURLStreamHandler"));

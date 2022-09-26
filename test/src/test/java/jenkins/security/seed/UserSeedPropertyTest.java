@@ -59,7 +59,7 @@ public class UserSeedPropertyTest {
 
     @Test
     @Issue("SECURITY-901")
-    public void userCreation_implies_userSeedCreation() throws Exception {
+    public void userCreation_implies_userSeedCreation() {
         User alice = User.getById("alice", true);
         assertNotNull(alice);
         UserSeedProperty userSeed = alice.getProperty(UserSeedProperty.class);

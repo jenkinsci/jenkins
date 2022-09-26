@@ -31,8 +31,8 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.xml.HasXPath.hasXPath;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.HttpMethod;
@@ -45,7 +45,7 @@ import com.gargoylesoftware.htmlunit.xml.XmlPage;
 import hudson.model.User;
 import java.io.File;
 import java.net.URL;
-import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import jenkins.security.ApiTokenProperty;
 import net.sf.json.JSONObject;
@@ -86,7 +86,7 @@ public class ApiTokenStatsRestartTest {
                    wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
 
                    WebRequest request = new WebRequest(new URL(j.getURL() + "user/" + u.getId() + "/descriptorByName/" + ApiTokenProperty.class.getName() + "/generateNewToken"), HttpMethod.POST);
-                   request.setRequestParameters(Collections.singletonList(new NameValuePair("newTokenName", TOKEN_NAME)));
+                   request.setRequestParameters(List.of(new NameValuePair("newTokenName", TOKEN_NAME)));
 
                    Page page = wc.getPage(request);
                    assertEquals(200, page.getWebResponse().getStatusCode());
@@ -159,12 +159,8 @@ public class ApiTokenStatsRestartTest {
     }
 
     private static void checkUserIsNotConnected(WebClient wc) throws Exception {
-        try {
-            wc.goToXml("whoAmI/api/xml");
-            fail();
-        } catch (FailingHttpStatusCodeException e) {
-            assertEquals(401, e.getStatusCode());
-        }
+        FailingHttpStatusCodeException e = assertThrows(FailingHttpStatusCodeException.class, () -> wc.goToXml("whoAmI/api/xml"));
+        assertEquals(401, e.getStatusCode());
     }
 
     private static void revokeToken(JenkinsRule j, WebClient wc, String login, String tokenUuid) throws Exception {

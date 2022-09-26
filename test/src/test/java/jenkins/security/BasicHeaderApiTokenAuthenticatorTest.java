@@ -165,7 +165,7 @@ public class BasicHeaderApiTokenAuthenticatorTest {
         }
     }
 
-    private static void enableLegacyTokenGenerationOnUserCreation() throws Exception {
+    private static void enableLegacyTokenGenerationOnUserCreation() {
         ApiTokenPropertyConfiguration apiTokenConfiguration = GlobalConfiguration.all().getInstance(ApiTokenPropertyConfiguration.class);
         // by default it's false
         apiTokenConfiguration.setTokenGenerationOnCreationEnabled(true);

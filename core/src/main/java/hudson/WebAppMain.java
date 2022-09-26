@@ -140,10 +140,10 @@ public class WebAppMain implements ServletContextListener {
         // Nicer console log formatting when using mvn jetty:run.
         if (Main.isDevelopmentMode && System.getProperty("java.util.logging.config.file") == null) {
             try {
-                Formatter formatter = (Formatter) Class.forName("io.jenkins.lib.support_log_formatter.SupportLogFormatter").newInstance();
+                Formatter formatter = (Formatter) Class.forName("io.jenkins.lib.support_log_formatter.SupportLogFormatter").getDeclaredConstructor().newInstance();
                 for (Handler h : Logger.getLogger("").getHandlers()) {
                     if (h instanceof ConsoleHandler) {
-                        ((ConsoleHandler) h).setFormatter(formatter);
+                        h.setFormatter(formatter);
                     }
                 }
             } catch (ClassNotFoundException x) {
@@ -322,14 +322,11 @@ public class WebAppMain implements ServletContextListener {
     /**
      * Determines the home directory for Jenkins.
      *
-     * <p>
-     * We look for a setting that affects the smallest scope first, then bigger ones later.
+     * <p>We look for a setting that affects the smallest scope first, then bigger ones later.
      *
-     * <p>
-     * People makes configuration mistakes, so we are trying to be nice
+     * <p>People make configuration mistakes, so we are trying to be nice
      * with those by doing {@link String#trim()}.
      *
-     * <p>
      * @return the File alongside with some description to help the user troubleshoot issues
      */
     public FileAndDescription getHomeDir(ServletContextEvent event) {

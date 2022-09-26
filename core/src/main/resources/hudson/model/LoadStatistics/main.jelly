@@ -27,7 +27,6 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
   <st:adjunct includes="hudson.model.LoadStatistics.resources"/>
   <h1>
-    <l:icon class="icon-monitor icon-xlg"/>
     ${%title(it.displayName)}
   </h1>
   <j:set var="type" value="${request.getParameter('type')}" />

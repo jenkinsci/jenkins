@@ -25,6 +25,7 @@
 package hudson.model;
 
 import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -105,21 +106,21 @@ public class CauseTest {
         Cause causeA = new Cause.UserIdCause(null);
         causeA.print(listener);
 
-        assertEquals("Started by user unknown or anonymous", baos.toString(Charset.defaultCharset().name()).trim());
+        assertEquals("Started by user unknown or anonymous", baos.toString(Charset.defaultCharset()).trim());
         baos.reset();
 
         //SYSTEM userid  - getDisplayName() should be SYSTEM
         Cause causeB = new Cause.UserIdCause();
         causeB.print(listener);
 
-        assertThat(baos.toString(Charset.defaultCharset().name()), containsString("SYSTEM"));
+        assertThat(baos.toString(Charset.defaultCharset()), containsString("SYSTEM"));
         baos.reset();
 
         //unknown userid - print unknown or anonymous
         Cause causeC = new Cause.UserIdCause("abc123");
         causeC.print(listener);
 
-        assertEquals("Started by user unknown or anonymous", baos.toString(Charset.defaultCharset().name()).trim());
+        assertEquals("Started by user unknown or anonymous", baos.toString(Charset.defaultCharset()).trim());
         baos.reset();
 
         //More or less standard operation
@@ -128,7 +129,7 @@ public class CauseTest {
         Cause causeD = new Cause.UserIdCause(user.getId());
         causeD.print(listener);
 
-        assertThat(baos.toString(Charset.defaultCharset().name()), containsString(user.getDisplayName()));
+        assertThat(baos.toString(Charset.defaultCharset()), containsString(user.getDisplayName()));
         baos.reset();
     }
 
@@ -137,7 +138,7 @@ public class CauseTest {
     @LocalData
     public void xssInRemoteCause() throws IOException, SAXException {
         final Item item = j.jenkins.getItemByFullName("fs");
-        Assert.assertTrue(item instanceof FreeStyleProject);
+        assertThat(item, instanceOf(FreeStyleProject.class));
         FreeStyleProject fs = (FreeStyleProject) item;
         final FreeStyleBuild build = fs.getBuildByNumber(1);
 

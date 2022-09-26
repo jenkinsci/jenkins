@@ -34,6 +34,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
@@ -53,19 +54,6 @@ import org.apache.commons.io.FileUtils;
  */
 public abstract class Lifecycle implements ExtensionPoint {
     private static Lifecycle INSTANCE = null;
-
-    public Lifecycle() {
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            Jenkins jenkins = Jenkins.getInstanceOrNull();
-            if (jenkins != null) {
-                try {
-                    jenkins.cleanUp();
-                } catch (Throwable t) {
-                    LOGGER.log(Level.SEVERE, "Failed to clean up. Shutdown will continue.", t);
-                }
-            }
-        }));
-    }
 
     /**
      * Gets the singleton instance.
@@ -253,6 +241,8 @@ public abstract class Lifecycle implements ExtensionPoint {
     /**
      * Called when Jenkins startup is finished or when Jenkins has finished reloading its
      * configuration.
+     *
+     * @since 2.333
      */
     public void onReady() {
         LOGGER.log(Level.INFO, "Jenkins is fully up and running");
@@ -263,6 +253,8 @@ public abstract class Lifecycle implements ExtensionPoint {
      *
      * <p>Callers must also send an {@link #onReady()} notification when Jenkins has finished
      * reloading its configuration.
+     *
+     * @since 2.333
      */
     public void onReload(@NonNull String user, @CheckForNull String remoteAddr) {
         if (remoteAddr != null) {
@@ -277,6 +269,8 @@ public abstract class Lifecycle implements ExtensionPoint {
 
     /**
      * Called when Jenkins is beginning its shutdown.
+     *
+     * @since 2.333
      */
     public void onStop(@NonNull String user, @CheckForNull String remoteAddr) {
         if (remoteAddr != null) {
@@ -290,10 +284,24 @@ public abstract class Lifecycle implements ExtensionPoint {
     }
 
     /**
+     * Tell the service manager to extend the startup or shutdown timeout. The value specified is a
+     * time during which either {@link #onExtendTimeout(long, TimeUnit)} must be called again or
+     * startup/shutdown must complete.
+     *
+     * @param timeout The amount by which to extend the timeout.
+     * @param unit The time unit of the timeout argument.
+     *
+     * @since 2.335
+     */
+    public void onExtendTimeout(long timeout, @NonNull TimeUnit unit) {}
+
+    /**
      * Called when Jenkins service state has changed.
      *
      * @param status The status string. This is free-form and can be used for various purposes:
      *     general state feedback, completion percentages, human-readable error message, etc.
+     *
+     * @since 2.333
      */
     public void onStatusUpdate(String status) {
         LOGGER.log(Level.INFO, status);

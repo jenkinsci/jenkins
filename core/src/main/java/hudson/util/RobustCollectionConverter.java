@@ -33,9 +33,11 @@ import com.thoughtworks.xstream.converters.reflection.SerializableConverter;
 import com.thoughtworks.xstream.core.ClassLoaderReference;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.mapper.Mapper;
+import com.thoughtworks.xstream.security.InputManipulationException;
 import java.util.Collection;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.logging.Logger;
 import jenkins.util.xstream.CriticalXStreamException;
 
 /**
@@ -83,9 +85,17 @@ public class RobustCollectionConverter extends CollectionConverter {
             reader.moveDown();
             try {
                 Object item = readBareItem(reader, context, collection);
+                long nanoNow = System.nanoTime();
                 collection.add(item);
+                XStream2SecurityUtils.checkForCollectionDoSAttack(context, nanoNow);
             } catch (CriticalXStreamException e) {
                 throw e;
+            } catch (InputManipulationException e) {
+                Logger.getLogger(RobustCollectionConverter.class.getName()).warning(
+                        "DoS detected and prevented. If the heuristic was too aggressive, " +
+                                "you can customize the behavior by setting the hudson.util.XStream2.collectionUpdateLimit system property. " +
+                                "See https://www.jenkins.io/redirect/xstream-dos-prevention for more information.");
+                throw new CriticalXStreamException(e);
             } catch (XStreamException | LinkageError e) {
                 RobustReflectionConverter.addErrorInContext(context, e);
             }

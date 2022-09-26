@@ -149,7 +149,7 @@ public class OldDataMonitor extends AdministrativeMonitor {
     };
 
     @Extension
-    public static final RunListener<Run> runDeleteListener = new RunListener<Run>() {
+    public static final RunListener<Run> runDeleteListener = new RunListener<>() {
         @Override
         public void onDeleted(Run run) {
             remove(run, true);
@@ -454,7 +454,7 @@ public class OldDataMonitor extends AdministrativeMonitor {
 
         @Override
         public String getIconFileName() {
-            return "document.svg";
+            return "symbol-cube";
         }
 
         @Override

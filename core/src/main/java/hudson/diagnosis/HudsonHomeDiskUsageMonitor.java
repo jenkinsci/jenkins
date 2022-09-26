@@ -99,8 +99,8 @@ public final class HudsonHomeDiskUsageMonitor extends AdministrativeMonitor {
 
     /**
      * Extension point for suggesting solutions for full JENKINS_HOME.
+     * Views are as follows:
      *
-     * <h3>Views</h3>
      * <dl>
      * <dt>message.jelly</dt>
      * <dd>

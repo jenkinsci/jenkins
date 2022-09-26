@@ -96,8 +96,9 @@ public class CopyOnWriteList<E> implements Iterable<E> {
     @Override
     public Iterator<E> iterator() {
         final Iterator<? extends E> itr = core.iterator();
-        return new Iterator<E>() {
+        return new Iterator<>() {
             private E last;
+
             @Override
             public boolean hasNext() {
                 return itr.hasNext();

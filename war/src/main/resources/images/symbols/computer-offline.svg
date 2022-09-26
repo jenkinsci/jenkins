@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="512px" height="512px" viewBox="0 0 512 512" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g transform="translate(32.000000, 64.000000)" stroke="currentColor" stroke-width="32">
+            <g>
+                <rect x="0" y="0" width="448" height="320" rx="32"></rect>
+                <polygon stroke-linecap="round" points="272 384 264 320 184 320 176 384"></polygon>
+                <line x1="336" y1="384" x2="112" y2="384" stroke-linecap="round"></line>
+            </g>
+            <g stroke="var(--red)" stroke-linecap="round" transform="translate(152.000000, 88.000000)">
+                <path d="M144,144 L0,0 M144,0 L0,144" ></path>
+            </g>
+        </g>
+    </g>
+</svg>

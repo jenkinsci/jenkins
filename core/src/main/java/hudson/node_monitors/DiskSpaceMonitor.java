@@ -24,6 +24,7 @@
 
 package hudson.node_monitors;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.model.Computer;
@@ -61,6 +62,7 @@ public class DiskSpaceMonitor extends AbstractDiskSpaceMonitor {
     }
 
     public static final DiskSpaceMonitorDescriptor DESCRIPTOR = new DiskSpaceMonitorDescriptor() {
+        @NonNull
         @Override
         public String getDisplayName() {
             return Messages.DiskSpaceMonitor_DisplayName();

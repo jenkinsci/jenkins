@@ -99,11 +99,15 @@ public interface ModelObjectWithContextMenu extends ModelObject {
             String text = a.getDisplayName();
             String base = Functions.getIconFilePath(a);
             if (base == null)     return this;
-            String icon = Stapler.getCurrentRequest().getContextPath() + (base.startsWith("images/") ? Functions.getResourcePath() : "") + '/' + base;
-
             String url =  Functions.getActionUrl(req.findAncestor(ModelObject.class).getUrl(), a);
 
-            return add(url, icon, text);
+            if (base.startsWith("symbol-")) {
+                Icon icon = Functions.tryGetIcon(base);
+                return add(url, icon.getClassSpec(), text);
+            } else {
+                String icon = Stapler.getCurrentRequest().getContextPath() + (base.startsWith("images/") ? Functions.getResourcePath() : "") + '/' + base;
+                return add(url, icon, text);
+            }
         }
 
         public ContextMenu add(String url, String icon, String text) {
@@ -133,6 +137,18 @@ public interface ModelObjectWithContextMenu extends ModelObject {
             return this;
         }
 
+        /** @since 2.335 */
+        public ContextMenu add(String url, String icon, String iconXml, String text, boolean post, boolean requiresConfirmation) {
+            if (text != null && icon != null && url != null) {
+                MenuItem item = new MenuItem(url, icon, text);
+                item.iconXml = iconXml;
+                item.post = post;
+                item.requiresConfirmation = requiresConfirmation;
+                items.add(item);
+            }
+            return this;
+        }
+
         /**
          * Add a header row (no icon, no URL, rendered in header style).
          *
@@ -141,7 +157,18 @@ public interface ModelObjectWithContextMenu extends ModelObject {
         @Restricted(DoNotUse.class) // manage.jelly only
         public ContextMenu addHeader(String title) {
             final MenuItem item = new MenuItem().withDisplayName(title);
-            item.header = true;
+            item.type = MenuItemType.HEADER;
+            return add(item);
+        }
+
+        /**
+         * Add a separator row (no icon, no URL, no text).
+         *
+         * @since 2.340
+         */
+        public ContextMenu addSeparator() {
+            final MenuItem item = new MenuItem();
+            item.type = MenuItemType.SEPARATOR;
             return add(item);
         }
 
@@ -269,6 +296,11 @@ public interface ModelObjectWithContextMenu extends ModelObject {
         public String icon;
 
         /**
+         * Optional icon XML, if set it's used instead of @icon for the menu item
+         */
+        private String iconXml;
+
+        /**
          * True to make a POST request rather than GET.
          * @since 1.504
          */
@@ -286,12 +318,12 @@ public interface ModelObjectWithContextMenu extends ModelObject {
 
 
         /**
-         * True to display this item as a section header.
-         * @since 2.231
+         * The type of menu item
+         * @since 2.340
          */
         @Exported
         @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD", justification = "read by Stapler")
-        public boolean header;
+        public MenuItemType type = MenuItemType.ITEM;
 
         /**
          * If this is a submenu, definition of subitems.
@@ -299,6 +331,11 @@ public interface ModelObjectWithContextMenu extends ModelObject {
         @Exported(inline = true)
         @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD", justification = "read by Stapler")
         public ContextMenu subMenu;
+
+        @Exported
+        public String getIconXml() {
+            return iconXml;
+        }
 
         public MenuItem(String url, String icon, String displayName) {
             withUrl(url).withIcon(icon).withDisplayName(displayName);
@@ -364,6 +401,12 @@ public interface ModelObjectWithContextMenu extends ModelObject {
             return Stapler.getCurrentRequest().getContextPath() + Jenkins.RESOURCE_PATH;
         }
 
+    }
+
+    enum MenuItemType {
+        ITEM,
+        HEADER,
+        SEPARATOR
     }
 
     /**

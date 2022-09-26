@@ -32,6 +32,7 @@ import hudson.views.ListViewColumnDescriptor;
 import hudson.views.ViewJobFilter;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import jenkins.model.DirectlyModifiableTopLevelItemGroup;
 import jenkins.model.Jenkins;
 import org.apache.commons.lang.StringUtils;
@@ -54,6 +55,7 @@ public abstract class ViewDescriptor extends Descriptor<View> {
      * in the view creation screen. The string should look like
      * "Abc Def Ghi".
      */
+    @NonNull
     @Override
     public String getDisplayName() {
         return super.getDisplayName();
@@ -147,7 +149,7 @@ public abstract class ViewDescriptor extends Descriptor<View> {
             if (v.getViewName().equals(view.getViewName())) {
                 continue;
             }
-            if (StringUtils.equals(v.getDisplayName(), value)) {
+            if (Objects.equals(v.getDisplayName(), value)) {
                 return FormValidation.warning(Messages.View_DisplayNameNotUniqueWarning(value));
             }
         }

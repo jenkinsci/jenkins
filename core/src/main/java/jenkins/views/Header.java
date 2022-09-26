@@ -24,7 +24,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  * @see PartialHeader
  * @see FullHeader
  * @see JenkinsHeader
- * @since TODO
+ * @since 2.323
  */
 public abstract class Header implements ExtensionPoint {
 
@@ -51,7 +51,7 @@ public abstract class Header implements ExtensionPoint {
     @Restricted(NoExternalUse.class)
     public static Header get() {
         Optional<Header> header = ExtensionList.lookup(Header.class).stream().filter(Header::isAvailable).findFirst();
-        return header.orElseGet(() -> new JenkinsHeader());
+        return header.orElseGet(JenkinsHeader::new);
     }
 
 }

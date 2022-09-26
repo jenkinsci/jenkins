@@ -401,7 +401,7 @@ public class UrlValidatorTest {
       }
 
 
-      return (!maxIndex);
+      return !maxIndex;
    }
 
    private String testPartsIndextoString() {

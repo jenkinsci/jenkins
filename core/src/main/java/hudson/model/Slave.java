@@ -59,10 +59,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.jar.JarFile;
@@ -237,7 +234,7 @@ public abstract class Slave extends Node implements Serializable {
     }
 
     public ComputerLauncher getLauncher() {
-        if (launcher == null && !StringUtils.isEmpty(agentCommand)) {
+        if (launcher == null && agentCommand != null && !agentCommand.isEmpty()) {
             try {
                 launcher = (ComputerLauncher) Jenkins.get().getPluginManager().uberClassLoader.loadClass("hudson.slaves.CommandLauncher").getConstructor(String.class, EnvVars.class).newInstance(agentCommand, null);
                 agentCommand = null;
@@ -303,6 +300,7 @@ public abstract class Slave extends Node implements Serializable {
         this.mode = mode;
     }
 
+    @NonNull
     @Override
     public DescribableList<NodeProperty<?>, NodePropertyDescriptor> getNodeProperties() {
         assert nodeProperties != null;
@@ -743,5 +741,5 @@ public abstract class Slave extends Node implements Serializable {
     /**
      * Provides a collection of file names, which are accessible via /jnlpJars link.
      */
-    private static final Set<String> ALLOWED_JNLPJARS_FILES = Collections.unmodifiableSet(new HashSet<>(Arrays.asList("agent.jar", "slave.jar", "remoting.jar", "jenkins-cli.jar", "hudson-cli.jar")));
+    private static final Set<String> ALLOWED_JNLPJARS_FILES = Set.of("agent.jar", "slave.jar", "remoting.jar", "jenkins-cli.jar", "hudson-cli.jar");
 }

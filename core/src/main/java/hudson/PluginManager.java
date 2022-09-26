@@ -79,7 +79,10 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.net.URLConnection;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Paths;
 import java.nio.file.attribute.FileTime;
+import java.security.CodeSource;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -151,6 +154,7 @@ import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.StaplerFallback;
 import org.kohsuke.stapler.StaplerOverridable;
 import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.StaplerRequest;
@@ -187,6 +191,7 @@ import org.xml.sax.helpers.DefaultHandler;
  * @author Kohsuke Kawaguchi
  */
 @ExportedBean
+@SuppressFBWarnings(value = "THROWS_METHOD_THROWS_CLAUSE_BASIC_EXCEPTION", justification = "TODO needs triage")
 public abstract class PluginManager extends AbstractModelObject implements OnMaster, StaplerOverridable, StaplerProxy {
     /** Custom plugin manager system property or context param. */
     public static final String CUSTOM_PLUGIN_MANAGER = PluginManager.class.getName() + ".className";
@@ -466,7 +471,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                                 @Override
                                 public void run(Reactor reactor) throws Exception {
                                     try {
-                                        CyclicGraphDetector<PluginWrapper> cgd = new CyclicGraphDetector<PluginWrapper>() {
+                                        CyclicGraphDetector<PluginWrapper> cgd = new CyclicGraphDetector<>() {
                                             @Override
                                             protected List<PluginWrapper> getEdges(PluginWrapper p) {
                                                 List<PluginWrapper> next = new ArrayList<>();
@@ -929,7 +934,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                 if (batch != null) {
                     batch.add(p);
                 } else {
-                    start(Collections.singletonList(p));
+                    start(List.of(p));
                 }
 
             } catch (Exception e) {
@@ -1323,6 +1328,39 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                 oneAndOnly = p;
             }
         }
+        if (oneAndOnly == null && Main.isUnitTest) {
+            // compare jenkins.security.ClassFilterImpl
+            CodeSource cs = c.getProtectionDomain().getCodeSource();
+            if (cs != null) {
+                URL loc = cs.getLocation();
+                if (loc != null) {
+                    if ("file".equals(loc.getProtocol())) {
+                        File file;
+                        try {
+                            file = Paths.get(loc.toURI()).toFile();
+                        } catch (InvalidPathException | URISyntaxException e) {
+                            LOGGER.log(Level.WARNING, "could not inspect " + loc, e);
+                            return null;
+                        }
+                        if (file.isFile()) { // ignore directories
+                            try (JarFile jf = new JarFile(file)) {
+                                Manifest mf = jf.getManifest();
+                                if (mf != null) {
+                                    java.util.jar.Attributes attr = mf.getMainAttributes();
+                                    if (attr.getValue("Plugin-Version") != null) {
+                                        String shortName = attr.getValue("Short-Name");
+                                        LOGGER.fine(() -> "found " + shortName + " for " + c);
+                                        return getPlugin(shortName);
+                                    }
+                                }
+                            } catch (IOException e) {
+                                LOGGER.log(Level.WARNING, "could not inspect " + loc, e);
+                            }
+                        }
+                    }
+                }
+            }
+        }
         return oneAndOnly;
     }
 
@@ -1347,6 +1385,27 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     @Restricted(NoExternalUse.class)
     public static boolean isNonMetaLabel(String label) {
         return !("adopt-this-plugin".equals(label) || "deprecated".equals(label));
+    }
+
+    /**
+     * This allows "Update Center" to live at the URL
+     * {@code /pluginManager/updates/} in addition to its {@code /updateCenter/}
+     * URL which is provided by {@link jenkins.model.Jenkins#getUpdateCenter()}.
+     * For purposes of Stapler, this object is the current item serving the
+     * view, and since this is not a {@link hudson.model.ModelObject}, it does
+     * not appear as an additional breadcrumb and only the "Plugin Manager"
+     * breadcrumb is shown.
+     */
+    @Restricted(NoExternalUse.class)
+    public static class UpdateCenterProxy implements StaplerFallback {
+        @Override
+        public Object getStaplerFallback() {
+            return Jenkins.get().getUpdateCenter();
+        }
+    }
+
+    public UpdateCenterProxy getUpdates() {
+        return new UpdateCenterProxy();
     }
 
     @Restricted(NoExternalUse.class)
@@ -1412,16 +1471,6 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     if (plugin.isForNewerHudson()) {
                         jsonObject.put("newerCoreRequired", Messages.PluginManager_coreWarning(plugin.requiredCore));
                     }
-                    if (plugin.isForNewerJava()) {
-                        jsonObject.put("newerJavaRequired", Messages.PluginManager_javaWarning(plugin.minimumJavaVersion));
-                    }
-                    if (plugin.isNeededDependenciesForNewerJava()) {
-                        VersionNumber javaVersion = plugin.getNeededDependenciesMinimumJavaVersion();
-                        if (javaVersion == null) {
-                            throw new IllegalStateException("java version cannot be null here");
-                        }
-                        jsonObject.put("dependenciesNewerJava", Messages.PluginManager_depJavaWarning(javaVersion.toString()));
-                    }
                     if (plugin.hasWarnings()) {
                         JSONObject unresolvedSecurityWarnings = new JSONObject();
                         unresolvedSecurityWarnings.put("text", Messages.PluginManager_securityWarning());
@@ -1446,7 +1495,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                         jsonObject.put("releaseTimestamp", releaseTimestamp);
                     }
                     if (hasLatestVersionNewerThanOffered(plugin)) {
-                        jsonObject.put("newerVersionAvailableNotOffered", Messages.PluginManager_newerVersionExists(plugin.latest));
+                        jsonObject.put("newerVersionAvailableNotOffered", Messages.PluginManager_newerVersionExists(plugin.latest, plugin.wiki));
                     }
                     return jsonObject;
                 })
@@ -1566,7 +1615,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         boolean dynamicLoad = req.getParameter("dynamicLoad") != null;
         install(plugins, dynamicLoad);
 
-        rsp.sendRedirect("../updateCenter/");
+        rsp.sendRedirect("updates/");
     }
 
     /**
@@ -1783,8 +1832,6 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         public void copy(File target) throws Exception {
             try (InputStream input =  ProxyConfiguration.getInputStream(new URL(url))) {
                 Files.copy(input, target.toPath());
-            } catch (Exception e) {
-                throw e;
             }
         }
 
@@ -1873,7 +1920,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     element("url", t.toURI().toString()).
                     element("dependencies", dependencies);
             new UpdateSite(UpdateCenter.ID_UPLOAD, null).new Plugin(UpdateCenter.ID_UPLOAD, cfg).deploy(true);
-            return new HttpRedirect("../updateCenter");
+            return new HttpRedirect("updates/");
         } catch (FileUploadException e) {
             throw new ServletException(e);
         }
@@ -2059,9 +2106,6 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         if (toInstall.isForNewerHudson()) {
             LOGGER.log(WARNING, "{0}@{1} was built for a newer Jenkins", new Object[] {toInstall.name, toInstall.version});
         }
-        if (toInstall.isForNewerJava()) {
-            LOGGER.log(WARNING, "{0}@{1} was built for a newer Java", new Object[] {toInstall.name, toInstall.version});
-        }
     }
 
     /**
@@ -2102,7 +2146,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     @RequirePOST
     public HttpResponse doInstallNecessaryPlugins(StaplerRequest req) throws IOException {
         prevalidateConfig(req.getInputStream());
-        return HttpResponses.redirectViaContextPath("updateCenter");
+        return HttpResponses.redirectViaContextPath("updates/");
     }
 
     /**

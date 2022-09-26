@@ -44,7 +44,7 @@ public class ApiTokenPropertyConfigurationTest {
 
     @Test
     @Issue("JENKINS-32776")
-    public void newUserTokenConfiguration() throws Exception {
+    public void newUserTokenConfiguration() {
         ApiTokenPropertyConfiguration config = ApiTokenPropertyConfiguration.get();
 
         config.setTokenGenerationOnCreationEnabled(true);

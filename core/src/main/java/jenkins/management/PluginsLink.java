@@ -73,12 +73,12 @@ public class PluginsLink extends ManagementLink {
     }
 
     @Restricted(NoExternalUse.class)
-    public boolean hasUpdates() {
+    public int getUpdateCount() {
         final UpdateCenter updateCenter = Jenkins.get().getUpdateCenter();
         if (!updateCenter.isSiteDataReady()) {
             // Do not display message during this page load, but possibly later.
-            return false;
+            return 0;
         }
-        return !updateCenter.getUpdates().isEmpty();
+        return updateCenter.getUpdates().size();
     }
 }

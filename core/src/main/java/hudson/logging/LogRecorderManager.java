@@ -31,11 +31,13 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.FeedAdapter;
 import hudson.Functions;
 import hudson.RestrictedSince;
+import hudson.Util;
 import hudson.init.Initializer;
 import hudson.model.AbstractModelObject;
 import hudson.model.Failure;
 import hudson.model.RSS;
 import hudson.util.CopyOnWriteMap;
+import hudson.util.FormValidation;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
@@ -76,6 +78,9 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
  * @author Kohsuke Kawaguchi
  */
 public class LogRecorderManager extends AbstractModelObject implements ModelObjectWithChildren, StaplerProxy {
+
+    private static final Logger LOGGER = Logger.getLogger(LogRecorderManager.class.getName());
+
     /**
      * {@link LogRecorder}s keyed by their {@linkplain LogRecorder#getName()}  name}.
      *
@@ -83,7 +88,7 @@ public class LogRecorderManager extends AbstractModelObject implements ModelObje
      */
     @Deprecated
     @Restricted(NoExternalUse.class)
-    @RestrictedSince("TODO")
+    @RestrictedSince("2.323")
     public final transient Map<String, LogRecorder> logRecorders = new CopyOnWriteMap.Tree<>();
 
     private List<LogRecorder> recorders;
@@ -102,7 +107,14 @@ public class LogRecorderManager extends AbstractModelObject implements ModelObje
         this.recorders = recorders;
 
         Map<String, LogRecorder> values = recorders.stream()
-                .collect(toMap(LogRecorder::getName, Function.identity()));
+                .collect(toMap(
+                        LogRecorder::getName,
+                        Function.identity(),
+                        // see JENKINS-68752, ignore duplicates
+                        (recorder1, recorder2) -> {
+                            LOGGER.warning(String.format("Ignoring duplicate log recorder '%s', check $JENKINS_HOME/log and remove the duplicate recorder", recorder2.getName()));
+                            return recorder1;
+                        }));
         ((CopyOnWriteMap<String, LogRecorder>) logRecorders).replaceBy(values);
     }
 
@@ -159,6 +171,20 @@ public class LogRecorderManager extends AbstractModelObject implements ModelObje
 
         // redirect to the config screen
         return new HttpRedirect(name + "/configure");
+    }
+
+    @Restricted(NoExternalUse.class)
+    public FormValidation doCheckNewName(@QueryParameter String name) {
+        if (Util.fixEmpty(name) == null) {
+            return FormValidation.ok();
+        }
+
+        try {
+            Jenkins.checkGoodName(name);
+        } catch (Failure e) {
+            return FormValidation.error(e.getMessage());
+        }
+        return FormValidation.ok();
     }
 
     @Override
@@ -221,7 +247,7 @@ public class LogRecorderManager extends AbstractModelObject implements ModelObje
             entryType = level;
         }
 
-        RSS.forwardToRss("Jenkins:log (" + entryType + " entries)", "", logs, new FeedAdapter<LogRecord>() {
+        RSS.forwardToRss("Jenkins:log (" + entryType + " entries)", "", logs, new FeedAdapter<>() {
             @Override
             public String getEntryTitle(LogRecord entry) {
                 return entry.getMessage();

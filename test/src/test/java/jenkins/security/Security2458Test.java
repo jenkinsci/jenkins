@@ -9,7 +9,6 @@ import java.io.IOException;
 import java.util.Objects;
 import jenkins.agents.AgentComputerUtil;
 import jenkins.security.s2m.AdminWhitelistRule;
-import jenkins.security.s2m.CallableDirectionChecker;
 import org.jenkinsci.remoting.RoleChecker;
 import org.junit.Before;
 import org.junit.Rule;
@@ -32,19 +31,11 @@ public class Security2458Test {
         // If the role check is empty, fail
         assertThrowsIOExceptionCausedBySecurityException(() -> Objects.requireNonNull(r.createOnlineSlave().getChannel()).call(new CallableCaller(new BadCallable())));
 
-        // If it performs a no-op check, pass. Never do this in your plugin.
-        Objects.requireNonNull(r.createOnlineSlave().getChannel()).call(new CallableCaller(new EvilCallable()));
+        // If it performs a no-op check, fail. This used to work when required role checks were introduced, but later prohibited.
+        assertThrowsIOExceptionCausedBySecurityException(() -> Objects.requireNonNull(r.createOnlineSlave().getChannel()).call(new CallableCaller(new EvilCallable())));
 
         // Explicit role check.
         Objects.requireNonNull(r.createOnlineSlave().getChannel()).call(new CallableCaller(new GoodCallable()));
-
-        // No-op role checks can be disallowed
-        System.setProperty(CallableDirectionChecker.class.getName() + ".allowAnyRole", "false");
-        try {
-            assertThrowsIOExceptionCausedBySecurityException(() -> Objects.requireNonNull(r.createOnlineSlave().getChannel()).call(new CallableCaller(new EvilCallable())));
-        } finally {
-            System.clearProperty(CallableDirectionChecker.class.getName() + ".allowAnyRole");
-        }
     }
 
     private static class CallableCaller extends MasterToSlaveCallable<Object, Throwable> {
@@ -81,7 +72,7 @@ public class Security2458Test {
 
         @Override
         public void checkRoles(RoleChecker checker) throws SecurityException {
-            checker.check(this); // Never do this
+            checker.check(this); // Was supported in 2.319 but later dropped
         }
     }
 

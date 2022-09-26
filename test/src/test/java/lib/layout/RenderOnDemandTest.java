@@ -30,7 +30,6 @@ import static org.junit.Assert.assertNull;
 
 import com.gargoylesoftware.htmlunit.ScriptResult;
 import com.gargoylesoftware.htmlunit.WebClientUtil;
-import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.model.InvisibleAction;
 import hudson.model.RootAction;
@@ -95,7 +94,7 @@ public class RenderOnDemandTest {
         HtmlPage p = j.createWebClient().goTo("self/testScript");
         assertNull(p.getElementById("loaded"));
 
-        ((HtmlElement) p.getElementById("button")).click();
+        p.getElementById("button").click();
         WebClientUtil.waitForJSExec(p.getWebClient());
         // all AJAX calls complete before the above method returns
         assertNotNull(p.getElementById("loaded"));

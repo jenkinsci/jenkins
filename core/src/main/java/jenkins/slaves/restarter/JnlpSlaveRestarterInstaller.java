@@ -90,27 +90,35 @@ public class JnlpSlaveRestarterInstaller extends ComputerListener implements Ser
             // filter out ones that doesn't apply
             restarters.removeIf(r -> !r.canWork());
 
-            e.addListener(new EngineListenerAdapter() {
-                @Override
-                public void onReconnect() {
-                    try {
-                        for (SlaveRestarter r : restarters) {
-                            try {
-                                LOGGER.info("Restarting agent via " + r);
-                                r.restart();
-                            } catch (Exception x) {
-                                LOGGER.log(SEVERE, "Failed to restart agent with " + r, x);
-                            }
-                        }
-                    } finally {
-                        // if we move on to the reconnection without restart,
-                        // don't let the current implementations kick in when the agent loses connection again
-                        restarters.clear();
-                    }
-                }
-            });
+            e.addListener(new EngineListenerAdapterImpl(restarters));
 
             return restarters;
+        }
+    }
+
+    private static final class EngineListenerAdapterImpl extends EngineListenerAdapter {
+        private final List<SlaveRestarter> restarters;
+
+        EngineListenerAdapterImpl(List<SlaveRestarter> restarters) {
+            this.restarters = restarters;
+        }
+
+        @Override
+        public void onReconnect() {
+            try {
+                for (SlaveRestarter r : restarters) {
+                    try {
+                        Logger.getGlobal().info("Restarting agent via " + r);
+                        r.restart();
+                    } catch (Exception x) {
+                        Logger.getGlobal().log(SEVERE, "Failed to restart agent with " + r, x);
+                    }
+                }
+            } finally {
+                // if we move on to the reconnection without restart,
+                // don't let the current implementations kick in when the agent loses connection again
+                restarters.clear();
+            }
         }
     }
 
