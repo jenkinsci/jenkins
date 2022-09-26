@@ -74,8 +74,15 @@ public class PingThreadTest {
         }
         assertNotNull(pingThread);
 
+        new ProcessBuilder("kill", "-TSTP", Long.toString(pid)).redirectErrorStream(true).start().waitFor();
+        Thread.sleep(10000);
         String status = Files.readString(Paths.get("/proc/" + pid + "/stat"), StandardCharsets.UTF_8);
-        assertEquals("basil", status);
+        try {
+            assertEquals("basil", status);
+        } finally {
+            new ProcessBuilder("kill", "-CONT", Long.toString(pid)).redirectErrorStream(true).start().waitFor();
+            Thread.sleep(10000);
+        }
 
         // Simulate lost connection
         kill(pid, "-TSTP", 'T');
