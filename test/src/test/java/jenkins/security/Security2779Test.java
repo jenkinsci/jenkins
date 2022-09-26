@@ -49,7 +49,7 @@ public class Security2779Test {
         webClient.waitForBackgroundJavaScript(2000);
         Assert.assertEquals(0, alerts.get());
 
-        final ScriptResult innerHtmlScript = page.executeJavaScript("document.querySelector('#tt').innerHTML");
+        final ScriptResult innerHtmlScript = page.executeJavaScript("document.querySelector('.tippy-content').innerHTML");
         Object jsResult = innerHtmlScript.getJavaScriptResult();
         assertThat(jsResult, instanceOf(String.class));
         String jsResultString = (String) jsResult;

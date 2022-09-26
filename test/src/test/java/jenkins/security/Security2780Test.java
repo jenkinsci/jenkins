@@ -29,7 +29,7 @@ public class Security2780Test {
         HtmlPage page = wc.goTo("");
         page.executeJavaScript("document.querySelector('a.jenkins-table__button').dispatchEvent(new Event('mouseover'));");
         wc.waitForBackgroundJavaScript(2000L);
-        ScriptResult result = page.executeJavaScript("document.querySelector('#tt').innerHTML;");
+        ScriptResult result = page.executeJavaScript("document.querySelector('.tippy-content').innerHTML;");
         Object jsResult = result.getJavaScriptResult();
         assertThat(jsResult, instanceOf(String.class));
         String jsResultString = (String) jsResult;
