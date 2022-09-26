@@ -74,7 +74,13 @@ public class PingThreadTest {
         }
         assertNotNull(pingThread);
 
-        // Simulate lost connection
+        /*
+         * Simulate lost connection by sending a STOP signal. We use the STOP signal rather than the
+         * TSTP signal because the latter relies on an interactive terminal, which we do not have in
+         * our CI builds. We wait for the signal to be delivered and visible in the
+         * /proc/${PID}/stat output for the process because otherwise we would be testing something
+         * other than the ping thread.
+         */
         kill(pid, "-STOP", 'T');
         try {
             // ... do not wait for Ping Thread to notice
@@ -82,6 +88,10 @@ public class PingThreadTest {
             onDead.setAccessible(true);
             onDead.invoke(pingThread, new TimeoutException("No ping"));
 
+            /*
+             * Channel termination happens asynchronously, so wait for the asynchronous activity to
+             * complete before proceeding with the test.
+             */
             await().pollInterval(250, TimeUnit.MILLISECONDS)
                     .atMost(10, TimeUnit.SECONDS)
                     .until(channel::isClosingOrClosed);
@@ -90,6 +100,15 @@ public class PingThreadTest {
             assertNull(slave.getComputer().getChannel());
             assertNull(computer.getChannel());
         } finally {
+            /*
+             * If we fail to wait for the process to resume and start tearing down the test right
+             * away, the test teardown process will hang waiting for the remote process to close,
+             * which will never happen because the process is suspended. On the other hand, waiting
+             * to confirm that the process has resumed via /proc/${PID}/stat is not reliable either,
+             * because once the process resumes it will realize that the controller side of the
+             * connection has been closed and terminate itself. Therefore we wait until either the
+             * process is in the resumed state or has terminated.
+             */
             kill(pid, "-CONT", 'S');
         }
     }
