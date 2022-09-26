@@ -23,7 +23,7 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" >
   <st:documentation> <![CDATA[
     Repeatable blocks used to present UI where the user can configure multiple entries
     of the same kind (see the Java installations configuration in the system config.)
@@ -102,8 +102,9 @@ THE SOFTWARE.
       minimum="1" is useful to make sure there's always at least one entry for the user to fill in.
     </st:attribute>
     <st:attribute name="header">
-      For each item, add this header.
-      This also activates drag&amp;drop (where the header is a grip).
+      For each item, add this header. <![CDATA[
+      This also activates drag&drop (where the header is a grip).
+      ]]>
     </st:attribute>
     <st:attributeConstraints expr="((var,items,name?)|field),varStatus?,noAddButton?,enableTopButton?,add?,minimum?,header?"/>
   </st:documentation>

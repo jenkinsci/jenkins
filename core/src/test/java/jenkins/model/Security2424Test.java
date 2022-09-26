@@ -25,7 +25,7 @@
 package jenkins.model;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertThrows;
 
 import hudson.model.Failure;
 import hudson.model.Messages;
@@ -36,23 +36,21 @@ public class Security2424Test {
     @Test
     @Issue("SECURITY-2424")
     public void doesNotAcceptNameWithTrailingDot_regular() {
-        try {
-            Jenkins.checkGoodName("job.");
-            fail("Names with dot should not be accepted");
-        } catch (Failure e) {
-            assertEquals(Messages.Hudson_TrailingDot(), e.getMessage());
-        }
+        Failure e = assertThrows(
+                "Names with dot should not be accepted",
+                Failure.class,
+                () -> Jenkins.checkGoodName("job."));
+        assertEquals(Messages.Hudson_TrailingDot(), e.getMessage());
     }
 
     @Test
     @Issue("SECURITY-2424")
     public void doesNotAcceptNameWithTrailingDot_withSpaces() {
-        try {
-            Jenkins.checkGoodName("job.   ");
-            fail("Names with dot should not be accepted");
-        } catch (Failure e) {
-            assertEquals(Messages.Hudson_TrailingDot(), e.getMessage());
-        }
+        Failure e = assertThrows(
+                "Names with dot should not be accepted",
+                Failure.class,
+                () -> Jenkins.checkGoodName("job.   "));
+        assertEquals(Messages.Hudson_TrailingDot(), e.getMessage());
     }
 
     @Test

@@ -41,9 +41,10 @@ THE SOFTWARE.
     <st:attribute name="targetType">
       the type for which descriptors will be configured. Defaults to ${it.class} (optional)
     </st:attribute>
-    <st:attribute name="hasHeader">
+    <st:attribute name="hasHeader"> <![CDATA[
       For each item, add a caption from descriptor.getDisplayName().
-      This also activates drag&amp;drop (where the header is a grip), and help text support.
+      This also activates drag&drop (where the header is a grip), and help text support.
+       ]]>
     </st:attribute>
     <st:attribute name="oneEach">
       If true, only allow up to one instance per descriptor.
