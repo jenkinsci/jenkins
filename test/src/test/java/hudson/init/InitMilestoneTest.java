@@ -1,8 +1,9 @@
 package hudson.init;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.contains;
+import static org.junit.Assert.assertEquals;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import org.junit.Rule;
@@ -18,9 +19,9 @@ public class InitMilestoneTest {
     @Test
     public void testInitMilestones() {
 
-        Queue<InitMilestone> attained = r.jenkins.getExtensionList(Initializers.class).get(0).getAttained();
+        List<InitMilestone> attained = r.jenkins.getExtensionList(Initializers.class).get(0).getAttained();
 
-        assertThat(attained, contains(
+        assertEquals(attained, List.of(
                 InitMilestone.EXTENSIONS_AUGMENTED,
                 InitMilestone.SYSTEM_CONFIG_LOADED,
                 InitMilestone.SYSTEM_CONFIG_ADAPTED,
@@ -59,8 +60,8 @@ public class InitMilestoneTest {
             attained.offer(InitMilestone.JOB_CONFIG_ADAPTED);
         }
 
-        public Queue<InitMilestone> getAttained() {
-            return attained;
+        public List<InitMilestone> getAttained() {
+            return new ArrayList<>(attained);
         }
     }
 
