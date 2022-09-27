@@ -1,5 +1,7 @@
 package hudson.node_monitors;
 
+import static org.awaitility.Awaitility.await;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -14,6 +16,7 @@ import hudson.slaves.OfflineCause;
 import hudson.slaves.RetentionStrategy;
 import hudson.slaves.SlaveComputer;
 import java.util.Collections;
+import java.util.concurrent.TimeUnit;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -58,7 +61,11 @@ public class ResponseTimeMonitorTest {
         j.jenkins.addNode(slave);
         Computer c = slave.toComputer();
         assertNotNull(c);
+        await().pollInterval(250, TimeUnit.MILLISECONDS)
+                .atMost(10, TimeUnit.SECONDS)
+                .until(() -> c.getOfflineCause(), notNullValue());
         OfflineCause originalOfflineCause = c.getOfflineCause();
+        assertNotNull(originalOfflineCause);
 
         ResponseTimeMonitor rtm = ComputerSet.getMonitors().get(ResponseTimeMonitor.class);
         for (int i = 0; i < 10; i++) {
