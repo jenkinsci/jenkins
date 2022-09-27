@@ -32,6 +32,7 @@ import static org.junit.Assert.assertThrows;
 import static org.junit.Assume.assumeFalse;
 
 import hudson.Functions;
+import hudson.Platform;
 import hudson.model.Computer;
 import hudson.remoting.Channel;
 import hudson.remoting.ChannelClosedException;
@@ -59,7 +60,7 @@ public class PingThreadTest {
 
     @Test
     public void failedPingThreadResetsComputerChannel() throws Exception {
-        assumeFalse("We simulate hung agent by sending the SIGSTOP signal", Functions.isWindows());
+        assumeFalse("We simulate hung agent by sending the SIGSTOP signal", Functions.isWindows() || Platform.isDarwin());
 
         DumbSlave slave = j.createOnlineSlave();
         Computer computer = slave.toComputer();
