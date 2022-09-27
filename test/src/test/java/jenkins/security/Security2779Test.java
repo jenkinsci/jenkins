@@ -37,7 +37,7 @@ public class Security2779Test {
         final JenkinsRule.WebClient webClient = j.createWebClient();
         webClient.setAlertHandler((AlertHandler) (p, s) -> alerts.addAndGet(1));
         final HtmlPage page = webClient.goTo(URL_NAME);
-        final ScriptResult eventScript = page.executeJavaScript("document.querySelector('" + selector + "').dispatchEvent(new Event('mouseover'))");
+        final ScriptResult eventScript = page.executeJavaScript("document.querySelector('" + selector + "')._tippy.show()");
         final Object eventResult = eventScript.getJavaScriptResult();
         assertThat(eventResult, instanceOf(boolean.class));
         Assert.assertTrue((boolean) eventResult);

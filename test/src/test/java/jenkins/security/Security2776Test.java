@@ -40,7 +40,7 @@ public class Security2776Test {
         final JenkinsRule.WebClient wc = j.createWebClient();
         wc.setAlertHandler((p, s) -> alerts.set(true));
         final HtmlPage page = wc.goTo(URL_NAME);
-        page.executeJavaScript("document.querySelector('" + selector + "').dispatchEvent(new Event('mouseover'));");
+        page.executeJavaScript("document.querySelector('" + selector + "')._tippy.show()");
         wc.waitForBackgroundJavaScript(2000L);
         ScriptResult result = page.executeJavaScript("document.querySelector('.tippy-content').innerHTML;");
         Object jsResult = result.getJavaScriptResult();
