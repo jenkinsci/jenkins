@@ -9,24 +9,7 @@
   max-width: ~"min(50vw, 1000px)" !important;
   white-space: pre-line;
   z-index: 0;
-
-  // The @supports can be removed when Firefox supports backdrop-filter
-  @supports (backdrop-filter: blur(15px)) {
-    backdrop-filter: saturate(2) blur(15px);
-  }
-
-  &::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: var(--tooltip-background);
-    z-index: -1;
-    border-radius: inherit;
-
-    @supports (backdrop-filter: blur(15px)) {
-      opacity: 0.55;
-    }
-  }
+  backdrop-filter: var(--tooltip-backdrop-filter);
 
   .tippy-content {
     padding: 0;
@@ -36,7 +19,7 @@
   .jenkins-tooltip--table-wrapper {
     background-color: rgba(black, 0.05);
     margin: -0.45rem -0.8rem;
-    border-radius: 0.66rem;
+    border-radius: 0.6rem;
   }
 
   .jenkins-table {
