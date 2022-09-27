@@ -263,3 +263,17 @@
     float: right;
   }
 }
+
+.advanced-button {
+  svg {
+    width: 0.875rem;
+    height: 0.875rem;
+    transition: var(--standard-transition);
+  }
+
+  &[data-expanded="true"] {
+    svg {
+      rotate: 180deg;
+    }
+  }
+}
