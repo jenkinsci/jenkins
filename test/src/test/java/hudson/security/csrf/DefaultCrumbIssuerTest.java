@@ -38,6 +38,7 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.recipes.PresetData;
+import org.jvnet.hudson.test.recipes.WithTimeout;
 
 /**
  * @author dty
@@ -169,6 +170,7 @@ public class DefaultCrumbIssuerTest {
 
     @Test
     @Issue("SECURITY-626")
+    @WithTimeout(300)
     public void crumbOnlyValidForOneSession() throws Exception {
         r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
         DefaultCrumbIssuer issuer = new DefaultCrumbIssuer(false);

@@ -63,7 +63,7 @@ import org.jvnet.hudson.test.SleepBuilder;
  */
 public class NodeProvisionerTest {
 
-    @Rule public JenkinsRule r = new NodeProvisionerRule(/* run x1000 the regular speed to speed up the test */10, 100, 10);
+    @Rule public JenkinsRule r = new NodeProvisionerRule(/* run 10x the regular speed to speed up the test */ 1000, 10000, 1000);
 
     /**
      * Latch synchronization primitive that waits for N thread to pass the checkpoint.
