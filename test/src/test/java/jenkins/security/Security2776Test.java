@@ -25,9 +25,9 @@ public class Security2776Test {
 
     @Test
     public void escapedTooltipIsEscaped() throws Exception {
-        assertExpectedBehaviorForTooltip("#symbol-icons .unsafe svg", _getUnsafeTooltip(), true);
+        assertExpectedBehaviorForTooltip("#symbol-icons .unsafe svg", _getSafeTooltip(), true);
         assertExpectedBehaviorForTooltip("#symbol-icons .safe svg", _getSafeTooltip(), false);
-        assertExpectedBehaviorForTooltip("#png-icons .unsafe img", _getUnsafeTooltip(), true);
+        assertExpectedBehaviorForTooltip("#png-icons .unsafe img", _getSafeTooltip(), true);
         assertExpectedBehaviorForTooltip("#png-icons .safe img", _getSafeTooltip(), false);
 
         // Outlier after the fix for SECURITY-1955
