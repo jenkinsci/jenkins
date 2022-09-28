@@ -4190,7 +4190,7 @@ __metadata:
     prettier: 2.7.1
     sortablejs: 1.15.0
     style-loader: 3.3.1
-    stylelint: 14.12.0
+    stylelint: 14.13.0
     stylelint-checkstyle-reporter: 0.2.0
     stylelint-config-standard: 28.0.0
     webpack: 5.74.0
@@ -6308,9 +6308,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"stylelint@npm:14.12.0":
-  version: 14.12.0
-  resolution: "stylelint@npm:14.12.0"
+"stylelint@npm:14.13.0":
+  version: 14.13.0
+  resolution: "stylelint@npm:14.13.0"
   dependencies:
     "@csstools/selector-specificity": ^2.0.2
     balanced-match: ^2.0.0
@@ -6352,7 +6352,7 @@ __metadata:
     write-file-atomic: ^4.0.2
   bin:
     stylelint: bin/stylelint.js
-  checksum: 154fa112af3f1c7763b5083b1659d6be6977a4410e69444b38541f84dadf1a1840f6595a9a30f063ac31a205b69497a403cd6866ec44df008b03e97dd708fbd4
+  checksum: 81efcb2ea015fe490651f0976a927c51efa493a32b2b8e681d68aba8a275a1d8d0ebf8eaf50ef3233e3dc367077db63792e7e69bf6abb18940d63fd6c9f772df
   languageName: node
   linkType: hard
 
