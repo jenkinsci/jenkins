@@ -48,7 +48,7 @@ for (i = 0; i < buildTypes.size(); i++) {
                 '-Penable-jacoco',
                 '--update-snapshots',
                 "-Dmaven.repo.local=$m2repo",
-                '-Dtest=hudson.slaves.NodeProvisionerTest',
+                '-Dtest=hudson.slaves.AgentInboundUrlTest,hudson.slaves.CloudTest,hudson.slaves.EnvironmentVariableNodePropertyTest,hudson.slaves.JNLPLauncherRealTest,hudson.slaves.JNLPLauncherTest,hudson.slaves.NodeCanTakeTaskTest,hudson.slaves.NodeParallelTest,hudson.slaves.NodePropertyTest,hudson.slaves.NodeProvisionerTest,hudson.slaves.PingThreadTest,hudson.slaves.SlaveComputerTest',
                 '-DforkCount=2',
                 '-Dspotbugs.skip',
                 '-Dcheckstyle.skip',
