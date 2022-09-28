@@ -12,7 +12,7 @@ properties([
   disableConcurrentBuilds(abortPrevious: true)
 ])
 
-def buildTypes = ['Linux', 'Windows']
+def buildTypes = ['Windows']
 def jdks = [11, 17]
 
 def builds = [:]
@@ -48,10 +48,11 @@ for (i = 0; i < buildTypes.size(); i++) {
                 '-Penable-jacoco',
                 '--update-snapshots',
                 "-Dmaven.repo.local=$m2repo",
-                '-Dmaven.test.failure.ignore',
+                '-Dtest=hudson.slaves.NodeProvisionerTest',
                 '-DforkCount=2',
-                '-Dspotbugs.failOnError=false',
-                '-Dcheckstyle.failOnViolation=false',
+                '-Dspotbugs.skip',
+                '-Dcheckstyle.skip',
+                '-Dspotless.check.skip',
                 '-Dset.changelist',
                 'help:evaluate',
                 '-Dexpression=changelist',
@@ -59,13 +60,8 @@ for (i = 0; i < buildTypes.size(); i++) {
                 'clean',
                 'install',
               ]
-              try {
+              while (true) {
                 infra.runMaven(mavenOptions, jdk)
-                if (isUnix()) {
-                  sh 'git add . && git diff --exit-code HEAD'
-                }
-              } finally {
-                archiveArtifacts allowEmptyArchive: true, artifacts: '**/target/surefire-reports/*.dumpstream'
               }
             }
           }
@@ -83,7 +79,7 @@ for (i = 0; i < buildTypes.size(); i++) {
           if (failFast && currentBuild.result == 'UNSTABLE') {
             error 'There were test failures; halting early'
           }
-          if (buildType == 'Linux' && jdk == jdks[0]) {
+          if (buildType == 'Windows' && jdk == jdks[0]) {
             def folders = env.JOB_NAME.split('/')
             if (folders.length > 1) {
               discoverGitReferenceBuild(scm: folders[1])
@@ -176,5 +172,6 @@ builds.ath = {
 }
 
 builds.failFast = failFast
+builds.remove('ath')
 parallel builds
 infra.maybePublishIncrementals()

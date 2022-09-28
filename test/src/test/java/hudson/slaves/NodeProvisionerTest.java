@@ -26,10 +26,8 @@ package hudson.slaves;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assume.assumeFalse;
 
 import hudson.BulkChange;
-import hudson.Functions;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
@@ -104,7 +102,6 @@ public class NodeProvisionerTest {
      */
     // TODO fragile
     @Test public void autoProvision() throws Exception {
-        assumeFalse("TODO: Windows container agents do not have enough resources to run this test", Functions.isWindows() && System.getenv("CI") != null);
         try (BulkChange bc = new BulkChange(r.jenkins)) {
             DummyCloudImpl cloud = initHudson(10);
 
@@ -124,7 +121,6 @@ public class NodeProvisionerTest {
      */
     // TODO fragile
     @Test public void loadSpike() throws Exception {
-        assumeFalse("TODO: Windows container agents do not have enough resources to run this test", Functions.isWindows() && System.getenv("CI") != null);
         try (BulkChange bc = new BulkChange(r.jenkins)) {
             DummyCloudImpl cloud = initHudson(0);
 
@@ -141,7 +137,6 @@ public class NodeProvisionerTest {
      */
     // TODO fragile
     @Test public void baselineSlaveUsage() throws Exception {
-        assumeFalse("TODO: Windows container agents do not have enough resources to run this test", Functions.isWindows() && System.getenv("CI") != null);
         try (BulkChange bc = new BulkChange(r.jenkins)) {
             DummyCloudImpl cloud = initHudson(0);
             // add agents statically upfront
@@ -160,7 +155,6 @@ public class NodeProvisionerTest {
      */
     // TODO fragile
     @Test public void labels() throws Exception {
-        assumeFalse("TODO: Windows container agents do not have enough resources to run this test", Functions.isWindows() && System.getenv("CI") != null);
         try (BulkChange bc = new BulkChange(r.jenkins)) {
             DummyCloudImpl cloud = initHudson(0);
             Label blue = r.jenkins.getLabel("blue");
@@ -193,7 +187,6 @@ public class NodeProvisionerTest {
     @Issue("JENKINS-67635")
     @Test
     public void testJobWithCloudLabelExpressionProvisionsOnlyOneAgent() throws Exception {
-        assumeFalse("TODO: Windows container agents do not have enough resources to run this test", Functions.isWindows() && System.getenv("CI") != null);
         DummyCloudImpl3 cloud1 = new DummyCloudImpl3(r);
         DummyCloudImpl3 cloud2 = new DummyCloudImpl3(r);
 
