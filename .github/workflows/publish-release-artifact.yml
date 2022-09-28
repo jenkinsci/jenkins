@@ -4,6 +4,9 @@ on:
   release:
     types: [published]
 
+permissions:
+  contents: read # to fetch code (actions/checkout)
+
 jobs:
   determine-version:
     runs-on: ubuntu-latest
@@ -35,6 +38,9 @@ jobs:
           echo "::set-output name=is-lts::${is_lts}"
           echo "::set-output name=project-version::$version"
   war:
+    permissions:
+      contents: write # to upload release asset (actions/upload-release-asset)
+
     runs-on: ubuntu-latest
     needs: determine-version
     steps:
@@ -67,6 +73,9 @@ jobs:
           asset_name: ${{ steps.fetch-war.outputs.file-name }}
           asset_content_type: application/java-archive
   debian:
+    permissions:
+      contents: write # to upload release asset (actions/upload-release-asset)
+
     runs-on: ubuntu-latest
     needs: determine-version
     steps:
@@ -101,6 +110,9 @@ jobs:
           asset_name: ${{ steps.fetch-deb.outputs.file-name }}
           asset_content_type: application/vnd.debian.binary-package
   redhat:
+    permissions:
+      contents: write # to upload release asset (actions/upload-release-asset)
+
     runs-on: ubuntu-latest
     needs: determine-version
     steps:
@@ -136,6 +148,9 @@ jobs:
           asset_name: ${{ steps.fetch-rpm.outputs.file-name }}
           asset_content_type: application/x-redhat-package-manager
   windows:
+    permissions:
+      contents: write # to upload release asset (actions/upload-release-asset)
+
     runs-on: ubuntu-latest
     needs: determine-version
     steps:
@@ -171,6 +186,9 @@ jobs:
           asset_name: ${{ steps.fetch-msi.outputs.file-name }}
           asset_content_type: application/octet-stream
   suse:
+    permissions:
+      contents: write # to upload release asset (actions/upload-release-asset)
+
     runs-on: ubuntu-latest
     needs: determine-version
     steps:
