@@ -42,11 +42,17 @@ import java.io.Serializable;
 import java.net.Authenticator;
 import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
-import java.net.MalformedURLException;
 import java.net.PasswordAuthentication;
 import java.net.Proxy;
+import java.net.ProxySelector;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -56,12 +62,6 @@ import jenkins.model.Jenkins;
 import jenkins.security.stapler.StaplerAccessibleType;
 import jenkins.util.JenkinsJVM;
 import jenkins.util.SystemProperties;
-import org.apache.commons.httpclient.Credentials;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.NTCredentials;
-import org.apache.commons.httpclient.UsernamePasswordCredentials;
-import org.apache.commons.httpclient.auth.AuthScope;
-import org.apache.commons.httpclient.methods.GetMethod;
 import org.jenkinsci.Symbol;
 import org.jvnet.robust_http_client.RetryableHttpStream;
 import org.kohsuke.accmod.Restricted;
@@ -429,7 +429,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
         public FormValidation doValidateProxy(
                 @QueryParameter("testUrl") String testUrl, @QueryParameter("name") String name, @QueryParameter("port") int port,
                 @QueryParameter("userName") String userName, @QueryParameter("secretPassword") Secret password,
-                @QueryParameter("noProxyHost") String noProxyHost) {
+                @QueryParameter("noProxyHost") String noProxyHost) throws InterruptedException {
 
             Jenkins.get().checkPermission(Jenkins.ADMINISTER);
 
@@ -437,37 +437,37 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
                 return FormValidation.error(Messages.ProxyConfiguration_TestUrlRequired());
             }
 
-            String host;
+            URI uri;
             try {
-                URL url = new URL(testUrl);
-                host = url.getHost();
-            } catch (MalformedURLException e) {
+                uri = new URI(testUrl);
+            } catch (URISyntaxException e) {
                 return FormValidation.error(Messages.ProxyConfiguration_MalformedTestUrl(testUrl));
             }
 
-            GetMethod method = null;
             try {
-                method = new GetMethod(testUrl);
-                method.getParams().setParameter("http.socket.timeout", DEFAULT_CONNECT_TIMEOUT_MILLIS > 0 ? DEFAULT_CONNECT_TIMEOUT_MILLIS : (int) TimeUnit.SECONDS.toMillis(30));
-
-                HttpClient client = new HttpClient();
-                if (Util.fixEmptyAndTrim(name) != null && !isNoProxyHost(host, noProxyHost)) {
-                    client.getHostConfiguration().setProxy(name, port);
-                    Credentials credentials = createCredentials(userName, password != null ? password.getPlainText() : null);
-                    AuthScope scope = new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT);
-                    client.getState().setProxyCredentials(scope, credentials);
+                HttpClient.Builder builder = HttpClient.newBuilder();
+                builder.connectTimeout(
+                        DEFAULT_CONNECT_TIMEOUT_MILLIS > 0
+                                ? Duration.ofMillis(DEFAULT_CONNECT_TIMEOUT_MILLIS)
+                                : Duration.ofSeconds(30));
+                if (Util.fixEmptyAndTrim(name) != null && !isNoProxyHost(uri.getHost(), noProxyHost)) {
+                    builder.proxy(ProxySelector.of(new InetSocketAddress(name, port)));
+                    Authenticator authenticator =
+                            newValidationAuthenticator(
+                                    userName, password != null ? password.getPlainText() : null);
+                    builder.authenticator(authenticator);
                 }
+                HttpClient client = builder.build();
 
-                int code = client.executeMethod(method);
+                HttpRequest request = HttpRequest.newBuilder(uri).GET().build();
+                HttpResponse<Void> response =
+                        client.send(request, HttpResponse.BodyHandlers.discarding());
+                int code = response.statusCode();
                 if (code != HttpURLConnection.HTTP_OK) {
                     return FormValidation.error(Messages.ProxyConfiguration_FailedToConnect(testUrl, code));
                 }
             } catch (IOException e) {
                 return FormValidation.error(e, Messages.ProxyConfiguration_FailedToConnectViaProxy(testUrl));
-            } finally {
-                if (method != null) {
-                    method.releaseConnection();
-                }
             }
 
             return FormValidation.ok(Messages.ProxyConfiguration_Success());
@@ -484,14 +484,19 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
             return false;
         }
 
-        private Credentials createCredentials(String userName, String password) {
-            if (userName.indexOf('\\') >= 0) {
-                final String domain = userName.substring(0, userName.indexOf('\\'));
-                final String user = userName.substring(userName.indexOf('\\') + 1);
-                return new NTCredentials(user, Secret.fromString(password).getPlainText(), "", domain);
-            } else {
-                return new UsernamePasswordCredentials(userName, Secret.fromString(password).getPlainText());
-            }
+        /**
+         * Create an {@link Authenticator} for use in validation context.
+         *
+         * @see #newAuthenticator
+         */
+        private static Authenticator newValidationAuthenticator(String userName, String password) {
+            return new Authenticator() {
+                @Override
+                protected PasswordAuthentication getPasswordAuthentication() {
+                    return new PasswordAuthentication(
+                            userName, Secret.fromString(password).getPlainText().toCharArray());
+                }
+            };
         }
     }
 }

@@ -33,8 +33,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeFalse;
 
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.HttpMethod;
@@ -42,7 +40,6 @@ import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.ExtensionList;
-import hudson.Functions;
 import hudson.diagnosis.OldDataMonitor;
 import hudson.tasks.Builder;
 import hudson.tasks.Shell;
@@ -150,7 +147,6 @@ public class FreeStyleProjectTest {
     @Test
     @Issue("JENKINS-36629")
     public void buildStabilityReports() throws Exception {
-        assumeFalse("TODO: https://issues.jenkins.io/browse/JENKINS-67681 LocalLauncher.kill() is excessivly slow on windows, mostly just about works outside CI", Functions.isWindows() && System.getenv("CI") != null);
         for (int i = 0; i <= 32; i++) {
             FreeStyleProject p = j.createFreeStyleProject(String.format("Pattern-%s", Integer.toBinaryString(i)));
             int expectedFails = 0;
@@ -253,13 +249,11 @@ public class FreeStyleProjectTest {
     @Issue("SECURITY-2424")
     public void cannotCreateJobWithTrailingDot_withoutOtherJob() throws Exception {
         assertThat(j.jenkins.getItems(), hasSize(0));
-        try {
-            j.jenkins.createProjectFromXML("jobA.", new ByteArrayInputStream("<project/>".getBytes(StandardCharsets.UTF_8)));
-            fail("Adding the job should have thrown an exception during checkGoodName");
-        }
-        catch (Failure e) {
-            assertEquals(Messages.Hudson_TrailingDot(), e.getMessage());
-        }
+        Failure e = assertThrows(
+                "Adding the job should have thrown an exception during checkGoodName",
+                Failure.class,
+                () -> j.jenkins.createProjectFromXML("jobA.", new ByteArrayInputStream("<project/>".getBytes(StandardCharsets.UTF_8))));
+        assertEquals(Messages.Hudson_TrailingDot(), e.getMessage());
         assertThat(j.jenkins.getItems(), hasSize(0));
     }
 
@@ -269,13 +263,11 @@ public class FreeStyleProjectTest {
         assertThat(j.jenkins.getItems(), hasSize(0));
         j.createFreeStyleProject("jobA");
         assertThat(j.jenkins.getItems(), hasSize(1));
-        try {
-            j.jenkins.createProjectFromXML("jobA.", new ByteArrayInputStream("<project/>".getBytes(StandardCharsets.UTF_8)));
-            fail("Adding the job should have thrown an exception during checkGoodName");
-        }
-        catch (Failure e) {
-            assertEquals(Messages.Hudson_TrailingDot(), e.getMessage());
-        }
+        Failure e = assertThrows(
+                "Adding the job should have thrown an exception during checkGoodName",
+                Failure.class,
+                () -> j.jenkins.createProjectFromXML("jobA.", new ByteArrayInputStream("<project/>".getBytes(StandardCharsets.UTF_8))));
+        assertEquals(Messages.Hudson_TrailingDot(), e.getMessage());
         assertThat(j.jenkins.getItems(), hasSize(1));
     }
 

@@ -14,7 +14,10 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 /**
  * {@link org.apache.tools.ant.AntClassLoader} with loosened visibility for use with {@link
  * ClassLoaderReflectionToolkit}.
+ *
+ * @deprecated use {@link URLClassLoader2}
  */
+@Deprecated
 @Restricted(NoExternalUse.class)
 public class AntClassLoader extends org.apache.tools.ant.AntClassLoader implements JenkinsClassLoader {
 

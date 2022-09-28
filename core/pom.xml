@@ -39,7 +39,6 @@ THE SOFTWARE.
   <url>https://github.com/jenkinsci/jenkins</url>
 
   <properties>
-    <staplerFork>true</staplerFork>
     <hamcrest.version>2.2</hamcrest.version>
     <xmlunit.version>2.9.0</xmlunit.version>
     <!-- Filled in by jacoco-maven-plugin -->
@@ -477,9 +476,9 @@ THE SOFTWARE.
       <version>1.1.4c</version>
     </dependency>
     <dependency>
-      <groupId>javax.servlet</groupId>
-      <artifactId>javax.servlet-api</artifactId>
-      <version>3.1.0</version>
+      <groupId>jakarta.servlet</groupId>
+      <artifactId>jakarta.servlet-api</artifactId>
+      <version>4.0.4</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -536,7 +535,6 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-inline</artifactId>
-      <version>${mockito.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -604,16 +602,6 @@ THE SOFTWARE.
             </goals>
           </execution>
         </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.kohsuke.stapler</groupId>
-        <artifactId>maven-stapler-plugin</artifactId>
-        <!-- version specified in grandparent pom -->
-        <configuration>
-          <!-- the source code is big enough now that otherwise it fails with OutOfMemoryError -->
-          <fork>${staplerFork}</fork>
-          <maxmem>128m</maxmem>
-        </configuration>
       </plugin>
       <plugin>
         <groupId>org.jvnet.localizer</groupId>
@@ -703,7 +691,6 @@ THE SOFTWARE.
         <configuration>
           <!-- Make sure to keep the directives in test/pom.xml and war/pom.xml in sync with these. -->
           <argLine>@{jacocoSurefireArgs} --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.desktop/com.sun.beans.introspect=ALL-UNNAMED</argLine>
-          <forkCount>0.5C</forkCount>
           <reuseForks>false</reuseForks>
         </configuration>
       </plugin>
@@ -754,35 +741,6 @@ THE SOFTWARE.
       <activation>
         <activeByDefault>true</activeByDefault>
       </activation>
-    </profile>
-    <profile>
-      <id>release</id>
-      <build>
-        <plugins>
-          <plugin>
-            <!--
-              generate jelly taglib docs from src/main/resources.
-              this is necessary in addition to the <reporting> configuration
-              to get the results deployed.
-            -->
-            <groupId>org.kohsuke.stapler</groupId>
-            <artifactId>maven-stapler-plugin</artifactId>
-            <!-- version specified in grandparent pom -->
-            <executions>
-              <execution>
-                <goals>
-                  <goal>jelly-taglibdoc</goal>
-                </goals>
-                <configuration>
-                  <patterns>
-                    <pattern>/lib/.*</pattern>
-                  </patterns>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
     </profile>
     <profile>
       <!-- Run SpotBugs for better error detection. Run as "mvn -Pspotbugs verify". -->

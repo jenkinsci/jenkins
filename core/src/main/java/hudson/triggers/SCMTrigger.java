@@ -28,6 +28,7 @@ package hudson.triggers;
 import static java.util.logging.Level.WARNING;
 
 import antlr.ANTLRException;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
@@ -535,7 +536,7 @@ public class SCMTrigger extends Trigger<Item> {
         }
 
         public String getLog() throws IOException {
-            return Util.loadFile(getLogFile());
+            return Util.loadFile(getLogFile(), Charset.defaultCharset());
         }
 
         /**
@@ -609,7 +610,7 @@ public class SCMTrigger extends Trigger<Item> {
             try {
                 // to make sure that the log file contains up-to-date text,
                 // don't do buffering.
-                StreamTaskListener listener = new StreamTaskListener(getLogFile());
+                StreamTaskListener listener = new StreamTaskListener(getLogFile(), Charset.defaultCharset());
 
                 try {
                     PrintStream logger = listener.getLogger();
@@ -644,7 +645,7 @@ public class SCMTrigger extends Trigger<Item> {
             // note that job().poll(listener) should also check this
             SCMDecisionHandler veto = SCMDecisionHandler.firstShouldPollVeto(job);
             if (veto != null) {
-                try (StreamTaskListener listener = new StreamTaskListener(getLogFile())) {
+                try (StreamTaskListener listener = new StreamTaskListener(getLogFile(), Charset.defaultCharset())) {
                     listener.getLogger().println(
                             "Skipping polling on " + DateFormat.getDateTimeInstance().format(new Date())
                                     + " due to veto from " + veto);
@@ -711,6 +712,7 @@ public class SCMTrigger extends Trigger<Item> {
          * Only used while ths cause is in the queue.
          * Once attached to the build, we'll move this into a file to reduce the memory footprint.
          */
+        @CheckForNull
         private String pollingLog;
 
         private transient Run run;
@@ -743,7 +745,10 @@ public class SCMTrigger extends Trigger<Item> {
             this.run = build;
             try {
                 BuildAction a = new BuildAction(build);
-                Files.writeString(Util.fileToPath(a.getPollingLogFile()), pollingLog, Charset.defaultCharset());
+                // pollingLog can be null when rebuilding a job that was initially triggered by polling.
+                if (pollingLog != null) {
+                    Files.writeString(Util.fileToPath(a.getPollingLogFile()), pollingLog, Charset.defaultCharset());
+                }
                 build.replaceAction(a);
             } catch (IOException e) {
                 LOGGER.log(WARNING, "Failed to persist the polling log", e);

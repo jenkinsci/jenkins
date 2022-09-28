@@ -12,7 +12,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertThrows;
 
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.HttpMethod;
@@ -286,13 +286,8 @@ public class ApiTokenPropertyTest {
     }
 
     private void checkUserIsNotConnected(WebClient wc) throws Exception {
-        try {
-            wc.goToXml("whoAmI/api/xml");
-            fail();
-        }
-        catch (FailingHttpStatusCodeException e) {
-            assertEquals(401, e.getStatusCode());
-        }
+        FailingHttpStatusCodeException e = assertThrows(FailingHttpStatusCodeException.class, () -> wc.goToXml("whoAmI/api/xml"));
+        assertEquals(401, e.getStatusCode());
     }
 
     @Test
@@ -659,13 +654,10 @@ public class ApiTokenPropertyTest {
     }
 
     private void checkInvalidTokenValue(ApiTokenProperty apiTokenProperty, String tokenName, String tokenValue) throws Exception {
-        try {
-            apiTokenProperty.addFixedNewToken(tokenName, tokenValue);
-            fail("The invalid token " + tokenName + " with value " + tokenValue + " was accepted but it should have been rejected.");
-        }
-        catch (IllegalArgumentException iae) {
-            // no care about the exception
-        }
+        assertThrows(
+                "The invalid token " + tokenName + " with value " + tokenValue + " was accepted but it should have been rejected.",
+                IllegalArgumentException.class,
+                () -> apiTokenProperty.addFixedNewToken(tokenName, tokenValue));
     }
 
     // test no token are generated for new user with the global configuration set to false
