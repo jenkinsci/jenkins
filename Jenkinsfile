@@ -48,7 +48,7 @@ for (i = 0; i < buildTypes.size(); i++) {
                 '-Penable-jacoco',
                 '--update-snapshots',
                 "-Dmaven.repo.local=$m2repo",
-                '-Dtest=hudson.init.InitMilestoneTest',
+                '-Dtest=hudson.init.InitMilestoneTest,hudson.init.impl.GroovyInitScriptTest',
                 '-DforkCount=2',
                 '-Dspotbugs.skip',
                 '-Dcheckstyle.skip',
