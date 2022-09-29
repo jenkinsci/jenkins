@@ -37,11 +37,7 @@ public class Security2779Test {
         final JenkinsRule.WebClient webClient = j.createWebClient();
         webClient.setAlertHandler((AlertHandler) (p, s) -> alerts.addAndGet(1));
         final HtmlPage page = webClient.goTo(URL_NAME);
-//        final ScriptResult eventScript =
         page.executeJavaScript("document.querySelector('" + selector + "')._tippy.show()");
-//        final Object eventResult = eventScript.getJavaScriptResult();
-//        assertThat(eventResult, instanceOf(boolean.class));
-//        Assert.assertTrue((boolean) eventResult);
         webClient.waitForBackgroundJavaScript(2000);
         // Assertion includes the selector for easier diagnosis
         Assert.assertEquals("Alert with selector '" + selector + "'", 0, alerts.get());
@@ -53,7 +49,7 @@ public class Security2779Test {
 
         // assert leading space to identify unintentional double-escaping (&amp;lt;) as test failure
         assertThat("tooltip does not contain dangerous HTML", jsResultString, not(containsString(" <img src=x")));
-        assertThat("tooltip contains safe text", jsResultString, containsString(" &lt;img src=x"));
+        assertThat("tooltip contains safe text", jsResultString, containsString(" &amp;lt;img src=x"));
     }
 
     @TestExtension

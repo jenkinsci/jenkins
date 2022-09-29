@@ -25,17 +25,17 @@ public class Security2776Test {
 
     @Test
     public void escapedTooltipIsEscaped() throws Exception {
-        assertExpectedBehaviorForTooltip("#symbol-icons .unsafe svg", _getSafeTooltip(), true);
-        assertExpectedBehaviorForTooltip("#symbol-icons .safe svg", _getSafeTooltip(), false);
-        assertExpectedBehaviorForTooltip("#png-icons .unsafe img", _getSafeTooltip(), true);
-        assertExpectedBehaviorForTooltip("#png-icons .safe img", _getSafeTooltip(), false);
+        assertExpectedBehaviorForTooltip("#symbol-icons .unsafe svg");
+        assertExpectedBehaviorForTooltip("#symbol-icons .safe svg");
+        assertExpectedBehaviorForTooltip("#png-icons .unsafe img");
+        assertExpectedBehaviorForTooltip("#png-icons .safe img");
 
         // Outlier after the fix for SECURITY-1955
-        assertExpectedBehaviorForTooltip("#svgIcons .unsafe svg", _getSafeTooltip(), false);
-        assertExpectedBehaviorForTooltip("#svgIcons .safe svg", Util.xmlEscape(_getSafeTooltip()), false);
+        assertExpectedBehaviorForTooltip("#svgIcons .unsafe svg");
+        assertExpectedBehaviorForTooltip("#svgIcons .safe svg");
     }
 
-    private void assertExpectedBehaviorForTooltip(String selector, String expectedTooltipContent, boolean alertExpected) throws IOException, SAXException {
+    private void assertExpectedBehaviorForTooltip(String selector) throws IOException, SAXException {
         final AtomicBoolean alerts = new AtomicBoolean();
         final JenkinsRule.WebClient wc = j.createWebClient();
         wc.setAlertHandler((p, s) -> alerts.set(true));
@@ -46,8 +46,8 @@ public class Security2776Test {
         Object jsResult = result.getJavaScriptResult();
         assertThat(jsResult, instanceOf(String.class));
         String jsResultString = (String) jsResult;
-        assertThat(jsResultString, containsString(expectedTooltipContent));
-        Assert.assertEquals(alertExpected ? "Alert expected" : "No alert expected", alertExpected, alerts.get());
+        assertThat(jsResultString, containsString(_getSafeTooltip()));
+        Assert.assertFalse("No alert expected", alerts.get());
     }
 
     private static String _getUnsafeTooltip() {
