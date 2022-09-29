@@ -22,7 +22,7 @@ public class InitMilestoneTest {
 
         List<InitMilestone> attained = r.jenkins.getExtensionList(Initializers.class).get(0).getAttained();
 
-        // TODO assert that they are contained in order
+        // TODO assert that they are contained in order, currently it generally works but flakes after some time
         assertThat(attained, containsInAnyOrder(
                 InitMilestone.EXTENSIONS_AUGMENTED,
                 InitMilestone.SYSTEM_CONFIG_LOADED,
