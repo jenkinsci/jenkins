@@ -6,7 +6,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 import com.gargoylesoftware.htmlunit.ScriptResult;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import hudson.Util;
+import hudson.Functions;
 import hudson.model.InvisibleAction;
 import hudson.model.UnprotectedRootAction;
 import java.io.IOException;
@@ -55,7 +55,7 @@ public class Security2776Test {
     }
 
     private static String _getSafeTooltip() {
-        return Util.xmlEscape(_getUnsafeTooltip());
+        return Functions.htmlAttributeEscape(_getUnsafeTooltip());
     }
 
     @TestExtension
