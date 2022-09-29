@@ -63,10 +63,8 @@ import java.util.logging.Logger;
  */
 public class Main {
 
-    private static final int MINIMUM_JAVA_VERSION = 11;
-    private static final int MAXIMUM_JAVA_VERSION = 17;
     private static final NavigableSet<Integer> SUPPORTED_JAVA_VERSIONS =
-            new TreeSet<>(Arrays.asList(MINIMUM_JAVA_VERSION, MAXIMUM_JAVA_VERSION));
+            new TreeSet<>(Arrays.asList(11, 17));
 
     private static final Logger LOGGER = Logger.getLogger(Main.class.getName());
 
@@ -98,11 +96,11 @@ public class Main {
     /*package*/ static void verifyJavaVersion(int releaseVersion, boolean enableFutureJava) {
         if (SUPPORTED_JAVA_VERSIONS.contains(releaseVersion)) {
             // Great!
-        } else if (releaseVersion >= MINIMUM_JAVA_VERSION) {
+        } else if (releaseVersion >= SUPPORTED_JAVA_VERSIONS.first()) {
             if (enableFutureJava) {
                 LOGGER.log(
                         Level.WARNING,
-                        "Running with Java {0} from {1}, which is not yet fully supported."
+                        "Running with Java {0} from {1}, which is not fully supported."
                             + " Continuing because {2} is set."
                             + " Supported Java versions are: {3}."
                             + " See https://jenkins.io/redirect/java-support/ for more information.",
@@ -112,11 +110,21 @@ public class Main {
                             ENABLE_FUTURE_JAVA_CLI_SWITCH,
                             SUPPORTED_JAVA_VERSIONS,
                         });
-            } else {
+            } else if (releaseVersion > SUPPORTED_JAVA_VERSIONS.last()) {
                 throw new UnsupportedClassVersionError(
                         String.format(
                                 "Running with Java %d from %s, which is not yet fully supported.%n"
                                         + "Run the command again with the %s flag to enable preview support for future Java versions.%n"
+                                        + "Supported Java versions are: %s",
+                                releaseVersion,
+                                System.getProperty("java.home"),
+                                ENABLE_FUTURE_JAVA_CLI_SWITCH,
+                                SUPPORTED_JAVA_VERSIONS));
+            } else {
+                throw new UnsupportedClassVersionError(
+                        String.format(
+                                "Running with Java %d from %s, which is not fully supported.%n"
+                                        + "Run the command again with the %s flag to bypass this error.%n"
                                         + "Supported Java versions are: %s",
                                 releaseVersion,
                                 System.getProperty("java.home"),
@@ -130,7 +138,7 @@ public class Main {
                                     + "Supported Java versions are: %s",
                             releaseVersion,
                             System.getProperty("java.home"),
-                            MINIMUM_JAVA_VERSION,
+                            SUPPORTED_JAVA_VERSIONS.first(),
                             SUPPORTED_JAVA_VERSIONS));
         }
     }
@@ -306,7 +314,7 @@ public class Main {
                 "                              (NOTE: this option does not change the directory where the plugin archives are stored)\n" +
                 "   --extractedFilesFolder   = folder where extracted files are to be located. Default is the temp folder\n" +
                 "   --logfile                = redirect log messages to this file\n" +
-                "   " + ENABLE_FUTURE_JAVA_CLI_SWITCH + "     = allows running with newer Java versions which are not yet fully supported\n" +
+                "   " + ENABLE_FUTURE_JAVA_CLI_SWITCH + "     = allows running with Java versions which are not fully supported\n" +
                 "{OPTIONS}");
 
         if (!DISABLE_CUSTOM_JSESSIONID_COOKIE_NAME) {
