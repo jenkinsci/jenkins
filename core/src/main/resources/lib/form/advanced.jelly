@@ -37,17 +37,18 @@ THE SOFTWARE.
   <div class='jenkins-form-item tr'>
     <st:adjunct includes="lib.form.advanced.advanced"/>
 
-    <div class="advancedLink">
-      <j:set var="id" value="${h.generateId()}"/>
-      <span style="display: none" id="${id}">
-        <l:icon class="icon-notepad icon-md" tooltip="${%customizedFields}"/>
-      </span>
-
+    <div class="advancedLink jenkins-buttons-row">
       <!-- advancedButton class is legacy -->
       <button type="button" class="jenkins-button advanced-button advancedButton">
         ${attrs.title?:'%Advanced'}
         <l:icon src="symbol-chevron-down"/>
       </button>
+
+      <j:set var="id" value="${h.generateId()}"/>
+      <span class="jenkins-edited-section-label" style="display: none" id="${id}" tooltip="${%customizedFields}">
+        <l:icon src="symbol-edit" />
+        ${%Edited}
+      </span>
     </div>
     <j:new var="customizedFields" className="java.util.TreeSet"/>
     <div class="advancedBody">

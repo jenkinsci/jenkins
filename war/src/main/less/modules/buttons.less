@@ -271,6 +271,14 @@
     transition: var(--standard-transition);
   }
 
+  &:not([data-expanded="true"]) {
+    &:active {
+      svg {
+        translate: 0 0.125rem;
+      }
+    }
+  }
+
   &[data-expanded="true"] {
     svg {
       rotate: 180deg;
