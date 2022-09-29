@@ -9,8 +9,15 @@ on:
     branches:
       - master
 
+permissions:
+  contents: read
+
 jobs:
   update_draft_release:
+    permissions:
+      pull-requests: write # to add label to PR (release-drafter/release-drafter)
+      contents: write # to create a github release (release-drafter/release-drafter)
+
     if: github.repository_owner == 'jenkinsci'
     runs-on: ubuntu-latest
     steps:
