@@ -9,7 +9,7 @@
         <div class="user-seed-panel" name="OK">
             <j:choose>
                 <j:when test="${descriptor.isCurrentUser(it)}">
-                    <button class="jenkins-button" type="button" name="reset-seed"
+                    <button class="jenkins-button jenkins-!-destructive-color" type="button" name="reset-seed"
                             onclick="return resetSeed(this)"
                             data-target-url="${descriptor.descriptorFullUrl}/renewSessionSeed"
                             data-confirm="${%resetSeed.confirmation}"
@@ -18,7 +18,7 @@
                     </button>
                 </j:when>
                 <j:otherwise>
-                    <button class="jenkins-button" type="button" name="reset-seed"
+                    <button class="jenkins-button jenkins-!-destructive-color" type="button" name="reset-seed"
                             onclick="return resetSeed(this)"
                             data-target-url="${descriptor.descriptorFullUrl}/renewSessionSeed"
                             data-confirm="${%resetSeed.confirmation}">
