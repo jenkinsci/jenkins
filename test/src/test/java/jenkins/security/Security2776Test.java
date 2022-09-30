@@ -1,6 +1,5 @@
 package jenkins.security;
 
-import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 
@@ -25,17 +24,23 @@ public class Security2776Test {
 
     @Test
     public void escapedTooltipIsEscaped() throws Exception {
-        assertExpectedBehaviorForTooltip("#symbol-icons .unsafe svg");
-        assertExpectedBehaviorForTooltip("#symbol-icons .safe svg");
-        assertExpectedBehaviorForTooltip("#png-icons .unsafe img");
-        assertExpectedBehaviorForTooltip("#png-icons .safe img");
+        assertExpectedBehaviorForTooltip("#symbol-icons .unsafe svg",
+                "&lt;img src=\"x\" onerror=\"alert(1)\"&gt;");
+        assertExpectedBehaviorForTooltip("#symbol-icons .safe svg",
+                Functions.htmlAttributeEscape(_getSafeTooltip()));
+        assertExpectedBehaviorForTooltip("#png-icons .unsafe img",
+                "&lt;img src=\"x\" onerror=\"alert(1)\"&gt;");
+        assertExpectedBehaviorForTooltip("#png-icons .safe img",
+                Functions.htmlAttributeEscape(_getSafeTooltip()));
 
         // Outlier after the fix for SECURITY-1955
-        assertExpectedBehaviorForTooltip("#svgIcons .unsafe svg");
-        assertExpectedBehaviorForTooltip("#svgIcons .safe svg");
+        assertExpectedBehaviorForTooltip("#svgIcons .unsafe svg",
+                "&amp;lt;img src=\"x\" onerror=\"alert(1)\"&amp;gt;");
+        assertExpectedBehaviorForTooltip("#svgIcons .safe svg",
+                "&amp;amp;lt;img src=&amp;amp;quot;x&amp;amp;quot; onerror=&amp;amp;quot;alert(1)&amp;amp;quot;&amp;amp;gt;");
     }
 
-    private void assertExpectedBehaviorForTooltip(String selector) throws IOException, SAXException {
+    private void assertExpectedBehaviorForTooltip(String selector, String expectedResult) throws IOException, SAXException {
         final AtomicBoolean alerts = new AtomicBoolean();
         final JenkinsRule.WebClient wc = j.createWebClient();
         wc.setAlertHandler((p, s) -> alerts.set(true));
@@ -46,7 +51,7 @@ public class Security2776Test {
         Object jsResult = result.getJavaScriptResult();
         assertThat(jsResult, instanceOf(String.class));
         String jsResultString = (String) jsResult;
-        assertThat(jsResultString, containsString(_getSafeTooltip()));
+        Assert.assertEquals(expectedResult, jsResultString);
         Assert.assertFalse("No alert expected", alerts.get());
     }
 
