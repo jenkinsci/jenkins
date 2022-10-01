@@ -218,11 +218,11 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     /**
      * When this {@link FilePath} represents the remote path,
      * this field is always non-null on the controller (the field represents
-     * the channel to the remote agent.) When transferred to a agent via remoting,
-     * this field reverts back to null, since it's transient.
+     * the channel to the remote agent.) When transferred to an agent via remoting,
+     * this field reverts to null, since it's transient.
      *
      * When this {@link FilePath} represents a path on the controller,
-     * this field is null on the controller. When transferred to a agent via remoting,
+     * this field is null on the controller. When transferred to an agent via remoting,
      * this field becomes non-null, representing the {@link Channel}
      * back to the controller.
      *
@@ -265,7 +265,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     /**
      * Construct a path starting with a base location.
      * @param base starting point for resolution, and defines channel
-     * @param rel a path which if relative will be resolved against base
+     * @param rel a path that when relative will be resolved against base
      */
     public FilePath(@NonNull FilePath base, @NonNull String rel) {
         this.channel = base.channel;
@@ -366,11 +366,11 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      * Checks if the remote path is Unix.
      */
     boolean isUnix() {
-        // if the path represents a local path, there' no need to guess.
+        // if the path represents a local path, there's no need to guess.
         if (!isRemote())
             return File.pathSeparatorChar != ';';
 
-        // note that we can't use the usual File.pathSeparator and etc., as the OS of
+        // note that we can't use the usual File.pathSeparator etc., as the OS of
         // the machine where this code runs and the OS that this FilePath refers to may be different.
 
         // Windows absolute path is 'X:\...', so this is usually a good indication of Windows path
@@ -831,7 +831,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     }
 
     /**
-     * Resolves symlink, if the given file is a symlink. Otherwise return null.
+     * Resolves symlink, if the given file is a symlink. Otherwise, return null.
      * <p>
      * If the resolution fails, report an error.
      *
@@ -1209,7 +1209,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     }
 
     /**
-     * Abstract {@link DelegatingCallable} that exposes an Before/After pattern for
+     * Abstract {@link DelegatingCallable} that exposes a Before/After pattern for
      * {@link hudson.FilePath.FileCallableWrapperFactory} that want to implement AOP-style interceptors
      * @since 1.482
      */
@@ -2217,7 +2217,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
            newInputStreamDenyingSymlinkAsNeeded(...) demonstrates how this would be done.
 
            This is useful for preventing symlink following on systems that don't support
-           LinkOption.NOFOLLOW_LINK. Notable among those is AIX. It is also important for
+           LinkOption.NOFOLLOW_LINK. Notable among those, is AIX. It is also important for
            prohibiting Windows Junctions, which are not considered symlinks by the
            Files.newInputStream(path, LinkOption.NOFOLLOW_LINKS) implementation.
         */
