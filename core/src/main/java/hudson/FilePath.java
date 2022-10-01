@@ -2458,7 +2458,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
 
     /**
      * Rename this file/directory to the target filepath.  This FilePath and the target must
-     * be on the some host
+     * be on the same host
      */
     public void renameTo(final FilePath target) throws IOException, InterruptedException {
         if (this.channel != target.channel) {
