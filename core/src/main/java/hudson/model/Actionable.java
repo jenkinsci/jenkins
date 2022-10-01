@@ -150,7 +150,6 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
     @SuppressWarnings("ConstantConditions")
     public void addAction(@NonNull Action a) {
         if (a == null) throw new IllegalArgumentException("Action must be non-null");
-
         getActions().add(a);
     }
 
