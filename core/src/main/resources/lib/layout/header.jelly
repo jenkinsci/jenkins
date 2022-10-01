@@ -24,12 +24,13 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:s="jelly:stapler" xmlns:d="jelly:define">
-  <s:documentation>
-    Header portion of the HTML page, that gets rendered into the &lt;head> tag.
-    Multiple &lt;l:header> elements can be specified, and can even come after
-    &lt;l:main-panel>.
+  <s:documentation> <![CDATA[
+    Header portion of the HTML page, that gets rendered into the <head> tag.
+    Multiple <l:header> elements can be specified, and can even come after
+    <l:main-panel>.
 
-    This tag can be placed inside &lt;l:layout>.
+    This tag can be placed inside <l:layout>.
+    ]]>
   </s:documentation>
   <j:if test="${mode=='header'}">
     <d:invokeBody />

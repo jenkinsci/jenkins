@@ -26,7 +26,7 @@ THE SOFTWARE.
 
   <l:layout norefresh="true" type="full-screen" title="${it.displayName}">
     <l:main-panel>
-     <div class="configure-instance">
+     <div class="configure-instance setup-wizard-heading">
        <form action="${rootURL}/setupWizard/configureInstance" method="post">
           <h1>${%Instance Configuration}</h1>
           <div style="margin: 2em;">
@@ -34,7 +34,7 @@ THE SOFTWARE.
             <tr>
               <td><label for="root-url">${%Jenkins URL}:</label></td>
               <td>
-                <input type="text" name="rootUrl" id="root-url" class="root-url" value="" />
+                <input type="text" name="rootUrl" id="root-url" class="jenkins-input" value="" />
                 <div class="error-panel error" />
               </td>
             </tr>

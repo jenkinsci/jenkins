@@ -19,7 +19,7 @@
   <j:if test="${attrs.iconSize != null}">
     <j:set var="iconSize" value="icon-${iconSize}"/>
   </j:if>
-  <l:icon tooltip="${tooltip}"
+  <l:icon tooltip="${h.htmlAttributeEscape(tooltip)}"
              class="${class} ${iconSize}"
              src="symbol-help-circle" />
 </j:jelly>

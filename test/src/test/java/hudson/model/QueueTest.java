@@ -160,7 +160,7 @@ import org.springframework.security.core.Authentication;
  */
 public class QueueTest {
 
-    @Rule public JenkinsRule r = new NodeProvisionerRule(-1, 0, 10);
+    @Rule public JenkinsRule r = new NodeProvisionerRule(/* run 10x the regular speed to speed up the test */ 1000, 10000, 1000);
 
     @Rule
     public LoggerRule logging = new LoggerRule().record(Queue.class, Level.FINE);
@@ -288,7 +288,7 @@ public class QueueTest {
         q.scheduleMaintenance().get();
         Queue.Item[] items = q.getItems();
         assertEquals(1, items.length);
-        assertTrue("Got " + items[0], items[0] instanceof BlockedItem);
+        assertThat(items[0], instanceOf(BlockedItem.class));
 
         q.save();
     }
