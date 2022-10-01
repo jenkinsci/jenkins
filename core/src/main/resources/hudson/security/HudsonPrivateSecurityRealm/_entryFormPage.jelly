@@ -45,7 +45,7 @@ THE SOFTWARE.
     </st:attribute>
   </st:documentation>
   <l:layout title="${title}" type="one-column">
-    <l:breadcrumb title="${%Add user}"/>
+    <l:breadcrumb title="${title}"/>
     <l:main-panel>
       <form action="${rootURL}/securityRealm/${action}" method="post">
         <local:_entryForm title="${title}" action="${action}" captcha="${captcha}" it="${host}" data="${data}" />

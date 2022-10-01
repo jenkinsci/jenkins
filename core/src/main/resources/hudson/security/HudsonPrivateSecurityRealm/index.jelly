@@ -29,7 +29,7 @@ THE SOFTWARE.
       <l:isAdmin>
         <a href="addUser" class="jenkins-button jenkins-button--primary">
           <l:icon src="symbol-add" />
-          Create user
+          ${%Create User}
         </a>
       </l:isAdmin>
     </l:app-bar>
