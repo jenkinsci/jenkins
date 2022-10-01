@@ -29,6 +29,27 @@ Behaviour.specify(
           }
           tr.parentNode.insertBefore(row, $(tr).next());
         }
+
+        const oneOrMoreFieldsEditedNotice = parentContainer.querySelector(".jenkins-edited-section-label")
+
+        if (oneOrMoreFieldsEditedNotice.classList.contains("jenkins-hidden")) {
+          // Show the label if the form contents change
+          const inputs = parentContainer.parentNode.nextSibling.querySelectorAll("input");
+          const form = document.createElement("form");
+          form.append(...[...inputs].map(node => node.cloneNode(true)))
+          const originalFormData = new FormData(form)
+
+          inputs.forEach(input => {
+            input.addEventListener("input", () => {
+              const updatedForm = document.createElement("form");
+              updatedForm.append(...[...inputs].map(node => node.cloneNode(true)))
+              const formData = new FormData(updatedForm)
+
+              const result = JSON.stringify(Object.fromEntries(originalFormData)) === JSON.stringify(Object.fromEntries(formData));
+              oneOrMoreFieldsEditedNotice.classList.toggle("jenkins-hidden", result);
+            })
+          })
+        }
       }
 
       const hiddenContent = parentContainer.parentNode.nextSibling;
@@ -53,9 +74,9 @@ Behaviour.specify(
   0,
   function (element) {
     const id = element.getAttribute("data-id");
-    const span = $(id);
-    if (span != null) {
-      span.style.display = "";
+    const oneOrMoreFieldsEditedNotice = $(id);
+    if (oneOrMoreFieldsEditedNotice != null) {
+      oneOrMoreFieldsEditedNotice.classList.remove("jenkins-hidden");
     } else if (console && console.log) {
       const customizedFields = element.getAttribute("data-customized-fields");
       console.log("no element " + id + " for " + customizedFields);
