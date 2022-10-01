@@ -2296,38 +2296,34 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      */
     public InputStream readFromOffset(final long offset) throws IOException, InterruptedException {
         if (channel == null) {
-            final RandomAccessFile raf = new RandomAccessFile(new File(remote), "r");
-            try {
-                raf.seek(offset);
-            } catch (IOException e) {
+            try (RandomAccessFile raf = new RandomAccessFile(new File(remote), "r")) {
                 try {
-                    raf.close();
-                } catch (IOException e1) {
-                    // ignore
+                    raf.seek(offset);
+                } catch (IOException e) {
+                    throw e;
                 }
-                throw e;
+                return new InputStream() {
+                    @Override
+                    public int read() throws IOException {
+                        return raf.read();
+                    }
+
+                    @Override
+                    public void close() throws IOException {
+                        raf.close();
+                    }
+
+                    @Override
+                    public int read(byte[] b, int off, int len) throws IOException {
+                        return raf.read(b, off, len);
+                    }
+
+                    @Override
+                    public int read(byte[] b) throws IOException {
+                        return raf.read(b);
+                    }
+                };
             }
-            return new InputStream() {
-                @Override
-                public int read() throws IOException {
-                    return raf.read();
-                }
-
-                @Override
-                public void close() throws IOException {
-                    raf.close();
-                }
-
-                @Override
-                public int read(byte[] b, int off, int len) throws IOException {
-                    return raf.read(b, off, len);
-                }
-
-                @Override
-                public int read(byte[] b) throws IOException {
-                    return raf.read(b);
-                }
-            };
         }
 
         final Pipe p = Pipe.createRemoteToLocal();
@@ -2518,7 +2514,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
 
                 File t = new File(target.getRemote());
 
-                for (File child : tmp.listFiles()) {
+                for (File child : Objects.requireNonNull(tmp.listFiles())) {
                     File target = new File(t, child.getName());
                     if (!child.renameTo(target))
                         throw new IOException("Failed to rename " + child + " to " + target);
@@ -3668,7 +3664,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                 Path directChild = this.getDirectChild(currentFilePath, remainingPath);
                 Path childUsingFullPath = currentFilePath.resolve(remainingPath);
                 String childUsingFullPathAbs = childUsingFullPath.toAbsolutePath().toString();
-                String directChildAbs = directChild.toAbsolutePath().toString();
+                String directChildAbs = Objects.requireNonNull(directChild).toAbsolutePath().toString();
 
                 if (childUsingFullPathAbs.length() == directChildAbs.length()) {
                     remainingPath = "";
