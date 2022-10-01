@@ -150,7 +150,7 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
     @SuppressWarnings("ConstantConditions")
     public void addAction(@NonNull Action a) {
         if (a == null) throw new IllegalArgumentException("Action must be non-null");
-        
+
         getActions().add(a);
     }
 
@@ -188,9 +188,8 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      */
     @SuppressWarnings("ConstantConditions")
     public boolean addOrReplaceAction(@NonNull Action a) {
-        if (a == null) {
-            throw new IllegalArgumentException("Action must be non-null");
-        }
+        if (a == null) throw new IllegalArgumentException("Action must be non-null");
+
         // CopyOnWriteArrayList does not support Iterator.remove, so need to do it this way:
         List<Action> old = new ArrayList<>(1);
         List<Action> current = getActions();
@@ -239,20 +238,19 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      * though technically consistent from the concurrency contract of {@link CopyOnWriteArrayList} (we would need
      * some form of transactions or a different backing type).
      *
-     * @param clazz the type of actions to remove
+     * @param actionType the type of actions to remove
      * @return {@code true} if this actions changed as a result of the call
      * @since 2.29
      */
     @SuppressWarnings("ConstantConditions")
-    public boolean removeActions(@NonNull Class<? extends Action> clazz) {
-        if (clazz == null) {
-            throw new IllegalArgumentException("Action type must be non-null");
-        }
+    public boolean removeActions(@NonNull Class<? extends Action> actionType) {
+        if (actionType == null) throw new IllegalArgumentException("Action type must be non-null");
+
         // CopyOnWriteArrayList does not support Iterator.remove, so need to do it this way:
         List<Action> old = new ArrayList<>();
         List<Action> current = getActions();
         for (Action a : current) {
-            if (clazz.isInstance(a)) {
+            if (actionType.isInstance(a)) {
                 old.add(a);
             }
         }
@@ -268,20 +266,17 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      * though technically consistent from the concurrency contract of {@link CopyOnWriteArrayList} (we would need
      * some form of transactions or a different backing type).
      *
-     * @param clazz the type of actions to replace (note that the action you are replacing this with need not extend
+     * @param actionType the type of actions to replace (note that the action you are replacing this with need not extend
      *              this class)
      * @param a     the action to replace with
      * @return {@code true} if this actions changed as a result of the call
      * @since 2.29
      */
     @SuppressWarnings("ConstantConditions")
-    public boolean replaceActions(@NonNull Class<? extends Action> clazz, @NonNull Action a) {
-        if (clazz == null) {
-            throw new IllegalArgumentException("Action type must be non-null");
-        }
-        if (a == null) {
-            throw new IllegalArgumentException("Action must be non-null");
-        }
+    public boolean replaceActions(@NonNull Class<? extends Action> actionType, @NonNull Action a) {
+        if (actionType == null) throw new IllegalArgumentException("Action type must be non-null");
+        if (a == null) throw new IllegalArgumentException("Action must be non-null");
+
         // CopyOnWriteArrayList does not support Iterator.remove, so need to do it this way:
         List<Action> old = new ArrayList<>();
         List<Action> current = getActions();
@@ -290,10 +285,10 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
             if (!found) {
                 if (a.equals(a1)) {
                     found = true;
-                } else if (clazz.isInstance(a1)) {
+                } else if (actionType.isInstance(a1)) {
                     old.add(a1);
                 }
-            } else if (clazz.isInstance(a1) && !a.equals(a1)) {
+            } else if (actionType.isInstance(a1) && !a.equals(a1)) {
                 old.add(a1);
             }
         }
