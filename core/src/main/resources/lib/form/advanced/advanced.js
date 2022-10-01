@@ -30,25 +30,35 @@ Behaviour.specify(
           tr.parentNode.insertBefore(row, $(tr).next());
         }
 
-        const oneOrMoreFieldsEditedNotice = parentContainer.querySelector(".jenkins-edited-section-label")
+        const oneOrMoreFieldsEditedNotice = parentContainer.querySelector(
+          ".jenkins-edited-section-label"
+        );
 
         if (oneOrMoreFieldsEditedNotice.classList.contains("jenkins-hidden")) {
           // Show the label if the form contents change
-          const inputs = parentContainer.parentNode.nextSibling.querySelectorAll("input");
+          const inputs =
+            parentContainer.parentNode.nextSibling.querySelectorAll("input");
           const form = document.createElement("form");
-          form.append(...[...inputs].map(node => node.cloneNode(true)))
-          const originalFormData = new FormData(form)
+          form.append(...[...inputs].map((node) => node.cloneNode(true)));
+          const originalFormData = new FormData(form);
 
-          inputs.forEach(input => {
+          inputs.forEach((input) => {
             input.addEventListener("input", () => {
               const updatedForm = document.createElement("form");
-              updatedForm.append(...[...inputs].map(node => node.cloneNode(true)))
-              const formData = new FormData(updatedForm)
+              updatedForm.append(
+                ...[...inputs].map((node) => node.cloneNode(true))
+              );
+              const formData = new FormData(updatedForm);
 
-              const result = JSON.stringify(Object.fromEntries(originalFormData)) === JSON.stringify(Object.fromEntries(formData));
-              oneOrMoreFieldsEditedNotice.classList.toggle("jenkins-hidden", result);
-            })
-          })
+              const result =
+                JSON.stringify(Object.fromEntries(originalFormData)) ===
+                JSON.stringify(Object.fromEntries(formData));
+              oneOrMoreFieldsEditedNotice.classList.toggle(
+                "jenkins-hidden",
+                result
+              );
+            });
+          });
         }
       }
 
