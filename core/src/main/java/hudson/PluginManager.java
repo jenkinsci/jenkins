@@ -1569,13 +1569,12 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
         if (req.hasParameter("remove")) {
             UpdateCenter uc = Jenkins.get().getUpdateCenter();
-            try (BulkChange bc = new BulkChange(uc)) {
-                try {
-                    for (String id : req.getParameterValues("sources"))
-                        uc.getSites().remove(uc.getById(id));
-                } finally {
-                    bc.commit();
-                }
+            BulkChange bc = new BulkChange(uc);
+            try {
+                for (String id : req.getParameterValues("sources"))
+                    uc.getSites().remove(uc.getById(id));
+            } finally {
+                bc.commit();
             }
         } else
         if (req.hasParameter("add"))
