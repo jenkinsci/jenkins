@@ -1013,7 +1013,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
             /* allow signup from the Jenkins home page, or /manage, which is where a /configureSecurity form redirects to */
             if (req.getRequestURI().equals(req.getContextPath() + "/") || req.getRequestURI().equals(req.getContextPath() + "/manage")) {
                 if (needsToCreateFirstUser()) {
-                    ((HttpServletResponse) response).sendRedirect("manage/securityRealm/firstUser");
+                    ((HttpServletResponse) response).sendRedirect("securityRealm/firstUser");
                 } else { // the first user already created. the role of this filter is over.
                     PluginServletFilter.removeFilter(this);
                     chain.doFilter(request, response);
