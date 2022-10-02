@@ -39,15 +39,17 @@ Behaviour.specify(
           const inputs =
             parentContainer.parentNode.nextSibling.querySelectorAll("input");
           const form = document.createElement("form");
-          form.append(...[...inputs].map((node) => node.cloneNode(true)));
+          const clonedNodes = [...inputs].map((node) => node.cloneNode(true));
+          form.append(...clonedNodes);
           const originalFormData = new FormData(form);
 
           inputs.forEach((input) => {
             input.addEventListener("input", () => {
               const updatedForm = document.createElement("form");
-              updatedForm.append(
-                ...[...inputs].map((node) => node.cloneNode(true))
+              const clonedNodes = [...inputs].map((node) =>
+                node.cloneNode(true)
               );
+              updatedForm.append(...clonedNodes);
               const formData = new FormData(updatedForm);
 
               const result =
