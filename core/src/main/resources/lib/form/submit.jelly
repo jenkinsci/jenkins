@@ -24,8 +24,9 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:s="jelly:stapler">
-  <s:documentation>
-    Submit button. This should be always used instead of the plain &lt;button&gt; tag.
+  <s:documentation> <![CDATA[
+    Submit button. This should be always used instead of the plain <button> tag.
+    ]]>
     <s:attribute name="name">
       If specified, becomes the value of the name attribute.
       When you have more than one submit button on the form, this can be used to determine
