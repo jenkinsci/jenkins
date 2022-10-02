@@ -59,6 +59,11 @@ THE SOFTWARE.
         <scope>import</scope>
       </dependency>
       <dependency>
+        <groupId>io.jenkins.plugins</groupId>
+        <artifactId>font-awesome-api</artifactId>
+        <version>6.2.0-3</version>
+      </dependency>
+      <dependency>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>ant</artifactId>
         <version>481.v7b_09e538fcca</version>
@@ -160,7 +165,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>junit</artifactId>
-      <version>1119.1121.vc43d0fc45561</version>
+      <version>1143.v8d9a_e3355270</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -342,7 +347,7 @@ THE SOFTWARE.
         </property>
       </activation>
       <properties>
-        <surefire.rerunFailingTestsCount>4</surefire.rerunFailingTestsCount>
+        <surefire.rerunFailingTestsCount>2</surefire.rerunFailingTestsCount>
         <surefire.skipAfterFailureCount>100</surefire.skipAfterFailureCount>
       </properties>
     </profile>

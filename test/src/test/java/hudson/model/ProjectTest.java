@@ -310,7 +310,7 @@ public class ProjectTest {
     }
 
     @Test
-    public void testScheduleBuild2() throws IOException, InterruptedException {
+    public void testScheduleBuild2() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject("project");
         p.setAssignedLabel(j.jenkins.getLabel("nonExist"));
         p.scheduleBuild(0, new UserIdCause());
@@ -321,7 +321,9 @@ public class ProjectTest {
             Thread.sleep(1000); //give some time to start build
             count++;
         }
-        assertNotNull("Build should be done or in progress.", p.getLastBuild());
+        FreeStyleBuild b = p.getLastBuild();
+        assertNotNull("Build should be done or in progress.", b);
+        j.assertBuildStatusSuccess(j.waitForCompletion(b));
     }
 
 

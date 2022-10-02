@@ -780,16 +780,6 @@
         </Or>
       </And>
       <And>
-        <Bug pattern="UNSAFE_HASH_EQUALS"/>
-        <Or>
-          <Class name="jenkins.install.SetupWizard"/>
-          <Class name="jenkins.security.apitoken.ApiTokenStore"/>
-          <Class name="jenkins.security.ApiTokenProperty"/>
-          <Class name="jenkins.security.ApiTokenProperty$DescriptorImpl"/>
-          <Class name="jenkins.util.SystemProperties"/>
-        </Or>
-      </And>
-      <And>
         <Bug pattern="URLCONNECTION_SSRF_FD"/>
         <Or>
           <Class name="hudson.FilePath"/>

@@ -1,10 +1,10 @@
 package hudson.model.queue;
 
+import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.notNullValue;
 
 import hudson.model.AbstractProject;
-import hudson.model.FreeStyleBuild;
+import hudson.model.Executor;
 import hudson.model.FreeStyleProject;
 import hudson.model.Label;
 import hudson.model.Node;
@@ -12,16 +12,20 @@ import hudson.model.Queue;
 import hudson.model.ResourceList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.LoggerRule;
 import org.jvnet.hudson.test.TestExtension;
 
 public class BuildKeepsRunningWhenFaultySubTasksTest {
     @Rule
     public JenkinsRule j = new JenkinsRule();
+
+    @Rule
+    public LoggerRule logging = new LoggerRule().record(Executor.class, Level.SEVERE).capture(100);
 
     public static final String ERROR_MESSAGE = "My unexpected exception";
 
@@ -30,11 +34,10 @@ public class BuildKeepsRunningWhenFaultySubTasksTest {
     @Issue("JENKINS-59793")
     public void buildFinishesWhenSubTaskFails() throws Exception {
         FreeStyleProject p = j.createProject(FreeStyleProject.class);
-        QueueTaskFuture<FreeStyleBuild> future = p.scheduleBuild2(0);
-        assertThat("Build should be actually scheduled by Jenkins", future, notNullValue());
 
         // We don't get stalled waiting the finalization of the job
-        future.get(5, TimeUnit.SECONDS);
+        j.buildAndAssertSuccess(p);
+        assertThat(logging.getMessages(), hasItem("Executor threw an exception"));
     }
 
     // A SubTask failing with an exception
