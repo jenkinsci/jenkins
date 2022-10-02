@@ -47,9 +47,11 @@ THE SOFTWARE.
   <l:layout title="${title}" type="one-column">
     <l:breadcrumb title="${title}"/>
     <l:main-panel>
-      <form action="${rootURL}/securityRealm/${action}" method="post">
+      <form action="${rootURL}/securityRealm/${action}" method="post" class="jenkins-form jenkins-form-item--small">
         <local:_entryForm title="${title}" action="${action}" captcha="${captcha}" it="${host}" data="${data}" />
-        <f:submit value="${title}" />
+        <f:bottomButtonBar>
+          <f:submit value="${title}" />
+        </f:bottomButtonBar>
       </form>
     </l:main-panel>
   </l:layout>
