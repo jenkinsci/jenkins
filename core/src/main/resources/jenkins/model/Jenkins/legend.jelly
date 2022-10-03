@@ -122,8 +122,6 @@ THE SOFTWARE.
 
       <h2>${%Weather}</h2>
 
-      <p class="jenkins-description">${%iconDescription}</p>
-
       <dl class="app-icon-legend">
         <dt>
           <l:icon src="symbol-weather-icon-health-80plus" />
