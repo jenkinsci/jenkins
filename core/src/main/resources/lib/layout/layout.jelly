@@ -25,27 +25,29 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:i="jelly:fmt" xmlns:x="jelly:xml">
-  <st:documentation>
+  <st:documentation> <![CDATA[
     Outer-most tag for a normal (non-AJAX) HTML rendering.
-    This is used with nested &lt;header>, &lt;side-panel>, and &lt;main-panel>
+    This is used with nested <header>, <side-panel>, and <main-panel>
     to form Jenkins's basic HTML layout.
-
-    <st:attribute name="title" use="required">
-      Title of the HTML page. Rendered into &lt;title> tag.
+    ]]>
+    <st:attribute name="title" use="required"> <![CDATA[
+      Title of the HTML page. Rendered into <title> tag.
+      ]]>
     </st:attribute>
     <st:attribute name="norefresh">
       Deprecated: Used to disable auto refresh for a page. The feature has been removed.
     </st:attribute>
-    <st:attribute name="css" deprecated="true">
+    <st:attribute name="css" deprecated="true"> <![CDATA[
       specify path that starts from "/" for loading additional CSS stylesheet.
       path is interpreted as relative to the context root. e.g.,
 
-      {noformat}&lt;l:layout css="/plugin/mysuperplugin/css/myneatstyle.css">{noformat}
+      {noformat}<l:layout css="/plugin/mysuperplugin/css/myneatstyle.css">{noformat}
 
       This was originally added to allow plugins to load their stylesheets, but
       *the use of the attribute is discouraged now.*
-      plugins should now do so by inserting &lt;style> elements and/or &lt;script> elements
-      in &lt;l:header/> tag.
+      plugins should now do so by inserting <style> elements and/or <script> elements
+      in <l:header/> tag.
+       ]]>
     </st:attribute>
     <st:attribute name="permission">
       If given, this page is only made available to users who have the specified permission.

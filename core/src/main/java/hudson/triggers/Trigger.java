@@ -63,7 +63,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
-import jenkins.model.ParameterizedJobMixIn;
+import jenkins.triggers.TriggeredItem;
 import jenkins.util.SystemProperties;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
@@ -77,6 +77,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  * put {@link Extension} on your {@link TriggerDescriptor} class.
  *
  * @author Kohsuke Kawaguchi
+ * @see TriggeredItem
  */
 public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>, ExtensionPoint {
 
@@ -279,9 +280,9 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
         }
 
         // Process all triggers, except SCMTriggers when synchronousPolling is set
-        for (ParameterizedJobMixIn.ParameterizedJob<?, ?> p : inst.allItems(ParameterizedJobMixIn.ParameterizedJob.class)) {
+        for (TriggeredItem p : inst.allItems(TriggeredItem.class)) {
             for (Trigger t : p.getTriggers().values()) {
-                if (!(t instanceof SCMTrigger && scmd.synchronousPolling)) {
+                if (!(p instanceof AbstractProject && t instanceof SCMTrigger && scmd.synchronousPolling)) {
                     if (t != null && t.spec != null && t.tabs != null) {
                         LOGGER.log(Level.FINE, "cron checking {0} with spec ‘{1}’", new Object[]{p, t.spec.trim()});
 
