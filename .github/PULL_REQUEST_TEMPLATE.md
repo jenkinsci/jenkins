@@ -54,7 +54,7 @@ Before the changes are marked as `ready-for-merge`:
 
 - [ ] There are at least two (2) approvals for the pull request and no outstanding requests for change.
 - [ ] Conversations in the pull request are over, or it is explicit that a reviewer is not blocking the change.
-- [ ] Changelog entries in the pull request title and/or `Proposed changelog entries` are accurate, human-readable, and in the imperative mood.
+- [ ] Changelog entries in the pull request title and/or **Proposed changelog entries** are accurate, human-readable, and in the imperative mood.
 - [ ] Proper changelog labels are set so that the changelog can be generated automatically.
 - [ ] If the change needs additional upgrade steps from users, the `upgrade-guide-needed` label is set and there is a **Proposed upgrade guidelines** section in the pull request title (see [example](https://github.com/jenkinsci/jenkins/pull/4387)).
 - [ ] If it would make sense to backport the change to LTS, a Jira issue must exist, be a _Bug_ or _Improvement_, and be labeled as `lts-candidate` to be considered (see [query](https://issues.jenkins.io/issues/?filter=12146)).
