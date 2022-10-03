@@ -24,8 +24,12 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <f:invisibleEntry>
+    <!-- This only exists to provide the parameter of the checkUrl -->
+    <f:checkbox name="exists" checked="true"/>
+  </f:invisibleEntry>
   <f:entry title="${%Default View}"
     description="${%description}">
-    <f:textbox field="primaryViewName" checkUrl="'${rootURL}/${h.jsStringEscape(instance.url)}viewExistsCheck?value='+encodeURIComponent(this.value)+'&amp;exists=true'"/>
+    <f:textbox field="primaryViewName" checkUrl="${rootURL}/${instance.url}viewExistsCheck" checkDependsOn="exists"/>
   </f:entry>
 </j:jelly>

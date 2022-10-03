@@ -29,9 +29,10 @@ THE SOFTWARE.
     <st:attribute name="host" use="required" type="hudson.security.HudsonPrivateSecurityRealm">
       Corresponds to the "it" of Jelly, meaning the context where the page is loaded.
     </st:attribute>
-    <st:attribute name="title" use="required">
+    <st:attribute name="title" use="required"> <![CDATA[
       Title of the HTML page. 
-      Rendered into &lt;title> tag, in the page content inside a &lt;h1> and as the label of the submit button.
+      Rendered into <title> tag, in the page content inside a <h1> and as the label of the submit button.
+      ]]>
     </st:attribute>
     <st:attribute name="action" use="required">
       The method to call from within the HudsonPrivateSecurityRealm.
