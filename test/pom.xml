@@ -94,7 +94,7 @@ THE SOFTWARE.
       <groupId>${project.groupId}</groupId>
       <artifactId>jenkins-test-harness</artifactId>
       <!-- TODO https://github.com/jenkinsci/jenkins-test-harness/pull/493 -->
-      <version>1850.va_4a_a_01d2b_57b</version>
+      <version>1857.vd7cd4f785585</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -125,7 +125,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>io.jenkins.plugins</groupId>
       <artifactId>javax-mail-api</artifactId>
-      <version>1.6.2-7</version>
+      <version>1.6.2-8</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -166,7 +166,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>junit</artifactId>
-      <version>1143.v8d9a_e3355270</version>
+      <version>1150.v5c2848328b_60</version>
       <scope>test</scope>
     </dependency>
     <dependency>
