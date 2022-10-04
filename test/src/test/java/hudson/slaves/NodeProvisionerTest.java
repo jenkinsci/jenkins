@@ -31,6 +31,12 @@ import static org.junit.Assume.assumeFalse;
 import hudson.BulkChange;
 import hudson.Functions;
 import hudson.Launcher;
+import hudson.matrix.Axis;
+import hudson.matrix.AxisList;
+import hudson.matrix.LabelAxis;
+import hudson.matrix.MatrixBuild;
+import hudson.matrix.MatrixProject;
+import hudson.matrix.MatrixRun;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
 import hudson.model.Computer;
@@ -43,6 +49,7 @@ import hudson.model.queue.QueueTaskFuture;
 import hudson.tasks.Builder;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -50,6 +57,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -212,6 +220,57 @@ public class NodeProvisionerTest {
             for (Future<FreeStyleBuild> bb : blueBuilds)
                 assertFalse(bb.isDone());
         }
+    }
+
+    @Issue("JENKINS-7291")
+    @Test
+    public void flyweightTasksWithoutMasterExecutors() throws Throwable {
+        assumeFalse("TODO: Windows container agents do not have enough resources to run this test", Functions.isWindows() && System.getenv("CI") != null);
+        rr.then(NodeProvisionerTest::_flyweightTasksWithoutMasterExecutors);
+    }
+
+    private static void _flyweightTasksWithoutMasterExecutors(JenkinsRule r) throws Exception {
+        DummyCloudImpl cloud = new DummyCloudImpl(r, 0);
+        cloud.label = r.jenkins.getLabel("remote");
+        r.jenkins.clouds.add(cloud);
+        r.jenkins.setNumExecutors(0);
+        r.jenkins.setNodes(Collections.emptyList());
+        MatrixProject m = r.jenkins.createProject(MatrixProject.class, "p");
+        m.setAxes(new AxisList(new LabelAxis("label", List.of("remote"))));
+        MatrixBuild build;
+        try {
+            build = m.scheduleBuild2(0).get(60, TimeUnit.SECONDS);
+        } catch (TimeoutException x) {
+            throw new AssertionError(Arrays.toString(r.jenkins.getQueue().getItems()), x);
+        }
+        r.assertBuildStatusSuccess(build);
+        assertEquals("", build.getBuiltOnStr());
+        List<MatrixRun> runs = build.getRuns();
+        assertEquals(1, runs.size());
+        assertEquals("slave0", runs.get(0).getBuiltOnStr());
+    }
+
+    /**
+     * When a flyweight task is restricted to run on a specific node, the node will be provisioned
+     * and the flyweight task will be executed.
+     */
+    @Issue("JENKINS-30084")
+    @Test
+    public void shouldRunFlyweightTaskOnProvisionedNodeWhenNodeRestricted() throws Throwable {
+        assumeFalse("TODO: Windows container agents do not have enough resources to run this test", Functions.isWindows() && System.getenv("CI") != null);
+        rr.then(NodeProvisionerTest::_shouldRunFlyweightTaskOnProvisionedNodeWhenNodeRestricted);
+    }
+
+    private static void _shouldRunFlyweightTaskOnProvisionedNodeWhenNodeRestricted(JenkinsRule r) throws Exception {
+        MatrixProject matrixProject = r.jenkins.createProject(MatrixProject.class, "p");
+        matrixProject.setAxes(new AxisList(new Axis("axis", "a", "b")));
+        Label label = Label.get("aws-linux-dummy");
+        DummyCloudImpl dummyCloud = new DummyCloudImpl(r, 0);
+        dummyCloud.label = label;
+        r.jenkins.clouds.add(dummyCloud);
+        matrixProject.setAssignedLabel(label);
+        r.buildAndAssertSuccess(matrixProject);
+        assertEquals("aws-linux-dummy", matrixProject.getBuilds().getLastBuild().getBuiltOn().getLabelString());
     }
 
     @Issue("JENKINS-67635")
