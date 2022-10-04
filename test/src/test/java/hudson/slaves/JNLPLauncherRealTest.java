@@ -80,6 +80,7 @@ public class JNLPLauncherRealTest {
                     builder.webSocket();
                 }
                 Slave agent = inboundAgents.createAgent(r, builder.build());
+                r.waitOnline(agent);
                 FreeStyleProject p = r.createFreeStyleProject();
                 p.setAssignedNode(agent);
                 FreeStyleBuild b = r.buildAndAssertSuccess(p);
