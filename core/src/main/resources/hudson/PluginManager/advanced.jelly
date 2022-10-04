@@ -77,9 +77,15 @@ THE SOFTWARE.
                 <h2 class="jenkins-section__title">${%Update Site}</h2>
                 <f:form method="post" action="siteConfigure" name="siteConfigure">
                     <f:entry title="${%URL}">
+                        <j:if test="${app.updateCenter.ID_DEFAULT.equals(app.updateCenter.PREDEFINED_UPDATE_SITE_ID)}">
+                          <a id="reset-to-default" href="#">${%Reset to default}</a>
+                        </j:if>
                         <f:textbox name="site"
-                                   value="${app.updateCenter.getSite(app.updateCenter.ID_DEFAULT).url}"/>
+                                   id="update-site-url"
+                                   value="${app.updateCenter.getSite(app.updateCenter.ID_DEFAULT).url}"
+                                   checkUrl="checkUpdateSiteUrl" checkDependsOn=""/>
                     </f:entry>
+                    <st:adjunct includes="hudson.PluginManager._updateSite"/>
                     <l:isAdmin>
                         <f:block>
                             <f:submit/>

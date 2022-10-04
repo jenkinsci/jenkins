@@ -39,7 +39,6 @@ import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Label;
 import hudson.model.Node;
-import hudson.model.Result;
 import hudson.model.queue.QueueTaskFuture;
 import hudson.tasks.Builder;
 import java.io.IOException;
@@ -51,11 +50,12 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.RealJenkinsRule;
 import org.jvnet.hudson.test.SleepBuilder;
 
 /**
@@ -63,7 +63,16 @@ import org.jvnet.hudson.test.SleepBuilder;
  */
 public class NodeProvisionerTest {
 
-    @Rule public JenkinsRule r = new NodeProvisionerRule(/* run 10x the regular speed to speed up the test */ 1000, 10000, 1000);
+    @Rule public RealJenkinsRule rr = new RealJenkinsRule();
+
+    @Before
+    public void setUp() {
+        // run 10x the regular speed to speed up the test
+        rr.javaOptions(
+                "-Dhudson.model.LoadStatistics.clock=" + TimeUnit.SECONDS.toMillis(1),
+                "-Dhudson.slaves.NodeProvisioner.initialDelay=" + TimeUnit.SECONDS.toMillis(10),
+                "-Dhudson.slaves.NodeProvisioner.recurrencePeriod=" + TimeUnit.SECONDS.toMillis(1));
+    }
 
     /**
      * Latch synchronization primitive that waits for N thread to pass the checkpoint.
@@ -103,13 +112,16 @@ public class NodeProvisionerTest {
      * Scenario: schedule a build and see if one agent is provisioned.
      */
     // TODO fragile
-    @Test public void autoProvision() throws Exception {
+    @Test public void autoProvision() throws Throwable {
         assumeFalse("TODO: Windows container agents do not have enough resources to run this test", Functions.isWindows() && System.getenv("CI") != null);
+        rr.then(NodeProvisionerTest::_autoProvision);
+    }
+
+    private static void _autoProvision(JenkinsRule r) throws Exception {
         try (BulkChange bc = new BulkChange(r.jenkins)) {
-            DummyCloudImpl cloud = initHudson(10);
+            DummyCloudImpl cloud = initHudson(10, r);
 
-
-            FreeStyleProject p = createJob(new SleepBuilder(10));
+            FreeStyleProject p = createJob(new SleepBuilder(10), r);
 
             Future<FreeStyleBuild> f = p.scheduleBuild2(0);
             f.get(30, TimeUnit.SECONDS); // if it's taking too long, abort.
@@ -123,12 +135,16 @@ public class NodeProvisionerTest {
      * Scenario: we got a lot of jobs all of the sudden, and we need to fire up a few nodes.
      */
     // TODO fragile
-    @Test public void loadSpike() throws Exception {
+    @Test public void loadSpike() throws Throwable {
         assumeFalse("TODO: Windows container agents do not have enough resources to run this test", Functions.isWindows() && System.getenv("CI") != null);
-        try (BulkChange bc = new BulkChange(r.jenkins)) {
-            DummyCloudImpl cloud = initHudson(0);
+        rr.then(NodeProvisionerTest::_loadSpike);
+    }
 
-            verifySuccessfulCompletion(buildAll(create5SlowJobs(new Latch(5))));
+    private static void _loadSpike(JenkinsRule r) throws Exception {
+        try (BulkChange bc = new BulkChange(r.jenkins)) {
+            DummyCloudImpl cloud = initHudson(0, r);
+
+            verifySuccessfulCompletion(buildAll(create5SlowJobs(new Latch(5), r)), r);
 
             // the time it takes to complete a job is eternally long compared to the time it takes to launch
             // a new slave, so in this scenario we end up allocating 5 slaves for 5 jobs.
@@ -140,15 +156,19 @@ public class NodeProvisionerTest {
      * Scenario: make sure we take advantage of statically configured agents.
      */
     // TODO fragile
-    @Test public void baselineSlaveUsage() throws Exception {
+    @Test public void baselineSlaveUsage() throws Throwable {
         assumeFalse("TODO: Windows container agents do not have enough resources to run this test", Functions.isWindows() && System.getenv("CI") != null);
+        rr.then(NodeProvisionerTest::_baselineSlaveUsage);
+    }
+
+    private static void _baselineSlaveUsage(JenkinsRule r) throws Exception {
         try (BulkChange bc = new BulkChange(r.jenkins)) {
-            DummyCloudImpl cloud = initHudson(0);
+            DummyCloudImpl cloud = initHudson(0, r);
             // add agents statically upfront
             r.createSlave().toComputer().connect(false).get();
             r.createSlave().toComputer().connect(false).get();
 
-            verifySuccessfulCompletion(buildAll(create5SlowJobs(new Latch(5))));
+            verifySuccessfulCompletion(buildAll(create5SlowJobs(new Latch(5), r)), r);
 
             // we should have used two static slaves, thus only 3 slaves should have been provisioned
             assertEquals(3, cloud.numProvisioned);
@@ -159,27 +179,31 @@ public class NodeProvisionerTest {
      * Scenario: loads on one label shouldn't translate to load on another label.
      */
     // TODO fragile
-    @Test public void labels() throws Exception {
+    @Test public void labels() throws Throwable {
         assumeFalse("TODO: Windows container agents do not have enough resources to run this test", Functions.isWindows() && System.getenv("CI") != null);
+        rr.then(NodeProvisionerTest::_labels);
+    }
+
+    private static void _labels(JenkinsRule r) throws Exception {
         try (BulkChange bc = new BulkChange(r.jenkins)) {
-            DummyCloudImpl cloud = initHudson(0);
+            DummyCloudImpl cloud = initHudson(0, r);
             Label blue = r.jenkins.getLabel("blue");
             Label red = r.jenkins.getLabel("red");
             cloud.label = red;
 
             // red jobs
-            List<FreeStyleProject> redJobs = create5SlowJobs(new Latch(5));
+            List<FreeStyleProject> redJobs = create5SlowJobs(new Latch(5), r);
             for (FreeStyleProject p : redJobs)
                 p.setAssignedLabel(red);
 
             // blue jobs
-            List<FreeStyleProject> blueJobs = create5SlowJobs(new Latch(5));
+            List<FreeStyleProject> blueJobs = create5SlowJobs(new Latch(5), r);
             for (FreeStyleProject p : blueJobs)
                 p.setAssignedLabel(blue);
 
             // build all
             List<Future<FreeStyleBuild>> blueBuilds = buildAll(blueJobs);
-            verifySuccessfulCompletion(buildAll(redJobs));
+            verifySuccessfulCompletion(buildAll(redJobs), r);
 
             // cloud should only give us 5 nodes for 5 red jobs
             assertEquals(5, cloud.numProvisioned);
@@ -192,8 +216,12 @@ public class NodeProvisionerTest {
 
     @Issue("JENKINS-67635")
     @Test
-    public void testJobWithCloudLabelExpressionProvisionsOnlyOneAgent() throws Exception {
+    public void testJobWithCloudLabelExpressionProvisionsOnlyOneAgent() throws Throwable {
         assumeFalse("TODO: Windows container agents do not have enough resources to run this test", Functions.isWindows() && System.getenv("CI") != null);
+        rr.then(NodeProvisionerTest::_testJobWithCloudLabelExpressionProvisionsOnlyOneAgent);
+    }
+
+    private static void _testJobWithCloudLabelExpressionProvisionsOnlyOneAgent(JenkinsRule r) throws Exception {
         DummyCloudImpl3 cloud1 = new DummyCloudImpl3(r);
         DummyCloudImpl3 cloud2 = new DummyCloudImpl3(r);
 
@@ -207,8 +235,8 @@ public class NodeProvisionerTest {
         p.setAssignedLabel(Label.parseExpression("cloud-1-label || cloud-2-label"));
 
         QueueTaskFuture<FreeStyleBuild> futureBuild = p.scheduleBuild2(0);
-        futureBuild.waitForStart();
-        r.assertBuildStatus(Result.SUCCESS, futureBuild);
+        FreeStyleBuild build = futureBuild.waitForStart();
+        r.assertBuildStatusSuccess(r.waitForCompletion(build));
 
         assertEquals(1, cloud1.numProvisioned);
         assertEquals(0, cloud2.numProvisioned);
@@ -270,14 +298,14 @@ public class NodeProvisionerTest {
     }
 
 
-    private FreeStyleProject createJob(Builder builder) throws IOException {
+    private static FreeStyleProject createJob(Builder builder, JenkinsRule r) throws IOException {
         FreeStyleProject p = r.createFreeStyleProject();
         p.setAssignedLabel(null);   // let it roam free, or else it ties itself to the built-in node since we have no agents
         p.getBuildersList().add(builder);
         return p;
     }
 
-    private DummyCloudImpl initHudson(int delay) throws IOException {
+    private static DummyCloudImpl initHudson(int delay, JenkinsRule r) throws IOException {
         // start a dummy service
         DummyCloudImpl cloud = new DummyCloudImpl(r, delay);
         r.jenkins.clouds.add(cloud);
@@ -288,19 +316,19 @@ public class NodeProvisionerTest {
         return cloud;
     }
 
-    private List<FreeStyleProject> create5SlowJobs(Latch l) throws IOException {
+    private static List<FreeStyleProject> create5SlowJobs(Latch l, JenkinsRule r) throws IOException {
         List<FreeStyleProject> jobs = new ArrayList<>();
         for (int i = 0; i < l.init; i++)
             //set a large delay, to simulate the situation where we need to provision more agents
             // to keep up with the load
-            jobs.add(createJob(l.createBuilder()));
+            jobs.add(createJob(l.createBuilder(), r));
         return jobs;
     }
 
     /**
      * Builds all the given projects at once.
      */
-    private List<Future<FreeStyleBuild>> buildAll(List<FreeStyleProject> jobs) {
+    private static List<Future<FreeStyleBuild>> buildAll(List<FreeStyleProject> jobs) {
         System.out.println("Scheduling builds for " + jobs.size() + " jobs");
         List<Future<FreeStyleBuild>> builds = new ArrayList<>();
         for (FreeStyleProject job : jobs)
@@ -308,16 +336,10 @@ public class NodeProvisionerTest {
         return builds;
     }
 
-    private void verifySuccessfulCompletion(List<Future<FreeStyleBuild>> builds) throws Exception {
+    private static void verifySuccessfulCompletion(List<Future<FreeStyleBuild>> builds, JenkinsRule r) throws Exception {
         System.out.println("Waiting for a completion");
         for (Future<FreeStyleBuild> f : builds) {
-            try {
-                r.assertBuildStatus(Result.SUCCESS, f.get(90, TimeUnit.SECONDS));
-            } catch (TimeoutException e) {
-                // time out so that the automated test won't hang forever, even when we have bugs
-                System.out.println("Build didn't complete in time");
-                throw e;
-            }
+            r.assertBuildStatusSuccess(f.get());
         }
     }
 }
