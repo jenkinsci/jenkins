@@ -33,6 +33,7 @@ import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Slave;
 import hudson.util.FormValidation;
+import java.io.File;
 import jenkins.agents.WebSocketAgentsTest;
 import jenkins.slaves.JnlpSlaveAgentProtocol4;
 import org.junit.Rule;
@@ -84,6 +85,9 @@ public class JNLPLauncherRealTest {
                 FreeStyleProject p = r.createFreeStyleProject();
                 p.setAssignedNode(agent);
                 FreeStyleBuild b = r.buildAndAssertSuccess(p);
+                if (webSocket) {
+                    assertThat(agent.toComputer().getSystemProperties().get("java.class.path"), is(new File(r.jenkins.root, "agent.jar").getAbsolutePath()));
+                }
                 System.err.println(JenkinsRule.getLog(b));
             }
         }, Description.EMPTY).evaluate();
