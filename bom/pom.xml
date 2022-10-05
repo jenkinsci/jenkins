@@ -38,7 +38,7 @@ THE SOFTWARE.
   <description>The module contains dependencies that are used by a specific Jenkins version</description>
 
   <properties>
-    <asm.version>9.3</asm.version>
+    <asm.version>9.4</asm.version>
     <slf4jVersion>2.0.3</slf4jVersion>
     <stapler.version>1736.vb_1e05c4231b_c</stapler.version>
     <groovy.version>2.4.21</groovy.version>
