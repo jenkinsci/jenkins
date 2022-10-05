@@ -348,7 +348,6 @@ THE SOFTWARE.
         </property>
       </activation>
       <properties>
-        <surefire.rerunFailingTestsCount>2</surefire.rerunFailingTestsCount>
         <surefire.skipAfterFailureCount>100</surefire.skipAfterFailureCount>
       </properties>
     </profile>
