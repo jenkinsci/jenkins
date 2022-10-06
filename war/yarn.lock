@@ -2911,13 +2911,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"css-minimizer-webpack-plugin@npm:4.2.0":
-  version: 4.2.0
-  resolution: "css-minimizer-webpack-plugin@npm:4.2.0"
+"css-minimizer-webpack-plugin@npm:4.2.1":
+  version: 4.2.1
+  resolution: "css-minimizer-webpack-plugin@npm:4.2.1"
   dependencies:
     cssnano: ^5.1.8
-    jest-worker: ^29.0.3
-    postcss: ^8.4.13
+    jest-worker: ^29.1.2
+    postcss: ^8.4.17
     schema-utils: ^4.0.0
     serialize-javascript: ^6.0.0
     source-map: ^0.6.1
@@ -2936,7 +2936,7 @@ __metadata:
       optional: true
     lightningcss:
       optional: true
-  checksum: fa95f0ae93b755606c6024f632252de6e60c5307ddbf6928a40447a6b33b551f4bfda274ff6a6c0419aa6c38b5a8b909d9d27d6cd868da6fe55cf16ec2d5de21
+  checksum: d7de086b6e8a762f554a7e13b0c3154b0b314ae45a831b451e8a10ede39519b2cb16d0dd7b3cb6eadea72d7dee29f2a2fea74cf752e66b791cf873da0f4c22f3
   languageName: node
   linkType: hard
 
@@ -4302,7 +4302,7 @@ __metadata:
     clean-webpack-plugin: 4.0.0
     copy-webpack-plugin: 11.0.0
     css-loader: 6.7.1
-    css-minimizer-webpack-plugin: 4.2.0
+    css-minimizer-webpack-plugin: 4.2.1
     eslint: 8.24.0
     eslint-config-prettier: 8.5.0
     handlebars: 4.7.7
@@ -4355,7 +4355,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jest-worker@npm:^29.0.3":
+"jest-worker@npm:^29.1.2":
   version: 29.1.2
   resolution: "jest-worker@npm:29.1.2"
   dependencies:
@@ -5749,7 +5749,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"postcss@npm:8.4.17":
+"postcss@npm:8.4.17, postcss@npm:^8.4.17":
   version: 8.4.17
   resolution: "postcss@npm:8.4.17"
   dependencies:
@@ -5757,17 +5757,6 @@ __metadata:
     picocolors: ^1.0.0
     source-map-js: ^1.0.2
   checksum: a6d9096dd711e17f7b1d18ff5dcb4fdedf3941d5a3dc8b0e4ea873b8f31972d57f73d6da9a8aed7ff389eb52190ed34f6a94f299a7f5ddc68b08a24a48f77eb9
-  languageName: node
-  linkType: hard
-
-"postcss@npm:^8.4.13, postcss@npm:^8.4.7":
-  version: 8.4.14
-  resolution: "postcss@npm:8.4.14"
-  dependencies:
-    nanoid: ^3.3.4
-    picocolors: ^1.0.0
-    source-map-js: ^1.0.2
-  checksum: fe58766ff32e4becf65a7d57678995cfd239df6deed2fe0557f038b47c94e4132e7e5f68b5aa820c13adfec32e523b693efaeb65798efb995ce49ccd83953816
   languageName: node
   linkType: hard
 
@@ -5779,6 +5768,17 @@ __metadata:
     picocolors: ^1.0.0
     source-map-js: ^1.0.2
   checksum: 10eee25efd77868036403858577da0cefaf2e0905feeaba5770d5438ccdddba3d01cba8063e96b8aac4c6daa0ed413dd5ae0554a433a3c4db38df1d134cffc1f
+  languageName: node
+  linkType: hard
+
+"postcss@npm:^8.4.7":
+  version: 8.4.14
+  resolution: "postcss@npm:8.4.14"
+  dependencies:
+    nanoid: ^3.3.4
+    picocolors: ^1.0.0
+    source-map-js: ^1.0.2
+  checksum: fe58766ff32e4becf65a7d57678995cfd239df6deed2fe0557f038b47c94e4132e7e5f68b5aa820c13adfec32e523b693efaeb65798efb995ce49ccd83953816
   languageName: node
   linkType: hard
 
