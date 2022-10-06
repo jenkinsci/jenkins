@@ -45,10 +45,10 @@ import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
-import java.util.HashSet;
 import java.util.List;
 import java.util.MissingResourceException;
-import java.util.Set;
+import java.util.NavigableSet;
+import java.util.TreeSet;
 import java.util.UUID;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
@@ -63,14 +63,8 @@ import java.util.logging.Logger;
  */
 public class Main {
 
-    private static final int MINIMUM_JAVA_VERSION = 11;
-    private static final int MAXIMUM_JAVA_VERSION = 17;
-    private static final Set<Integer> SUPPORTED_JAVA_VERSIONS =
-            new HashSet<>(Arrays.asList(MINIMUM_JAVA_VERSION, MAXIMUM_JAVA_VERSION));
-    private static final int MINIMUM_JAVA_CLASS_VERSION = 55;
-    private static final int MAXIMUM_JAVA_CLASS_VERSION = 61;
-    private static final Set<Integer> SUPPORTED_JAVA_CLASS_VERSIONS =
-            new HashSet<>(Arrays.asList(MINIMUM_JAVA_CLASS_VERSION, MAXIMUM_JAVA_CLASS_VERSION));
+    private static final NavigableSet<Integer> SUPPORTED_JAVA_VERSIONS =
+            new TreeSet<>(Arrays.asList(11, 17));
 
     private static final Logger LOGGER = Logger.getLogger(Main.class.getName());
 
@@ -99,56 +93,73 @@ public class Main {
      */
     private static final String ENABLE_FUTURE_JAVA_CLI_SWITCH = "--enable-future-java";
 
-    public static void main(String[] args) throws IllegalAccessException {
-        try {
-            String v = System.getProperty("java.class.version");
-            if (v != null) {
-                String classVersionString = v.split("\\.")[0];
-                try {
-                    int javaVersion = Integer.parseInt(classVersionString);
-                    verifyJavaVersion(javaVersion, isFutureJavaEnabled(args));
-                } catch (NumberFormatException e) {
-                    // err on the safe side and keep on going
-                    LOGGER.log(Level.WARNING, "Failed to parse java.class.version: {0}. Will continue execution", v);
-                }
+    /*package*/ static void verifyJavaVersion(int releaseVersion, boolean enableFutureJava) {
+        if (SUPPORTED_JAVA_VERSIONS.contains(releaseVersion)) {
+            // Great!
+        } else if (releaseVersion >= SUPPORTED_JAVA_VERSIONS.first()) {
+            if (enableFutureJava) {
+                LOGGER.log(
+                        Level.WARNING,
+                        "Running with Java {0} from {1}, which is not fully supported."
+                            + " Continuing because {2} is set."
+                            + " Supported Java versions are: {3}."
+                            + " See https://jenkins.io/redirect/java-support/ for more information.",
+                        new Object[] {
+                            releaseVersion,
+                            System.getProperty("java.home"),
+                            ENABLE_FUTURE_JAVA_CLI_SWITCH,
+                            SUPPORTED_JAVA_VERSIONS,
+                        });
+            } else if (releaseVersion > SUPPORTED_JAVA_VERSIONS.last()) {
+                throw new UnsupportedClassVersionError(
+                        String.format(
+                                "Running with Java %d from %s, which is not yet fully supported.%n"
+                                        + "Run the command again with the %s flag to enable preview support for future Java versions.%n"
+                                        + "Supported Java versions are: %s",
+                                releaseVersion,
+                                System.getProperty("java.home"),
+                                ENABLE_FUTURE_JAVA_CLI_SWITCH,
+                                SUPPORTED_JAVA_VERSIONS));
+            } else {
+                throw new UnsupportedClassVersionError(
+                        String.format(
+                                "Running with Java %d from %s, which is not fully supported.%n"
+                                        + "Run the command again with the %s flag to bypass this error.%n"
+                                        + "Supported Java versions are: %s",
+                                releaseVersion,
+                                System.getProperty("java.home"),
+                                ENABLE_FUTURE_JAVA_CLI_SWITCH,
+                                SUPPORTED_JAVA_VERSIONS));
             }
-
-            _main(args);
-        } catch (UnsupportedClassVersionError e) {
-            System.err.printf(
-                    "Jenkins requires Java versions %s but you are running with Java %s from %s%n",
-                    SUPPORTED_JAVA_VERSIONS, System.getProperty("java.specification.version"), System.getProperty("java.home"));
-            e.printStackTrace();
+        } else {
+            throw new UnsupportedClassVersionError(
+                    String.format(
+                            "Running with Java %d from %s, which is older than the minimum required version (Java %d).%n"
+                                    + "Supported Java versions are: %s",
+                            releaseVersion,
+                            System.getProperty("java.home"),
+                            SUPPORTED_JAVA_VERSIONS.first(),
+                            SUPPORTED_JAVA_VERSIONS));
         }
     }
 
-    /*package*/ static void verifyJavaVersion(int javaClassVersion, boolean enableFutureJava) {
-        final String displayVersion = String.format("%d.0", javaClassVersion);
-        if (SUPPORTED_JAVA_CLASS_VERSIONS.contains(javaClassVersion)) {
-            // Great!
-        } else if (javaClassVersion > MINIMUM_JAVA_CLASS_VERSION) {
-            if (enableFutureJava) {
-                LOGGER.log(Level.WARNING,
-                        String.format("Running with Java class version %s which is not in the list of supported versions: %s. " +
-                                        "Argument %s is set, so will continue. " +
-                                        "See https://jenkins.io/redirect/java-support/",
-                                javaClassVersion, SUPPORTED_JAVA_CLASS_VERSIONS, ENABLE_FUTURE_JAVA_CLI_SWITCH));
-            } else {
-                Error error = new UnsupportedClassVersionError(displayVersion);
-                LOGGER.log(Level.SEVERE, String.format("Running with Java class version %s which is not in the list of supported versions: %s. " +
-                                "Run with the " + ENABLE_FUTURE_JAVA_CLI_SWITCH + " flag to enable such behavior. " +
-                                "See https://jenkins.io/redirect/java-support/",
-                        javaClassVersion, SUPPORTED_JAVA_CLASS_VERSIONS), error);
-                throw error;
+    /**
+     * Get the release version of the current JVM.
+     *
+     * @return The release version of the current JVM; e.g., 8, 11, or 17.
+     * @throws NumberFormatException If the release version could not be parsed.
+     */
+    private static int getReleaseVersion() {
+        String version = System.getProperty("java.specification.version");
+        version = version.trim();
+        if (version.startsWith("1.")) {
+            String[] split = version.split("\\.");
+            if (split.length != 2) {
+                throw new NumberFormatException("Invalid Java specification version: " + version);
             }
-        } else {
-            Error error = new UnsupportedClassVersionError(displayVersion);
-            LOGGER.log(Level.SEVERE,
-                    String.format("Running with Java class version %s, which is older than the Minimum required version %s. " +
-                                    "See https://jenkins.io/redirect/java-support/",
-                            javaClassVersion, MINIMUM_JAVA_CLASS_VERSION), error);
-            throw error;
+            version = split[1];
         }
+        return Integer.parseInt(version);
     }
 
     /**
@@ -173,7 +184,15 @@ public class Main {
     @SuppressFBWarnings(
             value = {"PATH_TRAVERSAL_IN", "THROWS_METHOD_THROWS_RUNTIMEEXCEPTION"},
             justification = "User provided values for running the program and intentional propagation of reflection errors")
-    private static void _main(String[] args) throws IllegalAccessException {
+    public static void main(String[] args) throws IllegalAccessException {
+        try {
+            verifyJavaVersion(getReleaseVersion(), isFutureJavaEnabled(args));
+        } catch (UnsupportedClassVersionError e) {
+            System.err.println(e.getMessage());
+            System.err.println("See https://jenkins.io/redirect/java-support/ for more information.");
+            System.exit(1);
+        }
+
         //Allows to pass arguments through stdin to "hide" sensitive parameters like httpsKeyStorePassword
         //to achieve this use --paramsFromStdIn
         if (hasArgument("--paramsFromStdIn", args)) {
@@ -295,7 +314,7 @@ public class Main {
                 "                              (NOTE: this option does not change the directory where the plugin archives are stored)\n" +
                 "   --extractedFilesFolder   = folder where extracted files are to be located. Default is the temp folder\n" +
                 "   --logfile                = redirect log messages to this file\n" +
-                "   " + ENABLE_FUTURE_JAVA_CLI_SWITCH + "     = allows running with new Java versions which are not fully supported (class version " + MINIMUM_JAVA_CLASS_VERSION + " and above)\n" +
+                "   " + ENABLE_FUTURE_JAVA_CLI_SWITCH + "     = allows running with Java versions which are not fully supported\n" +
                 "{OPTIONS}");
 
         if (!DISABLE_CUSTOM_JSESSIONID_COOKIE_NAME) {
