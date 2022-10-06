@@ -72,6 +72,11 @@ function registerTooltips(container) {
         content: (element) => element.getAttribute("data-html-tooltip"),
         allowHTML: true,
         container: container,
+        onCreate(instance) {
+          instance.props.interactive =
+            instance.reference.getAttribute("data-tooltip-interactive") ===
+            "true";
+        },
       },
       TOOLTIP_BASE
     )

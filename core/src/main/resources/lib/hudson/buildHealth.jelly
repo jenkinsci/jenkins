@@ -65,6 +65,7 @@ THE SOFTWARE.
             </table>
           </div>
         </x:attribute>
+        <x:attribute name="data-tooltip-interactive">true</x:attribute>
       </j:if>
         <j:if test="${buildHealth!=null}">
             <div class="jenkins-table__cell__button-wrapper">
