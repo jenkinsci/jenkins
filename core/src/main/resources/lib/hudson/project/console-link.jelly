@@ -32,9 +32,8 @@ THE SOFTWARE.
             <l:task href="${buildUrl.baseUrl}/consoleText" icon="icon-document icon-md" title="${%View as plain text}"/>
         </j:when>
         <j:otherwise>
-            <l:task icon="images/svgs/terminal.svg" href="${buildUrl.baseUrl}/console" title="${%Console Output}">
-                <l:task href="${buildUrl.baseUrl}/consoleText" icon="icon-document icon-md" title="${%View as plain text}"/>
-            </l:task>
+            <l:task icon="images/svgs/terminal.svg" href="${buildUrl.baseUrl}/console" title="${%Console Output}"/>
+            <l:task href="${buildUrl.baseUrl}/consoleText" icon="icon-document icon-md" title="${%View as plain text}"/>
         </j:otherwise>
     </j:choose>
 </j:jelly>
