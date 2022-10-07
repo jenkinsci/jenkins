@@ -23,11 +23,11 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
-  <st:documentation>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:s="/lib/form">
+  <st:documentation> <![CDATA[
     Generates a form for creating something out of descriptors by (1) selecting a descriptor and specifying a name.
-    This also presents a copy option. This should be placed inside &lt;l:main-panel>.
-
+    This also presents a copy option. This should be placed inside <l:main-panel>.
+    ]]>
     <st:attribute name="action">
       Specify where the form will be submitted to. Defaults to 'createItem'.
     </st:attribute>

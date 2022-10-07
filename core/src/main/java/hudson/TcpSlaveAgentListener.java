@@ -253,8 +253,9 @@ public final class TcpSlaveAgentListener extends Thread {
 
         @Override
         public void run() {
+            String connectionInfo = "#" + id + " from " + s.getRemoteSocketAddress();
             try {
-                LOGGER.log(Level.FINE, "Accepted connection #{0} from {1}", new Object[] {id, s.getRemoteSocketAddress()});
+                LOGGER.log(Level.FINE, () -> "Accepted connection " + connectionInfo);
 
                 DataInputStream in = new DataInputStream(s.getInputStream());
 
@@ -277,7 +278,7 @@ public final class TcpSlaveAgentListener extends Thread {
                     AgentProtocol p = AgentProtocol.of(protocol);
                     if (p != null) {
                         if (Jenkins.get().getAgentProtocols().contains(protocol)) {
-                            LOGGER.log(p instanceof PingAgentProtocol ? Level.FINE : Level.INFO, "Accepted {0} connection #{1} from {2}", new Object[] {protocol, id, this.s.getRemoteSocketAddress()});
+                            LOGGER.log(p instanceof PingAgentProtocol ? Level.FINE : Level.INFO, () -> "Accepted " + protocol + " connection " + connectionInfo);
                             p.handle(this.s);
                         } else {
                             error("Disabled protocol:" + s, this.s);
@@ -288,7 +289,7 @@ public final class TcpSlaveAgentListener extends Thread {
                     error("Unrecognized protocol: " + s, this.s);
                 }
             } catch (InterruptedException e) {
-                LOGGER.log(Level.WARNING, "Connection #" + id + " aborted", e);
+                LOGGER.log(Level.WARNING, e, () -> "Connection " + connectionInfo + " aborted");
                 try {
                     s.close();
                 } catch (IOException ex) {
@@ -296,9 +297,9 @@ public final class TcpSlaveAgentListener extends Thread {
                 }
             } catch (IOException e) {
                 if (e instanceof EOFException) {
-                    LOGGER.log(Level.INFO, "Connection #{0} failed: {1}", new Object[] {id, e});
+                    LOGGER.log(Level.INFO, () -> "Connection " + connectionInfo + " failed: " + e.getMessage());
                 } else {
-                    LOGGER.log(Level.WARNING, "Connection #" + id + " failed", e);
+                    LOGGER.log(Level.WARNING, e, () -> "Connection " + connectionInfo + " failed");
                 }
                 try {
                     s.close();

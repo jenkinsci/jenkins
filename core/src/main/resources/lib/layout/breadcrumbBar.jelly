@@ -24,14 +24,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:i="jelly:fmt" xmlns:x="jelly:xml">
-  <st:documentation>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout">
+  <st:documentation> <![CDATA[
     Generates the bar that shows breadcrumbs, along with its associated dynamic behaviours.
     This tag is used by l:layout and not expected to be used by anyone else,
     but it's written as separate tag for better readability of code.
 
     To render additional breadcrumb items (for example to provide in-page navigations),
-    use the &lt;l:breadcrumb> tag.
+    use the <l:breadcrumb> tag.
+    ]]>
   </st:documentation>
 
   <st:adjunct includes="lib.layout.breadcrumbs" />

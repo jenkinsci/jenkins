@@ -23,10 +23,10 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <st:documentation>
-    Displays the build queue as &lt;l:pane>
-
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <st:documentation> <![CDATA[
+    Displays the build queue as <l:pane>
+    ]]>
     <st:attribute name="items" use="required">
       Queue items to be displayed. Normally you should specify ${app.queue.items},
       but for example you can specify a sublist after some filtering to narrow down
