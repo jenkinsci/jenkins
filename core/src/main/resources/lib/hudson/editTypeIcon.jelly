@@ -27,4 +27,8 @@ THE SOFTWARE.
 	<%@ attribute name="type" type="hudson.scm.EditType" required="true" %>
 -->
 <?jelly escape-by-default='true'?>
+<<<<<<< Updated upstream
 <l:icon alt="${type.description}" class="icon-sm" src="symbol-edit-note" title="${type.description}" xmlns:l="/lib/layout"/>
+=======
+<l:icon alt="${type.description}" class="icon-sm" src="symbol-${type.name}" title="${type.description}" xmlns:l="/lib/layout"/>
+>>>>>>> Stashed changes

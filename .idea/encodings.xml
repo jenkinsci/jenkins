@@ -9,11 +9,15 @@
     <file url="file://$PROJECT_DIR$/cli/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/cli/src/test/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/cli/src/test/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/cli/target/generated-sources/localizer" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/core/src/filter/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/core/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/core/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/core/src/test/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/core/src/test/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/core/target/generated-sources/antlr" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/core/target/generated-sources/localizer" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/core/target/generated-sources/taglib-interface" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/coverage/src/filter/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/coverage/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/coverage/src/main/resources" charset="UTF-8" />
