@@ -218,11 +218,11 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     /**
      * When this {@link FilePath} represents the remote path,
      * this field is always non-null on the controller (the field represents
-     * the channel to the remote agent.) When transferred to an agent via remoting,
-     * this field reverts to null, since it's transient.
+     * the channel to the remote agent.) When transferred to a agent via remoting,
+     * this field reverts back to null, since it's transient.
      *
      * When this {@link FilePath} represents a path on the controller,
-     * this field is null on the controller. When transferred to an agent via remoting,
+     * this field is null on the controller. When transferred to a agent via remoting,
      * this field becomes non-null, representing the {@link Channel}
      * back to the controller.
      *
@@ -265,7 +265,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     /**
      * Construct a path starting with a base location.
      * @param base starting point for resolution, and defines channel
-     * @param rel a path that when relative will be resolved against base
+     * @param rel a path which if relative will be resolved against base
      */
     public FilePath(@NonNull FilePath base, @NonNull String rel) {
         this.channel = base.channel;
@@ -366,11 +366,11 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      * Checks if the remote path is Unix.
      */
     boolean isUnix() {
-        // if the path represents a local path, there's no need to guess.
+        // if the path represents a local path, there' no need to guess.
         if (!isRemote())
             return File.pathSeparatorChar != ';';
 
-        // note that we can't use the usual File.pathSeparator etc., as the OS of
+        // note that we can't use the usual File.pathSeparator and etc., as the OS of
         // the machine where this code runs and the OS that this FilePath refers to may be different.
 
         // Windows absolute path is 'X:\...', so this is usually a good indication of Windows path
@@ -831,7 +831,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     }
 
     /**
-     * Resolves symlink, if the given file is a symlink. Otherwise, return null.
+     * Resolves symlink, if the given file is a symlink. Otherwise return null.
      * <p>
      * If the resolution fails, report an error.
      *
@@ -1209,7 +1209,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     }
 
     /**
-     * Abstract {@link DelegatingCallable} that exposes a Before/After pattern for
+     * Abstract {@link DelegatingCallable} that exposes an Before/After pattern for
      * {@link hudson.FilePath.FileCallableWrapperFactory} that want to implement AOP-style interceptors
      * @since 1.482
      */
@@ -2217,7 +2217,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
            newInputStreamDenyingSymlinkAsNeeded(...) demonstrates how this would be done.
 
            This is useful for preventing symlink following on systems that don't support
-           LinkOption.NOFOLLOW_LINK. Notable among those, is AIX. It is also important for
+           LinkOption.NOFOLLOW_LINK. Notable among those is AIX. It is also important for
            prohibiting Windows Junctions, which are not considered symlinks by the
            Files.newInputStream(path, LinkOption.NOFOLLOW_LINKS) implementation.
         */
@@ -2296,38 +2296,34 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      */
     public InputStream readFromOffset(final long offset) throws IOException, InterruptedException {
         if (channel == null) {
-            final RandomAccessFile raf = new RandomAccessFile(new File(remote), "r");
-            try {
-                raf.seek(offset);
-            } catch (IOException e) {
+            try (RandomAccessFile raf = new RandomAccessFile(new File(remote), "r")) {
                 try {
-                    raf.close();
-                } catch (IOException e1) {
-                    // ignore
+                    raf.seek(offset);
+                } catch (IOException e) {
+                    throw e;
                 }
-                throw e;
+                return new InputStream() {
+                    @Override
+                    public int read() throws IOException {
+                        return raf.read();
+                    }
+
+                    @Override
+                    public void close() throws IOException {
+                        raf.close();
+                    }
+
+                    @Override
+                    public int read(byte[] b, int off, int len) throws IOException {
+                        return raf.read(b, off, len);
+                    }
+
+                    @Override
+                    public int read(byte[] b) throws IOException {
+                        return raf.read(b);
+                    }
+                };
             }
-            return new InputStream() {
-                @Override
-                public int read() throws IOException {
-                    return raf.read();
-                }
-
-                @Override
-                public void close() throws IOException {
-                    raf.close();
-                }
-
-                @Override
-                public int read(byte[] b, int off, int len) throws IOException {
-                    return raf.read(b, off, len);
-                }
-
-                @Override
-                public int read(byte[] b) throws IOException {
-                    return raf.read(b);
-                }
-            };
         }
 
         final Pipe p = Pipe.createRemoteToLocal();
@@ -2511,14 +2507,14 @@ public final class FilePath implements SerializableOnlyOverRemoting {
             @Override
             public Void invoke(File f, VirtualChannel channel) throws IOException {
                 // JENKINS-16846: if f.getName() is the same as one of the files/directories in f,
-                // the rename op will fail
+                // then the rename op will fail
                 File tmp = new File(f.getAbsolutePath() + ".__rename");
                 if (!f.renameTo(tmp))
                     throw new IOException("Failed to rename " + f + " to " + tmp);
 
                 File t = new File(target.getRemote());
 
-                for (File child : tmp.listFiles()) {
+                for (File child : Objects.requireNonNull(tmp.listFiles())) {
                     File target = new File(t, child.getName());
                     if (!child.renameTo(target))
                         throw new IOException("Failed to rename " + child + " to " + target);
@@ -2668,7 +2664,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      * @param fileMask
      *      Ant GLOB pattern.
      *      String like "foo/bar/*.xml" Multiple patterns can be separated
-     *      by ',', and whitespace can surround ',' so that you can write
+     *      by ',', and whitespace can surround ',' (so that you can write
      *      "abc, def" and "abc,def" to mean the same thing.
      * @return
      *      the number of files copied.
@@ -2683,7 +2679,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      * @param fileMask
      *      Ant GLOB pattern.
      *      String like "foo/bar/*.xml" Multiple patterns can be separated
-     *      by ',', and whitespace can surround ',' so that you can write
+     *      by ',', and whitespace can surround ',' (so that you can write
      *      "abc, def" and "abc,def" to mean the same thing.
      * @param excludes
      *      Files to be excluded. Can be null.
@@ -3012,7 +3008,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      * Same as {@link #validateAntFileMask(String, int)} with (practically) unbounded number of operations.
      *
      * @return
-     *      null if no error was found. Otherwise, returns a human-readable error message.
+     *      null if no error was found. Otherwise returns a human readable error message.
      * @since 1.90
      * @see #validateFileMask(FilePath, String)
      * @deprecated use {@link #validateAntFileMask(String, int)} instead
@@ -3110,8 +3106,8 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                     if (hasMatch(dir, fileMask, caseSensitive))
                         continue;   // no error on this portion
 
-                    // JENKINS-5253 - if we can get some match in case-insensitive mode
-                    // and user requested case-sensitive match, notify the user
+                    // JENKINS-5253 - if we can get some match in case insensitive mode
+                    // and user requested case sensitive match, notify the user
                     if (caseSensitive && hasMatch(dir, fileMask, false)) {
                         return Messages.FilePath_validateAntFileMask_matchWithCaseInsensitive(fileMask);
                     }
@@ -3148,7 +3144,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                         fs.setCaseSensitive(caseSensitive);
                         DirectoryScanner ds = fs.getDirectoryScanner(new Project());
                         if (ds.getIncludedFilesCount() != 0) {
-                            // try shorter name first so that the suggestion results in the least amount of changes
+                            // try shorter name first so that the suggestion results in least amount of changes
                             String[] names = ds.getIncludedFiles();
                             Arrays.sort(names, SHORTER_STRING_FIRST);
                             for (String f : names) {
@@ -3172,7 +3168,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                         }
                     }
 
-                    { // finally, see if we can identify any sub portion that's valid. Otherwise, bail out
+                    { // finally, see if we can identify any sub portion that's valid. Otherwise bail out
                         String previous = null;
                         String pattern = fileMask;
 
@@ -3343,7 +3339,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      * @param value
      *      The relative path being validated.
      * @param errorIfNotExist
-     *      If true, report an error if the given relative path doesn't exist. Otherwise, it's a warning.
+     *      If true, report an error if the given relative path doesn't exist. Otherwise it's a warning.
      * @param expectingFile
      *      If true, we expect the relative path to point to a file.
      *      Otherwise, the relative path is expected to be pointing to a directory.
@@ -3668,7 +3664,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                 Path directChild = this.getDirectChild(currentFilePath, remainingPath);
                 Path childUsingFullPath = currentFilePath.resolve(remainingPath);
                 String childUsingFullPathAbs = childUsingFullPath.toAbsolutePath().toString();
-                String directChildAbs = directChild.toAbsolutePath().toString();
+                String directChildAbs = Objects.requireNonNull(directChild).toAbsolutePath().toString();
 
                 if (childUsingFullPathAbs.length() == directChildAbs.length()) {
                     remainingPath = "";
