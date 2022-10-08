@@ -366,7 +366,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      * Checks if the remote path is Unix.
      */
     boolean isUnix() {
-        // if the path represents a local path, there' no need to guess.
+        // if the path represents a local path, there's no need to guess.
         if (!isRemote())
             return File.pathSeparatorChar != ';';
 
