@@ -48,7 +48,6 @@ import java.nio.charset.StandardCharsets;
 import java.security.interfaces.RSAPublicKey;
 import java.util.Arrays;
 import java.util.Base64;
-import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.AgentProtocol;
@@ -135,7 +134,7 @@ public final class TcpSlaveAgentListener extends Thread {
           return CLI_HOST_NAME;
         }
         try {
-            return new URL(Objects.requireNonNull(Jenkins.get().getRootUrl())).getHost();
+            return new URL(Jenkins.get().getRootUrl()).getHost();
         } catch (MalformedURLException e) {
             throw new IllegalStateException("Could not get TcpSlaveAgentListener host name", e);
         }
@@ -210,10 +209,9 @@ public final class TcpSlaveAgentListener extends Thread {
             SocketAddress localAddress = serverSocket.getLocalAddress();
             if (localAddress instanceof InetSocketAddress) {
                 InetSocketAddress address = (InetSocketAddress) localAddress;
-                try (Socket client = new Socket(address.getHostName(), address.getPort())) {
-                    client.setSoTimeout(1000); // waking the acceptor loop should be quick
-                    new PingAgentProtocol().connect(client);
-                }
+                Socket client = new Socket(address.getHostName(), address.getPort());
+                client.setSoTimeout(1000); // waking the acceptor loop should be quick
+                new PingAgentProtocol().connect(client);
             }
         } catch (IOException e) {
             LOGGER.log(Level.FINE, "Failed to send Ping to wake acceptor loop", e);
@@ -355,7 +353,7 @@ public final class TcpSlaveAgentListener extends Thread {
 
     // This is essentially just to be able to pass the parent thread into the callback, as it can't access it otherwise
     private abstract static class ConnectionHandlerFailureCallback {
-        private final Thread parentThread;
+        private Thread parentThread;
 
         ConnectionHandlerFailureCallback(Thread parentThread) {
             this.parentThread = parentThread;
@@ -507,11 +505,11 @@ public final class TcpSlaveAgentListener extends Thread {
         }
 
         public static void schedule(Thread originThread, Throwable cause, long approxDelay) {
-            TcpSlaveAgentListenerRescheduler reScheduler = AperiodicWork.all().get(TcpSlaveAgentListenerRescheduler.class);
-            reScheduler.originThread = originThread;
-            reScheduler.cause = cause;
-            reScheduler.recurrencePeriod = approxDelay;
-            reScheduler.isActive = true;
+            TcpSlaveAgentListenerRescheduler rescheduler = AperiodicWork.all().get(TcpSlaveAgentListenerRescheduler.class);
+            rescheduler.originThread = originThread;
+            rescheduler.cause = cause;
+            rescheduler.recurrencePeriod = approxDelay;
+            rescheduler.isActive = true;
         }
     }
 
