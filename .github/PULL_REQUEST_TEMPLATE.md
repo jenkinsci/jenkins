@@ -16,13 +16,20 @@ If the issue is not fully described in Jira, add more information here (justific
 
 ### Proposed changelog entries
 
-- Entry 1: Issue, human-readable text
-- […]
-
-<!-- Comment:
+<!--
+Please propose a changelog entry (or entries) for this pull request below between the lines with three backticks.
+Add more than one entry if necessary, but be aware that this is usually an indicator that a PR should be split into multiple PRs.
 The changelog entry should be in the imperative mood; e.g., write "do this"/"return that" rather than "does this"/"returns that".
+Use basic HTML like '<strong>', '<a href="…">', '<code>' to format changelog entries. Please do not use Markdown or Asciidoc.
+
 For examples, see: https://www.jenkins.io/changelog/
+
+Full changelog entry guideline: https://github.com/jenkins-infra/jenkins.io/blob/master/content/_data/changelogs/_STYLEGUIDE.adoc#labels
 -->
+
+```
+- Improve spline reticulation.
+```
 
 ### Proposed upgrade guidelines
 
