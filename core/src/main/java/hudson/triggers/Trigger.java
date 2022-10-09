@@ -292,11 +292,13 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
                                 long begin_time = System.currentTimeMillis();
                                 t.run();
                                 long end_time = System.currentTimeMillis();
+                                String elapsed = Util.getTimeSpanString(end_time - begin_time);
+                                TriggerDescriptor descriptor = t.getDescriptor();
+                                String name = descriptor.getDisplayName();
+                                LOGGER.log(Level.FINER, String.format("Trigger '%s' triggered by '%s' (%s) successfully ran in %s.", name, p.getFullDisplayName(), p.getFullName(), elapsed));
                                 if (end_time - begin_time > CRON_THRESHOLD * 1000) {
-                                    TriggerDescriptor descriptor = t.getDescriptor();
-                                    String name = descriptor.getDisplayName();
                                     final String msg = String.format("Trigger '%s' triggered by '%s' (%s) spent too much time (%s) in its execution, other timers could be delayed.",
-                                            name, p.getFullDisplayName(), p.getFullName(), Util.getTimeSpanString(end_time - begin_time));
+                                            name, p.getFullDisplayName(), p.getFullName(), elapsed);
                                     LOGGER.log(Level.WARNING, msg);
                                     SlowTriggerAdminMonitor.getInstance().report(descriptor.getClass(), p.getFullName(), end_time - begin_time);
                                 }
