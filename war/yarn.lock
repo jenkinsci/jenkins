@@ -4311,7 +4311,7 @@ __metadata:
     jenkins-js-modules: 1.5.4
     jquery: 3.6.1
     less: 4.1.3
-    less-loader: 11.0.0
+    less-loader: 11.1.0
     lodash: 4.17.21
     mini-css-extract-plugin: 2.6.1
     postcss: 8.4.17
@@ -4496,15 +4496,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"less-loader@npm:11.0.0":
-  version: 11.0.0
-  resolution: "less-loader@npm:11.0.0"
+"less-loader@npm:11.1.0":
+  version: 11.1.0
+  resolution: "less-loader@npm:11.1.0"
   dependencies:
     klona: ^2.0.4
   peerDependencies:
     less: ^3.5.0 || ^4.0.0
     webpack: ^5.0.0
-  checksum: fe5f810549a04c3d1b7fdd838c598e1dd7e6ed35428bdc7ec0caa4e7f2c07abfd1519c477aca713ca1259f88905dae25dd5f0c27b61071d9ce0dfefded86be1a
+  checksum: 041216e0a6d95e24c9724f470719db3eb70b3888c45b1a1e9cd55edabe8ae79709522cd6c6713b466b3e9948544074e2a5b2be50ac3ced5ff41dfa9675f3b182
   languageName: node
   linkType: hard
 
