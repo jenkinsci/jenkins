@@ -59,13 +59,9 @@ for (i = 0; i < buildTypes.size(); i++) {
                 'clean',
                 'install',
               ]
-              try {
-                infra.runMaven(mavenOptions, jdk)
-                if (isUnix()) {
-                  sh 'git add . && git diff --exit-code HEAD'
-                }
-              } finally {
-                archiveArtifacts allowEmptyArchive: true, artifacts: '**/target/surefire-reports/*.dumpstream'
+              infra.runMaven(mavenOptions, jdk)
+              if (isUnix()) {
+                sh 'git add . && git diff --exit-code HEAD'
               }
             }
           }
@@ -73,6 +69,7 @@ for (i = 0; i < buildTypes.size(); i++) {
 
         // Once we've built, archive the artifacts and the test results.
         stage("${buildType} Publishing") {
+          archiveArtifacts allowEmptyArchive: true, artifacts: '**/target/surefire-reports/*.dumpstream'
           if (!fileExists('core/target/surefire-reports/TEST-jenkins.Junit4TestsRanTest.xml')) {
             error 'JUnit 4 tests are no longer being run for the core package'
           }
