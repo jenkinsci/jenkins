@@ -315,6 +315,8 @@ public class Main {
                 "   --extractedFilesFolder   = folder where extracted files are to be located. Default is the temp folder\n" +
                 "   --logfile                = redirect log messages to this file\n" +
                 "   " + ENABLE_FUTURE_JAVA_CLI_SWITCH + "     = allows running with Java versions which are not fully supported\n" +
+                "   --paramsFromStdIn        = Read parameters from standard input (stdin)\n" +
+                "   --version                = Print version to standard output (stdout) and exit\n" +
                 "{OPTIONS}");
 
         if (!DISABLE_CUSTOM_JSESSIONID_COOKIE_NAME) {
