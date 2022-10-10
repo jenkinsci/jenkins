@@ -76,12 +76,14 @@ public class AgentInboundUrlTest {
         addTestAgent();
 
         // parse the JNLP page into DOM to inspect the jnlp url argument.
-        JenkinsRule.WebClient agent = j.createWebClient();
-        XmlPage jnlp = (XmlPage) agent.goTo("computer/test/jenkins-agent.jnlp", "application/x-java-jnlp-file");
-        Document dom = new DOMReader().read(jnlp.getXmlDocument());
-        Object arg = dom.selectSingleNode("//application-desc/argument[3]/following-sibling::argument[1]");
-        String val = ((Element) arg).getText();
-        assertEquals(customInboundUrl, val);
+        XmlPage jnlp;
+        try (JenkinsRule.WebClient agent = j.createWebClient()) {
+            jnlp = (XmlPage) agent.goTo("computer/test/jenkins-agent.jnlp", "application/x-java-jnlp-file");
+            Document dom = new DOMReader().read(jnlp.getXmlDocument());
+            Object arg = dom.selectSingleNode("//application-desc/argument[3]/following-sibling::argument[1]");
+            String val = ((Element) arg).getText();
+            assertEquals(customInboundUrl, val);
+        }
     }
 
     /**
@@ -97,8 +99,12 @@ public class AgentInboundUrlTest {
     private void addTestAgent(ComputerLauncher launcher) throws Exception {
         List<Node> agents = new ArrayList<>(j.jenkins.getNodes());
         File dir = Util.createTempDir();
-        agents.add(new DumbSlave("test", "dummy", dir.getAbsolutePath(), "1", Node.Mode.NORMAL, "",
-                launcher, RetentionStrategy.INSTANCE, new ArrayList<>()));
+        DumbSlave agent = new DumbSlave("test", dir.getAbsolutePath(), launcher);
+        agent.setLabelString("");
+        agent.setRetentionStrategy(RetentionStrategy.INSTANCE);
+        agent.setNodeDescription("dummy");
+        agent.setNodeProperties(new ArrayList<>());
+        agents.add(agent);
         j.jenkins.setNodes(agents);
         Computer c = j.jenkins.getComputer("test");
         assertNotNull(c);

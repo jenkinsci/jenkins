@@ -8,17 +8,16 @@ import static org.junit.Assert.assertNull;
 
 import hudson.model.Computer;
 import hudson.model.ComputerSet;
-import hudson.model.Node;
 import hudson.model.User;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.JNLPLauncher;
 import hudson.slaves.OfflineCause;
 import hudson.slaves.RetentionStrategy;
 import hudson.slaves.SlaveComputer;
-import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 
@@ -29,6 +28,9 @@ public class ResponseTimeMonitorTest {
 
     @Rule
     public JenkinsRule j = new JenkinsRule();
+
+    @Rule
+    public TemporaryFolder tempFolder = new TemporaryFolder();
 
     /**
      * Makes sure that it doesn't try to monitor an already-offline agent.
@@ -57,7 +59,8 @@ public class ResponseTimeMonitorTest {
 
     @Test
     public void doNotDisconnectBeforeLaunched() throws Exception {
-        DumbSlave slave = new DumbSlave("dummy", "dummy", j.createTmpDir().getPath(), "1", Node.Mode.NORMAL, "", new JNLPLauncher(), RetentionStrategy.NOOP, Collections.EMPTY_LIST);
+        DumbSlave slave = new DumbSlave("dummy", tempFolder.toString(), new JNLPLauncher(false));
+        slave.setRetentionStrategy(RetentionStrategy.NOOP);
         j.jenkins.addNode(slave);
         Computer c = slave.toComputer();
         assertNotNull(c);
