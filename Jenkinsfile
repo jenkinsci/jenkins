@@ -67,77 +67,77 @@ for (i = 0; i < buildTypes.size(); i++) {
               }
             }
           }
-        }
 
-        // Once we've built, archive the artifacts and the test results.
-        stage("${buildType} Publishing") {
-          archiveArtifacts allowEmptyArchive: true, artifacts: '**/target/surefire-reports/*.dumpstream'
-          if (!fileExists('core/target/surefire-reports/TEST-jenkins.Junit4TestsRanTest.xml')) {
-            error 'JUnit 4 tests are no longer being run for the core package'
-          }
-          if (!fileExists('test/target/surefire-reports/TEST-jenkins.Junit4TestsRanTest.xml')) {
-            error 'JUnit 4 tests are no longer being run for the test package'
-          }
-          // cli and war have been migrated to JUnit 5
-          if (failFast && currentBuild.result == 'UNSTABLE') {
-            error 'There were test failures; halting early'
-          }
-          if (buildType == 'Linux' && jdk == jdks[0]) {
-            def folders = env.JOB_NAME.split('/')
-            if (folders.length > 1) {
-              discoverGitReferenceBuild(scm: folders[1])
+          // Once we've built, archive the artifacts and the test results.
+          stage("${buildType} Publishing") {
+            archiveArtifacts allowEmptyArchive: true, artifacts: '**/target/surefire-reports/*.dumpstream'
+            if (!fileExists('core/target/surefire-reports/TEST-jenkins.Junit4TestsRanTest.xml')) {
+              error 'JUnit 4 tests are no longer being run for the core package'
             }
-            publishCoverage calculateDiffForChangeRequests: true, adapters: [jacocoAdapter('coverage/target/site/jacoco-aggregate/jacoco.xml')]
+            if (!fileExists('test/target/surefire-reports/TEST-jenkins.Junit4TestsRanTest.xml')) {
+              error 'JUnit 4 tests are no longer being run for the test package'
+            }
+            // cli and war have been migrated to JUnit 5
+            if (failFast && currentBuild.result == 'UNSTABLE') {
+              error 'There were test failures; halting early'
+            }
+            if (buildType == 'Linux' && jdk == jdks[0]) {
+              def folders = env.JOB_NAME.split('/')
+              if (folders.length > 1) {
+                discoverGitReferenceBuild(scm: folders[1])
+              }
+              publishCoverage calculateDiffForChangeRequests: true, adapters: [jacocoAdapter('coverage/target/site/jacoco-aggregate/jacoco.xml')]
 
-            echo "Recording static analysis results for '${buildType}'"
-            recordIssues(
-                enabledForFailure: true,
-                tools: [java(), javaDoc()],
-                filters: [excludeFile('.*Assert.java')],
+              echo "Recording static analysis results for '${buildType}'"
+              recordIssues(
+                  enabledForFailure: true,
+                  tools: [java(), javaDoc()],
+                  filters: [excludeFile('.*Assert.java')],
+                  sourceCodeEncoding: 'UTF-8',
+                  skipBlames: true,
+                  trendChartType: 'TOOLS_ONLY'
+                  )
+              recordIssues([tool: spotBugs(pattern: '**/target/spotbugsXml.xml'),
                 sourceCodeEncoding: 'UTF-8',
                 skipBlames: true,
-                trendChartType: 'TOOLS_ONLY'
-                )
-            recordIssues([tool: spotBugs(pattern: '**/target/spotbugsXml.xml'),
-              sourceCodeEncoding: 'UTF-8',
-              skipBlames: true,
-              trendChartType: 'TOOLS_ONLY',
-              qualityGates: [
-                [threshold: 1, type: 'NEW', unstable: true],
-              ]])
-            recordIssues([tool: checkStyle(pattern: '**/target/checkstyle-result.xml'),
-              sourceCodeEncoding: 'UTF-8',
-              skipBlames: true,
-              trendChartType: 'TOOLS_ONLY',
-              qualityGates: [
-                [threshold: 1, type: 'TOTAL', unstable: true],
-              ]])
-             recordIssues([tool: esLint(pattern: '**/target/eslint-warnings.xml'),
-              sourceCodeEncoding: 'UTF-8',
-              skipBlames: true,
-              trendChartType: 'TOOLS_ONLY',
-              qualityGates: [
-                [threshold: 1, type: 'TOTAL', unstable: true],
-              ]])
+                trendChartType: 'TOOLS_ONLY',
+                qualityGates: [
+                  [threshold: 1, type: 'NEW', unstable: true],
+                ]])
+              recordIssues([tool: checkStyle(pattern: '**/target/checkstyle-result.xml'),
+                sourceCodeEncoding: 'UTF-8',
+                skipBlames: true,
+                trendChartType: 'TOOLS_ONLY',
+                qualityGates: [
+                  [threshold: 1, type: 'TOTAL', unstable: true],
+                ]])
+              recordIssues([tool: esLint(pattern: '**/target/eslint-warnings.xml'),
+                sourceCodeEncoding: 'UTF-8',
+                skipBlames: true,
+                trendChartType: 'TOOLS_ONLY',
+                qualityGates: [
+                  [threshold: 1, type: 'TOTAL', unstable: true],
+                ]])
               recordIssues([tool: styleLint(pattern: '**/target/stylelint-warnings.xml'),
-              sourceCodeEncoding: 'UTF-8',
-              skipBlames: true,
-              trendChartType: 'TOOLS_ONLY',
-              qualityGates: [
-                [threshold: 1, type: 'TOTAL', unstable: true],
-              ]])
-            if (failFast && currentBuild.result == 'UNSTABLE') {
-              error 'Static analysis quality gates not passed; halting early'
-            }
+                sourceCodeEncoding: 'UTF-8',
+                skipBlames: true,
+                trendChartType: 'TOOLS_ONLY',
+                qualityGates: [
+                  [threshold: 1, type: 'TOTAL', unstable: true],
+                ]])
+              if (failFast && currentBuild.result == 'UNSTABLE') {
+                error 'Static analysis quality gates not passed; halting early'
+              }
 
-            def changelist = readFile(changelistF)
-            dir(m2repo) {
-              archiveArtifacts(
-                  artifacts: "**/*$changelist/*$changelist*",
-                  excludes: '**/*.lastUpdated,**/jenkins-coverage*/,**/jenkins-test*/',
-                  allowEmptyArchive: true, // in case we forgot to reincrementalify
-                  fingerprint: true
-                  )
+              def changelist = readFile(changelistF)
+              dir(m2repo) {
+                archiveArtifacts(
+                    artifacts: "**/*$changelist/*$changelist*",
+                    excludes: '**/*.lastUpdated,**/jenkins-coverage*/,**/jenkins-test*/',
+                    allowEmptyArchive: true, // in case we forgot to reincrementalify
+                    fingerprint: true
+                    )
+              }
             }
           }
         }
