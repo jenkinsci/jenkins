@@ -121,7 +121,6 @@ import javax.servlet.http.HttpServletResponse;
 import jenkins.model.BlockedBecauseOfBuildInProgress;
 import jenkins.model.Jenkins;
 import jenkins.security.QueueItemAuthenticatorConfiguration;
-import jenkins.security.apitoken.ApiTokenTestHelper;
 import org.acegisecurity.acls.sid.PrincipalSid;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
@@ -981,8 +980,6 @@ public class QueueTest {
     @Issue({"SECURITY-186", "SECURITY-618"})
     @Test
     public void queueApiOutputShouldBeFilteredByUserPermission() throws Exception {
-        ApiTokenTestHelper.enableLegacyBehavior();
-
         r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
         ProjectMatrixAuthorizationStrategy str = new ProjectMatrixAuthorizationStrategy();
         str.add(Jenkins.READ, "bob");
