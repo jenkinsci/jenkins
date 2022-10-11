@@ -97,7 +97,7 @@ public class LabelAtom extends Label implements Saveable {
     }
 
     /**
-     * If the label contains 'unsafe' chars, escape them.
+     * If the label contains "unsafe" chars, escape them.
      */
     @Override
     public String getExpression() {
@@ -159,9 +159,66 @@ public class LabelAtom extends Label implements Saveable {
      * Returns label color as string. In case of empty string (or null)
      * it means there are no color assigned.
      */
-    @SuppressWarnings("unused") // used by jelly view
+    @SuppressWarnings("unused") // used by jelly view in /computer/labels
     public String getColor() {
-        return color;
+        if (color == null || color.isEmpty()) {
+            color = getSupportedColors().get(0);
+        }
+        if (color.startsWith("#")) {
+           return color;
+        }
+
+        return "var(--" + color + ")";
+    }
+
+    @SuppressWarnings("unused") // used by jelly view in /computer/labels
+    public String getColorCssClassId() {
+        // remove invalid css characters
+        return this.getColor().replace("#", "").replaceAll(" ", "").replace("(", "").replace(")", "").replaceAll("-", "");
+    }
+
+    public static List<String> getSupportedColors() {
+        List<String> list = new ArrayList<>();
+
+        list.add("background");
+
+        list.add("light-red");
+        list.add("red");
+        list.add("dark-red");
+
+        list.add("light-green");
+        list.add("green");
+        list.add("dark-green");
+
+        list.add("light-orange");
+        list.add("orange");
+        list.add("dark-orange");
+
+        list.add("light-yellow");
+        list.add("yellow");
+        list.add("dark-yellow");
+
+        list.add("light-blue");
+        list.add("blue");
+        list.add("dark-blue");
+
+        list.add("light-indigo");
+        list.add("indigo");
+        list.add("dark-indigo");
+
+        list.add("light-purple");
+        list.add("purple");
+        list.add("dark-purple");
+
+        list.add("light-pink");
+        list.add("pink");
+        list.add("dark-pink");
+
+        list.add("light-brown");
+        list.add("brown");
+        list.add("dark-brown");
+
+        return list;
     }
 
     /**
@@ -170,7 +227,7 @@ public class LabelAtom extends Label implements Saveable {
      * That means, when you use the function in external things, you must validate
      * color-string by your self (use some color-picker tool).
      */
-    @SuppressWarnings("unused") // used by jelly view
+    @SuppressWarnings("unused") // used by jelly view in /computer/labels
     public void setColor(String color) throws IOException {
         this.color = color;
         save();
@@ -331,7 +388,7 @@ public class LabelAtom extends Label implements Saveable {
     private static final XStream2 XSTREAM = new XStream2();
 
     static {
-        // Don't want Label.ConverterImpl to be used:
+        // Don"t want Label.ConverterImpl to be used:
         XSTREAM.registerConverter(new LabelAtomConverter(), 100);
     }
 

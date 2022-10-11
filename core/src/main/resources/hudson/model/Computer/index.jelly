@@ -75,7 +75,7 @@ THE SOFTWARE.
       </j:if>
 
         <j:if test="${it.node.assignedLabels.size() gt 1}">
-        <div>
+        <div class="jenkins-!-margin-bottom-4">
           <h2>${%Labels}</h2>
           <j:forEach var="entry" items="${it.node.labelCloud}">
             <!-- Skip the label for this node -->
