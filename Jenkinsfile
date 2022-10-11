@@ -29,116 +29,115 @@ for (i = 0; i < buildTypes.size(); i++) {
       if (buildType == 'Windows') {
         agentContainerLabel += '-windows'
       }
-      node(agentContainerLabel) {
-        // First stage is actually checking out the source. Since we're using Multibranch
-        // currently, we can use "checkout scm".
-        stage('Checkout') {
-          infra.checkoutSCM()
-        }
+      retry(conditions: [kubernetesAgent(handleNonKubernetes: true), nonresumable()], count: 2) {
+        node(agentContainerLabel) {
+          // First stage is actually checking out the source. Since we're using Multibranch
+          // currently, we can use "checkout scm".
+          stage('Checkout') {
+            infra.checkoutSCM()
+          }
 
-        def changelistF = "${pwd tmp: true}/changelist"
-        def m2repo = "${pwd tmp: true}/m2repo"
+          def changelistF = "${pwd tmp: true}/changelist"
+          def m2repo = "${pwd tmp: true}/m2repo"
 
-        // Now run the actual build.
-        stage("${buildType} Build / Test") {
-          timeout(time: 6, unit: 'HOURS') {
-            realtimeJUnit(healthScaleFactor: 20.0, testResults: '*/target/surefire-reports/*.xml') {
-              def mavenOptions = [
-                '-Pdebug',
-                '-Penable-jacoco',
-                '--update-snapshots',
-                "-Dmaven.repo.local=$m2repo",
-                '-Dmaven.test.failure.ignore',
-                '-DforkCount=2',
-                '-Dspotbugs.failOnError=false',
-                '-Dcheckstyle.failOnViolation=false',
-                '-Dset.changelist',
-                'help:evaluate',
-                '-Dexpression=changelist',
-                "-Doutput=$changelistF",
-                'clean',
-                'install',
-              ]
-              try {
+          // Now run the actual build.
+          stage("${buildType} Build / Test") {
+            timeout(time: 6, unit: 'HOURS') {
+              realtimeJUnit(healthScaleFactor: 20.0, testResults: '*/target/surefire-reports/*.xml') {
+                def mavenOptions = [
+                  '-Pdebug',
+                  '-Penable-jacoco',
+                  '--update-snapshots',
+                  "-Dmaven.repo.local=$m2repo",
+                  '-Dmaven.test.failure.ignore',
+                  '-DforkCount=2',
+                  '-Dspotbugs.failOnError=false',
+                  '-Dcheckstyle.failOnViolation=false',
+                  '-Dset.changelist',
+                  'help:evaluate',
+                  '-Dexpression=changelist',
+                  "-Doutput=$changelistF",
+                  'clean',
+                  'install',
+                ]
                 infra.runMaven(mavenOptions, jdk)
                 if (isUnix()) {
                   sh 'git add . && git diff --exit-code HEAD'
                 }
-              } finally {
-                archiveArtifacts allowEmptyArchive: true, artifacts: '**/target/surefire-reports/*.dumpstream'
               }
             }
           }
-        }
 
-        // Once we've built, archive the artifacts and the test results.
-        stage("${buildType} Publishing") {
-          if (!fileExists('core/target/surefire-reports/TEST-jenkins.Junit4TestsRanTest.xml')) {
-            error 'JUnit 4 tests are no longer being run for the core package'
-          }
-          if (!fileExists('test/target/surefire-reports/TEST-jenkins.Junit4TestsRanTest.xml')) {
-            error 'JUnit 4 tests are no longer being run for the test package'
-          }
-          // cli and war have been migrated to JUnit 5
-          if (failFast && currentBuild.result == 'UNSTABLE') {
-            error 'There were test failures; halting early'
-          }
-          if (buildType == 'Linux' && jdk == jdks[0]) {
-            def folders = env.JOB_NAME.split('/')
-            if (folders.length > 1) {
-              discoverGitReferenceBuild(scm: folders[1])
+          // Once we've built, archive the artifacts and the test results.
+          stage("${buildType} Publishing") {
+            archiveArtifacts allowEmptyArchive: true, artifacts: '**/target/surefire-reports/*.dumpstream'
+            if (!fileExists('core/target/surefire-reports/TEST-jenkins.Junit4TestsRanTest.xml')) {
+              error 'JUnit 4 tests are no longer being run for the core package'
             }
-            publishCoverage calculateDiffForChangeRequests: true, adapters: [jacocoAdapter('coverage/target/site/jacoco-aggregate/jacoco.xml')]
+            if (!fileExists('test/target/surefire-reports/TEST-jenkins.Junit4TestsRanTest.xml')) {
+              error 'JUnit 4 tests are no longer being run for the test package'
+            }
+            // cli and war have been migrated to JUnit 5
+            if (failFast && currentBuild.result == 'UNSTABLE') {
+              error 'There were test failures; halting early'
+            }
+            if (buildType == 'Linux' && jdk == jdks[0]) {
+              def folders = env.JOB_NAME.split('/')
+              if (folders.length > 1) {
+                discoverGitReferenceBuild(scm: folders[1])
+              }
+              publishCoverage calculateDiffForChangeRequests: true, adapters: [jacocoAdapter('coverage/target/site/jacoco-aggregate/jacoco.xml')]
 
-            echo "Recording static analysis results for '${buildType}'"
-            recordIssues(
-                enabledForFailure: true,
-                tools: [java(), javaDoc()],
-                filters: [excludeFile('.*Assert.java')],
+              echo "Recording static analysis results for '${buildType}'"
+              recordIssues(
+                  enabledForFailure: true,
+                  tools: [java(), javaDoc()],
+                  filters: [excludeFile('.*Assert.java')],
+                  sourceCodeEncoding: 'UTF-8',
+                  skipBlames: true,
+                  trendChartType: 'TOOLS_ONLY'
+                  )
+              recordIssues([tool: spotBugs(pattern: '**/target/spotbugsXml.xml'),
                 sourceCodeEncoding: 'UTF-8',
                 skipBlames: true,
-                trendChartType: 'TOOLS_ONLY'
-                )
-            recordIssues([tool: spotBugs(pattern: '**/target/spotbugsXml.xml'),
-              sourceCodeEncoding: 'UTF-8',
-              skipBlames: true,
-              trendChartType: 'TOOLS_ONLY',
-              qualityGates: [
-                [threshold: 1, type: 'NEW', unstable: true],
-              ]])
-            recordIssues([tool: checkStyle(pattern: '**/target/checkstyle-result.xml'),
-              sourceCodeEncoding: 'UTF-8',
-              skipBlames: true,
-              trendChartType: 'TOOLS_ONLY',
-              qualityGates: [
-                [threshold: 1, type: 'TOTAL', unstable: true],
-              ]])
-             recordIssues([tool: esLint(pattern: '**/target/eslint-warnings.xml'),
-              sourceCodeEncoding: 'UTF-8',
-              skipBlames: true,
-              trendChartType: 'TOOLS_ONLY',
-              qualityGates: [
-                [threshold: 1, type: 'TOTAL', unstable: true],
-              ]])
+                trendChartType: 'TOOLS_ONLY',
+                qualityGates: [
+                  [threshold: 1, type: 'NEW', unstable: true],
+                ]])
+              recordIssues([tool: checkStyle(pattern: '**/target/checkstyle-result.xml'),
+                sourceCodeEncoding: 'UTF-8',
+                skipBlames: true,
+                trendChartType: 'TOOLS_ONLY',
+                qualityGates: [
+                  [threshold: 1, type: 'TOTAL', unstable: true],
+                ]])
+              recordIssues([tool: esLint(pattern: '**/target/eslint-warnings.xml'),
+                sourceCodeEncoding: 'UTF-8',
+                skipBlames: true,
+                trendChartType: 'TOOLS_ONLY',
+                qualityGates: [
+                  [threshold: 1, type: 'TOTAL', unstable: true],
+                ]])
               recordIssues([tool: styleLint(pattern: '**/target/stylelint-warnings.xml'),
-              sourceCodeEncoding: 'UTF-8',
-              skipBlames: true,
-              trendChartType: 'TOOLS_ONLY',
-              qualityGates: [
-                [threshold: 1, type: 'TOTAL', unstable: true],
-              ]])
-            if (failFast && currentBuild.result == 'UNSTABLE') {
-              error 'Static analysis quality gates not passed; halting early'
-            }
+                sourceCodeEncoding: 'UTF-8',
+                skipBlames: true,
+                trendChartType: 'TOOLS_ONLY',
+                qualityGates: [
+                  [threshold: 1, type: 'TOTAL', unstable: true],
+                ]])
+              if (failFast && currentBuild.result == 'UNSTABLE') {
+                error 'Static analysis quality gates not passed; halting early'
+              }
 
-            def changelist = readFile(changelistF)
-            dir(m2repo) {
-              archiveArtifacts(
-                  artifacts: "**/*$changelist/*$changelist*",
-                  excludes: '**/*.lastUpdated,**/jenkins-coverage*/,**/jenkins-test*/',
-                  allowEmptyArchive: true, // in case we forgot to reincrementalify
-                  fingerprint: true
-                  )
+              def changelist = readFile(changelistF)
+              dir(m2repo) {
+                archiveArtifacts(
+                    artifacts: "**/*$changelist/*$changelist*",
+                    excludes: '**/*.lastUpdated,**/jenkins-coverage*/,**/jenkins-test*/',
+                    allowEmptyArchive: true, // in case we forgot to reincrementalify
+                    fingerprint: true
+                    )
+              }
             }
           }
         }
@@ -148,29 +147,31 @@ for (i = 0; i < buildTypes.size(); i++) {
 }
 
 builds.ath = {
-  node('docker-highmem') {
-    // Just to be safe
-    deleteDir()
-    def fileUri
-    def metadataPath
-    dir('sources') {
-      checkout scm
-      def mavenOptions = [
-        '-Pquick-build',
-        '-Dmaven.repo.local=$WORKSPACE_TMP/m2repo',
-        '-am',
-        '-pl',
-        'war',
-        'package',
-      ]
-      infra.runMaven(mavenOptions, 11)
-      dir('war/target') {
-        fileUri = 'file://' + pwd() + '/jenkins.war'
+  retry(conditions: [agent(), nonresumable()], count: 2) {
+    node('docker-highmem') {
+      // Just to be safe
+      deleteDir()
+      def fileUri
+      def metadataPath
+      dir('sources') {
+        checkout scm
+        def mavenOptions = [
+          '-Pquick-build',
+          '-Dmaven.repo.local=$WORKSPACE_TMP/m2repo',
+          '-am',
+          '-pl',
+          'war',
+          'package',
+        ]
+        infra.runMaven(mavenOptions, 11)
+        dir('war/target') {
+          fileUri = 'file://' + pwd() + '/jenkins.war'
+        }
+        metadataPath = pwd() + '/essentials.yml'
       }
-      metadataPath = pwd() + '/essentials.yml'
-    }
-    dir('ath') {
-      runATH jenkins: fileUri, metadataFile: metadataPath
+      dir('ath') {
+        runATH jenkins: fileUri, metadataFile: metadataPath
+      }
     }
   }
 }
