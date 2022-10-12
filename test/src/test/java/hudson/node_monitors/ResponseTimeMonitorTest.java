@@ -59,7 +59,7 @@ public class ResponseTimeMonitorTest {
 
     @Test
     public void doNotDisconnectBeforeLaunched() throws Exception {
-        DumbSlave slave = new DumbSlave("dummy", tempFolder.toString(), new JNLPLauncher(false));
+        DumbSlave slave = new DumbSlave("dummy", tempFolder.newFolder().getPath(), new JNLPLauncher(false));
         slave.setRetentionStrategy(RetentionStrategy.NOOP);
         j.jenkins.addNode(slave);
         Computer c = slave.toComputer();

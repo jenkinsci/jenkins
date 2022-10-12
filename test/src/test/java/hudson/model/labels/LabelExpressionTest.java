@@ -45,6 +45,7 @@ import hudson.slaves.DumbSlave;
 import hudson.slaves.RetentionStrategy;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
@@ -210,10 +211,10 @@ public class LabelExpressionTest {
     @Test
     public void dataCompatibilityWithHostNameWithWhitespace() throws Exception {
         assumeFalse("Windows can't have paths with colons, skipping", Functions.isWindows());
-        DumbSlave slave = new DumbSlave("abc def (xyz) test", tempFolder.toString(), j.createComputerLauncher(null));
+        DumbSlave slave = new DumbSlave("abc def (xyz) test", tempFolder.newFolder().getPath(), j.createComputerLauncher(null));
         slave.setRetentionStrategy(RetentionStrategy.NOOP);
         slave.setNodeDescription("dummy");
-        slave.setNodeProperties(new ArrayList<>());
+        slave.setNodeProperties(Collections.EMPTY_LIST);
         j.jenkins.addNode(slave);
 
 

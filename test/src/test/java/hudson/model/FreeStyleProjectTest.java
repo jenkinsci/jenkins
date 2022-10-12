@@ -105,7 +105,7 @@ public class FreeStyleProjectTest {
     @Issue("JENKINS-4206")
     public void customWorkspaceAllocation() throws Exception {
         FreeStyleProject f = j.createFreeStyleProject();
-        f.setCustomWorkspace(tempFolder.toString());
+        f.setCustomWorkspace(tempFolder.newFolder().getPath());
         j.buildAndAssertSuccess(f);
     }
 
@@ -116,7 +116,7 @@ public class FreeStyleProjectTest {
     @Issue("JENKINS-3997")
     public void customWorkspaceVariableExpansion() throws Exception {
         FreeStyleProject f = j.createFreeStyleProject();
-        File d = new File(tempFolder.toString(), "${JOB_NAME}");
+        File d = new File(tempFolder.newFolder().getPath(), "${JOB_NAME}");
         f.setCustomWorkspace(d.getPath());
         FreeStyleBuild b = j.buildAndAssertSuccess(f);
 
