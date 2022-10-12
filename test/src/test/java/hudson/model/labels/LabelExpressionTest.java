@@ -44,7 +44,6 @@ import hudson.model.Label;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.RetentionStrategy;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.Callable;
