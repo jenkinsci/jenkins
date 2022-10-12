@@ -98,7 +98,8 @@ THE SOFTWARE.
     <access-modifier.version>1.27</access-modifier.version>
     <bridge-method-injector.version>1.23</bridge-method-injector.version>
     <spotless.version>2.27.2</spotless.version>
-    <winstone.version>6.5</winstone.version>
+    <!-- TODO https://github.com/jenkinsci/winstone/pull/295 -->
+    <winstone.version>6.6-rc793.75975487c595</winstone.version>
   </properties>
 
   <dependencyManagement>
