@@ -136,6 +136,7 @@
           <Class name="hudson.scm.ChangeLogSet"/>
           <Class name="hudson.security.ACLContext"/>
           <Class name="hudson.security.ContainerAuthentication"/>
+          <Class name="hudson.security.LegacyAuthorizationStrategy"/>
           <Class name="hudson.slaves.Cloud$CloudState"/>
           <Class name="hudson.slaves.EnvironmentVariablesNodeProperty"/>
           <Class name="hudson.slaves.NodeProvisioner$StrategyState"/>
@@ -776,16 +777,6 @@
         <Or>
           <Class name="hudson.TcpSlaveAgentListener"/>
           <Class name="hudson.util.NoClientBindProtocolSocketFactory"/>
-        </Or>
-      </And>
-      <And>
-        <Bug pattern="UNSAFE_HASH_EQUALS"/>
-        <Or>
-          <Class name="jenkins.install.SetupWizard"/>
-          <Class name="jenkins.security.apitoken.ApiTokenStore"/>
-          <Class name="jenkins.security.ApiTokenProperty"/>
-          <Class name="jenkins.security.ApiTokenProperty$DescriptorImpl"/>
-          <Class name="jenkins.util.SystemProperties"/>
         </Or>
       </And>
       <And>

@@ -120,7 +120,7 @@ THE SOFTWARE.
                   </td>
                 <td class="pane">
                   <j:if test="${h.hasPermission(exeparent,exeparent.READ)}">
-                      <a href="${rootURL}/${exe.url}" class="model-link inside"><l:breakable value="${exe.displayName}"/></a>
+                      <a href="${rootURL}/${exe.url}" class="model-link inside" style="display: block;"><l:breakable value="${exe.displayName}"/></a>
                   </j:if>
                 </td>
                 </st:include>

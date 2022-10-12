@@ -37,26 +37,29 @@ THE SOFTWARE.
     <st:attribute name="descriptors" use="required">
       hudson.model.Descriptor collection whose configuration page is rendered.
     </st:attribute>
-    <st:attribute name="instances">
-      Map&lt;Descriptor,Describable> that defines current instances of those descriptors.
+    <st:attribute name="instances"> <![CDATA[
+      Map<Descriptor,Describable> that defines current instances of those descriptors.
       These are used to fill initial values. Other classes that define the get(Descriptor)
       method works fine, too, such as DescribableList.
+    ]]>
     </st:attribute>
-    <st:attribute name="field">
-      Either @field or @instances are required (or @field may be inherited from the ancestor &lt;entry> element).
+    <st:attribute name="field"> <![CDATA[
+      Either @field or @instances are required (or @field may be inherited from the ancestor <entry> element).
       If field is specified, instances are assumed to be instance[field].
 
       When this attribute is specified, JSON structure is properly set up so that the databinding
       can set the field (or pass this collection as a constructor parameter of the same name.
 
       This is more modern way of doing databinding, and thus preferred approach.
+    ]]>
     </st:attribute>
     <st:attribute name="targetType">
       the type for which descriptors will be configured.
       default to ${it.class}
     </st:attribute>
-    <st:attribute name="forceRowSet">
-      If specified, instead of a sequence of &lt;f:optionalBlock>s, draw a sequence of &lt;rowSet>s.
+    <st:attribute name="forceRowSet"> <![CDATA[
+      If specified, instead of a sequence of <f:optionalBlock>s, draw a sequence of <rowSet>s.
+    ]]>
     </st:attribute>
   </st:documentation>
 
