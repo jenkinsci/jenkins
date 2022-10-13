@@ -63,7 +63,7 @@ Behaviour.specify(
           }
 
           let oldError = $("error-description");
-          if ((oldError = $("error-description"))) {
+          if (oldError) {
             // Remove old error if there is any
             $(containerId).removeChild(oldError);
           }
