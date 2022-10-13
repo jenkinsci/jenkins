@@ -49,10 +49,21 @@ body {
 
 /* -------------------------------------- */
 
-#page-body {
+.app-page-body {
   display: flex;
+  justify-content: flex-start;
   align-items: stretch;
   flex: 1 0 auto;
+}
+
+.app-page-body__sidebar {
+  @media (min-width: 970px) {
+    &--sticky {
+      position: sticky;
+      top: 44px;
+      align-self: flex-start;
+    }
+  }
 }
 
 #page-body.clear::after {
