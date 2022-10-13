@@ -207,6 +207,12 @@ var FormChecker = {
   // won't work.
   inProgress: 0,
 
+  // defines the maximum number of parallel checks to be run
+  // should be '1' when http1.1 is used as browsers will usually throttle the number of connections
+  // and having a higher value can even have a negative impact. But with http2 enabled, this can
+  // be a great performance improvement
+  maxParallel: 1,
+
   /**
    * Schedules a form field check. Executions are serialized to reduce the bandwidth impact.
    *
@@ -233,7 +239,7 @@ var FormChecker = {
   },
 
   schedule: function () {
-    if (this.inProgress > 0) return;
+    if (this.inProgress >= this.maxParallel) return;
     if (this.queue.length == 0) return;
 
     var next = this.queue.shift();
@@ -249,6 +255,29 @@ var FormChecker = {
     this.inProgress++;
   },
 };
+
+/**
+ * Detects if http2 protocol is enabled.
+ */
+function isHttp2Enabled() {
+  try {
+    const p = performance.getEntriesByType("resource");
+    if (p.length > 0) {
+      if ("nextHopProtocol" in p[0] && p[0].nextHopProtocol === "h2") {
+        return true;
+      }
+    }
+  } catch (e) {
+    console.error(e.stack || e);
+  }
+  return false;
+}
+
+// detect if we're using http2 and if yes increase the maxParallel connections
+// of the FormChecker
+if (isHttp2Enabled()) {
+  FormChecker.maxParallel = 30;
+}
 
 /**
  * Find the sibling (in the sense of the structured form submission) form item of the given name,
