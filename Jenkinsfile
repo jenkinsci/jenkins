@@ -42,25 +42,29 @@ for (i = 0; i < buildTypes.size(); i++) {
 
           // Now run the actual build.
           stage("${buildType} Build / Test") {
-            timeout(time: 6, unit: 'HOURS') {
+            timeout(time: 12, unit: 'HOURS') {
               realtimeJUnit(healthScaleFactor: 20.0, testResults: '*/target/surefire-reports/*.xml') {
                 def mavenOptions = [
-                  '-Pdebug',
-                  '-Penable-jacoco',
                   '--update-snapshots',
                   "-Dmaven.repo.local=$m2repo",
-                  '-Dmaven.test.failure.ignore',
                   '-DforkCount=2',
-                  '-Dspotbugs.failOnError=false',
-                  '-Dcheckstyle.failOnViolation=false',
+                  '-Daccess-modifier-checker.skip',
+                  '-Dcheckstyle.skip',
+                  '-Denforcer.skip',
+                  '-Dinvoker.skip',
+                  '-Dspotbugs.skip',
+                  '-Dspotless.check.skip',
                   '-Dset.changelist',
                   'help:evaluate',
                   '-Dexpression=changelist',
                   "-Doutput=$changelistF",
                   'clean',
-                  'install',
+                  'verify',
                 ]
-                infra.runMaven(mavenOptions, jdk)
+                for (int i = 1; i <= 400; i++) {
+                  echo "Attempt ${i}"
+                  infra.runMaven(mavenOptions, jdk)
+                }
                 if (isUnix()) {
                   sh 'git add . && git diff --exit-code HEAD'
                 }
@@ -71,12 +75,6 @@ for (i = 0; i < buildTypes.size(); i++) {
           // Once we've built, archive the artifacts and the test results.
           stage("${buildType} Publishing") {
             archiveArtifacts allowEmptyArchive: true, artifacts: '**/target/surefire-reports/*.dumpstream'
-            if (!fileExists('core/target/surefire-reports/TEST-jenkins.Junit4TestsRanTest.xml')) {
-              error 'JUnit 4 tests are no longer being run for the core package'
-            }
-            if (!fileExists('test/target/surefire-reports/TEST-jenkins.Junit4TestsRanTest.xml')) {
-              error 'JUnit 4 tests are no longer being run for the test package'
-            }
             // cli and war have been migrated to JUnit 5
             if (failFast && currentBuild.result == 'UNSTABLE') {
               error 'There were test failures; halting early'
@@ -177,5 +175,6 @@ builds.ath = {
 }
 
 builds.failFast = failFast
+builds.remove('ath')
 parallel builds
 infra.maybePublishIncrementals()
