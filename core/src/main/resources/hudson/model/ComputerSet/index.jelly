@@ -30,21 +30,16 @@ THE SOFTWARE.
 <l:layout title="${%Nodes}">
   <st:include page="sidepanel.jelly" />
   <l:main-panel>
+    <l:app-bar title="${%Manage nodes and clouds}">
+      <l:hasAdministerOrManage>
+        <form method="post" action="updateNow">
+          <s:submit value="${%Refresh status}"/>
+        </form>
+      </l:hasAdministerOrManage>
+    </l:app-bar>
+
     <j:set var="monitors" value="${it._monitors}"/>
     <j:set var="tableWidth" value="${3}"/>
-
-    <div class="jenkins-app-bar">
-      <div class="jenkins-app-bar__content">
-        <h1>${%Manage nodes and clouds}</h1>
-      </div>
-      <l:hasAdministerOrManage>
-        <div class="jenkins-app-bar__controls">
-          <form method="post" action="updateNow">
-            <s:submit value="${%Refresh status}"/>
-          </form>
-        </div>
-      </l:hasAdministerOrManage>
-    </div>
 
     <table id="computers" class="jenkins-table sortable">
       <thead>
