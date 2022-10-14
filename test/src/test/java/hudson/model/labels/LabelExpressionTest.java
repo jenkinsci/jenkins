@@ -213,7 +213,7 @@ public class LabelExpressionTest {
         DumbSlave slave = new DumbSlave("abc def (xyz) test", tempFolder.newFolder().getPath(), j.createComputerLauncher(null));
         slave.setRetentionStrategy(RetentionStrategy.NOOP);
         slave.setNodeDescription("dummy");
-        slave.setNodeProperties(Collections.EMPTY_LIST);
+        slave.setNodeProperties(Collections.emptyList());
         j.jenkins.addNode(slave);
 
 
