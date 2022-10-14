@@ -1,23 +1,19 @@
 package hudson.node_monitors;
 
-import static org.awaitility.Awaitility.await;
-import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 import hudson.model.Computer;
 import hudson.model.ComputerSet;
+import hudson.model.Slave;
 import hudson.model.User;
 import hudson.slaves.DumbSlave;
-import hudson.slaves.JNLPLauncher;
 import hudson.slaves.OfflineCause;
-import hudson.slaves.RetentionStrategy;
 import hudson.slaves.SlaveComputer;
-import java.util.concurrent.TimeUnit;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.jvnet.hudson.test.InboundAgentRule;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 
@@ -30,7 +26,7 @@ public class ResponseTimeMonitorTest {
     public JenkinsRule j = new JenkinsRule();
 
     @Rule
-    public TemporaryFolder tempFolder = new TemporaryFolder();
+    public InboundAgentRule inboundAgents = new InboundAgentRule();
 
     /**
      * Makes sure that it doesn't try to monitor an already-offline agent.
@@ -59,14 +55,9 @@ public class ResponseTimeMonitorTest {
 
     @Test
     public void doNotDisconnectBeforeLaunched() throws Exception {
-        DumbSlave slave = new DumbSlave("dummy", tempFolder.newFolder().getPath(), new JNLPLauncher(false));
-        slave.setRetentionStrategy(RetentionStrategy.NOOP);
-        j.jenkins.addNode(slave);
+        Slave slave = inboundAgents.createAgent(j, InboundAgentRule.Options.newBuilder().skipStart().build());
         Computer c = slave.toComputer();
         assertNotNull(c);
-        await().pollInterval(250, TimeUnit.MILLISECONDS)
-                .atMost(10, TimeUnit.SECONDS)
-                .until(() -> c.getOfflineCause(), notNullValue());
         OfflineCause originalOfflineCause = c.getOfflineCause();
         assertNotNull(originalOfflineCause);
 

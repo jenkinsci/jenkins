@@ -31,7 +31,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import com.cloudbees.hudson.plugins.folder.computed.FolderCron;
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebRequest;
@@ -49,6 +48,7 @@ import hudson.model.queue.QueueTaskFuture;
 import hudson.security.FullControlOnceLoggedInAuthorizationStrategy;
 import hudson.security.HudsonPrivateSecurityRealm;
 import hudson.tasks.Builder;
+import hudson.triggers.Trigger;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -136,12 +136,11 @@ public class Security400Test {
         }
     }
 
-    // require a dependency on cloudbees-folder-plugin
     @Test
     @Issue("SECURITY-397")
     // particular case of SECURITY-391
-    public void folderCronDoRun() throws Exception {
-        j.createWebClient().assertFails("extensionList/" + PeriodicWork.class.getName() + "/" + FolderCron.class.getName() + "/run", HttpURLConnection.HTTP_NOT_FOUND);
+    public void triggerCronDoRun() throws Exception {
+        j.createWebClient().assertFails("extensionList/" + PeriodicWork.class.getName() + "/" + Trigger.Cron.class.getName() + "/run", HttpURLConnection.HTTP_NOT_FOUND);
         assertRequestWasBlockedAndResetFlag();
     }
 
