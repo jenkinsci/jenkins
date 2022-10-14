@@ -692,6 +692,7 @@ THE SOFTWARE.
           <!-- Make sure to keep the directives in test/pom.xml and war/pom.xml in sync with these. -->
           <argLine>@{jacocoSurefireArgs} --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.desktop/com.sun.beans.introspect=ALL-UNNAMED</argLine>
           <reuseForks>false</reuseForks>
+          <skipTests>true</skipTests>
         </configuration>
       </plugin>
       <plugin>
