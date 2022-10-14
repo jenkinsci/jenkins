@@ -8,9 +8,10 @@ def l=namespace(lib.LayoutTagLib)
 def st=namespace("jelly:stapler")
 
 l.layout(permission:app.SYSTEM_READ, title:my.displayName, type:"one-column") {
-    l.app_bar(title: my.displayName)
     set("readOnlyMode", !app.hasPermission(app.ADMINISTER))
     l.main_panel {
+        l.app_bar(title: my.displayName)
+
         div(class:"behavior-loading") {
             l.spinner(text: _("LOADING"))
         }
