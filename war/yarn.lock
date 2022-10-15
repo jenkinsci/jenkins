@@ -4035,7 +4035,7 @@ __metadata:
     prettier: 2.7.1
     sortablejs: 1.15.0
     style-loader: 3.3.1
-    stylelint: 14.13.0
+    stylelint: 14.14.0
     stylelint-checkstyle-reporter: 0.2.0
     stylelint-config-standard: 28.0.0
     webpack: 5.74.0
@@ -5475,7 +5475,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"postcss@npm:^8.4.16, postcss@npm:^8.4.17, postcss@npm:^8.4.7":
+"postcss@npm:^8.4.17, postcss@npm:^8.4.7":
   version: 8.4.17
   resolution: "postcss@npm:8.4.17"
   dependencies:
@@ -6179,9 +6179,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"stylelint@npm:14.13.0":
-  version: 14.13.0
-  resolution: "stylelint@npm:14.13.0"
+"stylelint@npm:14.14.0":
+  version: 14.14.0
+  resolution: "stylelint@npm:14.14.0"
   dependencies:
     "@csstools/selector-specificity": ^2.0.2
     balanced-match: ^2.0.0
@@ -6206,7 +6206,7 @@ __metadata:
     micromatch: ^4.0.5
     normalize-path: ^3.0.0
     picocolors: ^1.0.0
-    postcss: ^8.4.16
+    postcss: ^8.4.17
     postcss-media-query-parser: ^0.2.3
     postcss-resolve-nested-selector: ^0.1.1
     postcss-safe-parser: ^6.0.0
@@ -6223,7 +6223,7 @@ __metadata:
     write-file-atomic: ^4.0.2
   bin:
     stylelint: bin/stylelint.js
-  checksum: 81efcb2ea015fe490651f0976a927c51efa493a32b2b8e681d68aba8a275a1d8d0ebf8eaf50ef3233e3dc367077db63792e7e69bf6abb18940d63fd6c9f772df
+  checksum: 3196f5992262d82f3c8dea1d710a3dda1b6c890697eba7df58a3bc8fcd681d509449fa4be3f03e91155f5014df82973b57266ddbc34f41130aa27cc046113b8b
   languageName: node
   linkType: hard
 
