@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2021, CloudBees, Inc.
+Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Yahoo! Inc.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -23,13 +23,26 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <div class="alert alert-warning">
-     <form method="post" action="${rootURL}/${it.url}/act" name="${it.id}">
-      <f:submit name="yes" value="${%Manage}"/>
-      <f:dismiss name="no" value="${%Dismiss}"/>
-     </form>
+<j:jelly xmlns:j="jelly:core" xmlns:s="jelly:stapler" xmlns:l="/lib/layout">
+  <s:documentation> <![CDATA[
+    Dismiss button themed by YUI. This should be always
+    used instead of a custom button tag.
+    ]]>
+    <s:attribute name="name">
+      If specified, becomes the value of the name attribute.
+      When you have more than one dismiss button on the form, this can be used to determine
+      which button is pressed, as the server will get a parameter by this name.
+    </s:attribute>
+    <s:attribute name="tooltip" use="required">
+      The tooltip text of the dismiss button. Something like "dismiss", etc.
+    </s:attribute>
+  </s:documentation>
+  <button
+    name="${attrs.name ?: 'Dismiss'}"
+    tooltip="${attrs.tooltip ?: '%Dismiss'}"
+    class="jenkins-button jenkins-button--tertiary"
+    type="submit">
+    <l:icon src="symbol-close" />
+  </button>
 
-    ${%ExecutorsWarning}
-  </div>
 </j:jelly>
