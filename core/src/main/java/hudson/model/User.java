@@ -41,12 +41,14 @@ import hudson.init.InitMilestone;
 import hudson.init.Initializer;
 import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.SaveableListener;
+import hudson.model.userproperty.UserPreferencesProperty;
 import hudson.security.ACL;
 import hudson.security.AccessControlled;
 import hudson.security.SecurityRealm;
 import hudson.security.UserMayOrMayNotExistException2;
 import hudson.util.FormApply;
 import hudson.util.FormValidation;
+import hudson.util.HttpResponses;
 import hudson.util.RunList;
 import hudson.util.XStream2;
 import java.io.File;
@@ -335,6 +337,29 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         p.setUser(this);
         properties = ps;
         save();
+    }
+    
+    /**
+     * Expand {@link #addProperty(UserProperty)} for multiple properties to be done at once.
+     * Expected to be used by the categorized configuration pages to update part of the properties.
+     * The properties not included in the list will be let untouched.
+     * It will call the {@link UserProperty#setUser(User)} method and at the end, {@link #save()} once. 
+     * 
+     * @since TODO
+     */
+    public synchronized void addProperties(@NonNull List<UserProperty> multipleProperties) throws IOException {
+        List<UserProperty> newProperties = new ArrayList<>(this.properties);
+        for (UserProperty property : multipleProperties) {
+            UserProperty oldProp = getProperty(property.getClass());
+            if (oldProp != null) {
+                newProperties.remove(oldProp);
+            }
+            newProperties.add(property);
+            property.setUser(this);
+        }
+
+        this.properties = newProperties;
+        this.save();
     }
 
     /**
@@ -859,6 +884,15 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      */
     @POST
     public void doConfigSubmit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, FormException {
+        // FIXME DRAFT system property
+        if (true) {
+            LOGGER.warning(() -> 
+                    "Attempt to use the legacy /configSubmit endpoint of user login=" + this.id + 
+                    ". The global configuration page has been deprecated in favor of categorized pages. For more details, see JENKINS-69869."
+            );
+            throw HttpResponses.error(400, "The user global configuration page was split into categorized individual pages. See JENKINS-69869.");
+        }
+
         checkPermission(Jenkins.ADMINISTER);
 
         JSONObject json = req.getSubmittedForm();
