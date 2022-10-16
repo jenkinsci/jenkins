@@ -32,6 +32,7 @@ import hudson.Util;
 import hudson.model.Descriptor.FormException;
 import hudson.model.User;
 import hudson.model.UserProperty;
+import hudson.model.userproperty.UserPropertyCategory;
 import hudson.model.UserPropertyDescriptor;
 import hudson.security.ACL;
 import hudson.util.HttpResponses;
@@ -657,6 +658,11 @@ public class ApiTokenProperty extends UserProperty {
             p.revokeAllTokensExceptOne(tokenUuid);
 
             return HttpResponses.ok();
+        }
+
+        @Override
+        public @NonNull UserPropertyCategory getUserPropertyCategory() {
+            return UserPropertyCategory.get(UserPropertyCategory.Security.class);
         }
     }
 

@@ -2,7 +2,9 @@ package hudson.model;
 
 import static java.lang.String.format;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
+import hudson.model.userproperty.UserPropertyCategory;
 import hudson.util.PersistedList;
 import java.io.IOException;
 import javax.servlet.http.HttpSession;
@@ -56,6 +58,10 @@ public class PaneStatusProperties extends UserProperty implements Saveable {
             return false;
         }
 
+        @Override
+        public @NonNull UserPropertyCategory getUserPropertyCategory() {
+            return UserPropertyCategory.get(UserPropertyCategory.Invisible.class);
+        }
     }
 
     private static class PaneStatusPropertiesSessionFallback extends PaneStatusProperties {

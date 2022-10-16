@@ -6,6 +6,7 @@ import hudson.model.Descriptor.FormException;
 import hudson.model.User;
 import hudson.model.UserProperty;
 import hudson.model.UserPropertyDescriptor;
+import hudson.model.userproperty.UserPropertyCategory;
 import hudson.security.SecurityRealm;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -170,6 +171,11 @@ public class LastGrantedAuthoritiesProperty extends UserProperty {
         @Override
         public UserProperty newInstance(User user) {
             return null;
+        }
+
+        @Override
+        public @NonNull UserPropertyCategory getUserPropertyCategory() {
+            return UserPropertyCategory.get(UserPropertyCategory.Invisible.class);
         }
     }
 

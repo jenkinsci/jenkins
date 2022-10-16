@@ -5,6 +5,7 @@ import hudson.Extension;
 import hudson.model.User;
 import hudson.model.UserProperty;
 import hudson.model.UserPropertyDescriptor;
+import hudson.model.userproperty.UserPropertyCategory;
 import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.StaplerRequest;
@@ -54,6 +55,10 @@ public class UserSearchProperty extends hudson.model.UserProperty {
             return new UserSearchProperty(formData.optBoolean("insensitiveSearch"));
         }
 
+        @Override
+        public @NonNull UserPropertyCategory getUserPropertyCategory() {
+            return UserPropertyCategory.get(UserPropertyCategory.Preferences.class);
+        }
     }
 
 }
