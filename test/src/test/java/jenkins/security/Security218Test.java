@@ -49,8 +49,12 @@ public class Security218Test implements Serializable {
     public void jnlpSlave() throws Exception {
         DumbSlave a = (DumbSlave) inboundAgents.createAgent(j, InboundAgentRule.Options.newBuilder().secret().build());
         j.waitOnline(a);
-        j.createWebClient().goTo("computer/" + a.getNodeName() + "/jenkins-agent.jnlp?encrypt=true", "application/octet-stream");
-        check(a);
+        try {
+            j.createWebClient().goTo("computer/" + a.getNodeName() + "/jenkins-agent.jnlp?encrypt=true", "application/octet-stream");
+            check(a);
+        } finally {
+            inboundAgents.stop(j, a.getNodeName());
+        }
     }
 
     /**
