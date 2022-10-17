@@ -82,13 +82,17 @@ public class JNLPLauncherRealTest {
                 }
                 Slave agent = inboundAgents.createAgent(r, builder.build());
                 r.waitOnline(agent);
-                FreeStyleProject p = r.createFreeStyleProject();
-                p.setAssignedNode(agent);
-                FreeStyleBuild b = r.buildAndAssertSuccess(p);
-                if (webSocket) {
-                    assertThat(agent.toComputer().getSystemProperties().get("java.class.path"), is(new File(r.jenkins.root, "agent.jar").getAbsolutePath()));
+                try {
+                    FreeStyleProject p = r.createFreeStyleProject();
+                    p.setAssignedNode(agent);
+                    FreeStyleBuild b = r.buildAndAssertSuccess(p);
+                    if (webSocket) {
+                        assertThat(agent.toComputer().getSystemProperties().get("java.class.path"), is(new File(r.jenkins.root, "agent.jar").getAbsolutePath()));
+                    }
+                    System.err.println(JenkinsRule.getLog(b));
+                } finally {
+                    inboundAgents.stop(r, agent.getNodeName());
                 }
-                System.err.println(JenkinsRule.getLog(b));
             }
         }, Description.EMPTY).evaluate();
 
