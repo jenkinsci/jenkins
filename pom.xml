@@ -74,7 +74,7 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.373</revision>
+    <revision>2.374</revision>
     <changelist>-SNAPSHOT</changelist>
 
     <!-- configuration for patch tracker plugin  -->
@@ -97,7 +97,8 @@ THE SOFTWARE.
 
     <access-modifier.version>1.27</access-modifier.version>
     <bridge-method-injector.version>1.23</bridge-method-injector.version>
-    <spotless.version>2.27.1</spotless.version>
+    <spotless.version>2.27.2</spotless.version>
+    <winstone.version>6.5</winstone.version>
   </properties>
 
   <dependencyManagement>
