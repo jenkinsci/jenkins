@@ -80,7 +80,11 @@ public class JnlpSlaveRestarterInstallerTest {
             rr.then(r -> {
                 DumbSlave s = (DumbSlave) r.jenkins.getNode("remote");
                 r.waitOnline(s);
-                assertEquals(canWork.get() ? 1 : 2, s.getChannel().call(new JVMCount()).intValue());
+                try {
+                    assertEquals(canWork.get() ? 1 : 2, s.getChannel().call(new JVMCount()).intValue());
+                } finally {
+                    inboundAgents.stop(r, s.getNodeName());
+                }
             });
     }
 

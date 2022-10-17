@@ -102,12 +102,16 @@ public class JnlpAccessWithSecuredHudsonTest {
     public void serviceUsingDirectSecret() throws Exception {
         Slave slave = inboundAgents.createAgent(r, InboundAgentRule.Options.newBuilder().name("test").secret().build());
         r.waitOnline(slave);
-        r.createWebClient().goTo("computer/test/jenkins-agent.jnlp?encrypt=true", "application/octet-stream");
+        try {
+            r.createWebClient().goTo("computer/test/jenkins-agent.jnlp?encrypt=true", "application/octet-stream");
             Channel channel = slave.getComputer().getChannel();
             assertFalse("SECURITY-206", channel.isRemoteClassLoadingAllowed());
             r.jenkins.getExtensionList(AdminWhitelistRule.class).get(AdminWhitelistRule.class).setMasterKillSwitch(false);
             final File f = new File(r.jenkins.getRootDir(), "config.xml");
             assertTrue(f.exists());
+        } finally {
+            inboundAgents.stop(r, slave.getNodeName());
+        }
     }
 
 
