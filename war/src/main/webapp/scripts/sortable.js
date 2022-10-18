@@ -383,7 +383,7 @@ var Sortable = (function () {
     determine: function (itm) {
       var sortfn = this.caseInsensitive;
       if (itm.match(date_pattern)) sortfn = this.date;
-      if (itm.match(/^[�$]/)) sortfn = this.currency;
+      if (itm.match(/^[£$]/)) sortfn = this.currency;
       if (itm.match(/\%$/)) sortfn = this.percent;
       if (itm.match(/^-?[\d]+(\.[\d]+)?$/)) sortfn = this.numeric;
       return sortfn;
