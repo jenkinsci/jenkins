@@ -17,7 +17,7 @@ public class AtomicBooleanConverter implements Converter {
 
     @Override
     public boolean canConvert(Class type) {
-        return type != null && type == AtomicBoolean.class;
+        return type != null && AtomicBoolean.class.isAssignableFrom(type);
     }
 
     @Override
