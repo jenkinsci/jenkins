@@ -120,7 +120,7 @@ THE SOFTWARE.
         </dd>
       </dl>
 
-      <h2>${%Weather}</h2>
+      <h2>${%Project Health}</h2>
 
       <dl class="app-icon-legend">
         <dt>
