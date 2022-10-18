@@ -47,6 +47,7 @@ import hudson.model.Label;
 import hudson.model.Node;
 import hudson.model.queue.QueueTaskFuture;
 import hudson.tasks.Builder;
+import io.jenkins.lib.support_log_formatter.SupportLogFormatter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -58,6 +59,10 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -372,6 +377,15 @@ public class NodeProvisionerTest {
         // no build on the built-in node, to make sure we get everything from the cloud
         r.jenkins.setNumExecutors(0);
         r.jenkins.setNodes(Collections.emptyList());
+
+        // TODO RealJenkinsRule does not yet support LoggerRule
+        Handler handler = new ConsoleHandler();
+        handler.setFormatter(new SupportLogFormatter());
+        handler.setLevel(Level.FINER);
+        Logger logger = Logger.getLogger(NodeProvisioner.class.getName());
+        logger.setLevel(Level.FINER);
+        logger.addHandler(handler);
+
         return cloud;
     }
 
