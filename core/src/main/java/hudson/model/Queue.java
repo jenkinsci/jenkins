@@ -2620,6 +2620,14 @@ public class Queue extends ResourceController implements Saveable {
             this.causeOfBlockage = causeOfBlockage;
         }
 
+        public boolean isCauseOfBlockageNull() {
+            if (causeOfBlockage == null) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+
         @Override
         public CauseOfBlockage getCauseOfBlockage() {
             if (causeOfBlockage != null) {
