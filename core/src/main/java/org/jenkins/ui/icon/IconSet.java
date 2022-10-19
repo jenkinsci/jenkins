@@ -582,6 +582,11 @@ public class IconSet {
         translations.put("icon-folder", "symbol-folder");
         translations.put("icon-gear", "symbol-settings");
         translations.put("icon-gear2", "symbol-settings");
+        translations.put("icon-health-00to19", "symbol-weather-icon-health-00to19");
+        translations.put("icon-health-20to39", "symbol-weather-icon-health-20to39");
+        translations.put("icon-health-40to59", "symbol-weather-icon-health-40to59");
+        translations.put("icon-health-60to79", "symbol-weather-icon-health-60to79");
+        translations.put("icon-health-80plus", "symbol-weather-icon-health-80plus");
         translations.put("icon-help", "symbol-help-circle");
         translations.put("icon-keys", "symbol-key");
         translations.put("icon-monitor", "symbol-terminal");
