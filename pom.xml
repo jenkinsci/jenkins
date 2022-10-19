@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.79</version>
+    <version>1.88</version>
     <relativePath />
   </parent>
 
@@ -51,6 +51,9 @@ THE SOFTWARE.
 
   <modules>
     <module>bom</module>
+    <module>websocket/spi</module>
+    <module>websocket/jetty9</module>
+    <module>websocket/jetty10</module>
     <module>core</module>
     <module>war</module>
     <module>test</module>
@@ -71,12 +74,8 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.359</revision>
+    <revision>2.375</revision>
     <changelist>-SNAPSHOT</changelist>
-
-    <!-- *.html files are in UTF-8, and *.properties are in iso-8859-1, so this configuration is actually incorrect,
-    but this suppresses a warning from Maven, and as long as we don't do filtering we should be OK. -->
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
     <!-- configuration for patch tracker plugin  -->
     <project.patchManagement.system>github</project.patchManagement.system>
@@ -88,19 +87,18 @@ THE SOFTWARE.
     <changelog.url>https://www.jenkins.io/changelog</changelog.url>
 
     <!-- Bundled Remoting version -->
-    <remoting.version>3028.va_a_436db_35078</remoting.version>
+    <remoting.version>3063.v26e24490f041</remoting.version>
     <!-- Minimum Remoting version, which is tested for API compatibility -->
     <remoting.minimum.supported.version>4.2.1</remoting.minimum.supported.version>
 
     <spotbugs.effort>Max</spotbugs.effort>
     <spotbugs.threshold>Medium</spotbugs.threshold>
-    <spotbugs.excludeFilterFile>${project.basedir}/../src/spotbugs/spotbugs-excludes.xml</spotbugs.excludeFilterFile>
+    <spotbugs.excludeFilterFile>${maven.multiModuleProjectDirectory}/src/spotbugs/spotbugs-excludes.xml</spotbugs.excludeFilterFile>
 
     <access-modifier.version>1.27</access-modifier.version>
     <bridge-method-injector.version>1.23</bridge-method-injector.version>
-    <junit.jupiter.version>5.8.2</junit.jupiter.version>
-    <mockito.version>4.6.1</mockito.version>
-    <spotless.version>2.23.0</spotless.version>
+    <spotless.version>2.27.2</spotless.version>
+    <winstone.version>6.5</winstone.version>
   </properties>
 
   <dependencyManagement>
@@ -235,15 +233,8 @@ THE SOFTWARE.
               <forkedProcessTimeoutInSeconds>3600</forkedProcessTimeoutInSeconds>
               <java.awt.headless>true</java.awt.headless>
             </systemPropertyVariables>
-            <!-- SUREFIRE-1226 workaround -->
-            <trimStackTrace>false</trimStackTrace>
             <runOrder>alphabetical</runOrder>
           </configuration>
-        </plugin>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-assembly-plugin</artifactId>
-          <!-- Version specified in parent POM -->
         </plugin>
         <plugin>
           <artifactId>maven-jarsigner-plugin</artifactId>
@@ -264,31 +255,6 @@ THE SOFTWARE.
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-resources-plugin</artifactId>
           <!-- Version specified in parent POM -->
-        </plugin>
-        <plugin>
-          <!--
-            Both test harness and core uses stapler as an extension,
-            and apparently without having extension preloaded at the parent, the main artifact of the 'test' module
-            ends up installed with 'stapler-jar' extension (which normally is an indication that the ArtifactTypeHandler
-            defined in this extension is not getting picked up.)
-
-            To avoid this problem, I'm defining an extension here. Not sure if the nested <dependencies> is necessary.
-            It's also possible that I misdiagnosed the problem and the root cause is something entirely different.
-
-            To test if you can remove this work around, do a rebuild from main and see if the test harness
-            is installed with the right extension into the local repository.
-          -->
-          <groupId>org.kohsuke.stapler</groupId>
-          <artifactId>maven-stapler-plugin</artifactId>
-          <!-- version specified in parent pom -->
-          <extensions>true</extensions>
-          <dependencies>
-            <dependency>
-              <groupId>org.jvnet.maven-jellydoc-plugin</groupId>
-              <artifactId>maven-jellydoc-plugin</artifactId>
-              <version>1.5</version>
-            </dependency>
-          </dependencies>
         </plugin>
         <plugin>
           <groupId>org.kohsuke</groupId>
@@ -399,7 +365,7 @@ THE SOFTWARE.
             <dependency>
               <groupId>com.puppycrawl.tools</groupId>
               <artifactId>checkstyle</artifactId>
-              <version>10.3.1</version>
+              <version>10.3.4</version>
             </dependency>
           </dependencies>
           <executions>
@@ -460,8 +426,6 @@ THE SOFTWARE.
         <artifactId>maven-release-plugin</artifactId>
         <!-- Version specified in parent POM -->
         <configuration>
-          <!-- enable release profile during the release, create IPS package, and sign bits. -->
-          <arguments>-P release,sign</arguments>
           <!-- work around for a bug in javadoc plugin that causes the release to fail. see MRELEASE-271 -->
           <preparationGoals>clean install</preparationGoals>
           <goals>-DskipTests -Dspotbugs.skip -Dmaven.checkstyle.skip -Dspotless.check.skip generate-resources javadoc:javadoc deploy</goals>
@@ -558,25 +522,6 @@ THE SOFTWARE.
       <build>
         <plugins>
           <plugin>
-            <artifactId>maven-assembly-plugin</artifactId>
-            <!-- Version specified in parent POM -->
-            <inherited>false</inherited>
-            <executions>
-              <execution>
-                <goals>
-                  <goal>single</goal>
-                </goals>
-                <phase>package</phase>
-                <configuration>
-                  <finalName>jenkins-${project.version}</finalName>
-                  <descriptors>
-                    <descriptor>assembly-src.xml</descriptor>
-                  </descriptors>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-          <plugin>
             <artifactId>maven-gpg-plugin</artifactId>
             <!-- Version specified in parent POM -->
             <executions>
@@ -628,17 +573,6 @@ THE SOFTWARE.
           </plugin>
         </plugins>
       </build>
-    </profile>
-    <profile>
-      <id>specific-test</id>
-      <activation>
-        <property>
-          <name>test</name>
-        </property>
-      </activation>
-      <properties>
-        <failIfNoTests>false</failIfNoTests>
-      </properties>
     </profile>
   </profiles>
 </project>

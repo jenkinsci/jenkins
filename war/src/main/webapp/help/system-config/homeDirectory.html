@@ -1,24 +1,45 @@
 <div>
-  <p>
-  There are a few ways to change the Jenkins home directory:
+  <p>There are a few ways to change the Jenkins home directory:</p>
+
   <ul>
     <li>
-      Edit the <code>JENKINS_HOME</code> variable in your Jenkins configuration
-      file (e.g. <code>/etc/sysconfig/jenkins</code> on Red Hat Linux).
+      Edit the
+      <code>JENKINS_HOME</code>
+      variable in your Jenkins configuration file (e.g.
+      <code>/etc/sysconfig/jenkins</code>
+      on Red Hat Linux).
+    </li>
+
     <li>
-      Use your web container's admin tool to set the <code>JENKINS_HOME</code>
+      Use your web container's admin tool to set the
+      <code>JENKINS_HOME</code>
       environment variable.
+    </li>
+
     <li>
-      Set the environment variable <code>JENKINS_HOME</code> before launching
-      your web container, or before launching Jenkins directly from the WAR file.
+      Set the environment variable
+      <code>JENKINS_HOME</code>
+      before launching your web container, or before launching Jenkins directly
+      from the WAR file.
+    </li>
+
     <li>
-      Set the <code>JENKINS_HOME</code> Java system property when launching your
-      web container, or when launching Jenkins directly from the WAR file.
+      Set the
+      <code>JENKINS_HOME</code>
+      Java system property when launching your web container, or when launching
+      Jenkins directly from the WAR file.
+    </li>
+
     <li>
-      Modify <code>web.xml</code> in <code>jenkins.war</code> (or its expanded image in
-      your web container). This is not recommended.
+      Modify
+      <code>web.xml</code>
+      in
+      <code>jenkins.war</code>
+      (or its expanded image in your web container). This is not recommended.
+    </li>
   </ul>
+
   This value cannot be changed while Jenkins is running.
-  <br>
+  <br />
   It is shown here to help you ensure that your configuration is taking effect.
 </div>

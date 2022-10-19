@@ -72,6 +72,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.lang.reflect.Method;
+import java.net.HttpURLConnection;
 import java.net.JarURLConnection;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
@@ -79,7 +80,10 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.net.URLConnection;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Paths;
 import java.nio.file.attribute.FileTime;
+import java.security.CodeSource;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -151,6 +155,7 @@ import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.StaplerFallback;
 import org.kohsuke.stapler.StaplerOverridable;
 import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.StaplerRequest;
@@ -1324,6 +1329,39 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                 oneAndOnly = p;
             }
         }
+        if (oneAndOnly == null && Main.isUnitTest) {
+            // compare jenkins.security.ClassFilterImpl
+            CodeSource cs = c.getProtectionDomain().getCodeSource();
+            if (cs != null) {
+                URL loc = cs.getLocation();
+                if (loc != null) {
+                    if ("file".equals(loc.getProtocol())) {
+                        File file;
+                        try {
+                            file = Paths.get(loc.toURI()).toFile();
+                        } catch (InvalidPathException | URISyntaxException e) {
+                            LOGGER.log(Level.WARNING, "could not inspect " + loc, e);
+                            return null;
+                        }
+                        if (file.isFile()) { // ignore directories
+                            try (JarFile jf = new JarFile(file)) {
+                                Manifest mf = jf.getManifest();
+                                if (mf != null) {
+                                    java.util.jar.Attributes attr = mf.getMainAttributes();
+                                    if (attr.getValue("Plugin-Version") != null) {
+                                        String shortName = attr.getValue("Short-Name");
+                                        LOGGER.fine(() -> "found " + shortName + " for " + c);
+                                        return getPlugin(shortName);
+                                    }
+                                }
+                            } catch (IOException e) {
+                                LOGGER.log(Level.WARNING, "could not inspect " + loc, e);
+                            }
+                        }
+                    }
+                }
+            }
+        }
         return oneAndOnly;
     }
 
@@ -1348,6 +1386,27 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     @Restricted(NoExternalUse.class)
     public static boolean isNonMetaLabel(String label) {
         return !("adopt-this-plugin".equals(label) || "deprecated".equals(label));
+    }
+
+    /**
+     * This allows "Update Center" to live at the URL
+     * {@code /pluginManager/updates/} in addition to its {@code /updateCenter/}
+     * URL which is provided by {@link jenkins.model.Jenkins#getUpdateCenter()}.
+     * For purposes of Stapler, this object is the current item serving the
+     * view, and since this is not a {@link hudson.model.ModelObject}, it does
+     * not appear as an additional breadcrumb and only the "Plugin Manager"
+     * breadcrumb is shown.
+     */
+    @Restricted(NoExternalUse.class)
+    public static class UpdateCenterProxy implements StaplerFallback {
+        @Override
+        public Object getStaplerFallback() {
+            return Jenkins.get().getUpdateCenter();
+        }
+    }
+
+    public UpdateCenterProxy getUpdates() {
+        return new UpdateCenterProxy();
     }
 
     @Restricted(NoExternalUse.class)
@@ -1557,7 +1616,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         boolean dynamicLoad = req.getParameter("dynamicLoad") != null;
         install(plugins, dynamicLoad);
 
-        rsp.sendRedirect("../updateCenter/");
+        rsp.sendRedirect("updates/");
     }
 
     /**
@@ -1862,7 +1921,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     element("url", t.toURI().toString()).
                     element("dependencies", dependencies);
             new UpdateSite(UpdateCenter.ID_UPLOAD, null).new Plugin(UpdateCenter.ID_UPLOAD, cfg).deploy(true);
-            return new HttpRedirect("../updateCenter");
+            return new HttpRedirect("updates/");
         } catch (FileUploadException e) {
             throw new ServletException(e);
         }
@@ -1885,6 +1944,35 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             }
         }
         return FormValidation.ok();
+    }
+
+    @Restricted(NoExternalUse.class)
+    @RequirePOST public FormValidation doCheckUpdateSiteUrl(StaplerRequest request, @QueryParameter String value) {
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+        if (StringUtils.isNotBlank(value)) {
+            try {
+                value += ((value.contains("?")) ? "&" : "?") + "version=" + Jenkins.VERSION + "&uctest";
+
+                URL url = new URL(value);
+
+                // Connect to the URL
+                HttpURLConnection conn = (HttpURLConnection) ProxyConfiguration.open(url);
+                conn.setRequestMethod("HEAD");
+                conn.setConnectTimeout(5000);
+                if (100 <= conn.getResponseCode() && conn.getResponseCode() <= 399) {
+                    return FormValidation.ok();
+                } else {
+                    LOGGER.log(Level.FINE, "Obtained a non OK ({0}) response from the update center",
+                            new Object[]{conn.getResponseCode(), url});
+                    return FormValidation.error(Messages.PluginManager_connectionFailed());
+                }
+            } catch (IOException e) {
+                LOGGER.log(Level.FINE, "Failed to check update site", e);
+                return FormValidation.error(Messages.PluginManager_connectionFailed());
+            }
+        } else {
+            return FormValidation.error(Messages.PluginManager_emptyUpdateSiteUrl());
+        }
     }
 
     @Restricted(NoExternalUse.class)
@@ -2088,7 +2176,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     @RequirePOST
     public HttpResponse doInstallNecessaryPlugins(StaplerRequest req) throws IOException {
         prevalidateConfig(req.getInputStream());
-        return HttpResponses.redirectViaContextPath("updateCenter");
+        return HttpResponses.redirectViaContextPath("updates/");
     }
 
     /**

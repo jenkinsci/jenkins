@@ -46,6 +46,10 @@
         a {
           color: var(--table-header-foreground);
           font-weight: 700;
+
+          span.sortarrow {
+            width: 24px;
+          }
         }
       }
     }
@@ -58,9 +62,10 @@
 
       & > td {
         vertical-align: middle;
-        padding: var(--table-padding) 0 var(--table-padding) var(--table-padding);
+        padding: var(--table-padding) 0 var(--table-padding)
+          var(--table-padding);
         font-weight: 500;
-        height: 50px;
+        height: 3rem;
 
         &:first-of-type {
           padding-left: calc(var(--table-padding) * 2);
@@ -114,7 +119,7 @@
 
   &__cell--tight {
     padding-left: 0 !important;
-    text-align: center !important;
+    text-align: right !important;
     white-space: nowrap;
     width: 3.5rem;
   }
@@ -133,7 +138,8 @@
     display: inline-flex;
   }
 
-  &__link, .sortheader {
+  &__link,
+  .sortheader {
     display: inline-flex;
   }
 
@@ -143,10 +149,13 @@
     }
   }
 
-  &__button, &__icon {
-    svg, .build-status-icon__wrapper, img {
-      width: 24px !important;
-      height: 24px !important;
+  &__button,
+  &__icon {
+    svg,
+    .build-status-icon__wrapper,
+    img {
+      width: 1.5rem !important;
+      height: 1.5rem !important;
     }
   }
 
@@ -157,10 +166,14 @@
       height: 40px;
     }
 
-    .jenkins-table__button, .jenkins-table__link, .jenkins-table__icon {
-      svg, .build-status-icon__wrapper, img {
-        width: 20px !important;
-        height: 20px !important;
+    .jenkins-table__button,
+    .jenkins-table__link,
+    .jenkins-table__icon {
+      svg,
+      .build-status-icon__wrapper,
+      img {
+        width: 1.3rem !important;
+        height: 1.3rem !important;
       }
     }
   }
@@ -172,19 +185,26 @@
       height: 34px;
     }
 
-    .jenkins-table__button, .jenkins-table__link, .jenkins-table__icon {
-      svg, .build-status-icon__wrapper, img {
-        width: 16px !important;
-        height: 16px !important;
+    .jenkins-table__button,
+    .jenkins-table__link,
+    .jenkins-table__icon {
+      svg,
+      .build-status-icon__wrapper,
+      img {
+        width: 1rem !important;
+        height: 1rem !important;
       }
     }
   }
 
-  &__button, &__link {
+  &__button,
+  &__link {
     color: var(--link-color);
   }
 
-  &__button, .sortheader, &__link {
+  &__button,
+  .sortheader,
+  &__link {
     .item();
 
     align-items: center;
@@ -203,7 +223,8 @@
     line-height: 1 !important;
     transition: var(--standard-transition);
 
-    &::before, &::after {
+    &::before,
+    &::after {
       top: -7px;
       left: -10px;
       bottom: -7px;
@@ -241,7 +262,8 @@
       }
     }
 
-    &:active, &:focus {
+    &:active,
+    &:focus {
       &::before {
         background: currentColor;
         border-radius: 6px;

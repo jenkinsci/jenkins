@@ -66,4 +66,5 @@ public class IconSetTest {
 
         assertThat(symbol, not(containsString("tooltip")));
     }
+
 }

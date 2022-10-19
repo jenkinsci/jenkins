@@ -115,6 +115,7 @@ import hudson.model.Label;
 import hudson.model.ListView;
 import hudson.model.LoadBalancer;
 import hudson.model.LoadStatistics;
+import hudson.model.ManageJenkinsAction;
 import hudson.model.ManagementLink;
 import hudson.model.Messages;
 import hudson.model.ModifiableViewGroup;
@@ -239,6 +240,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
@@ -528,7 +530,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * {@link Computer}s in this Jenkins system. Read-only.
      */
-    protected final transient Map<Node, Computer> computers = new CopyOnWriteMap.Hash<>();
+    protected final transient ConcurrentMap<Node, Computer> computers = new ConcurrentHashMap<>();
 
     /**
      * Active {@link Cloud}s.
@@ -2177,7 +2179,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     @Override
-    protected Map<Node, Computer> getComputerMap() {
+    protected ConcurrentMap<Node, Computer> getComputerMap() {
         return computers;
     }
 
@@ -4415,7 +4417,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         for (MenuItem i : menu.items) {
             if (i.url.equals(request.getContextPath() + "/manage")) {
                 // add "Manage Jenkins" subitems
-                i.subMenu = new ContextMenu().from(this, request, response, "manage");
+                i.subMenu = new ContextMenu().from(ExtensionList.lookupSingleton(ManageJenkinsAction.class), request, response, "index");
             }
         }
         return menu;
@@ -5094,7 +5096,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     private boolean isAgentJnlpPath(String restOfPath, String prefix) {
-        return restOfPath.matches("/computer/[^/]+/" + prefix + "-agent[.]jnlp");
+        return restOfPath.matches("(/manage)?/computer/[^/]+/" + prefix + "-agent[.]jnlp");
     }
 
     /**
@@ -5229,6 +5231,10 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
         @Override
         public String getUrl() {
+            if (Jenkins.get().hasAnyPermission(Jenkins.MANAGE, Jenkins.SYSTEM_READ)) {
+                return "manage/computer/(built-in)/";
+            }
+
             return "computer/(built-in)/";
         }
 

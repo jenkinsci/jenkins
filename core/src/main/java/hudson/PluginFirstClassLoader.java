@@ -37,9 +37,12 @@ import jenkins.util.AntClassLoader;
 /**
  * classLoader which use first /WEB-INF/lib/*.jar and /WEB-INF/classes before core classLoader
  * <b>you must use the pluginFirstClassLoader true in the maven-hpi-plugin</b>
+ *
  * @author olamy
  * @since 1.371
+ * @deprecated use {@link PluginFirstClassLoader2}
  */
+@Deprecated
 public class PluginFirstClassLoader
     extends AntClassLoader
 {

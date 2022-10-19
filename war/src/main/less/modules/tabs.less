@@ -143,7 +143,8 @@
     color: var(--tabs-item-foreground--hover);
   }
 
-  &:active, &:focus {
+  &:active,
+  &:focus {
     outline: none;
     background: var(--tabs-item-background--active);
     color: var(--tabs-item-foreground--active);
@@ -155,7 +156,7 @@
   height: 1.25rem;
 }
 
-.tabBar .tab [type=radio] {
+.tabBar .tab [type="radio"] {
   display: none;
 }
 
@@ -179,4 +180,10 @@
 
 .tabBarFrame.showBaseline .tabBarBaseline {
   display: block;
+}
+
+.jenkins-tab-pane__title {
+  font-size: 1.6rem;
+  margin: 2.2rem 0 1.4rem;
+  padding: 0;
 }

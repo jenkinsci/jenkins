@@ -38,9 +38,9 @@ THE SOFTWARE.
   <description>The module contains dependencies that are used by a specific Jenkins version</description>
 
   <properties>
-    <asm.version>9.3</asm.version>
-    <slf4jVersion>1.7.36</slf4jVersion>
-    <stapler.version>1685.v3b_5035c4ce05</stapler.version>
+    <asm.version>9.4</asm.version>
+    <slf4jVersion>2.0.3</slf4jVersion>
+    <stapler.version>1736.vb_1e05c4231b_c</stapler.version>
     <groovy.version>2.4.21</groovy.version>
   </properties>
 
@@ -56,7 +56,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.springframework</groupId>
         <artifactId>spring-framework-bom</artifactId>
-        <version>5.3.21</version>
+        <version>5.3.23</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -64,7 +64,7 @@ THE SOFTWARE.
         <!-- https://docs.spring.io/spring-security/site/docs/5.5.4/reference/html5/#getting-maven-no-boot -->
         <groupId>org.springframework.security</groupId>
         <artifactId>spring-security-bom</artifactId>
-        <version>5.7.2</version>
+        <version>5.7.4</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -234,7 +234,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jenkins-ci</groupId>
         <artifactId>memory-monitor</artifactId>
-        <version>1.11</version>
+        <version>1.12</version>
       </dependency>
       <dependency>
         <groupId>org.jenkins-ci</groupId>
@@ -244,7 +244,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jenkins-ci</groupId>
         <artifactId>task-reactor</artifactId>
-        <version>1.7</version>
+        <version>1.8</version>
       </dependency>
       <dependency>
         <groupId>org.jenkins-ci</groupId>
@@ -279,7 +279,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jvnet.winp</groupId>
         <artifactId>winp</artifactId>
-        <version>1.28</version>
+        <version>1.30</version>
       </dependency>
       <dependency>
         <groupId>org.kohsuke</groupId>
@@ -295,6 +295,11 @@ THE SOFTWARE.
         <groupId>org.kohsuke.jinterop</groupId>
         <artifactId>j-interop</artifactId>
         <version>2.0.8-kohsuke-1</version>
+      </dependency>
+      <dependency>
+        <groupId>org.kohsuke.metainf-services</groupId>
+        <artifactId>metainf-services</artifactId>
+        <version>1.9</version>
       </dependency>
       <dependency>
         <groupId>org.kohsuke.stapler</groupId>
@@ -396,13 +401,6 @@ THE SOFTWARE.
         -->
         <scope>provided</scope>
         <optional>true</optional>
-      </dependency>
-      <dependency>
-        <!-- provided by log4j-over-slf4j -->
-        <groupId>log4j</groupId>
-        <artifactId>log4j</artifactId>
-        <version>1.2.17</version>
-        <scope>provided</scope>
       </dependency>
     </dependencies>
   </dependencyManagement>

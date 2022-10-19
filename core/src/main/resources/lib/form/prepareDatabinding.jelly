@@ -23,10 +23,11 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define">
-  <st:documentation>
-    Modifies the 'attrs.field' of the parent to inherit @field from the enclosing &lt;f:entry>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
+  <st:documentation> <![CDATA[
+    Modifies the 'attrs.field' of the parent to inherit @field from the enclosing <f:entry>
     if available. Also computes the @checkUrl attribute.
+    ]]>
   </st:documentation>
   <j:set var="pattrs" value="${parentScope.attrs}" />
   <j:if test="${pattrs.field==null}">

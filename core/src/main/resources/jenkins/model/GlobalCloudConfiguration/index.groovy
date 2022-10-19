@@ -12,17 +12,16 @@ l.layout(norefresh:true, permission:app.SYSTEM_READ, title:my.displayName) {
     set("readOnlyMode", !app.hasPermission(app.ADMINISTER))
     l.side_panel {
         l.tasks {
-            l.task(icon:"icon-up icon-md", href:rootURL+'/', title:_("Back to Dashboard"))
-            l.task(icon:"symbol-settings", href:"${rootURL}/computer/", title:_("Manage Nodes"))
+            l.task(icon:"symbol-settings", href: "../computer/", title:_("Manage Nodes"))
         }
     }
-    l.app_bar(title: my.displayName)
     l.main_panel {
+        l.app_bar(title: my.displayName)
         def clouds = Cloud.all()
         if (!clouds.isEmpty()) {
             p()
             div(class:"behavior-loading") {
-                l.spinner(text: _("LOADING"))
+                l.spinner(text: _("Loading"))
             }
 
             f.form(method:"post",name:"config",action:"configure", class: "jenkins-form") {

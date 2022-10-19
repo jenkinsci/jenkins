@@ -23,13 +23,17 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:f="/lib/form">
   <st:documentation>
     Section header in the form table.
 
-    <st:attribute name="title" use="required">
+    <st:attribute name="title" use="required"> <![CDATA[
       The section header text.
-      If null is given, the entire &lt;f:section> tag becomes no-op.
+      If null is given, the entire <f:section> tag becomes no-op.
+      ]]>
+    </st:attribute>
+    <st:attribute name="icon">
+      Optional attribute to set an icon for the section, this is only visible when using section-to-sidebar-items.js
     </st:attribute>
     <st:attribute name="name">
       Optional attribute to create a JSON object from this section.
@@ -42,7 +46,10 @@ THE SOFTWARE.
     <div class="${attrs.title!=null ? 'jenkins-section' : ''}">
       <j:if test="${attrs.title!=null}">
         <div class="jenkins-section__title">
-          ${title}
+          <div class="jenkins-hidden">
+            <l:icon src="${attrs.icon ?: 'symbol-settings'}" />
+          </div>
+          ${attrs.title}
         </div>
       </j:if>
       <d:invokeBody />

@@ -516,9 +516,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
         // Check root project for sub-job projects (e.g. matrix jobs).
         if (item.task instanceof AbstractProject<?, ?>) {
             AbstractProject<?, ?> project = (AbstractProject<?, ?>) item.task;
-            if (viewItems.contains(project.getRootProject())) {
-                return true;
-            }
+            return viewItems.contains(project.getRootProject());
         }
         return false;
     }
@@ -1087,7 +1085,8 @@ public abstract class View extends AbstractModelObject implements AccessControll
         try {
             Jenkins.checkGoodName(value);
             value = value.trim(); // why trim *after* checkGoodName? not sure, but ItemGroupMixIn.createTopLevelItem does the same
-            Jenkins.get().getProjectNamingStrategy().checkName(value);
+            ItemGroup<?> parent = getOwner().getItemGroup();
+            Jenkins.get().getProjectNamingStrategy().checkName(parent.getFullName(), value);
         } catch (Failure e) {
             return FormValidation.error(e.getMessage());
         }

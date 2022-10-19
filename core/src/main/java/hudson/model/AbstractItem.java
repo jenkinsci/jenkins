@@ -296,7 +296,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
             if (newName.equals(name)) {
                 return FormValidation.warning(Messages.AbstractItem_NewNameUnchanged());
             }
-            Jenkins.get().getProjectNamingStrategy().checkName(newName);
+            Jenkins.get().getProjectNamingStrategy().checkName(getParent().getFullName(), newName);
             checkIfNameIsUsed(newName);
             checkRename(newName);
         } catch (Failure e) {
@@ -854,7 +854,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
             String encoding = configFile.sniffEncoding();
             String xml = Files.readString(Util.fileToPath(configFile.getFile()), Charset.forName(encoding));
             Matcher matcher = SECRET_PATTERN.matcher(xml);
-            StringBuffer cleanXml = new StringBuffer();
+            StringBuilder cleanXml = new StringBuilder();
             while (matcher.find()) {
                 if (Secret.decrypt(matcher.group(1)) != null) {
                     matcher.appendReplacement(cleanXml, ">********<");
@@ -894,7 +894,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
             }
 
             // try to reflect the changes by reloading
-            Object o = new XmlFile(Items.XSTREAM, out.getTemporaryFile()).unmarshalNullingOut(this);
+            Object o = new XmlFile(Items.XSTREAM, out.getTemporaryPath().toFile()).unmarshalNullingOut(this);
             if (o != this) {
                 // ensure that we've got the same job type. extending this code to support updating
                 // to different job type requires destroying & creating a new job type

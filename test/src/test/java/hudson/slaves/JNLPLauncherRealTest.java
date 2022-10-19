@@ -33,6 +33,8 @@ import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Slave;
 import hudson.util.FormValidation;
+import java.io.File;
+import jenkins.agents.WebSocketAgentsTest;
 import jenkins.slaves.JnlpSlaveAgentProtocol4;
 import org.junit.Rule;
 import org.junit.Test;
@@ -54,25 +56,55 @@ public class JNLPLauncherRealTest {
         /* Since RealJenkinsRuleInit.jpi will load detached plugins, to reproduce a failure use:
         FileUtils.touch(new File(rr.getHome(), "plugins/instance-identity.jpi.disabled"));
         */
-        rr.then(JNLPLauncherRealTest::_smokes);
+        rr.then(new ConnectStep(false));
     }
 
-    private static void _smokes(JenkinsRule r) throws Throwable {
+    private static class ConnectStep implements RealJenkinsRule.Step {
+
+      private final boolean webSocket;
+
+      private ConnectStep(boolean webSocket) {
+        this.webSocket = webSocket;
+      }
+
+      @Override
+      public void run(JenkinsRule r) throws Throwable {
         InboundAgentRule inboundAgents = new InboundAgentRule(); // cannot use @Rule since it would not be accessible from the controller JVM
         inboundAgents.apply(new Statement() {
             @Override public void evaluate() throws Throwable {
                 for (PluginWrapper plugin : r.jenkins.pluginManager.getPlugins()) {
                     System.err.println(plugin + " active=" + plugin.isActive() + " enabled=" + plugin.isEnabled());
                 }
-                assertThat(ExtensionList.lookupSingleton(JNLPLauncher.DescriptorImpl.class).doCheckWebSocket(false, null).kind, is(FormValidation.Kind.OK));
-                Slave agent = inboundAgents.createAgent(r, "static");
-                FreeStyleProject p = r.createFreeStyleProject();
-                p.setAssignedNode(agent);
-                FreeStyleBuild b = r.buildAndAssertSuccess(p);
-                System.err.println(JenkinsRule.getLog(b));
+                assertThat(ExtensionList.lookupSingleton(JNLPLauncher.DescriptorImpl.class).doCheckWebSocket(webSocket, null).kind, is(FormValidation.Kind.OK));
+                InboundAgentRule.Options.Builder builder = InboundAgentRule.Options.newBuilder().name("static").secret();
+                if (webSocket) {
+                    builder.webSocket();
+                }
+                Slave agent = inboundAgents.createAgent(r, builder.build());
+                r.waitOnline(agent);
+                try {
+                    FreeStyleProject p = r.createFreeStyleProject();
+                    p.setAssignedNode(agent);
+                    FreeStyleBuild b = r.buildAndAssertSuccess(p);
+                    if (webSocket) {
+                        assertThat(agent.toComputer().getSystemProperties().get("java.class.path"), is(new File(r.jenkins.root, "agent.jar").getAbsolutePath()));
+                    }
+                    System.err.println(JenkinsRule.getLog(b));
+                } finally {
+                    inboundAgents.stop(r, agent.getNodeName());
+                }
             }
         }, Description.EMPTY).evaluate();
 
+      }
+    }
+
+    /**
+     * Simplified version of {@link WebSocketAgentsTest#smokes} just checking Jetty/Winstone.
+     */
+    @Issue("JENKINS-68933")
+    @Test public void webSocket() throws Throwable {
+        rr.then(new ConnectStep(true));
     }
 
 }
