@@ -1,12 +1,10 @@
 .jenkins-tabs {
   position: relative;
   display: flex;
-  margin-bottom: var(--section-padding);
   gap: calc(var(--section-padding) / 2.5);
-  padding: 5px var(--section-padding);
+  padding: 10px var(--section-padding);
   overflow-x: auto;
-  margin-left: calc(var(--section-padding) * -1);
-  margin-right: calc(var(--section-padding) * -1);
+  margin: -10px calc(var(--section-padding) * -1) calc(var(--section-padding) - 10px);
 
   &__tab {
     position: relative;
@@ -15,29 +13,28 @@
     line-height: 1 !important;
     transition: var(--standard-transition);
     z-index: 0;
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     font-weight: 500;
-    padding: 0.7rem 0.8rem;
+    padding: 0.75rem 1rem;
     flex-shrink: 0;
+    -webkit-font-smoothing: subpixel-antialiased;
 
     &::before,
     &::after {
       content: "";
       position: absolute;
       inset: 0;
-      border-radius: 10px;
+      border-radius: 0.66rem;
       z-index: -1;
       transition: var(--standard-transition);
-      opacity: 0;
     }
 
     &::before {
-      box-shadow: inset 0 0 0 2px var(--text-color);
-      opacity: 0.05;
+      box-shadow: inset 0 0 0 2px var(--button-background);
     }
 
     &::after {
-      box-shadow: 0 0 0 10px var(--text-color);
+      box-shadow: 0 0 0 10px transparent;
     }
 
     &:not(&--active) {
@@ -45,20 +42,19 @@
         text-decoration: none !important;
 
         &::before {
-          opacity: 0.075 !important;
-          background: var(--text-color);
+          background: var(--button-background);
         }
       }
 
       &:focus,
       &:active {
         &::before {
-          opacity: 0.125 !important;
+          //opacity: 0.125 !important;
         }
 
         &::after {
-          opacity: 0.05;
-          box-shadow: 0 0 0 5px var(--text-color);
+          //opacity: 0.05;
+          box-shadow: 0 0 0 5px var(--button-background);
         }
       }
     }
@@ -66,31 +62,29 @@
     &--active {
       cursor: default;
       color: var(--text-color);
-      //font-weight: 600;
 
       &::before {
-        opacity: 0.05 !important;
-        background: currentColor;
+        //opacity: 0.05 !important;
+        //background: currentColor;
       }
     }
   }
 
   &__tab-backdrop {
     position: absolute;
-    top: 5px;
+    top: 10px;
     left: var(--section-padding);
-    bottom: 5px;
+    bottom: 10px;
     transition: var(--standard-transition);
-    border-radius: 10px;
-    background: currentColor;
-    opacity: 0.05;
+    border-radius: 0.66rem;
+    background: var(--button-background);
   }
 }
 
 .jenkins-tabs--js {
   .jenkins-tabs__tab--active {
     &::before {
-      opacity: 0 !important;
+      //opacity: 0 !important;
     }
   }
 }
