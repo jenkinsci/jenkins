@@ -31,7 +31,7 @@ import java.util.Map;
 
 /**
  * An item which can be configured with {@link Trigger}s.
- * @since TODO
+ * @since 2.372
  */
 public interface TriggeredItem extends Item {
 
