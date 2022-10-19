@@ -27,13 +27,7 @@ THE SOFTWARE.
   <l:layout permission="${app.READ}">
     <st:include page="sidepanel.jelly" it="${app}"/>
     <l:main-panel>
-      <div class="jenkins-app-bar">
-        <div class="jenkins-app-bar__content">
-          <h1>
-            ${%Jenkins CLI}
-          </h1>
-        </div>
-      </div>
+      <l:app-bar title="${%Jenkins CLI}" />
       <p class="jenkins-description">
         ${%blurb(rootURL)}
       </p>
