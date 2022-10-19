@@ -145,20 +145,23 @@ public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
         List<ParameterValue> values = new ArrayList<>();
 
         JSONObject formData = req.getSubmittedForm();
-        JSONArray a = JSONArray.fromObject(formData.get("parameter"));
+        Object parameter = formData.get("parameter");
+        if (parameter != null) {
+            JSONArray a = JSONArray.fromObject(parameter);
 
-        for (Object o : a) {
-            JSONObject jo = (JSONObject) o;
-            String name = jo.getString("name");
+            for (Object o : a) {
+                JSONObject jo = (JSONObject) o;
+                String name = jo.getString("name");
 
-            ParameterDefinition d = getParameterDefinition(name);
-            if (d == null)
-                throw new IllegalArgumentException("No such parameter definition: " + name);
-            ParameterValue parameterValue = d.createValue(req, jo);
-            if (parameterValue != null) {
-                values.add(parameterValue);
-            } else {
-                throw new IllegalArgumentException("Cannot retrieve the parameter value: " + name);
+                ParameterDefinition d = getParameterDefinition(name);
+                if (d == null)
+                    throw new IllegalArgumentException("No such parameter definition: " + name);
+                ParameterValue parameterValue = d.createValue(req, jo);
+                if (parameterValue != null) {
+                    values.add(parameterValue);
+                } else {
+                    throw new IllegalArgumentException("Cannot retrieve the parameter value: " + name);
+                }
             }
         }
 
