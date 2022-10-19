@@ -93,7 +93,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>1847.v10c7a_4c2e344</version>
+      <version>1865.vc314fb_c2fa_a_4</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -124,7 +124,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>io.jenkins.plugins</groupId>
       <artifactId>javax-mail-api</artifactId>
-      <version>1.6.2-7</version>
+      <version>1.6.2-8</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -159,13 +159,13 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>cloudbees-folder</artifactId>
-      <version>6.758.vfd75d09eea_a_1</version>
+      <version>6.770.ve57b_a_fb_6a_67c</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>junit</artifactId>
-      <version>1143.v8d9a_e3355270</version>
+      <version>1153.v1c24f1a_d2553</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -347,7 +347,6 @@ THE SOFTWARE.
         </property>
       </activation>
       <properties>
-        <surefire.rerunFailingTestsCount>2</surefire.rerunFailingTestsCount>
         <surefire.skipAfterFailureCount>100</surefire.skipAfterFailureCount>
       </properties>
     </profile>
