@@ -193,6 +193,37 @@ public class DirectoryBrowserSupportTest {
         assertFalse(text, text.contains("x.txt"));
     }
 
+    @Test
+    public void viewGzippedArtifact() throws Exception {
+
+        // create a gzipped artifact
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.getBuildersList().add(new TestBuilder() {
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+                String testData = "This is a test";
+                String fileName = build.getWorkspace().getRemote()+"test.gz";
+                FileOutputStream output = new FileOutputStream(fileName);
+                try {
+                  Writer writer = new OutputStreamWriter(new GZIPOutputStream(output), StandardCharsets.UTF_8);
+                  try {
+                    writer.write(testData);
+                  } finally {
+                    writer.close();
+                  }
+                } finally {
+                  output.close();
+                }
+                return true;
+            }
+        });
+        p.getPublishersList().add(new ArtifactArchiver("*.gz", "", true));
+        j.buildAndAssertSuccess(p);
+
+        HtmlPage page = j.createWebClient().goTo("job/"+p.getName()+"/lastSuccessfulBuild/artifact/test.gz/*view*/");
+        assertEquals("This is a test", page.getWebResponse().getContentAsString());
+
+    }
+
     @Issue("JENKINS-19752")
     @Test
     public void zipDownload() throws Exception {
