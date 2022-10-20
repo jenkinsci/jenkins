@@ -34,7 +34,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
-import antlr.ANTLRException;
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
@@ -98,6 +97,7 @@ import jenkins.model.Jenkins;
 import jenkins.model.WorkspaceWriter;
 import jenkins.scm.DefaultSCMCheckoutStrategyImpl;
 import jenkins.scm.SCMCheckoutStrategy;
+import org.antlr.v4.runtime.RecognitionException;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
@@ -328,7 +328,7 @@ public class ProjectTest {
 
 
     @Test
-    public void testSchedulePolling() throws IOException, ANTLRException {
+    public void testSchedulePolling() throws IOException, RecognitionException {
         FreeStyleProject p = j.createFreeStyleProject("project");
         assertFalse("Project should not schedule polling because no scm trigger is set.", p.schedulePolling());
         SCMTrigger trigger = new SCMTrigger("0 0 * * *");

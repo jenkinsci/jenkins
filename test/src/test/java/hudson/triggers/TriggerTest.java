@@ -24,13 +24,13 @@
 
 package hudson.triggers;
 
-import antlr.ANTLRException;
 import hudson.Extension;
 import hudson.model.Item;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+import org.antlr.v4.runtime.RecognitionException;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -60,7 +60,7 @@ public class TriggerTest {
         public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
         @DataBoundConstructor
-        public MockTrigger(String cron) throws ANTLRException {
+        public MockTrigger(String cron) throws RecognitionException {
             super(cron);
         }
 

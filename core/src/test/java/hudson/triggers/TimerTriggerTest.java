@@ -24,10 +24,10 @@
 
 package hudson.triggers;
 
-import antlr.ANTLRException;
 import hudson.scheduler.CronTabList;
 import hudson.scheduler.Hash;
 import java.util.TimeZone;
+import org.antlr.v4.runtime.RecognitionException;
 import org.junit.Assert;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -38,7 +38,7 @@ import org.jvnet.hudson.test.Issue;
 public class TimerTriggerTest {
     @Issue("JENKINS-29790")
     @Test
-    public void testNoNPE() throws ANTLRException {
+    public void testNoNPE() throws RecognitionException {
         new TimerTrigger("").run();
     }
 

@@ -27,7 +27,6 @@ package hudson.triggers;
 
 import static hudson.Util.fixNull;
 
-import antlr.ANTLRException;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.model.BuildableItem;
@@ -41,6 +40,7 @@ import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
+import org.antlr.v4.runtime.RecognitionException;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -54,7 +54,7 @@ import org.kohsuke.stapler.QueryParameter;
 public class TimerTrigger extends Trigger<BuildableItem> {
 
     @DataBoundConstructor
-    public TimerTrigger(@NonNull String spec) throws ANTLRException {
+    public TimerTrigger(@NonNull String spec) {
         super(spec);
     }
 
@@ -95,7 +95,7 @@ public class TimerTrigger extends Trigger<BuildableItem> {
                 updateValidationsForSanity(validations, ctl);
                 updateValidationsForNextRun(validations, ctl);
                 return FormValidation.aggregate(validations);
-            } catch (ANTLRException e) {
+            } catch (RecognitionException e) {
                 if (value.trim().indexOf('\n') == -1 && value.contains("**"))
                     return FormValidation.error(Messages.TimerTrigger_MissingWhitespace());
                 return FormValidation.error(e.getMessage());

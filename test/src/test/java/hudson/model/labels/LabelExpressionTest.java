@@ -32,7 +32,6 @@ import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeFalse;
 
-import antlr.ANTLRException;
 import hudson.Functions;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
@@ -48,6 +47,7 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
+import org.antlr.v4.runtime.RecognitionException;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -182,7 +182,7 @@ public class LabelExpressionTest {
         parseAndVerify("aaa&&bbb&&ccc", "aaa&&bbb&&ccc");
     }
 
-    private void parseAndVerify(String expected, String expr) throws ANTLRException {
+    private void parseAndVerify(String expected, String expr) throws RecognitionException {
         assertEquals(expected, Label.parseExpression(expr).getName());
     }
 
@@ -347,7 +347,7 @@ public class LabelExpressionTest {
     private void parseShouldFail(String expr) {
         assertThrows(
                 expr + " should fail to parse",
-                ANTLRException.class,
+                RecognitionException.class,
                 () -> Label.parseExpression(expr));
     }
 

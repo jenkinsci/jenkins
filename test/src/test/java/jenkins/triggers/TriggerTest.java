@@ -4,7 +4,6 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-import antlr.ANTLRException;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.model.BuildableItem;
@@ -16,6 +15,7 @@ import hudson.triggers.Trigger;
 import hudson.triggers.TriggerDescriptor;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.antlr.v4.runtime.RecognitionException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -64,7 +64,7 @@ public class TriggerTest {
 
         private static final Logger LOGGER = Logger.getLogger(BadTimerTrigger.class.getName());
 
-        BadTimerTrigger(@NonNull final String specs) throws ANTLRException {
+        BadTimerTrigger(@NonNull final String specs) throws RecognitionException {
             super(specs);
         }
 

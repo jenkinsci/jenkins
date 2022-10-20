@@ -29,7 +29,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 
-import antlr.ANTLRException;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -37,6 +36,7 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
+import org.antlr.v4.runtime.RecognitionException;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 
@@ -46,7 +46,7 @@ import org.jvnet.hudson.test.Issue;
 public class CronTabTest {
 
     @Test
-    public void test1() throws ANTLRException {
+    public void test1() throws RecognitionException {
         new CronTab("@yearly");
         new CronTab("@weekly");
         new CronTab("@midnight");
@@ -97,7 +97,7 @@ public class CronTabTest {
      */
     @Issue("HUDSON-8656") // This is _not_ JENKINS-8656
     @Test
-    public void testCeil4() throws ANTLRException {
+    public void testCeil4() throws RecognitionException {
         final Calendar cal = Calendar.getInstance(new Locale("de", "de"));
         cal.set(2011, Calendar.JANUARY, 16, 0, 0, 0); // Sunday, Jan 16th 2011, 00:00
         final String cronStr = "0 23 * * 1-5"; // execute on weekdays @23:00
@@ -119,7 +119,7 @@ public class CronTabTest {
      */
     @Issue("HUDSON-8656") // This is _not_ JENKINS-8656
     @Test
-    public void testCeil5() throws ANTLRException {
+    public void testCeil5() throws RecognitionException {
         final Calendar cal = Calendar.getInstance(new Locale("de", "at"));
         cal.set(2011, Calendar.JANUARY, 16, 0, 0, 0); // Sunday, Jan 16th 2011, 00:00
         final String cronStr = "0 23 * * 1-5"; // execute on weekdays @23:00
@@ -266,7 +266,7 @@ public class CronTabTest {
         compare(new GregorianCalendar(2013, Calendar.MARCH, 21, 0, 2), new CronTab("H(0-3)/4 * * * *", Hash.from("junk")).ceil(new GregorianCalendar(2013, Calendar.MARCH, 21, 0, 0)));
         compare(new GregorianCalendar(2013, Calendar.MARCH, 21, 1, 2), new CronTab("H(0-3)/4 * * * *", Hash.from("junk")).ceil(new GregorianCalendar(2013, Calendar.MARCH, 21, 0, 5)));
 
-        assertThrows(ANTLRException.class, () -> compare(new GregorianCalendar(2013, Calendar.MARCH, 21, 0, 0), new CronTab("H(0-3)/15 * * * *", Hash.from("junk")).ceil(new GregorianCalendar(2013, Calendar.MARCH, 21, 0, 0))));
+        assertThrows(RecognitionException.class, () -> compare(new GregorianCalendar(2013, Calendar.MARCH, 21, 0, 0), new CronTab("H(0-3)/15 * * * *", Hash.from("junk")).ceil(new GregorianCalendar(2013, Calendar.MARCH, 21, 0, 0))));
     }
 
     @Test public void repeatedHash() throws Exception {
@@ -285,11 +285,11 @@ public class CronTabTest {
     }
 
     @Test public void rangeBoundsCheckFailHour() {
-        assertThrows(ANTLRException.class, () -> new CronTab("H H(12-24) * * *"));
+        assertThrows(RecognitionException.class, () -> new CronTab("H H(12-24) * * *"));
     }
 
     @Test public void rangeBoundsCheckFailMinute() {
-        assertThrows(ANTLRException.class, () -> new CronTab("H(33-66) * * * *"));
+        assertThrows(RecognitionException.class, () -> new CronTab("H(33-66) * * * *"));
     }
 
     @Issue("JENKINS-9283")

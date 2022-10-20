@@ -24,20 +24,15 @@
 
 package hudson.scheduler;
 
-import antlr.ANTLRException;
-import antlr.LLkParser;
-import antlr.ParserSharedInputState;
-import antlr.SemanticException;
-import antlr.Token;
-import antlr.TokenBuffer;
-import antlr.TokenStream;
-import antlr.TokenStreamException;
 import jenkins.util.SystemProperties;
+import org.antlr.v4.runtime.Parser;
+import org.antlr.v4.runtime.RecognitionException;
+import org.antlr.v4.runtime.TokenStream;
 
 /**
  * @author Kohsuke Kawaguchi
  */
-abstract class BaseParser extends LLkParser {
+abstract class BaseParser extends Parser {
     // lower/upper bounds of fields (inclusive)
     static final int[] LOWER_BOUNDS = new int[] {0, 0, 1, 1, 0};
     static final int[] UPPER_BOUNDS = new int[] {59, 23, 31, 12, 7};
@@ -47,20 +42,8 @@ abstract class BaseParser extends LLkParser {
      */
     protected Hash hash = Hash.zero();
 
-    protected BaseParser(int i) {
-        super(i);
-    }
-
-    protected BaseParser(ParserSharedInputState parserSharedInputState, int i) {
-        super(parserSharedInputState, i);
-    }
-
-    protected BaseParser(TokenBuffer tokenBuffer, int i) {
-        super(tokenBuffer, i);
-    }
-
-    protected BaseParser(TokenStream tokenStream, int i) {
-        super(tokenStream, i);
+    BaseParser(TokenStream input) {
+        super(input);
     }
 
     public void setHash(Hash hash) {
@@ -68,7 +51,7 @@ abstract class BaseParser extends LLkParser {
         this.hash = hash;
     }
 
-    protected long doRange(int start, int end, int step, int field) throws ANTLRException {
+    protected long doRange(int start, int end, int step, int field) throws RecognitionException {
         rangeCheck(start, field);
         rangeCheck(end, field);
         if (step <= 0)
@@ -83,7 +66,7 @@ abstract class BaseParser extends LLkParser {
         return bits;
     }
 
-    protected long doRange(int step, int field) throws ANTLRException {
+    protected long doRange(int step, int field) throws RecognitionException {
         return doRange(LOWER_BOUNDS[field], UPPER_BOUNDS[field], step, field);
     }
 
@@ -94,14 +77,14 @@ abstract class BaseParser extends LLkParser {
      *      Increments. For example, 15 if "H/15". Or {@link #NO_STEP} to indicate
      *      the special constant for "H" without the step value.
      */
-    protected long doHash(int step, int field) throws ANTLRException {
+    protected long doHash(int step, int field) throws RecognitionException {
         int u = UPPER_BOUNDS[field];
         if (field == 2) u = 28;   // day of month can vary depending on month, so to make life simpler, just use [1,28] that's always safe
         if (field == 4) u = 6;   // Both 0 and 7 of day of week are Sunday. For better distribution, limit upper bound to 6
         return doHash(LOWER_BOUNDS[field], u, step, field);
     }
 
-    protected long doHash(int s, int e, int step, int field) throws ANTLRException {
+    protected long doHash(int s, int e, int step, int field) throws RecognitionException {
         rangeCheck(s, field);
         rangeCheck(e, field);
         if (step > e - s + 1) {
@@ -124,19 +107,18 @@ abstract class BaseParser extends LLkParser {
         }
     }
 
-    protected void rangeCheck(int value, int field) throws ANTLRException {
+    protected void rangeCheck(int value, int field) throws RecognitionException {
         if (value < LOWER_BOUNDS[field] || UPPER_BOUNDS[field] < value) {
             error(Messages.BaseParser_OutOfRange(value, LOWER_BOUNDS[field], UPPER_BOUNDS[field]));
         }
     }
 
-    private void error(String msg) throws TokenStreamException, SemanticException {
-        Token token = LT(0);
-        throw new SemanticException(
+    private void error(String msg) throws RecognitionException {
+        throw new RecognitionException(
             msg,
-            token.getFilename(),
-            token.getLine(),
-            token.getColumn()
+            this,
+            this.getInputStream(),
+            this.getContext()
         );
     }
 

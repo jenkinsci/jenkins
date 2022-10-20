@@ -2,12 +2,12 @@ package hudson.scheduler;
 
 import static org.junit.Assert.fail;
 
-import antlr.ANTLRException;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.GregorianCalendar;
+import org.antlr.v4.runtime.RecognitionException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -42,7 +42,7 @@ public class CronTabEventualityTest {
 
     @Test
     @Issue("JENKINS-12388")
-    public void testYearlyWillBeEventuallyTriggeredWithinOneYear() throws ANTLRException {
+    public void testYearlyWillBeEventuallyTriggeredWithinOneYear() throws RecognitionException {
         Calendar start = new GregorianCalendar(2012, Calendar.JANUARY, 11, 22, 33); // Jan 11th 2012 22:33
         Calendar limit = createLimit(start, Calendar.YEAR, 1);
         checkEventuality(start, "@yearly", limit);
@@ -50,56 +50,56 @@ public class CronTabEventualityTest {
 
     @Test
     @Issue("JENKINS-12388")
-    public void testAnnuallyWillBeEventuallyTriggeredWithinOneYear() throws ANTLRException {
+    public void testAnnuallyWillBeEventuallyTriggeredWithinOneYear() throws RecognitionException {
         Calendar start = new GregorianCalendar(2012, Calendar.JANUARY, 11, 22, 33); // Jan 11th 2012 22:33
         Calendar limit = createLimit(start, Calendar.YEAR, 1);
         checkEventuality(start, "@annually", limit);
     }
 
     @Test
-    public void testMonthlyWillBeEventuallyTriggeredWithinOneMonth() throws ANTLRException {
+    public void testMonthlyWillBeEventuallyTriggeredWithinOneMonth() throws RecognitionException {
         Calendar start = new GregorianCalendar(2012, Calendar.JANUARY, 11, 22, 33); // Jan 11th 2012 22:33
         Calendar limit = createLimit(start, Calendar.MONTH, 1);
         checkEventuality(start, "@monthly", limit);
     }
 
     @Test
-    public void testWeeklyWillBeEventuallyTriggeredWithinOneWeek() throws ANTLRException {
+    public void testWeeklyWillBeEventuallyTriggeredWithinOneWeek() throws RecognitionException {
         Calendar start = new GregorianCalendar(2012, Calendar.JANUARY, 11, 22, 33); // Jan 11th 2012 22:33
         Calendar limit = createLimit(start, Calendar.WEEK_OF_YEAR, 1);
         checkEventuality(start, "@weekly", limit);
     }
 
     @Test
-    public void testDailyWillBeEventuallyTriggeredWithinOneDay() throws ANTLRException {
+    public void testDailyWillBeEventuallyTriggeredWithinOneDay() throws RecognitionException {
         Calendar start = new GregorianCalendar(2012, Calendar.JANUARY, 11, 22, 33); // Jan 11th 2012 22:33
         Calendar limit = createLimit(start, Calendar.DAY_OF_MONTH, 1);
         checkEventuality(start, "@daily", limit);
     }
 
     @Test
-    public void testMidnightWillBeEventuallyTriggeredWithinOneDay() throws ANTLRException {
+    public void testMidnightWillBeEventuallyTriggeredWithinOneDay() throws RecognitionException {
         Calendar start = new GregorianCalendar(2012, Calendar.JANUARY, 11, 22, 33); // Jan 11th 2012 22:33
         Calendar limit = createLimit(start, Calendar.DAY_OF_MONTH, 1);
         checkEventuality(start, "@midnight", limit);
     }
 
     @Test
-    public void testHourlyWillBeEventuallyTriggeredWithinOneHour() throws ANTLRException {
+    public void testHourlyWillBeEventuallyTriggeredWithinOneHour() throws RecognitionException {
         Calendar start = new GregorianCalendar(2012, Calendar.JANUARY, 11, 22, 33); // Jan 11th 2012 22:33
         Calendar limit = createLimit(start, Calendar.HOUR, 1);
         checkEventuality(start, "@hourly", limit);
     }
 
     @Test
-    public void testFirstDayOfMonthWillBeEventuallyTriggeredWithinOneMonth() throws ANTLRException {
+    public void testFirstDayOfMonthWillBeEventuallyTriggeredWithinOneMonth() throws RecognitionException {
         Calendar start = new GregorianCalendar(2012, Calendar.JANUARY, 11, 22, 33); // Jan 11th 2012 22:33
         Calendar limit = createLimit(start, Calendar.MONTH, 1);
         checkEventuality(start, "H H 1 * *", limit);
     }
 
     @Test
-    public void testFirstSundayOfMonthWillBeEventuallyTriggeredWithinOneMonthAndOneWeek() throws ANTLRException {
+    public void testFirstSundayOfMonthWillBeEventuallyTriggeredWithinOneMonthAndOneWeek() throws RecognitionException {
         Calendar start = new GregorianCalendar(2012, Calendar.JANUARY, 11, 22, 33); // Jan 11th 2012 22:33
         Calendar limit = createLimit(start, Calendar.DAY_OF_MONTH, 31 + 7);
         // If both day of month and day of week are specified:
@@ -108,7 +108,7 @@ public class CronTabEventualityTest {
         checkEventuality(start, "H H 1-7 * 0", limit);
     }
 
-    private void checkEventuality(Calendar start, String crontabFormat, Calendar limit) throws ANTLRException {
+    private void checkEventuality(Calendar start, String crontabFormat, Calendar limit) throws RecognitionException {
         CronTab cron = new CronTab(crontabFormat, hash);
         Calendar next = cron.ceil(start);
         if (next.after(limit)) {

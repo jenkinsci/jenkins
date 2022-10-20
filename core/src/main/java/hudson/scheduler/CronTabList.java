@@ -24,7 +24,6 @@
 
 package hudson.scheduler;
 
-import antlr.ANTLRException;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import java.util.Calendar;
@@ -33,6 +32,7 @@ import java.util.TimeZone;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.antlr.v4.runtime.RecognitionException;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -91,11 +91,11 @@ public final class CronTabList {
         return null;
     }
 
-    public static CronTabList create(@NonNull String format) throws ANTLRException {
+    public static CronTabList create(@NonNull String format) throws RecognitionException {
         return create(format, null);
     }
 
-    public static CronTabList create(@NonNull String format, Hash hash) throws ANTLRException {
+    public static CronTabList create(@NonNull String format, Hash hash) throws RecognitionException {
         Vector<CronTab> r = new Vector<>();
         int lineNumber = 0;
         String timezone = null;
@@ -110,18 +110,19 @@ public final class CronTabList {
                 if (timezone != null) {
                     LOGGER.log(Level.CONFIG, "CRON with timezone {0}", timezone);
                 } else {
-                    throw new ANTLRException("Invalid or unsupported timezone '" + timezoneString + "'");
+                    throw new RecognitionException("Invalid or unsupported timezone '" + timezoneString + "'", null, null, null);
                 }
                 continue;
             }
 
             if (line.length() == 0 || line.startsWith("#"))
                 continue;   // ignorable line
-            try {
+            //TODO: Fix this
+            //try {
                 r.add(new CronTab(line, lineNumber, hash, timezone));
-            } catch (ANTLRException e) {
-                throw new ANTLRException(Messages.CronTabList_InvalidInput(line, e.toString()), e);
-            }
+            //} catch (ANTLRException e) {
+            //    throw new ANTLRException(Messages.CronTabList_InvalidInput(line, e.toString()), e);
+            //}
         }
 
         return new CronTabList(r);

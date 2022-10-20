@@ -25,7 +25,6 @@
 
 package hudson.triggers;
 
-import antlr.ANTLRException;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -65,6 +64,7 @@ import java.util.logging.Logger;
 import jenkins.model.Jenkins;
 import jenkins.triggers.TriggeredItem;
 import jenkins.util.SystemProperties;
+import org.antlr.v4.runtime.RecognitionException;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -100,7 +100,7 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
             } else {
                 LOGGER.log(Level.WARNING, "The job {0} has a null crontab spec which is incorrect", job.getFullName());
             }
-        } catch (ANTLRException e) {
+        } catch (RecognitionException e) {
             // this shouldn't fail because we've already parsed stuff in the constructor,
             // so if it fails, use whatever 'tabs' that we already have.
             LOGGER.log(Level.WARNING, String.format("Failed to parse crontab spec %s in job %s", spec, project.getFullName()), e);
@@ -171,7 +171,7 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
      * periodically. This is useful when your trigger does
      * some polling work.
      */
-    protected Trigger(@NonNull String cronTabSpec) throws ANTLRException {
+    protected Trigger(@NonNull String cronTabSpec) throws RecognitionException {
         this.spec = cronTabSpec;
         this.tabs = CronTabList.create(cronTabSpec);
     }
@@ -196,7 +196,7 @@ public abstract class Trigger<J extends Item> implements Describable<Trigger<?>>
     protected Object readResolve() throws ObjectStreamException {
         try {
             tabs = CronTabList.create(spec);
-        } catch (ANTLRException e) {
+        } catch (RecognitionException e) {
             InvalidObjectException x = new InvalidObjectException(e.getMessage());
             x.initCause(e);
             throw x;

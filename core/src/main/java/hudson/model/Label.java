@@ -26,7 +26,6 @@ package hudson.model;
 
 import static hudson.Util.fixNull;
 
-import antlr.ANTLRException;
 import com.thoughtworks.xstream.converters.Converter;
 import com.thoughtworks.xstream.converters.MarshallingContext;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
@@ -56,7 +55,6 @@ import hudson.slaves.NodeProvisioner;
 import hudson.util.QuotedStringTokenizer;
 import hudson.util.VariableResolver;
 import java.io.Serializable;
-import java.io.StringReader;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -68,6 +66,9 @@ import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithChildren;
+import org.antlr.v4.runtime.CharStreams;
+import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.RecognitionException;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.StaplerRequest;
@@ -611,9 +612,10 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
      *
      * TODO: replace this with a real parser later
      */
-    public static Label parseExpression(@NonNull String labelExpression) throws ANTLRException {
-        LabelExpressionLexer lexer = new LabelExpressionLexer(new StringReader(labelExpression));
-        return new LabelExpressionParser(lexer).expr();
+    public static Label parseExpression(@NonNull String labelExpression) throws RecognitionException {
+        LabelExpressionLexer lexer = new LabelExpressionLexer(CharStreams.fromString(labelExpression));
+        CommonTokenStream inputTokenStream = new CommonTokenStream(lexer);
+        return new LabelExpressionParser(inputTokenStream).expr().l;
     }
 
     /**

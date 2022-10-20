@@ -24,7 +24,6 @@
 
 package hudson.model.labels;
 
-import antlr.ANTLRException;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
@@ -280,11 +279,11 @@ public abstract class LabelExpression extends Label {
         if (Util.fixEmptyAndTrim(expression) == null) {
             return FormValidation.ok();
         }
-        try {
+        //try {
             Label.parseExpression(expression);
-        } catch (ANTLRException e) {
-            return FormValidation.error(e, Messages.LabelExpression_InvalidBooleanExpression(e.getMessage()));
-        }
+//        } catch (ANTLRException e) {
+//            return FormValidation.error(e, Messages.LabelExpression_InvalidBooleanExpression(e.getMessage()));
+//        }
         final Jenkins j = Jenkins.get();
         Label l = j.getLabel(expression);
         if (l == null || l.isEmpty()) {

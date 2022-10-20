@@ -29,15 +29,15 @@ import static java.util.Calendar.HOUR_OF_DAY;
 import static java.util.Calendar.MINUTE;
 import static java.util.Calendar.MONTH;
 
-import antlr.ANTLRException;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
-import java.io.StringReader;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.Locale;
 import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.antlr.v4.runtime.CharStreams;
+import org.antlr.v4.runtime.CommonTokenStream;
 
 /**
  * Table for driving scheduled tasks.
@@ -67,11 +67,11 @@ public final class CronTab {
      */
     private @CheckForNull String specTimezone;
 
-    public CronTab(String format) throws ANTLRException {
+    public CronTab(String format) {
         this(format, null);
     }
 
-    public CronTab(String format, Hash hash) throws ANTLRException {
+    public CronTab(String format, Hash hash) {
         this(format, 1, hash);
     }
 
@@ -80,7 +80,7 @@ public final class CronTab {
      *      Use {@link #CronTab(String, int, Hash)}
      */
     @Deprecated
-    public CronTab(String format, int line) throws ANTLRException {
+    public CronTab(String format, int line) {
         set(format, line, null);
     }
 
@@ -89,7 +89,7 @@ public final class CronTab {
      *      Used to spread out token like "@daily". Null to preserve the legacy behaviour
      *      of not spreading it out at all.
      */
-    public CronTab(String format, int line, Hash hash) throws ANTLRException {
+    public CronTab(String format, int line, Hash hash) {
         this(format, line, hash, null);
     }
 
@@ -99,21 +99,22 @@ public final class CronTab {
      *      timezone
      * @since 1.615
      */
-    public CronTab(String format, int line, Hash hash, @CheckForNull String timezone) throws ANTLRException {
+    public CronTab(String format, int line, Hash hash, @CheckForNull String timezone) {
         set(format, line, hash, timezone);
     }
 
-    private void set(String format, int line, Hash hash) throws ANTLRException {
+    private void set(String format, int line, Hash hash) {
         set(format, line, hash, null);
     }
 
     /**
      * @since 1.615
      */
-    private void set(String format, int line, Hash hash, String timezone) throws ANTLRException {
-        CrontabLexer lexer = new CrontabLexer(new StringReader(format));
+    private void set(String format, int line, Hash hash, String timezone) {
+        CrontabLexer lexer = new CrontabLexer(CharStreams.fromString(format));
         lexer.setLine(line);
-        CrontabParser parser = new CrontabParser(lexer);
+        CommonTokenStream inputTokenStream = new CommonTokenStream(lexer);
+        CrontabParser parser = new CrontabParser(inputTokenStream);
         parser.setHash(hash);
         spec = format;
         specTimezone = timezone;
@@ -465,7 +466,7 @@ public final class CronTab {
         }
     }
 
-    void set(String format, Hash hash) throws ANTLRException {
+    void set(String format, Hash hash) {
         set(format, 1, hash);
     }
 

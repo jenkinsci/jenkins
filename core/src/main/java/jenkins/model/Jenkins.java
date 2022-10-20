@@ -42,7 +42,6 @@ import static java.util.logging.Level.WARNING;
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
 
-import antlr.ANTLRException;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
@@ -2067,14 +2066,14 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 return l;
 
             // non-existent
-            try {
+            //try {
                 // For the record, this method creates temporary labels but there is a periodic task
                 // calling "trimLabels" to remove unused labels running every 5 minutes.
                 labels.putIfAbsent(expr, Label.parseExpression(expr));
-            } catch (ANTLRException e) {
-                // laxly accept it as a single label atom for backward compatibility
-                return getLabelAtom(expr);
-            }
+//            } catch (ANTLRException e) {
+//                // laxly accept it as a single label atom for backward compatibility
+//                return getLabelAtom(expr);
+//            }
         }
     }
 

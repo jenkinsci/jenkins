@@ -31,7 +31,6 @@ package hudson.model;
 import static hudson.scm.PollingResult.BUILD_NOW;
 import static hudson.scm.PollingResult.NO_CHANGES;
 
-import antlr.ANTLRException;
 import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -50,7 +49,6 @@ import hudson.model.Fingerprint.RangeSet;
 import hudson.model.Node.Mode;
 import hudson.model.Queue.Executable;
 import hudson.model.Queue.Task;
-import hudson.model.labels.LabelAtom;
 import hudson.model.labels.LabelExpression;
 import hudson.model.listeners.SCMPollListener;
 import hudson.model.queue.CauseOfBlockage;
@@ -411,13 +409,13 @@ public abstract class AbstractProject<P extends AbstractProject<P, R>, R extends
     @Exported(name = "labelExpression")
     public String getAssignedLabelString() {
         if (canRoam || assignedNode == null)    return null;
-        try {
+        //try {
             Label.parseExpression(assignedNode);
             return assignedNode;
-        } catch (ANTLRException e) {
-            // must be old label or host name that includes whitespace or other unsafe chars
-            return LabelAtom.escape(assignedNode);
-        }
+//        } catch (ANTLRException e) {
+//            // must be old label or host name that includes whitespace or other unsafe chars
+//            return LabelAtom.escape(assignedNode);
+//        }
     }
 
     /**
