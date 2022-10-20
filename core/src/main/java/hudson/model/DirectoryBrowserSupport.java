@@ -380,11 +380,11 @@ public final class DirectoryBrowserSupport implements HttpResponse {
             InputStream in;
             try {
                 in = baseFile.open(getNoFollowLinks());
-                byte[] sig new byte[2];
-                int len = in.read(sig 0, 2);
+                byte[] sig = new byte[2];
+                int len = in.read(sig, 0, 2);
                 in.close();
                 in = baseFile.open(getNoFollowLinks());
-                if (len == 2 && (int)((sig0] & 0xff) | ((sig1] << 8) & 0xff00)) == GZIPInputStream.GZIP_MAGIC) {
+                if (len == 2 && (int) ((sig[0] & 0xff) | ((sig[1] << 8) & 0xff00)) == GZIPInputStream.GZIP_MAGIC) {
                     in = new GZIPInputStream(in);
                 }
             } catch (IOException ioe) {
