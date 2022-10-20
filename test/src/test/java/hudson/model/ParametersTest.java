@@ -266,6 +266,26 @@ public class ParametersTest {
         collector.checkThat("parameters page should not leave param description unescaped", text, not(containsString("<param description>")));
     }
 
+    @Test
+    @Issue("JENKINS-69637")
+    public void emptyParameterDefinitionProperty() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.addProperty(new ParametersDefinitionProperty());
+
+        JenkinsRule.WebClient wc = j.createWebClient()
+                .withThrowExceptionOnFailingStatusCode(false);
+        HtmlPage page;
+
+        page = wc.getPage(p, "build?delay=0sec");
+        collector.checkThat(page.getWebResponse().getStatusCode(), is(HttpURLConnection.HTTP_BAD_METHOD));
+        HtmlForm form = page.getFormByName("parameters");
+        page = j.submit(form);
+        collector.checkThat(page.getWebResponse().getStatusCode(), is(HttpURLConnection.HTTP_OK));
+        j.waitUntilNoActivity();
+        FreeStyleBuild b = p.getBuildByNumber(1);
+        collector.checkThat(b.getResult(), is(Result.SUCCESS));
+    }
+
     static class MyMarkupFormatter extends MarkupFormatter {
         @Override
         public void translate(String markup, @NonNull Writer output) throws IOException {
