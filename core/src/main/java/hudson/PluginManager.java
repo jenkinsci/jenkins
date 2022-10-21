@@ -72,6 +72,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.lang.reflect.Method;
+import java.net.HttpURLConnection;
 import java.net.JarURLConnection;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
@@ -1943,6 +1944,35 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             }
         }
         return FormValidation.ok();
+    }
+
+    @Restricted(NoExternalUse.class)
+    @RequirePOST public FormValidation doCheckUpdateSiteUrl(StaplerRequest request, @QueryParameter String value) {
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+        if (StringUtils.isNotBlank(value)) {
+            try {
+                value += ((value.contains("?")) ? "&" : "?") + "version=" + Jenkins.VERSION + "&uctest";
+
+                URL url = new URL(value);
+
+                // Connect to the URL
+                HttpURLConnection conn = (HttpURLConnection) ProxyConfiguration.open(url);
+                conn.setRequestMethod("HEAD");
+                conn.setConnectTimeout(5000);
+                if (100 <= conn.getResponseCode() && conn.getResponseCode() <= 399) {
+                    return FormValidation.ok();
+                } else {
+                    LOGGER.log(Level.FINE, "Obtained a non OK ({0}) response from the update center",
+                            new Object[]{conn.getResponseCode(), url});
+                    return FormValidation.error(Messages.PluginManager_connectionFailed());
+                }
+            } catch (IOException e) {
+                LOGGER.log(Level.FINE, "Failed to check update site", e);
+                return FormValidation.error(Messages.PluginManager_connectionFailed());
+            }
+        } else {
+            return FormValidation.error(Messages.PluginManager_emptyUpdateSiteUrl());
+        }
     }
 
     @Restricted(NoExternalUse.class)
