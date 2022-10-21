@@ -62,7 +62,8 @@ jobs:
           echo $REPO
 
           wget -q https://get.jenkins.io/${REPO}/${PROJECT_VERSION}/${FILE_NAME}
-      - name: Release
+      - name: Upload Release Asset
+        id: upload-war
         uses: softprops/action-gh-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -95,7 +96,8 @@ jobs:
           echo $REPO
 
           wget -q https://get.jenkins.io/${REPO}/${FILE_NAME}
-      - name: Release
+      - name: Upload Release Asset
+        id: upload-deb
         if: always()
         uses: softprops/action-gh-release@v1
         env:
@@ -130,7 +132,7 @@ jobs:
           echo $REPO
 
           wget -q https://get.jenkins.io/${REPO}/${FILE_NAME}
-      - name: Release
+      - name: Upload Release Asset
         id: upload-rpm
         if: always()
         uses: softprops/action-gh-release@v1
@@ -166,7 +168,7 @@ jobs:
           echo $REPO
 
           wget -q https://get.jenkins.io/${REPO}/${PROJECT_VERSION}/${FILE_NAME}
-      - name: Release
+      - name: Upload Release Asset
         id: upload-msi
         if: always()
         uses: softprops/action-gh-release@v1
