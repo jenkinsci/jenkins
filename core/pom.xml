@@ -571,8 +571,6 @@ THE SOFTWARE.
             <phase>generate-sources</phase>
             <configuration>
               <sources>
-                <source>${project.build.directory}/generated-sources/antlr4/hudson/model/labels</source>
-                <source>${project.build.directory}/generated-sources/antlr4/hudson/scheduler</source>
                 <source>${project.build.directory}/generated-sources/localizer</source>
                 <source>${project.build.directory}/generated-sources/taglib-interface</source>
               </sources>

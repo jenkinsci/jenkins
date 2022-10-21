@@ -47,7 +47,7 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
-import org.antlr.v4.runtime.RecognitionException;
+import org.antlr.v4.runtime.misc.ParseCancellationException;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -182,7 +182,7 @@ public class LabelExpressionTest {
         parseAndVerify("aaa&&bbb&&ccc", "aaa&&bbb&&ccc");
     }
 
-    private void parseAndVerify(String expected, String expr) throws RecognitionException {
+    private void parseAndVerify(String expected, String expr) throws ParseCancellationException {
         assertEquals(expected, Label.parseExpression(expr).getName());
     }
 
@@ -347,7 +347,7 @@ public class LabelExpressionTest {
     private void parseShouldFail(String expr) {
         assertThrows(
                 expr + " should fail to parse",
-                RecognitionException.class,
+                ParseCancellationException.class,
                 () -> Label.parseExpression(expr));
     }
 

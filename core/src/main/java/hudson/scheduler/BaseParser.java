@@ -26,8 +26,8 @@ package hudson.scheduler;
 
 import jenkins.util.SystemProperties;
 import org.antlr.v4.runtime.Parser;
-import org.antlr.v4.runtime.RecognitionException;
 import org.antlr.v4.runtime.TokenStream;
+import org.antlr.v4.runtime.misc.ParseCancellationException;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -51,7 +51,7 @@ abstract class BaseParser extends Parser {
         this.hash = hash;
     }
 
-    protected long doRange(int start, int end, int step, int field) throws RecognitionException {
+    protected long doRange(int start, int end, int step, int field) throws ParseCancellationException {
         rangeCheck(start, field);
         rangeCheck(end, field);
         if (step <= 0)
@@ -66,7 +66,7 @@ abstract class BaseParser extends Parser {
         return bits;
     }
 
-    protected long doRange(int step, int field) throws RecognitionException {
+    protected long doRange(int step, int field) throws ParseCancellationException {
         return doRange(LOWER_BOUNDS[field], UPPER_BOUNDS[field], step, field);
     }
 
@@ -77,14 +77,14 @@ abstract class BaseParser extends Parser {
      *      Increments. For example, 15 if "H/15". Or {@link #NO_STEP} to indicate
      *      the special constant for "H" without the step value.
      */
-    protected long doHash(int step, int field) throws RecognitionException {
+    protected long doHash(int step, int field) throws ParseCancellationException {
         int u = UPPER_BOUNDS[field];
         if (field == 2) u = 28;   // day of month can vary depending on month, so to make life simpler, just use [1,28] that's always safe
         if (field == 4) u = 6;   // Both 0 and 7 of day of week are Sunday. For better distribution, limit upper bound to 6
         return doHash(LOWER_BOUNDS[field], u, step, field);
     }
 
-    protected long doHash(int s, int e, int step, int field) throws RecognitionException {
+    protected long doHash(int s, int e, int step, int field) throws ParseCancellationException {
         rangeCheck(s, field);
         rangeCheck(e, field);
         if (step > e - s + 1) {
@@ -107,19 +107,14 @@ abstract class BaseParser extends Parser {
         }
     }
 
-    protected void rangeCheck(int value, int field) throws RecognitionException {
+    protected void rangeCheck(int value, int field) throws ParseCancellationException {
         if (value < LOWER_BOUNDS[field] || UPPER_BOUNDS[field] < value) {
             error(Messages.BaseParser_OutOfRange(value, LOWER_BOUNDS[field], UPPER_BOUNDS[field]));
         }
     }
 
-    private void error(String msg) throws RecognitionException {
-        throw new RecognitionException(
-            msg,
-            this,
-            this.getInputStream(),
-            this.getContext()
-        );
+    private void error(String msg) throws ParseCancellationException {
+        throw new ParseCancellationException(msg);
     }
 
     protected Hash getHashForTokens() {

@@ -45,7 +45,7 @@ startRule [CronTab table]
 expr [int field]
 returns [long bits=0]
 locals[long lhs, long rhs=0]
- : term[field] { $lhs = $term.ctx.bits; } ( COMMA expr[field] { $rhs = $expr.ctx.bits; } )?
+ : term[field] { $lhs = $term.ctx.bits; } ( OR expr[field] { $rhs = $expr.ctx.bits; } )?
  {
   $bits = $lhs|$rhs;
  }
@@ -53,7 +53,7 @@ locals[long lhs, long rhs=0]
 
 term [int field]
 returns [long bits=0]
-locals [int d=NO_STEP, int s, int e, int t]
+locals [int d=NO_STEP, int s, int e]
    : token { $s=$token.ctx.value; } MINUS token { $e=$token.ctx.value; } ( DIV token { $d=$token.ctx.value; } )?
    {
      $bits = doRange($s,$e,$d,$field);

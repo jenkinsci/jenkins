@@ -36,6 +36,7 @@ import java.util.Locale;
 import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.antlr.v4.runtime.BailErrorStrategy;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 
@@ -115,6 +116,7 @@ public final class CronTab {
         lexer.setLine(line);
         CommonTokenStream inputTokenStream = new CommonTokenStream(lexer);
         CrontabParser parser = new CrontabParser(inputTokenStream);
+        parser.setErrorHandler(new BailErrorStrategy());
         parser.setHash(hash);
         spec = format;
         specTimezone = timezone;

@@ -12,7 +12,7 @@ options {
 
 expr
 returns [Label l]
-  : term1 EOF { $l=$term1.ctx.l; }
+  : term1 { $l=$term1.ctx.l; } EOF
   ;
 
 term1

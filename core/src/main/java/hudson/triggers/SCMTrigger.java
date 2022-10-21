@@ -80,7 +80,7 @@ import jenkins.scm.SCMDecisionHandler;
 import jenkins.triggers.SCMTriggerItem;
 import jenkins.util.SystemProperties;
 import net.sf.json.JSONObject;
-import org.antlr.v4.runtime.RecognitionException;
+import org.antlr.v4.runtime.misc.ParseCancellationException;
 import org.apache.commons.jelly.XMLOutput;
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
@@ -110,7 +110,7 @@ public class SCMTrigger extends Trigger<Item> {
     private boolean ignorePostCommitHooks;
 
     @DataBoundConstructor
-    public SCMTrigger(String scmpoll_spec) throws RecognitionException {
+    public SCMTrigger(String scmpoll_spec) throws ParseCancellationException {
         super(scmpoll_spec);
     }
 
@@ -125,7 +125,7 @@ public class SCMTrigger extends Trigger<Item> {
      * @deprecated since 2.21
      */
     @Deprecated
-    public SCMTrigger(String scmpoll_spec, boolean ignorePostCommitHooks) throws RecognitionException {
+    public SCMTrigger(String scmpoll_spec, boolean ignorePostCommitHooks) throws ParseCancellationException {
         super(scmpoll_spec);
         this.ignorePostCommitHooks = ignorePostCommitHooks;
     }

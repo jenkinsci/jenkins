@@ -32,7 +32,7 @@ import java.util.TimeZone;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.antlr.v4.runtime.RecognitionException;
+import org.antlr.v4.runtime.misc.ParseCancellationException;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -91,11 +91,11 @@ public final class CronTabList {
         return null;
     }
 
-    public static CronTabList create(@NonNull String format) throws RecognitionException {
+    public static CronTabList create(@NonNull String format) throws ParseCancellationException {
         return create(format, null);
     }
 
-    public static CronTabList create(@NonNull String format, Hash hash) throws RecognitionException {
+    public static CronTabList create(@NonNull String format, Hash hash) throws ParseCancellationException {
         Vector<CronTab> r = new Vector<>();
         int lineNumber = 0;
         String timezone = null;
@@ -110,19 +110,18 @@ public final class CronTabList {
                 if (timezone != null) {
                     LOGGER.log(Level.CONFIG, "CRON with timezone {0}", timezone);
                 } else {
-                    throw new RecognitionException("Invalid or unsupported timezone '" + timezoneString + "'", null, null, null);
+                    throw new ParseCancellationException("Invalid or unsupported timezone '" + timezoneString + "'");
                 }
                 continue;
             }
 
             if (line.length() == 0 || line.startsWith("#"))
                 continue;   // ignorable line
-            //TODO: Fix this
-            //try {
+            try {
                 r.add(new CronTab(line, lineNumber, hash, timezone));
-            //} catch (ANTLRException e) {
-            //    throw new ANTLRException(Messages.CronTabList_InvalidInput(line, e.toString()), e);
-            //}
+            } catch (ParseCancellationException e) {
+                throw new ParseCancellationException(Messages.CronTabList_InvalidInput(line, e.toString()), e);
+            }
         }
 
         return new CronTabList(r);

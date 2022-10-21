@@ -49,6 +49,7 @@ import hudson.model.Fingerprint.RangeSet;
 import hudson.model.Node.Mode;
 import hudson.model.Queue.Executable;
 import hudson.model.Queue.Task;
+import hudson.model.labels.LabelAtom;
 import hudson.model.labels.LabelExpression;
 import hudson.model.listeners.SCMPollListener;
 import hudson.model.queue.CauseOfBlockage;
@@ -109,6 +110,7 @@ import jenkins.scm.SCMDecisionHandler;
 import jenkins.triggers.SCMTriggerItem;
 import jenkins.util.TimeDuration;
 import net.sf.json.JSONObject;
+import org.antlr.v4.runtime.misc.ParseCancellationException;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -409,13 +411,13 @@ public abstract class AbstractProject<P extends AbstractProject<P, R>, R extends
     @Exported(name = "labelExpression")
     public String getAssignedLabelString() {
         if (canRoam || assignedNode == null)    return null;
-        //try {
+        try {
             Label.parseExpression(assignedNode);
             return assignedNode;
-//        } catch (ANTLRException e) {
-//            // must be old label or host name that includes whitespace or other unsafe chars
-//            return LabelAtom.escape(assignedNode);
-//        }
+        } catch (ParseCancellationException e) {
+            // must be old label or host name that includes whitespace or other unsafe chars
+            return LabelAtom.escape(assignedNode);
+        }
     }
 
     /**

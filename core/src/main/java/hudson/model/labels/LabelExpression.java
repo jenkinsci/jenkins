@@ -42,6 +42,7 @@ import java.util.Set;
 import jenkins.model.Jenkins;
 import jenkins.model.labels.LabelAutoCompleteSeeder;
 import jenkins.model.labels.LabelValidator;
+import org.antlr.v4.runtime.misc.ParseCancellationException;
 
 /**
  * Boolean expression of labels.
@@ -279,11 +280,11 @@ public abstract class LabelExpression extends Label {
         if (Util.fixEmptyAndTrim(expression) == null) {
             return FormValidation.ok();
         }
-        //try {
+        try {
             Label.parseExpression(expression);
-//        } catch (ANTLRException e) {
-//            return FormValidation.error(e, Messages.LabelExpression_InvalidBooleanExpression(e.getMessage()));
-//        }
+        } catch (ParseCancellationException e) {
+            return FormValidation.error(e, Messages.LabelExpression_InvalidBooleanExpression(e.getMessage()));
+        }
         final Jenkins j = Jenkins.get();
         Label l = j.getLabel(expression);
         if (l == null || l.isEmpty()) {

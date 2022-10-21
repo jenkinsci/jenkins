@@ -42,7 +42,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.jcip.annotations.GuardedBy;
-import org.antlr.v4.runtime.RecognitionException;
+import org.antlr.v4.runtime.misc.ParseCancellationException;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
@@ -154,7 +154,7 @@ public class SimpleScheduledRetentionStrategy extends RetentionStrategy<SlaveCom
             nextStart = Long.MIN_VALUE;
             lastStop = Long.MAX_VALUE;
             lastStart = Long.MAX_VALUE;
-        } catch (RecognitionException e) {
+        } catch (ParseCancellationException e) {
             InvalidObjectException x = new InvalidObjectException(e.getMessage());
             x.initCause(e);
             throw x;
@@ -264,7 +264,7 @@ public class SimpleScheduledRetentionStrategy extends RetentionStrategy<SlaveCom
                 if (msg != null)
                     return FormValidation.warning(msg);
                 return FormValidation.ok();
-            } catch (RecognitionException e) {
+            } catch (ParseCancellationException e) {
                 return FormValidation.error(e.getMessage());
             }
         }

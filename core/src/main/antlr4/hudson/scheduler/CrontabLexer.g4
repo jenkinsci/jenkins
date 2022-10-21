@@ -14,7 +14,6 @@ AT:   '@';
 H:    'H';
 LPAREN: '(';
 RPAREN: ')';
-COMMA: ',';
 
 YEARLY: 'yearly';
 ANNUALLY: 'annually';
