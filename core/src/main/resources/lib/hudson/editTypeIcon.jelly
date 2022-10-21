@@ -28,4 +28,3 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <l:icon alt="${type.description}" class="icon-sm" src="symbol-${type.name}" title="${type.description}" xmlns:l="/lib/layout"/>
-
