@@ -1,8 +1,8 @@
 ---
 ath:
   useLocalSnapshots: false
-  athRevision: "5450.v1cfec809d04b"
-  athImage: "jenkins/ath:5450.v1cfec809d04b"
+  athRevision: "5458.v911b_2f0818ee"
+  athImage: "jenkins/ath:5458.v911b_2f0818ee"
   categories:
     - org.jenkinsci.test.acceptance.junit.SmokeTest
   jdks:
