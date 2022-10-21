@@ -68,10 +68,6 @@ THE SOFTWARE.
       <artifactId>remoting</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.antlr</groupId>
-      <artifactId>antlr4</artifactId>
-    </dependency>
-    <dependency>
       <groupId>args4j</groupId>
       <artifactId>args4j</artifactId>
     </dependency>
@@ -277,6 +273,10 @@ THE SOFTWARE.
     <dependency>
       <groupId>net.sf.kxml</groupId>
       <artifactId>kxml2</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.antlr</groupId>
+      <artifactId>antlr4</artifactId>
     </dependency>
     <dependency>
       <groupId>org.apache.ant</groupId>
