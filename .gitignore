@@ -59,3 +59,7 @@ war/node_modules/
 war/yarn-error.log
 .java-version
 .checkstyle
+
+# ANTLR generated files
+*.tokens
+core/gen/
