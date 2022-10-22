@@ -14,7 +14,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
-
 import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
 import org.junit.Before;
 import org.junit.Rule;
