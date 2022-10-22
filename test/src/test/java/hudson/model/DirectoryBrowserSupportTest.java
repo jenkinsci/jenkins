@@ -198,15 +198,15 @@ public class DirectoryBrowserSupportTest {
         Assume.assumeFalse("can't test this on Windows", Functions.isWindows());
 
         // create a gzipped artifact
+        String content = "This is a test";
         FreeStyleProject p = j.createFreeStyleProject();
-        p.setScm(new SingleFileSCM("test.txt", "This is a test"));
+        p.setScm(new SingleFileSCM("test.txt", content));
         p.getBuildersList().add(new Shell("gzip test.txt"));
         p.getPublishersList().add(new ArtifactArchiver("test.txt.gz", "", true));
         j.buildAndAssertSuccess(p);
 
-        HtmlPage page = j.createWebClient().goTo("job/" + p.getName() + "/lastSuccessfulBuild/artifact/test.txt.gz/*view*/");
-        assertEquals("This is a test", page.getWebResponse().getContentAsString());
-
+        Page page = j.createWebClient().goTo("job/" + p.getName() + "/lastSuccessfulBuild/artifact/test.txt.gz/*view*/", "text/plain");
+        assertEquals(content, page.getWebResponse().getContentAsString());
     }
 
     @Issue("JENKINS-19752")
