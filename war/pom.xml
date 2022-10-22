@@ -46,7 +46,7 @@ THE SOFTWARE.
     <host>localhost</host>
     <!-- HTTP listener port -->
     <port>8080</port>
-    <node.version>16.17.1</node.version>
+    <node.version>16.18.0</node.version>
     <!-- frontend-maven-plugin will install this Yarn version as bootstrap, then hand over control to Yarn Berry. -->
     <yarn.version>1.22.19</yarn.version>
     <!-- maven-antrun-plugin will download this Yarn version. -->
@@ -322,7 +322,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>script-security</artifactId>
-                  <version>1172.v35f6a_0b_8207e</version>
+                  <version>1189.vb_a_b_7c8fd5fde</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -335,7 +335,7 @@ THE SOFTWARE.
                   <!-- dependency of junit -->
                   <groupId>org.jenkins-ci.plugins.workflow</groupId>
                   <artifactId>workflow-api</artifactId>
-                  <version>1144.v61c3180fa_03f</version>
+                  <version>1164.v760c223ddb_32</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -364,7 +364,7 @@ THE SOFTWARE.
                   <!-- dependency of checks-api -->
                   <groupId>org.jenkins-ci.plugins.workflow</groupId>
                   <artifactId>workflow-support</artifactId>
-                  <version>813.vb_d7c3d2984a_0</version>
+                  <version>839.v35e2736cfd5c</version>
                   <type>hpi</type>
                 </artifactItem>
 
@@ -434,7 +434,7 @@ THE SOFTWARE.
                   <!-- dependency of workflow-api -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>scm-api</artifactId>
-                  <version>602.v6a_81757a_31d2</version>
+                  <version>608.vfa_f971c5a_a_e9</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>

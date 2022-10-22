@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  */
 
-@import "../abstracts/theme.less";
+@import url("../abstracts/theme.less");
 
 /* Panel */
 @media (min-width: 1600px) {
@@ -513,20 +513,6 @@ pre.console {
     margin-left: 0;
     margin-right: 0.5rem;
   }
-}
-
-.top-sticker,
-#top-sticker {
-  width: 100%; /* it needs to occupy the entire width or else the underlying content will see through */
-  z-index: 999;
-}
-
-.top-sticker.noedge > .top-sticker-edge {
-  display: none;
-}
-
-.top-sticker.noedge > .top-sticker-inner {
-  padding: 0;
 }
 
 .icon16x16 {
@@ -1170,96 +1156,7 @@ table.progress-bar.red td.progress-bar-done {
   background-color: #c00;
 }
 
-/* ========================= notification bar ========================= */
-#notification-bar {
-  width: 100%;
-  position: fixed;
-  text-align: center;
-  left: 0;
-  font-size: 1.75rem;
-  z-index: 1000;
-  border-bottom: 1px solid var(--black);
-  line-height: 3.5rem;
-  height: 3.5rem;
-  display: block;
-  will-change: opacity;
-}
-
-#notification-bar .svg-icon {
-  width: 35px;
-  height: 35px;
-  padding-bottom: 5px;
-}
-
-#notification-bar.notif-alert-default {
-  background-color: var(--alert-default-bg-color);
-  border-color: var(--alert-default-border-color);
-  color: var(--alert-default-color);
-
-  .svg-icon {
-    color: var(--alert-default-icon-color);
-  }
-}
-
-#notification-bar.notif-alert-success {
-  background-color: var(--notification-success-bg-color);
-  border-color: var(--notification-success-border-color);
-  color: var(--notification-success-color);
-
-  .svg-icon {
-    color: var(--notification-success-icon-color);
-  }
-}
-
-#notification-bar.notif-alert-warn {
-  background-color: var(--notification-warning-bg-color);
-  border-color: var(--notification-warning-border-color);
-  color: var(--notification-warning-color);
-
-  .svg-icon {
-    color: var(--notification-warning-icon-color);
-  }
-}
-
-#notification-bar.notif-alert-err {
-  background-color: var(--notification-error-bg-color);
-  border-color: var(--notification-error-border-color);
-  color: var(--notification-error-color);
-
-  .svg-icon {
-    color: var(--notification-error-icon-color);
-  }
-}
-
-#notification-bar.notif-alert-show {
-  animation: fadein 350ms ease-out 1 normal forwards;
-}
-
-#notification-bar.notif-alert-clear {
-  animation: fadeout 350ms ease-in 1 normal forwards;
-}
-
-@keyframes fadein {
-  from {
-    opacity: 0;
-  }
-
-  to {
-    opacity: 1;
-    visibility: visible;
-  }
-}
-
-@keyframes fadeout {
-  from {
-    opacity: 1;
-  }
-
-  to {
-    opacity: 0;
-    visibility: hidden;
-  }
-}
+/* Unknown */
 
 @keyframes spin {
   from {
@@ -1419,11 +1316,6 @@ td.matrix-leftcolumn {
 td.matrix-cell {
   border: 1px var(--medium-grey) solid;
   text-align: center;
-}
-
-/* ========================= legend.jelly ================== */
-table#legend-table td {
-  vertical-align: middle;
 }
 
 /* ========================= select.jelly ================== */
