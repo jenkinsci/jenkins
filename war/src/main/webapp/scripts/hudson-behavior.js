@@ -2272,7 +2272,7 @@ function ensureVisible(e) {
   }
 
   // if there are any stickers around, subtract them from the viewport
-  handleStickers("top-sticker", function (t) {
+  handleStickers("jenkins-breadcrumbs", function (t) {
     t = t.clientHeight;
     Y += t;
     H -= t;
@@ -2757,96 +2757,5 @@ var layoutUpdateCallback = {
   call: function () {
     for (var i = 0, length = this.callbacks.length; i < length; i++)
       this.callbacks[i]();
-  },
-};
-
-// Notification bar
-// ==============================
-// this control displays a single line message at the top of the page, like StackOverflow does
-// see ui-samples for more details
-var notificationBar = {
-  OPACITY: 1,
-  DELAY: 3000, // milliseconds to auto-close the notification
-  div: null, // the main 'notification-bar' DIV
-  token: null, // timer for cancelling auto-close
-  defaultIcon: "svg-sprite-action-symbol.svg#ic_info_24px",
-  defaultAlertClass: "notif-alert-default",
-
-  OK: {
-    // standard option values for typical OK notification
-    icon: "svg-sprite-action-symbol.svg#ic_check_circle_24px",
-    alertClass: "notif-alert-success",
-  },
-  WARNING: {
-    // likewise, for warning
-    icon: "svg-sprite-action-symbol.svg#ic_report_problem_24px",
-    alertClass: "notif-alert-warn",
-  },
-  ERROR: {
-    // likewise, for error
-    icon: "svg-sprite-action-symbol.svg#ic_highlight_off_24px",
-    alertClass: "notif-alert-err",
-    sticky: true,
-  },
-
-  init: function () {
-    if (this.div == null) {
-      this.div = document.createElement("div");
-      YAHOO.util.Dom.setStyle(this.div, "opacity", 0);
-      this.div.id = "notification-bar";
-      document.body.insertBefore(this.div, document.body.firstElementChild);
-      var self = this;
-      this.div.onclick = function () {
-        self.hide();
-      };
-    } else {
-      this.div.innerHTML = "";
-    }
-  },
-  // cancel pending auto-hide timeout
-  clearTimeout: function () {
-    if (this.token) window.clearTimeout(this.token);
-    this.token = null;
-  },
-  // hide the current notification bar, if it's displayed
-  hide: function () {
-    this.clearTimeout();
-    this.div.classList.remove("notif-alert-show");
-    this.div.classList.add("notif-alert-clear");
-  },
-  // show a notification bar
-  show: function (text, options) {
-    options = options || {};
-    this.init();
-    var icon = this.div.appendChild(document.createElement("div"));
-    icon.style.display = "inline-block";
-    if (options.iconColor || this.defaultIconColor) {
-      icon.style.color = options.iconColor || this.defaultIconColor;
-    }
-    var svg = icon.appendChild(
-      document.createElementNS("http://www.w3.org/2000/svg", "svg")
-    );
-    svg.setAttribute("viewBox", "0 0 24 24");
-    svg.setAttribute("focusable", "false");
-    svg.setAttribute("class", "svg-icon");
-    var use = svg.appendChild(
-      document.createElementNS("http://www.w3.org/2000/svg", "use")
-    );
-    use.setAttribute(
-      "href",
-      rootURL + "/images/material-icons/" + (options.icon || this.defaultIcon)
-    );
-    var message = this.div.appendChild(document.createElement("span"));
-    message.appendChild(document.createTextNode(text));
-
-    this.div.className = options.alertClass || this.defaultAlertClass;
-    this.div.classList.add("notif-alert-show");
-
-    this.clearTimeout();
-    var self = this;
-    if (!options.sticky)
-      this.token = window.setTimeout(function () {
-        self.hide();
-      }, this.DELAY);
   },
 };
