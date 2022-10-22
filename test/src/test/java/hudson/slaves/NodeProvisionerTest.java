@@ -24,6 +24,9 @@
 
 package hudson.slaves;
 
+import static org.hamcrest.CoreMatchers.anyOf;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assume.assumeFalse;
@@ -161,7 +164,8 @@ public class NodeProvisionerTest {
 
             // the time it takes to complete a job is eternally long compared to the time it takes to launch
             // a new slave, so in this scenario we end up allocating 5 slaves for 5 jobs.
-            assertEquals(5, cloud.numProvisioned);
+            // sometimes we can end up allocating 6 due to the conservative estimation in StandardStrategyImpl#apply
+            assertThat(cloud.numProvisioned, anyOf(equalTo(5), equalTo(6)));
         }
     }
 
@@ -219,7 +223,8 @@ public class NodeProvisionerTest {
             verifySuccessfulCompletion(buildAll(redJobs), r);
 
             // cloud should only give us 5 nodes for 5 red jobs
-            assertEquals(5, cloud.numProvisioned);
+            // sometimes we can end up allocating 6 due to the conservative estimation in StandardStrategyImpl#apply
+            assertThat(cloud.numProvisioned, anyOf(equalTo(5), equalTo(6)));
 
             // and all blue jobs should be still stuck in the queue
             for (Future<FreeStyleBuild> bb : blueBuilds)
