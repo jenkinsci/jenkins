@@ -391,6 +391,9 @@ THE SOFTWARE.
           <artifactId>spotless-maven-plugin</artifactId>
           <version>${spotless.version}</version>
           <configuration>
+            <antlr4>
+              <antlr4Formatter />
+            </antlr4>
             <java>
               <endWithNewline />
               <importOrder />

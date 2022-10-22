@@ -1,16 +1,36 @@
 lexer grammar LabelExpressionLexer;
 
-AND:    '&&';
-OR:     '||';
-NOT:    '!';
-IMPLIES:'->';
-IFF:    '<->';
-LPAREN: '(';
-RPAREN: ')';
+AND
+   : '&&'
+   ;
 
-fragment IDENTIFIER_PART :
-    ~( '&' | '|' | '!' | '<' | '>' | '(' | ')' | ' ' | '\t' | '"' | '\'' | '-' )
-    ;
+OR
+   : '||'
+   ;
+
+NOT
+   : '!'
+   ;
+
+IMPLIES
+   : '->'
+   ;
+
+IFF
+   : '<->'
+   ;
+
+LPAREN
+   : '('
+   ;
+
+RPAREN
+   : ')'
+   ;
+
+fragment IDENTIFIER_PART
+   : ~ ('&' | '|' | '!' | '<' | '>' | '(' | ')' | ' ' | '\t' | '"' | '\'' | '-')
+   ;
 
 ATOM
 /*
@@ -20,20 +40,18 @@ ATOM
     If we are seeing currently a '-', we check that the next char is not a '>' which will be a IMPLIES.
     Otherwise the ATOM and the IMPLIES will collide and expr like a->b will just be parsed as ATOM (without spaces)
 */
-    :   (
-          { _input.LA(2) != '>' }? '-'
-        | IDENTIFIER_PART
-        )+
-    ;
+   
+   : (
+   { _input.LA(2) != '>' }? '-' | IDENTIFIER_PART)+
+   ;
 
 WS
-  : (' '|'\t')+ -> skip
-  ;
+   : (' ' | '\t')+ -> skip
+   ;
 
 STRINGLITERAL
-    :   '"'
-        ( '\\' ( 'b' | 't' | 'n' | 'f' | 'r' | '"' | '\'' | '\\' )   /* escape */
-        |  ~( '\\' | '"' | '\r' | '\n' )
-        )*
-        '"'
-    ;
+   : '"' ('\\' ('b' | 't' | 'n' | 'f' | 'r' | '"' | '\'' | '\\') /* escape */
+   
+   | ~ ('\\' | '"' | '\r' | '\n'))* '"'
+   ;
+
