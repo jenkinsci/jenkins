@@ -56,12 +56,9 @@ import hudson.tasks.Shell;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
 import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;
 import java.net.HttpURLConnection;
@@ -79,7 +76,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
-import java.util.zip.GZIPOutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import jenkins.model.ArtifactManager;
@@ -199,31 +195,16 @@ public class DirectoryBrowserSupportTest {
 
     @Test
     public void viewGzippedArtifact() throws Exception {
+        Assume.assumeFalse("can't test this on Windows", Functions.isWindows());
 
         // create a gzipped artifact
         FreeStyleProject p = j.createFreeStyleProject();
-        p.getBuildersList().add(new TestBuilder() {
-            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
-                String testData = "This is a test";
-                String fileName = build.getWorkspace().getRemote() + "test.gz";
-                FileOutputStream output = new FileOutputStream(fileName);
-                try {
-                  Writer writer = new OutputStreamWriter(new GZIPOutputStream(output), StandardCharsets.UTF_8);
-                  try {
-                    writer.write(testData);
-                  } finally {
-                    writer.close();
-                  }
-                } finally {
-                  output.close();
-                }
-                return true;
-            }
-        });
-        p.getPublishersList().add(new ArtifactArchiver("*.gz", "", true));
+        p.setScm(new SingleFileSCM("test.txt", "This is a test"));
+        p.getBuildersList().add(new Shell("gzip test.txt"));
+        p.getPublishersList().add(new ArtifactArchiver("test.txt.gz", "", true));
         j.buildAndAssertSuccess(p);
 
-        HtmlPage page = j.createWebClient().goTo("job/" + p.getName() + "/lastSuccessfulBuild/artifact/test.gz/*view*/");
+        HtmlPage page = j.createWebClient().goTo("job/" + p.getName() + "/lastSuccessfulBuild/artifact/test.txt.gz/*view*/");
         assertEquals("This is a test", page.getWebResponse().getContentAsString());
 
     }
