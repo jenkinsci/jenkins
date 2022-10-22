@@ -8,7 +8,7 @@ import org.antlr.v4.runtime.misc.ParseCancellationException;
  */
 public class ANTLRException extends ParseCancellationException {
     public ANTLRException() {
-        // nothing needs to be done her
+        // nothing needs to be done here
     }
 
     public ANTLRException(String msg) {
