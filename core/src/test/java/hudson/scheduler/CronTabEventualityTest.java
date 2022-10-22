@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.GregorianCalendar;
-import org.antlr.v4.runtime.misc.ParseCancellationException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -42,7 +41,7 @@ public class CronTabEventualityTest {
 
     @Test
     @Issue("JENKINS-12388")
-    public void testYearlyWillBeEventuallyTriggeredWithinOneYear() throws ParseCancellationException {
+    public void testYearlyWillBeEventuallyTriggeredWithinOneYear() {
         Calendar start = new GregorianCalendar(2012, Calendar.JANUARY, 11, 22, 33); // Jan 11th 2012 22:33
         Calendar limit = createLimit(start, Calendar.YEAR, 1);
         checkEventuality(start, "@yearly", limit);
@@ -50,56 +49,56 @@ public class CronTabEventualityTest {
 
     @Test
     @Issue("JENKINS-12388")
-    public void testAnnuallyWillBeEventuallyTriggeredWithinOneYear() throws ParseCancellationException {
+    public void testAnnuallyWillBeEventuallyTriggeredWithinOneYear() {
         Calendar start = new GregorianCalendar(2012, Calendar.JANUARY, 11, 22, 33); // Jan 11th 2012 22:33
         Calendar limit = createLimit(start, Calendar.YEAR, 1);
         checkEventuality(start, "@annually", limit);
     }
 
     @Test
-    public void testMonthlyWillBeEventuallyTriggeredWithinOneMonth() throws ParseCancellationException {
+    public void testMonthlyWillBeEventuallyTriggeredWithinOneMonth() {
         Calendar start = new GregorianCalendar(2012, Calendar.JANUARY, 11, 22, 33); // Jan 11th 2012 22:33
         Calendar limit = createLimit(start, Calendar.MONTH, 1);
         checkEventuality(start, "@monthly", limit);
     }
 
     @Test
-    public void testWeeklyWillBeEventuallyTriggeredWithinOneWeek() throws ParseCancellationException {
+    public void testWeeklyWillBeEventuallyTriggeredWithinOneWeek() {
         Calendar start = new GregorianCalendar(2012, Calendar.JANUARY, 11, 22, 33); // Jan 11th 2012 22:33
         Calendar limit = createLimit(start, Calendar.WEEK_OF_YEAR, 1);
         checkEventuality(start, "@weekly", limit);
     }
 
     @Test
-    public void testDailyWillBeEventuallyTriggeredWithinOneDay() throws ParseCancellationException {
+    public void testDailyWillBeEventuallyTriggeredWithinOneDay() {
         Calendar start = new GregorianCalendar(2012, Calendar.JANUARY, 11, 22, 33); // Jan 11th 2012 22:33
         Calendar limit = createLimit(start, Calendar.DAY_OF_MONTH, 1);
         checkEventuality(start, "@daily", limit);
     }
 
     @Test
-    public void testMidnightWillBeEventuallyTriggeredWithinOneDay() throws ParseCancellationException {
+    public void testMidnightWillBeEventuallyTriggeredWithinOneDay() {
         Calendar start = new GregorianCalendar(2012, Calendar.JANUARY, 11, 22, 33); // Jan 11th 2012 22:33
         Calendar limit = createLimit(start, Calendar.DAY_OF_MONTH, 1);
         checkEventuality(start, "@midnight", limit);
     }
 
     @Test
-    public void testHourlyWillBeEventuallyTriggeredWithinOneHour() throws ParseCancellationException {
+    public void testHourlyWillBeEventuallyTriggeredWithinOneHour() {
         Calendar start = new GregorianCalendar(2012, Calendar.JANUARY, 11, 22, 33); // Jan 11th 2012 22:33
         Calendar limit = createLimit(start, Calendar.HOUR, 1);
         checkEventuality(start, "@hourly", limit);
     }
 
     @Test
-    public void testFirstDayOfMonthWillBeEventuallyTriggeredWithinOneMonth() throws ParseCancellationException {
+    public void testFirstDayOfMonthWillBeEventuallyTriggeredWithinOneMonth() {
         Calendar start = new GregorianCalendar(2012, Calendar.JANUARY, 11, 22, 33); // Jan 11th 2012 22:33
         Calendar limit = createLimit(start, Calendar.MONTH, 1);
         checkEventuality(start, "H H 1 * *", limit);
     }
 
     @Test
-    public void testFirstSundayOfMonthWillBeEventuallyTriggeredWithinOneMonthAndOneWeek() throws ParseCancellationException {
+    public void testFirstSundayOfMonthWillBeEventuallyTriggeredWithinOneMonthAndOneWeek() {
         Calendar start = new GregorianCalendar(2012, Calendar.JANUARY, 11, 22, 33); // Jan 11th 2012 22:33
         Calendar limit = createLimit(start, Calendar.DAY_OF_MONTH, 31 + 7);
         // If both day of month and day of week are specified:
@@ -108,7 +107,7 @@ public class CronTabEventualityTest {
         checkEventuality(start, "H H 1-7 * 0", limit);
     }
 
-    private void checkEventuality(Calendar start, String crontabFormat, Calendar limit) throws ParseCancellationException {
+    private void checkEventuality(Calendar start, String crontabFormat, Calendar limit) {
         CronTab cron = new CronTab(crontabFormat, hash);
         Calendar next = cron.ceil(start);
         if (next.after(limit)) {

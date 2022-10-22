@@ -182,7 +182,7 @@ public class LabelExpressionTest {
         parseAndVerify("aaa&&bbb&&ccc", "aaa&&bbb&&ccc");
     }
 
-    private void parseAndVerify(String expected, String expr) throws ParseCancellationException {
+    private void parseAndVerify(String expected, String expr) {
         assertEquals(expected, Label.parseExpression(expr).getName());
     }
 

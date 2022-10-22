@@ -46,7 +46,7 @@ import org.jvnet.hudson.test.Issue;
 public class CronTabTest {
 
     @Test
-    public void test1() throws ParseCancellationException {
+    public void test1() {
         new CronTab("@yearly");
         new CronTab("@weekly");
         new CronTab("@midnight");
@@ -97,7 +97,7 @@ public class CronTabTest {
      */
     @Issue("HUDSON-8656") // This is _not_ JENKINS-8656
     @Test
-    public void testCeil4() throws ParseCancellationException {
+    public void testCeil4() {
         final Calendar cal = Calendar.getInstance(new Locale("de", "de"));
         cal.set(2011, Calendar.JANUARY, 16, 0, 0, 0); // Sunday, Jan 16th 2011, 00:00
         final String cronStr = "0 23 * * 1-5"; // execute on weekdays @23:00
@@ -119,7 +119,7 @@ public class CronTabTest {
      */
     @Issue("HUDSON-8656") // This is _not_ JENKINS-8656
     @Test
-    public void testCeil5() throws ParseCancellationException {
+    public void testCeil5() {
         final Calendar cal = Calendar.getInstance(new Locale("de", "at"));
         cal.set(2011, Calendar.JANUARY, 16, 0, 0, 0); // Sunday, Jan 16th 2011, 00:00
         final String cronStr = "0 23 * * 1-5"; // execute on weekdays @23:00

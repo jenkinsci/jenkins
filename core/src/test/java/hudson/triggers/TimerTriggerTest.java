@@ -27,7 +27,6 @@ package hudson.triggers;
 import hudson.scheduler.CronTabList;
 import hudson.scheduler.Hash;
 import java.util.TimeZone;
-import org.antlr.v4.runtime.misc.ParseCancellationException;
 import org.junit.Assert;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -38,7 +37,7 @@ import org.jvnet.hudson.test.Issue;
 public class TimerTriggerTest {
     @Issue("JENKINS-29790")
     @Test
-    public void testNoNPE() throws ParseCancellationException {
+    public void testNoNPE() {
         new TimerTrigger("").run();
     }
 
