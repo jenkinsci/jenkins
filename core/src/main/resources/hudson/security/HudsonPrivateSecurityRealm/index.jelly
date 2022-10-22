@@ -24,16 +24,17 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
-  <l:layout permission="${app.ADMINISTER}" title="${%Users}">
-    <st:include page="sidepanel.jelly" />
+  <l:layout permission="${app.ADMINISTER}" title="${%Users}" type="one-column">
     <l:main-panel>
-      <div class="jenkins-app-bar">
-        <div class="jenkins-app-bar__content">
-          <h1>
-            ${%Users}
-          </h1>
-        </div>
-      </div>
+      <l:app-bar title="${%Users}">
+        <l:isAdmin>
+          <a href="addUser" class="jenkins-button jenkins-button--primary">
+            <l:icon src="symbol-add" />
+            ${%Create User}
+          </a>
+        </l:isAdmin>
+      </l:app-bar>
+
       <p class="jenkins-description">${%blurb}</p>
 
       <table class="jenkins-table sortable" id="people">
