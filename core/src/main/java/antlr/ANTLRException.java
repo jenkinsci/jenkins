@@ -11,7 +11,15 @@ public class ANTLRException extends ParseCancellationException {
         // nothing needs to be done here
     }
 
-    public ANTLRException(String msg) {
-        super(msg);
+    public ANTLRException(String message) {
+        super(message);
+    }
+
+    public ANTLRException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public ANTLRException(Throwable cause) {
+        super(cause);
     }
 }
