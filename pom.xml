@@ -74,7 +74,7 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.374</revision>
+    <revision>2.375</revision>
     <changelist>-SNAPSHOT</changelist>
 
     <!-- configuration for patch tracker plugin  -->
@@ -87,7 +87,7 @@ THE SOFTWARE.
     <changelog.url>https://www.jenkins.io/changelog</changelog.url>
 
     <!-- Bundled Remoting version -->
-    <remoting.version>3063.v26e24490f041</remoting.version>
+    <remoting.version>3068.v09b_895d8da_14</remoting.version>
     <!-- Minimum Remoting version, which is tested for API compatibility -->
     <remoting.minimum.supported.version>4.2.1</remoting.minimum.supported.version>
 
@@ -98,7 +98,7 @@ THE SOFTWARE.
     <access-modifier.version>1.27</access-modifier.version>
     <bridge-method-injector.version>1.23</bridge-method-injector.version>
     <spotless.version>2.27.2</spotless.version>
-    <winstone.version>6.5</winstone.version>
+    <winstone.version>6.6</winstone.version>
   </properties>
 
   <dependencyManagement>
