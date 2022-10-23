@@ -28,8 +28,8 @@ import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
 
 import antlr.ANTLRException;
@@ -41,7 +41,6 @@ import hudson.model.BuildListener;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Label;
-import hudson.model.Node.Mode;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.RetentionStrategy;
 import java.lang.reflect.Field;
@@ -51,6 +50,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.SequenceLock;
@@ -63,6 +63,9 @@ public class LabelExpressionTest {
 
     @Rule
     public JenkinsRule j = new JenkinsRule();
+
+    @Rule
+    public TemporaryFolder tempFolder = new TemporaryFolder();
 
     /**
      * Verifies the queueing behavior in the presence of the expression.
@@ -207,8 +210,10 @@ public class LabelExpressionTest {
     @Test
     public void dataCompatibilityWithHostNameWithWhitespace() throws Exception {
         assumeFalse("Windows can't have paths with colons, skipping", Functions.isWindows());
-        DumbSlave slave = new DumbSlave("abc def (xyz) test", "dummy",
-                j.createTmpDir().getPath(), "1", Mode.NORMAL, "", j.createComputerLauncher(null), RetentionStrategy.NOOP, Collections.EMPTY_LIST);
+        DumbSlave slave = new DumbSlave("abc def (xyz) test", tempFolder.newFolder().getPath(), j.createComputerLauncher(null));
+        slave.setRetentionStrategy(RetentionStrategy.NOOP);
+        slave.setNodeDescription("dummy");
+        slave.setNodeProperties(Collections.emptyList());
         j.jenkins.addNode(slave);
 
 
@@ -340,12 +345,10 @@ public class LabelExpressionTest {
     }
 
     private void parseShouldFail(String expr) {
-        try {
-            Label.parseExpression(expr);
-            fail(expr + " should fail to parse");
-        } catch (ANTLRException e) {
-            // expected
-        }
+        assertThrows(
+                expr + " should fail to parse",
+                ANTLRException.class,
+                () -> Label.parseExpression(expr));
     }
 
     @Test

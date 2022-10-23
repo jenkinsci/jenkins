@@ -24,9 +24,10 @@
 
 package lib.form;
 
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
@@ -130,7 +131,7 @@ public class RepeatablePropertyTest {
         assertNotNull(inputs);
         final List<HtmlTextInput> textInputList = new ArrayList<>();
         for (HtmlElement input : inputs) {
-            assertTrue(input instanceof HtmlTextInput);
+            assertThat(input, instanceOf(HtmlTextInput.class));
             textInputList.add((HtmlTextInput) input);
         }
         return textInputList;

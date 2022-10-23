@@ -924,6 +924,8 @@ public class Util {
      * All characters outside numbers and letters without diacritic are encoded.
      * Note that slash ({@code /}) is encoded, so the given string should be a
      * single path component used in constructing a URL.
+     *
+     * @since 2.308
      */
     @NonNull
     public static String fullEncode(@NonNull String s) {

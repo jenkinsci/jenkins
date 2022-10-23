@@ -24,10 +24,10 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout">
-  <st:documentation>
-    This tag inside &lt;l:tasks> tag renders the left navigation bar of Hudson.
-    Each &lt;task> tag gets an icon and link.
-
+  <st:documentation> <![CDATA[
+    This tag inside <l:tasks> tag renders the left navigation bar of Jenkins.
+    Each <task> tag gets an icon and link.
+    ]]>
     <st:attribute name="href" use="required">
       Link target. Relative to the current page.
     </st:attribute>

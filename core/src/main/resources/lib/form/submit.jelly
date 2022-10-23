@@ -23,11 +23,11 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:s="jelly:stapler" xmlns:d="jelly:define" xmlns:f="/lib/form">
-  <s:documentation>
+<j:jelly xmlns:j="jelly:core" xmlns:s="jelly:stapler" >
+  <s:documentation> <![CDATA[
     Submit button themed by YUI. This should be always
-    used instead of the plain &lt;input tag.
-
+    used instead of the plain <input> tag.
+    ]]>
     <s:attribute name="name">
       If specified, becomes the value of the name attribute.
       When you have more than one submit button on the form, this can be used to determine
