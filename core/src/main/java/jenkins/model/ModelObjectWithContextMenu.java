@@ -331,7 +331,8 @@ public interface ModelObjectWithContextMenu extends ModelObject {
 
 
         /**
-         * True to require confirmation after a click.
+         * The number to display for the context menu item's badge
+         * Set the value above 0 to display
          * @since TODO
          */
         @Exported
