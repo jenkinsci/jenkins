@@ -70,11 +70,11 @@
   // Header dimensions
   --header-item-border-radius: 4px;
 
-  // Breadcrumbs and footer
-  --breadcrumbs-bg: #f8f8f8;
-  --breadcrumbs-border: var(--light-grey);
-  --breadcrumbs-text-color: #4d545d;
-  --breadcrumbs-item-bg-color--hover: var(--light-grey);
+  // Breadcrumbs bar
+  --breadcrumbs-bar-background: hsla(240, 0.2, 0.965, 0.8);
+
+  // Footer
+  --footer-background: hsla(240, 0.2, 0.965, 0.8);
 
   // Alert call outs
   --alert-success-text-color: #155724;
@@ -238,6 +238,13 @@
   --form-item-max-width: ~"min(65vw, 1600px)";
   --form-item-max-width--medium: ~"min(50vw, 1400px)";
   --form-item-max-width--small: ~"min(35vw, 1200px)";
+
+  @media screen and (max-width: 768px) {
+    --form-item-max-width: 100%;
+    --form-item-max-width--medium: 100%;
+    --form-item-max-width--small: 100%;
+  }
+
   --form-label-font-weight: 500;
   --form-input-padding: 0.5rem;
   --form-input-border-radius: 6px;

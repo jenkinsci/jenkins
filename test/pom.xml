@@ -78,7 +78,7 @@ THE SOFTWARE.
         <!-- requireUpperBoundDeps via matrix-project and junit -->
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>script-security</artifactId>
-        <version>1183.v774b_0b_0a_a_451</version>
+        <version>1189.vb_a_b_7c8fd5fde</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -93,7 +93,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>1865.vc314fb_c2fa_a_4</version>
+      <version>1868.v03b_7c6673e2e</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -159,7 +159,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>cloudbees-folder</artifactId>
-      <version>6.770.ve57b_a_fb_6a_67c</version>
+      <version>6.773.vd2dcc704ee7e</version>
       <scope>test</scope>
     </dependency>
     <dependency>
