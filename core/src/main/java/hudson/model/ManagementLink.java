@@ -163,6 +163,18 @@ public abstract class ManagementLink implements ExtensionPoint, Action {
         }
     }
 
+
+    /**
+     * Displays a badge on the management link icon.
+     * If set to 0 the badge will not display.
+     *
+     * @return the number to display on the badge.
+     * @since TODO
+     */
+    public @NonNull int getBadge() {
+        return 0;
+    }
+
     /**
      * Categories supported by this version of core.
      *

@@ -31,8 +31,6 @@ import hudson.model.UpdateCenter;
 import hudson.security.Permission;
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * @author <a href="mailto:nicolas.deloof@gmail.com">Nicolas De Loof</a>
@@ -72,8 +70,9 @@ public class PluginsLink extends ManagementLink {
         return Category.CONFIGURATION;
     }
 
-    @Restricted(NoExternalUse.class)
-    public int getUpdateCount() {
+    @NonNull
+    @Override
+    public int getBadge() {
         final UpdateCenter updateCenter = Jenkins.get().getUpdateCenter();
         if (!updateCenter.isSiteDataReady()) {
             // Do not display message during this page load, but possibly later.

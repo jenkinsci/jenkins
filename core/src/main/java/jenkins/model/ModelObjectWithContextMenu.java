@@ -149,6 +149,19 @@ public interface ModelObjectWithContextMenu extends ModelObject {
             return this;
         }
 
+        /** @since TODO */
+        public ContextMenu add(String url, String icon, String iconXml, String text, boolean post, boolean requiresConfirmation, int badge) {
+            if (text != null && icon != null && url != null) {
+                MenuItem item = new MenuItem(url, icon, text);
+                item.iconXml = iconXml;
+                item.post = post;
+                item.requiresConfirmation = requiresConfirmation;
+                item.badge = badge;
+                items.add(item);
+            }
+            return this;
+        }
+
         /**
          * Add a header row (no icon, no URL, rendered in header style).
          *
@@ -316,6 +329,14 @@ public interface ModelObjectWithContextMenu extends ModelObject {
         @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD", justification = "read by Stapler")
         public boolean requiresConfirmation;
 
+
+        /**
+         * True to require confirmation after a click.
+         * @since TODO
+         */
+        @Exported
+        @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD", justification = "read by Stapler")
+        public int badge;
 
         /**
          * The type of menu item

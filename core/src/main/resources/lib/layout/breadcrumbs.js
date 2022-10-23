@@ -22,15 +22,16 @@ window.breadcrumbs = (function () {
   var logger = function () {};
   // logger = function() { console.log.apply(console,arguments) };  // uncomment this line to enable logging
 
-  function makeMenuHtml(icon, iconXml, displayName) {
+  function makeMenuHtml(icon, iconXml, displayName, badge) {
     var displaynameSpan = "<span>" + displayName + "</span>";
+    const badgeSpan = badge === 0 ? "" : "<span class='yui-menu-badge'>" + badge + "</span>";
 
     if (iconXml != null) {
-      return iconXml + displaynameSpan;
+      return iconXml + displaynameSpan + badgeSpan;
     }
 
     if (icon === null) {
-      return "<span style='margin: 2px 4px 2px 2px;' />" + displaynameSpan;
+      return "<span style='margin: 2px 4px 2px 2px;' />" + displaynameSpan + badgeSpan;
     }
 
     // TODO: move this to the API response in a clean way
@@ -41,11 +42,11 @@ window.breadcrumbs = (function () {
           icon +
           "' />" +
           "</svg>" +
-          displaynameSpan
+          displaynameSpan + badgeSpan
       : "<img src='" +
           icon +
           "' width=24 height=24 style='margin: 2px 4px 2px 2px;' alt=''>" +
-          displaynameSpan;
+          displaynameSpan + badgeSpan;
   }
 
   Event.observe(window, "load", function () {
@@ -175,14 +176,15 @@ window.breadcrumbs = (function () {
                 e.text = makeMenuHtml(
                   e.icon,
                   e.iconXml,
-                  "<span class='header'>" + e.displayName + "</span>"
+                  "<span class='header'>" + e.displayName + "</span>",
+                  e.badge
                 );
                 e.disabled = true;
               } else if (e.type === "SEPARATOR") {
                 e.text = "<span class='separator'>--</span>";
                 e.disabled = true;
               } else {
-                e.text = makeMenuHtml(e.icon, e.iconXml, e.displayName);
+                e.text = makeMenuHtml(e.icon, e.iconXml, e.displayName, e.badge);
               }
               if (e.subMenu != null) {
                 e.subMenu = {
