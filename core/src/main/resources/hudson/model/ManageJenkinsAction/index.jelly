@@ -36,8 +36,8 @@ THE SOFTWARE.
       <d:tag name="item">
         <div class="jenkins-section__item__icon" aria-hidden="true">
           <l:icon src="${m.iconFileName}" class="icon" />
-          <j:if test="${m.badge != null and m.badge != 0}">
-            <div tooltip="${m.badge == 1 ? '%updateAvailable(m.badge)' : '%updatesAvailable(m.badge)'}" class="jenkins-section__item__icon__badge">
+          <j:if test="${m.badge != 0}">
+            <div class="jenkins-section__item__icon__badge">
               ${m.badge}
             </div>
           </j:if>
