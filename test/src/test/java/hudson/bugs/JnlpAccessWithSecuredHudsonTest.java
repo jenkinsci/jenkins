@@ -37,7 +37,6 @@ import java.io.File;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Locale;
-import jenkins.security.apitoken.ApiTokenTestHelper;
 import jenkins.security.s2m.AdminWhitelistRule;
 import org.dom4j.Document;
 import org.dom4j.Element;
@@ -67,8 +66,6 @@ public class JnlpAccessWithSecuredHudsonTest {
     @Email("http://markmail.org/message/on4wkjdaldwi2atx")
     @Test
     public void anonymousCanAlwaysLoadJARs() throws Exception {
-        ApiTokenTestHelper.enableLegacyBehavior();
-
         inboundAgents.createAgent(r, InboundAgentRule.Options.newBuilder().name("test").skipStart().build());
         JenkinsRule.WebClient wc = r.createWebClient();
         HtmlPage p = wc.withBasicApiToken(User.getById("alice", true)).goTo("computer/test/");
