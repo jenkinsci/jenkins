@@ -14,7 +14,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
-import jenkins.security.apitoken.ApiTokenTestHelper;
+import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -45,8 +45,6 @@ public class BasicHeaderProcessorTest {
      */
     @Test
     public void testVariousWaysToCall() throws Exception {
-        ApiTokenTestHelper.enableLegacyBehavior();
-
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
 
         wc = j.createWebClient();
@@ -114,7 +112,8 @@ public class BasicHeaderProcessorTest {
 
     @Test
     public void testAuthHeaderCaseInSensitive() throws Exception {
-        ApiTokenTestHelper.enableLegacyBehavior();
+        ApiTokenPropertyConfiguration tokenConfig = ApiTokenPropertyConfiguration.get();
+        tokenConfig.setTokenGenerationOnCreationEnabled(true);
 
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         User foo = User.getOrCreateByIdOrFullName("foo");

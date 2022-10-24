@@ -38,10 +38,8 @@ import javax.servlet.http.HttpServletResponse;
 import jenkins.model.Jenkins;
 import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
 import jenkins.security.apitoken.ApiTokenStore;
-import jenkins.security.apitoken.ApiTokenTestHelper;
 import jenkins.security.apitoken.TokenUuidAndPlainValue;
 import net.sf.json.JSONObject;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -57,16 +55,14 @@ public class ApiTokenPropertyTest {
     @Rule
     public JenkinsRule j = new JenkinsRule();
 
-    @Before
-    public void setupLegacyConfig() {
-        ApiTokenTestHelper.enableLegacyBehavior();
-    }
-
     /**
      * Tests the UI interaction and authentication.
      */
     @Test
     public void basics() throws Exception {
+        ApiTokenPropertyConfiguration tokenConfig = ApiTokenPropertyConfiguration.get();
+        tokenConfig.setTokenGenerationOnCreationEnabled(true);
+
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         User u = User.getById("foo", true);
         j.createWebClient().withBasicApiToken(u);
@@ -118,9 +114,13 @@ public class ApiTokenPropertyTest {
     @Issue("SECURITY-200")
     @Test
     public void adminsShouldBeUnableToSeeTokensByDefault() throws Exception {
+        ApiTokenPropertyConfiguration tokenConfig = ApiTokenPropertyConfiguration.get();
+        tokenConfig.setTokenGenerationOnCreationEnabled(true);
+
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         User u = User.getOrCreateByIdOrFullName("foo");
         final ApiTokenProperty t = u.getProperty(ApiTokenProperty.class);
+        t.generateNewToken("test");
         final String token = t.getApiToken();
 
         // Make sure the UI does not show the token to another user
@@ -133,6 +133,9 @@ public class ApiTokenPropertyTest {
     @Issue("SECURITY-200")
     @Test
     public void adminsShouldBeUnableToChangeTokensByDefault() throws Exception {
+        ApiTokenPropertyConfiguration tokenConfig = ApiTokenPropertyConfiguration.get();
+        tokenConfig.setTokenGenerationOnCreationEnabled(true);
+
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         User foo = User.getOrCreateByIdOrFullName("foo");
         User bar = User.getOrCreateByIdOrFullName("bar");
