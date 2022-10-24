@@ -292,6 +292,11 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     }
 
     /**
+     * Location of the detacthed plugins in the war
+     */
+    protected detachedPluginLocation = "/WEB-INF/detached-plugins";
+
+    /**
      * All discovered plugins.
      */
     protected final List<PluginWrapper> plugins = new CopyOnWriteArrayList<>();
@@ -617,7 +622,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             return;
         }
         LOGGER.fine(() -> "considering loading a detached dependency " + shortName);
-        for (String loadedFile : loadPluginsFromWar("/WEB-INF/detached-plugins", (dir, name) -> normalisePluginName(name).equals(shortName))) {
+        for (String loadedFile : loadPluginsFromWar(detachedPluginLocation, (dir, name) -> normalisePluginName(name).equals(shortName))) {
             String loaded = normalisePluginName(loadedFile);
             File arc = new File(rootDir, loaded + ".jpi");
             LOGGER.info(() -> "Loading a detached plugin as a dependency: " + arc);
@@ -758,7 +763,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
             final List<DetachedPluginsUtil.DetachedPlugin> detachedPlugins = DetachedPluginsUtil.getDetachedPlugins(lastExecVersion);
 
-            Set<String> loadedDetached = loadPluginsFromWar("/WEB-INF/detached-plugins", new FilenameFilter() {
+            Set<String> loadedDetached = loadPluginsFromWar(detachedPluginLocation, new FilenameFilter() {
                 @Override
                 public boolean accept(File dir, String name) {
                     name = normalisePluginName(name);
@@ -793,7 +798,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     new Object[] {lastExecVersion, Jenkins.VERSION, loadedDetached});
         } else {
             final Set<DetachedPluginsUtil.DetachedPlugin> forceUpgrade = new HashSet<>();
-            // TODO using getDetachedPlugins here seems wrong; should be forcing an upgrade when the installed version is older than that in WEB-INF/detached-plugins/
+            // TODO using getDetachedPlugins here seems wrong; should be forcing an upgrade when the installed version is older than that in detachedPluginLocation (WEB-INF/detached-plugins/)
             for (DetachedPluginsUtil.DetachedPlugin p : DetachedPluginsUtil.getDetachedPlugins()) {
                 VersionNumber installedVersion = getPluginVersion(rootDir, p.getShortName());
                 VersionNumber requiredVersion = p.getRequiredVersion();
@@ -805,7 +810,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                 }
             }
             if (!forceUpgrade.isEmpty()) {
-                Set<String> loadedDetached = loadPluginsFromWar("/WEB-INF/detached-plugins", new FilenameFilter() {
+                Set<String> loadedDetached = loadPluginsFromWar(detachedPluginLocation, new FilenameFilter() {
                     @Override
                     public boolean accept(File dir, String name) {
                         name = normalisePluginName(name);
