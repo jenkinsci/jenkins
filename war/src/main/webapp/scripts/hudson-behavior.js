@@ -1504,7 +1504,7 @@ function rowvgStartEachRow(recursive, f) {
     ++p,
     function (e) {
       e.addEventListener("click", function () {
-        updateOptionalBlock(e, true);
+        updateOptionalBlock(e);
       });
     }
   );
@@ -1547,7 +1547,7 @@ function rowvgStartEachRow(recursive, f) {
       // this requires "TR.row-set-end" to mark rows
       // Get the `input` from the checkbox container
       var checkbox = e.querySelector("input[type='checkbox']");
-      updateOptionalBlock(checkbox, false);
+      updateOptionalBlock(checkbox);
     }
   );
 
@@ -1922,7 +1922,7 @@ function applyNameRefHelper(s, e, id) {
 
 // used by optionalBlock.jelly to update the form status
 //   @param c     checkbox element
-function updateOptionalBlock(c, scroll) {
+function updateOptionalBlock(c) {
   // find the start TR
   var s = $(c);
   while (!s.hasClassName("optional-block-start")) s = s.up();
@@ -1934,14 +1934,6 @@ function updateOptionalBlock(c, scroll) {
   var checked = xor(c.checked, Element.hasClassName(c, "negative"));
 
   vg.rowVisibilityGroup.makeInnerVisible(checked);
-
-  if (checked && scroll) {
-    var D = YAHOO.util.Dom;
-
-    var r = D.getRegion(s);
-    r = r.union(D.getRegion(vg.rowVisibilityGroup.end));
-    scrollIntoView(r);
-  }
 
   if (c.name == "hudson-tools-InstallSourceProperty") {
     // Hack to hide tool home when "Install automatically" is checked.
@@ -2025,39 +2017,6 @@ function AutoScroller(scrollContainer) {
       scrollDiv.scrollTop = currentHeight;
     },
   };
-}
-
-// scroll the current window to display the given element or the region.
-function scrollIntoView(e) {
-  function calcDelta(ex1, ex2, vx1, vw) {
-    var vx2 = vx1 + vw;
-    var a;
-    a = Math.min(vx1 - ex1, vx2 - ex2);
-    if (a > 0) return -a;
-    a = Math.min(ex1 - vx1, ex2 - vx2);
-    if (a > 0) return a;
-    return 0;
-  }
-
-  var D = YAHOO.util.Dom;
-
-  var r;
-  if (e.tagName != null) r = D.getRegion(e);
-  else r = e;
-
-  var dx = calcDelta(
-    r.left,
-    r.right,
-    document.body.scrollLeft,
-    D.getViewportWidth()
-  );
-  var dy = calcDelta(
-    r.top,
-    r.bottom,
-    document.body.scrollTop,
-    D.getViewportHeight()
-  );
-  window.scrollBy(dx, dy);
 }
 
 // used in expandableTextbox.jelly to change a input field into a text area
