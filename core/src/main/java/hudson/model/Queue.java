@@ -2620,6 +2620,7 @@ public class Queue extends ResourceController implements Saveable {
             this.causeOfBlockage = causeOfBlockage;
         }
 
+        @Restricted(NoExternalUse.class)
         public boolean isCauseOfBlockageNull() {
             if (causeOfBlockage == null) {
                 return true;
