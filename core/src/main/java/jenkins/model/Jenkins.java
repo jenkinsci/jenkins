@@ -2727,7 +2727,16 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 ? securityRealm.getUserIdStrategy() // don't trigger rekey on Jenkins load
                 : this.securityRealm.getUserIdStrategy();
         this.securityRealm = securityRealm;
-        // reset the filters and proxies for the new SecurityRealm
+        resetFilter(securityRealm, oldUserIdStrategy);
+        saveQuietly();
+    }
+
+    /**
+     * Reset the filters and proxies for the new {@link SecurityRealm}.
+     * @param securityRealm The new security realm
+     * @param oldUserIdStrategy The old user id strategy if there was one. Can trigger a rekey if the new user id strategy is different.
+     */
+    private void resetFilter(@NonNull SecurityRealm securityRealm, @CheckForNull IdStrategy oldUserIdStrategy) {
         try {
             HudsonFilter filter = HudsonFilter.get(servletContext);
             if (filter == null) {
@@ -2739,14 +2748,13 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 filter.reset(securityRealm);
                 LOGGER.fine("Security is now fully set up");
             }
-            if (!oldUserIdStrategy.equals(this.securityRealm.getUserIdStrategy())) {
+            if (oldUserIdStrategy != null && !oldUserIdStrategy.equals(this.securityRealm.getUserIdStrategy())) {
                 User.rekey();
             }
         } catch (ServletException e) {
             // for binary compatibility, this method cannot throw a checked exception
             throw new RuntimeException("Failed to configure filter", e) {};
         }
-        saveQuietly();
     }
 
     /**
@@ -3484,8 +3492,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                         else
                             setSecurityRealm(new LegacySecurityRealm());
                     } else {
-                        // force the set to proxy
-                        setSecurityRealm(securityRealm);
+                        resetFilter(securityRealm, null);
                     }
                 }
 
