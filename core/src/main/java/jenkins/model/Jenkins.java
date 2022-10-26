@@ -2736,7 +2736,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @param securityRealm The new security realm
      * @param oldUserIdStrategy The old user id strategy if there was one. Can trigger a rekey if the new user id strategy is different.
      */
-    private void resetFilter(@NonNull SecurityRealm securityRealm, @CheckForNull IdStrategy oldUserIdStrategy) {
+    private void resetFilter(@CheckForNull SecurityRealm securityRealm, @CheckForNull IdStrategy oldUserIdStrategy) {
         try {
             HudsonFilter filter = HudsonFilter.get(servletContext);
             if (filter == null) {
@@ -2748,7 +2748,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 filter.reset(securityRealm);
                 LOGGER.fine("Security is now fully set up");
             }
-            if (oldUserIdStrategy != null && !oldUserIdStrategy.equals(this.securityRealm.getUserIdStrategy())) {
+            if (oldUserIdStrategy != null && this.securityRealm != null && !oldUserIdStrategy.equals(this.securityRealm.getUserIdStrategy())) {
                 User.rekey();
             }
         } catch (ServletException e) {
