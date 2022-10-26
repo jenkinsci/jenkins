@@ -188,15 +188,15 @@ public class LabelExpressionTest {
 
     @Test
     public void parserError() {
-        parseShouldFail("foo bar");
-        parseShouldFail("foo (bar)");
-        parseShouldFail("foo(bar)");
-        parseShouldFail("a <- b");
-        parseShouldFail("a -< b");
-        parseShouldFail("a - b");
-        parseShouldFail("->");
-        parseShouldFail("-<");
-        parseShouldFail("-!");
+        parseShouldFail("foo bar", "line 1:5: unexpected token: bar");
+        parseShouldFail("foo (bar)", "line 1:5: unexpected token: (");
+        parseShouldFail("foo(bar)", "line 1:4: unexpected token: (");
+        parseShouldFail("a <- b", "line 1:5: expecting '>', found ' '");
+        parseShouldFail("a -< b", "line 1:3: unexpected token: -");
+        parseShouldFail("a - b", "line 1:3: unexpected token: -");
+        parseShouldFail("->", "line 1:1: unexpected token: ->");
+        parseShouldFail("-<", "line 1:3: expecting '-', found '<EOF>'");
+        parseShouldFail("-!", "line 1:2: unexpected token: !");
     }
 
     @Test
@@ -344,11 +344,12 @@ public class LabelExpressionTest {
         assertThat(label, instanceOf(LabelExpression.And.class));
     }
 
-    private void parseShouldFail(String expr) {
-        assertThrows(
+    private void parseShouldFail(String expr, String message) {
+        ANTLRException e = assertThrows(
                 expr + " should fail to parse",
                 ANTLRException.class,
                 () -> Label.parseExpression(expr));
+        assertEquals(message, e.toString());
     }
 
     @Test
