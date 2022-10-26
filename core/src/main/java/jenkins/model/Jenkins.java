@@ -3310,6 +3310,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         try {
             checkRawBuildsDir(buildsDir);
             setBuildsAndWorkspacesDir();
+            resetFilter(securityRealm, null);
         } catch (InvalidBuildsDir invalidBuildsDir) {
             throw new IOException(invalidBuildsDir);
         }
@@ -3491,8 +3492,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                             setSecurityRealm(SecurityRealm.NO_AUTHENTICATION);
                         else
                             setSecurityRealm(new LegacySecurityRealm());
-                    } else {
-                        resetFilter(securityRealm, null);
                     }
                 }
 
