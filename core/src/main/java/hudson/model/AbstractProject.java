@@ -1111,8 +1111,9 @@ public abstract class AbstractProject<P extends AbstractProject<P, R>, R extends
         // Blocked downstream tasks must block this project.
         // Projects blocked by upstream or downstream builds
         // are ignored to break deadlocks.
-        for (Queue.Item item : Jenkins.get().getQueue().getBlockedItems()) {
-            if (item.getCauseOfBlockage() instanceof AbstractProject.BecauseOfUpstreamBuildInProgress ||
+        for (Queue.BlockedItem item : Jenkins.get().getQueue().getBlockedItems()) {
+            if (item.isCauseOfBlockageNull() ||
+                    item.getCauseOfBlockage() instanceof AbstractProject.BecauseOfUpstreamBuildInProgress ||
                     item.getCauseOfBlockage() instanceof AbstractProject.BecauseOfDownstreamBuildInProgress) {
                 continue;
             }
@@ -1139,8 +1140,9 @@ public abstract class AbstractProject<P extends AbstractProject<P, R>, R extends
         // Blocked upstream tasks must block this project.
         // Projects blocked by upstream or downstream builds
         // are ignored to break deadlocks.
-        for (Queue.Item item : Jenkins.get().getQueue().getBlockedItems()) {
-            if (item.getCauseOfBlockage() instanceof AbstractProject.BecauseOfUpstreamBuildInProgress ||
+        for (Queue.BlockedItem item : Jenkins.get().getQueue().getBlockedItems()) {
+            if (item.isCauseOfBlockageNull() ||
+                    item.getCauseOfBlockage() instanceof AbstractProject.BecauseOfUpstreamBuildInProgress ||
                     item.getCauseOfBlockage() instanceof AbstractProject.BecauseOfDownstreamBuildInProgress) {
                 continue;
             }

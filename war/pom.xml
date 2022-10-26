@@ -565,7 +565,11 @@ THE SOFTWARE.
                 // add Winstone since we are bundling it.
                 def d = project.dependencies.find { it.artifactId=="winstone" };
                 def a = mojo.artifactFactory.createProjectArtifact(d.groupId,d.artifactId,d.version);
-                def p = mojo.projectBuilder.buildFromRepository(a, project.getRemoteArtifactRepositories(), mojo.localRepository)
+                def buildingRequest = new org.apache.maven.project.DefaultProjectBuildingRequest(mojo.session.projectBuildingRequest)
+                buildingRequest.remoteRepositories = project.remoteArtifactRepositories
+                buildingRequest.localRepository = mojo.localRepository
+                buildingRequest.processPlugins = false // improve performance
+                def p = mojo.projectBuilder.build(a, buildingRequest).project
                 models.put(a,p);
             }</inlineScript>
         </configuration>
