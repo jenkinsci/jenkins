@@ -121,7 +121,6 @@ import javax.servlet.http.HttpServletResponse;
 import jenkins.model.BlockedBecauseOfBuildInProgress;
 import jenkins.model.Jenkins;
 import jenkins.security.QueueItemAuthenticatorConfiguration;
-import jenkins.security.apitoken.ApiTokenTestHelper;
 import org.acegisecurity.acls.sid.PrincipalSid;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
@@ -539,10 +538,12 @@ public class QueueTest {
     }
 
 
-    @TestExtension({"upstreamProjectsInQueueBlock", "downstreamProjectsInQueueBlock"})
+    @TestExtension({"upstreamProjectsInQueueBlock", "downstreamProjectsInQueueBlock", "handleCauseOfBlockageThatIsNull"})
     public static class BlockingQueueTaskDispatcher extends QueueTaskDispatcher {
 
         public static final String NAME_OF_BLOCKED_PROJECT = "blocked project";
+
+        public static final String NAME_OF_ANOTHER_BLOCKED_PROJECT = "another blocked project";
 
         @Override
         public CauseOfBlockage canRun(hudson.model.Queue.Item item) {
@@ -641,6 +642,36 @@ public class QueueTest {
        //Ensure orderly shutdown
        q.clear();
        r.waitUntilNoActivity();
+    }
+
+    @Issue("JENKINS-69850")
+    @Test
+    public void handleCauseOfBlockageThatIsNull() throws Exception {
+
+        FreeStyleProject a = r.createFreeStyleProject(BlockingQueueTaskDispatcher.NAME_OF_BLOCKED_PROJECT);
+        FreeStyleProject b = r.createFreeStyleProject(BlockingQueueTaskDispatcher.NAME_OF_ANOTHER_BLOCKED_PROJECT);
+        a.getPublishersList().add(new BuildTrigger(b.getName(), true));
+        a.setBlockBuildWhenDownstreamBuilding(true);
+        b.setBlockBuildWhenUpstreamBuilding(true);
+        r.jenkins.rebuildDependencyGraph();
+
+        Queue q = r.jenkins.getQueue();
+        Queue.withLock(() -> {
+            a.scheduleBuild(0, new UserIdCause());
+            b.scheduleBuild(0, new UserIdCause());
+            // Move both projects from pending to blocked
+            q.maintain();
+
+            q.save();
+            // Loading blocked items sets the CauseOfBlockage to null
+            q.load();
+            // Before JENKINS-69850 was fixed the null CauseOfBlockage caused a stack overflow
+            q.maintain();
+        });
+
+        //Ensure orderly shutdown
+        q.clear();
+        r.waitUntilNoActivity();
     }
 
     public static class TestFlyweightTask extends TestTask implements Queue.FlyweightTask {
@@ -981,8 +1012,6 @@ public class QueueTest {
     @Issue({"SECURITY-186", "SECURITY-618"})
     @Test
     public void queueApiOutputShouldBeFilteredByUserPermission() throws Exception {
-        ApiTokenTestHelper.enableLegacyBehavior();
-
         r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
         ProjectMatrixAuthorizationStrategy str = new ProjectMatrixAuthorizationStrategy();
         str.add(Jenkins.READ, "bob");
