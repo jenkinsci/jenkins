@@ -57,6 +57,9 @@ curl -sO ${jenkinsURL}jnlpJars/agent.jar
 java -jar <a href="${rootURL}/jnlpJars/agent.jar">agent.jar</a> -jnlpUrl ${jenkinsURL}${it.url}jenkins-agent.jnlp -secret @secret-file ${it.launcher.getWorkDirOptions(it)}</pre>
             </j:otherwise>
           </j:choose>
+          <p>
+            ${%Note: PowerShell users must use curl.exe instead of curl because curl is a default PowerShell cmdlet alias for Invoke-WebRequest.}
+          </p>
       </j:if>
     </j:when>
     <j:otherwise>

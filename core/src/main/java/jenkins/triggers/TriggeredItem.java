@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2018, CloudBees, Inc.
+ * Copyright 2022 CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,19 +22,24 @@
  * THE SOFTWARE.
  */
 
-package jenkins.security.apitoken;
+package jenkins.triggers;
 
-import hudson.model.User;
-import org.jvnet.hudson.test.JenkinsRule;
+import hudson.model.Item;
+import hudson.triggers.Trigger;
+import hudson.triggers.TriggerDescriptor;
+import java.util.Map;
 
-public class ApiTokenTestHelper {
+/**
+ * An item which can be configured with {@link Trigger}s.
+ * @since 2.372
+ */
+public interface TriggeredItem extends Item {
+
     /**
-     * @deprecated No longer needed just to use {@link JenkinsRule.WebClient#withBasicApiToken(User)}.
+     * Gets currently configured triggers. You may use
+     * {@code <p:config-trigger/>} to configure them.
+     * @return a map from trigger kind to instance
      */
-    @Deprecated
-    public static void enableLegacyBehavior() {
-        ApiTokenPropertyConfiguration config = ApiTokenPropertyConfiguration.get();
-        config.setTokenGenerationOnCreationEnabled(true);
-        config.setCreationOfLegacyTokenEnabled(true);
-    }
+    Map<TriggerDescriptor, Trigger<?>> getTriggers();
+
 }

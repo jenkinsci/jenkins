@@ -9,35 +9,30 @@ import com.gargoylesoftware.htmlunit.AlertHandler;
 import com.gargoylesoftware.htmlunit.ScriptResult;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.model.UnprotectedRootAction;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
 
-@RunWith(Parameterized.class)
 public class Security2779Test {
     public static final String URL_NAME = "security2779";
-    private final String selector;
+
     @Rule
     public JenkinsRule j = new JenkinsRule();
 
-    @Parameterized.Parameters
-    public static Collection<String> getSelectors() {
-        return Arrays.asList("#link-panel a", "#icon-panel svg");
-    }
-
-    public Security2779Test(String selector) {
-        this.selector = selector;
+    @Test
+    public void noXssInHelpLinkPanel() throws Exception {
+        noCrossSiteScriptingInHelp("#link-panel a");
     }
 
     @Test
-    public void noXssInHelp() throws Exception {
+    public void noXssInHelpIconPanel() throws Exception {
+        noCrossSiteScriptingInHelp("#icon-panel svg");
+    }
+
+    private void noCrossSiteScriptingInHelp(String selector) throws Exception {
         final AtomicInteger alerts = new AtomicInteger();
         final JenkinsRule.WebClient webClient = j.createWebClient();
         webClient.setAlertHandler((AlertHandler) (p, s) -> alerts.addAndGet(1));
@@ -47,7 +42,8 @@ public class Security2779Test {
         assertThat(eventResult, instanceOf(boolean.class));
         Assert.assertTrue((boolean) eventResult);
         webClient.waitForBackgroundJavaScript(2000);
-        Assert.assertEquals(0, alerts.get());
+        // Assertion includes the selector for easier diagnosis
+        Assert.assertEquals("Alert with selector '" + selector + "'", 0, alerts.get());
 
         final ScriptResult innerHtmlScript = page.executeJavaScript("document.querySelector('#tt').innerHTML");
         Object jsResult = innerHtmlScript.getJavaScriptResult();
