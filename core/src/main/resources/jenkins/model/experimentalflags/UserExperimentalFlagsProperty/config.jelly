@@ -39,7 +39,6 @@ THE SOFTWARE.
                 <table class="jenkins-table sortable">
                     <thead>
                         <tr>
-                            <th>${%FlagKey}</th>
                             <th>${%FlagDisplayName}</th>
                             <th>${%FlagDescription}</th>
                             <th>${%FlagConfig}</th>
@@ -48,15 +47,9 @@ THE SOFTWARE.
                     <tbody>
                         <j:forEach var="flagConfig" items="${flagConfigs}" varStatus="loop">
                             <j:set var="flagValue" value="${userProperty.getFlagValue(flagConfig.flagKey)}"/>
-
                             <tr>
-                                <td id="flags_${flagConfig.flagKey}">
-                                    <a href="#flags_${flagConfig.flagKey}" title="${%Permalink}">#</a>
-                                    <st:nbsp/>
-                                    <code>${flagConfig.flagKey}</code>
-                                </td>
                                 <td>
-                                    ${flagConfig.displayName}
+                                    ${flagConfig.displayName}<span class="jenkins-label jenkins-label--tertiary" style="margin-left: 1ch;">${flagConfig.flagKey}</span>
                                 </td>
                                 <td>
                                     <st:include it="${flagConfig}" page="${flagConfig.flagDescriptionPage}"/>
