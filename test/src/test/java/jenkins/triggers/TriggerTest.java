@@ -15,7 +15,6 @@ import hudson.triggers.Trigger;
 import hudson.triggers.TriggerDescriptor;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.antlr.v4.runtime.misc.ParseCancellationException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -64,7 +63,7 @@ public class TriggerTest {
 
         private static final Logger LOGGER = Logger.getLogger(BadTimerTrigger.class.getName());
 
-        BadTimerTrigger(@NonNull final String specs) throws ParseCancellationException {
+        BadTimerTrigger(@NonNull final String specs) {
             super(specs);
         }
 

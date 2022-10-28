@@ -32,6 +32,7 @@ import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeFalse;
 
+import antlr.ANTLRException;
 import hudson.Functions;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
@@ -47,7 +48,6 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
-import org.antlr.v4.runtime.misc.ParseCancellationException;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -188,15 +188,15 @@ public class LabelExpressionTest {
 
     @Test
     public void parserError() {
-        parseShouldFail("foo bar", "line 1:5: extraneous input 'bar' expecting <EOF>");
-        parseShouldFail("foo (bar)", "line 1:5: mismatched input '(' expecting {<EOF>, '&&', '||', '->', '<->'}");
-        parseShouldFail("foo(bar)", "line 1:4: mismatched input '(' expecting {<EOF>, '&&', '||', '->', '<->'}");
-        parseShouldFail("a <- b", "line 1:3: token recognition error at: '<- '");
-        parseShouldFail("a -< b", "line 1:4: token recognition error at: '< '");
-        parseShouldFail("a - b", "line 1:3: mismatched input '-' expecting {<EOF>, '&&', '||', '->', '<->'}");
-        parseShouldFail("->", "line 1:1: mismatched input '->' expecting {'!', '(', ATOM, STRINGLITERAL}");
-        parseShouldFail("-<", "line 1:2: token recognition error at: '<'");
-        parseShouldFail("-!", "line 1:2: extraneous input '!' expecting <EOF>");
+        parseShouldFail("foo bar", "line 1:4: extraneous input 'bar' expecting <EOF>");
+        parseShouldFail("foo (bar)", "line 1:4: mismatched input '(' expecting {<EOF>, '&&', '||', '->', '<->'}");
+        parseShouldFail("foo(bar)", "line 1:3: mismatched input '(' expecting {<EOF>, '&&', '||', '->', '<->'}");
+        parseShouldFail("a <- b", "line 1:2: token recognition error at: '<- '");
+        parseShouldFail("a -< b", "line 1:3: token recognition error at: '< '");
+        parseShouldFail("a - b", "line 1:2: mismatched input '-' expecting {<EOF>, '&&', '||', '->', '<->'}");
+        parseShouldFail("->", "line 1:0: mismatched input '->' expecting {'!', '(', ATOM, STRINGLITERAL}");
+        parseShouldFail("-<", "line 1:1: token recognition error at: '<'");
+        parseShouldFail("-!", "line 1:1: extraneous input '!' expecting <EOF>");
     }
 
     @Test
@@ -345,11 +345,12 @@ public class LabelExpressionTest {
     }
 
     private void parseShouldFail(String expr, String message) {
-        ParseCancellationException e = assertThrows(
+        ANTLRException e = assertThrows(
                 expr + " should fail to parse",
-                ParseCancellationException.class,
+                ANTLRException.class,
                 () -> Label.parseExpression(expr));
-        assertEquals(message, e.toString());
+        assertThat(e, instanceOf(IllegalArgumentException.class));
+        assertEquals(message, e.getMessage());
     }
 
     @Test

@@ -97,7 +97,6 @@ import jenkins.model.Jenkins;
 import jenkins.model.WorkspaceWriter;
 import jenkins.scm.DefaultSCMCheckoutStrategyImpl;
 import jenkins.scm.SCMCheckoutStrategy;
-import org.antlr.v4.runtime.misc.ParseCancellationException;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
@@ -328,7 +327,7 @@ public class ProjectTest {
 
 
     @Test
-    public void testSchedulePolling() throws IOException, ParseCancellationException {
+    public void testSchedulePolling() throws IOException {
         FreeStyleProject p = j.createFreeStyleProject("project");
         assertFalse("Project should not schedule polling because no scm trigger is set.", p.schedulePolling());
         SCMTrigger trigger = new SCMTrigger("0 0 * * *");

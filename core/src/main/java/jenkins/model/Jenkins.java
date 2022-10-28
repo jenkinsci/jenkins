@@ -289,7 +289,6 @@ import jenkins.util.io.OnMaster;
 import jenkins.util.xml.XMLUtils;
 import net.jcip.annotations.GuardedBy;
 import net.sf.json.JSONObject;
-import org.antlr.v4.runtime.misc.ParseCancellationException;
 import org.apache.commons.jelly.JellyException;
 import org.apache.commons.jelly.Script;
 import org.apache.commons.logging.LogFactory;
@@ -2071,7 +2070,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 // For the record, this method creates temporary labels but there is a periodic task
                 // calling "trimLabels" to remove unused labels running every 5 minutes.
                 labels.putIfAbsent(expr, Label.parseExpression(expr));
-            } catch (ParseCancellationException e) {
+            } catch (IllegalArgumentException e) {
                 // laxly accept it as a single label atom for backward compatibility
                 return getLabelAtom(expr);
             }

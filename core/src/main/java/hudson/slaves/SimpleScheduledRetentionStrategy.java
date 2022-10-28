@@ -42,7 +42,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.jcip.annotations.GuardedBy;
-import org.antlr.v4.runtime.misc.ParseCancellationException;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
@@ -67,6 +66,10 @@ public class SimpleScheduledRetentionStrategy extends RetentionStrategy<SlaveCom
     private final int upTimeMins;
     private final boolean keepUpWhenActive;
 
+    /**
+     * @param startTimeSpec the crontab entry to be parsed
+     * @throws IllegalArgumentException if the crontab entry cannot be parsed
+     */
     @DataBoundConstructor
     public SimpleScheduledRetentionStrategy(String startTimeSpec, int upTimeMins, boolean keepUpWhenActive)
             {
@@ -154,7 +157,7 @@ public class SimpleScheduledRetentionStrategy extends RetentionStrategy<SlaveCom
             nextStart = Long.MIN_VALUE;
             lastStop = Long.MAX_VALUE;
             lastStart = Long.MAX_VALUE;
-        } catch (ParseCancellationException e) {
+        } catch (IllegalArgumentException e) {
             InvalidObjectException x = new InvalidObjectException(e.getMessage());
             x.initCause(e);
             throw x;
@@ -264,7 +267,7 @@ public class SimpleScheduledRetentionStrategy extends RetentionStrategy<SlaveCom
                 if (msg != null)
                     return FormValidation.warning(msg);
                 return FormValidation.ok();
-            } catch (ParseCancellationException e) {
+            } catch (IllegalArgumentException e) {
                 return FormValidation.error(e.getMessage());
             }
         }

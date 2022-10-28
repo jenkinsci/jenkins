@@ -26,8 +26,6 @@ package hudson.model;
 
 import static hudson.Util.fixNull;
 
-import antlr.ANTLRException;
-import antlr.SemanticException;
 import com.thoughtworks.xstream.converters.Converter;
 import com.thoughtworks.xstream.converters.MarshallingContext;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
@@ -57,7 +55,6 @@ import hudson.slaves.NodeProvisioner;
 import hudson.util.QuotedStringTokenizer;
 import hudson.util.VariableResolver;
 import java.io.Serializable;
-import java.util.BitSet;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -69,14 +66,9 @@ import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithChildren;
-import org.antlr.v4.runtime.ANTLRErrorListener;
+import jenkins.util.antlr.JenkinsANTLRErrorListener;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.Parser;
-import org.antlr.v4.runtime.RecognitionException;
-import org.antlr.v4.runtime.Recognizer;
-import org.antlr.v4.runtime.atn.ATNConfigSet;
-import org.antlr.v4.runtime.dfa.DFA;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.StaplerRequest;
@@ -619,35 +611,17 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
      * Parses the expression into a label expression tree.
      *
      * TODO: replace this with a real parser later
+     *
+     * @param labelExpression the label expression to be parsed
+     * @throws IllegalArgumentException if the label expression cannot be parsed
      */
-    public static Label parseExpression(@NonNull String labelExpression) throws ANTLRException {
-        ANTLRErrorListener listener = new ANTLRErrorListener() {
-            @Override
-            public void syntaxError(Recognizer<?, ?> recognizer, Object offendingSymbol, int line, int charPositionInLine, String msg, RecognitionException e) {
-                throw new SemanticException(msg, line, charPositionInLine);
-            }
-
-            @Override
-            public void reportAmbiguity(Parser recognizer, DFA dfa, int startIndex, int stopIndex, boolean exact, BitSet ambigAlts, ATNConfigSet configs) {
-
-            }
-
-            @Override
-            public void reportAttemptingFullContext(Parser recognizer, DFA dfa, int startIndex, int stopIndex, BitSet conflictingAlts, ATNConfigSet configs) {
-
-            }
-
-            @Override
-            public void reportContextSensitivity(Parser recognizer, DFA dfa, int startIndex, int stopIndex, int prediction, ATNConfigSet configs) {
-
-            }
-        };
+    public static Label parseExpression(@NonNull String labelExpression) {
         LabelExpressionLexer lexer = new LabelExpressionLexer(CharStreams.fromString(labelExpression));
         lexer.removeErrorListeners();
-        lexer.addErrorListener(listener);
+        lexer.addErrorListener(new JenkinsANTLRErrorListener());
         LabelExpressionParser parser = new LabelExpressionParser(new CommonTokenStream(lexer));
         parser.removeErrorListeners();
-        parser.addErrorListener(listener);
+        parser.addErrorListener(new JenkinsANTLRErrorListener());
         return parser.expr().l;
     }
 

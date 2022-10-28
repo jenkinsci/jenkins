@@ -110,7 +110,6 @@ import jenkins.scm.SCMDecisionHandler;
 import jenkins.triggers.SCMTriggerItem;
 import jenkins.util.TimeDuration;
 import net.sf.json.JSONObject;
-import org.antlr.v4.runtime.misc.ParseCancellationException;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -414,7 +413,7 @@ public abstract class AbstractProject<P extends AbstractProject<P, R>, R extends
         try {
             Label.parseExpression(assignedNode);
             return assignedNode;
-        } catch (ParseCancellationException e) {
+        } catch (IllegalArgumentException e) {
             // must be old label or host name that includes whitespace or other unsafe chars
             return LabelAtom.escape(assignedNode);
         }

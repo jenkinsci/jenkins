@@ -30,7 +30,6 @@ import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
-import org.antlr.v4.runtime.misc.ParseCancellationException;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -60,7 +59,7 @@ public class TriggerTest {
         public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
         @DataBoundConstructor
-        public MockTrigger(String cron) throws ParseCancellationException {
+        public MockTrigger(String cron) {
             super(cron);
         }
 

@@ -1,19 +1,12 @@
 package antlr;
 
-import org.antlr.v4.runtime.misc.ParseCancellationException;
-
 /**
- * This class is for binary compatibility for older plugins that
- * import ANTLRException.
+ * This class is for binary compatibility for older plugins that import {@link ANTLRException}.
  *
- * @deprecated use {@link ParseCancellationException}
+ * @deprecated use {@link IllegalArgumentException}
  */
 @Deprecated
-public class ANTLRException extends ParseCancellationException {
-    public ANTLRException() {
-        // nothing needs to be done here
-    }
-
+public class ANTLRException extends IllegalArgumentException {
     public ANTLRException(String message) {
         super(message);
     }

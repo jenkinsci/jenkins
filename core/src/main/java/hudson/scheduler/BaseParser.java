@@ -24,12 +24,10 @@
 
 package hudson.scheduler;
 
-import antlr.SemanticException;
 import jenkins.util.SystemProperties;
+import org.antlr.v4.runtime.InputMismatchException;
 import org.antlr.v4.runtime.Parser;
-import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.TokenStream;
-import org.antlr.v4.runtime.misc.ParseCancellationException;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -44,6 +42,11 @@ abstract class BaseParser extends Parser {
      */
     protected Hash hash = Hash.zero();
 
+    /**
+     * Custom error message overriding ANTLR's {@link InputMismatchException}
+     */
+    private String errorMessage;
+
     BaseParser(TokenStream input) {
         super(input);
     }
@@ -53,7 +56,15 @@ abstract class BaseParser extends Parser {
         this.hash = hash;
     }
 
-    protected long doRange(int start, int end, int step, int field) throws ParseCancellationException {
+    public String getErrorMessage() {
+        return errorMessage;
+    }
+
+    public void setErrorMessage(String errorMessage) {
+        this.errorMessage = errorMessage;
+    }
+
+    protected long doRange(int start, int end, int step, int field) {
         rangeCheck(start, field);
         rangeCheck(end, field);
         if (step <= 0)
@@ -68,7 +79,7 @@ abstract class BaseParser extends Parser {
         return bits;
     }
 
-    protected long doRange(int step, int field) throws ParseCancellationException {
+    protected long doRange(int step, int field) {
         return doRange(LOWER_BOUNDS[field], UPPER_BOUNDS[field], step, field);
     }
 
@@ -79,14 +90,14 @@ abstract class BaseParser extends Parser {
      *      Increments. For example, 15 if "H/15". Or {@link #NO_STEP} to indicate
      *      the special constant for "H" without the step value.
      */
-    protected long doHash(int step, int field) throws ParseCancellationException {
+    protected long doHash(int step, int field) {
         int u = UPPER_BOUNDS[field];
         if (field == 2) u = 28;   // day of month can vary depending on month, so to make life simpler, just use [1,28] that's always safe
         if (field == 4) u = 6;   // Both 0 and 7 of day of week are Sunday. For better distribution, limit upper bound to 6
         return doHash(LOWER_BOUNDS[field], u, step, field);
     }
 
-    protected long doHash(int s, int e, int step, int field) throws ParseCancellationException {
+    protected long doHash(int s, int e, int step, int field) {
         rangeCheck(s, field);
         rangeCheck(e, field);
         if (step > e - s + 1) {
@@ -109,19 +120,15 @@ abstract class BaseParser extends Parser {
         }
     }
 
-    protected void rangeCheck(int value, int field) throws ParseCancellationException {
+    protected void rangeCheck(int value, int field) {
         if (value < LOWER_BOUNDS[field] || UPPER_BOUNDS[field] < value) {
             error(Messages.BaseParser_OutOfRange(value, LOWER_BOUNDS[field], UPPER_BOUNDS[field]));
         }
     }
 
-    private void error(String msg) throws SemanticException {
-        Token t = _input.LT(-1);
-        throw new SemanticException(
-                msg,
-                t.getLine(),
-                t.getCharPositionInLine()
-        );
+    private void error(String msg) {
+        setErrorMessage(msg);
+        throw new InputMismatchException(this);
     }
 
     protected Hash getHashForTokens() {

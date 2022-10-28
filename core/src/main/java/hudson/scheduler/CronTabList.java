@@ -24,6 +24,7 @@
 
 package hudson.scheduler;
 
+import antlr.ANTLRException;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import java.util.Calendar;
@@ -32,7 +33,6 @@ import java.util.TimeZone;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.antlr.v4.runtime.misc.ParseCancellationException;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -91,11 +91,19 @@ public final class CronTabList {
         return null;
     }
 
-    public static CronTabList create(@NonNull String format) throws ParseCancellationException {
+    /**
+     * @param format the crontab entry to be parsed
+     * @throws IllegalArgumentException if the crontab entry cannot be parsed
+     */
+    public static CronTabList create(@NonNull String format) {
         return create(format, null);
     }
 
-    public static CronTabList create(@NonNull String format, Hash hash) throws ParseCancellationException {
+    /**
+     * @param format the crontab entry to be parsed
+     * @throws IllegalArgumentException if the crontab entry cannot be parsed
+     */
+    public static CronTabList create(@NonNull String format, Hash hash) {
         Vector<CronTab> r = new Vector<>();
         int lineNumber = 0;
         String timezone = null;
@@ -110,7 +118,7 @@ public final class CronTabList {
                 if (timezone != null) {
                     LOGGER.log(Level.CONFIG, "CRON with timezone {0}", timezone);
                 } else {
-                    throw new ParseCancellationException("Invalid or unsupported timezone '" + timezoneString + "'");
+                    throw new ANTLRException("Invalid or unsupported timezone '" + timezoneString + "'");
                 }
                 continue;
             }
@@ -119,8 +127,8 @@ public final class CronTabList {
                 continue;   // ignorable line
             try {
                 r.add(new CronTab(line, lineNumber, hash, timezone));
-            } catch (ParseCancellationException e) {
-                throw new ParseCancellationException(Messages.CronTabList_InvalidInput(line, e.toString()), e);
+            } catch (IllegalArgumentException e) {
+                throw new ANTLRException(Messages.CronTabList_InvalidInput(line, e.getMessage()), e);
             }
         }
 

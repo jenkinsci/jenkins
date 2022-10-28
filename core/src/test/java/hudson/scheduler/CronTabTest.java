@@ -25,10 +25,13 @@
 package hudson.scheduler;
 
 import static java.util.Calendar.MONDAY;
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 
+import antlr.ANTLRException;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -36,7 +39,6 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
-import org.antlr.v4.runtime.misc.ParseCancellationException;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 
@@ -266,9 +268,10 @@ public class CronTabTest {
         compare(new GregorianCalendar(2013, Calendar.MARCH, 21, 0, 2), new CronTab("H(0-3)/4 * * * *", Hash.from("junk")).ceil(new GregorianCalendar(2013, Calendar.MARCH, 21, 0, 0)));
         compare(new GregorianCalendar(2013, Calendar.MARCH, 21, 1, 2), new CronTab("H(0-3)/4 * * * *", Hash.from("junk")).ceil(new GregorianCalendar(2013, Calendar.MARCH, 21, 0, 5)));
 
-        ParseCancellationException e = assertThrows(ParseCancellationException.class, () ->
+        ANTLRException e = assertThrows(ANTLRException.class, () ->
                 compare(new GregorianCalendar(2013, Calendar.MARCH, 21, 0, 0), new CronTab("H(0-3)/15 * * * *", Hash.from("junk")).ceil(new GregorianCalendar(2013, Calendar.MARCH, 21, 0, 0))));
-        assertEquals("line 1:8: 15 is an invalid value. Must be within 1 and 4", e.toString());
+        assertThat(e, instanceOf(IllegalArgumentException.class));
+        assertEquals("line 1:9: 15 is an invalid value. Must be within 1 and 4", e.getMessage());
     }
 
     @Test public void repeatedHash() throws Exception {
@@ -287,13 +290,15 @@ public class CronTabTest {
     }
 
     @Test public void rangeBoundsCheckFailHour() {
-        ParseCancellationException e = assertThrows(ParseCancellationException.class, () -> new CronTab("H H(12-24) * * *"));
-        assertEquals("line 1:10: 24 is an invalid value. Must be within 0 and 23", e.toString());
+        ANTLRException e = assertThrows(ANTLRException.class, () -> new CronTab("H H(12-24) * * *"));
+        assertThat(e, instanceOf(IllegalArgumentException.class));
+        assertEquals("line 1:10: 24 is an invalid value. Must be within 0 and 23", e.getMessage());
     }
 
     @Test public void rangeBoundsCheckFailMinute() {
-        ParseCancellationException e = assertThrows(ParseCancellationException.class, () -> new CronTab("H(33-66) * * * *"));
-        assertEquals("line 1:8: 66 is an invalid value. Must be within 0 and 59", e.toString());
+        ANTLRException e = assertThrows(ANTLRException.class, () -> new CronTab("H(33-66) * * * *"));
+        assertThat(e, instanceOf(IllegalArgumentException.class));
+        assertEquals("line 1:8: 66 is an invalid value. Must be within 0 and 59", e.getMessage());
     }
 
     @Issue("JENKINS-9283")
