@@ -132,11 +132,12 @@ public final class CronTab {
         lexer.setLine(line);
         CrontabParser parser = new CrontabParser(new CommonTokenStream(lexer));
         parser.removeErrorListeners();
-        parser.addErrorListener(new JenkinsANTLRErrorListener(() -> parser.getErrorMessage()));
+        parser.addErrorListener(new JenkinsANTLRErrorListener(parser::getErrorMessage));
         parser.setErrorHandler(new BailErrorStrategy());
         parser.setHash(hash);
         spec = format;
         specTimezone = timezone;
+
         parser.startRule(this);
         if ((dayOfWeek & (1 << 7)) != 0) {
             dayOfWeek |= 1; // copy bit 7 over to bit 0
