@@ -188,15 +188,15 @@ public class LabelExpressionTest {
 
     @Test
     public void parserError() {
-        parseShouldFail("foo bar", "line 1:5: unexpected token: bar");
-        parseShouldFail("foo (bar)", "line 1:5: unexpected token: (");
-        parseShouldFail("foo(bar)", "line 1:4: unexpected token: (");
-        parseShouldFail("a <- b", "line 1:5: expecting '>', found ' '");
-        parseShouldFail("a -< b", "line 1:3: unexpected token: -");
-        parseShouldFail("a - b", "line 1:3: unexpected token: -");
-        parseShouldFail("->", "line 1:1: unexpected token: ->");
-        parseShouldFail("-<", "line 1:3: expecting '-', found '<EOF>'");
-        parseShouldFail("-!", "line 1:2: unexpected token: !");
+        parseShouldFail("foo bar", "line 1:5: extraneous input 'bar' expecting <EOF>");
+        parseShouldFail("foo (bar)", "line 1:5: mismatched input '(' expecting {<EOF>, '&&', '||', '->', '<->'}");
+        parseShouldFail("foo(bar)", "line 1:4: mismatched input '(' expecting {<EOF>, '&&', '||', '->', '<->'}");
+        parseShouldFail("a <- b", "line 1:3: token recognition error at: '<- '");
+        parseShouldFail("a -< b", "line 1:4: token recognition error at: '< '");
+        parseShouldFail("a - b", "line 1:3: mismatched input '-' expecting {<EOF>, '&&', '||', '->', '<->'}");
+        parseShouldFail("->", "line 1:1: mismatched input '->' expecting {'!', '(', ATOM, STRINGLITERAL}");
+        parseShouldFail("-<", "line 1:2: token recognition error at: '<'");
+        parseShouldFail("-!", "line 1:2: extraneous input '!' expecting <EOF>");
     }
 
     @Test

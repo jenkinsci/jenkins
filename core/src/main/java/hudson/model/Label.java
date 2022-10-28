@@ -26,6 +26,8 @@ package hudson.model;
 
 import static hudson.Util.fixNull;
 
+import antlr.ANTLRException;
+import antlr.SemanticException;
 import com.thoughtworks.xstream.converters.Converter;
 import com.thoughtworks.xstream.converters.MarshallingContext;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
@@ -68,7 +70,6 @@ import java.util.stream.StreamSupport;
 import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithChildren;
 import org.antlr.v4.runtime.ANTLRErrorListener;
-import org.antlr.v4.runtime.BailErrorStrategy;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.Parser;
@@ -76,7 +77,6 @@ import org.antlr.v4.runtime.RecognitionException;
 import org.antlr.v4.runtime.Recognizer;
 import org.antlr.v4.runtime.atn.ATNConfigSet;
 import org.antlr.v4.runtime.dfa.DFA;
-import org.antlr.v4.runtime.misc.ParseCancellationException;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.StaplerRequest;
@@ -620,13 +620,11 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
      *
      * TODO: replace this with a real parser later
      */
-    public static Label parseExpression(@NonNull String labelExpression) throws ParseCancellationException {
-        LabelExpressionLexer lexer = new LabelExpressionLexer(CharStreams.fromString(labelExpression));
-        lexer.removeErrorListeners();
-        lexer.addErrorListener(new ANTLRErrorListener() {
+    public static Label parseExpression(@NonNull String labelExpression) throws ANTLRException {
+        ANTLRErrorListener listener = new ANTLRErrorListener() {
             @Override
             public void syntaxError(Recognizer<?, ?> recognizer, Object offendingSymbol, int line, int charPositionInLine, String msg, RecognitionException e) {
-                throw new ParseCancellationException(msg);
+                throw new SemanticException(msg, line, charPositionInLine);
             }
 
             @Override
@@ -643,10 +641,13 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
             public void reportContextSensitivity(Parser recognizer, DFA dfa, int startIndex, int stopIndex, int prediction, ATNConfigSet configs) {
 
             }
-        });
-        CommonTokenStream inputTokenStream = new CommonTokenStream(lexer);
-        LabelExpressionParser parser = new LabelExpressionParser(inputTokenStream);
-        parser.setErrorHandler(new BailErrorStrategy());
+        };
+        LabelExpressionLexer lexer = new LabelExpressionLexer(CharStreams.fromString(labelExpression));
+        lexer.removeErrorListeners();
+        lexer.addErrorListener(listener);
+        LabelExpressionParser parser = new LabelExpressionParser(new CommonTokenStream(lexer));
+        parser.removeErrorListeners();
+        parser.addErrorListener(listener);
         return parser.expr().l;
     }
 

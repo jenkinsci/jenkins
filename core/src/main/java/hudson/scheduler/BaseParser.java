@@ -24,8 +24,10 @@
 
 package hudson.scheduler;
 
+import antlr.SemanticException;
 import jenkins.util.SystemProperties;
 import org.antlr.v4.runtime.Parser;
+import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.TokenStream;
 import org.antlr.v4.runtime.misc.ParseCancellationException;
 
@@ -113,8 +115,13 @@ abstract class BaseParser extends Parser {
         }
     }
 
-    private void error(String msg) throws ParseCancellationException {
-        throw new ParseCancellationException(msg);
+    private void error(String msg) throws SemanticException {
+        Token t = _input.LT(-1);
+        throw new SemanticException(
+                msg,
+                t.getLine(),
+                t.getCharPositionInLine()
+        );
     }
 
     protected Hash getHashForTokens() {
