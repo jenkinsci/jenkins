@@ -188,7 +188,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.antlr</groupId>
         <artifactId>antlr4</artifactId>
-        <version>4.11.1</version>
+        <version>${antlr.version}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.ant</groupId>

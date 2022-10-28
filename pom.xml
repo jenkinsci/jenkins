@@ -96,6 +96,7 @@ THE SOFTWARE.
     <spotbugs.excludeFilterFile>${maven.multiModuleProjectDirectory}/src/spotbugs/spotbugs-excludes.xml</spotbugs.excludeFilterFile>
 
     <access-modifier.version>1.27</access-modifier.version>
+    <antlr.version>4.11.1</antlr.version>
     <bridge-method-injector.version>1.23</bridge-method-injector.version>
     <spotless.version>2.27.2</spotless.version>
     <winstone.version>6.6</winstone.version>
@@ -299,7 +300,7 @@ THE SOFTWARE.
         <plugin>
           <groupId>org.antlr</groupId>
           <artifactId>antlr4-maven-plugin</artifactId>
-          <version>4.11.1</version>
+          <version>${antlr.version}</version>
           <executions>
             <execution>
               <id>antlr</id>
