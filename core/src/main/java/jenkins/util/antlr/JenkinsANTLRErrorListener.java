@@ -38,18 +38,15 @@ public class JenkinsANTLRErrorListener extends BaseErrorListener {
 
     public static String formatMessage(int line, int column, String message) {
         StringBuilder sb = new StringBuilder();
-
         if (line != -1) {
             sb.append("line ");
             sb.append(line);
-
             if (column != -1) {
                 sb.append(":" + column);
             }
             sb.append(":");
             sb.append(" ");
         }
-
         sb.append(message);
         return sb.toString();
     }
