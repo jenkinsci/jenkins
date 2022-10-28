@@ -37,12 +37,11 @@ THE SOFTWARE.
     </st:attribute>
   </st:documentation>
   <l:layout title="${%Updates} - ${%Plugin Manager}" permission="${app.SYSTEM_READ}">
-
-    <l:app-bar title="${%Plugins}" />
-
     <st:include page="sidepanel.jelly"/>
 
     <l:main-panel>
+      <l:app-bar title="${%Plugins}" />
+
       <div class="jenkins-app-bar jenkins-app-bar--sticky">
         <div class="jenkins-app-bar__content">
           <l:search-bar clazz="jenkins-search--app-bar"

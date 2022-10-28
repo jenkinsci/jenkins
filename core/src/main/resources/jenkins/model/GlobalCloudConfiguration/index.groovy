@@ -15,8 +15,8 @@ l.layout(norefresh:true, permission:app.SYSTEM_READ, title:my.displayName) {
             l.task(icon:"symbol-settings", href: "../computer/", title:_("Manage Nodes"))
         }
     }
-    l.app_bar(title: my.displayName)
     l.main_panel {
+        l.app_bar(title: my.displayName)
         def clouds = Cloud.all()
         if (!clouds.isEmpty()) {
             p()

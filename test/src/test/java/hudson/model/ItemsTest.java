@@ -49,8 +49,6 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import jenkins.model.Jenkins;
-import jenkins.security.apitoken.ApiTokenTestHelper;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -65,11 +63,6 @@ public class ItemsTest {
 
     @Rule public JenkinsRule r = new JenkinsRule();
     @Rule public TemporaryFolder tmpRule = new TemporaryFolder();
-
-    @Before
-    public void setupLegacyBehavior() {
-        ApiTokenTestHelper.enableLegacyBehavior();
-    }
 
     @Test public void getAllItems() throws Exception {
         MockFolder d = r.createFolder("d");

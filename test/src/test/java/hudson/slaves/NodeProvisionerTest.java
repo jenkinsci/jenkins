@@ -24,6 +24,9 @@
 
 package hudson.slaves;
 
+import static org.hamcrest.CoreMatchers.anyOf;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assume.assumeFalse;
@@ -47,6 +50,7 @@ import hudson.model.Label;
 import hudson.model.Node;
 import hudson.model.queue.QueueTaskFuture;
 import hudson.tasks.Builder;
+import io.jenkins.lib.support_log_formatter.SupportLogFormatter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -58,6 +62,10 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -156,7 +164,8 @@ public class NodeProvisionerTest {
 
             // the time it takes to complete a job is eternally long compared to the time it takes to launch
             // a new slave, so in this scenario we end up allocating 5 slaves for 5 jobs.
-            assertEquals(5, cloud.numProvisioned);
+            // sometimes we can end up allocating 6 due to the conservative estimation in StandardStrategyImpl#apply
+            assertThat(cloud.numProvisioned, anyOf(equalTo(5), equalTo(6)));
         }
     }
 
@@ -214,7 +223,8 @@ public class NodeProvisionerTest {
             verifySuccessfulCompletion(buildAll(redJobs), r);
 
             // cloud should only give us 5 nodes for 5 red jobs
-            assertEquals(5, cloud.numProvisioned);
+            // sometimes we can end up allocating 6 due to the conservative estimation in StandardStrategyImpl#apply
+            assertThat(cloud.numProvisioned, anyOf(equalTo(5), equalTo(6)));
 
             // and all blue jobs should be still stuck in the queue
             for (Future<FreeStyleBuild> bb : blueBuilds)
@@ -372,6 +382,15 @@ public class NodeProvisionerTest {
         // no build on the built-in node, to make sure we get everything from the cloud
         r.jenkins.setNumExecutors(0);
         r.jenkins.setNodes(Collections.emptyList());
+
+        // TODO RealJenkinsRule does not yet support LoggerRule
+        Handler handler = new ConsoleHandler();
+        handler.setFormatter(new SupportLogFormatter());
+        handler.setLevel(Level.FINER);
+        Logger logger = Logger.getLogger(NodeProvisioner.class.getName());
+        logger.setLevel(Level.FINER);
+        logger.addHandler(handler);
+
         return cloud;
     }
 
