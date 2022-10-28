@@ -37,7 +37,6 @@ import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import jenkins.util.antlr.JenkinsANTLRErrorListener;
-import org.antlr.v4.runtime.BailErrorStrategy;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 
@@ -133,7 +132,6 @@ public final class CronTab {
         CrontabParser parser = new CrontabParser(new CommonTokenStream(lexer));
         parser.removeErrorListeners();
         parser.addErrorListener(new JenkinsANTLRErrorListener(parser::getErrorMessage));
-        parser.setErrorHandler(new BailErrorStrategy());
         parser.setHash(hash);
         spec = format;
         specTimezone = timezone;
