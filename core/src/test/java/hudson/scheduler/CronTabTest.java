@@ -266,7 +266,9 @@ public class CronTabTest {
         compare(new GregorianCalendar(2013, Calendar.MARCH, 21, 0, 2), new CronTab("H(0-3)/4 * * * *", Hash.from("junk")).ceil(new GregorianCalendar(2013, Calendar.MARCH, 21, 0, 0)));
         compare(new GregorianCalendar(2013, Calendar.MARCH, 21, 1, 2), new CronTab("H(0-3)/4 * * * *", Hash.from("junk")).ceil(new GregorianCalendar(2013, Calendar.MARCH, 21, 0, 5)));
 
-        assertThrows(ANTLRException.class, () -> compare(new GregorianCalendar(2013, Calendar.MARCH, 21, 0, 0), new CronTab("H(0-3)/15 * * * *", Hash.from("junk")).ceil(new GregorianCalendar(2013, Calendar.MARCH, 21, 0, 0))));
+        ANTLRException e = assertThrows(ANTLRException.class, () ->
+                compare(new GregorianCalendar(2013, Calendar.MARCH, 21, 0, 0), new CronTab("H(0-3)/15 * * * *", Hash.from("junk")).ceil(new GregorianCalendar(2013, Calendar.MARCH, 21, 0, 0))));
+        assertEquals("line 1:8: 15 is an invalid value. Must be within 1 and 4", e.toString());
     }
 
     @Test public void repeatedHash() throws Exception {
@@ -285,11 +287,13 @@ public class CronTabTest {
     }
 
     @Test public void rangeBoundsCheckFailHour() {
-        assertThrows(ANTLRException.class, () -> new CronTab("H H(12-24) * * *"));
+        ANTLRException e = assertThrows(ANTLRException.class, () -> new CronTab("H H(12-24) * * *"));
+        assertEquals("line 1:10: 24 is an invalid value. Must be within 0 and 23", e.toString());
     }
 
     @Test public void rangeBoundsCheckFailMinute() {
-        assertThrows(ANTLRException.class, () -> new CronTab("H(33-66) * * * *"));
+        ANTLRException e = assertThrows(ANTLRException.class, () -> new CronTab("H(33-66) * * * *"));
+        assertEquals("line 1:8: 66 is an invalid value. Must be within 0 and 59", e.toString());
     }
 
     @Issue("JENKINS-9283")

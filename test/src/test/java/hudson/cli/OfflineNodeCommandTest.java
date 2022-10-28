@@ -27,8 +27,6 @@ package hudson.cli;
 import static hudson.cli.CLICommandInvoker.Matcher.failedWith;
 import static hudson.cli.CLICommandInvoker.Matcher.hasNoStandardOutput;
 import static hudson.cli.CLICommandInvoker.Matcher.succeededSilently;
-import static org.awaitility.Awaitility.await;
-import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
@@ -39,18 +37,16 @@ import static org.hamcrest.Matchers.not;
 import hudson.model.Computer;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
+import hudson.model.Slave;
 import hudson.slaves.DumbSlave;
-import hudson.slaves.JNLPLauncher;
 import hudson.slaves.OfflineCause;
-import hudson.slaves.RetentionStrategy;
 import hudson.util.OneShotEvent;
-import java.io.File;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 import jenkins.model.Jenkins;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.InboundAgentRule;
 import org.jvnet.hudson.test.JenkinsRule;
 
 /**
@@ -62,6 +58,9 @@ public class OfflineNodeCommandTest {
 
     @Rule
     public final JenkinsRule j = new JenkinsRule();
+
+    @Rule
+    public InboundAgentRule inboundAgents = new InboundAgentRule();
 
     @Before
     public void setUp() {
@@ -112,15 +111,7 @@ public class OfflineNodeCommandTest {
 
     @Test
     public void offlineNodeShouldSucceedOnOfflineNode() throws Exception {
-        DumbSlave slave = new DumbSlave(
-                "aNode",
-                new File(j.jenkins.getRootDir(), "agent-work-dirs/aNode").getAbsolutePath(),
-                new JNLPLauncher(true));
-        slave.setRetentionStrategy(RetentionStrategy.NOOP);
-        j.jenkins.addNode(slave);
-        await().pollInterval(250, TimeUnit.MILLISECONDS)
-                .atMost(10, TimeUnit.SECONDS)
-                .until(() -> slave.toComputer().getOfflineCause(), notNullValue());
+        Slave slave = inboundAgents.createAgent(j, InboundAgentRule.Options.newBuilder().name("aNode").skipStart().build());
         slave.toComputer().setTemporarilyOffline(true, null);
         assertThat(slave.toComputer().isOffline(), equalTo(true));
         assertThat(slave.toComputer().isTemporarilyOffline(), equalTo(true));
@@ -179,15 +170,7 @@ public class OfflineNodeCommandTest {
 
     @Test
     public void offlineNodeShouldSucceedOnOfflineNodeWithCause() throws Exception {
-        DumbSlave slave = new DumbSlave(
-                "aNode",
-                new File(j.jenkins.getRootDir(), "agent-work-dirs/aNode").getAbsolutePath(),
-                new JNLPLauncher(true));
-        slave.setRetentionStrategy(RetentionStrategy.NOOP);
-        j.jenkins.addNode(slave);
-        await().pollInterval(250, TimeUnit.MILLISECONDS)
-                .atMost(10, TimeUnit.SECONDS)
-                .until(() -> slave.toComputer().getOfflineCause(), notNullValue());
+        Slave slave = inboundAgents.createAgent(j, InboundAgentRule.Options.newBuilder().name("aNode").skipStart().build());
         slave.toComputer().setTemporarilyOffline(true, null);
         assertThat(slave.toComputer().isOffline(), equalTo(true));
         assertThat(slave.toComputer().isTemporarilyOffline(), equalTo(true));
