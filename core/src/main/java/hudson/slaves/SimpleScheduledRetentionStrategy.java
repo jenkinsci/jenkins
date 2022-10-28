@@ -268,7 +268,7 @@ public class SimpleScheduledRetentionStrategy extends RetentionStrategy<SlaveCom
                     return FormValidation.warning(msg);
                 return FormValidation.ok();
             } catch (IllegalArgumentException e) {
-                return FormValidation.error(e.getMessage());
+                return FormValidation.error(e, e.getMessage());
             }
         }
     }
