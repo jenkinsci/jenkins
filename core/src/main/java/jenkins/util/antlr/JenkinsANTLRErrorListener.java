@@ -42,10 +42,10 @@ public class JenkinsANTLRErrorListener extends BaseErrorListener {
             sb.append("line ");
             sb.append(line);
             if (column != -1) {
-                sb.append(":" + column);
+                sb.append(":");
+                sb.append(column);
             }
-            sb.append(":");
-            sb.append(" ");
+            sb.append(": ");
         }
         sb.append(message);
         return sb.toString();

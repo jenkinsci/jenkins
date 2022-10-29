@@ -71,8 +71,7 @@ public class SimpleScheduledRetentionStrategy extends RetentionStrategy<SlaveCom
      * @throws IllegalArgumentException if the crontab entry cannot be parsed
      */
     @DataBoundConstructor
-    public SimpleScheduledRetentionStrategy(String startTimeSpec, int upTimeMins, boolean keepUpWhenActive)
-            {
+    public SimpleScheduledRetentionStrategy(String startTimeSpec, int upTimeMins, boolean keepUpWhenActive) {
         this.startTimeSpec = startTimeSpec;
         this.keepUpWhenActive = keepUpWhenActive;
         this.tabs = CronTabList.create(startTimeSpec);
