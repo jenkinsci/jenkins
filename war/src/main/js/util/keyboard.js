@@ -1,40 +1,55 @@
-export default function navigableList(container, items, selectedClass) {
+/**
+ * @param {Element} container - the container for the items
+ * @param {function(): NodeListOf<Element>} itemsFunc - function which returns the list of items
+ * @param {string} selectedClass - the class to apply to the selected item
+ */
+export default function makeKeyboardNavigable(
+  container,
+  itemsFunc,
+  selectedClass
+) {
   window.addEventListener("keydown", (e) => {
-    let items2 = items();
-    let liSelected = [...items2].find(a => a.classList.contains(selectedClass));
-    const isVisible = window.getComputedStyle(container).visibility === 'visible';
+    let items = itemsFunc();
+    let selectedItem = [...items].find((a) =>
+      a.classList.contains(selectedClass)
+    );
+    const isVisible =
+      window.getComputedStyle(container).visibility === "visible";
 
+    // Only navigate through the list of items if the container is active on the screen
     if (container && isVisible) {
-      if (e.keyCode === 40) {
-        if (liSelected) {
-          liSelected.classList.remove(selectedClass);
-          const next = liSelected.nextSibling;
+      if (e.key === "ArrowDown") {
+        if (selectedItem) {
+          selectedItem.classList.remove(selectedClass);
+          const next = selectedItem.nextSibling;
 
           if (next) {
-            liSelected = next;
+            selectedItem = next;
           } else {
-            liSelected = items2[0];
+            selectedItem = items[0];
           }
         } else {
-          liSelected = items2[0];
+          selectedItem = items[0];
         }
 
-        liSelected?.classList.add(selectedClass);
-      } else if (e.keyCode === 38) {
-        if (liSelected) {
-          liSelected.classList.remove(selectedClass);
-          const previous = liSelected.previousSibling;
+        selectedItem?.classList.add(selectedClass);
+      } else if (e.key === "ArrowUp") {
+        if (selectedItem) {
+          selectedItem.classList.remove(selectedClass);
+          const previous = selectedItem.previousSibling;
 
           if (previous) {
-            liSelected = previous;
+            selectedItem = previous;
           } else {
-            liSelected = items2[items2.length - 1];
+            selectedItem = items[items.length - 1];
           }
         } else {
-          liSelected = items2[items2.length - 1];
+          selectedItem = items[items.length - 1];
         }
 
-        liSelected?.classList.add(selectedClass);
+        selectedItem?.classList.add(selectedClass);
+      } else if (e.key === "Enter") {
+        selectedItem?.click();
       }
     }
   });

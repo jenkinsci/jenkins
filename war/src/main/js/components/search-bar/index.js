@@ -1,7 +1,7 @@
-import { createElementFromHtml } from "../../util/dom";
-import navigableList from "../../util/keyboard";
+import { createElementFromHtml } from "@/util/dom";
+import makeKeyboardNavigable from "@/util/keyboard";
 
-const SELECTED_CLASS = "jenkins-search__results-item--selected"
+const SELECTED_CLASS = "jenkins-search__results-item--selected";
 
 const init = () => {
   const searchBarInputs = document.querySelectorAll(".jenkins-search__input");
@@ -34,10 +34,11 @@ const init = () => {
           results.forEach((item, index) => {
             container.append(
               createElementFromHtml(
-                `<a class="${index === 0 ? SELECTED_CLASS : ''}" href="${item.url}"><div>${item.icon}</div>${item.label}</a>`
+                `<a class="${index === 0 ? SELECTED_CLASS : ""}" href="${
+                  item.url
+                }"><div>${item.icon}</div>${item.label}</a>`
               )
             );
-            // container.append(item["children"]);
           });
 
           if (results.length === 0 && container === searchResults) {
@@ -52,19 +53,7 @@ const init = () => {
         // Filter results
         const results = searchBar
           .suggestions()
-          .filter(
-            (item) =>
-              item.label.toLowerCase().includes(query) ||
-              item.children.some((child) =>
-                child.label.toLowerCase().includes(query)
-              )
-          )
-          .map((item) => {
-            item.children = item.children.filter((child) =>
-              child.label.toLowerCase().includes(query)
-            );
-            return item;
-          })
+          .filter((item) => item.label.toLowerCase().includes(query))
           .slice(0, 5);
 
         searchResults.innerHTML = "";
@@ -86,24 +75,16 @@ const init = () => {
       }
 
       searchBar.addEventListener("keydown", (e) => {
-        if (e.keyCode === 13) {
-          e.preventDefault();
-
-          const selectedResult = searchResults.querySelector("." + SELECTED_CLASS);
-          selectedResult?.click();
-        }
-        if (e.keyCode === 38) {
-          e.preventDefault();
-        }
-
-        if (e.keyCode === 40) {
+        if (e.key === "ArrowUp" || e.key === "ArrowDown") {
           e.preventDefault();
         }
       });
 
-      navigableList(searchResultsContainer,
+      makeKeyboardNavigable(
+        searchResultsContainer,
         () => searchResults.querySelectorAll("a"),
-        SELECTED_CLASS);
+        SELECTED_CLASS
+      );
 
       searchBar.addEventListener("focusin", () => {
         if (searchBar.value.length !== 0) {
