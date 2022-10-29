@@ -1,4 +1,7 @@
 import { createElementFromHtml } from "../../util/dom";
+import navigableList from "../../util/keyboard";
+
+const SELECTED_CLASS = "jenkins-search__results-item--selected"
 
 const init = () => {
   const searchBarInputs = document.querySelectorAll(".jenkins-search__input");
@@ -28,15 +31,13 @@ const init = () => {
         showResultsContainer();
 
         function appendResults(container, results) {
-          results.forEach((item) => {
+          results.forEach((item, index) => {
             container.append(
               createElementFromHtml(
-                `<a href="${item.url}"><div>${item.icon}</div>${item.label}</a>`
+                `<a class="${index === 0 ? SELECTED_CLASS : ''}" href="${item.url}"><div>${item.icon}</div>${item.label}</a>`
               )
             );
-            const children = createElementFromHtml(`<div></div>`);
-            appendResults(children, item["children"]);
-            container.append(children);
+            // container.append(item["children"]);
           });
 
           if (results.length === 0 && container === searchResults) {
@@ -88,15 +89,21 @@ const init = () => {
         if (e.keyCode === 13) {
           e.preventDefault();
 
-          const topResult = searchResults.querySelector("a");
-          topResult?.click();
+          const selectedResult = searchResults.querySelector("." + SELECTED_CLASS);
+          selectedResult?.click();
         }
-
-        if (e.keyCode === 38 || e.keyCode === 40) {
-          console.log('im being hit')
+        if (e.keyCode === 38) {
           e.preventDefault();
         }
-      })
+
+        if (e.keyCode === 40) {
+          e.preventDefault();
+        }
+      });
+
+      navigableList(searchResultsContainer,
+        () => searchResults.querySelectorAll("a"),
+        SELECTED_CLASS);
 
       searchBar.addEventListener("focusin", () => {
         if (searchBar.value.length !== 0) {
