@@ -249,6 +249,7 @@
     z-index: 0;
     line-height: 1;
     min-height: 2.25rem;
+    transition: background var(--standard-transition);
 
     div {
       display: flex;
@@ -345,10 +346,23 @@
       }
     }
   }
+
+  &:hover {
+    .jenkins-search__results-item--selected {
+      background: transparent;
+    }
+  }
 }
 
 .jenkins-search__results-item--selected {
   background: var(--item-background--hover);
+  animation: pulse 1s ease-in-out forwards;
+
+  @keyframes pulse {
+    50% {
+      background: var(--item-background--active)
+    }
+  }
 }
 
 .jenkins-search__results__no-results-label {
