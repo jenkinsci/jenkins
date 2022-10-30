@@ -3,7 +3,7 @@ import makeKeyboardNavigable from "@/util/keyboard";
 
 const SELECTED_CLASS = "jenkins-search__results-item--selected";
 
-const init = () => {
+function init() {
   const searchBarInputs = document.querySelectorAll(".jenkins-search__input");
 
   [...searchBarInputs]
@@ -102,6 +102,6 @@ const init = () => {
         hideResultsContainer();
       });
     });
-};
+}
 
 export default { init };
