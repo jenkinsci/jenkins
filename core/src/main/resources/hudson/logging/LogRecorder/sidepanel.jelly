@@ -30,7 +30,7 @@ THE SOFTWARE.
   <l:header />
   <l:side-panel>
     <l:tasks>
-      <l:task href="." icon="symbol-file-tray" title="${%Log records}"/>
+      <l:task href="." icon="symbol-journal" title="${%Log records}"/>
       <l:isAdmin>
         <l:task href="configure" icon="symbol-settings" title="${%Configure}"/>
         <l:task href="delete" icon="icon-edit-delete icon-md" title="${%Delete}"/>

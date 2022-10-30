@@ -41,7 +41,7 @@
 
   // Status icon colors
   --weather-icon-color: var(--primary);
-  --unstable-build-icon-color: var(--notification-warning-icon-color);
+  --unstable-build-icon-color: var(--orange);
 
   // Background colors
   --background: var(--white);
@@ -70,36 +70,11 @@
   // Header dimensions
   --header-item-border-radius: 4px;
 
-  // Breadcrumbs and footer
-  --breadcrumbs-bg: #f8f8f8;
-  --breadcrumbs-border: var(--light-grey);
-  --breadcrumbs-text-color: #4d545d;
-  --breadcrumbs-item-bg-color--hover: var(--light-grey);
+  // Breadcrumbs bar
+  --breadcrumbs-bar-background: hsla(240, 0.2, 0.965, 0.8);
 
-  // Alert banners
-  // Default
-  --alert-default-icon-color: #2196f3;
-  --alert-default-bg-color: #d1ecf1;
-  --alert-default-border-color: #bee5eb;
-  --alert-default-color: #0c5464;
-
-  // Success
-  --notification-success-icon-color: #4caf50;
-  --notification-success-bg-color: #d4edda;
-  --notification-success-border-color: #c3e6cb;
-  --notification-success-color: var(--success);
-
-  // Warning
-  --notification-warning-icon-color: #ff9800;
-  --notification-warning-bg-color: #fff3cd;
-  --notification-warning-border-color: #ffeeba;
-  --notification-warning-color: #856404;
-
-  // Error
-  --notification-error-icon-color: #f44336;
-  --notification-error-bg-color: #f8d7da;
-  --notification-error-border-color: #f5c6cb;
-  --notification-error-color: #721c24;
+  // Footer
+  --footer-background: hsla(240, 0.2, 0.965, 0.8);
 
   // Alert call outs
   --alert-success-text-color: #155724;
@@ -263,6 +238,13 @@
   --form-item-max-width: ~"min(65vw, 1600px)";
   --form-item-max-width--medium: ~"min(50vw, 1400px)";
   --form-item-max-width--small: ~"min(35vw, 1200px)";
+
+  @media screen and (max-width: 768px) {
+    --form-item-max-width: 100%;
+    --form-item-max-width--medium: 100%;
+    --form-item-max-width--small: 100%;
+  }
+
   --form-label-font-weight: 500;
   --form-input-padding: 0.5rem;
   --form-input-border-radius: 6px;
@@ -346,7 +328,7 @@
   pink: #fb0f45;
   purple: #af52de;
   red: #e6001f;
-  yellow: #fc0;
+  yellow: #ffb31a;
 }
 
 @semantics: {

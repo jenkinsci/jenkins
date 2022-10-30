@@ -454,7 +454,7 @@ public class OldDataMonitor extends AdministrativeMonitor {
 
         @Override
         public String getIconFileName() {
-            return "symbol-cube";
+            return "symbol-trash-bin";
         }
 
         @Override
