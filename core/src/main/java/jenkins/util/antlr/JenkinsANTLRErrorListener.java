@@ -36,7 +36,7 @@ public class JenkinsANTLRErrorListener extends BaseErrorListener {
         throw new ANTLRException(formatMessage(line, charPositionInLine, msg), e);
     }
 
-    public static String formatMessage(int line, int column, String message) {
+    private static String formatMessage(int line, int column, String message) {
         StringBuilder sb = new StringBuilder();
         if (line != -1) {
             sb.append("line ");
