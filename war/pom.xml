@@ -459,8 +459,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>jdk-tool</artifactId>
-                  <!-- TODO https://github.com/jenkinsci/jdk-tool-plugin/pull/49 -->
-                  <version>58.v6905d00de622</version>
+                  <version>63.v62d2fd4b_4793</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
