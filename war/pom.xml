@@ -173,6 +173,7 @@ THE SOFTWARE.
                 <enforceBytecodeVersion>
                   <maxJdkVersion>1.8</maxJdkVersion>
                   <excludes>
+                    <exclude>org.antlr:antlr4</exclude>
                     <exclude>org.jenkins-ci:commons-jelly</exclude>
                     <exclude>org.jenkins-ci:task-reactor</exclude>
                     <exclude>org.jenkins-ci.main:cli</exclude>

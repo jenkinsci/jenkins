@@ -31,7 +31,6 @@ package hudson.model;
 import static hudson.scm.PollingResult.BUILD_NOW;
 import static hudson.scm.PollingResult.NO_CHANGES;
 
-import antlr.ANTLRException;
 import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -414,7 +413,7 @@ public abstract class AbstractProject<P extends AbstractProject<P, R>, R extends
         try {
             Label.parseExpression(assignedNode);
             return assignedNode;
-        } catch (ANTLRException e) {
+        } catch (IllegalArgumentException e) {
             // must be old label or host name that includes whitespace or other unsafe chars
             return LabelAtom.escape(assignedNode);
         }
