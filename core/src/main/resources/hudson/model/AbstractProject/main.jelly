@@ -38,13 +38,13 @@ THE SOFTWARE.
       </t:summary>
     </j:forEach>
 
-    <j:if test="${!it.displayLatestArtifacts()}">
+    <j:if test="${!it.displayLastArtifacts()}">
       <t:artifactList caption="${%Last Successful Artifacts}"
         build="${it.lastSuccessfulBuild}" baseURL="lastSuccessfulBuild/"
         permission="${it.lastSuccessfulBuild.ARTIFACTS}"/>
     </j:if>
 
-    <j:if test="${it.displayLatestArtifacts()}">
+    <j:if test="${it.displayLastArtifacts()}">
       <t:artifactList caption="${%Last Artifacts}"
         build="${it.lastCompletedBuild}" baseURL="lastCompletedBuild/"
         permission="${it.lastCompletedBuild.ARTIFACTS}"/>

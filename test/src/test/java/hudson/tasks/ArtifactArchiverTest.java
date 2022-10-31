@@ -209,7 +209,7 @@ public class ArtifactArchiverTest {
     }
 
     @Test
-    public void displaysTheLatestArtifacts() throws Exception {
+    public void displaysTheLastArtifacts() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildersList().add(new TestBuilder() {
             @Override public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
@@ -224,14 +224,14 @@ public class ArtifactArchiverTest {
             }
         });
         ArtifactArchiver aa = new ArtifactArchiver("testdir/fizz");
-        aa.setDisplayLatestArtifacts(true);
+        aa.setDisplayLastArtifacts(true);
         p.getPublishersList().add(aa);
         FreeStyleBuild b = j.buildAndAssertStatus(Result.FAILURE, p);
 
         try (JenkinsRule.WebClient webClient = j.createWebClient()) {
             HtmlPage mainProjectPage = webClient.goTo("job/" + p.getName());
             String textContent = mainProjectPage.getVisibleText();
-            assertThat("Main project page displays the latest artifacts", textContent.contains("Last Artifacts"));
+            assertThat("Main project page displays the last artifacts", textContent.contains("Last Artifacts"));
             assertThat("fizz is in the main artifacts list, even though the job failed, because the last artifact should be shown if the build fails", textContent.contains("fizz"));
         }
     }

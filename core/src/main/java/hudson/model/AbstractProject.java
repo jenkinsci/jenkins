@@ -768,14 +768,13 @@ public abstract class AbstractProject<P extends AbstractProject<P, R>, R extends
     }
 
     /**
-     * Returns whether the project should display the latest artifacts
      * @since 2.376
      */
-    public boolean displayLatestArtifacts() {
+    public boolean displayLastArtifacts() {
         return getPublishersList().stream()
                 .filter(publisher -> publisher instanceof ArtifactArchiver)
                 .map(publisher -> (ArtifactArchiver) publisher)
-                .map(ArtifactArchiver::isDisplayLatestArtifacts)
+                .map(ArtifactArchiver::isDisplayLastArtifacts)
                 .findFirst()
                 .orElse(false);
     }

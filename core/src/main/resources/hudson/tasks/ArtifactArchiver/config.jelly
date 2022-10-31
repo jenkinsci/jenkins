@@ -49,8 +49,8 @@ THE SOFTWARE.
     <f:entry field="followSymlinks" >
       <f:checkbox title="${%followSymlinks}" default="false"/>
     </f:entry>
-    <f:entry field="displayLatestArtifacts" >
-      <f:checkbox title="${%displayLatestArtifacts}" default="false"/>
+    <f:entry field="displayLastArtifacts" >
+      <f:checkbox title="${%displayLastArtifacts}" default="false"/>
     </f:entry>
   </f:advanced>
 </j:jelly>
