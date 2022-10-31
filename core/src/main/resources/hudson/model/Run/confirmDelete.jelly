@@ -37,7 +37,7 @@ THE SOFTWARE.
       <j:if test="${msg==null}">
         <form method="post" action="doDelete">
           ${%delete.build(it.displayName)}
-          <f:submit value="${%Yes}"/>
+          <f:submit value="${%Yes}" clazz="jenkins-!-destructive-color" />
         </form>
       </j:if>
 

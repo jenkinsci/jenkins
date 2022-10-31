@@ -87,7 +87,7 @@ THE SOFTWARE.
     <changelog.url>https://www.jenkins.io/changelog</changelog.url>
 
     <!-- Bundled Remoting version -->
-    <remoting.version>3068.v09b_895d8da_14</remoting.version>
+    <remoting.version>3071.v7e9b_0dc08466</remoting.version>
     <!-- Minimum Remoting version, which is tested for API compatibility -->
     <remoting.minimum.supported.version>4.2.1</remoting.minimum.supported.version>
 
@@ -96,6 +96,7 @@ THE SOFTWARE.
     <spotbugs.excludeFilterFile>${maven.multiModuleProjectDirectory}/src/spotbugs/spotbugs-excludes.xml</spotbugs.excludeFilterFile>
 
     <access-modifier.version>1.27</access-modifier.version>
+    <antlr.version>4.11.1</antlr.version>
     <bridge-method-injector.version>1.23</bridge-method-injector.version>
     <spotless.version>2.27.2</spotless.version>
     <winstone.version>6.6</winstone.version>
@@ -297,9 +298,9 @@ THE SOFTWARE.
           <version>${bridge-method-injector.version}</version>
         </plugin>
         <plugin>
-          <groupId>org.codehaus.mojo</groupId>
-          <artifactId>antlr-maven-plugin</artifactId>
-          <version>2.2</version>
+          <groupId>org.antlr</groupId>
+          <artifactId>antlr4-maven-plugin</artifactId>
+          <version>${antlr.version}</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
@@ -365,7 +366,7 @@ THE SOFTWARE.
             <dependency>
               <groupId>com.puppycrawl.tools</groupId>
               <artifactId>checkstyle</artifactId>
-              <version>10.3.4</version>
+              <version>10.4</version>
             </dependency>
           </dependencies>
           <executions>
@@ -383,6 +384,9 @@ THE SOFTWARE.
           <artifactId>spotless-maven-plugin</artifactId>
           <version>${spotless.version}</version>
           <configuration>
+            <antlr4>
+              <antlr4Formatter />
+            </antlr4>
             <java>
               <endWithNewline />
               <importOrder />
