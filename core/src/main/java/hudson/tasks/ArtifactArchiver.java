@@ -122,6 +122,7 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
     /**
      * Display the latest artifacts in main project page instead of the latest successful artifacts.
      * Useful for test automation jobs where you are interested in the artifacts of an unsuccessful build.
+     * @since 2.376
      */
     @NonNull
     private Boolean displayLatestArtifacts = false;

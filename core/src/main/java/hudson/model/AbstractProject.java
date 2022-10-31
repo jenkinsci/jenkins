@@ -767,6 +767,10 @@ public abstract class AbstractProject<P extends AbstractProject<P, R>, R extends
         return getActions(ProminentProjectAction.class);
     }
 
+    /**
+     * Returns whether the project should display the latest artifacts
+     * @since 2.376
+     */
     public boolean displayLatestArtifacts() {
         return getPublishersList().stream()
                 .filter(publisher -> publisher instanceof ArtifactArchiver)
