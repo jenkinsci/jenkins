@@ -38,9 +38,17 @@ THE SOFTWARE.
       </t:summary>
     </j:forEach>
 
-    <t:artifactList caption="${%Last Successful Artifacts}"
+    <j:if test="${!it.displayLatestArtifacts()}">
+      <t:artifactList caption="${%Last Successful Artifacts}"
         build="${it.lastSuccessfulBuild}" baseURL="lastSuccessfulBuild/"
         permission="${it.lastSuccessfulBuild.ARTIFACTS}"/>
+    </j:if>
+
+    <j:if test="${it.displayLatestArtifacts()}">
+      <t:artifactList caption="${%Last Artifacts}"
+        build="${it.lastCompletedBuild}" baseURL="lastCompletedBuild/"
+        permission="${it.lastCompletedBuild.ARTIFACTS}"/>
+    </j:if>
   </table>
 
   <!-- merge fragments from the actions -->

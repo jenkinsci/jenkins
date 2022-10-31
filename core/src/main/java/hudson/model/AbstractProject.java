@@ -65,6 +65,7 @@ import hudson.search.SearchIndexBuilder;
 import hudson.security.Permission;
 import hudson.slaves.Cloud;
 import hudson.slaves.WorkspaceList;
+import hudson.tasks.ArtifactArchiver;
 import hudson.tasks.BuildStep;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildTrigger;
@@ -764,6 +765,15 @@ public abstract class AbstractProject<P extends AbstractProject<P, R>, R extends
 
     public List<ProminentProjectAction> getProminentActions() {
         return getActions(ProminentProjectAction.class);
+    }
+
+    public boolean displayLatestArtifacts() {
+        return getPublishersList().stream()
+                .filter(publisher -> publisher instanceof ArtifactArchiver)
+                .map(publisher -> (ArtifactArchiver) publisher)
+                .map(ArtifactArchiver::isDisplayLatestArtifacts)
+                .findFirst()
+                .orElse(false);
     }
 
     @Override

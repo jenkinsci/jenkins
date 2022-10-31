@@ -119,6 +119,13 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
     @NonNull
     private Boolean followSymlinks = true;
 
+    /**
+     * Display the latest artifacts in main project page instead of the latest successful artifacts.
+     * Useful for test automation jobs where you are interested in the artifacts of an unsuccessful build.
+     */
+    @NonNull
+    private Boolean displayLatestArtifacts = false;
+
     @DataBoundConstructor public ArtifactArchiver(String artifacts) {
         this.artifacts = artifacts.trim();
         allowEmptyArchive = false;
@@ -164,6 +171,9 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
         }
         if (followSymlinks == null) {
             followSymlinks = true;
+        }
+        if (displayLatestArtifacts == null) {
+            displayLatestArtifacts = false;
         }
         return this;
     }
@@ -232,6 +242,16 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
 
     @DataBoundSetter public final void setFollowSymlinks(boolean followSymlinks) {
         this.followSymlinks = followSymlinks;
+    }
+
+    @NonNull
+    public boolean isDisplayLatestArtifacts() {
+        return displayLatestArtifacts;
+    }
+
+    @DataBoundSetter
+    public void setDisplayLatestArtifacts(boolean displayLatestArtifacts) {
+        this.displayLatestArtifacts = displayLatestArtifacts;
     }
 
     @Override

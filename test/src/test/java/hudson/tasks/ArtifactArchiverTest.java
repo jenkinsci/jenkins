@@ -34,6 +34,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeFalse;
 import static org.junit.Assume.assumeTrue;
 
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.AbortException;
 import hudson.FilePath;
 import hudson.Functions;
@@ -205,6 +206,34 @@ public class ArtifactArchiverTest {
         assumeTrue("May not be testable on Windows:\n" + JenkinsRule.getLog(b), ws.child("dir/lodge").exists());
         List<FreeStyleBuild.Artifact> artifacts = b.getArtifacts();
         assertEquals(0, artifacts.size());
+    }
+
+    @Test
+    public void displaysTheLatestArtifacts() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.getBuildersList().add(new TestBuilder() {
+            @Override public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+                FilePath ws = build.getWorkspace();
+                if (ws == null) {
+                    return false;
+                }
+                FilePath dir = ws.child("testdir");
+                dir.mkdirs();
+                dir.child("fizz").write("contents", null);
+                return false;
+            }
+        });
+        ArtifactArchiver aa = new ArtifactArchiver("testdir/fizz");
+        aa.setDisplayLatestArtifacts(true);
+        p.getPublishersList().add(aa);
+        FreeStyleBuild b = j.buildAndAssertStatus(Result.FAILURE, p);
+
+        try (JenkinsRule.WebClient webClient = j.createWebClient()) {
+            HtmlPage mainProjectPage = webClient.goTo("job/" + p.getName());
+            String textContent = mainProjectPage.getVisibleText();
+            assertThat("Main project page displays the latest artifacts", textContent.contains("Last Artifacts"));
+            assertThat("fizz is in the main artifacts list, even though the job failed, because the last artifact should be shown if the build fails", textContent.contains("fizz"));
+        }
     }
 
     @LocalData
