@@ -30,8 +30,8 @@ THE SOFTWARE.
   <l:layout title="${%New log recorder}">
     <st:include page="sidepanel.jelly" />
 
-    <l:app-bar title="${%New log recorder}"/>
     <l:main-panel>
+      <l:app-bar title="${%New log recorder}"/>
       <f:form name="configSubmit" method="post" action="newLogRecorder">
         <f:entry title="${%Name}">
           <f:textbox name="name" checkDependsOn="name" checkUrl="checkNewName" />

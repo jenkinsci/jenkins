@@ -27,7 +27,7 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:t="/lib/hudson">
-<l:layout title="${%All Jenkins Logs}">
+<l:layout title="${%All Jenkins Logs}" type="one-column">
   <l:breadcrumb title="${%All Jenkins Logs}" />
   <l:main-panel>
     <h1>${%All Jenkins Logs}</h1>
