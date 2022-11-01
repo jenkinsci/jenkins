@@ -252,7 +252,7 @@ THE SOFTWARE.
                   <version>${remoting.minimum.supported.version}</version>
                   <type>jar</type>
                   <outputDirectory>${project.build.outputDirectory}/old-remoting</outputDirectory>
-                  <destFileName>remoting-minimal-supported.jar</destFileName>
+                  <destFileName>remoting-minimum-supported.jar</destFileName>
                 </artifactItem>
                 <artifactItem>
                   <groupId>org.jenkins-ci.main</groupId>
