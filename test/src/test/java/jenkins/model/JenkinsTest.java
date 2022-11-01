@@ -46,6 +46,8 @@ import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.WebResponse;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
+import hudson.ExtensionList;
+import hudson.XmlFile;
 import hudson.model.Computer;
 import hudson.model.Failure;
 import hudson.model.FreeStyleProject;
@@ -54,9 +56,11 @@ import hudson.model.Label;
 import hudson.model.Node;
 import hudson.model.RestartListener;
 import hudson.model.RootAction;
+import hudson.model.Saveable;
 import hudson.model.TaskListener;
 import hudson.model.UnprotectedRootAction;
 import hudson.model.User;
+import hudson.model.listeners.SaveableListener;
 import hudson.security.FullControlOnceLoggedInAuthorizationStrategy;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
 import hudson.security.HudsonPrivateSecurityRealm;
@@ -769,6 +773,34 @@ public class JenkinsTest {
 
         j.jenkins.trimLabels();
         assertThat(j.jenkins.getLabels().contains(l), is(true));
+    }
+
+    @Test
+    public void reloadShouldNotSaveConfig() throws Exception {
+        SaveableListenerImpl saveListener = ExtensionList.lookupSingleton(SaveableListenerImpl.class);
+        saveListener.reset();
+        j.jenkins.reload();
+        assertFalse("Jenkins object should not have been saved.", saveListener.wasCalled());
+    }
+
+    @TestExtension("reloadShouldNotSaveConfig")
+    public static class SaveableListenerImpl extends SaveableListener {
+        private boolean called;
+
+        void reset() {
+            called = false;
+        }
+
+        boolean wasCalled() {
+            return called;
+        }
+
+        @Override
+        public void onChange(Saveable o, XmlFile file) {
+            if (o instanceof Jenkins) {
+                called = true;
+            }
+        }
     }
 
     @TestExtension({"testLogin123", "testLogin123WithRead"})
