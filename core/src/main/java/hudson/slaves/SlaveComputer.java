@@ -48,7 +48,6 @@ import hudson.model.TaskListener;
 import hudson.model.User;
 import hudson.remoting.Channel;
 import hudson.remoting.ChannelBuilder;
-import hudson.remoting.ChannelClosedException;
 import hudson.remoting.CommandTransport;
 import hudson.remoting.Engine;
 import hudson.remoting.Launcher;
@@ -90,6 +89,7 @@ import jenkins.slaves.RemotingVersionInfo;
 import jenkins.slaves.systemInfo.SlaveSystemInfo;
 import jenkins.util.Listeners;
 import jenkins.util.SystemProperties;
+import org.jenkinsci.remoting.ChannelStateException;
 import org.jenkinsci.remoting.util.LoggingChannelListener;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.Beta;
@@ -1113,7 +1113,7 @@ public class SlaveComputer extends Computer {
 
             try {
                 getChannelOrFail().setProperty("agent", Boolean.TRUE); // indicate that this side of the channel is the agent side.
-            } catch (ChannelClosedException e) {
+            } catch (ChannelStateException e) {
                 throw new IllegalStateException(e);
             }
 
