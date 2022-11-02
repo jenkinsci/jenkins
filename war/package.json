@@ -49,7 +49,7 @@
   },
   "dependencies": {
     "@babel/preset-env": "7.19.4",
-    "babel-loader": "8.2.5",
+    "babel-loader": "9.0.0",
     "bootstrap": "3.4.1",
     "hotkeys-js": "3.10.0",
     "jenkins-js-modules": "1.5.4",
