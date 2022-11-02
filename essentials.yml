@@ -1,8 +1,8 @@
 ---
 ath:
   useLocalSnapshots: false
-  athRevision: "acceptance-test-harness-1.115"
-  athImage: "jenkins/ath:1.97-pre"
+  athRevision: "5458.v911b_2f0818ee"
+  athImage: "jenkins/ath:5458.v911b_2f0818ee"
   categories:
     - org.jenkinsci.test.acceptance.junit.SmokeTest
   jdks:

@@ -24,6 +24,7 @@
 
 package hudson.model;
 
+import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.StringEndsWith.endsWith;
 import static org.junit.Assert.assertEquals;
@@ -213,7 +214,7 @@ public class NodeTest {
         node.getNodeProperties().add(new NodePropertyImpl());
         notTake = true;
         assertNotNull("Node should not take project because node property does not allow it.", node.canTake(item));
-        assertTrue("Cause of blockage should be busy label.", node.canTake(item) instanceof CauseOfBlockage.BecauseLabelIsBusy);
+        assertThat("Cause of blockage should be busy label.", node.canTake(item), instanceOf(CauseOfBlockage.BecauseLabelIsBusy.class));
         User user = User.get("John");
         GlobalMatrixAuthorizationStrategy auth = new GlobalMatrixAuthorizationStrategy();
         j.jenkins.setAuthorizationStrategy(auth);

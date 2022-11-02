@@ -35,15 +35,11 @@ THE SOFTWARE.
     <s:attribute name="value">
       The text of the apply button.
     </s:attribute>
-
-    <s:attribute name="large">
-        Set to "true" to enable the large variant of the button
-    </s:attribute>
   </s:documentation>
+
   <st:adjunct includes="lib.form.apply.apply"/>
   <input type="hidden" name="core:apply" value="" />
-  <input type="button"
-         value="${attrs.value ?: '%Apply'}"
-         class="apply-button applyButton ${attrs.large ? 'large-button' : ''}"
-         name="Apply"/><!-- applyButton is legacy -->
+  <button type="button" class="jenkins-button apply-button" name="Apply">
+    ${attrs.value ?: '%Apply'}
+  </button>
 </j:jelly>
