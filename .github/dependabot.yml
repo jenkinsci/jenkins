@@ -55,3 +55,13 @@ updates:
       # Contains incompatible API changes and needs compatibility work. See:
       # https://github.com/jenkinsci/jenkins/pull/4224
       - dependency-name: "org.jfree:jfreechart"
+  - package-ecosystem: "maven"
+    directory: "/"
+    target-branch: "stable-2.361"
+    labels:
+      - "into-lts"
+      - "needs-justification"
+    schedule:
+      interval: "daily"
+    # Include only security updates and exclude version updates.
+    open-pull-requests-limit: 0

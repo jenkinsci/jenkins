@@ -42,7 +42,6 @@ import static java.util.logging.Level.WARNING;
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
 
-import antlr.ANTLRException;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
@@ -240,6 +239,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
@@ -529,7 +529,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * {@link Computer}s in this Jenkins system. Read-only.
      */
-    protected final transient Map<Node, Computer> computers = new CopyOnWriteMap.Hash<>();
+    protected final transient ConcurrentMap<Node, Computer> computers = new ConcurrentHashMap<>();
 
     /**
      * Active {@link Cloud}s.
@@ -2070,7 +2070,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 // For the record, this method creates temporary labels but there is a periodic task
                 // calling "trimLabels" to remove unused labels running every 5 minutes.
                 labels.putIfAbsent(expr, Label.parseExpression(expr));
-            } catch (ANTLRException e) {
+            } catch (IllegalArgumentException e) {
                 // laxly accept it as a single label atom for backward compatibility
                 return getLabelAtom(expr);
             }
@@ -2178,7 +2178,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     @Override
-    protected Map<Node, Computer> getComputerMap() {
+    protected ConcurrentMap<Node, Computer> getComputerMap() {
         return computers;
     }
 
@@ -2726,7 +2726,16 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 ? securityRealm.getUserIdStrategy() // don't trigger rekey on Jenkins load
                 : this.securityRealm.getUserIdStrategy();
         this.securityRealm = securityRealm;
-        // reset the filters and proxies for the new SecurityRealm
+        resetFilter(securityRealm, oldUserIdStrategy);
+        saveQuietly();
+    }
+
+    /**
+     * Reset the filters and proxies for the new {@link SecurityRealm}.
+     * @param securityRealm The new security realm
+     * @param oldUserIdStrategy The old user id strategy if there was one. Can trigger a rekey if the new user id strategy is different.
+     */
+    private void resetFilter(@CheckForNull SecurityRealm securityRealm, @CheckForNull IdStrategy oldUserIdStrategy) {
         try {
             HudsonFilter filter = HudsonFilter.get(servletContext);
             if (filter == null) {
@@ -2738,14 +2747,13 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 filter.reset(securityRealm);
                 LOGGER.fine("Security is now fully set up");
             }
-            if (!oldUserIdStrategy.equals(this.securityRealm.getUserIdStrategy())) {
+            if (oldUserIdStrategy != null && this.securityRealm != null && !oldUserIdStrategy.equals(this.securityRealm.getUserIdStrategy())) {
                 User.rekey();
             }
         } catch (ServletException e) {
             // for binary compatibility, this method cannot throw a checked exception
             throw new RuntimeException("Failed to configure filter", e) {};
         }
-        saveQuietly();
     }
 
     /**
@@ -3301,6 +3309,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         try {
             checkRawBuildsDir(buildsDir);
             setBuildsAndWorkspacesDir();
+            resetFilter(securityRealm, null);
         } catch (InvalidBuildsDir invalidBuildsDir) {
             throw new IOException(invalidBuildsDir);
         }
@@ -3482,9 +3491,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                             setSecurityRealm(SecurityRealm.NO_AUTHENTICATION);
                         else
                             setSecurityRealm(new LegacySecurityRealm());
-                    } else {
-                        // force the set to proxy
-                        setSecurityRealm(securityRealm);
                     }
                 }
 

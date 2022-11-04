@@ -24,6 +24,7 @@
 
 package hudson.model;
 
+import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.notNullValue;
@@ -156,10 +157,10 @@ public class AbstractBuildTest {
 
             Object culpritsArray = json.get("culprits");
             assertNotNull(culpritsArray);
-            assertTrue(culpritsArray instanceof JSONArray);
+            assertThat(culpritsArray, instanceOf(JSONArray.class));
             Set<String> fromApi = new TreeSet<>();
             for (Object o : ((JSONArray) culpritsArray).toArray()) {
-                assertTrue(o instanceof JSONObject);
+                assertThat(o, instanceOf(JSONObject.class));
                 Object id = ((JSONObject) o).get("id");
                 if (id instanceof String) {
                     fromApi.add((String) id);

@@ -26,6 +26,7 @@ package jenkins.websocket;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.Collections;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.concurrent.CompletableFuture;
@@ -49,7 +50,7 @@ public class Jetty10Provider implements Provider {
     private static final String ATTR_LISTENER = Jetty10Provider.class.getName() + ".listener";
 
     // TODO does not seem possible to use HttpServletRequest.get/setAttribute for this
-    private static final Map<Listener, Session> sessions = new WeakHashMap<>();
+    private static final Map<Listener, Session> sessions = Collections.synchronizedMap(new WeakHashMap<>());
 
     public Jetty10Provider() {
         JettyWebSocketServerContainer.class.hashCode();
@@ -89,7 +90,9 @@ public class Jetty10Provider implements Provider {
 
             @Override
             public void sendPing(ByteBuffer applicationData) throws IOException {
-                session().getRemote().sendPing(applicationData);
+                CompletableFuture<Void> f = new CompletableFuture<>();
+                session().getRemote().sendPing(applicationData, new WriteCallbackImpl(f));
+                // TODO return f;
             }
 
             @Override

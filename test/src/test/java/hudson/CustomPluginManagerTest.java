@@ -26,7 +26,9 @@ package hudson;
 
 import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
-import static org.junit.Assert.assertFalse;
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -129,7 +131,7 @@ public class CustomPluginManagerTest {
     @WithPlugin("htmlpublisher.jpi")
     @WithCustomLocalPluginManager(BadCustomPluginManager.class)
     @Test public void badCustomPluginManager() {
-        assertFalse("Custom plugin manager not installed", r.getPluginManager() instanceof CustomPluginManager);
+        assertThat("Custom plugin manager not installed", r.getPluginManager(), not(instanceOf(CustomPluginManager.class)));
     }
 
     public static class BadCustomPluginManager extends LocalPluginManager implements CustomPluginManager {
