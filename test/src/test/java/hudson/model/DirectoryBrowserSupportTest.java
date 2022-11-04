@@ -1160,7 +1160,7 @@ public class DirectoryBrowserSupportTest {
         p.getPublishersList().add(new ArtifactArchiver("*", "", true));
         j.buildAndAssertSuccess(p);
 
-        String utf8Header="utf-8";
+        String utf8Header = "utf-8";
         String encodingPropName = "file.encoding";
         String encodingInitialValue = System.getProperty(encodingPropName);
         String disableFeaturePropname = DirectoryBrowserSupport.class.getName() + ".disableUTF8FileHeader";
@@ -1169,14 +1169,14 @@ public class DirectoryBrowserSupportTest {
         try {
             // Ensure UTF-8 is not in the headers with the file.encoding unset
             System.setProperty(encodingPropName, "");
-            Page page = j.createWebClient().goTo(artifactPath,"text/plain");
+            Page page = j.createWebClient().goTo(artifactPath, "text/plain");
             String contentType = page.getWebResponse().getResponseHeaderValue("Content-Type");
             assertFalse(contentType.contains(utf8Header));
             assertFalse("unicode rendered with file.encoding unset", page.getWebResponse().getContentAsString().contains("✅"));
 
             // Ensure UTF-8 is in the headers with the file.encoding set to UTF-8
             System.setProperty(encodingPropName, "UTF-8");
-            page = j.createWebClient().goTo(artifactPath,"text/plain");
+            page = j.createWebClient().goTo(artifactPath, "text/plain");
             contentType = page.getWebResponse().getResponseHeaderValue("Content-Type");
             //TODO not working
             //assertTrue(contentType.contains(utf8Header));
@@ -1186,7 +1186,7 @@ public class DirectoryBrowserSupportTest {
             // Ensure UTF-8 is not in the headers with the file.encoding set to UTF-8 and the fix is disabled
             System.setProperty(encodingPropName, "UTF-8");
             System.setProperty(disableFeaturePropname, "true");
-            page = j.createWebClient().goTo(artifactPath,"text/plain");
+            page = j.createWebClient().goTo(artifactPath, "text/plain");
             contentType = page.getWebResponse().getResponseHeaderValue("Content-Type");
             assertFalse(contentType.contains(utf8Header));
             assertFalse("unicode rendered with disableUTF8FileHeader escape hatch enabled", page.getWebResponse().getContentAsString().contains("✅"));
@@ -1202,8 +1202,8 @@ public class DirectoryBrowserSupportTest {
                 System.setProperty(disableFeaturePropname, disableFeaturInitialValue);
             }
         }
-
     }
+
     public static final class SimulatedExternalArtifactManagerFactory extends ArtifactManagerFactory {
         @Override
         public ArtifactManager managerFor(Run<?, ?> build) {

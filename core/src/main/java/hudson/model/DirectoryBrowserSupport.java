@@ -378,7 +378,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
         if (LOGGER.isLoggable(Level.FINE))
             LOGGER.fine("Serving " + baseFile + " with lastModified=" + lastModified + ", length=" + length);
 
-        if (System.getProperty("file.encoding").equals("UTF-8") && !SystemProperties.getBoolean(DISABLE_UTF8_FILE_HEADER, false) ){
+        if (System.getProperty("file.encoding").equals("UTF-8") && !SystemProperties.getBoolean(DISABLE_UTF8_FILE_HEADER, false)) {
             // JENKINS-28676 serve unicode artifacts when "-Dfile.encoding" is "UTF-8"
             rsp.setContentType("text/plain;charset=\"UTF-8\"");
         }
