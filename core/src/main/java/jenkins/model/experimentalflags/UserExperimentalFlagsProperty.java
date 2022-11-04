@@ -52,7 +52,7 @@ public class UserExperimentalFlagsProperty extends UserProperty {
     }
 
     public UserExperimentalFlagsProperty(Map<String, String> flags) {
-        this.flags = flags;
+        this.flags = new HashMap<>(flags);
     }
 
     public @CheckForNull Object getFlagValue(String flagKey) {

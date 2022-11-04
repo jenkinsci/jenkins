@@ -72,10 +72,6 @@ public abstract class UserExperimentalFlag<T> implements ExtensionPoint {
      */
     public abstract @Nullable String getShortDescription();
 
-    public UserExperimentalFlag() {
-        this(null);
-    }
-
     /**
      * The ID used by the machine to link the flag with its value within the user properties
      */
