@@ -1,7 +1,7 @@
 const searchBarInput = document.querySelector("#settings-search-bar");
 
 searchBarInput.suggestions = function () {
-  return [...document.querySelectorAll(".jenkins-section__item")]
+  return Array.from(document.querySelectorAll(".jenkins-section__item"))
     .map((item) => ({
       url: item.querySelector("a").href,
       icon: item.querySelector(
