@@ -10,7 +10,7 @@ export default function makeKeyboardNavigable(
 ) {
   window.addEventListener("keydown", (e) => {
     let items = itemsFunc();
-    let selectedItem = [...items].find((a) =>
+    let selectedItem = Array.from(items).find((a) =>
       a.classList.contains(selectedClass)
     );
     const isVisible =
