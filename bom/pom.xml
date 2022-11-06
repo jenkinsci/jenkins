@@ -64,14 +64,9 @@ THE SOFTWARE.
         <!-- https://docs.spring.io/spring-security/site/docs/5.5.4/reference/html5/#getting-maven-no-boot -->
         <groupId>org.springframework.security</groupId>
         <artifactId>spring-security-bom</artifactId>
-        <version>5.7.4</version>
+        <version>5.7.5</version>
         <type>pom</type>
         <scope>import</scope>
-      </dependency>
-      <dependency>
-        <groupId>antlr</groupId>
-        <artifactId>antlr</artifactId>
-        <version>2.7.7</version>
       </dependency>
       <dependency>
         <!-- JENKINS-21160: Remoting also depends on args4j; please update accordingly -->
@@ -189,6 +184,11 @@ THE SOFTWARE.
         <groupId>net.sf.kxml</groupId>
         <artifactId>kxml2</artifactId>
         <version>2.3.0</version>
+      </dependency>
+      <dependency>
+        <groupId>org.antlr</groupId>
+        <artifactId>antlr4-runtime</artifactId>
+        <version>${antlr.version}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.ant</groupId>
