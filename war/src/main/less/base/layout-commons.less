@@ -1,4 +1,4 @@
-@import "../abstracts/theme.less";
+@import url("../abstracts/theme.less");
 
 html {
   position: relative;
@@ -43,10 +43,6 @@ body {
   margin-left: 0.25rem;
 }
 
-#footer-container {
-  background-color: var(--breadcrumbs-bg);
-}
-
 /* -------------------------------------- */
 
 .app-page-body {
@@ -84,6 +80,10 @@ body {
 
 .app-page-body--one-column {
   --form-item-max-width: calc(85vw - 4rem);
+
+  @media screen and (max-width: 768px) {
+    --form-item-max-width: 100%;
+  }
 
   max-width: 85vw;
 
