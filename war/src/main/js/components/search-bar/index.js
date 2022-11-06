@@ -6,7 +6,7 @@ const SELECTED_CLASS = "jenkins-search__results-item--selected";
 function init() {
   const searchBarInputs = document.querySelectorAll(".jenkins-search__input");
 
-  [...searchBarInputs]
+  Array.from(searchBarInputs)
     .filter((searchBar) => searchBar.suggestions)
     .forEach((searchBar) => {
       const searchWrapper = searchBar.parentElement.parentElement;
