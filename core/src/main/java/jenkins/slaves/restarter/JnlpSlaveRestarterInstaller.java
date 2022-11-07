@@ -52,20 +52,20 @@ public class JnlpSlaveRestarterInstaller extends ComputerListener implements Ser
             install(c, listener);
             return null;
         }
-    }
 
-    private static void install(Computer c, TaskListener listener) {
-        try {
-            final List<SlaveRestarter> restarters = new ArrayList<>(SlaveRestarter.all());
+        private static void install(Computer c, TaskListener listener) {
+            try {
+                final List<SlaveRestarter> restarters = new ArrayList<>(SlaveRestarter.all());
 
-            VirtualChannel ch = c.getChannel();
-            if (ch == null) return;  // defensive check
+                VirtualChannel ch = c.getChannel();
+                if (ch == null) return;  // defensive check
 
-            List<SlaveRestarter> effective = ch.call(new FindEffectiveRestarters(restarters));
+                List<SlaveRestarter> effective = ch.call(new FindEffectiveRestarters(restarters));
 
-            LOGGER.log(FINE, "Effective SlaveRestarter on {0}: {1}", new Object[] {c.getName(), effective});
-        } catch (Throwable e) {
-            Functions.printStackTrace(e, listener.error("Failed to install restarter"));
+                LOGGER.log(FINE, "Effective SlaveRestarter on {0}: {1}", new Object[] {c.getName(), effective});
+            } catch (Throwable e) {
+                Functions.printStackTrace(e, listener.error("Failed to install restarter"));
+            }
         }
     }
 
@@ -80,12 +80,6 @@ public class JnlpSlaveRestarterInstaller extends ComputerListener implements Ser
         public List<SlaveRestarter> call() throws IOException {
             Engine e = Engine.current();
             if (e == null) return null;    // not running under Engine
-
-            try {
-                Engine.class.getMethod("addListener", EngineListener.class);
-            } catch (NoSuchMethodException ignored) {
-                return null;    // running with older version of remoting that doesn't support adding listener
-            }
 
             // filter out ones that doesn't apply
             restarters.removeIf(r -> !r.canWork());

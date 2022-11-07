@@ -29,8 +29,8 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <l:layout permission="${app.ADMINISTER}" title="${%Delete log recorder}">
     <st:include page="sidepanel.jelly" />
-    <l:app-bar title="${%Delete log recorder}" />
     <l:main-panel>
+      <l:app-bar title="${%Delete log recorder}" />
       <form method="post" action="doDelete">
         <p>${%delete.logrecorder(it.displayName)}</p>
         <div>

@@ -24,8 +24,8 @@
 
 package hudson.model;
 
-import static org.awaitility.Awaitility.await;
 import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -34,7 +34,6 @@ import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import java.util.Arrays;
 import java.util.TreeSet;
-import java.util.concurrent.TimeUnit;
 import jenkins.model.DirectlyModifiableTopLevelItemGroup;
 import net.sf.json.JSONObject;
 import org.junit.Rule;
@@ -112,7 +111,8 @@ public class ViewDescriptorTest {
                         .getSomeProperty());
 
         //WHEN the users goes with "Edit View" on the configure page
-        HtmlPage editViewPage = r.createWebClient().getPage(myListView, "configure");
+        JenkinsRule.WebClient client = r.createWebClient();
+        HtmlPage editViewPage = client.getPage(myListView, "configure");
 
         //THEN the invisible property is not displayed on page
         assertFalse("CustomInvisibleProperty should not be displayed on the View edition page UI.",
@@ -120,13 +120,11 @@ public class ViewDescriptorTest {
 
 
         HtmlForm editViewForm = editViewPage.getFormByName("viewConfig");
-        editViewForm.getTextAreaByName("description").type("This list view is awesome !");
+        editViewForm.getTextAreaByName("description").setText("This list view is awesome !");
         r.submit(editViewForm);
 
         //Check that the description is updated on view
-        await().pollInterval(1, TimeUnit.SECONDS)
-                .atMost(10, TimeUnit.SECONDS)
-                .until(() -> r.createWebClient().getPage(myListView).asNormalizedText(), containsString("This list view is awesome !"));
+        assertThat(client.getPage(myListView).asNormalizedText(), containsString("This list view is awesome !"));
 
         //AND THEN after View save, the invisible property is still persisted with the View.
         assertNotNull("The CustomInvisibleProperty should be persisted on the View.",

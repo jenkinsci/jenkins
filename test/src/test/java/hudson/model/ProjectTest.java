@@ -34,7 +34,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
-import antlr.ANTLRException;
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
@@ -328,7 +327,7 @@ public class ProjectTest {
 
 
     @Test
-    public void testSchedulePolling() throws IOException, ANTLRException {
+    public void testSchedulePolling() throws IOException {
         FreeStyleProject p = j.createFreeStyleProject("project");
         assertFalse("Project should not schedule polling because no scm trigger is set.", p.schedulePolling());
         SCMTrigger trigger = new SCMTrigger("0 0 * * *");

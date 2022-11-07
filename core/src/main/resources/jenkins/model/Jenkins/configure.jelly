@@ -31,9 +31,9 @@ THE SOFTWARE.
   <st:include page="sidepanel.jelly" />
   <f:breadcrumb-config-outline title="${%Configure System}" />
 
-  <l:app-bar title="${%Configure System}" />
-
   <l:main-panel>
+    <l:app-bar title="${%Configure System}" />
+
     <div class="behavior-loading"><l:spinner text="${%LOADING}"/></div>
     <f:form method="post" name="config" action="configSubmit" class="jenkins-form">
       <j:set var="instance" value="${it}" />
