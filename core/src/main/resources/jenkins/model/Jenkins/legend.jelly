@@ -26,82 +26,138 @@ THE SOFTWARE.
 <!-- show the icon legend -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
-  <l:layout>
-    <st:include page="sidepanel.jelly" />
+  <l:layout title="${%Icon legend}">
+    <l:app-bar title="${title}" />
+
+    <st:include page="sidepanel.jelly"/>
+
     <l:main-panel>
-      <table cellpadding="5" id="legend-table">
-        <tr><td>
-          <l:icon class="icon-nobuilt icon-xlg"/>
-          ${%lightgrey}
-        </td></tr>
-        <tr><td>
-          <l:icon class="icon-nobuilt-anime icon-xlg"/>
-          ${%lightgrey_anime}
-        </td></tr>
+      <h2>${%Status}</h2>
 
-        <tr><td>
-          <l:icon class="icon-disabled icon-xlg"/>
-          ${%grey}
-        </td></tr>
-        <tr><td>
-          <l:icon class="icon-disabled-anime icon-xlg"/>
-          ${%grey_anime}
-        </td></tr>
-
-        <tr><td>
-          <l:icon class="icon-aborted icon-xlg"/>
-          ${%darkgrey}
-        </td></tr>
-        <tr><td>
-          <l:icon class="icon-aborted-anime icon-xlg"/>
-          ${%darkgrey_anime}
-        </td></tr>
-
-        <tr><td>
+      <dl class="app-icon-legend">
+        <dt>
           <l:icon class="icon-blue icon-xlg"/>
+        </dt>
+        <dd>
           ${%blue}
-        </td></tr>
-        <tr><td>
+        </dd>
+
+        <dt>
           <l:icon class="icon-blue-anime icon-xlg"/>
+        </dt>
+        <dd>
           ${%blue_anime}
-        </td></tr>
-        <tr><td>
+        </dd>
+
+        <dt>
           <l:icon class="icon-yellow icon-xlg"/>
+        </dt>
+        <dd>
           ${%yellow}
-        </td></tr>
-        <tr><td>
+        </dd>
+
+        <dt>
           <l:icon class="icon-yellow-anime icon-xlg"/>
+        </dt>
+        <dd>
           ${%yellow_anime}
-        </td></tr>
-        <tr><td>
+        </dd>
+
+        <dt>
           <l:icon class="icon-red icon-xlg"/>
+        </dt>
+        <dd>
           ${%red}
-        </td></tr>
-        <tr><td>
+        </dd>
+
+        <dt>
           <l:icon class="icon-red-anime icon-xlg"/>
+        </dt>
+        <dd>
           ${%red_anime}
-        </td></tr>
-        <tr><td>
-          <l:icon class="icon-health-80plus icon-xlg"/>
+        </dd>
+
+        <dt>
+          <l:icon class="icon-nobuilt icon-xlg"/>
+        </dt>
+        <dd>
+          ${%lightgrey}
+        </dd>
+
+        <dt>
+          <l:icon class="icon-nobuilt-anime icon-xlg"/>
+        </dt>
+        <dd>
+          ${%lightgrey_anime}
+        </dd>
+
+        <dt>
+          <l:icon class="icon-disabled icon-xlg"/>
+        </dt>
+        <dd>
+          ${%grey}
+        </dd>
+
+        <dt>
+          <l:icon class="icon-disabled-anime icon-xlg"/>
+        </dt>
+        <dd>
+          ${%grey_anime}
+        </dd>
+
+        <dt>
+          <l:icon class="icon-aborted icon-xlg"/>
+        </dt>
+        <dd>
+          ${%darkgrey}
+        </dd>
+
+        <dt>
+          <l:icon class="icon-aborted-anime icon-xlg"/>
+        </dt>
+        <dd>
+          ${%darkgrey_anime}
+        </dd>
+      </dl>
+
+      <h2>${%Project Health}</h2>
+
+      <dl class="app-icon-legend">
+        <dt>
+          <l:icon src="symbol-weather-icon-health-80plus" />
+        </dt>
+        <dd>
           ${%health-81plus}
-        </td></tr>
-        <tr><td>
-          <l:icon class="icon-health-60to79 icon-xlg"/>
+        </dd>
+
+        <dt>
+          <l:icon src="symbol-weather-icon-health-60to79" />
+        </dt>
+        <dd>
           ${%health-61to80}
-        </td></tr>
-        <tr><td>
-          <l:icon class="icon-health-40to59 icon-xlg"/>
+        </dd>
+
+        <dt>
+          <l:icon src="symbol-weather-icon-health-40to59" />
+        </dt>
+        <dd>
           ${%health-41to60}
-        </td></tr>
-        <tr><td>
-          <l:icon class="icon-health-20to39 icon-xlg"/>
+        </dd>
+
+        <dt>
+          <l:icon src="symbol-weather-icon-health-20to39" />
+        </dt>
+        <dd>
           ${%health-21to40}
-        </td></tr>
-        <tr><td>
-          <l:icon class="icon-health-00to19 icon-xlg"/>
+        </dd>
+
+        <dt>
+          <l:icon src="symbol-weather-icon-health-00to19" />
+        </dt>
+        <dd>
           ${%health-00to20}
-        </td></tr>
-      </table>
+        </dd>
+      </dl>
     </l:main-panel>
   </l:layout>
 </j:jelly>

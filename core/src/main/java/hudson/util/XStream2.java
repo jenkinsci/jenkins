@@ -83,6 +83,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
+import jenkins.util.xstream.AtomicBooleanConverter;
 import jenkins.util.xstream.SafeURLConverter;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -273,6 +274,7 @@ public class XStream2 extends XStream {
         // http://www.openwall.com/lists/oss-security/2017/04/03/4
         denyTypes(new Class[] { void.class, Void.class });
 
+        registerConverter(new AtomicBooleanConverter(), 10);
         registerConverter(new RobustCollectionConverter(getMapper(), getReflectionProvider()), 10);
         registerConverter(new RobustMapConverter(getMapper()), 10);
         registerConverter(new ImmutableMapConverter(getMapper(), getReflectionProvider()), 10);
