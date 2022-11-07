@@ -89,7 +89,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
     static final String ALLOW_ABSOLUTE_PATH_PROPERTY_NAME = DirectoryBrowserSupport.class.getName() + ".allowAbsolutePath";
 
     // Escape hatch for JENKINS-28676, set to true to disable this fix
-    private static final String DISABLE_UTF8_FILE_HEADER = DirectoryBrowserSupport.class.getName() + ".disableUTF8FileHeader";
+    private static final String DISABLE_ARTIFACT_DEFAULT_CHARSET = DirectoryBrowserSupport.class.getName() + ".disableArtifactDefaultCharset";
 
     public final ModelObject owner;
 
@@ -378,9 +378,12 @@ public final class DirectoryBrowserSupport implements HttpResponse {
         if (LOGGER.isLoggable(Level.FINE))
             LOGGER.fine("Serving " + baseFile + " with lastModified=" + lastModified + ", length=" + length);
 
-        if (System.getProperty("file.encoding").equals("UTF-8") && !SystemProperties.getBoolean(DISABLE_UTF8_FILE_HEADER, false)) {
-            // JENKINS-28676 serve unicode artifacts when "-Dfile.encoding" is "UTF-8"
-            rsp.setContentType("text/plain;charset=\"UTF-8\"");
+        if (!SystemProperties.getBoolean(DISABLE_ARTIFACT_DEFAULT_CHARSET, false)) {
+            String fileEncoding = System.getProperty("file.encoding");
+            if (fileEncoding != null) {
+                // JENKINS-28676 serve artifacts using the default encoding of the JVM
+                rsp.setContentType("text/plain;charset=\"" + fileEncoding + "\"");
+            }
         }
 
         if (view) {
