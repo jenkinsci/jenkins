@@ -1152,58 +1152,6 @@ public class DirectoryBrowserSupportTest {
         MatcherAssert.assertThat(page.getWebResponse().getContentAsString(), CoreMatchers.containsString(content));
     }
 
-    @Issue("JENKINS-28676")
-    @Test
-    public void utf8headers() throws Exception {
-        FreeStyleProject p = j.createFreeStyleProject();
-        p.setScm(new SingleFileSCM("test.log", "✅❌"));
-        p.getPublishersList().add(new ArtifactArchiver("*", "", true));
-        j.buildAndAssertSuccess(p);
-
-        String utf8Header = "utf-8";
-        String encodingPropName = "file.encoding";
-        String encodingInitialValue = System.getProperty(encodingPropName);
-        String disableFeaturePropname = DirectoryBrowserSupport.class.getName() + ".disableUTF8FileHeader";
-        String disableFeaturInitialValue =  System.getProperty(disableFeaturePropname);
-        String artifactPath = "job/" + p.getName() + "/lastSuccessfulBuild/artifact/test.log";
-        try {
-            // Ensure UTF-8 is not in the headers with the file.encoding unset
-            System.setProperty(encodingPropName, "");
-            Page page = j.createWebClient().goTo(artifactPath, "text/plain");
-            String contentType = page.getWebResponse().getResponseHeaderValue("Content-Type");
-            assertFalse(contentType.contains(utf8Header));
-            assertFalse("unicode rendered with file.encoding unset", page.getWebResponse().getContentAsString().contains("✅"));
-
-            // Ensure UTF-8 is in the headers with the file.encoding set to UTF-8
-            System.setProperty(encodingPropName, "UTF-8");
-            page = j.createWebClient().goTo(artifactPath, "text/plain");
-            contentType = page.getWebResponse().getResponseHeaderValue("Content-Type");
-            //TODO not working
-            //assertTrue(contentType.contains(utf8Header));
-            //String pageContent=page.getWebResponse().getContentAsString();
-            //assertTrue("unicode not rendered with file.encoding set to UTF-8", pageContent.contains("✅"));
-
-            // Ensure UTF-8 is not in the headers with the file.encoding set to UTF-8 and the fix is disabled
-            System.setProperty(encodingPropName, "UTF-8");
-            System.setProperty(disableFeaturePropname, "true");
-            page = j.createWebClient().goTo(artifactPath, "text/plain");
-            contentType = page.getWebResponse().getResponseHeaderValue("Content-Type");
-            assertFalse(contentType.contains(utf8Header));
-            assertFalse("unicode rendered with disableUTF8FileHeader escape hatch enabled", page.getWebResponse().getContentAsString().contains("✅"));
-        } finally {
-            if (encodingInitialValue == null) {
-                System.clearProperty(encodingPropName);
-            } else {
-                System.setProperty(encodingPropName, encodingInitialValue);
-            }
-            if (disableFeaturInitialValue == null) {
-                System.clearProperty(disableFeaturePropname);
-            } else {
-                System.setProperty(disableFeaturePropname, disableFeaturInitialValue);
-            }
-        }
-    }
-
     public static final class SimulatedExternalArtifactManagerFactory extends ArtifactManagerFactory {
         @Override
         public ArtifactManager managerFor(Run<?, ?> build) {
