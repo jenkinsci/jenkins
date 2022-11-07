@@ -13,11 +13,11 @@ function init() {
       const searchResultsContainer = createElementFromHtml(
         `<div class="jenkins-search__results-container"></div>`
       );
-      searchWrapper.append(searchResultsContainer);
+      searchWrapper.appendChild(searchResultsContainer);
       const searchResults = createElementFromHtml(
         `<div class="jenkins-search__results"></div>`
       );
-      searchResultsContainer.append(searchResults);
+      searchResultsContainer.appendChild(searchResults);
 
       searchBar.addEventListener("input", () => {
         const query = searchBar.value.toLowerCase();
@@ -32,7 +32,7 @@ function init() {
 
         function appendResults(container, results) {
           results.forEach((item, index) => {
-            container.append(
+            container.appendChild(
               createElementFromHtml(
                 `<a class="${index === 0 ? SELECTED_CLASS : ""}" href="${
                   item.url
@@ -42,7 +42,7 @@ function init() {
           });
 
           if (results.length === 0 && container === searchResults) {
-            container.append(
+            container.appendChild(
               createElementFromHtml(
                 `<p class="jenkins-search__results__no-results-label">No results</p>`
               )
