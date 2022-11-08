@@ -136,7 +136,6 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.hamcrest</groupId>
       <artifactId>hamcrest-core</artifactId>
-      <version>2.2</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -153,7 +152,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>antisamy-markup-formatter</artifactId>
-      <version>2.7</version>
+      <version>155.v795fb_8702324</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -165,7 +164,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>junit</artifactId>
-      <version>1153.v1c24f1a_d2553</version>
+      <version>1156.vcf492e95a_a_b_0</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -252,7 +251,7 @@ THE SOFTWARE.
                   <version>${remoting.minimum.supported.version}</version>
                   <type>jar</type>
                   <outputDirectory>${project.build.outputDirectory}/old-remoting</outputDirectory>
-                  <destFileName>remoting-minimal-supported.jar</destFileName>
+                  <destFileName>remoting-minimum-supported.jar</destFileName>
                 </artifactItem>
                 <artifactItem>
                   <groupId>org.jenkins-ci.main</groupId>
