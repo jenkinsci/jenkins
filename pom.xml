@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.90</version>
+    <version>1.91</version>
     <relativePath />
   </parent>
 
@@ -74,7 +74,7 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.376</revision>
+    <revision>2.377</revision>
     <changelist>-SNAPSHOT</changelist>
 
     <!-- configuration for patch tracker plugin  -->
@@ -93,9 +93,9 @@ THE SOFTWARE.
 
     <spotbugs.effort>Max</spotbugs.effort>
     <spotbugs.threshold>Medium</spotbugs.threshold>
-    <spotbugs.excludeFilterFile>${maven.multiModuleProjectDirectory}/src/spotbugs/spotbugs-excludes.xml</spotbugs.excludeFilterFile>
 
     <access-modifier.version>1.27</access-modifier.version>
+    <antlr.version>4.11.1</antlr.version>
     <bridge-method-injector.version>1.23</bridge-method-injector.version>
     <spotless.version>2.27.2</spotless.version>
     <winstone.version>6.6</winstone.version>
@@ -297,9 +297,9 @@ THE SOFTWARE.
           <version>${bridge-method-injector.version}</version>
         </plugin>
         <plugin>
-          <groupId>org.codehaus.mojo</groupId>
-          <artifactId>antlr-maven-plugin</artifactId>
-          <version>2.2</version>
+          <groupId>org.antlr</groupId>
+          <artifactId>antlr4-maven-plugin</artifactId>
+          <version>${antlr.version}</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
@@ -365,7 +365,7 @@ THE SOFTWARE.
             <dependency>
               <groupId>com.puppycrawl.tools</groupId>
               <artifactId>checkstyle</artifactId>
-              <version>10.3.4</version>
+              <version>10.4</version>
             </dependency>
           </dependencies>
           <executions>
@@ -383,6 +383,9 @@ THE SOFTWARE.
           <artifactId>spotless-maven-plugin</artifactId>
           <version>${spotless.version}</version>
           <configuration>
+            <antlr4>
+              <antlr4Formatter />
+            </antlr4>
             <java>
               <endWithNewline />
               <importOrder />
@@ -466,8 +469,6 @@ THE SOFTWARE.
                 <bannedDependencies>
                   <excludes>
                     <exclude>org.sonatype.sisu:sisu-guice</exclude>
-                    <exclude>log4j:log4j:*:jar:compile</exclude>
-                    <exclude>log4j:log4j:*:jar:runtime</exclude>
                     <exclude>commons-logging:commons-logging:*:jar:compile</exclude>
                     <exclude>commons-logging:commons-logging:*:jar:runtime</exclude>
                   </excludes>
@@ -491,21 +492,6 @@ THE SOFTWARE.
   </build>
 
   <profiles>
-    <profile>
-      <id>metrics</id>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>com.github.spotbugs</groupId>
-            <artifactId>spotbugs-maven-plugin</artifactId>
-            <!-- Version specified in parent POM -->
-            <configuration>
-              <threshold>High</threshold>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
     <profile>
       <id>debug</id>
       <activation>

@@ -182,21 +182,21 @@ public class LabelExpressionTest {
         parseAndVerify("aaa&&bbb&&ccc", "aaa&&bbb&&ccc");
     }
 
-    private void parseAndVerify(String expected, String expr) throws ANTLRException {
+    private void parseAndVerify(String expected, String expr) {
         assertEquals(expected, Label.parseExpression(expr).getName());
     }
 
     @Test
     public void parserError() {
-        parseShouldFail("foo bar", "line 1:5: unexpected token: bar");
-        parseShouldFail("foo (bar)", "line 1:5: unexpected token: (");
-        parseShouldFail("foo(bar)", "line 1:4: unexpected token: (");
-        parseShouldFail("a <- b", "line 1:5: expecting '>', found ' '");
-        parseShouldFail("a -< b", "line 1:3: unexpected token: -");
-        parseShouldFail("a - b", "line 1:3: unexpected token: -");
-        parseShouldFail("->", "line 1:1: unexpected token: ->");
-        parseShouldFail("-<", "line 1:3: expecting '-', found '<EOF>'");
-        parseShouldFail("-!", "line 1:2: unexpected token: !");
+        parseShouldFail("foo bar", "line 1:4: extraneous input 'bar' expecting <EOF>");
+        parseShouldFail("foo (bar)", "line 1:4: mismatched input '(' expecting {<EOF>, '&&', '||', '->', '<->'}");
+        parseShouldFail("foo(bar)", "line 1:3: mismatched input '(' expecting {<EOF>, '&&', '||', '->', '<->'}");
+        parseShouldFail("a <- b", "line 1:2: token recognition error at: '<- '");
+        parseShouldFail("a -< b", "line 1:3: token recognition error at: '< '");
+        parseShouldFail("a - b", "line 1:2: mismatched input '-' expecting {<EOF>, '&&', '||', '->', '<->'}");
+        parseShouldFail("->", "line 1:0: mismatched input '->' expecting {'!', '(', ATOM, STRINGLITERAL}");
+        parseShouldFail("-<", "line 1:1: token recognition error at: '<'");
+        parseShouldFail("-!", "line 1:1: extraneous input '!' expecting <EOF>");
     }
 
     @Test
@@ -349,7 +349,8 @@ public class LabelExpressionTest {
                 expr + " should fail to parse",
                 ANTLRException.class,
                 () -> Label.parseExpression(expr));
-        assertEquals(message, e.toString());
+        assertThat(e, instanceOf(IllegalArgumentException.class));
+        assertEquals(message, e.getMessage());
     }
 
     @Test
