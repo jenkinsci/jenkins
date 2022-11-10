@@ -28,7 +28,7 @@ THE SOFTWARE.
     <l:main-panel>
       <h1>
         <span class="icon-lg">
-          <l:icon src="${h.getUserAvatar(user,'48x48')}" />
+          <l:icon src="${h.getUserAvatar(it, '48x48')}" />
         </span>
         ${it.fullName}
       </h1>
