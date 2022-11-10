@@ -30,15 +30,26 @@ THE SOFTWARE.
 		<l:main-panel>
 			<j:choose>
 				<j:when test="${app.lifecycle.canRestart()}">
-					<form method="post" action="safeRestart">
+					<form method="post" action="safeRestart2">
+						<f:entry title="${%Restart Message}">
+						  <f:textbox name="message" value="${%The Jenkins Controller is restarting gently. Builds will continue.}"/>
+						</f:entry>
 						${%confirmRestart}
-						<f:submit value="${%Yes}" />
+						<br/>
+						<f:submit clazz="jenkins-!-destructive-color" value="${%Yes}" />
 					</form>
 				</j:when>
 				<j:otherwise>
 					${%Jenkins cannot restart itself as currently configured.}
 				</j:otherwise>
 			</j:choose>
+			<j:if test="${app.isQuietingDown()}">
+				<f:form method="post" action="cancelQuietDown" name="cancelRestart">
+					<f:bottomButtonBar>
+						<f:submit value="${%Cancel}" />
+					</f:bottomButtonBar>
+				</f:form>
+			</j:if>
 		</l:main-panel>
 	</l:layout>
 </j:jelly>

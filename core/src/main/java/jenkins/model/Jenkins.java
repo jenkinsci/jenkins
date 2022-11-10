@@ -280,6 +280,7 @@ import jenkins.security.stapler.StaplerDispatchable;
 import jenkins.security.stapler.StaplerFilteredActionListener;
 import jenkins.security.stapler.TypedFilter;
 import jenkins.slaves.WorkspaceLocator;
+import jenkins.util.JenkinsIsSafeRestarting;
 import jenkins.util.JenkinsJVM;
 import jenkins.util.Listeners;
 import jenkins.util.SystemProperties;
@@ -482,6 +483,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     @CheckForNull
     private transient volatile QuietDownInfo quietDownInfo;
+
     private transient volatile boolean terminating;
     @GuardedBy("Jenkins.class")
     private transient boolean cleanUpStarted;
@@ -2923,6 +2925,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         return quietDownInfo != null;
     }
 
+    public boolean isPreparingSafeRestart() {
+        return quietDownInfo.isSafeRestart();
+    }
     /**
      * Returns quiet down reason if it was indicated.
      * @return
@@ -2933,7 +2938,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     @CheckForNull
     public String getQuietDownReason() {
         final QuietDownInfo info = quietDownInfo;
-        return info != null ? info.reason : null;
+        return info != null ? info.message : null;
     }
 
     /**
@@ -4070,7 +4075,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      *
      * @param block Block until the system really quiets down and no builds are running
      * @param timeout If non-zero, only block up to the specified number of milliseconds
-     * @deprecated since 2.267; use {@link #doQuietDown(boolean, int, String)} instead.
+     * @deprecated since 2.267; use {@link #doQuietDown2(boolean, int, String, boolean)} instead.
      */
     @Deprecated
     public synchronized HttpRedirect doQuietDown(boolean block, int timeout) {
@@ -4086,16 +4091,32 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      *
      * @param block Block until the system really quiets down and no builds are running
      * @param timeout If non-zero, only block up to the specified number of milliseconds
-     * @param reason Quiet reason that will be visible to user
+     * @param message Quiet reason that will be visible to user
+     * @deprecated use {@link #doQuietDown2(boolean, int, String, boolean)} instead.
+     */
+    @Deprecated
+    public HttpRedirect doQuietDown(@QueryParameter boolean block,
+                                    @QueryParameter int timeout,
+                                    @QueryParameter @CheckForNull String message) throws InterruptedException, IOException {
+
+        return doQuietDown2(block, timeout, message, false);
+    }
+    /**
+     * Quiet down Jenkins - preparation for a restart
+     *
+     * @param block Block until the system really quiets down and no builds are running
+     * @param timeout If non-zero, only block up to the specified number of milliseconds
+     * @param message Quiet reason that will be visible to user
+     * @param safeRestart If the quietDown is for a safeRestart
      * @since 2.267
      */
     @RequirePOST
-    public HttpRedirect doQuietDown(@QueryParameter boolean block,
+    public HttpRedirect doQuietDown2(@QueryParameter boolean block,
                                     @QueryParameter int timeout,
-                                    @QueryParameter @CheckForNull String reason) throws InterruptedException, IOException {
+                                    @QueryParameter @CheckForNull String message, @QueryParameter boolean safeRestart) throws InterruptedException, IOException {
         synchronized (this) {
             checkPermission(MANAGE);
-            quietDownInfo = new QuietDownInfo(reason);
+            quietDownInfo = new QuietDownInfo(message, safeRestart);
         }
         if (block) {
             long waitUntil = timeout;
@@ -4108,7 +4129,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         }
         return new HttpRedirect(".");
     }
-
     /**
      * Cancel previous quiet down Jenkins - preparation for a restart
      */
@@ -4498,17 +4518,27 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     @CLIMethod(name = "safe-restart")
     public HttpResponse doSafeRestart(StaplerRequest req) throws IOException, ServletException, RestartNotSupportedException {
+        return doSafeRestart2(req, null);
+    }
+
+    /**
+     * Queues up a restart of Jenkins for when there are no builds running, if we can.
+     *
+     * This first replaces "app" to {@link HudsonIsRestarting}
+     *
+     * @since 1.332
+     */
+    public HttpResponse doSafeRestart2(StaplerRequest req, @QueryParameter("message") String message) throws IOException, ServletException, RestartNotSupportedException {
         checkPermission(MANAGE);
         if (req != null && req.getMethod().equals("GET"))
             return HttpResponses.forwardToView(this, "_safeRestart.jelly");
 
         if (req == null || req.getMethod().equals("POST")) {
-            safeRestart();
+            safeRestart(message);
         }
 
         return HttpResponses.redirectToDot();
     }
-
     private static Lifecycle restartableLifecycle() throws RestartNotSupportedException {
         if (Main.isUnitTest) {
             throw new RestartNotSupportedException("Restarting the controller JVM is not supported in JenkinsRule-based tests");
@@ -4548,12 +4578,20 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     /**
      * Queues up a restart to be performed once there are no builds currently running.
-     * @since 1.332
+     * @deprecated since 2.377
      */
     public void safeRestart() throws RestartNotSupportedException {
+        safeRestart(null);
+    }
+    /**
+     * Queues up a restart to be performed once there are no builds currently running.
+     * @param message the message to show to users in the shutdown banner.
+     * @since 2.377
+     */
+    public void safeRestart(String message) throws RestartNotSupportedException {
         final Lifecycle lifecycle = restartableLifecycle();
         // Quiet down so that we won't launch new builds.
-        quietDownInfo = new QuietDownInfo();
+        quietDownInfo = new QuietDownInfo(message, true);
 
         new Thread("safe-restart thread") {
             final String exitUser = getAuthentication2().getName();
@@ -4562,11 +4600,10 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 try (ACLContext ctx = ACL.as2(ACL.SYSTEM2)) {
 
                     // Wait 'til we have no active executors.
-                    doQuietDown(true, 0, null);
-
+                    doQuietDown2(true, 0, message, true);
                     // Make sure isQuietingDown is still true.
                     if (isQuietingDown()) {
-                        servletContext.setAttribute("app", new HudsonIsRestarting());
+                        servletContext.setAttribute("app", new JenkinsIsSafeRestarting());
                         // give some time for the browser to load the "reloading" page
                         lifecycle.onStatusUpdate("Restart in 10 seconds");
                         Thread.sleep(TimeUnit.SECONDS.toMillis(10));
@@ -5742,16 +5779,30 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     private static final class QuietDownInfo {
-
         @CheckForNull
-        final String reason;
+        final String message;
+
+        private boolean safeRestart;
 
         QuietDownInfo() {
-            this(null);
+            this(null, false);
         }
 
-        QuietDownInfo(final String reason) {
-            this.reason = reason;
+        QuietDownInfo(final String message) {
+            this(message, false);
+        }
+
+        QuietDownInfo(final String message, final boolean safeRestart) {
+                this.message = message;
+                this.safeRestart = safeRestart;
+        }
+
+        boolean isSafeRestart() {
+            return safeRestart;
+        }
+
+        void setSafeRestart(boolean safeRestart) {
+            this.safeRestart = safeRestart;
         }
     }
 }
