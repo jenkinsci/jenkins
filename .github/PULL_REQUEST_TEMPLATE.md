@@ -28,8 +28,8 @@ For refactoring and code cleanup changes, exercise the code before and after the
 
 ### Proposed changelog entries
 
-- Entry 1: Issue, human-readable text
-- […]
+* Issue, human-readable text
+* […]
 
 <!-- Comment:
 The changelog entry should be in the imperative mood; e.g., write "do this"/"return that" rather than "does this"/"returns that".

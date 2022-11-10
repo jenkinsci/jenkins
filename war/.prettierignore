@@ -34,3 +34,5 @@ src/main/webapp/jsbundles/
 
 # TODO not sure why this fails
 src/main/less/abstracts/theme.less
+
+../.github/PULL_REQUEST_TEMPLATE.md
