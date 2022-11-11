@@ -57,7 +57,7 @@ THE SOFTWARE.
                             ${%Your browser will reload automatically when Jenkins is ready.}
                         </p>
                         <p class="safe-restarting">
-                            <b>${%Safe Restart}</b> ${%Jobs on agents can usually continue.}
+                            <b>${%Safe Restart}:</b> ${%Jobs on agents can usually continue.}
                         </p>
                     </div>
                 </div>
