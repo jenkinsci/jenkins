@@ -42,14 +42,6 @@
   }
 
   .spin(@duration: 2s) {
-    -webkit-animation-name: spin;
-    -webkit-animation-duration: @duration;
-    -webkit-animation-iteration-count: infinite;
-    -webkit-animation-timing-function: linear;
-    -moz-animation-name: spin;
-    -moz-animation-duration: @duration;
-    -moz-animation-iteration-count: infinite;
-    -moz-animation-timing-function: linear;
     animation-name: spin;
     animation-duration: @duration;
     animation-iteration-count: infinite;
@@ -57,8 +49,6 @@
   }
 
   .no-spin() {
-    -webkit-animation-name: none;
-    -moz-animation-name: none;
     animation-name: none;
   }
 

@@ -74,7 +74,7 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.377</revision>
+    <revision>2.378</revision>
     <changelist>-SNAPSHOT</changelist>
 
     <!-- configuration for patch tracker plugin  -->
@@ -89,7 +89,7 @@ THE SOFTWARE.
     <!-- Bundled Remoting version -->
     <remoting.version>3071.v7e9b_0dc08466</remoting.version>
     <!-- Minimum Remoting version, which is tested for API compatibility -->
-    <remoting.minimum.supported.version>4.2.1</remoting.minimum.supported.version>
+    <remoting.minimum.supported.version>4.7</remoting.minimum.supported.version>
 
     <spotbugs.effort>Max</spotbugs.effort>
     <spotbugs.threshold>Medium</spotbugs.threshold>
