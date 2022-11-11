@@ -50,7 +50,7 @@ THE SOFTWARE.
                           <img src="${imagesURL}/svgs/logo.svg" alt="Jenkins logo" />
                         </div>
                         <h1 class="loading">
-                            ${%Please wait while the Jenkins Controller is restarting. Jobs on agents can continue.}
+                            ${%Please wait while the Jenkins Controller is restarting}
                             <span>.</span><span>.</span><span>.</span>
                         </h1>
                         <p class="restarting">
