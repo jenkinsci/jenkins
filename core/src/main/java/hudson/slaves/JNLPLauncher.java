@@ -211,7 +211,7 @@ public class JNLPLauncher extends ComputerLauncher {
         return workDirSettings.toCommandLineString((SlaveComputer) computer);
     }
 
-    @Extension @Symbol("jnlp")
+    @Extension @Symbol({"inbound", "jnlp"})
     public static class DescriptorImpl extends Descriptor<ComputerLauncher> {
         @SuppressFBWarnings(value = "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD", justification = "for backward compatibility")
         public DescriptorImpl() {

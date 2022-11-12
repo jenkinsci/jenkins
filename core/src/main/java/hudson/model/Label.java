@@ -26,7 +26,6 @@ package hudson.model;
 
 import static hudson.Util.fixNull;
 
-import antlr.ANTLRException;
 import com.thoughtworks.xstream.converters.Converter;
 import com.thoughtworks.xstream.converters.MarshallingContext;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
@@ -56,7 +55,6 @@ import hudson.slaves.NodeProvisioner;
 import hudson.util.QuotedStringTokenizer;
 import hudson.util.VariableResolver;
 import java.io.Serializable;
-import java.io.StringReader;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -68,6 +66,9 @@ import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithChildren;
+import jenkins.util.antlr.JenkinsANTLRErrorListener;
+import org.antlr.v4.runtime.CharStreams;
+import org.antlr.v4.runtime.CommonTokenStream;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.StaplerRequest;
@@ -610,10 +611,18 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
      * Parses the expression into a label expression tree.
      *
      * TODO: replace this with a real parser later
+     *
+     * @param labelExpression the label expression to be parsed
+     * @throws IllegalArgumentException if the label expression cannot be parsed
      */
-    public static Label parseExpression(@NonNull String labelExpression) throws ANTLRException {
-        LabelExpressionLexer lexer = new LabelExpressionLexer(new StringReader(labelExpression));
-        return new LabelExpressionParser(lexer).expr();
+    public static Label parseExpression(@NonNull String labelExpression) {
+        LabelExpressionLexer lexer = new LabelExpressionLexer(CharStreams.fromString(labelExpression));
+        lexer.removeErrorListeners();
+        lexer.addErrorListener(new JenkinsANTLRErrorListener());
+        LabelExpressionParser parser = new LabelExpressionParser(new CommonTokenStream(lexer));
+        parser.removeErrorListeners();
+        parser.addErrorListener(new JenkinsANTLRErrorListener());
+        return parser.expr().l;
     }
 
     /**
