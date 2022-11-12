@@ -132,6 +132,7 @@ var crumb = {
   appendToForm: function (form) {
     if (this.fieldName == null) return; // noop
     var div = document.createElement("div");
+    div.classList.add("jenkins-!-display-contents");
     div.innerHTML =
       "<input type=hidden name='" +
       this.fieldName +
@@ -1400,6 +1401,7 @@ function rowvgStartEachRow(recursive, f) {
     if (Element.hasClassName(form, "no-json")) return;
     // add the hidden 'json' input field, which receives the form structure in JSON
     var div = document.createElement("div");
+    div.classList.add("jenkins-!-display-contents");
     div.innerHTML = "<input type=hidden name=json value=init>";
     form.appendChild(div);
 
@@ -1504,7 +1506,7 @@ function rowvgStartEachRow(recursive, f) {
     ++p,
     function (e) {
       e.addEventListener("click", function () {
-        updateOptionalBlock(e, true);
+        updateOptionalBlock(e);
       });
     }
   );
@@ -1547,7 +1549,7 @@ function rowvgStartEachRow(recursive, f) {
       // this requires "TR.row-set-end" to mark rows
       // Get the `input` from the checkbox container
       var checkbox = e.querySelector("input[type='checkbox']");
-      updateOptionalBlock(checkbox, false);
+      updateOptionalBlock(checkbox);
     }
   );
 
@@ -1922,7 +1924,7 @@ function applyNameRefHelper(s, e, id) {
 
 // used by optionalBlock.jelly to update the form status
 //   @param c     checkbox element
-function updateOptionalBlock(c, scroll) {
+function updateOptionalBlock(c) {
   // find the start TR
   var s = $(c);
   while (!s.hasClassName("optional-block-start")) s = s.up();
@@ -1934,14 +1936,6 @@ function updateOptionalBlock(c, scroll) {
   var checked = xor(c.checked, Element.hasClassName(c, "negative"));
 
   vg.rowVisibilityGroup.makeInnerVisible(checked);
-
-  if (checked && scroll) {
-    var D = YAHOO.util.Dom;
-
-    var r = D.getRegion(s);
-    r = r.union(D.getRegion(vg.rowVisibilityGroup.end));
-    scrollIntoView(r);
-  }
 
   if (c.name == "hudson-tools-InstallSourceProperty") {
     // Hack to hide tool home when "Install automatically" is checked.
@@ -2025,39 +2019,6 @@ function AutoScroller(scrollContainer) {
       scrollDiv.scrollTop = currentHeight;
     },
   };
-}
-
-// scroll the current window to display the given element or the region.
-function scrollIntoView(e) {
-  function calcDelta(ex1, ex2, vx1, vw) {
-    var vx2 = vx1 + vw;
-    var a;
-    a = Math.min(vx1 - ex1, vx2 - ex2);
-    if (a > 0) return -a;
-    a = Math.min(ex1 - vx1, ex2 - vx2);
-    if (a > 0) return a;
-    return 0;
-  }
-
-  var D = YAHOO.util.Dom;
-
-  var r;
-  if (e.tagName != null) r = D.getRegion(e);
-  else r = e;
-
-  var dx = calcDelta(
-    r.left,
-    r.right,
-    document.body.scrollLeft,
-    D.getViewportWidth()
-  );
-  var dy = calcDelta(
-    r.top,
-    r.bottom,
-    document.body.scrollTop,
-    D.getViewportHeight()
-  );
-  window.scrollBy(dx, dy);
 }
 
 // used in expandableTextbox.jelly to change a input field into a text area
@@ -2272,7 +2233,7 @@ function ensureVisible(e) {
   }
 
   // if there are any stickers around, subtract them from the viewport
-  handleStickers("top-sticker", function (t) {
+  handleStickers("jenkins-breadcrumbs", function (t) {
     t = t.clientHeight;
     Y += t;
     H -= t;
@@ -2757,96 +2718,5 @@ var layoutUpdateCallback = {
   call: function () {
     for (var i = 0, length = this.callbacks.length; i < length; i++)
       this.callbacks[i]();
-  },
-};
-
-// Notification bar
-// ==============================
-// this control displays a single line message at the top of the page, like StackOverflow does
-// see ui-samples for more details
-var notificationBar = {
-  OPACITY: 1,
-  DELAY: 3000, // milliseconds to auto-close the notification
-  div: null, // the main 'notification-bar' DIV
-  token: null, // timer for cancelling auto-close
-  defaultIcon: "svg-sprite-action-symbol.svg#ic_info_24px",
-  defaultAlertClass: "notif-alert-default",
-
-  OK: {
-    // standard option values for typical OK notification
-    icon: "svg-sprite-action-symbol.svg#ic_check_circle_24px",
-    alertClass: "notif-alert-success",
-  },
-  WARNING: {
-    // likewise, for warning
-    icon: "svg-sprite-action-symbol.svg#ic_report_problem_24px",
-    alertClass: "notif-alert-warn",
-  },
-  ERROR: {
-    // likewise, for error
-    icon: "svg-sprite-action-symbol.svg#ic_highlight_off_24px",
-    alertClass: "notif-alert-err",
-    sticky: true,
-  },
-
-  init: function () {
-    if (this.div == null) {
-      this.div = document.createElement("div");
-      YAHOO.util.Dom.setStyle(this.div, "opacity", 0);
-      this.div.id = "notification-bar";
-      document.body.insertBefore(this.div, document.body.firstElementChild);
-      var self = this;
-      this.div.onclick = function () {
-        self.hide();
-      };
-    } else {
-      this.div.innerHTML = "";
-    }
-  },
-  // cancel pending auto-hide timeout
-  clearTimeout: function () {
-    if (this.token) window.clearTimeout(this.token);
-    this.token = null;
-  },
-  // hide the current notification bar, if it's displayed
-  hide: function () {
-    this.clearTimeout();
-    this.div.classList.remove("notif-alert-show");
-    this.div.classList.add("notif-alert-clear");
-  },
-  // show a notification bar
-  show: function (text, options) {
-    options = options || {};
-    this.init();
-    var icon = this.div.appendChild(document.createElement("div"));
-    icon.style.display = "inline-block";
-    if (options.iconColor || this.defaultIconColor) {
-      icon.style.color = options.iconColor || this.defaultIconColor;
-    }
-    var svg = icon.appendChild(
-      document.createElementNS("http://www.w3.org/2000/svg", "svg")
-    );
-    svg.setAttribute("viewBox", "0 0 24 24");
-    svg.setAttribute("focusable", "false");
-    svg.setAttribute("class", "svg-icon");
-    var use = svg.appendChild(
-      document.createElementNS("http://www.w3.org/2000/svg", "use")
-    );
-    use.setAttribute(
-      "href",
-      rootURL + "/images/material-icons/" + (options.icon || this.defaultIcon)
-    );
-    var message = this.div.appendChild(document.createElement("span"));
-    message.appendChild(document.createTextNode(text));
-
-    this.div.className = options.alertClass || this.defaultAlertClass;
-    this.div.classList.add("notif-alert-show");
-
-    this.clearTimeout();
-    var self = this;
-    if (!options.sticky)
-      this.token = window.setTimeout(function () {
-        self.hide();
-      }, this.DELAY);
   },
 };
