@@ -17,7 +17,7 @@
     "lint:js": "eslint --config .eslintrc.js ../ --ext js && prettier --check ../",
     "lint:js-ci": "eslint --config .eslintrc.js ../ --ext js -f checkstyle -o target/eslint-warnings.xml && prettier --check ../",
     "lint:css": "stylelint src/main/less",
-    "lint:css-ci": "stylelint src/main/less --custom-formatter stylelint-formatter.js -o target/stylelint-warnings.xml",
+    "lint:css-ci": "stylelint src/main/less --custom-formatter stylelint-checkstyle-reporter -o target/stylelint-warnings.xml",
     "lint:ci": "yarn lint:js-ci && yarn lint:css-ci",
     "lint:fix": "prettier --write ../ && stylelint src/main/less --fix && eslint --config .eslintrc.js --fix ../",
     "lint": "yarn lint:js && yarn lint:css"
