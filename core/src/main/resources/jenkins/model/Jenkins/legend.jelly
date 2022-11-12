@@ -28,10 +28,10 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson"
          xmlns:s="/lib/form" xmlns:f="/lib/form">
   <l:layout title="${%Icon legend}" type="one-column">
-    <l:app-bar title="${title}" />
     <f:breadcrumb-config-outline title="${%Icon legend}" />
 
     <l:main-panel>
+      <l:app-bar title="${title}" />
       <h2>${%Status}</h2>
 
       <dl class="app-icon-legend">
