@@ -61,7 +61,7 @@ THE SOFTWARE.
             <j:choose>
               <j:when test="${empty(app.pluginManager.plugins) and empty(app.pluginManager.failedPlugins)}">
                 <tr>
-                  <td class="jenkins-table__cell--mobile-only" colspan="3">
+                  <td colspan="3">
                     ${%No plugins installed.}
                   </td>
                 </tr>
@@ -69,13 +69,13 @@ THE SOFTWARE.
               <j:otherwise>
                 <j:forEach var="p" items="${app.pluginManager.plugins}">
                   <tr>
-                    <td class="jenkins-table__cell--mobile-only">
+                    <td>
                       <st:out value="${p.shortName}"/>
                     </td>
-                    <td class="jenkins-table__cell--mobile-only">
+                    <td>
                       <st:out value="${p.version}"/>
                     </td>
-                    <td class="jenkins-table__cell--mobile-only">
+                    <td>
                       ${p.enabled ? "%Yes" : "%No"}
                     </td>
                   </tr>

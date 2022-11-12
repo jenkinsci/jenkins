@@ -41,10 +41,10 @@ THE SOFTWARE.
     <tbody>
       <j:forEach var="e" items="${items}">
         <tr>
-          <td class="jenkins-table__cell--mobile-only">
+          <td>
             <st:out value="${e.key}"/>
           </td>
-          <td class="jenkins-table__cell--mobile-only" style="white-space: normal">
+          <td style="white-space: normal">
             <l:breakable value="${e.value}"/>
           </td>
         </tr>

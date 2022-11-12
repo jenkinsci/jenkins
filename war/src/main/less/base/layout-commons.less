@@ -1,5 +1,4 @@
 @import url("../abstracts/theme.less");
-@import url("../abstracts/breakpoints");
 
 html {
   position: relative;
@@ -74,7 +73,7 @@ body {
 }
 
 #main-panel {
-  padding: var(--section-padding);
+  padding: 2rem;
   display: inline-block;
   width: 100%;
 }
@@ -117,15 +116,7 @@ body.full-screen #main-panel {
   padding: 0;
 }
 
-body.two-column #side-panel {
-  width: 340px;
-}
-
-body.two-column #main-panel {
-  width: calc(100% - 370px);
-}
-
-@media (max-width: @mobile-breakpoint) {
+@media (max-width: 970px) {
   body.two-column #page-body {
     flex-wrap: wrap;
   }
@@ -139,6 +130,16 @@ body.two-column #main-panel {
   body.two-column #main-panel {
     margin-left: 0;
     width: 100%;
+  }
+}
+
+@media (min-width: 1170px) {
+  body.two-column #side-panel {
+    width: 340px;
+  }
+
+  body.two-column #main-panel {
+    width: calc(100% - 370px);
   }
 }
 
