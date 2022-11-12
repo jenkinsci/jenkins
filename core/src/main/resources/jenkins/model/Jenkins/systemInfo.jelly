@@ -75,7 +75,7 @@ THE SOFTWARE.
                 <tr>
                   <td>
                     <a href="${p.url}" target="_blank" rel="noopener noreferrer">
-                      <st:out value="${p.shortName}"/>
+                      <st:out value="${p.displayName}"/>
                     </a>
                   </td>
                   <td>
