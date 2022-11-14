@@ -86,6 +86,12 @@ function init() {
         SELECTED_CLASS
       );
 
+      // Workaround: Firefox doesn't update the dropdown height correctly so
+      // let's bind the container's height to it's child
+      new ResizeObserver(() => {
+        searchResultsContainer.style.height = searchResults.offsetHeight + "px";
+      }).observe(searchResults);
+
       searchBar.addEventListener("focusin", () => {
         if (searchBar.value.length !== 0) {
           searchResultsContainer.style.height =
