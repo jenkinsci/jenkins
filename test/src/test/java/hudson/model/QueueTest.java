@@ -1093,7 +1093,7 @@ public class QueueTest {
         t1.getBuildersList().add(new SleepBuilder(TimeUnit.SECONDS.toMillis(30)));
         t1.setConcurrentBuild(false);
 
-        t1.scheduleBuild2(0).waitForStart();
+        FreeStyleBuild build = t1.scheduleBuild2(0).waitForStart();
         t1.scheduleBuild2(0);
 
         queue.maintain();
@@ -1103,6 +1103,8 @@ public class QueueTest {
         CauseOfBlockage expected = new BlockedBecauseOfBuildInProgress(t1.getFirstBuild());
 
         assertEquals(expected.getShortDescription(), actual.getShortDescription());
+        Queue.getInstance().doCancelItem(r.jenkins.getQueue().getBlockedItems().get(0).getId());
+        r.assertBuildStatusSuccess(r.waitForCompletion(build));
     }
 
     @Test @LocalData
