@@ -35,7 +35,7 @@ public class Security2780Test {
         String jsResultString = (String) jsResult;
 
         assertThat("No unsafe HTML expected in the tooltip", jsResultString, not(containsString("<img")));
-        assertThat("Safe HTML expected in the tooltip", jsResultString, containsString("Schedule a Build for &amp;lt;img"));
+        assertThat("Safe HTML expected in the tooltip", jsResultString, containsString("Schedule a Build for &lt;img"));
         Assert.assertFalse("No alert expected", alertTriggered.get());
     }
 }
