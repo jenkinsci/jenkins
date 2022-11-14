@@ -40,7 +40,7 @@ Behaviour.specify(
             parentContainer.parentNode.nextSibling.querySelectorAll("input");
           const form = document.createElement("form");
           inputs.forEach((node) => {
-            form.append(node.cloneNode(true));
+            form.appendChild(node.cloneNode(true));
           });
           const originalFormData = new FormData(form);
 
@@ -48,7 +48,7 @@ Behaviour.specify(
             input.addEventListener("input", () => {
               const updatedForm = document.createElement("form");
               inputs.forEach((node) => {
-                updatedForm.append(node.cloneNode(true));
+                updatedForm.appendChild(node.cloneNode(true));
               });
               const formData = new FormData(updatedForm);
 
