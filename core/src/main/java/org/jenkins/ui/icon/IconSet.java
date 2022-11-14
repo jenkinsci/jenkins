@@ -130,8 +130,11 @@ public class IconSet {
         symbol = symbol.replaceAll("(tooltip=\").*?(\")", "$1$2");
         symbol = symbol.replaceAll("(data-html-tooltip=\").*?(\")", "$1$2");
         symbol = symbol.replaceAll("(id=\").*?(\")", "");
-        if (!tooltip.isEmpty()) {
+        if (!tooltip.isEmpty() && htmlTooltip.isEmpty()) {
             symbol = symbol.replaceAll("<svg", "<svg tooltip=\"" + Functions.htmlAttributeEscape(tooltip) + "\"");
+        }
+        if (!htmlTooltip.isEmpty()) {
+            symbol = symbol.replaceAll("<svg", "<svg data-html-tooltip=\"" + Functions.htmlAttributeEscape(htmlTooltip) + "\"");
         }
         if (!id.isEmpty()) {
             symbol = symbol.replaceAll("<svg", "<svg id=\"" + Functions.htmlAttributeEscape(id) + "\"");
