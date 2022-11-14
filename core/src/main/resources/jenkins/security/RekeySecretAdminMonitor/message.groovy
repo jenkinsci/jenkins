@@ -54,5 +54,5 @@ form(method: "post", action: "${rootURL}/${my.url}/scan", name:"rekey") {
     } else {
         f.submit(name: "schedule", value:_("Schedule a re-key during the next startup"))
     }
-    f.submit(name: "dismiss", value:_("Dismiss"))
+    f.submit(name: "dismiss", value:_("Dismiss"), primary: "false", clazz: "jenkins-!-destructive-color")
 }
