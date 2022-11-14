@@ -32,8 +32,17 @@ THE SOFTWARE.
   <l:main-panel>
     <l:app-bar title="${%Manage nodes and clouds}">
       <l:hasAdministerOrManage>
-        <form method="post" action="updateNow">
-          <s:submit value="${%Refresh status}"/>
+        <j:getStatic var="createPermission" className="hudson.model.Computer" field="CREATE"/>
+        <j:if test="${h.hasPermission(createPermission)}">
+          <a class="jenkins-button jenkins-button--primary" href="new">
+            <l:icon src="symbol-add" />
+            ${%New Node}
+          </a>
+        </j:if>
+        <form method="post" action="updateNow" class="jenkins-!-display-contents">
+          <button tooltip="${%Refresh status}" class="jenkins-button">
+            <l:icon src="symbol-refresh" />
+          </button>
         </form>
       </l:hasAdministerOrManage>
     </l:app-bar>
