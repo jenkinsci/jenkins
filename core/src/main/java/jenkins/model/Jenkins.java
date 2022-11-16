@@ -2927,7 +2927,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     /**
      * Returns if the quietingDown is a safe restart.
-     * @since 2.378
+     * @since TODO
      */
     public boolean isPreparingSafeRestart() {
         if (quietDownInfo == null) {
@@ -4101,7 +4101,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @param block Block until the system really quiets down and no builds are running
      * @param timeout If non-zero, only block up to the specified number of milliseconds
      * @param message Quiet reason that will be visible to user
-     * @deprecated since 2.378; use {@link #doQuietDown2(boolean, int, String, boolean)} instead.
+     * @deprecated since TODO; use {@link #doQuietDown2(boolean, int, String, boolean)} instead.
      */
     @Deprecated
     public HttpRedirect doQuietDown(@QueryParameter boolean block,
@@ -4118,7 +4118,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @param timeout If non-zero, only block up to the specified number of milliseconds
      * @param message Quiet reason that will be visible to user
      * @param safeRestart If the quietDown is for a safeRestart
-     * @since 2.378
+     * @since TODO
      */
     @RequirePOST
     public HttpRedirect doQuietDown2(@QueryParameter boolean block,
@@ -4525,7 +4525,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      *
      * This first replaces "app" to {@link HudsonIsRestarting}
      *
-     * @deprecated since 2.378; use {@link #doSafeRestart2(StaplerRequest, String)} instead.
+     * @deprecated since TODO; use {@link #doSafeRestart2(StaplerRequest, String)} instead.
      *
      */
     @Deprecated
@@ -4538,7 +4538,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      *
      * This first replaces "app" to {@link HudsonIsRestarting}
      *
-     * @since 2.378
+     * @since TODO
      */
     @CLIMethod(name = "safe-restart")
     public HttpResponse doSafeRestart2(StaplerRequest req, @QueryParameter("message") String message) throws IOException, ServletException, RestartNotSupportedException {
@@ -4592,7 +4592,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     /**
      * Queues up a restart to be performed once there are no builds currently running.
-     * @deprecated since 2.378; use {@link #safeRestart(String)} instead.
+     * @deprecated since TODO; use {@link #safeRestart(String)} instead.
      */
     @Deprecated
     public void safeRestart() throws RestartNotSupportedException {
@@ -4602,7 +4602,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * Queues up a restart to be performed once there are no builds currently running.
      * @param message the message to show to users in the shutdown banner.
-     * @since 2.378
+     * @since TODO
      */
     public void safeRestart(String message) throws RestartNotSupportedException {
         final Lifecycle lifecycle = restartableLifecycle();
