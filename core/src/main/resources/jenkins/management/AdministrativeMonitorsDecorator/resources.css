@@ -101,6 +101,9 @@
   position: relative;
   float: right;
   margin: -6px 0 0 0 !important;
+  gap: 0.5rem;
+  display: flex;
+  padding-left: 0.5rem;
 }
 
 .am-container .am-message .alert form span {

@@ -28,7 +28,7 @@ THE SOFTWARE.
     <form method="post" action="${rootURL}/${it.url}/act" name="${it.id}">
       <f:submit name="agent" value="${%Set up agent}"/>
       <f:submit name="cloud" value="${%Set up cloud}"/>
-      <f:submit name="no" value="${%Dismiss}"/>
+      <f:submit primary="false" clazz="jenkins-!-destructive-color" name="no" value="${%Dismiss}"/>
     </form>
     ${%ExecutorsWarning}
   </div>

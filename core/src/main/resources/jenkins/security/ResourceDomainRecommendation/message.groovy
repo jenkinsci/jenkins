@@ -32,7 +32,7 @@ dl {
         l.isAdmin() {
           form(method: "post", action: "${rootURL}/${my.url}/act") {
               f.submit(name: 'redirect', value: _("Configure resource root URL"))
-              f.submit(name: 'dismiss', value: _("Dismiss"))
+              f.submit(name: 'dismiss', value: _("Dismiss"), primary: "false", clazz: "jenkins-!-destructive-color")
             }
         }
 
