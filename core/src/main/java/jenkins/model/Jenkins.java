@@ -2936,6 +2936,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         return quietDownInfo.isSafeRestart();
 
     }
+
     /**
      * Returns quiet down reason if it was indicated.
      * @return
@@ -4109,6 +4110,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
         return doQuietDown2(block, timeout, message, false);
     }
+
     /**
      * Quiet down Jenkins - preparation for a restart
      *
@@ -4137,6 +4139,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         }
         return new HttpRedirect(".");
     }
+
     /**
      * Cancel previous quiet down Jenkins - preparation for a restart
      */
@@ -4525,7 +4528,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @deprecated since 2.378; use {@link #doSafeRestart2(StaplerRequest, String)} instead.
      *
      */
-    @CLIMethod(name = "safe-restart")
+    @Deprecated
     public HttpResponse doSafeRestart(StaplerRequest req) throws IOException, ServletException, RestartNotSupportedException {
         return doSafeRestart2(req, null);
     }
@@ -4537,6 +4540,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      *
      * @since 2.378
      */
+    @CLIMethod(name = "safe-restart")
     public HttpResponse doSafeRestart2(StaplerRequest req, @QueryParameter("message") String message) throws IOException, ServletException, RestartNotSupportedException {
         checkPermission(MANAGE);
         if (req != null && req.getMethod().equals("GET"))
@@ -4548,6 +4552,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
         return HttpResponses.redirectToDot();
     }
+
     private static Lifecycle restartableLifecycle() throws RestartNotSupportedException {
         if (Main.isUnitTest) {
             throw new RestartNotSupportedException("Restarting the controller JVM is not supported in JenkinsRule-based tests");
@@ -4589,9 +4594,11 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Queues up a restart to be performed once there are no builds currently running.
      * @deprecated since 2.378; use {@link #safeRestart(String)} instead.
      */
+    @Deprecated
     public void safeRestart() throws RestartNotSupportedException {
         safeRestart(null);
     }
+
     /**
      * Queues up a restart to be performed once there are no builds currently running.
      * @param message the message to show to users in the shutdown banner.
@@ -5791,6 +5798,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         @CheckForNull
         final String message;
 
+        @NonNull
         private boolean safeRestart;
 
         QuietDownInfo() {
