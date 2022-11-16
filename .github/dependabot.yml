@@ -65,3 +65,7 @@ updates:
       interval: "daily"
     # Include only security updates and exclude version updates.
     open-pull-requests-limit: 0
+  - package-ecosystem: "docker"
+    directory: "./gitpod"
+    schedule:
+      interval: "daily"

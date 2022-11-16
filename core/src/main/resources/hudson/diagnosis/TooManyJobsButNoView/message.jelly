@@ -28,7 +28,7 @@ THE SOFTWARE.
     <l:isAdmin>
       <form method="post" action="${rootURL}/${it.url}/act" name="${it.id}">
         <f:submit name="yes" value="${%Create a view now}"/>
-        <f:submit name="no" value="${%Dismiss}"/>
+        <f:submit primary="false" clazz="jenkins-!-destructive-color" name="no" value="${%Dismiss}"/>
       </form>
     </l:isAdmin>
     ${%blurb}
