@@ -227,7 +227,7 @@ public abstract class Telemetry implements ExtensionPoint {
                 try {
                     URI uri = new URI(ENDPOINT);
                     httpRequest = ProxyConfiguration.newHttpRequestBuilder(uri)
-                            .headers("Content-Type", "application/json; charset=UTF-8")
+                            .headers("Content-Type", "application/json; charset=utf-8")
                             .POST(HttpRequest.BodyPublishers.ofString(body))
                             .build();
                 } catch (IllegalArgumentException | URISyntaxException e) {
