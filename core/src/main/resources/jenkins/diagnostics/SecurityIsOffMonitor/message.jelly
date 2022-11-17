@@ -24,11 +24,11 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <div class="alert alert-warning">
+  <div class="alert alert-warning" style="display: flex; align-items: center;">
+    <span style="margin-right: 1em">${%blurb}</span>
     <form method="post" action="${rootURL}/${it.url}/act" name="${it.id}">
       <f:submit name="yes" value="${%Setup Security}"/>
       <f:submit primary="false" clazz="jenkins-!-destructive-color" name="no" value="${%Dismiss}"/>
     </form>
-    ${%blurb}
   </div>
 </j:jelly>
