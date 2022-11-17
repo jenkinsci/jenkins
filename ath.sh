@@ -28,6 +28,9 @@ eval $(vnc.sh)
 env | sort
 git clone --branch "$ATH_VERSION" --depth 1 https://github.com/jenkinsci/acceptance-test-harness
 cd acceptance-test-harness
-run.sh firefox /jenkins.war -Dmaven.test.failure.ignore -DforkCount=1 -Dgroups=org.jenkinsci.test.acceptance.junit.SmokeTest
+run.sh firefox /jenkins.war \
+  -Dmaven.test.failure.ignore \
+  -DforkCount=1 \
+  -Dgroups=org.jenkinsci.test.acceptance.junit.SmokeTest
 cp -v target/surefire-reports/TEST-*.xml /reports
 EOF
