@@ -35,11 +35,14 @@ import hudson.util.FormValidation;
 import hudson.util.PersistedList;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -47,11 +50,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import jenkins.model.Jenkins;
 import jenkins.security.UpdateSiteWarningsConfiguration;
 import jenkins.security.UpdateSiteWarningsMonitor;
+import org.apache.commons.io.FilenameUtils;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
@@ -70,12 +76,31 @@ public class UpdateSiteTest {
     private Server server;
     private URL baseUrl;
 
-    private String getResource(String resourceName) throws IOException {
+    private static String getResource(String resourceName) throws IOException {
         try {
             URL url = UpdateSiteTest.class.getResource(resourceName);
+            if (url == null) {
+                url = extract(resourceName);
+            }
             return url != null ? Files.readString(Paths.get(url.toURI()), StandardCharsets.UTF_8) : null;
         } catch (URISyntaxException e) {
             return null;
+        }
+    }
+
+    public static URL extract(String resourceName) throws IOException {
+        URL url = UpdateSiteTest.class.getResource(resourceName + ".zip");
+        if (url == null) {
+            return null;
+        }
+        try (InputStream is = url.openStream(); ZipInputStream zis = new ZipInputStream(is)) {
+            ZipEntry zipEntry = zis.getNextEntry();
+            assertEquals(resourceName, zipEntry.getName());
+            Path result = Files.createTempFile(FilenameUtils.getBaseName(resourceName), FilenameUtils.getExtension(resourceName));
+            result.toFile().deleteOnExit();
+            Files.copy(zis, result, StandardCopyOption.REPLACE_EXISTING);
+            assertNull(zis.getNextEntry());
+            return result.toUri().toURL();
         }
     }
 
