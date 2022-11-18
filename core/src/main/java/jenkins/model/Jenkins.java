@@ -2929,6 +2929,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Returns if the quietingDown is a safe restart.
      * @since TODO
      */
+    @Restricted(NoExternalUse.class)
     public boolean isPreparingSafeRestart() {
         if (quietDownInfo == null) {
             return false;
