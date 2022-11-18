@@ -76,7 +76,6 @@
     "plugins": [
       { "name": "matrix-project" },
       { "name": "ssh-slaves", "suggested": true },
-      { "name": "windows-slaves" }
     ]
   },
   {
