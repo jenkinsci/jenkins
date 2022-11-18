@@ -43,7 +43,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.xml.XmlPage;
 import hudson.ExtensionList;
 import hudson.diagnosis.OldDataMonitor;
-import hudson.slaves.DumbSlave;
+import hudson.slaves.DumbAgent;
 import hudson.slaves.OfflineCause;
 import java.io.File;
 import java.net.HttpURLConnection;
@@ -68,8 +68,8 @@ public class ComputerTest {
 
     @Test
     public void discardLogsAfterDeletion() throws Exception {
-        DumbSlave delete = j.createOnlineSlave(Jenkins.get().getLabelAtom("delete"));
-        DumbSlave keep = j.createOnlineSlave(Jenkins.get().getLabelAtom("keep"));
+        DumbAgent delete = j.createOnlineSlave(Jenkins.get().getLabelAtom("delete"));
+        DumbAgent keep = j.createOnlineSlave(Jenkins.get().getLabelAtom("keep"));
         File logFile = delete.toComputer().getLogFile();
         assertTrue(logFile.exists());
 
@@ -105,7 +105,7 @@ public class ComputerTest {
 
     @Test
     public void doNotShowUserDetailsInOfflineCause() throws Exception {
-        DumbSlave slave = j.createOnlineSlave();
+        DumbAgent slave = j.createOnlineSlave();
         final Computer computer = slave.toComputer();
         computer.setTemporarilyOffline(true, new OfflineCause.UserCause(User.getOrCreateByIdOrFullName("username"), "msg"));
         verifyOfflineCause(computer);
@@ -141,7 +141,7 @@ public class ComputerTest {
 
     @Test
     public void tiedJobs() throws Exception {
-        DumbSlave s = j.createOnlineSlave();
+        DumbAgent s = j.createOnlineSlave();
         Label l = s.getSelfLabel();
         Computer c = s.toComputer();
         FreeStyleProject p = j.createFreeStyleProject();

@@ -32,7 +32,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.fail;
 
-import hudson.slaves.DumbSlave;
+import hudson.slaves.DumbAgent;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -69,7 +69,7 @@ public class WaitNodeOnlineCommandTest {
 
     @Test
     public void waitNodeOnlineShouldSucceedOnGoingOnlineNode() throws Exception {
-        DumbSlave slave = j.createSlave("aNode", "", null);
+        DumbAgent slave = j.createSlave("aNode", "", null);
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ)
@@ -80,7 +80,7 @@ public class WaitNodeOnlineCommandTest {
 
     @Test
     public void waitNodeOnlineShouldTimeoutOnGoingOfflineNode() throws Exception {
-        DumbSlave slave = j.createSlave("aNode", "", null);
+        DumbAgent slave = j.createSlave("aNode", "", null);
         slave.toComputer().setTemporarilyOffline(true);
 
         boolean timeoutOccurred = false;
@@ -105,7 +105,7 @@ public class WaitNodeOnlineCommandTest {
 
     @Test
     public void waitNodeOnlineShouldTimeoutOnDisconnectedNode() throws Exception {
-        DumbSlave slave = j.createSlave("aNode", "", null);
+        DumbAgent slave = j.createSlave("aNode", "", null);
         slave.toComputer().disconnect();
         slave.toComputer().waitUntilOffline();
 
@@ -131,7 +131,7 @@ public class WaitNodeOnlineCommandTest {
 
     @Test
     public void waitNodeOnlineShouldTimeoutOnDisconnectingNode() throws Exception {
-        DumbSlave slave = j.createSlave("aNode", "", null);
+        DumbAgent slave = j.createSlave("aNode", "", null);
         slave.toComputer().disconnect();
 
         boolean timeoutOccurred = false;
@@ -156,7 +156,7 @@ public class WaitNodeOnlineCommandTest {
 
     @Test
     public void waitNodeOnlineShouldSuccessOnOnlineNode() throws Exception {
-        DumbSlave slave = j.createSlave("aNode", "", null);
+        DumbAgent slave = j.createSlave("aNode", "", null);
         slave.toComputer().waitUntilOnline();
         while (!slave.toComputer().isOnline()) {
             Thread.sleep(100);

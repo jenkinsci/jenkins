@@ -33,7 +33,7 @@ import hudson.Functions;
 import hudson.model.FreeStyleProject;
 import hudson.model.JDK;
 import hudson.model.labels.LabelAtom;
-import hudson.slaves.DumbSlave;
+import hudson.slaves.DumbAgent;
 import hudson.tasks.Ant.AntInstallation;
 import hudson.tasks.BatchFile;
 import hudson.tasks.Maven.MavenInstallation;
@@ -57,7 +57,7 @@ public class ToolLocationNodePropertyTest {
     @Rule
     public TemporaryFolder tmp = new TemporaryFolder();
 
-    private DumbSlave slave;
+    private DumbAgent slave;
     private FreeStyleProject project;
 
     @Test

@@ -4,7 +4,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import hudson.slaves.DumbSlave;
+import hudson.slaves.DumbAgent;
 import hudson.slaves.SlaveComputer;
 import hudson.util.ClockDifference;
 import java.util.concurrent.TimeUnit;
@@ -25,7 +25,7 @@ public class ClockMonitorDescriptorTest {
      */
     @Test
     public void testClockMonitor() throws Exception {
-        DumbSlave s = jenkins.createOnlineSlave();
+        DumbAgent s = jenkins.createOnlineSlave();
         SlaveComputer c = s.getComputer();
         if (c.isOffline())
             fail("Slave failed to go online: " + c.getLog());

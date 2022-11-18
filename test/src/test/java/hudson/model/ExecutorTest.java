@@ -11,7 +11,7 @@ import static org.junit.Assert.fail;
 
 import hudson.Launcher;
 import hudson.remoting.VirtualChannel;
-import hudson.slaves.DumbSlave;
+import hudson.slaves.DumbAgent;
 import hudson.slaves.OfflineCause;
 import hudson.tasks.Builder;
 import hudson.util.OneShotEvent;
@@ -101,7 +101,7 @@ public class ExecutorTest {
 
     @Test
     public void disconnectCause() throws Exception {
-        DumbSlave slave = j.createOnlineSlave();
+        DumbAgent slave = j.createOnlineSlave();
         FreeStyleProject p = j.createFreeStyleProject();
         p.setAssignedNode(slave);
 
@@ -124,7 +124,7 @@ public class ExecutorTest {
     @Issue("SECURITY-611")
     @Test
     public void apiPermissions() throws Exception {
-        DumbSlave slave = new DumbSlave("slave", j.jenkins.getRootDir().getAbsolutePath(), j.createComputerLauncher(null));
+        DumbAgent slave = new DumbAgent("slave", j.jenkins.getRootDir().getAbsolutePath(), j.createComputerLauncher(null));
         slave.setNumExecutors(2);
         j.jenkins.addNode(slave);
         FreeStyleProject publicProject = j.createFreeStyleProject("public-project");

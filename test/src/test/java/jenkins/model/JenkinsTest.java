@@ -65,7 +65,7 @@ import hudson.security.FullControlOnceLoggedInAuthorizationStrategy;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
 import hudson.security.HudsonPrivateSecurityRealm;
 import hudson.slaves.ComputerListener;
-import hudson.slaves.DumbSlave;
+import hudson.slaves.DumbAgent;
 import hudson.slaves.OfflineCause;
 import hudson.util.FormValidation;
 import hudson.util.HttpResponses;
@@ -476,7 +476,7 @@ public class JenkinsTest {
 
     @Test
     public void runScriptOnOfflineComputer() throws Exception {
-        DumbSlave slave = j.createSlave(true);
+        DumbAgent slave = j.createSlave(true);
         j.disconnectSlave(slave);
 
         URL url = new URL(j.getURL(), "computer/" + slave.getNodeName() + "/scriptText?script=println(42)");

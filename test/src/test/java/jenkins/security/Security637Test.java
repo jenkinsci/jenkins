@@ -39,7 +39,8 @@ import hudson.model.BuildListener;
 import hudson.model.FreeStyleProject;
 import hudson.model.JobProperty;
 import hudson.model.JobPropertyDescriptor;
-import hudson.slaves.DumbSlave;
+import hudson.slaves.DumbAgent;
+
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.URL;
@@ -63,7 +64,7 @@ public class Security637Test {
     @Issue("SECURITY-637")
     public void urlSafeDeserialization_handler_inSameJVMRemotingContext() throws Throwable {
         sessions.then(j -> {
-                DumbSlave slave = j.createOnlineSlave(null, new EnvVars("JAVA_TOOL_OPTIONS", "--add-opens=java.base/java.net=ALL-UNNAMED"));
+                DumbAgent slave = j.createOnlineSlave(null, new EnvVars("JAVA_TOOL_OPTIONS", "--add-opens=java.base/java.net=ALL-UNNAMED"));
                 String unsafeHandlerClassName = slave.getChannel().call(new URLHandlerCallable(new URL("https://www.google.com/")));
                 assertThat(unsafeHandlerClassName, containsString("SafeURLStreamHandler"));
 
@@ -106,7 +107,7 @@ public class Security637Test {
     @Issue("SECURITY-637")
     public void urlSafeDeserialization_urlBuiltInAgent_inSameJVMRemotingContext() throws Throwable {
         sessions.then(j -> {
-                DumbSlave slave = j.createOnlineSlave();
+                DumbAgent slave = j.createOnlineSlave();
 
                 // we bypass the standard equals method that resolve the hostname
                 assertThat(
@@ -136,7 +137,7 @@ public class Security637Test {
     @Issue("SECURITY-637")
     public void urlSafeDeserialization_urlBuiltInMaster_inSameJVMRemotingContext() throws Throwable {
         sessions.then(j -> {
-                DumbSlave slave = j.createOnlineSlave();
+                DumbAgent slave = j.createOnlineSlave();
 
                 // we bypass the standard equals method that resolve the hostname
                 assertThat(

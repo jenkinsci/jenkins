@@ -5,7 +5,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import hudson.node_monitors.DiskSpaceMonitorDescriptor.DiskSpace;
-import hudson.slaves.DumbSlave;
+import hudson.slaves.DumbAgent;
 import hudson.slaves.SlaveComputer;
 import org.junit.Rule;
 import org.junit.Test;
@@ -27,7 +27,7 @@ public class DiskSpaceMonitorDescriptorTest {
     @Test
     @Issue("JENKINS-3381")
     public void remoteDiskSpaceUsage() throws Exception {
-        DumbSlave s = j.createSlave();
+        DumbAgent s = j.createSlave();
         SlaveComputer c = s.getComputer();
         c.connect(false).get(); // wait until it's connected
         if (c.isOffline())

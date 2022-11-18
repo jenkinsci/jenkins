@@ -8,7 +8,7 @@ import hudson.model.Computer;
 import hudson.model.ComputerSet;
 import hudson.model.Slave;
 import hudson.model.User;
-import hudson.slaves.DumbSlave;
+import hudson.slaves.DumbAgent;
 import hudson.slaves.OfflineCause;
 import hudson.slaves.SlaveComputer;
 import org.junit.Rule;
@@ -34,7 +34,7 @@ public class ResponseTimeMonitorTest {
     @Test
     @Issue("JENKINS-20272")
     public void skipOfflineAgent() throws Exception {
-        DumbSlave s = j.createSlave();
+        DumbAgent s = j.createSlave();
         SlaveComputer c = s.getComputer();
         c.connect(false).get(); // wait until it's connected
 

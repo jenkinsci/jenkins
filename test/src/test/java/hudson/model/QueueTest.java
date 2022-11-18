@@ -83,7 +83,7 @@ import hudson.security.GlobalMatrixAuthorizationStrategy;
 import hudson.security.Permission;
 import hudson.security.ProjectMatrixAuthorizationStrategy;
 import hudson.security.SparseACL;
-import hudson.slaves.DumbSlave;
+import hudson.slaves.DumbAgent;
 import hudson.slaves.OfflineCause;
 import hudson.tasks.BatchFile;
 import hudson.tasks.BuildTrigger;
@@ -830,8 +830,8 @@ public class QueueTest {
      */
     @Test public void permissionSensitiveSlaveAllocations() throws Exception {
         r.jenkins.setNumExecutors(0); // restrict builds to those agents
-        DumbSlave s1 = r.createSlave();
-        DumbSlave s2 = r.createSlave();
+        DumbAgent s1 = r.createSlave();
+        DumbAgent s2 = r.createSlave();
 
         FreeStyleProject p = r.createFreeStyleProject();
         QueueItemAuthenticatorConfiguration.get().getAuthenticators().add(new MockQueueItemAuthenticator(Map.of(p.getFullName(), alice)));
@@ -931,7 +931,7 @@ public class QueueTest {
 
     @Test public void cancelInQueue() throws Exception {
         // parepare an offline slave.
-        DumbSlave slave = r.createOnlineSlave();
+        DumbAgent slave = r.createOnlineSlave();
         assertFalse(slave.toComputer().isOffline());
         slave.toComputer().disconnect(null).get();
         assertTrue(slave.toComputer().isOffline());

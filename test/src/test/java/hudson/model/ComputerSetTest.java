@@ -36,7 +36,8 @@ import static org.junit.Assert.assertEquals;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.cli.CLICommandInvoker;
-import hudson.slaves.DumbSlave;
+import hudson.slaves.DumbAgent;
+
 import java.net.HttpURLConnection;
 import jenkins.model.Jenkins;
 import org.junit.Rule;
@@ -74,7 +75,7 @@ public class ComputerSetTest {
 
     @Test
     public void nodeOfflineCli() throws Exception {
-        DumbSlave s = j.createSlave();
+        DumbAgent s = j.createSlave();
 
         assertThat(new CLICommandInvoker(j, "wait-node-offline").invokeWithArgs("xxx"), CLICommandInvoker.Matcher.failedWith(/* IllegalArgumentException from NodeOptionHandler */ 3));
         assertThat(new CLICommandInvoker(j, "wait-node-online").invokeWithArgs(s.getNodeName()), CLICommandInvoker.Matcher.succeededSilently());

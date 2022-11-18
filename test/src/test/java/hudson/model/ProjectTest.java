@@ -65,7 +65,7 @@ import hudson.security.AccessDeniedException3;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
 import hudson.security.HudsonPrivateSecurityRealm;
 import hudson.slaves.Cloud;
-import hudson.slaves.DumbSlave;
+import hudson.slaves.DumbAgent;
 import hudson.slaves.EnvironmentVariablesNodeProperty;
 import hudson.slaves.NodeProvisioner;
 import hudson.tasks.ArtifactArchiver;
@@ -1024,7 +1024,7 @@ public class ProjectTest {
                 Thread.sleep(time);
 
                 System.out.println("launching slave");
-                DumbSlave slave = caller.createSlave(label);
+                DumbAgent slave = caller.createSlave(label);
                 computer = slave.toComputer();
                 computer.connect(false).get();
                 synchronized (ProjectTest.DummyCloudImpl2.this) {

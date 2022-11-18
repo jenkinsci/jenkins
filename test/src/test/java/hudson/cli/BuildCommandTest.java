@@ -55,7 +55,7 @@ import hudson.model.SimpleParameterDefinition;
 import hudson.model.StringParameterDefinition;
 import hudson.model.StringParameterValue;
 import hudson.model.TopLevelItem;
-import hudson.slaves.DumbSlave;
+import hudson.slaves.DumbAgent;
 import hudson.tasks.BatchFile;
 import hudson.tasks.Shell;
 import hudson.util.OneShotEvent;
@@ -226,7 +226,7 @@ public class BuildCommandTest {
     @Issue("JENKINS-15094")
     @Test
     public void executorsAliveOnParameterWithNullDefaultValue() throws Exception {
-        DumbSlave slave = j.createSlave();
+        DumbAgent slave = j.createSlave();
         FreeStyleProject project = j.createFreeStyleProject("foo");
         project.setAssignedNode(slave);
 

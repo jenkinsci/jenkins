@@ -46,7 +46,8 @@ import com.gargoylesoftware.htmlunit.WebResponse;
 import hudson.security.ACL;
 import hudson.security.AccessDeniedException3;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
-import hudson.slaves.DumbSlave;
+import hudson.slaves.DumbAgent;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -196,7 +197,7 @@ public class ComputerConfigDotXmlTest {
         WebRequest req = new WebRequest(wc.createCrumbedUrl(String.format("%s/config.xml", computer.getUrl())), HttpMethod.POST);
         req.setAdditionalHeader("Content-Type", "application/xml");
         // to ensure maximum compatibility of payload, we'll serialize a real one with the same name
-        DumbSlave mole = new DumbSlave(name, temporaryFolder.newFolder().getPath(), rule.createComputerLauncher(null));
+        DumbAgent mole = new DumbAgent(name, temporaryFolder.newFolder().getPath(), rule.createComputerLauncher(null));
         req.setRequestBody(Jenkins.XSTREAM.toXML(mole));
         WebResponse response = wc.getPage(req).getWebResponse();
         assertThat(response.getStatusCode(), is(400));

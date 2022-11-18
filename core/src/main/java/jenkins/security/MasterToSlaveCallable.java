@@ -20,6 +20,6 @@ public abstract class MasterToSlaveCallable<V, T extends Throwable> implements C
 
     @Override
     public void checkRoles(RoleChecker checker) throws SecurityException {
-        checker.check(this, Roles.SLAVE);
+        checker.check(this, Roles.AGENT);
     }
 }

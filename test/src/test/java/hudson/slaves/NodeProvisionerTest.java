@@ -353,7 +353,7 @@ public class NodeProvisionerTest {
 
             @Override
             public Node call() throws Exception {
-                DumbSlave slave = caller.createSlave(label);
+                DumbAgent slave = caller.createSlave(label);
                 computer = slave.toComputer();
                 computer.connect(false).get();
                 return slave;

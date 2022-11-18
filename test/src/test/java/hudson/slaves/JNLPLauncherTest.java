@@ -214,7 +214,7 @@ public class JNLPLauncherTest {
     private Computer addTestAgent(ComputerLauncher launcher) throws Exception {
         List<Node> agents = new ArrayList<>(j.jenkins.getNodes());
         File dir = Util.createTempDir();
-        agents.add(new DumbSlave("test", "dummy", dir.getAbsolutePath(), "1", Mode.NORMAL, "",
+        agents.add(new DumbAgent("test", "dummy", dir.getAbsolutePath(), "1", Mode.NORMAL, "",
                 launcher, RetentionStrategy.INSTANCE, new ArrayList<>()));
         j.jenkins.setNodes(agents);
         Computer c = j.jenkins.getComputer("test");
@@ -233,7 +233,7 @@ public class JNLPLauncherTest {
 
     @Test
     public void testConfigRoundtrip() throws Exception {
-        DumbSlave s = j.createSlave();
+        DumbAgent s = j.createSlave();
         JNLPLauncher original = new JNLPLauncher("a");
         s.setLauncher(original);
         j.assertEqualDataBoundBeans(((JNLPLauncher) s.getLauncher()).getWorkDirSettings(), RemotingWorkDirSettings.getEnabledDefaults());

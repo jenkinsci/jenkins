@@ -68,7 +68,7 @@ import hudson.PluginManager;
 import hudson.PluginWrapper;
 import hudson.ProxyConfiguration;
 import hudson.RestrictedSince;
-import hudson.TcpSlaveAgentListener;
+import hudson.TcpAgentAgentListener;
 import hudson.Util;
 import hudson.WebAppMain;
 import hudson.XmlFile;
@@ -616,9 +616,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     public final transient PluginManager pluginManager;
 
-    public transient volatile TcpSlaveAgentListener tcpSlaveAgentListener;
+    public transient volatile TcpAgentAgentListener tcpAgentAgentListener;
 
-    private final transient Object tcpSlaveAgentListenerLock = new Object();
+    private final transient Object tcpAgentAgentListenerLock = new Object();
 
     /**
      * List of registered {@link SCMListener}s.
@@ -1005,7 +1005,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 System.exit(0);
             save();
 
-            launchTcpSlaveAgentListener();
+            launchTcpAgentAgentListener();
 
             Timer.get().scheduleAtFixedRate(new SafeTimerTask() {
                 @Override
@@ -1196,8 +1196,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
 
-    public TcpSlaveAgentListener getTcpSlaveAgentListener() {
-        return tcpSlaveAgentListener;
+    public TcpAgentAgentListener getTcpAgentAgentListener() {
+        return tcpAgentAgentListener;
     }
 
     /**
@@ -1235,7 +1235,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     private void forceSetSlaveAgentPort(int port) throws IOException {
         this.slaveAgentPort = port;
-        launchTcpSlaveAgentListener();
+        launchTcpAgentAgentListener();
     }
 
     /**
@@ -1316,17 +1316,17 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         agentProtocols = null;
     }
 
-    private void launchTcpSlaveAgentListener() throws IOException {
-        synchronized (tcpSlaveAgentListenerLock) {
+    private void launchTcpAgentAgentListener() throws IOException {
+        synchronized (tcpAgentAgentListenerLock) {
             // shutdown previous agent if the port has changed
-            if (tcpSlaveAgentListener != null && tcpSlaveAgentListener.configuredPort != slaveAgentPort) {
-                tcpSlaveAgentListener.shutdown();
-                tcpSlaveAgentListener = null;
+            if (tcpAgentAgentListener != null && tcpAgentAgentListener.configuredPort != slaveAgentPort) {
+                tcpAgentAgentListener.shutdown();
+                tcpAgentAgentListener = null;
             }
-            if (slaveAgentPort != -1 && tcpSlaveAgentListener == null) {
+            if (slaveAgentPort != -1 && tcpAgentAgentListener == null) {
                 final String administrativeMonitorId = getClass().getName() + ".tcpBind";
                 try {
-                    tcpSlaveAgentListener = new TcpSlaveAgentListener(slaveAgentPort);
+                    tcpAgentAgentListener = new TcpAgentAgentListener(slaveAgentPort);
                     // remove previous monitor in case of previous error
                     AdministrativeMonitor toBeRemoved = null;
                     ExtensionList<AdministrativeMonitor> all = AdministrativeMonitor.all();
@@ -3803,10 +3803,10 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     private void _cleanUpShutdownTcpSlaveAgent(List<Throwable> errors) {
-        if (tcpSlaveAgentListener != null) {
+        if (tcpAgentAgentListener != null) {
             LOGGER.log(FINE, "Shutting down TCP/IP agent listener");
             try {
-                tcpSlaveAgentListener.shutdown();
+                tcpAgentAgentListener.shutdown();
             } catch (OutOfMemoryError e) {
                 // we should just propagate this, no point trying to log
                 throw e;
@@ -5308,8 +5308,12 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         }
 
         @Override
-        @RequirePOST
         public void doLaunchSlaveAgent(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+
+        }
+
+        @RequirePOST
+        public void doLaunchAgentAgent(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
             // this computer never returns null from channel, so
             // this method shall never be invoked.
             rsp.sendError(SC_NOT_FOUND);
@@ -5665,7 +5669,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         "error", // AbstractModelObject/error.jelly
         "oops", // .jelly
         "signup", // #doSignup
-        "tcpSlaveAgentListener", // #getTcpSlaveAgentListener
+        "tcpAgentAgentListener", // #getTcpAgentAgentListener
         "federatedLoginService", // #getFederatedLoginService
         "securityRealm" // #getSecurityRealm
     ));

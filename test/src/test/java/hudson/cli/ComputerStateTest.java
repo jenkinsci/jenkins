@@ -39,7 +39,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.cli.CLICommandInvoker.Result;
 import hudson.model.Computer;
 import hudson.model.Slave;
-import hudson.slaves.DumbSlave;
+import hudson.slaves.DumbAgent;
 import hudson.slaves.OfflineCause;
 import jenkins.model.Jenkins;
 import org.junit.Rule;
@@ -126,7 +126,7 @@ public class ComputerStateTest {
 
     @Test
     public void testUiForConnected() throws Exception {
-        DumbSlave slave = j.createOnlineSlave();
+        DumbAgent slave = j.createOnlineSlave();
         Computer computer = slave.toComputer();
 
         WebClient wc = j.createWebClient();
@@ -151,7 +151,7 @@ public class ComputerStateTest {
         assertThat(info.asNormalizedText(), not(containsString("Environment Variables")));
     }
 
-    private void assertConnected(WebClient wc, DumbSlave slave) throws Exception {
+    private void assertConnected(WebClient wc, DumbAgent slave) throws Exception {
         HtmlPage main = wc.getPage(slave);
         main.getAnchorByText("Disconnect");
 

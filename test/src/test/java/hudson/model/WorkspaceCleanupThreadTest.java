@@ -32,7 +32,7 @@ import static org.junit.Assert.assertTrue;
 import hudson.FilePath;
 import hudson.remoting.VirtualChannel;
 import hudson.scm.NullSCM;
-import hudson.slaves.DumbSlave;
+import hudson.slaves.DumbAgent;
 import hudson.slaves.WorkspaceList;
 import hudson.util.StreamTaskListener;
 import java.io.File;
@@ -80,7 +80,7 @@ public class WorkspaceCleanupThreadTest {
 
         FilePath ws1 = createOldWorkspaceOn(r.jenkins, p);
 
-        DumbSlave s = r.createOnlineSlave();
+        DumbAgent s = r.createOnlineSlave();
         FilePath ws2 = createOldWorkspaceOn(s, p);
         assertEquals(s, p.getLastBuiltOn());
 
@@ -96,9 +96,9 @@ public class WorkspaceCleanupThreadTest {
         FreeStyleProject p1 = d.createProject(FreeStyleProject.class, "p");
         FilePath ws1 = createOldWorkspaceOn(r.jenkins, p1);
 
-        DumbSlave s1 = r.createOnlineSlave();
+        DumbAgent s1 = r.createOnlineSlave();
         FilePath ws2 = createOldWorkspaceOn(s1, p1);
-        DumbSlave s2 = r.createOnlineSlave();
+        DumbAgent s2 = r.createOnlineSlave();
         FilePath ws3 = createOldWorkspaceOn(s2, p1);
         assertEquals(s2, p1.getLastBuiltOn());
 

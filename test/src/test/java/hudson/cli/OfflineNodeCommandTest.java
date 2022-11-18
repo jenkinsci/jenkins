@@ -38,7 +38,7 @@ import hudson.model.Computer;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Slave;
-import hudson.slaves.DumbSlave;
+import hudson.slaves.DumbAgent;
 import hudson.slaves.OfflineCause;
 import hudson.util.OneShotEvent;
 import java.util.concurrent.Future;
@@ -93,7 +93,7 @@ public class OfflineNodeCommandTest {
 
     @Test
     public void offlineNodeShouldSucceedOnOnlineNode() throws Exception {
-        DumbSlave slave = j.createSlave("aNode", "", null);
+        DumbAgent slave = j.createSlave("aNode", "", null);
         slave.toComputer().waitUntilOnline();
         assertThat(slave.toComputer().isOnline(), equalTo(true));
         assertThat(slave.toComputer().isTemporarilyOffline(), equalTo(false));
@@ -129,7 +129,7 @@ public class OfflineNodeCommandTest {
 
     @Test
     public void offlineNodeShouldSucceedOnDisconnectedNode() throws Exception {
-        DumbSlave slave = j.createSlave("aNode", "", null);
+        DumbAgent slave = j.createSlave("aNode", "", null);
         slave.toComputer().waitUntilOnline();
         assertThat(slave.toComputer().isOnline(), equalTo(true));
         assertThat(slave.toComputer().getOfflineCause(), equalTo(null));
@@ -152,7 +152,7 @@ public class OfflineNodeCommandTest {
 
     @Test
     public void offlineNodeShouldSucceedOnOnlineNodeWithCause() throws Exception {
-        DumbSlave slave = j.createSlave("aNode", "", null);
+        DumbAgent slave = j.createSlave("aNode", "", null);
         slave.toComputer().waitUntilOnline();
         assertThat(slave.toComputer().isOnline(), equalTo(true));
         assertThat(slave.toComputer().isTemporarilyOffline(), equalTo(false));
@@ -188,7 +188,7 @@ public class OfflineNodeCommandTest {
 
     @Test
     public void offlineNodeShouldSucceedOnDisconnectedNodeWithCause() throws Exception {
-        DumbSlave slave = j.createSlave("aNode", "", null);
+        DumbAgent slave = j.createSlave("aNode", "", null);
         slave.toComputer().waitUntilOnline();
         assertThat(slave.toComputer().isOnline(), equalTo(true));
         assertThat(slave.toComputer().getOfflineCause(), equalTo(null));
@@ -212,7 +212,7 @@ public class OfflineNodeCommandTest {
     @Test
     public void offlineNodeShouldSucceedOnBuildingNode() throws Exception {
         final OneShotEvent finish = new OneShotEvent();
-        DumbSlave slave = j.createSlave("aNode", "", null);
+        DumbAgent slave = j.createSlave("aNode", "", null);
         slave.toComputer().waitUntilOnline();
         FreeStyleProject project = j.createFreeStyleProject("aProject");
         project.setAssignedNode(slave);
@@ -241,7 +241,7 @@ public class OfflineNodeCommandTest {
     @Test
     public void offlineNodeShouldSucceedOnBuildingNodeWithCause() throws Exception {
         final OneShotEvent finish = new OneShotEvent();
-        DumbSlave slave = j.createSlave("aNode", "", null);
+        DumbAgent slave = j.createSlave("aNode", "", null);
         slave.toComputer().waitUntilOnline();
         FreeStyleProject project = j.createFreeStyleProject("aProject");
         project.setAssignedNode(slave);
@@ -269,9 +269,9 @@ public class OfflineNodeCommandTest {
 
     @Test
     public void offlineNodeManyShouldSucceed() throws Exception {
-        DumbSlave slave1 = j.createSlave("aNode1", "", null);
-        DumbSlave slave2 = j.createSlave("aNode2", "", null);
-        DumbSlave slave3 = j.createSlave("aNode3", "", null);
+        DumbAgent slave1 = j.createSlave("aNode1", "", null);
+        DumbAgent slave2 = j.createSlave("aNode2", "", null);
+        DumbAgent slave3 = j.createSlave("aNode3", "", null);
         slave1.toComputer().waitUntilOnline();
         assertThat(slave1.toComputer().isOnline(), equalTo(true));
         assertThat(slave1.toComputer().getOfflineCause(), equalTo(null));
@@ -299,9 +299,9 @@ public class OfflineNodeCommandTest {
 
     @Test
     public void offlineNodeManyShouldSucceedWithCause() throws Exception {
-        DumbSlave slave1 = j.createSlave("aNode1", "", null);
-        DumbSlave slave2 = j.createSlave("aNode2", "", null);
-        DumbSlave slave3 = j.createSlave("aNode3", "", null);
+        DumbAgent slave1 = j.createSlave("aNode1", "", null);
+        DumbAgent slave2 = j.createSlave("aNode2", "", null);
+        DumbAgent slave3 = j.createSlave("aNode3", "", null);
         slave1.toComputer().waitUntilOnline();
         assertThat(slave1.toComputer().isOnline(), equalTo(true));
         assertThat(slave1.toComputer().getOfflineCause(), equalTo(null));
@@ -329,8 +329,8 @@ public class OfflineNodeCommandTest {
 
     @Test
     public void offlineNodeManyShouldFailIfANodeDoesNotExist() throws Exception {
-        DumbSlave slave1 = j.createSlave("aNode1", "", null);
-        DumbSlave slave2 = j.createSlave("aNode2", "", null);
+        DumbAgent slave1 = j.createSlave("aNode1", "", null);
+        DumbAgent slave2 = j.createSlave("aNode2", "", null);
         slave1.toComputer().waitUntilOnline();
         assertThat(slave1.toComputer().isOnline(), equalTo(true));
         assertThat(slave1.toComputer().getOfflineCause(), equalTo(null));
@@ -355,8 +355,8 @@ public class OfflineNodeCommandTest {
 
     @Test
     public void offlineNodeManyShouldFailIfANodeDoesNotExistWithCause() throws Exception {
-        DumbSlave slave1 = j.createSlave("aNode1", "", null);
-        DumbSlave slave2 = j.createSlave("aNode2", "", null);
+        DumbAgent slave1 = j.createSlave("aNode1", "", null);
+        DumbAgent slave2 = j.createSlave("aNode2", "", null);
         slave1.toComputer().waitUntilOnline();
         assertThat(slave1.toComputer().isOnline(), equalTo(true));
         assertThat(slave1.toComputer().getOfflineCause(), equalTo(null));
@@ -381,8 +381,8 @@ public class OfflineNodeCommandTest {
 
     @Test
     public void offlineNodeManyShouldSucceedEvenANodeIsSpecifiedTwice() throws Exception {
-        DumbSlave slave1 = j.createSlave("aNode1", "", null);
-        DumbSlave slave2 = j.createSlave("aNode2", "", null);
+        DumbAgent slave1 = j.createSlave("aNode1", "", null);
+        DumbAgent slave2 = j.createSlave("aNode2", "", null);
         slave1.toComputer().waitUntilOnline();
         assertThat(slave1.toComputer().isOnline(), equalTo(true));
         assertThat(slave1.toComputer().getOfflineCause(), equalTo(null));
@@ -404,8 +404,8 @@ public class OfflineNodeCommandTest {
 
     @Test
     public void offlineNodeManyShouldSucceedEvenANodeIsSpecifiedTwiceWithCause() throws Exception {
-        DumbSlave slave1 = j.createSlave("aNode1", "", null);
-        DumbSlave slave2 = j.createSlave("aNode2", "", null);
+        DumbAgent slave1 = j.createSlave("aNode1", "", null);
+        DumbAgent slave2 = j.createSlave("aNode2", "", null);
         slave1.toComputer().waitUntilOnline();
         assertThat(slave1.toComputer().isOnline(), equalTo(true));
         assertThat(slave1.toComputer().getOfflineCause(), equalTo(null));

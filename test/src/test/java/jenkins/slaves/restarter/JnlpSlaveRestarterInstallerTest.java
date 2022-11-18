@@ -27,7 +27,8 @@ package jenkins.slaves.restarter;
 import static org.junit.Assert.assertEquals;
 
 import hudson.model.Slave;
-import hudson.slaves.DumbSlave;
+import hudson.slaves.DumbAgent;
+
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import jenkins.security.MasterToSlaveCallable;
@@ -78,7 +79,7 @@ public class JnlpSlaveRestarterInstallerTest {
                 canWork.set(logging.getMessages().stream().anyMatch(msg -> msg.contains("Effective SlaveRestarter on remote: [jenkins.slaves.restarter.")));
             });
             rr.then(r -> {
-                DumbSlave s = (DumbSlave) r.jenkins.getNode("remote");
+                DumbAgent s = (DumbAgent) r.jenkins.getNode("remote");
                 r.waitOnline(s);
                 try {
                     assertEquals(canWork.get() ? 1 : 2, s.getChannel().call(new JVMCount()).intValue());

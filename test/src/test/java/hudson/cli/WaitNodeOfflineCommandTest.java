@@ -32,7 +32,8 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.fail;
 
-import hudson.slaves.DumbSlave;
+import hudson.slaves.DumbAgent;
+
 import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
@@ -70,7 +71,7 @@ public class WaitNodeOfflineCommandTest {
 
     @Test
     public void waitNodeOfflineShouldSucceedOnOfflineNode() throws Exception {
-        DumbSlave slave = j.createSlave("aNode", "", null);
+        DumbAgent slave = j.createSlave("aNode", "", null);
         slave.toComputer().setTemporarilyOffline(true);
         while (!slave.toComputer().isOffline()) {
             Thread.sleep(100);
@@ -85,7 +86,7 @@ public class WaitNodeOfflineCommandTest {
 
     @Test
     public void waitNodeOfflineShouldSucceedOnGoingOfflineNode() throws Exception {
-        DumbSlave slave = j.createSlave("aNode", "", null);
+        DumbAgent slave = j.createSlave("aNode", "", null);
         slave.toComputer().setTemporarilyOffline(true);
 
         final CLICommandInvoker.Result result = command
@@ -97,7 +98,7 @@ public class WaitNodeOfflineCommandTest {
 
     @Test
     public void waitNodeOfflineShouldSucceedOnDisconnectedNode() throws Exception {
-        DumbSlave slave = j.createSlave("aNode", "", null);
+        DumbAgent slave = j.createSlave("aNode", "", null);
         slave.toComputer().disconnect();
         while (!slave.toComputer().isOffline()) {
             Thread.sleep(100);
@@ -112,7 +113,7 @@ public class WaitNodeOfflineCommandTest {
 
     @Test
     public void waitNodeOfflineShouldSucceedOnDisconnectingNode() throws Exception {
-        DumbSlave slave = j.createSlave("aNode", "", null);
+        DumbAgent slave = j.createSlave("aNode", "", null);
         slave.toComputer().disconnect();
 
         final CLICommandInvoker.Result result = command
@@ -124,7 +125,7 @@ public class WaitNodeOfflineCommandTest {
 
     @Test
     public void waitNodeOfflineShouldTimeoutOnOnlineNode() throws Exception {
-        DumbSlave slave = j.createSlave("aNode", "", null);
+        DumbAgent slave = j.createSlave("aNode", "", null);
         slave.toComputer().waitUntilOnline();
         boolean timeoutOccurred = false;
 

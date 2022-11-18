@@ -42,7 +42,7 @@ import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Node;
 import hudson.remoting.VirtualChannel;
-import hudson.slaves.DumbSlave;
+import hudson.slaves.DumbAgent;
 import hudson.tasks.Builder;
 import hudson.util.OneShotEvent;
 import java.io.IOException;
@@ -88,7 +88,7 @@ public class OnlineNodeCommandTest {
     }
 
     @Test public void onlineNodeShouldSucceed() throws Exception {
-        DumbSlave slave = j.createSlave("aNode", "", null);
+        DumbAgent slave = j.createSlave("aNode", "", null);
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Computer.CONNECT, Jenkins.READ)
@@ -102,7 +102,7 @@ public class OnlineNodeCommandTest {
     }
 
     @Test public void onlineNodeShouldSucceedOnOnlineNode() throws Exception {
-        DumbSlave slave = j.createSlave("aNode", "", null);
+        DumbAgent slave = j.createSlave("aNode", "", null);
         if (slave.toComputer().isConnecting()) {
             System.out.println("Waiting until going online is in progress...");
             slave.toComputer().waitUntilOnline();
@@ -117,7 +117,7 @@ public class OnlineNodeCommandTest {
     }
 
     @Test public void onlineNodeShouldSucceedOnOfflineNode() throws Exception {
-        DumbSlave slave = j.createSlave("aNode", "", null);
+        DumbAgent slave = j.createSlave("aNode", "", null);
         if (slave.toComputer().isConnecting()) {
             System.out.println("Waiting until going online is in progress...");
             slave.toComputer().waitUntilOnline();
@@ -139,7 +139,7 @@ public class OnlineNodeCommandTest {
     }
 
     @Test public void onlineNodeShouldSucceedOnDisconnectedNode() throws Exception {
-        DumbSlave slave = j.createSlave("aNode", "", null);
+        DumbAgent slave = j.createSlave("aNode", "", null);
         if (slave.toComputer().isConnecting()) {
             System.out.println("Waiting until going online is in progress...");
             slave.toComputer().waitUntilOnline();
@@ -161,7 +161,7 @@ public class OnlineNodeCommandTest {
     }
 
     @Test public void onlineNodeShouldSucceedOnDisconnectingNode() throws Exception {
-        DumbSlave slave = j.createSlave("aNode", "", null);
+        DumbAgent slave = j.createSlave("aNode", "", null);
         if (slave.toComputer().isConnecting()) {
             System.out.println("Waiting until going online is in progress...");
             slave.toComputer().waitUntilOnline();
@@ -182,7 +182,7 @@ public class OnlineNodeCommandTest {
 
     @Test public void onlineNodeShouldSucceedOnBuildingOfflineNode() throws Exception {
         final OneShotEvent finish = new OneShotEvent();
-        DumbSlave slave = j.createSlave("aNode", "", null);
+        DumbAgent slave = j.createSlave("aNode", "", null);
         if (!slave.toComputer().isOnline()) {
             System.out.println("Waiting until going online is in progress...");
             slave.toComputer().waitUntilOnline();
@@ -216,9 +216,9 @@ public class OnlineNodeCommandTest {
     }
 
     @Test public void onlineNodeManyShouldSucceed() throws Exception {
-        DumbSlave slave1 = j.createSlave("aNode1", "", null);
-        DumbSlave slave2 = j.createSlave("aNode2", "", null);
-        DumbSlave slave3 = j.createSlave("aNode3", "", null);
+        DumbAgent slave1 = j.createSlave("aNode1", "", null);
+        DumbAgent slave2 = j.createSlave("aNode2", "", null);
+        DumbAgent slave3 = j.createSlave("aNode3", "", null);
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Computer.CONNECT, Jenkins.READ)
@@ -242,8 +242,8 @@ public class OnlineNodeCommandTest {
     }
 
     @Test public void onlineNodeManyShouldFailIfANodeDoesNotExist() throws Exception {
-        DumbSlave slave1 = j.createSlave("aNode1", "", null);
-        DumbSlave slave2 = j.createSlave("aNode2", "", null);
+        DumbAgent slave1 = j.createSlave("aNode1", "", null);
+        DumbAgent slave2 = j.createSlave("aNode2", "", null);
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Computer.CONNECT, Jenkins.READ)
@@ -265,8 +265,8 @@ public class OnlineNodeCommandTest {
     }
 
     @Test public void onlineNodeManyShouldSucceedEvenANodeIsSpecifiedTwice() throws Exception {
-        DumbSlave slave1 = j.createSlave("aNode1", "", null);
-        DumbSlave slave2 = j.createSlave("aNode2", "", null);
+        DumbAgent slave1 = j.createSlave("aNode1", "", null);
+        DumbAgent slave2 = j.createSlave("aNode2", "", null);
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Computer.CONNECT, Jenkins.READ)

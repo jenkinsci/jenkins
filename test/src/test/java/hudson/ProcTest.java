@@ -10,7 +10,7 @@ import hudson.Launcher.RemoteLauncher.ProcImpl;
 import hudson.model.TaskListener;
 import hudson.remoting.Pipe;
 import hudson.remoting.VirtualChannel;
-import hudson.slaves.DumbSlave;
+import hudson.slaves.DumbAgent;
 import hudson.util.IOUtils;
 import hudson.util.StreamTaskListener;
 import java.io.ByteArrayInputStream;
@@ -71,7 +71,7 @@ public class ProcTest {
     }
 
     private VirtualChannel createSlaveChannel() throws Exception {
-        DumbSlave s = j.createSlave();
+        DumbAgent s = j.createSlave();
         s.toComputer().connect(false).get();
         VirtualChannel ch = null;
         while (ch == null) {

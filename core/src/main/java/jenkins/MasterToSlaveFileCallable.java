@@ -19,7 +19,7 @@ import org.jenkinsci.remoting.RoleChecker;
 public abstract class MasterToSlaveFileCallable<T> implements FileCallable<T> {
     @Override
     public void checkRoles(RoleChecker checker) throws SecurityException {
-        checker.check(this, Roles.SLAVE);
+        checker.check(this, Roles.AGENT);
     }
 
     private static final long serialVersionUID = 1L;

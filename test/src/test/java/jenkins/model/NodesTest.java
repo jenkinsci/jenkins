@@ -41,7 +41,7 @@ import hudson.model.Failure;
 import hudson.model.Node;
 import hudson.model.Slave;
 import hudson.slaves.ComputerLauncher;
-import hudson.slaves.DumbSlave;
+import hudson.slaves.DumbAgent;
 import java.io.IOException;
 import org.junit.Rule;
 import org.junit.Test;
@@ -156,7 +156,7 @@ public class NodesTest {
     public void cannotCreateNodeWithTrailingDot_withoutOtherNode() throws Exception {
         assertThat(r.jenkins.getNodes(), hasSize(0));
 
-        DumbSlave node = new DumbSlave("nodeA.", "temp", r.createComputerLauncher(null));
+        DumbAgent node = new DumbAgent("nodeA.", "temp", r.createComputerLauncher(null));
         Failure e = assertThrows(
                 "Adding the node should have thrown an exception during checkGoodName",
                 Failure.class,
@@ -173,7 +173,7 @@ public class NodesTest {
         r.createSlave("nodeA", "", null);
         assertThat(r.jenkins.getNodes(), hasSize(1));
 
-        DumbSlave node = new DumbSlave("nodeA.", "temp", r.createComputerLauncher(null));
+        DumbAgent node = new DumbAgent("nodeA.", "temp", r.createComputerLauncher(null));
         Failure e = assertThrows(
                 "Adding the node should have thrown an exception during checkGoodName",
                 Failure.class,
@@ -192,7 +192,7 @@ public class NodesTest {
         try {
             assertThat(r.jenkins.getNodes(), hasSize(0));
 
-            DumbSlave node = new DumbSlave("nodeA.", "temp", r.createComputerLauncher(null));
+            DumbAgent node = new DumbAgent("nodeA.", "temp", r.createComputerLauncher(null));
             r.jenkins.addNode(node);
 
             assertThat(r.jenkins.getNodes(), hasSize(1));

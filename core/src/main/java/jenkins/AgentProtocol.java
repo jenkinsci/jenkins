@@ -4,14 +4,14 @@ import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
-import hudson.TcpSlaveAgentListener;
+import hudson.TcpAgentAgentListener;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.Set;
 import jenkins.model.Jenkins;
 
 /**
- * Pluggable Jenkins TCP agent protocol handler called from {@link TcpSlaveAgentListener}.
+ * Pluggable Jenkins TCP agent protocol handler called from {@link TcpAgentAgentListener}.
  *
  * <p>
  * To register your extension, put {@link Extension} annotation on your subtype.
@@ -29,7 +29,7 @@ import jenkins.model.Jenkins;
  *
  * @author Kohsuke Kawaguchi
  * @since 1.467
- * @see TcpSlaveAgentListener
+ * @see TcpAgentAgentListener
  */
 public abstract class AgentProtocol implements ExtensionPoint {
     /**
@@ -53,7 +53,7 @@ public abstract class AgentProtocol implements ExtensionPoint {
         return false;
     }
     /**
-     * Allow essential {@link AgentProtocol} implementations (basically {@link TcpSlaveAgentListener.PingAgentProtocol})
+     * Allow essential {@link AgentProtocol} implementations (basically {@link TcpAgentAgentListener.PingAgentProtocol})
      * to be always enabled.
      *
      * @return {@code true} if the protocol can never be disabled.

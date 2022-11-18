@@ -249,7 +249,7 @@ public class JNLPLauncher extends ComputerLauncher {
                     return FormValidation.error("Tunneling is not supported in WebSocket mode");
                 }
             } else {
-                if (Jenkins.get().getTcpSlaveAgentListener() == null) {
+                if (Jenkins.get().getTcpAgentAgentListener() == null) {
                     return FormValidation.error("Either WebSocket mode is selected, or the TCP port for inbound agents must be enabled");
                 }
                 if (InstanceIdentityProvider.RSA.getCertificate() == null || InstanceIdentityProvider.RSA.getPrivateKey() == null) {

@@ -301,7 +301,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * @see #relocateOldLogs()
      */
     public @NonNull File getLogFile() {
-        return new File(getLogDir(), "slave.log");
+        return new File(getLogDir(), "child.log");
     }
 
     /**
@@ -312,7 +312,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * @since 1.613
      */
     protected @NonNull File getLogDir() {
-        File dir = new File(Jenkins.get().getRootDir(), "logs/slaves/" + nodeName);
+        File dir = new File(Jenkins.get().getRootDir(), "logs/agents/" + nodeName);
         synchronized (logDirLock) {
             try {
                 IOUtils.mkdirs(dir);

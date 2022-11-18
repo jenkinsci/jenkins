@@ -31,7 +31,7 @@ import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.JDK;
 import hudson.model.Node;
-import hudson.slaves.DumbSlave;
+import hudson.slaves.DumbAgent;
 import hudson.slaves.JNLPLauncher;
 import hudson.slaves.RetentionStrategy;
 import hudson.tasks.BatchFile;
@@ -52,7 +52,7 @@ public class InstallerTranslatorTest {
 
     @Issue("JENKINS-23517")
     @Test public void offlineNodeForJDK() throws Exception {
-        Node slave = new DumbSlave("disconnected-slave", null, "/wherever", "1", Node.Mode.NORMAL, null, new JNLPLauncher(true), RetentionStrategy.NOOP, Collections.emptyList());
+        Node slave = new DumbAgent("disconnected-slave", null, "/wherever", "1", Node.Mode.NORMAL, null, new JNLPLauncher(true), RetentionStrategy.NOOP, Collections.emptyList());
         String globalDefaultLocation = "/usr/lib/jdk";
         JDK jdk = new JDK("my-jdk", globalDefaultLocation, List.of(new InstallSourceProperty(List.of(new CommandInstaller(null, "irrelevant", "/opt/jdk")))));
         r.jenkins.getJDKs().add(jdk);

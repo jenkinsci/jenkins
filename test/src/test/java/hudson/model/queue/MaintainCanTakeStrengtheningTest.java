@@ -8,7 +8,7 @@ import hudson.model.FreeStyleProject;
 import hudson.model.Label;
 import hudson.model.Node;
 import hudson.model.Queue;
-import hudson.slaves.DumbSlave;
+import hudson.slaves.DumbAgent;
 import hudson.slaves.NodeProperty;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -37,7 +37,7 @@ public class MaintainCanTakeStrengtheningTest {
     @Test
     public void testExceptionOnNodeProperty() throws Exception {
         // A node throwing the exception because of the canTake method of the attached FaultyNodeProperty
-        DumbSlave faultyAgent = r.createOnlineSlave(Label.get("faulty"));
+        DumbAgent faultyAgent = r.createOnlineSlave(Label.get("faulty"));
         faultyAgent.getNodeProperties().add(new FaultyNodeProperty());
 
         // A good agent

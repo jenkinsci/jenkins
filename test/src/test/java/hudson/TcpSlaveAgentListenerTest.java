@@ -37,7 +37,7 @@ public class TcpSlaveAgentListenerTest {
     @Test
     public void diagnostics() throws Exception {
         r.getInstance().setSlaveAgentPort(0);
-        int p = r.jenkins.getTcpSlaveAgentListener().getPort();
+        int p = r.jenkins.getTcpAgentAgentListener().getPort();
         WebClient wc = r.createWebClient();
 
         TextPage text = wc.getPage(new URL("http://localhost:" + p + "/"));

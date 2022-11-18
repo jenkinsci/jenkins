@@ -45,7 +45,8 @@ import hudson.model.Run;
 import hudson.model.RunMap;
 import hudson.model.TopLevelItem;
 import hudson.model.TopLevelItemDescriptor;
-import hudson.slaves.DumbSlave;
+import hudson.slaves.DumbAgent;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Optional;
@@ -81,7 +82,7 @@ public class BuildTimeTrendTest {
     @Test
     public void withAbstractJob_OnAgentNode() throws Exception {
         assumeFalse("TODO: Windows container agents do not have enough resources to run this test", Functions.isWindows() && System.getenv("CI") != null);
-        DumbSlave agent = j.createSlave();
+        DumbAgent agent = j.createSlave();
         FreeStyleProject p = j.createFreeStyleProject();
         p.setAssignedNode(agent);
 
@@ -101,7 +102,7 @@ public class BuildTimeTrendTest {
     @Test
     public void withAbstractJob_OnBoth() throws Exception {
         assumeFalse("TODO: Windows container agents do not have enough resources to run this test", Functions.isWindows() && System.getenv("CI") != null);
-        DumbSlave agent = j.createSlave();
+        DumbAgent agent = j.createSlave();
         FreeStyleProject p = j.createFreeStyleProject();
 
         p.setAssignedNode(j.jenkins);

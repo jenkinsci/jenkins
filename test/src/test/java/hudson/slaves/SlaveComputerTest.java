@@ -63,7 +63,7 @@ public class SlaveComputerTest {
 
     @Test
     public void testAgentLogs() throws Exception {
-        DumbSlave node = j.createOnlineSlave();
+        DumbAgent node = j.createOnlineSlave();
         String log = node.getComputer().getLog();
         Assert.assertTrue(log.contains("Remoting version: " + Launcher.VERSION));
         Assert.assertTrue(log.contains("Launcher: " + SimpleCommandLauncher.class.getSimpleName()));
@@ -74,7 +74,7 @@ public class SlaveComputerTest {
     @Test
     public void testGetAbsoluteRemotePath() throws Exception {
         //default auth
-        DumbSlave nodeA = j.createOnlineSlave();
+        DumbAgent nodeA = j.createOnlineSlave();
         String path = nodeA.getComputer().getAbsoluteRemotePath();
         Assert.assertNotNull(path);
         Assert.assertEquals(getRemoteFS(nodeA, null), path);
@@ -105,7 +105,7 @@ public class SlaveComputerTest {
     @Test
     @Issue("JENKINS-57111")
     public void startupShouldNotFailOnExceptionOnlineListener() throws Exception {
-        DumbSlave nodeA = j.createOnlineSlave();
+        DumbAgent nodeA = j.createOnlineSlave();
         assertThat(nodeA.getComputer(), instanceOf(SlaveComputer.class));
 
         int retries = 10;
@@ -161,7 +161,7 @@ public class SlaveComputerTest {
     @Issue("JENKINS-57111")
     public void startupShouldFailOnErrorOnlineListener() throws Exception {
         assumeFalse("TODO: Windows container agents do not have enough resources to run this test", Functions.isWindows() && System.getenv("CI") != null);
-        DumbSlave nodeA = j.createSlave();
+        DumbAgent nodeA = j.createSlave();
         assertThat(nodeA.getComputer(), instanceOf(SlaveComputer.class));
         int retries = 10;
         while (ErrorOnOnlineListener.onOnlineCount == 0 && retries > 0) {

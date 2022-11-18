@@ -52,7 +52,7 @@ import hudson.security.GlobalMatrixAuthorizationStrategy;
 import hudson.security.HudsonPrivateSecurityRealm;
 import hudson.security.Permission;
 import hudson.slaves.ComputerListener;
-import hudson.slaves.DumbSlave;
+import hudson.slaves.DumbAgent;
 import hudson.slaves.NodeProperty;
 import hudson.slaves.OfflineCause;
 import hudson.util.TagCloud;
@@ -267,7 +267,7 @@ public class NodeTest {
     public void testGetChannel() throws Exception {
         Slave agent = j.createOnlineSlave();
         Node nodeOffline = j.createSlave();
-        Node node = new DumbSlave("agent2", "description", agent.getRemoteFS(), "1", Mode.NORMAL, "", agent.getLauncher(), agent.getRetentionStrategy(), agent.getNodeProperties());
+        Node node = new DumbAgent("agent2", "description", agent.getRemoteFS(), "1", Mode.NORMAL, "", agent.getLauncher(), agent.getRetentionStrategy(), agent.getNodeProperties());
         assertNull("Channel of node should be null because node has not assigned computer.", node.getChannel());
         assertNull("Channel of node should be null because assigned computer is offline.", nodeOffline.getChannel());
         assertNotNull("Channel of node should not be null.", agent.getChannel());
@@ -276,7 +276,7 @@ public class NodeTest {
     @Test
     public void testToComputer() throws Exception {
         Slave agent = j.createOnlineSlave();
-        Node node = new DumbSlave("agent2", "description", agent.getRemoteFS(), "1", Mode.NORMAL, "", agent.getLauncher(), agent.getRetentionStrategy(), agent.getNodeProperties());
+        Node node = new DumbAgent("agent2", "description", agent.getRemoteFS(), "1", Mode.NORMAL, "", agent.getLauncher(), agent.getRetentionStrategy(), agent.getNodeProperties());
         assertNull("Agent which is not added into Jenkins list nodes should not have assigned computer.", node.toComputer());
         assertNotNull("Agent which is added into Jenkins list nodes should have assigned computer.", agent.toComputer());
     }

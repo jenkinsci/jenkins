@@ -4,7 +4,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertThrows;
 
-import hudson.slaves.DumbSlave;
+import hudson.slaves.DumbAgent;
+
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.logging.Level;
@@ -47,7 +48,7 @@ public class Security218Test implements Serializable {
      */
     @Test
     public void jnlpSlave() throws Exception {
-        DumbSlave a = (DumbSlave) inboundAgents.createAgent(j, InboundAgentRule.Options.newBuilder().secret().build());
+        DumbAgent a = (DumbAgent) inboundAgents.createAgent(j, InboundAgentRule.Options.newBuilder().secret().build());
         j.waitOnline(a);
         try {
             j.createWebClient().goTo("computer/" + a.getNodeName() + "/jenkins-agent.jnlp?encrypt=true", "application/octet-stream");
@@ -62,7 +63,7 @@ public class Security218Test implements Serializable {
      * returns a malicious response.
      */
     @SuppressWarnings("ConstantConditions")
-    private void check(DumbSlave s) {
+    private void check(DumbAgent s) {
         IOException e = assertThrows(
                 "Expected the connection to die",
                 IOException.class,

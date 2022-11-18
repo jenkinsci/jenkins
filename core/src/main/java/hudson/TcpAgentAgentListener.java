@@ -66,7 +66,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  * Listens to incoming TCP connections, for example from agents.
  *
  * <p>
- * Aside from the HTTP endpoint, Jenkins runs {@link TcpSlaveAgentListener} that listens on a TCP socket.
+ * Aside from the HTTP endpoint, Jenkins runs {@link TcpAgentAgentListener} that listens on a TCP socket.
  * Historically  this was used for inbound connection from agents (hence the name), but over time
  * it was extended and made generic, so that multiple protocols of different purposes can co-exist on the
  * same socket.
@@ -79,7 +79,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  * @see AgentProtocol
  */
 @StaplerAccessibleType
-public final class TcpSlaveAgentListener extends Thread {
+public final class TcpAgentAgentListener extends Thread {
 
     private final ServerSocketChannel serverSocket;
     private volatile boolean shuttingDown;
@@ -90,7 +90,7 @@ public final class TcpSlaveAgentListener extends Thread {
      * @param port
      *      Use 0 to choose a random port.
      */
-    public TcpSlaveAgentListener(int port) throws IOException {
+    public TcpAgentAgentListener(int port) throws IOException {
         super("TCP agent listener port=" + port);
         try {
             serverSocket = ServerSocketChannel.open();
@@ -100,9 +100,9 @@ public final class TcpSlaveAgentListener extends Thread {
         }
         this.configuredPort = port;
         setUncaughtExceptionHandler((t, e) -> {
-            LOGGER.log(Level.SEVERE, "Uncaught exception in TcpSlaveAgentListener " + t + ", attempting to reschedule thread", e);
+            LOGGER.log(Level.SEVERE, "Uncaught exception in TcpAgentAgentListener " + t + ", attempting to reschedule thread", e);
             shutdown();
-            TcpSlaveAgentListenerRescheduler.schedule(t, e);
+            TcpAgentAgentListenerRescheduler.schedule(t, e);
         });
 
         LOGGER.log(Level.FINE, "TCP agent listener started on port {0}", getPort());
@@ -136,7 +136,7 @@ public final class TcpSlaveAgentListener extends Thread {
         try {
             return new URL(Jenkins.get().getRootUrl()).getHost();
         } catch (MalformedURLException e) {
-            throw new IllegalStateException("Could not get TcpSlaveAgentListener host name", e);
+            throw new IllegalStateException("Could not get TcpAgentAgentListener host name", e);
         }
     }
 
@@ -189,7 +189,7 @@ public final class TcpSlaveAgentListener extends Thread {
                     public void run(Throwable cause) {
                         LOGGER.log(Level.WARNING, "Connection handler failed, restarting listener", cause);
                         shutdown();
-                        TcpSlaveAgentListenerRescheduler.schedule(getParentThread(), cause);
+                        TcpAgentAgentListenerRescheduler.schedule(getParentThread(), cause);
                     }
                 }).start();
             }
@@ -241,7 +241,7 @@ public final class TcpSlaveAgentListener extends Thread {
             }
             setName("TCP agent connection handler #" + id + " with " + s.getRemoteSocketAddress());
             setUncaughtExceptionHandler((t, e) -> {
-                LOGGER.log(Level.SEVERE, "Uncaught exception in TcpSlaveAgentListener ConnectionHandler " + t, e);
+                LOGGER.log(Level.SEVERE, "Uncaught exception in TcpAgentAgentListener ConnectionHandler " + t, e);
                 try {
                     s.close();
                     parentTerminator.run(e);
@@ -367,7 +367,7 @@ public final class TcpSlaveAgentListener extends Thread {
     }
 
     /**
-     * This extension provides a Ping protocol that allows people to verify that the {@link TcpSlaveAgentListener} is alive.
+     * This extension provides a Ping protocol that allows people to verify that the {@link TcpAgentAgentListener} is alive.
      * We also use this to wake the acceptor thread on termination.
      *
      * @since 1.653
@@ -437,21 +437,21 @@ public final class TcpSlaveAgentListener extends Thread {
     }
 
     /**
-     * Reschedules the {@code TcpSlaveAgentListener} on demand.  Disables itself after running.
+     * Reschedules the {@code TcpAgentAgentListener} on demand.  Disables itself after running.
      */
     @Extension
     @Restricted(NoExternalUse.class)
-    public static class TcpSlaveAgentListenerRescheduler extends AperiodicWork {
+    public static class TcpAgentAgentListenerRescheduler extends AperiodicWork {
         private Thread originThread;
         private Throwable cause;
         private long recurrencePeriod = 5000;
         private boolean isActive;
 
-        public TcpSlaveAgentListenerRescheduler() {
+        public TcpAgentAgentListenerRescheduler() {
             isActive = false;
         }
 
-        public TcpSlaveAgentListenerRescheduler(Thread originThread, Throwable cause) {
+        public TcpAgentAgentListenerRescheduler(Thread originThread, Throwable cause) {
             this.originThread = originThread;
             this.cause = cause;
             this.isActive = false;
@@ -476,7 +476,7 @@ public final class TcpSlaveAgentListener extends Thread {
 
         @Override
         public AperiodicWork getNewInstance() {
-            return new TcpSlaveAgentListenerRescheduler(originThread, cause);
+            return new TcpAgentAgentListenerRescheduler(originThread, cause);
         }
 
         @Override
@@ -488,14 +488,14 @@ public final class TcpSlaveAgentListener extends Thread {
                     }
                     int port = Jenkins.get().getSlaveAgentPort();
                     if (port != -1) {
-                        new TcpSlaveAgentListener(port).start();
-                        LOGGER.log(Level.INFO, "Restarted TcpSlaveAgentListener");
+                        new TcpAgentAgentListener(port).start();
+                        LOGGER.log(Level.INFO, "Restarted TcpAgentAgentListener");
                     } else {
-                        LOGGER.log(Level.SEVERE, "Uncaught exception in TcpSlaveAgentListener " + originThread + ". Port is disabled, not rescheduling", cause);
+                        LOGGER.log(Level.SEVERE, "Uncaught exception in TcpAgentAgentListener " + originThread + ". Port is disabled, not rescheduling", cause);
                     }
                     isActive = false;
                 } catch (IOException e) {
-                    LOGGER.log(Level.SEVERE, "Could not reschedule TcpSlaveAgentListener - trying again.", cause);
+                    LOGGER.log(Level.SEVERE, "Could not reschedule TcpAgentAgentListener - trying again.", cause);
                 }
             }
         }
@@ -505,7 +505,7 @@ public final class TcpSlaveAgentListener extends Thread {
         }
 
         public static void schedule(Thread originThread, Throwable cause, long approxDelay) {
-            TcpSlaveAgentListenerRescheduler rescheduler = AperiodicWork.all().get(TcpSlaveAgentListenerRescheduler.class);
+            TcpAgentAgentListenerRescheduler rescheduler = AperiodicWork.all().get(TcpAgentAgentListenerRescheduler.class);
             rescheduler.originThread = originThread;
             rescheduler.cause = cause;
             rescheduler.recurrencePeriod = approxDelay;
@@ -526,7 +526,7 @@ public final class TcpSlaveAgentListener extends Thread {
 
     private static int iotaGen = 1;
 
-    private static final Logger LOGGER = Logger.getLogger(TcpSlaveAgentListener.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(TcpAgentAgentListener.class.getName());
 
     /**
      * Host name that we advertise protocol clients to connect to.
@@ -537,7 +537,7 @@ public final class TcpSlaveAgentListener extends Thread {
      */
     @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
     @Restricted(NoExternalUse.class)
-    public static String CLI_HOST_NAME = SystemProperties.getString(TcpSlaveAgentListener.class.getName() + ".hostName");
+    public static String CLI_HOST_NAME = SystemProperties.getString(TcpAgentAgentListener.class.getName() + ".hostName");
 
     /**
      * Port number that we advertise protocol clients to connect to.
@@ -551,5 +551,5 @@ public final class TcpSlaveAgentListener extends Thread {
      */
     @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
     @Restricted(NoExternalUse.class)
-    public static Integer CLI_PORT = SystemProperties.getInteger(TcpSlaveAgentListener.class.getName() + ".port");
+    public static Integer CLI_PORT = SystemProperties.getInteger(TcpAgentAgentListener.class.getName() + ".port");
 }

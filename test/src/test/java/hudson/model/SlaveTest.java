@@ -43,12 +43,8 @@ import hudson.DescriptorExtensionList;
 import hudson.ExtensionList;
 import hudson.security.ProjectMatrixAuthorizationStrategy;
 import hudson.security.csrf.CrumbIssuer;
-import hudson.slaves.ComputerLauncher;
-import hudson.slaves.DumbSlave;
-import hudson.slaves.JNLPLauncher;
-import hudson.slaves.NodeProperty;
-import hudson.slaves.NodePropertyDescriptor;
-import hudson.slaves.RetentionStrategy;
+import hudson.slaves.*;
+import hudson.slaves.DumbAgent;
 import hudson.util.FormValidation;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -75,7 +71,7 @@ public class SlaveTest {
     @Test
     public void formValidation() throws Exception {
         j.executeOnServer(() -> {
-            assertNotNull(j.jenkins.getDescriptor(DumbSlave.class).getCheckUrl("remoteFS"));
+            assertNotNull(j.jenkins.getDescriptor(DumbAgent.class).getCheckUrl("remoteFS"));
             return null;
         });
     }
@@ -85,7 +81,7 @@ public class SlaveTest {
      */
     @Test
     public void slaveConfigDotXml() throws Exception {
-        DumbSlave s = j.createSlave();
+        DumbAgent s = j.createSlave();
         JenkinsRule.WebClient wc = j.createWebClient();
         Page p = wc.goTo("computer/" + s.getNodeName() + "/config.xml", "application/xml");
         String xml = p.getWebResponse().getContentAsString();
@@ -100,7 +96,7 @@ public class SlaveTest {
         xml = xml.replace("NAME", s.getNodeName());
         post("computer/" + s.getNodeName() + "/config.xml", xml);
 
-        s = (DumbSlave) j.jenkins.getNode(s.getNodeName());
+        s = (DumbAgent) j.jenkins.getNode(s.getNodeName());
         assertNotNull(s);
         assertEquals("some text", s.getNodeDescription());
         assertEquals(JNLPLauncher.class, s.getLauncher().getClass());
@@ -119,7 +115,7 @@ public class SlaveTest {
 
     @Test
     public void remoteFsCheck() throws Exception {
-        DumbSlave.DescriptorImpl d = j.jenkins.getDescriptorByType(DumbSlave.DescriptorImpl.class);
+        DumbAgent.DescriptorImpl d = j.jenkins.getDescriptorByType(DumbAgent.DescriptorImpl.class);
         assertEquals(FormValidation.ok(), d.doCheckRemoteFS("c:\\"));
         assertEquals(FormValidation.ok(), d.doCheckRemoteFS("/tmp"));
         assertEquals(FormValidation.Kind.WARNING, d.doCheckRemoteFS("relative/path").kind);
@@ -178,8 +174,8 @@ public class SlaveTest {
     @Test
     @Issue("JENKINS-36280")
     public void launcherFiltering() {
-        DumbSlave.DescriptorImpl descriptor =
-                j.getInstance().getDescriptorByType(DumbSlave.DescriptorImpl.class);
+        DumbAgent.DescriptorImpl descriptor =
+                j.getInstance().getDescriptorByType(DumbAgent.DescriptorImpl.class);
         DescriptorExtensionList<ComputerLauncher, Descriptor<ComputerLauncher>> descriptors =
                 j.getInstance().getDescriptorList(ComputerLauncher.class);
         assumeThat("we need at least two launchers to test this", descriptors.size(), not(anyOf(is(0), is(1))));
@@ -196,8 +192,8 @@ public class SlaveTest {
     @Test
     @Issue("JENKINS-36280")
     public void retentionFiltering() {
-        DumbSlave.DescriptorImpl descriptor =
-                j.getInstance().getDescriptorByType(DumbSlave.DescriptorImpl.class);
+        DumbAgent.DescriptorImpl descriptor =
+                j.getInstance().getDescriptorByType(DumbAgent.DescriptorImpl.class);
         DescriptorExtensionList<RetentionStrategy<?>, Descriptor<RetentionStrategy<?>>> descriptors = RetentionStrategy.all();
         assumeThat("we need at least two retention strategies to test this", descriptors.size(), not(anyOf(is(0), is(1))));
         assertThat(descriptor.retentionStrategyDescriptors(null), containsInAnyOrder(descriptors.toArray(new Descriptor[descriptors.size()])));
@@ -214,8 +210,8 @@ public class SlaveTest {
     @Issue("JENKINS-36280")
     public void propertyFiltering() {
         j.jenkins.setAuthorizationStrategy(new ProjectMatrixAuthorizationStrategy()); // otherwise node descriptor is not available
-        DumbSlave.DescriptorImpl descriptor =
-                j.getInstance().getDescriptorByType(DumbSlave.DescriptorImpl.class);
+        DumbAgent.DescriptorImpl descriptor =
+                j.getInstance().getDescriptorByType(DumbAgent.DescriptorImpl.class);
         DescriptorExtensionList<NodeProperty<?>, NodePropertyDescriptor> descriptors = NodeProperty.all();
         assumeThat("we need at least two node properties to test this", descriptors.size(), not(anyOf(is(0), is(1))));
         assertThat(descriptor.nodePropertyDescriptors(null), containsInAnyOrder(descriptors.toArray(new Descriptor[descriptors.size()])));

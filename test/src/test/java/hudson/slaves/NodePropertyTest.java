@@ -35,12 +35,12 @@ public class NodePropertyTest {
     @Test
     public void invisibleProperty() throws Exception {
         logs.record(Descriptor.class, Level.ALL);
-        DumbSlave s = j.createSlave();
+        DumbAgent s = j.createSlave();
         InvisibleProperty before = new InvisibleProperty();
         s.getNodeProperties().add(before);
         assertFalse(before.reconfigured);
 
-        DumbSlave s2 = j.configRoundtrip(s);
+        DumbAgent s2 = j.configRoundtrip(s);
         assertNotSame(s, s2);
         InvisibleProperty after = s2.getNodeProperties().get(InvisibleProperty.class);
 
@@ -63,7 +63,7 @@ public class NodePropertyTest {
 
     @Test
     public void basicConfigRoundtrip() throws Exception {
-        DumbSlave s = j.createSlave();
+        DumbAgent s = j.createSlave();
         HtmlForm f = j.createWebClient().goTo("computer/" + s.getNodeName() + "/configure").getFormByName("config");
         ((HtmlLabel) DomNodeUtil.selectSingleNode(f, ".//LABEL[text()='PropertyImpl']")).click();
         j.submit(f);

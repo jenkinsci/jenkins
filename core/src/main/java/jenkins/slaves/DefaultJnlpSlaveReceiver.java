@@ -5,7 +5,7 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.Functions;
-import hudson.TcpSlaveAgentListener.ConnectionFromCurrentPeer;
+import hudson.TcpAgentAgentListener.ConnectionFromCurrentPeer;
 import hudson.model.Computer;
 import hudson.model.Slave;
 import hudson.remoting.Channel;

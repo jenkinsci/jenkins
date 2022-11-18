@@ -152,10 +152,10 @@ public class LogRecorderManagerTest {
         assertEquals(show(recs), 6, recs.size());
         // Would of course prefer to get "msg #5 1.0 2.0 'OK?'" but all attempts to fix this have ended in disaster (JENKINS-63458):
         assertEquals("msg #5 {0,number,0.0} {1,number,0.0} ''OK?''", new SimpleFormatter().formatMessage(recs.get(1)));
-        recs = r1.getSlaveLogRecords().get(c);
+        recs = r1.getAgentLogRecords().get(c);
         assertNotNull(recs);
         assertEquals(show(recs), 3, recs.size());
-        recs = r2.getSlaveLogRecords().get(c);
+        recs = r2.getAgentLogRecords().get(c);
         assertNotNull(recs);
         assertEquals(show(recs), 1, recs.size());
         String text = j.createWebClient().goTo("log/r1/").asNormalizedText();

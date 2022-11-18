@@ -67,7 +67,7 @@ import hudson.model.Node.Mode;
 import hudson.model.Queue.Task;
 import hudson.security.ACL;
 import hudson.security.AccessDeniedException3;
-import hudson.slaves.DumbSlave;
+import hudson.slaves.DumbAgent;
 import hudson.util.FormValidation;
 import hudson.util.HudsonIsLoading;
 import hudson.views.ViewsTabBar;
@@ -411,7 +411,7 @@ public class ViewTest {
         ListView view = listView("aView");
         view.filterExecutors = true;
 
-        DumbSlave dedicatedSlave = j.createOnlineSlave();
+        DumbAgent dedicatedSlave = j.createOnlineSlave();
         dedicatedSlave.setMode(Mode.EXCLUSIVE);
         view.add(j.createFreeStyleProject());
 
@@ -419,7 +419,7 @@ public class ViewTest {
         tiedJob.setAssignedNode(dedicatedSlave);
         view.add(tiedJob);
 
-        DumbSlave notIncludedSlave = j.createOnlineSlave();
+        DumbAgent notIncludedSlave = j.createOnlineSlave();
         notIncludedSlave.setMode(Mode.EXCLUSIVE);
 
         assertContainsNodes(view, j.jenkins, dedicatedSlave);

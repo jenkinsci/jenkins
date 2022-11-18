@@ -62,7 +62,7 @@ public class PingThreadTest {
     public void failedPingThreadResetsComputerChannel() throws Exception {
         assumeFalse("We simulate hung agent by sending the SIGSTOP signal", Functions.isWindows() || Platform.isDarwin());
 
-        DumbSlave slave = j.createOnlineSlave();
+        DumbAgent slave = j.createOnlineSlave();
         Computer computer = slave.toComputer();
         Channel channel = (Channel) slave.getChannel();
         long pid = channel.call(new GetPid());

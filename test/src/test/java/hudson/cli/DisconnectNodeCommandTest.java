@@ -34,7 +34,7 @@ import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.not;
 
 import hudson.model.Computer;
-import hudson.slaves.DumbSlave;
+import hudson.slaves.DumbAgent;
 import hudson.slaves.OfflineCause;
 import jenkins.model.Jenkins;
 import org.junit.Before;
@@ -83,7 +83,7 @@ public class DisconnectNodeCommandTest {
 
     @Test
     public void disconnectNodeShouldSucceed() throws Exception {
-        DumbSlave slave = j.createSlave("aNode", "", null);
+        DumbAgent slave = j.createSlave("aNode", "", null);
         slave.toComputer().waitUntilOnline();
         assertThat(slave.toComputer().isOnline(), equalTo(true));
         assertThat(slave.toComputer().getOfflineCause(), equalTo(null));
@@ -120,7 +120,7 @@ public class DisconnectNodeCommandTest {
 
     @Test
     public void disconnectNodeShouldSucceedWithCause() throws Exception {
-        DumbSlave slave = j.createSlave("aNode", "", null);
+        DumbAgent slave = j.createSlave("aNode", "", null);
         slave.toComputer().waitUntilOnline();
         assertThat(slave.toComputer().isOnline(), equalTo(true));
         assertThat(slave.toComputer().getOfflineCause(), equalTo(null));
@@ -157,9 +157,9 @@ public class DisconnectNodeCommandTest {
 
     @Test
     public void disconnectNodeManyShouldSucceed() throws Exception {
-        DumbSlave slave1 = j.createSlave("aNode1", "", null);
-        DumbSlave slave2 = j.createSlave("aNode2", "", null);
-        DumbSlave slave3 = j.createSlave("aNode3", "", null);
+        DumbAgent slave1 = j.createSlave("aNode1", "", null);
+        DumbAgent slave2 = j.createSlave("aNode2", "", null);
+        DumbAgent slave3 = j.createSlave("aNode3", "", null);
         slave1.toComputer().waitUntilOnline();
         assertThat(slave1.toComputer().isOnline(), equalTo(true));
         assertThat(slave1.toComputer().getOfflineCause(), equalTo(null));
@@ -187,9 +187,9 @@ public class DisconnectNodeCommandTest {
 
     @Test
     public void disconnectNodeManyShouldSucceedWithCause() throws Exception {
-        DumbSlave slave1 = j.createSlave("aNode1", "", null);
-        DumbSlave slave2 = j.createSlave("aNode2", "", null);
-        DumbSlave slave3 = j.createSlave("aNode3", "", null);
+        DumbAgent slave1 = j.createSlave("aNode1", "", null);
+        DumbAgent slave2 = j.createSlave("aNode2", "", null);
+        DumbAgent slave3 = j.createSlave("aNode3", "", null);
         slave1.toComputer().waitUntilOnline();
         assertThat(slave1.toComputer().isOnline(), equalTo(true));
         assertThat(slave1.toComputer().getOfflineCause(), equalTo(null));
@@ -217,8 +217,8 @@ public class DisconnectNodeCommandTest {
 
     @Test
     public void disconnectNodeManyShouldFailIfANodeDoesNotExist() throws Exception {
-        DumbSlave slave1 = j.createSlave("aNode1", "", null);
-        DumbSlave slave2 = j.createSlave("aNode2", "", null);
+        DumbAgent slave1 = j.createSlave("aNode1", "", null);
+        DumbAgent slave2 = j.createSlave("aNode2", "", null);
         slave1.toComputer().waitUntilOnline();
         assertThat(slave1.toComputer().isOnline(), equalTo(true));
         assertThat(slave1.toComputer().getOfflineCause(), equalTo(null));
@@ -243,8 +243,8 @@ public class DisconnectNodeCommandTest {
 
     @Test
     public void disconnectNodeManyShouldSucceedEvenANodeIsSpecifiedTwice() throws Exception {
-        DumbSlave slave1 = j.createSlave("aNode1", "", null);
-        DumbSlave slave2 = j.createSlave("aNode2", "", null);
+        DumbAgent slave1 = j.createSlave("aNode1", "", null);
+        DumbAgent slave2 = j.createSlave("aNode2", "", null);
         slave1.toComputer().waitUntilOnline();
         assertThat(slave1.toComputer().isOnline(), equalTo(true));
         assertThat(slave1.toComputer().getOfflineCause(), equalTo(null));
