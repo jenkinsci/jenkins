@@ -147,6 +147,7 @@ public class Jetty10Provider implements Provider {
             @Override
             public void onWebSocketClose(int statusCode, String reason) {
                 listener.onWebSocketClose(statusCode, reason);
+                sessions.remove(listener);
             }
 
             @Override
@@ -158,6 +159,7 @@ public class Jetty10Provider implements Provider {
             @Override
             public void onWebSocketError(Throwable cause) {
                 listener.onWebSocketError(cause);
+                sessions.remove(listener);
             }
         };
     }
