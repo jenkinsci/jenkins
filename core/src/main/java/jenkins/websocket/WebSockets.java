@@ -68,7 +68,7 @@ public class WebSockets {
         return (req, rsp, node) -> {
             try {
                 session.handler = provider.handle(req, rsp, new Provider.Listener() {
-                    Object providerSession;
+                    private Object providerSession;
 
                     @Override
                     public void onWebSocketConnect(Object providerSession) {
