@@ -91,7 +91,8 @@ function init() {
       // Disabled in HtmlUnit
       if (!window.isRunAsTest) {
         new ResizeObserver(() => {
-          searchResultsContainer.style.height = searchResults.offsetHeight + "px";
+          searchResultsContainer.style.height =
+            searchResults.offsetHeight + "px";
         }).observe(searchResults);
       }
 
