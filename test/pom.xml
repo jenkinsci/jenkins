@@ -93,8 +93,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <!-- TODO https://github.com/jenkinsci/jenkins-test-harness/pull/514 -->
-      <version>1900.v39ef96e28d8c</version>
+      <version>1894.v471a_047124ce</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
