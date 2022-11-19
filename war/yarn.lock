@@ -2680,7 +2680,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cosmiconfig@npm:^7.0.0, cosmiconfig@npm:^7.0.1":
+"cosmiconfig@npm:^7.0.0":
   version: 7.0.1
   resolution: "cosmiconfig@npm:7.0.1"
   dependencies:
@@ -2690,6 +2690,19 @@ __metadata:
     path-type: ^4.0.0
     yaml: ^1.10.0
   checksum: 4be63e7117955fd88333d7460e4c466a90f556df6ef34efd59034d2463484e339666c41f02b523d574a797ec61f4a91918c5b89a316db2ea2f834e0d2d09465b
+  languageName: node
+  linkType: hard
+
+"cosmiconfig@npm:^7.1.0":
+  version: 7.1.0
+  resolution: "cosmiconfig@npm:7.1.0"
+  dependencies:
+    "@types/parse-json": ^4.0.0
+    import-fresh: ^3.2.1
+    parse-json: ^5.0.0
+    path-type: ^4.0.0
+    yaml: ^1.10.0
+  checksum: c53bf7befc1591b2651a22414a5e786cd5f2eeaa87f3678a3d49d6069835a9d8d1aef223728e98aa8fec9a95bf831120d245096db12abe019fecb51f5696c96f
   languageName: node
   linkType: hard
 
@@ -2720,21 +2733,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"css-loader@npm:6.7.1":
-  version: 6.7.1
-  resolution: "css-loader@npm:6.7.1"
+"css-loader@npm:6.7.2":
+  version: 6.7.2
+  resolution: "css-loader@npm:6.7.2"
   dependencies:
     icss-utils: ^5.1.0
-    postcss: ^8.4.7
+    postcss: ^8.4.18
     postcss-modules-extract-imports: ^3.0.0
     postcss-modules-local-by-default: ^4.0.0
     postcss-modules-scope: ^3.0.0
     postcss-modules-values: ^4.0.0
     postcss-value-parser: ^4.2.0
-    semver: ^7.3.5
+    semver: ^7.3.8
   peerDependencies:
     webpack: ^5.0.0
-  checksum: 170fdbc630a05a43679ef60fa97694766b568dbde37adccc0faafa964fc675f08b976bc68837bb73b61d60240e8d2cbcbf51540fe94ebc9dafc56e7c46ba5527
+  checksum: f3c980cc9c033a02e60df7e5a2f33a1e8c2c3dd552f017485d2d81b383be623ae8c4189404e7a4a7403b52744683ae4b516def0f7ccf125c2b198cb647e46543
   languageName: node
   linkType: hard
 
@@ -4064,7 +4077,7 @@ __metadata:
     bootstrap: 3.4.1
     clean-webpack-plugin: 4.0.0
     copy-webpack-plugin: 11.0.0
-    css-loader: 6.7.1
+    css-loader: 6.7.2
     css-minimizer-webpack-plugin: 4.2.2
     eslint: 8.27.0
     eslint-config-prettier: 8.5.0
@@ -4077,13 +4090,13 @@ __metadata:
     less-loader: 11.1.0
     lodash: 4.17.21
     mini-css-extract-plugin: 2.6.1
-    postcss: 8.4.18
+    postcss: 8.4.19
     postcss-less: 6.0.0
     postcss-loader: 7.0.1
     prettier: 2.7.1
     sortablejs: 1.15.0
     style-loader: 3.3.1
-    stylelint: 14.14.1
+    stylelint: 14.15.0
     stylelint-checkstyle-reporter: 0.2.0
     stylelint-config-standard: 29.0.0
     webpack: 5.75.0
@@ -5482,7 +5495,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"postcss@npm:8.4.18, postcss@npm:^8.4.17, postcss@npm:^8.4.18, postcss@npm:^8.4.7":
+"postcss@npm:8.4.19, postcss@npm:^8.4.18, postcss@npm:^8.4.19":
+  version: 8.4.19
+  resolution: "postcss@npm:8.4.19"
+  dependencies:
+    nanoid: ^3.3.4
+    picocolors: ^1.0.0
+    source-map-js: ^1.0.2
+  checksum: 62782723a385f92b7525f66d29614624de7c5643855423db3a5efd9287e677650300192749adddbbb6734cea9b1d5f5fd4f6ea00ca3f9a95dbbb88f835f5ca64
+  languageName: node
+  linkType: hard
+
+"postcss@npm:^8.4.17":
   version: 8.4.18
   resolution: "postcss@npm:8.4.18"
   dependencies:
@@ -5877,6 +5901,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"semver@npm:^7.3.8":
+  version: 7.3.8
+  resolution: "semver@npm:7.3.8"
+  dependencies:
+    lru-cache: ^6.0.0
+  bin:
+    semver: bin/semver.js
+  checksum: ba9c7cbbf2b7884696523450a61fee1a09930d888b7a8d7579025ad93d459b2d1949ee5bbfeb188b2be5f4ac163544c5e98491ad6152df34154feebc2cc337c1
+  languageName: node
+  linkType: hard
+
 "serialize-javascript@npm:^6.0.0":
   version: 6.0.0
   resolution: "serialize-javascript@npm:6.0.0"
@@ -6175,14 +6210,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"stylelint@npm:14.14.1":
-  version: 14.14.1
-  resolution: "stylelint@npm:14.14.1"
+"stylelint@npm:14.15.0":
+  version: 14.15.0
+  resolution: "stylelint@npm:14.15.0"
   dependencies:
     "@csstools/selector-specificity": ^2.0.2
     balanced-match: ^2.0.0
     colord: ^2.9.3
-    cosmiconfig: ^7.0.1
+    cosmiconfig: ^7.1.0
     css-functions-list: ^3.1.0
     debug: ^4.3.4
     fast-glob: ^3.2.12
@@ -6202,7 +6237,7 @@ __metadata:
     micromatch: ^4.0.5
     normalize-path: ^3.0.0
     picocolors: ^1.0.0
-    postcss: ^8.4.18
+    postcss: ^8.4.19
     postcss-media-query-parser: ^0.2.3
     postcss-resolve-nested-selector: ^0.1.1
     postcss-safe-parser: ^6.0.0
@@ -6219,7 +6254,7 @@ __metadata:
     write-file-atomic: ^4.0.2
   bin:
     stylelint: bin/stylelint.js
-  checksum: be35a419e181ccf31410091d3a92766ffd17c71e8b6dda481343e2c589cbde96be539472783477f7f2907802bd9d79cc8322c3d22fb62c0fbd42fefd4ba66435
+  checksum: a3b4593a35a2303987305ca5147ea31e92a47e1994d393be8d1a07a6dc8720b9eee1fed62aafaca618cd8f06e0b3ca601af4fa6618967f1f359ea36ade4c2550
   languageName: node
   linkType: hard
 

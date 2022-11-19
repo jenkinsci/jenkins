@@ -27,9 +27,8 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <l:layout permission="${app.ADMINISTER}" title="${%Thread dump}">
-    <st:include page="sidepanel.jelly" />
-
+  <l:layout permission="${app.ADMINISTER}" title="${%Thread dump}" type="one-column">
+    <f:breadcrumb-config-outline title="${%Thread dump}" />
     <l:main-panel>
       <h1>${%Thread Dump}</h1>
       <j:set var="tdumps" value="${it.getAllThreadDumps()}"/>
@@ -50,7 +49,10 @@ THE SOFTWARE.
           </h1>
         </j:if>
         <j:forEach var="t" items="${e.value.entrySet()}">
-          <h2>${t.key}</h2>
+          <h2>
+            ${t.key}
+            <l:copyButton message="${%successfullyCopied}" tooltip="${%clickToCopy}" text="${t.value}"/>
+          </h2>
           <pre>${t.value}</pre>
         </j:forEach>
       </j:forEach>
