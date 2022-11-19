@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "plugins": [{ "name": "typescript-plugin-css-modules" }],
+    "incremental": true,
+    "outDir": "src/main/webapp/js",
+    "target": "es2019",
+    "module": "es2015",
+    "moduleResolution": "node",
+    "lib": ["es2019", "dom"],
+    "declaration": true,
+    "declarationMap": true,
+    "experimentalDecorators": true,
+    "useDefineForClassFields": false,
+    "baseUrl": ".",
+    "esModuleInterop": true,
+    "paths": {
+        "@components/*": ["./src/main/tsc/components/*"],
+      },
+  },
+  "include": ["src/main/ts/**/*.ts"],
+}
