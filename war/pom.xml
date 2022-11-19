@@ -173,6 +173,7 @@ THE SOFTWARE.
                 <enforceBytecodeVersion>
                   <maxJdkVersion>1.8</maxJdkVersion>
                   <excludes>
+                    <exclude>com.infradna.tool:bridge-method-annotation</exclude>
                     <exclude>org.antlr:antlr4</exclude>
                     <exclude>org.jenkins-ci:commons-jelly</exclude>
                     <exclude>org.jenkins-ci:task-reactor</exclude>
@@ -330,14 +331,14 @@ THE SOFTWARE.
                   <!-- dependency of command-launcher, junit, matrix-project, and workflow-support -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>script-security</artifactId>
-                  <version>1189.vb_a_b_7c8fd5fde</version>
+                  <version>1190.v65867a_a_47126</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <!-- detached after 1.577 -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>junit</artifactId>
-                  <version>1156.vcf492e95a_a_b_0</version>
+                  <version>1160.vf1f01a_a_ea_b_7f</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
