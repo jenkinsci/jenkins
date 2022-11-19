@@ -132,6 +132,7 @@ var crumb = {
   appendToForm: function (form) {
     if (this.fieldName == null) return; // noop
     var div = document.createElement("div");
+    div.classList.add("jenkins-!-display-contents");
     div.innerHTML =
       "<input type=hidden name='" +
       this.fieldName +
@@ -1400,6 +1401,7 @@ function rowvgStartEachRow(recursive, f) {
     if (Element.hasClassName(form, "no-json")) return;
     // add the hidden 'json' input field, which receives the form structure in JSON
     var div = document.createElement("div");
+    div.classList.add("jenkins-!-display-contents");
     div.innerHTML = "<input type=hidden name=json value=init>";
     form.appendChild(div);
 
