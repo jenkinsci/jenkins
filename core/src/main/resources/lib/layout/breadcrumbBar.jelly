@@ -37,36 +37,36 @@ THE SOFTWARE.
 
   <st:adjunct includes="lib.layout.breadcrumbs" />
 
-  <div class="top-sticker noedge">
-    <div class="top-sticker-inner">
-      <div class="jenkins-breadcrumbs">
-        <ul id="breadcrumbs">
-          <j:forEach var="anc" items="${request.ancestors}">
-            <j:if test="${h.isModel(anc.object) and anc.prev.url!=anc.url}">
-              <j:set var="mode" value="breadcrumbs" />
-              <l:breadcrumb title="${anc.object == app ? '%Dashboard' : anc.object.displayName}"
-                            href="${anc.url}/"
-                            hasMenu="${h.isModelWithContextMenu(anc.object)}" />
-              <j:choose>
-                <j:when test="${h.isModelWithChildren(anc.object)}">
-                  <li class="children" href="${anc.url}/">
-                    <!-- shows '>' for rendering children -->
-                  </li>
-                </j:when>
-                <j:otherwise>
-                  <li class="separator">
-                  </li>
-                </j:otherwise>
-              </j:choose>
-            </j:if>
-          </j:forEach>
+  <j:set var="contents" trim="true">
+    <d:invokeBody />
+  </j:set>
 
-          <!-- render additional breadcrumb items -->
-          <d:invokeBody />
-        </ul>
+  <div id="breadcrumbBar" class="jenkins-breadcrumbs" aria-label="breadcrumb">
+    <ol class="jenkins-breadcrumbs__list" id="breadcrumbs">
+      <j:forEach var="anc" items="${request.ancestors}" indexVar="index">
+        <j:if test="${h.isModel(anc.object) and anc.prev.url!=anc.url}">
+          <j:set var="mode" value="breadcrumbs" />
+          <l:breadcrumb title="${anc.object == app ? '%Dashboard' : anc.object.displayName}"
+                        href="${contents.length() == 0 and (index == request.ancestors.size() - 1) ? null : anc.url + '/'}"
+                        hasMenu="${h.isModelWithContextMenu(anc.object)}" />
+          <j:choose>
+            <j:when test="${h.isModelWithChildren(anc.object)}">
+              <li class="children" href="${anc.url}/">
+                <!-- shows '>' for rendering children -->
+              </li>
+            </j:when>
+            <j:otherwise>
+              <li class="separator">
+              </li>
+            </j:otherwise>
+          </j:choose>
+        </j:if>
+      </j:forEach>
 
-        <div id="breadcrumb-menu-target"/><!-- this is where the menu gets rendered -->
-      </div>
-    </div>
+      <!-- render additional breadcrumb items -->
+      <j:out value="${contents}" />
+    </ol>
   </div>
+
+  <div id="breadcrumb-menu-target"/><!-- this is where the menu gets rendered -->
 </j:jelly>

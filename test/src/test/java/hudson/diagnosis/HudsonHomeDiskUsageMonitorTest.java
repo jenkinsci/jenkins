@@ -19,7 +19,6 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.List;
 import jenkins.model.Jenkins;
-import jenkins.security.apitoken.ApiTokenTestHelper;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -56,8 +55,6 @@ public class HudsonHomeDiskUsageMonitorTest {
     @Issue("SECURITY-371")
     @Test
     public void noAccessForNonAdmin() throws Exception {
-        ApiTokenTestHelper.enableLegacyBehavior();
-
         JenkinsRule.WebClient wc = j.createWebClient()
                 .withThrowExceptionOnFailingStatusCode(false);
 

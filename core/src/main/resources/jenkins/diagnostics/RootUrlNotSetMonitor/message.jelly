@@ -26,7 +26,7 @@ THE SOFTWARE.
   <div class="alert alert-warning">
     <l:isAdmin>
       <form method="post" action="${rootURL}/${it.url}/disable">
-        <f:submit value="${%Dismiss}"/>
+        <f:submit primary="false" clazz="jenkins-!-destructive-color" value="${%Dismiss}"/>
       </form>
     </l:isAdmin>
     <j:set var="actionAnchor">

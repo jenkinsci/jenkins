@@ -73,7 +73,6 @@ import java.util.regex.Pattern;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.Jenkins;
 import jenkins.model.TransientActionFactory;
-import jenkins.security.apitoken.ApiTokenTestHelper;
 import jenkins.tasks.SimpleBuildStep;
 import org.junit.Rule;
 import org.junit.Test;
@@ -126,8 +125,6 @@ public class PasswordTest {
     @Issue({"SECURITY-266", "SECURITY-304"})
     @Test
     public void testExposedCiphertext() throws Exception {
-        ApiTokenTestHelper.enableLegacyBehavior();
-
         boolean saveEnabled = Item.EXTENDED_READ.getEnabled();
         Item.EXTENDED_READ.setEnabled(true);
         try {
