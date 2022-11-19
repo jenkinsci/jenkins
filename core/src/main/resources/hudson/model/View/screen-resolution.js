@@ -7,7 +7,7 @@
     "x" +
     screen.height +
     "; path=/" +
-    "; SameSite=Strict";
+    "; SameSite=Lax";
   if (secureCookie) {
     cookie += `; secure`;
   }
