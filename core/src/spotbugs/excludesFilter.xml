@@ -353,45 +353,6 @@
         <Bug pattern="THROWS_METHOD_THROWS_CLAUSE_BASIC_EXCEPTION"/>
         <Or>
           <Class name="hudson.ClassicPluginStrategy"/>
-          <Class name="hudson.cli.AbstractBuildRangeCommand"/>
-          <Class name="hudson.cli.AddJobToViewCommand"/>
-          <Class name="hudson.cli.BuildCommand"/>
-          <Class name="hudson.cli.CancelQuietDownCommand"/>
-          <Class name="hudson.cli.ClearQueueCommand"/>
-          <Class name="hudson.cli.CLI"/>
-          <Class name="hudson.cli.CLICommand"/>
-          <Class name="hudson.cli.ConnectNodeCommand"/>
-          <Class name="hudson.cli.ConsoleCommand"/>
-          <Class name="hudson.cli.CopyJobCommand"/>
-          <Class name="hudson.cli.CreateJobCommand"/>
-          <Class name="hudson.cli.CreateNodeCommand"/>
-          <Class name="hudson.cli.CreateViewCommand"/>
-          <Class name="hudson.cli.declarative.MethodBinder"/>
-          <Class name="hudson.cli.DeleteJobCommand"/>
-          <Class name="hudson.cli.DeleteNodeCommand"/>
-          <Class name="hudson.cli.DeleteViewCommand"/>
-          <Class name="hudson.cli.DisablePluginCommand"/>
-          <Class name="hudson.cli.DisconnectNodeCommand"/>
-          <Class name="hudson.cli.EnablePluginCommand"/>
-          <Class name="hudson.cli.GetJobCommand"/>
-          <Class name="hudson.cli.GetViewCommand"/>
-          <Class name="hudson.cli.GroovyCommand"/>
-          <Class name="hudson.cli.HelpCommand"/>
-          <Class name="hudson.cli.InstallPluginCommand"/>
-          <Class name="hudson.cli.ListJobsCommand"/>
-          <Class name="hudson.cli.OfflineNodeCommand"/>
-          <Class name="hudson.cli.OnlineNodeCommand"/>
-          <Class name="hudson.cli.QuietDownCommand"/>
-          <Class name="hudson.cli.ReloadConfigurationCommand"/>
-          <Class name="hudson.cli.ReloadJobCommand"/>
-          <Class name="hudson.cli.RemoveJobFromViewCommand"/>
-          <Class name="hudson.cli.RunRangeCommand"/>
-          <Class name="hudson.cli.SetBuildDescriptionCommand"/>
-          <Class name="hudson.cli.SetBuildDisplayNameCommand"/>
-          <Class name="hudson.cli.UpdateJobCommand"/>
-          <Class name="hudson.cli.UpdateViewCommand"/>
-          <Class name="hudson.cli.WaitNodeOfflineCommand"/>
-          <Class name="hudson.cli.WaitNodeOnlineCommand"/>
           <Class name="hudson.Functions"/>
           <Class name="hudson.logging.LogRecorderManager"/>
           <Class name="hudson.Main"/>
@@ -417,7 +378,6 @@
           <Class name="hudson.util.Retrier"/>
           <Class name="jenkins.agents.WebSocketAgents$Session"/>
           <Class name="jenkins.ClassLoaderReflectionToolkit"/>
-          <Class name="jenkins.cli.StopBuildsCommand"/>
           <Class name="jenkins.management.AsynchronousAdministrativeMonitor"/>
           <Class name="jenkins.model.ModelObjectWithChildren"/>
           <Class name="jenkins.model.ModelObjectWithContextMenu"/>
@@ -504,10 +464,6 @@
       <And>
         <Bug pattern="THROWS_METHOD_THROWS_RUNTIMEEXCEPTION"/>
         <Or>
-          <Class name="hudson.cli.CLICommand"/>
-          <Class name="hudson.cli.GroovyshCommand"/>
-          <Class name="hudson.cli.ListChangesCommand"/>
-          <Class name="hudson.cli.ReloadConfigurationCommand"/>
           <Class name="hudson.ExtensionFinder$GuiceFinder$SezpozModule"/>
           <Class name="hudson.lifecycle.Lifecycle"/>
           <Class name="hudson.model.queue.Executables"/>
