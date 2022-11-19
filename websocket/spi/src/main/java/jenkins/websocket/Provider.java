@@ -47,7 +47,7 @@ interface Provider {
 
     interface Listener {
 
-        void onWebSocketConnect(Object poviderSession);
+        void onWebSocketConnect(Object providerSession);
 
         Object getProviderSession();
 
