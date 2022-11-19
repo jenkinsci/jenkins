@@ -23,7 +23,7 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:f="/lib/form">
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:st="jelly:stapler" xmlns:f="/lib/form">
   <st:documentation> <![CDATA[
     <input type="checkbox"> tag that takes true/false for @checked, which is more Jelly friendly.
     ]]>
@@ -74,19 +74,17 @@ THE SOFTWARE.
   <j:set var="name" value="${attrs.name ?: '_.'+attrs.field}"/>
   <j:set var="default" value="${attrs.default ?: false}"/>
   <j:set var="value" value="${attrs.checked ?: instance[attrs.field] ?: default}"/>
+  <l:js src="jsbundles/web-components.js" type="module"/>
 
-  <span class="jenkins-checkbox">
-    <input type="checkbox"
-           name="${name}"
-           value="${attrs.value}"
-           title="${attrs.tooltip}"
-           onclick="${attrs.readonly=='true' ? 'return false;' : attrs.onclick}" id="${attrs.id}" class="${attrs.class} ${attrs.negative!=null ? 'negative' : null} ${attrs.checkUrl!=null?'validated':''}"
-           checkUrl="${attrs.checkUrl}" checkDependsOn="${attrs.checkDependsOn}" json="${attrs.json}"
-           disabled="${readOnlyMode ? 'true' : null}"
-           checked="${value ? 'true' : null}"/>
-    <label class="attach-previous ${attrs.title == null ? 'js-checkbox-label-empty' : ''}"
-           title="${attrs.tooltip}">${attrs.title}</label>
-  </span>
+  <jenkins-checkbox
+    tooltip="${attrs.tooltip}"
+    title="${attrs.title}"
+    name="${name}"
+    value="${attrs.value}"
+    disabled="${readOnlyMode ? 'true' : null}"
+    checked="${value ? 'true' : null}"
+    id="${attrs.id}"
+  ></jenkins-checkbox>
   <j:if test="${customizedFields != null and attrs.field != null and value != default}">
     <j:mute>${customizedFields.add(name)}</j:mute>
   </j:if>
