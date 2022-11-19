@@ -220,7 +220,7 @@ public class PluginManagerCheckUpdateCenterTest {
         public void doDynamic(StaplerRequest staplerRequest, StaplerResponse staplerResponse) throws ServletException, IOException {
             staplerResponse.setContentType("text/json");
             staplerResponse.setStatus(200);
-            staplerResponse.serveFile(staplerRequest,  UpdateSiteTest.class.getResource("update-center.json"));
+            staplerResponse.serveFile(staplerRequest,  UpdateSiteTest.extract("update-center.json"));
         }
     }
 
