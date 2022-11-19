@@ -67,7 +67,7 @@ public class TelemetryTest {
         await().pollInterval(250, TimeUnit.MILLISECONDS)
                 .atMost(10, TimeUnit.SECONDS)
                 .until(() -> types, hasItem("test-data"));
-        assertThat(logger.getMessages(), hasItem("Telemetry submission received response '200 OK' for: test-data"));
+        assertThat(logger.getMessages(), hasItem("Telemetry submission received response 200 for: test-data"));
         assertThat(logger.getMessages(), hasItem("Skipping telemetry for 'future' as it is configured to start later"));
         assertThat(logger.getMessages(), hasItem("Skipping telemetry for 'past' as it is configured to end in the past"));
         assertThat(logger.getMessages(), hasItem("Skipping telemetry for 'empty' as it has no data"));

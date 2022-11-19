@@ -45,6 +45,7 @@ import java.net.InetSocketAddress;
 import java.net.PasswordAuthentication;
 import java.net.Proxy;
 import java.net.ProxySelector;
+import java.net.SocketAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -56,8 +57,10 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
+import jenkins.UserAgentURLConnectionDecorator;
 import jenkins.model.Jenkins;
 import jenkins.security.stapler.StaplerAccessibleType;
 import jenkins.util.JenkinsJVM;
@@ -225,6 +228,10 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
         return r;
     }
 
+    private static boolean isExcluded(String needle, String haystack) {
+        return getNoProxyHostPatterns(haystack).stream().anyMatch(p -> p.matcher(needle).matches());
+    }
+
     @DataBoundSetter
     public void setSecretPassword(Secret secretPassword) {
         this.secretPassword = secretPassword;
@@ -259,11 +266,8 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
     }
 
     public static Proxy createProxy(String host, String name, int port, String noProxyHost) {
-        if (host != null && noProxyHost != null) {
-            for (Pattern p : getNoProxyHostPatterns(noProxyHost)) {
-                if (p.matcher(host).matches())
-                    return Proxy.NO_PROXY;
-            }
+        if (host != null && noProxyHost != null && isExcluded(host, noProxyHost)) {
+           return Proxy.NO_PROXY;
         }
         return new Proxy(Proxy.Type.HTTP, new InetSocketAddress(name, port));
     }
@@ -299,7 +303,10 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
 
     /**
      * This method should be used wherever {@link URL#openConnection()} to internet URLs is invoked directly.
+     *
+     * @deprecated use {@link #newHttpClient}/{@link #newHttpClientBuilder} and {@link #newHttpRequestBuilder(URI)}
      */
+    @Deprecated
     public static URLConnection open(URL url) throws IOException {
         final ProxyConfiguration p = get();
 
@@ -327,6 +334,10 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
         return con;
     }
 
+    /**
+     * @deprecated use {@link #newHttpClient}/{@link #newHttpClientBuilder} and {@link #newHttpRequestBuilder(URI)}
+     */
+    @Deprecated
     public static InputStream getInputStream(URL url) throws IOException {
         final ProxyConfiguration p = get();
         if (p == null)
@@ -341,6 +352,100 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
         }
 
         return is;
+    }
+
+    /**
+     * Return a new {@link HttpClient} with Jenkins-specific default settings.
+     *
+     * <p>Equivalent to {@code newHttpClientBuilder().build()}.
+     *
+     * <p>The Jenkins-specific default settings include a proxy server and proxy authentication (as
+     * configured by {@link ProxyConfiguration}) and a connection timeout (as configured by {@link
+     * ProxyConfiguration#DEFAULT_CONNECT_TIMEOUT_MILLIS}).
+     *
+     * @return a new {@link HttpClient}
+     * @since TODO
+     */
+    public static HttpClient newHttpClient() {
+        return newHttpClientBuilder().build();
+    }
+
+    /**
+     * Create a new {@link HttpClient.Builder} preconfigured with Jenkins-specific default settings.
+     *
+     * <p>The Jenkins-specific default settings include a proxy server and proxy authentication (as
+     * configured by {@link ProxyConfiguration}) and a connection timeout (as configured by {@link
+     * ProxyConfiguration#DEFAULT_CONNECT_TIMEOUT_MILLIS}).
+     *
+     * @return an {@link HttpClient.Builder}
+     * @since TODO
+     */
+    public static HttpClient.Builder newHttpClientBuilder() {
+        HttpClient.Builder httpClientBuilder = HttpClient.newBuilder();
+        ProxyConfiguration proxyConfiguration = get();
+        if (proxyConfiguration != null) {
+            if (proxyConfiguration.getName() != null) {
+                httpClientBuilder.proxy(new JenkinsProxySelector(
+                        proxyConfiguration.getName(),
+                        proxyConfiguration.getPort(),
+                        proxyConfiguration.getNoProxyHost()));
+            }
+            if (proxyConfiguration.getUserName() != null) {
+                httpClientBuilder.authenticator(proxyConfiguration.authenticator);
+            }
+        }
+        if (DEFAULT_CONNECT_TIMEOUT_MILLIS > 0) {
+            httpClientBuilder.connectTimeout(Duration.ofMillis(DEFAULT_CONNECT_TIMEOUT_MILLIS));
+        }
+        return httpClientBuilder;
+    }
+
+    /**
+     * Create a new {@link HttpRequest.Builder} builder with the given URI preconfigured with
+     * Jenkins-specific default settings.
+     *
+     * <p>The Jenkins-specific default settings include a custom user agent on the controller
+     * (unless {@link UserAgentURLConnectionDecorator#DISABLED} is true).
+     *
+     * @param uri the request URI
+     * @return an {@link HttpRequest.Builder}
+     * @throws IllegalArgumentException if the URI scheme is not supported
+     * @since TODO
+     */
+    public static HttpRequest.Builder newHttpRequestBuilder(URI uri) {
+        HttpRequest.Builder httpRequestBuilder = HttpRequest.newBuilder(uri);
+        if (JenkinsJVM.isJenkinsJVM() && !UserAgentURLConnectionDecorator.DISABLED) {
+            httpRequestBuilder.setHeader("User-Agent", UserAgentURLConnectionDecorator.getUserAgent());
+        }
+        return httpRequestBuilder;
+    }
+
+    private static class JenkinsProxySelector extends ProxySelector {
+        @NonNull private final Proxy proxy;
+        @CheckForNull private final String exclusions;
+
+        private JenkinsProxySelector(@NonNull String hostname, int port, @CheckForNull String exclusions) {
+            this.proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(hostname, port));
+            this.exclusions = exclusions;
+        }
+
+        @Override
+        public void connectFailed(URI uri, SocketAddress sa, IOException e) {
+            // Ignore.
+        }
+
+        @Override
+        public List<Proxy> select(URI uri) {
+            Objects.requireNonNull(uri);
+            String scheme = Objects.requireNonNull(uri.getScheme());
+            String host = Objects.requireNonNull(uri.getHost());
+            boolean excluded = exclusions != null && isExcluded(host.toLowerCase(), exclusions);
+            if (!excluded && (scheme.equalsIgnoreCase("http") || scheme.equalsIgnoreCase("https"))) {
+                return List.of(proxy);
+            } else {
+                return List.of(Proxy.NO_PROXY);
+            }
+        }
     }
 
     /**
@@ -433,7 +538,8 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
 
             Jenkins.get().checkPermission(Jenkins.ADMINISTER);
 
-            if (Util.fixEmptyAndTrim(testUrl) == null) {
+            testUrl = Util.fixEmptyAndTrim(testUrl);
+            if (testUrl == null) {
                 return FormValidation.error(Messages.ProxyConfiguration_TestUrlRequired());
             }
 
@@ -441,36 +547,35 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
             try {
                 uri = new URI(testUrl);
             } catch (URISyntaxException e) {
-                return FormValidation.error(Messages.ProxyConfiguration_MalformedTestUrl(testUrl));
+                return FormValidation.error(e, Messages.ProxyConfiguration_MalformedTestUrl(testUrl));
             }
-
+            HttpClient.Builder builder = HttpClient.newBuilder();
+            builder.connectTimeout(DEFAULT_CONNECT_TIMEOUT_MILLIS > 0
+                    ? Duration.ofMillis(DEFAULT_CONNECT_TIMEOUT_MILLIS)
+                    : Duration.ofSeconds(30));
+            if (Util.fixEmptyAndTrim(name) != null && !isNoProxyHost(uri.getHost(), noProxyHost)) {
+                builder.proxy(ProxySelector.of(new InetSocketAddress(name, port)));
+                Authenticator authenticator = newValidationAuthenticator(userName, password != null ? password.getPlainText() : null);
+                builder.authenticator(authenticator);
+            }
+            HttpClient httpClient = builder.build();
+            HttpRequest httpRequest;
             try {
-                HttpClient.Builder builder = HttpClient.newBuilder();
-                builder.connectTimeout(
-                        DEFAULT_CONNECT_TIMEOUT_MILLIS > 0
-                                ? Duration.ofMillis(DEFAULT_CONNECT_TIMEOUT_MILLIS)
-                                : Duration.ofSeconds(30));
-                if (Util.fixEmptyAndTrim(name) != null && !isNoProxyHost(uri.getHost(), noProxyHost)) {
-                    builder.proxy(ProxySelector.of(new InetSocketAddress(name, port)));
-                    Authenticator authenticator =
-                            newValidationAuthenticator(
-                                    userName, password != null ? password.getPlainText() : null);
-                    builder.authenticator(authenticator);
+                httpRequest = ProxyConfiguration.newHttpRequestBuilder(uri)
+                        .method("HEAD", HttpRequest.BodyPublishers.noBody())
+                        .build();
+            } catch (IllegalArgumentException e) {
+                return FormValidation.error(e, Messages.ProxyConfiguration_MalformedTestUrl(testUrl));
+            }
+            try {
+                HttpResponse<Void> httpResponse = httpClient.send(httpRequest, HttpResponse.BodyHandlers.discarding());
+                if (httpResponse.statusCode() == HttpURLConnection.HTTP_OK) {
+                    return FormValidation.ok(Messages.ProxyConfiguration_Success());
                 }
-                HttpClient client = builder.build();
-
-                HttpRequest request = HttpRequest.newBuilder(uri).GET().build();
-                HttpResponse<Void> response =
-                        client.send(request, HttpResponse.BodyHandlers.discarding());
-                int code = response.statusCode();
-                if (code != HttpURLConnection.HTTP_OK) {
-                    return FormValidation.error(Messages.ProxyConfiguration_FailedToConnect(testUrl, code));
-                }
+                return FormValidation.error(Messages.ProxyConfiguration_FailedToConnect(testUrl, httpResponse.statusCode()));
             } catch (IOException e) {
                 return FormValidation.error(e, Messages.ProxyConfiguration_FailedToConnectViaProxy(testUrl));
             }
-
-            return FormValidation.ok(Messages.ProxyConfiguration_Success());
         }
 
         private boolean isNoProxyHost(String host, String noProxyHost) {
