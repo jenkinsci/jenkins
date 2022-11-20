@@ -1,6 +1,7 @@
 package jenkins.security;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import com.gargoylesoftware.htmlunit.ScriptResult;
@@ -35,9 +36,9 @@ public class Security2776Test {
 
         // Outlier after the fix for SECURITY-1955
         assertExpectedBehaviorForTooltip("#svgIcons .unsafe svg",
-                "&[lt;img src=\"x\" onerror=\"alert(1)\"&amp;gt;");
+                "&lt;img src=\"x\" onerror=\"alert(1)\"&gt;");
         assertExpectedBehaviorForTooltip("#svgIcons .safe svg",
-                "&amp;amp;lt;img src=&amp;amp;quot;x&amp;amp;quot; onerror=&amp;amp;quot;alert(1)&amp;amp;quot;&amp;amp;gt;");
+                "&amp;lt;img src=&amp;quot;x&amp;quot; onerror=&amp;quot;alert(1)&amp;quot;&amp;gt;");
     }
 
     private void assertExpectedBehaviorForTooltip(String selector, String expectedResult) throws IOException, SAXException {
@@ -51,7 +52,7 @@ public class Security2776Test {
         Object jsResult = result.getJavaScriptResult();
         assertThat(jsResult, instanceOf(String.class));
         String jsResultString = (String) jsResult;
-        Assert.assertEquals(expectedResult, jsResultString);
+        assertThat(jsResultString, is(expectedResult));
         Assert.assertFalse("No alert expected", alerts.get());
     }
 
