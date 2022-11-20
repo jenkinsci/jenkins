@@ -66,9 +66,7 @@ public class SvgIconTest  {
 
         String pristineTooltip = "Special tooltip with double quotes \", simple quotes ', and html characters <>&.";
 
-        // Escaped twice, once per new h.xmlEscape then once per Jelly.
-        // But as the tooltip lib interprets HTML, it's fine, the tooltip displays the original values without interpreting them
-        String expectedTooltip = "Special tooltip with double quotes &quot;, simple quotes ', and html characters &amp;lt;&amp;gt;&amp;amp;.";
+        String expectedTooltip = "Special tooltip with double quotes &quot;, simple quotes ', and html characters &lt;&gt;&amp;.";
         testRootAction.tooltipContent = pristineTooltip;
 
         HtmlPage p = j.createWebClient().goTo(testRootAction.getUrlName());

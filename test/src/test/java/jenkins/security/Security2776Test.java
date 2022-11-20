@@ -35,7 +35,7 @@ public class Security2776Test {
 
         // Outlier after the fix for SECURITY-1955
         assertExpectedBehaviorForTooltip("#svgIcons .unsafe svg",
-                "&amp;lt;img src=\"x\" onerror=\"alert(1)\"&amp;gt;");
+                "&[lt;img src=\"x\" onerror=\"alert(1)\"&amp;gt;");
         assertExpectedBehaviorForTooltip("#svgIcons .safe svg",
                 "&amp;amp;lt;img src=&amp;amp;quot;x&amp;amp;quot; onerror=&amp;amp;quot;alert(1)&amp;amp;quot;&amp;amp;gt;");
     }
