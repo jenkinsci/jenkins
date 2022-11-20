@@ -61,30 +61,25 @@ THE SOFTWARE.
             <j:choose>
               <j:when test="${empty(app.pluginManager.plugins) and empty(app.pluginManager.failedPlugins)}">
                 <tr>
-                  <td>
-                    <a href="${p.url}" target="_blank" rel="noopener noreferrer">
-                      <st:out value="${p.displayName}"/>
-                    </a>
-                  </td>
-                  <td>
-                    <st:out value="${p.version}"/>
-                  </td>
-                  <td>
-                    <st:out value="${state}"/>
+                  <td colspan="3">
+                    ${%No plugins installed.}
                   </td>
                 </tr>
               </j:when>
               <j:otherwise>
                 <j:forEach var="p" items="${app.pluginManager.plugins}">
+                  <j:set var="state" value="${p.enabled?'true':'false'}"/>
                   <tr>
                     <td>
-                      <st:out value="${p.shortName}"/>
+                      <a href="${p.url}" target="_blank" rel="noopener noreferrer">
+                        <st:out value="${p.displayName}"/>
+                      </a>
                     </td>
                     <td>
                       <st:out value="${p.version}"/>
                     </td>
                     <td>
-                      ${p.enabled ? "%Yes" : "%No"}
+                      <st:out value="${state}"/>
                     </td>
                   </tr>
                 </j:forEach>
