@@ -45,7 +45,7 @@ public abstract class AsyncPeriodicWork extends PeriodicWork {
      *
      * @since 1.651
      */
-    private static final long LOG_ROTATE_SIZE = SystemProperties.getLong(AsyncPeriodicWork.class.getName() + ".logRotateSize", -1L);
+    private static final long LOG_ROTATE_SIZE = SystemProperties.getLong(AsyncPeriodicWork.class.getName() + ".logRotateSize", 10485760L);
     /**
      * The number of milliseconds (since startup or previous rotation) after which to try and rotate the log file.
      *
