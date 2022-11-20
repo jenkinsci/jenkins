@@ -99,7 +99,7 @@ THE SOFTWARE.
     <bridge-method-injector.version>1.25</bridge-method-injector.version>
     <spotless.version>2.27.2</spotless.version>
     <!-- TODO https://github.com/jenkinsci/winstone/pull/295 -->
-    <winstone.version>6.7-rc798.5ffb_99e90442</winstone.version>
+    <winstone.version>6.7-rc801.e909b_b_58a_f22</winstone.version>
   </properties>
 
   <dependencyManagement>
