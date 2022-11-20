@@ -9,6 +9,8 @@ node/
 
 .yarnrc.yml
 
+wc/
+
 # libraries / external deps / generated files
 src/main/js/plugin-setup-wizard/bootstrap-detached.js
 src/main/webapp/scripts/behavior.js

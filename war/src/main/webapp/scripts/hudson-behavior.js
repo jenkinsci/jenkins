@@ -1445,7 +1445,9 @@ function rowvgStartEachRow(recursive, f) {
     function (e) {
       // see optionalBlock.jelly
       // Get the `input` from the checkbox container
-      var checkbox = e.querySelector("input[type='checkbox']");
+      var checkbox =
+        e.querySelector("input[type='checkbox']") ||
+        e.querySelector("jenkins-checkbox");
 
       // Set start.ref to checkbox in preparation of row-set-end processing
       e.setAttribute("ref", (checkbox.id = "cb" + iota++));
@@ -1502,7 +1504,9 @@ function rowvgStartEachRow(recursive, f) {
 
   Behaviour.specify(
     "INPUT.optional-block-event-item",
+    "JENKINS-CHECKBOX.optional-block-event-item",
     "input-optional-block-event-item",
+    "jenkins-checkbox-optional-block-event-item",
     ++p,
     function (e) {
       e.addEventListener("click", function () {
@@ -1548,7 +1552,10 @@ function rowvgStartEachRow(recursive, f) {
       // can sandwich row-set-end
       // this requires "TR.row-set-end" to mark rows
       // Get the `input` from the checkbox container
-      var checkbox = e.querySelector("input[type='checkbox']");
+      var checkbox =
+        e.querySelector("input[type='checkbox']") ||
+        e.querySelector("jenkins-checkbox");
+      console.log(checkbox);
       updateOptionalBlock(checkbox);
     }
   );
@@ -1933,7 +1940,7 @@ function updateOptionalBlock(c) {
   var vg = s;
   while (!vg.hasClassName("rowvg-start")) vg = vg.next();
 
-  var checked = xor(c.checked, Element.hasClassName(c, "negative"));
+  var checked = xor(c.attributes.checked, Element.hasClassName(c, "negative"));
 
   vg.rowVisibilityGroup.makeInnerVisible(checked);
 
@@ -2568,7 +2575,7 @@ window.addEventListener("load", function () {
   document.querySelectorAll(".jenkins-form-item").forEach(function (element) {
     if (
       element.querySelector(
-        ".optionalBlock-container > .row-group-start input[type='checkbox'], .optional-block-start input[type='checkbox'], div > .jenkins-checkbox"
+        ".optionalBlock-container > .row-group-start input[type='checkbox'], .optional-block-start input[type='checkbox'], div > .jenkins-checkbox, jenkins-checkbox"
       ) != null
     ) {
       element.classList.add("jenkins-form-item--tight");

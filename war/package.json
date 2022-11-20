@@ -14,8 +14,9 @@
   ],
   "scripts": {
     "dev": "webpack --config webpack.config.js",
+    "wc": "cd wc; yarn build; cp dist/web-components.* ../src/main/webapp/jsbundles/; cd ..",
     "prod": "webpack --config webpack.config.js --mode=production",
-    "build": "yarn prod",
+    "build": "yarn prod && yarn wc",
     "start": "yarn dev --watch",
     "lint:js": "eslint --config .eslintrc.js ../ --ext js && prettier --check ../",
     "lint:js-ci": "eslint --config .eslintrc.js ../ --ext js -f checkstyle -o target/eslint-warnings.xml && prettier --check ../",

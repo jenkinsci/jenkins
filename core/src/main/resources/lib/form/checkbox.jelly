@@ -75,16 +75,20 @@ THE SOFTWARE.
   <j:set var="default" value="${attrs.default ?: false}"/>
   <j:set var="value" value="${attrs.checked ?: instance[attrs.field] ?: default}"/>
   <l:js src="jsbundles/web-components.js" type="module"/>
-
-  <jenkins-checkbox
-    tooltip="${attrs.tooltip}"
-    title="${attrs.title}"
-    name="${name}"
-    value="${attrs.value}"
-    disabled="${readOnlyMode ? 'true' : null}"
-    checked="${value ? 'true' : null}"
-    id="${attrs.id}"
-  ></jenkins-checkbox>
+  <span class="jenkins-checkbox">
+    <jenkins-checkbox
+      tooltip="${attrs.tooltip}"
+      title="${attrs.title}"
+      name="${name}"
+      value="${attrs.value}"
+      disabled="${readOnlyMode ? 'true' : null}"
+      checked="${value ? 'true' : null}"
+      id="${attrs.id}"
+      onclick="${attrs.readonly=='true' ? 'return false;' : attrs.onclick}"
+      class="${attrs.class} ${attrs.negative!=null ? 'negative' : null} ${attrs.checkUrl!=null?'validated':''}"
+      checkUrl="${attrs.checkUrl}" checkDependsOn="${attrs.checkDependsOn}" json="${attrs.json}"
+    ></jenkins-checkbox>
+  </span>
   <j:if test="${customizedFields != null and attrs.field != null and value != default}">
     <j:mute>${customizedFields.add(name)}</j:mute>
   </j:if>

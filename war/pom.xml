@@ -786,6 +786,10 @@ THE SOFTWARE.
                     </condition>
                     <fail if="yarn.checksum.matches.fail">Checksum error</fail>
                     <echo file="${project.basedir}/.yarnrc.yml">yarnPath: ${yarn.dest}</echo>
+                    <echo append="true" file="${project.basedir}/.yarnrc.yml">${line.separator}
+pnpIgnorePatterns:
+  - "./wc/.*"
+  - "./wc/**"</echo>
                   </target>
                 </configuration>
               </execution>

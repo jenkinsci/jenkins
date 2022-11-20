@@ -6,6 +6,9 @@ target
 node/
 node_modules/
 
+# web components
+wc
+
 # Generated JavaScript Bundles
 jsbundles
 

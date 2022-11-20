@@ -49,7 +49,6 @@ module.exports = (env, argv) => ({
     ],
     "simple-page": [path.join(__dirname, "src/main/less/simple-page.less")],
     styles: [path.join(__dirname, "src/main/less/styles.less")],
-    "web-components": [path.join(__dirname, "src/main/js/web-components.js")],
   },
   output: {
     path: path.join(__dirname, "src/main/webapp/jsbundles"),

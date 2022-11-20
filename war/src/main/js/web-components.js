@@ -1,1 +1,0 @@
-import 'jenkins-web-components';
