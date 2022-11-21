@@ -9,7 +9,7 @@
     "; path=/" +
     "; SameSite=Lax";
   if (secureCookie) {
-    cookie += `; secure`;
+    cookie += "; secure";
   }
   document.cookie = cookie;
 })();
