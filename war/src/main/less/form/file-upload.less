@@ -1,0 +1,41 @@
+.jenkins-file-upload {
+  margin: -10px 0 0 -10px;
+  padding: 10px 0 10px 10px;
+  outline: none;
+  background: transparent;
+
+  &::file-selector-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    outline: none;
+    margin: 0;
+    padding: 0.5rem 0.85rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--text-color);
+    border-radius: 0.66rem;
+    cursor: pointer;
+    min-height: 36px;
+    white-space: nowrap;
+    background: var(--button-background);
+    transition: var(--standard-transition);
+    box-shadow: 0 0 0 10px transparent;
+
+    &:hover {
+      background: var(--button-background--hover);
+    }
+
+    &:active {
+      background: var(--button-background--active);
+      box-shadow: 0 0 0 5px var(--button-box-shadow--focus);
+    }
+  }
+
+  &:focus-visible {
+    &::file-selector-button {
+      box-shadow: 0 0 0 0.2rem var(--text-color) !important;
+    }
+  }
+}
