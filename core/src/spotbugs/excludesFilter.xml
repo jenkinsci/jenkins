@@ -64,9 +64,7 @@
   <Match>
     <And>
       <Bug pattern="DM_DEFAULT_ENCODING"/>
-      <Or>
-        <Class name="hudson.util.TextFile"/>
-      </Or>
+      <Class name="hudson.util.TextFile"/>
     </And>
   </Match>
   <Match>
@@ -127,9 +125,7 @@
       </And>
       <And>
         <Bug pattern="LI_LAZY_INIT_STATIC"/>
-        <Or>
-          <Class name="hudson.triggers.Trigger"/>
-        </Or>
+        <Class name="hudson.triggers.Trigger"/>
       </And>
       <And>
         <Bug pattern="NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE"/>
@@ -347,9 +343,7 @@
       </And>
       <And>
         <Bug pattern="UNENCRYPTED_SOCKET"/>
-        <Or>
-          <Class name="hudson.TcpSlaveAgentListener"/>
-        </Or>
+        <Class name="hudson.TcpSlaveAgentListener"/>
       </And>
       <And>
         <Bug pattern="URLCONNECTION_SSRF_FD"/>
