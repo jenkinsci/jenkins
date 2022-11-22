@@ -151,27 +151,9 @@ builds.ath = {
     node('docker-highmem') {
       // Just to be safe
       deleteDir()
-      def fileUri
-      def metadataPath
-      dir('sources') {
-        checkout scm
-        def mavenOptions = [
-          '-Pquick-build',
-          '-Dmaven.repo.local=$WORKSPACE_TMP/m2repo',
-          '-am',
-          '-pl',
-          'war',
-          'package',
-        ]
-        infra.runMaven(mavenOptions, 11)
-        dir('war/target') {
-          fileUri = 'file://' + pwd() + '/jenkins.war'
-        }
-        metadataPath = pwd() + '/essentials.yml'
-      }
-      dir('ath') {
-        runATH jenkins: fileUri, metadataFile: metadataPath
-      }
+      checkout scm
+      sh 'bash ath.sh'
+      junit testResults: 'target/ath-reports/TEST-*.xml', testDataPublishers: [[$class: 'AttachmentPublisher']]
     }
   }
 }
