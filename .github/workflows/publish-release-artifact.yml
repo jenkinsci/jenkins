@@ -219,7 +219,7 @@ jobs:
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
+          with:
           upload_url: ${{ github.event.release.upload_url }}
           asset_path: ./${{ steps.fetch-suse-rpm.outputs.file-name }}
           asset_name: ${{ steps.fetch-suse-rpm.outputs.file-name }}
