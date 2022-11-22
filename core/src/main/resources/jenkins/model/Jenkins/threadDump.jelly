@@ -35,7 +35,7 @@ THE SOFTWARE.
 
       <j:forEach var="e" items="${tdumps.entrySet()}">
         <j:if test="${e.key != null and e.key.length() > 0}">
-          <a href="#id${e.key.hashCode()}" class="jenkins-link--with-icon"><l:icon class="icon-sm" src="symbol-computer" />
+          <a href="#id${e.key.hashCode()}" class="jenkins-link--with-icon" style="margin-left:10px;"><l:icon class="icon-sm" src="symbol-computer" />
             <span style="margin-left: 4px;">${e.key}</span>
           </a>
         </j:if>
