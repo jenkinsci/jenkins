@@ -1553,9 +1553,7 @@ function rowvgStartEachRow(recursive, f) {
       // this requires "TR.row-set-end" to mark rows
       // Get the `input` from the checkbox container
       var checkbox =
-        e.querySelector("input[type='checkbox']") ||
-        e.querySelector("jenkins-checkbox");
-      console.log(checkbox);
+        e.querySelector("input[type='checkbox']")
       updateOptionalBlock(checkbox);
     }
   );
