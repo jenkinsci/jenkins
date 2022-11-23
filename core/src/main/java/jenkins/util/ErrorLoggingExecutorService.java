@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+ * Copyright 2022 CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,43 +22,42 @@
  * THE SOFTWARE.
  */
 
-package hudson.util;
+package jenkins.util;
 
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * {@link ThreadFactory} that creates a thread, which in turn displays a stack trace
- * when it terminates unexpectedly.
- *
- * @author Kohsuke Kawaguchi
- * @since 1.226
- * @see jenkins.util.ErrorLoggingExecutorService
+ * Executor service that logs unchecked exceptions / errors in {@link Runnable}.
+ * Exceptions thrown from {@link Callable} are <em>not</em> not logged,
+ * under the assumption that something is checking {@link Future#get()}.
  */
-public class ExceptionCatchingThreadFactory implements ThreadFactory, Thread.UncaughtExceptionHandler {
-    private final ThreadFactory core;
+public class ErrorLoggingExecutorService extends InterceptingExecutorService {
 
-    public ExceptionCatchingThreadFactory() {
-        this(Executors.defaultThreadFactory());
-    }
+    private static final Logger LOGGER = Logger.getLogger(ErrorLoggingExecutorService.class.getName());
 
-    public ExceptionCatchingThreadFactory(ThreadFactory core) {
-        this.core = core;
+    public ErrorLoggingExecutorService(ExecutorService base) {
+        super(base);
     }
 
     @Override
-    public Thread newThread(Runnable r) {
-        Thread t = core.newThread(r);
-        t.setUncaughtExceptionHandler(this);
-        return t;
+    protected Runnable wrap(Runnable r) {
+        return () -> {
+            try {
+                r.run();
+            } catch (Throwable x) {
+                LOGGER.log(Level.WARNING, null, x);
+                throw x;
+            }
+        };
     }
 
     @Override
-    public void uncaughtException(Thread t, Throwable e) {
-        LOGGER.log(Level.WARNING, "Thread " + t.getName() + " terminated unexpectedly", e);
+    protected <V> Callable<V> wrap(Callable<V> r) {
+        return r;
     }
 
-    private static final Logger LOGGER = Logger.getLogger(ExceptionCatchingThreadFactory.class.getName());
 }
