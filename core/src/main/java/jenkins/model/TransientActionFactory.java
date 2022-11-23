@@ -28,7 +28,6 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.ExtensionList;
 import hudson.ExtensionListListener;
 import hudson.ExtensionPoint;
@@ -49,7 +48,6 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  * @see Actionable#getAllActions
  * @since 1.548
  */
-@SuppressFBWarnings(value = "THROWS_METHOD_THROWS_CLAUSE_BASIC_EXCEPTION", justification = "TODO needs triage")
 public abstract class TransientActionFactory<T> implements ExtensionPoint {
 
     /**

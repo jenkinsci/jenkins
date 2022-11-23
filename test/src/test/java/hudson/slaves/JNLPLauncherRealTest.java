@@ -38,65 +38,28 @@ import jenkins.agents.WebSocketAgentsTest;
 import jenkins.slaves.JnlpSlaveAgentProtocol4;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.runner.Description;
-import org.junit.runners.model.Statement;
 import org.jvnet.hudson.test.For;
 import org.jvnet.hudson.test.InboundAgentRule;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.PrefixedOutputStream;
 import org.jvnet.hudson.test.RealJenkinsRule;
 
 @For({JNLPLauncher.class, JnlpSlaveAgentProtocol4.class})
 public class JNLPLauncherRealTest {
 
-    @Rule public RealJenkinsRule rr = new RealJenkinsRule().includeTestClasspathPlugins(false);
+    private static final String STATIC_AGENT_NAME = "static";
+
+    @Rule public RealJenkinsRule rr = new RealJenkinsRule().includeTestClasspathPlugins(false).withColor(PrefixedOutputStream.Color.BLUE);
+
+    @Rule public InboundAgentRule iar = new InboundAgentRule();
 
     @Issue("JEP-230")
     @Test public void smokes() throws Throwable {
         /* Since RealJenkinsRuleInit.jpi will load detached plugins, to reproduce a failure use:
         FileUtils.touch(new File(rr.getHome(), "plugins/instance-identity.jpi.disabled"));
         */
-        rr.then(new ConnectStep(false));
-    }
-
-    private static class ConnectStep implements RealJenkinsRule.Step {
-
-      private final boolean webSocket;
-
-      private ConnectStep(boolean webSocket) {
-        this.webSocket = webSocket;
-      }
-
-      @Override
-      public void run(JenkinsRule r) throws Throwable {
-        InboundAgentRule inboundAgents = new InboundAgentRule(); // cannot use @Rule since it would not be accessible from the controller JVM
-        inboundAgents.apply(new Statement() {
-            @Override public void evaluate() throws Throwable {
-                for (PluginWrapper plugin : r.jenkins.pluginManager.getPlugins()) {
-                    System.err.println(plugin + " active=" + plugin.isActive() + " enabled=" + plugin.isEnabled());
-                }
-                assertThat(ExtensionList.lookupSingleton(JNLPLauncher.DescriptorImpl.class).doCheckWebSocket(webSocket, null).kind, is(FormValidation.Kind.OK));
-                InboundAgentRule.Options.Builder builder = InboundAgentRule.Options.newBuilder().name("static").secret();
-                if (webSocket) {
-                    builder.webSocket();
-                }
-                Slave agent = inboundAgents.createAgent(r, builder.build());
-                r.waitOnline(agent);
-                try {
-                    FreeStyleProject p = r.createFreeStyleProject();
-                    p.setAssignedNode(agent);
-                    FreeStyleBuild b = r.buildAndAssertSuccess(p);
-                    if (webSocket) {
-                        assertThat(agent.toComputer().getSystemProperties().get("java.class.path"), is(new File(r.jenkins.root, "agent.jar").getAbsolutePath()));
-                    }
-                    System.err.println(JenkinsRule.getLog(b));
-                } finally {
-                    inboundAgents.stop(r, agent.getNodeName());
-                }
-            }
-        }, Description.EMPTY).evaluate();
-
-      }
+        then(false);
     }
 
     /**
@@ -104,7 +67,47 @@ public class JNLPLauncherRealTest {
      */
     @Issue("JENKINS-68933")
     @Test public void webSocket() throws Throwable {
-        rr.then(new ConnectStep(true));
+        then(true);
     }
 
+    private void then(boolean websocket) throws Throwable {
+        try {
+            rr.startJenkins();
+            InboundAgentRule.Options.Builder options = InboundAgentRule.Options.newBuilder().name(STATIC_AGENT_NAME).color(PrefixedOutputStream.Color.RED);
+            if (websocket) {
+                options = options.webSocket();
+            }
+            iar.createAgent(rr, options.build());
+            rr.runRemotely(new RunJobStep(STATIC_AGENT_NAME, websocket));
+        } finally {
+            iar.stop(rr, STATIC_AGENT_NAME);
+        }
+    }
+
+    private static class RunJobStep implements RealJenkinsRule.Step {
+        private final String agentName;
+        private final boolean webSocket;
+
+        RunJobStep(String agentName, boolean webSocket) {
+            this.agentName = agentName;
+            this.webSocket = webSocket;
+        }
+
+        @Override
+        public void run(JenkinsRule r) throws Throwable {
+            for (PluginWrapper plugin : r.jenkins.pluginManager.getPlugins()) {
+                System.err.println(plugin + " active=" + plugin.isActive() + " enabled=" + plugin.isEnabled());
+            }
+            assertThat(ExtensionList.lookupSingleton(JNLPLauncher.DescriptorImpl.class).doCheckWebSocket(webSocket, null).kind, is(FormValidation.Kind.OK));
+            Slave agent = (Slave) r.jenkins.getNode(agentName);
+            r.waitOnline(agent);
+            FreeStyleProject p = r.createFreeStyleProject();
+            p.setAssignedNode(agent);
+            FreeStyleBuild b = r.buildAndAssertSuccess(p);
+            if (webSocket) {
+                assertThat(agent.toComputer().getSystemProperties().get("java.class.path"), is(new File(r.jenkins.root, "agent.jar").getAbsolutePath()));
+            }
+            System.err.println(JenkinsRule.getLog(b));
+        }
+    }
 }
