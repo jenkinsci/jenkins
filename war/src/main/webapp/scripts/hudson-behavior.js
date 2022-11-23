@@ -1542,22 +1542,6 @@ function rowvgStartEachRow(recursive, f) {
     }
   );
 
-  Behaviour.specify(
-    "TR.optional-block-start,DIV.tr.optional-block-start",
-    "tr-optional-block-start-div-tr-optional-block-start-2",
-    ++p,
-    function (e) {
-      // see optionalBlock.jelly
-      // this is suffixed by a pointless string so that two processing for optional-block-start
-      // can sandwich row-set-end
-      // this requires "TR.row-set-end" to mark rows
-      // Get the `input` from the checkbox container
-      var checkbox =
-        e.querySelector("input[type='checkbox']")
-      updateOptionalBlock(checkbox);
-    }
-  );
-
   // image that shows [+] or [-], with hover effect.
   // oncollapsed and onexpanded will be called when the button is triggered.
   Behaviour.specify("IMG.fold-control", "img-fold-control", ++p, function (e) {
@@ -2410,6 +2394,27 @@ function buildFormTree(form) {
     }
 
     var jsonElement = null;
+    // due to the fact that the input field is encapsulated in web component, it is not
+    // listed in the form.elements. So we need to find it manually.
+    const boxes = form.querySelectorAll("jenkins-checkbox");
+    boxes.forEach((e) => {
+      // using former logic
+      p = findParent(e);
+      var checked = xor(e.checked, Element.hasClassName(e, "negative"));
+      if (!e.groupingNode) {
+        v = e.getAttribute("json");
+        if (v) {
+          // if the special attribute is present, we'll either set the value or not. useful for an array of checkboxes
+          // we can't use @value because IE6 sets the value to be "on" if it's left unspecified.
+          if (checked) addProperty(p, e.name, v);
+        } else {
+          // otherwise it'll bind to boolean
+          addProperty(p, e.name, checked);
+        }
+      } else {
+        if (checked) addProperty(p, e.name, (e.formDom = {}));
+      }
+    });
 
     for (var i = 0; i < form.elements.length; i++) {
       var e = form.elements[i];
@@ -2435,23 +2440,6 @@ function buildFormTree(form) {
       switch (type.toLowerCase()) {
         case "button":
         case "submit":
-          break;
-        case "checkbox":
-          p = findParent(e);
-          var checked = xor(e.checked, Element.hasClassName(e, "negative"));
-          if (!e.groupingNode) {
-            v = e.getAttribute("json");
-            if (v) {
-              // if the special attribute is present, we'll either set the value or not. useful for an array of checkboxes
-              // we can't use @value because IE6 sets the value to be "on" if it's left unspecified.
-              if (checked) addProperty(p, e.name, v);
-            } else {
-              // otherwise it'll bind to boolean
-              addProperty(p, e.name, checked);
-            }
-          } else {
-            if (checked) addProperty(p, e.name, (e.formDom = {}));
-          }
           break;
         case "file":
           // to support structured form submission with file uploads,
