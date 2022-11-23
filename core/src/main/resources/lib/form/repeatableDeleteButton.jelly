@@ -23,10 +23,10 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <st:documentation>
-    Delete button for the &lt;repeatable> tag.
-
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
+  <st:documentation> <![CDATA[
+    Delete button for the <repeatable> tag.
+    ]]>
     <st:attribute name="value">
       Caption of the button. Defaults to 'Delete'.
     </st:attribute>

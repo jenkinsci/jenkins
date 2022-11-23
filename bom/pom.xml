@@ -38,9 +38,9 @@ THE SOFTWARE.
   <description>The module contains dependencies that are used by a specific Jenkins version</description>
 
   <properties>
-    <asm.version>9.3</asm.version>
-    <slf4jVersion>2.0.0</slf4jVersion>
-    <stapler.version>1733.v981fdd98007e</stapler.version>
+    <asm.version>9.4</asm.version>
+    <slf4jVersion>2.0.4</slf4jVersion>
+    <stapler.version>1736.vb_1e05c4231b_c</stapler.version>
     <groovy.version>2.4.21</groovy.version>
   </properties>
 
@@ -56,7 +56,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.springframework</groupId>
         <artifactId>spring-framework-bom</artifactId>
-        <version>5.3.22</version>
+        <version>5.3.24</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -64,14 +64,9 @@ THE SOFTWARE.
         <!-- https://docs.spring.io/spring-security/site/docs/5.5.4/reference/html5/#getting-maven-no-boot -->
         <groupId>org.springframework.security</groupId>
         <artifactId>spring-security-bom</artifactId>
-        <version>5.7.3</version>
+        <version>5.7.5</version>
         <type>pom</type>
         <scope>import</scope>
-      </dependency>
-      <dependency>
-        <groupId>antlr</groupId>
-        <artifactId>antlr</artifactId>
-        <version>2.7.7</version>
       </dependency>
       <dependency>
         <!-- JENKINS-21160: Remoting also depends on args4j; please update accordingly -->
@@ -131,11 +126,6 @@ THE SOFTWARE.
         <version>1.4</version>
       </dependency>
       <dependency>
-        <groupId>commons-httpclient</groupId>
-        <artifactId>commons-httpclient</artifactId>
-        <version>3.1-jenkins-3</version>
-      </dependency>
-      <dependency>
         <groupId>commons-io</groupId>
         <artifactId>commons-io</artifactId>
         <version>2.11.0</version>
@@ -191,6 +181,11 @@ THE SOFTWARE.
         <version>2.3.0</version>
       </dependency>
       <dependency>
+        <groupId>org.antlr</groupId>
+        <artifactId>antlr4-runtime</artifactId>
+        <version>${antlr.version}</version>
+      </dependency>
+      <dependency>
         <groupId>org.apache.ant</groupId>
         <artifactId>ant</artifactId>
         <version>1.10.12</version>
@@ -198,7 +193,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.apache.commons</groupId>
         <artifactId>commons-compress</artifactId>
-        <version>1.21</version>
+        <version>1.22</version>
       </dependency>
       <dependency>
         <groupId>org.codehaus.groovy</groupId>
@@ -234,7 +229,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jenkins-ci</groupId>
         <artifactId>memory-monitor</artifactId>
-        <version>1.11</version>
+        <version>1.12</version>
       </dependency>
       <dependency>
         <groupId>org.jenkins-ci</groupId>
@@ -244,7 +239,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jenkins-ci</groupId>
         <artifactId>task-reactor</artifactId>
-        <version>1.7</version>
+        <version>1.8</version>
       </dependency>
       <dependency>
         <groupId>org.jenkins-ci</groupId>
@@ -279,7 +274,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jvnet.winp</groupId>
         <artifactId>winp</artifactId>
-        <version>1.28</version>
+        <version>1.30</version>
       </dependency>
       <dependency>
         <groupId>org.kohsuke</groupId>
@@ -401,13 +396,6 @@ THE SOFTWARE.
         -->
         <scope>provided</scope>
         <optional>true</optional>
-      </dependency>
-      <dependency>
-        <!-- provided by log4j-over-slf4j -->
-        <groupId>log4j</groupId>
-        <artifactId>log4j</artifactId>
-        <version>1.2.17</version>
-        <scope>provided</scope>
       </dependency>
     </dependencies>
   </dependencyManagement>
