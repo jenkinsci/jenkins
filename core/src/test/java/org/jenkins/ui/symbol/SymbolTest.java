@@ -3,11 +3,13 @@ package org.jenkins.ui.symbol;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.not;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -15,12 +17,16 @@ import org.junit.jupiter.api.Test;
 public class SymbolTest {
     public static final String SCIENCE_PATH;
 
+    public static final String IMAGES_SYMBOLS_SCIENCE_PATH_XML = "/images/symbols/science.path.xml";
+
     static {
         try {
-            Pattern p = Pattern.compile(".*(<path.*/>).*");
-            String svg = IOUtils.toString(SymbolTest.class.getResourceAsStream("/images/symbols/science.svg"), StandardCharsets.UTF_8);
-            Matcher matcher = p.matcher(svg);
-            SCIENCE_PATH = matcher.group(1);
+            try (InputStream resourceAsStream = SymbolTest.class.getResourceAsStream(IMAGES_SYMBOLS_SCIENCE_PATH_XML)) {
+                if (resourceAsStream == null) {
+                    throw new IllegalStateException("Could not find resource" + IMAGES_SYMBOLS_SCIENCE_PATH_XML);
+                }
+                SCIENCE_PATH = IOUtils.toString(resourceAsStream, StandardCharsets.UTF_8).trim();
+            }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -42,6 +48,32 @@ public class SymbolTest {
         assertThat(symbol, containsString("tooltip=\"Tooltip\""));
         assertThat(symbol, containsString("class=\"class1 class2\""));
         assertThat(symbol, containsString("id=\"id\""));
+    }
+
+    @Test
+    @DisplayName("Invalid strings should throw IllegalArgumentException")
+    void invalidRawString() {
+        assertThrows(IllegalArgumentException.class, () -> new SymbolRequest.Builder().build());
+        assertThrows(IllegalArgumentException.class, () -> new SymbolRequest.Builder().withRaw("").build());
+        assertThrows(IllegalArgumentException.class, () -> new SymbolRequest.Builder().withRaw("foobar").build());
+        assertThrows(IllegalArgumentException.class, () -> new SymbolRequest.Builder().withRaw("plugin-foo").build());
+        assertThrows(IllegalArgumentException.class, () -> new SymbolRequest.Builder().withRaw("symbol-foo plugin-bar someclass").build());
+    }
+
+    @Test
+    @DisplayName("Given a raw string it can be parsed to a name")
+    void rawStringCore() {
+        SymbolRequest symbol = new SymbolRequest.Builder().withRaw("symbol-gear").build();
+        assertNull(symbol.getPluginName());
+        assertEquals("gear", symbol.getName());
+    }
+
+    @Test
+    @DisplayName("Given a raw string it can be parsed to a name and plugin")
+    void rawStringPlugin() {
+        SymbolRequest symbol = new SymbolRequest.Builder().withRaw("symbol-science plugin-foo").build();
+        assertEquals("foo", symbol.getPluginName());
+        assertEquals("science", symbol.getName());
     }
 
     @Test

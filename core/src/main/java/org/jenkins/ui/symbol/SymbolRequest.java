@@ -2,6 +2,7 @@ package org.jenkins.ui.symbol;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import java.util.logging.Logger;
 
 /**
  * <p>A Symbol specification, to be passed to {@link Symbol#get(SymbolRequest)}.
@@ -11,6 +12,8 @@ import edu.umd.cs.findbugs.annotations.NonNull;
  * @since TODO
  */
 public final class SymbolRequest {
+    private static final Logger LOGGER = Logger.getLogger(SymbolRequest.class.getName());
+
     /**
      * The name of the symbol.
      */
@@ -97,6 +100,8 @@ public final class SymbolRequest {
         private String pluginName;
         @CheckForNull
         private String id;
+        @CheckForNull
+        private String raw;
 
         @CheckForNull
         public String getName() {
@@ -158,12 +163,45 @@ public final class SymbolRequest {
             return this;
         }
 
+        @CheckForNull
+        public String getRaw() {
+            return raw;
+        }
+
+        public Builder withRaw(@CheckForNull String raw) {
+            this.raw = raw;
+            return this;
+        }
+
         @NonNull
         public SymbolRequest build() {
+            if (name == null && pluginName == null && raw != null) {
+                parseRaw(raw);
+                LOGGER.fine(() -> "\"" + raw + "\" parsed to name: " + name + " and pluginName: " + pluginName);
+            }
             if (name == null) {
                 throw new IllegalArgumentException("name cannot be null");
             }
             return new SymbolRequest(name, title, tooltip, classes, pluginName, id);
+        }
+
+        private void parseRaw(@NonNull String raw) {
+            String[] s = raw.split(" ");
+            if (s.length <= 2) {
+                for (String element : s) {
+                    if (element.startsWith("symbol-")) {
+                        name = element.substring("symbol-".length());
+                    }
+                    if (element.startsWith("plugin-")) {
+                        pluginName = element.substring("plugin-".length());
+                    }
+                    if (name != null && pluginName != null) {
+                        break;
+                    }
+                }
+            } else {
+                throw new IllegalArgumentException("raw must be in the format \"symbol-<name> plugin-<pluginName>\"");
+            }
         }
     }
 }
