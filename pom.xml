@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.91</version>
+    <version>1.92</version>
     <relativePath />
   </parent>
 
@@ -74,7 +74,7 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.379</revision>
+    <revision>2.380</revision>
     <changelist>-SNAPSHOT</changelist>
 
     <!-- configuration for patch tracker plugin  -->
@@ -87,7 +87,7 @@ THE SOFTWARE.
     <changelog.url>https://www.jenkins.io/changelog</changelog.url>
 
     <!-- Bundled Remoting version -->
-    <remoting.version>3071.v7e9b_0dc08466</remoting.version>
+    <remoting.version>3077.vd69cf116da_6f</remoting.version>
     <!-- Minimum Remoting version, which is tested for API compatibility -->
     <remoting.minimum.supported.version>4.7</remoting.minimum.supported.version>
 
