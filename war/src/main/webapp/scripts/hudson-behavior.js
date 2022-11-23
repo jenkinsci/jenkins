@@ -1438,22 +1438,6 @@ function rowvgStartEachRow(recursive, f) {
     makeButton(e);
   });
 
-  Behaviour.specify(
-    "TR.optional-block-start,DIV.tr.optional-block-start",
-    "tr-optional-block-start-div-tr-optional-block-start",
-    ++p,
-    function (e) {
-      // see optionalBlock.jelly
-      // Get the `input` from the checkbox container
-      var checkbox =
-        e.querySelector("input[type='checkbox']") ||
-        e.querySelector("jenkins-checkbox");
-
-      // Set start.ref to checkbox in preparation of row-set-end processing
-      e.setAttribute("ref", (checkbox.id = "cb" + iota++));
-    }
-  );
-
   // see RowVisibilityGroupTest
   Behaviour.specify(
     "TR.rowvg-start,DIV.tr.rowvg-start",
@@ -1499,19 +1483,6 @@ function rowvgStartEachRow(recursive, f) {
          */
         eachRow: rowvgStartEachRow,
       };
-    }
-  );
-
-  Behaviour.specify(
-    "INPUT.optional-block-event-item",
-    "JENKINS-CHECKBOX.optional-block-event-item",
-    "input-optional-block-event-item",
-    "jenkins-checkbox-optional-block-event-item",
-    ++p,
-    function (e) {
-      e.addEventListener("click", function () {
-        updateOptionalBlock(e);
-      });
     }
   );
 
@@ -2561,7 +2532,7 @@ window.addEventListener("load", function () {
   document.querySelectorAll(".jenkins-form-item").forEach(function (element) {
     if (
       element.querySelector(
-        ".optionalBlock-container > .row-group-start input[type='checkbox'], .optional-block-start input[type='checkbox'], div > .jenkins-checkbox, jenkins-checkbox"
+        ".optionalBlock-container > .row-group-start input[type='checkbox'], .optional-block-start input[type='checkbox']"
       ) != null
     ) {
       element.classList.add("jenkins-form-item--tight");

@@ -68,6 +68,8 @@ THE SOFTWARE.
   </j:if>
   <!-- logic taken from f:checkbox -->
   <j:set var="name" value="${attrs.name ?: '_.'+attrs.field}"/>
+  <j:set var="isChecked" value="${attrs.checked ? attrs.checked : false}"/>
+
   <j:choose>
     <j:when test="${attrs.title!=null}">
       <div class="optionalBlock-container jenkins-form-item">
@@ -82,7 +84,7 @@ THE SOFTWARE.
         <script>
             window.addEventListener('load', function () {
                 const checkbox =  document.querySelector('jenkins-checkbox[name="${name}"]');
-                let isChecked = ${attrs.checked ? attrs.checked : false};
+                let isChecked = ${isChecked};
                 if(checkbox) {
                     checkbox.addEventListener('change', function(event) {
                         isChecked = !isChecked;
@@ -103,7 +105,7 @@ THE SOFTWARE.
           <f:helpArea />
         </j:if>
         <div class="rowvg-start tr"></div>
-        <div class="form-container tr" data-name="${name}">
+        <div class="${isChecked ? 'form-container' : 'form-container--hidden' } tr" data-name="${name}">
           <d:invokeBody />
         </div>
         <!-- end marker -->
