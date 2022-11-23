@@ -4,12 +4,27 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.not;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 public class SymbolTest {
+    public static final String SCIENCE_PATH;
 
-    public static final String SCIENCE_PATH = "<path d=\"M13,11.33L18,18H6l5-6.67V6h2 M15.96,4H8.04C7.62,4,7.39,4.48,7.65,4.81L9,6.5v4.17L3.2,18.4C2.71,19.06,3.18,20,4,20h16 c0.82,0,1.29-0.94,0.8-1.6L15,10.67V6.5l1.35-1.69C16.61,4.48,16.38,4,15.96,4L15.96,4z\"/>";
+    static {
+        try {
+            Pattern p = Pattern.compile(".*(<path.*/>).*");
+            String svg = IOUtils.toString(SymbolTest.class.getResourceAsStream("/images/symbols/science.svg"), StandardCharsets.UTF_8);
+            Matcher matcher = p.matcher(svg);
+            SCIENCE_PATH = matcher.group(1);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     @Test
     @DisplayName("Get symbol should build the symbol with given attributes")
