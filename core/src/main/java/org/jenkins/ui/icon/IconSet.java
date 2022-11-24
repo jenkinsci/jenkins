@@ -588,6 +588,7 @@ public class IconSet {
         translations.put("icon-health-60to79", "symbol-weather-icon-health-60to79");
         translations.put("icon-health-80plus", "symbol-weather-icon-health-80plus");
         translations.put("icon-help", "symbol-help-circle");
+        translations.put("icon-id-card", "symbol-id-card");
         translations.put("icon-keys", "symbol-key");
         translations.put("icon-monitor", "symbol-terminal");
         translations.put("icon-new-package", "symbol-add");
