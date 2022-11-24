@@ -1,5 +1,6 @@
 import { createElementFromHtml } from "@/util/dom";
 import makeKeyboardNavigable from "@/util/keyboard";
+import { sanitizeString } from "@/util/security";
 
 const SELECTED_CLASS = "jenkins-search__results-item--selected";
 
@@ -36,7 +37,7 @@ function init() {
               createElementFromHtml(
                 `<a class="${index === 0 ? SELECTED_CLASS : ""}" href="${
                   item.url
-                }"><div>${item.icon}</div>${item.label}</a>`
+                }"><div>${item.icon}</div>${sanitizeString(item.label)}</a>`
               )
             );
           });
