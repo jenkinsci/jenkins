@@ -26,7 +26,7 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <div class="alert alert-warning">
     <form method="post" action="${rootURL}/${it.url}/disable">
-      <f:submit value="${%Dismiss}"/>
+      <f:submit primary="false" clazz="jenkins-!-destructive-color" value="${%Dismiss}"/>
     </form>
     ${%blurb(rootURL)}
   </div>

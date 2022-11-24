@@ -25,16 +25,25 @@
 package hudson.util;
 
 
+import com.gargoylesoftware.htmlunit.ScriptResult;
 import com.gargoylesoftware.htmlunit.WebResponseListener;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import hudson.model.AbstractProject;
 import hudson.model.FreeStyleProject;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildStepMonitor;
+import hudson.tasks.Builder;
 import hudson.tasks.Publisher;
+import java.io.IOException;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.TestExtension;
+import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.QueryParameter;
+import org.xml.sax.SAXException;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -66,6 +75,55 @@ public class FormFieldValidatorTest {
         @Override
         public BuildStepMonitor getRequiredMonitorService() {
             return BuildStepMonitor.BUILD;
+        }
+    }
+
+    @Test
+    @Issue("JENKINS-15604")
+    public void testCodeMirrorBlur() throws IOException, SAXException {
+        final FreeStyleProject freeStyleProject = j.createFreeStyleProject();
+        freeStyleProject.getBuildersList().add(new CodeMirrorStep(""));
+        freeStyleProject.save();
+        final JenkinsRule.WebClient wc = j.createWebClient();
+        final HtmlPage page = wc.getPage(freeStyleProject, "configure");
+
+        // get initial value
+        final ScriptResult scriptResult1 = page.executeJavaScript("document.querySelectorAll('.validation-error-area--visible .ok')[1].textContent");
+        final long javaScriptResult1 = Long.parseLong((String) scriptResult1.getJavaScriptResult());
+        Assert.assertEquals(System.currentTimeMillis(), javaScriptResult1, 5000); // value is expected to be roughly "now"
+
+        // focus then blur to update
+        page.executeJavaScript("document.querySelector('.CodeMirror textarea').dispatchEvent(new Event(\"focus\"))");
+        page.executeJavaScript("document.querySelector('.CodeMirror textarea').dispatchEvent(new Event(\"blur\"))");
+        wc.waitForBackgroundJavaScript(1000); // Unsure whether this is needed
+
+        // get updated value
+        final ScriptResult scriptResult2 = page.executeJavaScript("document.querySelectorAll('.validation-error-area--visible .ok')[1].textContent");
+        final long javaScriptResult2 = Long.parseLong((String) scriptResult2.getJavaScriptResult());
+        Assert.assertEquals(System.currentTimeMillis(), javaScriptResult2, 5000); // value is expected to be roughly "now"
+
+        // value should have changed
+        Assert.assertNotEquals(javaScriptResult1, javaScriptResult2);
+    }
+
+    public static class CodeMirrorStep extends Builder {
+        private String command;
+
+        @DataBoundConstructor
+        public CodeMirrorStep(String command) {
+            this.command = command;
+        }
+
+        @TestExtension
+        public static class DescriptorImpl extends BuildStepDescriptor<Builder> {
+            public FormValidation doCheckCommand(@QueryParameter String command) {
+                return FormValidation.ok("" + System.currentTimeMillis());
+            }
+
+            @Override
+            public boolean isApplicable(Class<? extends AbstractProject> jobType) {
+                return true;
+            }
         }
     }
 

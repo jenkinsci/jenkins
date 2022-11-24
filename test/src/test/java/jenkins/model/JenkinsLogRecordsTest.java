@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import jenkins.util.java.JavaUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -34,8 +35,8 @@ public class JenkinsLogRecordsTest {
         assertThat("Records are displayed in reverse order",
             logRecords.stream().map(LogRecord::getMessage).collect(Collectors.toList()),
             containsInRelativeOrder("Completed initialization", "Started initialization"));
-        VersionNumber javaVersion = new VersionNumber(System.getProperty("java.specification.version"));
-        if (javaVersion.isOlderThan(new VersionNumber("9")) || javaVersion.isNewerThanOrEqualTo(new VersionNumber("17"))) { // TODO https://github.com/jenkinsci/jenkins-test-harness/issues/359
+        VersionNumber javaVersion = new VersionNumber(JavaUtils.getCurrentRuntimeJavaVersion());
+        if (javaVersion.isNewerThanOrEqualTo(new VersionNumber("17"))) { // TODO https://github.com/jenkinsci/jenkins-test-harness/issues/359
             Object x = new Object() {
                 @Override
                 public String toString() {

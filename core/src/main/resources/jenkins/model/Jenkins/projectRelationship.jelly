@@ -28,13 +28,13 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <l:layout title="${%Project Relationship}">
-    <l:app-bar title="${%Project Relationship}">
-      <t:help href="projectRelationship-help" />
-    </l:app-bar>
-
     <st:include page="sidepanel.jelly" />
 
     <l:main-panel>
+      <l:app-bar title="${%Project Relationship}">
+        <t:help href="projectRelationship-help" />
+      </l:app-bar>
+
       <form action="projectRelationship" method="get">
         <table width="100%">
           <tr>

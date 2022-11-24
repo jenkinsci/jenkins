@@ -15,8 +15,10 @@
   }
 }
 
-#tasks h1 {
-  margin-top: 0.4rem;
+#side-panel .jenkins-app-bar {
+  margin-top: var(--section-padding);
+  margin-left: var(--section-padding);
+  margin-right: var(--section-padding);
 }
 
 #tasks .task {
@@ -57,6 +59,32 @@
         transition: stroke-width var(--standard-transition);
       }
     }
+  }
+
+  .task-icon-badge {
+    position: relative;
+    color: currentColor;
+    letter-spacing: 0;
+    z-index: 0;
+    margin-left: auto;
+    min-width: 24px;
+    text-align: center;
+    padding: 0 8px;
+    line-height: 0.75rem;
+    font-size: 0.75rem;
+
+    &::before {
+      content: "";
+      position: absolute;
+      inset: -6px 0;
+      background: var(--item-background--hover);
+      border-radius: 100px;
+      z-index: -1;
+    }
+  }
+
+  .task-link-text {
+    display: contents;
   }
 
   .task-link-text {

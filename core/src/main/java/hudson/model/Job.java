@@ -1352,7 +1352,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
             final ProjectNamingStrategy namingStrategy = Jenkins.get().getProjectNamingStrategy();
                 if (namingStrategy.isForceExistingJobs()) {
-                    namingStrategy.checkName(name);
+                    namingStrategy.checkName(getParent().getFullName(), name);
                 }
                 FormApply.success(".").generateResponse(req, rsp, null);
         } catch (JSONException e) {

@@ -6,7 +6,6 @@
 .bootstrap-3 [class*="col-"] {
   // simple reset
   margin: initial;
-  padding: initial;
 }
 
 .plugin-setup-wizard() {
@@ -43,14 +42,6 @@
   }
 
   .spin(@duration: 2s) {
-    -webkit-animation-name: spin;
-    -webkit-animation-duration: @duration;
-    -webkit-animation-iteration-count: infinite;
-    -webkit-animation-timing-function: linear;
-    -moz-animation-name: spin;
-    -moz-animation-duration: @duration;
-    -moz-animation-iteration-count: infinite;
-    -moz-animation-timing-function: linear;
     animation-name: spin;
     animation-duration: @duration;
     animation-iteration-count: infinite;
@@ -58,8 +49,6 @@
   }
 
   .no-spin() {
-    -webkit-animation-name: none;
-    -moz-animation-name: none;
     animation-name: none;
   }
 
@@ -100,6 +89,11 @@
 
   .error {
     margin-bottom: 1em;
+  }
+
+  .danger {
+    border: 1px solid;
+    border-color: var(--danger-color, #c4000a);
   }
 
   .modal-body {
@@ -921,36 +915,6 @@
   }
 }
 
-@-ms-keyframes spin {
-  from {
-    -ms-transform: rotate(0deg);
-  }
-
-  to {
-    -ms-transform: rotate(360deg);
-  }
-}
-
-@-moz-keyframes spin {
-  from {
-    -moz-transform: rotate(0deg);
-  }
-
-  to {
-    -moz-transform: rotate(360deg);
-  }
-}
-
-@-webkit-keyframes spin {
-  from {
-    -webkit-transform: rotate(0deg);
-  }
-
-  to {
-    -webkit-transform: rotate(360deg);
-  }
-}
-
 @keyframes spin {
   from {
     transform: rotate(0deg);
@@ -1050,4 +1014,8 @@ body .plugin-setup-wizard {
 .bootstrap-3 .plugins {
   padding-left: 0;
   padding-right: 0;
+}
+
+.setup-wizard-heading {
+  margin-top: -24px;
 }
