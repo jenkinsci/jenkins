@@ -34,7 +34,7 @@ THE SOFTWARE.
 
     <l:main-panel>
       <l:app-bar title="${%Manage Jenkins}">
-        <l:search-bar placeholder="${%Search settings}" id="settings-search-bar" autofocus="true" />
+        <l:search-bar placeholder="${%Search settings}" id="settings-search-bar" />
       </l:app-bar>
 
       <script src="${resURL}/jsbundles/pages/manage-jenkins.js" type="text/javascript" />
