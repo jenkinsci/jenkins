@@ -106,6 +106,7 @@ import jenkins.security.ImpersonatingExecutorService;
 import jenkins.security.MasterToSlaveCallable;
 import jenkins.security.stapler.StaplerDispatchable;
 import jenkins.util.ContextResettingExecutorService;
+import jenkins.util.ErrorLoggingExecutorService;
 import jenkins.util.Listeners;
 import jenkins.util.SystemProperties;
 import net.jcip.annotations.GuardedBy;
@@ -1362,10 +1363,11 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
 
     public static final ExecutorService threadPoolForRemoting = new ContextResettingExecutorService(
         new ImpersonatingExecutorService(
-            Executors.newCachedThreadPool(
-                new ExceptionCatchingThreadFactory(
-                    new NamingThreadFactory(
-                        new DaemonThreadFactory(), "Computer.threadPoolForRemoting"))), ACL.SYSTEM2));
+            new ErrorLoggingExecutorService(
+                Executors.newCachedThreadPool(
+                    new ExceptionCatchingThreadFactory(
+                        new NamingThreadFactory(
+                            new DaemonThreadFactory(), "Computer.threadPoolForRemoting")))), ACL.SYSTEM2));
 
 //
 //

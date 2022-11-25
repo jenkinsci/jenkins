@@ -61,7 +61,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>io.jenkins.plugins</groupId>
         <artifactId>font-awesome-api</artifactId>
-        <version>6.2.0-3</version>
+        <version>6.2.1-1</version>
       </dependency>
       <dependency>
         <groupId>org.jenkins-ci.plugins</groupId>
@@ -93,7 +93,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>1893.v604f95e37d29</version>
+      <version>1900.v9e128c991ef4</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
