@@ -37,22 +37,19 @@ public class Security2779Test {
         final JenkinsRule.WebClient webClient = j.createWebClient();
         webClient.setAlertHandler((AlertHandler) (p, s) -> alerts.addAndGet(1));
         final HtmlPage page = webClient.goTo(URL_NAME);
-        final ScriptResult eventScript = page.executeJavaScript("document.querySelector('" + selector + "').dispatchEvent(new Event('mouseover'))");
-        final Object eventResult = eventScript.getJavaScriptResult();
-        assertThat(eventResult, instanceOf(boolean.class));
-        Assert.assertTrue((boolean) eventResult);
+        page.executeJavaScript("document.querySelector('" + selector + "')._tippy.show()");
         webClient.waitForBackgroundJavaScript(2000);
         // Assertion includes the selector for easier diagnosis
         Assert.assertEquals("Alert with selector '" + selector + "'", 0, alerts.get());
 
-        final ScriptResult innerHtmlScript = page.executeJavaScript("document.querySelector('#tt').innerHTML");
+        final ScriptResult innerHtmlScript = page.executeJavaScript("document.querySelector('.tippy-content').innerHTML");
         Object jsResult = innerHtmlScript.getJavaScriptResult();
         assertThat(jsResult, instanceOf(String.class));
         String jsResultString = (String) jsResult;
 
         // assert leading space to identify unintentional double-escaping (&amp;lt;) as test failure
         assertThat("tooltip does not contain dangerous HTML", jsResultString, not(containsString(" <img src=x")));
-        assertThat("tooltip contains safe text", jsResultString, containsString(" &lt;img src=x"));
+        assertThat("tooltip contains safe text", jsResultString, containsString("lt;img src=x"));
     }
 
     @TestExtension

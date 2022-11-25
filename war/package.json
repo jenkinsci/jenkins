@@ -58,6 +58,7 @@
     "postcss-less": "6.0.0",
     "sortablejs": "1.15.0",
     "stylelint-checkstyle-reporter": "0.2.0",
+    "tippy.js": "^6.3.7",
     "window-handle": "1.0.1"
   },
   "browserslist": [
