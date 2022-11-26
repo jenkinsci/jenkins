@@ -3759,10 +3759,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"hotkeys-js@npm:3.10.0":
-  version: 3.10.0
-  resolution: "hotkeys-js@npm:3.10.0"
-  checksum: 4bb3db45514a18b8dd17a7544d4db3f31a4da08ef918671bc552be828f323796fcaf7f616d8530a2839c9dd04739047090ea106210b2b4da520c7db5cf63744c
+"hotkeys-js@npm:3.10.1":
+  version: 3.10.1
+  resolution: "hotkeys-js@npm:3.10.1"
+  checksum: f6ca367fbcc52e6d6a4f735ada8d6ebfd38d7a1bc5574ffb3dafb5e7a0b5ad1d2a23b46c59eb482b09aca4ca76152738d1be32553580a3e8c7dad6f46a0fa738
   languageName: node
   linkType: hard
 
@@ -4097,7 +4097,7 @@ __metadata:
     eslint-config-prettier: 8.5.0
     handlebars: 4.7.7
     handlebars-loader: 1.7.2
-    hotkeys-js: 3.10.0
+    hotkeys-js: 3.10.1
     jenkins-js-modules: 1.5.4
     jquery: 3.6.1
     less: 4.1.3
