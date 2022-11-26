@@ -539,9 +539,6 @@ function fireEvent(element, event) {
   }
 }
 
-// shared tooltip object
-var tooltip;
-
 // Behavior rules
 //========================================================
 // using tag names in CSS selector makes the processing faster
@@ -1120,10 +1117,6 @@ function rowvgStartEachRow(recursive, f) {
 
 (function () {
   var p = 20;
-  Behaviour.specify("BODY", "body", ++p, function () {
-    tooltip = new YAHOO.widget.Tooltip("tt", { context: [], zindex: 999 });
-  });
-
   Behaviour.specify("TABLE.sortable", "table-sortable", ++p, function (e) {
     // sortable table
     e.sortable = new Sortable.Sortable(e);
@@ -1417,12 +1410,6 @@ function rowvgStartEachRow(recursive, f) {
     }
 
     form = null; // memory leak prevention
-  });
-
-  // hook up tooltip.
-  //   add nodismiss="" if you'd like to display the tooltip forever as long as the mouse is on the element.
-  Behaviour.specify("[tooltip]", "-tooltip-", ++p, function (e) {
-    applyTooltip(e, e.getAttribute("tooltip"));
   });
 
   Behaviour.specify(
@@ -1801,36 +1788,6 @@ function rowvgStartEachRow(recursive, f) {
 var hudsonRules = {}; // legacy name
 // now empty, but plugins can stuff things in here later:
 Behaviour.register(hudsonRules);
-
-function applyTooltip(e, text) {
-  // copied from YAHOO.widget.Tooltip.prototype.configContext to efficiently add a new element
-  // event registration via YAHOO.util.Event.addListener leaks memory, so do it by ourselves here
-  e.onmouseover = function (ev) {
-    var delay = this.getAttribute("nodismiss") != null ? 99999999 : 5000;
-    tooltip.cfg.setProperty("autodismissdelay", delay);
-    return tooltip.onContextMouseOver.call(
-      this,
-      YAHOO.util.Event.getEvent(ev),
-      tooltip
-    );
-  };
-  e.onmousemove = function (ev) {
-    return tooltip.onContextMouseMove.call(
-      this,
-      YAHOO.util.Event.getEvent(ev),
-      tooltip
-    );
-  };
-  e.onmouseout = function (ev) {
-    return tooltip.onContextMouseOut.call(
-      this,
-      YAHOO.util.Event.getEvent(ev),
-      tooltip
-    );
-  };
-  e.title = text;
-  e = null; // avoid memory leak
-}
 
 var Path = {
   tail: function (p) {
@@ -2513,55 +2470,6 @@ function buildFormTree(form) {
     return false;
   }
 }
-
-var hoverNotification = (function () {
-  var msgBox;
-  var body;
-
-  // animation effect that automatically hide the message box
-  var effect = function (overlay, dur) {
-    var o = YAHOO.widget.ContainerEffect.FADE(overlay, dur);
-    o.animateInCompleteEvent.subscribe(function () {
-      window.setTimeout(function () {
-        msgBox.hide();
-      }, 1500);
-    });
-    return o;
-  };
-
-  function init() {
-    if (msgBox != null) return; // already initialized
-
-    var div = document.createElement("DIV");
-    document.body.appendChild(div);
-    div.innerHTML =
-      "<div id=hoverNotification class='jenkins-tooltip'><div class=bd></div></div>";
-    body = $("hoverNotification");
-
-    msgBox = new YAHOO.widget.Overlay(body, {
-      visible: false,
-      zIndex: 1000,
-      effect: {
-        effect: effect,
-        duration: 0.25,
-      },
-    });
-    msgBox.render();
-  }
-
-  return function (title, anchor, offset) {
-    if (typeof offset === "undefined") {
-      offset = 48;
-    }
-    init();
-    body.innerHTML = title;
-    var xy = YAHOO.util.Dom.getXY(anchor);
-    xy[0] += offset;
-    xy[1] += anchor.offsetHeight;
-    msgBox.cfg.setProperty("xy", xy);
-    msgBox.show();
-  };
-})();
 
 // Decrease vertical padding for checkboxes
 window.addEventListener("load", function () {
