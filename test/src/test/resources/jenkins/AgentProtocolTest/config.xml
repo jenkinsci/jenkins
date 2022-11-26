@@ -28,18 +28,12 @@
   </views>
   <primaryView>all</primaryView>
   <slaveAgentPort>0</slaveAgentPort>
-  <!-- YOLO: unstable configuration -->
   <enabledAgentProtocols>
-    <!-- Since removed, but may as well test robustness of load: -->
-    <string>CLI-connect</string>
-    <string>JNLP-connect</string>
-    <string>JNLP3-connect</string>
+    <string>JNLP4-connect</string>
   </enabledAgentProtocols>
   <disabledAgentProtocols>
-    <string>JNLP4-connect</string>
     <string>JNLP2-connect</string>
-    <!-- Ditto: -->
-    <string>CLI2-connect</string>
+    <string>JNLP3-connect</string>
   </disabledAgentProtocols>
   <label></label>
   <nodeProperties/>
