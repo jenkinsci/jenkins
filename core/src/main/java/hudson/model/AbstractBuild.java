@@ -273,7 +273,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P, R>, R extends A
      * {@link #getDisplayName()}.
      * @deprecated navigation through a hierarchy should be done through breadcrumbs, do not add a link using this method
      */
-    @Deprecated(since = "TODO")
+    @Deprecated(since = "2.364")
     public String getUpUrl() {
         return Functions.getNearestAncestorUrl(Stapler.getCurrentRequest(), getParent()) + '/';
     }

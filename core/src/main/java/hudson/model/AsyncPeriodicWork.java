@@ -45,7 +45,7 @@ public abstract class AsyncPeriodicWork extends PeriodicWork {
      *
      * @since 1.651
      */
-    private static final long LOG_ROTATE_SIZE = SystemProperties.getLong(AsyncPeriodicWork.class.getName() + ".logRotateSize", -1L);
+    private static final long LOG_ROTATE_SIZE = SystemProperties.getLong(AsyncPeriodicWork.class.getName() + ".logRotateSize", 10485760L);
     /**
      * The number of milliseconds (since startup or previous rotation) after which to try and rotate the log file.
      *
@@ -92,7 +92,7 @@ public abstract class AsyncPeriodicWork extends PeriodicWork {
                 return;
             }
             thread = new Thread(() -> {
-                logger.log(getNormalLoggingLevel(), "Started {0}", name);
+                logger.log(Level.FINE, "Started {0}", name);
                 long startTime = System.currentTimeMillis();
                 long stopTime;
 
@@ -110,7 +110,7 @@ public abstract class AsyncPeriodicWork extends PeriodicWork {
                     l.close(String.format("Finished at %tc. %dms", new Date(stopTime), stopTime - startTime));
                 }
 
-                logger.log(getNormalLoggingLevel(), "Finished {0}. {1,number} ms",
+                logger.log(Level.FINE, "Finished {0}. {1,number} ms",
                         new Object[]{name, stopTime - startTime});
             }, name + " thread");
             thread.start();

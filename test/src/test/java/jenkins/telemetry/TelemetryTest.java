@@ -1,5 +1,6 @@
 package jenkins.telemetry;
 
+import static org.awaitility.Awaitility.await;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
@@ -21,6 +22,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.regex.Pattern;
 import javax.servlet.FilterChain;
@@ -62,14 +64,13 @@ public class TelemetryTest {
         j.jenkins.setNoUsageStatistics(false); // tests usually don't submit this, but we need this
         assertEquals("no requests received", 0, counter);
         ExtensionList.lookupSingleton(Telemetry.TelemetryReporter.class).doRun();
-        do {
-            Thread.sleep(250);
-        } while (counter == 0); // this might end up being flaky due to 1 to many active telemetry trials
-        assertThat(logger.getMessages(), hasItem("Telemetry submission received response '200 OK' for: test-data"));
+        await().pollInterval(250, TimeUnit.MILLISECONDS)
+                .atMost(10, TimeUnit.SECONDS)
+                .until(() -> types, hasItem("test-data"));
+        assertThat(logger.getMessages(), hasItem("Telemetry submission received response 200 for: test-data"));
         assertThat(logger.getMessages(), hasItem("Skipping telemetry for 'future' as it is configured to start later"));
         assertThat(logger.getMessages(), hasItem("Skipping telemetry for 'past' as it is configured to end in the past"));
         assertThat(logger.getMessages(), hasItem("Skipping telemetry for 'empty' as it has no data"));
-        assertThat(types, hasItem("test-data"));
         assertThat(types, not(hasItem("future")));
         assertThat(types, not(hasItem("past")));
         assertThat(correlators.size(), is(counter));
@@ -85,11 +86,9 @@ public class TelemetryTest {
         correlator.setCorrelationId(correlationId);
 
         ExtensionList.lookupSingleton(Telemetry.TelemetryReporter.class).doRun();
-        do {
-            Thread.sleep(250);
-        } while (counter == 0); // this might end up being flaky due to 1 to many active telemetry trials
-
-        assertThat(types, hasItem("test-data"));
+        await().pollInterval(250, TimeUnit.MILLISECONDS)
+                .atMost(10, TimeUnit.SECONDS)
+                .until(() -> types, hasItem("test-data"));
         //90ecf3ce1cd5ba1e5ad3cde7ad08a941e884f2e4d9bd463361715abab8efedc5
         assertThat(correlators, hasItem(DigestUtils.sha256Hex(correlationId + "test-data")));
     }

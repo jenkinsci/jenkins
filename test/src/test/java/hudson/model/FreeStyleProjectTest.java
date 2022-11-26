@@ -52,6 +52,7 @@ import jenkins.model.Jenkins;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.FailureBuilder;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -68,6 +69,9 @@ public class FreeStyleProjectTest {
 
     @Rule
     public JenkinsRule j = new JenkinsRule();
+
+    @Rule
+    public TemporaryFolder tempFolder = new TemporaryFolder();
 
     /**
      * Tests a trivial configuration round-trip.
@@ -101,8 +105,7 @@ public class FreeStyleProjectTest {
     @Issue("JENKINS-4206")
     public void customWorkspaceAllocation() throws Exception {
         FreeStyleProject f = j.createFreeStyleProject();
-        File d = j.createTmpDir();
-        f.setCustomWorkspace(d.getPath());
+        f.setCustomWorkspace(tempFolder.newFolder().getPath());
         j.buildAndAssertSuccess(f);
     }
 
@@ -113,7 +116,7 @@ public class FreeStyleProjectTest {
     @Issue("JENKINS-3997")
     public void customWorkspaceVariableExpansion() throws Exception {
         FreeStyleProject f = j.createFreeStyleProject();
-        File d = new File(j.createTmpDir(), "${JOB_NAME}");
+        File d = new File(tempFolder.newFolder(), "${JOB_NAME}");
         f.setCustomWorkspace(d.getPath());
         FreeStyleBuild b = j.buildAndAssertSuccess(f);
 

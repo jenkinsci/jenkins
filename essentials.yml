@@ -1,9 +1,0 @@
----
-ath:
-  useLocalSnapshots: false
-  athRevision: "5439.vb_929a_7e53585"
-  athImage: "jenkins/ath:5439.vb_929a_7e53585"
-  categories:
-    - org.jenkinsci.test.acceptance.junit.SmokeTest
-  jdks:
-    - 11
