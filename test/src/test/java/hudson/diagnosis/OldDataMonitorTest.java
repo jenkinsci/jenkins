@@ -155,7 +155,6 @@ public class OldDataMonitorTest {
     }
 
     @Issue("JENKINS-63372")
-    @LocalData("main")
     @Test public void referToTest() {
         FreeStyleBuild build = mock(FreeStyleBuild.class);
         when(build.getParent()).thenReturn(null);
