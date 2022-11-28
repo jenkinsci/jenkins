@@ -164,7 +164,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>junit</artifactId>
-      <version>1160.vf1f01a_a_ea_b_7f</version>
+      <version>1166.va_436e268e972</version>
       <scope>test</scope>
     </dependency>
     <dependency>
