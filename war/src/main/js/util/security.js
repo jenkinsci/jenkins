@@ -1,6 +1,18 @@
-function sanitizeString(str) {
-  str = str.replace(/[^a-z0-9áéíóúñü .,_-]/gim, "");
-  return str.trim();
+function xmlEscape(str) {
+  return str.replace(/[<>&'"]/g, (match) => {
+    switch (match) {
+      case "<":
+        return "&lt;";
+      case ">":
+        return "&gt;";
+      case "&":
+        return "&amp;";
+      case "'":
+        return "&apos;";
+      case '"':
+        return "&quot;";
+    }
+  });
 }
 
-export { sanitizeString };
+export { xmlEscape };
