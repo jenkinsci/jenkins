@@ -27,6 +27,7 @@ THE SOFTWARE.
   <l:layout>
     <l:hasPermission permission="${app.READ}" it="${app}">
       <st:include page="sidepanel.jelly" it="${app}" />
+      <!-- TODO: breadcrumb needed here? -->
     </l:hasPermission>
     <l:main-panel>
       <h1>${%Success}</h1>

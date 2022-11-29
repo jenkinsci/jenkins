@@ -29,6 +29,7 @@ THE SOFTWARE.
 <st:compress xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <l:layout title="${it.run.parent.displayName} #${it.run.number} ${%Polling Log}">
     <st:include it="${it.run}" page="sidepanel.jelly" />
+    <!-- TODO: no breadcrumb here? -->
     <l:main-panel>
       <h1>${%Polling Log}</h1>
       <p>${%blurb}</p>

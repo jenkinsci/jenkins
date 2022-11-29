@@ -37,6 +37,7 @@ THE SOFTWARE.
   <st:statusCode value="405" />
   <l:layout title="${it.displayName}">
     <st:include page="sidepanel.jelly" it="${it.job}"/>
+    <!-- TODO: breadcrumb needed here? -->
     <l:main-panel>
       <div class="behavior-loading"><l:spinner text="${%LOADING}"/></div>
       <h1>${it.job.pronoun} ${it.job.displayName}</h1>

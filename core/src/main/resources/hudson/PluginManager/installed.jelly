@@ -31,7 +31,7 @@ THE SOFTWARE.
     <j:set var="readOnlyMode" value="${!app.hasPermission(app.ADMINISTER)}"/>
 
     <st:include page="sidepanel.jelly"/>
-
+    <l:breadcrumb title="${%Installed plugins}" />
     <l:main-panel>
       <l:app-bar title="${%Plugins}" />
 
