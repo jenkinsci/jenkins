@@ -31,7 +31,6 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:t="/lib/hudson">
   <l:layout>
     <st:include it="${it.run}" page="sidepanel.jelly"/>
-    <!-- TODO: no breadcrumb here? -->
     <l:main-panel>
       <h1>
         <l:icon class="icon-fingerprint icon-xlg"/>

@@ -31,7 +31,6 @@ THE SOFTWARE.
 <l:layout title="${%Download progress} - ${%Plugin Manager}" permission="${app.SYSTEM_READ}">
   <st:adjunct includes="hudson.model.UpdateCenter.update-center" />
   <st:include page="sidepanel.jelly" it="${app.pluginManager}" />
-  <!-- TODO: nothing here? -->
   <l:main-panel>
     <h1>${%Download progress}</h1>
     <st:include page="body.jelly" />

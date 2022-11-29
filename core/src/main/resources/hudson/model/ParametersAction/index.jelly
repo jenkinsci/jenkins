@@ -33,7 +33,6 @@ THE SOFTWARE.
     </j:invoke>
     <j:set var="build" value="${request.findAncestorObject(buildClass)}" />
 		<st:include page="sidepanel.jelly" it="${build}" />
-		<!-- TODO: breadcrumb needed here? -->
 		<l:main-panel>
 			<h1>${%Build} ${build.displayName}</h1>
 			<div class="container-fluid pane-frame">

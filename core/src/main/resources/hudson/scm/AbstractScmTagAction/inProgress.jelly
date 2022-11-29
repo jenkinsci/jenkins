@@ -26,7 +26,6 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <l:layout>
     <st:include it="${it.run}" page="sidepanel.jelly" />
-    <!-- TODO: breadcrumb needed here? -->
     <l:main-panel>
       <h1>Build ${it.run.displayName}</h1>
       <p>
