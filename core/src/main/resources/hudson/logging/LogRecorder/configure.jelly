@@ -30,6 +30,7 @@ THE SOFTWARE.
 <l:layout permission="${app.ADMINISTER}" title="${%Configure log recorder}">
   <st:include page="sidepanel.jelly" />
   <l:breadcrumb title="${%Configure log recorder}" />
+
   <l:main-panel>
     <l:app-bar title="${%Configure log recorder}">
       <t:help href="https://www.jenkins.io/redirect/log-recorders" tooltip="${%Additional information on log levels}" />
