@@ -32,6 +32,7 @@ THE SOFTWARE.
 
     <st:include page="sidepanel.jelly"/>
     <l:breadcrumb title="${%Installed plugins}" />
+
     <l:main-panel>
       <l:app-bar title="${%Plugins}" />
 

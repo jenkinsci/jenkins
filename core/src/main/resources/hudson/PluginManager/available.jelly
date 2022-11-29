@@ -30,6 +30,7 @@ THE SOFTWARE.
   <l:layout title="${%Available plugins} - ${%Plugin Manager}" permission="${app.SYSTEM_READ}">
     <st:include page="sidepanel.jelly"/>
     <l:breadcrumb title="${%Available plugins}" />
+
     <l:main-panel>
       <l:app-bar title="${%Plugins}" />
 
