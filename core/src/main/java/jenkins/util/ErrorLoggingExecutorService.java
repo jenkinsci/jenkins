@@ -34,6 +34,7 @@ import java.util.logging.Logger;
  * Executor service that logs unchecked exceptions / errors in {@link Runnable}.
  * Exceptions thrown from {@link Callable} are <em>not</em> not logged,
  * under the assumption that something is checking {@link Future#get()}.
+ * @since TODO
  */
 public class ErrorLoggingExecutorService extends InterceptingExecutorService {
 
