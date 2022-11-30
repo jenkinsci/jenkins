@@ -89,7 +89,7 @@ import org.kohsuke.stapler.verb.POST;
 /**
  * Records a selected set of logs so that the system administrator
  * can diagnose a specific aspect of the system.
- *
+ * <p>
  * TODO: still a work in progress.
  *
  * <p><strong>Access Control</strong>:
@@ -193,7 +193,7 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
      * Validate the name.
      *
      * @return {@link FormValidation#ok} if the log target is not empty, otherwise {@link
-     *     FormValidation#warning} with a message explaining the problem.
+     * FormValidation#warning} with a message explaining the problem.
      */
     @NonNull
     @Restricted(NoExternalUse.class)
@@ -373,8 +373,11 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
     }
 
     private static final class SetLevel extends MasterToSlaveCallable<Void, Error> {
-        /** known loggers (kept per agent), to avoid GC */
-        @SuppressWarnings("MismatchedQueryAndUpdateOfCollection") private static final Set<Logger> loggers = new HashSet<>();
+        /**
+         * known loggers (kept per agent), to avoid GC
+         */
+        @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
+        private static final Set<Logger> loggers = new HashSet<>();
         private final String name;
         private final Level level;
 
@@ -383,7 +386,8 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
             this.level = level;
         }
 
-        @Override public Void call() throws Error {
+        @Override
+        public Void call() throws Error {
             Logger logger = Logger.getLogger(name);
             loggers.add(logger);
             logger.setLevel(level);
@@ -406,8 +410,11 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
         }
     }
 
-    @Extension @Restricted(NoExternalUse.class) public static final class ComputerLogInitializer extends ComputerListener {
-        @Override public void preOnline(Computer c, Channel channel, FilePath root, TaskListener listener) throws IOException, InterruptedException {
+    @Extension
+    @Restricted(NoExternalUse.class)
+    public static final class ComputerLogInitializer extends ComputerListener {
+        @Override
+        public void preOnline(Computer c, Channel channel, FilePath root, TaskListener listener) throws IOException, InterruptedException {
             for (LogRecorder recorder : Jenkins.get().getLog().getRecorders()) {
                 for (Target t : recorder.getLoggers()) {
                     channel.call(new SetLevel(t.name, t.getLevel()));
@@ -486,7 +493,7 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
      */
     @Override
     public synchronized void save() throws IOException {
-        if (BulkChange.contains(this))   return;
+        if (BulkChange.contains(this)) return;
 
         handlePluginUpdatingLegacyLogManagerMap();
         getConfigFile().write(this);
@@ -569,11 +576,21 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
     }
 
     /**
+     * @deprecated use of term 'slave' is
+     * replaced by term 'agent' use {@link #getAgentLogRecords()}
+     */
+    @Deprecated
+    public Map<Computer, List<LogRecord>> getSlaveLogRecords() {
+        return getAgentLogRecords();
+    }
+
+    /**
      * Gets a view of log records per agent matching this recorder.
+     *
      * @return a map (sorted by display name) from computer to (nonempty) list of log records
      * @since 1.519
      */
-    public Map<Computer, List<LogRecord>> getSlaveLogRecords() {
+    public Map<Computer, List<LogRecord>> getAgentLogRecords() {
         Map<Computer, List<LogRecord>> result = new TreeMap<>(new Comparator<>() {
             final Collator COLL = Collator.getInstance();
 

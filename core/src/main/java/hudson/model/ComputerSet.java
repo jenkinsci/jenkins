@@ -98,7 +98,7 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
 
     /**
      * @deprecated as of 1.301
-     *      Use {@link #getMonitors()}.
+     * Use {@link #getMonitors()}.
      */
     @Deprecated
     public static List<NodeMonitor> get_monitors() {
@@ -143,9 +143,18 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
     }
 
     /**
+     * @deprecated use of term 'slave' is
+     * replaced by term 'agent' use {@link #get_agentNames()} ()}
+     */
+    @Deprecated
+    public List<String> get_slaveNames() {
+        return get_agentNames();
+    }
+
+    /**
      * Gets all the agent names.
      */
-    public List<String> get_slaveNames() {
+    public List<String> get_agentNames() {
         return new AbstractList<>() {
             final List<Node> nodes = Jenkins.get().getNodes();
 
@@ -222,7 +231,7 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
 
     /**
      * Triggers the schedule update now.
-     *
+     * <p>
      * TODO: ajax on the client side to wait until the update completion might be nice.
      */
     @RequirePOST
@@ -244,8 +253,8 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
      */
     @RequirePOST
     public synchronized void doCreateItem(StaplerRequest req, StaplerResponse rsp,
-                                           @QueryParameter String name, @QueryParameter String mode,
-                                           @QueryParameter String from) throws IOException, ServletException {
+                                          @QueryParameter String name, @QueryParameter String mode,
+                                          @QueryParameter String from) throws IOException, ServletException {
         final Jenkins app = Jenkins.get();
         app.checkPermission(Computer.CREATE);
 
@@ -290,8 +299,8 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
      */
     @POST
     public synchronized void doDoCreateItem(StaplerRequest req, StaplerResponse rsp,
-                                           @QueryParameter String name,
-                                           @QueryParameter String type) throws IOException, ServletException, FormException {
+                                            @QueryParameter String name,
+                                            @QueryParameter String type) throws IOException, ServletException, FormException {
         final Jenkins app = Jenkins.get();
         app.checkPermission(Computer.CREATE);
         String fixedName = Util.fixEmptyAndTrim(name);
@@ -310,6 +319,7 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
 
     /**
      * Makes sure that the given name is good as an agent name.
+     *
      * @return trimmed name if valid; throws ParseException if not
      */
     public String checkName(String name) throws Failure {
@@ -408,7 +418,8 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
     /**
      * Just to force the execution of the static initializer.
      */
-    public static void initialize() {}
+    public static void initialize() {
+    }
 
     @Initializer(after = JOB_CONFIG_ADAPTED)
     public static void init() {
@@ -478,7 +489,8 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
             NodeMonitor nm = d.clazz.getDeclaredConstructor().newInstance();
             nm.setIgnored(ignored);
             return nm;
-        } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
+        } catch (NoSuchMethodException | InstantiationException | IllegalAccessException |
+                 InvocationTargetException e) {
             LOGGER.log(Level.SEVERE, "Failed to instantiate " + d.clazz, e);
         }
         return null;
