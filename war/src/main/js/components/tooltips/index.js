@@ -19,8 +19,12 @@ function registerTooltip(element) {
     element._tippy.destroy();
   }
 
-  if (element.hasAttribute("tooltip") && !element.hasAttribute("data-html-tooltip")) {
-    tippy(element,
+  if (
+    element.hasAttribute("tooltip") &&
+    !element.hasAttribute("data-html-tooltip")
+  ) {
+    tippy(
+      element,
       Object.assign(
         {
           content: (element) =>
@@ -41,7 +45,8 @@ function registerTooltip(element) {
   }
 
   if (element.hasAttribute("data-html-tooltip")) {
-    tippy(element,
+    tippy(
+      element,
       Object.assign(
         {
           content: (element) => element.getAttribute("data-html-tooltip"),
