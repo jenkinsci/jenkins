@@ -3759,10 +3759,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"hotkeys-js@npm:3.10.0":
-  version: 3.10.0
-  resolution: "hotkeys-js@npm:3.10.0"
-  checksum: 4bb3db45514a18b8dd17a7544d4db3f31a4da08ef918671bc552be828f323796fcaf7f616d8530a2839c9dd04739047090ea106210b2b4da520c7db5cf63744c
+"hotkeys-js@npm:3.10.1":
+  version: 3.10.1
+  resolution: "hotkeys-js@npm:3.10.1"
+  checksum: f6ca367fbcc52e6d6a4f735ada8d6ebfd38d7a1bc5574ffb3dafb5e7a0b5ad1d2a23b46c59eb482b09aca4ca76152738d1be32553580a3e8c7dad6f46a0fa738
   languageName: node
   linkType: hard
 
@@ -4097,7 +4097,7 @@ __metadata:
     eslint-config-prettier: 8.5.0
     handlebars: 4.7.7
     handlebars-loader: 1.7.2
-    hotkeys-js: 3.10.0
+    hotkeys-js: 3.10.1
     jenkins-js-modules: 1.5.4
     jquery: 3.6.1
     less: 4.1.3
@@ -4107,7 +4107,7 @@ __metadata:
     postcss: 8.4.19
     postcss-less: 6.0.0
     postcss-loader: 7.0.1
-    prettier: 2.7.1
+    prettier: 2.8.0
     sortablejs: 1.15.0
     style-loader: 3.3.1
     stylelint: 14.15.0
@@ -5539,12 +5539,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"prettier@npm:2.7.1":
-  version: 2.7.1
-  resolution: "prettier@npm:2.7.1"
+"prettier@npm:2.8.0":
+  version: 2.8.0
+  resolution: "prettier@npm:2.8.0"
   bin:
     prettier: bin-prettier.js
-  checksum: 55a4409182260866ab31284d929b3cb961e5fdb91fe0d2e099dac92eaecec890f36e524b4c19e6ceae839c99c6d7195817579cdffc8e2c80da0cb794463a748b
+  checksum: 72004ce0cc9bb097daf3e3833f62495768724392c1d5b178dd47372337616e9e50ecbb0804f236596223f7b5eb1bbe69cefc8957dca21112c5777e77ef73a564
   languageName: node
   linkType: hard
 
