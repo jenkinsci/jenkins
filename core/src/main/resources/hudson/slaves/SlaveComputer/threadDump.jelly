@@ -36,7 +36,10 @@ THE SOFTWARE.
       <l:isAdmin>
         <h1>${%Thread Dump}</h1>
         <j:forEach var="t" items="${it.getThreadDump().entrySet()}">
-          <h2>${t.key}</h2>
+          <h2>
+            ${t.key}
+            <l:copyButton message="${%successfullyCopied}" tooltip="${%clickToCopy}" text="${t.value}"/>
+          </h2>
           <pre>${t.value}</pre>
         </j:forEach>
       </l:isAdmin>
