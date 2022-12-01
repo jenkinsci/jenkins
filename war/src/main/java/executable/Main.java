@@ -182,8 +182,8 @@ public class Main {
     }
 
     @SuppressFBWarnings(
-            value = {"PATH_TRAVERSAL_IN", "THROWS_METHOD_THROWS_RUNTIMEEXCEPTION"},
-            justification = "User provided values for running the program and intentional propagation of reflection errors")
+            value = "PATH_TRAVERSAL_IN",
+            justification = "User provided values for running the program")
     public static void main(String[] args) throws IllegalAccessException {
         try {
             verifyJavaVersion(getReleaseVersion(), isFutureJavaEnabled(args));

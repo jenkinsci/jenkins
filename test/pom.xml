@@ -61,7 +61,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>io.jenkins.plugins</groupId>
         <artifactId>font-awesome-api</artifactId>
-        <version>6.2.0-3</version>
+        <version>6.2.1-1</version>
       </dependency>
       <dependency>
         <groupId>org.jenkins-ci.plugins</groupId>
@@ -78,7 +78,7 @@ THE SOFTWARE.
         <!-- requireUpperBoundDeps via matrix-project and junit -->
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>script-security</artifactId>
-        <version>1189.vb_a_b_7c8fd5fde</version>
+        <version>1218.v39ca_7f7ed0a_c</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -93,7 +93,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>1868.v03b_7c6673e2e</version>
+      <version>1900.v9e128c991ef4</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -136,7 +136,6 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.hamcrest</groupId>
       <artifactId>hamcrest-core</artifactId>
-      <version>2.2</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -153,19 +152,19 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>antisamy-markup-formatter</artifactId>
-      <version>2.7</version>
+      <version>155.v795fb_8702324</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>cloudbees-folder</artifactId>
-      <version>6.773.vd2dcc704ee7e</version>
+      <version>6.795.v3e23d3c6f194</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>junit</artifactId>
-      <version>1153.v1c24f1a_d2553</version>
+      <version>1166.va_436e268e972</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -252,12 +251,12 @@ THE SOFTWARE.
                   <version>${remoting.minimum.supported.version}</version>
                   <type>jar</type>
                   <outputDirectory>${project.build.outputDirectory}/old-remoting</outputDirectory>
-                  <destFileName>remoting-minimal-supported.jar</destFileName>
+                  <destFileName>remoting-minimum-supported.jar</destFileName>
                 </artifactItem>
                 <artifactItem>
                   <groupId>org.jenkins-ci.main</groupId>
                   <artifactId>remoting</artifactId>
-                  <version>4.2</version>
+                  <version>4.6</version>
                   <type>jar</type>
                   <outputDirectory>${project.build.outputDirectory}/old-remoting</outputDirectory>
                   <destFileName>remoting-unsupported.jar</destFileName>
