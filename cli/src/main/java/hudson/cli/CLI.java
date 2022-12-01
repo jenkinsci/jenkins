@@ -71,6 +71,7 @@ import org.glassfish.tyrus.container.jdk.client.JdkClientContainer;
 /**
  * CLI entry point to Jenkins.
  */
+@SuppressFBWarnings(value = "CRLF_INJECTION_LOGS", justification = "We don't care about this behavior")
 public class CLI {
 
     private CLI() {}

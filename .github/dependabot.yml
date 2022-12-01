@@ -55,6 +55,14 @@ updates:
       # Contains incompatible API changes and needs compatibility work. See:
       # https://github.com/jenkinsci/jenkins/pull/4224
       - dependency-name: "org.jfree:jfreechart"
+
+      # Starting with 6.x, Spring requires Java 17 at a minimum.
+      - dependency-name: "org.springframework:spring-framework-bom"
+        versions: [">=6.0.0"]
+
+      # Starting with 6.x, Spring Security requires Java 17 at a minimum.
+      - dependency-name: "org.springframework.security:spring-security-bom"
+        versions: [">=6.0.0"]
   - package-ecosystem: "maven"
     directory: "/"
     target-branch: "stable-2.361"
@@ -65,3 +73,7 @@ updates:
       interval: "daily"
     # Include only security updates and exclude version updates.
     open-pull-requests-limit: 0
+  - package-ecosystem: "docker"
+    directory: "./gitpod"
+    schedule:
+      interval: "daily"
