@@ -85,7 +85,7 @@ public class IconSet {
 
     // for Jelly
     @Restricted(NoExternalUse.class)
-    public static String getSymbol(String name, String title, String tooltip, String classes, String pluginName, String id) {
+    public static String getSymbol(String name, String title, String tooltip, String htmlTooltip, String classes, String pluginName, String id) {
         String translatedName = cleanName(name);
 
         String identifier = Util.fixEmpty(pluginName) == null ? "core" : pluginName;
@@ -95,9 +95,13 @@ public class IconSet {
             String symbol = symbolsForLookup.get(translatedName);
             symbol = symbol.replaceAll("(class=\").*?(\")", "$1$2");
             symbol = symbol.replaceAll("(tooltip=\").*?(\")", "");
+            symbol = symbol.replaceAll("(data-html-tooltip=\").*?(\")", "");
             symbol = symbol.replaceAll("(id=\").*?(\")", "");
-            if (!tooltip.isEmpty()) {
+            if (!tooltip.isEmpty() && htmlTooltip.isEmpty()) {
                 symbol = symbol.replaceAll("<svg", "<svg tooltip=\"" + Functions.htmlAttributeEscape(tooltip) + "\"");
+            }
+            if (!htmlTooltip.isEmpty()) {
+                symbol = symbol.replaceAll("<svg", "<svg data-html-tooltip=\"" + Functions.htmlAttributeEscape(htmlTooltip) + "\"");
             }
             if (!id.isEmpty()) {
                  symbol = symbol.replaceAll("<svg", "<svg id=\"" + Functions.htmlAttributeEscape(id) + "\"");
@@ -124,9 +128,13 @@ public class IconSet {
         symbol = symbol.replaceAll("(<title>).*(</title>)", "$1$2");
         symbol = symbol.replaceAll("(class=\").*?(\")", "$1$2");
         symbol = symbol.replaceAll("(tooltip=\").*?(\")", "$1$2");
+        symbol = symbol.replaceAll("(data-html-tooltip=\").*?(\")", "$1$2");
         symbol = symbol.replaceAll("(id=\").*?(\")", "");
-        if (!tooltip.isEmpty()) {
+        if (!tooltip.isEmpty() && htmlTooltip.isEmpty()) {
             symbol = symbol.replaceAll("<svg", "<svg tooltip=\"" + Functions.htmlAttributeEscape(tooltip) + "\"");
+        }
+        if (!htmlTooltip.isEmpty()) {
+            symbol = symbol.replaceAll("<svg", "<svg data-html-tooltip=\"" + Functions.htmlAttributeEscape(htmlTooltip) + "\"");
         }
         if (!id.isEmpty()) {
             symbol = symbol.replaceAll("<svg", "<svg id=\"" + Functions.htmlAttributeEscape(id) + "\"");

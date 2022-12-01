@@ -51,8 +51,8 @@ public class AgentProtocolTest {
     @LocalData
     @Issue("JENKINS-45841")
     public void testShouldNotOverrideUserConfiguration() throws Exception {
-        assertEnabled("JNLP-connect");
-        assertDisabled("JNLP2-connect", "JNLP4-connect");
+        assertEnabled("JNLP4-connect");
+        assertDisabled("JNLP2-connect", "JNLP3-connect");
         assertProtocols(true, "System protocols should be always enabled", "Ping");
     }
 
