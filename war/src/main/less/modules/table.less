@@ -49,16 +49,22 @@
             width: 24px;
           }
         }
+
+        svg {
+          vertical-align: middle;
+          width: 0.8rem;
+          height: 0.8rem;
+        }
       }
     }
   }
 
   & > tbody {
     & > tr {
-      background: var(--table-body-background);
       color: var(--table-body-foreground);
 
       & > td {
+        background: var(--table-body-background);
         vertical-align: middle;
         padding: var(--table-padding) 0 var(--table-padding)
           var(--table-padding);

@@ -66,11 +66,19 @@ public class TelemetryTest {
         ExtensionList.lookupSingleton(Telemetry.TelemetryReporter.class).doRun();
         await().pollInterval(250, TimeUnit.MILLISECONDS)
                 .atMost(10, TimeUnit.SECONDS)
+                .until(logger::getMessages, hasItem("Telemetry submission received response 200 for: test-data"));
+        await().pollInterval(250, TimeUnit.MILLISECONDS)
+                .atMost(10, TimeUnit.SECONDS)
+                .until(logger::getMessages, hasItem("Skipping telemetry for 'future' as it is configured to start later"));
+        await().pollInterval(250, TimeUnit.MILLISECONDS)
+                .atMost(10, TimeUnit.SECONDS)
+                .until(logger::getMessages, hasItem("Skipping telemetry for 'past' as it is configured to end in the past"));
+        await().pollInterval(250, TimeUnit.MILLISECONDS)
+                .atMost(10, TimeUnit.SECONDS)
+                .until(logger::getMessages, hasItem("Skipping telemetry for 'empty' as it has no data"));
+        await().pollInterval(250, TimeUnit.MILLISECONDS)
+                .atMost(10, TimeUnit.SECONDS)
                 .until(() -> types, hasItem("test-data"));
-        assertThat(logger.getMessages(), hasItem("Telemetry submission received response 200 for: test-data"));
-        assertThat(logger.getMessages(), hasItem("Skipping telemetry for 'future' as it is configured to start later"));
-        assertThat(logger.getMessages(), hasItem("Skipping telemetry for 'past' as it is configured to end in the past"));
-        assertThat(logger.getMessages(), hasItem("Skipping telemetry for 'empty' as it has no data"));
         assertThat(types, not(hasItem("future")));
         assertThat(types, not(hasItem("past")));
         assertThat(correlators.size(), is(counter));
