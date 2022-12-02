@@ -40,7 +40,7 @@ THE SOFTWARE.
   <properties>
     <asm.version>9.4</asm.version>
     <slf4jVersion>2.0.5</slf4jVersion>
-    <stapler.version>1736.vb_1e05c4231b_c</stapler.version>
+    <stapler.version>1756.vec9071748061</stapler.version>
     <groovy.version>2.4.21</groovy.version>
   </properties>
 
@@ -214,7 +214,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jenkins-ci</groupId>
         <artifactId>annotation-indexer</artifactId>
-        <version>1.16</version>
+        <version>1.17</version>
       </dependency>
       <dependency>
         <groupId>org.jenkins-ci</groupId>
@@ -224,7 +224,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jenkins-ci</groupId>
         <artifactId>crypto-util</artifactId>
-        <version>1.7</version>
+        <version>1.8</version>
       </dependency>
       <dependency>
         <groupId>org.jenkins-ci</groupId>
@@ -244,7 +244,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jenkins-ci</groupId>
         <artifactId>version-number</artifactId>
-        <version>1.10</version>
+        <version>1.11</version>
       </dependency>
       <dependency>
         <groupId>org.jenkins-ci.main</groupId>
