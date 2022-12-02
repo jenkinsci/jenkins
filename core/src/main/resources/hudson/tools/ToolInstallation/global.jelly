@@ -23,11 +23,11 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:local="local">
-  <f:section title="${descriptor.displayName}">
+  <f:section title="${%title(descriptor.displayName)}">
     <d:taglib uri="local">
       <d:tag name="section">
         <j:set var="escapeEntryTitleAndDescription" value="true"/>
-        <f:entry title="${%title(descriptor.displayName)}" description="${%description(descriptor.displayName)}">
+        <f:entry>
           <f:repeatable name="tool" var="instance" items="${descriptor.installations}"
                         add="${%label.add(descriptor.displayName)}" header="${descriptor.displayName}" enableTopButton="true"
                         noAddButton="${readOnlyMode ? 'true' : null}"
