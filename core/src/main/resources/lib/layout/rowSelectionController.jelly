@@ -38,27 +38,23 @@ THE SOFTWARE.
       <d:invokeBody />
     </j:set>
 
-    <j:if test="${contents.length() != 0}">
-      <button type="button" class="jenkins-button jenkins-button--tertiary jenkins-table__checkbox-options">
-        <l:icon src="symbol-chevron-down" />
-      </button>
-
-      <div class="jenkins-table__checkbox-dropdown">
-        <span>${%Select}</span>
-        <button type="button" data-select="all" class="jenkins-button jenkins-button--tertiary">
+    <j:if test="${contents.length() > 0}">
+      <l:overflowButton icon="symbol-chevron-down" clazz="jenkins-button--tertiary jenkins-table__checkbox-options">
+        <span class="jenkins-dropdown__heading">${%Select}</span>
+        <button type="button" data-select="all" class="jenkins-dropdown__item">
           <div class="jenkins-table__checkbox-dropdown__icon">
             <l:icon src="symbol-check" />
           </div>
           ${%All}
         </button>
         <j:out value="${contents}" />
-        <button type="button" data-select="none" class="jenkins-button jenkins-button--tertiary">
+        <button type="button" data-select="none" class="jenkins-dropdown__item">
           <div class="jenkins-table__checkbox-dropdown__icon">
             <l:icon src="symbol-close" />
           </div>
           ${%None}
         </button>
-      </div>
+      </l:overflowButton>
     </j:if>
   </div>
 

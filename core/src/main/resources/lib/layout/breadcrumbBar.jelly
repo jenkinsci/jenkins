@@ -35,8 +35,6 @@ THE SOFTWARE.
     ]]>
   </st:documentation>
 
-  <st:adjunct includes="lib.layout.breadcrumbs" />
-
   <j:set var="contents" trim="true">
     <d:invokeBody />
   </j:set>
