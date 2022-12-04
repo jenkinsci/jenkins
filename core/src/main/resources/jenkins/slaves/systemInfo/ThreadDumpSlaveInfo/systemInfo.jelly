@@ -30,7 +30,10 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <j:forEach var="t" items="${it.getThreadDump().entrySet()}">
-    <h2>${t.key}</h2>
+    <h2>
+      ${t.key}
+      <l:copyButton message="${%successfullyCopied}" tooltip="${%clickToCopy}" text="${t.value}"/>
+    </h2>
     <pre>${t.value}</pre>
   </j:forEach>
 </j:jelly>

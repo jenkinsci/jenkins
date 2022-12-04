@@ -31,6 +31,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import hudson.Launcher;
@@ -309,6 +310,8 @@ public class OnlineNodeCommandTest {
      * @throws Exception if somethink wrong happened
      */
     public static Future<FreeStyleBuild> startBlockingAndFinishingBuild(FreeStyleProject project, OneShotEvent finish) throws Exception {
+        assertFalse(finish.isSignaled());
+
         final OneShotEvent block = new OneShotEvent();
 
         project.getBuildersList().add(new BlockingAndFinishingBuilder(block, finish));
