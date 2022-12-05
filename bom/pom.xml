@@ -379,24 +379,6 @@ THE SOFTWARE.
         <version>1.2</version>
         <scope>provided</scope>
       </dependency>
-      <dependency>
-        <!--  make sure these old servlet versions are never used by us or by any plugins which end up depending on this version -->
-        <!--  plugin-pom tries to fudge servlet support to be compatible with cores < 2.0 and JTH which needs 3.x for jetty, and ends up causing issues with some IDEs -->
-        <groupId>javax.servlet</groupId>
-        <!-- the old artifactID for the servlet API -->
-        <artifactId>servlet-api</artifactId>
-        <version>[0]</version>
-        <!--
-              "[0]" is a range that must be exactly 0
-              this is different to "0" which is hint to use version 0.
-              therefore unless anyone else uses ranges (they should not) this version will always win
-              We have deployed a version 0 to jenkins repo which has an empty jar
-              This prevents conflicts between the old Servlet API and the new Servlet API as the groupIDs have changed
-              see https://github.com/jenkinsci/jenkins/pull/3033/files#r141325857 for a fuller description
-        -->
-        <scope>provided</scope>
-        <optional>true</optional>
-      </dependency>
     </dependencies>
   </dependencyManagement>
 
