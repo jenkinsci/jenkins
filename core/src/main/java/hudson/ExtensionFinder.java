@@ -251,6 +251,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
 
         private final Map<Key, Annotation> annotations = new HashMap<>();
         private final Sezpoz moduleFinder = new Sezpoz();
+        private final List<IndexItem<?, Object>> sezpozIndices;
 
         /**
          * Map from {@link GuiceExtensionAnnotation#annotationType} to {@link GuiceExtensionAnnotation}
@@ -260,7 +261,8 @@ public abstract class ExtensionFinder implements ExtensionPoint {
         public GuiceFinder() {
             refreshExtensionAnnotations();
 
-            SezpozModule extensions = new SezpozModule(loadSezpozIndices(Jenkins.get().getPluginManager().uberClassLoader));
+            sezpozIndices = loadSezpozIndices(Jenkins.get().getPluginManager().uberClassLoader);
+            SezpozModule extensions = new SezpozModule(sezpozIndices);
 
             List<Module> modules = new ArrayList<>();
             modules.add(new AbstractModule() {
@@ -315,6 +317,10 @@ public abstract class ExtensionFinder implements ExtensionPoint {
 
         public Injector getContainer() {
             return container;
+        }
+
+        public List<IndexItem<?, Object>> getSezpozIndices() {
+            return sezpozIndices;
         }
 
         /**

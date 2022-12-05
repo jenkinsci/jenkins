@@ -2,12 +2,19 @@ package jenkins.security;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.in;
 import static org.junit.Assert.assertThrows;
 
+import com.google.inject.Injector;
+import com.google.inject.Key;
+import hudson.ExtensionFinder;
 import hudson.slaves.DumbSlave;
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.List;
 import java.util.logging.Level;
+import java.util.stream.Collectors;
+import net.java.sezpoz.IndexItem;
 import org.codehaus.groovy.runtime.MethodClosure;
 import org.junit.Rule;
 import org.junit.Test;
@@ -47,6 +54,16 @@ public class Security218Test implements Serializable {
      */
     @Test
     public void jnlpSlave() throws Exception {
+        for (ExtensionFinder finder : j.jenkins.getExtensionList(ExtensionFinder.class)) {
+            if (finder instanceof ExtensionFinder.GuiceFinder) {
+                List<IndexItem<?, Object>> sezpozIndices = ((ExtensionFinder.GuiceFinder) finder).getSezpozIndices();
+                List<String> sezpozNames = sezpozIndices.stream().map(IndexItem::className).collect(Collectors.toList());
+                assertThat("jenkins.slaves.JnlpSlaveAgentProtocol4", in(sezpozNames));
+                Injector container = ((ExtensionFinder.GuiceFinder) finder).getContainer();
+                List<String> bindingTypes = container.getBindings().keySet().stream().map(Key::getTypeLiteral).map(Object::toString).collect(Collectors.toList());
+                assertThat("jenkins.slaves.JnlpSlaveAgentProtocol4", in(bindingTypes));
+            }
+        }
         DumbSlave a = (DumbSlave) inboundAgents.createAgent(j, InboundAgentRule.Options.newBuilder().secret().build());
         j.waitOnline(a);
         try {
