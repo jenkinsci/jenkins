@@ -6,8 +6,11 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.in;
 import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 
 import com.google.inject.Key;
 import hudson.ExtensionFinder;
@@ -73,12 +76,24 @@ public class Security218Test implements Serializable {
                 assertThat("jenkins.slaves.JnlpSlaveAgentProtocol4", in(sezpozNames));
                 List<String> bindingTypes = finder.getContainer().getBindings().keySet().stream().map(Key::getTypeLiteral).map(Object::toString).collect(Collectors.toList());
                 assertThat("jenkins.slaves.JnlpSlaveAgentProtocol4", in(bindingTypes));
-                Object o = finder.getContainer().getBindings().entrySet().stream().filter(e -> e.getKey().getTypeLiteral().toString().equals("jenkins.slaves.JnlpSlaveAgentProtocol4")).map(e -> e.getValue().getProvider().get()).findFirst().orElse(null);
+                Object o = finder.getContainer().getBindings().entrySet().stream().filter(e -> e.getKey().getTypeLiteral().toString().equals("jenkins.slaves.JnlpSlaveAgentProtocol4"))
+                        .map(e -> e.getValue().getProvider().get()).findFirst().orElse(null);
                 assertNotNull(o);
             }
         }
         ExtensionList<AgentProtocol> agentProtocolExtensions = ExtensionList.lookup(AgentProtocol.class);
         assertThat(agentProtocolExtensions, containsInAnyOrder(instanceOf(JnlpSlaveAgentProtocol4.class), instanceOf(TcpSlaveAgentListener.PingAgentProtocol.class)));
+        for (AgentProtocol p : agentProtocolExtensions) {
+            assertNotNull(p.getClass().getName(), p.getName());
+            if (p instanceof TcpSlaveAgentListener.PingAgentProtocol) {
+                assertTrue(p.isRequired());
+            } else if (p instanceof JnlpSlaveAgentProtocol4) {
+                assertFalse(p.isRequired());
+            }
+            assertFalse(p.getClass().getName(), p.isOptIn());
+        }
+        assertThat(j.jenkins.getDisabledAgentProtocols(), nullValue());
+        assertThat(j.jenkins.getEnabledAgentProtocols(), nullValue());
         Set<String> agentProtocols = j.jenkins.getAgentProtocols();
         assertThat(agentProtocols, containsInAnyOrder("JNLP4-connect", "Ping"));
         DumbSlave a = (DumbSlave) inboundAgents.createAgent(j, InboundAgentRule.Options.newBuilder().secret().build());

@@ -639,6 +639,11 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     private static final boolean SLAVE_AGENT_PORT_ENFORCE = SystemProperties.getBoolean(Jenkins.class.getName() + ".slaveAgentPortEnforce", false);
 
+    @CheckForNull
+    public synchronized List<String> getDisabledAgentProtocols() {
+        return disabledAgentProtocols;
+    }
+
     /**
      * The TCP agent protocols that are explicitly disabled (we store the disabled ones so that newer protocols
      * are enabled by default). Will be {@code null} instead of empty to simplify XML format.
@@ -653,6 +658,11 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     @Deprecated
     private transient String[] _disabledAgentProtocols;
+
+    @CheckForNull
+    public synchronized List<String> getEnabledAgentProtocols() {
+        return enabledAgentProtocols;
+    }
 
     /**
      * The TCP agent protocols that are {@link AgentProtocol#isOptIn()} and explicitly enabled.
