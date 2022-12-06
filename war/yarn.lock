@@ -3884,6 +3884,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"ignore@npm:^5.2.1":
+  version: 5.2.1
+  resolution: "ignore@npm:5.2.1"
+  checksum: 7251d00cba49fe88c4f3565fadeb4aa726ba38294a9a79ffed542edc47bafd989d4b2ccf65700c5b1b26a1e91dfc7218fb23017937c79216025d5caeec0ee9d5
+  languageName: node
+  linkType: hard
+
 "image-size@npm:~0.5.0":
   version: 0.5.5
   resolution: "image-size@npm:0.5.5"
@@ -4159,7 +4166,7 @@ __metadata:
     prettier: 2.8.0
     sortablejs: 1.15.0
     style-loader: 3.3.1
-    stylelint: 14.15.0
+    stylelint: 14.16.0
     stylelint-checkstyle-reporter: 0.2.0
     stylelint-config-standard: 29.0.0
     tippy.js: ^6.3.7
@@ -5519,7 +5526,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"postcss-selector-parser@npm:^6.0.10, postcss-selector-parser@npm:^6.0.2, postcss-selector-parser@npm:^6.0.4, postcss-selector-parser@npm:^6.0.5, postcss-selector-parser@npm:^6.0.9":
+"postcss-selector-parser@npm:^6.0.11":
+  version: 6.0.11
+  resolution: "postcss-selector-parser@npm:6.0.11"
+  dependencies:
+    cssesc: ^3.0.0
+    util-deprecate: ^1.0.2
+  checksum: 0b01aa9c2d2c8dbeb51e9b204796b678284be9823abc8d6d40a8b16d4149514e922c264a8ed4deb4d6dbced564b9be390f5942c058582d8656351516d6c49cde
+  languageName: node
+  linkType: hard
+
+"postcss-selector-parser@npm:^6.0.2, postcss-selector-parser@npm:^6.0.4, postcss-selector-parser@npm:^6.0.5, postcss-selector-parser@npm:^6.0.9":
   version: 6.0.10
   resolution: "postcss-selector-parser@npm:6.0.10"
   dependencies:
@@ -6274,9 +6291,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"stylelint@npm:14.15.0":
-  version: 14.15.0
-  resolution: "stylelint@npm:14.15.0"
+"stylelint@npm:14.16.0":
+  version: 14.16.0
+  resolution: "stylelint@npm:14.16.0"
   dependencies:
     "@csstools/selector-specificity": ^2.0.2
     balanced-match: ^2.0.0
@@ -6291,7 +6308,7 @@ __metadata:
     globby: ^11.1.0
     globjoin: ^0.1.4
     html-tags: ^3.2.0
-    ignore: ^5.2.0
+    ignore: ^5.2.1
     import-lazy: ^4.0.0
     imurmurhash: ^0.1.4
     is-plain-object: ^5.0.0
@@ -6305,7 +6322,7 @@ __metadata:
     postcss-media-query-parser: ^0.2.3
     postcss-resolve-nested-selector: ^0.1.1
     postcss-safe-parser: ^6.0.0
-    postcss-selector-parser: ^6.0.10
+    postcss-selector-parser: ^6.0.11
     postcss-value-parser: ^4.2.0
     resolve-from: ^5.0.0
     string-width: ^4.2.3
@@ -6318,7 +6335,7 @@ __metadata:
     write-file-atomic: ^4.0.2
   bin:
     stylelint: bin/stylelint.js
-  checksum: a3b4593a35a2303987305ca5147ea31e92a47e1994d393be8d1a07a6dc8720b9eee1fed62aafaca618cd8f06e0b3ca601af4fa6618967f1f359ea36ade4c2550
+  checksum: 3b8d003aa0756cd8101e06be08a621fe4a2627c962d5ee471a231e71132ea90468f34f12f7bf8ba1e6c9857f55ac2d5c1b63f7a6e5c4ed667b1826925e0fd267
   languageName: node
   linkType: hard
 
