@@ -434,7 +434,7 @@ THE SOFTWARE.
             <configuration>
               <rules>
                 <bannedDependencies>
-                  <excludes>
+                  <excludes combine.children="append">
                     <exclude>org.sonatype.sisu:sisu-guice</exclude>
                     <exclude>commons-logging:commons-logging:*:jar:compile</exclude>
                     <exclude>commons-logging:commons-logging:*:jar:runtime</exclude>
