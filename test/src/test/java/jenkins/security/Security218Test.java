@@ -12,6 +12,7 @@ import static org.junit.Assert.assertThrows;
 import com.google.inject.Key;
 import hudson.ExtensionFinder;
 import hudson.ExtensionList;
+import hudson.TcpSlaveAgentListener;
 import hudson.cli.declarative.CLIRegisterer;
 import hudson.slaves.DumbSlave;
 import java.io.IOException;
@@ -20,6 +21,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
+import jenkins.AgentProtocol;
+import jenkins.slaves.JnlpSlaveAgentProtocol4;
 import net.java.sezpoz.IndexItem;
 import org.codehaus.groovy.runtime.MethodClosure;
 import org.junit.Rule;
@@ -70,10 +73,12 @@ public class Security218Test implements Serializable {
                 assertThat("jenkins.slaves.JnlpSlaveAgentProtocol4", in(sezpozNames));
                 List<String> bindingTypes = finder.getContainer().getBindings().keySet().stream().map(Key::getTypeLiteral).map(Object::toString).collect(Collectors.toList());
                 assertThat("jenkins.slaves.JnlpSlaveAgentProtocol4", in(bindingTypes));
-                Object o = finder.getContainer().getBindings().entrySet().stream().filter(e -> e.getKey().getTypeLiteral().toString().equals("jenkins.slaves.JnlpSlaveAgentProtocol4")).map(e -> e.getValue().getProvider().get());
+                Object o = finder.getContainer().getBindings().entrySet().stream().filter(e -> e.getKey().getTypeLiteral().toString().equals("jenkins.slaves.JnlpSlaveAgentProtocol4")).map(e -> e.getValue().getProvider().get()).findFirst().orElse(null);
                 assertNotNull(o);
             }
         }
+        ExtensionList<AgentProtocol> agentProtocolExtensions = ExtensionList.lookup(AgentProtocol.class);
+        assertThat(agentProtocolExtensions, containsInAnyOrder(instanceOf(JnlpSlaveAgentProtocol4.class), instanceOf(TcpSlaveAgentListener.PingAgentProtocol.class)));
         Set<String> agentProtocols = j.jenkins.getAgentProtocols();
         assertThat(agentProtocols, containsInAnyOrder("JNLP4-connect", "Ping"));
         DumbSlave a = (DumbSlave) inboundAgents.createAgent(j, InboundAgentRule.Options.newBuilder().secret().build());
