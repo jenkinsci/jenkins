@@ -25,9 +25,11 @@
 package hudson.model;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import hudson.PluginWrapper;
 import hudson.model.UpdateSite.Data;
@@ -202,6 +204,25 @@ public class UpdateSiteTest {
         List<UpdateSite.Plugin> available = site.getAvailables();
         assertEquals("ALowTitle", available.get(0).getDisplayName());
         assertEquals("TheHighTitle", available.get(1).getDisplayName());
+    }
+
+    @Test public void deprecations() throws Exception {
+        UpdateSite site = getUpdateSite("/plugins/deprecations-update-center.json");
+
+        UpdateSite.Plugin credentials = site.getPlugin("credentials");
+        assertNotNull(credentials);
+        assertFalse(credentials.isDeprecated());
+        assertNull(credentials.getDeprecation());
+
+        UpdateSite.Plugin iconShim = site.getPlugin("icon-shim");
+        assertNotNull(iconShim);
+        assertTrue(iconShim.isDeprecated());
+        assertEquals("https://www.jenkins.io/deprecations/icon-shim/", iconShim.getDeprecation().url);
+
+        UpdateSite.Plugin tokenMacro = site.getPlugin("token-macro");
+        assertNotNull(tokenMacro);
+        assertTrue(tokenMacro.isDeprecated());
+        assertEquals("https://wiki.jenkins-ci.org/display/JENKINS/Token+Macro+Plugin", tokenMacro.getDeprecation().url);
     }
 
     private UpdateSite getUpdateSite(String path) throws Exception {
