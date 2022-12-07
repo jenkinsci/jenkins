@@ -64,7 +64,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import jenkins.model.Jenkins;
 import jenkins.model.ProjectNamingStrategy;
-import jenkins.security.apitoken.ApiTokenTestHelper;
 import org.hamcrest.Matchers;
 import org.junit.Rule;
 import org.junit.Test;
@@ -226,8 +225,6 @@ public class JobTest {
 
     @LocalData
     @Test public void configDotXmlPermission() throws Exception {
-        ApiTokenTestHelper.enableLegacyBehavior();
-
         j.jenkins.setCrumbIssuer(null);
         JenkinsRule.WebClient wc = j.createWebClient();
         boolean saveEnabled = Item.EXTENDED_READ.getEnabled();

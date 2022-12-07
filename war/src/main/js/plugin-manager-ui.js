@@ -63,8 +63,6 @@ document.addEventListener("DOMContentLoaded", function () {
     filterInput.parentElement.classList.add("jenkins-search--loading");
   });
 
-  filterInput.focus();
-
   applyFilter(filterInput.value);
 
   setTimeout(function () {

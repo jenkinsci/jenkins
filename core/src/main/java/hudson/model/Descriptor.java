@@ -30,6 +30,7 @@ import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.BulkChange;
 import hudson.DescriptorExtensionList;
 import hudson.ExtensionList;
@@ -755,6 +756,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
         return getHelpFile(getKlass(), fieldName);
     }
 
+    @SuppressFBWarnings(value = "SBSC_USE_STRINGBUFFER_CONCATENATION", justification = "no big deal")
     public String getHelpFile(Klass<?> clazz, String fieldName) {
         HelpRedirect r = helpRedirect.get(fieldName);
         if (r != null)    return r.resolve();

@@ -24,13 +24,13 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:d="jelly:define" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
-  <st:documentation>
-    Used in the &lt;l:side-panel> to draw a box with a title.
+  <st:documentation> <![CDATA[
+    Used in the <l:side-panel> to draw a box with a title.
 
     The box is drawn as a table, and the body of this tag
-    is expected to draw a series of &lt;TR>s to fill in the contents
+    is expected to draw a series of <TR>s to fill in the contents
     of the box.
-
+    ]]>
     <st:attribute name="title" use="required">
       Title of the box. Can include HTML.
     </st:attribute>

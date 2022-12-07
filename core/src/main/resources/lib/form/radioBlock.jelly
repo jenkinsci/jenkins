@@ -23,7 +23,7 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:f="/lib/form">
   <st:documentation>
     Radio button with a label that hides additional controls.
     When checked, those additional controls are displayed. This is useful
@@ -34,8 +34,9 @@ THE SOFTWARE.
       Name of the radio button group. Radio buttons that are mutually exclusive need
       to have the same name.
     </st:attribute>
-    <st:attribute name="value" use="required">
-      @value of the &lt;input> element.
+    <st:attribute name="value" use="required"> <![CDATA[
+      @value of the <input> element.
+    ]]>
     </st:attribute>
     <st:attribute name="title" use="required">
       Human readable label text to be rendered next to the radio button.
@@ -46,9 +47,10 @@ THE SOFTWARE.
     <st:attribute name="inline">
       if present, the folded section will not be grouped into a separate JSON object upon submission.
     </st:attribute>
-    <st:attribute name="help">
+    <st:attribute name="help"> <![CDATA[
       If specified, the (?) help icon will be rendered on the right,
-      for in place help text. See &lt;f:entry> for the details.
+      for in place help text. See <f:entry> for the details.
+    ]]>
     </st:attribute>
   </st:documentation>
 

@@ -30,21 +30,25 @@ THE SOFTWARE.
 <l:layout title="${%Nodes}">
   <st:include page="sidepanel.jelly" />
   <l:main-panel>
+    <l:app-bar title="${%Manage nodes and clouds}">
+      <l:hasAdministerOrManage>
+        <j:getStatic var="createPermission" className="hudson.model.Computer" field="CREATE"/>
+        <j:if test="${h.hasPermission(createPermission)}">
+          <a class="jenkins-button jenkins-button--primary" href="new">
+            <l:icon src="symbol-add" />
+            ${%New Node}
+          </a>
+        </j:if>
+        <form method="post" action="updateNow" class="jenkins-!-display-contents">
+          <button tooltip="${%Refresh status}" class="jenkins-button">
+            <l:icon src="symbol-refresh" />
+          </button>
+        </form>
+      </l:hasAdministerOrManage>
+    </l:app-bar>
+
     <j:set var="monitors" value="${it._monitors}"/>
     <j:set var="tableWidth" value="${3}"/>
-
-    <div class="jenkins-app-bar">
-      <div class="jenkins-app-bar__content">
-        <h1>${%Manage nodes and clouds}</h1>
-      </div>
-      <l:hasAdministerOrManage>
-        <div class="jenkins-app-bar__controls">
-          <form method="post" action="updateNow">
-            <s:submit value="${%Refresh status}"/>
-          </form>
-        </div>
-      </l:hasAdministerOrManage>
-    </div>
 
     <table id="computers" class="jenkins-table sortable">
       <thead>
