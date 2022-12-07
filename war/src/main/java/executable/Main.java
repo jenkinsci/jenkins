@@ -254,9 +254,10 @@ public class Main {
         if (!hasOption(arguments, "--webroot=")) {
             // defaults to ~/.jenkins/war since many users reported that cron job attempts to clean up
             // the contents in the temporary directory.
-            final FileAndDescription describedHomeDir = getHomeDir();
-            System.out.println("webroot: " + describedHomeDir.description);
-            arguments.add("--webroot=" + new File(describedHomeDir.file, "war"));
+            final File jenkinsHome = getJenkinsHome();
+            final File webRoot = new File(jenkinsHome, "war");
+            System.out.println("webroot: " + webRoot);
+            arguments.add("--webroot=" + webRoot);
         }
 
         // only do a cleanup if you set the extractedFilesFolder property.
@@ -541,67 +542,37 @@ public class Main {
         }
     }
 
-    /** Add some metadata to a File, allowing to trace setup issues */
-    private static class FileAndDescription {
-        final File file;
-        final String description;
-
-        FileAndDescription(File file, String description) {
-            this.file = file;
-            this.description = description;
-        }
-    }
-
     /**
      * Determines the home directory for Jenkins.
      *
      * People makes configuration mistakes, so we are trying to be nice
      * with those by doing {@link String#trim()}.
-     *
-     * @return the File alongside with some description to help the user troubleshoot issues
      */
     @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "User provided values for running the program.")
-    private static FileAndDescription getHomeDir() {
+    private static File getJenkinsHome() {
         // check the system property for the home directory first
         for (String name : HOME_NAMES) {
             String sysProp = System.getProperty(name);
-            if (sysProp != null)
-                return new FileAndDescription(new File(sysProp.trim()), "System.getProperty(\"" + name + "\")");
+            if (sysProp != null) {
+                return new File(sysProp.trim());
+            }
         }
 
         // look at the env var next
-        try {
-            for (String name : HOME_NAMES) {
-                String env = System.getenv(name);
-                if (env != null)
-                    return new FileAndDescription(new File(env.trim()).getAbsoluteFile(), "EnvVars.masterEnvVars.get(\"" + name + "\")");
+        for (String name : HOME_NAMES) {
+            String env = System.getenv(name);
+            if (env != null) {
+                return new File(env.trim());
             }
-        } catch (Throwable e) {
-            // this code fails when run on JDK1.4
         }
 
         // otherwise pick a place by ourselves
-
-/* ServletContext not available yet
-        String root = event.getServletContext().getRealPath("/WEB-INF/workspace");
-        if(root!=null) {
-            File ws = new File(root.trim());
-            if(ws.exists())
-                // Hudson <1.42 used to prefer this before ~/.hudson, so
-                // check the existence and if it's there, use it.
-                // otherwise if this is a new installation, prefer ~/.hudson
-                return new FileAndDescription(ws, "getServletContext().getRealPath(\"/WEB-INF/workspace\")");
-        }
-*/
-
-        // if for some reason we can't put it within the webapp, use home directory.
         File legacyHome = new File(new File(System.getProperty("user.home")), ".hudson");
         if (legacyHome.exists()) {
-            return new FileAndDescription(legacyHome, "$user.home/.hudson"); // before rename, this is where it was stored
+            return legacyHome; // before rename, this is where it was stored
         }
 
-        File newHome = new File(new File(System.getProperty("user.home")), ".jenkins");
-        return new FileAndDescription(newHome, "$user.home/.jenkins");
+        return new File(new File(System.getProperty("user.home")), ".jenkins");
     }
 
     private static final String[] HOME_NAMES = {"JENKINS_HOME", "HUDSON_HOME"};

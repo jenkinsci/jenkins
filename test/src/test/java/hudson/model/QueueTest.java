@@ -266,7 +266,7 @@ public class QueueTest {
             }
         });
 
-        Future<FreeStyleBuild> b1 = p.scheduleBuild2(0);
+        FreeStyleBuild b1 = p.scheduleBuild2(0).waitForStart();
         assertNotNull(b1);
         seq.phase(1);   // and make sure we have one build under way
 
@@ -280,6 +280,10 @@ public class QueueTest {
         assertThat(items[0], instanceOf(BlockedItem.class));
 
         q.save();
+
+        assertTrue(q.cancel(items[0]));
+        seq.done();
+        r.assertBuildStatusSuccess(r.waitForCompletion(b1));
     }
 
     public static final class FileItemPersistenceTestServlet extends HttpServlet {
