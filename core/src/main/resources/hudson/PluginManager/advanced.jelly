@@ -32,6 +32,7 @@ THE SOFTWARE.
         <j:set var="readOnlyMode" value="${!app.hasPermission(app.ADMINISTER)}"/>
 
         <st:include page="sidepanel.jelly"/>
+        <l:breadcrumb title="${%Advanced settings}" />
 
         <l:main-panel>
           <l:app-bar title="${%Advanced settings}"/>
