@@ -215,13 +215,13 @@ public class UpdateSiteTest {
         assertFalse(credentials.isDeprecated());
         assertNull(credentials.getDeprecation());
 
-        // icon-shim, present in update-center.json, deprecated via label and top-level list
+        // present in update-center.json, deprecated via label and top-level list
         UpdateSite.Plugin iconShim = site.getPlugin("icon-shim");
         assertNotNull(iconShim);
         assertTrue(iconShim.isDeprecated());
         assertEquals("https://www.jenkins.io/deprecations/icon-shim/", iconShim.getDeprecation().url);
 
-        // token-macro, present in update-center.json, deprecated via label only
+        // present in update-center.json, deprecated via label only
         UpdateSite.Plugin tokenMacro = site.getPlugin("token-macro");
         assertNotNull(tokenMacro);
         assertTrue(tokenMacro.isDeprecated());
