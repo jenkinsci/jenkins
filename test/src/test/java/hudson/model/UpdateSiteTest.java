@@ -209,23 +209,31 @@ public class UpdateSiteTest {
     @Test public void deprecations() throws Exception {
         UpdateSite site = getUpdateSite("/plugins/deprecations-update-center.json");
 
-        // present in update-center.json, not deprecated
+        // present in plugins section of update-center.json, not deprecated
         UpdateSite.Plugin credentials = site.getPlugin("credentials");
         assertNotNull(credentials);
         assertFalse(credentials.isDeprecated());
         assertNull(credentials.getDeprecation());
+        assertNull(site.getData().getDeprecations().get("credentials"));
 
-        // present in update-center.json, deprecated via label and top-level list
+        // present in plugins section of update-center.json, deprecated via label and top-level list
         UpdateSite.Plugin iconShim = site.getPlugin("icon-shim");
         assertNotNull(iconShim);
         assertTrue(iconShim.isDeprecated());
         assertEquals("https://www.jenkins.io/deprecations/icon-shim/", iconShim.getDeprecation().url);
+        assertEquals("https://www.jenkins.io/deprecations/icon-shim/", site.getData().getDeprecations().get("icon-shim").url);
 
-        // present in update-center.json, deprecated via label only
+        // present in plugins section of update-center.json, deprecated via label only
         UpdateSite.Plugin tokenMacro = site.getPlugin("token-macro");
         assertNotNull(tokenMacro);
         assertTrue(tokenMacro.isDeprecated());
         assertEquals("https://wiki.jenkins-ci.org/display/JENKINS/Token+Macro+Plugin", tokenMacro.getDeprecation().url);
+        assertEquals("https://wiki.jenkins-ci.org/display/JENKINS/Token+Macro+Plugin", site.getData().getDeprecations().get("token-macro").url);
+
+        // not in plugins section of update-center.json, deprecated via top-level list
+        UpdateSite.Plugin variant = site.getPlugin("variant");
+        assertNull(variant);
+        assertEquals("https://www.jenkins.io/deprecations/variant/", site.getData().getDeprecations().get("variant").url);
     }
 
     private UpdateSite getUpdateSite(String path) throws Exception {
