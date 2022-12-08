@@ -1277,7 +1277,14 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                     result.add(name);
                 }
             }
-            agentProtocols = result;
+            /*
+             * An empty result is almost never valid, but it can happen due to JENKINS-70206. Since we know the result
+             * is likely incorrect, at least decline to cache it so that a correct result can be computed later on
+             * rather than continuing to deliver the incorrect result indefinitely.
+             */
+            if (!result.isEmpty()) {
+                agentProtocols = result;
+            }
             return result;
         }
         return agentProtocols;

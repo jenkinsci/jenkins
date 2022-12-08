@@ -37,11 +37,6 @@ updates:
       # Contains incompatible API changes and needs compatibility work.
       - dependency-name: "jakarta.servlet.jsp.jstl:jakarta.servlet.jsp.jstl-api"
 
-      # This is a banned dependency, and we have a redundant trick in our POM to
-      # prevent it from being pulled in. If and when the reference is removed in
-      # our POM, this exclusion can also be removed.
-      - dependency-name: "javax.servlet:servlet-api"
-
       # Needs significant testing. See:
       # https://github.com/jenkinsci/jenkins/pull/5112#issuecomment-744429487
       # https://github.com/jenkinsci/jenkins/pull/5116#issuecomment-744526638
