@@ -501,8 +501,8 @@ public abstract class ExtensionFinder implements ExtensionPoint {
                         cc.getGenericInterfaces();
 
                         /*
-                         * See com.google.inject.spi.InjectionPoint#forConstructorOf(TypeLiteral<?>, boolean)
-                         * and com.google.inject.spi.InjectionPoint(TypeLiteral<?>, Constructor<?>)
+                         * See com.google.inject.spi.InjectionPoint#forConstructorOf(TypeLiteral, boolean)
+                         * and com.google.inject.spi.InjectionPoint(TypeLiteral, Constructor)
                          */
                         boolean foundInjectableConstructor = false;
                         for (Constructor constructor : cc.getDeclaredConstructors()) {
@@ -526,7 +526,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
                             }
                         }
 
-                        // See com.google.inject.spi.InjectionPoint(TypeLiteral<?>, Constructor<?>)
+                        // See com.google.inject.spi.InjectionPoint(TypeLiteral, Method, boolean)
                         for (Method method : cc.getDeclaredMethods()) {
                             if (method.isAnnotationPresent(javax.inject.Inject.class)
                                     || method.isAnnotationPresent(com.google.inject.Inject.class)) {
@@ -535,7 +535,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
                             }
                         }
 
-                        // See com.google.inject.spi.InjectionPoint(TypeLiteral<?>, Field, boolean)
+                        // See com.google.inject.spi.InjectionPoint(TypeLiteral, Field, boolean)
                         for (Field f : cc.getDeclaredFields()) {
                             if (f.isAnnotationPresent(javax.inject.Inject.class)
                                     || f.isAnnotationPresent(com.google.inject.Inject.class)) {
