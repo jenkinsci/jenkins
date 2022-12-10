@@ -31,9 +31,6 @@ updates:
       # and determined to be temporary. Exclusions should be removed from this
       # section once the remaining action items have been completed.
 
-      # Fails test automation; needs further investigation.
-      - dependency-name: "com.google.inject:guice-bom"
-
       # Contains incompatible API changes and needs compatibility work.
       - dependency-name: "jakarta.servlet.jsp.jstl:jakarta.servlet.jsp.jstl-api"
 
