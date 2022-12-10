@@ -30,6 +30,13 @@
       "matchStrings": ["<node.version>(?<currentValue>.*?)</node.version>"],
       "depNameTemplate": "node",
       "datasourceTemplate": "npm"
+    },
+    {
+      "fileMatch": ["ath.sh"],
+      "matchStrings": ["export ATH_VERSION=(?<currentValue>.*?)\n"],
+      "depNameTemplate": "jenkins/ath",
+      "datasourceTemplate": "docker",
+      "versioningTemplate": "loose"
     }
   ],
   "labels": ["dependencies", "skip-changelog"],
