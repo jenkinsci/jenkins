@@ -2359,10 +2359,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"big.js@npm:^3.1.3":
-  version: 3.2.0
-  resolution: "big.js@npm:3.2.0"
-  checksum: 299449e40555625a308f01d74378677036b2ec98b30aaa89794b3afbd4eaa104b7456a989affadfd7f630dc14b3f1df250de9bddc4a6fc664e60727887bb33e7
+"big.js@npm:^5.2.2":
+  version: 5.2.2
+  resolution: "big.js@npm:5.2.2"
+  checksum: b89b6e8419b097a8fb4ed2399a1931a68c612bce3cfd5ca8c214b2d017531191070f990598de2fc6f3f993d91c0f08aa82697717f6b3b8732c9731866d233c9e
   languageName: node
   linkType: hard
 
@@ -3096,10 +3096,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"emojis-list@npm:^2.0.0":
-  version: 2.1.0
-  resolution: "emojis-list@npm:2.1.0"
-  checksum: fb61fa6356dfcc9fbe6db8e334c29da365a34d3d82a915cb59621883d3023d804fd5edad5acd42b8eec016936e81d3b38e2faf921b32e073758374253afe1272
+"emojis-list@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "emojis-list@npm:3.0.0"
+  checksum: ddaaa02542e1e9436c03970eeed445f4ed29a5337dfba0fe0c38dfdd2af5da2429c2a0821304e8a8d1cadf27fdd5b22ff793571fa803ae16852a6975c65e8e70
   languageName: node
   linkType: hard
 
@@ -3723,17 +3723,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"handlebars-loader@npm:1.7.2":
-  version: 1.7.2
-  resolution: "handlebars-loader@npm:1.7.2"
+"handlebars-loader@npm:1.7.3":
+  version: 1.7.3
+  resolution: "handlebars-loader@npm:1.7.3"
   dependencies:
     async: ^3.2.2
     fastparse: ^1.0.0
-    loader-utils: 1.0.x
+    loader-utils: 1.4.x
     object-assign: ^4.1.0
   peerDependencies:
     handlebars: ">= 1.3.0 < 5"
-  checksum: e5372f83002dffec6dfac1c7a0090485cb6b609b0288d6543c3f576829282fa34d0284e1289e7688a5779857bad588bb034f916425f4d9590534b2e4f70bfa07
+  checksum: 51064e3b900eedf07a3b05545bf7ee9fe0f5a647083cbf68b05746fee33c72c942ac6a111d2c35eb79036f3e81e4106cb40eb987b5e0eb415b88a9f3f25f19cb
   languageName: node
   linkType: hard
 
@@ -4152,7 +4152,7 @@ __metadata:
     eslint: 8.29.0
     eslint-config-prettier: 8.5.0
     handlebars: 4.7.7
-    handlebars-loader: 1.7.2
+    handlebars-loader: 1.7.3
     hotkeys-js: 3.10.1
     jenkins-js-modules: 1.5.4
     jquery: 3.6.1
@@ -4304,12 +4304,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"json5@npm:^0.5.0":
-  version: 0.5.1
-  resolution: "json5@npm:0.5.1"
+"json5@npm:^1.0.1":
+  version: 1.0.1
+  resolution: "json5@npm:1.0.1"
+  dependencies:
+    minimist: ^1.2.0
   bin:
     json5: lib/cli.js
-  checksum: 9b85bf06955b23eaa4b7328aa8892e3887e81ca731dd27af04a5f5f1458fbc5e1de57a24442e3272f8a888dd1abe1cb68eb693324035f6b3aeba4fcab7667d62
+  checksum: e76ea23dbb8fc1348c143da628134a98adf4c5a4e8ea2adaa74a80c455fc2cdf0e2e13e6398ef819bfe92306b610ebb2002668ed9fc1af386d593691ef346fc3
   languageName: node
   linkType: hard
 
@@ -4421,14 +4423,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"loader-utils@npm:1.0.x":
-  version: 1.0.4
-  resolution: "loader-utils@npm:1.0.4"
+"loader-utils@npm:1.4.x":
+  version: 1.4.2
+  resolution: "loader-utils@npm:1.4.2"
   dependencies:
-    big.js: ^3.1.3
-    emojis-list: ^2.0.0
-    json5: ^0.5.0
-  checksum: c669f8a3ea13a09a67869a53dfc07bc3e57323a60924629081e16b84df36721a1f5f0edc72b821de4afa247a7eb34e4b35417a9927ed8eec9859a01028a8f295
+    big.js: ^5.2.2
+    emojis-list: ^3.0.0
+    json5: ^1.0.1
+  checksum: eb6fb622efc0ffd1abdf68a2022f9eac62bef8ec599cf8adb75e94d1d338381780be6278534170e99edc03380a6d29bc7eb1563c89ce17c5fed3a0b17f1ad804
   languageName: node
   linkType: hard
 
@@ -4692,6 +4694,13 @@ __metadata:
     is-plain-obj: ^1.1.0
     kind-of: ^6.0.3
   checksum: 8c040b3068811e79de1140ca2b708d3e203c8003eb9a414c1ab3cd467fc5f17c9ca02a5aef23bedc51a7f8bfbe77f87e9a7e31ec81fba304cda675b019496f4e
+  languageName: node
+  linkType: hard
+
+"minimist@npm:^1.2.0":
+  version: 1.2.7
+  resolution: "minimist@npm:1.2.7"
+  checksum: 7346574a1038ca23c32e02252f603801f09384dd1d78b69a943a4e8c2c28730b80e96193882d3d3b22a063445f460e48316b29b8a25addca2d7e5e8f75478bec
   languageName: node
   linkType: hard
 
