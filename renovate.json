@@ -30,6 +30,19 @@
       "matchStrings": ["<node.version>(?<currentValue>.*?)</node.version>"],
       "depNameTemplate": "node",
       "datasourceTemplate": "npm"
+    },
+    {
+      "fileMatch": ["ath.sh"],
+      "matchStrings": ["export ATH_VERSION=(?<currentValue>.*?)\n"],
+      "depNameTemplate": "jenkins/ath",
+      "datasourceTemplate": "docker",
+      "versioningTemplate": "loose"
+    },
+    {
+      "fileMatch": [".gitpod/Dockerfile"],
+      "matchStrings": ["ARG MAVEN_VERSION=(?<currentValue>.*?)\n"],
+      "depNameTemplate": "org.apache.maven:maven-core",
+      "datasourceTemplate": "maven"
     }
   ],
   "labels": ["dependencies", "skip-changelog"],
