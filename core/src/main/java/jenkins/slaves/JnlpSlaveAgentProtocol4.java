@@ -72,11 +72,11 @@ public class JnlpSlaveAgentProtocol4 extends AgentProtocol {
     /**
      * Our keystore.
      */
-    private final KeyStore keyStore;
+    private KeyStore keyStore = null;
     /**
      * Our trust manager.
      */
-    private final TrustManager trustManager;
+    private TrustManager trustManager = null;
 
     /**
      * The provider of our {@link IOHub}
@@ -111,7 +111,9 @@ public class JnlpSlaveAgentProtocol4 extends AgentProtocol {
         }
 
         // prepare our keyStore so we can provide our authentication
-        keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
+        if (keyStore == null && getName() == null) {
+            keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
+        }
         char[] password = constructPassword();
         try {
             keyStore.load(null, password);
@@ -135,14 +137,18 @@ public class JnlpSlaveAgentProtocol4 extends AgentProtocol {
         }
 
         // prepare our trustManagers
-        trustManager = new PublicKeyMatchingX509ExtendedTrustManager(false, true);
+        if (trustManager == null && getName() == null) {
+            trustManager = new PublicKeyMatchingX509ExtendedTrustManager(false, true);
+        }
         TrustManager[] trustManagers = {trustManager};
 
         // prepare our SSLContext
-        try {
-            sslContext = SSLContext.getInstance("TLS");
-        } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException("Java runtime specification requires support for TLS algorithm", e);
+        if (sslContext == null && getName() == null) {
+            try {
+                sslContext = SSLContext.getInstance("TLS");
+            } catch (NoSuchAlgorithmException e) {
+                throw new IllegalStateException("Java runtime specification requires support for TLS algorithm", e);
+            }
         }
         sslContext.init(kmf.getKeyManagers(), trustManagers, null);
     }
