@@ -1966,6 +1966,13 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             return FormValidation.error(Messages.PluginManager_emptyUpdateSiteUrl());
         }
 
+        //Check to see if the value is a file as some update centers are local json files
+        value = value.replace("file:/", "");
+        File file = new File(value);
+        if (file.isFile()) {
+            return FormValidation.ok();
+        }
+
         value += ((value.contains("?")) ? "&" : "?") + "version=" + Jenkins.VERSION + "&uctest";
 
         URI uri;
