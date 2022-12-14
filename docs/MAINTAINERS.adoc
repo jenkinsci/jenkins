@@ -165,16 +165,20 @@ without which end users would cease use of the delivered software.
 A pull request represents potential value for end users,
 value which is only realized when the pull request is merged and delivered in a shipping release.
 
-[cols="1,1"]
+[cols="50%,50%"]
 |===
+|Optimal Outcome|Suboptimal Outcome
+
 |When a pull request is merged and delivered in a shipping release, users are rewarded with this value.
 |Inversely, when a pull request remains unmerged and unreleased for an extended period of time, users are deprived of this value.
 |===
 
 Another explicit goal of the project is to encourage both new and seasoned contributors alike.
 
-[cols="1,1"]
+[cols="50%,50%"]
 |===
+|Optimal Outcome|Suboptimal Outcome
+
 |When a submission that is ready for merge is approved, merged, and released in a timely fashion, the contributor is more likely to contribute again.
 |Inversely, when a submission that is ready for merge languishes without timely approval, merge, and release, the contributor is less likely to contribute again.
 |When the contributor of a submission that is not _yet_ ready for merge is provided with clear, actionable, and justified feedback and when, after the action has been taken, the submission is subsequently reviewed again, approved, merged, and released in a timely fashion, the contributor is more likely to contribute again.
