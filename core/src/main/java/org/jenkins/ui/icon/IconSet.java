@@ -69,11 +69,12 @@ public class IconSet {
     // for Jelly
     @SuppressWarnings("unused")
     @Restricted(NoExternalUse.class)
-    public static String getSymbol(String name, String title, String tooltip, String classes, String pluginName, String id) {
+    public static String getSymbol(String name, String title, String tooltip, String htmlTooltip, String classes, String pluginName, String id) {
         return Symbol.get(new SymbolRequest.Builder()
                                  .withName(IconSet.cleanName(name))
                                  .withTitle(title)
                                  .withTooltip(tooltip)
+                                 .withHtmlTooltip(htmlTooltip)
                                  .withClasses(classes)
                                  .withPluginName(pluginName)
                                  .withId(id)

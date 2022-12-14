@@ -175,8 +175,9 @@ THE SOFTWARE.
                   <excludes>
                     <exclude>com.infradna.tool:bridge-method-annotation</exclude>
                     <exclude>org.antlr:antlr4</exclude>
+                    <exclude>org.jenkins-ci:annotation-indexer</exclude>
                     <exclude>org.jenkins-ci:commons-jelly</exclude>
-                    <exclude>org.jenkins-ci:task-reactor</exclude>
+                    <exclude>org.jenkins-ci:crypto-util</exclude>
                     <exclude>org.jenkins-ci.main:cli</exclude>
                     <exclude>org.jenkins-ci.main:jenkins-core</exclude>
                     <exclude>org.jenkins-ci.main:remoting</exclude>
@@ -184,7 +185,11 @@ THE SOFTWARE.
                     <exclude>org.jenkins-ci.main:websocket-jetty10</exclude>
                     <exclude>org.jenkins-ci.main:websocket-spi</exclude>
                     <exclude>org.jenkins-ci:memory-monitor</exclude>
+                    <exclude>org.jenkins-ci:symbol-annotation</exclude>
+                    <exclude>org.jenkins-ci:task-reactor</exclude>
+                    <exclude>org.jenkins-ci:version-number</exclude>
                     <exclude>org.jvnet.winp:winp</exclude>
+                    <exclude>org.kohsuke:access-modifier-annotation</exclude>
                     <exclude>org.kohsuke.stapler:stapler</exclude>
                     <exclude>org.kohsuke.stapler:stapler-groovy</exclude>
                     <exclude>org.kohsuke.stapler:stapler-jelly</exclude>
@@ -593,7 +598,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>io.jenkins.lib</groupId>
                   <artifactId>support-log-formatter</artifactId>
-                  <version>1.1</version>
+                  <version>1.2</version>
                 </artifactItem>
               </artifactItems>
               <outputDirectory>${project.build.directory}</outputDirectory>

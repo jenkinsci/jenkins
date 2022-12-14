@@ -51,6 +51,20 @@ public class SymbolTest {
     }
 
     @Test
+    @DisplayName("HTML tooltip overrides tooltip")
+    void htmlTooltipOverridesTooltip() {
+        String symbol = Symbol.get(new SymbolRequest.Builder()
+                .withName("science")
+                .withTooltip("Tooltip")
+                .withHtmlTooltip("<p>Some HTML Tooltip</p>")
+                .build()
+        );
+        assertThat(symbol, containsString(SCIENCE_PATH));
+        assertThat(symbol, not(containsString("tooltip=\"Tooltip\"")));
+        assertThat(symbol, containsString("data-html-tooltip=\"&lt;p&gt;Some HTML Tooltip&lt;/p&gt;\""));
+    }
+
+    @Test
     @DisplayName("Invalid strings should throw IllegalArgumentException")
     void invalidRawString() {
         assertThrows(IllegalArgumentException.class, () -> new SymbolRequest.Builder().build());

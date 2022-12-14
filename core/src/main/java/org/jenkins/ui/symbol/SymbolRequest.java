@@ -26,10 +26,15 @@ public final class SymbolRequest {
     @CheckForNull
     private final String title;
     /**
-     * The tooltip to display when hovering over the symbol.
+     * The tooltip to display when hovering over the symbol. Only displayed if {@link #htmlTooltip} is not set.
      */
     @CheckForNull
     private final String tooltip;
+    /**
+     * An HTML tooltip to display when hovering over the symbol. Overrides any value of the {@link #tooltip} field.
+     */
+    @CheckForNull
+    private final String htmlTooltip;
     /**
      * Additional CSS classes to apply to the symbol.
      */
@@ -63,6 +68,11 @@ public final class SymbolRequest {
     }
 
     @CheckForNull
+    public String getHtmlTooltip() {
+        return htmlTooltip;
+    }
+
+    @CheckForNull
     public String getClasses() {
         return classes;
     }
@@ -77,11 +87,12 @@ public final class SymbolRequest {
         return id;
     }
 
-    private SymbolRequest(@NonNull String name, @CheckForNull String title, @CheckForNull String tooltip, @CheckForNull String classes, @CheckForNull String pluginName,
+    private SymbolRequest(@NonNull String name, @CheckForNull String title, @CheckForNull String tooltip, @CheckForNull String htmlTooltip, @CheckForNull String classes, @CheckForNull String pluginName,
                           @CheckForNull String id) {
         this.name = name;
         this.title = title;
         this.tooltip = tooltip;
+        this.htmlTooltip = htmlTooltip;
         this.classes = classes;
         this.pluginName = pluginName;
         this.id = id;
@@ -94,6 +105,8 @@ public final class SymbolRequest {
         private String title;
         @CheckForNull
         private String tooltip;
+        @CheckForNull
+        private String htmlTooltip;
         @CheckForNull
         private String classes;
         @CheckForNull
@@ -130,6 +143,16 @@ public final class SymbolRequest {
 
         public Builder withTooltip(@CheckForNull String tooltip) {
             this.tooltip = tooltip;
+            return this;
+        }
+
+        @CheckForNull
+        public String getHtmlTooltip() {
+            return htmlTooltip;
+        }
+
+        public Builder withHtmlTooltip(@CheckForNull String htmlTooltip) {
+            this.htmlTooltip = htmlTooltip;
             return this;
         }
 
@@ -182,7 +205,7 @@ public final class SymbolRequest {
             if (name == null) {
                 throw new IllegalArgumentException("name cannot be null");
             }
-            return new SymbolRequest(name, title, tooltip, classes, pluginName, id);
+            return new SymbolRequest(name, title, tooltip, htmlTooltip, classes, pluginName, id);
         }
 
         private void parseRaw(@NonNull String raw) {

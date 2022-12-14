@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2020 CloudBees, Inc.
+ * Copyright 2022 CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,38 +22,43 @@
  * THE SOFTWARE.
  */
 
-package jenkins;
+package jenkins.util;
 
-import hudson.Extension;
-import java.net.Socket;
-import org.jenkinsci.Symbol;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-@Extension
-@Symbol("jnlp2")
-public class TestJnlpSlaveAgentProtocol2 extends AgentProtocol {
+/**
+ * Executor service that logs unchecked exceptions / errors in {@link Runnable}.
+ * Exceptions thrown from {@link Callable} are <em>not</em> not logged,
+ * under the assumption that something is checking {@link Future#get()}.
+ * @since TODO
+ */
+public class ErrorLoggingExecutorService extends InterceptingExecutorService {
 
-    @Override
-    public boolean isOptIn() {
-        return true;
+    private static final Logger LOGGER = Logger.getLogger(ErrorLoggingExecutorService.class.getName());
+
+    public ErrorLoggingExecutorService(ExecutorService base) {
+        super(base);
     }
 
     @Override
-    public boolean isDeprecated() {
-        return true;
+    protected Runnable wrap(Runnable r) {
+        return () -> {
+            try {
+                r.run();
+            } catch (Throwable x) {
+                LOGGER.log(Level.WARNING, null, x);
+                throw x;
+            }
+        };
     }
 
     @Override
-    public String getName() {
-        return "JNLP2-connect";
-    }
-
-    @Override
-    public String getDisplayName() {
-        return "JNLP2-connect";
-    }
-
-    @Override
-    public void handle(Socket socket) {
+    protected <V> Callable<V> wrap(Callable<V> r) {
+        return r;
     }
 
 }

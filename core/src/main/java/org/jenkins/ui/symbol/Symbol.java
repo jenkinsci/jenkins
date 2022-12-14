@@ -45,6 +45,7 @@ public final class Symbol {
         String name = request.getName();
         String title = request.getTitle();
         String tooltip = request.getTooltip();
+        String htmlTooltip = request.getHtmlTooltip();
         String classes = request.getClasses();
         String pluginName = request.getPluginName();
         String id = request.getId();
@@ -54,8 +55,11 @@ public final class Symbol {
         String symbol = SYMBOLS
                 .computeIfAbsent(identifier, key -> new ConcurrentHashMap<>())
                 .computeIfAbsent(name, key -> loadSymbol(identifier, key));
-        if (StringUtils.isNotBlank(tooltip)) {
+        if (StringUtils.isNotBlank(tooltip) && StringUtils.isBlank(htmlTooltip)) {
             symbol = symbol.replaceAll("<svg", "<svg tooltip=\"" + Functions.htmlAttributeEscape(tooltip) + "\"");
+        }
+        if (StringUtils.isNotBlank(htmlTooltip)) {
+            symbol = symbol.replaceAll("<svg", "<svg data-html-tooltip=\"" + Functions.htmlAttributeEscape(htmlTooltip) + "\"");
         }
         if (StringUtils.isNotBlank(id)) {
             symbol = symbol.replaceAll("<svg", "<svg id=\"" + Functions.htmlAttributeEscape(id) + "\"");
@@ -89,6 +93,7 @@ public final class Symbol {
                      .replaceAll("<svg", "<svg aria-hidden=\"true\"")
                      .replaceAll("(class=\").*?(\")", "")
                      .replaceAll("(tooltip=\").*?(\")", "")
+                     .replaceAll("(data-html-tooltip=\").*?(\")", "")
                      .replaceAll("(id=\").*?(\")", "")
                      .replace("stroke:#000", "stroke:currentColor");
     }
