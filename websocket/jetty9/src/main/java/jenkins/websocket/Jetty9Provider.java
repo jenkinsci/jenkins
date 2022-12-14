@@ -26,9 +26,6 @@ package jenkins.websocket;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.Collections;
-import java.util.Map;
-import java.util.WeakHashMap;
 import java.util.concurrent.Future;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -47,9 +44,6 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 public class Jetty9Provider implements Provider {
 
     private static final String ATTR_LISTENER = Jetty9Provider.class.getName() + ".listener";
-
-    // TODO does not seem possible to use HttpServletRequest.get/setAttribute for this
-    private static final Map<Listener, Session> sessions = Collections.synchronizedMap(new WeakHashMap<>());
 
     private WebSocketServletFactory factory;
 
@@ -104,7 +98,7 @@ public class Jetty9Provider implements Provider {
             }
 
             private Session session() {
-                Session session = sessions.get(listener);
+                Session session = (Session) listener.getProviderSession();
                 if (session == null) {
                     throw new IllegalStateException("missing session");
                 }
@@ -136,8 +130,7 @@ public class Jetty9Provider implements Provider {
 
             @Override
             public void onWebSocketConnect(Session session) {
-                sessions.put(listener, session);
-                listener.onWebSocketConnect();
+                listener.onWebSocketConnect(session);
             }
 
             @Override
