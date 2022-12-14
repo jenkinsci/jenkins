@@ -35,7 +35,7 @@ Remoting updates in the core are subject to the process though.
 * Issue Triage Team Member 
 * Core Pull Request Reviewer
 * Core Maintainer
-** Pull request Assignee
+** Pull Request Assignee
 * Release Team Member
 
 **Contributors** submit pull requests to the Jenkins core and review changes submitted by others.
@@ -156,9 +156,9 @@ code reviewers are expected to suggest proper channels for contributors to discu
 * If no consensus can be reached on the mailing list,
   voting at the link:https://www.jenkins.io/project/governance-meeting/[Jenkins Governance Meeting] can be used to get a final decision.
 
-==== Bringing pull requests to closure
+=== Bringing pull requests to closure
 
-===== Motivation
+==== Motivation
 
 An obvious goal of the project is to deliver value to end users,
 without which end users would cease use of the delivered software.
@@ -192,7 +192,7 @@ As part of the process of bringing pull requests to closure,
 core maintainers are expected to steer discussions towards the identification of clear action items with reasoning
 and to explicitly reject with reasoning pull requests for which there are no clear and justified action items or for which such action items remain incomplete after an extended period of time.
 
-===== Indicating intent to close
+==== Indicating intent to close
 
 Core maintainers communicate their intention to bring a pull request to closure by adding themselves to the pull request in the **Assignees** field,
 through which they make a commitment to work with the contributor to either merge the pull request or to explicitly reject it.
@@ -205,9 +205,9 @@ An exception to the above would be if, following the adoption of this system, a 
 In that case, any core maintainer can retroactively assign the pull request to the core maintainer who closed it for tracking purposes.
 If a core maintainer does not regularly close pull requests,
 the maintainer should consider whether it is appropriate to remain on the core team
-in light of the commitment to closing pull requests that such membership implies.
+in light of the responsibility to closing pull requests that such membership implies.
 
-===== Providing actionable and justified feedback
+==== Providing actionable and justified feedback
 
 Once assigned to a pull request, a core maintainer should make every reasonable effort to drive the pull request to closure in a timely fashion.
 If further action is needed before the pull request can be accepted, this action should be explicitly requested along with the reasoning behind it.
@@ -217,7 +217,7 @@ but the ultimate goal of these questions should be to arrive at clear and justif
 otherwise, the process can languish for an extended period of time.
 It is the responsibility of the assignee to steer the discussion towards concrete and justified action item(s).
 
-===== Providing confirmation that feedback has been addressed
+==== Providing confirmation that feedback has been addressed
 
 Once any requested actions have been taken, the assignee should make every reasonable effort to provide explicit confirmation that each action item has been completed.
 This gives contributors positive reinforcement and confidence that their submission is moving forward through the process,
@@ -226,19 +226,19 @@ If the assignee cannot provide such confirmation in a timely fashion,
 the assignee should consider whether it is appropriate to remain assigned to the pull request
 in light of the commitment to the contributor that such an assignment implies.
 
-===== Negotiating scope
+==== Negotiating scope
 
 Not every pull request reaches a state of perfection at the end of the review process.
 Sometimes, requests are made that, while justified, represent an additional amount of work that the contributor may not be willing to do.
 In some cases it is critical to complete the additional work, but in others "you aren't gonna need it" (YAGNI).
 In such cases, the assignee should make a good faith effort to negotiate with the contributor to find a reasonable middle ground that is "good enough."
-Failure to negotiate reasonably can often chase contributors away.
+Failure to negotiate successfully can often chase contributors away.
 If the additional work is simple enough and the submission is not moving forward,
 the assignee may consider occasionally giving the contributor a lift by completing the additional work,
 though this is not expected in the general case
-and would not be reasonable to the assignee if a large amount of additional work is necessary.
+and would not be fair to the assignee if a large amount of additional work is necessary.
 
-===== Voting process
+==== Voting process
 
 A pull request can often serve as a catalyst for a discussion in which several possible paths forward are identified.
 When there is no clear consensus among the core maintainers about the path forward,
@@ -253,7 +253,7 @@ the core maintainer must provide with the veto a technical justification showing
 (e.g., opens a security exposure, negatively affects performance, etc.).
 A veto without a justification is invalid and has no weight.
 
-===== Acceptance [[acceptance]]
+==== Acceptance [[acceptance]]
 
 Once a pull request has reached the point where it is ready for merge, it is time to begin the countdown period by applying the `ready-for-merge` label.
 To avoid ambiguity, this label should only be applied by a core maintainer who actually intends to merge the pull request.
@@ -268,7 +268,7 @@ An example acceptance message is as follows:
 
 > This PR is now ready for merge. We will merge it after approximately 24 hours if there is no negative feedback. Please see the https://github.com/jenkinsci/jenkins/blob/master/docs/MAINTAINERS.adoc#merge-process[merge process documentation] for more information about the merge process. Thanks!
 
-===== Rejection
+==== Rejection
 
 Not all pull requests reach the point where they are ready for merge.
 In some cases, the pull request is close to being ready, but one or more justified action items remain incomplete.
