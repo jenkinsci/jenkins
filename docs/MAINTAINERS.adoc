@@ -165,7 +165,7 @@ without which end users would cease use of the delivered software.
 A pull request represents potential value for end users,
 value which is only realized when the pull request is merged and delivered in a shipping release.
 
-[cols="50%,50%"]
+[cols="1,1"]
 |===
 |Optimal Outcome|Suboptimal Outcome
 
@@ -175,7 +175,7 @@ value which is only realized when the pull request is merged and delivered in a 
 
 Another explicit goal of the project is to encourage both new and seasoned contributors alike.
 
-[cols="50%,50%"]
+[cols="1,1"]
 |===
 |Optimal Outcome|Suboptimal Outcome
 
