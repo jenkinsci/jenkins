@@ -1,4 +1,4 @@
-@import "../abstracts/theme.less";
+@import url("../abstracts/theme.less");
 
 .icon-help {
   color: var(--primary);
@@ -85,11 +85,6 @@
   .status-icon-color(var(--primary));
 }
 
-[class*="icon-health-"] {
-  color: var(--weather-icon-color);
-  fill: var(--weather-icon-color);
-}
-
 .build-status-icon__wrapper {
   display: inline-flex;
   position: relative;
@@ -118,7 +113,7 @@
 .icon-grey-anime .build-status-icon__outer,
 .icon-nobuilt-anime .build-status-icon__outer {
   .svg-icon {
-    animation: spin 1.5s linear infinite;
+    animation: spin 1.7s linear infinite;
   }
 }
 

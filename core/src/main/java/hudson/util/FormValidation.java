@@ -44,14 +44,19 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.reflect.Method;
+import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.Stream;
 import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
@@ -462,9 +467,45 @@ public abstract class FormValidation extends IOException implements HttpResponse
      */
     public abstract static class URLCheck {
         /**
+         * Open the given URI and read text content from it. This method honors the Content-type
+         * header.
+         *
+         * @throws IOException if the URI scheme is not supported, the connection was interrupted,
+         *     or the response was an error
+         * @since TODO
+         */
+        protected Stream<String> open(URI uri) throws IOException {
+            HttpClient httpClient = ProxyConfiguration.newHttpClient();
+            HttpRequest httpRequest;
+            try {
+                httpRequest = ProxyConfiguration.newHttpRequestBuilder(uri).GET().build();
+            } catch (IllegalArgumentException e) {
+                throw new IOException(e);
+            }
+            java.net.http.HttpResponse<Stream<String>> httpResponse;
+            try {
+                httpResponse =
+                        httpClient.send(httpRequest, java.net.http.HttpResponse.BodyHandlers.ofLines());
+            } catch (InterruptedException e) {
+                throw new IOException(e);
+            }
+            if (httpResponse.statusCode() != HttpURLConnection.HTTP_OK) {
+                throw new IOException(
+                        "Server returned HTTP response code "
+                                + httpResponse.statusCode()
+                                + " for URI "
+                                + uri);
+            }
+            return httpResponse.body();
+        }
+
+        /**
          * Opens the given URL and reads text content from it.
          * This method honors Content-type header.
+         *
+         * @deprecated use {@link #open(URI)}
          */
+        @Deprecated
         protected BufferedReader open(URL url) throws IOException {
             // use HTTP content type to find out the charset.
             URLConnection con = ProxyConfiguration.open(url);
@@ -476,10 +517,24 @@ public abstract class FormValidation extends IOException implements HttpResponse
         }
 
         /**
+         * Find the string literal from the given stream of lines.
+         *
+         * @return true if found, false otherwise
+         * @since TODO
+         */
+        protected boolean findText(Stream<String> in, String literal) {
+            try (in) {
+                return in.anyMatch(line -> line.contains(literal));
+            }
+        }
+
+        /**
          * Finds the string literal from the given reader.
          * @return
          *      true if found, false otherwise.
+         * @deprecated use {@link #findText(Stream, String)}
          */
+        @Deprecated
         protected boolean findText(BufferedReader in, String literal) throws IOException {
             String line;
             while ((line = in.readLine()) != null)
@@ -499,9 +554,9 @@ public abstract class FormValidation extends IOException implements HttpResponse
             // any invalid URL comes here
             if (e.getMessage().equals(url))
                 // Sun JRE (and probably others too) often return just the URL in the error.
-                return error("Unable to connect " + url);
+                return error("Unable to connect " + url, e);
             else
-                return error(e.getMessage());
+                return error(e.getMessage(), e);
         }
 
         /**

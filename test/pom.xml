@@ -37,8 +37,6 @@ THE SOFTWARE.
   <description>Functional tests for Jenkins core</description>
 
   <properties>
-    <!-- may use e.g. 2C for 2 × (number of cores) -->
-    <concurrency>2</concurrency>
     <mavenDebug>false</mavenDebug>
     <!-- Filled in by jacoco-maven-plugin -->
     <jacocoSurefireArgs />
@@ -61,21 +59,26 @@ THE SOFTWARE.
         <scope>import</scope>
       </dependency>
       <dependency>
+        <groupId>io.jenkins.plugins</groupId>
+        <artifactId>font-awesome-api</artifactId>
+        <version>6.2.1-1</version>
+      </dependency>
+      <dependency>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>ant</artifactId>
-        <version>475.vf34069fef73c</version>
+        <version>481.v7b_09e538fcca</version>
       </dependency>
       <dependency>
         <!-- RequireUpperBoundDeps via mailer and junit -->
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>display-url-api</artifactId>
-        <version>2.3.6</version>
+        <version>2.3.7</version>
       </dependency>
       <dependency>
         <!-- requireUpperBoundDeps via matrix-project and junit -->
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>script-security</artifactId>
-        <version>1175.v4b_d517d6db_f0</version>
+        <version>1228.vd93135a_2fb_25</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -90,7 +93,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>1834.v91a_a_5f4b_6529</version>
+      <version>1912.v0cdf15450b_fb</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -121,7 +124,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>io.jenkins.plugins</groupId>
       <artifactId>javax-mail-api</artifactId>
-      <version>1.6.2-7</version>
+      <version>1.6.2-8</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -133,7 +136,6 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.hamcrest</groupId>
       <artifactId>hamcrest-core</artifactId>
-      <version>2.2</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -144,25 +146,31 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
       <artifactId>instance-identity</artifactId>
-      <version>116.vf8f487400980</version>
+      <version>142.v04572ca_5b_265</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>antisamy-markup-formatter</artifactId>
-      <version>2.7</version>
+      <version>155.v795fb_8702324</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>cloudbees-folder</artifactId>
-      <version>6.758.vfd75d09eea_a_1</version>
+      <version>6.795.v3e23d3c6f194</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>credentials</artifactId>
+      <version>1214.v1de940103927</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>junit</artifactId>
-      <version>1119.1121.vc43d0fc45561</version>
+      <version>1166.va_436e268e972</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -174,7 +182,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>matrix-auth</artifactId>
-      <version>3.1.5</version>
+      <version>3.1.6</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -202,7 +210,6 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-inline</artifactId>
-      <version>${mockito.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -232,12 +239,6 @@ THE SOFTWARE.
         </executions>
       </plugin>
       <plugin>
-        <groupId>org.kohsuke.stapler</groupId>
-        <artifactId>maven-stapler-plugin</artifactId>
-        <!-- version specified in grandparent pom -->
-        <extensions>true</extensions>
-      </plugin>
-      <plugin>
         <artifactId>maven-dependency-plugin</artifactId>
         <!-- Version specified in grandparent POM -->
         <executions>
@@ -256,12 +257,12 @@ THE SOFTWARE.
                   <version>${remoting.minimum.supported.version}</version>
                   <type>jar</type>
                   <outputDirectory>${project.build.outputDirectory}/old-remoting</outputDirectory>
-                  <destFileName>remoting-minimal-supported.jar</destFileName>
+                  <destFileName>remoting-minimum-supported.jar</destFileName>
                 </artifactItem>
                 <artifactItem>
                   <groupId>org.jenkins-ci.main</groupId>
                   <artifactId>remoting</artifactId>
-                  <version>4.2</version>
+                  <version>4.6</version>
                   <type>jar</type>
                   <outputDirectory>${project.build.outputDirectory}/old-remoting</outputDirectory>
                   <destFileName>remoting-unsupported.jar</destFileName>
@@ -282,7 +283,6 @@ THE SOFTWARE.
             <buildDirectory>${project.build.directory}</buildDirectory>
           </systemPropertyVariables>
           <reuseForks>false</reuseForks>
-          <forkCount>${concurrency}</forkCount>
         </configuration>
         <executions>
           <!-- Unbind the default execution so that it does not run before test-runtime. -->
@@ -352,7 +352,6 @@ THE SOFTWARE.
         </property>
       </activation>
       <properties>
-        <surefire.rerunFailingTestsCount>4</surefire.rerunFailingTestsCount>
         <surefire.skipAfterFailureCount>100</surefire.skipAfterFailureCount>
       </properties>
     </profile>

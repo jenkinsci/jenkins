@@ -35,8 +35,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.Page;
@@ -193,13 +193,8 @@ public class FingerprintTest {
     public void shouldThrowIOExceptionWhenFileIsInvalid() throws Exception {
         XmlFile f = new XmlFile(new File(rule.jenkins.getRootDir(), "foo.xml"));
         f.write("Hello, world!");
-        try {
-            FileFingerprintStorage.load(f.getFile());
-        } catch (IOException ex) {
-            assertThat(ex.getMessage(), containsString("Unexpected Fingerprint type"));
-            return;
-        }
-        fail("Expected IOException");
+        IOException e = assertThrows(IOException.class, () -> FileFingerprintStorage.load(f.getFile()));
+        assertThat(e.getMessage(), containsString("Unexpected Fingerprint type"));
     }
 
     @Test

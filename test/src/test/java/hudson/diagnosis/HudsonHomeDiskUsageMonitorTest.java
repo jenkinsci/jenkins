@@ -2,8 +2,8 @@ package hudson.diagnosis;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import com.gargoylesoftware.htmlunit.ElementNotFoundException;
 import com.gargoylesoftware.htmlunit.HttpMethod;
@@ -19,7 +19,6 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.List;
 import jenkins.model.Jenkins;
-import jenkins.security.apitoken.ApiTokenTestHelper;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -50,18 +49,12 @@ public class HudsonHomeDiskUsageMonitorTest {
         assertFalse(mon.isEnabled());
 
         // and make sure it's gone
-        try {
-            fail(getForm(mon) + " shouldn't be there");
-        } catch (ElementNotFoundException e) {
-            // as expected
-        }
+        assertThrows(ElementNotFoundException.class, () -> getForm(mon));
     }
 
     @Issue("SECURITY-371")
     @Test
     public void noAccessForNonAdmin() throws Exception {
-        ApiTokenTestHelper.enableLegacyBehavior();
-
         JenkinsRule.WebClient wc = j.createWebClient()
                 .withThrowExceptionOnFailingStatusCode(false);
 

@@ -28,16 +28,15 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
          xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-    <l:layout title="${%Advanced Settings} - ${%Plugin Manager}" permission="${app.SYSTEM_READ}">
+    <l:layout title="${%Advanced settings} - ${%Plugin Manager}" permission="${app.SYSTEM_READ}">
         <j:set var="readOnlyMode" value="${!app.hasPermission(app.ADMINISTER)}"/>
-
-        <l:app-bar title="${%Plugin Manager}"/>
 
         <st:include page="sidepanel.jelly"/>
 
         <l:main-panel>
-            <local:tabBar page="advanced" xmlns:local="/hudson/PluginManager"/>
+          <l:app-bar title="${%Advanced settings}"/>
 
+          <div class="jenkins-form">
             <section class="jenkins-section jenkins-!-margin-bottom-5">
                 <h2 class="jenkins-section__title">${%HTTP Proxy Configuration}</h2>
                 <f:form method="post" action="proxyConfigure" name="proxyConfigure">
@@ -78,9 +77,15 @@ THE SOFTWARE.
                 <h2 class="jenkins-section__title">${%Update Site}</h2>
                 <f:form method="post" action="siteConfigure" name="siteConfigure">
                     <f:entry title="${%URL}">
+                        <j:if test="${app.updateCenter.ID_DEFAULT.equals(app.updateCenter.PREDEFINED_UPDATE_SITE_ID)}">
+                          <a id="reset-to-default" href="#">${%Reset to default}</a>
+                        </j:if>
                         <f:textbox name="site"
-                                   value="${app.updateCenter.getSite(app.updateCenter.ID_DEFAULT).url}"/>
+                                   id="update-site-url"
+                                   value="${app.updateCenter.getSite(app.updateCenter.ID_DEFAULT).url}"
+                                   checkUrl="checkUpdateSiteUrl" checkDependsOn=""/>
                     </f:entry>
+                    <st:adjunct includes="hudson.PluginManager._updateSite"/>
                     <l:isAdmin>
                         <f:block>
                             <f:submit/>
@@ -107,6 +112,7 @@ THE SOFTWARE.
                     </ul>
                 </section>
             </j:if>
+          </div>
         </l:main-panel>
     </l:layout>
 </j:jelly>

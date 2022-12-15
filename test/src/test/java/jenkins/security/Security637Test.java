@@ -40,7 +40,6 @@ import hudson.model.FreeStyleProject;
 import hudson.model.JobProperty;
 import hudson.model.JobPropertyDescriptor;
 import hudson.slaves.DumbSlave;
-import hudson.util.VersionNumber;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.URL;
@@ -64,10 +63,7 @@ public class Security637Test {
     @Issue("SECURITY-637")
     public void urlSafeDeserialization_handler_inSameJVMRemotingContext() throws Throwable {
         sessions.then(j -> {
-                EnvVars envVars = new VersionNumber(System.getProperty("java.specification.version")).isOlderThan(new VersionNumber("9"))
-                        ? null
-                        : new EnvVars("JAVA_TOOL_OPTIONS", "--add-opens=java.base/java.net=ALL-UNNAMED");
-                DumbSlave slave = j.createOnlineSlave(null, envVars);
+                DumbSlave slave = j.createOnlineSlave(null, new EnvVars("JAVA_TOOL_OPTIONS", "--add-opens=java.base/java.net=ALL-UNNAMED"));
                 String unsafeHandlerClassName = slave.getChannel().call(new URLHandlerCallable(new URL("https://www.google.com/")));
                 assertThat(unsafeHandlerClassName, containsString("SafeURLStreamHandler"));
 
