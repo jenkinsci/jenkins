@@ -2190,7 +2190,7 @@ function ensureVisible(e) {
   }
 
   // if there are any stickers around, subtract them from the viewport
-  handleStickers("jenkins-breadcrumbs", function (t) {
+  handleStickers("top-sticker", function (t) {
     t = t.clientHeight;
     Y += t;
     H -= t;

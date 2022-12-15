@@ -41,13 +41,11 @@ function onWinScroll(callback) {
 }
 
 function pageHeaderHeight() {
-  return (
-    document.querySelector("#page-header").offsetHeight + breadcrumbBarHeight()
-  );
+  return elementHeight("#page-header") + breadcrumbBarHeight();
 }
 
 function breadcrumbBarHeight() {
-  return document.querySelector("#breadcrumbBar").offsetHeight;
+  return elementHeight("#breadcrumbBar");
 }
 
 function removeTextHighlighting(selector) {
@@ -56,6 +54,10 @@ function removeTextHighlighting(selector) {
     highlightSplit.before(highlightSplit.text());
     highlightSplit.remove();
   });
+}
+
+function elementHeight(selector) {
+  return $(selector).height();
 }
 
 export default {
