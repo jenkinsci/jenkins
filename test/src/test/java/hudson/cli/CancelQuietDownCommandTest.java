@@ -109,7 +109,7 @@ public class CancelQuietDownCommandTest {
     @Test
     public void cancelQuietDownShouldSuccessOnNoQuietDownedJenkinsAndRunningExecutor() throws Exception {
         final FreeStyleProject project = j.createFreeStyleProject("aProject");
-        final OneShotEvent finish = new OneShotEvent();
+        OneShotEvent finish = new OneShotEvent();
         Future<FreeStyleBuild> build = OnlineNodeCommandTest.startBlockingAndFinishingBuild(project, finish);
         assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(1));
 
@@ -124,6 +124,7 @@ public class CancelQuietDownCommandTest {
         assertThat(project.isBuilding(), equalTo(false));
         j.assertBuildStatusSuccess(build);
         QuietDownCommandTest.assertJenkinsNotInQuietMode(j);
+        finish = new OneShotEvent();
         build = OnlineNodeCommandTest.startBlockingAndFinishingBuild(project, finish);
         assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(2));
         assertThat(project.isBuilding(), equalTo(true));
@@ -142,7 +143,7 @@ public class CancelQuietDownCommandTest {
     @Test
     public void cancelQuietDownShouldSuccessOnQuietDownedJenkinsAndRunningExecutor() throws Exception {
         final FreeStyleProject project = j.createFreeStyleProject("aProject");
-        final OneShotEvent finish = new OneShotEvent();
+        OneShotEvent finish = new OneShotEvent();
         Future<FreeStyleBuild> build = OnlineNodeCommandTest.startBlockingAndFinishingBuild(project, finish);
         assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(1));
         assertThat(project.isBuilding(), equalTo(true));
@@ -160,6 +161,7 @@ public class CancelQuietDownCommandTest {
         assertThat(project.isBuilding(), equalTo(false));
         j.assertBuildStatusSuccess(build);
         QuietDownCommandTest.assertJenkinsNotInQuietMode(j);
+        finish = new OneShotEvent();
         build = OnlineNodeCommandTest.startBlockingAndFinishingBuild(project, finish);
         assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(2));
         assertThat(project.isBuilding(), equalTo(true));

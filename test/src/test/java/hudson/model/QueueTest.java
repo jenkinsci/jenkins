@@ -46,12 +46,10 @@ import static org.junit.Assert.assertTrue;
 
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.Page;
+import com.gargoylesoftware.htmlunit.ScriptResult;
 import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.html.DomElement;
 import com.gargoylesoftware.htmlunit.html.DomNode;
-import com.gargoylesoftware.htmlunit.html.DomNodeList;
-import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
-import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlFileInput;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlFormUtil;
@@ -268,7 +266,7 @@ public class QueueTest {
             }
         });
 
-        Future<FreeStyleBuild> b1 = p.scheduleBuild2(0);
+        FreeStyleBuild b1 = p.scheduleBuild2(0).waitForStart();
         assertNotNull(b1);
         seq.phase(1);   // and make sure we have one build under way
 
@@ -282,6 +280,10 @@ public class QueueTest {
         assertThat(items[0], instanceOf(BlockedItem.class));
 
         q.save();
+
+        assertTrue(q.cancel(items[0]));
+        seq.done();
+        r.assertBuildStatusSuccess(r.waitForCompletion(b1));
     }
 
     public static final class FileItemPersistenceTestServlet extends HttpServlet {
@@ -1093,7 +1095,7 @@ public class QueueTest {
         t1.getBuildersList().add(new SleepBuilder(TimeUnit.SECONDS.toMillis(30)));
         t1.setConcurrentBuild(false);
 
-        t1.scheduleBuild2(0).waitForStart();
+        FreeStyleBuild build = t1.scheduleBuild2(0).waitForStart();
         t1.scheduleBuild2(0);
 
         queue.maintain();
@@ -1103,6 +1105,8 @@ public class QueueTest {
         CauseOfBlockage expected = new BlockedBecauseOfBuildInProgress(t1.getFirstBuild());
 
         assertEquals(expected.getShortDescription(), actual.getShortDescription());
+        Queue.getInstance().doCancelItem(r.jenkins.getQueue().getBlockedItems().get(0).getId());
+        r.assertBuildStatusSuccess(r.waitForCompletion(build));
     }
 
     @Test @LocalData
@@ -1270,14 +1274,11 @@ public class QueueTest {
 
         HtmlPage page = wc.goTo("");
 
-        DomElement buildQueue = page.getElementById("buildQueue");
-        DomNodeList<HtmlElement> anchors = buildQueue.getElementsByTagName("a");
-        HtmlAnchor anchorWithTooltip = (HtmlAnchor) anchors.stream()
-                .filter(a -> a.getAttribute("tooltip") != null && !a.getAttribute("tooltip").isEmpty())
-                .findFirst().orElseThrow(IllegalStateException::new);
+        page.executeJavaScript("document.querySelector('#buildQueue a[tooltip]:not([tooltip=\"\"])')._tippy.show()");
+        wc.waitForBackgroundJavaScript(1000);
+        ScriptResult result = page.executeJavaScript("document.querySelector('.tippy-content').innerHTML;");
 
-        String tooltip = anchorWithTooltip.getAttribute("tooltip");
-        return tooltip;
+        return result.getJavaScriptResult().toString();
     }
 
     public static class BrokenAffinityKeyProject extends Project<BrokenAffinityKeyProject, BrokenAffinityKeyBuild> implements TopLevelItem {
