@@ -53,7 +53,7 @@ Follow the [contributing guidelines](CONTRIBUTING.md) if you want to propose a c
 For more information about participating in the community and contributing to the Jenkins project,
 see [this page](https://www.jenkins.io/participate/).
 
-Documentation for Jenkins core maintainers is in the [maintainers guidelines](docs/MAINTAINERS.adoc).
+Documentation for Jenkins core maintainers is in the [maintainers guidelines](MAINTAINERS.adoc).
 
 # News and Website
 

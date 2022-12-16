@@ -138,7 +138,7 @@ To submit a pull request:
 6. Wait for CI results/reviews, process the feedback.
    - If you do not get feedback after 3 days, feel free to ping `@jenkinsci/core-pr-reviewers` in the comments.
    - Usually we merge pull requests after 2 approvals from reviewers, no requested changes, and having waited some more time to give others an opportunity to provide their feedback.
-     See [this page](/docs/MAINTAINERS.adoc) for more information about our review process.
+     See [this page](MAINTAINERS.adoc) for more information about our review process.
 
 Once your Pull Request is ready to be merged,
 the repository maintainers will integrate it, prepare changelogs, and
