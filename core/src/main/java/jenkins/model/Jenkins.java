@@ -3137,12 +3137,14 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         return User.get(name, User.ALLOW_USER_CREATION_VIA_URL && hasPermission(ADMINISTER));
     }
 
-    public synchronized TopLevelItem createProject(TopLevelItemDescriptor type, String name) throws IOException {
+    @NonNull
+    public synchronized TopLevelItem createProject(@NonNull TopLevelItemDescriptor type, @NonNull String name) throws IOException {
         return createProject(type, name, true);
     }
 
+    @NonNull
     @Override
-    public synchronized TopLevelItem createProject(TopLevelItemDescriptor type, String name, boolean notify) throws IOException {
+    public synchronized TopLevelItem createProject(@NonNull TopLevelItemDescriptor type, @NonNull String name, boolean notify) throws IOException {
         return itemGroupMixIn.createProject(type, name, notify);
     }
 
@@ -3173,8 +3175,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @throws IllegalArgumentException
      *      if the project of the given name already exists.
      */
-    public synchronized <T extends TopLevelItem> T createProject(Class<T> type, String name) throws IOException {
-        return type.cast(createProject((TopLevelItemDescriptor) getDescriptor(type), name));
+    @NonNull
+    public synchronized <T extends TopLevelItem> T createProject(@NonNull Class<T> type, @NonNull String name) throws IOException {
+        return type.cast(createProject((TopLevelItemDescriptor) getDescriptorOrDie(type), name));
     }
 
     /**
