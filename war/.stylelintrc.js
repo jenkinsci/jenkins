@@ -3,7 +3,6 @@ module.exports = {
   customSyntax: "postcss-less",
   rules: {
     indentation: null,
-    linebreaks: "unix",
     "max-line-length": 150,
     "selector-list-comma-newline-after": null,
     "selector-list-comma-space-after": null,
