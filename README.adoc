@@ -52,11 +52,11 @@ Our latest and greatest source of Jenkins can be found on https://github.com/jen
 
 == Contributing to Jenkins
 
-Follow the link:CONTRIBUTING.adoc[contributing guidelines] if you want to propose a change in the Jenkins core.
+Follow the link:CONTRIBUTING.md[contributing guidelines] if you want to propose a change in the Jenkins core.
 For more information about participating in the community and contributing to the Jenkins project,
 see https://www.jenkins.io/participate/[this page].
 
-Documentation for Jenkins core maintainers is in the link:MAINTAINERS.adoc[maintainers guidelines].
+Documentation for Jenkins core maintainers is in the link:docs/MAINTAINERS.adoc[maintainers guidelines].
 
 == News and Website
 

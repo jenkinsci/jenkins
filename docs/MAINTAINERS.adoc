@@ -307,7 +307,7 @@ triage team members are not responsible for handling the ticket after initial tr
 Other materials which might help:
 
 * link:https://www.jenkins.io/participate/code/[Contribute to Jenkins / Code] or 
-  link:CONTRIBUTING.adoc[Contributing to the Jenkins Core] - 
+  link:https://github.com/jenkinsci/jenkins/blob/master/CONTRIBUTING.md[Contributing to the Jenkins Core] - 
   extended version of "feel free to contribute".
 * link:https://github.com/jenkinsci/.github/blob/master/SUPPORT.md[Jenkins Support Disclaimer Page] -
 for those requesters who expect quick response and SLA.
