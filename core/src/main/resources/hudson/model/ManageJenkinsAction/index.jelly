@@ -52,7 +52,6 @@ THE SOFTWARE.
               <div class="jenkins-section__item">
               <j:set var="alt" value="${icon.replaceAll('\\d*\\.[^.]+$', '')}"/>
               <j:set var="iconSrc" value="${h.tryGetIconPath(m.iconFileName, context)}"/>
-              <j:set var="badge" value="${m.badge}"/>
               <j:set var="iconXml">
                 <l:icon src="${m.iconFileName}" />
               </j:set>
@@ -86,6 +85,7 @@ THE SOFTWARE.
                   <a href="${m.urlName}">
                     <div class="jenkins-section__item__icon" aria-hidden="true">
                       <l:icon src="${m.iconFileName}" class="icon" />
+                      <j:set var="badge" value="${m.badge}"/>
                       <j:if test="${badge != null}">
                         <div tooltip="${badge.tooltip}" class="jenkins-section__item__icon__badge alert-${badge.severity}">
                           ${badge.text}
