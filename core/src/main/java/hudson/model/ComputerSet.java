@@ -200,7 +200,6 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
         return r;
     }
 
-
     @Override
     public String getSearchUrl() {
         return "/computers/";

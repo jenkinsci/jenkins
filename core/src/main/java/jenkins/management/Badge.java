@@ -5,7 +5,6 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 /**
  *  Definition of a badge that is displayed on the Manage Jenkins page.
  *  The badge is shown as a small overlay over the corresponding icon.
-
  */
 public class Badge {
 
@@ -21,7 +20,6 @@ public class Badge {
      *      as this might lead to line breaks.
      * @param tooltip  The tooltip to show for the badge.
      *      Do not include html tags.
-
      * @param severity  The severity of the badge (danger, warning, info)
      */
     public Badge(@NonNull String text, String tooltip, Severity severity) {
@@ -40,7 +38,7 @@ public class Badge {
     }
 
     /**
-     * The tooltip for the badge.
+     * The tooltip of the badge.
      *
      * @return tooltip
      */
@@ -49,9 +47,10 @@ public class Badge {
     }
 
     /**
-     * The background color of the badge.
+     * The severity of the badge.
+     * Influences the background color of the badge.
      *
-     * @return color
+     * @return severity
      */
     public Severity getSeverity() {
         return severity;
