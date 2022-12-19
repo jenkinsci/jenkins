@@ -1,7 +1,6 @@
 package jenkins.security;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.emptyIterable;
 import static org.hamcrest.Matchers.hasItem;
@@ -61,7 +60,7 @@ public class BasicHeaderProcessorTest {
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
 
         wc = j.createWebClient();
-        User foo = User.getById("foo", true);
+        final User foo = User.getById("foo", true);
         User.getById("bar", true);
 
         // call without authentication
