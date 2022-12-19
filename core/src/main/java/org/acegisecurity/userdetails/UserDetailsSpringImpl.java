@@ -71,4 +71,8 @@ final class UserDetailsSpringImpl implements org.springframework.security.core.u
         return delegate.isEnabled();
     }
 
+    @Override
+    public String toString() {
+        return delegate.getUsername();
+    }
 }

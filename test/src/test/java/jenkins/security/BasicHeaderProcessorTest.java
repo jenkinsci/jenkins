@@ -1,5 +1,10 @@
 package jenkins.security;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.emptyIterable;
+import static org.hamcrest.Matchers.hasItem;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 
@@ -14,12 +19,15 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.Collections;
+import java.util.logging.Level;
 import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
+import org.jvnet.hudson.test.LoggerRule;
 import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.HttpResponse;
 import org.xml.sax.SAXException;
@@ -30,6 +38,11 @@ import org.xml.sax.SAXException;
 public class BasicHeaderProcessorTest {
     @Rule
     public JenkinsRule j = new JenkinsRule();
+
+    @Rule
+    public LoggerRule l = new LoggerRule()
+            .record(BasicHeaderProcessor.class, Level.INFO)
+            .capture(5);
 
     private WebClient wc;
 
@@ -55,51 +68,66 @@ public class BasicHeaderProcessorTest {
         makeRequestAndVerify("anonymous");
         spySecurityListener.authenticatedCalls.assertNoNewEvents();
         spySecurityListener.failedToAuthenticateCalls.assertNoNewEvents();
+        assertEquals(Collections.emptyList(), l.getMessages());
 
         // call with API token
         wc = j.createWebClient();
         wc.withBasicApiToken("foo");
         makeRequestAndVerify("foo");
         spySecurityListener.authenticatedCalls.assertLastEventIsAndThenRemoveIt(u -> u.getUsername().equals("foo"));
+        assertLogged("Request authenticated as UsernamePasswordAuthenticationToken [Principal=foo");
 
         // call with invalid API token
         wc = j.createWebClient();
         wc.withBasicCredentials("foo", "abcd" + foo.getProperty(ApiTokenProperty.class).getApiToken());
         makeRequestAndFail();
         spySecurityListener.failedToAuthenticateCalls.assertLastEventIsAndThenRemoveIt("foo");
+        assertLogged("Authentication of BASIC header failed: Invalid password/token for user: foo");
 
         // call with password
         wc = j.createWebClient();
         wc.withBasicCredentials("foo");
         makeRequestAndVerify("foo");
         spySecurityListener.authenticatedCalls.assertLastEventIsAndThenRemoveIt(u -> u.getUsername().equals("foo"));
+        assertLogged("Request authenticated as UsernamePasswordAuthenticationToken [Principal=foo");
 
         // call with incorrect password
         wc = j.createWebClient();
         wc.withBasicCredentials("foo", "bar");
         makeRequestAndFail();
         spySecurityListener.failedToAuthenticateCalls.assertLastEventIsAndThenRemoveIt("foo");
+        assertLogged("Authentication of BASIC header failed: Invalid password/token for user: foo");
 
         wc = j.createWebClient();
         wc.login("bar");
         spySecurityListener.authenticatedCalls.assertLastEventIsAndThenRemoveIt(u -> u.getUsername().equals("bar"));
         spySecurityListener.loggedInCalls.assertLastEventIsAndThenRemoveIt("bar");
+        assertEquals(Collections.emptyList(), l.getMessages()); // Nothing logged as it bypasses BasicHeaderProcessor
 
         // if the session cookie is valid, then basic header won't be needed
         makeRequestAndVerify("bar");
         spySecurityListener.authenticatedCalls.assertNoNewEvents();
         spySecurityListener.failedToAuthenticateCalls.assertNoNewEvents();
+        assertEquals(Collections.emptyList(), l.getMessages());
 
         // if the session cookie is valid, and basic header is set anyway login should not fail either
         wc.withBasicCredentials("bar");
         makeRequestAndVerify("bar");
         spySecurityListener.authenticatedCalls.assertNoNewEvents();
         spySecurityListener.failedToAuthenticateCalls.assertNoNewEvents();
+        assertLogged("Request re-authenticated as bar");
 
         // but if the password is incorrect, it should fail, instead of silently logging in as the user indicated by session
         wc.withBasicCredentials("foo", "bar");
         makeRequestAndFail();
         spySecurityListener.failedToAuthenticateCalls.assertLastEventIsAndThenRemoveIt("foo");
+        assertLogged("Authentication of BASIC header failed: Invalid password/token for user: foo");
+    }
+
+    private void assertLogged(String substring) {
+        assertThat(l.getMessages(), hasItem(containsString(substring)));
+        l.capture(5); // Erase old lines so this can be run repeatedly
+        assertThat(l.getMessages(), emptyIterable());
     }
 
     private void makeRequestAndFail() throws IOException, SAXException {
