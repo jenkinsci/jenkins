@@ -28,7 +28,9 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.model.ManagementLink;
 import hudson.model.UpdateCenter;
+import hudson.model.UpdateSite.Plugin;
 import hudson.security.Permission;
+import java.util.List;
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
 
@@ -71,24 +73,42 @@ public class PluginsLink extends ManagementLink {
     }
 
     @Override
-    public String getBadge() {
+    public Badge getBadge() {
         final UpdateCenter updateCenter = Jenkins.get().getUpdateCenter();
         if (!updateCenter.isSiteDataReady()) {
             // Do not display message during this page load, but possibly later.
             return null;
         }
-        int size = updateCenter.getUpdates().size();
-        return size == 0 ? null : Integer.toString(size);
-    }
-
-    @Override
-    public String getBadgeTooltip() {
-        final UpdateCenter updateCenter = Jenkins.get().getUpdateCenter();
-        int size = updateCenter.getUpdates().size();
-        if (size > 1) {
-            return Messages.PluginsLink_updatesAvailable(size);
-        } else {
-            return Messages.PluginsLink_updateAvailable();
+        List<Plugin> plugins = updateCenter.getUpdates();
+        int size = plugins.size();
+        if (size > 0) {
+            String tooltip = null;
+            Badge.Severity severity = Badge.Severity.warning;
+            int securityFixSize = (int) plugins.stream().filter(plugin -> plugin.fixesSecurityVulnerabilities()).count();
+            if (size > 1) {
+                switch (securityFixSize) {
+                    case 0:
+                        tooltip = Messages.PluginsLink_updatesAvailable(size);
+                        break;
+                    case 1:
+                        tooltip = Messages.PluginsLink_oneSecurityUpdateAvailable(size);
+                        severity = Badge.Severity.danger;
+                        break;
+                    default:
+                        tooltip = Messages.PluginsLink_securityUpdatesAvailable(size, securityFixSize);
+                        severity = Badge.Severity.danger;
+                        break;
+                }
+            } else {
+                if (securityFixSize > 0) {
+                    tooltip = Messages.PluginsLink_securityUpdateAvailable();
+                    severity = Badge.Severity.danger;
+                } else {
+                    tooltip = Messages.PluginsLink_updateAvailable();
+                }
+            }
+            return new Badge(Integer.toString(size), tooltip, severity);
         }
+        return null;
     }
 }

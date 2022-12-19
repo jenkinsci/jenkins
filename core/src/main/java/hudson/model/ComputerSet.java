@@ -58,8 +58,6 @@ import jenkins.model.ModelObjectWithChildren;
 import jenkins.model.ModelObjectWithContextMenu.ContextMenu;
 import jenkins.util.Timer;
 import net.sf.json.JSONObject;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
@@ -202,18 +200,6 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
         return r;
     }
 
-    /**
-     * Number of nodes that are not connected.
-     */
-    @Restricted(NoExternalUse.class)
-    public int getOfflineNodeCount() {
-        int count = 0;
-        for (Computer c : get_all())
-            if (c.isOffline() && !c.isConnecting() && c.isAcceptingTasks()) {
-                count++;
-            }
-        return count;
-    }
 
     @Override
     public String getSearchUrl() {

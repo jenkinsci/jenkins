@@ -26,7 +26,6 @@ package jenkins.management;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
-import hudson.model.ComputerSet;
 import hudson.model.ManagementLink;
 import hudson.security.Permission;
 import jenkins.model.Jenkins;
@@ -68,24 +67,5 @@ public class NodesLink extends ManagementLink {
     @Override
     public Category getCategory() {
         return Category.CONFIGURATION;
-    }
-
-    @Override
-    public String getBadge() {
-        int offline = new ComputerSet().getOfflineNodeCount();
-        if (offline > 0) {
-            return Integer.toString(offline);
-        }
-        return null;
-    }
-
-    @Override
-    public String getBadgeTooltip() {
-        int offline = new ComputerSet().getOfflineNodeCount();
-        if (offline > 1) {
-            return Messages.NodesLink_nodesOffline(offline);
-        } else {
-            return Messages.NodesLink_nodeOffline();
-        }
     }
 }

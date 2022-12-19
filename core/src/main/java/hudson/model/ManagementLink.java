@@ -34,6 +34,7 @@ import hudson.security.Permission;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import jenkins.management.Badge;
 import jenkins.model.Jenkins;
 import org.jvnet.localizer.Localizable;
 import org.kohsuke.accmod.Restricted;
@@ -215,22 +216,12 @@ public abstract class ManagementLink implements ExtensionPoint, Action {
     }
 
     /**
-     * The content of a badge shown as overlay over the icon on "Manage Jenkins".
+     * A badge shown as overlay over the icon on "Manage Jenkins".
      *
-     * @return badge text or {@code null} if no badge should be shown.
+     * @return badge or {@code null} if no badge should be shown.
      * @since TODO
      */
-    public @CheckForNull String getBadge() {
-        return null;
-    }
-
-    /**
-     * The tooltip to show for the badge on "Manage Jenkins".
-     *
-     * @return badge tooltip or null when no tooltip should be shown
-     * @since TODO
-     */
-    public @CheckForNull String getBadgeTooltip() {
+    public @CheckForNull Badge getBadge() {
         return null;
     }
 
