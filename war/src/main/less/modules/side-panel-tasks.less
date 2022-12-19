@@ -15,8 +15,32 @@
   }
 }
 
-#tasks h1 {
-  margin-top: 0.4rem;
+#side-panel {
+  .jenkins-app-bar {
+    margin-top: var(--section-padding);
+    margin-left: var(--section-padding);
+    margin-right: var(--section-padding);
+  }
+
+  & > #tasks > .jenkins-search-container {
+    margin-left: -0.8rem;
+    margin-bottom: calc(var(--section-padding) / 2);
+
+    .jenkins-search__icon {
+      width: 2.8rem;
+      aspect-ratio: unset;
+    }
+
+    .jenkins-search__input {
+      padding-left: 2.8rem;
+    }
+  }
+
+  &:has(.jenkins-search__results-container--visible) {
+    .task-link {
+      opacity: 0.3;
+    }
+  }
 }
 
 #tasks .task {
@@ -43,14 +67,15 @@
   border: none;
   text-decoration: none;
   margin: 0;
+  transition: opacity var(--standard-transition);
 
   .task-icon-link {
     display: inline-flex;
 
     svg,
     img {
-      width: 1.4rem !important;
-      height: 1.4rem !important;
+      width: 1.375rem !important;
+      height: 1.375rem !important;
       color: var(--text-color);
 
       * {

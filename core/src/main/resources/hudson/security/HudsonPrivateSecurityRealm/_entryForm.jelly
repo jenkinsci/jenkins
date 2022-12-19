@@ -29,8 +29,9 @@ THE SOFTWARE.
     <st:attribute name="it" use="required" type="hudson.security.HudsonPrivateSecurityRealm">
       Context where the page is loaded.
     </st:attribute>
-    <st:attribute name="title" use="required">
-      Title of the HTML page. Rendered in the page content inside a &lt;h1>.
+    <st:attribute name="title" use="required"> <![CDATA[
+      Title of the HTML page. Rendered in the page content inside a <h1>.
+    ]]>
     </st:attribute>
     <st:attribute name="action" use="required">
       The method to call from within the HudsonPrivateSecurityRealm.
@@ -47,7 +48,7 @@ THE SOFTWARE.
   <div class="form-content">
     <table>
       <tr>
-        <f:entry title="${%Username}:" class="${data.errors.containsKey('username') ? 'jenkins-!-margin-bottom-2' : ''}">
+        <f:entry title="${%Username}" class="${data.errors.containsKey('username') ? 'jenkins-!-margin-bottom-2' : ''}">
           <input class="jenkins-input" type="text" name="username" id="username" value="${data.username}" autofocus="autofocus" />
         </f:entry>
         <j:if test="${data.errors.containsKey('username')}">
@@ -57,7 +58,7 @@ THE SOFTWARE.
         </j:if>
       </tr>
       <tr>
-        <f:entry title="${%Password}:" class="${data.errors.containsKey('password1') ? 'jenkins-!-margin-bottom-2' : ''}">
+        <f:entry title="${%Password}" class="${data.errors.containsKey('password1') ? 'jenkins-!-margin-bottom-2' : ''}">
           <input class="jenkins-input" type="password" name="password1" value="${data.password1}" />
         </f:entry>
         <j:if test="${data.errors.containsKey('password1')}">
@@ -67,7 +68,7 @@ THE SOFTWARE.
         </j:if>
       </tr>
       <tr>
-        <f:entry title="${%Confirm password}:" class="${data.errors.containsKey('password1') ? 'jenkins-!-margin-bottom-2' : ''}">
+        <f:entry title="${%Confirm password}" class="${data.errors.containsKey('password1') ? 'jenkins-!-margin-bottom-2' : ''}">
           <input class="jenkins-input" type="password" name="password2" value="${data.password2}" />
         </f:entry>
         <j:if test="${data.errors.containsKey('password1')}">
@@ -77,7 +78,7 @@ THE SOFTWARE.
         </j:if>
       </tr>
       <tr>
-        <f:entry title="${%Full name}:" class="${data.errors.containsKey('fullname') ? 'jenkins-!-margin-bottom-2' : ''}">
+        <f:entry title="${%Full name}" class="${data.errors.containsKey('fullname') ? 'jenkins-!-margin-bottom-2' : ''}">
           <input class="jenkins-input" type="text" name="fullname" value="${data.fullname}" />
         </f:entry>
         <j:if test="${data.errors.containsKey('fullname')}">
@@ -88,7 +89,7 @@ THE SOFTWARE.
       </tr>
       <j:if test="${it.mailerPluginPresent}">
         <tr>
-          <f:entry title="${%E-mail address}:" class="${data.errors.containsKey('email') ? 'jenkins-!-margin-bottom-2' : ''}">
+          <f:entry title="${%E-mail address}" class="${data.errors.containsKey('email') ? 'jenkins-!-margin-bottom-2' : ''}">
             <input class="jenkins-input" type="text" name="email" value="${data.email}" />
           </f:entry>
           <j:if test="${data.errors.containsKey('email')}">

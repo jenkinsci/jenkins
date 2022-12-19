@@ -1,8 +1,9 @@
 package jenkins.model;
 
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
 
 import hudson.ExtensionPoint;
 import java.util.Arrays;
@@ -36,12 +37,12 @@ public class ExtensionTypeHierarchyTest {
     @Test
     public void sameExtensionCanImplementMultipleExtensionPoints() {
         Animal[] animals = sort(j.jenkins.getExtensionList(Animal.class).toArray(new Animal[2]));
-        assertTrue(animals[0] instanceof Crow);
-        assertTrue(animals[1] instanceof Swan);
+        assertThat(animals[0], instanceOf(Crow.class));
+        assertThat(animals[1], instanceOf(Swan.class));
         assertEquals(2, animals.length);
 
         White[] whites = sort(j.jenkins.getExtensionList(White.class).toArray(new White[1]));
-        assertTrue(whites[0] instanceof Swan);
+        assertThat(whites[0], instanceOf(Swan.class));
         assertEquals(1, whites.length);
 
         assertSame(animals[1], whites[0]);

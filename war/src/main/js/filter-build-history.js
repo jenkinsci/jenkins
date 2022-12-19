@@ -518,7 +518,7 @@ const debouncedFilter = debounce(handleFilter, 300);
 
 document.addEventListener("DOMContentLoaded", function () {
   // Apply correct styling upon filter bar text change, call API after wait
-  pageSearchInput.addEventListener("input", function () {
+  pageSearchInput?.addEventListener("input", function () {
     pageSearchInputContainer.classList.add("jenkins-search--loading");
     buildHistoryContainer.classList.add("jenkins-pane--loading");
     noBuildsBanner.style.display = "none";
