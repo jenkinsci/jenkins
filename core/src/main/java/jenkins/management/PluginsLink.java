@@ -82,32 +82,38 @@ public class PluginsLink extends ManagementLink {
         List<Plugin> plugins = updateCenter.getUpdates();
         int size = plugins.size();
         if (size > 0) {
-            String tooltip = null;
-            Badge.Severity severity = Badge.Severity.warning;
+            StringBuilder tooltip = new StringBuilder();
+            Badge.Severity severity = Badge.Severity.WARNING;
             int securityFixSize = (int) plugins.stream().filter(plugin -> plugin.fixesSecurityVulnerabilities()).count();
+            int incompatibleSize = (int) plugins.stream().filter(plugin -> !plugin.isCompatibleWithInstalledVersion()).count();
             if (size > 1) {
-                switch (securityFixSize) {
-                    case 0:
-                        tooltip = Messages.PluginsLink_updatesAvailable(size);
-                        break;
-                    case 1:
-                        tooltip = Messages.PluginsLink_oneSecurityUpdateAvailable(size);
-                        severity = Badge.Severity.danger;
-                        break;
-                    default:
-                        tooltip = Messages.PluginsLink_securityUpdatesAvailable(size, securityFixSize);
-                        severity = Badge.Severity.danger;
-                        break;
-                }
+                tooltip.append(Messages.PluginsLink_updatesAvailable(size));
             } else {
-                if (securityFixSize > 0) {
-                    tooltip = Messages.PluginsLink_securityUpdateAvailable();
-                    severity = Badge.Severity.danger;
-                } else {
-                    tooltip = Messages.PluginsLink_updateAvailable();
-                }
+                tooltip.append(Messages.PluginsLink_updateAvailable());
             }
-            return new Badge(Integer.toString(size), tooltip, severity);
+            switch (incompatibleSize) {
+                case 0:
+                    break;
+                case 1:
+                    tooltip.append("\n").append(Messages.PluginsLink_incompatibleUpdateAvailable());
+                    break;
+                default:
+                    tooltip.append("\n").append(Messages.PluginsLink_incompatibleUpdatesAvailable(incompatibleSize));
+                    break;
+            }
+            switch (securityFixSize) {
+                case 0:
+                    break;
+                case 1:
+                    tooltip.append("\n").append(Messages.PluginsLink_securityUpdateAvailable());
+                    severity = Badge.Severity.DANGER;
+                    break;
+                default:
+                    tooltip.append("\n").append(Messages.PluginsLink_securityUpdatesAvailable(securityFixSize));
+                    severity = Badge.Severity.DANGER;
+                    break;
+            }
+            return new Badge(Integer.toString(size), tooltip.toString(), severity);
         }
         return null;
     }

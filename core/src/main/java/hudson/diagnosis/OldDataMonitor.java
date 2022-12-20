@@ -477,7 +477,7 @@ public class OldDataMonitor extends AdministrativeMonitor {
         public Badge getBadge() {
             int size = get(Jenkins.get()).data.size();
             if (size > 0) {
-                return new Badge(Integer.toString(size), Messages.OldDataMonitor_OldDataTooltip(), Badge.Severity.warning);
+                return new Badge(Integer.toString(size), Messages.OldDataMonitor_OldDataTooltip(), Badge.Severity.WARNING);
             }
             return null;
         }

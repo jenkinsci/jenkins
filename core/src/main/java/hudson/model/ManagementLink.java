@@ -216,7 +216,7 @@ public abstract class ManagementLink implements ExtensionPoint, Action {
     }
 
     /**
-     * A badge shown as overlay over the icon on "Manage Jenkins".
+     * A {@link Badge} shown as overlay over the icon on "Manage Jenkins".
      *
      * @return badge or {@code null} if no badge should be shown.
      * @since TODO
