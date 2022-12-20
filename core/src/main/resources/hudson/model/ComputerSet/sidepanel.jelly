@@ -31,7 +31,7 @@ THE SOFTWARE.
   <l:side-panel>
     <l:tasks>
       <l:task href="../configureClouds" icon="symbol-cloud" permission="${app.SYSTEM_READ}"
-              title="${app.hasPermission(app.ADMINISTER) ? '%Configure Clouds' : '%View Clouds'}"/>
+              title="${app.hasPermission(app.ADMINISTER) ? '%Clouds' : '%View Clouds'}"/>
       <l:task href="configure" icon="symbol-settings" permissions="${app.MANAGE_AND_SYSTEM_READ}" title="${%Node Monitoring}"/>
     </l:tasks>
     <t:queue items="${app.queue.items}" />
