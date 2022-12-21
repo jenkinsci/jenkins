@@ -267,6 +267,14 @@ THE SOFTWARE.
                   <outputDirectory>${project.build.outputDirectory}/old-remoting</outputDirectory>
                   <destFileName>remoting-unsupported.jar</destFileName>
                 </artifactItem>
+                <artifactItem>
+                  <groupId>io.jenkins.plugins</groupId>
+                  <artifactId>design-library</artifactId>
+                  <version>91.v257f311ea_1dc</version>
+                  <type>hpi</type>
+                  <outputDirectory>${project.build.outputDirectory}/plugins</outputDirectory>
+                  <destFileName>design-library.jpi</destFileName>
+                </artifactItem>
               </artifactItems>
             </configuration>
           </execution>
