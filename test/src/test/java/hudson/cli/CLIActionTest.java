@@ -114,21 +114,18 @@ public class CLIActionTest {
         final Proc proc = launcher.launch().cmds(commands).stdout(System.out).stderr(System.err).start();
         if (!Functions.isWindows()) {
             // Try to get a thread dump of the client if it hangs.
-            Timer.get().schedule(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        if (proc.isAlive()) {
-                            Field procF = Proc.LocalProc.class.getDeclaredField("proc");
-                            procF.setAccessible(true);
-                            ProcessTree.OSProcess osp = ProcessTree.get().get((Process) procF.get(proc));
-                            if (osp != null) {
-                                launcher.launch().cmds("kill", "-QUIT", Integer.toString(osp.getPid())).stdout(System.out).stderr(System.err).join();
-                            }
+            Timer.get().schedule(() -> {
+                try {
+                    if (proc.isAlive()) {
+                        Field procF = Proc.LocalProc.class.getDeclaredField("proc");
+                        procF.setAccessible(true);
+                        ProcessTree.OSProcess osp = ProcessTree.get().get((Process) procF.get(proc));
+                        if (osp != null) {
+                            launcher.launch().cmds("kill", "-QUIT", Integer.toString(osp.getPid())).stdout(System.out).stderr(System.err).join();
                         }
-                    } catch (Exception x) {
-                        throw new AssertionError(x);
                     }
+                } catch (Exception x) {
+                    throw new AssertionError(x);
                 }
             }, 1, TimeUnit.MINUTES);
         }

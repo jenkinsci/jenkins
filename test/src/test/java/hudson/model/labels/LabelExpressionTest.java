@@ -355,20 +355,17 @@ public class LabelExpressionTest {
 
     @Test
     public void formValidation() throws Exception {
-        j.executeOnServer(new Callable<>() {
-            @Override
-            public Object call() throws Exception {
-                Label l = j.jenkins.getLabel("foo");
-                DumbSlave s = j.createSlave(l);
-                String msg = LabelExpression.validate("goo").renderHtml();
-                assertTrue(msg.contains("foo"));
-                assertTrue(msg.contains("goo"));
+        j.executeOnServer(() -> {
+            Label l = j.jenkins.getLabel("foo");
+            DumbSlave s = j.createSlave(l);
+            String msg = LabelExpression.validate("goo").renderHtml();
+            assertTrue(msg.contains("foo"));
+            assertTrue(msg.contains("goo"));
 
-                msg = LabelExpression.validate("built-in && goo").renderHtml();
-                assertTrue(msg.contains("foo"));
-                assertTrue(msg.contains("goo"));
-                return null;
-            }
+            msg = LabelExpression.validate("built-in && goo").renderHtml();
+            assertTrue(msg.contains("foo"));
+            assertTrue(msg.contains("goo"));
+            return null;
         });
     }
 
