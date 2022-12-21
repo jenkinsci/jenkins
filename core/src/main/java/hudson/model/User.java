@@ -41,6 +41,7 @@ import hudson.init.InitMilestone;
 import hudson.init.Initializer;
 import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.SaveableListener;
+import hudson.search.SearchItemCategory;
 import hudson.security.ACL;
 import hudson.security.AccessControlled;
 import hudson.security.SecurityRealm;
@@ -274,6 +275,11 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     @Override
     public @NonNull String getSearchUrl() {
         return "/user/" + Util.rawEncode(idStrategy().keyFor(id));
+    }
+
+    @Override
+    public SearchItemCategory getSearchItemCategory() {
+        return SearchItemCategory.PEOPLE;
     }
 
     /**

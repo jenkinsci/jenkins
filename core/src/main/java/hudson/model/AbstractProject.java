@@ -61,7 +61,6 @@ import hudson.scm.PollingResult;
 import hudson.scm.SCM;
 import hudson.scm.SCMRevisionState;
 import hudson.scm.SCMS;
-import hudson.search.SearchIndexBuilder;
 import hudson.security.Permission;
 import hudson.slaves.Cloud;
 import hudson.slaves.WorkspaceList;
@@ -1706,11 +1705,6 @@ public abstract class AbstractProject<P extends AbstractProject<P, R>, R extends
      */
     protected void buildDependencyGraph(DependencyGraph graph) {
         triggers().buildDependencyGraph(this, graph);
-    }
-
-    @Override
-    protected SearchIndexBuilder makeSearchIndex() {
-        return getParameterizedJobMixIn().extendSearchIndex(super.makeSearchIndex());
     }
 
     @Override

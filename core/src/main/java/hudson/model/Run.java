@@ -57,7 +57,6 @@ import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.RunListener;
 import hudson.model.listeners.SaveableListener;
 import hudson.model.queue.SubTask;
-import hudson.search.SearchIndexBuilder;
 import hudson.security.ACL;
 import hudson.security.AccessControlled;
 import hudson.security.Permission;
@@ -1575,18 +1574,6 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      */
     public @NonNull AnnotatedLargeText getLogText() {
         return new AnnotatedLargeText(getLogFile(), getCharset(), !isLogUpdated(), this);
-    }
-
-    @Override
-    protected @NonNull SearchIndexBuilder makeSearchIndex() {
-        SearchIndexBuilder builder = super.makeSearchIndex()
-                .add("console")
-                .add("changes");
-        for (Action a : getAllActions()) {
-            if (a.getIconFileName() != null)
-                builder.add(a.getUrlName());
-        }
-        return builder;
     }
 
     public @NonNull Api getApi() {

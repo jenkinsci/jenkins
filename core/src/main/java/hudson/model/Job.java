@@ -46,11 +46,6 @@ import hudson.model.PermalinkProjectAction.Permalink;
 import hudson.model.listeners.ItemListener;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.SCM;
-import hudson.search.QuickSilver;
-import hudson.search.SearchIndex;
-import hudson.search.SearchIndexBuilder;
-import hudson.search.SearchItem;
-import hudson.search.SearchItems;
 import hudson.security.ACL;
 import hudson.tasks.LogRotator;
 import hudson.util.AlternativeUiTextProvider;
@@ -480,31 +475,6 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     @Override
-    protected SearchIndexBuilder makeSearchIndex() {
-        return super.makeSearchIndex().add(new SearchIndex() {
-            @Override
-            public void find(String token, List<SearchItem> result) {
-                try {
-                    if (token.startsWith("#"))
-                        token = token.substring(1); // ignore leading '#'
-                    int n = Integer.parseInt(token);
-                    Run b = getBuildByNumber(n);
-                    if (b == null)
-                        return; // no such build
-                    result.add(SearchItems.create("#" + n, "" + n, b));
-                } catch (NumberFormatException e) {
-                    // not a number.
-                }
-            }
-
-            @Override
-            public void suggest(String token, List<SearchItem> result) {
-                find(token, result);
-            }
-        }).add("configure", "config", "configure");
-    }
-
-    @Override
     public Collection<? extends Job> getAllJobs() {
         return Set.of(this);
     }
@@ -911,8 +881,6 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * Returns the last build.
      * @see LazyBuildMixIn#getLastBuild
      */
-    @Exported
-    @QuickSilver
     public RunT getLastBuild() {
         SortedMap<Integer, ? extends RunT> runs = _getRuns();
 
@@ -925,8 +893,6 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * Returns the oldest build in the record.
      * @see LazyBuildMixIn#getFirstBuild
      */
-    @Exported
-    @QuickSilver
     public RunT getFirstBuild() {
         SortedMap<Integer, ? extends RunT> runs = _getRuns();
 
@@ -941,8 +907,6 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      *
      * @see #getLastStableBuild()
      */
-    @Exported
-    @QuickSilver
     public RunT getLastSuccessfulBuild() {
         return (RunT) Permalink.LAST_SUCCESSFUL_BUILD.resolve(this);
     }
@@ -951,8 +915,6 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * Returns the last build that was anything but stable, if any. Otherwise null.
      * @see #getLastSuccessfulBuild
      */
-    @Exported
-    @QuickSilver
     public RunT getLastUnsuccessfulBuild() {
         return (RunT) Permalink.LAST_UNSUCCESSFUL_BUILD.resolve(this);
     }
@@ -961,8 +923,6 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * Returns the last unstable build, if any. Otherwise null.
      * @see #getLastSuccessfulBuild
      */
-    @Exported
-    @QuickSilver
     public RunT getLastUnstableBuild() {
         return (RunT) Permalink.LAST_UNSTABLE_BUILD.resolve(this);
     }
@@ -971,8 +931,6 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * Returns the last stable build, if any. Otherwise null.
      * @see #getLastSuccessfulBuild
      */
-    @Exported
-    @QuickSilver
     public RunT getLastStableBuild() {
         return (RunT) Permalink.LAST_STABLE_BUILD.resolve(this);
     }
@@ -980,8 +938,6 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     /**
      * Returns the last failed build, if any. Otherwise null.
      */
-    @Exported
-    @QuickSilver
     public RunT getLastFailedBuild() {
         return (RunT) Permalink.LAST_FAILED_BUILD.resolve(this);
     }
@@ -989,8 +945,6 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     /**
      * Returns the last completed build, if any. Otherwise null.
      */
-    @Exported
-    @QuickSilver
     public RunT getLastCompletedBuild() {
         return (RunT) Permalink.LAST_COMPLETED_BUILD.resolve(this);
     }

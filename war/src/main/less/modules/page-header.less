@@ -48,11 +48,15 @@ a.page-header__brand-link {
   align-items: center;
 }
 
-.page-header__hyperlinks a {
+.page-header__hyperlinks a,
+.page-header__hyperlinks button {
   --text-color: var(--header-link-color);
 
   display: inline-flex;
   align-items: center;
+  background: transparent;
+  border: none;
+  outline: none;
 
   // need to override an existing rule
   /* stylelint-disable declaration-block-no-shorthand-property-overrides */
@@ -60,7 +64,10 @@ a.page-header__brand-link {
   padding: 0.5rem;
   margin-right: 0 !important;
   font-weight: bold;
-  outline-color: var(--header-link-outline);
+  border-radius: var(--header-item-border-radius);
+  color: var(--header-link-color);
+  cursor: pointer;
+  transition: 0.2s ease;
 
   &:link,
   &:visited {
@@ -80,6 +87,11 @@ a.page-header__brand-link {
 
   &:active {
     background-color: var(--header-link-bg-classic-active);
+  }
+
+  svg {
+    width: 18px;
+    height: 18px;
   }
 
   .jenkins-menu-dropdown-chevron {
