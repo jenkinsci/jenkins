@@ -1,15 +1,10 @@
-import tippy from "tippy.js";
-import Templates from "@/components/dropdowns/templates";
-import makeKeyboardNavigable from "@/util/keyboard";
 import Path from "@/util/path";
+import behaviorShim from "@/util/behavior-shim";
+import Utils from "@/components/dropdowns/utils";
 
 function init() {
   generateJumplistAccessors();
-
-  tippy(
-    "li.children, #menuSelector, .jenkins-menu-dropdown-chevron",
-    generateDropdown()
-  );
+  generateDropdowns();
 }
 
 /*
@@ -23,7 +18,7 @@ function generateJumplistAccessors() {
       isFirefox ? "span" : "button"
     );
     dropdownChevron.className = "jenkins-menu-dropdown-chevron";
-    dropdownChevron.setAttribute("href", link.href);
+    dropdownChevron.dataset.href = link.href;
     dropdownChevron.addEventListener("click", (event) => {
       event.preventDefault();
     });
@@ -32,73 +27,66 @@ function generateJumplistAccessors() {
 }
 
 /*
- * Generates the Tippy dropdown for the jump lists
- * Preloads the data on hover of the jump list accessor for speed
+ * Generates the dropdowns for the jump lists
  */
-function generateDropdown(isSubmenu = false) {
-  return {
-    ...Templates.dropdown(),
-    trigger: isSubmenu ? "mouseenter" : "click",
-    placement: isSubmenu ? "right-start" : "bottom-start",
-    offset: isSubmenu ? [-8, 0] : [0, 0],
-    onCreate(instance) {
-      instance.reference.addEventListener("mouseenter", () => {
-        if (instance.loaded) {
-          return;
-        }
-
-        instance.popper.addEventListener("click", () => {
-          instance.hide();
-        });
-
-        const href = instance.reference.getAttribute("href");
-        const jumplistType = !instance.reference.classList.contains("children")
+function generateDropdowns() {
+  behaviorShim.specify(
+    "li.children, #menuSelector, .jenkins-menu-dropdown-chevron",
+    "-dropdown-",
+    1000,
+    (element) =>
+      Utils.generateDropdown(element, (instance) => {
+        const href = element.dataset.href;
+        const jumplistType = !element.classList.contains("children")
           ? "contextMenu"
           : "childrenContextMenu";
+
+        if (element.items) {
+          instance.setContent(Utils.generateDropdownItems(element.items));
+          return;
+        }
 
         fetch(Path.combinePath(href, jumplistType))
           .then((response) => response.json())
           .then((json) =>
-            instance.setContent(generateDropdownItems(json.items))
+            instance.setContent(
+              Utils.generateDropdownItems(
+                mapChildrenItemsToDropdownItems(json.items)
+              )
+            )
           )
-          .catch((error) => {
-            instance.setContent(`Request failed. ${error}`);
-          })
+          .catch((error) => instance.setContent(`Request failed. ${error}`))
           .finally(() => (instance.loaded = true));
-      });
-    },
-  };
+      })
+  );
 }
 
 /*
  * Generates the contents for the dropdown
  */
-function generateDropdownItems(items) {
-  const menuItems = document.createElement("div");
-
-  menuItems.classList.add("jenkins-dropdown");
-  menuItems.append(
-    ...items.map((item) => {
-      if (item.type === "HEADER") {
-        return Templates.heading(item.text || item.displayName);
-      }
-
-      if (item.type === "SEPARATOR") {
-        return Templates.separator();
-      }
-
-      const menuItemOptions = {
-        url: item.url,
-        label: item.text || item.displayName,
-        icon: item.icon,
-        iconXml: item.iconXml,
-        subMenu: item.subMenu,
-        type: item.post ? "button" : "link",
+function mapChildrenItemsToDropdownItems(items) {
+  return items.map((item) => {
+    if (item.type === "HEADER") {
+      return {
+        type: "HEADER",
+        label: item.displayName,
       };
-      const menuItem = Templates.item(menuItemOptions);
+    }
 
-      if (item.post || item.requiresConfirmation) {
-        menuItem.addEventListener("click", () => {
+    if (item.type === "SEPARATOR") {
+      return {
+        type: "SEPARATOR",
+      };
+    }
+
+    return {
+      icon: item.icon,
+      iconXml: item.iconXml,
+      label: item.displayName,
+      url: item.url,
+      type: item.post || item.requiresConfirmation ? "button" : "link",
+      onClick: () => {
+        if (item.post || item.requiresConfirmation) {
           if (item.requiresConfirmation) {
             if (confirm((item.text || item.displayName) + ": are you sure?")) {
               // TODO I18N
@@ -114,25 +102,15 @@ function generateDropdownItems(items) {
           } else {
             new Ajax.Request(item.url);
           }
-        });
-      }
-
-      if (item.subMenu != null) {
-        menuItem.items = item.subMenu.items;
-        tippy(menuItem, generateDropdown(true));
-      }
-
-      return menuItem;
-    })
-  );
-
-  makeKeyboardNavigable(
-    menuItems,
-    () => menuItems.querySelectorAll(".jenkins-dropdown__item"),
-    Templates.SELECTED_ITEM_CLASS
-  );
-
-  return menuItems;
+        }
+      },
+      subMenu: item.subMenu
+        ? () => {
+            return mapChildrenItemsToDropdownItems(item.subMenu.items);
+          }
+        : null,
+    };
+  });
 }
 
 export default { init };

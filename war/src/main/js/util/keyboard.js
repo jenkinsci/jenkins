@@ -19,6 +19,8 @@ export default function makeKeyboardNavigable(
     // Only navigate through the list of items if the container is active on the screen
     if (container && isVisible) {
       if (e.key === "ArrowDown") {
+        e.preventDefault();
+
         if (selectedItem) {
           selectedItem.classList.remove(selectedClass);
           const next = selectedItem.nextSibling;
@@ -34,6 +36,8 @@ export default function makeKeyboardNavigable(
 
         selectedItem?.classList.add(selectedClass);
       } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+
         if (selectedItem) {
           selectedItem.classList.remove(selectedClass);
           const previous = selectedItem.previousSibling;

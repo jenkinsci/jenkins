@@ -15,28 +15,22 @@ function dropdown() {
   };
 }
 
-const SELECTED_ITEM_CLASS = "jenkins-dropdown__item--selected";
-
-const itemDefaultOptions = {
-  type: "link",
-};
-
-function item(options) {
+function menuItem(options) {
   const itemOptions = {
-    ...itemDefaultOptions,
+    type: "link",
     ...options,
   };
 
   const tag = itemOptions.type === "link" ? "a" : "button";
 
-  return createElementFromHtml(`
+  const item = createElementFromHtml(`
       <${tag} class="jenkins-dropdown__item" href="${itemOptions.url}">
           ${
             itemOptions.icon
               ? `<div class="jenkins-dropdown__item__icon">${
                   itemOptions.iconXml
                     ? itemOptions.iconXml
-                    : `<img src="${itemOptions.icon}" />`
+                    : `<img alt="${itemOptions.label}" src="${itemOptions.icon}" />`
                 }</div>`
               : ``
           }
@@ -48,6 +42,12 @@ function item(options) {
           }
       </${tag}>
     `);
+
+  if (options.onClick) {
+    item.addEventListener("click", () => options.onClick());
+  }
+
+  return item;
 }
 
 function heading(label) {
@@ -62,4 +62,9 @@ function separator() {
   );
 }
 
-export default { dropdown, SELECTED_ITEM_CLASS, item, heading, separator };
+export default {
+  dropdown,
+  menuItem,
+  heading,
+  separator,
+};
