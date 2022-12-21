@@ -44,7 +44,6 @@ import hudson.model.listeners.ItemListener;
 import hudson.scm.ChangeLogSet;
 import hudson.search.CollectionSearchIndex;
 import hudson.search.SearchIndexBuilder;
-import hudson.search.SearchItemCategory;
 import hudson.security.ACL;
 import hudson.security.AccessControlled;
 import hudson.security.Permission;
@@ -560,11 +559,6 @@ public abstract class View extends AbstractModelObject implements AccessControll
     @Override
     public String getSearchUrl() {
         return getUrl();
-    }
-
-    @Override
-    public SearchItemCategory getSearchItemCategory() {
-        return SearchItemCategory.VIEWS;
     }
 
     /**
