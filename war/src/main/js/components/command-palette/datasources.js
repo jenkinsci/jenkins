@@ -8,15 +8,26 @@ export const JenkinsSearchSource = {
       .getElementById("page-header")
       .dataset.rootUrl.escapeHTML();
     const response = await Search.search(query);
+
+    function correctAddress(url) {
+      if (url.startsWith("/")) {
+        url = url.substring(1);;
+      }
+
+      if (!url.includes(rootUrl)) {
+        url = rootUrl + "/" + url;
+      }
+
+      return url;
+    }
+
     return await response.json().then((data) => {
       return [...data["suggestions"]].map(
         (e) =>
           new LinkResult(
             Symbols.SEARCH,
             e.name,
-            e.description,
-            e.category,
-            e.url?.startsWith("/") ? `${rootUrl}${e.url}` : `${rootUrl}`
+            correctAddress(e.url)
           )
       );
     });
