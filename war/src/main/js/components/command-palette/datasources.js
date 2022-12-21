@@ -1,5 +1,6 @@
 import { LinkResult } from "./models";
 import Search from "@/api/search";
+import * as Symbols from "./symbols";
 
 export const JenkinsSearchSource = {
   async execute(query) {
@@ -11,11 +12,11 @@ export const JenkinsSearchSource = {
       return [...data["suggestions"]].map(
         (e) =>
           new LinkResult(
-            e.icon,
+            Symbols.SEARCH,
             e.name,
             e.description,
             e.category,
-            e.url.startsWith("/") ? `${rootUrl}${e.url}` : `${rootUrl}`
+            e.url?.startsWith("/") ? `${rootUrl}${e.url}` : `${rootUrl}`
           )
       );
     });

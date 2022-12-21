@@ -11,7 +11,7 @@ window.addEventListener("load", () => {
     });
   }
 
-  const pageSearchBar = document.querySelectorAll(".jenkins-search__input");
+  const pageSearchBar = document.querySelectorAll("#page-body .jenkins-search__input");
   if (pageSearchBar.length === 1) {
     hotkeys("/", () => {
       pageSearchBar[0].focus();

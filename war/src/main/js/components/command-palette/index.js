@@ -1,7 +1,7 @@
 import { LinkResult } from "@/components/command-palette/models";
 import { JenkinsSearchSource } from "./datasources";
-import Helpers from "./helpers";
 import debounce from "lodash/debounce";
+import * as Symbols from "./symbols";
 
 const datasources = [JenkinsSearchSource];
 
@@ -49,7 +49,7 @@ function init() {
     if (query.length === 0) {
       results = [
         new LinkResult(
-          "symbol-help-circle",
+          Symbols.HELP,
           i18n.dataset.getHelp,
           undefined,
           "Help",
@@ -67,32 +67,23 @@ function init() {
       );
     }
 
-    results = Helpers.groupResultsByCategory(results);
-
     // Clear current search results
     searchResults.innerHTML = "";
 
     if (query.length === 0 || Object.keys(results).length > 0) {
-      for (const [category, items] of Object.entries(results)) {
-        const heading = document.createElement("p");
-        heading.className = "jenkins-command-palette__results__heading";
-        heading.innerText = category;
-        searchResults.append(heading);
+      results.forEach(function (obj) {
+        const renderedObject = obj.render();
 
-        items.forEach(function (obj) {
-          const renderedObject = obj.render();
-
-          let link = document.createElement("DIV");
-          if (renderedObject instanceof HTMLElement) {
-            link = renderedObject;
-          } else {
-            link.innerHTML = renderedObject;
-            link = link.firstChild;
-          }
-          link.addEventListener("mouseenter", (e) => itemMouseEnter(e));
-          searchResults.append(link);
-        });
-      }
+        let link = document.createElement("DIV");
+        if (renderedObject instanceof HTMLElement) {
+          link = renderedObject;
+        } else {
+          link.innerHTML = renderedObject;
+          link = link.firstChild;
+        }
+        link.addEventListener("mouseenter", (e) => itemMouseEnter(e));
+        searchResults.append(link);
+      });
 
       updateSelectedItem(0);
     } else {
@@ -201,6 +192,6 @@ function init() {
       }
     }
   }
-};
+}
 
 export default { init };
