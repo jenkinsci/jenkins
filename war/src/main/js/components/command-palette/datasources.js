@@ -11,7 +11,7 @@ export const JenkinsSearchSource = {
 
     function correctAddress(url) {
       if (url.startsWith("/")) {
-        url = url.substring(1);;
+        url = url.substring(1);
       }
 
       if (!url.includes(rootUrl)) {
@@ -23,12 +23,7 @@ export const JenkinsSearchSource = {
 
     return await response.json().then((data) => {
       return [...data["suggestions"]].map(
-        (e) =>
-          new LinkResult(
-            Symbols.SEARCH,
-            e.name,
-            correctAddress(e.url)
-          )
+        (e) => new LinkResult(Symbols.SEARCH, e.name, correctAddress(e.url))
       );
     });
   },

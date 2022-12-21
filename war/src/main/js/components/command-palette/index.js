@@ -2,6 +2,7 @@ import { LinkResult } from "@/components/command-palette/models";
 import { JenkinsSearchSource } from "./datasources";
 import debounce from "lodash/debounce";
 import * as Symbols from "./symbols";
+import makeKeyboardNavigable from "@/util/keyboard";
 
 const datasources = [JenkinsSearchSource];
 
@@ -101,53 +102,17 @@ function init() {
     commandPaletteSearchBarContainer.classList.remove(
       "jenkins-search--loading"
     );
+
+    makeKeyboardNavigable(
+      searchResultsContainer,
+      () => searchResults.querySelectorAll("a"),
+      hoverClass
+    );
   }
 
   commandPaletteInput.addEventListener("input", () => {
     commandPaletteSearchBarContainer.classList.add("jenkins-search--loading");
     debounce(renderResults, 300)();
-  });
-
-  commandPaletteInput.addEventListener("keyup", function (event) {
-    const maxLength = searchResults.getElementsByTagName("a").length;
-    let selectedIndex = -1;
-    let hoveredItem = document.querySelector("." + hoverClass);
-
-    if (hoveredItem) {
-      selectedIndex = [
-        ...hoveredItem.parentElement.getElementsByTagName("a"),
-      ].indexOf(hoveredItem);
-    }
-
-    switch (event.code) {
-      case "Enter":
-        if (hoveredItem) {
-          window.location.href = hoveredItem.href;
-        }
-        return false;
-      case "ArrowUp":
-        if (selectedIndex !== -1) {
-          if (selectedIndex - 1 < 0) {
-            selectedIndex = maxLength - 1;
-          } else {
-            selectedIndex--;
-          }
-
-          updateSelectedItem(selectedIndex, selectedIndex + 1 >= maxLength);
-        }
-        return false;
-      case "ArrowDown":
-        if (selectedIndex !== -1) {
-          if (selectedIndex + 1 >= maxLength) {
-            selectedIndex = 0;
-          } else {
-            selectedIndex++;
-          }
-
-          updateSelectedItem(selectedIndex, selectedIndex + 1 >= maxLength);
-        }
-        return false;
-    }
   });
 
   // Helper methods for visibility of command palette

@@ -11,7 +11,9 @@ export class LinkResult {
     return `<a class="jenkins-command-palette__results__item" href="${
       this.url
     }">
-        <div class="jenkins-command-palette__results__item__icon">${this.icon}</div>
+        <div class="jenkins-command-palette__results__item__icon">${
+          this.icon
+        }</div>
         ${this.label}
         ${this.isExternal ? Symbols.EXTERNAL_LINK : ""}
     </a>`;

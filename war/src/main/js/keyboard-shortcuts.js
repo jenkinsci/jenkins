@@ -1,7 +1,9 @@
 import hotkeys from "hotkeys-js";
 
 window.addEventListener("load", () => {
-  const openCommandPaletteButton = document.querySelector("#button-open-command-palette");
+  const openCommandPaletteButton = document.querySelector(
+    "#button-open-command-palette"
+  );
   if (openCommandPaletteButton) {
     hotkeys(translateModifierKeysForUsersPlatform("CMD+K"), () => {
       openCommandPaletteButton.click();
@@ -11,7 +13,9 @@ window.addEventListener("load", () => {
     });
   }
 
-  const pageSearchBar = document.querySelectorAll("#page-body .jenkins-search__input");
+  const pageSearchBar = document.querySelectorAll(
+    "#page-body .jenkins-search__input"
+  );
   if (pageSearchBar.length === 1) {
     hotkeys("/", () => {
       pageSearchBar[0].focus();
