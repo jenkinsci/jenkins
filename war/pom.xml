@@ -650,7 +650,7 @@ THE SOFTWARE.
       <plugin>
         <groupId>org.eclipse.jetty</groupId>
         <artifactId>jetty-maven-plugin</artifactId>
-        <version>10.0.12</version>
+        <version>10.0.13</version>
         <configuration>
           <!--
             Reload webapp when you hit ENTER. (See JETTY-282 for more)
