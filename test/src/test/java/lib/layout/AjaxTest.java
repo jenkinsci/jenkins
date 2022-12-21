@@ -31,6 +31,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.recipes.PresetData;
 import org.kohsuke.stapler.jelly.JellyFacet;
 
@@ -40,8 +41,9 @@ public class AjaxTest {
     public JenkinsRule r = new JenkinsRule();
 
     @Issue("JENKINS-21254")
-    @PresetData(PresetData.DataSet.NO_ANONYMOUS_READACCESS)
     @Test public void rejectedLinks() throws Exception {
+        r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
+        r.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy());
         JenkinsRule.WebClient wc = r.createWebClient();
         String prefix = r.contextPath + '/';
         for (DomElement e : wc.goTo("login").getElementsByTagName("link")) {
