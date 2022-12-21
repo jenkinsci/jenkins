@@ -26,6 +26,12 @@ function init() {
 
   const hoverClass = "jenkins-command-palette__results__item--hover";
 
+  makeKeyboardNavigable(
+    searchResultsContainer,
+    () => searchResults.querySelectorAll("a"),
+    hoverClass
+  );
+
   // Events
   headerCommandPaletteButton.addEventListener("click", async function () {
     if (commandPalette.hasAttribute("open")) {
@@ -76,12 +82,8 @@ function init() {
         const renderedObject = obj.render();
 
         let link = document.createElement("DIV");
-        if (renderedObject instanceof HTMLElement) {
-          link = renderedObject;
-        } else {
-          link.innerHTML = renderedObject;
-          link = link.firstChild;
-        }
+        link.innerHTML = renderedObject;
+        link = link.firstChild;
         link.addEventListener("mouseenter", (e) => itemMouseEnter(e));
         searchResults.append(link);
       });
@@ -101,12 +103,6 @@ function init() {
     searchResultsContainer.style.height = searchResults.offsetHeight + "px";
     commandPaletteSearchBarContainer.classList.remove(
       "jenkins-search--loading"
-    );
-
-    makeKeyboardNavigable(
-      searchResultsContainer,
-      () => searchResults.querySelectorAll("a"),
-      hoverClass
     );
   }
 
