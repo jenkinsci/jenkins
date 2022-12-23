@@ -37,7 +37,6 @@ import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
-import org.jvnet.hudson.test.recipes.PresetData;
 import org.jvnet.hudson.test.recipes.WithTimeout;
 
 /**

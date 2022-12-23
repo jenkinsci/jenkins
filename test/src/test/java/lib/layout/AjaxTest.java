@@ -32,7 +32,6 @@ import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
-import org.jvnet.hudson.test.recipes.PresetData;
 import org.kohsuke.stapler.jelly.JellyFacet;
 
 public class AjaxTest {
