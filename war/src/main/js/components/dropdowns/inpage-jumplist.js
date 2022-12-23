@@ -10,11 +10,11 @@ function init() {
   if (inpageNavigationBreadcrumb) {
     const chevron = document.createElement("li");
     chevron.classList.add("children");
-    chevron.items = [
-      ...document.querySelectorAll(
+    chevron.items = Array.from(
+      document.querySelectorAll(
         "form > div > div > .jenkins-section > .jenkins-section__title"
-      ),
-    ].map((section) => {
+      )
+    ).map((section) => {
       section.id = toId(section.textContent);
       return { label: section.textContent, url: "#" + section.id };
     });
