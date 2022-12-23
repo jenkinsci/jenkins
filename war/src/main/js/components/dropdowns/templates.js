@@ -1,4 +1,5 @@
 import { createElementFromHtml } from "@/util/dom";
+import { xmlEscape } from "@/util/security";
 
 function dropdown() {
   return {
@@ -21,6 +22,7 @@ function menuItem(options) {
     ...options,
   };
 
+  const label = xmlEscape(itemOptions.label);
   const tag = itemOptions.type === "link" ? "a" : "button";
 
   const item = createElementFromHtml(`
@@ -30,11 +32,11 @@ function menuItem(options) {
               ? `<div class="jenkins-dropdown__item__icon">${
                   itemOptions.iconXml
                     ? itemOptions.iconXml
-                    : `<img alt="${itemOptions.label}" src="${itemOptions.icon}" />`
+                    : `<img alt="${label}" src="${itemOptions.icon}" />`
                 }</div>`
               : ``
           }
-          ${itemOptions.label}
+          ${label}
           ${
             itemOptions.subMenu != null
               ? `<span class="jenkins-dropdown__item__chevron"></span>`
