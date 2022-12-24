@@ -17,10 +17,12 @@ function dropdown() {
 }
 
 function menuItem(options) {
-  const itemOptions = {
-    type: "link",
-    ...options,
-  };
+  const itemOptions = Object.assign(
+    {
+      type: "link",
+    },
+    options
+  );
 
   const label = xmlEscape(itemOptions.label);
   const tag = itemOptions.type === "link" ? "a" : "button";

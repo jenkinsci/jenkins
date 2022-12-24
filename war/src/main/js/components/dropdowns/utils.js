@@ -11,22 +11,24 @@ const SELECTED_ITEM_CLASS = "jenkins-dropdown__item--selected";
  * @param callback - called to retrieve the list of dropdown items
  */
 function generateDropdown(element, callback) {
-  tippy(element, {
-    ...Templates.dropdown(),
-    onCreate(instance) {
-      instance.reference.addEventListener("mouseenter", () => {
-        if (instance.loaded) {
-          return;
-        }
+  tippy(
+    element,
+    Object.assign({}, Templates.dropdown(), {
+      onCreate(instance) {
+        instance.reference.addEventListener("mouseenter", () => {
+          if (instance.loaded) {
+            return;
+          }
 
-        instance.popper.addEventListener("click", () => {
-          instance.hide();
+          instance.popper.addEventListener("click", () => {
+            instance.hide();
+          });
+
+          callback(instance);
         });
-
-        callback(instance);
-      });
-    },
-  });
+      },
+    })
+  );
 }
 
 /*
@@ -36,8 +38,8 @@ function generateDropdownItems(items) {
   const menuItems = document.createElement("div");
   menuItems.classList.add("jenkins-dropdown");
 
-  menuItems.append(
-    ...items.map((item) => {
+  items
+    .map((item) => {
       if (item.type === "HEADER") {
         return Templates.heading(item.label);
       }
@@ -49,18 +51,20 @@ function generateDropdownItems(items) {
       const menuItem = Templates.menuItem(item);
 
       if (item.subMenu != null) {
-        tippy(menuItem, {
-          ...Templates.dropdown(),
-          content: generateDropdownItems(item.subMenu()),
-          trigger: "mouseenter",
-          placement: "right-start",
-          offset: [-8, 0],
-        });
+        tippy(
+          menuItem,
+          Object.assign({}, Templates.dropdown(), {
+            content: generateDropdownItems(item.subMenu()),
+            trigger: "mouseenter",
+            placement: "right-start",
+            offset: [-8, 0],
+          })
+        );
       }
 
       return menuItem;
     })
-  );
+    .forEach((item) => menuItems.appendChild(item));
 
   makeKeyboardNavigable(
     menuItems,
