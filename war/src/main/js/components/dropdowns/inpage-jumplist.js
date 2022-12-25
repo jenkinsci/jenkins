@@ -1,4 +1,4 @@
-// import { toId } from "@/util/dom";
+import { toId } from "@/util/dom";
 
 /*
  * Generates a jump list for the active breadcrumb to jump to
@@ -10,15 +10,14 @@ function init() {
   if (inpageNavigationBreadcrumb) {
     const chevron = document.createElement("li");
     chevron.classList.add("children");
-    chevron.items = [];
-    // chevron.items = Array.from(
-    //   document.querySelectorAll(
-    //     "form > div > div > .jenkins-section > .jenkins-section__title"
-    //   )
-    // ).map((section) => {
-    //   section.id = toId(section.textContent);
-    //   return { label: section.textContent, url: "#" + section.id };
-    // });
+    chevron.items = Array.from(
+      document.querySelectorAll(
+        "form > div > div > .jenkins-section > .jenkins-section__title"
+      )
+    ).map((section) => {
+      section.id = toId(section.textContent);
+      return { label: section.textContent, url: "#" + section.id };
+    });
 
     inpageNavigationBreadcrumb.after(chevron);
   }
