@@ -28,7 +28,7 @@ THE SOFTWARE.
   <td data="${lsBuild.timestampString2 ?: '-'}">
     <j:choose>
       <j:when test="${lsBuild!=null}">
-        ${lsBuild.timestampString}
+        <span data-update-timestamp="${lsBuild.timestamp.time}">${lsBuild.timestampString}</span>
         <a href="${jobBaseUrl}${job.shortUrl}lastSuccessfulBuild/" class="jenkins-table__link jenkins-table__badge model-link inside">${lsBuild.displayName}</a>
       </j:when>
       <j:otherwise>

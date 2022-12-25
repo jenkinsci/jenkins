@@ -63,3 +63,45 @@
     }
   }
 }
+
+.jenkins-job-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.jenkins-mobile-show {
+  @media (min-width: 767px) {
+    display: none;
+  }
+}
+
+.jenkins-mobile-hide {
+  @media (max-width: 767px) {
+    display: none;
+  }
+}
+
+.jenkins-job-card {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-gap: 1rem;
+  padding: calc(1rem - var(--card-border-width, 0));
+  border-radius: 1rem;
+  text-decoration: none !important;
+  background: var(--card-background);
+  border: var(--card-border-width) solid var(--card-border-color);
+
+  &__label {
+    color: var(--link-color);
+    font-weight: 600;
+    margin: 0 0 0.5rem;
+    font-size: 1rem;
+  }
+
+  &__description {
+    color: var(--text-color-secondary);
+    margin: 0;
+    font-size: 1rem;
+  }
+}
