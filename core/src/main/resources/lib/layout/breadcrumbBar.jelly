@@ -65,6 +65,4 @@ THE SOFTWARE.
       <j:out value="${contents}" />
     </ol>
   </div>
-
-  <div id="breadcrumb-menu-target"/><!-- this is where the menu gets rendered -->
 </j:jelly>

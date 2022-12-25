@@ -69,7 +69,47 @@ function generateDropdownItems(items) {
   makeKeyboardNavigable(
     menuItems,
     () => menuItems.querySelectorAll(".jenkins-dropdown__item"),
-    SELECTED_ITEM_CLASS
+    SELECTED_ITEM_CLASS,
+    (selectedItem, key) => {
+      switch (key) {
+        case "ArrowLeft":
+          selectedItem.closest("[data-tippy-root]")?._tippy?.hide();
+          break;
+        case "ArrowRight": {
+          const tippy = selectedItem._tippy;
+          if (!tippy) {
+            break;
+          }
+
+          tippy.show();
+          tippy.props.content
+            .querySelector(".jenkins-dropdown__item")
+            .classList.add(SELECTED_ITEM_CLASS);
+          break;
+        }
+      }
+    },
+    (container) => {
+      const isVisible =
+        window.getComputedStyle(container).visibility === "visible";
+      const isLastDropdown = Array.from(
+        document.querySelectorAll(".jenkins-dropdown")
+      )
+        .filter((dropdown) => container !== dropdown)
+        .filter(
+          (dropdown) =>
+            window.getComputedStyle(dropdown).visibility === "visible"
+        )
+        .every(
+          (dropdown) =>
+            !(
+              container.compareDocumentPosition(dropdown) &
+              Node.DOCUMENT_POSITION_FOLLOWING
+            )
+        );
+
+      return isVisible && isLastDropdown;
+    }
   );
 
   return menuItems;
