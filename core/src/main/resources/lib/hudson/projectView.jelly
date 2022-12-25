@@ -91,16 +91,25 @@ THE SOFTWARE.
         <j:forEach var="job" items="${jobs}">
           <j:set var="relativeLinkToJob" value="${h.getRelativeLinkTo(job)}"/>
           <a class="jenkins-job-card" href="${jobBaseUrl}${job.shortUrl}">
-            <div>
+            <div class="jenkins-job-card__icons">
               <t:ballColorTd it="${job.iconColor}" />
             </div>
-            <div>
+            <div class="jenkins-job-card__details">
               <p class="jenkins-job-card__label">${job.displayName}</p>
               <j:set var="lastBuild" value="${job.lastBuild}"/>
-              <p class="jenkins-job-card__description">
-                <span data-update-timestamp="${lastBuild.timestamp.time}">${lastBuild.timestampString}</span>
-                - ${%Duration} ${lastBuild.durationString}
-              </p>
+              <j:if test="${lastBuild != null}">
+                <p class="jenkins-job-card__message">
+                  <j:set var="lastLog" value="${lastBuild.changeSets.0.logs.0}"/>
+                  <j:if test="${lastLog != null}">
+                    <l:icon src="symbol-commit" />
+                    '${lastLog.msg}' by ${lastLog.authorName}
+                  </j:if>
+                </p>
+                <p class="jenkins-job-card__description">
+                  ${%Built}
+                  <span data-update-timestamp="${lastBuild.timestamp.time}">${lastBuild.timestampString}</span>, took ${lastBuild.durationString}
+                </p>
+              </j:if>
             </div>
           </a>
         </j:forEach>

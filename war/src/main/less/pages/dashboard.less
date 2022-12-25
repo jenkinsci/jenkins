@@ -83,6 +83,8 @@
 }
 
 .jenkins-job-card {
+  .item();
+
   display: grid;
   grid-template-columns: auto 1fr;
   grid-gap: 1rem;
@@ -91,17 +93,77 @@
   text-decoration: none !important;
   background: var(--card-background);
   border: var(--card-border-width) solid var(--card-border-color);
+  transition: var(--standard-transition);
+
+  &::before {
+    content: none;
+  }
+
+  &__icons {
+    pointer-events: none;
+    color: var(--text-color);
+  }
+
+  &__details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
 
   &__label {
     color: var(--link-color);
     font-weight: 600;
-    margin: 0 0 0.5rem;
+    margin: 0;
     font-size: 1rem;
+  }
+
+  &__message {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0;
+    font-size: 1rem;
+
+    svg {
+      width: 1.25rem;
+      height: 1.25rem;
+
+      * {
+        stroke-width: 40px;
+      }
+    }
+
+    &:empty {
+      display: none;
+    }
   }
 
   &__description {
     color: var(--text-color-secondary);
     margin: 0;
     font-size: 1rem;
+
+    .mono {
+      font-family: var(--font-family-mono);
+    }
+
+    &:empty {
+      display: none;
+    }
+  }
+
+  &:hover {
+    --link-color: var(--link-color--hover);
+
+    background: var(--card-background--hover);
+    border-color: var(--card-border-color--hover);
+  }
+
+  &:active, &:focus {
+    --link-color: var(--link-color--active);
+
+    background: var(--card-background--active);
+    border-color: var(--card-border-color--active);
   }
 }
