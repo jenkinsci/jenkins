@@ -200,23 +200,17 @@ THE SOFTWARE.
           </execution>
         </executions>
       </plugin>
-      <!-- JENKINS-68021: Work around JDK-8206937 by clearing the release=8 flag. -->
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
         <configuration>
-          <source>1.8</source>
-          <target>1.8</target>
-          <testSource>1.8</testSource>
-          <testTarget>1.8</testTarget>
-          <release combine.self="override" />
-          <testRelease combine.self="override" />
+          <release>8</release>
+          <testRelease>8</testRelease>
         </configuration>
       </plugin>
       <plugin>
         <artifactId>maven-javadoc-plugin</artifactId>
         <configuration>
-          <source>1.8</source>
-          <release combine.self="override" />
+          <release>8</release>
         </configuration>
       </plugin>
       <plugin>
@@ -656,7 +650,7 @@ THE SOFTWARE.
       <plugin>
         <groupId>org.eclipse.jetty</groupId>
         <artifactId>jetty-maven-plugin</artifactId>
-        <version>10.0.12</version>
+        <version>10.0.13</version>
         <configuration>
           <!--
             Reload webapp when you hit ENTER. (See JETTY-282 for more)
