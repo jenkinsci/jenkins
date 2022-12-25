@@ -55,7 +55,7 @@ function generateDropdowns() {
               )
             )
           )
-          .catch((error) => instance.setContent(`Request failed. ${error}`))
+          .catch((error) => console.log(`Jumplist request failed: ${error}`))
           .finally(() => (instance.loaded = true));
       })
   );
