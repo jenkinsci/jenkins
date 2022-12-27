@@ -131,9 +131,12 @@ public final class WebSocketAgents extends InvisibleAction implements Unprotecte
                 LOGGER.fine(() -> "setting up channel for " + agent);
                 state.fireBeforeChannel(new ChannelBuilder(agent, Computer.threadPoolForRemoting));
                 transport = new Transport();
-                state.fireAfterChannel(state.getChannelBuilder().build(transport));
-                LOGGER.fine(() -> "set up channel for " + agent);
-                return null;
+                try {
+                    state.fireAfterChannel(state.getChannelBuilder().build(transport));
+                    LOGGER.fine(() -> "set up channel for " + agent);
+                } catch (IOException x) {
+                    LOGGER.log(Level.WARNING, "failed to set up channel for " + agent, x);
+                }
             });
         }
 

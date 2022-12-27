@@ -33,7 +33,11 @@ THE SOFTWARE.
     </j:if>
 
     <l:main-panel>
-      <l:app-bar title="${%Manage Jenkins}" />
+      <l:app-bar title="${%Manage Jenkins}">
+        <l:search-bar placeholder="${%Search settings}" id="settings-search-bar" />
+      </l:app-bar>
+
+      <script src="${resURL}/jsbundles/pages/manage-jenkins.js" type="text/javascript" />
 
       <section class="manage-messages">
         <j:forEach var="am" items="${app.activeAdministrativeMonitors}">

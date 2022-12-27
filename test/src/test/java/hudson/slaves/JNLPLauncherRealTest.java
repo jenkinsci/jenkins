@@ -42,6 +42,7 @@ import org.jvnet.hudson.test.For;
 import org.jvnet.hudson.test.InboundAgentRule;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.PrefixedOutputStream;
 import org.jvnet.hudson.test.RealJenkinsRule;
 
 @For({JNLPLauncher.class, JnlpSlaveAgentProtocol4.class})
@@ -49,7 +50,7 @@ public class JNLPLauncherRealTest {
 
     private static final String STATIC_AGENT_NAME = "static";
 
-    @Rule public RealJenkinsRule rr = new RealJenkinsRule().includeTestClasspathPlugins(false);
+    @Rule public RealJenkinsRule rr = new RealJenkinsRule().includeTestClasspathPlugins(false).withColor(PrefixedOutputStream.Color.BLUE);
 
     @Rule public InboundAgentRule iar = new InboundAgentRule();
 
@@ -72,7 +73,7 @@ public class JNLPLauncherRealTest {
     private void then(boolean websocket) throws Throwable {
         try {
             rr.startJenkins();
-            InboundAgentRule.Options.Builder options = InboundAgentRule.Options.newBuilder().name(STATIC_AGENT_NAME);
+            InboundAgentRule.Options.Builder options = InboundAgentRule.Options.newBuilder().name(STATIC_AGENT_NAME).color(PrefixedOutputStream.Color.RED);
             if (websocket) {
                 options = options.webSocket();
             }
