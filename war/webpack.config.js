@@ -31,6 +31,9 @@ module.exports = (env, argv) => ({
       path.join(__dirname, "src/main/js/config-tabbar.less"),
     ],
     app: [path.join(__dirname, "src/main/js/app.js")],
+    "pages/manage-jenkins": [
+      path.join(__dirname, "src/main/js/pages/manage-jenkins"),
+    ],
     "keyboard-shortcuts": [
       path.join(__dirname, "src/main/js/keyboard-shortcuts.js"),
     ],
