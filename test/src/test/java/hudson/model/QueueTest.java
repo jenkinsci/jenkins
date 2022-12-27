@@ -266,7 +266,7 @@ public class QueueTest {
             }
         });
 
-        Future<FreeStyleBuild> b1 = p.scheduleBuild2(0);
+        FreeStyleBuild b1 = p.scheduleBuild2(0).waitForStart();
         assertNotNull(b1);
         seq.phase(1);   // and make sure we have one build under way
 
@@ -280,6 +280,10 @@ public class QueueTest {
         assertThat(items[0], instanceOf(BlockedItem.class));
 
         q.save();
+
+        assertTrue(q.cancel(items[0]));
+        seq.done();
+        r.assertBuildStatusSuccess(r.waitForCompletion(b1));
     }
 
     public static final class FileItemPersistenceTestServlet extends HttpServlet {
@@ -957,18 +961,15 @@ public class QueueTest {
         assertNotNull(item);
 
         final ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1);
-        executor.schedule(new Runnable() {
-            @Override
-            public void run() {
-                   try {
-                       Queue.getInstance().doCancelItem(item.getId());
-                   } catch (IOException e) {
-                       throw new UncheckedIOException(e);
-                   } catch (ServletException e) {
-                       throw new RuntimeException(e);
-                   }
-            }
-            }, 2, TimeUnit.SECONDS);
+        executor.schedule(() -> {
+               try {
+                   Queue.getInstance().doCancelItem(item.getId());
+               } catch (IOException e) {
+                   throw new UncheckedIOException(e);
+               } catch (ServletException e) {
+                   throw new RuntimeException(e);
+               }
+        }, 2, TimeUnit.SECONDS);
 
         assertThrows(CancellationException.class, f::waitForStart);
     }
