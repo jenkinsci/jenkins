@@ -54,7 +54,6 @@ import java.net.URLClassLoader;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.Future;
 import javax.servlet.ServletException;
 import jenkins.ClassLoaderReflectionToolkit;
@@ -524,14 +523,14 @@ public class PluginManagerTest {
         assertNotNull(site.getData());
 
         // neither of the following plugins should be installed
-        assertNull(r.jenkins.getPluginManager().getPlugin("Parameterized-Remote-Trigger"));
-        assertNull(r.jenkins.getPluginManager().getPlugin("token-macro"));
+        assertNull(r.jenkins.getPluginManager().getPlugin("mandatory-depender"));
+        assertNull(r.jenkins.getPluginManager().getPlugin("dependee"));
 
         HtmlPage page = r.createWebClient().goTo("pluginManager/advanced");
         HtmlForm f = page.getFormByName("uploadPlugin");
         File dir = tmp.newFolder();
-        File plugin = new File(dir, "Parameterized-Remote-Trigger.hpi");
-        FileUtils.copyURLToFile(getClass().getClassLoader().getResource("plugins/Parameterized-Remote-Trigger.hpi"), plugin);
+        File plugin = new File(dir, "mandatory-depender-0.0.2.hpi");
+        FileUtils.copyURLToFile(getClass().getClassLoader().getResource("plugins/mandatory-depender-0.0.2.hpi"), plugin);
         f.getInputByName("name").setValueAttribute(plugin.getAbsolutePath());
         r.submit(f);
 
@@ -554,12 +553,12 @@ public class PluginManagerTest {
         } while (!done);
 
         // the files get renamed to .jpi
-        assertTrue(new File(r.jenkins.getRootDir(), "plugins/Parameterized-Remote-Trigger.jpi").exists());
-        assertTrue(new File(r.jenkins.getRootDir(), "plugins/token-macro.jpi").exists());
+        assertTrue(new File(r.jenkins.getRootDir(), "plugins/mandatory-depender.jpi").exists());
+        assertTrue(new File(r.jenkins.getRootDir(), "plugins/dependee.jpi").exists());
 
         // now the other plugins should have been found as dependencies and downloaded
-        assertNotNull(r.jenkins.getPluginManager().getPlugin("Parameterized-Remote-Trigger"));
-        assertNotNull(r.jenkins.getPluginManager().getPlugin("token-macro"));
+        assertNotNull(r.jenkins.getPluginManager().getPlugin("mandatory-depender"));
+        assertNotNull(r.jenkins.getPluginManager().getPlugin("dependee"));
     }
 
     @Issue("JENKINS-44898")
@@ -592,65 +591,6 @@ public class PluginManagerTest {
         assertNotNull(r.jenkins.getPluginManager().getPlugin("variant"));
         dynamicLoad("jenkins-50336.hpi");
         assertTrue(ExtensionList.lookup(GlobalConfiguration.class).stream().anyMatch(gc -> "io.jenkins.plugins.MyGlobalConfiguration".equals(gc.getClass().getName())));
-    }
-
-    /*
-    credentials - present in update-center.json, not deprecated
-    htmlpublisher - not in update-center.json, not deprecated
-    icon-shim, present in update-center.json, deprecated via label and top-level list
-    token-macro, present in update-center.json, deprecated via label only
-    variant, not in update-center.json, deprecated via top-level list
-     */
-    @Test
-    @Issue("JENKINS-59136")
-    @WithPlugin({"credentials.hpi", "htmlpublisher.jpi", "icon-shim.hpi", "token-macro.hpi", "variant.hpi"})
-    public void testDeprecationNotices() throws Exception {
-        assumeFalse("TODO: Implement this test on Windows", Functions.isWindows());
-        PersistedList<UpdateSite> sites = r.jenkins.getUpdateCenter().getSites();
-        sites.clear();
-        URL url = PluginManagerTest.class.getResource("/plugins/deprecations-update-center.json");
-        UpdateSite site = new UpdateSite(UpdateCenter.ID_DEFAULT, url.toString());
-        sites.add(site);
-
-        assertEquals(FormValidation.ok(), site.updateDirectlyNow(false));
-        assertNotNull(site.getData());
-
-        assertTrue(ExtensionList.lookupSingleton(PluginManager.PluginDeprecationMonitor.class).isActivated());
-
-        final PluginManager pm = Jenkins.get().getPluginManager();
-
-        final PluginWrapper credentials = pm.getPlugin("credentials");
-        Objects.requireNonNull(credentials);
-        assertFalse(credentials.isDeprecated());
-        assertTrue(credentials.getDeprecations().isEmpty());
-
-        final PluginWrapper htmlpublisher = pm.getPlugin("htmlpublisher");
-        Objects.requireNonNull(htmlpublisher);
-        assertFalse(htmlpublisher.isDeprecated());
-        assertTrue(htmlpublisher.getDeprecations().isEmpty());
-
-        final PluginWrapper iconShim = pm.getPlugin("icon-shim");
-        Objects.requireNonNull(iconShim);
-        assertTrue(iconShim.isDeprecated());
-        List<UpdateSite.Deprecation> deprecations = iconShim.getDeprecations();
-        assertEquals(1, deprecations.size());
-        assertEquals("https://www.jenkins.io/deprecations/icon-shim/", deprecations.get(0).url);
-        assertEquals("https://wiki.jenkins-ci.org/display/JENKINS/Icon+Shim+Plugin", iconShim.getInfo().wiki);
-
-        final PluginWrapper tokenMacro = pm.getPlugin("token-macro");
-        Objects.requireNonNull(tokenMacro);
-        assertTrue(tokenMacro.isDeprecated());
-        deprecations = tokenMacro.getDeprecations();
-        assertEquals(1, deprecations.size());
-        assertEquals("https://wiki.jenkins-ci.org/display/JENKINS/Token+Macro+Plugin", deprecations.get(0).url);
-
-        final PluginWrapper variant = pm.getPlugin("variant");
-        Objects.requireNonNull(variant);
-        assertTrue(variant.isDeprecated());
-        deprecations = variant.getDeprecations();
-        assertEquals(1, deprecations.size());
-        assertEquals("https://www.jenkins.io/deprecations/variant/", deprecations.get(0).url);
-        assertNull(variant.getInfo());
     }
 
     @Issue("JENKINS-62622")
