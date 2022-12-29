@@ -188,7 +188,8 @@ public class NodeProvisionerTest {
             verifySuccessfulCompletion(buildAll(create5SlowJobs(new Latch(5), r)), r);
 
             // we should have used two static slaves, thus only 3 slaves should have been provisioned
-            assertEquals(3, cloud.numProvisioned);
+            // sometimes we can end up allocating 4 due to the conservative estimation in StandardStrategyImpl#apply
+            assertThat(cloud.numProvisioned, anyOf(equalTo(3), equalTo(4)));
         }
     }
 
