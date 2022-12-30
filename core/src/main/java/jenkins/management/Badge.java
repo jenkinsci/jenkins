@@ -32,18 +32,19 @@ import java.util.Locale;
 
 /**
  *  Definition of a badge that can be returned by a {@link ManagementLink} implementation.
- *  The badge is shown as a small overlay over the corresponding icon on the {@code Manage Jenkins} page, can display additional information
- *  in a tooltip and change it's color depending on the severity.
+ *  The badge is shown as a small overlay over the corresponding icon on the {@code Manage Jenkins} page,
+ *  it can display additional information in a tooltip and change it's color depending on the severity.
  *
  *  <p>
  *  A badge mainly serves as a fast feedback for the corresponding management page.
- *  It could be used to just display some short status information or hint that some action can be taken. E.g. the badge on {@code Manage Plugins}
- *  shows information about the number of available updates and in its tooltip additionally how many updates contain incompatible changes or fix
- *  security vulnerabilities. It also changes it's color when there are security fixes available.
+ *  It could be used to just display some short status information or hint that some action can be taken.
+ *  For example the badge on {@code Manage Plugins} shows information about the number of available updates
+ *  and in its tooltip additionally how many updates contain incompatible changes or fix
+ *  security vulnerabilities. It also changes its color when there are security fixes available.
  *
  *  <p>
  *  A badge might display the same information as an {@link AdministrativeMonitor}. While an {@link AdministrativeMonitor}
- *  can be disabled, a badge will be always shown. E.g. the badge of {@link OldDataMonitor.ManagementLinkImpl} always shows the number of old data entries.
+ *  can be disabled, a badge will always be shown. E.g. the badge of {@link OldDataMonitor.ManagementLinkImpl} always shows the number of old data entries.
  *
  *  @since TODO
  */
