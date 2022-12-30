@@ -23,10 +23,8 @@
  */
 (function () {
   document.addEventListener("DOMContentLoaded", function () {
-
     const timespanSelect = document.querySelector("#timespan-select");
     timespanSelect.addEventListener("change", () => {
-
       const graphLocation = document.querySelector(".js-load-graph");
       if (graphLocation) {
         const type = timespanSelect.value;
