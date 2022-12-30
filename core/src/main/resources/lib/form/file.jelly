@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+Copyright (c) 2022, Jenkins project contributors
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,29 +22,30 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<!--
-  Log view
--->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-<l:layout title="Log" permission="${app.SYSTEM_READ}">
-  <st:include page="sidepanel.jelly" />
-  <!-- no need for additional breadcrumb here as we're on an index page already including breadcrumb -->
-  <l:main-panel>
-    <h1>${it.displayName}</h1>
-    <t:logRecords logRecords="${it.logRecords}"/>
-    <j:forEach var="entry" items="${it.slaveLogRecords.entrySet()}">
-      <h2><a href="${rootURL}/${entry.key.url}" class="model-link">${entry.key.displayName}</a></h2>
-      <t:logRecords logRecords="${entry.value}"/>
-    </j:forEach>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:f="/lib/form">
+  <st:documentation>
+    Generates an input field <code>&lt;input type="file" ... /></code>
 
-    <l:isAdmin>
-      <form method="post" id='clear-logrecorder' action="clear">
-        <f:submit value="${%Clear This Log}" />
-      </form>
-    </l:isAdmin>
+    <st:attribute name="field">
+      Used for databinding.
+    </st:attribute>
+    <st:attribute name="jsonAware">
+      Enable structured form submission.
+    </st:attribute>
+    <st:attribute name="accept">
+      Defines the file types the file input should accept. This string is a comma-separated list.
+    </st:attribute>
+    @since TODO
+  </st:documentation>
+  <f:prepareDatabinding />
 
-    <st:include it="${it.parent}" page="feeds.jelly" />
-  </l:main-panel>
-</l:layout>
+  <j:set var="name" value="${attrs.name ?: attrs.field}"/>
+
+  <input name="${name}"
+         type="file"
+         jsonAware="${attrs.jsonAware}"
+         class="jenkins-file-upload"
+         accept="${attrs.accept}"
+  />
 </j:jelly>
