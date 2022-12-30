@@ -3852,7 +3852,7 @@ getConstrainedY: function (y) {
 
 
     /*
-         Uses the context element's position to calculate the availble height 
+         Uses the context element's position to calculate the available height 
          above and below it to display its corresponding Menu.
     */
 

@@ -166,7 +166,7 @@ var repeatableSupport = {
     for (var i = 0; i < inputs.length; i++) {
       var input = inputs[i];
       if (input.name == "hudson-tools-InstallSourceProperty") {
-        updateOptionalBlock(input, false);
+        updateOptionalBlock(input);
       }
     }
     layoutUpdateCallback.call();
