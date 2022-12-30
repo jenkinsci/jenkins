@@ -24,14 +24,21 @@ window.breadcrumbs = (function () {
 
   function makeMenuHtml(icon, iconXml, displayName, badge) {
     var displaynameSpan = "<span>" + displayName + "</span>";
-    const badgeSpan = badge === 0 ? "" : "<span class='yui-menu-badge'>" + badge + "</span>";
+    const badgeSpan =
+      badge === null
+        ? ""
+        : "<span class='yui-menu-badge'>" + badge.text + "</span>";
 
     if (iconXml != null) {
       return iconXml + displaynameSpan + badgeSpan;
     }
 
     if (icon === null) {
-      return "<span style='margin: 2px 4px 2px 2px;' />" + displaynameSpan + badgeSpan;
+      return (
+        "<span style='margin: 2px 4px 2px 2px;' />" +
+        displaynameSpan +
+        badgeSpan
+      );
     }
 
     // TODO: move this to the API response in a clean way
@@ -42,11 +49,13 @@ window.breadcrumbs = (function () {
           icon +
           "' />" +
           "</svg>" +
-          displaynameSpan + badgeSpan
+          displaynameSpan +
+          badgeSpan
       : "<img src='" +
           icon +
           "' width=24 height=24 style='margin: 2px 4px 2px 2px;' alt=''>" +
-          displaynameSpan + badgeSpan;
+          displaynameSpan +
+          badgeSpan;
   }
 
   Event.observe(window, "load", function () {
@@ -184,7 +193,12 @@ window.breadcrumbs = (function () {
                 e.text = "<span class='separator'>--</span>";
                 e.disabled = true;
               } else {
-                e.text = makeMenuHtml(e.icon, e.iconXml, e.displayName, e.badge);
+                e.text = makeMenuHtml(
+                  e.icon,
+                  e.iconXml,
+                  e.displayName,
+                  e.badge
+                );
               }
               if (e.subMenu != null) {
                 e.subMenu = {

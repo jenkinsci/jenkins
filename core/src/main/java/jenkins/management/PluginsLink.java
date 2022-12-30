@@ -28,7 +28,9 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.model.ManagementLink;
 import hudson.model.UpdateCenter;
+import hudson.model.UpdateSite.Plugin;
 import hudson.security.Permission;
+import java.util.List;
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
 
@@ -70,14 +72,9 @@ public class PluginsLink extends ManagementLink {
         return Category.CONFIGURATION;
     }
 
-    @NonNull
     @Override
-    public int getBadge() {
+    public Badge getBadge() {
         final UpdateCenter updateCenter = Jenkins.get().getUpdateCenter();
-        if (!updateCenter.isSiteDataReady()) {
-            // Do not display message during this page load, but possibly later.
-            return 0;
-        }
-        return updateCenter.getUpdates().size();
+        return updateCenter.getBadge();
     }
 }

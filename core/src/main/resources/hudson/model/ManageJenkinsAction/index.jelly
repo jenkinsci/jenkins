@@ -27,28 +27,10 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <l:layout title="${%Manage Jenkins}" permissions="${app.MANAGE_AND_SYSTEM_READ}" xmlns:local="local">
+  <l:layout title="${%Manage Jenkins}" permissions="${app.MANAGE_AND_SYSTEM_READ}">
     <j:if test="${taskTags==null}">
       <st:include page="sidepanel.jelly" it="${app}" />
     </j:if>
-
-    <d:taglib uri="local">
-      <d:tag name="item">
-        <div class="jenkins-section__item__icon" aria-hidden="true">
-          <l:icon src="${m.iconFileName}" class="icon" />
-          <j:if test="${m.badge != 0}">
-            <div class="jenkins-section__item__icon__badge">
-              ${m.badge}
-            </div>
-          </j:if>
-        </div>
-        <dl>
-          <dt>${m.displayName}</dt>
-          <dd><j:out value="${m.description}"/></dd>
-          <dd><st:include it="${m}" page="info.jelly" optional="true"/></dd>
-        </dl>
-      </d:tag>
-    </d:taglib>
 
     <l:main-panel>
       <l:app-bar title="${%Manage Jenkins}">
@@ -81,17 +63,44 @@ THE SOFTWARE.
               <j:choose>
                 <j:when test="${m.requiresConfirmation}">
                   <l:confirmationLink href="${m.urlName}" post="${m.requiresPOST}" message="${%are.you.sure(m.displayName)}">
-                    <local:item />
+                    <div class="jenkins-section__item__icon" aria-hidden="true">
+                      <l:icon src="${m.iconFileName}" class="icon" />
+                    </div>
+                    <dl>
+                      <dt>${m.displayName}</dt>
+                      <dd><j:out value="${m.description}"/></dd>
+                      <dd><st:include it="${m}" page="info.jelly" optional="true"/></dd>
+                    </dl>
                   </l:confirmationLink>
                 </j:when>
                 <j:when test="${m.requiresPOST}">
                   <f:link href="${m.urlName}" post="${m.requiresPOST}">
-                    <local:item />
+                    <div class="jenkins-section__item__icon" aria-hidden="true">
+                      <l:icon src="${m.iconFileName}" class="icon" />
+                    </div>
+                    <dl>
+                      <dt>${m.displayName}</dt>
+                      <dd><j:out value="${m.description}"/></dd>
+                      <dd><st:include it="${m}" page="info.jelly" optional="true"/></dd>
+                    </dl>
                   </f:link>
                 </j:when>
                 <j:otherwise>
                   <a href="${m.urlName}">
-                    <local:item />
+                    <div class="jenkins-section__item__icon" aria-hidden="true">
+                      <l:icon src="${m.iconFileName}" class="icon" />
+                      <j:set var="badge" value="${m.badge}"/>
+                      <j:if test="${badge != null}">
+                        <div tooltip="${badge.tooltip}" class="jenkins-section__item__icon__badge alert-${badge.severity}">
+                          ${badge.text}
+                        </div>
+                      </j:if>
+                    </div>
+                    <dl>
+                      <dt>${m.displayName}</dt>
+                      <dd><j:out value="${m.description}"/></dd>
+                      <dd><st:include it="${m}" page="info.jelly" optional="true"/></dd>
+                    </dl>
                   </a>
                 </j:otherwise>
               </j:choose>

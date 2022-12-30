@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import javax.servlet.ServletException;
+import jenkins.management.Badge;
 import org.apache.commons.jelly.JellyContext;
 import org.apache.commons.jelly.JellyException;
 import org.apache.commons.jelly.JellyTagException;
@@ -150,7 +151,7 @@ public interface ModelObjectWithContextMenu extends ModelObject {
         }
 
         /** @since TODO */
-        public ContextMenu add(String url, String icon, String iconXml, String text, boolean post, boolean requiresConfirmation, int badge) {
+        public ContextMenu add(String url, String icon, String iconXml, String text, boolean post, boolean requiresConfirmation, Badge badge) {
             if (text != null && icon != null && url != null) {
                 MenuItem item = new MenuItem(url, icon, text);
                 item.iconXml = iconXml;
@@ -330,14 +331,7 @@ public interface ModelObjectWithContextMenu extends ModelObject {
         public boolean requiresConfirmation;
 
 
-        /**
-         * The number to display for the context menu item's badge
-         * Set the value above 0 to display
-         * @since TODO
-         */
-        @Exported
-        @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD", justification = "read by Stapler")
-        public int badge;
+        private Badge badge;
 
         /**
          * The type of menu item
@@ -357,6 +351,15 @@ public interface ModelObjectWithContextMenu extends ModelObject {
         @Exported
         public String getIconXml() {
             return iconXml;
+        }
+
+        /**
+         * The badge to display for the context menu item
+         * @since TODO
+         */
+        @Exported
+        public Badge getBadge() {
+            return badge;
         }
 
         public MenuItem(String url, String icon, String displayName) {

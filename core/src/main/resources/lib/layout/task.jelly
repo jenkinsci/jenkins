@@ -142,7 +142,7 @@ THE SOFTWARE.
               <span class="task-link-text">${title}</span>
               <j:if test="${attrs.badge != null}">
                 <span class="task-icon-badge">
-                  ${attrs.badge}
+                  ${attrs.badge.text}
                 </span>
               </j:if>
             </span>
@@ -178,7 +178,7 @@ THE SOFTWARE.
                   <span>${title}</span>
                   <j:if test="${attrs.badge != null}">
                     <span class="task-icon-badge">
-                      ${attrs.badge}
+                      ${attrs.badge.text}
                     </span>
                   </j:if>
                 </l:confirmationLink>
@@ -192,7 +192,7 @@ THE SOFTWARE.
                   <span class="task-link-text">${title}</span>
                   <j:if test="${attrs.badge != null}">
                     <span class="task-icon-badge">
-                      ${attrs.badge}
+                      ${attrs.badge.text}
                     </span>
                   </j:if>
                 </a>

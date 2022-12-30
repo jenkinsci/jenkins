@@ -34,6 +34,7 @@ import hudson.security.Permission;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import jenkins.management.Badge;
 import jenkins.model.Jenkins;
 import org.jvnet.localizer.Localizable;
 import org.kohsuke.accmod.Restricted;
@@ -163,18 +164,6 @@ public abstract class ManagementLink implements ExtensionPoint, Action {
         }
     }
 
-
-    /**
-     * Displays a badge on the management link icon.
-     * If set to 0 the badge will not display.
-     *
-     * @return the number to display on the badge.
-     * @since TODO
-     */
-    public @NonNull int getBadge() {
-        return 0;
-    }
-
     /**
      * Categories supported by this version of core.
      *
@@ -224,6 +213,16 @@ public abstract class ManagementLink implements ExtensionPoint, Action {
         public @NonNull String getLabel() {
             return label.toString();
         }
+    }
+
+    /**
+     * A {@link Badge} shown as overlay over the icon on "Manage Jenkins".
+     *
+     * @return badge or {@code null} if no badge should be shown.
+     * @since TODO
+     */
+    public @CheckForNull Badge getBadge() {
+        return null;
     }
 
     private static final Logger LOGGER = Logger.getLogger(ManagementLink.class.getName());

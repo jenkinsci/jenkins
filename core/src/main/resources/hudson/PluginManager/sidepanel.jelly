@@ -29,7 +29,7 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <l:side-panel>
     <l:tasks>
-      <l:task href="${rootURL}/manage/pluginManager/" icon="symbol-download" title="${%Updates}" badge="${app.updateCenter.updates.size() != 0 ? app.updateCenter.updates.size() : null}"/>
+      <l:task href="${rootURL}/manage/pluginManager/" icon="symbol-download" title="${%Updates}" badge="${app.updateCenter.badge}"/>
       <l:task href="${rootURL}/manage/pluginManager/available" icon="symbol-shopping-bag" title="${%Available plugins}"/>
       <l:task href="${rootURL}/manage/pluginManager/installed" icon="symbol-plugins" title="${%Installed plugins}"/>
       <l:task href="${rootURL}/manage/pluginManager/advanced" icon="symbol-settings" title="${%Advanced settings}"/>
