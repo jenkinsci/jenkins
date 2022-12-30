@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+Copyright (c) 2022, Jenkins project contributors
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -23,14 +23,29 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
-	xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form"
-	xmlns:i="jelly:fmt" xmlns:p="/lib/hudson/project">
-        <j:set var="escapeEntryTitleAndDescription" value="false"/>
-        <f:entry title="${h.escape(it.name)}" description="${it.formattedDescription}" field="file">
-		<div name="parameter">
-			<input type="hidden" name="name" value="${it.name}" />
-			<f:file jsonAware="true" />
-		</div>
-	</f:entry>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:f="/lib/form">
+  <st:documentation>
+    Generates an input field <code>&lt;input type="file" ... /></code>
+
+    <st:attribute name="field">
+      Used for databinding.
+    </st:attribute>
+    <st:attribute name="jsonAware">
+      Enable structured form submission.
+    </st:attribute>
+    <st:attribute name="accept">
+      Defines the file types the file input should accept. This string is a comma-separated list.
+    </st:attribute>
+    @since TODO
+  </st:documentation>
+  <f:prepareDatabinding />
+
+  <j:set var="name" value="${attrs.name ?: attrs.field}"/>
+
+  <input name="${name}"
+         type="file"
+         jsonAware="${attrs.jsonAware}"
+         class="jenkins-file-upload"
+         accept="${attrs.accept}"
+  />
 </j:jelly>
