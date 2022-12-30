@@ -1,5 +1,9 @@
+.jenkins-search-container {
+  position: relative;
+}
+
 .jenkins-search {
-  --search-bar-height: 2.1875rem;
+  --search-bar-height: 2.375rem;
 
   position: relative;
   max-width: 420px;
@@ -206,4 +210,165 @@
       pointer-events: none;
     }
   }
+}
+
+.jenkins-search__results-container {
+  position: absolute;
+  width: 100%;
+  border-radius: 1rem;
+  box-shadow: var(--dropdown-box-shadow);
+  overflow: hidden;
+  z-index: 10;
+  height: 1px; // Setting to 0 caused the items not to render initially in Chrome
+  opacity: 0;
+  transition: var(--standard-transition);
+  backdrop-filter: var(--dropdown-backdrop-filter);
+  visibility: collapse;
+  scale: 95%;
+  translate: 0 -0.3125rem;
+  will-change: height, scale, opacity;
+
+  &--visible {
+    opacity: 1;
+    scale: 100%;
+    visibility: visible;
+    translate: 0 0.3125rem;
+  }
+
+  a {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    padding: 0.5rem 0.7rem;
+    font-size: 0.85rem;
+    border-radius: 10px;
+    color: var(--text-color);
+    font-weight: 500;
+    text-decoration: none;
+    z-index: 0;
+    line-height: 1;
+    min-height: 2.25rem;
+    transition: background var(--standard-transition);
+
+    div {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 1.125rem;
+      height: 1.125rem;
+
+      svg,
+      img {
+        width: 100%;
+        height: 100%;
+      }
+    }
+
+    &::before,
+    &::after {
+      position: absolute;
+      content: "";
+      inset: 0;
+      z-index: -1;
+      border-radius: 10px;
+      transition: var(--standard-transition);
+      pointer-events: none;
+    }
+
+    &::before {
+      background-color: transparent;
+    }
+
+    &::after {
+      box-shadow: 0 0 0 0.66rem transparent;
+    }
+
+    &:hover,
+    &:focus {
+      &::before {
+        background-color: var(--item-background--hover);
+      }
+    }
+
+    &:active,
+    &:focus {
+      outline: none !important;
+      z-index: 1;
+
+      &::before {
+        background-color: var(--item-background--active);
+      }
+
+      &::after {
+        box-shadow: 0 0 0 0.33rem var(--item-box-shadow--focus);
+      }
+    }
+
+    &:focus-visible {
+      &::after {
+        box-shadow: 0 0 0 0.33rem var(--text-color);
+      }
+    }
+  }
+
+  .jenkins-search__results {
+    position: relative;
+    display: flex;
+    justify-content: flex-start;
+    flex-direction: column;
+    gap: 0.2rem;
+    padding: 0.4rem;
+
+    & > div {
+      position: relative;
+      margin-top: -0.25rem;
+
+      a {
+        padding-left: 2.6rem;
+        color: var(--text-color-secondary);
+      }
+
+      &::before {
+        content: "";
+        position: absolute;
+        top: 0.4rem;
+        left: 1.1rem + 0.625rem;
+        bottom: 0.3rem;
+        width: 0.125rem;
+        background: currentColor;
+        border-radius: 100vmax;
+        opacity: 0.05;
+      }
+
+      &:empty {
+        display: none;
+      }
+    }
+  }
+
+  &:hover {
+    .jenkins-search__results-item--selected {
+      background: transparent;
+    }
+  }
+}
+
+.jenkins-search__results-item--selected {
+  background: var(--item-background--hover);
+  animation: pulse 1s ease-in-out forwards;
+
+  @keyframes pulse {
+    50% {
+      background: var(--item-background--active);
+    }
+  }
+}
+
+.jenkins-search__results__no-results-label {
+  text-align: center;
+  margin: 2rem;
+  padding: 0;
+  color: var(--text-color-secondary);
+  font-weight: 500;
 }

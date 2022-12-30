@@ -64,7 +64,7 @@ THE SOFTWARE.
         <!-- https://docs.spring.io/spring-security/site/docs/5.5.4/reference/html5/#getting-maven-no-boot -->
         <groupId>org.springframework.security</groupId>
         <artifactId>spring-security-bom</artifactId>
-        <version>5.8.0</version>
+        <version>5.8.1</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -103,7 +103,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>com.thoughtworks.xstream</groupId>
         <artifactId>xstream</artifactId>
-        <version>1.4.19</version>
+        <version>1.4.20</version>
       </dependency>
       <dependency>
         <groupId>commons-beanutils</groupId>

@@ -1960,44 +1960,71 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     @Restricted(NoExternalUse.class)
     @RequirePOST public FormValidation doCheckUpdateSiteUrl(StaplerRequest request, @QueryParameter String value) throws InterruptedException {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+        return checkUpdateSiteURL(value);
+    }
 
+    @Restricted(DoNotUse.class) // visible for testing only
+    FormValidation checkUpdateSiteURL(@CheckForNull String value) throws InterruptedException {
         value = Util.fixEmptyAndTrim(value);
+
         if (value == null) {
             return FormValidation.error(Messages.PluginManager_emptyUpdateSiteUrl());
         }
 
-        value += ((value.contains("?")) ? "&" : "?") + "version=" + Jenkins.VERSION + "&uctest";
+        final URI baseUri;
+        try {
+            baseUri = new URI(value);
+        } catch (URISyntaxException ex) {
+            return FormValidation.error(ex, Messages.PluginManager_invalidUrl());
+        }
 
-        URI uri;
-        try {
-            uri = new URI(value);
-        } catch (URISyntaxException e) {
-            return FormValidation.error(e, Messages.PluginManager_invalidUrl());
-        }
-        HttpClient httpClient = ProxyConfiguration.newHttpClientBuilder()
-                .connectTimeout(Duration.ofSeconds(5))
-                .build();
-        HttpRequest httpRequest;
-        try {
-            httpRequest = ProxyConfiguration.newHttpRequestBuilder(uri)
-                    .method("HEAD", HttpRequest.BodyPublishers.noBody())
-                    .build();
-        } catch (IllegalArgumentException e) {
-            return FormValidation.error(e, Messages.PluginManager_invalidUrl());
-        }
-        try {
-            java.net.http.HttpResponse<Void> httpResponse = httpClient.send(
-                    httpRequest, java.net.http.HttpResponse.BodyHandlers.discarding());
-            if (100 <= httpResponse.statusCode() && httpResponse.statusCode() <= 399) {
+        if ("file".equalsIgnoreCase(baseUri.getScheme())) {
+            File f = new File(baseUri);
+            if (f.isFile()) {
                 return FormValidation.ok();
             }
-            LOGGER.log(Level.FINE, "Obtained a non OK ({0}) response from the update center",
-                    new Object[] {httpResponse.statusCode(), uri});
             return FormValidation.error(Messages.PluginManager_connectionFailed());
-        } catch (IOException e) {
-            LOGGER.log(Level.FINE, "Failed to check update site", e);
-            return FormValidation.error(e, Messages.PluginManager_connectionFailed());
         }
+
+        if ("https".equalsIgnoreCase(baseUri.getScheme()) || "http".equalsIgnoreCase(baseUri.getScheme())) {
+            final URI uriWithQuery;
+            try {
+                if (baseUri.getRawQuery() == null) {
+                    uriWithQuery = new URI(value + "?version=" + Jenkins.VERSION + "&uctest");
+                } else {
+                    uriWithQuery = new URI(value + "&version=" + Jenkins.VERSION + "&uctest");
+                }
+            } catch (URISyntaxException e) {
+                return FormValidation.error(e, Messages.PluginManager_invalidUrl());
+            }
+            HttpClient httpClient = ProxyConfiguration.newHttpClientBuilder()
+                    .connectTimeout(Duration.ofSeconds(5))
+                    .build();
+            HttpRequest httpRequest;
+            try {
+                httpRequest = ProxyConfiguration.newHttpRequestBuilder(uriWithQuery)
+                        .method("HEAD", HttpRequest.BodyPublishers.noBody())
+                        .build();
+            } catch (IllegalArgumentException e) {
+                return FormValidation.error(e, Messages.PluginManager_invalidUrl());
+            }
+            try {
+                java.net.http.HttpResponse<Void> httpResponse = httpClient.send(
+                        httpRequest, java.net.http.HttpResponse.BodyHandlers.discarding());
+                if (100 <= httpResponse.statusCode() && httpResponse.statusCode() <= 399) {
+                    return FormValidation.ok();
+                }
+                LOGGER.log(Level.FINE, "Obtained a non OK ({0}) response from the update center",
+                        new Object[] {httpResponse.statusCode(), baseUri});
+                return FormValidation.error(Messages.PluginManager_connectionFailed());
+            } catch (IOException e) {
+                LOGGER.log(Level.FINE, "Failed to check update site", e);
+                return FormValidation.error(e, Messages.PluginManager_connectionFailed());
+            }
+
+        }
+        // not a file or http(s) scheme
+        return FormValidation.error(Messages.PluginManager_invalidUrl());
     }
 
     @Restricted(NoExternalUse.class)
