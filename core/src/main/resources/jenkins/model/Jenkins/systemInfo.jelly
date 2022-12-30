@@ -34,21 +34,18 @@ THE SOFTWARE.
       <l:app-bar title="${%System Information}" />
 
       <l:hasPermission permission="${app.SYSTEM_READ}">
-        <div class="jenkins-tab-pane">
-          <h2 class="jenkins-tab-pane__title">${%System Properties}</h2>
+        <l:tabPane title="${%System Properties}">
           <t:propertyTable items="${h.systemProperties}" />
-        </div>
+        </l:tabPane>
       </l:hasPermission>
 
       <l:hasPermission permission="${app.SYSTEM_READ}">
-        <div class="jenkins-tab-pane">
-          <h2 class="jenkins-tab-pane__title">${%Environment Variables}</h2>
+        <l:tabPane title="${%Environment Variables}">
           <t:propertyTable items="${h.envVars}" />
-        </div>
+        </l:tabPane>
       </l:hasPermission>
 
-      <div class="jenkins-tab-pane">
-        <h2 class="jenkins-tab-pane__title">${%Plugins}</h2>
+      <l:tabPane title="${%Plugins}">
         <table class="jenkins-table sortable">
           <thead>
             <tr>
@@ -87,11 +84,9 @@ THE SOFTWARE.
             </j:choose>
           </tbody>
         </table>
-      </div>
+      </l:tabPane>
 
-      <div class="jenkins-tab-pane">
-        <h2 class="jenkins-tab-pane__title">${%Memory Usage}</h2>
-
+      <l:tabPane title="${%Memory Usage}">
         <f:entry title="${%Timespan}" class="jenkins-form-item--small">
           <div class="jenkins-select">
             <select id="timespan-select" class="jenkins-select__input">
@@ -103,13 +98,12 @@ THE SOFTWARE.
         </f:entry>
 
         <div id="graph-host" />
-      </div>
+      </l:tabPane>
 
       <l:isAdmin>
-        <div class="jenkins-tab-pane">
-          <h2 class="jenkins-tab-pane__title">${%Thread Dumps}</h2>
+        <l:tabPane title="${%Thread Dumps}">
           <p>${%threadDump_blurb('threadDump')}</p>
-        </div>
+        </l:tabPane>
       </l:isAdmin>
 
       <l:js src="jsbundles/section-to-tabs.js" />
