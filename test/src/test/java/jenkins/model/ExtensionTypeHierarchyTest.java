@@ -52,12 +52,7 @@ public class ExtensionTypeHierarchyTest {
      * Sort by class name
      */
     private <T> T[] sort(T[] a) {
-        Arrays.sort(a, new Comparator<>() {
-            @Override
-            public int compare(T o1, T o2) {
-                return o1.getClass().getName().compareTo(o2.getClass().getName());
-            }
-        });
+        Arrays.sort(a, Comparator.comparing(o -> o.getClass().getName()));
         return a;
     }
 }
