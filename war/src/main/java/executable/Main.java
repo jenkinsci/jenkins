@@ -361,15 +361,13 @@ public class Main {
         }
     }
 
-    // TODO: Get rid of FB warning after updating to Java 7
     /**
-     * reads up to maxRead bytes from InputStream if available into a String
+     * Reads up to maxRead bytes from InputStream if available into a String
      *
      * @param in input stream to be read
      * @param maxToRead maximum number of bytes to read from the in
      * @return a String read from in
      */
-    @SuppressFBWarnings(value = {"DM_DEFAULT_ENCODING", "RR_NOT_CHECKED"}, justification = "Legacy behavior, We expect less input than maxToRead")
     private static String readStringNonBlocking(InputStream in, int maxToRead) {
         byte[] buffer;
         try {

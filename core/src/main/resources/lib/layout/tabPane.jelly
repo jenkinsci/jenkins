@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+Copyright (c) 2022 Jenkins project contributors
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -23,15 +23,16 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <l:layout>
-		<st:include page="sidepanel.jelly" />
-		<l:breadcrumb title="${%Delete}" />
-		<l:main-panel>
-		  <form method="post" action="doDelete">
-		    ${%delete.agent(it.displayName)}
-        <f:submit value="${%Yes}" clazz="jenkins-!-destructive-color" />
-		  </form>
-		</l:main-panel>
-	</l:layout>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define">
+  <st:documentation>
+    <st:attribute name="title" use="required">
+      The title of the tab
+    </st:attribute>
+    @since TODO
+  </st:documentation>
+  <div class="jenkins-tab-pane">
+    <h2 class="jenkins-tab-pane__title">${attrs.title}</h2>
+
+    <d:invokeBody />
+  </div>
 </j:jelly>
