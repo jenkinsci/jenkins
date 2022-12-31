@@ -24,7 +24,6 @@
 
 package hudson.triggers;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.model.AperiodicWork;
 import hudson.model.AsyncAperiodicWork;
 import hudson.model.AsyncPeriodicWork;
@@ -48,7 +47,6 @@ import jenkins.util.Timer;
  * @author Kohsuke Kawaguchi
  * @since 1.124
  */
-@SuppressFBWarnings(value = "THROWS_METHOD_THROWS_CLAUSE_BASIC_EXCEPTION", justification = "TODO needs triage")
 public abstract class SafeTimerTask extends TimerTask {
 
     /**

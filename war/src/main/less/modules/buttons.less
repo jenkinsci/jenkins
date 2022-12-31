@@ -156,39 +156,20 @@
 .jenkins-buttons-row {
   display: flex;
   align-items: center;
-
-  .jenkins-button {
-    margin-left: 0 !important;
-    margin-right: 0.5rem !important;
-  }
-
-  .yui-button {
-    margin-left: 0 !important;
-    margin-right: 0.5rem !important;
-  }
-
-  .jenkins-table__button {
-    margin-left: 0 !important;
-    margin-right: 1.5rem !important;
-  }
+  gap: 1rem;
 
   &--invert {
     justify-content: flex-end;
+  }
 
+  &--equal-width {
     .jenkins-button {
-      margin-left: 0.5rem !important;
-      margin-right: 0 !important;
+      min-width: 5.625rem;
     }
+  }
 
-    .yui-button {
-      margin-left: 0.5rem !important;
-      margin-right: 0 !important;
-    }
-
-    .jenkins-table__button {
-      margin-left: 1.5rem !important;
-      margin-right: 0 !important;
-    }
+  &--equal-width {
+    min-width: 5.625rem;
   }
 }
 
@@ -261,5 +242,27 @@
 
   & > span {
     float: right;
+  }
+}
+
+.advanced-button {
+  svg {
+    width: 0.875rem;
+    height: 0.875rem;
+    transition: var(--standard-transition);
+  }
+
+  &:not([data-expanded="true"]) {
+    &:active {
+      svg {
+        translate: 0 0.125rem;
+      }
+    }
+  }
+
+  &[data-expanded="true"] {
+    svg {
+      rotate: 180deg;
+    }
   }
 }

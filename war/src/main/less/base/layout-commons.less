@@ -1,7 +1,6 @@
-@import "../abstracts/theme.less";
+@import url("../abstracts/theme.less");
 
 html {
-  position: relative;
   height: 100%;
   box-sizing: border-box;
 }
@@ -43,16 +42,23 @@ body {
   margin-left: 0.25rem;
 }
 
-#footer-container {
-  background-color: var(--breadcrumbs-bg);
-}
-
 /* -------------------------------------- */
 
-#page-body {
+.app-page-body {
   display: flex;
+  justify-content: flex-start;
   align-items: stretch;
   flex: 1 0 auto;
+}
+
+.app-page-body__sidebar {
+  @media (min-width: 970px) {
+    &--sticky {
+      position: sticky;
+      top: 44px;
+      align-self: flex-start;
+    }
+  }
 }
 
 #page-body.clear::after {
@@ -73,6 +79,10 @@ body {
 
 .app-page-body--one-column {
   --form-item-max-width: calc(85vw - 4rem);
+
+  @media screen and (max-width: 768px) {
+    --form-item-max-width: 100%;
+  }
 
   max-width: 85vw;
 

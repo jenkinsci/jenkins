@@ -27,7 +27,6 @@ package jenkins.security;
 import static org.springframework.security.core.context.SecurityContextHolder.getContext;
 import static org.springframework.security.core.context.SecurityContextHolder.setContext;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import jenkins.util.InterceptingExecutorService;
@@ -44,7 +43,6 @@ import org.springframework.security.core.context.SecurityContext;
  * @author Kohsuke Kawaguchi
  * @since 1.561
  */
-@SuppressFBWarnings(value = "THROWS_METHOD_THROWS_CLAUSE_BASIC_EXCEPTION", justification = "TODO needs triage")
 public class SecurityContextExecutorService extends InterceptingExecutorService {
 
     public SecurityContextExecutorService(ExecutorService service) {
