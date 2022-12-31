@@ -40,11 +40,11 @@ THE SOFTWARE.
   <j:set var="tableId" value="${h.generateId()}"/>
   <j:if test="${attrs.sensitive}">
     <div class="jenkins-!-margin-bottom-2">
-      <button class="app-all-hidden-reveal-all jenkins-button jenkins-button--transparent" data-table-id="${tableId}">
+      <button class="app-all-hidden-reveal-all jenkins-button jenkins-button--transparent jenkins-!-color-blue" data-table-id="${tableId}">
         <l:icon src="symbol-view"/>
         ${%revealAll}
       </button>
-      <button class="app-all-hidden-hide-all jenkins-hidden jenkins-button jenkins-button--transparent" data-table-id="${tableId}">
+      <button class="app-all-hidden-hide-all jenkins-hidden jenkins-button jenkins-button--transparent jenkins-!-color-blue" data-table-id="${tableId}">
         <l:icon src="symbol-view"/>
         ${%hideAll}
       </button>
