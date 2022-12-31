@@ -48,7 +48,7 @@
     //   return false;
     // }
 
-    if (btn.parentNode.parentNode.classList.contains("advanced-button")) {
+    if (btn.classList.contains("advanced-button")) {
       // don't consider 'advanced' buttons
       return false;
     }

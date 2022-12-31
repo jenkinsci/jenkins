@@ -30,6 +30,7 @@ THE SOFTWARE.
     <l:app-bar title="${title}" />
 
     <st:include page="sidepanel.jelly"/>
+    <l:breadcrumb title="${%title}" />
 
     <l:main-panel>
       <h2>${%Status}</h2>

@@ -159,7 +159,7 @@ public class DirectoryBrowserSupportTest {
         p.getBuildersList().add(new TestBuilder() {
             @Override
             public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
-                build.getWorkspace().child("\u6F22\u5B57.bin").touch(0); // Kanji
+                build.getWorkspace().child("漢字.bin").touch(0); // Kanji
                 return true;
             }
         }); // Kanji
