@@ -31,7 +31,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import jenkins.model.Jenkins;
 import jenkins.security.ApiTokenProperty;
-import jenkins.security.apitoken.ApiTokenTestHelper;
+import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
 import jenkins.util.FullDuplexHttpService;
 import jenkins.util.Timer;
 import org.apache.commons.io.FileUtils;
@@ -48,7 +48,6 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.LoggerRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.TestExtension;
-import org.jvnet.hudson.test.recipes.PresetData;
 import org.kohsuke.args4j.Option;
 
 public class CLIActionTest {
@@ -62,9 +61,10 @@ public class CLIActionTest {
     public LoggerRule logging = new LoggerRule();
 
     @Test
-    @PresetData(PresetData.DataSet.NO_ANONYMOUS_READACCESS)
     @Issue("SECURITY-192")
     public void serveCliActionToAnonymousUserWithoutPermissions() throws Exception {
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy());
         JenkinsRule.WebClient wc = j.createWebClient();
         // The behavior changed due to SECURITY-192. index page is no longer accessible to anonymous
         wc.assertFails("cli", HttpURLConnection.HTTP_FORBIDDEN);
@@ -79,7 +79,8 @@ public class CLIActionTest {
     @Issue({"JENKINS-12543", "JENKINS-41745"})
     @Test
     public void authentication() throws Exception {
-        ApiTokenTestHelper.enableLegacyBehavior();
+        ApiTokenPropertyConfiguration config = ApiTokenPropertyConfiguration.get();
+        config.setTokenGenerationOnCreationEnabled(true);
 
         logging.record(PlainCLIProtocol.class, Level.FINE);
         File jar = tmp.newFile("jenkins-cli.jar");
@@ -113,21 +114,18 @@ public class CLIActionTest {
         final Proc proc = launcher.launch().cmds(commands).stdout(System.out).stderr(System.err).start();
         if (!Functions.isWindows()) {
             // Try to get a thread dump of the client if it hangs.
-            Timer.get().schedule(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        if (proc.isAlive()) {
-                            Field procF = Proc.LocalProc.class.getDeclaredField("proc");
-                            procF.setAccessible(true);
-                            ProcessTree.OSProcess osp = ProcessTree.get().get((Process) procF.get(proc));
-                            if (osp != null) {
-                                launcher.launch().cmds("kill", "-QUIT", Integer.toString(osp.getPid())).stdout(System.out).stderr(System.err).join();
-                            }
+            Timer.get().schedule(() -> {
+                try {
+                    if (proc.isAlive()) {
+                        Field procF = Proc.LocalProc.class.getDeclaredField("proc");
+                        procF.setAccessible(true);
+                        ProcessTree.OSProcess osp = ProcessTree.get().get((Process) procF.get(proc));
+                        if (osp != null) {
+                            launcher.launch().cmds("kill", "-QUIT", Integer.toString(osp.getPid())).stdout(System.out).stderr(System.err).join();
                         }
-                    } catch (Exception x) {
-                        throw new AssertionError(x);
                     }
+                } catch (Exception x) {
+                    throw new AssertionError(x);
                 }
             }, 1, TimeUnit.MINUTES);
         }

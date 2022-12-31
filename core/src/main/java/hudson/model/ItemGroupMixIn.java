@@ -24,7 +24,7 @@
 
 package hudson.model;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Util;
 import hudson.XmlFile;
 import hudson.model.listeners.ItemListener;
@@ -62,7 +62,6 @@ import org.xml.sax.SAXException;
  * @author Kohsuke Kawaguchi
  * @see ViewGroupMixIn
  */
-@SuppressFBWarnings(value = "THROWS_METHOD_THROWS_CLAUSE_THROWABLE", justification = "TODO needs triage")
 public abstract class ItemGroupMixIn {
     /**
      * {@link ItemGroup} for which we are working.
@@ -267,7 +266,7 @@ public abstract class ItemGroupMixIn {
     public synchronized TopLevelItem createProjectFromXML(String name, InputStream xml) throws IOException {
         acl.checkPermission(Item.CREATE);
 
-        Jenkins.get().getProjectNamingStrategy().checkName(name);
+        Jenkins.get().getProjectNamingStrategy().checkName(parent.getFullName(), name);
         Items.verifyItemDoesNotAlreadyExist(parent, name, null);
         Jenkins.checkGoodName(name);
 
@@ -309,13 +308,14 @@ public abstract class ItemGroupMixIn {
         }
     }
 
-    public synchronized TopLevelItem createProject(TopLevelItemDescriptor type, String name, boolean notify)
+    @NonNull
+    public synchronized TopLevelItem createProject(@NonNull TopLevelItemDescriptor type, @NonNull String name, boolean notify)
             throws IOException {
         acl.checkPermission(Item.CREATE);
         type.checkApplicableIn(parent);
         acl.getACL().checkCreatePermission(parent, type);
 
-        Jenkins.get().getProjectNamingStrategy().checkName(name);
+        Jenkins.get().getProjectNamingStrategy().checkName(parent.getFullName(), name);
         Items.verifyItemDoesNotAlreadyExist(parent, name, null);
         Jenkins.checkGoodName(name);
 

@@ -24,6 +24,8 @@
 
 package hudson.model;
 
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -32,10 +34,8 @@ import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import java.util.Arrays;
 import java.util.TreeSet;
-import java.util.concurrent.TimeUnit;
 import jenkins.model.DirectlyModifiableTopLevelItemGroup;
 import net.sf.json.JSONObject;
-import org.awaitility.Awaitility;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -111,8 +111,8 @@ public class ViewDescriptorTest {
                         .getSomeProperty());
 
         //WHEN the users goes with "Edit View" on the configure page
-        JenkinsRule.WebClient webClient = r.createWebClient();
-        HtmlPage editViewPage = webClient.getPage(myListView, "configure");
+        JenkinsRule.WebClient client = r.createWebClient();
+        HtmlPage editViewPage = client.getPage(myListView, "configure");
 
         //THEN the invisible property is not displayed on page
         assertFalse("CustomInvisibleProperty should not be displayed on the View edition page UI.",
@@ -120,14 +120,11 @@ public class ViewDescriptorTest {
 
 
         HtmlForm editViewForm = editViewPage.getFormByName("viewConfig");
-        editViewForm.getTextAreaByName("description").type("This list view is awesome !");
+        editViewForm.getTextAreaByName("description").setText("This list view is awesome !");
         r.submit(editViewForm);
 
         //Check that the description is updated on view
-        Awaitility.waitAtMost(10, TimeUnit.SECONDS).until(() -> webClient.getPage(myListView)
-                                                                        .asNormalizedText()
-                                                                        .contains("This list view is awesome !"));
-
+        assertThat(client.getPage(myListView).asNormalizedText(), containsString("This list view is awesome !"));
 
         //AND THEN after View save, the invisible property is still persisted with the View.
         assertNotNull("The CustomInvisibleProperty should be persisted on the View.",

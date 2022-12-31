@@ -39,8 +39,6 @@ THE SOFTWARE.
   <url>https://github.com/jenkinsci/jenkins</url>
 
   <properties>
-    <staplerFork>true</staplerFork>
-    <hamcrest.version>2.2</hamcrest.version>
     <xmlunit.version>2.9.0</xmlunit.version>
     <!-- Filled in by jacoco-maven-plugin -->
     <jacocoSurefireArgs />
@@ -67,10 +65,6 @@ THE SOFTWARE.
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>remoting</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>antlr</groupId>
-      <artifactId>antlr</artifactId>
     </dependency>
     <dependency>
       <groupId>args4j</groupId>
@@ -169,10 +163,6 @@ THE SOFTWARE.
     <dependency>
       <groupId>commons-fileupload</groupId>
       <artifactId>commons-fileupload</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>commons-httpclient</groupId>
-      <artifactId>commons-httpclient</artifactId>
     </dependency>
     <dependency>
       <groupId>commons-io</groupId>
@@ -278,6 +268,10 @@ THE SOFTWARE.
     <dependency>
       <groupId>net.sf.kxml</groupId>
       <artifactId>kxml2</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.antlr</groupId>
+      <artifactId>antlr4-runtime</artifactId>
     </dependency>
     <dependency>
       <groupId>org.apache.ant</groupId>
@@ -477,9 +471,9 @@ THE SOFTWARE.
       <version>1.1.4c</version>
     </dependency>
     <dependency>
-      <groupId>javax.servlet</groupId>
-      <artifactId>javax.servlet-api</artifactId>
-      <version>3.1.0</version>
+      <groupId>jakarta.servlet</groupId>
+      <artifactId>jakarta.servlet-api</artifactId>
+      <version>4.0.4</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -500,14 +494,7 @@ THE SOFTWARE.
     </dependency-->
     <dependency>
       <groupId>org.hamcrest</groupId>
-      <artifactId>hamcrest</artifactId>
-      <version>${hamcrest.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.hamcrest</groupId>
-      <artifactId>hamcrest-library</artifactId>
-      <version>${hamcrest.version}</version>
+      <artifactId>hamcrest-core</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -536,7 +523,6 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-inline</artifactId>
-      <version>${mockito.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -573,7 +559,6 @@ THE SOFTWARE.
             <phase>generate-sources</phase>
             <configuration>
               <sources>
-                <source>${project.build.directory}/generated-sources/antlr</source>
                 <source>${project.build.directory}/generated-sources/localizer</source>
                 <source>${project.build.directory}/generated-sources/taglib-interface</source>
               </sources>
@@ -606,16 +591,6 @@ THE SOFTWARE.
         </executions>
       </plugin>
       <plugin>
-        <groupId>org.kohsuke.stapler</groupId>
-        <artifactId>maven-stapler-plugin</artifactId>
-        <!-- version specified in grandparent pom -->
-        <configuration>
-          <!-- the source code is big enough now that otherwise it fails with OutOfMemoryError -->
-          <fork>${staplerFork}</fork>
-          <maxmem>128m</maxmem>
-        </configuration>
-      </plugin>
-      <plugin>
         <groupId>org.jvnet.localizer</groupId>
         <artifactId>localizer-maven-plugin</artifactId>
         <!-- version specified in grandparent pom -->
@@ -644,29 +619,15 @@ THE SOFTWARE.
         </executions>
       </plugin>
       <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>antlr-maven-plugin</artifactId>
+        <groupId>org.antlr</groupId>
+        <artifactId>antlr4-maven-plugin</artifactId>
         <!-- version specified in grandparent pom -->
         <executions>
           <execution>
-            <id>cron</id>
+            <id>antlr</id>
             <goals>
-              <goal>generate</goal>
+              <goal>antlr4</goal>
             </goals>
-            <configuration>
-              <sourceDirectory>${basedir}/src/main/grammar</sourceDirectory>
-              <grammars>crontab.g</grammars>
-            </configuration>
-          </execution>
-          <execution>
-            <id>labelExpr</id>
-            <goals>
-              <goal>generate</goal>
-            </goals>
-            <configuration>
-              <sourceDirectory>${basedir}/src/main/grammar</sourceDirectory>
-              <grammars>labelExpr.g</grammars>
-            </configuration>
           </execution>
         </executions>
       </plugin>
@@ -703,7 +664,6 @@ THE SOFTWARE.
         <configuration>
           <!-- Make sure to keep the directives in test/pom.xml and war/pom.xml in sync with these. -->
           <argLine>@{jacocoSurefireArgs} --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.desktop/com.sun.beans.introspect=ALL-UNNAMED</argLine>
-          <forkCount>0.5C</forkCount>
           <reuseForks>false</reuseForks>
         </configuration>
       </plugin>
@@ -754,44 +714,6 @@ THE SOFTWARE.
       <activation>
         <activeByDefault>true</activeByDefault>
       </activation>
-    </profile>
-    <profile>
-      <id>release</id>
-      <build>
-        <plugins>
-          <plugin>
-            <!--
-              generate jelly taglib docs from src/main/resources.
-              this is necessary in addition to the <reporting> configuration
-              to get the results deployed.
-            -->
-            <groupId>org.kohsuke.stapler</groupId>
-            <artifactId>maven-stapler-plugin</artifactId>
-            <!-- version specified in grandparent pom -->
-            <executions>
-              <execution>
-                <goals>
-                  <goal>jelly-taglibdoc</goal>
-                </goals>
-                <configuration>
-                  <patterns>
-                    <pattern>/lib/.*</pattern>
-                  </patterns>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-    <profile>
-      <!-- Run SpotBugs for better error detection. Run as "mvn -Pspotbugs verify". -->
-      <!-- SpotBugs has been moved to the default build flow, but here we fail the build on errors-->
-      <id>spotbugs</id>
-      <properties>
-        <!-- In the default profile we always fail the build if there SpotBugs errors -->
-        <spotbugs.failOnError>true</spotbugs.failOnError>
-      </properties>
     </profile>
     <profile>
       <id>enable-jacoco</id>

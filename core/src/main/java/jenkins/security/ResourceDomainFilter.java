@@ -54,7 +54,7 @@ public class ResourceDomainFilter implements Filter {
 
     private static final Logger LOGGER = Logger.getLogger(ResourceDomainFilter.class.getName());
 
-    private static final Set<String> ALLOWED_PATHS = new HashSet<>(Arrays.asList("/" + ResourceDomainRootAction.URL, "/favicon.ico", "/robots.txt"));
+    private static final Set<String> ALLOWED_PATHS = new HashSet<>(Arrays.asList("/" + ResourceDomainRootAction.URL, "/favicon.ico", "/favicon.svg", "/robots.txt"));
     public static final String ERROR_RESPONSE = "Jenkins serves only static files on this domain.";
 
     @Initializer(after = InitMilestone.EXTENSIONS_AUGMENTED)

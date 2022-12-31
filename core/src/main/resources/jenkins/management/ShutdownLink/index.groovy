@@ -7,12 +7,6 @@ def l = namespace(lib.LayoutTagLib)
 def st = namespace("jelly:stapler")
 
 l.layout(norefresh: true, permission: app.MANAGE, title: my.displayName) {
-    l.side_panel {
-        l.tasks {
-            l.task(icon: "icon-up icon-md", href: rootURL + '/', title: _("Back to Dashboard"))
-            l.task(icon: "symbol-settings", href: "${rootURL}/manage", title: _("Manage Jenkins"))
-        }
-    }
     l.main_panel {
         h1 {
             text(Messages.ShutdownLink_DisplayName_prepare())
@@ -31,7 +25,8 @@ l.layout(norefresh: true, permission: app.MANAGE, title: my.displayName) {
             f.bottomButtonBar {
                 f.submit(value: _(app.isQuietingDown()
                         ? Messages.ShutdownLink_ShutDownReason_update()
-                        : Messages.ShutdownLink_DisplayName_prepare()))
+                        : Messages.ShutdownLink_DisplayName_prepare()),
+                        clazz: "jenkins-!-destructive-color")
             }
         }
 

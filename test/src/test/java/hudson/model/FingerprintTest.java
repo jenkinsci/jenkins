@@ -24,6 +24,7 @@
 
 package hudson.model;
 
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.notNullValue;
@@ -34,8 +35,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.Page;
@@ -192,13 +193,8 @@ public class FingerprintTest {
     public void shouldThrowIOExceptionWhenFileIsInvalid() throws Exception {
         XmlFile f = new XmlFile(new File(rule.jenkins.getRootDir(), "foo.xml"));
         f.write("Hello, world!");
-        try {
-            FileFingerprintStorage.load(f.getFile());
-        } catch (IOException ex) {
-            assertThat(ex.getMessage(), containsString("Unexpected Fingerprint type"));
-            return;
-        }
-        fail("Expected IOException");
+        IOException e = assertThrows(IOException.class, () -> FileFingerprintStorage.load(f.getFile()));
+        assertThat(e.getMessage(), containsString("Unexpected Fingerprint type"));
     }
 
     @Test
@@ -490,7 +486,7 @@ public class FingerprintTest {
         Fingerprint fp = getFingerprint(build, "test.txt");
         File sourceFile = new File(rule.jenkins.getRootDir(), "config.xml");
         File targetFile = new File(rule.jenkins.getRootDir(), "../cf3.xml");
-        Util.copyFile(sourceFile, targetFile);
+        Files.copy(sourceFile.toPath(), targetFile.toPath(), REPLACE_EXISTING);
         targetFile.deleteOnExit();
         String first = fp.getHashString().substring(0, 2);
         String second = fp.getHashString().substring(2, 4);
@@ -517,7 +513,7 @@ public class FingerprintTest {
         Fingerprint fp = getFingerprint(build, "test.txt");
         File sourceFile = new File(rule.jenkins.getRootDir(), "config.xml");
         File targetFile = new File(rule.jenkins.getRootDir(), "../cf4.xml");
-        Util.copyFile(sourceFile, targetFile);
+        Files.copy(sourceFile.toPath(), targetFile.toPath(), REPLACE_EXISTING);
         targetFile.deleteOnExit();
         String first = fp.getHashString().substring(0, 2);
         String second = fp.getHashString().substring(2, 4);

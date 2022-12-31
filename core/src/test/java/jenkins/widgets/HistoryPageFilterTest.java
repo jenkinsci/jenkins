@@ -43,6 +43,7 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import org.junit.Assert;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -497,13 +498,10 @@ public class HistoryPageFilterTest {
             return this;
         }
 
-        //TODO: Rewrite in functional style when Java 8 is available
         private List<ParameterValue> buildPropertiesMapToParameterValues(Map<String, String> buildParametersAsMap) {
-            List<ParameterValue> parameterValues = new ArrayList<>();
-            for (Map.Entry<String, String> parameter : buildParametersAsMap.entrySet()) {
-                parameterValues.add(new StringParameterValue(parameter.getKey(), parameter.getValue()));
-            }
-            return parameterValues;
+            return buildParametersAsMap.entrySet().stream()
+                    .map(parameter -> new StringParameterValue(parameter.getKey(), parameter.getValue()))
+                    .collect(Collectors.toList());
         }
 
         MockBuild withSensitiveBuildParameters(String paramName, String paramValue) {

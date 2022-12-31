@@ -171,7 +171,6 @@ import org.springframework.security.core.Authentication;
  * @see QueueTaskDispatcher
  */
 @ExportedBean
-@SuppressFBWarnings(value = "THROWS_METHOD_THROWS_CLAUSE_BASIC_EXCEPTION", justification = "TODO needs triage")
 public class Queue extends ResourceController implements Saveable {
 
     /**
@@ -2618,6 +2617,15 @@ public class Queue extends ResourceController implements Saveable {
 
         void setCauseOfBlockage(CauseOfBlockage causeOfBlockage) {
             this.causeOfBlockage = causeOfBlockage;
+        }
+
+        @Restricted(NoExternalUse.class)
+        public boolean isCauseOfBlockageNull() {
+            if (causeOfBlockage == null) {
+                return true;
+            } else {
+                return false;
+            }
         }
 
         @Override

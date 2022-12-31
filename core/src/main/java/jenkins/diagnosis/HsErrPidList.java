@@ -3,6 +3,7 @@ package jenkins.diagnosis;
 import hudson.Extension;
 import hudson.Functions;
 import hudson.Util;
+import hudson.diagnosis.Messages;
 import hudson.model.AdministrativeMonitor;
 import hudson.util.jna.Kernel32Utils;
 import java.io.BufferedReader;
@@ -84,7 +85,7 @@ public class HsErrPidList extends AdministrativeMonitor {
 
     @Override
     public String getDisplayName() {
-        return "JVM Crash Reports";
+        return Messages.HsErrPidList_DisplayName();
     }
 
     /**

@@ -74,7 +74,9 @@ THE SOFTWARE.
                 <j:set var="state" value="${p.enabled?'true':'false'}"/>
                 <tr>
                   <td>
-                    <st:out value="${p.shortName}"/>
+                    <a href="${p.url}" target="_blank" rel="noopener noreferrer">
+                      <st:out value="${p.displayName}"/>
+                    </a>
                   </td>
                   <td>
                     <st:out value="${p.version}"/>
