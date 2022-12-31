@@ -113,23 +113,22 @@ public class NodeTest {
         OfflineCause.UserCause cause;
 
         final User someone = User.getOrCreateByIdOrFullName("someone@somewhere.com");
-        ACL.impersonate2(someone.impersonate2());
-
-        computer.doToggleOffline("original message");
-        cause = (OfflineCause.UserCause) computer.getOfflineCause();
-        assertTrue(cause.toString(), cause.toString().matches("^.*?Disconnected by someone@somewhere.com : original message"));
-        assertEquals(someone, cause.getUser());
-
+        try (ACLContext ignored = ACL.as2(someone.impersonate2())) {
+            computer.doToggleOffline("original message");
+            cause = (OfflineCause.UserCause) computer.getOfflineCause();
+            assertTrue(cause.toString(), cause.toString().matches("^.*?Disconnected by someone@somewhere.com : original message"));
+            assertEquals(someone, cause.getUser());
+        }
         final User root = User.getOrCreateByIdOrFullName("root@localhost");
-        ACL.impersonate2(root.impersonate2());
+        try (ACLContext ignored = ACL.as2(root.impersonate2())) {
+            computer.doChangeOfflineCause("new message");
+            cause = (OfflineCause.UserCause) computer.getOfflineCause();
+            assertTrue(cause.toString(), cause.toString().matches("^.*?Disconnected by root@localhost : new message"));
+            assertEquals(root, cause.getUser());
 
-        computer.doChangeOfflineCause("new message");
-        cause = (OfflineCause.UserCause) computer.getOfflineCause();
-        assertTrue(cause.toString(), cause.toString().matches("^.*?Disconnected by root@localhost : new message"));
-        assertEquals(root, cause.getUser());
-
-        computer.doToggleOffline(null);
-        assertNull(computer.getOfflineCause());
+            computer.doToggleOffline(null);
+            assertNull(computer.getOfflineCause());
+        }
     }
 
     @Test
