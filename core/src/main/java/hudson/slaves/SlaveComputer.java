@@ -784,6 +784,7 @@ public class SlaveComputer extends Computer {
      * Inline editing of description
      */
     @RequirePOST
+    @Restricted(NoExternalUse.class)
     public synchronized void doSubmitDescription(StaplerResponse rsp, @QueryParameter String description) throws IOException {
         checkPermission(CONFIGURE);
 
