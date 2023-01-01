@@ -59,7 +59,7 @@ THE SOFTWARE.
           <j:forEach var="m" items="${monitors}">
             <j:if test="${m.columnCaption!=null}">
               <j:set var="tableWidth" value="${tableWidth+1}"/>
-              <th align="right" tooltip="${m.descriptor.timestampString}">${m.columnCaption}</th>
+              <th tooltip="${m.descriptor.timestampString}">${m.columnCaption}</th>
             </j:if>
           </j:forEach>
           <th class="jenkins-table__cell--tight" data-sort-disable="true" />
@@ -104,16 +104,16 @@ THE SOFTWARE.
       </j:forEach>
 
       <tr class="sortbottom">
-        <th />
-        <th>${%Data obtained}</th>
+        <td />
+        <td>${%Data obtained}</td>
         <j:forEach var="m" items="${monitors}">
           <j:if test="${m.columnCaption!=null}">
-            <th align="right">
+            <td>
               ${m.descriptor.timestampString}
-            </th>
+            </td>
           </j:if>
         </j:forEach>
-        <th />
+        <td />
       </tr>
       </tbody>
     </table>
