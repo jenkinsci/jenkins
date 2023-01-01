@@ -26,10 +26,10 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
   <j:choose>
     <j:when test="${data==null}">
-      <td align="right" data="-1">N/A</td>
+      <td data="-1">N/A</td>
     </j:when>
     <j:otherwise>
-      <td align="right" data="${data.freeSize}"><j:out value="${data.toHtml()}"/></td>
+      <td data="${data.freeSize}"><j:out value="${data.toHtml()}"/></td>
     </j:otherwise>
   </j:choose>
 </j:jelly>
