@@ -4080,7 +4080,7 @@ __metadata:
     prettier: 2.8.1
     sortablejs: 1.15.0
     style-loader: 3.3.1
-    stylelint: 14.16.0
+    stylelint: 14.16.1
     stylelint-checkstyle-reporter: 0.2.0
     stylelint-config-standard: 29.0.0
     tippy.js: ^6.3.7
@@ -6184,9 +6184,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"stylelint@npm:14.16.0":
-  version: 14.16.0
-  resolution: "stylelint@npm:14.16.0"
+"stylelint@npm:14.16.1":
+  version: 14.16.1
+  resolution: "stylelint@npm:14.16.1"
   dependencies:
     "@csstools/selector-specificity": ^2.0.2
     balanced-match: ^2.0.0
@@ -6228,7 +6228,7 @@ __metadata:
     write-file-atomic: ^4.0.2
   bin:
     stylelint: bin/stylelint.js
-  checksum: 3b8d003aa0756cd8101e06be08a621fe4a2627c962d5ee471a231e71132ea90468f34f12f7bf8ba1e6c9857f55ac2d5c1b63f7a6e5c4ed667b1826925e0fd267
+  checksum: bc24050415e3c357a76d8ca2799e74ce31f33c9158b4086462512b0191db5d6a161b81ef35b064039c6eacf98a5553e45fca4c5f21eb4d45e7f1d44b2d226e9b
   languageName: node
   linkType: hard
 
