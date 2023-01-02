@@ -38,11 +38,8 @@ THE SOFTWARE.
       <h1>
         <span class="icon-lg">
           <l:icon src="${it.icon}"/>
-        </span>
-        ${it.caption} ${%System Information}
-        <j:if test="${!empty(it.node.nodeDescription)}">
-          <span style="font-size:smaller">(${it.node.nodeDescription})</span>
-        </j:if>
+        </span>${it.caption}
+        ${%System Information}
       </h1>
 
       <j:choose>
