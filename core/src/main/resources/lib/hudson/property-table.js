@@ -12,11 +12,13 @@
       .querySelectorAll(".app-hidden-info-hide .jenkins-button")
       .forEach(function (elem) {
         elem.addEventListener("click", function () {
-          const selection = window.getSelection()
+          const selection = window.getSelection();
           // Don't hide value while it's being selected
-          if (selection === null || window.getSelection().type !== 'Range') {
+          if (selection === null || window.getSelection().type !== "Range") {
             elem.parentElement.classList.add("jenkins-hidden");
-            elem.parentElement.previousSibling.classList.remove("jenkins-hidden");
+            elem.parentElement.previousSibling.classList.remove(
+              "jenkins-hidden"
+            );
           }
         });
       });
