@@ -27,7 +27,7 @@ window.breadcrumbs = (function () {
     const badgeSpan =
       badge === null
         ? ""
-        : "<span class='yui-menu-badge'>" + badge.text + "</span>";
+        : `<span class="yui-menu-badge" tooltip="${badge.tooltip}">${badge.text}</span>`;
 
     if (iconXml != null) {
       return iconXml + displaynameSpan + badgeSpan;
@@ -163,6 +163,8 @@ window.breadcrumbs = (function () {
       menu.addItems(items);
       menu.render("breadcrumb-menu-target");
       menu.show();
+
+      Behaviour.applySubtree(menu.body);
     }
 
     // ignore the currently pending call
