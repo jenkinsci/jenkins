@@ -1,0 +1,11 @@
+.app-table-full-width-column {
+  width: 100%;
+}
+
+.app-hidden-info-hide > button {
+  text-align: left;
+}
+
+span.jenkins-\!-color-blue > svg {
+  vertical-align: text-top;
+}
