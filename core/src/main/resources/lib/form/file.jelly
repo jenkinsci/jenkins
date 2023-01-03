@@ -35,9 +35,10 @@ THE SOFTWARE.
     <st:attribute name="clazz">
       Additional CSS class(es) to add.
     </st:attribute>
-    <st:attribute name="name">
+    <st:attribute name="name"> <![CDATA[
       This becomes @name of the <input> tag.
       If @field is specified, this value is inferred from it.
+      ]]>
     </st:attribute>
     @since TODO
   </st:documentation>
