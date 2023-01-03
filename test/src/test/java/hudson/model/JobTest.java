@@ -58,7 +58,6 @@ import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -313,11 +312,7 @@ public class JobTest {
         j.buildAndAssertSuccess(p);
         j.buildAndAssertSuccess(p);
         assertEquals(6, p.getLastSuccessfulBuild().getNumber());
-        assertEquals(3, RunLoadCounter.assertMaxLoads(p, 1, new Callable<Integer>() {
-            @Override public Integer call() {
-                return p.getLastFailedBuild().getNumber();
-            }
-        }).intValue());
+        assertEquals(3, RunLoadCounter.assertMaxLoads(p, 1, () -> p.getLastFailedBuild().getNumber()).intValue());
     }
 
     @Issue("JENKINS-19764")

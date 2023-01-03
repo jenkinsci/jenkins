@@ -395,15 +395,12 @@ public class SearchTest {
 
         // Alice can't
         assertFalse("no permission", j.jenkins.getView("foo").hasPermission2(User.get("alice").impersonate2(), View.READ));
-        ACL.impersonate2(User.get("alice").impersonate2(), new Runnable() {
-            @Override
-            public void run() {
-                assertEquals("no visible views", 0, Jenkins.get().getViews().size());
+        ACL.impersonate2(User.get("alice").impersonate2(), () -> {
+            assertEquals("no visible views", 0, Jenkins.get().getViews().size());
 
-                List<SearchItem> results = new ArrayList<>();
-                j.jenkins.getSearchIndex().suggest("foo", results);
-                assertEquals("empty results list", Collections.emptyList(), results);
-            }
+            List<SearchItem> results1 = new ArrayList<>();
+            j.jenkins.getSearchIndex().suggest("foo", results1);
+            assertEquals("empty results list", Collections.emptyList(), results1);
         });
     }
 
