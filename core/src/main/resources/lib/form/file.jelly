@@ -23,18 +23,22 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:f="/lib/form">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:f="/lib/form"
+         xmlns:m="jelly:hudson.util.jelly.MorphTagLibrary">
   <st:documentation>
     Generates an input field <code>&lt;input type="file" ... /></code>
+    All unknown attributes are passed through to the field.
 
     <st:attribute name="field">
       Used for databinding.
     </st:attribute>
-    <st:attribute name="jsonAware">
-      Enable structured form submission.
+    <st:attribute name="clazz">
+      Additional CSS class(es) to add.
     </st:attribute>
-    <st:attribute name="accept">
-      Defines the file types the file input should accept. This string is a comma-separated list.
+    <st:attribute name="name"> <![CDATA[
+      This becomes @name of the <input> tag.
+      If @field is specified, this value is inferred from it.
+      ]]>
     </st:attribute>
     @since TODO
   </st:documentation>
@@ -42,10 +46,9 @@ THE SOFTWARE.
 
   <j:set var="name" value="${attrs.name ?: attrs.field}"/>
 
-  <input name="${name}"
-         type="file"
-         jsonAware="${attrs.jsonAware}"
-         class="jenkins-file-upload"
-         accept="${attrs.accept}"
+  <m:input name="${name}"
+           type="file"
+           class="jenkins-file-upload${attrs.clazz == null ? '' : ' ' +  attrs.clazz}"
+           ATTRIBUTES="${attrs}" EXCEPT="field clazz"
   />
 </j:jelly>
