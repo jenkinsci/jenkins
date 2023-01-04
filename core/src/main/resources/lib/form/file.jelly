@@ -40,6 +40,13 @@ THE SOFTWARE.
       If @field is specified, this value is inferred from it.
       ]]>
     </st:attribute>
+    <!-- the below fields are passed through using the morph tag library but defined here for documentation -->
+    <st:attribute name="jsonAware">
+      Enable structured form submission.
+    </st:attribute>
+    <st:attribute name="accept">
+      Defines the file types the file input should accept. This string is a comma-separated list.
+    </st:attribute>
     @since TODO
   </st:documentation>
   <f:prepareDatabinding />
