@@ -89,9 +89,10 @@ THE SOFTWARE.
                   <a href="${m.urlName}">
                     <div class="jenkins-section__item__icon" aria-hidden="true">
                       <l:icon src="${m.iconFileName}" class="icon" />
-                      <j:if test="${m.getUpdateCount() != null and m.getUpdateCount() != 0}">
-                        <div tooltip="${m.getUpdateCount() == 1 ? '%updateAvailable(m.getUpdateCount())' : '%updatesAvailable(m.getUpdateCount())'}" class="jenkins-section__item__icon__badge">
-                          ${m.getUpdateCount()}
+                      <j:set var="badge" value="${m.badge}"/>
+                      <j:if test="${badge != null}">
+                        <div tooltip="${badge.tooltip}" class="jenkins-section__item__icon__badge alert-${badge.severity}">
+                          ${badge.text}
                         </div>
                       </j:if>
                     </div>

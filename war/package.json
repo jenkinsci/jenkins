@@ -23,14 +23,14 @@
     "lint": "yarn lint:js && yarn lint:css"
   },
   "devDependencies": {
-    "@babel/cli": "7.19.3",
-    "@babel/core": "7.20.5",
+    "@babel/cli": "7.20.7",
+    "@babel/core": "7.20.7",
     "autoprefixer": "10.4.13",
     "clean-webpack-plugin": "4.0.0",
     "copy-webpack-plugin": "11.0.0",
     "css-loader": "6.7.3",
     "css-minimizer-webpack-plugin": "4.2.2",
-    "eslint": "8.29.0",
+    "eslint": "8.31.0",
     "eslint-config-prettier": "8.5.0",
     "handlebars": "4.7.7",
     "handlebars-loader": "1.7.3",
@@ -41,7 +41,7 @@
     "postcss-loader": "7.0.2",
     "prettier": "2.8.1",
     "style-loader": "3.3.1",
-    "stylelint": "14.16.0",
+    "stylelint": "14.16.1",
     "stylelint-config-standard": "29.0.0",
     "webpack": "5.75.0",
     "webpack-cli": "5.0.1",
@@ -53,7 +53,7 @@
     "bootstrap": "3.4.1",
     "hotkeys-js": "3.10.1",
     "jenkins-js-modules": "1.5.4",
-    "jquery": "3.6.2",
+    "jquery": "3.6.3",
     "lodash": "4.17.21",
     "postcss-less": "6.0.0",
     "sortablejs": "1.15.0",
@@ -65,5 +65,5 @@
     "defaults",
     "not IE 11"
   ],
-  "packageManager": "yarn@3.3.0"
+  "packageManager": "yarn@3.3.1"
 }
