@@ -389,7 +389,7 @@ public interface ModelObjectWithContextMenu extends ModelObject {
         }
 
         public MenuItem withDisplayName(String displayName) {
-            this.displayName = Util.escape(displayName);
+            this.displayName = displayName;
             return this;
         }
 
