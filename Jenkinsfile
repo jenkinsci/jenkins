@@ -12,7 +12,7 @@ properties([
   disableConcurrentBuilds(abortPrevious: true)
 ])
 
-def buildTypes = ['Linux', 'Windows']
+def buildTypes = ['Linux']
 def jdks = [11, 17, 19]
 
 def builds = [:]
