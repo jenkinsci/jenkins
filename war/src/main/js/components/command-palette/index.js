@@ -58,8 +58,8 @@ function init() {
         new LinkResult(
           Symbols.HELP,
           i18n.dataset.getHelp,
-          undefined,
-          "Help",
+          "https://www.jenkins.io/redirect/search-box",
+          true,
           document
             .getElementById("page-header")
             .dataset.searchHelpUrl.escapeHTML(),
