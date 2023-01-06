@@ -7,6 +7,10 @@ import makeKeyboardNavigable from "@/util/keyboard";
 const datasources = [JenkinsSearchSource];
 
 function init() {
+  if (window.isRunAsTest) {
+    return;
+  }
+
   const i18n = document.getElementById("command-palette-i18n");
   const headerCommandPaletteButton = document.getElementById(
     "button-open-command-palette"
