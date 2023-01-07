@@ -306,13 +306,6 @@ THE SOFTWARE.
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
-                  <!-- detached after 1.547 -->
-                  <groupId>org.jenkins-ci.plugins</groupId>
-                  <artifactId>windows-slaves</artifactId>
-                  <version>1.8.1</version>
-                  <type>hpi</type>
-                </artifactItem>
-                <artifactItem>
                   <!-- detached after 1.553 -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>antisamy-markup-formatter</artifactId>
