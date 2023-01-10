@@ -188,7 +188,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.apache.ant</groupId>
         <artifactId>ant</artifactId>
-        <version>1.10.12</version>
+        <version>1.10.13</version>
       </dependency>
       <dependency>
         <groupId>org.apache.commons</groupId>
