@@ -28,7 +28,7 @@ THE SOFTWARE.
     <st:include page="sidepanel.jelly" />
     <!-- no need for additional breadcrumb here as we're on an index page already including breadcrumb -->
     <l:main-panel>
-      <l:app-bar title="">
+      <l:app-bar title="${it.caption}">
         <!-- temporarily offline switch -->
         <j:choose>
           <j:when test="${it.temporarilyOffline}">
