@@ -87,27 +87,19 @@ THE SOFTWARE.
         <t:iconSize><t:rssBar/></t:iconSize>
       </div>
 
-      <div class="jenkins-job-cards jenkins-mobile-show">
+      <div class="jenkins-jobs-list jenkins-mobile-show">
         <j:forEach var="job" items="${jobs}">
           <j:set var="relativeLinkToJob" value="${h.getRelativeLinkTo(job)}"/>
-          <a class="jenkins-job-card" href="${jobBaseUrl}${job.shortUrl}">
-            <div class="jenkins-job-card__icons">
+          <a class="jenkins-jobs-list__item" href="${jobBaseUrl}${job.shortUrl}">
+            <div class="jenkins-jobs-list__item__icons">
               <t:ballColorTd it="${job.iconColor}" />
             </div>
-            <div class="jenkins-job-card__details">
-              <p class="jenkins-job-card__label">${job.displayName}</p>
+            <div class="jenkins-jobs-list__item__details">
+              <p class="jenkins-jobs-list__item__label">${job.displayName}</p>
               <j:set var="lastBuild" value="${job.lastBuild}"/>
               <j:if test="${lastBuild != null}">
-                <p class="jenkins-job-card__message">
-                  <j:set var="lastLog" value="${lastBuild.changeSets.0.logs.0}"/>
-                  <j:if test="${lastLog != null}">
-                    <l:icon src="symbol-commit" />
-                    '${lastLog.msg}' by ${lastLog.authorName}
-                  </j:if>
-                </p>
-                <p class="jenkins-job-card__description">
-                  ${%Built}
-                  <span data-update-timestamp="${lastBuild.timestamp.time}">${lastBuild.timestampString}</span>, took ${lastBuild.durationString}
+                <p class="jenkins-jobs-list__item__description">
+                  ${%Description(lastBuild.timestampString, lastBuild.durationString)}
                 </p>
               </j:if>
             </div>
