@@ -39,7 +39,7 @@
     "mini-css-extract-plugin": "2.7.2",
     "postcss": "8.4.21",
     "postcss-loader": "7.0.2",
-    "prettier": "2.8.1",
+    "prettier": "2.8.2",
     "style-loader": "3.3.1",
     "stylelint": "14.16.1",
     "stylelint-config-standard": "29.0.0",
