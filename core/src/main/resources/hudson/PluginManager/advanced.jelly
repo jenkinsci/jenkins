@@ -60,8 +60,8 @@ THE SOFTWARE.
                         <div style="margin-bottom: 1em;">
                             ${%deploytext}
                         </div>
-                        <f:entry title="${%File}">
-                            <input type="file" name="name" class="jenkins-input" accept=".hpi,.jpi"/>
+                        <f:entry title="${%File}" field="name">
+                            <f:file accept=".hpi,.jpi" />
                         </f:entry>
                         <p>${%Or}</p>
                         <f:entry title="${%URL}">

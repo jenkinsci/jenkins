@@ -30,6 +30,12 @@ module.exports = (env, argv) => ({
       path.join(__dirname, "src/main/js/config-tabbar.js"),
       path.join(__dirname, "src/main/js/config-tabbar.less"),
     ],
+    "pages/manage-jenkins/system-information": [
+      path.join(
+        __dirname,
+        "src/main/js/pages/manage-jenkins/system-information"
+      ),
+    ],
     app: [path.join(__dirname, "src/main/js/app.js")],
     "pages/manage-jenkins": [
       path.join(__dirname, "src/main/js/pages/manage-jenkins"),

@@ -30,11 +30,19 @@ THE SOFTWARE.
   <j:if test="${it.getPrimaryView() != null}">
     <j:set var="it" value="${it.getPrimaryView()}"/>
   </j:if>
+  <j:set var="submissionUrl" value="${request.getParameter('submissionUrl')}" defaultValue="submitDescription"/>
+  <j:invokeStatic className="hudson.Util" method="isSafeToRedirectTo" var="isSafeToRedirectTo">
+    <j:arg value="${submissionUrl}"/>
+  </j:invokeStatic>
+  <j:if test="${!isSafeToRedirectTo}">
+    <j:set var="submissionUrl" value="submitDescription"/>
+  </j:if>
+  <j:set var="initialDescription" value="${request.getParameter('description')}" defaultValue="${it.description}"/>
   <l:ajax>
-    <form action="submitDescription" method="post">
+    <form action="${submissionUrl}" method="post">
       <table>
         <f:entry help="${app.markupFormatter.helpUrl}">
-          <f:textarea name="description" value="${it.description}"
+          <f:textarea name="description" value="${initialDescription}"
                       codemirror-mode="${app.markupFormatter.codeMirrorMode}" codemirror-config="${app.markupFormatter.codeMirrorConfig}" previewEndpoint="/markupFormatter/previewDescription"/>
         </f:entry>
       </table>
