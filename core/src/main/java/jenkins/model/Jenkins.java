@@ -339,7 +339,6 @@ import org.xml.sax.InputSource;
  * @author Kohsuke Kawaguchi
  */
 @ExportedBean
-@SuppressFBWarnings(value = "THROWS_METHOD_THROWS_CLAUSE_BASIC_EXCEPTION", justification = "TODO needs triage")
 public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLevelItemGroup, StaplerProxy, StaplerFallback,
         ModifiableViewGroup, AccessControlled, DescriptorByNameOwner,
         ModelObjectWithContextMenu, ModelObjectWithChildren, OnMaster {
@@ -649,6 +648,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @since 2.16
      */
     @CheckForNull
+    @GuardedBy("this")
     private List<String> disabledAgentProtocols;
     /**
      * @deprecated Just a temporary buffer for XSTream migration code from JENKINS-39465, do not use
@@ -663,6 +663,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @since 2.16
      */
     @CheckForNull
+    @GuardedBy("this")
     private List<String> enabledAgentProtocols;
     /**
      * @deprecated Just a temporary buffer for XSTream migration code from JENKINS-39465, do not use
@@ -678,6 +679,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @see #setAgentProtocols(Set)
      * @see #getAgentProtocols()
      */
+    @GuardedBy("this")
     private transient Set<String> agentProtocols;
 
     /**
@@ -1065,16 +1067,18 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         if (SLAVE_AGENT_PORT_ENFORCE) {
             slaveAgentPort = getSlaveAgentPortInitialValue(slaveAgentPort);
         }
-        if (disabledAgentProtocols == null && _disabledAgentProtocols != null) {
-            disabledAgentProtocols = Arrays.asList(_disabledAgentProtocols);
-            _disabledAgentProtocols = null;
+        synchronized (this) {
+            if (disabledAgentProtocols == null && _disabledAgentProtocols != null) {
+                disabledAgentProtocols = Arrays.asList(_disabledAgentProtocols);
+                _disabledAgentProtocols = null;
+            }
+            if (enabledAgentProtocols == null && _enabledAgentProtocols != null) {
+                enabledAgentProtocols = Arrays.asList(_enabledAgentProtocols);
+                _enabledAgentProtocols = null;
+            }
+            // Invalidate the protocols cache after the reload
+            agentProtocols = null;
         }
-        if (enabledAgentProtocols == null && _enabledAgentProtocols != null) {
-            enabledAgentProtocols = Arrays.asList(_enabledAgentProtocols);
-            _enabledAgentProtocols = null;
-        }
-        // Invalidate the protocols cache after the reload
-        agentProtocols = null;
 
         // no longer persisted
         installStateName = null;
@@ -1246,9 +1250,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @return the enabled agent protocols.
      * @since 2.16
      */
-    public Set<String> getAgentProtocols() {
+    @NonNull
+    public synchronized Set<String> getAgentProtocols() {
         if (agentProtocols == null) {
-            // idempotent, so don't care if we do this concurrently, should all get same result
             Set<String> result = new TreeSet<>();
             Set<String> disabled = new TreeSet<>();
             for (String p : Util.fixNull(disabledAgentProtocols)) {
@@ -1265,7 +1269,14 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                     result.add(name);
                 }
             }
-            agentProtocols = result;
+            /*
+             * An empty result is almost never valid, but it can happen due to JENKINS-70206. Since we know the result
+             * is likely incorrect, at least decline to cache it so that a correct result can be computed later on
+             * rather than continuing to deliver the incorrect result indefinitely.
+             */
+            if (!result.isEmpty()) {
+                agentProtocols = result;
+            }
             return result;
         }
         return agentProtocols;
@@ -1277,7 +1288,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @param protocols the enabled agent protocols.
      * @since 2.16
      */
-    public void setAgentProtocols(Set<String> protocols) {
+    public synchronized void setAgentProtocols(@NonNull Set<String> protocols) {
         Set<String> disabled = new TreeSet<>();
         Set<String> enabled = new TreeSet<>();
         for (AgentProtocol p : AgentProtocol.all()) {
@@ -3141,12 +3152,14 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         return User.get(name, User.ALLOW_USER_CREATION_VIA_URL && hasPermission(ADMINISTER));
     }
 
-    public synchronized TopLevelItem createProject(TopLevelItemDescriptor type, String name) throws IOException {
+    @NonNull
+    public synchronized TopLevelItem createProject(@NonNull TopLevelItemDescriptor type, @NonNull String name) throws IOException {
         return createProject(type, name, true);
     }
 
+    @NonNull
     @Override
-    public synchronized TopLevelItem createProject(TopLevelItemDescriptor type, String name, boolean notify) throws IOException {
+    public synchronized TopLevelItem createProject(@NonNull TopLevelItemDescriptor type, @NonNull String name, boolean notify) throws IOException {
         return itemGroupMixIn.createProject(type, name, notify);
     }
 
@@ -3177,8 +3190,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @throws IllegalArgumentException
      *      if the project of the given name already exists.
      */
-    public synchronized <T extends TopLevelItem> T createProject(Class<T> type, String name) throws IOException {
-        return type.cast(createProject((TopLevelItemDescriptor) getDescriptor(type), name));
+    @NonNull
+    public synchronized <T extends TopLevelItem> T createProject(@NonNull Class<T> type, @NonNull String name) throws IOException {
+        return type.cast(createProject((TopLevelItemDescriptor) getDescriptorOrDie(type), name));
     }
 
     /**
