@@ -26,6 +26,7 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <l:layout title="${%People} - ${it.parent.viewName}">
     <st:include page="sidepanel.jelly" it="${it.parent}" />
+    <l:breadcrumb title="${%People}" />
     <t:setIconSize/>
     <l:main-panel>
       <div class="jenkins-app-bar">

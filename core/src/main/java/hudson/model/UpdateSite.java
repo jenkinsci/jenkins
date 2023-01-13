@@ -1598,7 +1598,7 @@ public class UpdateSite {
          *      See {@link UpdateCenter#isRestartRequiredForCompletion()}
          */
         public Future<UpdateCenterJob> deploy(boolean dynamicLoad) {
-            return deploy(dynamicLoad, null, null);
+            return deploy(dynamicLoad, null, null, false);
         }
 
         /**
@@ -1614,24 +1614,31 @@ public class UpdateSite {
          *      See {@link UpdateCenter#isRestartRequiredForCompletion()}
          * @param correlationId A correlation ID to be set on the job.
          * @param batch if defined, a list of plugins to add to, which will be started later
+         * @param hasEnabledDependents
+         *      If true, this plugin will be enabled if this plugin is disabled.
+         *      If false, this plugin will remain the current status.
          */
         @Restricted(NoExternalUse.class)
-        public Future<UpdateCenterJob> deploy(boolean dynamicLoad, @CheckForNull UUID correlationId, @CheckForNull List<PluginWrapper> batch) {
+        public Future<UpdateCenterJob> deploy(boolean dynamicLoad, @CheckForNull UUID correlationId, @CheckForNull List<PluginWrapper> batch, boolean hasEnabledDependents) {
             Jenkins.get().checkPermission(Jenkins.ADMINISTER);
             UpdateCenter uc = Jenkins.get().getUpdateCenter();
+            PluginWrapper pw = getInstalled();
             for (Plugin dep : getNeededDependencies()) {
                 UpdateCenter.InstallationJob job = uc.getJob(dep);
                 if (job == null || job.status instanceof UpdateCenter.DownloadJob.Failure) {
                     LOGGER.log(Level.INFO, "Adding dependent install of " + dep.name + " for plugin " + name);
-                    dep.deploy(dynamicLoad, /* UpdateCenterPluginInstallTest.test_installKnownPlugins specifically asks that these not be correlated */ null, batch);
+                    if (pw == null) {
+                        dep.deploy(dynamicLoad, /* UpdateCenterPluginInstallTest.test_installKnownPlugins specifically asks that these not be correlated */ null, batch, true);
+                    } else {
+                        dep.deploy(dynamicLoad, null, batch, pw.isEnabled());
+                    }
                 } else {
                     LOGGER.log(Level.FINE, "Dependent install of {0} for plugin {1} already added, skipping", new Object[] {dep.name, name});
                 }
             }
-            PluginWrapper pw = getInstalled();
             if (pw != null) { // JENKINS-34494 - check for this plugin being disabled
                 Future<UpdateCenterJob> enableJob = null;
-                if (!pw.isEnabled()) {
+                if (!pw.isEnabled() && hasEnabledDependents) {
                     UpdateCenter.EnableJob job = uc.new EnableJob(UpdateSite.this, null, this, dynamicLoad);
                     job.setCorrelationId(correlationId);
                     enableJob = uc.addJob(job);
