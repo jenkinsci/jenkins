@@ -68,8 +68,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ github.event.release.upload_url }}
-          assets: ${{ steps.fetch-war.outputs.file-name }}
+          files: ${{ steps.fetch-war.outputs.file-name }}
   debian:
     permissions:
       contents: write # to upload release asset (softprops/action-gh-release@v1)
@@ -103,8 +102,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ github.event.release.upload_url }}
-          assets: ${{ steps.fetch-deb.outputs.file-name }}
+          files: ${{ steps.fetch-deb.outputs.file-name }}
   redhat:
     permissions:
       contents: write # to upload release asset (softprops/action-gh-release@v1)
@@ -139,8 +137,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ github.event.release.upload_url }}
-          assets: ${{ steps.fetch-rpm.outputs.file-name }}
+          files: ${{ steps.fetch-rpm.outputs.file-name }}
   windows:
     permissions:
       contents: write # to upload release asset (softprops/action-gh-release@v1)
@@ -175,8 +172,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ github.event.release.upload_url }}
-          assets: ${{ steps.fetch-msi.outputs.file-name }}
+          files: ${{ steps.fetch-msi.outputs.file-name }}
   suse:
     permissions:
       contents: write # to upload release asset (softprops/action-gh-release@v1)
@@ -211,5 +207,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ github.event.release.upload_url }}
-          assets: ${{ steps.fetch-suse-rpm.outputs.file-name }}
+          files: ${{ steps.fetch-suse-rpm.outputs.file-name }}
