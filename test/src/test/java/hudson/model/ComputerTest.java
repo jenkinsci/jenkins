@@ -24,11 +24,16 @@
 
 package hudson.model;
 
+import static org.awaitility.Awaitility.await;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.any;
+import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.isA;
 import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -49,6 +54,8 @@ import java.io.File;
 import java.net.HttpURLConnection;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 import jenkins.model.Jenkins;
 import org.junit.Rule;
 import org.junit.Test;
@@ -56,6 +63,7 @@ import org.junit.experimental.categories.Category;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
+import org.jvnet.hudson.test.LoggerRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.MockFolder;
 import org.jvnet.hudson.test.SmokeTest;
@@ -65,6 +73,7 @@ import org.jvnet.hudson.test.recipes.LocalData;
 public class ComputerTest {
 
     @Rule public JenkinsRule j = new JenkinsRule();
+    @Rule public LoggerRule logging = new LoggerRule();
 
     @Test
     public void discardLogsAfterDeletion() throws Exception {
@@ -151,6 +160,18 @@ public class ComputerTest {
         FreeStyleProject p3 = f.createProject(FreeStyleProject.class, "project");
         p3.setAssignedLabel(l);
         assertThat(c.getTiedJobs(), containsInAnyOrder(p, p3));
+    }
+
+    @Test
+    public void exceptions() throws Exception {
+        logging.record("", Level.WARNING).capture(10);
+        boolean ok = false;
+        Computer.threadPoolForRemoting.submit(() -> {
+            if (!ok) {
+                throw new IllegalStateException("oops");
+            }
+        });
+        await().atMost(15, TimeUnit.SECONDS).until(() -> logging, LoggerRule.recorded(Level.WARNING, anyOf(nullValue(), any(String.class)), isA(IllegalStateException.class)));
     }
 
     @Issue("SECURITY-1923")
