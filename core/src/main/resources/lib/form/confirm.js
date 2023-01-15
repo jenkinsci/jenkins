@@ -75,7 +75,7 @@
     var name;
     for (let i = 0; i < buttons.length; i++) {
       var button = buttons[i];
-      name = button.parentNode.parentNode.getAttribute("name");
+      name = button.getAttribute("name");
       if (name == "Submit" || name == "Apply" || name == "OK") {
         $(button).on("click", function () {
           needToConfirm = false;
