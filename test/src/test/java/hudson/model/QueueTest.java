@@ -46,12 +46,10 @@ import static org.junit.Assert.assertTrue;
 
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.Page;
+import com.gargoylesoftware.htmlunit.ScriptResult;
 import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.html.DomElement;
 import com.gargoylesoftware.htmlunit.html.DomNode;
-import com.gargoylesoftware.htmlunit.html.DomNodeList;
-import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
-import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlFileInput;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlFormUtil;
@@ -268,7 +266,7 @@ public class QueueTest {
             }
         });
 
-        Future<FreeStyleBuild> b1 = p.scheduleBuild2(0);
+        FreeStyleBuild b1 = p.scheduleBuild2(0).waitForStart();
         assertNotNull(b1);
         seq.phase(1);   // and make sure we have one build under way
 
@@ -282,6 +280,10 @@ public class QueueTest {
         assertThat(items[0], instanceOf(BlockedItem.class));
 
         q.save();
+
+        assertTrue(q.cancel(items[0]));
+        seq.done();
+        r.assertBuildStatusSuccess(r.waitForCompletion(b1));
     }
 
     public static final class FileItemPersistenceTestServlet extends HttpServlet {
@@ -959,18 +961,15 @@ public class QueueTest {
         assertNotNull(item);
 
         final ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1);
-        executor.schedule(new Runnable() {
-            @Override
-            public void run() {
-                   try {
-                       Queue.getInstance().doCancelItem(item.getId());
-                   } catch (IOException e) {
-                       throw new UncheckedIOException(e);
-                   } catch (ServletException e) {
-                       throw new RuntimeException(e);
-                   }
-            }
-            }, 2, TimeUnit.SECONDS);
+        executor.schedule(() -> {
+               try {
+                   Queue.getInstance().doCancelItem(item.getId());
+               } catch (IOException e) {
+                   throw new UncheckedIOException(e);
+               } catch (ServletException e) {
+                   throw new RuntimeException(e);
+               }
+        }, 2, TimeUnit.SECONDS);
 
         assertThrows(CancellationException.class, f::waitForStart);
     }
@@ -1272,14 +1271,11 @@ public class QueueTest {
 
         HtmlPage page = wc.goTo("");
 
-        DomElement buildQueue = page.getElementById("buildQueue");
-        DomNodeList<HtmlElement> anchors = buildQueue.getElementsByTagName("a");
-        HtmlAnchor anchorWithTooltip = (HtmlAnchor) anchors.stream()
-                .filter(a -> a.getAttribute("tooltip") != null && !a.getAttribute("tooltip").isEmpty())
-                .findFirst().orElseThrow(IllegalStateException::new);
+        page.executeJavaScript("document.querySelector('#buildQueue a[tooltip]:not([tooltip=\"\"])')._tippy.show()");
+        wc.waitForBackgroundJavaScript(1000);
+        ScriptResult result = page.executeJavaScript("document.querySelector('.tippy-content').innerHTML;");
 
-        String tooltip = anchorWithTooltip.getAttribute("tooltip");
-        return tooltip;
+        return result.getJavaScriptResult().toString();
     }
 
     public static class BrokenAffinityKeyProject extends Project<BrokenAffinityKeyProject, BrokenAffinityKeyBuild> implements TopLevelItem {

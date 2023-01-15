@@ -28,6 +28,7 @@ THE SOFTWARE.
          xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <l:layout title="${it.fullDisplayName}">
     <st:include page="sidepanel.jelly"/>
+    <l:breadcrumb title="${%Confirm deletion}" />
     <l:main-panel>
       <j:set var="msg" value="${it.whyKeepLog}"/>
       <j:if test="${msg!=null}">

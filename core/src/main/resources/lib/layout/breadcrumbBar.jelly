@@ -47,7 +47,7 @@ THE SOFTWARE.
         <j:if test="${h.isModel(anc.object) and anc.prev.url!=anc.url}">
           <j:set var="mode" value="breadcrumbs" />
           <l:breadcrumb title="${anc.object == app ? '%Dashboard' : anc.object.displayName}"
-                        href="${contents.length() == 0 and (index == request.ancestors.size() - 1) ? null : anc.url + '/'}"
+                        href="${anc.url}/"
                         hasMenu="${h.isModelWithContextMenu(anc.object)}" />
           <j:choose>
             <j:when test="${h.isModelWithChildren(anc.object)}">

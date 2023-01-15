@@ -38,6 +38,7 @@ THE SOFTWARE.
   </st:documentation>
   <l:layout title="${%Updates} - ${%Plugin Manager}" permission="${app.SYSTEM_READ}">
     <st:include page="sidepanel.jelly"/>
+    <!-- no need for additional breadcrumb here as we're on an "index" page already including breadcrumb -->
 
     <l:main-panel>
       <l:app-bar title="${%Plugins}" />

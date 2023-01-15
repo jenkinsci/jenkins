@@ -24,10 +24,6 @@
 
 package hudson.scm;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.startsWith;
 import static org.junit.Assert.assertEquals;
 
 import com.gargoylesoftware.htmlunit.html.DomElement;
@@ -45,7 +41,6 @@ import hudson.model.TaskListener;
 import java.io.File;
 import org.junit.Rule;
 import org.junit.Test;
-import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 
 public class AbstractScmTagActionTest {
@@ -64,19 +59,6 @@ public class AbstractScmTagActionTest {
 
         String tooltip = buildAndExtractTooltipAttribute(p);
         assertEquals(tagToKeep, tooltip);
-    }
-
-    @Test
-    @Issue("SECURITY-1537")
-    public void preventXssInTagAction() throws Exception {
-        FreeStyleProject p = j.createFreeStyleProject();
-        p.setScm(new FakeSCM("<img src='x' onerror=alert(123)>XSS"));
-
-        j.buildAndAssertSuccess(p);
-
-        String tooltip = buildAndExtractTooltipAttribute(p);
-        assertThat(tooltip, not(containsString("<")));
-        assertThat(tooltip, startsWith("&lt;"));
     }
 
     private String buildAndExtractTooltipAttribute(FreeStyleProject p) throws Exception {

@@ -26,7 +26,9 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <l:layout title="${it.displayName}">
     <st:include page="sidepanel.jelly" />
+    <!-- no need for additional breadcrumb here as we're on an index page already including breadcrumb -->
     <l:main-panel>
+      <st:include page="index-top.jelly" it="${it}" />
 
       <!-- temporarily offline switch -->
       <div style="float:right">
@@ -51,16 +53,6 @@ THE SOFTWARE.
           </j:otherwise>
         </j:choose>
       </div>
-
-      <h1>
-        <span class="icon-lg">
-          <l:icon src="${it.iconClassName}" />
-        </span>
-        ${it.caption}
-        <j:if test="${!empty(it.node.nodeDescription)}">
-          <span style="font-size:smaller">(${it.node.nodeDescription})</span>
-        </j:if>
-      </h1>
 
       <j:if test="${it.offlineCause!=null and it.offline and !it.connecting}">
         <st:include it="${it.offlineCause}" page="cause.jelly" />
