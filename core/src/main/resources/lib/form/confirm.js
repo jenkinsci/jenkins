@@ -48,7 +48,7 @@
     //   return false;
     // }
 
-    if (btn.parentNode.parentNode.classList.contains("advanced-button")) {
+    if (btn.classList.contains("advanced-button")) {
       // don't consider 'advanced' buttons
       return false;
     }
@@ -75,7 +75,7 @@
     var name;
     for (let i = 0; i < buttons.length; i++) {
       var button = buttons[i];
-      name = button.parentNode.parentNode.getAttribute("name");
+      name = button.getAttribute("name");
       if (name == "Submit" || name == "Apply" || name == "OK") {
         $(button).on("click", function () {
           needToConfirm = false;
