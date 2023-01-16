@@ -30,6 +30,7 @@ THE SOFTWARE.
   <l:layout title="${%Manage Jenkins}" permissions="${app.MANAGE_AND_SYSTEM_READ}">
     <j:if test="${taskTags==null}">
       <st:include page="sidepanel.jelly" it="${app}" />
+      <!-- no need for additional breadcrumb here as we're on an index page already including breadcrumb -->
     </j:if>
 
     <l:main-panel>
