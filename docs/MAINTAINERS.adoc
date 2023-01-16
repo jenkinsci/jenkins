@@ -225,9 +225,9 @@ It is the responsibility of the assignee to steer the discussion towards concret
 Once any requested actions have been taken, the assignee should make every reasonable effort to provide explicit confirmation that each action item has been completed.
 This gives contributors positive reinforcement and confidence that their submission is moving forward through the process,
 ultimately making them more likely to complete the process and contribute again.
-If the assignee cannot provide such confirmation in a timely fashion,
-the assignee should consider whether it is appropriate to remain assigned to the pull request
-in light of the commitment to the contributor that such an assignment implies.
+Assignees who cannot provide such confirmation in a timely fashion are strongly encouraged to remove their assignment from the pull request in order to allow another core maintainer to pick it up.
+If the assignee cannot respond in a timely fashion, the author or another core maintainer may ask the current assignee about their intentions;
+in the absence of a timely response, another core maintainer may remove the assignment.
 
 ==== Negotiating scope
 
