@@ -32,19 +32,30 @@ THE SOFTWARE.
       If the current user doesn't have this permission, the description
       is not editable.
     </st:attribute>
+    <st:attribute name="description">
+      Optional value of the description. If not specified, will use '${it.description}'.
+    </st:attribute>
+    <st:attribute name="submissionUrl">
+      Optional submission URL. If not specified, will use 'submitDescription'.
+    </st:attribute>
   </st:documentation>
 
-  <div id="description">
+  <j:set var="actualDescription" value="${description}" defaultValue="${it.description}"/>
+
+  <div id="description" class="jenkins-!-margin-bottom-0">
     <div>
-      <j:out value="${it.description!=null ? app.markupFormatter.translate(it.description) : ''}" />
+      <j:out value="${actualDescription!=null ? app.markupFormatter.translate(actualDescription) : ''}" />
     </div>
 
     <l:hasPermission permission="${permission}">
       <div class="jenkins-buttons-row jenkins-buttons-row--invert">
-        <a class="jenkins-button jenkins-button--tertiary" id="description-link" href="editDescription" onclick="return replaceDescription();">
-          <l:icon src="symbol-edit" />
+        <st:adjunct includes="lib.hudson.editable-description"/>
+        <a class="jenkins-button jenkins-button--tertiary" id="description-link" href="editDescription" data-description="${actualDescription}" data-url="${submissionUrl}">
+          <span class="leading-icon">
+            <l:icon src="symbol-edit" />
+          </span>
           <j:choose>
-            <j:when test="${empty(it.description)}">
+            <j:when test="${empty(actualDescription)}">
               ${%add description}
             </j:when>
             <j:otherwise>

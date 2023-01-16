@@ -30,6 +30,7 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <l:layout permission="${app.primaryView.CREATE}">
     <st:include page="sidepanel.jelly" it="${it.user}"/>
+    <l:breadcrumb title="${%New view}" />
 
     <l:main-panel>
       <j:invokeStatic var="views" className="hudson.model.View" method="allInstantiable" />
