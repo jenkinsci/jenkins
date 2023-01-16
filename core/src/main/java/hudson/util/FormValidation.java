@@ -472,7 +472,7 @@ public abstract class FormValidation extends IOException implements HttpResponse
          *
          * @throws IOException if the URI scheme is not supported, the connection was interrupted,
          *     or the response was an error
-         * @since TODO
+         * @since 2.382
          */
         protected Stream<String> open(URI uri) throws IOException {
             HttpClient httpClient = ProxyConfiguration.newHttpClient();
@@ -520,7 +520,7 @@ public abstract class FormValidation extends IOException implements HttpResponse
          * Find the string literal from the given stream of lines.
          *
          * @return true if found, false otherwise
-         * @since TODO
+         * @since 2.382
          */
         protected boolean findText(Stream<String> in, String literal) {
             try (in) {

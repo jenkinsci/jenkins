@@ -635,7 +635,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     /**
      * Defines the location of the detached plugins in the WAR.
      * @return by default, {@code /WEB-INF/detached-plugins}
-     * @since TODO
+     * @since 2.377
      */
     protected @NonNull String getDetachedLocation() {
         return "/WEB-INF/detached-plugins";
