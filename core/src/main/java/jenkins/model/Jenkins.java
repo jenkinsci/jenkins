@@ -280,7 +280,6 @@ import jenkins.security.stapler.StaplerDispatchable;
 import jenkins.security.stapler.StaplerFilteredActionListener;
 import jenkins.security.stapler.TypedFilter;
 import jenkins.slaves.WorkspaceLocator;
-import jenkins.util.JenkinsIsSafeRestarting;
 import jenkins.util.JenkinsJVM;
 import jenkins.util.Listeners;
 import jenkins.util.SystemProperties;
@@ -4634,7 +4633,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                     doQuietDown2(true, 0, message, true);
                     // Make sure isQuietingDown is still true.
                     if (isQuietingDown()) {
-                        servletContext.setAttribute("app", new JenkinsIsSafeRestarting());
+                        servletContext.setAttribute("app", new HudsonIsRestarting(true));
                         // give some time for the browser to load the "reloading" page
                         lifecycle.onStatusUpdate("Restart in 10 seconds");
                         Thread.sleep(TimeUnit.SECONDS.toMillis(10));
