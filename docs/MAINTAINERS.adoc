@@ -207,9 +207,8 @@ To avoid making commitments on behalf of others that cannot be fulfilled,
 core maintainers should only assign pull requests to themselves and not to other core maintainers.
 An exception to the above would be if, following the adoption of this system, a pull request is brought to closure but remains unassigned.
 In that case, any core maintainer can retroactively assign the pull request to the core maintainer who closed it for tracking purposes.
-If a core maintainer does not regularly close pull requests,
-the maintainer should consider whether it is appropriate to remain on the core team
-in light of the responsibility to closing pull requests that such membership implies.
+In light of the responsibility to close pull requests implied by membership on the core team,
+all core maintainers are strongly encouraged to regularly close pull requests.
 
 ==== Providing actionable and justified feedback
 
