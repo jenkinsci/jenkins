@@ -59,11 +59,6 @@
                     {{{ this.adoptMe }}}
                 </div>
             {{/if}}
-            {{#if this.newerVersionAvailableNotOffered }}
-                <div class="alert alert-info">
-                    {{{ this.newerVersionAvailableNotOffered }}}
-                </div>
-            {{/if}}
         </td>
         {{#if this.releaseTimestamp }}
             <td style="width: 25%" data="{{ this.releaseTimestamp.iso8601 }}">

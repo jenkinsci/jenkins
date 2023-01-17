@@ -1506,9 +1506,6 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                         releaseTimestamp.put("displayValue", Messages.PluginManager_ago(Functions.getTimeSpanString(plugin.releaseTimestamp)));
                         jsonObject.put("releaseTimestamp", releaseTimestamp);
                     }
-                    if (hasLatestVersionNewerThanOffered(plugin)) {
-                        jsonObject.put("newerVersionAvailableNotOffered", Messages.PluginManager_newerVersionExists(plugin.latest, plugin.wiki));
-                    }
                     return jsonObject;
                 })
                 .collect(toList());
@@ -2590,14 +2587,6 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     @Restricted(DoNotUse.class) // Used from table.jelly
     public boolean hasAdoptThisPluginLabel(UpdateSite.Plugin plugin) {
         return plugin.hasCategory("adopt-this-plugin");
-    }
-
-    @Restricted(DoNotUse.class) // Used from table.jelly
-    public boolean hasLatestVersionNewerThanOffered(UpdateSite.Plugin plugin) {
-        if (plugin.latest == null) {
-            return false;
-        }
-        return !plugin.latest.equalsIgnoreCase(plugin.version); // we can assume that any defined 'latest' will be newer than the actual offered version
     }
 
     @Restricted(DoNotUse.class) // Used from table.jelly
