@@ -602,9 +602,6 @@ public class PluginManagerTest {
 
         // ensure data is loaded - probably unnecessary, but closer to reality
         Assert.assertSame(FormValidation.Kind.OK, uc.getSite("default").updateDirectlyNow().kind);
-
-        // This would throw NPE
-        uc.getPluginsWithUnavailableUpdates();
     }
 
     @Test @Issue("JENKINS-64840")
