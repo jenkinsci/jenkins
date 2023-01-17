@@ -2941,11 +2941,10 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     @Restricted(NoExternalUse.class)
     public boolean isPreparingSafeRestart() {
-        if (quietDownInfo == null) {
-            return false;
+        if (quietDownInfo != null) {
+            quietDownInfo.isSafeRestart();
         }
-        return quietDownInfo.isSafeRestart();
-
+        return false;
     }
 
     /**

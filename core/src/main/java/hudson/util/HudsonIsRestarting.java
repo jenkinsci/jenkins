@@ -42,12 +42,15 @@ import org.kohsuke.stapler.StaplerResponse;
  */
 public class HudsonIsRestarting {
     private boolean safeRestart;
+
     public HudsonIsRestarting(boolean safeRestart) {
         this.safeRestart = safeRestart;
     }
+
     public HudsonIsRestarting() {
         this.safeRestart = false;
     }
+
     public void doDynamic(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, InterruptedException {
         rsp.setStatus(SC_SERVICE_UNAVAILABLE);
         req.getView(this, "index.jelly").forward(req, rsp);
