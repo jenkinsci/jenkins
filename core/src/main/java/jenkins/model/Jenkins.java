@@ -4098,7 +4098,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      *
      * @param block Block until the system really quiets down and no builds are running
      * @param timeout If non-zero, only block up to the specified number of milliseconds
-     * @deprecated since 2.267; use {@link #doQuietDown2(boolean, int, String, boolean)} instead.
+     * @deprecated since 2.267; use {@link #doQuietDown(boolean, int, String, boolean)} instead.
      */
     @Deprecated
     public synchronized HttpRedirect doQuietDown(boolean block, int timeout) {
@@ -4115,14 +4115,14 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @param block Block until the system really quiets down and no builds are running
      * @param timeout If non-zero, only block up to the specified number of milliseconds
      * @param message Quiet reason that will be visible to user
-     * @deprecated since TODO; use {@link #doQuietDown2(boolean, int, String, boolean)} instead.
+     * @deprecated since TODO; use {@link #doQuietDown(boolean, int, String, boolean)} instead.
      */
     @Deprecated
-    public HttpRedirect doQuietDown(@QueryParameter boolean block,
-                                    @QueryParameter int timeout,
-                                    @QueryParameter @CheckForNull String message) throws InterruptedException, IOException {
+    public HttpRedirect doQuietDown(boolean block,
+                                    int timeout,
+                                    @CheckForNull String message) throws InterruptedException, IOException {
 
-        return doQuietDown2(block, timeout, message, false);
+        return doQuietDown(block, timeout, message, false);
     }
 
     /**
@@ -4135,7 +4135,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @since TODO
      */
     @RequirePOST
-    public HttpRedirect doQuietDown2(@QueryParameter boolean block,
+    public HttpRedirect doQuietDown(@QueryParameter boolean block,
                                     @QueryParameter int timeout,
                                     @QueryParameter @CheckForNull String message, @QueryParameter boolean safeRestart) throws InterruptedException, IOException {
         synchronized (this) {
@@ -4539,12 +4539,12 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      *
      * This first replaces "app" to {@link HudsonIsRestarting}
      *
-     * @deprecated since TODO; use {@link #doSafeRestart2(StaplerRequest, String)} instead.
+     * @deprecated since TODO; use {@link #doSafeRestart(StaplerRequest, String)} instead.
      *
      */
     @Deprecated
     public HttpResponse doSafeRestart(StaplerRequest req) throws IOException, ServletException, RestartNotSupportedException {
-        return doSafeRestart2(req, null);
+        return doSafeRestart(req, null);
     }
 
     /**
@@ -4555,7 +4555,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @since TODO
      */
     @CLIMethod(name = "safe-restart")
-    public HttpResponse doSafeRestart2(StaplerRequest req, @QueryParameter("message") String message) throws IOException, ServletException, RestartNotSupportedException {
+    public HttpResponse doSafeRestart(StaplerRequest req, @QueryParameter("message") String message) throws IOException, ServletException, RestartNotSupportedException {
         checkPermission(MANAGE);
         if (req != null && req.getMethod().equals("GET"))
             return HttpResponses.forwardToView(this, "_safeRestart.jelly");
@@ -4630,7 +4630,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 try (ACLContext ctx = ACL.as2(ACL.SYSTEM2)) {
 
                     // Wait 'til we have no active executors.
-                    doQuietDown2(true, 0, message, true);
+                    doQuietDown(true, 0, message, true);
                     // Make sure isQuietingDown is still true.
                     if (isQuietingDown()) {
                         servletContext.setAttribute("app", new HudsonIsRestarting(true));

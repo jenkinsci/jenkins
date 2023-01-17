@@ -53,7 +53,7 @@ public class HudsonIsRestarting {
         req.getView(this, "index.jelly").forward(req, rsp);
     }
 
-    public boolean isSafeRestart() {
+    public boolean getSafeRestart() {
         return safeRestart;
     }
 }
