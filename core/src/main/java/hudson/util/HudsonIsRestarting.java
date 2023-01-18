@@ -43,10 +43,14 @@ import org.kohsuke.stapler.StaplerResponse;
 public class HudsonIsRestarting {
     private boolean safeRestart;
 
+    /**
+     * @since TODO
+     */
     public HudsonIsRestarting(boolean safeRestart) {
         this.safeRestart = safeRestart;
     }
 
+    @Deprecated
     public HudsonIsRestarting() {
         this.safeRestart = false;
     }
@@ -56,6 +60,9 @@ public class HudsonIsRestarting {
         req.getView(this, "index.jelly").forward(req, rsp);
     }
 
+    /**
+     * @since TODO
+     */
     public boolean getSafeRestart() {
         return safeRestart;
     }

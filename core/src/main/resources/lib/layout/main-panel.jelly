@@ -50,7 +50,7 @@ THE SOFTWARE.
                 ${app.getQuietDownReason()}
               </j:when>
               <j:otherwise>
-                ${%The Jenkins Controller is going to shut down. No further jobs will be accepted.}
+                ${%The Jenkins Controller is going to shut down. No new builds can be started.}
               </j:otherwise>
             </j:choose>
           </div>
