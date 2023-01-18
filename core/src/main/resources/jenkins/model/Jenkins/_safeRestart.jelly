@@ -33,7 +33,7 @@ THE SOFTWARE.
 				<j:when test="${app.lifecycle.canRestart()}">
 					<form method="post" action="safeRestart">
 						<f:entry title="${%Restart Message}">
-						  <f:textbox name="message" value="${%The Jenkins Controller is restarting gently. Running jobs can continue. No new jobs are accepted.}"/>
+						  <f:textbox name="message" value="${%The Jenkins Controller is restarting safely. Running builds will finish or continue afterwards, depending on the job type. No new builds can be started.}"/>
 						</f:entry>
 						${%confirmRestart}
 						<f:bottomButtonBar>

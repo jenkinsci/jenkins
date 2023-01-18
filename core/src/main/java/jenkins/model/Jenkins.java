@@ -4534,9 +4534,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     /**
-     * Queues up a restart of Jenkins for when there are no builds running, if we can.
-     *
-     * This first replaces "app" to {@link HudsonIsRestarting}
+     * Queues up a safe restart of Jenkins. Jobs have to finish or pause before it can proceed. No new jobs are accepted.
      *
      * @deprecated since TODO; use {@link #doSafeRestart(StaplerRequest, String)} instead.
      *
@@ -4547,9 +4545,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     /**
-     * Queues up a restart of Jenkins for when there are no builds running, if we can.
-     *
-     * This first replaces "app" to {@link HudsonIsRestarting}
+     * Queues up a safe restart of Jenkins. Jobs have to finish or pause before it can proceed. No new jobs are accepted.
      *
      * @since TODO
      */
@@ -5827,6 +5823,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 this.safeRestart = safeRestart;
         }
 
+        @NonNull
         boolean isSafeRestart() {
             return safeRestart;
         }
