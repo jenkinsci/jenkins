@@ -254,6 +254,7 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
 import javax.crypto.SecretKey;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletContext;
@@ -2940,13 +2941,13 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @since TODO
      */
     @Restricted(NoExternalUse.class)
+    @NonNull
     public boolean isPreparingSafeRestart() {
         if (quietDownInfo != null) {
-            quietDownInfo.isSafeRestart();
+            return quietDownInfo.isSafeRestart();
         }
         return false;
     }
-
     /**
      * Returns quiet down reason if it was indicated.
      * @return
