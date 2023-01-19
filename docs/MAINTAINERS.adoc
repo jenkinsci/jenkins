@@ -56,7 +56,7 @@ GitHub team: link:https://github.com/orgs/jenkinsci/teams/core-pr-reviewers[@jen
 **Core Maintainers** get `Write` permissions in the repository, and hence they are able to merge pull requests.
 Their responsibility is to perform pull request reviews on a regular basis and to bring pull requests to closure,
 either by merging ready pull requests towards weekly releases (`master` branch)
-or by closing pull requests that are not ready for merge after an extended period of time.
+or by closing pull requests that are not ready for merge because of submitter inaction after an extended period of time.
 Core maintainers make a commitment to bringing a pull request to closure by becoming an **Assignee.**
 They are also responsible to monitor the weekly release status and to perform triage of critical issues.
 GitHub team: link:https://github.com/orgs/jenkinsci/teams/core[@jenkinsci/core].
@@ -91,7 +91,7 @@ to maintain a good quality of the codebase and documentation,
 to ensure there is a consensus between contributors,
 and to bring pull requests to closure in a timely fashion,
 either by merging ready pull requests towards weekly releases
-or by closing pull requests that are not ready for merge after an extended period of time.
+or by closing pull requests that are not ready for merge because of submitter inaction after an extended period of time.
 
 ==== Verifying Feasibility
 
