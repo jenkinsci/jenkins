@@ -196,7 +196,7 @@ As part of the process of bringing pull requests to closure,
 core maintainers are expected to steer discussions towards the identification of clear action items with reasoning
 and to explicitly reject with reasoning pull requests for which there are no clear and justified action items or for which such action items remain incomplete after an extended period of time.
 
-==== Indicating intent to close
+==== Indicating intent to merge or close
 
 Core maintainers communicate their intention to bring a pull request to closure by adding themselves to the pull request in the **Assignees** field,
 through which they make a commitment to work with the contributor to either merge the pull request or to explicitly reject it.
