@@ -80,7 +80,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 @StaplerAccessibleType
 public final class TcpSlaveAgentListener extends Thread {
 
-    private final ServerSocketChannel serverSocket;
+    private ServerSocketChannel serverSocket;
     private volatile boolean shuttingDown;
 
     public final int configuredPort;
@@ -91,21 +91,25 @@ public final class TcpSlaveAgentListener extends Thread {
      */
     public TcpSlaveAgentListener(int port) throws IOException {
         super("TCP agent listener port=" + port);
-        try {
-            serverSocket = ServerSocketChannel.open();
-            serverSocket.socket().bind(new InetSocketAddress(port));
-        } catch (BindException e) {
-            throw (BindException) new BindException("Failed to listen on port " + port + " because it's already in use.").initCause(e);
-        }
+        serverSocket = createSocket(port);
         this.configuredPort = port;
         setUncaughtExceptionHandler((t, e) -> {
             LOGGER.log(Level.SEVERE, "Uncaught exception in TcpSlaveAgentListener " + t, e);
             shutdown();
         });
-
         LOGGER.log(Level.FINE, "TCP agent listener started on port {0}", getPort());
-
         start();
+    }
+
+    private static ServerSocketChannel createSocket(int port) throws IOException {
+        ServerSocketChannel result;
+        try {
+            result = ServerSocketChannel.open();
+            result.socket().bind(new InetSocketAddress(port));
+        } catch (BindException e) {
+            throw (BindException) new BindException("Failed to listen on port " + port + " because it's already in use.").initCause(e);
+        }
+        return result;
     }
 
     /**
@@ -170,9 +174,9 @@ public final class TcpSlaveAgentListener extends Thread {
 
     @Override
     public void run() {
-        try {
-            // the loop eventually terminates when the socket is closed.
-            while (!shuttingDown) {
+        // the loop eventually terminates when the thread shuts down
+        while (!shuttingDown) {
+            try {
                 Socket s = serverSocket.accept().socket();
 
                 // this prevents a connection from silently terminated by the router in between or the other peer
@@ -183,10 +187,20 @@ public final class TcpSlaveAgentListener extends Thread {
                 s.setTcpNoDelay(true);
 
                 new ConnectionHandler(s).start();
-            }
-        } catch (IOException e) {
-            if (!shuttingDown) {
-                LOGGER.log(Level.SEVERE, "Failed to accept TCP connections", e);
+            } catch (Throwable e) {
+                if (!shuttingDown) {
+                    LOGGER.log(Level.SEVERE, "Failed to accept TCP connections", e);
+                    if (!serverSocket.isOpen()) {
+                        // Socket open, no need to restart it, just loop
+                        LOGGER.log(Level.INFO, "Restarting server socket");
+                        try {
+                            serverSocket = createSocket(configuredPort);
+                            LOGGER.log(Level.INFO, "TCP agent listener restarted on port {0}", getPort());
+                        } catch (IOException ioe) {
+                            LOGGER.log(Level.WARNING, "Failed to restart server socket", ioe);
+                        }
+                    }
+                }
             }
         }
     }
