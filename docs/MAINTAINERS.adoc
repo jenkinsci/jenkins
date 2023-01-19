@@ -283,8 +283,8 @@ first by applying the `stalled` label, then by applying the `proposed-for-closed
 This process should be undertaken with the utmost care and respect
 in order to ensure that the contributor feels welcome to contribute again.
 At minimum, the reasoning behind the rejection should be stated in objective and factual terms.
-If the pull request might be accepted again in the future once additional action item(s) have been completed,
-these should be stated to allow for the original author or a different author to complete the pull request.
+If the proposed change might be accepted again in the future once additional action item(s) have been completed,
+these should be stated to allow for the original author or a different author to complete the proposed change.
 Please be mindful that people are more likely to contribute again when they are thanked for their contribution.
 An example rejection message is as follows:
 
