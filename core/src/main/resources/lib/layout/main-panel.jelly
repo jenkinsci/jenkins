@@ -38,7 +38,7 @@ THE SOFTWARE.
                 ${app.getQuietDownReason()}
               </j:when>
               <j:otherwise>
-                ${%The Jenkins Controller is restarting safely. Running builds will finish or continue afterwards, depending on the job type. No new builds can be started.}
+                ${%saferestart}
               </j:otherwise>
             </j:choose>
           </div>
@@ -50,7 +50,7 @@ THE SOFTWARE.
                 ${app.getQuietDownReason()}
               </j:when>
               <j:otherwise>
-                ${%The Jenkins Controller is going to shut down. No new builds can be started.}
+                ${%shutdown}
               </j:otherwise>
             </j:choose>
           </div>
