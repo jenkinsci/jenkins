@@ -35,13 +35,13 @@ THE SOFTWARE.
 
       <l:hasPermission permission="${app.SYSTEM_READ}">
         <l:tabPane title="${%System Properties}">
-          <t:propertyTable items="${h.systemProperties}" />
+          <t:propertyTable items="${h.systemProperties}" sensitive="true" />
         </l:tabPane>
       </l:hasPermission>
 
       <l:hasPermission permission="${app.SYSTEM_READ}">
         <l:tabPane title="${%Environment Variables}">
-          <t:propertyTable items="${h.envVars}" />
+          <t:propertyTable items="${h.envVars}" sensitive="true" />
         </l:tabPane>
       </l:hasPermission>
 
