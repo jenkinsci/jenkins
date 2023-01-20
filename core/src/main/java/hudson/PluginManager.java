@@ -75,6 +75,7 @@ import java.lang.reflect.Method;
 import java.net.HttpURLConnection;
 import java.net.JarURLConnection;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -1949,30 +1950,58 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     @Restricted(NoExternalUse.class)
     @RequirePOST public FormValidation doCheckUpdateSiteUrl(StaplerRequest request, @QueryParameter String value) {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
-        if (StringUtils.isNotBlank(value)) {
+        return checkUpdateSiteURL(value);
+    }
+
+    @Restricted(DoNotUse.class) // visible for testing only
+    FormValidation checkUpdateSiteURL(@CheckForNull String value) {
+        value = Util.fixEmptyAndTrim(value);
+        if (StringUtils.isBlank(value)) {
+            return FormValidation.error(Messages.PluginManager_emptyUpdateSiteUrl());
+        }
+        final URI baseUri;
+        try {
+            baseUri = new URI(value);
+        } catch (URISyntaxException ex) {
+            return FormValidation.error(ex, Messages.PluginManager_invalidUrl());
+        }
+        if ("file".equalsIgnoreCase(baseUri.getScheme())) {
+            File f = new File(baseUri);
+            if (f.isFile()) {
+                return FormValidation.ok();
+            }
+            return FormValidation.error(Messages.PluginManager_connectionFailed());
+        }
+        if ("https".equalsIgnoreCase(baseUri.getScheme()) || "http".equalsIgnoreCase(baseUri.getScheme())) {
+            final URI uriWithQuery;
             try {
-                value += ((value.contains("?")) ? "&" : "?") + "version=" + Jenkins.VERSION + "&uctest";
-
-                URL url = new URL(value);
-
+                if (baseUri.getRawQuery() == null) {
+                    uriWithQuery = new URI(value + "?version=" + Jenkins.VERSION + "&uctest");
+                } else {
+                    uriWithQuery = new URI(value + "&version=" + Jenkins.VERSION + "&uctest");
+                }
+            } catch (URISyntaxException e) {
+                return FormValidation.error(e, Messages.PluginManager_invalidUrl());
+            }
+            try {
                 // Connect to the URL
-                HttpURLConnection conn = (HttpURLConnection) ProxyConfiguration.open(url);
+                HttpURLConnection conn = (HttpURLConnection) ProxyConfiguration.open(uriWithQuery.toURL());
                 conn.setRequestMethod("HEAD");
                 conn.setConnectTimeout(5000);
                 if (100 <= conn.getResponseCode() && conn.getResponseCode() <= 399) {
                     return FormValidation.ok();
                 } else {
                     LOGGER.log(Level.FINE, "Obtained a non OK ({0}) response from the update center",
-                            new Object[]{conn.getResponseCode(), url});
+                            new Object[]{conn.getResponseCode(), uriWithQuery});
                     return FormValidation.error(Messages.PluginManager_connectionFailed());
                 }
             } catch (IOException e) {
                 LOGGER.log(Level.FINE, "Failed to check update site", e);
                 return FormValidation.error(Messages.PluginManager_connectionFailed());
             }
-        } else {
-            return FormValidation.error(Messages.PluginManager_emptyUpdateSiteUrl());
         }
+        // not a file or http(s) scheme
+        return FormValidation.error(Messages.PluginManager_invalidUrl());
     }
 
     @Restricted(NoExternalUse.class)
