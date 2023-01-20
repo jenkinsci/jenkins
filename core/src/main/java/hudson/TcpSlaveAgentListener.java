@@ -191,7 +191,6 @@ public final class TcpSlaveAgentListener extends Thread {
                 if (!shuttingDown) {
                     LOGGER.log(Level.SEVERE, "Failed to accept TCP connections", e);
                     if (!serverSocket.isOpen()) {
-                        // Socket open, no need to restart it, just loop
                         LOGGER.log(Level.INFO, "Restarting server socket");
                         try {
                             serverSocket = createSocket(configuredPort);
