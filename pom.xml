@@ -88,7 +88,7 @@ THE SOFTWARE.
 
     <!-- Bundled Remoting version -->
     <!-- TODO https://github.com/jenkinsci/remoting/pull/621 -->
-    <remoting.version>3097.v2d296a_8a_a_013</remoting.version>
+    <remoting.version>3099.v6f431148cd72</remoting.version>
     <!-- Minimum Remoting version, which is tested for API compatibility -->
     <remoting.minimum.supported.version>4.7</remoting.minimum.supported.version>
 
