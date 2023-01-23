@@ -1992,7 +1992,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     return FormValidation.ok();
                 } else {
                     LOGGER.log(Level.FINE, "Obtained a non OK ({0}) response from the update center",
-                            new Object[]{conn.getResponseCode(), uriWithQuery});
+                            new Object[]{conn.getResponseCode(), baseUri});
                     return FormValidation.error(Messages.PluginManager_connectionFailed());
                 }
             } catch (IOException e) {
