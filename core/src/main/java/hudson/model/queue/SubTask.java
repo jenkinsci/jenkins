@@ -30,8 +30,7 @@ import hudson.model.AbstractProject;
 import hudson.model.Executor;
 import hudson.model.Label;
 import hudson.model.Node;
-import hudson.model.Queue.Executable;
-import hudson.model.Queue.Task;
+import hudson.model.Queue;
 import hudson.model.ResourceActivity;
 import java.io.IOException;
 
@@ -79,19 +78,30 @@ public interface SubTask extends ResourceActivity {
     }
 
     /**
-     * Creates {@link Executable}, which performs the actual execution of the task.
-     * @return {@link Executable} to be launched or null if the executable cannot be
+     * Creates an object which performs the actual execution of the task.
+     * @return executable to be launched or null if the executable cannot be
      * created (e.g. {@link AbstractProject} is disabled)
-     * @exception IOException {@link Executable} cannot be created
+     * @exception IOException executable cannot be created
      */
-    @CheckForNull Executable createExecutable() throws IOException;
+    @CheckForNull Queue.Executable createExecutable() throws IOException;
 
     /**
-     * Gets the {@link Task} that this subtask belongs to.
+     * Gets the task that this subtask belongs to.
      * @return by default, {@code this}
+     * @see #getOwnerExecutable
      */
-    default @NonNull Task getOwnerTask() {
-        return (Task) this;
+    default @NonNull Queue.Task getOwnerTask() {
+        return (Queue.Task) this;
+    }
+
+    /**
+     * If this task is associated with an executable of {@link #getOwnerTask}, finds that.
+     * @return by default, {@code null}
+     * @see hudson.model.Queue.Executable#getParentExecutable
+     * @since TODO
+     */
+    default @CheckForNull Queue.Executable getOwnerExecutable() {
+        return null;
     }
 
     /**
