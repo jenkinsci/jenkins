@@ -35,9 +35,9 @@ import hudson.model.ResourceActivity;
 import java.io.IOException;
 
 /**
- * A component of {@link Task} that represents a computation carried out by a single {@link Executor}.
+ * A component of {@link Queue.Task} that represents a computation carried out by a single {@link Executor}.
  *
- * A {@link Task} consists of a number of {@link SubTask}.
+ * A {@link Queue.Task} consists of a number of {@link SubTask}.
  *
  * <p>
  * Plugins are encouraged to extend from {@link AbstractSubTask}
@@ -105,7 +105,7 @@ public interface SubTask extends ResourceActivity {
     }
 
     /**
-     * If a subset of {@link SubTask}s of a {@link Task} needs to be collocated with other {@link SubTask}s,
+     * If a subset of {@link SubTask}s of a {@link Queue.Task} needs to be collocated with other {@link SubTask}s,
      * those {@link SubTask}s should return the equal object here. If null, the execution unit isn't under a
      * colocation constraint.
      * @return by default, null
