@@ -104,7 +104,7 @@ public class CLIActionTest {
     private static final String ADMIN = "admin@mycorp.com";
 
     private void assertExitCode(int code, boolean useApiToken, File jar, String... args) throws IOException, InterruptedException {
-        List<String> commands = new ArrayList<>(Arrays.asList("java", "-jar", jar.getAbsolutePath(), "-s", j.getURL().toString(), /* TODO until it is the default */ "-webSocket"));
+        List<String> commands = new ArrayList<>(Arrays.asList("java", "-jar", jar.getAbsolutePath(), "-s", j.getURL().toString()));
         if (useApiToken) {
             commands.add("-auth");
             commands.add(ADMIN + ":" + User.getOrCreateByIdOrFullName(ADMIN).getProperty(ApiTokenProperty.class).getApiToken());
@@ -140,7 +140,6 @@ public class CLIActionTest {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         assertEquals(0, new Launcher.LocalLauncher(StreamTaskListener.fromStderr()).launch().cmds(
             "java", "-Dfile.encoding=ISO-8859-2", "-Duser.language=cs", "-Duser.country=CZ", "-jar", jar.getAbsolutePath(),
-                "-webSocket", // TODO as above
                 "-s", j.getURL().toString()./* just checking */replaceFirst("/$", ""), "test-diagnostic").
             stdout(baos).stderr(System.err).join());
         assertEquals("encoding=ISO-8859-2 locale=cs_CZ", baos.toString(Charset.forName("ISO-8859-2")).trim());
@@ -160,7 +159,6 @@ public class CLIActionTest {
         PrintWriter pw = new PrintWriter(new OutputStreamWriter(new TeeOutputStream(pos, System.err), Charset.defaultCharset()), true);
         Proc proc = new Launcher.LocalLauncher(StreamTaskListener.fromStderr()).launch().cmds(
             "java", "-jar", jar.getAbsolutePath(), "-s", j.getURL().toString(),
-                "-webSocket", // TODO as above
                 "groovysh").
             stdout(new TeeOutputStream(baos, System.out)).stderr(System.err).stdin(pis).start();
         while (!baos.toString(Charset.defaultCharset()).contains("000")) { // cannot just search for, say, "groovy:000> " since there are ANSI escapes there (cf. StringEscapeUtils.escapeJava)
