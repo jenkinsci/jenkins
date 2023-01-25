@@ -758,6 +758,11 @@ public class Functions {
         return s.indexOf('\r') >= 0 || s.indexOf('\n') >= 0;
     }
 
+    /**
+     * Encodes a string into UTF-8 encoding
+     * Input example  1: !"£$%^&*()_+}{:@~?><|¬`,./;'#[]-=
+     * Output example 1: %20!"%C2%A3$%^&*()_+}{:@~?><|%C2%AC`,./;'#[]-=%20%20
+     */
     public static String encode(String s) {
         return Util.encode(s);
     }
@@ -766,6 +771,13 @@ public class Functions {
      * Shortcut function for calling {@link URLEncoder#encode(String,String)} (with UTF-8 encoding).<br>
      * Useful for encoding URL query parameters in jelly code (as in {@code "...?param=${h.urlEncode(something)}"}).<br>
      * For convenience in jelly code, it also accepts null parameter, and then returns an empty string.
+     *
+     * Input example  1: & " ' < >
+     * Output example 1: %26+%22+%27+%3C+%3E
+     * Input example  2: !"£$%^&*()_+}{:@~?><|¬`,./;'#[]-=
+     * Output example 2: %21%22%C2%A3%24%25%5E%26*%28%29_%2B%7D%7B%3A%40%7E%3F%3E%3C%7C%C2%AC%60%2C.%2F%3B%27%23%5B%5D-%3D++
+     * Note:
+     * - a blank space will render as + (You can see this in above examples)
      *
      * @since 2.200
      */
@@ -776,10 +788,27 @@ public class Functions {
         return URLEncoder.encode(s, StandardCharsets.UTF_8);
     }
 
+    /**
+     * Escapes HTML unsafe characters
+     * Input example  1: & " ' < >
+     * Output example 1: &amp; &quot; &#039; &lt; &gt;
+     * Input example  2: !"£$%^&*()_+}{:@~?><|¬`,./;'#[]-=
+     * Output example 2: !&quot;£$%^&amp;*()_+}{:@~?&gt;&lt;|¬`,./;&#039;#[]-=&nbsp;
+     * Notes:
+     * - 2 consecutive blank spaces will render as &nbsp; (which is a non-breaking space char)
+     * - This method will render an apostrophe as &#039;
+     */
     public static String escape(String s) {
         return Util.escape(s);
     }
 
+    /**
+     * Escapes XML unsafe characters
+     * Input example  1: < > &
+     * Output example 1: &lt; &gt; &amp;
+     * Input example  2: !"£$%^&*()_+}{:@~?><|¬`,./;'#[]-=
+     * Output example 2: !"£$%^&amp;*()_+}{:@~?&gt;&lt;|¬`,./;'#[]-=
+     */
     public static String xmlEscape(String s) {
         return Util.xmlEscape(s);
     }
@@ -788,6 +817,15 @@ public class Functions {
         return s.replace("&lt;", "<").replace("&gt;", ">").replace("&amp;", "&");
     }
 
+    /**
+     * Escapes HTML unsafe characters
+     * Input example  1: & " ' < >
+     * Output example 1: &amp; &quot; &#39; &lt; &gt;
+     * Input example  2: !"£$%^&*()_+}{:@~?><|¬`,./;'#[]-=
+     * Output example 2: !&quot;£$%^&amp;*()_+}{:@~?&gt;&lt;|¬`,./;&#39;#[]-=
+     * Note:
+     * - 2 consecutive blank spaces will not render any special chars
+     */
     public static String htmlAttributeEscape(String text) {
         StringBuilder buf = new StringBuilder(text.length() + 64);
         for (int i = 0; i < text.length(); i++) {
@@ -1569,6 +1607,11 @@ public class Functions {
         return Collections.emptyList();
     }
 
+    /**
+     * Escapes Javascript unsafe characters
+     * Input example : \ \\ ' "
+     * Output example: \\ \\\\ \' \"
+     */
     public static String jsStringEscape(String s) {
         if (s == null) return null;
         StringBuilder buf = new StringBuilder();
