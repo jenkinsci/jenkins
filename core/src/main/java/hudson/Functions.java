@@ -759,9 +759,12 @@ public class Functions {
     }
 
     /**
-     * Encodes a string into UTF-8 encoding
+     * Partially encodes a string into UTF-8 encoding. It uses the hudson.Util encode method to escape non-ASCII characters in URL.
      * Input example  1: !"£$%^&*()_+}{:@~?><|¬`,./;'#[]-=
      * Output example 1: %20!"%C2%A3$%^&*()_+}{:@~?><|%C2%AC`,./;'#[]-=%20%20
+     * Notes:
+     * - this methods only escapes non-ASCII but leaves other URL-unsafe characters, such as '#'
+     * - rawEncode(String) in the hudson.Util library should generally be used instead (do check the documentation for that method)
      */
     public static String encode(String s) {
         return Util.encode(s);
