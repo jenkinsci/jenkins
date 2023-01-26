@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2017 Red Hat, inc.
+Copyright (c) 2023, CloudBees Inc.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,22 +22,25 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<!-- This page have not existed historically so plugins might well not provide any views. -->
+<!--
+  2nd page in the "new cloud" page for displaying the entire configuration entries for the selected cloud type.
+-->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
-    <l:layout title="Cloud ${it.name}">
-        <st:include page="sidepanel.jelly" it="${it}"/>
-        <!-- no need for additional breadcrumb here as we're on an index page already including breadcrumb -->
-        <l:main-panel>
-            <h1>${%Cloud} ${it.name}</h1>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
+         xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <l:layout permission="${app.ADMINISTER}" type="one-column" title="${%New Cloud}">
+    <l:main-panel>
+      <f:form method="post" action="doCreateItem" name="config" class="jenkins-form">
+        <!-- main body of the configuration -->
+        <st:include it="${requestScope.instance}" page="config.jelly" />
+        
+        <f:bottomButtonBar>
+          <input type="hidden" name="type" value="${request.getParameter('mode')}"/>
 
-            <st:include page="top.jelly" optional="true"/>
-
-            <j:forEach var="action" items="${it.allActions}">
-                <st:include page="summary.jelly" from="${action}" optional="true" it="${action}" />
-            </j:forEach>
-
-            <st:include page="main.jelly" optional="true"/>
-        </l:main-panel>
-    </l:layout>
+          <f:submit value="${%Save}"/>
+        </f:bottomButtonBar>
+      </f:form>
+      <st:adjunct includes="lib.form.confirm" />
+    </l:main-panel>
+  </l:layout>
 </j:jelly>

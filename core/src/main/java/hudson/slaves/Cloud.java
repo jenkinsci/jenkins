@@ -46,13 +46,23 @@ import hudson.security.Permission;
 import hudson.security.PermissionScope;
 import hudson.slaves.NodeProvisioner.PlannedNode;
 import hudson.util.DescriptorList;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.concurrent.Future;
+import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
+import net.sf.json.JSONObject;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.HttpRedirect;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.interceptor.RequirePOST;
+import org.kohsuke.stapler.verb.POST;
 
 /**
  * Creates {@link Node}s to dynamically expand/shrink the agents attached to Hudson.
@@ -122,7 +132,7 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
      * @return Jenkins relative URL.
      */
     public @NonNull String getUrl() {
-        return "cloud/" + Util.rawEncode(name);
+        return "cloud/" + Util.rawEncode(name) + "/";
     }
 
     @Override
@@ -273,6 +283,62 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
         // PermissionGroup#register), there is nothing further to do in this method. We call
         // Objects.hash() to guard against potential future compiler optimizations.
         Objects.hash(PERMISSION_SCOPE, PROVISION);
+    }
+
+    @Exported
+    public String getIcon() {
+        return "symbol-cloud";
+    }
+
+    public String getIconClassName() {
+        return "symbol-cloud";
+    }
+
+    @SuppressWarnings("unused") // stapler
+    public String getIconAltText() {
+        return "[" + getClass().getSimpleName() + "]";
+    }
+
+    /**
+     * Deletes the cloud.
+     */
+    @RequirePOST
+    public HttpResponse doDoDelete() throws IOException {
+        checkPermission(Jenkins.ADMINISTER);
+        Jenkins.get().clouds.remove(this);
+        return new HttpRedirect("../..");
+    }
+
+    /**
+     * Accepts the update to the node configuration.
+     */
+    @POST
+    public void doConfigSubmit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, Descriptor.FormException {
+        checkPermission(Jenkins.ADMINISTER);
+
+        String proposedName = Util.fixEmptyAndTrim(req.getSubmittedForm().getString("name"));
+        Jenkins.checkGoodName(proposedName);
+
+        Cloud cloud = Jenkins.get().getCloud(name);
+        if (cloud == null) {
+            throw new ServletException("No such cloud " + name);
+        }
+
+        if (!proposedName.equals(name)
+                && Jenkins.get().getCloud(proposedName) != null) {
+            throw new Descriptor.FormException(jenkins.agents.Messages.CloudSet_CloudAlreadyExists(proposedName), "name");
+        }
+
+        Cloud result = cloud.reconfigure(req, req.getSubmittedForm());
+        Jenkins.get().clouds.replace(this, result);
+
+        // take the user back to the cloud top page.
+        rsp.sendRedirect2("../../" + result.getUrl());
+    }
+
+    public Cloud reconfigure(@NonNull final StaplerRequest req, JSONObject form) throws Descriptor.FormException {
+        if (form == null)     return null;
+        return getDescriptor().newInstance(req, form);
     }
 
     /**
