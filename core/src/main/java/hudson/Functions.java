@@ -760,9 +760,10 @@ public class Functions {
 
     /**
      * Partially encodes a string into UTF-8 encoding. It uses the hudson.Util encode method to escape non-ASCII characters in URL.
-     * Input example  1: !"£$%^&*()_+}{:@~?><|¬`,./;'#[]-=
-     * Output example 1: %20!"%C2%A3$%^&*()_+}{:@~?><|%C2%AC`,./;'#[]-=%20%20
+     * Input example  1: !"£$%^&*()_+}{:@~?><|¬`,./;'#[]-= 
+     * Output example 1: !"%C2%A3$%^&*()_+}{:@~?><|%C2%AC`,./;'#[]-=%20
      * Notes:
+     * - a blank space will render as %20
      * - this methods only escapes non-ASCII but leaves other URL-unsafe characters, such as '#'
      * - rawEncode(String) in the hudson.Util library should generally be used instead (do check the documentation for that method)
      */
