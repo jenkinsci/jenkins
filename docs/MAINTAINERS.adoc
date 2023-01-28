@@ -246,7 +246,7 @@ and would not be fair to the assignee if a large amount of additional work is ne
 A pull request can often serve as a catalyst for a discussion in which several possible paths forward are identified.
 When there is no clear consensus among the core maintainers about the path forward,
 the assignee should call for a vote.
-While only core maintainers have formally binding votes, any interested parties are generally encouraged to vote, even if their votes are merely advisory.
+While only core maintainers have formally binding votes, any interested parties are generally encouraged to vote, even if their votes are advisory.
 To avoid ambiguity, it is preferred that votes be done using https://www.apache.org/foundation/voting.html#expressing-votes-1-0-1-and-fractions[Apache conventions].
 A -1 vote by a core maintainer stops a pull request in its tracks.
 This constitutes a veto, and it can neither be overruled nor overridden under normal circumstances.
