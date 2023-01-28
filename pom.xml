@@ -97,7 +97,7 @@ THE SOFTWARE.
     <access-modifier.version>1.30</access-modifier.version>
     <antlr.version>4.11.1</antlr.version>
     <bridge-method-injector.version>1.25</bridge-method-injector.version>
-    <spotless.version>2.30.0</spotless.version>
+    <spotless.version>2.31.0</spotless.version>
     <winstone.version>6.7</winstone.version>
   </properties>
 
