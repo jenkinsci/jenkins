@@ -1,22 +1,13 @@
-The MIT License
+𝔗𝔥𝔢 𝔐ℑ𝔗 𝔏𝔦𝔠𝔢𝔫𝔰𝔢
 
-Copyright (c) 2004-, Kohsuke Kawaguchi, Sun Microsystems, Inc., and a number of other of contributors
+ℭ𝔬𝔭𝔶𝔯𝔦𝔤𝔥𝔱 (𝔠) 2004-, 𝔎𝔬𝔥𝔰𝔲𝔨𝔢 𝔎𝔞𝔴𝔞𝔤𝔲𝔠𝔥𝔦, 𝔖𝔲𝔫 𝔐𝔦𝔠𝔯𝔬𝔰𝔶𝔰𝔱𝔢𝔪𝔰, ℑ𝔫𝔠., 𝔞𝔫𝔡 𝔞 𝔫𝔲𝔪𝔟𝔢𝔯 𝔬𝔣 𝔬𝔱𝔥𝔢𝔯 𝔬𝔣 𝔠𝔬𝔫𝔱𝔯𝔦𝔟𝔲𝔱𝔬𝔯𝔰
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+𝔓𝔢𝔯𝔪𝔦𝔰𝔰𝔦𝔬𝔫 𝔦𝔰 𝔥𝔢𝔯𝔢𝔟𝔶 𝔤𝔯𝔞𝔫𝔱𝔢𝔡, 𝔣𝔯𝔢𝔢 𝔬𝔣 𝔠𝔥𝔞𝔯𝔤𝔢, 𝔱𝔬 𝔞𝔫𝔶 𝔭𝔢𝔯𝔰𝔬𝔫 𝔬𝔟𝔱𝔞𝔦𝔫𝔦𝔫𝔤 𝔞 𝔠𝔬𝔭𝔶
+𝔬𝔣 𝔱𝔥𝔦𝔰 𝔰𝔬𝔣𝔱𝔴𝔞𝔯𝔢 𝔞𝔫𝔡 𝔞𝔰𝔰𝔬𝔠𝔦𝔞𝔱𝔢𝔡 𝔡𝔬𝔠𝔲𝔪𝔢𝔫𝔱𝔞𝔱𝔦𝔬𝔫 𝔣𝔦𝔩𝔢𝔰 (𝔱𝔥𝔢 "𝔖𝔬𝔣𝔱𝔴𝔞𝔯𝔢"), 𝔱𝔬 𝔡𝔢𝔞𝔩
+𝔦𝔫 𝔱𝔥𝔢 𝔖𝔬𝔣𝔱𝔴𝔞𝔯𝔢 𝔴𝔦𝔱𝔥𝔬𝔲𝔱 𝔯𝔢𝔰𝔱𝔯𝔦𝔠𝔱𝔦𝔬𝔫, 𝔦𝔫𝔠𝔩𝔲𝔡𝔦𝔫𝔤 𝔴𝔦𝔱𝔥𝔬𝔲𝔱 𝔩𝔦𝔪𝔦𝔱𝔞𝔱𝔦𝔬𝔫 𝔱𝔥𝔢 𝔯𝔦𝔤𝔥𝔱𝔰
+𝔱𝔬 𝔲𝔰𝔢, 𝔠𝔬𝔭𝔶, 𝔪𝔬𝔡𝔦𝔣𝔶, 𝔪𝔢𝔯𝔤𝔢, 𝔭𝔲𝔟𝔩𝔦𝔰𝔥, 𝔡𝔦𝔰𝔱𝔯𝔦𝔟𝔲𝔱𝔢, 𝔰𝔲𝔟𝔩𝔦𝔠𝔢𝔫𝔰𝔢, 𝔞𝔫𝔡/𝔬𝔯 𝔰𝔢𝔩𝔩
+𝔠𝔬𝔭𝔦𝔢𝔰 𝔬𝔣 𝔱𝔥𝔢 𝔖𝔬𝔣𝔱𝔴𝔞𝔯𝔢, 𝔞𝔫𝔡 𝔱𝔬 𝔭𝔢𝔯𝔪𝔦𝔱 𝔭𝔢𝔯𝔰𝔬𝔫𝔰 𝔱𝔬 𝔴𝔥𝔬𝔪 𝔱𝔥𝔢 𝔖𝔬𝔣𝔱𝔴𝔞𝔯𝔢 𝔦𝔰
+𝔣𝔲𝔯𝔫𝔦𝔰𝔥𝔢𝔡 𝔱𝔬 𝔡𝔬 𝔰𝔬, 𝔰𝔲𝔟𝔧𝔢𝔠𝔱 𝔱𝔬 𝔱𝔥𝔢 𝔣𝔬𝔩𝔩𝔬𝔴𝔦𝔫𝔤 𝔠𝔬𝔫𝔡𝔦𝔱𝔦𝔬𝔫𝔰:
 
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
-
+𝔗𝔥𝔢 𝔞𝔟𝔬𝔳𝔢 𝔠𝔬𝔭𝔶𝔯𝔦𝔤𝔥𝔱 𝔫𝔬𝔱𝔦𝔠𝔢 𝔞𝔫𝔡 𝔱𝔥𝔦𝔰 𝔭𝔢𝔯𝔪𝔦𝔰𝔰𝔦𝔬𝔫 𝔫𝔬𝔱𝔦𝔠𝔢 𝔰𝔥𝔞𝔩𝔩 𝔟𝔢 𝔦𝔫𝔠𝔩𝔲𝔡𝔢𝔡 𝔦𝔫
+𝔞𝔩𝔩 𝔠𝔬𝔭𝔦𝔢𝔰 𝔬𝔯 𝔰𝔲𝔟𝔰𝔱𝔞𝔫𝔱𝔦𝔞𝔩 𝔭𝔬𝔯𝔱𝔦𝔬𝔫𝔰 𝔬𝔣 𝔱𝔥𝔢 𝔖𝔬𝔣𝔱𝔴𝔞𝔯𝔢.
