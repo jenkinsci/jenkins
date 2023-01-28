@@ -248,13 +248,13 @@ When there is no clear consensus among the core maintainers about the path forwa
 the assignee should call for a vote.
 While only core maintainers have formally binding votes, any interested parties are generally encouraged to vote, even if their votes are advisory.
 To avoid ambiguity, it is preferred that votes be done using https://www.apache.org/foundation/voting.html#expressing-votes-1-0-1-and-fractions[Apache conventions].
-A -1 vote by a core maintainer stops a pull request in its tracks.
-This constitutes a veto, and it can neither be overruled nor overridden under normal circumstances.
-Vetoes stand until and unless the core maintainer withdraws the veto.
-To ensure that vetoes are used prudently,
-the core maintainer must provide with the veto a technical justification showing why the change is bad
+Unlike in the Apache Software Foundation, a -1 vote is not a veto but rather a very strong objection.
+A -1 vote by a core maintainer stops a pull request in its tracks
+until and unless the core maintainer withdraws the -1 vote or is outvoted by other core maintainers.
+To ensure that -1 votes are used prudently,
+the core maintainer must provide with the -1 vote a technical justification showing why the change is bad
 (e.g., opens a security exposure, negatively affects performance, etc.).
-A veto without a justification is invalid and has no weight.
+A -1 vote without a justification is invalid and has no weight.
 
 ==== Acceptance [[acceptance]]
 
