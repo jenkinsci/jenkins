@@ -28,10 +28,15 @@ Behaviour.specify(
         parameters: { start: e.fetchedBytes },
         requestHeaders: headers,
         onComplete: function (rsp) {
-          if (rsp.status >= 500) {
+          if (rsp.status >= 500 || rsp.status === 0) {
             setTimeout(function () {
               fetchNext(e, href, onFinishEvent);
             }, 1000);
+            return;
+          }
+          if (rsp.status === 403) {
+            // likely an expired crumb
+            location.reload();
             return;
           }
           /* append text and do autoscroll if applicable */
