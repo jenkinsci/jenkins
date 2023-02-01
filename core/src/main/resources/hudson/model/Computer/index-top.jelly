@@ -1,11 +1,5 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:t="/lib/hudson">
-  <!-- Node name and status -->
-  <h1>
-    <l:icon src="${it.iconClassName}" class="icon-xlg" />
-    ${it.caption}
-  </h1>
-
   <!-- Node description -->
   <t:editableDescription permission="${it.CONFIGURE}" description="${it.node.nodeDescription}" submissionUrl="submitDescription" />
 </j:jelly>
