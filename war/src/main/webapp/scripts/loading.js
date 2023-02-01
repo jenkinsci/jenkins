@@ -65,4 +65,4 @@ function safeRedirector(preferredUrl, fallbackUrl) {
 }
 
 const rootUrl = document.head.getAttribute("data-rooturl");
-safeRedirector(window.location.href, rootUrl);
+safeRedirector(window.location.href, rootUrl + "/");
