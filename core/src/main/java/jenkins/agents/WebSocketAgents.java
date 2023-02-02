@@ -34,6 +34,7 @@ import hudson.model.UnprotectedRootAction;
 import hudson.remoting.AbstractByteBufferCommandTransport;
 import hudson.remoting.Capability;
 import hudson.remoting.ChannelBuilder;
+import hudson.remoting.ChunkHeader;
 import hudson.remoting.Engine;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -173,7 +174,7 @@ public final class WebSocketAgents extends InvisibleAction implements Unprotecte
             @Override
             protected void write(ByteBuffer headerAndData) throws IOException {
                 // As in Engine.runWebSocket:
-                LOGGER.finest(() -> "sending message of length " + (headerAndData.remaining() - 2));
+                LOGGER.finest(() -> "sending message of length " + (headerAndData.remaining() - ChunkHeader.SIZE));
                 try {
                     sendBinary(headerAndData).get(5, TimeUnit.MINUTES);
                 } catch (Exception x) {
