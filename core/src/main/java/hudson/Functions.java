@@ -759,7 +759,8 @@ public class Functions {
     }
 
     /**
-     * Partially encodes a string into UTF-8 encoding. It uses the {@link hudson.Util} encode method to escape non-ASCII characters in URL.
+     * Partially encodes a string into UTF-8 encoding. It uses {@link hudson.Util#encode} to escape
+     * non-ASCII characters in URL.
      * <pre>
      * Input example  1: !"£$%^&amp;*()_+}{:@~?&gt;&lt;|¬`,./;'#[]- =
      * Output example 1: !"%C2%A3$%^&amp;*()_+}{:@~?&gt;&lt;|%C2%AC`,./;'#[]-%20=
@@ -783,7 +784,7 @@ public class Functions {
      * Input example  1: &amp; " ' &lt; &gt;
      * Output example 1: %26+%22+%27+%3C+%3E
      * Input example  2: !"£$%^&amp;*()_+}{:@~?&gt;&lt;|¬`,./;'#[]-=
-     * Output example 2: %21%22%C2%A3%24%25%5E%26*%28%29_%2B%7D%7B%3A%40%7E%3F%3E%3C%7C%C2%AC%60%2C.%2F%3B%27%23%5B%5D-%3D++
+     * Output example 2: %21%22%C2%A3%24%25%5E%26*%28%29_%2B%7D%7B%3A%40%7E%3F%3E%3C%7C%C2%AC%60%2C.%2F%3B%27%23%5B%5D-%3D
      * </pre>
      * Note: A blank space will render as + (You can see this in above examples)
      *
@@ -797,18 +798,24 @@ public class Functions {
     }
 
     /**
-     * Escapes HTML unsafe characters
+     * Escapes HTML unsafe characters.
+     *<br/>
+     * The purpose of this method (originally) was to faithfully render a human-entered description.
+     * So newlines translate to line break tags, consecutive spaces are retained as nbsp, and we escape HTML special chars to not get markup.
      * <pre>
      * Input example  1: &amp; " ' &lt; &gt;
-     * Output example 1: &amp; &quot; &#039; &lt; &gt;
+     * Output example 1: &amp;amp; &amp;quot; &amp;#039; &amp;lt; &amp;gt;
      * Input example  2: !"£$%^&amp;*()_+}{:@~?&gt;&lt;|¬`,./;'#[]-=
-     * Output example 2: !&quot;£$%^&amp;*()_+}{:@~?&gt;&lt;|¬`,./;&#039;#[]-=&nbsp;
+     * Output example 2: !&amp;quot;£$%^&amp;amp;*()_+}{:@~?&amp;gt;&amp;lt;|¬`,./;&amp;#039;#[]-=
      * </pre>
      * Notes:
      * <ul>
-     * <li>2 consecutive blank spaces will render as &nbsp; (which is a non-breaking space char)</li>
-     * <li>This method will render an apostrophe as &#039;</li>
+     * <li>2 consecutive blank spaces will render as &amp;nbsp; (which is a non-breaking space char)</li>
+     * <li>This method will render an apostrophe as &amp;#039;</li>
+     * <li>A newline character \n will render as &lt;br&gt; HTML tag</li>
      * </ul>
+     * @see #xmlEscape
+     * @see hudson.Util#escape
      */
     public static String escape(String s) {
         return Util.escape(s);
@@ -818,10 +825,11 @@ public class Functions {
      * Escapes XML unsafe characters
      * <pre>
      * Input example  1: &lt; &gt; &amp;
-     * Output example 1: &lt; &gt; &amp;
+     * Output example 1: &amp;lt; &amp;gt; &amp;amp;
      * Input example  2: !"£$%^&amp;*()_+}{:@~?&gt;&lt;|¬`,./;'#[]-=
-     * Output example 2: !"£$%^&amp;*()_+}{:@~?&gt;&lt;|¬`,./;'#[]-=
+     * Output example 2: !"£$%^&amp;amp;*()_+}{:@~?&amp;gt;&amp;lt;|¬`,./;'#[]-=
      * </pre>
+     *  @see hudson.Util#xmlEscape
      */
     public static String xmlEscape(String s) {
         return Util.xmlEscape(s);
@@ -835,9 +843,9 @@ public class Functions {
      * Escapes HTML unsafe characters
      * <pre>
      * Input example  1: &amp; " ' &lt; &gt;
-     * Output example 1: &amp; &quot; &#39; &lt; &gt;
+     * Output example 1: &amp;amp; &amp;quot; &amp;#39; &amp;lt; &amp;gt;
      * Input example  2: !"£$%^&amp;*()_+}{:@~?&gt;&lt;|¬`,./;'#[]-=
-     * Output example 2: !&quot;£$%^&amp;*()_+}{:@~?&gt;&lt;|¬`,./;&#39;#[]-=
+     * Output example 2: !&amp;quot;£$%^&amp;amp;*()_+}{:@~?&amp;gt;&amp;lt;|¬`,./;&amp;#39;#[]-=
      * </pre>
      * Note: 2 consecutive blank spaces will not render any special chars.
      */
