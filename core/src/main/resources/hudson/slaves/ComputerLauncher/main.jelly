@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+Copyright (c) 2004-2023, Sun Microsystems, Inc., Kohsuke Kawaguchi, Jenkins project contributors
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -23,31 +23,13 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <j:if test="${it.launchSupported and it.offline and !it.temporarilyOffline}">
-    <j:choose>
-      <j:when test="${it.isConnecting()}">
-        <p>
-          ${%launchingDescription}
-          <j:if test="${it.hasPermission(it.CONFIGURE) or it.hasPermission(it.CONNECT)}">
-          <a href="log">${%See log for more details}</a>
-          </j:if>
-        </p>
-
-        <l:hasPermission permission="${it.CONNECT}">
-          <form method="post" action="launchSlaveAgent">
-            <f:submit value="${%Relaunch agent}" />
-          </form>
-        </l:hasPermission>
-      </j:when>
-
-      <j:otherwise>
-        <l:hasPermission permission="${it.CONNECT}">
-          <form method="post" action="launchSlaveAgent">
-            <f:submit value="${%Launch agent}" />
-          </form>
-        </l:hasPermission>
-      </j:otherwise>
-    </j:choose>
+<j:jelly xmlns:j="jelly:core">
+  <j:if test="${it.launchSupported and it.offline and !it.temporarilyOffline and it.isConnecting()}">
+    <p>
+      ${%launchingDescription}
+      <j:if test="${it.hasPermission(it.CONFIGURE) or it.hasPermission(it.CONNECT)}">
+        <a href="log">${%See log for more details}</a>
+      </j:if>
+    </p>
   </j:if>
 </j:jelly>
