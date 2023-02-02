@@ -2942,11 +2942,13 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     @Restricted(NoExternalUse.class)
     @NonNull
     public boolean isPreparingSafeRestart() {
+        QuietDownInfo quietDownInfo = this.quietDownInfo;
         if (quietDownInfo != null) {
             return quietDownInfo.isSafeRestart();
         }
         return false;
     }
+
     /**
      * Returns quiet down reason if it was indicated.
      * @return
@@ -5807,7 +5809,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         @CheckForNull
         final String message;
 
-        @NonNull
         private boolean safeRestart;
 
         QuietDownInfo() {
@@ -5823,7 +5824,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 this.safeRestart = safeRestart;
         }
 
-        @NonNull
+
         boolean isSafeRestart() {
             return safeRestart;
         }
