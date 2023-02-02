@@ -63,7 +63,7 @@ public class HudsonIsRestarting {
     /**
      * @since TODO
      */
-    public boolean getSafeRestart() {
+    public boolean isSafeRestart() {
         return safeRestart;
     }
 }

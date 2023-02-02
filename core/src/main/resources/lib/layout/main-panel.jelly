@@ -34,7 +34,7 @@ THE SOFTWARE.
         <j:when test="${app.isPreparingSafeRestart()}">
           <div id='safe-restart-msg'>
             <j:choose>
-              <j:when test="${app.getQuietDownReason() != null}">
+              <j:when test="${!app.getQuietDownReason().trim().isEmpty()}">
                 ${app.getQuietDownReason()}
               </j:when>
               <j:otherwise>
