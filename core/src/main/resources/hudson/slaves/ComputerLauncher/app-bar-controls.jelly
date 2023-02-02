@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+Copyright (c) 2023, Jenkins project contributors
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,23 +22,24 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<!--
-  "New agent" page.
-
-  The flow of this is:
-
-    new.jelly -> ComputerSet.doCreateItem -> _new2.jelly -> ComputerSet.doDoCreateItem
--->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
-  <j:getStatic var="createPermission" className="hudson.model.Computer" field="CREATE"/>
-  <l:layout title="${%New node}" permission="${createPermission}" type="one-column">
-    <st:include page="sidepanel.jelly" />
-    <l:breadcrumb title="${%New node}" />
-    <l:main-panel>
-      <j:invokeStatic var="slaves" className="hudson.slaves.NodeDescriptor" method="allInstantiable" />
-      <n:form title="${%New node}" nameTitle="${%Node name}" copyTitle="${%Copy Existing Node}" showCopyOption="${!empty(it._slaveNames)}"
-              descriptors="${slaves}" checkUrl="checkName" xmlns:n="/lib/hudson/newFromList" />
-    </l:main-panel>
-  </l:layout>
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:f="/lib/form">
+  <j:if test="${it.launchSupported and it.offline and !it.temporarilyOffline}">
+    <j:choose>
+      <j:when test="${it.isConnecting()}">
+        <l:hasPermission permission="${it.CONNECT}">
+          <form method="post" action="launchSlaveAgent">
+            <f:submit value="${%Relaunch agent}"/>
+          </form>
+        </l:hasPermission>
+      </j:when>
+      <j:otherwise>
+        <l:hasPermission permission="${it.CONNECT}">
+          <form method="post" action="launchSlaveAgent">
+            <f:submit value="${%Launch agent}"/>
+          </form>
+        </l:hasPermission>
+      </j:otherwise>
+    </j:choose>
+  </j:if>
 </j:jelly>

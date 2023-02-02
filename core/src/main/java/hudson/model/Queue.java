@@ -2077,10 +2077,14 @@ public class Queue extends ResourceController implements Saveable {
 
         /**
          * An umbrella executable (such as a {@link Run}) of which this is one part.
-         * If {@link #getParent} has a distinct {@link SubTask#getOwnerTask},
-         * then it should be the case that {@code getParentExecutable().getParent() == getParent().getOwnerTask()}.
+         * Some invariants:
+         * <ul>
+         * <li>{@code getParent().getOwnerTask() == getParent() || getParentExecutable().getParent() == getParent().getOwnerTask()}
+         * <li>{@code getParent().getOwnerExecutable() == null || getParentExecutable() == getParent().getOwnerExecutable()}
+         * </ul>
          * @return a <em>distinct</em> executable (never {@code this}, unlike the default of {@link SubTask#getOwnerTask}!); or null if this executable was already at top level
          * @since 2.313, but implementations can already implement this with a lower core dependency.
+         * @see SubTask#getOwnerExecutable
          */
         default @CheckForNull Executable getParentExecutable() {
             return null;
