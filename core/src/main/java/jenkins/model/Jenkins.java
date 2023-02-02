@@ -4114,9 +4114,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @param block Block until the system really quiets down and no builds are running
      * @param timeout If non-zero, only block up to the specified number of milliseconds
      * @param message Quiet reason that will be visible to user
-     * @deprecated since TODO; use {@link #doQuietDown(boolean, int, String, boolean)} instead.
+     * @deprecated use {@link #doQuietDown(boolean, int, String, boolean)} instead.
      */
-    @Deprecated
+    @Deprecated(since = "TODO")
     public HttpRedirect doQuietDown(boolean block,
                                     int timeout,
                                     @CheckForNull String message) throws InterruptedException, IOException {
@@ -4536,10 +4536,10 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * Queues up a safe restart of Jenkins. Jobs have to finish or pause before it can proceed. No new jobs are accepted.
      *
-     * @deprecated since TODO; use {@link #doSafeRestart(StaplerRequest, String)} instead.
+     * @deprecated use {@link #doSafeRestart(StaplerRequest, String)} instead.
      *
      */
-    @Deprecated
+    @Deprecated(since = "TODO")
     public HttpResponse doSafeRestart(StaplerRequest req) throws IOException, ServletException, RestartNotSupportedException {
         return doSafeRestart(req, null);
     }
@@ -4601,9 +4601,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     /**
      * Queues up a restart to be performed once there are no builds currently running.
-     * @deprecated since TODO; use {@link #safeRestart(String)} instead.
+     * @deprecated use {@link #safeRestart(String)} instead.
      */
-    @Deprecated
+    @Deprecated(since = "TODO")
     public void safeRestart() throws RestartNotSupportedException {
         safeRestart(null);
     }
