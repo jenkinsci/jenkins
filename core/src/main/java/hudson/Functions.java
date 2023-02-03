@@ -1621,7 +1621,8 @@ public class Functions {
     }
 
     /**
-     * Escapes Javascript unsafe characters
+     * Escape a string so variable values can be used in inline JavaScript in views.
+     * Note that inline JavaScript and especially passing variables is discouraged, see the documentation for alternatives.
      * <pre>
      * Input example : \ \\ ' "
      * Output example: \\ \\\\ \' \"
