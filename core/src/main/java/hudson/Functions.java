@@ -830,7 +830,7 @@ public class Functions {
     }
 
     /**
-     * Escapes HTML unsafe characters
+     * Escapes a string so it can be used in an HTML attribute value.
      * <pre>
      * Input example  1: &amp; " ' &lt; &gt;
      * Output example 1: &amp;amp; &amp;quot; &amp;#39; &amp;lt; &amp;gt;
