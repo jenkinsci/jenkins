@@ -759,8 +759,7 @@ public class Functions {
     }
 
     /**
-     * Partially encodes a string into UTF-8 encoding. It uses {@link hudson.Util#encode} to escape
-     * non-ASCII characters in URL.
+     * Percent-encodes space and non-ASCII UTF-8 characters for use in URLs.
      * <pre>
      * Input example  1: !"£$%^&amp;*()_+}{:@~?&gt;&lt;|¬`,./;'#[]- =
      * Output example 1: !"%C2%A3$%^&amp;*()_+}{:@~?&gt;&lt;|%C2%AC`,./;'#[]-%20=
