@@ -1626,6 +1626,7 @@ public class Functions {
      * Input example : \ \\ ' "
      * Output example: \\ \\\\ \' \"
      * </pre>
+     * @see <a href="https://www.jenkins.io/doc/developer/security/xss-prevention/#passing-values-to-javascript">Passing values to JavaScript</a>
      */
     public static String jsStringEscape(String s) {
         if (s == null) return null;
