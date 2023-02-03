@@ -804,12 +804,6 @@ public class Functions {
      * Input example  2: !"£$%^&amp;*()_+}{:@~?&gt;&lt;|¬`,./;'#[]-=
      * Output example 2: !&amp;quot;£$%^&amp;amp;*()_+}{:@~?&amp;gt;&amp;lt;|¬`,./;&amp;#039;#[]-=
      * </pre>
-     * Notes:
-     * <ul>
-     * <li>2 consecutive blank spaces will render as &amp;nbsp; (which is a non-breaking space char)</li>
-     * <li>This method will render an apostrophe as &amp;#039;</li>
-     * <li>A newline character \n will render as &lt;br&gt; HTML tag</li>
-     * </ul>
      * @see #xmlEscape
      * @see hudson.Util#escape
      */
