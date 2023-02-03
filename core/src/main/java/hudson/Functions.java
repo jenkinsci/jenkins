@@ -797,10 +797,7 @@ public class Functions {
     }
 
     /**
-     * Escapes HTML unsafe characters.
-     *<br/>
-     * The purpose of this method (originally) was to faithfully render a human-entered description.
-     * So newlines translate to line break tags, consecutive spaces are retained as nbsp, and we escape HTML special chars to not get markup.
+     * Transforms the input string so it renders as written in HTML output: newlines are converted to HTML line breaks, consecutive spaces are retained as {@code &amp;nbsp;}, and HTML metacharacters are escaped.
      * <pre>
      * Input example  1: &amp; " ' &lt; &gt;
      * Output example 1: &amp;amp; &amp;quot; &amp;#039; &amp;lt; &amp;gt;
