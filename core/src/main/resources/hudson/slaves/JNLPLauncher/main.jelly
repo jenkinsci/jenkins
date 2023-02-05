@@ -39,43 +39,27 @@ THE SOFTWARE.
                 <p>
                   ${%slaveAgent.cli.run}
                 </p>
-
                 <j:set var="copy_agent_jar" value="curl -sO ${jenkinsURL}jnlpJars/agent.jar" />
                 <j:set var="copy_java_cmd" value="java -jar agent.jar -jnlpUrl ${jenkinsURL}${it.url}jenkins-agent.jnlp ${it.launcher.getWorkDirOptions(it)}" />
-                
-                
-
-
-                
                 <pre>curl -sO ${jenkinsURL}jnlpJars/agent.jar      <l:copyButton message="text copied" text="${copy_agent_jar}" tooltip="Click to copy" />  
-
 java -jar <a href="${rootURL}/jnlpJars/agent.jar">agent.jar</a> -jnlpUrl ${jenkinsURL}${it.url}jenkins-agent.jnlp ${it.launcher.getWorkDirOptions(it)}  <l:copyButton message="text copied" text="${copy_java_cmd}" tooltip="Click to copy" />  </pre>
-               
-
-
             </j:when>
             <j:otherwise>
                 <p>
                   ${%slaveAgent.cli.run}
                 </p>
                 <!-- TODO conceal secret w/ JS if possible -->
-
-                
                 <j:set var="copy_java_cmd_secret" value="java -jar agent.jar -jnlpUrl ${jenkinsURL}${it.url}jenkins-agent.jnlp  -secret ${it.jnlpMac} ${it.launcher.getWorkDirOptions(it)}" />
                 <j:set var="copy_secret_to_file" value="echo ${it.jnlpMac} &gt; secret-file" />
                 <j:set var="copy_java_cmd_secret2" value="java -jar agent.jar -jnlpUrl ${jenkinsURL}${it.url}jenkins-agent.jnlp  -secret @secret-file ${it.launcher.getWorkDirOptions(it)}" />
-                
                 <pre>curl -sO ${jenkinsURL}jnlpJars/agent.jar        <l:copyButton message="text copied" text="${copy_agent_jar}" tooltip="Click to copy" />  
-java -jar <a href="${rootURL}/jnlpJars/agent.jar">agent.jar</a> -jnlpUrl ${jenkinsURL}${it.url}jenkins-agent.jnlp -secret ${it.jnlpMac} ${it.launcher.getWorkDirOptions(it)}    <l:copyButton message="text copied" text="${copy_java_cmd_secret}" tooltip="Click to copy" />  </pre>
-                
+java -jar <a href="${rootURL}/jnlpJars/agent.jar">agent.jar</a> -jnlpUrl ${jenkinsURL}${it.url}jenkins-agent.jnlp -secret ${it.jnlpMac} ${it.launcher.getWorkDirOptions(it)}    <l:copyButton message="text copied" text="${copy_java_cmd_secret}" tooltip="Click to copy" />  </pre> 
                 <p>
                   ${%slaveAgent.cli.run.secret}
                 </p>
-
                 <pre>echo ${it.jnlpMac} > secret-file.  <l:copyButton message="text copied" text="${copy_secret_to_file}" tooltip="Click to copy" />  copy_java_cmd_secret
 curl -sO ${jenkinsURL}jnlpJars/agent.jar                <l:copyButton message="text copied" text="${copy_agent_jar}" tooltip="Click to copy" /> 
 java -jar <a href="${rootURL}/jnlpJars/agent.jar">agent.jar</a> -jnlpUrl ${jenkinsURL}${it.url}jenkins-agent.jnlp -secret @secret-file ${it.launcher.getWorkDirOptions(it)}     <l:copyButton message="text copied" text="${copy_java_cmd_secret2}" tooltip="Click to copy" />  </pre>
-            
             </j:otherwise>
           </j:choose>
           <p>
