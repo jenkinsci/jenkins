@@ -46,12 +46,12 @@ THE SOFTWARE.
     <host>localhost</host>
     <!-- HTTP listener port -->
     <port>8080</port>
-    <node.version>18.13.0</node.version>
+    <node.version>18.14.0</node.version>
     <!-- frontend-maven-plugin will install this Yarn version as bootstrap, then hand over control to Yarn Berry. -->
     <yarn.version>1.22.19</yarn.version>
     <!-- maven-antrun-plugin will download this Yarn version. -->
-    <yarn-berry.version>3.3.1</yarn-berry.version>
-    <yarn-berry.sha256sum>1d2760eb5c0e525abe9c5306fac5fe0b5628c0955072a0da2f4043524497526a</yarn-berry.sha256sum>
+    <yarn-berry.version>3.4.1</yarn-berry.version>
+    <yarn-berry.sha256sum>b51208ae422260539b3503fe5b596f4f236947d69ed1f8797f9830331a38c841</yarn-berry.sha256sum>
   </properties>
 
   <dependencyManagement>
@@ -556,14 +556,14 @@ THE SOFTWARE.
                   <!-- dependency of mina-sshd-api-core -->
                   <groupId>io.jenkins.plugins.mina-sshd-api</groupId>
                   <artifactId>mina-sshd-api-common</artifactId>
-                  <version>2.9.1-44.v476733c11f82</version>
+                  <version>2.9.2-50.va_0e1f42659a_a</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <!-- dependency of sshd -->
                   <groupId>io.jenkins.plugins.mina-sshd-api</groupId>
                   <artifactId>mina-sshd-api-core</artifactId>
-                  <version>2.9.1-44.v476733c11f82</version>
+                  <version>2.9.2-50.va_0e1f42659a_a</version>
                   <type>hpi</type>
                 </artifactItem>
               </artifactItems>
