@@ -555,14 +555,14 @@ THE SOFTWARE.
                   <!-- dependency of mina-sshd-api-core -->
                   <groupId>io.jenkins.plugins.mina-sshd-api</groupId>
                   <artifactId>mina-sshd-api-common</artifactId>
-                  <version>2.9.1-44.v476733c11f82</version>
+                  <version>2.9.2-50.va_0e1f42659a_a</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <!-- dependency of sshd -->
                   <groupId>io.jenkins.plugins.mina-sshd-api</groupId>
                   <artifactId>mina-sshd-api-core</artifactId>
-                  <version>2.9.1-44.v476733c11f82</version>
+                  <version>2.9.2-50.va_0e1f42659a_a</version>
                   <type>hpi</type>
                 </artifactItem>
               </artifactItems>
