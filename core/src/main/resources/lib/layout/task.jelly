@@ -77,9 +77,17 @@ THE SOFTWARE.
       (onclick supersedes this except in the context menu.)
       (since 1.512)
     </st:attribute>
+    <st:attribute name="onclick" deprecated="true">
+      Onclick inline JS handler. Deprecated, use callbackElementId instead.
+    </st:attribute>
     <st:attribute name="confirmationMessage">
       Message to use for confirmation, if requested; defaults to title.
       (since 1.512)
+    </st:attribute>
+    <st:attribute name="callbackElementId">
+      This is the ID attribute of an HTML element that will be looked up to invoke a callback when clicked.
+      The HTML element is expected to have the attribute data-callback (a global function).
+      The global function will be invoked with the HTML element and event as arguments.
     </st:attribute>
   </st:documentation>
 
@@ -149,16 +157,6 @@ THE SOFTWARE.
               <l:icon src="${icon}" />
             </j:set>
             ${taskTags!=null and attrs.contextMenu!='false' ? taskTags.add(href, iconSrc, iconXml, title, post == 'true', requiresConfirmation == 'true') : null}
-            <j:set var="id" value="${h.generateId()}"/>
-            <j:if test="${attrs.onclick == null and post and not requiresConfirmation}">
-                <script>
-                    function postRequest_${id}(a) {
-                        new Ajax.Request(a.href);
-                        hoverNotification('${%Done.}', a.parentNode);
-                        return false;
-                    }
-                </script>
-            </j:if>
 
             <j:choose>
               <j:when test="${requiresConfirmation and not attrs.onClick}">
@@ -171,12 +169,13 @@ THE SOFTWARE.
               </j:when>
 
               <j:otherwise>
-                <a href="${href}" class="task-link ${isCurrent ? 'task-link--active' : ''}" onclick="${attrs.onclick ?: (post ? 'return postRequest_' + id + '(this)' : null)}">
+                <a href="${href}" class="task-link task-link-no-confirm ${isCurrent ? 'task-link--active' : ''}" data-success="${%Done.}" data-post="${attrs.post}" data-callback="${attrs.callbackElementId}" onclick="${attrs.onclick}">
                   <span class="task-icon-link">
                     <l:icon src="${icon}" />
                   </span>
                   <span class="task-link-text">${title}</span>
                 </a>
+                <st:adjunct includes="lib.layout.task.task" />
               </j:otherwise>
             </j:choose>
           </span>
