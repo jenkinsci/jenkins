@@ -98,7 +98,8 @@ THE SOFTWARE.
     <antlr.version>4.11.1</antlr.version>
     <bridge-method-injector.version>1.25</bridge-method-injector.version>
     <spotless.version>2.31.0</spotless.version>
-    <winstone.version>6.7</winstone.version>
+    <!-- Make sure to keep the jetty-maven-plugin version in war/pom.xml in sync with the Jetty release in Winstone: -->
+    <winstone.version>6.10</winstone.version>
   </properties>
 
   <!--
