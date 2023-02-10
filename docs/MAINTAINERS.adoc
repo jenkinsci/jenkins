@@ -165,6 +165,11 @@ without which end users would cease use of the delivered software.
 A pull request represents potential value for end users,
 value which is only realized when the pull request is merged and delivered in a shipping release.
 
+The same goes to maintenance pull requests that do not deliver immediate value to the users
+but improve the project's health and sustainability, for example
+developer documentation updates, code quality, project and test automation, etc.
+They also need to be merged, and it is in our best interest to do it rather sooner than later.
+
 [cols="1,1"]
 |===
 |Optimal Outcome|Suboptimal Outcome
