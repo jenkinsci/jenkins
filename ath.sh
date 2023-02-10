@@ -6,7 +6,7 @@ set -o xtrace
 cd "$(dirname "$0")"
 
 # https://github.com/jenkinsci/acceptance-test-harness/releases
-export ATH_VERSION=5478.vb_b_cd04943676
+export ATH_VERSION=5497.vca_4a_876045ce
 
 # TODO use Artifactory proxy?
 

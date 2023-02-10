@@ -74,7 +74,7 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.389</revision>
+    <revision>2.391</revision>
     <changelist>-SNAPSHOT</changelist>
 
     <!-- configuration for patch tracker plugin  -->
@@ -87,7 +87,7 @@ THE SOFTWARE.
     <changelog.url>https://www.jenkins.io/changelog</changelog.url>
 
     <!-- Bundled Remoting version -->
-    <remoting.version>3085.vc4c6977c075a</remoting.version>
+    <remoting.version>3107.v665000b_51092</remoting.version>
     <!-- Minimum Remoting version, which is tested for API compatibility -->
     <remoting.minimum.supported.version>4.7</remoting.minimum.supported.version>
 
@@ -98,7 +98,8 @@ THE SOFTWARE.
     <antlr.version>4.11.1</antlr.version>
     <bridge-method-injector.version>1.25</bridge-method-injector.version>
     <spotless.version>2.31.0</spotless.version>
-    <winstone.version>6.7</winstone.version>
+    <!-- Make sure to keep the jetty-maven-plugin version in war/pom.xml in sync with the Jetty release in Winstone: -->
+    <winstone.version>6.10</winstone.version>
   </properties>
 
   <!--
@@ -332,7 +333,7 @@ THE SOFTWARE.
             <dependency>
               <groupId>com.puppycrawl.tools</groupId>
               <artifactId>checkstyle</artifactId>
-              <version>10.6.0</version>
+              <version>10.7.0</version>
             </dependency>
           </dependencies>
           <executions>
