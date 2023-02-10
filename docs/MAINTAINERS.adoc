@@ -160,7 +160,8 @@ code reviewers are expected to suggest proper channels for contributors to discu
 
 ==== Motivation
 
-An obvious goal of the project is to deliver value to end users,
+An obvious goal of the project is to deliver value to end users
+(without incurring an undue maintenance burden),
 without which end users would cease use of the delivered software.
 A pull request represents potential value for end users,
 value which is only realized when the pull request is merged and delivered in a shipping release.
