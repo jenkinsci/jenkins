@@ -70,7 +70,7 @@ THE SOFTWARE.
 
   <issueManagement>
     <system>jira</system>
-    <url>https://issues.jenkins.io/browse/JENKINS/component/15593</url>
+    <url>https://issues.jenkins.io/issues/?jql=component=15593</url>
   </issueManagement>
 
   <properties>
