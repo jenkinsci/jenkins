@@ -239,7 +239,8 @@ Initial issue triage has the following objectives:
   Sometimes Jenkins Jira is used as a support portal.
   We do not want to encourage that.
   Jenkins Jira is an issue tracker, and we expect reporters to investigate issues on their side to an extent that they can be reviewed by maintainers.
-  For support requests, users are expected to use link:https://www.jenkins.io/mailing-lists[mailing lists],
+  For support requests, users are expected to use the link:https://community.jenkins.io/c/using-jenkins/support/8[community forum],
+  link:https://www.jenkins.io/mailing-lists[mailing lists],
   link:https://www.jenkins.io/chat/[chats] and other resources (e.g. Stackoverflow).
   It is fine to link users to link:https://github.com/jenkinsci/.github/blob/master/SUPPORT.md[this page]. 
 * **Resolve duplicates**.
