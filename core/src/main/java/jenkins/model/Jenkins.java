@@ -5250,10 +5250,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
         @Override
         public String getUrl() {
-            if (Jenkins.get().hasAnyPermission(Jenkins.MANAGE, Jenkins.SYSTEM_READ)) {
-                return "manage/computer/(built-in)/";
-            }
-
             return "computer/(built-in)/";
         }
 
