@@ -76,7 +76,7 @@ The Decision is made by a consensus in the mailing list or via voting at the lin
 
 Jenkins core is a mission-critical part of the ecosystem.
 We need to ensure that submitted pull requests are not only code complete,
-but also that they do not introduce undesired defects, breaking changes and technical debt.
+but also that they do not introduce undesired defects, breaking changes or technical debt.
 At the same time, we are interested to make the review process as simple as possible for contributors and maintainers.
 
 === Review goals
