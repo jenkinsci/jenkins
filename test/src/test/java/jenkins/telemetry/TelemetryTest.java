@@ -5,6 +5,8 @@ import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.empty;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -99,6 +101,55 @@ public class TelemetryTest {
                 .until(() -> types, hasItem("test-data"));
         //90ecf3ce1cd5ba1e5ad3cde7ad08a941e884f2e4d9bd463361715abab8efedc5
         assertThat(correlators, hasItem(DigestUtils.sha256Hex(correlationId + "test-data")));
+    }
+
+    @Test
+    public void testNonSubmissionOnError() throws Exception {
+        assertEquals("no requests received", 0, counter);
+        ExtensionList.lookupSingleton(Telemetry.TelemetryReporter.class).doRun();
+        await().pollInterval(250, TimeUnit.MILLISECONDS)
+                .atMost(10, TimeUnit.SECONDS)
+                .until(logger::getMessages, hasItem("Failed to build telemetry content for: 'throwing'"));
+        await().pollInterval(250, TimeUnit.MILLISECONDS)
+                .atMost(2, TimeUnit.SECONDS)
+                .until(logger::getMessages, hasItem("Skipping telemetry for 'throwing' as it has no data"));
+        await().pollInterval(250, TimeUnit.MILLISECONDS)
+                .atMost(10, TimeUnit.SECONDS)
+                .until(() -> types, is(not(empty())));
+        assertThat(types, not(contains("throwing")));
+    }
+
+    @TestExtension("testNonSubmissionOnError")
+    public static class ExceptionThrowingTelemetry extends Telemetry {
+
+        @NonNull
+        @Override
+        public String getDisplayName() {
+            return "throwing";
+        }
+
+        @NonNull
+        @Override
+        public String getId() {
+            return "throwing";
+        }
+
+        @NonNull
+        @Override
+        public LocalDate getStart() {
+            return LocalDate.MIN;
+        }
+
+        @NonNull
+        @Override
+        public LocalDate getEnd() {
+            return LocalDate.MAX;
+        }
+
+        @Override
+        public JSONObject createContent() {
+            throw new RuntimeException("something went wrong");
+        }
     }
 
     @TestExtension
