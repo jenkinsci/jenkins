@@ -27,10 +27,9 @@ package jenkins.cli;
 import hudson.Extension;
 import hudson.cli.CLICommand;
 import hudson.cli.Messages;
+import java.util.logging.Logger;
 import jenkins.model.Jenkins;
 import org.kohsuke.args4j.Option;
-
-import java.util.logging.Logger;
 
 /**
  * Safe Restart Jenkins - do not accept any new jobs and try to pause existing.
