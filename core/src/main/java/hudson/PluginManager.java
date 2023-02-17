@@ -1884,8 +1884,6 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             // first copy into a temporary file name
             File t = File.createTempFile("uploaded", ".jpi");
             t.deleteOnExit();
-            // TODO Remove this workaround after FILEUPLOAD-293 is resolved.
-            Files.delete(Util.fileToPath(t));
             try {
                 copier.copy(t);
             } catch (Exception e) {
