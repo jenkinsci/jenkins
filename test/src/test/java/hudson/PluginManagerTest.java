@@ -673,13 +673,13 @@ public class PluginManagerTest {
                 HttpRequest.newBuilder()
                         .uri(crumbIssuer)
                         .header("Accept", "application/json")
-                        .timeout(Duration.ofSeconds(5))
+                        .timeout(Duration.ofSeconds(7))
                         .GET()
                         .build();
         HttpClient clientGet =
                 HttpClient.newBuilder()
                         .cookieHandler(CookieHandler.getDefault())
-                        .connectTimeout(Duration.ofSeconds(3))
+                        .connectTimeout(Duration.ofSeconds(2))
                         .build();
         HttpResponse<String> responseGet = clientGet.send(httpGet, HttpResponse.BodyHandlers.ofString());
         assertEquals("Bad response for crumb issuer", 200, responseGet.statusCode());
@@ -695,7 +695,7 @@ public class PluginManagerTest {
         HttpRequest request =
                 HttpRequest.newBuilder()
                         .uri(installNecessaryPlugins)
-                        .timeout(Duration.ofSeconds(29))
+                        .timeout(Duration.ofSeconds(20))
                         .header("Content-Type", "application/xml")
                         .header(crumbRequestField, crumb)
                         .POST(HttpRequest.BodyPublishers.ofString(xmlRequest))
@@ -704,7 +704,7 @@ public class PluginManagerTest {
                 HttpClient.newBuilder()
                         .cookieHandler(CookieHandler.getDefault())
                         .followRedirects(HttpClient.Redirect.ALWAYS)
-                        .connectTimeout(Duration.ofSeconds(3))
+                        .connectTimeout(Duration.ofSeconds(2))
                         .build();
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
