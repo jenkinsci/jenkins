@@ -678,7 +678,6 @@ public class PluginManagerTest {
                         .build();
         HttpClient clientGet =
                 HttpClient.newBuilder()
-                        .version(HttpClient.Version.HTTP_1_1)
                         .cookieHandler(CookieHandler.getDefault())
                         .connectTimeout(Duration.ofSeconds(3))
                         .build();
@@ -703,7 +702,6 @@ public class PluginManagerTest {
                         .build();
         HttpClient client =
                 HttpClient.newBuilder()
-                        .version(HttpClient.Version.HTTP_1_1)
                         .cookieHandler(CookieHandler.getDefault())
                         .followRedirects(HttpClient.Redirect.ALWAYS)
                         .connectTimeout(Duration.ofSeconds(3))
