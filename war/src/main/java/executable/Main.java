@@ -28,12 +28,10 @@ package executable;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.PrintStream;
 import java.io.UncheckedIOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -52,12 +50,23 @@ import java.util.TreeSet;
 import java.util.UUID;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Launcher class for stand-alone execution of Jenkins as
  * {@code java -jar jenkins.war}.
+ *
+ * <p>On a high-level architectural note, this class is intended to be a very thin wrapper whose
+ * primary purpose is to extract Winstone and delegate to Winstone's own initialization mechanism.
+ * The logic in this class should only perform Jenkins-specific argument and environment validation
+ * and Jenkins-specific Winstone customization prior to delegating to Winstone.
+ *
+ * <p>In particular, managing the logging subsystem is completely delegated to Winstone, and this
+ * class should neither assume that logging has been initialized nor take advantage of the logging
+ * subsystem. In the event that this class needs to print information to the user, it should do so
+ * via the standard output (stdout) and standard error (stderr) streams rather than via the logging
+ * subsystem. Such messages should generally be avoided except for fatal scenarios, such as an
+ * inappropriate Java Virtual Machine (JVM) or some other serious failure that would preclude
+ * starting Winstone.
  *
  * @author Kohsuke Kawaguchi
  */
@@ -65,8 +74,6 @@ public class Main {
 
     private static final NavigableSet<Integer> SUPPORTED_JAVA_VERSIONS =
             new TreeSet<>(Arrays.asList(11, 17));
-
-    private static final Logger LOGGER = Logger.getLogger(Main.class.getName());
 
     /**
      * Sets custom session cookie name.
@@ -98,18 +105,16 @@ public class Main {
             // Great!
         } else if (releaseVersion >= SUPPORTED_JAVA_VERSIONS.first()) {
             if (enableFutureJava) {
-                LOGGER.log(
-                        Level.WARNING,
-                        "Running with Java {0} from {1}, which is not fully supported."
-                            + " Continuing because {2} is set."
-                            + " Supported Java versions are: {3}."
-                            + " See https://jenkins.io/redirect/java-support/ for more information.",
-                        new Object[] {
-                            releaseVersion,
-                            System.getProperty("java.home"),
-                            ENABLE_FUTURE_JAVA_CLI_SWITCH,
-                            SUPPORTED_JAVA_VERSIONS,
-                        });
+                System.err.println(
+                        String.format(
+                                "Running with Java %d from %s, which is not fully supported. "
+                                        + "Continuing because %s is set. "
+                                        + "Supported Java versions are: %s. "
+                                        + "See https://jenkins.io/redirect/java-support/ for more information.",
+                                releaseVersion,
+                                System.getProperty("java.home"),
+                                ENABLE_FUTURE_JAVA_CLI_SWITCH,
+                                SUPPORTED_JAVA_VERSIONS));
             } else if (releaseVersion > SUPPORTED_JAVA_VERSIONS.last()) {
                 throw new UnsupportedClassVersionError(
                         String.format(
@@ -219,19 +224,6 @@ public class Main {
             }
         }
 
-        // if the output should be redirect to a file, do it now
-        for (int i = 0; i < args.length; i++) {
-            if (args[i].startsWith("--logfile=")) {
-                PrintStream ps = createLogFileStream(new File(args[i].substring("--logfile=".length())));
-                System.setOut(ps);
-                System.setErr(ps);
-                // don't let winstone see this
-                List<String> _args = new ArrayList<>(Arrays.asList(args));
-                _args.remove(i);
-                args = _args.toArray(new String[0]);
-                break;
-            }
-        }
         for (String arg : args) {
             if (arg.startsWith("--pluginroot=")) {
                 System.setProperty("hudson.PluginManager.workDir",
@@ -280,7 +272,7 @@ public class Main {
         }
         deleteWinstoneTempContents(new File(tempFile.getParent(), "winstone/" + me.getName()));
         if (!tempFile.delete()) {
-            LOGGER.log(Level.WARNING, "Failed to delete the temporary file {0}", tempFile);
+            System.err.println("Failed to delete temporary file: " + tempFile);
         }
 
         // locate the Winstone launcher
@@ -314,7 +306,6 @@ public class Main {
                 "   --pluginroot             = folder where the plugin archives are expanded into. Default is ${JENKINS_HOME}/plugins\n" +
                 "                              (NOTE: this option does not change the directory where the plugin archives are stored)\n" +
                 "   --extractedFilesFolder   = folder where extracted files are to be located. Default is the temp folder\n" +
-                "   --logfile                = redirect log messages to this file\n" +
                 "   " + ENABLE_FUTURE_JAVA_CLI_SWITCH + "     = allows running with Java versions which are not fully supported\n" +
                 "   --paramsFromStdIn        = Read parameters from standard input (stdin)\n" +
                 "   --version                = Print version to standard output (stdout) and exit\n" +
@@ -370,26 +361,13 @@ public class Main {
         }
     }
 
-    @SuppressFBWarnings(value = "DM_DEFAULT_ENCODING", justification = "--logfile relies on the default encoding, fine")
-    private static PrintStream createLogFileStream(File file) {
-        LogFileOutputStream los;
-        try {
-            los = new LogFileOutputStream(file);
-        } catch (FileNotFoundException e) {
-            throw new UncheckedIOException(e);
-        }
-        return new PrintStream(los);
-    }
-
-    // TODO: Get rid of FB warning after updating to Java 7
     /**
-     * reads up to maxRead bytes from InputStream if available into a String
+     * Reads up to maxRead bytes from InputStream if available into a String
      *
      * @param in input stream to be read
      * @param maxToRead maximum number of bytes to read from the in
      * @return a String read from in
      */
-    @SuppressFBWarnings(value = {"DM_DEFAULT_ENCODING", "RR_NOT_CHECKED"}, justification = "Legacy behavior, We expect less input than maxToRead")
     private static String readStringNonBlocking(InputStream in, int maxToRead) {
         byte[] buffer;
         try {
@@ -402,7 +380,7 @@ public class Main {
     }
 
     private static void trimOffOurOptions(List<String> arguments) {
-        arguments.removeIf(arg -> arg.startsWith("--daemon") || arg.startsWith("--logfile") || arg.startsWith("--extractedFilesFolder")
+        arguments.removeIf(arg -> arg.startsWith("--extractedFilesFolder")
                 || arg.startsWith("--pluginroot") || arg.startsWith(ENABLE_FUTURE_JAVA_CLI_SWITCH));
     }
 
@@ -516,7 +494,6 @@ public class Main {
             for (File file : files) {
                 for (String pattern : patterns) {
                     if (file.getName().matches(pattern)) {
-                        LOGGER.log(Level.FINE, "Deleting the temporary file {0}", file);
                         deleteWinstoneTempContents(file);
                     }
                 }
@@ -526,7 +503,6 @@ public class Main {
 
     private static void deleteWinstoneTempContents(File file) {
         if (!file.exists()) {
-            LOGGER.log(Level.FINEST, "No file found at {0}, nothing to delete.", file);
             return;
         }
         if (file.isDirectory()) {
@@ -538,7 +514,7 @@ public class Main {
             }
         }
         if (!file.delete()) {
-            LOGGER.log(Level.WARNING, "Failed to delete the temporary Winstone file {0}", file);
+            System.err.println("Failed to delete temporary Winstone file: " + file);
         }
     }
 
