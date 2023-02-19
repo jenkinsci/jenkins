@@ -46,7 +46,7 @@ import java.util.Locale;
  *  A badge might display the same information as an {@link AdministrativeMonitor}. While an {@link AdministrativeMonitor}
  *  can be disabled, a badge will always be shown. E.g. the badge of {@link OldDataMonitor.ManagementLinkImpl} always shows the number of old data entries.
  *
- *  @since TODO
+ *  @since 2.385
  */
 public class Badge {
 

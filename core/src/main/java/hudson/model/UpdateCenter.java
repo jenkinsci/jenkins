@@ -1071,28 +1071,6 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         return getUpdates().stream().anyMatch(plugin -> !plugin.isCompatible(cache));
     }
 
-    @Restricted(NoExternalUse.class)
-    public List<Plugin> getPluginsWithUnavailableUpdates() {
-        Map<String, Plugin> pluginMap = new LinkedHashMap<>();
-        for (PluginWrapper wrapper : Jenkins.get().getPluginManager().getPlugins()) {
-            for (UpdateSite site : sites) {
-                UpdateSite.Plugin plugin = site.getPlugin(wrapper.getShortName());
-                if (plugin == null) {
-                    // Plugin not distributed by this update site
-                    continue;
-                }
-                final Plugin existing = pluginMap.get(plugin.name);
-                if (existing == null) { // TODO better support for overlapping update sites
-                    if (plugin.latest != null && !plugin.latest.equalsIgnoreCase(plugin.version) && !plugin.latest.equalsIgnoreCase(wrapper.getVersion())) {
-                        pluginMap.put(plugin.name, plugin);
-                    }
-                }
-            }
-        }
-        final ArrayList<Plugin> unavailable = new ArrayList<>(pluginMap.values());
-        return unavailable;
-    }
-
     /**
      * Ensure that all UpdateSites are up to date, without requiring a user to
      * browse to the instance.
