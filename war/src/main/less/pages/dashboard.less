@@ -73,11 +73,11 @@
     .item();
 
     display: grid;
-    grid-template-columns: auto 1fr;
-    grid-gap: 1rem;
+    grid-template-columns: 1fr auto;
+    gap: 1rem;
     padding: calc(1rem - var(--card-border-width, 0));
+    align-items: center;
     border-radius: 1rem;
-    text-decoration: none !important;
     background: var(--card-background);
     border: var(--card-border-width) solid var(--card-border-color);
     transition: var(--standard-transition);
@@ -92,9 +92,27 @@
     }
 
     &__details {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 1rem;
+      text-decoration: none !important;
+    }
+
+    &__details__text {
       display: flex;
       flex-direction: column;
       gap: 0.5rem;
+    }
+
+    &__actions {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-right: 0.5rem;
+
+      &:empty {
+        display: none;
+      }
     }
 
     &__label {

@@ -71,6 +71,9 @@ THE SOFTWARE.
           <thead>
           <tr>
             <j:forEach var="col" items="${columnExtensions}">
+              <j:if test="${col.class.simpleName.equals('BuildButtonColumn')}">
+                <j:set var="buildButtonColumn" value="${col}" />
+              </j:if>
               <st:include page="columnHeader.jelly" it="${col}" />
             </j:forEach>
           </tr>
@@ -90,20 +93,25 @@ THE SOFTWARE.
       <div class="jenkins-jobs-list jenkins-mobile-show">
         <j:forEach var="job" items="${jobs}">
           <j:set var="relativeLinkToJob" value="${h.getRelativeLinkTo(job)}"/>
-          <a class="jenkins-jobs-list__item" href="${jobBaseUrl}${job.shortUrl}">
-            <div class="jenkins-jobs-list__item__icons">
-              <t:ballColorTd it="${job.iconColor}" />
+          <div class="jenkins-jobs-list__item">
+            <a class="jenkins-jobs-list__item__details" href="${jobBaseUrl}${job.shortUrl}">
+              <div class="jenkins-jobs-list__item__icons">
+                <t:ballColorTd it="${job.iconColor}" />
+              </div>
+              <div class="jenkins-jobs-list__item__details__text">
+                <p class="jenkins-jobs-list__item__label">${job.displayName}</p>
+                <j:set var="lastBuild" value="${job.lastBuild}"/>
+                <j:if test="${lastBuild != null}">
+                  <p class="jenkins-jobs-list__item__description">
+                    ${%Description(lastBuild.timestampString, lastBuild.durationString)}
+                  </p>
+                </j:if>
+              </div>
+            </a>
+            <div class="jenkins-jobs-list__item__actions">
+              <st:include page="column.jelly" it="${buildButtonColumn}" />
             </div>
-            <div class="jenkins-jobs-list__item__details">
-              <p class="jenkins-jobs-list__item__label">${job.displayName}</p>
-              <j:set var="lastBuild" value="${job.lastBuild}"/>
-              <j:if test="${lastBuild != null}">
-                <p class="jenkins-jobs-list__item__description">
-                  ${%Description(lastBuild.timestampString, lastBuild.durationString)}
-                </p>
-              </j:if>
-            </div>
-          </a>
+          </div>
         </j:forEach>
       </div>
     </j:if>
