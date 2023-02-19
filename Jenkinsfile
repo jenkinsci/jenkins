@@ -152,7 +152,9 @@ builds.ath = {
       // Just to be safe
       deleteDir()
       checkout scm
-      sh 'bash ath.sh'
+      infra.withArtifactCachingProxy {
+        sh 'bash ath.sh'
+      }
       junit testResults: 'target/ath-reports/TEST-*.xml', testDataPublishers: [[$class: 'AttachmentPublisher']]
     }
   }

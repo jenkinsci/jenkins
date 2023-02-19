@@ -28,7 +28,7 @@ THE SOFTWARE.
     <st:attribute name="title" use="required">
       The title of the tab
     </st:attribute>
-    @since TODO
+    @since 2.385
   </st:documentation>
   <div class="jenkins-tab-pane">
     <h2 class="jenkins-tab-pane__title">${attrs.title}</h2>

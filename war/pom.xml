@@ -46,12 +46,12 @@ THE SOFTWARE.
     <host>localhost</host>
     <!-- HTTP listener port -->
     <port>8080</port>
-    <node.version>18.12.1</node.version>
+    <node.version>18.14.0</node.version>
     <!-- frontend-maven-plugin will install this Yarn version as bootstrap, then hand over control to Yarn Berry. -->
     <yarn.version>1.22.19</yarn.version>
     <!-- maven-antrun-plugin will download this Yarn version. -->
-    <yarn-berry.version>3.3.1</yarn-berry.version>
-    <yarn-berry.sha256sum>1d2760eb5c0e525abe9c5306fac5fe0b5628c0955072a0da2f4043524497526a</yarn-berry.sha256sum>
+    <yarn-berry.version>3.4.1</yarn-berry.version>
+    <yarn-berry.sha256sum>b51208ae422260539b3503fe5b596f4f236947d69ed1f8797f9830331a38c841</yarn-berry.sha256sum>
   </properties>
 
   <dependencyManagement>
@@ -145,7 +145,6 @@ THE SOFTWARE.
       -->
       <groupId>org.jenkins-ci</groupId>
       <artifactId>winstone</artifactId>
-      <!-- Make sure to keep jetty-maven-plugin elsewhere in this file in sync with the Jetty release in Winstone -->
       <version>${winstone.version}</version>
       <scope>test</scope>
     </dependency>
@@ -188,6 +187,7 @@ THE SOFTWARE.
                     <exclude>org.jenkins-ci:symbol-annotation</exclude>
                     <exclude>org.jenkins-ci:task-reactor</exclude>
                     <exclude>org.jenkins-ci:version-number</exclude>
+                    <exclude>org.jvnet.hudson:commons-jelly-tags-define</exclude>
                     <exclude>org.jvnet.winp:winp</exclude>
                     <exclude>org.kohsuke:access-modifier-annotation</exclude>
                     <exclude>org.kohsuke.stapler:stapler</exclude>
@@ -288,7 +288,7 @@ THE SOFTWARE.
                   <!-- dependency of checks-api, junit, and mailer -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>display-url-api</artifactId>
-                  <version>2.3.6</version>
+                  <version>2.3.7</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -303,13 +303,6 @@ THE SOFTWARE.
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>matrix-auth</artifactId>
                   <version>3.1.5</version>
-                  <type>hpi</type>
-                </artifactItem>
-                <artifactItem>
-                  <!-- detached after 1.547 -->
-                  <groupId>org.jenkins-ci.plugins</groupId>
-                  <artifactId>windows-slaves</artifactId>
-                  <version>1.8.1</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -330,14 +323,14 @@ THE SOFTWARE.
                   <!-- dependency of command-launcher, junit, matrix-project, and workflow-support -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>script-security</artifactId>
-                  <version>1190.v65867a_a_47126</version>
+                  <version>1229.v4880b_b_e905a_6</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <!-- detached after 1.577 -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>junit</artifactId>
-                  <version>1160.vf1f01a_a_ea_b_7f</version>
+                  <version>1177.v90374a_ef4d09</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -351,7 +344,7 @@ THE SOFTWARE.
                   <!-- dependency of checks-api, echarts-api, font-awesome-api, and junit -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>plugin-util-api</artifactId>
-                  <version>2.18.0</version>
+                  <version>2.20.0</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -365,7 +358,7 @@ THE SOFTWARE.
                   <!-- dependency of junit -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>checks-api</artifactId>
-                  <version>1.8.0</version>
+                  <version>1.8.1</version>
                   <type>hpi</type>
                 </artifactItem>
 
@@ -562,14 +555,14 @@ THE SOFTWARE.
                   <!-- dependency of mina-sshd-api-core -->
                   <groupId>io.jenkins.plugins.mina-sshd-api</groupId>
                   <artifactId>mina-sshd-api-common</artifactId>
-                  <version>2.9.1-44.v476733c11f82</version>
+                  <version>2.9.2-50.va_0e1f42659a_a</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <!-- dependency of sshd -->
                   <groupId>io.jenkins.plugins.mina-sshd-api</groupId>
                   <artifactId>mina-sshd-api-core</artifactId>
-                  <version>2.9.1-44.v476733c11f82</version>
+                  <version>2.9.2-50.va_0e1f42659a_a</version>
                   <type>hpi</type>
                 </artifactItem>
               </artifactItems>
