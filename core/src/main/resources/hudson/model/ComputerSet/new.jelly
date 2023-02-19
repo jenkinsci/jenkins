@@ -37,7 +37,7 @@ THE SOFTWARE.
     <l:breadcrumb title="${%New node}" />
     <l:main-panel>
       <j:invokeStatic var="slaves" className="hudson.slaves.NodeDescriptor" method="allInstantiable" />
-      <n:form title="${%New node}" nameTitle="${%Node name}" copyTitle="${%Copy Existing Node}" copyNames="${it._slaveNames}"
+      <n:form title="${%New node}" nameTitle="${%Node name}" copyTitle="${%Copy Existing Node}" showCopyOption="${!empty(it._slaveNames)}"
               descriptors="${slaves}" checkUrl="checkName" xmlns:n="/lib/hudson/newFromList" />
     </l:main-panel>
   </l:layout>

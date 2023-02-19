@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2017, CloudBees, Inc.
+Copyright (c) 2023, Jenkins project contributors
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -21,20 +21,25 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
+
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
-    <div class="alert alert-warning">
-        <form method="post" action="${rootURL}/${it.url}/disable">
-            <f:submit value="${%Dismiss}"/>
-        </form>
-        <j:set var="referenceAnchor">
-            <a href="https://www.jenkins.io/redirect/csrf-protection" rel="noopener noreferrer" target="_blank">${%referenceUrlContent}</a>
-        </j:set>
-        <j:set var="actionAnchor">
-            <a href="${rootURL}/configureSecurity">${%actionUrlContent}</a>
-        </j:set>
-        <j:out value="${%warningMessage(referenceAnchor)}"/>
-        <p />
-        <j:out value="${%actionMessage(actionAnchor)}"/>
-    </div>
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:f="/lib/form">
+  <j:if test="${it.launchSupported and it.offline and !it.temporarilyOffline}">
+    <j:choose>
+      <j:when test="${it.isConnecting()}">
+        <l:hasPermission permission="${it.CONNECT}">
+          <form method="post" action="launchSlaveAgent">
+            <f:submit value="${%Relaunch agent}"/>
+          </form>
+        </l:hasPermission>
+      </j:when>
+      <j:otherwise>
+        <l:hasPermission permission="${it.CONNECT}">
+          <form method="post" action="launchSlaveAgent">
+            <f:submit value="${%Launch agent}"/>
+          </form>
+        </l:hasPermission>
+      </j:otherwise>
+    </j:choose>
+  </j:if>
 </j:jelly>
