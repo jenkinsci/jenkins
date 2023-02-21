@@ -32,29 +32,75 @@ THE SOFTWARE.
       </div>
     </j:when>
     <j:when test="${it.offline and !it.temporarilyOffline}">
+      <j:set var="jenkinsURL" value="${h.inferHudsonURL(request)}"/>
+      <j:set var="copy_agent_jar_unix" value="curl -sO ${jenkinsURL}jnlpJars/agent.jar" />
+      <j:set var="copy_agent_jar_windows" value="curl.exe -sO ${jenkinsURL}jnlpJars/agent.jar" />
+      <j:set var="copy_java_cmd" value="java -jar agent.jar -jnlpUrl ${jenkinsURL}${it.url}jenkins-agent.jnlp ${it.launcher.getWorkDirOptions(it)}" />
       <j:if test="${h.hasPermission(it, it.CONNECT)}">
-          <j:set var="jenkinsURL" value="${h.inferHudsonURL(request)}"/>
           <j:choose>
             <j:when test="${it.ACL.hasPermission(app.ANONYMOUS, it.CONNECT)}">
-                <p>
-                  ${%slaveAgent.cli.run}
-                </p>
-                <pre>curl -sO ${jenkinsURL}jnlpJars/agent.jar
-java -jar <a href="${rootURL}/jnlpJars/agent.jar">agent.jar</a> -jnlpUrl ${jenkinsURL}${it.url}jenkins-agent.jnlp ${it.launcher.getWorkDirOptions(it)}</pre>
+                <h3>
+                  ${%slaveAgent.cli.run} (Unix)
+                  <l:copyButton text="${copy_agent_jar_unix};${copy_java_cmd}"/>
+                </h3>
+<pre>
+${copy_agent_jar_unix}
+${copy_java_cmd}
+</pre>
+
+                <h3>
+                  ${%slaveAgent.cli.run} (Windows)
+                  <l:copyButton text="${copy_agent_jar_windows} &amp; ${copy_java_cmd}"/>
+                </h3>
+<pre>
+${copy_agent_jar_windows}
+${copy_java_cmd}
+</pre>
+
             </j:when>
             <j:otherwise>
-                <p>
-                  ${%slaveAgent.cli.run}
-                </p>
+                <j:set var="copy_java_cmd_secret" value="java -jar agent.jar -jnlpUrl ${jenkinsURL}${it.url}jenkins-agent.jnlp -secret ${it.jnlpMac} ${it.launcher.getWorkDirOptions(it)}" />
+                <h3>
+                  ${%slaveAgent.cli.run} (Unix)
+                  <l:copyButton text="${copy_agent_jar_unix};${copy_java_cmd_secret}"/>
+                </h3>
                 <!-- TODO conceal secret w/ JS if possible -->
-                <pre>curl -sO ${jenkinsURL}jnlpJars/agent.jar
-java -jar <a href="${rootURL}/jnlpJars/agent.jar">agent.jar</a> -jnlpUrl ${jenkinsURL}${it.url}jenkins-agent.jnlp -secret ${it.jnlpMac} ${it.launcher.getWorkDirOptions(it)}</pre>
-                <p>
-                  ${%slaveAgent.cli.run.secret}
-                </p>
-                <pre>echo ${it.jnlpMac} > secret-file
-curl -sO ${jenkinsURL}jnlpJars/agent.jar
-java -jar <a href="${rootURL}/jnlpJars/agent.jar">agent.jar</a> -jnlpUrl ${jenkinsURL}${it.url}jenkins-agent.jnlp -secret @secret-file ${it.launcher.getWorkDirOptions(it)}</pre>
+<pre>
+${copy_agent_jar_unix}
+${copy_java_cmd_secret}
+</pre>
+
+                <h3>
+                  ${%slaveAgent.cli.run} (Windows)
+                  <l:copyButton text="${copy_agent_jar_windows} &amp; ${copy_java_cmd_secret}"/>
+                </h3>
+                <!-- TODO conceal secret w/ JS if possible -->
+<pre>
+${copy_agent_jar_windows}
+${copy_java_cmd_secret}
+</pre>
+
+                <j:set var="copy_secret_to_file" value="echo ${it.jnlpMac} &gt; secret-file" />
+                <j:set var="copy_java_cmd_secret2" value="java -jar agent.jar -jnlpUrl ${jenkinsURL}${it.url}jenkins-agent.jnlp -secret @secret-file ${it.launcher.getWorkDirOptions(it)}" />
+                <h3>
+                  ${%slaveAgent.cli.run.secret} (Unix)
+                  <l:copyButton text="${copy_secret_to_file};${copy_agent_jar_unix};${copy_java_cmd_secret2}"/>
+                </h3>
+<pre>
+${copy_secret_to_file}
+${copy_agent_jar_unix}
+${copy_java_cmd_secret2}
+</pre>
+
+                <h3>
+                  ${%slaveAgent.cli.run.secret} (Windows)
+                  <l:copyButton text="${copy_secret_to_file} &amp; ${copy_agent_jar_windows} &amp; ${copy_java_cmd_secret2}"/>
+                </h3>
+<pre>
+${copy_secret_to_file}
+${copy_agent_jar_windows}
+${copy_java_cmd_secret2}
+</pre>
             </j:otherwise>
           </j:choose>
           <p>
