@@ -1,0 +1,9 @@
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
+    <f:section title="${%Validation Test}">
+        <f:optionalBlock name="enableConfig" title="${%Enable configuration}">
+            <f:entry title="${%Some value}" field="someValue">
+                <f:number clazz="positive-number" min="5" max="10" step="1" default="7" />
+            </f:entry>
+        </f:optionalBlock>
+    </f:section>
+</j:jelly>
