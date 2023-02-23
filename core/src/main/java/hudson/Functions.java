@@ -758,6 +758,19 @@ public class Functions {
         return s.indexOf('\r') >= 0 || s.indexOf('\n') >= 0;
     }
 
+    /**
+     * Percent-encodes space and non-ASCII UTF-8 characters for use in URLs.
+     * <pre>
+     * Input example  1: !"£$%^&amp;*()_+}{:@~?&gt;&lt;|¬`,./;'#[]- =
+     * Output example 1: !"%C2%A3$%^&amp;*()_+}{:@~?&gt;&lt;|%C2%AC`,./;'#[]-%20=
+     * </pre>
+     * Notes:
+     * <ul>
+     * <li>a blank space will render as %20</li>
+     * <li>this methods only escapes non-ASCII but leaves other URL-unsafe characters, such as '#'</li>
+     * <li>{@link hudson.Util#rawEncode(String)} in the {@link hudson.Util} library should generally be used instead (do check the documentation for that method)</li>
+     * </ul>
+     */
     public static String encode(String s) {
         return Util.encode(s);
     }
@@ -766,6 +779,13 @@ public class Functions {
      * Shortcut function for calling {@link URLEncoder#encode(String,String)} (with UTF-8 encoding).<br>
      * Useful for encoding URL query parameters in jelly code (as in {@code "...?param=${h.urlEncode(something)}"}).<br>
      * For convenience in jelly code, it also accepts null parameter, and then returns an empty string.
+     * <pre>
+     * Input example  1: &amp; " ' &lt; &gt;
+     * Output example 1: %26+%22+%27+%3C+%3E
+     * Input example  2: !"£$%^&amp;*()_+}{:@~?&gt;&lt;|¬`,./;'#[]-=
+     * Output example 2: %21%22%C2%A3%24%25%5E%26*%28%29_%2B%7D%7B%3A%40%7E%3F%3E%3C%7C%C2%AC%60%2C.%2F%3B%27%23%5B%5D-%3D
+     * </pre>
+     * Note: A blank space will render as + (You can see this in above examples)
      *
      * @since 2.200
      */
@@ -776,10 +796,31 @@ public class Functions {
         return URLEncoder.encode(s, StandardCharsets.UTF_8);
     }
 
+    /**
+     * Transforms the input string so it renders as written in HTML output: newlines are converted to HTML line breaks, consecutive spaces are retained as {@code &amp;nbsp;}, and HTML metacharacters are escaped.
+     * <pre>
+     * Input example  1: &amp; " ' &lt; &gt;
+     * Output example 1: &amp;amp; &amp;quot; &amp;#039; &amp;lt; &amp;gt;
+     * Input example  2: !"£$%^&amp;*()_+}{:@~?&gt;&lt;|¬`,./;'#[]-=
+     * Output example 2: !&amp;quot;£$%^&amp;amp;*()_+}{:@~?&amp;gt;&amp;lt;|¬`,./;&amp;#039;#[]-=
+     * </pre>
+     * @see #xmlEscape
+     * @see hudson.Util#escape
+     */
     public static String escape(String s) {
         return Util.escape(s);
     }
 
+    /**
+     * Escapes XML unsafe characters
+     * <pre>
+     * Input example  1: &lt; &gt; &amp;
+     * Output example 1: &amp;lt; &amp;gt; &amp;amp;
+     * Input example  2: !"£$%^&amp;*()_+}{:@~?&gt;&lt;|¬`,./;'#[]-=
+     * Output example 2: !"£$%^&amp;amp;*()_+}{:@~?&amp;gt;&amp;lt;|¬`,./;'#[]-=
+     * </pre>
+     *  @see hudson.Util#xmlEscape
+     */
     public static String xmlEscape(String s) {
         return Util.xmlEscape(s);
     }
@@ -788,6 +829,16 @@ public class Functions {
         return s.replace("&lt;", "<").replace("&gt;", ">").replace("&amp;", "&");
     }
 
+    /**
+     * Escapes a string so it can be used in an HTML attribute value.
+     * <pre>
+     * Input example  1: &amp; " ' &lt; &gt;
+     * Output example 1: &amp;amp; &amp;quot; &amp;#39; &amp;lt; &amp;gt;
+     * Input example  2: !"£$%^&amp;*()_+}{:@~?&gt;&lt;|¬`,./;'#[]-=
+     * Output example 2: !&amp;quot;£$%^&amp;amp;*()_+}{:@~?&amp;gt;&amp;lt;|¬`,./;&amp;#39;#[]-=
+     * </pre>
+     * Note: 2 consecutive blank spaces will not render any special chars.
+     */
     public static String htmlAttributeEscape(String text) {
         StringBuilder buf = new StringBuilder(text.length() + 64);
         for (int i = 0; i < text.length(); i++) {
@@ -1569,6 +1620,15 @@ public class Functions {
         return Collections.emptyList();
     }
 
+    /**
+     * Escape a string so variable values can be used in inline JavaScript in views.
+     * Note that inline JavaScript and especially passing variables is discouraged, see the documentation for alternatives.
+     * <pre>
+     * Input example : \ \\ ' "
+     * Output example: \\ \\\\ \' \"
+     * </pre>
+     * @see <a href="https://www.jenkins.io/doc/developer/security/xss-prevention/#passing-values-to-javascript">Passing values to JavaScript</a>
+     */
     public static String jsStringEscape(String s) {
         if (s == null) return null;
         StringBuilder buf = new StringBuilder();

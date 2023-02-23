@@ -40,7 +40,7 @@ jobs:
           echo "project-version=$version" >> $GITHUB_OUTPUT
   war:
     permissions:
-      contents: write # to upload release asset (actions/upload-release-asset)
+      contents: write # to upload release asset (softprops/action-gh-release)
 
     runs-on: ubuntu-latest
     needs: determine-version
@@ -65,17 +65,14 @@ jobs:
           wget -q https://get.jenkins.io/${REPO}/${PROJECT_VERSION}/${FILE_NAME}
       - name: Upload Release Asset
         id: upload-war
-        uses: actions/upload-release-asset@v1
+        uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ./${{ steps.fetch-war.outputs.file-name }}
-          asset_name: ${{ steps.fetch-war.outputs.file-name }}
-          asset_content_type: application/java-archive
+          files: ${{ steps.fetch-war.outputs.file-name }}
   debian:
     permissions:
-      contents: write # to upload release asset (actions/upload-release-asset)
+      contents: write # to upload release asset (softprops/action-gh-release)
 
     runs-on: ubuntu-latest
     needs: determine-version
@@ -102,17 +99,14 @@ jobs:
       - name: Upload Release Asset
         id: upload-deb
         if: always()
-        uses: actions/upload-release-asset@v1
+        uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ./${{ steps.fetch-deb.outputs.file-name }}
-          asset_name: ${{ steps.fetch-deb.outputs.file-name }}
-          asset_content_type: application/vnd.debian.binary-package
+          files: ${{ steps.fetch-deb.outputs.file-name }}
   redhat:
     permissions:
-      contents: write # to upload release asset (actions/upload-release-asset)
+      contents: write # to upload release asset (softprops/action-gh-release)
 
     runs-on: ubuntu-latest
     needs: determine-version
@@ -140,17 +134,14 @@ jobs:
       - name: Upload Release Asset
         id: upload-rpm
         if: always()
-        uses: actions/upload-release-asset@v1
+        uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ./${{ steps.fetch-rpm.outputs.file-name }}
-          asset_name: ${{ steps.fetch-rpm.outputs.file-name }}
-          asset_content_type: application/x-redhat-package-manager
+          files: ${{ steps.fetch-rpm.outputs.file-name }}
   windows:
     permissions:
-      contents: write # to upload release asset (actions/upload-release-asset)
+      contents: write # to upload release asset (softprops/action-gh-release)
 
     runs-on: ubuntu-latest
     needs: determine-version
@@ -178,17 +169,14 @@ jobs:
       - name: Upload Release Asset
         id: upload-msi
         if: always()
-        uses: actions/upload-release-asset@v1
+        uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ./${{ steps.fetch-msi.outputs.file-name }}
-          asset_name: ${{ steps.fetch-msi.outputs.file-name }}
-          asset_content_type: application/octet-stream
+          files: ${{ steps.fetch-msi.outputs.file-name }}
   suse:
     permissions:
-      contents: write # to upload release asset (actions/upload-release-asset)
+      contents: write # to upload release asset (softprops/action-gh-release)
 
     runs-on: ubuntu-latest
     needs: determine-version
@@ -216,11 +204,8 @@ jobs:
       - name: Upload Release Asset
         id: upload-suse-rpm
         if: always()
-        uses: actions/upload-release-asset@v1
+        uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ./${{ steps.fetch-suse-rpm.outputs.file-name }}
-          asset_name: ${{ steps.fetch-suse-rpm.outputs.file-name }}
-          asset_content_type: application/x-redhat-package-manager
+          files: ${{ steps.fetch-suse-rpm.outputs.file-name }}
