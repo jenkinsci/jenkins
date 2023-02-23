@@ -49,6 +49,7 @@ import java.io.File;
 import java.net.HttpURLConnection;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
+import java.util.concurrent.Future;
 import jenkins.model.Jenkins;
 import org.junit.Rule;
 import org.junit.Test;
@@ -197,4 +198,43 @@ public class ComputerTest {
                     "  <fullName>Foo User</fullName>\n" +
                     "  <badField/>\n" +
                     "</hudson.model.User>\n";
+
+    @Test
+    public void testTerminatedNodeStatusPageDoesNotShowTrace() throws Exception {
+        DumbSlave agent = j.createOnlineSlave();
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.setAssignedNode(agent);
+
+        Future<FreeStyleBuild> r = ExecutorTest.startBlockingBuild(p);
+
+        String message = "It went away";
+        p.getLastBuild().getBuiltOn().toComputer().disconnect(
+                new OfflineCause.ChannelTermination(new RuntimeException(message))
+        );
+
+        WebClient wc = j.createWebClient();
+        Page page = wc.getPage(wc.createCrumbedUrl(agent.toComputer().getUrl()));
+        String content = page.getWebResponse().getContentAsString();
+        assertThat(content, not(containsString(message)));
+    }
+
+    @Test
+    public void testTerminatedNodeAjaxExecutorsDoesNotShowTrace() throws Exception {
+        DumbSlave agent = j.createOnlineSlave();
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.setAssignedNode(agent);
+
+        Future<FreeStyleBuild> r = ExecutorTest.startBlockingBuild(p);
+
+        String message = "It went away";
+        p.getLastBuild().getBuiltOn().toComputer().disconnect(
+                new OfflineCause.ChannelTermination(new RuntimeException(message))
+        );
+
+        WebClient wc = j.createWebClient();
+        Page page = wc.getPage(wc.createCrumbedUrl("ajaxExecutors"));
+        String content = page.getWebResponse().getContentAsString();
+        assertThat(content, not(containsString(message)));
+    }
+
 }
