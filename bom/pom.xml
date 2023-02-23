@@ -40,7 +40,7 @@ THE SOFTWARE.
   <properties>
     <asm.version>9.4</asm.version>
     <slf4jVersion>2.0.3</slf4jVersion>
-    <stapler.version>1736.vb_1e05c4231b_c</stapler.version>
+    <stapler.version>1736.1738.v1fec607a_ecb_a</stapler.version>
     <groovy.version>2.4.21</groovy.version>
   </properties>
 
@@ -128,7 +128,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>commons-fileupload</groupId>
         <artifactId>commons-fileupload</artifactId>
-        <version>1.4</version>
+        <version>1.5</version>
       </dependency>
       <dependency>
         <groupId>commons-httpclient</groupId>
