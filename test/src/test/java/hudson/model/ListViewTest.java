@@ -261,7 +261,7 @@ public class ListViewTest {
 
         when(req.getMethod()).thenReturn("POST");
         when(req.getParameter("name")).thenReturn("job1");
-        when(req.getInputStream()).thenReturn(new Stream(IOUtils.toInputStream(configXml)));
+        when(req.getInputStream()).thenReturn(new Stream(IOUtils.toInputStream(configXml, StandardCharsets.UTF_8)));
         when(req.getContentType()).thenReturn("application/xml");
         v.doCreateItem(req, rsp);
         List<TopLevelItem> items = v.getItems();

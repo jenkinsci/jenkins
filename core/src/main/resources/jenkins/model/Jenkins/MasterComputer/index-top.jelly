@@ -1,0 +1,7 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout">
+  <!-- Node description -->
+  <div class="jenkins-!-margin-bottom-5">
+    ${%blurb}
+  </div>
+</j:jelly>

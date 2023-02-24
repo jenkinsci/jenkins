@@ -29,6 +29,7 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
   <l:layout permission="${app.primaryView.CREATE}" title="${%New View}">
     <st:include page="sidepanel.jelly" />
+    <l:breadcrumb title="${%New view}" />
     <l:main-panel>
       <j:invokeStatic var="views" className="hudson.model.View" method="allInstantiable" />
       <n:form title="${%New View}" nameTitle="${%View name}" action="createView" copyTitle="${%Copy Existing View}"

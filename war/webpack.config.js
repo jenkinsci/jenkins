@@ -30,6 +30,16 @@ module.exports = (env, argv) => ({
       path.join(__dirname, "src/main/js/config-tabbar.js"),
       path.join(__dirname, "src/main/js/config-tabbar.less"),
     ],
+    "pages/manage-jenkins/system-information": [
+      path.join(
+        __dirname,
+        "src/main/js/pages/manage-jenkins/system-information"
+      ),
+    ],
+    app: [path.join(__dirname, "src/main/js/app.js")],
+    "pages/manage-jenkins": [
+      path.join(__dirname, "src/main/js/pages/manage-jenkins"),
+    ],
     "keyboard-shortcuts": [
       path.join(__dirname, "src/main/js/keyboard-shortcuts.js"),
     ],
@@ -178,6 +188,7 @@ module.exports = (env, argv) => ({
   },
   resolve: {
     alias: {
+      "@": path.resolve(__dirname, "src/main/js"),
       // Needed to be able to register helpers at runtime
       handlebars: "handlebars/runtime",
     },

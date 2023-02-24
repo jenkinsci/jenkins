@@ -53,12 +53,26 @@ def analyze_file(file, lineno, commits_and_tags, dry_run=False):
         print(f"\tfirst tag was {first_tag}")
         commits_and_tags[line_sha] = first_tag
         if not dry_run:
+            since_version = first_tag.replace("jenkins-", "")
             update_file(
                 file,
                 int(lineno),
                 "@since TODO",
-                "@since " + first_tag.replace("jenkins-", ""),
+                f"@since {since_version}",
             )
+            update_file(
+                file,
+                int(lineno),
+                '@Deprecated(since = "TODO")',
+                f'@Deprecated(since = "{since_version}")',
+            )
+            update_file(
+                file,
+                int(lineno),
+                '@RestrictedSince("TODO")',
+                f'@RestrictedSince("{since_version}")',
+            )
+
     else:
         print(
             "\tNot updating file, no tag found. "
@@ -78,7 +92,8 @@ def analyze_files(commits_and_tags, dry_run=False):
         GIT,
         "grep",
         "--line-number",
-        "@since TODO",
+        "-E",
+        '@since TODO|@Deprecated\\(since = "TODO"\\)|@RestrictedSince\\("TODO"\\)',
         "--",
         "*.java",
         "*.jelly",
@@ -111,12 +126,14 @@ def display_results(commits_and_tags):
 
 def main():
     """
-    Update '@since TODO' entries with actual Jenkins release versions.
+    Update '@since TODO', '@Deprecated(since = "TODO")', and '@RestrictedSince("TODO")' entries
+    with actual Jenkins release versions.
 
     This script is a developer tool, to be used by maintainers.
     """
     parser = argparse.ArgumentParser(
-        description="Update '@since TODO' entries with actual Jenkins release versions."
+        description="Update '@since TODO', '@Deprecated(since = \"TODO\")', and '@RestrictedSince(\"TODO\")' entries "
+                    "with actual Jenkins release versions. "
     )
     parser.add_argument("-n", "--dry-run", help="Dry run", action="store_true")
     args = parser.parse_args()

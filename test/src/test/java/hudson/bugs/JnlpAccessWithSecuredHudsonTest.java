@@ -37,7 +37,6 @@ import java.io.File;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Locale;
-import jenkins.security.apitoken.ApiTokenTestHelper;
 import jenkins.security.s2m.AdminWhitelistRule;
 import org.dom4j.Document;
 import org.dom4j.Element;
@@ -67,8 +66,6 @@ public class JnlpAccessWithSecuredHudsonTest {
     @Email("http://markmail.org/message/on4wkjdaldwi2atx")
     @Test
     public void anonymousCanAlwaysLoadJARs() throws Exception {
-        ApiTokenTestHelper.enableLegacyBehavior();
-
         inboundAgents.createAgent(r, InboundAgentRule.Options.newBuilder().name("test").skipStart().build());
         JenkinsRule.WebClient wc = r.createWebClient();
         HtmlPage p = wc.withBasicApiToken(User.getById("alice", true)).goTo("computer/test/");
@@ -102,12 +99,16 @@ public class JnlpAccessWithSecuredHudsonTest {
     public void serviceUsingDirectSecret() throws Exception {
         Slave slave = inboundAgents.createAgent(r, InboundAgentRule.Options.newBuilder().name("test").secret().build());
         r.waitOnline(slave);
-        r.createWebClient().goTo("computer/test/jenkins-agent.jnlp?encrypt=true", "application/octet-stream");
+        try {
+            r.createWebClient().goTo("computer/test/jenkins-agent.jnlp?encrypt=true", "application/octet-stream");
             Channel channel = slave.getComputer().getChannel();
             assertFalse("SECURITY-206", channel.isRemoteClassLoadingAllowed());
             r.jenkins.getExtensionList(AdminWhitelistRule.class).get(AdminWhitelistRule.class).setMasterKillSwitch(false);
             final File f = new File(r.jenkins.getRootDir(), "config.xml");
             assertTrue(f.exists());
+        } finally {
+            inboundAgents.stop(r, slave.getNodeName());
+        }
     }
 
 
