@@ -1,0 +1,24 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:s="jelly:stapler" xmlns:l="/lib/layout">
+  <s:documentation> <![CDATA[
+    Jenkins themed dismiss button. This should always be
+    used instead of a custom button tag.
+    ]]>
+    <s:attribute name="name">
+      If specified, becomes the value of the name attribute.
+      When you have more than one dismiss button on the form, this can be used to determine
+      which button is pressed, as the server will get a parameter by this name.
+    </s:attribute>
+    <s:attribute name="value">
+      The tooltip text of the dismiss button.
+    </s:attribute>
+  </s:documentation>
+  <button
+    name="${attrs.name ?: 'Dismiss'}"
+    tooltip="${attrs.value ?: '%Dismiss'}"
+    class="jenkins-button jenkins-!-destructive-color"
+    type="submit">
+    <l:icon src="symbol-close" />
+  </button>
+
+</j:jelly>

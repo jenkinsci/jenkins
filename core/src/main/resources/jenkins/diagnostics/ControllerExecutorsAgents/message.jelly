@@ -27,7 +27,7 @@ THE SOFTWARE.
   <div class="alert alert-warning">
      <form method="post" action="${rootURL}/${it.url}/act" name="${it.id}">
       <f:submit name="yes" value="${%Manage}"/>
-      <f:dismiss name="no" value="${%Dismiss}"/>
+      <f:dismiss-button name="no" value="${%Dismiss}"/>
      </form>
 
     ${%ExecutorsWarning}

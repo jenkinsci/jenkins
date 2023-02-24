@@ -39,7 +39,7 @@ THE SOFTWARE.
           <div>
             <f:submit name="yes" value="${%More Info}"/>
             <l:isAdmin>
-              <f:dismiss value="${%Dismiss}"/>
+              <f:dismiss-button value="${%Dismiss}"/>
             </l:isAdmin>
           </div>
         </form>
