@@ -29,6 +29,7 @@ import java.nio.ByteBuffer;
 import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.eclipse.jetty.websocket.api.Session;
@@ -57,16 +58,16 @@ public class Jetty10Provider implements Provider {
 
     private static final String ATTR_LISTENER = Jetty10Provider.class.getName() + ".listener";
 
-    private JettyWebSocketServerContainer wsContainer;
+    private final AtomicBoolean initialized = new AtomicBoolean(false);
 
     public Jetty10Provider() {
         JettyWebSocketServerContainer.class.hashCode();
     }
 
-    private synchronized void init(HttpServletRequest req) {
-        if (wsContainer == null) {
-            wsContainer = JettyWebSocketServerContainer.getContainer(req.getServletContext());
-            wsContainer.setIdleTimeout(Duration.ofSeconds(IDLE_TIMEOUT_SECONDS));
+    private void init(HttpServletRequest req) {
+        if (!initialized.get()) {
+            JettyWebSocketServerContainer.getContainer(req.getServletContext()).setIdleTimeout(Duration.ofSeconds(IDLE_TIMEOUT_SECONDS));
+            initialized.set(true);
         }
     }
 
@@ -79,7 +80,7 @@ public class Jetty10Provider implements Provider {
             rsp.sendError(HttpServletResponse.SC_BAD_REQUEST, "only WS connections accepted here");
             return null;
         }
-        if (!wsContainer.upgrade(Jetty10Provider::createWebSocket, req, rsp)) {
+        if (!JettyWebSocketServerContainer.getContainer(req.getServletContext()).upgrade(Jetty10Provider::createWebSocket, req, rsp)) {
             rsp.sendError(HttpServletResponse.SC_BAD_REQUEST, "did not manage to upgrade");
             return null;
         }
