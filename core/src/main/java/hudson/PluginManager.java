@@ -2225,7 +2225,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     @RequirePOST
     public HttpResponse doInstallNecessaryPlugins(StaplerRequest req) throws IOException {
         prevalidateConfig(req.getInputStream());
-        return HttpResponses.redirectViaContextPath("updates/");
+        return HttpResponses.redirectViaContextPath("pluginManager/updates/");
     }
 
     /**
