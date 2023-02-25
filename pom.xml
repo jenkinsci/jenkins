@@ -95,7 +95,7 @@ THE SOFTWARE.
     <spotbugs.threshold>Medium</spotbugs.threshold>
 
     <access-modifier.version>1.30</access-modifier.version>
-    <antlr.version>4.11.1</antlr.version>
+    <antlr.version>4.12.0</antlr.version>
     <bridge-method-injector.version>1.25</bridge-method-injector.version>
     <spotless.version>2.33.0</spotless.version>
     <!-- Make sure to keep the jetty-maven-plugin version in war/pom.xml in sync with the Jetty release in Winstone: -->
