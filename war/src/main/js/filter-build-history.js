@@ -37,8 +37,18 @@ function updateBuilds(params) {
           rsp.responseText === '<table class="pane"></table>'
         ) {
           noBuildsBanner.style.display = "block";
+          if (
+            typeof params === "object" &&
+            "search" in params &&
+            params.search !== ""
+          ) {
+            pageSearchInputContainer.style.display = "block";
+          } else {
+            pageSearchInputContainer.style.display = "none";
+          }
         } else {
           noBuildsBanner.style.display = "none";
+          pageSearchInputContainer.style.display = "block";
         }
 
         //delete rows with transitive data
@@ -472,8 +482,18 @@ function loadPage(params, focusOnSearch) {
 
       if (rsp.responseText === '<table class="pane"></table>') {
         noBuildsBanner.style.display = "block";
+        if (
+          typeof params === "object" &&
+          "search" in params &&
+          params.search !== ""
+        ) {
+          pageSearchInputContainer.style.display = "block";
+        } else {
+          pageSearchInputContainer.style.display = "none";
+        }
       } else {
         noBuildsBanner.style.display = "none";
+        pageSearchInputContainer.style.display = "block";
       }
 
       var dataTable = getDataTable(buildHistoryContainer);
