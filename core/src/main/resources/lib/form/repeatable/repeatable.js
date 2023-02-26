@@ -255,6 +255,12 @@ Behaviour.specify("DIV.repeated-chunk", "repeatable", -200, function (d) {
       if (inputs[i].defaultChecked) {
         inputs[i].checked = true;
       }
+
+      // Uniquify the "id" of <input> and "for" of <label>
+      inputs[i].id = inputs[i].name + "_" + inputs[i].id;
+      if (inputs[i].nextElementSibling.tagName === "LABEL") {
+        inputs[i].nextElementSibling.setAttribute("for", inputs[i].id);
+      }
     }
   }
 });

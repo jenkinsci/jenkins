@@ -49,9 +49,17 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.net.CookieHandler;
+import java.net.CookieManager;
+import java.net.HttpCookie;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Future;
@@ -602,9 +610,6 @@ public class PluginManagerTest {
 
         // ensure data is loaded - probably unnecessary, but closer to reality
         Assert.assertSame(FormValidation.Kind.OK, uc.getSite("default").updateDirectlyNow().kind);
-
-        // This would throw NPE
-        uc.getPluginsWithUnavailableUpdates();
     }
 
     @Test @Issue("JENKINS-64840")
@@ -646,5 +651,64 @@ public class PluginManagerTest {
         assertTrue(json.has("data"));
         data = json.getJSONArray("data");
         assertEquals("Should be two search hits for hello", 2, data.size());
+    }
+
+    @Issue("JENKINS-70599")
+    @Test
+    public void installNecessaryPluginsTest() throws Exception {
+        String jenkinsUrl = r.getURL().toString();
+
+        // Define a cookie handler
+        CookieHandler.setDefault(new CookieManager());
+        HttpCookie sessionCookie = new HttpCookie("session", "test-session-cookie");
+        sessionCookie.setPath("/");
+        sessionCookie.setVersion(0);
+        ((CookieManager) CookieHandler.getDefault())
+                .getCookieStore()
+                .add(new URI(jenkinsUrl), sessionCookie);
+
+        // Initialize the cookie handler and get the crumb
+        URI crumbIssuer = new URI(jenkinsUrl + "crumbIssuer/api/json");
+        HttpRequest httpGet =
+                HttpRequest.newBuilder()
+                        .uri(crumbIssuer)
+                        .header("Accept", "application/json")
+                        .timeout(Duration.ofSeconds(7))
+                        .GET()
+                        .build();
+        HttpClient clientGet =
+                HttpClient.newBuilder()
+                        .cookieHandler(CookieHandler.getDefault())
+                        .connectTimeout(Duration.ofSeconds(2))
+                        .build();
+        HttpResponse<String> responseGet = clientGet.send(httpGet, HttpResponse.BodyHandlers.ofString());
+        assertEquals("Bad response for crumb issuer", 200, responseGet.statusCode());
+        String body = responseGet.body();
+        assertTrue("crumbRequestField not in response", body.contains("crumbRequestField"));
+        org.json.JSONObject jsonObject = new org.json.JSONObject(body);
+        String crumb = (String) jsonObject.get("crumb");
+        String crumbRequestField = (String) jsonObject.get("crumbRequestField");
+
+        // Call installNecessaryPlugins XML API for git client plugin 4.0.0 with crumb
+        URI installNecessaryPlugins = new URI(jenkinsUrl + "pluginManager/installNecessaryPlugins");
+        String xmlRequest = "<jenkins><install plugin=\"git-client@4.0.0\"></install></jenkins>";
+        HttpRequest request =
+                HttpRequest.newBuilder()
+                        .uri(installNecessaryPlugins)
+                        .timeout(Duration.ofSeconds(20))
+                        .header("Content-Type", "application/xml")
+                        .header(crumbRequestField, crumb)
+                        .POST(HttpRequest.BodyPublishers.ofString(xmlRequest))
+                        .build();
+        HttpClient client =
+                HttpClient.newBuilder()
+                        .cookieHandler(CookieHandler.getDefault())
+                        .followRedirects(HttpClient.Redirect.ALWAYS)
+                        .connectTimeout(Duration.ofSeconds(2))
+                        .build();
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        // Redirect reported 404 before bug was fixed
+        assertEquals("Bad response for installNecessaryPlugins", 200, response.statusCode());
     }
 }
