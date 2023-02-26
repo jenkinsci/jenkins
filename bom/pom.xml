@@ -388,6 +388,7 @@ THE SOFTWARE.
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>flatten-maven-plugin</artifactId>
+        <version>1.0.0</version>
         <configuration>
           <updatePomFile>true</updatePomFile>
           <outputDirectory>${project.build.directory}</outputDirectory>
