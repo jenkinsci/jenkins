@@ -66,6 +66,10 @@ function generateDropdownItems(items) {
     })
     .forEach((item) => menuItems.appendChild(item));
 
+  if (items.length === 0) {
+    menuItems.appendChild(Templates.placeholder("No items"));
+  }
+
   makeKeyboardNavigable(
     menuItems,
     () => menuItems.querySelectorAll(".jenkins-dropdown__item"),

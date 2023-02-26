@@ -66,9 +66,16 @@ function separator() {
   );
 }
 
+function placeholder(label) {
+  return createElementFromHtml(
+    `<p class="jenkins-dropdown__placeholder">${label}</p>`
+  );
+}
+
 export default {
   dropdown,
   menuItem,
   heading,
   separator,
+  placeholder,
 };
