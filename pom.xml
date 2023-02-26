@@ -1,19 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
 The MIT License
-
 Copyright (c) 2004-2011, Sun Microsystems, Inc., Kohsuke Kawaguchi, id:sorokh
-
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
 to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
-
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
-
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -95,7 +91,7 @@ THE SOFTWARE.
     <spotbugs.threshold>Medium</spotbugs.threshold>
 
     <access-modifier.version>1.30</access-modifier.version>
-    <antlr.version>4.11.1</antlr.version>
+    <antlr.version>4.12.0</antlr.version>
     <bridge-method-injector.version>1.25</bridge-method-injector.version>
     <spotless.version>2.33.0</spotless.version>
     <!-- Make sure to keep the jetty-maven-plugin version in war/pom.xml in sync with the Jetty release in Winstone: -->
@@ -211,7 +207,6 @@ THE SOFTWARE.
             <!--
               during the development, debug profile will cause
               the jars to be signed by a self-certified dummy public key.
-
               For release, you should define the real values in ~/.m2/settings.xml
             -->
             <alias>${hudson.sign.alias}</alias>

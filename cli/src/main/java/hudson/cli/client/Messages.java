@@ -2,9 +2,10 @@ package hudson.cli.client;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.Properties;
 
 public class Messages extends Exception{
-
+    Properties properties = new Properties();
     public static String CLI_NoSuchFileExists(File file) throws FileNotFoundException {
         return "file doesn't exist" + file.getName();
     }

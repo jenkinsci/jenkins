@@ -460,14 +460,13 @@ public class CLI {
             finished();
         }
 
-        @Override
         @SuppressWarnings("Since15")
+        @Override
         protected void onStdout(byte[] chunk) throws IOException {
             System.out.write(chunk);
         }
-
-        @Override
         @SuppressWarnings("Since15")
+        @Override
         protected void onStderr(byte[] chunk) throws IOException {
             System.err.write(chunk);
         }
