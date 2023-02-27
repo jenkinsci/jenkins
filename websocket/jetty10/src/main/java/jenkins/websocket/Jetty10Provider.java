@@ -58,16 +58,16 @@ public class Jetty10Provider implements Provider {
 
     private static final String ATTR_LISTENER = Jetty10Provider.class.getName() + ".listener";
 
-    private final AtomicBoolean initialized = new AtomicBoolean(false);
+    private boolean initialized = false;
 
     public Jetty10Provider() {
         JettyWebSocketServerContainer.class.hashCode();
     }
 
     private void init(HttpServletRequest req) {
-        if (!initialized.get()) {
+        if (!initialized) {
             JettyWebSocketServerContainer.getContainer(req.getServletContext()).setIdleTimeout(Duration.ofSeconds(IDLE_TIMEOUT_SECONDS));
-            initialized.set(true);
+            initialized = true;
         }
     }
 
