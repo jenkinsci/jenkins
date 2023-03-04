@@ -24,10 +24,12 @@ window.breadcrumbs = (function () {
 
   function makeMenuHtml(icon, iconXml, displayName, badge) {
     var displaynameSpan = "<span>" + displayName + "</span>";
+    const badgeText = badge?.text.escapeHTML();
+    const badgeTooltip = badge?.tooltip.escapeHTML();
     const badgeSpan =
       badge === null
         ? ""
-        : `<span class="yui-menu-badge" tooltip="${badge.tooltip}">${badge.text}</span>`;
+        : `<span class="yui-menu-badge" tooltip="${badgeTooltip}">${badgeText}</span>`;
 
     if (iconXml != null) {
       return iconXml + displaynameSpan + badgeSpan;
