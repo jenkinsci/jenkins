@@ -316,20 +316,16 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
     public void doConfigSubmit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, Descriptor.FormException {
         checkPermission(Jenkins.ADMINISTER);
 
-        String proposedName = Util.fixEmptyAndTrim(req.getSubmittedForm().getString("name"));
-        Jenkins.checkGoodName(proposedName);
-
-        Cloud cloud = Jenkins.get().getCloud(name);
+        Cloud cloud = Jenkins.get().getCloud(this.name);
         if (cloud == null) {
-            throw new ServletException("No such cloud " + name);
+            throw new ServletException("No such cloud " + this.name);
         }
-
-        if (!proposedName.equals(name)
+        Cloud result = cloud.reconfigure(req, req.getSubmittedForm());
+        String proposedName = result.name;
+        if (!proposedName.equals(this.name)
                 && Jenkins.get().getCloud(proposedName) != null) {
             throw new Descriptor.FormException(jenkins.agents.Messages.CloudSet_CloudAlreadyExists(proposedName), "name");
         }
-
-        Cloud result = cloud.reconfigure(req, req.getSubmittedForm());
         Jenkins.get().clouds.replace(this, result);
 
         // take the user back to the cloud top page.

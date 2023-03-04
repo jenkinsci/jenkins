@@ -176,19 +176,9 @@ public class CloudSet extends AbstractModelObject implements Describable<CloudSe
      */
     @POST
     public synchronized void doDoCreateItem(StaplerRequest req, StaplerResponse rsp,
-                                            @QueryParameter("_.name") String name,
                                             @QueryParameter String type) throws IOException, ServletException, Descriptor.FormException {
-        final Jenkins app = Jenkins.get();
-        app.checkPermission(Jenkins.ADMINISTER);
-        String fixedName = Util.fixEmptyAndTrim(name);
-        checkName(fixedName);
-
-        JSONObject formData = req.getSubmittedForm();
-        formData.put("_.name", fixedName);
-
-        Cloud result = Cloud.all().find(type).newInstance(req, formData);
-        app.clouds.add(result);
-
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+        Jenkins.get().clouds.add(Cloud.all().find(type).newInstance(req, req.getSubmittedForm()));
         // take the user back to the cloud list top page
         rsp.sendRedirect2(".");
     }
