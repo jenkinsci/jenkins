@@ -296,7 +296,7 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
 
     @SuppressWarnings("unused") // stapler
     public String getIconAltText() {
-        return "[" + getClass().getSimpleName() + "]";
+        return getClass().getSimpleName().replace("Cloud", "");
     }
 
     /**
