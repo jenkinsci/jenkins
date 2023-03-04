@@ -32,12 +32,10 @@ THE SOFTWARE.
         <l:main-panel>
             <l:app-bar title="${%Manage clouds}">
                 <l:hasAdministerOrManage>
-                    <j:if test="${h.hasPermission(createPermission)}">
-                        <a class="jenkins-button jenkins-button--primary" href="new">
-                            <l:icon src="symbol-add" />
-                            ${%New Cloud}
-                        </a>
-                    </j:if>
+                    <a class="jenkins-button jenkins-button--primary" href="new">
+                        <l:icon src="symbol-add" />
+                        ${%New Cloud}
+                    </a>
                 </l:hasAdministerOrManage>
             </l:app-bar>
             <table id="clouds" class="jenkins-table sortable">
