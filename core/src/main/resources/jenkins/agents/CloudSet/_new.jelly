@@ -28,11 +28,11 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
          xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <l:layout permission="${app.ADMINISTER}" type="one-column" title="${%New Cloud}">
-    <l:breadcrumb title="${%New Cloud}"/>
+  <l:layout permission="${app.ADMINISTER}" type="one-column" title="${%New cloud}">
+    <l:breadcrumb title="${%New cloud}"/>
     <l:main-panel>
       <f:form method="post" action="doCreateItem" name="config" class="jenkins-form">
-        <h1>${%New Cloud}</h1>
+        <h1>${%New cloud}</h1>
         <!-- main body of the configuration -->
         <st:include it="${requestScope.instance}" page="config.jelly" />
         

@@ -34,7 +34,7 @@ THE SOFTWARE.
                 <l:hasAdministerOrManage>
                     <a class="jenkins-button jenkins-button--primary" href="new">
                         <l:icon src="symbol-add" />
-                        ${%New Cloud}
+                        ${%New cloud}
                     </a>
                 </l:hasAdministerOrManage>
             </l:app-bar>
