@@ -357,17 +357,17 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
     /**
      * Return a new {@link HttpClient} with Jenkins-specific default settings.
      *
-     * <p>Equivalent to {@code newHttpClientBuilder().build()}.
+     * <p>Equivalent to {@code newHttpClientBuilder().followRedirects(HttpClient.Redirect.NORMAL).build()}.
      *
      * <p>The Jenkins-specific default settings include a proxy server and proxy authentication (as
      * configured by {@link ProxyConfiguration}) and a connection timeout (as configured by {@link
      * ProxyConfiguration#DEFAULT_CONNECT_TIMEOUT_MILLIS}).
      *
      * @return a new {@link HttpClient}
-     * @since TODO
+     * @since 2.379
      */
     public static HttpClient newHttpClient() {
-        return newHttpClientBuilder().build();
+        return newHttpClientBuilder().followRedirects(HttpClient.Redirect.NORMAL).build();
     }
 
     /**
@@ -378,7 +378,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
      * ProxyConfiguration#DEFAULT_CONNECT_TIMEOUT_MILLIS}).
      *
      * @return an {@link HttpClient.Builder}
-     * @since TODO
+     * @since 2.379
      */
     public static HttpClient.Builder newHttpClientBuilder() {
         HttpClient.Builder httpClientBuilder = HttpClient.newBuilder();
@@ -410,7 +410,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
      * @param uri the request URI
      * @return an {@link HttpRequest.Builder}
      * @throws IllegalArgumentException if the URI scheme is not supported
-     * @since TODO
+     * @since 2.379
      */
     public static HttpRequest.Builder newHttpRequestBuilder(URI uri) {
         HttpRequest.Builder httpRequestBuilder = HttpRequest.newBuilder(uri);

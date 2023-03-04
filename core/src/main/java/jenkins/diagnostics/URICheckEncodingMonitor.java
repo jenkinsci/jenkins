@@ -43,7 +43,7 @@ public class URICheckEncodingMonitor extends AdministrativeMonitor {
 
         if (!expected.equals(value)) {
             String expectedHex = Util.toHexString(expected.getBytes(StandardCharsets.UTF_8));
-            String valueHex = Util.toHexString(value.getBytes(StandardCharsets.UTF_8));
+            String valueHex = value != null ? Util.toHexString(value.getBytes(StandardCharsets.UTF_8)) : null;
             LOGGER.log(Level.CONFIG, "Expected to receive: " + expected + " (" + expectedHex + ") but got: " + value + " (" + valueHex + ")");
             return FormValidation.warningWithMarkup(hudson.model.Messages.Hudson_NotUsesUTF8ToDecodeURL());
         }

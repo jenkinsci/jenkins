@@ -195,6 +195,14 @@ public class ChannelPinger extends ComputerListener {
                         LOGGER.log(Level.FINE, "Ping failed after the channel " + channel.getName() + " is already partially closed.", cause);
                     } else {
                         LOGGER.log(Level.INFO, "Ping failed. Terminating the channel " + channel.getName() + ".", cause);
+                        if (computer == null) {
+                            // Disconnect from agent side.
+                            try {
+                                channel.close(cause);
+                            } catch (IOException x) {
+                                LOGGER.log(Level.WARNING, "could not disconnect " + channel.getName(), x);
+                            }
+                        }
                     }
             }
             /** Keep in a separate method so we do not even try to do class loading on {@link PingFailureAnalyzer} from an agent JVM. */

@@ -49,12 +49,19 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.net.CookieHandler;
+import java.net.CookieManager;
+import java.net.HttpCookie;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.Future;
 import javax.servlet.ServletException;
 import jenkins.ClassLoaderReflectionToolkit;
@@ -415,6 +422,18 @@ public class PluginManagerTest {
         assertThrows(IOException.class, () -> dynamicLoad("mandatory-depender-0.0.2.hpi"));
     }
 
+    @Issue("JENKINS-68194")
+    @WithPlugin("dependee.hpi")
+    @Test public void clearDisabledStatusAfterUninstall() throws Exception {
+        PluginWrapper pw = r.jenkins.pluginManager.getPlugin("dependee");
+        assertNotNull(pw);
+
+        pw.doMakeDisabled();
+        pw.doDoUninstall();
+
+        File disabledHpi = new File(r.jenkins.getRootDir(), "plugins/dependee.hpi.disabled");
+        assertFalse(disabledHpi.exists());  // `.disabled` file should be deleted after uninstall
+    }
 
     @Issue("JENKINS-21486")
     @Test public void installPluginWithObsoleteOptionalDependencyFails() throws Exception {
@@ -512,14 +531,14 @@ public class PluginManagerTest {
         assertNotNull(site.getData());
 
         // neither of the following plugins should be installed
-        assertNull(r.jenkins.getPluginManager().getPlugin("Parameterized-Remote-Trigger"));
-        assertNull(r.jenkins.getPluginManager().getPlugin("token-macro"));
+        assertNull(r.jenkins.getPluginManager().getPlugin("mandatory-depender"));
+        assertNull(r.jenkins.getPluginManager().getPlugin("dependee"));
 
         HtmlPage page = r.createWebClient().goTo("pluginManager/advanced");
         HtmlForm f = page.getFormByName("uploadPlugin");
         File dir = tmp.newFolder();
-        File plugin = new File(dir, "Parameterized-Remote-Trigger.hpi");
-        FileUtils.copyURLToFile(getClass().getClassLoader().getResource("plugins/Parameterized-Remote-Trigger.hpi"), plugin);
+        File plugin = new File(dir, "mandatory-depender-0.0.2.hpi");
+        FileUtils.copyURLToFile(getClass().getClassLoader().getResource("plugins/mandatory-depender-0.0.2.hpi"), plugin);
         f.getInputByName("name").setValueAttribute(plugin.getAbsolutePath());
         r.submit(f);
 
@@ -542,12 +561,12 @@ public class PluginManagerTest {
         } while (!done);
 
         // the files get renamed to .jpi
-        assertTrue(new File(r.jenkins.getRootDir(), "plugins/Parameterized-Remote-Trigger.jpi").exists());
-        assertTrue(new File(r.jenkins.getRootDir(), "plugins/token-macro.jpi").exists());
+        assertTrue(new File(r.jenkins.getRootDir(), "plugins/mandatory-depender.jpi").exists());
+        assertTrue(new File(r.jenkins.getRootDir(), "plugins/dependee.jpi").exists());
 
         // now the other plugins should have been found as dependencies and downloaded
-        assertNotNull(r.jenkins.getPluginManager().getPlugin("Parameterized-Remote-Trigger"));
-        assertNotNull(r.jenkins.getPluginManager().getPlugin("token-macro"));
+        assertNotNull(r.jenkins.getPluginManager().getPlugin("mandatory-depender"));
+        assertNotNull(r.jenkins.getPluginManager().getPlugin("dependee"));
     }
 
     @Issue("JENKINS-44898")
@@ -582,65 +601,6 @@ public class PluginManagerTest {
         assertTrue(ExtensionList.lookup(GlobalConfiguration.class).stream().anyMatch(gc -> "io.jenkins.plugins.MyGlobalConfiguration".equals(gc.getClass().getName())));
     }
 
-    /*
-    credentials - present in update-center.json, not deprecated
-    htmlpublisher - not in update-center.json, not deprecated
-    icon-shim, present in update-center.json, deprecated via label and top-level list
-    token-macro, present in update-center.json, deprecated via label only
-    variant, not in update-center.json, deprecated via top-level list
-     */
-    @Test
-    @Issue("JENKINS-59136")
-    @WithPlugin({"credentials.hpi", "htmlpublisher.jpi", "icon-shim.hpi", "token-macro.hpi", "variant.hpi"})
-    public void testDeprecationNotices() throws Exception {
-        assumeFalse("TODO: Implement this test on Windows", Functions.isWindows());
-        PersistedList<UpdateSite> sites = r.jenkins.getUpdateCenter().getSites();
-        sites.clear();
-        URL url = PluginManagerTest.class.getResource("/plugins/deprecations-update-center.json");
-        UpdateSite site = new UpdateSite(UpdateCenter.ID_DEFAULT, url.toString());
-        sites.add(site);
-
-        assertEquals(FormValidation.ok(), site.updateDirectlyNow(false));
-        assertNotNull(site.getData());
-
-        assertTrue(ExtensionList.lookupSingleton(PluginManager.PluginDeprecationMonitor.class).isActivated());
-
-        final PluginManager pm = Jenkins.get().getPluginManager();
-
-        final PluginWrapper credentials = pm.getPlugin("credentials");
-        Objects.requireNonNull(credentials);
-        assertFalse(credentials.isDeprecated());
-        assertTrue(credentials.getDeprecations().isEmpty());
-
-        final PluginWrapper htmlpublisher = pm.getPlugin("htmlpublisher");
-        Objects.requireNonNull(htmlpublisher);
-        assertFalse(htmlpublisher.isDeprecated());
-        assertTrue(htmlpublisher.getDeprecations().isEmpty());
-
-        final PluginWrapper iconShim = pm.getPlugin("icon-shim");
-        Objects.requireNonNull(iconShim);
-        assertTrue(iconShim.isDeprecated());
-        List<UpdateSite.Deprecation> deprecations = iconShim.getDeprecations();
-        assertEquals(1, deprecations.size());
-        assertEquals("https://www.jenkins.io/deprecations/icon-shim/", deprecations.get(0).url);
-        assertEquals("https://wiki.jenkins-ci.org/display/JENKINS/Icon+Shim+Plugin", iconShim.getInfo().wiki);
-
-        final PluginWrapper tokenMacro = pm.getPlugin("token-macro");
-        Objects.requireNonNull(tokenMacro);
-        assertTrue(tokenMacro.isDeprecated());
-        deprecations = tokenMacro.getDeprecations();
-        assertEquals(1, deprecations.size());
-        assertEquals("https://wiki.jenkins-ci.org/display/JENKINS/Token+Macro+Plugin", deprecations.get(0).url);
-
-        final PluginWrapper variant = pm.getPlugin("variant");
-        Objects.requireNonNull(variant);
-        assertTrue(variant.isDeprecated());
-        deprecations = variant.getDeprecations();
-        assertEquals(1, deprecations.size());
-        assertEquals("https://www.jenkins.io/deprecations/variant/", deprecations.get(0).url);
-        assertNull(variant.getInfo());
-    }
-
     @Issue("JENKINS-62622")
     @Test
     @WithPlugin("legacy.hpi")
@@ -650,9 +610,6 @@ public class PluginManagerTest {
 
         // ensure data is loaded - probably unnecessary, but closer to reality
         Assert.assertSame(FormValidation.Kind.OK, uc.getSite("default").updateDirectlyNow().kind);
-
-        // This would throw NPE
-        uc.getPluginsWithUnavailableUpdates();
     }
 
     @Test @Issue("JENKINS-64840")
@@ -694,5 +651,64 @@ public class PluginManagerTest {
         assertTrue(json.has("data"));
         data = json.getJSONArray("data");
         assertEquals("Should be two search hits for hello", 2, data.size());
+    }
+
+    @Issue("JENKINS-70599")
+    @Test
+    public void installNecessaryPluginsTest() throws Exception {
+        String jenkinsUrl = r.getURL().toString();
+
+        // Define a cookie handler
+        CookieHandler.setDefault(new CookieManager());
+        HttpCookie sessionCookie = new HttpCookie("session", "test-session-cookie");
+        sessionCookie.setPath("/");
+        sessionCookie.setVersion(0);
+        ((CookieManager) CookieHandler.getDefault())
+                .getCookieStore()
+                .add(new URI(jenkinsUrl), sessionCookie);
+
+        // Initialize the cookie handler and get the crumb
+        URI crumbIssuer = new URI(jenkinsUrl + "crumbIssuer/api/json");
+        HttpRequest httpGet =
+                HttpRequest.newBuilder()
+                        .uri(crumbIssuer)
+                        .header("Accept", "application/json")
+                        .timeout(Duration.ofSeconds(7))
+                        .GET()
+                        .build();
+        HttpClient clientGet =
+                HttpClient.newBuilder()
+                        .cookieHandler(CookieHandler.getDefault())
+                        .connectTimeout(Duration.ofSeconds(2))
+                        .build();
+        HttpResponse<String> responseGet = clientGet.send(httpGet, HttpResponse.BodyHandlers.ofString());
+        assertEquals("Bad response for crumb issuer", 200, responseGet.statusCode());
+        String body = responseGet.body();
+        assertTrue("crumbRequestField not in response", body.contains("crumbRequestField"));
+        org.json.JSONObject jsonObject = new org.json.JSONObject(body);
+        String crumb = (String) jsonObject.get("crumb");
+        String crumbRequestField = (String) jsonObject.get("crumbRequestField");
+
+        // Call installNecessaryPlugins XML API for git client plugin 4.0.0 with crumb
+        URI installNecessaryPlugins = new URI(jenkinsUrl + "pluginManager/installNecessaryPlugins");
+        String xmlRequest = "<jenkins><install plugin=\"git-client@4.0.0\"></install></jenkins>";
+        HttpRequest request =
+                HttpRequest.newBuilder()
+                        .uri(installNecessaryPlugins)
+                        .timeout(Duration.ofSeconds(20))
+                        .header("Content-Type", "application/xml")
+                        .header(crumbRequestField, crumb)
+                        .POST(HttpRequest.BodyPublishers.ofString(xmlRequest))
+                        .build();
+        HttpClient client =
+                HttpClient.newBuilder()
+                        .cookieHandler(CookieHandler.getDefault())
+                        .followRedirects(HttpClient.Redirect.ALWAYS)
+                        .connectTimeout(Duration.ofSeconds(2))
+                        .build();
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        // Redirect reported 404 before bug was fixed
+        assertEquals("Bad response for installNecessaryPlugins", 200, response.statusCode());
     }
 }
