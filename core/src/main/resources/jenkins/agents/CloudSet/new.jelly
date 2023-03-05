@@ -32,7 +32,7 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
   <j:getStatic var="createPermission" className="jenkins.model.Jenkins" field="ADMINISTER"/>
-  <l:layout title="${%New cloud}" permission="${createPermission}" type="one-column">
+  <l:layout title="${%New cloud}" permission="${app.ADMINISTER}" type="one-column">
     <st:include page="sidepanel.jelly" />
     <l:breadcrumb title="${%New cloud}" />
     <l:main-panel>

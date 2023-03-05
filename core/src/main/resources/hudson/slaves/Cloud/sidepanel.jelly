@@ -28,13 +28,10 @@ THE SOFTWARE.
     <l:side-panel>
         <l:tasks>
             <l:task contextMenu="false" href="." icon="symbol-computer" title="${%Status}"/>
-            <l:task href="configure" icon="symbol-settings" permission="${it.EXTENDED_READ}"
-                    title="${it.hasPermission(it.CONFIGURE) ? '%Configure' : '%View Configuration'}"/>
-            <l:task href="delete" icon="icon-edit-delete icon-md" permission="${it.DELETE}" title="${%Delete Cloud}"/>
+            <l:task href="configure" icon="symbol-settings"
+                    title="${app.hasPermission(app.ADMINISTER) ? '%Configure' : '%View Configuration'}"/>
+            <l:task href="delete" icon="icon-edit-delete icon-md" permission="${app.ADMINISTER}" title="${%Delete Cloud}"/>
             <t:actions />
         </l:tasks>
-        <j:forEach var="action" items="${it.allActions}">
-            <st:include it="${action}" page="box.jelly" optional="true"/>
-        </j:forEach>
     </l:side-panel>
 </j:jelly>
