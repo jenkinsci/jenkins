@@ -23,8 +23,8 @@
     "lint": "yarn lint:js && yarn lint:css"
   },
   "devDependencies": {
-    "@babel/cli": "7.20.7",
-    "@babel/core": "7.20.12",
+    "@babel/cli": "7.21.0",
+    "@babel/core": "7.21.0",
     "autoprefixer": "10.4.13",
     "clean-webpack-plugin": "4.0.0",
     "copy-webpack-plugin": "11.0.0",
