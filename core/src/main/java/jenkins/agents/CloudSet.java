@@ -8,9 +8,12 @@ import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.Failure;
 import hudson.model.RootAction;
+import hudson.model.UpdateCenter;
 import hudson.slaves.Cloud;
 import hudson.util.FormValidation;
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.servlet.ServletException;
@@ -18,6 +21,8 @@ import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithChildren;
 import jenkins.model.ModelObjectWithContextMenu;
 import net.sf.json.JSONObject;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerFallback;
 import org.kohsuke.stapler.StaplerRequest;
@@ -29,6 +34,7 @@ import org.kohsuke.stapler.verb.POST;
 
 @ExportedBean
 @Extension
+@Restricted(NoExternalUse.class)
 public class CloudSet extends AbstractModelObject implements Describable<CloudSet>, StaplerFallback, ModelObjectWithChildren, RootAction {
     @Override
     public Descriptor<CloudSet> getDescriptor() {
@@ -58,6 +64,16 @@ public class CloudSet extends AbstractModelObject implements Describable<CloudSe
     @Exported(name = "cloud", inline = true)
     public Jenkins.CloudList get_all() {
         return Jenkins.get().clouds;
+    }
+
+    @SuppressWarnings("unused") // stapler
+    public boolean isCloudAvailable() {
+        return !Cloud.all().isEmpty();
+    }
+
+    @SuppressWarnings("unused") // stapler
+    public String getCloudUpdateCenterCategoryLabel() {
+        return URLEncoder.encode(UpdateCenter.getCategoryDisplayName("cloud"), StandardCharsets.UTF_8);
     }
 
     @Override
