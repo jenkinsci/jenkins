@@ -256,7 +256,6 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
      * @throws IOException if this is not a directory, or listing was not possible for some other reason
      * @since 2.118
      */
-    @Restricted(NoExternalUse.class)
     public @NonNull Collection<String> list(@NonNull String includes, @CheckForNull String excludes, boolean useDefaultExcludes) throws IOException {
         return list(includes, excludes, useDefaultExcludes, new OpenOption[0]);
     }
