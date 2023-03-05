@@ -1992,6 +1992,7 @@ public class Functions {
         href = URLDecoder.decode(href, StandardCharsets.UTF_8);
         if (url.endsWith("/")) url = url.substring(0, url.length() - 1);
         if (href.endsWith("/")) href = href.substring(0, href.length() - 1);
+        if (href.startsWith("../")) href = href.substring(3, href.length());
 
         return url.endsWith(href);
     }
