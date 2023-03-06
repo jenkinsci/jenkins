@@ -29,7 +29,7 @@ THE SOFTWARE.
         <j:set var="escapeEntryTitleAndDescription" value="true"/>
         <f:entry>
           <f:repeatable name="tool" var="instance" items="${descriptor.installations}"
-                        add="${%label.add(descriptor.displayName)}" header="${descriptor.displayName}" enableTopButton="true"
+                        add="${%label.add(descriptor.displayName)}" header="${descriptor.displayName}"
                         noAddButton="${readOnlyMode ? 'true' : null}"
           >
             <j:set var="toolDescriptor" value="${descriptor}" /><!-- to make this descriptor accessible from properties -->
@@ -37,11 +37,7 @@ THE SOFTWARE.
               <st:include page="config.jelly" from="${descriptor}" class="${descriptor.clazz}"/>
               <f:descriptorList descriptors="${descriptor.propertyDescriptors}" field="properties"/>
               <l:isAdmin>
-                <f:entry title="">
-                  <div align="right">
-                    <f:repeatableDeleteButton value="${%label.delete(descriptor.displayName)}"/>
-                  </div>
-                </f:entry>
+                <f:repeatableDeleteButton value="${%label.delete(descriptor.displayName)}"/>
               </l:isAdmin>
             </div>
           </f:repeatable>
