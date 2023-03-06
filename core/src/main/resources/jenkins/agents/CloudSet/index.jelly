@@ -77,10 +77,10 @@ THE SOFTWARE.
             <section class="empty-state-section">
               <j:choose>
                 <j:when test="${it.cloudAvailable}">
-                  <p>${%There are no clouds currently setup, create one or install a plugin for more cloud options}.</p>
+                  <p>${%There are no clouds currently setup, create one or install a plugin for more cloud options.}</p>
                 </j:when>
                 <j:otherwise>
-                  <p>${%There are no cloud implementations for dynamically allocated agents installed}.</p>
+                  <p>${%There are no cloud implementations for dynamically allocated agents installed.}</p>
                 </j:otherwise>
               </j:choose>
               <ul class="empty-state-section-list">
