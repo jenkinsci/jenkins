@@ -265,7 +265,7 @@ public class Items {
                 continue;
             }
             if (p[i].equals("..")) {
-                if (name.size() == 0) {
+                if (name.isEmpty()) {
                     throw new IllegalArgumentException(String.format(
                             "Illegal relative path '%s' within context '%s'", path, context.getFullName()
                     ));

@@ -1655,7 +1655,7 @@ public class Functions {
      * Converts "abc" to "Abc".
      */
     public static String capitalize(String s) {
-        if (s == null || s.length() == 0) return s;
+        if (s == null || s.isEmpty()) return s;
         return Character.toUpperCase(s.charAt(0)) + s.substring(1);
     }
 
@@ -1867,7 +1867,7 @@ public class Functions {
     public static String joinPath(String... components) {
         StringBuilder buf = new StringBuilder();
         for (String s : components) {
-            if (s.length() == 0)  continue;
+            if (s.isEmpty())  continue;
 
             if (buf.length() > 0) {
                 if (buf.charAt(buf.length() - 1) != '/')
@@ -2171,8 +2171,8 @@ public class Functions {
         // Views are expected to contain a slash and a period, neither as the first char, and the last slash before the first period: Class/view.jelly
         // Nested classes use slashes, so we do not expect period before: Class/Nested/view.jelly
         String views = Arrays.stream(threadName.split(" ")).filter(part -> {
-            int slash = part.lastIndexOf("/");
-            int firstPeriod = part.indexOf(".");
+            int slash = part.lastIndexOf('/');
+            int firstPeriod = part.indexOf('.');
             return slash > 0 && firstPeriod > 0 && slash < firstPeriod;
         }).collect(Collectors.joining(" "));
         if (StringUtils.isBlank(views)) {

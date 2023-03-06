@@ -298,7 +298,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
                 return;
             }
 
-            if (rest.length() == 0) {
+            if (rest.isEmpty()) {
                 // if the target page to be displayed is a directory and the path doesn't end with '/', redirect
                 StringBuffer reqUrl = req.getRequestURL();
                 if (reqUrl.charAt(reqUrl.length() - 1) != '/') {
@@ -482,7 +482,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
 
     private String getPath(StaplerRequest req) {
         String path = req.getRestOfPath();
-        if (path.length() == 0)
+        if (path.isEmpty())
             path = "/";
         return path;
     }
