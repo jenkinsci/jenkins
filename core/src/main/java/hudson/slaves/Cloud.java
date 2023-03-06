@@ -46,6 +46,7 @@ import hudson.security.Permission;
 import hudson.security.PermissionScope;
 import hudson.slaves.NodeProvisioner.PlannedNode;
 import hudson.util.DescriptorList;
+import hudson.util.FormApply;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Objects;
@@ -313,7 +314,7 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
      * Accepts the update to the node configuration.
      */
     @POST
-    public void doConfigSubmit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, Descriptor.FormException {
+    public HttpResponse doConfigSubmit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, Descriptor.FormException {
         checkPermission(Jenkins.ADMINISTER);
 
         Cloud cloud = Jenkins.get().getCloud(this.name);
@@ -329,7 +330,7 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
         Jenkins.get().clouds.replace(this, result);
 
         // take the user back to the cloud top page.
-        rsp.sendRedirect2("../../" + result.getUrl());
+        return FormApply.success("../../" + result.getUrl());
     }
 
     public Cloud reconfigure(@NonNull final StaplerRequest req, JSONObject form) throws Descriptor.FormException {
