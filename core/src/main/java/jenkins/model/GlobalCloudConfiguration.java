@@ -21,11 +21,13 @@ import org.kohsuke.stapler.verb.POST;
  * Provides a configuration form for {@link Jenkins#clouds}.
  *
  * Has been overhauled in Jenkins 2.XXX to no longer contribute to Configure System, but be a standalone form.
+ * @deprecated Replaced by {@link jenkins.agents.CloudsLink} and {@link jenkins.agents.CloudSet}.
  */
 @Extension
 @Symbol("cloud")
 @Restricted(NoExternalUse.class)
 @RestrictedSince("2.205")
+@Deprecated
 public class GlobalCloudConfiguration implements RootAction {
 
     @CheckForNull
