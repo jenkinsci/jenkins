@@ -50,7 +50,7 @@ THE SOFTWARE.
     Either way, the successful queueing will result in 201 status code with <code>Location</code> HTTP header
     pointing the URL of the item in the queue. By polling the <code>api/json</code> sub-URL of the queue item,
     you can track the status of the queued task. Generally, the task will go through some state transitions,
-    then eventually it becomes either cancelled (look for the <code>cancelled</code> field property), or gets executed
+    then eventually it becomes either cancelled (look for the <code>cancelled</code> boolean property), or gets executed
     (look for the <code>executable</code> field that typically points to the <code>Run</code> object.)
   </p>
   <p>
