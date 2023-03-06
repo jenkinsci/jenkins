@@ -43,6 +43,7 @@ import hudson.widgets.HistoryWidget;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Files;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -181,15 +182,21 @@ public abstract class LazyBuildMixIn<JobT extends Job<JobT, RunT> & Queue.Task &
     public final synchronized RunT newBuild() throws IOException {
         try {
             RunT lastBuild = getBuildClass().getConstructor(asJob().getClass()).newInstance(asJob());
+            var rootDir = lastBuild.getRootDir().toPath();
+            if (Files.isDirectory(rootDir)) {
+               LOGGER.warning(() -> "JENKINS-23152: " + rootDir + " already existed; will not overwrite with " + lastBuild + " but will create a fresh build #" + asJob().getNextBuildNumber());
+               return newBuild();
+            }
             builds.put(lastBuild);
             lastBuild.getPreviousBuild(); // JENKINS-20662: create connection to previous build
             return lastBuild;
         } catch (InvocationTargetException e) {
             LOGGER.log(Level.WARNING, String.format("A new build could not be created in job %s", asJob().getFullName()), e);
             throw handleInvocationTargetException(e);
-        } catch (ReflectiveOperationException | IllegalStateException e) {
-            LOGGER.log(Level.WARNING, String.format("A new build could not be created in job %s", asJob().getFullName()), e);
-            throw new LinkageError(e.getMessage(), e);
+        } catch (ReflectiveOperationException e) {
+            throw new LinkageError("A new build could not be created in " + asJob().getFullName() + ": " + e, e);
+        } catch (IllegalStateException e) {
+            throw new IOException("A new build could not be created in " + asJob().getFullName() + ": " + e, e);
         }
     }
 

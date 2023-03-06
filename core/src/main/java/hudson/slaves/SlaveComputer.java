@@ -780,6 +780,23 @@ public class SlaveComputer extends Computer {
             return channel.call(new SlaveLogFetcher());
     }
 
+    /**
+     * Inline editing of description
+     */
+    @RequirePOST
+    @Restricted(NoExternalUse.class)
+    public synchronized void doSubmitDescription(StaplerResponse rsp, @QueryParameter String description) throws IOException {
+        checkPermission(CONFIGURE);
+
+        final Slave node = this.getNode();
+        if (node != null) {
+            node.setNodeDescription(description);
+        } else { // Node has been disabled/removed during other session tries to change the description.
+            throw new IOException("Description will be not set. The node " + nodeName + " does not exist (anymore).");
+        }
+        rsp.sendRedirect(".");
+    }
+
     @RequirePOST
     public HttpResponse doDoDisconnect(@QueryParameter String offlineMessage) {
         if (channel != null) {

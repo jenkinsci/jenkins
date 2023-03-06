@@ -72,9 +72,13 @@ THE SOFTWARE.
     <j:choose>
       <div class="row pane-content">
         <j:when test="${paneIsCollapsed}">
-          <div class="row">
-            <div class="col-xs-24 cell">${attrs.collapsedText}</div>
-          </div>
+          <table class="pane">
+            <tr>
+              <td class="pane">
+                ${attrs.collapsedText}
+              </td>
+            </tr>
+          </table>
         </j:when>
         <j:otherwise>
           <table class="pane ${attrs.class}">

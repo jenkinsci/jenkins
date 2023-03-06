@@ -53,19 +53,9 @@ THE SOFTWARE.
         <local:section/>
       </j:when>
       <j:otherwise>
-        <div class="tr"> <!-- f:advanced does not work well here because of placement in third column -->
-          <div>
-            <st:adjunct includes="lib.form.advanced.advanced"/>
-            <div class="advancedLink" style="text-align:left">
-              <input type="button" value="${%title(descriptor.displayName)}..." class="advanced-button advancedButton"/>
-            </div>
-            <div class="advancedBody">
-              <div class="tbody">
-                <local:section/>
-              </div>
-            </div>
-          </div>
-        </div>
+        <f:advanced title="${%title(descriptor.displayName)}">
+          <local:section/>
+        </f:advanced>
       </j:otherwise>
     </j:choose>
   </f:section>

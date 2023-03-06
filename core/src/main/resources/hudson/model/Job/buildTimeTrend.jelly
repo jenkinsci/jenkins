@@ -28,6 +28,7 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
   <l:layout title="${%title(it.displayName)}">
     <st:include page="sidepanel.jelly" />
+    <l:breadcrumb title="${%Build Time Trend}" />
     <st:adjunct includes="hudson.model.Job.buildTimeTrend_resources" />
     <l:main-panel>
       <h1>${%Timeline}</h1>

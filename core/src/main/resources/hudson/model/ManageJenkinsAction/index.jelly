@@ -30,10 +30,15 @@ THE SOFTWARE.
   <l:layout title="${%Manage Jenkins}" permissions="${app.MANAGE_AND_SYSTEM_READ}">
     <j:if test="${taskTags==null}">
       <st:include page="sidepanel.jelly" it="${app}" />
+      <!-- no need for additional breadcrumb here as we're on an index page already including breadcrumb -->
     </j:if>
 
     <l:main-panel>
-      <l:app-bar title="${%Manage Jenkins}" />
+      <l:app-bar title="${%Manage Jenkins}">
+        <l:search-bar placeholder="${%Search settings}" id="settings-search-bar" />
+      </l:app-bar>
+
+      <script src="${resURL}/jsbundles/pages/manage-jenkins.js" type="text/javascript" />
 
       <section class="manage-messages">
         <j:forEach var="am" items="${app.activeAdministrativeMonitors}">
@@ -85,9 +90,10 @@ THE SOFTWARE.
                   <a href="${m.urlName}">
                     <div class="jenkins-section__item__icon" aria-hidden="true">
                       <l:icon src="${m.iconFileName}" class="icon" />
-                      <j:if test="${m.getUpdateCount() != null and m.getUpdateCount() != 0}">
-                        <div tooltip="${m.getUpdateCount() == 1 ? '%updateAvailable(m.getUpdateCount())' : '%updatesAvailable(m.getUpdateCount())'}" class="jenkins-section__item__icon__badge">
-                          ${m.getUpdateCount()}
+                      <j:set var="badge" value="${m.badge}"/>
+                      <j:if test="${badge != null}">
+                        <div tooltip="${badge.tooltip}" class="jenkins-section__item__icon__badge alert-${badge.severity}">
+                          ${badge.text}
                         </div>
                       </j:if>
                     </div>

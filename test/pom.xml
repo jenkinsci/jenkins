@@ -72,13 +72,13 @@ THE SOFTWARE.
         <!-- RequireUpperBoundDeps via mailer and junit -->
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>display-url-api</artifactId>
-        <version>2.3.6</version>
+        <version>2.3.7</version>
       </dependency>
       <dependency>
         <!-- requireUpperBoundDeps via matrix-project and junit -->
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>script-security</artifactId>
-        <version>1218.v39ca_7f7ed0a_c</version>
+        <version>1229.v4880b_b_e905a_6</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -93,7 +93,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>1900.v9e128c991ef4</version>
+      <version>1938.ve4c94459431d</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -124,7 +124,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>io.jenkins.plugins</groupId>
       <artifactId>javax-mail-api</artifactId>
-      <version>1.6.2-8</version>
+      <version>1.6.2-9</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -146,7 +146,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
       <artifactId>instance-identity</artifactId>
-      <version>116.vf8f487400980</version>
+      <version>142.v04572ca_5b_265</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -158,7 +158,13 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>cloudbees-folder</artifactId>
-      <version>6.795.v3e23d3c6f194</version>
+      <version>6.800.v71307ca_b_986b</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>credentials</artifactId>
+      <version>1214.v1de940103927</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -170,13 +176,13 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>mailer</artifactId>
-      <version>438.v02c7f0a_12fa_4</version>
+      <version>448.v5b_97805e3767</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>matrix-auth</artifactId>
-      <version>3.1.5</version>
+      <version>3.1.6</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -260,6 +266,14 @@ THE SOFTWARE.
                   <type>jar</type>
                   <outputDirectory>${project.build.outputDirectory}/old-remoting</outputDirectory>
                   <destFileName>remoting-unsupported.jar</destFileName>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>io.jenkins.plugins</groupId>
+                  <artifactId>design-library</artifactId>
+                  <version>91.v257f311ea_1dc</version>
+                  <type>hpi</type>
+                  <outputDirectory>${project.build.outputDirectory}/plugins</outputDirectory>
+                  <destFileName>design-library.jpi</destFileName>
                 </artifactItem>
               </artifactItems>
             </configuration>

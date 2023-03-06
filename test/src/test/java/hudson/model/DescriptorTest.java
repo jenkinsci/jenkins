@@ -241,11 +241,9 @@ public class DescriptorTest {
         NullPointerException cause = new NullPointerException();
         final Descriptor.FormException fe = new Descriptor.FormException("My Message", cause, "fake");
         FailingHttpStatusCodeException ex = assertThrows(FailingHttpStatusCodeException.class, () ->
-            rule.executeOnServer(new Callable<Void>() {
-                @Override public Void call() throws Exception {
-                    fe.generateResponse(Stapler.getCurrentRequest(), Stapler.getCurrentResponse(), Jenkins.get());
-                    return null;
-                }
+            rule.executeOnServer((Callable<Void>) () -> {
+                fe.generateResponse(Stapler.getCurrentRequest(), Stapler.getCurrentResponse(), Jenkins.get());
+                return null;
             }));
         String response = ex.getResponse().getContentAsString();
         assertThat(response, containsString(fe.getMessage()));

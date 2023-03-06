@@ -13,13 +13,16 @@ properties([
 ])
 
 def buildTypes = ['Linux', 'Windows']
-def jdks = [11, 17]
+def jdks = [11, 17, 19]
 
 def builds = [:]
 for (i = 0; i < buildTypes.size(); i++) {
   for (j = 0; j < jdks.size(); j++) {
     def buildType = buildTypes[i]
     def jdk = jdks[j]
+    if (buildType == 'Windows' && jdk != 17) {
+      continue // unnecessary use of hardware
+    }
     builds["${buildType}-jdk${jdk}"] = {
       // see https://github.com/jenkins-infra/documentation/blob/master/ci.adoc#node-labels for information on what node types are available
       def agentContainerLabel = 'maven-' + jdk
@@ -149,7 +152,9 @@ builds.ath = {
       // Just to be safe
       deleteDir()
       checkout scm
-      sh 'bash ath.sh'
+      infra.withArtifactCachingProxy {
+        sh 'bash ath.sh'
+      }
       junit testResults: 'target/ath-reports/TEST-*.xml', testDataPublishers: [[$class: 'AttachmentPublisher']]
     }
   }
