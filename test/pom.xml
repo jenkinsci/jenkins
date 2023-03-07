@@ -78,7 +78,7 @@ THE SOFTWARE.
         <!-- requireUpperBoundDeps via matrix-project and junit -->
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>script-security</artifactId>
-        <version>1228.vd93135a_2fb_25</version>
+        <version>1229.v4880b_b_e905a_6</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -93,7 +93,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>1912.v0cdf15450b_fb</version>
+      <version>1938.ve4c94459431d</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -124,7 +124,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>io.jenkins.plugins</groupId>
       <artifactId>javax-mail-api</artifactId>
-      <version>1.6.2-8</version>
+      <version>1.6.2-9</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -176,7 +176,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>mailer</artifactId>
-      <version>438.v02c7f0a_12fa_4</version>
+      <version>448.v5b_97805e3767</version>
       <scope>test</scope>
     </dependency>
     <dependency>
