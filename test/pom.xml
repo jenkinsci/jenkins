@@ -152,7 +152,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>antisamy-markup-formatter</artifactId>
-      <version>155.v795fb_8702324</version>
+      <version>159.v25b_c67cd35fb_</version>
       <scope>test</scope>
     </dependency>
     <dependency>
