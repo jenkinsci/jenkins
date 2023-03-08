@@ -57,7 +57,7 @@ THE SOFTWARE.
     To programmatically schedule SCM polling, post to <a href="../polling">this URL</a>.
   </p>
   <p>
-    If security is enabled, the recommended method is to provide the username/password of an
+    If security is enabled, the recommended method is to provide the username/API Token of an
     account with build permission in the request.  Tools such as <code>curl</code> and <code>wget</code>
     have parameters to specify these credentials.  Another alternative (but deprecated) is to
     configure the 'Trigger builds remotely' section in the job configuration.  Then building
