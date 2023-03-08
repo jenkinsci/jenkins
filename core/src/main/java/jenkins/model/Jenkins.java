@@ -264,6 +264,7 @@ import jenkins.AgentProtocol;
 import jenkins.ExtensionComponentSet;
 import jenkins.ExtensionRefreshException;
 import jenkins.InitReactorRunner;
+import jenkins.agents.CloudSet;
 import jenkins.diagnostics.URICheckEncodingMonitor;
 import jenkins.install.InstallState;
 import jenkins.install.SetupWizard;
@@ -2186,6 +2187,14 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     public Cloud getCloud(String name) {
         return clouds.getByName(name);
+    }
+
+    /**
+     * Only there to bind to /cloud/ URL.
+     */
+    @Restricted(DoNotUse.class)
+    public CloudSet getCloud() {
+        return new CloudSet();
     }
 
     @Override

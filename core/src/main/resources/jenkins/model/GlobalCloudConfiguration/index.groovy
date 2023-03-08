@@ -8,4 +8,4 @@ def f = namespace(lib.FormTagLib)
 def l = namespace(lib.LayoutTagLib)
 def st = namespace("jelly:stapler")
 
-st.redirect(url: rootURL + "/manage/cloudSet/")
+st.redirect(url: rootURL + "/manage/cloud/")

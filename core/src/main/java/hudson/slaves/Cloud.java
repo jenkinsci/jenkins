@@ -133,7 +133,7 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
      * @return Jenkins relative URL.
      */
     public @NonNull String getUrl() {
-        return "cloud/" + Util.rawEncode(name) + "/";
+        return "manage/cloud/" + Util.rawEncode(name) + "/";
     }
 
     @Override
@@ -307,7 +307,7 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
     public HttpResponse doDoDelete() throws IOException {
         checkPermission(Jenkins.ADMINISTER);
         Jenkins.get().clouds.remove(this);
-        return new HttpRedirect("../..");
+        return new HttpRedirect("..");
     }
 
     /**
@@ -317,20 +317,21 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
     public HttpResponse doConfigSubmit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, Descriptor.FormException {
         checkPermission(Jenkins.ADMINISTER);
 
-        Cloud cloud = Jenkins.get().getCloud(this.name);
+        Jenkins j = Jenkins.get();
+        Cloud cloud = j.getCloud(this.name);
         if (cloud == null) {
             throw new ServletException("No such cloud " + this.name);
         }
         Cloud result = cloud.reconfigure(req, req.getSubmittedForm());
         String proposedName = result.name;
         if (!proposedName.equals(this.name)
-                && Jenkins.get().getCloud(proposedName) != null) {
+                && j.getCloud(proposedName) != null) {
             throw new Descriptor.FormException(jenkins.agents.Messages.CloudSet_CloudAlreadyExists(proposedName), "name");
         }
-        Jenkins.get().clouds.replace(this, result);
-
+        j.clouds.replace(this, result);
+        j.save();
         // take the user back to the cloud top page.
-        return FormApply.success("../../" + result.getUrl());
+        return FormApply.success(j.getRootUrlFromRequest() + result.getUrl());
     }
 
     public Cloud reconfigure(@NonNull final StaplerRequest req, JSONObject form) throws Descriptor.FormException {

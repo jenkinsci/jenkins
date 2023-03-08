@@ -33,12 +33,15 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.kohsuke.stapler.verb.POST;
 
 @ExportedBean
-@Extension
 @Restricted(NoExternalUse.class)
 public class CloudSet extends AbstractModelObject implements Describable<CloudSet>, StaplerFallback, ModelObjectWithChildren, RootAction {
     @Override
     public Descriptor<CloudSet> getDescriptor() {
         return Jenkins.get().getDescriptorOrDie(CloudSet.class);
+    }
+
+    public Cloud getDynamic(String token) {
+        return Jenkins.get().getCloud(token);
     }
 
     @Override
@@ -53,12 +56,12 @@ public class CloudSet extends AbstractModelObject implements Describable<CloudSe
 
     @Override
     public String getUrlName() {
-        return "cloudSet";
+        return "cloud";
     }
 
     @Override
     public String getSearchUrl() {
-        return "/cloudSet/";
+        return "/cloud/";
     }
 
     @Exported(name = "cloud", inline = true)
@@ -204,6 +207,7 @@ public class CloudSet extends AbstractModelObject implements Describable<CloudSe
         /**
          * Auto-completion for the "copy from" field in the new cloud page.
          */
+        @SuppressWarnings("unused") // stapler
         public AutoCompletionCandidates doAutoCompleteCopyNewItemFrom(@QueryParameter final String value) {
             final AutoCompletionCandidates r = new AutoCompletionCandidates();
             Jenkins.get().clouds.stream()
