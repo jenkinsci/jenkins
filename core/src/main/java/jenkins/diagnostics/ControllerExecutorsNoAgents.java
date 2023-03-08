@@ -57,7 +57,7 @@ public class ControllerExecutorsNoAgents extends AdministrativeMonitor {
             disable(true);
             rsp.sendRedirect(req.getContextPath() + "/manage");
         } else if (req.hasParameter("cloud")) {
-            rsp.sendRedirect(req.getContextPath() + "/cloudSet/");
+            rsp.sendRedirect(req.getContextPath() + "/manage/cloud/");
         } else if (req.hasParameter("agent")) {
             rsp.sendRedirect(req.getContextPath() + "/computer/new");
         }

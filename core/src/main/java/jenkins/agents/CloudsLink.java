@@ -28,7 +28,7 @@ public class CloudsLink extends ManagementLink {
 
     @Override
     public String getUrlName() {
-        return "cloudSet";
+        return "cloud";
     }
 
     @NonNull
