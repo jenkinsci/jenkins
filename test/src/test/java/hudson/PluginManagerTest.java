@@ -26,6 +26,7 @@ package hudson;
 
 import static java.nio.file.attribute.PosixFilePermission.OWNER_READ;
 import static java.nio.file.attribute.PosixFilePermission.OWNER_WRITE;
+import static org.awaitility.Awaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -76,11 +77,13 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import javax.servlet.ServletException;
 import jenkins.ClassLoaderReflectionToolkit;
@@ -748,11 +751,19 @@ public class PluginManagerTest {
 
         File tmpDir = Files.createTempFile("tmp", ".tmp").getParent().toFile();
         tmpDir.deleteOnExit();
-
-        Optional<File> lastUploadedPlugin = Arrays.stream(Objects.requireNonNull(tmpDir.listFiles((file, fileName) -> fileName.startsWith("uploaded")))).max(Comparator.comparingLong(File::lastModified));
-        Set<PosixFilePermission> filesPermission = Files.getPosixFilePermissions(lastUploadedPlugin.get().toPath(), LinkOption.NOFOLLOW_LINKS);
-
-        assertEquals(EnumSet.of(OWNER_READ, OWNER_WRITE), filesPermission);
+        final Set<PosixFilePermission>[] filesPermission = new Set[]{new HashSet<>()};
+        await().pollInterval(250, TimeUnit.MILLISECONDS)
+                .atMost(10, TimeUnit.SECONDS)
+                .until(() -> {
+                    Optional<File> lastUploadedPlugin = Arrays.stream(Objects.requireNonNull(tmpDir.listFiles((file, fileName) -> fileName.startsWith("uploaded")))).max(Comparator.comparingLong(File::lastModified));
+                    if (lastUploadedPlugin.isPresent()) {
+                        filesPermission[0] = Files.getPosixFilePermissions(lastUploadedPlugin.get().toPath(), LinkOption.NOFOLLOW_LINKS);
+                        return true;
+                    } else {
+                        return false;
+                    }
+                });
+        assertEquals(EnumSet.of(OWNER_READ, OWNER_WRITE), filesPermission[0]);
     }
 
     @Test
