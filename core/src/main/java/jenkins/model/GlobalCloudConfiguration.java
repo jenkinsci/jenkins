@@ -9,7 +9,7 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
- * Redirects from /configureClouds to /cloudSet/.
+ * Redirects from /configureClouds to /cloud/.
  * Previously was the form for clouds.
  * <p>
  * @deprecated Replaced by {@link jenkins.agents.CloudsLink} and {@link jenkins.agents.CloudSet}.
