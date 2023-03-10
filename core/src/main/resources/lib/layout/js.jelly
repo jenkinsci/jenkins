@@ -28,7 +28,7 @@ THE SOFTWARE.
     Client-side JavaScript loading tag. Similar to adjunct, but driven from the client. See page-init.js.
 
     @since 2.0
-    <st:attribute name="src" required="true">
+    <st:attribute name="src" use="required">
       JavaScript source path (relative to Jenkins).
     </st:attribute>
   </st:documentation>

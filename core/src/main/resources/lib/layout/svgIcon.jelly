@@ -42,7 +42,7 @@
          style="${attrs.style}"
          onclick="${attrs.onclick}"
          id="${attrs.id}"
-         tooltip="${attrs.tooltip != null ? h.xmlEscape(attrs.tooltip) : null}">
+         tooltip="${attrs.tooltip != null ? attrs.tooltip : null}">
 
         <j:choose>
             <j:when test="${attrs.href != null}">

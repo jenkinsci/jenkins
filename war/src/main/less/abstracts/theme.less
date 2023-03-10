@@ -162,9 +162,13 @@
   --link-font-weight: 600;
 
   // Tooltips
-  --tooltip-background-color: var(--background);
-  --tooltip-foreground-color: var(--text-color);
-  --tooltip-shadow: 0 0 8px 2px rgba(0, 0, 0, 0.05), 0 2px 2px rgba(0, 0, 0, 0.05), 0 10px 20px rgba(0, 0, 0, 0.2);
+  --tooltip-backdrop-filter: contrast(0.6) brightness(2.4) saturate(2) blur(15px);
+  --tooltip-color: var(--text-color);
+  --tooltip-box-shadow: 0 0 8px 2px rgba(0, 0, 30, 0.05), 0 0 1px 1px rgba(0, 0, 20, 0.025), 0 10px 20px rgba(0, 0, 20, 0.15);
+
+  // Dropdowns
+  --dropdown-backdrop-filter: contrast(0.6) brightness(2.5) saturate(1.5) blur(20px);
+  --dropdown-box-shadow: 0 10px 30px rgba(0, 0, 20, 0.2), 0 2px 10px rgba(0, 0, 20, 0.05), inset 0 -1px 2px rgba(255, 255, 255, 0.025);
 
   // Dark link
   --link-dark-color: var(--text-color);
@@ -285,8 +289,6 @@
   --plugin-manager-category-link-border-color--hover: var(--black);
   --plugin-manager-category-text-color: var(--text-color);
   --plugin-manager-category-link-color--hover: var(--text-color);
-  --plugin-manager-unavailable-bg-color: #f4f4f4;
-  --plugin-manager-unavailable-label-color: var(--text-color);
 
   // Auto complete
   --auto-complete-bg-color--prehighlight: #b3d4ff;

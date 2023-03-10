@@ -1,5 +1,6 @@
 @import url("./abstracts/mixins");
 @import url("./abstracts/colors");
+@import url("./base/display");
 @import url("./base/layout-commons");
 @import url("./base/spacing");
 @import url("./base/style");
@@ -8,6 +9,7 @@
 @import url("./base/yui-compatibility");
 @import url("./form/checkbox");
 @import url("./form/codemirror");
+@import url("./form/file-upload");
 @import url("./form/input");
 @import url("./form/layout");
 @import url("./form/radio");
@@ -54,9 +56,7 @@ html {
   // The downside is that the page does not resize with the browser's font size,
   // only with the zoom level.
   font-size: 16px !important;
-  letter-spacing: -0.016em;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   -webkit-tap-highlight-color: transparent;
-  scroll-behavior: smooth;
 }

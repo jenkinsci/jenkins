@@ -30,7 +30,7 @@ THE SOFTWARE.
     <s:attribute name="id">
       If specified the ID of the button.
 
-      @since TODO
+      @since 2.376
     </s:attribute>
     <s:attribute name="name">
       If specified, becomes the value of the name attribute.
@@ -45,12 +45,12 @@ THE SOFTWARE.
       Sets whether this button is a primary button or not.
       Defaults to true.
 
-      @since TODO
+      @since 2.376
     </s:attribute>
     <s:attribute name="clazz" />
   </s:documentation>
 
-  <button id="${attrs.id}" name="${attrs.name ?: 'Submit'}"
+  <button id="${attrs.id}" name="${attrs.name ?: 'Submit'}" formNoValidate="formNoValidate"
           class="jenkins-button ${attrs.primary != 'false' ? 'jenkins-button--primary' : ''} ${attrs.clazz}">
     ${attrs.value ?: '%Submit'}
   </button>

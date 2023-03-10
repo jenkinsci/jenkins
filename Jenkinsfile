@@ -13,15 +13,15 @@ properties([
 ])
 
 def buildTypes = ['Linux', 'Windows']
-def jdks = [11, 17]
+def jdks = [11, 17, 19]
 
 def builds = [:]
 for (i = 0; i < buildTypes.size(); i++) {
   for (j = 0; j < jdks.size(); j++) {
     def buildType = buildTypes[i]
     def jdk = jdks[j]
-    if (buildType == 'Windows' && jdk == 17) {
-      continue // TODO pending jenkins-infra/helpdesk#2822
+    if (buildType == 'Windows' && jdk != 17) {
+      continue // unnecessary use of hardware
     }
     builds["${buildType}-jdk${jdk}"] = {
       // see https://github.com/jenkins-infra/documentation/blob/master/ci.adoc#node-labels for information on what node types are available
@@ -151,27 +151,11 @@ builds.ath = {
     node('docker-highmem') {
       // Just to be safe
       deleteDir()
-      def fileUri
-      def metadataPath
-      dir('sources') {
-        checkout scm
-        def mavenOptions = [
-          '-Pquick-build',
-          '-Dmaven.repo.local=$WORKSPACE_TMP/m2repo',
-          '-am',
-          '-pl',
-          'war',
-          'package',
-        ]
-        infra.runMaven(mavenOptions, 11)
-        dir('war/target') {
-          fileUri = 'file://' + pwd() + '/jenkins.war'
-        }
-        metadataPath = pwd() + '/essentials.yml'
+      checkout scm
+      infra.withArtifactCachingProxy {
+        sh 'bash ath.sh'
       }
-      dir('ath') {
-        runATH jenkins: fileUri, metadataFile: metadataPath
-      }
+      junit testResults: 'target/ath-reports/TEST-*.xml', testDataPublishers: [[$class: 'AttachmentPublisher']]
     }
   }
 }

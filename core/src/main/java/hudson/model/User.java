@@ -1066,6 +1066,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         }
 
         private Object readResolve() {
+            // Will generally only work if called after UserIdMapper.init:
             return getById(id, false);
         }
     }
