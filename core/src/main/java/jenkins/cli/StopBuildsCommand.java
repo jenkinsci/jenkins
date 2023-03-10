@@ -83,8 +83,10 @@ public class StopBuildsCommand extends CLICommand {
     private void stopJobBuilds(final Job job) {
         final Run lastBuild = job.getLastBuild();
         final String jobName = job.getFullDisplayName();
-        if (lastBuild != null && lastBuild.isBuilding()) {
-            stopBuild(lastBuild, jobName);
+        if (lastBuild != null) {
+            if (lastBuild.isBuilding()) {
+                stopBuild(lastBuild, jobName);
+            }
             checkAndStopPreviousBuilds(lastBuild, jobName);
         }
     }
