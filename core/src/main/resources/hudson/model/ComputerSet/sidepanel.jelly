@@ -31,7 +31,7 @@ THE SOFTWARE.
   <l:side-panel>
     <l:tasks>
       <l:task href="../computer" icon="symbol-computer"
-              title="${app.hasPermission(app.ADMINISTER) ? '%Configure Nodes' : '%View Nodes'}"/>
+              title="${app.hasPermission(app.ADMINISTER) ? '%Nodes' : '%View Nodes'}"/>
       <l:task href="configure" icon="symbol-settings" permissions="${app.MANAGE_AND_SYSTEM_READ}" title="${%Node Monitoring}"/>
     </l:tasks>
     <t:queue items="${app.queue.items}" />

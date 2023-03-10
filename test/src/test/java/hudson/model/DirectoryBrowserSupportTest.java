@@ -50,6 +50,7 @@ import hudson.FilePath;
 import hudson.Functions;
 import hudson.Launcher;
 import hudson.Util;
+import hudson.slaves.WorkspaceList;
 import hudson.tasks.ArtifactArchiver;
 import hudson.tasks.BatchFile;
 import hudson.tasks.Shell;
@@ -1136,6 +1137,210 @@ public class DirectoryBrowserSupportTest {
             }
         }
 
+    }
+
+    @Test
+    @Issue("SECURITY-1807")
+    public void tmpNotListed() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.getBuildersList().add(new TestBuilder() {
+            @Override
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+                FilePath ws = build.getWorkspace();
+                ws.child("anotherDir").mkdirs();
+                WorkspaceList.tempDir(ws.child("subdir")).mkdirs();
+                return true;
+            }
+        });
+        assertEquals(Result.SUCCESS, p.scheduleBuild2(0).get().getResult());
+
+        String text = j.createWebClient().goTo("job/" + p.getName() + "/ws/").asNormalizedText();
+        assertTrue(text, text.contains("anotherDir"));
+        assertFalse(text, text.contains("subdir"));
+    }
+
+    @Test
+    @Issue("SECURITY-1807")
+    public void tmpNotListedWithGlob() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+
+        assertEquals(Result.SUCCESS, p.scheduleBuild2(0).get().getResult());
+        FilePath ws = p.getSomeWorkspace();
+
+        FilePath anotherDir = ws.child("anotherDir");
+        anotherDir.mkdirs();
+        anotherDir.child("insideDir").mkdirs();
+
+        FilePath mainTmp = WorkspaceList.tempDir(ws.child("subDir"));
+        mainTmp.mkdirs();
+
+        FilePath anotherTmp = WorkspaceList.tempDir(anotherDir.child("insideDir"));
+        anotherTmp.mkdirs();
+
+        ws.child("anotherDir/one.txt").touch(0);
+        ws.child("anotherDir/insideDir/two.txt").touch(0);
+        mainTmp.child("three.txt").touch(0);
+        anotherTmp.child("four.txt").touch(0);
+
+        assertEquals(Result.SUCCESS, p.scheduleBuild2(0).get().getResult());
+
+        String text = j.createWebClient().goTo("job/" + p.getName() + "/ws/**/*.txt").asNormalizedText();
+        assertTrue(text, text.contains("one.txt"));
+        assertTrue(text, text.contains("two.txt"));
+        assertFalse(text, text.contains("three.txt"));
+        assertFalse(text, text.contains("four.txt"));
+    }
+
+    @Test
+    @Issue("SECURITY-1807")
+    public void noDirectAccessToTmp() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.getBuildersList().add(new TestBuilder() {
+            @Override
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+                FilePath ws = build.getWorkspace();
+
+                FilePath folder = ws.child("anotherDir");
+                folder.mkdirs();
+                folder.child("one.txt").touch(0);
+
+                FilePath mainTmp = WorkspaceList.tempDir(ws.child("subDir"));
+                mainTmp.mkdirs();
+                mainTmp.child("two.txt").touch(0);
+
+                return true;
+            }
+        });
+        assertEquals(Result.SUCCESS, p.scheduleBuild2(0).get().getResult());
+
+        JenkinsRule.WebClient wc = j.createWebClient();
+        wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
+
+        Page page = wc.goTo(p.getUrl() + "ws/anotherDir/", null);
+        assertThat(page.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_OK));
+        page = wc.goTo(p.getUrl() + "ws/anotherDir/one.txt", null);
+        assertThat(page.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_OK));
+
+        page = wc.goTo(p.getUrl() + "ws/subdir@tmp/", null);
+        assertThat(page.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_NOT_FOUND));
+
+        page = wc.goTo(p.getUrl() + "ws/subdir@tmp/two.txt", null);
+        assertThat(page.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_NOT_FOUND));
+    }
+
+    @Test
+    @Issue("SECURITY-1807")
+    public void tmpNotListedInPlain() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.getBuildersList().add(new TestBuilder() {
+            @Override
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+                FilePath ws = build.getWorkspace();
+                ws.child("anotherDir").mkdirs();
+                WorkspaceList.tempDir(ws.child("subdir")).mkdirs();
+                return true;
+            }
+        });
+        assertEquals(Result.SUCCESS, p.scheduleBuild2(0).get().getResult());
+
+        String text = j.createWebClient().goTo("job/" + p.getName() + "/ws/*plain*", "text/plain").getWebResponse().getContentAsString();
+        assertTrue(text, text.contains("anotherDir"));
+        assertFalse(text, text.contains("subdir"));
+    }
+
+    @Test
+    @Issue("SECURITY-1807")
+    public void tmpNotListedInZipWithoutGlob() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.getBuildersList().add(new TestBuilder() {
+            @Override
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+                FilePath ws = build.getWorkspace();
+
+                FilePath anotherDir = ws.child("anotherDir");
+                anotherDir.mkdirs();
+                anotherDir.child("insideDir").mkdirs();
+
+                FilePath mainTmp = WorkspaceList.tempDir(ws.child("subDir"));
+                mainTmp.mkdirs();
+
+                FilePath anotherTmp = WorkspaceList.tempDir(anotherDir.child("insideDir"));
+                anotherTmp.mkdirs();
+
+                ws.child("anotherDir/one.txt").touch(0);
+                ws.child("anotherDir/insideDir/two.txt").touch(0);
+                mainTmp.child("three.txt").touch(0);
+                anotherTmp.child("four.txt").touch(0);
+                return true;
+            }
+        });
+        assertEquals(Result.SUCCESS, p.scheduleBuild2(0).get().getResult());
+
+        JenkinsRule.WebClient wc = j.createWebClient();
+        wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
+
+        //http://localhost:54407/jenkins/job/test0/ws/**/*.txt/*zip*/glob.zip
+        Page zipPage = wc.goTo("job/" + p.getName() + "/ws/*zip*/" + p.getName(), null);
+        assertThat(zipPage.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_OK));
+
+        List<String> entryNames = getListOfEntriesInDownloadedZip((UnexpectedPage) zipPage);
+        assertThat(entryNames, hasSize(2));
+        assertThat(entryNames, containsInAnyOrder(
+                "test0/anotherDir/one.txt",
+                "test0/anotherDir/insideDir/two.txt"
+        ));
+
+        zipPage = wc.goTo("job/" + p.getName() + "/ws/anotherDir/*zip*/" + p.getName(), null);
+        assertThat(zipPage.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_OK));
+
+        entryNames = getListOfEntriesInDownloadedZip((UnexpectedPage) zipPage);
+        assertThat(entryNames, hasSize(2));
+        assertThat(entryNames, containsInAnyOrder(
+                "anotherDir/one.txt",
+                "anotherDir/insideDir/two.txt"
+        ));
+    }
+
+    @Test
+    @Issue("SECURITY-1807")
+    public void tmpNotListedInZipWithGlob() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.getBuildersList().add(new TestBuilder() {
+            @Override
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+                FilePath ws = build.getWorkspace();
+
+                FilePath anotherDir = ws.child("anotherDir");
+                anotherDir.mkdirs();
+                anotherDir.child("insideDir").mkdirs();
+
+                FilePath mainTmp = WorkspaceList.tempDir(ws.child("subDir"));
+                mainTmp.mkdirs();
+
+                FilePath anotherTmp = WorkspaceList.tempDir(anotherDir.child("insideDir"));
+                anotherTmp.mkdirs();
+
+                ws.child("anotherDir/one.txt").touch(0);
+                ws.child("anotherDir/insideDir/two.txt").touch(0);
+                mainTmp.child("three.txt").touch(0);
+                anotherTmp.child("four.txt").touch(0);
+                return true;
+            }
+        });
+        assertEquals(Result.SUCCESS, p.scheduleBuild2(0).get().getResult());
+
+        JenkinsRule.WebClient wc = j.createWebClient();
+        wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
+
+        Page zipPage = wc.goTo("job/" + p.getName() + "/ws/**/*.txt/*zip*/glob.zip", null);
+        assertThat(zipPage.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_OK));
+
+        List<String> entryNames = getListOfEntriesInDownloadedZip((UnexpectedPage) zipPage);
+        assertThat(entryNames, hasSize(2));
+        assertThat(entryNames, containsInAnyOrder(
+                "anotherDir/one.txt",
+                "anotherDir/insideDir/two.txt"
+        ));
     }
 
     @Test
