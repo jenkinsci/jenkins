@@ -31,7 +31,7 @@ THE SOFTWARE.
     <l:main-panel>
       <j:choose>
         <j:when test="${it.cloudAvailable and !it._all.isEmpty()}">
-          <l:app-bar title="${%Manage clouds}">
+          <l:app-bar title="${%Clouds}">
             <l:hasAdministerOrManage>
               <a class="jenkins-button jenkins-button--primary" href="new">
                 <l:icon src="symbol-add"/>
@@ -72,7 +72,7 @@ THE SOFTWARE.
         </j:when>
         <j:otherwise>
           <div class="empty-state-block">
-            <l:app-bar title="${%Manage clouds}"/>
+            <l:app-bar title="${%Clouds}"/>
 
             <section class="empty-state-section">
               <j:choose>
