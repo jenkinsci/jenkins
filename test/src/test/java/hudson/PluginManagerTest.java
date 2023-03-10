@@ -749,7 +749,7 @@ public class PluginManagerTest {
         f.getInputByName("name").setValueAttribute(plugin.getAbsolutePath());
         r.submit(f);
 
-        File tmpDir = Files.createTempFile("tmp", ".tmp").getParent().toFile();
+        File tmpDir = new File(File.createTempFile("tmp", ".tmp").getParent());
         tmpDir.deleteOnExit();
         final Set<PosixFilePermission>[] filesPermission = new Set[]{new HashSet<>()};
         await().pollInterval(250, TimeUnit.MILLISECONDS)
