@@ -46,7 +46,7 @@ THE SOFTWARE.
         <div class="jenkins-app-bar__controls">
           <a href="https://www.jenkins.io/participate/" class="jenkins-button" target="_blank">
             <l:icon src="symbol-heart" />
-            Get involved
+            ${%Get involved}
           </a>
         </div>
       </div>
