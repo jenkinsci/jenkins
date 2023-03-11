@@ -13,6 +13,17 @@ function dropdown() {
     appendTo: document.body,
     offset: [0, 0],
     animation: "dropdown",
+    onShow: (instance) => {
+      const referenceParent = instance.reference.parentNode;
+
+      if (referenceParent.classList.contains("model-link")) {
+        referenceParent.classList.add("model-link--open");
+      }
+    },
+    onHide: (instance) => {
+      const referenceParent = instance.reference.parentNode;
+      referenceParent.classList.remove("model-link--open");
+    },
   };
 }
 
