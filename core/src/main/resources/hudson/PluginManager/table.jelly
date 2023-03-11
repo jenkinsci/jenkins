@@ -36,7 +36,7 @@ THE SOFTWARE.
       If true, will hide all rows by default, and only the filter field will show them.
     </st:attribute>
   </st:documentation>
-  <l:layout title="${%Updates} - ${%Plugin Manager}" permission="${app.SYSTEM_READ}">
+  <l:layout title="${%Updates} - ${%Plugins}" permission="${app.SYSTEM_READ}">
     <st:include page="sidepanel.jelly"/>
     <!-- no need for additional breadcrumb here as we're on an "index" page already including breadcrumb -->
 
