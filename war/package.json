@@ -53,7 +53,7 @@
     "bootstrap": "3.4.1",
     "hotkeys-js": "3.10.1",
     "jenkins-js-modules": "1.5.4",
-    "jquery": "3.6.3",
+    "jquery": "3.6.4",
     "lodash": "4.17.21",
     "postcss-less": "6.0.0",
     "sortablejs": "1.15.0",
