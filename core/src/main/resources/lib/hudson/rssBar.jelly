@@ -29,17 +29,23 @@ THE SOFTWARE.
     <button class="jenkins-button jenkins-button--tertiary" id="button-icon-legend">
       ${%legend}
     </button>
-      <a href="rssAll" class="jenkins-button jenkins-button--tertiary">
-        <l:icon src="symbol-rss" />
-        <span>Atom feed ${%forAll}</span>
-      </a>
-      <a href="rssFailed" class="jenkins-button jenkins-button--tertiary">
-        <l:icon src="symbol-rss" />
-        <span>Atom feed ${%forFailures}</span>
-      </a>
-      <a href="rssLatest" class="jenkins-button jenkins-button--tertiary">
-        <l:icon src="symbol-rss" />
-        <span>Atom feed ${%justLatestBuilds}</span>
-      </a>
+    <a href="rssAll" class="jenkins-button jenkins-button--tertiary">
+      <l:icon src="symbol-rss" />
+      <span>Atom feed ${%forAll}</span>
+    </a>
+    <a href="rssFailed" class="jenkins-button jenkins-button--tertiary">
+      <l:icon src="symbol-rss" />
+      <span>Atom feed ${%forFailures}</span>
+    </a>
+    <a href="rssLatest" class="jenkins-button jenkins-button--tertiary">
+      <l:icon src="symbol-rss" />
+      <span>Atom feed ${%justLatestBuilds}</span>
+    </a>
   </div>
+
+  <template id="template-icon-legend">
+    <st:include page="legend.jelly" it="${app}" />
+  </template>
+
+  <script src="${resURL}/jsbundles/pages/dashboard.js" type="text/javascript" defer="true" />
 </j:jelly>
