@@ -31,7 +31,7 @@ public class AdvancedButtonTest {
     public void testNestedOptionalBlock() throws Exception {
         HtmlPage page = j.createWebClient().goTo("self/testNestedOptionalBlock");
         HtmlForm form = page.getFormByName("config");
-        HtmlFormUtil.getButtonByCaption(form, "Advanced...").click();
+        HtmlFormUtil.getButtonByCaption(form, "Advanced").click();
         form.getInputByName("c").click();
 
         j.submit(form);
@@ -43,7 +43,7 @@ public class AdvancedButtonTest {
         HtmlPage page = j.createWebClient().goTo("self/testSectionInsideOfAdvanced");
         HtmlForm form = page.getFormByName("config");
         assertFalse(form.getInputByName("b").isDisplayed());
-        HtmlFormUtil.getButtonByCaption(form, "Advanced...").click();
+        HtmlFormUtil.getButtonByCaption(form, "Advanced").click();
         assertTrue(form.getInputByName("b").isDisplayed());
     }
 

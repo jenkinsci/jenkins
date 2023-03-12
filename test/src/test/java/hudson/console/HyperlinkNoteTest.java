@@ -93,7 +93,7 @@ public class HyperlinkNoteTest {
     private static String annotate(String text) throws IOException {
         StringWriter writer = new StringWriter();
         try (ConsoleAnnotationOutputStream out = new ConsoleAnnotationOutputStream(writer, null, null, StandardCharsets.UTF_8)) {
-            IOUtils.copy(new StringReader(text), out);
+            IOUtils.copy(new StringReader(text), out, StandardCharsets.UTF_8);
         }
         return writer.toString();
     }

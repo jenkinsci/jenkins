@@ -211,7 +211,7 @@ public class JNLPLauncher extends ComputerLauncher {
         return workDirSettings.toCommandLineString((SlaveComputer) computer);
     }
 
-    @Extension @Symbol("jnlp")
+    @Extension @Symbol({"inbound", "jnlp"})
     public static class DescriptorImpl extends Descriptor<ComputerLauncher> {
         @SuppressFBWarnings(value = "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD", justification = "for backward compatibility")
         public DescriptorImpl() {
@@ -243,17 +243,17 @@ public class JNLPLauncher extends ComputerLauncher {
         public FormValidation doCheckWebSocket(@QueryParameter boolean webSocket, @QueryParameter String tunnel) {
             if (webSocket) {
                 if (!WebSockets.isSupported()) {
-                    return FormValidation.error("WebSocket support is not enabled in this Jenkins installation");
+                    return FormValidation.error(Messages.JNLPLauncher_WebsocketNotEnabled());
                 }
                 if (Util.fixEmptyAndTrim(tunnel) != null) {
-                    return FormValidation.error("Tunneling is not supported in WebSocket mode");
+                    return FormValidation.error(Messages.JNLPLauncher_TunnelingNotSupported());
                 }
             } else {
                 if (Jenkins.get().getTcpSlaveAgentListener() == null) {
-                    return FormValidation.error("Either WebSocket mode is selected, or the TCP port for inbound agents must be enabled");
+                    return FormValidation.error(Messages.JNLPLauncher_TCPPortDisabled());
                 }
                 if (InstanceIdentityProvider.RSA.getCertificate() == null || InstanceIdentityProvider.RSA.getPrivateKey() == null) {
-                    return FormValidation.error("You must install the instance-identity plugin to use inbound agents in TCP mode");
+                    return FormValidation.error(Messages.JNLPLauncher_InstanceIdentityRequired());
                 }
             }
             return FormValidation.ok();

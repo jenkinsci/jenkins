@@ -46,7 +46,6 @@ import hudson.slaves.RetentionStrategy;
 import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.Set;
-import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import org.junit.Rule;
 import org.junit.Test;
@@ -182,21 +181,21 @@ public class LabelExpressionTest {
         parseAndVerify("aaa&&bbb&&ccc", "aaa&&bbb&&ccc");
     }
 
-    private void parseAndVerify(String expected, String expr) throws ANTLRException {
+    private void parseAndVerify(String expected, String expr) {
         assertEquals(expected, Label.parseExpression(expr).getName());
     }
 
     @Test
     public void parserError() {
-        parseShouldFail("foo bar");
-        parseShouldFail("foo (bar)");
-        parseShouldFail("foo(bar)");
-        parseShouldFail("a <- b");
-        parseShouldFail("a -< b");
-        parseShouldFail("a - b");
-        parseShouldFail("->");
-        parseShouldFail("-<");
-        parseShouldFail("-!");
+        parseShouldFail("foo bar", "line 1:4: extraneous input 'bar' expecting <EOF>");
+        parseShouldFail("foo (bar)", "line 1:4: mismatched input '(' expecting {<EOF>, '&&', '||', '->', '<->'}");
+        parseShouldFail("foo(bar)", "line 1:3: mismatched input '(' expecting {<EOF>, '&&', '||', '->', '<->'}");
+        parseShouldFail("a <- b", "line 1:2: token recognition error at: '<- '");
+        parseShouldFail("a -< b", "line 1:3: token recognition error at: '< '");
+        parseShouldFail("a - b", "line 1:2: mismatched input '-' expecting {<EOF>, '&&', '||', '->', '<->'}");
+        parseShouldFail("->", "line 1:0: mismatched input '->' expecting {'!', '(', ATOM, STRINGLITERAL}");
+        parseShouldFail("-<", "line 1:1: token recognition error at: '<'");
+        parseShouldFail("-!", "line 1:1: extraneous input '!' expecting <EOF>");
     }
 
     @Test
@@ -344,29 +343,28 @@ public class LabelExpressionTest {
         assertThat(label, instanceOf(LabelExpression.And.class));
     }
 
-    private void parseShouldFail(String expr) {
-        assertThrows(
+    private void parseShouldFail(String expr, String message) {
+        ANTLRException e = assertThrows(
                 expr + " should fail to parse",
                 ANTLRException.class,
                 () -> Label.parseExpression(expr));
+        assertThat(e, instanceOf(IllegalArgumentException.class));
+        assertEquals(message, e.getMessage());
     }
 
     @Test
     public void formValidation() throws Exception {
-        j.executeOnServer(new Callable<>() {
-            @Override
-            public Object call() throws Exception {
-                Label l = j.jenkins.getLabel("foo");
-                DumbSlave s = j.createSlave(l);
-                String msg = LabelExpression.validate("goo").renderHtml();
-                assertTrue(msg.contains("foo"));
-                assertTrue(msg.contains("goo"));
+        j.executeOnServer(() -> {
+            Label l = j.jenkins.getLabel("foo");
+            DumbSlave s = j.createSlave(l);
+            String msg = LabelExpression.validate("goo").renderHtml();
+            assertTrue(msg.contains("foo"));
+            assertTrue(msg.contains("goo"));
 
-                msg = LabelExpression.validate("built-in && goo").renderHtml();
-                assertTrue(msg.contains("foo"));
-                assertTrue(msg.contains("goo"));
-                return null;
-            }
+            msg = LabelExpression.validate("built-in && goo").renderHtml();
+            assertTrue(msg.contains("foo"));
+            assertTrue(msg.contains("goo"));
+            return null;
         });
     }
 

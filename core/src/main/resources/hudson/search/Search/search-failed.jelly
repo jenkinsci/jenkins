@@ -48,8 +48,17 @@ THE SOFTWARE.
             </j:forEach>
           </ol>
             <j:if test="${items.hasMoreResults()}">
-                <j:set var="max" value="${request.hasParameter('max')?request.getParameter('max'):100}"/>
-                <em>result has been truncated, <a href="?q=${h.urlEncode(q)}&amp;max=${max+100}">see 100 more</a></em>
+              <j:set var="max" value="${request.hasParameter('max')?request.getParameter('max'):100}"/>
+              <j:choose>
+                <j:when test="${max &gt; it.getMaxSearchSize()}">
+                 <em>Only showing the first ${it.getMaxSearchSize()} results,
+                   <a href="https://www.jenkins.io/redirect/increase-search-size-limit/">see the documentation for how to increase this limit.</a>
+                 </em>
+                </j:when>
+                <j:otherwise>
+                  <em>result has been truncated, <a href="?q=${h.urlEncode(q)}&amp;max=${max+100}">see 100 more</a></em>
+               </j:otherwise>
+              </j:choose>
             </j:if>
         </j:otherwise>
       </j:choose>

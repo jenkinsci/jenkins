@@ -34,6 +34,8 @@ import java.io.OutputStream;
 import java.io.Serializable;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.LinkOption;
+import java.nio.file.OpenOption;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -84,6 +86,11 @@ public final class DirectoryBrowserSupport implements HttpResponse {
     // escape hatch for SECURITY-904 to keep legacy behavior
     @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
     public static boolean ALLOW_SYMLINK_ESCAPE = SystemProperties.getBoolean(DirectoryBrowserSupport.class.getName() + ".allowSymlinkEscape");
+
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
+    public static boolean ALLOW_TMP_DISPLAY = SystemProperties.getBoolean(DirectoryBrowserSupport.class.getName() + ".allowTmpEscape");
+
+    private static final Pattern TMPDIR_PATTERN = Pattern.compile(".+@tmp/.*");
 
     /**
      * Escape hatch for the protection against SECURITY-2481. If enabled, the absolute paths on Windows will be allowed.
@@ -266,7 +273,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
             baseFile = root.child(base);
         }
 
-        if (baseFile.hasSymlink(getNoFollowLinks())) {
+        if (baseFile.hasSymlink(getOpenOptions()) || hasTmpDir(baseFile, base, getOpenOptions())) {
             rsp.sendError(HttpServletResponse.SC_NOT_FOUND);
             return;
         }
@@ -282,13 +289,13 @@ public final class DirectoryBrowserSupport implements HttpResponse {
                     includes = rest;
                     prefix = "";
                 }
-                baseFile.zip(rsp.getOutputStream(), includes, null, true, getNoFollowLinks(), prefix);
+                baseFile.zip(rsp.getOutputStream(), includes, null, true, prefix, getOpenOptions());
                 return;
             }
             if (plain) {
                 rsp.setContentType("text/plain;charset=UTF-8");
                 try (OutputStream os = rsp.getOutputStream()) {
-                    for (VirtualFile kid : baseFile.list(getNoFollowLinks())) {
+                    for (VirtualFile kid : baseFile.list(getOpenOptions())) {
                         os.write(kid.getName().getBytes(StandardCharsets.UTF_8));
                         if (kid.isDirectory()) {
                             os.write('/');
@@ -312,14 +319,16 @@ public final class DirectoryBrowserSupport implements HttpResponse {
             List<List<Path>> glob = null;
             boolean patternUsed = rest.length() > 0;
             boolean containsSymlink = false;
-            if (patternUsed) {
+            boolean containsTmpDir = false;
+                if (patternUsed) {
                 // the rest is Ant glob pattern
                 glob = patternScan(baseFile, rest, createBackRef(restSize));
             } else
             if (serveDirIndex) {
                 // serve directory index
                 glob = baseFile.run(new BuildChildPaths(root, baseFile, req.getLocale()));
-                containsSymlink = baseFile.containsSymLinkChild(getNoFollowLinks());
+                containsSymlink = baseFile.containsSymLinkChild(getOpenOptions());
+                containsTmpDir = baseFile.containsTmpDirChild(getOpenOptions());
             }
 
             if (glob != null) {
@@ -335,6 +344,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
                 req.setAttribute("pattern", rest);
                 req.setAttribute("dir", baseFile);
                 req.setAttribute("showSymlinkWarning", containsSymlink);
+                req.setAttribute("showTmpDirWarning", containsTmpDir);
                 if (ResourceDomainConfiguration.isResourceRequest(req)) {
                     req.getView(this, "plaindir.jelly").forward(req, rsp);
                 } else {
@@ -415,7 +425,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
                 }
                 InputStream in;
                 try {
-                    in = baseFile.open(getNoFollowLinks());
+                    in = baseFile.open(getOpenOptions());
                 } catch (IOException ioe) {
                     rsp.sendError(HttpServletResponse.SC_NOT_FOUND);
                     return;
@@ -436,6 +446,13 @@ public final class DirectoryBrowserSupport implements HttpResponse {
         public Boolean call() throws IOException {
             return new File(fragment).isAbsolute();
         }
+    }
+
+    private boolean hasTmpDir(VirtualFile baseFile, String base, OpenOption[] openOptions) {
+        if (FilePath.isTmpDir(baseFile.getName(), openOptions)) {
+            return true;
+        }
+        return FilePath.isIgnoreTmpDirs(openOptions) && TMPDIR_PATTERN.matcher(base).matches();
     }
 
     private List<List<Path>> keepReadabilityOnlyOnDescendants(VirtualFile root, boolean patternUsed, List<List<Path>> pathFragmentsList) {
@@ -763,7 +780,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
     private static List<List<Path>> buildChildPaths(VirtualFile cur, Locale locale) throws IOException {
             List<List<Path>> r = new ArrayList<>();
 
-            VirtualFile[] files = cur.list(getNoFollowLinks());
+            VirtualFile[] files = cur.list(getOpenOptions());
                 Arrays.sort(files, new FileComparator(locale));
 
                 for (VirtualFile f : files) {
@@ -778,7 +795,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
                         while (true) {
                             // files that don't start with '.' qualify for 'meaningful files', nor SCM related files
                             List<VirtualFile> sub = new ArrayList<>();
-                            for (VirtualFile vf : f.list(getNoFollowLinks())) {
+                            for (VirtualFile vf : f.list(getOpenOptions())) {
                                 String name = vf.getName();
                                 if (!name.startsWith(".") && !name.equals("CVS") && !name.equals(".svn")) {
                                     sub.add(vf);
@@ -803,7 +820,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
      * @param baseRef String like "../../../" that cancels the 'rest' portion. Can be "./"
      */
     private static List<List<Path>> patternScan(VirtualFile baseDir, String pattern, String baseRef) throws IOException {
-            Collection<String> files = baseDir.list(pattern, null, /* TODO what is the user expectation? */true, getNoFollowLinks());
+            Collection<String> files = baseDir.list(pattern, null, /* TODO what is the user expectation? */true, getOpenOptions());
 
             if (!files.isEmpty()) {
                 List<List<Path>> r = new ArrayList<>(files.size());
@@ -846,8 +863,15 @@ public final class DirectoryBrowserSupport implements HttpResponse {
             pathList.add(path);
         }
 
-    private static boolean getNoFollowLinks() {
-        return !ALLOW_SYMLINK_ESCAPE;
+    private static OpenOption[] getOpenOptions() {
+            List<OpenOption> options = new ArrayList<>();
+            if (!ALLOW_SYMLINK_ESCAPE) {
+                options.add(LinkOption.NOFOLLOW_LINKS);
+            }
+            if (!ALLOW_TMP_DISPLAY) {
+                options.add(FilePath.DisplayOption.IGNORE_TMP_DIRS);
+            }
+        return options.toArray(new OpenOption[0]);
     }
 
     private static final Logger LOGGER = Logger.getLogger(DirectoryBrowserSupport.class.getName());
