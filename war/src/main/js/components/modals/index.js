@@ -24,7 +24,7 @@ export function showModal(contents, options = {}) {
         </button>
       `);
     modal.appendChild(closeButton);
-    closeButton.addEventListener("click", () => closeForm());
+    closeButton.addEventListener("click", () => closeModal());
   }
 
   modal.querySelector("div").appendChild(contents);
@@ -34,10 +34,18 @@ export function showModal(contents, options = {}) {
   modal.addEventListener("cancel", (e) => {
     e.preventDefault();
 
-    closeForm();
+    closeModal();
   });
 
-  function closeForm() {
+  modal.addEventListener("click", function (e) {
+    if (e.target !== e.currentTarget) {
+      return;
+    }
+
+    closeModal();
+  });
+
+  function closeModal() {
     modal.classList.add("jenkins-modal--hidden");
 
     modal.addEventListener("webkitAnimationEnd", () => {
