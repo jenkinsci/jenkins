@@ -190,7 +190,7 @@ As some maintainers are willing to fix typographical errors and merge conflicts 
 ## IntelliJ suggestion
 
 In case you are using IntelliJ, please adjust the default setting in respect to whitespace fixes on save.
-The setting can be found in Settings -> Editor -> General -> On Save -> Remove trailing spaces on: `Modified lines`
+The setting can be found in Settings -> Editor -> General -> On Save -> Uncheck Remove trailing spaces on: `Modified lines`
 This will help minimize the diff, which makes reviewing PRs easier.
 
 We also do not recommend `*` imports in the production code.
