@@ -1,15 +1,18 @@
 /* global replaceDescription */
 (function () {
   document.addEventListener("DOMContentLoaded", function () {
-    let descriptionLink = document.querySelector("#description-link");
+    const descriptionPane = document.querySelector("#description");
+    const dataUrl = descriptionPane.dataset.url;
+    const dataDescription = descriptionPane.dataset.description;
+    let descriptionLink = document.getElementById(descriptionPane.dataset.buttonSetter);
+
     descriptionLink.addEventListener("click", function (e) {
       e.preventDefault();
-      let url = descriptionLink.getAttribute("data-url");
-      let description = descriptionLink.getAttribute("data-description");
-      if (url == null && description == null) {
+
+      if (dataUrl == null && dataDescription == null) {
         return replaceDescription();
       } else {
-        return replaceDescription(description, url);
+        return replaceDescription(dataDescription, dataUrl);
       }
     });
   });

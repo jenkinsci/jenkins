@@ -35,7 +35,11 @@ THE SOFTWARE.
                 <div id="systemmessage">
                   <j:out value="${app.systemMessage!=null ? app.markupFormatter.translate(app.systemMessage) : ''}" />
                 </div>
-              <t:editableDescription permission="${it.CONFIGURE}"/>
+              <t:editableDescription permission="${it.CONFIGURE}" customButton="button-description-setter" />
+
+              <button id="button-description-setter">
+                I am custom button
+              </button>
             </div>
           </st:include>
 
