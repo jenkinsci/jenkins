@@ -152,13 +152,13 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>antisamy-markup-formatter</artifactId>
-      <version>155.v795fb_8702324</version>
+      <version>159.v25b_c67cd35fb_</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>cloudbees-folder</artifactId>
-      <version>6.800.v71307ca_b_986b</version>
+      <version>6.815.v0dd5a_cb_40e0e</version>
       <scope>test</scope>
     </dependency>
     <dependency>
