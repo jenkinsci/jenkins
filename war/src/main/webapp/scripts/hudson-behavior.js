@@ -918,7 +918,7 @@ function renderOnDemand(e, callback, noBehaviour) {
       e.parentNode.insertBefore(n, e);
       if (n.nodeType == 1 && !noBehaviour) elements.push(n);
     }
-    Element.remove(e);
+    e.remove();
 
     evalInnerHtmlScripts(t.responseText, function () {
       Behaviour.applySubtree(elements, true);
