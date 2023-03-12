@@ -1,4 +1,4 @@
-:root, .app-theme-picker__picker[data-theme="none"] {
+:root, .app-theme-picker__picker[data-theme="none"], ::backdrop {
   // Font related properties
   --font-family-sans: system-ui, "Segoe UI", roboto, "Noto Sans", oxygen, ubuntu, cantarell,
   "Fira Sans", "Droid Sans", "Helvetica Neue", arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
@@ -173,7 +173,7 @@
   // Modals
   --modal-backdrop-background: hsla(240, 10%, 20%, 0.8);
   --modal-backdrop-filter: brightness(3) blur(50px);
-  --modal-box-shadow: 0 10px 40px rgba(0, 0, 20, 0.1),
+  --modal-box-shadow: 0 10px 40px rgba(0, 0, 20, 0.15),
                       0 2px 15px rgba(0, 0, 20, 0.05),
                       inset 0 0 2px 2px rgba(255, 255, 255, 0.025);
 

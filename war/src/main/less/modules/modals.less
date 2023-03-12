@@ -6,7 +6,7 @@
   background: transparent;
   box-shadow: var(--modal-box-shadow);
   backdrop-filter: var(--modal-backdrop-filter);
-  animation: jenkins-modal-animate-in var(--elastic-transition);
+  animation: jenkins-modal-animate-in 0.25s cubic-bezier(0, 0.68, 0.5, 1.5);
   overflow: hidden;
   padding: 0;
 
@@ -56,7 +56,7 @@
 }
 
 .jenkins-modal--hidden {
-  animation: jenkins-modal-animate-out 0.2s ease;
+  animation: jenkins-modal-animate-out 0.1s linear;
 
   &::backdrop {
     animation: jenkins-modal-backdrop-animate-out 0.2s ease;
@@ -71,9 +71,8 @@
 
 @keyframes jenkins-modal-animate-in {
   from {
-    scale: 90%;
+    scale: 85%;
     opacity: 0;
-    filter: blur(10px);
   }
 }
 
@@ -85,7 +84,7 @@
 
 @keyframes jenkins-modal-animate-out {
   to {
-    scale: 90%;
+    scale: 85%;
     opacity: 0;
   }
 }
