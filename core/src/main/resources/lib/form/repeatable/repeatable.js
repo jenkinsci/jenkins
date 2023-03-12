@@ -107,11 +107,11 @@ var repeatableSupport = {
         if (addButtonElements.length == 1 && this.enableTopButton) {
           buttonElement = addButtonElements[0];
           parentOfButton = buttonElement.parentNode;
-          var addTopButton = document.createElement("input");
+          var addTopButton = document.createElement("button");
           addTopButton.type = "button";
-          addTopButton.value =
-            buttonElement.textContent || buttonElement.innerText;
-          addTopButton.className = "repeatable-add repeatable-add-top";
+          addTopButton.innerHTML = buttonElement.innerHTML;
+          addTopButton.className =
+            "jenkins-button repeatable-add repeatable-add-top";
           parentOfButton.insertBefore(addTopButton, parentOfButton.firstChild);
           Behaviour.applySubtree(addTopButton, true);
         }
@@ -153,14 +153,17 @@ var repeatableSupport = {
 
   // called when 'add' button is clicked
   onAdd: function (n) {
-    var addOnTop = false;
+    let addOnTop = false;
+
+    if (n.classList.contains("repeatable-add-top")) {
+      addOnTop = true;
+    }
+
     while (n.tag == null) {
       n = n.parentNode;
-      if (n.hasClassName("repeatable-add-top")) {
-        addOnTop = true;
-      }
+      n.tag.expand(addOnTop);
     }
-    n.tag.expand(addOnTop);
+
     // Hack to hide tool home when a new tool has some installers.
     var inputs = n.getElementsByTagName("INPUT");
     for (var i = 0; i < inputs.length; i++) {
@@ -190,12 +193,17 @@ Behaviour.specify("DIV.repeated-container", "repeatable", -100, function (e) {
 });
 
 // button to add a new repeatable block
-Behaviour.specify("INPUT.repeatable-add", "repeatable", 0, function (e) {
-  makeButton(e, function (e) {
-    repeatableSupport.onAdd(e.target);
-  });
-  e = null; // avoid memory leak
-});
+Behaviour.specify(
+  "INPUT.repeatable-add, BUTTON.repeatable-add",
+  "repeatable",
+  0,
+  function (button) {
+    button.addEventListener("click", ({ currentTarget: button }) => {
+      repeatableSupport.onAdd(button);
+    });
+    button = null; // avoid memory leak
+  }
+);
 
 /**
  * Converts markup for plugins that aren't using the repeatableDeleteButton tag
