@@ -41,12 +41,18 @@ THE SOFTWARE.
 
           <j:set var="items" value="${it.items}"/>
           <st:include page="main.jelly" />
+
+          <template id="template-icon-legend">
+            <st:include page="legend.jelly" it="${app}" />
+          </template>
         </l:main-panel>
         <l:header>
           <!-- for screen resolution detection -->
           <l:yui module="cookie" />
           <script id="screenResolution-script" data-use-secure-cookie="${request.secure}"/>
           <st:adjunct includes="hudson.model.View.screen-resolution"/>
+
+          <script src="${resURL}/jsbundles/pages/dashboard.js" type="text/javascript" defer="true" />
         </l:header>
     </l:layout>
 </st:compress>

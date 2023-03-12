@@ -1,0 +1,51 @@
+import { createElementFromHtml } from "@/util/dom";
+import { CLOSE } from "@/util/symbols";
+
+const defaults = {
+  maxWidth: undefined,
+  hideCloseButton: false,
+};
+
+export function showModal(contents, options = {}) {
+  options = { ...defaults, ...options };
+  const modal = createElementFromHtml(
+    `<dialog class='jenkins-modal'>
+      <div class='jenkins-modal__contents'></div>
+    </dialog>`
+  );
+  modal.style.maxWidth = options.maxWidth;
+
+  let closeButton;
+  if (options.hideCloseButton !== true) {
+    closeButton = createElementFromHtml(`
+        <button class="jenkins-modal__close-button jenkins-button">
+          <span class="jenkins-visually-hidden">Close</span>
+          ${CLOSE}
+        </button>
+      `);
+    modal.appendChild(closeButton);
+    closeButton.addEventListener("click", () => closeForm());
+  }
+
+  modal.querySelector("div").appendChild(contents);
+
+  document.querySelector("body").appendChild(modal);
+
+  modal.addEventListener("cancel", (e) => {
+    e.preventDefault();
+
+    closeForm();
+  });
+
+  function closeForm() {
+    modal.classList.add("jenkins-modal--hidden");
+
+    modal.addEventListener("webkitAnimationEnd", () => {
+      modal.remove();
+    });
+  }
+
+  modal.showModal();
+
+  closeButton?.blur();
+}
