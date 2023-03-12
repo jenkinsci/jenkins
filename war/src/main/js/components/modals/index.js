@@ -7,7 +7,7 @@ const defaults = {
 };
 
 export function showModal(contents, options = {}) {
-  options = { ...defaults, ...options };
+  options = Object.assign({}, defaults, options);
   const modal = createElementFromHtml(
     `<dialog class='jenkins-modal'>
       <div class='jenkins-modal__contents'></div>
