@@ -137,18 +137,8 @@ public class TokenBasedRememberMeServices2 extends AbstractRememberMeServices {
 
         // TODO is it really still necessary to reimplement all of the below, or could we simply override rememberMeRequested?
 
-        String username;
-        Object principal = successfulAuthentication.getPrincipal();
-        if (principal instanceof UserDetails) {
-            username = ((UserDetails) principal).getUsername();
-        } else if (principal instanceof String) {
-            username = (String) principal;
-        } else {
-            LOGGER.warning(() -> "from " + successfulAuthentication + " found principal " + principal + " of unexpected " + (principal == null ? null : principal.getClass()));
-            return;
-        }
-
         long expiryTime = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(getTokenValiditySeconds());
+        String username = successfulAuthentication.getName();
 
         String signatureValue = makeTokenSignature(expiryTime, username);
         int tokenLifetime = calculateLoginLifetime(request, successfulAuthentication);
