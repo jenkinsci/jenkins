@@ -93,7 +93,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>1934.v90a_c07cf5b_21</version>
+      <version>1949.vb_b_37feefe78c</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -124,7 +124,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>io.jenkins.plugins</groupId>
       <artifactId>javax-mail-api</artifactId>
-      <version>1.6.2-8</version>
+      <version>1.6.2-9</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -152,13 +152,13 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>antisamy-markup-formatter</artifactId>
-      <version>155.v795fb_8702324</version>
+      <version>159.v25b_c67cd35fb_</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>cloudbees-folder</artifactId>
-      <version>6.800.v71307ca_b_986b</version>
+      <version>6.815.v0dd5a_cb_40e0e</version>
       <scope>test</scope>
     </dependency>
     <dependency>

@@ -54,6 +54,12 @@ THE SOFTWARE.
                ${%Symlinks are hidden}
              </p>
             </j:if>
+           <j:if test="${showTmpDirWarning}">
+             <p>
+                <img id="tmpdiralert" src="${imagesURL}/16x16/warning.png"/>
+               ${%Tmp directories are hidden}
+             </p>
+            </j:if>
           </j:when>
           <j:otherwise>
             <table class="fileList">
@@ -120,6 +126,12 @@ THE SOFTWARE.
              <p>
                 <img id="alert" src="${imagesURL}/svgs/warning.svg" width="16" height="16" />
                ${%Symlinks are hidden}
+             </p>
+            </j:if>
+           <j:if test="${showTmpDirWarning}">
+             <p>
+                <img id="alert" src="${imagesURL}/16x16/warning.png"/>
+               ${%Tmp directories are hidden}
              </p>
             </j:if>
           </j:otherwise>
