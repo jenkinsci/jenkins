@@ -24,6 +24,9 @@
 
 package hudson;
 
+import static java.nio.file.attribute.PosixFilePermission.OWNER_READ;
+import static java.nio.file.attribute.PosixFilePermission.OWNER_WRITE;
+import static org.awaitility.Awaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -32,9 +35,15 @@ import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeFalse;
 
+import com.gargoylesoftware.htmlunit.AlertHandler;
+import com.gargoylesoftware.htmlunit.Page;
+import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
+import com.gargoylesoftware.htmlunit.html.HtmlElement;
+import com.gargoylesoftware.htmlunit.html.HtmlElementUtil;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.PluginManager.UberClassLoader;
+import hudson.model.DownloadService;
 import hudson.model.Hudson;
 import hudson.model.RootAction;
 import hudson.model.UpdateCenter;
@@ -59,10 +68,23 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.LinkOption;
+import java.nio.file.attribute.PosixFilePermission;
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 import javax.servlet.ServletException;
 import jenkins.ClassLoaderReflectionToolkit;
 import jenkins.RestartRequiredException;
@@ -75,6 +97,7 @@ import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.jvnet.hudson.test.FlagRule;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
@@ -92,6 +115,7 @@ public class PluginManagerTest {
 
     @Rule public JenkinsRule r = PluginManagerUtil.newJenkinsRule();
     @Rule public TemporaryFolder tmp = new TemporaryFolder();
+    @Rule public FlagRule<Boolean> signatureCheck = new FlagRule<>(() -> DownloadService.signatureCheck, x -> DownloadService.signatureCheck = x);
 
     /**
      * Manual submission form.
@@ -711,4 +735,101 @@ public class PluginManagerTest {
         // Redirect reported 404 before bug was fixed
         assertEquals("Bad response for installNecessaryPlugins", 200, response.statusCode());
     }
+
+    @Test
+    @Issue("SECURITY-2823")
+    public void verifyUploadedPluginPermission() throws Exception {
+        assumeFalse(Functions.isWindows());
+
+        HtmlPage page = r.createWebClient().goTo("pluginManager/advanced");
+        HtmlForm f = page.getFormByName("uploadPlugin");
+        File dir = tmp.newFolder();
+        File plugin = new File(dir, "htmlpublisher.jpi");
+        FileUtils.copyURLToFile(Objects.requireNonNull(getClass().getClassLoader().getResource("plugins/htmlpublisher.jpi")), plugin);
+        f.getInputByName("name").setValueAttribute(plugin.getAbsolutePath());
+        r.submit(f);
+
+        File tmpDir = new File(File.createTempFile("tmp", ".tmp").getParent());
+        tmpDir.deleteOnExit();
+        final Set<PosixFilePermission>[] filesPermission = new Set[]{new HashSet<>()};
+        await().pollInterval(250, TimeUnit.MILLISECONDS)
+                .atMost(10, TimeUnit.SECONDS)
+                .until(() -> {
+                    Optional<File> lastUploadedPlugin = Arrays.stream(Objects.requireNonNull(tmpDir.listFiles((file, fileName) -> fileName.startsWith("uploaded")))).max(Comparator.comparingLong(File::lastModified));
+                    if (lastUploadedPlugin.isPresent()) {
+                        filesPermission[0] = Files.getPosixFilePermissions(lastUploadedPlugin.get().toPath(), LinkOption.NOFOLLOW_LINKS);
+                        return true;
+                    } else {
+                        return false;
+                    }
+                });
+        assertEquals(EnumSet.of(OWNER_READ, OWNER_WRITE), filesPermission[0]);
+    }
+
+    @Test
+    @Issue("SECURITY-3037")
+    public void noInjectionOnAvailablePluginsPage() throws Exception {
+        DownloadService.signatureCheck = false;
+        Jenkins.get().getUpdateCenter().getSites().clear();
+        UpdateSite us = new UpdateSite("Security3037", Jenkins.get().getRootUrl() + "security3037UpdateCenter/security3037-update-center.json");
+        Jenkins.get().getUpdateCenter().getSites().add(us);
+
+        try (JenkinsRule.WebClient wc = r.createWebClient()) {
+            HtmlPage p = wc.goTo("pluginManager");
+            List<HtmlElement> elements = p.getElementById("bottom-sticker")
+                    .getElementsByTagName("a")
+                    .stream()
+                    .filter(link -> link.getAttribute("href").equals("checkUpdatesServer"))
+                    .collect(Collectors.toList());
+            assertEquals(1, elements.size());
+            AlertHandlerImpl alertHandler = new AlertHandlerImpl();
+            wc.setAlertHandler(alertHandler);
+
+            HtmlElementUtil.click(elements.get(0));
+            HtmlPage available = wc.goTo("pluginManager/available");
+            assertTrue(available.querySelector(".alert-danger")
+                    .getTextContent().contains("This plugin is built for Jenkins 2.999"));
+            wc.waitForBackgroundJavaScript(100);
+
+            HtmlAnchor anchor = available.querySelector(".jenkins-table__link");
+            anchor.click(true, false, false);
+            wc.waitForBackgroundJavaScript(100);
+            assertTrue(alertHandler.messages.isEmpty());
+        }
+    }
+
+    static class AlertHandlerImpl implements AlertHandler {
+        List<String> messages = Collections.synchronizedList(new ArrayList<>());
+
+        @Override
+        public void handleAlert(final Page page, final String message) {
+            messages.add(message);
+        }
+    }
+
+    @TestExtension("noInjectionOnAvailablePluginsPage")
+    public static final class Security3037UpdateCenter implements RootAction {
+
+        @Override
+        public String getIconFileName() {
+            return "gear2.png";
+        }
+
+        @Override
+        public String getDisplayName() {
+            return "security-3037-update-center";
+        }
+
+        @Override
+        public String getUrlName() {
+            return "security3037UpdateCenter";
+        }
+
+        public void doDynamic(StaplerRequest staplerRequest, StaplerResponse staplerResponse) throws ServletException, IOException {
+            staplerResponse.setContentType("application/json");
+            staplerResponse.setStatus(200);
+            staplerResponse.serveFile(staplerRequest, PluginManagerTest.class.getResource("/plugins/security3037-update-center.json"));
+        }
+    }
+
 }
