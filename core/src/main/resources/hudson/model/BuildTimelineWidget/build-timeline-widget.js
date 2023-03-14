@@ -11,19 +11,29 @@ function getData(eventSource1, current, min, max) {
   }
   if (!eventSource1.loaded[current]) {
     eventSource1.loaded[current] = true;
-    new Ajax.Request("timeline/data/", {
-      method: "POST",
-      parameters: { min: current * interval, max: (current + 1) * interval },
-      onSuccess: function (t) {
-        if (t.status != 0) {
-          try {
-            eventSource1.loadJSON(JSON.parse(t.responseText), ".");
+    fetch(
+      "timeline/data/?" +
+        new URLSearchParams({
+          min: current * interval,
+          max: (current + 1) * interval,
+        }),
+      {
+        method: "POST",
+        headers: {
+          [document.head.dataset.crumbHeader]: document.head.dataset.crumbValue,
+        },
+      }
+    ).then((t) => {
+      if (t.status !== 0) {
+        t.json()
+          .then((json) => {
+            eventSource1.loadJSON(json, ".");
             getData(eventSource1, current - 1, min, max);
-          } catch (e) {
-            alert(e);
-          }
-        }
-      },
+          })
+          .catch((err) => {
+            alert(err);
+          });
+      }
     });
   }
 }
