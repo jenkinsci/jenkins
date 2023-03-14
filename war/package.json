@@ -25,7 +25,7 @@
   "devDependencies": {
     "@babel/cli": "7.21.0",
     "@babel/core": "7.21.0",
-    "autoprefixer": "10.4.13",
+    "autoprefixer": "10.4.14",
     "clean-webpack-plugin": "4.0.0",
     "copy-webpack-plugin": "11.0.0",
     "css-loader": "6.7.3",
