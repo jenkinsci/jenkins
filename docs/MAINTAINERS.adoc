@@ -58,7 +58,7 @@ They are also responsible to monitor the weekly release status and to perform tr
 GitHub team: link:https://github.com/orgs/jenkinsci/teams/core[@jenkinsci/core].
 
 **Release Team Members** are responsible for Jenkins weekly and LTS releases.
-Led by the link:https://www.jenkins.io/project/team-leads/#release[Jenkins Release Officer], they initiate releases, prepare changelogs and backport changes into the link:https://www.jenkins.io/download/lts/[Stable release line].
+Led by the link:https://www.jenkins.io/project/team-leads/#release[Jenkins Release Officer], they initiate releases and backport changes into the link:https://www.jenkins.io/download/lts/[Stable release line].
 Team members get `Write` permissions in the Jenkins core repository, and they also get permissions to trigger release Pipelines. LTS release steps are documented in link:https://github.com/jenkins-infra/release/blob/master/.github/ISSUE_TEMPLATE/1-lts-release-checklist.md[jenkins-infra/release]
 
 === Ladder
@@ -76,7 +76,7 @@ The Decision is made by a consensus in the mailing list or via voting at the lin
 
 Jenkins core is a mission-critical part of the ecosystem.
 We need to ensure that submitted pull requests are not only code complete,
-but also that they do not introduce undesired defects, breaking changes and technical debt.
+but also that they do not introduce undesired defects, breaking changes or technical debt.
 At the same time, we are interested to make the review process as simple as possible for contributors and maintainers.
 
 === Review goals
@@ -239,7 +239,8 @@ Initial issue triage has the following objectives:
   Sometimes Jenkins Jira is used as a support portal.
   We do not want to encourage that.
   Jenkins Jira is an issue tracker, and we expect reporters to investigate issues on their side to an extent that they can be reviewed by maintainers.
-  For support requests, users are expected to use link:https://www.jenkins.io/mailing-lists[mailing lists],
+  For support requests, users are expected to use the link:https://community.jenkins.io/c/using-jenkins/support/8[community forum],
+  link:https://www.jenkins.io/mailing-lists[mailing lists],
   link:https://www.jenkins.io/chat/[chats] and other resources (e.g. Stackoverflow).
   It is fine to link users to link:https://github.com/jenkinsci/.github/blob/master/SUPPORT.md[this page]. 
 * **Resolve duplicates**.
@@ -348,7 +349,8 @@ Merge process can be initiated once a pull request matches the requirements:
 
 ==== Step 2: Is it a good time to merge?
 
-link:https://www.jenkins.io/security/[Jenkins security updates] are coordinated with the LTS calendar and if the weekly release on the weekend before an LTS release introduces regressions, users of the weekly line may have to choose between security fixes and a working Jenkins.
+link:https://www.jenkins.io/security/[Jenkins security updates] are coordinated with the LTS calendar.
+If the weekly release before an LTS release introduces regressions, users of the weekly line may have to choose between security fixes and a working Jenkins.
 The Jenkins security team will usually send a "pre-announcement" to link:https://groups.google.com/forum/#!forum/jenkinsci-advisories[the advisories list] on Wednesday or Thursday the week before release, but that's not always doable.
 For these reasons, the following changes should not be merged during the week before LTS releases (weeks 3, 7, 11, 15, etc. on the page linked above):
 
