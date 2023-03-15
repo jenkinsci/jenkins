@@ -41,7 +41,6 @@ import com.gargoylesoftware.htmlunit.ElementNotFoundException;
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.WebResponse;
 import com.gargoylesoftware.htmlunit.html.DomNode;
 import com.gargoylesoftware.htmlunit.html.DomNodeList;
 import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
@@ -357,24 +356,40 @@ public class AbstractProjectTest {
         JenkinsRule.WebClient wc = j.createWebClient()
                 .withThrowExceptionOnFailingStatusCode(false);
 
-        WebResponse rsp = wc.getPage(wc.addCrumb(new WebRequest(new URL(j.getURL(), p.getUrl() +
-                "build?delay=0"),
-                HttpMethod.POST))).getWebResponse();
-        assertEquals(HttpURLConnection.HTTP_CREATED, rsp.getStatusCode());
-        assertNotNull(rsp.getResponseHeaderValue("Location"));
+        HttpURLConnection conn = (HttpURLConnection) wc.createCrumbedUrl(p.getUrl() + "build?delay=0")
+                .openConnection();
+        conn.setRequestMethod("POST");
+        assertEquals(HttpURLConnection.HTTP_CREATED, conn.getResponseCode());
+        assertNotNull(conn.getHeaderField("Location"));
 
-        WebResponse rsp2 = wc.getPage(wc.addCrumb(new WebRequest(new URL(j.getURL(), p.getUrl() +
-                "build?delay=0"),
-                HttpMethod.POST))).getWebResponse();
-        assertEquals(HttpURLConnection.HTTP_CREATED, rsp2.getStatusCode());
-        assertEquals(rsp.getResponseHeaderValue("Location"), rsp2.getResponseHeaderValue("Location"));
+        HttpURLConnection conn2 = (HttpURLConnection) wc.createCrumbedUrl(p.getUrl() + "build?delay=0")
+                .openConnection();
+        conn2.setRequestMethod("POST");
+        assertEquals(HttpURLConnection.HTTP_CREATED, conn2.getResponseCode());
+        assertEquals(conn.getHeaderField("Location"), conn2.getHeaderField("Location"));
 
         p.makeDisabled(true);
 
-        WebResponse rsp3 = wc.getPage(wc.addCrumb(new WebRequest(new URL(j.getURL(), p.getUrl() +
+        HttpURLConnection conn3 = (HttpURLConnection) wc.createCrumbedUrl(p.getUrl() + "build?delay=0")
+                .openConnection();
+        conn3.setRequestMethod("POST");
+        assertEquals(HttpURLConnection.HTTP_CONFLICT, conn3.getResponseCode());
+    }
+
+    /**
+     * Create a build by web page
+     */
+    @Test
+    public void buildByWebPage() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+        JenkinsRule.WebClient wc = j.createWebClient()
+                .withThrowExceptionOnFailingStatusCode(false);
+
+        Page page = wc.getPage(wc.addCrumb(new WebRequest(new URL(j.getURL(), p.getUrl() +
                 "build?delay=0"),
-                HttpMethod.POST))).getWebResponse();
-        assertEquals(HttpURLConnection.HTTP_CONFLICT, rsp3.getStatusCode());
+                HttpMethod.POST)));
+        assertTrue(page.isHtmlPage());
+        assertEquals(page.getUrl().toString(), j.getURL() + p.getUrl());
     }
 
     /**
