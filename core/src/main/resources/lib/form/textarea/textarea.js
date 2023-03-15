@@ -68,20 +68,26 @@ Behaviour.specify(
         layoutUpdateCallback.call();
       };
 
-      new Ajax.Request(rootURL + showPreview.getAttribute("previewEndpoint"), {
-        parameters: {
-          text: text,
+      fetch(rootURL + showPreview.getAttribute("previewEndpoint"), {
+        method: 'post',
+        headers: {
+          [document.head.dataset.crumbHeader]: document.head.dataset.crumbValue
         },
-        onSuccess: function (obj) {
-          render(obj.responseText);
-        },
-        onFailure: function (obj) {
-          render(
-            obj.status + " " + obj.statusText + "<HR/>" + obj.responseText
-          );
-        },
-      });
-      return false;
+        body: new URLSearchParams({
+          text: text
+        })
+      }).then(rsp => {
+        rsp.text().then(responseText => {
+          if (rsp.ok) {
+            render(responseText);
+          } else {
+            render(
+              rsp.status + " " + rsp.statusText + "<HR/>" + rsp.responseText
+            );
+          }
+          return false;
+        })
+      })
     };
 
     hidePreview.onclick = function () {

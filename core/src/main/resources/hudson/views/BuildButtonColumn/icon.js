@@ -9,7 +9,8 @@ Behaviour.specify(
     var icon = document.getElementById(id);
 
     icon.onclick = function () {
-      new Ajax.Request(url);
+      // TODO what is this doing? this is just ignored? is it notifying if url succeeded?
+      fetch(url)
       hoverNotification(message, this, -100);
       return false;
     };

@@ -9,13 +9,18 @@
 
   var urlToTest = redirectForm.getAttribute("data-url");
   var callUrlToTest = function (testWithContext, callback) {
-    var options = {
-      onComplete: callback,
-    };
+    var body = null;
     if (testWithContext === true) {
-      options.parameters = { testWithContext: true };
+      body = new URLSearchParams({ testWithContext: "true" });
     }
-    new Ajax.Request(urlToTest, options);
+    fetch(urlToTest, {
+      cache: 'no-cache',
+      headers: {
+        [document.head.dataset.crumbHeader]: document.head.dataset.crumbValue
+      },
+      body
+    }).then(rsp => callback(rsp))
+      .catch(rsp => callback(rsp))
   };
 
   var displayWarningMessage = function (withContextMessage) {

@@ -1,10 +1,9 @@
 (function () {
   function updateBuildCaptionIcon() {
-    new Ajax.Request("statusIcon", {
-      method: "get",
-      onComplete: function (rsp) {
-        var isBuilding = rsp.getResponseHeader("X-Building");
-        if (isBuilding == "true") {
+    fetch("statusIcon")
+      .then(rsp => {
+        var isBuilding = rsp.headers.get("X-Building");
+        if (isBuilding === "true") {
           setTimeout(updateBuildCaptionIcon, 5000);
         } else {
           var progressBar = document.querySelector(
@@ -14,10 +13,11 @@
             progressBar.style.display = "none";
           }
         }
-        document.querySelector(".build-caption .icon-xlg").outerHTML =
-          rsp.responseText;
-      },
-    });
+        rsp.text()
+          .then(responseText => {
+            document.querySelector(".build-caption .icon-xlg").outerHTML = responseText
+          })
+      });
   }
 
   window.addEventListener("load", function () {

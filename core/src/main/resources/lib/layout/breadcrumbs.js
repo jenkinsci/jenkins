@@ -83,10 +83,16 @@ window.breadcrumbs = (function () {
   }
 
   function postRequest(action, event, url) {
-    new Ajax.Request(url);
-    if (event.length == 1 && event[0].target != null) {
-      hoverNotification("Done.", event[0].target);
-    }
+    fetch(url, {
+      method: 'post',
+      headers: {
+        [document.head.dataset.crumbHeader]: document.head.dataset.crumbValue
+      },
+    }).then(_ => {
+      if (event.length == 1 && event[0].target != null) {
+        hoverNotification("Done.", event[0].target);
+      }
+    })
   }
 
   function requireConfirmation(action, event, cfg) {

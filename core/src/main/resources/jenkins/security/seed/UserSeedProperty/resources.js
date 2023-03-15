@@ -33,9 +33,13 @@ window.resetSeed = function (button) {
   }
 
   if (confirm(confirmMessage)) {
-    new Ajax.Request(targetUrl, {
-      method: "post",
-      onSuccess: function () {
+    fetch(targetUrl, {
+      method: 'post',
+      headers: {
+        [document.head.dataset.crumbHeader]: document.head.dataset.crumbValue
+      }
+    }).then(rsp => {
+      if (rsp.ok) {
         if (redirectAfterClick) {
           window.location.href = redirectAfterClick;
         } else {
@@ -43,7 +47,8 @@ window.resetSeed = function (button) {
             warningMessage.addClassName("visible");
           }
         }
-      },
-    });
+
+      }
+    })
   }
 };

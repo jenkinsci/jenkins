@@ -105,15 +105,21 @@ window.confirmAndRevokeAllSelected = function (button) {
         selectedValues.push({ userId: userId, uuid: uuid });
       }
 
-      var params = { values: selectedValues };
-      new Ajax.Request(url, {
-        postBody: Object.toJSON(params),
-        contentType: "application/json",
-        encoding: "UTF-8",
-        onComplete: function () {
-          window.location.reload();
-        },
-      });
+      // Workaround prototype.js breaking JSON.stringify
+      // Given this page is isolated, it's safe to not restore these after to the prototype version
+      delete Array.prototype.toJSON;
+      delete Object.prototype.toJSON;
+      delete Hash.prototype.toJSON;
+      delete String.prototype.toJSON;
+
+      fetch(url, {
+        method: "post",
+        body: JSON.stringify({ values: selectedValues }),
+        headers: {
+          'Content-Type': "application/json",
+          [document.head.dataset.crumbHeader]: document.head.dataset.crumbValue
+        }
+      }).then(() => window.location.reload())
     }
   }
 };
