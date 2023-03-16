@@ -57,8 +57,8 @@ THE SOFTWARE.
       If given, this page is made available to users who have one or more of the specified permissions.
       (The permissions will be checked against the "it" object.)
     </st:attribute>
-    <st:attribute name="type" use="optional">
-      Available values: two-column (by default), one-column (full-width size) or full-screen (since 2.53).
+    <st:attribute name="type" use="optional" since="2.53">
+      Available values: two-column (by default), one-column (full-width size) or full-screen.
     </st:attribute>
     <st:attribute name="nogrid" use="optional">
       Do not include Bootstrap 3 grid. When a plugin wants to use a more recent version of Bootstrap then
