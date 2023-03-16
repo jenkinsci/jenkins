@@ -53,7 +53,7 @@ function updateBuilds(params) {
           while (
             rows.length > 1 &&
             rows[firstBuildRow].classList.contains("transitive")
-            ) {
+          ) {
             Element.remove(rows[firstBuildRow]);
           }
 
@@ -72,7 +72,9 @@ function updateBuilds(params) {
             } else {
               // The data table has no rows.  In this case, we just add all new rows directly to the
               // table, one after the other i.e. we don't insert before a "pivot" row (first row).
-              dataTable.getElementsByTagName("tbody")[0].appendChild(newRows[0]);
+              dataTable
+                .getElementsByTagName("tbody")[0]
+                .appendChild(newRows[0]);
             }
           }
 
