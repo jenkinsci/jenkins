@@ -111,7 +111,10 @@
   }
 
   .task-link-text {
-    display: contents;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    display: inline-block;
   }
 
   &--active {
