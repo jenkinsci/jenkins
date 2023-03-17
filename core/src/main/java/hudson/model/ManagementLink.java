@@ -117,11 +117,11 @@ public abstract class ManagementLink implements ExtensionPoint, Action {
     }
 
     /**
-     * Returns the permission required for user to see this management link on the "Manage Jenkins" page ({@link ManageJenkinsAction}).
+     * Returns the permission required for user to see this management link on the "Settings" page ({@link ManageJenkinsAction}).
      *
      * Historically, this returned null, which amounted to the same behavior, as {@link Jenkins#ADMINISTER} was required to access the page.
      *
-     * @return the permission required for the link to be shown on "Manage Jenkins".
+     * @return the permission required for the link to be shown on "Settings".
      */
     public @NonNull Permission getRequiredPermission() {
         return Jenkins.ADMINISTER;
@@ -216,7 +216,7 @@ public abstract class ManagementLink implements ExtensionPoint, Action {
     }
 
     /**
-     * A {@link Badge} shown as overlay over the icon on "Manage Jenkins".
+     * A {@link Badge} shown as overlay over the icon on "Settings".
      *
      * @return badge or {@code null} if no badge should be shown.
      * @since 2.385

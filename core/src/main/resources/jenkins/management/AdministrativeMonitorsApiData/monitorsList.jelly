@@ -15,7 +15,7 @@
 
                 <p style="text-align: center; margin: 10px 0 0 0;">
                     <a href="${rootURL}/manage">
-                        ${%Manage Jenkins}
+                        ${%Settings}
                     </a>
                 </p>
             </j:when>

@@ -39,7 +39,7 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
 /**
- * Adds the "Manage Jenkins" link to the top page.
+ * Adds the "Settings" link to the top page.
  *
  * @author Kohsuke Kawaguchi
  */

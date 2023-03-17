@@ -4435,7 +4435,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         ContextMenu menu = new ContextMenu().from(this, request, response);
         for (MenuItem i : menu.items) {
             if (i.url.equals(request.getContextPath() + "/manage")) {
-                // add "Manage Jenkins" subitems
+                // add "Settings" subitems
                 i.subMenu = new ContextMenu().from(ExtensionList.lookupSingleton(ManageJenkinsAction.class), request, response, "index");
             }
         }

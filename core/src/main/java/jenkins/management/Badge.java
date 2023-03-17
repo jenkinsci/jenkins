@@ -32,7 +32,7 @@ import java.util.Locale;
 
 /**
  *  Definition of a badge that can be returned by a {@link ManagementLink} implementation.
- *  The badge is shown as a small overlay over the corresponding icon on the {@code Manage Jenkins} page,
+ *  The badge is shown as a small overlay over the corresponding icon on the {@code Settings} page,
  *  it can display additional information in a tooltip and change it's color depending on the severity.
  *
  *  <p>
