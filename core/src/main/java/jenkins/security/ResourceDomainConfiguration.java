@@ -134,7 +134,7 @@ public final class ResourceDomainConfiguration extends GlobalConfiguration {
 
         StaplerRequest currentRequest = Stapler.getCurrentRequest();
         if (currentRequest != null) {
-            String currentRequestHost = String.format("%s", currentRequest.getServerName());
+            String currentRequestHost = currentRequest.getServerName());
 
             if (currentRequestHost.equals(resourceRootUrlHost)) {
                 return FormValidation.error(Messages.ResourceDomainConfiguration_SameAsCurrent());
