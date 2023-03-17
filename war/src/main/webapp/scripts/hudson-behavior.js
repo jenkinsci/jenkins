@@ -972,14 +972,6 @@ function progressBarOnClick() {
   if (href != null) window.location = href;
 }
 
-function expandButton(e) {
-  var link = e.target;
-  while (!Element.hasClassName(link, "advancedLink")) link = link.parentNode;
-  link.style.display = "none";
-  $(link).next().style.display = "block";
-  layoutUpdateCallback.call();
-}
-
 function labelAttachPreviousOnClick() {
   var e = $(this).previous();
   while (e != null) {
@@ -1129,15 +1121,6 @@ function rowvgStartEachRow(recursive, f) {
     function (e) {
       // progressBar.jelly
       e.onclick = progressBarOnClick;
-    }
-  );
-
-  Behaviour.specify(
-    "INPUT.expand-button",
-    "input-expand-button",
-    ++p,
-    function (e) {
-      makeButton(e, expandButton);
     }
   );
 
@@ -2537,8 +2520,7 @@ function loadScript(href, callback) {
 }
 
 // logic behind <f:validateButton />
-function safeValidateButton(yuiButton) {
-  var button = yuiButton._button;
+function safeValidateButton(button) {
   var descriptorUrl = button.getAttribute(
     "data-validate-button-descriptor-url"
   );
@@ -2548,14 +2530,12 @@ function safeValidateButton(yuiButton) {
   // optional, by default = empty string
   var paramList = button.getAttribute("data-validate-button-with") || "";
 
-  validateButton(checkUrl, paramList, yuiButton);
+  validateButton(checkUrl, paramList, button);
 }
 
 // this method should not be called directly, only get called by safeValidateButton
 // kept "public" for legacy compatibility
 function validateButton(checkUrl, paramList, button) {
-  button = button._button;
-
   var parameters = {};
 
   paramList.split(",").each(function (name) {
