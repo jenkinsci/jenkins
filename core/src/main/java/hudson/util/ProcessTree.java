@@ -453,7 +453,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                 Thread.interrupted(); // Clear the interrupt flag and just accept that no known vetoers exist.
             }
             catch (Exception e) {
-                LOGGER.log(Level.WARNING, "Error while determining if vetoers exist", e);
+                LOGGER.log(Level.FINE, "Error while determining if vetoers exist", e);
             }
         }
 
@@ -476,7 +476,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
             if (os.equals("FreeBSD"))
                 return new FreeBSD(vetoes);
         } catch (LinkageError e) {
-            LOGGER.log(Level.WARNING, "Failed to load winp. Reverting to the default", e);
+            LOGGER.log(Level.FINE, "Failed to load OS-specific implementation; reverting to the default", e);
             enabled = false;
         }
 
