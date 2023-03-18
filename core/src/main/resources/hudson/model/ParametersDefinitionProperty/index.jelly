@@ -67,7 +67,7 @@ THE SOFTWARE.
             ${%Build}
           </button>
           <a href="./" class="jenkins-button">
-            Cancel
+            ${%Cancel}
           </a>
         </f:bottomButtonBar>
       </f:form>
