@@ -38,7 +38,6 @@ THE SOFTWARE.
   <l:layout title="${it.displayName}">
     <st:include page="sidepanel.jelly" it="${it.job}"/>
     <l:main-panel>
-      <div class="behavior-loading"><l:spinner text="${%LOADING}"/></div>
       <h1>${it.job.pronoun} ${it.job.displayName}</h1>
       <p class="jenkins-description">${%description}</p>
       <j:set var="delay" value="${request.getParameter('delay')}" />
@@ -64,6 +63,7 @@ THE SOFTWARE.
           <input type="hidden" name="statusCode" value="303" />
           <input type="hidden" name="redirectTo" value="." />
           <button class="jenkins-button jenkins-button--primary jenkins-!-build-color">
+            <l:icon src="symbol-play" />
             ${%Build}
           </button>
           <a href="./" class="jenkins-button">
