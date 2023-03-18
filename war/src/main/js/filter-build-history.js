@@ -25,65 +25,72 @@ const updateBuildsRefreshInterval = 5000;
 
 function updateBuilds(params) {
   if (isPageVisible()) {
-    new Ajax.Request(ajaxUrl + toQueryString(params), {
-      requestHeaders: buildHistoryContainer.headers,
-      onSuccess: function (rsp) {
-        var dataTable = getDataTable(buildHistoryContainer);
-        var rows = dataTable.rows;
-
-        // Check there are no existing rows (except the search bar) before showing the no builds banner
-        if (
-          rows.length <= 1 &&
-          rsp.responseText === '<table class="pane"></table>'
-        ) {
-          noBuildsBanner.style.display = "block";
-        } else {
-          noBuildsBanner.style.display = "none";
-        }
-
-        //delete rows with transitive data
-        var firstBuildRow = 0;
-        if (rows[firstBuildRow].classList.contains("build-search-row")) {
-          firstBuildRow++;
-        }
-        while (
-          rows.length > 1 &&
-          rows[firstBuildRow].classList.contains("transitive")
-        ) {
-          Element.remove(rows[firstBuildRow]);
-        }
-
-        // insert new rows
-        var div = document.createElement("div");
-        div.innerHTML = rsp.responseText;
-        Behaviour.applySubtree(div);
-
-        var pivot = rows[firstBuildRow];
-        var newDataTable = getDataTable(div);
-        var newRows = newDataTable.rows;
-        while (newRows.length > 0) {
-          if (pivot !== undefined) {
-            // The data table has rows.  Insert before a "pivot" row (first row).
-            pivot.parentNode.insertBefore(newRows[0], pivot);
-          } else {
-            // The data table has no rows.  In this case, we just add all new rows directly to the
-            // table, one after the other i.e. we don't insert before a "pivot" row (first row).
-            dataTable.getElementsByTagName("tbody")[0].appendChild(newRows[0]);
-          }
-        }
-
-        if (newDataTable.classList.contains("hasPageData")) {
-          buildHistoryPage.setAttribute(
-            "page-entry-newest",
-            newDataTable.getAttribute("page-entry-newest")
-          );
-        }
-
-        // next update
-        buildHistoryContainer.headers = ["n", rsp.getResponseHeader("n")];
-        checkAllRowCellOverflows();
-        createRefreshTimeout(params);
+    fetch(ajaxUrl + toQueryString(params), {
+      headers: {
+        n: buildHistoryContainer.headers[1],
       },
+    }).then((rsp) => {
+      if (rsp.ok) {
+        rsp.text().then((responseText) => {
+          var dataTable = getDataTable(buildHistoryContainer);
+          var rows = dataTable.rows;
+
+          // Check there are no existing rows (except the search bar) before showing the no builds banner
+          if (
+            rows.length <= 1 &&
+            responseText === '<table class="pane"></table>'
+          ) {
+            noBuildsBanner.style.display = "block";
+          } else {
+            noBuildsBanner.style.display = "none";
+          }
+
+          //delete rows with transitive data
+          var firstBuildRow = 0;
+          if (rows[firstBuildRow].classList.contains("build-search-row")) {
+            firstBuildRow++;
+          }
+          while (
+            rows.length > 1 &&
+            rows[firstBuildRow].classList.contains("transitive")
+          ) {
+            rows[firstBuildRow].remove();
+          }
+
+          // insert new rows
+          var div = document.createElement("div");
+          div.innerHTML = responseText;
+          Behaviour.applySubtree(div);
+
+          var pivot = rows[firstBuildRow];
+          var newDataTable = getDataTable(div);
+          var newRows = newDataTable.rows;
+          while (newRows.length > 0) {
+            if (pivot !== undefined) {
+              // The data table has rows.  Insert before a "pivot" row (first row).
+              pivot.parentNode.insertBefore(newRows[0], pivot);
+            } else {
+              // The data table has no rows.  In this case, we just add all new rows directly to the
+              // table, one after the other i.e. we don't insert before a "pivot" row (first row).
+              dataTable
+                .getElementsByTagName("tbody")[0]
+                .appendChild(newRows[0]);
+            }
+          }
+
+          if (newDataTable.classList.contains("hasPageData")) {
+            buildHistoryPage.setAttribute(
+              "page-entry-newest",
+              newDataTable.getAttribute("page-entry-newest")
+            );
+          }
+
+          // next update
+          buildHistoryContainer.headers = ["n", rsp.headers.get("n")];
+          checkAllRowCellOverflows();
+          createRefreshTimeout(params);
+        });
+      }
     });
   } else {
     createRefreshTimeout(params);
@@ -465,48 +472,50 @@ function loadPage(params, focusOnSearch) {
     params.search = searchString;
   }
 
-  new Ajax.Request(ajaxUrl + toQueryString(params), {
-    onSuccess: function (rsp) {
-      pageSearchInputContainer.classList.remove("jenkins-search--loading");
-      buildHistoryContainer.classList.remove("jenkins-pane--loading");
+  fetch(ajaxUrl + toQueryString(params)).then((rsp) => {
+    if (rsp.ok) {
+      rsp.text().then((responseText) => {
+        pageSearchInputContainer.classList.remove("jenkins-search--loading");
+        buildHistoryContainer.classList.remove("jenkins-pane--loading");
 
-      if (rsp.responseText === '<table class="pane"></table>') {
-        noBuildsBanner.style.display = "block";
-      } else {
-        noBuildsBanner.style.display = "none";
-      }
+        if (responseText === '<table class="pane"></table>') {
+          noBuildsBanner.style.display = "block";
+        } else {
+          noBuildsBanner.style.display = "none";
+        }
 
-      var dataTable = getDataTable(buildHistoryContainer);
-      var tbody = dataTable.getElementsByTagName("tbody")[0];
-      var rows = tbody.getElementsByClassName("build-row");
+        var dataTable = getDataTable(buildHistoryContainer);
+        var tbody = dataTable.getElementsByTagName("tbody")[0];
+        var rows = tbody.getElementsByClassName("build-row");
 
-      // Delete all build rows
-      while (rows.length > 0) {
-        Element.remove(rows[0]);
-      }
+        // Delete all build rows
+        while (rows.length > 0) {
+          rows[0].remove();
+        }
 
-      // insert new rows
-      var div = document.createElement("div");
-      div.innerHTML = rsp.responseText;
-      Behaviour.applySubtree(div);
+        // insert new rows
+        var div = document.createElement("div");
+        div.innerHTML = responseText;
+        Behaviour.applySubtree(div);
 
-      var newDataTable = getDataTable(div);
-      var newRows = newDataTable.rows;
-      while (newRows.length > 0) {
-        tbody.appendChild(newRows[0]);
-      }
+        var newDataTable = getDataTable(div);
+        var newRows = newDataTable.rows;
+        while (newRows.length > 0) {
+          tbody.appendChild(newRows[0]);
+        }
 
-      checkAllRowCellOverflows();
-      updatePageParams(newDataTable);
-      togglePageUpDown();
-      if (!hasPageUp()) {
-        createRefreshTimeout(params);
-      }
+        checkAllRowCellOverflows();
+        updatePageParams(newDataTable);
+        togglePageUpDown();
+        if (!hasPageUp()) {
+          createRefreshTimeout(params);
+        }
 
-      if (focusOnSearch) {
-        pageSearchInput.focus();
-      }
-    },
+        if (focusOnSearch) {
+          pageSearchInput.focus();
+        }
+      });
+    }
   });
 }
 
