@@ -28,7 +28,7 @@ THE SOFTWARE.
       <d:tag name="section">
         <j:set var="escapeEntryTitleAndDescription" value="true"/>
         <f:entry>
-          <f:repeatable name="tool" var="instance" items="${descriptor.installations}"
+          <f:repeatable name="tool" var="instance" items="${descriptor.installations}" enableTopButton="true"
                         add="${%label.add(descriptor.displayName)}" header="${descriptor.displayName}"
                         noAddButton="${readOnlyMode ? 'true' : null}"
           >
