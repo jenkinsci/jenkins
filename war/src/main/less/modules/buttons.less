@@ -238,9 +238,32 @@
 
   .validation-error-area--visible {
     margin-top: 0;
+    margin-bottom: 0.625rem;
   }
 
-  & > span {
+  & > .jenkins-button {
     float: right;
+  }
+}
+
+.advanced-button {
+  svg {
+    width: 0.875rem;
+    height: 0.875rem;
+    transition: var(--standard-transition);
+  }
+
+  &:not([data-expanded="true"]) {
+    &:active {
+      svg {
+        translate: 0 0.125rem;
+      }
+    }
+  }
+
+  &[data-expanded="true"] {
+    svg {
+      rotate: 180deg;
+    }
   }
 }

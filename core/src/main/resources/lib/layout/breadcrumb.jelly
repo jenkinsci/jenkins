@@ -36,14 +36,14 @@ THE SOFTWARE.
       If specified, this ID will be assigned to the LI element.
       This is useful for programmatically adding the context menu
     </st:attribute>
-    <st:attribute name="hasMenu">
+    <st:attribute name="hasMenu" since="2.361">
       If true, this breadcrumb item will include a '⌄' symbol to display a dropdown menu with items
-      from the '{breadcrumb.href}/contextMenu' path. Since TODO
+      from the '{breadcrumb.href}/contextMenu' path.
     </st:attribute>
   </st:documentation>
 
   <j:if test="${mode=='breadcrumbs'}">
-    <j:set var="hasLink" value="${!(attrs.href == null or h.hyperlinkMatchesCurrentPage(attrs.href))}" />
+    <j:set var="hasLink" value="${attrs.href != null}" />
     <li id="${attrs.id}" class="jenkins-breadcrumbs__list-item" aria-current="${hasLink ? null : 'page'}">
       <j:choose>
         <j:when test="${!hasLink}">

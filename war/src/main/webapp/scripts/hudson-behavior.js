@@ -539,9 +539,6 @@ function fireEvent(element, event) {
   }
 }
 
-// shared tooltip object
-var tooltip;
-
 // Behavior rules
 //========================================================
 // using tag names in CSS selector makes the processing faster
@@ -921,7 +918,7 @@ function renderOnDemand(e, callback, noBehaviour) {
       e.parentNode.insertBefore(n, e);
       if (n.nodeType == 1 && !noBehaviour) elements.push(n);
     }
-    Element.remove(e);
+    e.remove();
 
     evalInnerHtmlScripts(t.responseText, function () {
       Behaviour.applySubtree(elements, true);
@@ -973,14 +970,6 @@ function sequencer(fs) {
 function progressBarOnClick() {
   var href = this.getAttribute("href");
   if (href != null) window.location = href;
-}
-
-function expandButton(e) {
-  var link = e.target;
-  while (!Element.hasClassName(link, "advancedLink")) link = link.parentNode;
-  link.style.display = "none";
-  $(link).next().style.display = "block";
-  layoutUpdateCallback.call();
 }
 
 function labelAttachPreviousOnClick() {
@@ -1120,10 +1109,6 @@ function rowvgStartEachRow(recursive, f) {
 
 (function () {
   var p = 20;
-  Behaviour.specify("BODY", "body", ++p, function () {
-    tooltip = new YAHOO.widget.Tooltip("tt", { context: [], zindex: 999 });
-  });
-
   Behaviour.specify("TABLE.sortable", "table-sortable", ++p, function (e) {
     // sortable table
     e.sortable = new Sortable.Sortable(e);
@@ -1136,15 +1121,6 @@ function rowvgStartEachRow(recursive, f) {
     function (e) {
       // progressBar.jelly
       e.onclick = progressBarOnClick;
-    }
-  );
-
-  Behaviour.specify(
-    "INPUT.expand-button",
-    "input-expand-button",
-    ++p,
-    function (e) {
-      makeButton(e, expandButton);
     }
   );
 
@@ -1417,12 +1393,6 @@ function rowvgStartEachRow(recursive, f) {
     }
 
     form = null; // memory leak prevention
-  });
-
-  // hook up tooltip.
-  //   add nodismiss="" if you'd like to display the tooltip forever as long as the mouse is on the element.
-  Behaviour.specify("[tooltip]", "-tooltip-", ++p, function (e) {
-    applyTooltip(e, e.getAttribute("tooltip"));
   });
 
   Behaviour.specify(
@@ -1802,36 +1772,6 @@ var hudsonRules = {}; // legacy name
 // now empty, but plugins can stuff things in here later:
 Behaviour.register(hudsonRules);
 
-function applyTooltip(e, text) {
-  // copied from YAHOO.widget.Tooltip.prototype.configContext to efficiently add a new element
-  // event registration via YAHOO.util.Event.addListener leaks memory, so do it by ourselves here
-  e.onmouseover = function (ev) {
-    var delay = this.getAttribute("nodismiss") != null ? 99999999 : 5000;
-    tooltip.cfg.setProperty("autodismissdelay", delay);
-    return tooltip.onContextMouseOver.call(
-      this,
-      YAHOO.util.Event.getEvent(ev),
-      tooltip
-    );
-  };
-  e.onmousemove = function (ev) {
-    return tooltip.onContextMouseMove.call(
-      this,
-      YAHOO.util.Event.getEvent(ev),
-      tooltip
-    );
-  };
-  e.onmouseout = function (ev) {
-    return tooltip.onContextMouseOut.call(
-      this,
-      YAHOO.util.Event.getEvent(ev),
-      tooltip
-    );
-  };
-  e.title = text;
-  e = null; // avoid memory leak
-}
-
 var Path = {
   tail: function (p) {
     var idx = p.lastIndexOf("/");
@@ -1884,10 +1824,18 @@ function xor(a, b) {
 }
 
 // used by editableDescription.jelly to replace the description field with a form
-function replaceDescription() {
+function replaceDescription(initialDescription, submissionUrl) {
   var d = document.getElementById("description");
   $(d).down().next().innerHTML = "<div class='jenkins-spinner'></div>";
+  let parameters = {};
+  if (initialDescription !== undefined && submissionUrl !== undefined) {
+    parameters = {
+      description: initialDescription,
+      submissionUrl: submissionUrl,
+    };
+  }
   new Ajax.Request("./descriptionForm", {
+    parameters: parameters,
     onComplete: function (x) {
       d.innerHTML = x.responseText;
       evalInnerHtmlScripts(x.responseText, function () {
@@ -2514,55 +2462,6 @@ function buildFormTree(form) {
   }
 }
 
-var hoverNotification = (function () {
-  var msgBox;
-  var body;
-
-  // animation effect that automatically hide the message box
-  var effect = function (overlay, dur) {
-    var o = YAHOO.widget.ContainerEffect.FADE(overlay, dur);
-    o.animateInCompleteEvent.subscribe(function () {
-      window.setTimeout(function () {
-        msgBox.hide();
-      }, 1500);
-    });
-    return o;
-  };
-
-  function init() {
-    if (msgBox != null) return; // already initialized
-
-    var div = document.createElement("DIV");
-    document.body.appendChild(div);
-    div.innerHTML =
-      "<div id=hoverNotification class='jenkins-tooltip'><div class=bd></div></div>";
-    body = $("hoverNotification");
-
-    msgBox = new YAHOO.widget.Overlay(body, {
-      visible: false,
-      zIndex: 1000,
-      effect: {
-        effect: effect,
-        duration: 0.25,
-      },
-    });
-    msgBox.render();
-  }
-
-  return function (title, anchor, offset) {
-    if (typeof offset === "undefined") {
-      offset = 48;
-    }
-    init();
-    body.innerHTML = title;
-    var xy = YAHOO.util.Dom.getXY(anchor);
-    xy[0] += offset;
-    xy[1] += anchor.offsetHeight;
-    msgBox.cfg.setProperty("xy", xy);
-    msgBox.show();
-  };
-})();
-
 // Decrease vertical padding for checkboxes
 window.addEventListener("load", function () {
   document.querySelectorAll(".jenkins-form-item").forEach(function (element) {
@@ -2621,8 +2520,7 @@ function loadScript(href, callback) {
 }
 
 // logic behind <f:validateButton />
-function safeValidateButton(yuiButton) {
-  var button = yuiButton._button;
+function safeValidateButton(button) {
   var descriptorUrl = button.getAttribute(
     "data-validate-button-descriptor-url"
   );
@@ -2632,14 +2530,12 @@ function safeValidateButton(yuiButton) {
   // optional, by default = empty string
   var paramList = button.getAttribute("data-validate-button-with") || "";
 
-  validateButton(checkUrl, paramList, yuiButton);
+  validateButton(checkUrl, paramList, button);
 }
 
 // this method should not be called directly, only get called by safeValidateButton
 // kept "public" for legacy compatibility
 function validateButton(checkUrl, paramList, button) {
-  button = button._button;
-
   var parameters = {};
 
   paramList.split(",").each(function (name) {

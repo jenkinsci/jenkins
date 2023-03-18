@@ -27,6 +27,7 @@ package hudson.model;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -102,6 +103,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.reactor.ReactorException;
 import org.jvnet.hudson.test.FakeChangeLogSCM;
+import org.jvnet.hudson.test.InboundAgentRule;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestBuilder;
@@ -114,6 +116,9 @@ import org.jvnet.hudson.test.TestExtension;
 public class ProjectTest {
 
     @Rule public JenkinsRule j = new JenkinsRule();
+
+    @Rule public InboundAgentRule inboundAgents = new InboundAgentRule();
+
     public static boolean createAction = false;
     public static boolean getFilePath = false;
     public static boolean createSubTask = false;
@@ -263,7 +268,7 @@ public class ProjectTest {
         j.jenkins.setScmCheckoutRetryCount(6);
         assertEquals("Scm retry count should be the same as global scm retry count.", 6, p.getScmCheckoutRetryCount());
         HtmlForm form = j.createWebClient().goTo(p.getUrl() + "/configure").getFormByName("config");
-        ((HtmlElement) form.getByXPath("//div[@class='advancedLink']//button").get(0)).click();
+        ((HtmlElement) form.querySelectorAll(".advancedButton").get(0)).click();
         // required due to the new default behavior of click
         form.getInputByName("hasCustomScmCheckoutRetryCount").click(new Event(), false, false, false, true);
         form.getInputByName("scmCheckoutRetryCount").setValueAttribute("7");
@@ -731,7 +736,7 @@ public class ProjectTest {
 
         //Now create another slave. And restrict the job to that slave. The slave is offline, leaving the job with no assignable nodes.
         //We tell our mock SCM to return that it has got changes. But since there are no agents, we get the desired result.
-        Slave s2 = j.createSlave();
+        Slave s2 = inboundAgents.createAgent(j, InboundAgentRule.Options.newBuilder().skipStart().build());
         proj.setAssignedLabel(s2.getSelfLabel());
         requiresWorkspaceScm.hasChange = true;
 
@@ -750,7 +755,7 @@ public class ProjectTest {
          */
         HtmlPage log = j.createWebClient().getPage(proj, "scmPollLog");
         String logastext = log.asNormalizedText();
-        assertTrue(logastext.contains("(" + AbstractProject.WorkspaceOfflineReason.all_suitable_nodes_are_offline.name() + ")"));
+        assertThat(logastext, containsString("(" + AbstractProject.WorkspaceOfflineReason.all_suitable_nodes_are_offline.name() + ")"));
 
     }
 
