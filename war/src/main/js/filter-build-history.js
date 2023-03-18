@@ -54,7 +54,7 @@ function updateBuilds(params) {
             rows.length > 1 &&
             rows[firstBuildRow].classList.contains("transitive")
           ) {
-            Element.remove(rows[firstBuildRow]);
+            rows[firstBuildRow].remove();
           }
 
           // insert new rows
@@ -490,7 +490,7 @@ function loadPage(params, focusOnSearch) {
 
         // Delete all build rows
         while (rows.length > 0) {
-          Element.remove(rows[0]);
+          rows[0].remove();
         }
 
         // insert new rows
