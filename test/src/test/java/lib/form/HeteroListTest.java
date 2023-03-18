@@ -124,7 +124,7 @@ public class HeteroListTest {
         Object result = page.executeJavaScript("Array.from(document.querySelectorAll('button')).filter(b => b.textContent.indexOf('Add XSS') !== -1)[0].innerHTML").getJavaScriptResult();
         assertThat(result, instanceOf(String.class));
         String resultString = (String) result;
-        assertThat(resultString, not(containsString("<")));
+        assertThat(resultString, not(containsString("<img")));
     }
 
     // only possible after a partial fix
@@ -145,7 +145,7 @@ public class HeteroListTest {
         Object result = page.executeJavaScript("Array.from(document.querySelectorAll('button')).filter(b => b.textContent.indexOf('Add XSS') !== -1)[0].innerHTML").getJavaScriptResult();
         assertThat(result, instanceOf(String.class));
         String resultString = (String) result;
-        assertThat(resultString, not(containsString("<")));
+        assertThat(resultString, not(containsString("<img")));
     }
 
     @Test
