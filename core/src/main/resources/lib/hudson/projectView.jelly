@@ -100,16 +100,22 @@ THE SOFTWARE.
               </div>
               <div class="jenkins-jobs-list__item__details__text">
                 <p class="jenkins-jobs-list__item__label">${job.displayName}</p>
-                <j:set var="lastBuild" value="${job.lastBuild}"/>
-                <j:if test="${lastBuild != null}">
-                  <p class="jenkins-jobs-list__item__description">
-                    ${%Description(lastBuild.timestampString, lastBuild.durationString)}
-                  </p>
-                </j:if>
+                <div class="jenkins-jobs-list__item__description">
+                  <j:set var="lastBuild" value="${job.lastBuild}"/>
+                  <j:if test="${lastBuild != null}">
+                    <span>
+                      ${%Description(lastBuild.timestampString, lastBuild.durationString)}
+                    </span>
+                  </j:if>
+
+                  <j:forEach var="col" items="${columnExtensions}">
+                    <st:include page="compactColumn.jelly" it="${col}" optional="true" />
+                  </j:forEach>
+                </div>
               </div>
             </a>
             <div class="jenkins-jobs-list__item__actions">
-              <st:include page="column.jelly" it="${buildButtonColumn}" />
+              <st:include page="column.jelly" it="${buildButtonColumn}" optional="true" />
             </div>
           </div>
         </j:forEach>

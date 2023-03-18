@@ -96,12 +96,14 @@
       grid-template-columns: auto 1fr;
       gap: 1rem;
       text-decoration: none !important;
+      overflow: hidden;
     }
 
     &__details__text {
       display: flex;
       flex-direction: column;
       gap: 0.5rem;
+      overflow: hidden;
     }
 
     &__actions {
@@ -123,17 +125,30 @@
     }
 
     &__description {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
       color: var(--text-color-secondary);
       margin: 0;
       font-size: 1rem;
+      white-space: nowrap;
+      mask-image: linear-gradient(90deg, black calc(100% - 1rem), transparent);
 
-      .mono {
-        font-family: var(--font-family-mono);
+      svg {
+        width: 1rem;
+        height: 1rem;
       }
 
       &:empty {
         display: none;
       }
+    }
+
+    &__compact-column {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
     }
 
     &:hover {
