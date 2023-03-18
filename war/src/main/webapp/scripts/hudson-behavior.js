@@ -918,7 +918,7 @@ function renderOnDemand(e, callback, noBehaviour) {
       e.parentNode.insertBefore(n, e);
       if (n.nodeType == 1 && !noBehaviour) elements.push(n);
     }
-    Element.remove(e);
+    e.remove();
 
     evalInnerHtmlScripts(t.responseText, function () {
       Behaviour.applySubtree(elements, true);
@@ -970,14 +970,6 @@ function sequencer(fs) {
 function progressBarOnClick() {
   var href = this.getAttribute("href");
   if (href != null) window.location = href;
-}
-
-function expandButton(e) {
-  var link = e.target;
-  while (!Element.hasClassName(link, "advancedLink")) link = link.parentNode;
-  link.style.display = "none";
-  $(link).next().style.display = "block";
-  layoutUpdateCallback.call();
 }
 
 function labelAttachPreviousOnClick() {
@@ -1129,15 +1121,6 @@ function rowvgStartEachRow(recursive, f) {
     function (e) {
       // progressBar.jelly
       e.onclick = progressBarOnClick;
-    }
-  );
-
-  Behaviour.specify(
-    "INPUT.expand-button",
-    "input-expand-button",
-    ++p,
-    function (e) {
-      makeButton(e, expandButton);
     }
   );
 
