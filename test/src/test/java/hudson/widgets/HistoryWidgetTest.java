@@ -1,5 +1,6 @@
 package hudson.widgets;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import com.gargoylesoftware.htmlunit.html.DomNode;
@@ -36,7 +37,7 @@ public class HistoryWidgetTest {
         { // Filter input shouldn't display when there's no build
             HtmlPage page = wc.goTo("job/" + p.getName());
             DomNode searchInputContainer = page.querySelector(".jenkins-search");
-            assertTrue(searchInputContainer.getAttributes().getNamedItem("style").getNodeValue().contains("display: none"));
+            assertTrue(searchInputContainer.getAttributes().getNamedItem("class").getNodeValue().contains("jenkins-hidden"));
         }
 
         j.buildAndAssertSuccess(p);  // Add a build
@@ -44,7 +45,7 @@ public class HistoryWidgetTest {
         { // Filter input should display when there's a build
             HtmlPage page = wc.goTo("job/" + p.getName());
             DomNode searchInputContainer = page.querySelector(".jenkins-search");
-            assertTrue(searchInputContainer.getAttributes().getNamedItem("style").getNodeValue().contains("display: block"));
+            assertFalse(searchInputContainer.getAttributes().getNamedItem("class").getNodeValue().contains("jenkins-hidden"));
         }
     }
 }

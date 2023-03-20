@@ -46,13 +46,13 @@ function updateBuilds(params) {
               "search" in params &&
               params.search !== ""
             ) {
-              pageSearchInputContainer.style.display = "block";
+              pageSearchInputContainer.classList.remove("jenkins-hidden");
             } else {
-              pageSearchInputContainer.style.display = "none";
+              pageSearchInputContainer.classList.add("jenkins-hidden");
             }
           } else {
             noBuildsBanner.style.display = "none";
-            pageSearchInputContainer.style.display = "block";
+            pageSearchInputContainer.classList.remove("jenkins-hidden");
           }
 
           //delete rows with transitive data
@@ -495,13 +495,13 @@ function loadPage(params, focusOnSearch) {
             "search" in params &&
             params.search !== ""
           ) {
-            pageSearchInputContainer.style.display = "block";
+            pageSearchInputContainer.classList.remove("jenkins-hidden");
           } else {
-            pageSearchInputContainer.style.display = "none";
+            pageSearchInputContainer.classList.add("jenkins-hidden");
           }
         } else {
           noBuildsBanner.style.display = "none";
-          pageSearchInputContainer.style.display = "block";
+          pageSearchInputContainer.classList.remove("jenkins-hidden");
         }
 
         var dataTable = getDataTable(buildHistoryContainer);
