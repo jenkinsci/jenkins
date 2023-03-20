@@ -31,6 +31,7 @@ import hudson.Extension;
 import hudson.cli.CLICommand;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Objects;
 import javax.servlet.ServletException;
 import net.sf.json.JSONObject;
@@ -118,7 +119,7 @@ public class FileParameterDefinition extends ParameterDefinition {
     @Override
     public ParameterValue createValue(CLICommand command, String value) throws IOException, InterruptedException {
         // capture the file to the server
-        File local = File.createTempFile("jenkins", "parameter");
+        File local = Files.createTempFile("jenkins", "parameter").toFile();
         String name;
         if (value.isEmpty()) {
             FileUtils.copyInputStreamToFile(command.stdin, local);

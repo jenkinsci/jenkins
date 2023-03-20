@@ -21,6 +21,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import jenkins.model.CauseOfInterruption.UserInterruption;
 import jenkins.model.InterruptedBuildAction;
 import jenkins.model.Jenkins;
+import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -150,6 +151,24 @@ public class ExecutorTest {
         api = wc.goTo(slave.toComputer().getUrl() + "api/json?pretty&depth=1", null).getWebResponse().getContentAsString();
         System.out.println(api);
         assertThat(api, allOf(containsString("public-project"), not(containsString("secret-project"))));
+    }
+
+    @Test
+    @Issue("SECURITY-2120")
+    public void disconnectCause_WithoutTrace() throws Exception {
+        DumbSlave slave = j.createOnlineSlave();
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.setAssignedNode(slave);
+
+        Future<FreeStyleBuild> r = startBlockingBuild(p);
+
+        String message = "It went away";
+        p.getLastBuild().getBuiltOn().toComputer().disconnect(
+                new OfflineCause.ChannelTermination(new RuntimeException(message))
+        );
+
+        OfflineCause offlineCause = p.getLastBuild().getBuiltOn().toComputer().getOfflineCause();
+        Assert.assertThat(offlineCause.toString(), not(containsString(message)));
     }
 
     /**

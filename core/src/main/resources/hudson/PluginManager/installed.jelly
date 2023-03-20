@@ -27,7 +27,7 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:s="/lib/form">
-  <l:layout title="${%Installed plugins} - ${%Plugin Manager}" permission="${app.SYSTEM_READ}">
+  <l:layout title="${%Installed plugins} - ${%Plugins}" permission="${app.SYSTEM_READ}">
     <j:set var="readOnlyMode" value="${!app.hasPermission(app.ADMINISTER)}"/>
 
     <st:include page="sidepanel.jelly"/>
