@@ -19,7 +19,7 @@ import java.util.concurrent.TimeoutException;
 public abstract class InterceptingExecutorService implements ExecutorService {
     private final ExecutorService base;
 
-    public InterceptingExecutorService(ExecutorService base) {
+    protected InterceptingExecutorService(ExecutorService base) {
         this.base = base;
     }
 
@@ -31,6 +31,7 @@ public abstract class InterceptingExecutorService implements ExecutorService {
         return base;
     }
 
+    @Override
     public <T> Future<T> submit(Callable<T> task) {
         return delegate().submit(wrap(task));
     }

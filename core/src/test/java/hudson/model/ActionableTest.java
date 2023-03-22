@@ -24,20 +24,18 @@
 
 package hudson.model;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
 import org.junit.Assert;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -150,11 +148,11 @@ public class ActionableTest {
         thing.addAction(a2);
         assertEquals(Arrays.asList(a1, a2), thing.getActions());
         assertThat(thing.removeAction(a1), is(true));
-        assertEquals(Collections.singletonList(a2), thing.getActions());
+        assertEquals(List.of(a2), thing.getActions());
         assertThat(thing.removeAction(a1), is(false));
-        assertEquals(Collections.singletonList(a2), thing.getActions());
+        assertEquals(List.of(a2), thing.getActions());
         assertThat(thing.removeAction(null), is(false));
-        assertEquals(Collections.singletonList(a2), thing.getActions());
+        assertEquals(List.of(a2), thing.getActions());
     }
 
     @SuppressWarnings("deprecation")
@@ -166,9 +164,9 @@ public class ActionableTest {
         thing.addAction(a2);
         assertEquals(Arrays.asList(a1, a2), thing.getActions());
         assertThat(thing.removeActions(CauseAction.class), is(true));
-        assertEquals(Collections.singletonList(a2), thing.getActions());
+        assertEquals(List.of(a2), thing.getActions());
         assertThat(thing.removeActions(CauseAction.class), is(false));
-        assertEquals(Collections.singletonList(a2), thing.getActions());
+        assertEquals(List.of(a2), thing.getActions());
     }
 
     @SuppressWarnings("deprecation")
@@ -178,7 +176,7 @@ public class ActionableTest {
         ParametersAction a2 = new ParametersAction();
         assertEquals(Collections.<Action>emptyList(), thing.getActions());
         thing.addAction(a1);
-        assertEquals(Collections.singletonList(a1), thing.getActions());
+        assertEquals(List.of(a1), thing.getActions());
         thing.addAction(a2);
         assertEquals(Arrays.asList(a1, a2), thing.getActions());
     }
@@ -219,8 +217,12 @@ public class ActionableTest {
     }
 
     private static class ActionableImpl extends Actionable {
-        @Override public String getDisplayName() {return  null;}
+        @Override public String getDisplayName() {
+            return null;
+        }
 
-        @Override public String getSearchUrl() {return null;}
+        @Override public String getSearchUrl() {
+            return null;
+        }
     }
 }

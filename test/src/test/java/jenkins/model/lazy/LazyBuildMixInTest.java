@@ -24,13 +24,14 @@
 
 package jenkins.model.lazy;
 
-import hudson.model.FreeStyleBuild;
-import hudson.model.FreeStyleProject;
-import hudson.model.listeners.RunListener;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
+
+import hudson.model.FreeStyleBuild;
+import hudson.model.FreeStyleProject;
+import hudson.model.listeners.RunListener;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -89,9 +90,10 @@ public class LazyBuildMixInTest {
     @Test public void newRunningBuildRelationFromPrevious() throws Exception {
         FreeStyleProject p = r.createFreeStyleProject();
         p.getBuildersList().add(new SleepBuilder(1000));
-        FreeStyleBuild b1 = p.scheduleBuild2(0).get();
+        FreeStyleBuild b1 = r.buildAndAssertSuccess(p);
         assertNull(b1.getNextBuild());
         FreeStyleBuild b2 = p.scheduleBuild2(0).waitForStart();
         assertSame(b2, b1.getNextBuild());
+        r.assertBuildStatusSuccess(r.waitForCompletion(b2));
     }
 }

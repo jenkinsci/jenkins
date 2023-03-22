@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2020, CloudBees, Inc.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,13 +21,21 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.widgets;
+
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeFalse;
 
 import com.gargoylesoftware.htmlunit.html.DomNode;
 import com.gargoylesoftware.htmlunit.html.DomNodeList;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlTable;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.Functions;
 import hudson.XmlFile;
 import hudson.model.FreeStyleProject;
 import hudson.model.ItemGroup;
@@ -38,6 +46,10 @@ import hudson.model.RunMap;
 import hudson.model.TopLevelItem;
 import hudson.model.TopLevelItemDescriptor;
 import hudson.slaves.DumbSlave;
+import java.io.File;
+import java.io.IOException;
+import java.util.Optional;
+import java.util.SortedMap;
 import jenkins.model.Jenkins;
 import org.junit.Rule;
 import org.junit.Test;
@@ -46,16 +58,6 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.recipes.LocalData;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Optional;
-import java.util.SortedMap;
-
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
 public class BuildTimeTrendTest {
 
     @Rule
@@ -63,31 +65,33 @@ public class BuildTimeTrendTest {
 
     @Test
     public void withAbstractJob_OnBuiltInNode() throws Exception {
+        assumeFalse("TODO: Windows container agents do not have enough resources to run this test", Functions.isWindows() && System.getenv("CI") != null);
         FreeStyleProject p = j.createFreeStyleProject();
-        j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        j.buildAndAssertSuccess(p);
 
         JenkinsRule.WebClient wc = j.createWebClient();
 
         wc.withThrowExceptionOnFailingStatusCode(false);
         HtmlPage page = wc.getPage(p, "buildTimeTrend");
 
-        HtmlTable table = page.getDocumentElement().querySelector("table[data-is-master-slave-enabled=false]");
+        HtmlTable table = page.getDocumentElement().querySelector("table[data-is-distributed-build-enabled=false]");
         assertNotNull(table);
     }
 
     @Test
     public void withAbstractJob_OnAgentNode() throws Exception {
+        assumeFalse("TODO: Windows container agents do not have enough resources to run this test", Functions.isWindows() && System.getenv("CI") != null);
         DumbSlave agent = j.createSlave();
         FreeStyleProject p = j.createFreeStyleProject();
         p.setAssignedNode(agent);
 
-        j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        j.buildAndAssertSuccess(p);
 
         JenkinsRule.WebClient wc = j.createWebClient();
 
         wc.withThrowExceptionOnFailingStatusCode(false);
         HtmlPage page = wc.getPage(p, "buildTimeTrend");
-        DomNodeList<DomNode> anchors = page.getDocumentElement().querySelectorAll("table[data-is-master-slave-enabled=true] td a");
+        DomNodeList<DomNode> anchors = page.getDocumentElement().querySelectorAll("table[data-is-distributed-build-enabled=true] td a");
         Optional<DomNode> anchor = anchors.stream()
                 .filter(a -> a.getTextContent().equals(agent.getNodeName()))
                 .findFirst();
@@ -96,31 +100,32 @@ public class BuildTimeTrendTest {
 
     @Test
     public void withAbstractJob_OnBoth() throws Exception {
+        assumeFalse("TODO: Windows container agents do not have enough resources to run this test", Functions.isWindows() && System.getenv("CI") != null);
         DumbSlave agent = j.createSlave();
         FreeStyleProject p = j.createFreeStyleProject();
 
         p.setAssignedNode(j.jenkins);
-        j.assertBuildStatusSuccess(p.scheduleBuild2(0));
-        
+        j.buildAndAssertSuccess(p);
+
         p.setAssignedNode(agent);
-        j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        j.buildAndAssertSuccess(p);
 
         JenkinsRule.WebClient wc = j.createWebClient();
 
         wc.withThrowExceptionOnFailingStatusCode(false);
         HtmlPage page = wc.getPage(p, "buildTimeTrend");
 
-        DomNodeList<DomNode> anchors = page.getDocumentElement().querySelectorAll("table[data-is-master-slave-enabled=true] td a");
+        DomNodeList<DomNode> anchors = page.getDocumentElement().querySelectorAll("table[data-is-distributed-build-enabled=true] td a");
         Optional<DomNode> anchor = anchors.stream()
                 .filter(a -> a.getTextContent().equals(agent.getNodeName()))
                 .findFirst();
         // for the build on agent
         assertTrue(anchor.isPresent());
 
-        String masterName = hudson.model.Messages.Hudson_Computer_DisplayName();
-        DomNodeList<DomNode> tds = page.getDocumentElement().querySelectorAll("table[data-is-master-slave-enabled=true] td");
+        String builtInNode = hudson.model.Messages.Hudson_Computer_DisplayName();
+        DomNodeList<DomNode> tds = page.getDocumentElement().querySelectorAll("table[data-is-distributed-build-enabled=true] td");
         Optional<DomNode> td = tds.stream()
-                .filter(t -> t.getTextContent().equals(masterName))
+                .filter(t -> t.getTextContent().equals(builtInNode))
                 .findFirst();
         // for the build on built-in node
         assertTrue(td.isPresent());
@@ -129,6 +134,7 @@ public class BuildTimeTrendTest {
     @Test
     @LocalData("localDataNonAbstractJob")
     public void withNonAbstractJob_withoutAgents() throws Exception {
+        assumeFalse("TODO: Windows container agents do not have enough resources to run this test", Functions.isWindows() && System.getenv("CI") != null);
         JenkinsRule.WebClient wc = j.createWebClient();
         TopLevelItem p = j.jenkins.getItem("job0");
         assertThat(p, instanceOf(NonAbstractJob.class));
@@ -136,7 +142,7 @@ public class BuildTimeTrendTest {
         wc.withThrowExceptionOnFailingStatusCode(false);
         HtmlPage page = wc.getPage(p, "buildTimeTrend");
 
-        DomNodeList<DomNode> tds = page.getDocumentElement().querySelectorAll("table[data-is-master-slave-enabled=false] td");
+        DomNodeList<DomNode> tds = page.getDocumentElement().querySelectorAll("table[data-is-distributed-build-enabled=false] td");
         Optional<DomNode> td = tds.stream()
                 .filter(t -> t.getTextContent().equals("#1"))
                 .findFirst();
@@ -148,12 +154,13 @@ public class BuildTimeTrendTest {
     @LocalData("localDataNonAbstractJob")
     @Issue("JENKINS-63232")
     public void withNonAbstractJob_withAgents() throws Exception {
-        // just to trigger data-is-master-slave-enabled = true
+        assumeFalse("TODO: Windows container agents do not have enough resources to run this test", Functions.isWindows() && System.getenv("CI") != null);
+        // just to trigger data-is-distributed-build-enabled = true
         j.createSlave();
-        
+
         // Before the correction, if there was an agent and the build was not inheriting from AbstractBuild, we got
         // Uncaught TypeError: Cannot read property 'escapeHTML' of undefined
-        
+
         JenkinsRule.WebClient wc = j.createWebClient();
         TopLevelItem p = j.jenkins.getItem("job0");
         assertThat(p, instanceOf(NonAbstractJob.class));
@@ -161,7 +168,7 @@ public class BuildTimeTrendTest {
         wc.withThrowExceptionOnFailingStatusCode(false);
         HtmlPage page = wc.getPage(p, "buildTimeTrend");
 
-        DomNodeList<DomNode> tds = page.getDocumentElement().querySelectorAll("table[data-is-master-slave-enabled=true] td");
+        DomNodeList<DomNode> tds = page.getDocumentElement().querySelectorAll("table[data-is-distributed-build-enabled=true] td");
         Optional<DomNode> td = tds.stream()
                 .filter(t -> t.getTextContent().equals("#1"))
                 .findFirst();
@@ -183,16 +190,16 @@ public class BuildTimeTrendTest {
             super(parent, name);
         }
 
-        @Override 
+        @Override
         public boolean isBuildable() {
             return true;
         }
 
         private RunMap<NonAbstractBuild> runMap;
-        
-        @Override 
+
+        @Override
         protected SortedMap<Integer, NonAbstractBuild> _getRuns() {
-            if (runMap == null){
+            if (runMap == null) {
                 runMap = new RunMap<>(this.getBuildDir(), this::createBuildFromDir);
             }
             return runMap;
@@ -205,19 +212,19 @@ public class BuildTimeTrendTest {
             return build;
         }
 
-        @Override 
+        @Override
         protected void removeRun(NonAbstractBuild run) {
-            
+
         }
 
-        @Override 
+        @Override
         public DescriptorImpl getDescriptor() {
             return (NonAbstractJob.DescriptorImpl) Jenkins.get().getDescriptorOrDie(getClass());
         }
 
         @TestExtension
         public static class DescriptorImpl extends TopLevelItemDescriptor {
-            @Override 
+            @Override
             public TopLevelItem newInstance(ItemGroup parent, String name) {
                 return new NonAbstractJob(parent, name);
             }

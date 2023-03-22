@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,19 +21,29 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.util;
 
 
+import com.gargoylesoftware.htmlunit.ScriptResult;
 import com.gargoylesoftware.htmlunit.WebResponseListener;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import hudson.model.AbstractProject;
 import hudson.model.FreeStyleProject;
-import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.BuildStepDescriptor;
+import hudson.tasks.BuildStepMonitor;
+import hudson.tasks.Builder;
 import hudson.tasks.Publisher;
+import java.io.IOException;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.TestExtension;
+import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.QueryParameter;
+import org.xml.sax.SAXException;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -65,6 +75,55 @@ public class FormFieldValidatorTest {
         @Override
         public BuildStepMonitor getRequiredMonitorService() {
             return BuildStepMonitor.BUILD;
+        }
+    }
+
+    @Test
+    @Issue("JENKINS-15604")
+    public void testCodeMirrorBlur() throws IOException, SAXException {
+        final FreeStyleProject freeStyleProject = j.createFreeStyleProject();
+        freeStyleProject.getBuildersList().add(new CodeMirrorStep(""));
+        freeStyleProject.save();
+        final JenkinsRule.WebClient wc = j.createWebClient();
+        final HtmlPage page = wc.getPage(freeStyleProject, "configure");
+
+        // get initial value
+        final ScriptResult scriptResult1 = page.executeJavaScript("document.querySelectorAll('.validation-error-area--visible .ok')[1].textContent");
+        final long javaScriptResult1 = Long.parseLong((String) scriptResult1.getJavaScriptResult());
+        Assert.assertEquals(System.currentTimeMillis(), javaScriptResult1, 5000); // value is expected to be roughly "now"
+
+        // focus then blur to update
+        page.executeJavaScript("document.querySelector('.CodeMirror textarea').dispatchEvent(new Event(\"focus\"))");
+        page.executeJavaScript("document.querySelector('.CodeMirror textarea').dispatchEvent(new Event(\"blur\"))");
+        wc.waitForBackgroundJavaScript(1000); // Unsure whether this is needed
+
+        // get updated value
+        final ScriptResult scriptResult2 = page.executeJavaScript("document.querySelectorAll('.validation-error-area--visible .ok')[1].textContent");
+        final long javaScriptResult2 = Long.parseLong((String) scriptResult2.getJavaScriptResult());
+        Assert.assertEquals(System.currentTimeMillis(), javaScriptResult2, 5000); // value is expected to be roughly "now"
+
+        // value should have changed
+        Assert.assertNotEquals(javaScriptResult1, javaScriptResult2);
+    }
+
+    public static class CodeMirrorStep extends Builder {
+        private String command;
+
+        @DataBoundConstructor
+        public CodeMirrorStep(String command) {
+            this.command = command;
+        }
+
+        @TestExtension
+        public static class DescriptorImpl extends BuildStepDescriptor<Builder> {
+            public FormValidation doCheckCommand(@QueryParameter String command) {
+                return FormValidation.ok("" + System.currentTimeMillis());
+            }
+
+            @Override
+            public boolean isApplicable(Class<? extends AbstractProject> jobType) {
+                return true;
+            }
         }
     }
 

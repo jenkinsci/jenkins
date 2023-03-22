@@ -1,16 +1,9 @@
 package hudson.init;
 
+import static java.util.logging.Level.WARNING;
+
 import com.google.inject.Injector;
 import hudson.model.Hudson;
-import jenkins.model.Jenkins;
-import org.jvnet.hudson.annotation_indexer.Index;
-import org.jvnet.hudson.reactor.Milestone;
-import org.jvnet.hudson.reactor.MilestoneImpl;
-import org.jvnet.hudson.reactor.Reactor;
-import org.jvnet.hudson.reactor.Task;
-import org.jvnet.hudson.reactor.TaskBuilder;
-import org.jvnet.localizer.ResourceBundleHolder;
-
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
@@ -23,8 +16,14 @@ import java.util.List;
 import java.util.MissingResourceException;
 import java.util.Set;
 import java.util.logging.Logger;
-
-import static java.util.logging.Level.WARNING;
+import jenkins.model.Jenkins;
+import org.jvnet.hudson.annotation_indexer.Index;
+import org.jvnet.hudson.reactor.Milestone;
+import org.jvnet.hudson.reactor.MilestoneImpl;
+import org.jvnet.hudson.reactor.Reactor;
+import org.jvnet.hudson.reactor.Task;
+import org.jvnet.hudson.reactor.TaskBuilder;
+import org.jvnet.localizer.ResourceBundleHolder;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -45,10 +44,15 @@ abstract class TaskMethodFinder<T extends Annotation> extends TaskBuilder {
 
     // working around the restriction that Java doesn't allow annotation types to extend interfaces
     protected abstract String displayNameOf(T i);
+
     protected abstract String[] requiresOf(T i);
+
     protected abstract String[] attainsOf(T i);
+
     protected abstract Milestone afterOf(T i);
+
     protected abstract Milestone beforeOf(T i);
+
     protected abstract boolean fatalOf(T i);
 
     @Override
@@ -58,7 +62,7 @@ abstract class TaskMethodFinder<T extends Annotation> extends TaskBuilder {
             if (filter(e)) continue;   // already reported once
 
             T i = e.getAnnotation(type);
-            if (i==null)        continue; // stale index
+            if (i == null)        continue; // stale index
 
             result.add(new TaskImpl(i, e));
         }
@@ -78,13 +82,13 @@ abstract class TaskMethodFinder<T extends Annotation> extends TaskBuilder {
     protected String getDisplayNameOf(Method e, T i) {
         Class<?> c = e.getDeclaringClass();
         String key = displayNameOf(i);
-        if (key.length()==0)  return c.getSimpleName()+"."+e.getName();
+        if (key.length() == 0)  return c.getSimpleName() + "." + e.getName();
         try {
             ResourceBundleHolder rb = ResourceBundleHolder.get(
                     c.getClassLoader().loadClass(c.getPackage().getName() + ".Messages"));
             return rb.format(key);
         } catch (ClassNotFoundException x) {
-            LOGGER.log(WARNING, "Failed to load "+x.getMessage()+" for "+ e,x);
+            LOGGER.log(WARNING, "Failed to load " + x.getMessage() + " for " + e, x);
             return key;
         } catch (MissingResourceException x) {
             LOGGER.log(WARNING, "Could not find key '" + key + "' in " + c.getPackage().getName() + ".Messages", x);
@@ -99,14 +103,14 @@ abstract class TaskMethodFinder<T extends Annotation> extends TaskBuilder {
         try {
             Class<?>[] pt = e.getParameterTypes();
             Object[] args = new Object[pt.length];
-            for (int i=0; i<args.length; i++)
+            for (int i = 0; i < args.length; i++)
                 args[i] = lookUp(pt[i]);
 
             e.invoke(
                 Modifier.isStatic(e.getModifiers()) ? null : lookUp(e.getDeclaringClass()),
                 args);
         } catch (IllegalAccessException x) {
-            throw (Error)new IllegalAccessError().initCause(x);
+            throw (Error) new IllegalAccessError().initCause(x);
         } catch (InvocationTargetException x) {
             throw new Error(x);
         }
@@ -118,12 +122,12 @@ abstract class TaskMethodFinder<T extends Annotation> extends TaskBuilder {
     private Object lookUp(Class<?> type) {
         Jenkins j = Jenkins.get();
         assert j != null : "This method is only invoked after the Jenkins singleton instance has been set";
-        if (type==Jenkins.class || type==Hudson.class)
+        if (type == Jenkins.class || type == Hudson.class)
             return j;
         Injector i = j.getInjector();
-        if (i!=null)
+        if (i != null)
             return i.getInstance(type);
-        throw new IllegalArgumentException("Unable to inject "+type);
+        throw new IllegalArgumentException("Unable to inject " + type);
     }
 
     /**
@@ -190,7 +194,7 @@ abstract class TaskMethodFinder<T extends Annotation> extends TaskBuilder {
             List<Milestone> r = new ArrayList<>();
             for (String s : tokens) {
                 try {
-                    r.add((Milestone)Enum.valueOf(milestoneType,s));
+                    r.add((Milestone) Enum.valueOf(milestoneType, s));
                 } catch (IllegalArgumentException x) {
                     r.add(new MilestoneImpl(s));
                 }

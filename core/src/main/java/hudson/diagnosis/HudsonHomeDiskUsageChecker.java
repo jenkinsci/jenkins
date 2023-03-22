@@ -21,16 +21,16 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.diagnosis;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
-import jenkins.model.Jenkins;
 import hudson.model.PeriodicWork;
+import java.util.logging.Logger;
+import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
 import org.jenkinsci.Symbol;
-
-import java.util.logging.Logger;
 
 /**
  * Periodically checks the disk usage of {@code JENKINS_HOME},
@@ -49,14 +49,14 @@ public class HudsonHomeDiskUsageChecker extends PeriodicWork {
     protected void doRun() {
             long free = Jenkins.get().getRootDir().getUsableSpace();
             long total = Jenkins.get().getRootDir().getTotalSpace();
-            if(free<=0 || total<=0) {
+            if (free <= 0 || total <= 0) {
                 // information unavailable. pointless to try.
                 LOGGER.info("JENKINS_HOME disk usage information isn't available. aborting to monitor");
                 cancel();
                 return;
             }
 
-            LOGGER.fine("Monitoring disk usage of JENKINS_HOME. total="+total+" free="+free);
+            LOGGER.fine("Monitoring disk usage of JENKINS_HOME. total=" + total + " free=" + free);
 
 
             // if it's more than 90% full and less than the minimum, activate
@@ -70,7 +70,7 @@ public class HudsonHomeDiskUsageChecker extends PeriodicWork {
     /**
      * Gets the minimum amount of space to check for, with a default of 10GB
      */
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
     public static long FREE_SPACE_THRESHOLD = SystemProperties.getLong(HudsonHomeDiskUsageChecker.class.getName()
-                    + ".freeSpaceThreshold", 1024L*1024*1024*10);
+                    + ".freeSpaceThreshold", 1024L * 1024 * 1024 * 10);
 }

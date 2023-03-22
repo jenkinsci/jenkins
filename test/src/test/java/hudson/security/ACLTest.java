@@ -24,29 +24,30 @@
 
 package hudson.security;
 
-import edu.umd.cs.findbugs.annotations.NonNull;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
+
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.FreeStyleProject;
 import hudson.model.Item;
+import hudson.model.Job;
 import hudson.model.Run;
 import hudson.model.UnprotectedRootAction;
 import hudson.model.User;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import jenkins.model.Jenkins;
 import org.junit.Assert;
-import org.junit.Test;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import org.junit.Rule;
+import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.TestExtension;
-
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import hudson.model.Job;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 
@@ -65,7 +66,7 @@ public class ACLTest {
         assertTrue(p.hasPermission2(ACL.SYSTEM2, Item.CONFIGURE));
         p.checkPermission(Item.CONFIGURE);
         p.checkAbortPermission();
-        assertEquals(Collections.singletonList(p), r.jenkins.getAllItems());
+        assertEquals(List.of(p), r.jenkins.getAllItems());
     }
 
     @Test
@@ -170,12 +171,8 @@ public class ACLTest {
                 .grant(Jenkins.READ).everywhere().toEveryone());
 
         JenkinsRule.WebClient wc = r.createWebClient();
-        try {
-            wc.goTo("either");
-            fail();
-        } catch (FailingHttpStatusCodeException ex) {
-            assertEquals(403, ex.getStatusCode());
-        }
+        FailingHttpStatusCodeException ex = assertThrows(FailingHttpStatusCodeException.class, () -> wc.goTo("either"));
+        assertEquals(403, ex.getStatusCode());
 
         r.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
                 .grant(Jenkins.ADMINISTER).everywhere().toEveryone());

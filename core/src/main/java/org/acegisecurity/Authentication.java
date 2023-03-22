@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package org.acegisecurity;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -66,39 +67,48 @@ public interface Authentication extends Principal, Serializable {
                 public GrantedAuthority[] getAuthorities() {
                     return GrantedAuthority.fromSpring(a.getAuthorities());
                 }
+
                 @Override
                 public Object getCredentials() {
                     return a.getCredentials(); // seems to be String, typically, so nothing to wrap
                 }
+
                 @Override
                 public Object getDetails() {
                     // Could try to wrap WebAuthenticationDetails, but it does not appear that any code actual checkcasts this.
                     return a.getDetails();
                 }
+
                 @Override
                 public Object getPrincipal() {
                     return UserDetails.fromSpringPrincipal(a.getPrincipal());
                 }
+
                 @Override
                 public boolean isAuthenticated() {
                     return a.isAuthenticated();
                 }
+
                 @Override
                 public void setAuthenticated(boolean isAuthenticated) throws IllegalArgumentException {
                     a.setAuthenticated(isAuthenticated);
                 }
+
                 @Override
                 public String getName() {
                     return a.getName();
                 }
+
                 @Override
                 public boolean equals(Object o) {
                     return o instanceof Authentication && ((Authentication) o).getName().equals(getName());
                 }
+
                 @Override
                 public int hashCode() {
                     return getName().hashCode();
                 }
+
                 @Override
                 public String toString() {
                     return super.toString() + ": " + getName();

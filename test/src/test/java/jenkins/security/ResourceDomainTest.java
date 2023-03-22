@@ -1,17 +1,24 @@
 package jenkins.security;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.junit.Assume.assumeFalse;
+
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.ExtensionList;
 import hudson.FilePath;
+import hudson.Functions;
 import hudson.model.DirectoryBrowserSupport;
 import hudson.model.FreeStyleProject;
 import hudson.model.Item;
 import hudson.model.UnprotectedRootAction;
+import java.net.URL;
+import java.time.Instant;
+import java.util.UUID;
 import jenkins.model.Jenkins;
 import jenkins.model.JenkinsLocationConfiguration;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -23,11 +30,6 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.HttpResponse;
-
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import java.net.URL;
-import java.time.Instant;
-import java.util.UUID;
 
 @Issue("JENKINS-41891")
 @For({ ResourceDomainRootAction.class, ResourceDomainFilter.class, ResourceDomainConfiguration.class })
@@ -269,12 +271,12 @@ public class ResourceDomainTest {
     }
 
 //    @Test
-    public void indexFileIsUsedIfDefined() throws Exception {
+    public void indexFileIsUsedIfDefined() {
         // TODO Test with DBS with and without directory index file
     }
 
     @Test
-    public void adminMonitorShowsUpWithOverriddenCSP() throws Exception {
+    public void adminMonitorShowsUpWithOverriddenCSP() {
         ResourceDomainRecommendation monitor = ExtensionList.lookupSingleton(ResourceDomainRecommendation.class);
         Assert.assertFalse(monitor.isActivated());
         System.setProperty(DirectoryBrowserSupport.class.getName() + ".CSP", "");
@@ -308,7 +310,7 @@ public class ResourceDomainTest {
     }
 
     @Test
-    public void testRedirectUrls() throws Exception {
+    public void testRedirectUrls() {
         ResourceDomainRootAction rootAction = ResourceDomainRootAction.get();
         String url = rootAction.getRedirectUrl(new ResourceDomainRootAction.Token("foo", "bar", Instant.now()), "foo bar baz");
         Assert.assertFalse("urlencoded", url.contains(" "));
@@ -338,6 +340,7 @@ public class ResourceDomainTest {
     @Test
     @Issue("JENKINS-59849")
     public void testMoreUrlEncoding() throws Exception {
+        assumeFalse("TODO: Implement this test on Windows", Functions.isWindows());
         JenkinsRule.WebClient webClient = j.createWebClient();
         webClient.setThrowExceptionOnFailingStatusCode(false);
         webClient.setRedirectEnabled(true);

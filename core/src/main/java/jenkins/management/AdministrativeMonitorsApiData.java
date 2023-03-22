@@ -1,11 +1,10 @@
 package jenkins.management;
 
 import hudson.model.AdministrativeMonitor;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-
 import java.util.ArrayList;
 import java.util.List;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 @Restricted(NoExternalUse.class)
 public class AdministrativeMonitorsApiData {

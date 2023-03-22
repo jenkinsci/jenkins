@@ -1,12 +1,12 @@
 package hudson;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
-import hudson.model.Node;
 import hudson.model.Executor;
+import hudson.model.Node;
 import hudson.model.TaskListener;
 import hudson.tasks.BuildWrapper;
-import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * Decorates {@link Launcher} so that one can intercept executions of commands

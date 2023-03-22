@@ -1,74 +1,61 @@
 package hudson.cli;
 
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.fail;
-import static org.powermock.api.mockito.PowerMockito.mock;
-import static org.powermock.api.mockito.PowerMockito.mockStatic;
-import static org.powermock.api.mockito.PowerMockito.when;
-import hudson.model.TopLevelItem;
-import hudson.model.ViewTest.CompositeView;
-import hudson.model.View;
+import static org.junit.Assert.assertThrows;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.when;
 
+import hudson.model.TopLevelItem;
+import hudson.model.View;
+import hudson.model.ViewTest.CompositeView;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.PrintStream;
+import java.io.UncheckedIOException;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-
-
+import java.util.Set;
 import jenkins.model.Jenkins;
-
 import org.hamcrest.Description;
 import org.hamcrest.TypeSafeMatcher;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.core.classloader.annotations.SuppressStaticInitializationFor;
-import org.powermock.modules.junit4.PowerMockRunner;
 
-@RunWith(PowerMockRunner.class)
-@PrepareForTest(Jenkins.class)
-@PowerMockIgnore({"com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*"})
-@SuppressStaticInitializationFor("hudson.cli.CLICommand")
 public class ListJobsCommandTest {
 
-    private /*final*/ Jenkins jenkins;
     private /*final*/ ListJobsCommand command;
     private final ByteArrayOutputStream stdout = new ByteArrayOutputStream();
     private final ByteArrayOutputStream stderr = new ByteArrayOutputStream();
 
     @Before
     public void setUp() {
-
-        jenkins = mock(Jenkins.class);
-        mockStatic(Jenkins.class);
-        when(Jenkins.get()).thenReturn(jenkins);
         command = mock(ListJobsCommand.class, Mockito.CALLS_REAL_METHODS);
         command.stdout = new PrintStream(stdout);
         command.stderr = new PrintStream(stderr);
     }
 
     @Test
-    public void failForNonexistingName() throws Exception {
+    public void failForNonexistentName() {
+        Jenkins jenkins = mock(Jenkins.class);
 
-        when(jenkins.getView("NoSuchViewOrItemGroup")).thenReturn(null);
-        when(jenkins.getItemByFullName("NoSuchViewOrItemGroup")).thenReturn(null);
+        try (MockedStatic<Jenkins> mocked = mockStatic(Jenkins.class)) {
+            mocked.when(Jenkins::get).thenReturn(jenkins);
+            when(jenkins.getView("NoSuchViewOrItemGroup")).thenReturn(null);
+            when(jenkins.getItemByFullName("NoSuchViewOrItemGroup")).thenReturn(null);
 
-        try {
-            runWith("NoSuchViewOrItemGroup");
-            fail("Exception should be thrown in the previous call.");
-        } catch (IllegalArgumentException e) { // Expected
+            final IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> runWith("NoSuchViewOrItemGroup"));
             assertThat(e.getMessage(), containsString("No view or item group with the given name 'NoSuchViewOrItemGroup' found."));
+            assertThat(stdout, is(empty()));
         }
-        assertThat(stdout, is(empty()));
     }
 
     @Test
@@ -77,12 +64,15 @@ public class ListJobsCommandTest {
         final List<TopLevelItem> jenkinsJobs = Arrays.asList(
                 job("some-job"), job("some-other-job")
         );
+        Jenkins jenkins = mock(Jenkins.class);
+        try (MockedStatic<Jenkins> mocked = mockStatic(Jenkins.class)) {
+            mocked.when(Jenkins::get).thenReturn(jenkins);
+            when(jenkins.getItems()).thenReturn(jenkinsJobs);
 
-        when(jenkins.getItems()).thenReturn(jenkinsJobs);
-
-        assertThat(runWith(null), equalTo(0));
-        assertThat(stderr, is(empty()));
-        assertThat(stdout, listsJobs("some-job", "some-other-job"));
+            assertThat(runWith(null), equalTo(0));
+            assertThat(stderr, is(empty()));
+            assertThat(stdout, listsJobs("some-job", "some-other-job"));
+        }
     }
 
     @Test
@@ -95,11 +85,15 @@ public class ListJobsCommandTest {
         final View customView = view();
         when(customView.getItems()).thenReturn(viewJobs);
 
-        when(jenkins.getView("CustomView")).thenReturn(customView);
+        Jenkins jenkins = mock(Jenkins.class);
+        try (MockedStatic<Jenkins> mocked = mockStatic(Jenkins.class)) {
+            mocked.when(Jenkins::get).thenReturn(jenkins);
+            when(jenkins.getView("CustomView")).thenReturn(customView);
 
-        assertThat(runWith("CustomView"), equalTo(0));
-        assertThat(stderr, is(empty()));
-        assertThat(stdout, listsJobs("some-job", "some-other-job"));
+            assertThat(runWith("CustomView"), equalTo(0));
+            assertThat(stderr, is(empty()));
+            assertThat(stdout, listsJobs("some-job", "some-other-job"));
+        }
     }
 
     @Test
@@ -118,13 +112,17 @@ public class ListJobsCommandTest {
         when(rootView.getViews()).thenReturn(Arrays.asList(leftView, rightView));
         when(rootView.getItems()).thenReturn(Arrays.asList(rootJob, sharedJob));
         when(leftView.getItems()).thenReturn(Arrays.asList(leftJob, sharedJob));
-        when(rightView.getItems()).thenReturn(Collections.singletonList(rightJob));
+        when(rightView.getItems()).thenReturn(List.of(rightJob));
 
-        when(jenkins.getView("Root")).thenReturn(rootView);
+        Jenkins jenkins = mock(Jenkins.class);
+        try (MockedStatic<Jenkins> mocked = mockStatic(Jenkins.class)) {
+            mocked.when(Jenkins::get).thenReturn(jenkins);
+            when(jenkins.getView("Root")).thenReturn(rootView);
 
-        assertThat(runWith("Root"), equalTo(0));
-        assertThat(stderr, is(empty()));
-        assertThat(stdout, listsJobs("rootJob", "leftJob", "rightJob", "sharedJob"));
+            assertThat(runWith("Root"), equalTo(0));
+            assertThat(stderr, is(empty()));
+            assertThat(stdout, listsJobs("rootJob", "leftJob", "rightJob", "sharedJob"));
+        }
     }
 
     private View view() {
@@ -155,12 +153,19 @@ public class ListJobsCommandTest {
 
     private TypeSafeMatcher<ByteArrayOutputStream> empty() {
 
-        return new TypeSafeMatcher<ByteArrayOutputStream>() {
+        return new TypeSafeMatcher<>() {
 
             @Override
             protected boolean matchesSafely(ByteArrayOutputStream item) {
-
-                return item.toString().isEmpty();
+                Charset charset;
+                try {
+                    charset = command.getClientCharset();
+                } catch (IOException e) {
+                    throw new UncheckedIOException(e);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+                return item.toString(charset).isEmpty();
             }
 
             @Override
@@ -173,14 +178,20 @@ public class ListJobsCommandTest {
 
     private TypeSafeMatcher<ByteArrayOutputStream> listsJobs(final String... expected) {
 
-        return new TypeSafeMatcher<ByteArrayOutputStream>() {
+        return new TypeSafeMatcher<>() {
 
             @Override
             protected boolean matchesSafely(ByteArrayOutputStream item) {
 
-                final HashSet<String> jobs = new HashSet<>(
-                        Arrays.asList(item.toString().split(System.getProperty("line.separator")))
-                );
+                Charset charset;
+                try {
+                    charset = command.getClientCharset();
+                } catch (IOException e) {
+                    throw new UncheckedIOException(e);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+                Set<String> jobs = new HashSet<>(Arrays.asList(item.toString(charset).split(System.getProperty("line.separator"))));
 
                 return new HashSet<>(Arrays.asList(expected)).equals(jobs);
             }

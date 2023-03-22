@@ -21,19 +21,21 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertEquals;
 
 import hudson.XmlFile;
 import java.util.logging.Level;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.not;
-import org.junit.Test;
-import static org.junit.Assert.assertEquals;
-import static org.hamcrest.MatcherAssert.assertThat;
 import org.junit.Rule;
+import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
-import org.jvnet.hudson.test.LoggerRule;
 import org.jvnet.hudson.test.JenkinsSessionRule;
+import org.jvnet.hudson.test.LoggerRule;
 
 public class AbstractItem2Test {
 
@@ -60,11 +62,21 @@ public class AbstractItem2Test {
         sessions.then(j -> {
                 FreeStyleProject p1 = j.jenkins.getItemByFullName("p1", FreeStyleProject.class);
                 FreeStyleProject p2 = j.jenkins.getItemByFullName("p2", FreeStyleProject.class);
-                assertEquals(/* does not work yet: p1 */ null, p2.getProperty(BadProperty.class).other);
+                /*
+                 * AbstractItem.Replacer.readResolve() is racy, as its comments acknowledge. Jobs
+                 * are loaded in parallel, and p1 may not have been loaded yet when we are loading
+                 * p2. The only way for this test to work reliably is to reload p2 after p1 has
+                 * already been loaded, thus assuring that p2's reference to p1 can be properly
+                 * deserialized.
+                 */
+                p2.doReload();
+                assertEquals(p1, p2.getProperty(BadProperty.class).other);
         });
     }
+
     static class BadProperty extends JobProperty<FreeStyleProject> {
         final FreeStyleProject other;
+
         BadProperty(FreeStyleProject other) {
             this.other = other;
         }

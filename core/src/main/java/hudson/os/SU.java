@@ -21,9 +21,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.os;
 
+import static hudson.util.jna.GNUCLibrary.LIBC;
+
 import com.sun.solaris.EmbeddedSu;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.FilePath;
 import hudson.Launcher.LocalLauncher;
 import hudson.Util;
@@ -36,13 +40,11 @@ import hudson.remoting.VirtualChannel;
 import hudson.remoting.Which;
 import hudson.slaves.Channels;
 import hudson.util.ArgumentListBuilder;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.nio.charset.Charset;
 import java.util.Collections;
-
-import static hudson.util.jna.GNUCLibrary.LIBC;
 
 /**
  * Executes {@link Callable} as the super user, by forking a new process and executing the closure in there
@@ -71,40 +73,43 @@ public abstract class SU {
      *      Close this channel and the SU environment will be shut down.
      */
     public static VirtualChannel start(final TaskListener listener, final String rootUsername, final String rootPassword) throws IOException, InterruptedException {
-        if(File.pathSeparatorChar==';') // on Windows
+        if (File.pathSeparatorChar == ';') // on Windows
             return newLocalChannel();  // TODO: perhaps use RunAs to run as an Administrator?
 
         String os = Util.fixNull(System.getProperty("os.name"));
-        if(os.equals("Linux"))
+        if (os.equals("Linux"))
             return new UnixSu() {
                 @Override
                 protected String sudoExe() {
                     return "sudo";
                 }
 
+                @SuppressFBWarnings(value = "COMMAND_INJECTION", justification = "TODO needs triage")
                 @Override
                 protected Process sudoWithPass(ArgumentListBuilder args) throws IOException {
-                    args.prepend(sudoExe(),"-S");
+                    args.prepend(sudoExe(), "-S");
                     listener.getLogger().println("$ " + String.join(" ", args.toList()));
                     ProcessBuilder pb = new ProcessBuilder(args.toCommandArray());
                     Process p = pb.start();
                     // TODO: use -p to detect prompt
                     // TODO: detect if the password didn't work
-                    PrintStream ps = new PrintStream(p.getOutputStream());
-                    ps.println(rootPassword);
-                    ps.println(rootPassword);
-                    ps.println(rootPassword);
+                    try (PrintStream ps = new PrintStream(p.getOutputStream(), false, Charset.defaultCharset())) {
+                        ps.println(rootPassword);
+                        ps.println(rootPassword);
+                        ps.println(rootPassword);
+                    }
                     return p;
                 }
-            }.start(listener,rootPassword);
+            }.start(listener, rootPassword);
 
-        if(os.equals("SunOS"))
+        if (os.equals("SunOS"))
             return new UnixSu() {
                 @Override
                 protected String sudoExe() {
                     return "/usr/bin/pfexec";
                 }
 
+                @SuppressFBWarnings(value = "COMMAND_INJECTION", justification = "TODO needs triage")
                 @Override
                 protected Process sudoWithPass(ArgumentListBuilder args) throws IOException {
                     listener.getLogger().println("Running with embedded_su");
@@ -113,7 +118,7 @@ public abstract class SU {
                 }
             // in solaris, pfexec never asks for a password, so username==null means
             // we won't be using password. this helps disambiguate empty password
-            }.start(listener,rootUsername==null?null:rootPassword);
+            }.start(listener, rootUsername == null ? null : rootPassword);
 
         // TODO: Mac?
 
@@ -128,7 +133,7 @@ public abstract class SU {
     /**
      * Starts a new privilege-escalated environment, execute a closure, and shut it down.
      */
-    public static <V,T extends Throwable> V execute(TaskListener listener, String rootUsername, String rootPassword, final Callable<V, T> closure) throws T, IOException, InterruptedException {
+    public static <V, T extends Throwable> V execute(TaskListener listener, String rootUsername, String rootPassword, final Callable<V, T> closure) throws T, IOException, InterruptedException {
         VirtualChannel ch = start(listener, rootUsername, rootPassword);
         try {
             return ch.call(closure);
@@ -147,16 +152,16 @@ public abstract class SU {
         VirtualChannel start(TaskListener listener, String rootPassword) throws IOException, InterruptedException {
             final int uid = LIBC.geteuid();
 
-            if(uid==0)  // already running as root
+            if (uid == 0)  // already running as root
                 return newLocalChannel();
 
             String javaExe = System.getProperty("java.home") + "/bin/java";
             File agentJar = Which.jarFile(Launcher.class);
 
             ArgumentListBuilder args = new ArgumentListBuilder().add(javaExe);
-            if(agentJar.isFile())
+            if (agentJar.isFile())
                 args.add("-jar").add(agentJar);
-            else // in production code this never happens, but during debugging this is convenient    
+            else // in production code this never happens, but during debugging this is convenient
                 args.add("-cp").add(agentJar).add(hudson.remoting.Launcher.class.getName());
 
             if (Util.fixEmptyAndTrim(rootPassword) == null) {
@@ -168,7 +173,7 @@ public abstract class SU {
                 // try sudo with the given password. Also run in pfexec so that we can elevate the privileges
                 Process proc = sudoWithPass(args);
                 return Channels.forProcess(args.toStringWithQuote(), Computer.threadPoolForRemoting, proc,
-                        listener.getLogger() );
+                        listener.getLogger());
             }
         }
     }

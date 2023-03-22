@@ -1,10 +1,10 @@
 package org.acegisecurity.util;
 
-import org.junit.jupiter.api.Test;
-import org.jvnet.hudson.test.Issue;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import org.junit.jupiter.api.Test;
+import org.jvnet.hudson.test.Issue;
 
 @SuppressWarnings("deprecation")
 public class FieldUtilsTest {
@@ -45,7 +45,7 @@ public class FieldUtilsTest {
         public String getMyField() {
             return myField;
         }
-        
+
     }
 
     public class InnerClassWithProtectedField {

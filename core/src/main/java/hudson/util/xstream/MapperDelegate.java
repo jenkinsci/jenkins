@@ -9,6 +9,7 @@
  *
  * Created on 22. January 2005 by Joe Walnes
  */
+
 package hudson.util.xstream;
 
 import com.thoughtworks.xstream.XStream;
@@ -139,7 +140,7 @@ public class MapperDelegate extends MapperWrapper {
 
     @Override
     public SingleValueConverter getConverterFromItemType(String fieldName, Class type, Class definedIn) {
-    	return delegate.getConverterFromItemType(fieldName, type, definedIn);
+        return delegate.getConverterFromItemType(fieldName, type, definedIn);
     }
 
     /**
@@ -148,7 +149,7 @@ public class MapperDelegate extends MapperWrapper {
     @Deprecated
     @Override
     public String aliasForAttribute(Class definedIn, String fieldName) {
-    	return delegate.aliasForAttribute(definedIn, fieldName);
+        return delegate.aliasForAttribute(definedIn, fieldName);
     }
 
     /**
@@ -157,7 +158,7 @@ public class MapperDelegate extends MapperWrapper {
     @Deprecated
     @Override
     public String attributeForAlias(Class definedIn, String alias) {
-    	return delegate.attributeForAlias(definedIn, alias);
+        return delegate.attributeForAlias(definedIn, alias);
     }
 
     /**
@@ -166,7 +167,7 @@ public class MapperDelegate extends MapperWrapper {
     @Deprecated
     @Override
     public SingleValueConverter getConverterFromAttribute(Class type, String attribute) {
-    	return delegate.getConverterFromAttribute(type, attribute);
+        return delegate.getConverterFromAttribute(type, attribute);
     }
 
     @Override

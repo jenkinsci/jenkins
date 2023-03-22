@@ -21,15 +21,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
-
-import jenkins.model.IdStrategy;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestName;
-
-import java.io.File;
-import java.io.IOException;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
@@ -41,10 +34,17 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.startsWith;
 import static org.junit.Assert.assertThrows;
 
+import java.io.File;
+import java.io.IOException;
+import jenkins.model.IdStrategy;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TestName;
+
 public class UserIdMapperTest {
 
     @Rule
-    public TestName name= new TestName();
+    public TestName name = new TestName();
 
     @Test
     public void testNonexistentFileLoads() throws IOException {

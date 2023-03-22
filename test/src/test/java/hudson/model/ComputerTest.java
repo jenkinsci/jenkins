@@ -21,18 +21,24 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
+import static org.awaitility.Awaitility.await;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.any;
+import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.isA;
 import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.HttpMethod;
@@ -40,24 +46,25 @@ import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.xml.XmlPage;
-
+import hudson.ExtensionList;
+import hudson.diagnosis.OldDataMonitor;
+import hudson.slaves.DumbSlave;
+import hudson.slaves.OfflineCause;
 import java.io.File;
 import java.net.HttpURLConnection;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
-
-import hudson.ExtensionList;
-import hudson.diagnosis.OldDataMonitor;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 import jenkins.model.Jenkins;
-import hudson.slaves.DumbSlave;
-import hudson.slaves.OfflineCause;
-
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
+import org.jvnet.hudson.test.LoggerRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.MockFolder;
 import org.jvnet.hudson.test.SmokeTest;
@@ -67,6 +74,7 @@ import org.jvnet.hudson.test.recipes.LocalData;
 public class ComputerTest {
 
     @Rule public JenkinsRule j = new JenkinsRule();
+    @Rule public LoggerRule logging = new LoggerRule();
 
     @Test
     public void discardLogsAfterDeletion() throws Exception {
@@ -101,7 +109,7 @@ public class ComputerTest {
 
         Page page = j.submit(form);
         assertEquals(NOTE, HttpURLConnection.HTTP_BAD_REQUEST, page.getWebResponse().getStatusCode());
-        assertThat(NOTE, page.getWebResponse().getContentAsString(), 
+        assertThat(NOTE, page.getWebResponse().getContentAsString(),
                 containsString("Agent called ‘nodeA’ already exists"));
     }
 
@@ -133,6 +141,7 @@ public class ComputerTest {
     public void addAction() throws Exception {
         Computer c = j.createSlave().toComputer();
         class A extends InvisibleAction {}
+
         assertEquals(0, c.getActions(A.class).size());
         c.addAction(new A());
         assertEquals(1, c.getActions(A.class).size());
@@ -152,6 +161,18 @@ public class ComputerTest {
         FreeStyleProject p3 = f.createProject(FreeStyleProject.class, "project");
         p3.setAssignedLabel(l);
         assertThat(c.getTiedJobs(), containsInAnyOrder(p, p3));
+    }
+
+    @Test
+    public void exceptions() throws Exception {
+        logging.record("", Level.WARNING).capture(10);
+        boolean ok = false;
+        Computer.threadPoolForRemoting.submit(() -> {
+            if (!ok) {
+                throw new IllegalStateException("oops");
+            }
+        });
+        await().atMost(15, TimeUnit.SECONDS).until(() -> logging, LoggerRule.recorded(Level.WARNING, anyOf(nullValue(), any(String.class)), isA(IllegalStateException.class)));
     }
 
     @Issue("SECURITY-1923")
@@ -174,13 +195,9 @@ public class ComputerTest {
         req.setAdditionalHeader("Content-Type", "application/xml");
         req.setRequestBody(VALID_XML_BAD_FIELD_USER_XML);
 
-        try {
-            wc.getPage(req);
-            fail("Should have returned failure.");
-        } catch (FailingHttpStatusCodeException e) {
-            // This really shouldn't return 500, but that's what it does now.
-            assertThat(e.getStatusCode(), equalTo(500));
-        }
+        FailingHttpStatusCodeException e = assertThrows(FailingHttpStatusCodeException.class, () -> wc.getPage(req));
+        // This really shouldn't return 500, but that's what it does now.
+        assertThat(e.getStatusCode(), equalTo(500));
 
         OldDataMonitor odm = ExtensionList.lookupSingleton(OldDataMonitor.class);
         Map<Saveable, OldDataMonitor.VersionRange> data = odm.getData();
@@ -202,4 +219,43 @@ public class ComputerTest {
                     "  <fullName>Foo User</fullName>\n" +
                     "  <badField/>\n" +
                     "</hudson.model.User>\n";
+
+    @Test
+    public void testTerminatedNodeStatusPageDoesNotShowTrace() throws Exception {
+        DumbSlave agent = j.createOnlineSlave();
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.setAssignedNode(agent);
+
+        Future<FreeStyleBuild> r = ExecutorTest.startBlockingBuild(p);
+
+        String message = "It went away";
+        p.getLastBuild().getBuiltOn().toComputer().disconnect(
+                new OfflineCause.ChannelTermination(new RuntimeException(message))
+        );
+
+        WebClient wc = j.createWebClient();
+        Page page = wc.getPage(wc.createCrumbedUrl(agent.toComputer().getUrl()));
+        String content = page.getWebResponse().getContentAsString();
+        assertThat(content, not(containsString(message)));
+    }
+
+    @Test
+    public void testTerminatedNodeAjaxExecutorsDoesNotShowTrace() throws Exception {
+        DumbSlave agent = j.createOnlineSlave();
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.setAssignedNode(agent);
+
+        Future<FreeStyleBuild> r = ExecutorTest.startBlockingBuild(p);
+
+        String message = "It went away";
+        p.getLastBuild().getBuiltOn().toComputer().disconnect(
+                new OfflineCause.ChannelTermination(new RuntimeException(message))
+        );
+
+        WebClient wc = j.createWebClient();
+        Page page = wc.getPage(wc.createCrumbedUrl("ajaxExecutors"));
+        String content = page.getWebResponse().getContentAsString();
+        assertThat(content, not(containsString(message)));
+    }
+
 }

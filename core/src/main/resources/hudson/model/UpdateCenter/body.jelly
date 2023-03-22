@@ -29,13 +29,13 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <l:ajax>
-    
+
     <table id="log">
       <j:forEach var="i" items="${it.jobs}">
         <st:include it="${i}" page="row.jelly" />
       </j:forEach>
     </table>
-    
+
     <div id="scheduleRestartBlock" style="padding-top:2em">
       <form method="post" id="scheduleRestart" action="">
         <p class="info" style="font-weight: normal">
@@ -49,18 +49,15 @@ THE SOFTWARE.
             <l:icon class="icon-red icon-md"/>
             <l:icon class="icon-nobuilt icon-md"/>
           </div>
-          <p class="info" style="font-weight: normal">
+          <p class="info">
             <j:if test="${app.lifecycle.canRestart()}">
               <j:if test="${app.isQuietingDown() or it.isRestartScheduled()}">
-                <input id="scheduleRestartCheckbox" onchange="submitScheduleForm(this)" type="checkbox" checked="checked" />
+                <f:checkbox checked="true" id="scheduleRestartCheckbox" name="scheduleRestart" title="${%warning}" />
               </j:if>
               <j:if test="${!app.isQuietingDown() and !it.isRestartScheduled()}">
-                <input id="scheduleRestartCheckbox" onchange="submitScheduleForm(this)" type="checkbox" />
+                <f:checkbox readonly="true" id="scheduleRestartCheckbox" name="scheduleRestart" title="${%warning}" />
               </j:if>
             </j:if>
-            <label for="scheduleRestartCheckbox">
-              ${%warning}
-            </label>
           </p>
         </l:isAdmin>
       </form>

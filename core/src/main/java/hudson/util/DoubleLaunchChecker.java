@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,32 +21,30 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.util;
-
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import hudson.init.Initializer;
-import jenkins.model.Jenkins;
-import hudson.triggers.SafeTimerTask;
-import jenkins.util.Timer;
-import org.apache.commons.io.FileUtils;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.interceptor.RequirePOST;
-
-import javax.servlet.ServletException;
-import javax.servlet.ServletContext;
 
 import static hudson.init.InitMilestone.JOB_CONFIG_ADAPTED;
 import static javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
+
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import hudson.Util;
+import hudson.init.Initializer;
+import hudson.triggers.SafeTimerTask;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Logger;
 import java.util.logging.Level;
-import java.lang.management.ManagementFactory;
-import java.lang.reflect.Method;
+import java.util.logging.Logger;
+import javax.servlet.ServletException;
+import jenkins.model.Jenkins;
+import jenkins.util.Timer;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
  * Makes sure that no other Hudson uses our {@code JENKINS_HOME} directory,
@@ -62,14 +60,10 @@ import java.lang.reflect.Method;
  * this file. In this way, while we cannot detect the problem right away, within a reasonable time frame
  * we can detect the collision.
  *
- * <p>
- * More traditional way of doing this is to use a lock file with PID in it, but unfortunately in Java,
- * there's no reliable way to obtain PID.
- *
  * @author Kohsuke Kawaguchi
  * @since 1.178
  */
-@SuppressFBWarnings(value="PREDICTABLE_RANDOM", justification = "The random is just used for load distribution.")
+@SuppressFBWarnings(value = "PREDICTABLE_RANDOM", justification = "The random is just used for load distribution.")
 public class DoubleLaunchChecker {
     /**
      * The timestamp of the owner file when we updated it for the last time.
@@ -88,7 +82,7 @@ public class DoubleLaunchChecker {
     public final File home;
 
     /**
-     * ID string of the other Hudson that we are colliding with. 
+     * ID string of the other Hudson that we are colliding with.
      * Can be null.
      */
     private String collidingId;
@@ -98,28 +92,29 @@ public class DoubleLaunchChecker {
     }
 
     protected void execute() {
-        File timestampFile = new File(home,".owner");
+        File timestampFile = new File(home, ".owner");
 
         long t = timestampFile.lastModified();
-        if(t!=0 && lastWriteTime!=0 && t!=lastWriteTime && !ignore) {
+        if (t != 0 && lastWriteTime != 0 && t != lastWriteTime && !ignore) {
             try {
-                collidingId = FileUtils.readFileToString(timestampFile, Charset.defaultCharset());
+                collidingId = Files.readString(Util.fileToPath(timestampFile), Charset.defaultCharset());
             } catch (IOException e) {
                 LOGGER.log(Level.SEVERE, "Failed to read collision file", e);
             }
             // we noticed that someone else have updated this file.
             // switch GUI to display this error.
-            Jenkins.get().servletContext.setAttribute("app",this);
-            LOGGER.severe("Collision detected. timestamp="+t+", expected="+lastWriteTime);
+            // TODO seems drastic; could this just be switched to an AdministrativeMonitor?
+            Jenkins.get().servletContext.setAttribute("app", this);
+            LOGGER.severe("Collision detected. timestamp=" + t + ", expected=" + lastWriteTime);
             // we need to continue updating this file, so that the other Hudson would notice the problem, too.
         }
 
         try {
-            FileUtils.writeStringToFile(timestampFile, getId(), Charset.defaultCharset());
+            Files.writeString(Util.fileToPath(timestampFile), getId(), Charset.defaultCharset());
             lastWriteTime = timestampFile.lastModified();
         } catch (IOException e) {
             // if failed to write, err on the safe side and assume things are OK.
-            lastWriteTime=0;
+            lastWriteTime = 0;
         }
 
         schedule();
@@ -129,20 +124,7 @@ public class DoubleLaunchChecker {
      * Figures out a string that identifies this instance of Hudson.
      */
     public String getId() {
-        Jenkins h = Jenkins.get();
-
-        // in servlet 2.5, we can get the context path
-        String contextPath="";
-        try {
-            Method m = ServletContext.class.getMethod("getContextPath");
-            contextPath = " contextPath=\"" + m.invoke(h.servletContext) + "\"";
-        } catch (RuntimeException e) {
-            throw e;
-        } catch (Exception e) {
-            // maybe running with Servlet 2.4
-        }
-
-        return h.hashCode()+contextPath+" at "+ManagementFactory.getRuntimeMXBean().getName();
+        return Long.toString(ProcessHandle.current().pid());
     }
 
     public String getCollidingId() {
@@ -154,7 +136,7 @@ public class DoubleLaunchChecker {
      */
     public void schedule() {
         // randomize the scheduling so that multiple Hudson instances will write at the file at different time
-        long MINUTE = 1000*60;
+        long MINUTE = 1000 * 60; // TODO use TimeUnit.MINUTE.toMillis
 
         Timer.get()
             .schedule(new SafeTimerTask() {
@@ -165,8 +147,9 @@ public class DoubleLaunchChecker {
             }, (random.nextInt(30) + 60) * MINUTE, TimeUnit.MILLISECONDS);
     }
 
-    @Initializer(after= JOB_CONFIG_ADAPTED)
+    @Initializer(after = JOB_CONFIG_ADAPTED)
     public static void init() {
+        // TODO AperiodicWork would be more idiomatic
         new DoubleLaunchChecker().schedule();
     }
 
@@ -175,7 +158,7 @@ public class DoubleLaunchChecker {
      */
     public void doDynamic(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         rsp.setStatus(SC_INTERNAL_SERVER_ERROR);
-        req.getView(this,"index.jelly").forward(req,rsp);
+        req.getView(this, "index.jelly").forward(req, rsp);
     }
 
     /**
@@ -185,7 +168,7 @@ public class DoubleLaunchChecker {
     public void doIgnore(StaplerRequest req, StaplerResponse rsp) throws IOException {
         ignore = true;
         Jenkins.get().servletContext.setAttribute("app", Jenkins.get());
-        rsp.sendRedirect2(req.getContextPath()+'/');
+        rsp.sendRedirect2(req.getContextPath() + '/');
     }
 
     private static final Logger LOGGER = Logger.getLogger(DoubleLaunchChecker.class.getName());

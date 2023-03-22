@@ -21,12 +21,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.widgets;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.Queue;
 import hudson.model.Run;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * Represents an entry used by the {@link HistoryPageFilter}.

@@ -21,8 +21,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.security.stapler;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.Function;
@@ -34,9 +37,6 @@ import org.kohsuke.stapler.event.FilteredFieldTriggerListener;
 import org.kohsuke.stapler.event.FilteredGetterTriggerListener;
 import org.kohsuke.stapler.lang.FieldRef;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 /**
  * Log a warning message when a "getter" or "doAction" function or fragment view that was filtered out by SECURITY-400 new rules
  */
@@ -47,21 +47,21 @@ public class StaplerFilteredActionListener implements FilteredDoActionTriggerLis
     private static final String LOG_MESSAGE = "New Stapler routing rules result in the URL \"{0}\" no longer being allowed. " +
             "If you consider it safe to use, add the following to the whitelist: \"{1}\". " +
             "Learn more: https://www.jenkins.io/redirect/stapler-routing";
-    
-    @Override 
+
+    @Override
     public boolean onDoActionTrigger(Function f, StaplerRequest req, StaplerResponse rsp, Object node) {
         LOGGER.log(Level.WARNING, LOG_MESSAGE, new Object[]{
                 req.getPathInfo(),
-                f.getSignature()
+                f.getSignature(),
         });
         return false;
     }
-    
+
     @Override
     public boolean onGetterTrigger(Function f, StaplerRequest req, StaplerResponse rsp, Object node, String expression) {
         LOGGER.log(Level.WARNING, LOG_MESSAGE, new Object[]{
                 req.getPathInfo(),
-                f.getSignature()
+                f.getSignature(),
         });
         return false;
     }
@@ -70,7 +70,7 @@ public class StaplerFilteredActionListener implements FilteredDoActionTriggerLis
     public boolean onFieldTrigger(FieldRef f, StaplerRequest req, StaplerResponse staplerResponse, Object node, String expression) {
         LOGGER.log(Level.WARNING, LOG_MESSAGE, new Object[]{
                 req.getPathInfo(),
-                f.getSignature()
+                f.getSignature(),
         });
         return false;
     }
@@ -78,7 +78,7 @@ public class StaplerFilteredActionListener implements FilteredDoActionTriggerLis
     @Override
     public boolean onDispatchTrigger(StaplerRequest req, StaplerResponse rsp, Object node, String viewName) {
         LOGGER.warning(() -> "New Stapler dispatch rules result in the URL \"" + req.getPathInfo() + "\" no longer being allowed. " +
-                "If you consider it safe to use, add the following to the whitelist: \"" + node.getClass().getName() + " " + viewName + "\". "+
+                "If you consider it safe to use, add the following to the whitelist: \"" + node.getClass().getName() + " " + viewName + "\". " +
                 "Learn more: https://www.jenkins.io/redirect/stapler-facet-restrictions");
         return false;
     }

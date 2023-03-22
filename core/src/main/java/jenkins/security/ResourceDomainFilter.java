@@ -21,14 +21,17 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.security;
 
 import hudson.init.InitMilestone;
 import hudson.init.Initializer;
 import hudson.util.PluginServletFilter;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.logging.Logger;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
@@ -37,11 +40,8 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.logging.Logger;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Prohibit requests to Jenkins coming through a resource domain URL configured with
@@ -54,7 +54,7 @@ public class ResourceDomainFilter implements Filter {
 
     private static final Logger LOGGER = Logger.getLogger(ResourceDomainFilter.class.getName());
 
-    private static final Set<String> ALLOWED_PATHS = new HashSet<>(Arrays.asList("/" + ResourceDomainRootAction.URL, "/favicon.ico", "/robots.txt"));
+    private static final Set<String> ALLOWED_PATHS = new HashSet<>(Arrays.asList("/" + ResourceDomainRootAction.URL, "/favicon.ico", "/favicon.svg", "/robots.txt"));
     public static final String ERROR_RESPONSE = "Jenkins serves only static files on this domain.";
 
     @Initializer(after = InitMilestone.EXTENSIONS_AUGMENTED)
@@ -66,8 +66,8 @@ public class ResourceDomainFilter implements Filter {
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain)
             throws IOException, ServletException {
         if (servletRequest instanceof HttpServletRequest) {
-            HttpServletRequest httpServletRequest = (HttpServletRequest)servletRequest;
-            HttpServletResponse httpServletResponse = (HttpServletResponse)servletResponse;
+            HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
+            HttpServletResponse httpServletResponse = (HttpServletResponse) servletResponse;
             if (ResourceDomainConfiguration.isResourceRequest(httpServletRequest)) {
                 String path = httpServletRequest.getPathInfo();
                 if (!path.startsWith("/" + ResourceDomainRootAction.URL + "/") && !ALLOWED_PATHS.contains(path)) {

@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import static org.junit.Assert.assertEquals;
@@ -31,7 +32,6 @@ import static org.junit.Assert.assertSame;
 import com.gargoylesoftware.htmlunit.html.DomNodeUtil;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlLabel;
-import hudson.model.Descriptor.FormException;
 import net.sf.json.JSONObject;
 import org.junit.Rule;
 import org.junit.Test;
@@ -57,14 +57,14 @@ public class ViewPropertyTest {
         ((HtmlLabel) DomNodeUtil.selectSingleNode(f, ".//LABEL[text()='ViewPropertyImpl']")).click();
         j.submit(f);
         ViewPropertyImpl vp = foo.getProperties().get(ViewPropertyImpl.class);
-        assertEquals("Duke",vp.name);
+        assertEquals("Duke", vp.name);
 
         // make sure it roundtrips correctly
         vp.name = "Kohsuke";
         j.configRoundtrip(foo);
         ViewPropertyImpl vp2 = foo.getProperties().get(ViewPropertyImpl.class);
-        assertNotSame(vp,vp2);
-        j.assertEqualDataBoundBeans(vp,vp2);
+        assertNotSame(vp, vp2);
+        j.assertEqualDataBoundBeans(vp, vp2);
     }
 
     public static class ViewPropertyImpl extends ViewProperty {
@@ -92,7 +92,7 @@ public class ViewPropertyTest {
         InvisiblePropertyImpl vp = new InvisiblePropertyImpl();
         foo.getProperties().add(vp);
         j.configRoundtrip(foo);
-        assertSame(vp,foo.getProperties().get(InvisiblePropertyImpl.class));
+        assertSame(vp, foo.getProperties().get(InvisiblePropertyImpl.class));
     }
 
     public static class InvisiblePropertyImpl extends ViewProperty {
@@ -100,7 +100,7 @@ public class ViewPropertyTest {
         }
 
         @Override
-        public ViewProperty reconfigure(StaplerRequest req, JSONObject form) throws FormException {
+        public ViewProperty reconfigure(StaplerRequest req, JSONObject form) {
             return this;
         }
 

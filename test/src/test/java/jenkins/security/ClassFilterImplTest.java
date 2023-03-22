@@ -24,6 +24,15 @@
 
 package jenkins.security;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assume.assumeThat;
+
 import com.google.common.collect.LinkedListMultimap;
 import com.thoughtworks.xstream.XStream;
 import hudson.ExtensionList;
@@ -40,24 +49,15 @@ import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.Collections;
+import java.nio.file.Files;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import jenkins.model.GlobalConfiguration;
-import org.apache.commons.io.FileUtils;
-import org.junit.Test;
-import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assume.assumeThat;
 import org.junit.ClassRule;
 import org.junit.Rule;
+import org.junit.Test;
 import org.jvnet.hudson.test.BuildWatcher;
-import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.LoggerRule;
 import org.jvnet.hudson.test.TestExtension;
@@ -81,12 +81,14 @@ public class ClassFilterImplTest {
         p.getBuildersList().add(new M2SBuilder());
         r.assertLogContains("sent {}", r.buildAndAssertSuccess(p));
     }
+
     public static class M2SBuilder extends Builder {
         @Override
         public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
             listener.getLogger().println("sent " + launcher.getChannel().call(new M2S()));
             return true;
         }
+
         @TestExtension("controllerToAgentBypassesWhitelist")
         public static class DescriptorImpl extends BuildStepDescriptor<Builder> {
             @SuppressWarnings("rawtypes")
@@ -96,8 +98,10 @@ public class ClassFilterImplTest {
             }
         }
     }
+
     private static class M2S extends MasterToSlaveCallable<String, RuntimeException> {
         private final LinkedListMultimap<?, ?> obj = LinkedListMultimap.create();
+
         @Override
         public String call() throws RuntimeException {
             return obj.toString();
@@ -112,14 +116,16 @@ public class ClassFilterImplTest {
         FreeStyleProject p = r.createFreeStyleProject();
         p.setAssignedNode(r.createSlave());
         p.getBuildersList().add(new S2MBuilder());
-        r.assertBuildStatus(Result.FAILURE, p.scheduleBuild2(0));
+        r.buildAndAssertStatus(Result.FAILURE, p);
     }
+
     public static class S2MBuilder extends Builder {
         @Override
         public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
             listener.getLogger().println("received " + launcher.getChannel().call(new S2M()));
             return true;
         }
+
         @TestExtension("agentToControllerRequiresWhitelist")
         public static class DescriptorImpl extends BuildStepDescriptor<Builder> {
             @SuppressWarnings("rawtypes")
@@ -129,6 +135,7 @@ public class ClassFilterImplTest {
             }
         }
     }
+
     private static class S2M extends MasterToSlaveCallable<LinkedListMultimap<?, ?>, RuntimeException> {
         @Override
         public LinkedListMultimap<?, ?> call() throws RuntimeException {
@@ -145,7 +152,7 @@ public class ClassFilterImplTest {
         config.save();
         assertThat(config.getConfigFile().asString(), not(containsString("LinkedListMultimap")));
         config.unrelated = "modified";
-        FileUtils.write(config.getConfigFile().getFile(), new XStream().toXML(config), StandardCharsets.UTF_8);
+        Files.writeString(config.getConfigFile().getFile().toPath(), new XStream().toXML(config), StandardCharsets.UTF_8);
         assertThat(config.getConfigFile().asString(), allOf(containsString("LinkedListMultimap"), containsString("modified")));
         config.obj = null;
         config.unrelated = null;
@@ -153,22 +160,15 @@ public class ClassFilterImplTest {
         assertNull(config.obj);
         assertEquals("modified", config.unrelated);
         Map<Saveable, OldDataMonitor.VersionRange> data = ExtensionList.lookupSingleton(OldDataMonitor.class).getData();
-        assertEquals(Collections.singleton(config), data.keySet());
+        assertEquals(Set.of(config), data.keySet());
         assertThat(data.values().iterator().next().extra, allOf(containsString("LinkedListMultimap"), containsString("https://www.jenkins.io/redirect/class-filter/")));
-    }
-
-    @Test
-    @Issue("JENKINS-49543")
-    public void moduleClassesShouldBeWhitelisted() {
-        ClassFilterImpl filter = new ClassFilterImpl();
-        filter.check("org.jenkinsci.modules.windows_slave_installer.WindowsSlaveInstaller");
-        filter.check("org.jenkinsci.main.modules.instance_identity.PageDecoratorImpl");
     }
 
     @TestExtension("xstreamRequiresWhitelist")
     public static class Config extends GlobalConfiguration {
         LinkedListMultimap<?, ?> obj;
         String unrelated;
+
         @Override
         protected XmlFile getConfigFile() {
             return super.getConfigFile();

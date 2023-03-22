@@ -1,20 +1,18 @@
 package hudson.model;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import hudson.FilePath;
 import hudson.security.ACL;
-import jenkins.model.Jenkins;
-import org.junit.Test;
-import org.jvnet.hudson.test.Issue;
-
 import java.io.File;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
+import jenkins.model.Jenkins;
+import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
 import org.springframework.security.core.Authentication;
 
 /**

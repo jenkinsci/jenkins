@@ -21,24 +21,23 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.fingerprints;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
-
-import java.io.IOException;
-import java.util.Date;
-
 import hudson.Functions;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.Fingerprint;
 import hudson.model.TaskListener;
+import java.io.IOException;
+import java.util.Date;
 import jenkins.model.FingerprintFacet;
 import jenkins.model.Jenkins;
-import org.kohsuke.accmod.restrictions.Beta;
 import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.Beta;
 
 /**
  * Pluggable fingerprint storage API for fingerprints.
@@ -57,9 +56,11 @@ public abstract class FingerprintStorage extends AbstractDescribableImpl<Fingerp
 
     /**
      * Returns the file system based {@link FileFingerprintStorage} configured on the system.
+     * @deprecated since 2.324, use {@code ExtensionList.lookupSingleton(FileFingerprintStorage.class)} instead.
      */
+    @Deprecated
     public static FingerprintStorage getFileFingerprintStorage() {
-        return ExtensionList.lookup(FingerprintStorage.class).get(ExtensionList.lookup(FingerprintStorage.class).size()-1);
+        return ExtensionList.lookupSingleton(FileFingerprintStorage.class);
     }
 
     /**

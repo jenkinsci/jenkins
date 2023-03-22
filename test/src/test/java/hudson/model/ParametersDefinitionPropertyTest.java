@@ -24,12 +24,13 @@
 
 package hudson.model;
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.Locale;
 import java.util.logging.Level;
 import net.sf.json.JSONObject;
-import org.junit.Test;
-import static org.junit.Assert.assertEquals;
 import org.junit.Rule;
+import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.LoggerRule;
@@ -83,7 +84,7 @@ public class ParametersDefinitionPropertyTest {
         public static class DescriptorImpl extends ParameterDescriptor {
 
             @Override
-            public ParameterDefinition newInstance(StaplerRequest req, JSONObject formData) throws FormException {
+            public ParameterDefinition newInstance(StaplerRequest req, JSONObject formData) {
                 return new KrazyParameterDefinition(formData.getString("name"), formData.getString("description"), formData.getString("field").toLowerCase(Locale.ENGLISH));
             }
 

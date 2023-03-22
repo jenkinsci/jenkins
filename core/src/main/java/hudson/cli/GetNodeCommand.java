@@ -21,16 +21,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.cli;
 
 import hudson.Extension;
 import hudson.model.Computer;
 import hudson.model.Node;
-
 import java.io.IOException;
-
 import jenkins.model.Jenkins;
-
 import org.kohsuke.args4j.Argument;
 
 /**
@@ -40,7 +38,7 @@ import org.kohsuke.args4j.Argument;
 @Extension
 public class GetNodeCommand extends CLICommand {
 
-    @Argument(metaVar="NODE", usage="Name of the node", required=true)
+    @Argument(metaVar = "NODE", usage = "Name of the node", required = true)
     public Node node;
 
     @Override

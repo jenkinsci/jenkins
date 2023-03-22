@@ -24,6 +24,7 @@
 
 package jenkins.tasks;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.AbortException;
 import hudson.EnvVars;
 import hudson.Extension;
@@ -49,7 +50,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.model.DependencyDeclarer;
 import jenkins.model.RunAction2;
 import jenkins.model.TransientActionFactory;

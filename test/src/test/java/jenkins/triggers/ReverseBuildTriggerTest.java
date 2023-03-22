@@ -24,6 +24,12 @@
 
 package jenkins.triggers;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.core.IsNot.not;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 import hudson.model.Cause;
 import hudson.model.Computer;
 import hudson.model.FreeStyleBuild;
@@ -36,21 +42,14 @@ import hudson.model.User;
 import hudson.tasks.BuildTrigger;
 import hudson.tasks.BuildTriggerTest;
 import hudson.triggers.Trigger;
-
-import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import jenkins.model.Jenkins;
 import jenkins.security.QueueItemAuthenticatorConfiguration;
-
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.core.IsNot.not;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.hamcrest.MatcherAssert.assertThat;
 import org.junit.Before;
 import org.junit.ClassRule;
-
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.BuildWatcher;
@@ -76,7 +75,7 @@ public class ReverseBuildTriggerTest {
         FreeStyleProject downstream = r.createFreeStyleProject("downstream");
         FreeStyleProject wayDownstream = r.createFreeStyleProject("wayDownstream");
         downstream.addTrigger(new ReverseBuildTrigger("upstream", Result.SUCCESS));
-        downstream.getPublishersList().add(new BuildTrigger(Collections.singleton(wayDownstream), Result.SUCCESS));
+        downstream.getPublishersList().add(new BuildTrigger(Set.of(wayDownstream), Result.SUCCESS));
         downstream.save();
         r.configRoundtrip(downstream);
         ReverseBuildTrigger rbt = downstream.getTrigger(ReverseBuildTrigger.class);
@@ -85,7 +84,7 @@ public class ReverseBuildTriggerTest {
         assertEquals(Result.SUCCESS, rbt.getThreshold());
         BuildTrigger bt = downstream.getPublishersList().get(BuildTrigger.class);
         assertNotNull(bt);
-        assertEquals(Collections.singletonList(wayDownstream), bt.getChildProjects(downstream));
+        assertEquals(List.of(wayDownstream), bt.getChildProjects(downstream));
         assertEquals(Result.SUCCESS, bt.getThreshold());
     }
 
@@ -107,7 +106,7 @@ public class ReverseBuildTriggerTest {
         downstream.addTrigger(t);
         t.start(downstream, true); // as in AbstractProject.submit
         r.jenkins.rebuildDependencyGraph(); // as in AbstractProject.doConfigSubmit
-        assertEquals(Collections.singletonList(downstream), upstream.getDownstreamProjects());
+        assertEquals(List.of(downstream), upstream.getDownstreamProjects());
         // TODO could check doCheckUpstreamProjects, though it is not terribly interesting
         // Legacy mode: alice has no read permission on upstream but it works anyway
         FreeStyleBuild b = r.buildAndAssertSuccess(upstream);
@@ -208,7 +207,7 @@ public class ReverseBuildTriggerTest {
         r.configRoundtrip(downstreamJob2);
 
         r.jenkins.rebuildDependencyGraph();
-        final FreeStyleBuild build = upstreamJob.scheduleBuild2(0).get();
+        final FreeStyleBuild build = r.buildAndAssertSuccess(upstreamJob);
         r.waitUntilNoActivity();
 
         r.assertLogNotContains("java.lang.NullPointerException", build);

@@ -1,10 +1,9 @@
 package hudson.cli;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
-import javax.net.ssl.X509TrustManager;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import javax.net.ssl.X509TrustManager;
 
 /**
  * @author Kohsuke Kawaguchi

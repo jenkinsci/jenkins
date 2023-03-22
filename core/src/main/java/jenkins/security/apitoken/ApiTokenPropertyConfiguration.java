@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.security.apitoken;
 
 import hudson.Extension;
@@ -34,7 +35,7 @@ import org.jenkinsci.Symbol;
  *
  * @since 2.129
  */
-@Extension 
+@Extension
 @Symbol("apiToken")
 public class ApiTokenPropertyConfiguration extends GlobalConfiguration implements PersistentDescriptor {
     /**
@@ -48,18 +49,18 @@ public class ApiTokenPropertyConfiguration extends GlobalConfiguration implement
      * For security reasons, we do not recommend you enable this but we left that open to ease upgrades.
      */
     private boolean creationOfLegacyTokenEnabled = false;
-    
+
     /**
      * Each time an API Token is used, its usage counter is incremented and the last used date is updated.
      * You can disable this feature using this property.
      */
     private boolean usageStatisticsEnabled = true;
-    
+
     public static ApiTokenPropertyConfiguration get() {
         return GlobalConfiguration.all().get(ApiTokenPropertyConfiguration.class);
     }
 
-    public boolean hasExistingConfigFile(){
+    public boolean hasExistingConfigFile() {
         return getConfigFile().exists();
     }
 
@@ -80,17 +81,17 @@ public class ApiTokenPropertyConfiguration extends GlobalConfiguration implement
         this.creationOfLegacyTokenEnabled = creationOfLegacyTokenEnabled;
         save();
     }
-    
+
     public boolean isUsageStatisticsEnabled() {
         return usageStatisticsEnabled;
     }
-    
+
     public void setUsageStatisticsEnabled(boolean usageStatisticsEnabled) {
         this.usageStatisticsEnabled = usageStatisticsEnabled;
         save();
     }
-    
-    @Override 
+
+    @Override
     public GlobalConfigurationCategory getCategory() {
         return GlobalConfigurationCategory.get(GlobalConfigurationCategory.Security.class);
     }

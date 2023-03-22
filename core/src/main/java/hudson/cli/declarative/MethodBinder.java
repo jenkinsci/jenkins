@@ -21,24 +21,25 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.cli.declarative;
 
 import hudson.cli.CLICommand;
 import hudson.util.ReflectionUtils;
 import hudson.util.ReflectionUtils.Parameter;
-import org.kohsuke.args4j.Argument;
-import org.kohsuke.args4j.CmdLineException;
-import org.kohsuke.args4j.CmdLineParser;
-import org.kohsuke.args4j.Option;
-import org.kohsuke.args4j.spi.FieldSetter;
-import org.kohsuke.args4j.spi.Setter;
-import org.kohsuke.args4j.spi.OptionHandler;
-
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
+import java.util.Objects;
+import org.kohsuke.args4j.Argument;
+import org.kohsuke.args4j.CmdLineException;
+import org.kohsuke.args4j.CmdLineParser;
+import org.kohsuke.args4j.Option;
+import org.kohsuke.args4j.spi.FieldSetter;
+import org.kohsuke.args4j.spi.OptionHandler;
+import org.kohsuke.args4j.spi.Setter;
 
 /**
  * Binds method parameters to CLI arguments and parameters via args4j.
@@ -93,15 +94,15 @@ class MethodBinder {
                 }
             };
             Option option = p.annotation(Option.class);
-            if (option!=null) {
-                parser.addOption(setter,option);
+            if (option != null) {
+                parser.addOption(setter, option);
             }
             Argument arg = p.annotation(Argument.class);
-            if (arg!=null) {
-                if (bias>0) arg = new ArgumentImpl(arg,bias);
-                parser.addArgument(setter,arg);
+            if (arg != null) {
+                if (bias > 0) arg = new ArgumentImpl(arg, bias);
+                parser.addArgument(setter, arg);
             }
-            if (p.type()==CLICommand.class)
+            if (p.type() == CLICommand.class)
                 arguments[index] = command;
 
             if (p.type().isPrimitive())
@@ -111,7 +112,7 @@ class MethodBinder {
 
     public Object call(Object instance) throws Exception {
         try {
-            return method.invoke(instance,arguments);
+            return method.invoke(instance, arguments);
         } catch (InvocationTargetException e) {
             Throwable t = e.getTargetException();
             if (t instanceof Exception)
@@ -155,7 +156,7 @@ class MethodBinder {
 
         @Override
         public int index() {
-            return base.index()+bias;
+            return base.index() + bias;
         }
 
         @Override
@@ -171,6 +172,23 @@ class MethodBinder {
         @Override
         public boolean hidden() {
             return base.hidden();
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (!(o instanceof ArgumentImpl)) {
+                return false;
+            }
+            ArgumentImpl argument = (ArgumentImpl) o;
+            return Objects.equals(base, argument.base) && bias == argument.bias;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(base, bias);
         }
     }
 }

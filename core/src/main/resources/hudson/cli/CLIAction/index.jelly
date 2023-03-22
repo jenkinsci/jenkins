@@ -26,25 +26,33 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <l:layout permission="${app.READ}">
     <st:include page="sidepanel.jelly" it="${app}"/>
+    <!-- no need for additional breadcrumb here as we're on an index page already including breadcrumb -->
     <l:main-panel>
-      <h1>
-        <l:icon class="icon-terminal icon-xlg"/>
-        ${%Jenkins CLI}
-      </h1>
-      <p>
+      <l:app-bar title="${%Jenkins CLI}" />
+      <p class="jenkins-description">
         ${%blurb(rootURL)}
       </p>
       <j:set var="commandArgs" value="help"/>
       <st:include page="example.jelly"/>
 
       <h2>${%Available Commands}</h2>
-      <table>
-        <j:forEach items="${h.getCLICommands()}" var="command">
+      <table class="jenkins-table sortable">
+        <thead>
           <tr>
-            <td><a href="command/${command.name}">${command.name}</a></td>
-            <td>${command.shortDescription}</td>
+            <th initialSortDir="down">${%Name}</th>
+            <th>${%Description}</th>
           </tr>
-        </j:forEach>
+        </thead>
+        <tbody>
+          <j:forEach items="${h.getCLICommands()}" var="command">
+            <tr>
+              <td>
+                <a href="command/${command.name}" class="jenkins-table__link">${command.name}</a>
+              </td>
+              <td>${command.shortDescription}</td>
+            </tr>
+          </j:forEach>
+        </tbody>
       </table>
     </l:main-panel>
   </l:layout>

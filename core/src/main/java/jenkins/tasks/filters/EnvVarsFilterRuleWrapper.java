@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.tasks.filters;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
@@ -29,13 +30,12 @@ import hudson.EnvVars;
 import hudson.Launcher;
 import hudson.model.Run;
 import hudson.model.TaskListener;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Helper class that provide the list of rules (local + global) for a given builder.
@@ -52,7 +52,7 @@ public class EnvVarsFilterRuleWrapper implements Serializable {
     }
 
     public static @NonNull
-    EnvVarsFilterRuleWrapper createRuleWrapper(@CheckForNull Run<?,?> run,
+    EnvVarsFilterRuleWrapper createRuleWrapper(@CheckForNull Run<?, ?> run,
                                                @NonNull Object builder,
                                                @NonNull Launcher launcher,
                                                @NonNull List<EnvVarsFilterLocalRule> localRules) {

@@ -1,18 +1,19 @@
 package jenkins.util.groovy;
 
+import static java.util.logging.Level.WARNING;
+
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import groovy.lang.Binding;
 import groovy.lang.GroovyCodeSource;
 import groovy.lang.GroovyShell;
 import java.io.File;
-import java.io.FileFilter;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.TreeSet;
-import static java.util.logging.Level.WARNING;
 import java.util.logging.Logger;
-import edu.umd.cs.findbugs.annotations.NonNull;
 import javax.servlet.ServletContext;
 import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
@@ -63,7 +64,7 @@ public class GroovyHookScript {
     }
 
     public GroovyHookScript bind(String name, Object o) {
-        bindings.setProperty(name,o);
+        bindings.setProperty(name, o);
         return this;
     }
 
@@ -72,18 +73,18 @@ public class GroovyHookScript {
     }
 
     public void run() {
-        final String hookGroovy = hook+".groovy";
-        final String hookGroovyD = hook+".groovy.d";
+        final String hookGroovy = hook + ".groovy";
+        final String hookGroovyD = hook + ".groovy.d";
 
         try {
-            URL bundled = servletContext.getResource("/WEB-INF/"+ hookGroovy);
+            URL bundled = servletContext.getResource("/WEB-INF/" + hookGroovy);
             execute(bundled);
         } catch (IOException e) {
-            LOGGER.log(WARNING, "Failed to execute /WEB-INF/"+hookGroovy,e);
+            LOGGER.log(WARNING, "Failed to execute /WEB-INF/" + hookGroovy, e);
         }
 
-        Set<String> resources = servletContext.getResourcePaths("/WEB-INF/"+ hookGroovyD +"/");
-        if (resources!=null) {
+        Set<String> resources = servletContext.getResourcePaths("/WEB-INF/" + hookGroovyD + "/");
+        if (resources != null) {
             // sort to execute them in a deterministic order
             for (String res : new TreeSet<>(resources)) {
                 try {
@@ -100,13 +101,8 @@ public class GroovyHookScript {
 
         File scriptD = new File(rootDir, hookGroovyD);
         if (scriptD.isDirectory()) {
-            File[] scripts = scriptD.listFiles(new FileFilter() {
-                @Override
-                public boolean accept(File f) {
-                    return f.getName().endsWith(".groovy");
-                }
-            });
-            if (scripts!=null) {
+            File[] scripts = scriptD.listFiles(f -> f.getName().endsWith(".groovy"));
+            if (scripts != null) {
                 // sort to run them in a deterministic order
                 Arrays.sort(scripts);
                 for (File f : scripts) {
@@ -117,15 +113,15 @@ public class GroovyHookScript {
     }
 
     protected void execute(URL bundled) throws IOException {
-        if (bundled!=null) {
-            LOGGER.info("Executing bundled script: "+bundled);
+        if (bundled != null) {
+            LOGGER.info("Executing bundled script: " + bundled);
             execute(new GroovyCodeSource(bundled));
         }
     }
 
     protected void execute(File f) {
         if (f.exists()) {
-            LOGGER.info("Executing "+f);
+            LOGGER.info("Executing " + f);
             try {
                 execute(new GroovyCodeSource(f));
             } catch (IOException e) {
@@ -134,6 +130,7 @@ public class GroovyHookScript {
         }
     }
 
+    @SuppressFBWarnings(value = "GROOVY_SHELL", justification = "Groovy hook scripts are a feature, not a bug")
     protected void execute(GroovyCodeSource s) {
         try {
             createShell().evaluate(s);

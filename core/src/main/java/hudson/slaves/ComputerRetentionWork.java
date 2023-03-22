@@ -21,18 +21,18 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.slaves;
 
+import hudson.Extension;
+import hudson.model.Computer;
+import hudson.model.Node;
+import hudson.model.PeriodicWork;
+import hudson.model.Queue;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.concurrent.TimeUnit;
-
-import hudson.model.Computer;
-import hudson.model.Queue;
 import jenkins.model.Jenkins;
-import hudson.model.Node;
-import hudson.model.PeriodicWork;
-import hudson.Extension;
 import org.jenkinsci.Symbol;
 
 /**
@@ -63,7 +63,7 @@ public class ComputerRetentionWork extends PeriodicWork {
                 @Override
                 public void run() {
                     Node n = c.getNode();
-                    if (n!=null && n.isHoldOffLaunchUntilSave())
+                    if (n != null && n.isHoldOffLaunchUntilSave())
                         return;
                     if (!nextCheck.containsKey(c) || startRun > nextCheck.get(c)) {
                         // at the moment I don't trust strategies to wait more than 60 minutes

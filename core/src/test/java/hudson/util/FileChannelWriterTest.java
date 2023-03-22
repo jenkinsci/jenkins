@@ -1,20 +1,19 @@
 package hudson.util;
 
-import org.apache.commons.io.FileUtils;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.Assert.assertThrows;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.channels.ClosedChannelException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
-
-import static org.hamcrest.core.IsEqual.equalTo;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertThrows;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 public class FileChannelWriterTest {
     @Rule
@@ -56,6 +55,6 @@ public class FileChannelWriterTest {
 
 
     private void assertContent(String string) throws IOException {
-        assertThat(FileUtils.readFileToString(file, StandardCharsets.UTF_8), equalTo(string));
+        assertThat(Files.readString(file.toPath(), StandardCharsets.UTF_8), equalTo(string));
     }
 }

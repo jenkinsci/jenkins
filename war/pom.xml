@@ -36,14 +36,22 @@ THE SOFTWARE.
 
   <name>Jenkins war</name>
   <description>Creates a war file. Also includes additional static web resources, such as images, CSS, JavaScript, and some HTML files.</description>
+  <url>https://github.com/jenkinsci/jenkins</url>
 
   <properties>
     <JENKINS_HOME>${basedir}/work</JENKINS_HOME>
-    <contextPath>/jenkins</contextPath><!-- context path during test -->
-    <host>localhost</host><!-- HTTP listener host/interface -->
-    <port>8080</port><!-- HTTP listener port -->
-    <node.version>14.16.0</node.version>
-    <yarn.version>1.22.10</yarn.version>
+    <!-- context path during test -->
+    <contextPath>/jenkins</contextPath>
+    <!-- HTTP listener host/interface -->
+    <host>localhost</host>
+    <!-- HTTP listener port -->
+    <port>8080</port>
+    <node.version>18.15.0</node.version>
+    <!-- frontend-maven-plugin will install this Yarn version as bootstrap, then hand over control to Yarn Berry. -->
+    <yarn.version>1.22.19</yarn.version>
+    <!-- maven-antrun-plugin will download this Yarn version. -->
+    <yarn-berry.version>3.5.0</yarn-berry.version>
+    <yarn-berry.sha256sum>e4fc5f94867cd0b492fb0a644f14e7b47c4387bc75d46b56e86db6d0f1a6cb97</yarn-berry.sha256sum>
   </properties>
 
   <dependencyManagement>
@@ -60,33 +68,9 @@ THE SOFTWARE.
 
   <dependencies>
     <dependency>
-      <groupId>org.jenkins-ci</groupId>
-      <artifactId>executable-war</artifactId>
-      <version>1.45</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.jenkins-ci.main</groupId>
-      <artifactId>jenkins-core</artifactId>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>cli</artifactId>
       <version>${project.version}</version>
-      <exclusions>
-        <!--
-          jars that are not needed in war. most of the exclusions should happen in the core, to make IDEs happy, not here.
-        -->
-        <exclusion>
-          <groupId>javax.servlet.jsp</groupId>
-          <artifactId>javax.servlet.jsp-api</artifactId>
-        </exclusion>
-        <!-- Stapler 1.195 fails to declare this as optional, and the 1.1 version lacks a license: -->
-        <exclusion>
-          <artifactId>metainf-services</artifactId>
-          <groupId>org.kohsuke.metainf-services</groupId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.google.code.findbugs</groupId>
-          <artifactId>jsr305</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
@@ -94,11 +78,35 @@ THE SOFTWARE.
       <!-- specified in the parent -->
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>cli</artifactId>
+      <groupId>org.jenkins-ci.main</groupId>
+      <artifactId>jenkins-core</artifactId>
+      <version>${project.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>com.google.code.findbugs</groupId>
+          <artifactId>jsr305</artifactId>
+        </exclusion>
+        <!--
+          jars that are not needed in war. most of the exclusions should happen in the core, to make IDEs happy, not here.
+        -->
+        <exclusion>
+          <groupId>jakarta.servlet.jsp</groupId>
+          <artifactId>jakarta.servlet.jsp-api</artifactId>
+        </exclusion>
+        <!-- Stapler 1.195 fails to declare this as optional, and the 1.1 version lacks a license: -->
+        <exclusion>
+          <groupId>org.kohsuke.metainf-services</groupId>
+          <artifactId>metainf-services</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.main</groupId>
+      <artifactId>websocket-jetty10</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
+     < dependabot/maven/org.eclipse.jetty-jetty-maven-plugin-9.4.43.v20210629
       <!--
         not actually used by test but used by dependency plugin to include it inside the war.
       -->
@@ -131,6 +139,10 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
       <artifactId>systemd-slave-installer</artifactId>
+      <groupId>org.jenkins-ci.main</groupId>
+      <artifactId>websocket-jetty9</artifactId>
+      <version>${project.version}</version>
+
     </dependency>
     <dependency>
       <!--
@@ -153,7 +165,6 @@ THE SOFTWARE.
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-jdk14</artifactId>
     </dependency>
-
     <!-- offline profiler API when we need it -->
     <!--dependency
       <groupId>com.yourkit.api</groupId>
@@ -162,11 +173,80 @@ THE SOFTWARE.
       <scope>system</scope>
       <systemPath>/usr/local/yjp/lib/yjp.jar</systemPath>
     </dependency-->
+    <dependency>
+      <!--
+        not actually used by test but used by dependency plugin to include it inside the war.
+      -->
+      <groupId>org.jenkins-ci</groupId>
+      <artifactId>winstone</artifactId>
+      <version>${winstone.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
     <finalName>jenkins</finalName>
     <plugins>
+      <!-- TODO When Java 8 usage declines to a terminal level, this can be deleted. -->
+      <plugin>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>display-info</id>
+            <configuration>
+              <rules>
+                <requireJavaVersion>
+                  <version>1.8</version>
+                </requireJavaVersion>
+                <enforceBytecodeVersion>
+                  <maxJdkVersion>1.8</maxJdkVersion>
+                  <excludes>
+                    <exclude>com.infradna.tool:bridge-method-annotation</exclude>
+                    <exclude>org.antlr:antlr4</exclude>
+                    <exclude>org.jenkins-ci:annotation-indexer</exclude>
+                    <exclude>org.jenkins-ci:commons-jelly</exclude>
+                    <exclude>org.jenkins-ci:crypto-util</exclude>
+                    <exclude>org.jenkins-ci.main:cli</exclude>
+                    <exclude>org.jenkins-ci.main:jenkins-core</exclude>
+                    <exclude>org.jenkins-ci.main:remoting</exclude>
+                    <exclude>org.jenkins-ci.main:websocket-jetty9</exclude>
+                    <exclude>org.jenkins-ci.main:websocket-jetty10</exclude>
+                    <exclude>org.jenkins-ci.main:websocket-spi</exclude>
+                    <exclude>org.jenkins-ci:memory-monitor</exclude>
+                    <exclude>org.jenkins-ci:symbol-annotation</exclude>
+                    <exclude>org.jenkins-ci:task-reactor</exclude>
+                    <exclude>org.jenkins-ci:version-number</exclude>
+                    <exclude>org.jvnet.hudson:commons-jelly-tags-define</exclude>
+                    <exclude>org.jvnet.winp:winp</exclude>
+                    <exclude>org.kohsuke:access-modifier-annotation</exclude>
+                    <exclude>org.kohsuke.stapler:stapler</exclude>
+                    <exclude>org.kohsuke.stapler:stapler-groovy</exclude>
+                    <exclude>org.kohsuke.stapler:stapler-jelly</exclude>
+                  </excludes>
+                </enforceBytecodeVersion>
+              </rules>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <release>8</release>
+          <testRelease>8</testRelease>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <configuration>
+          <release>8</release>
+        </configuration>
+      </plugin>
       <plugin>
         <artifactId>maven-war-plugin</artifactId>
         <!-- version specified in grandparent pom -->
@@ -175,9 +255,11 @@ THE SOFTWARE.
           <!-- for putting Main-Class into war -->
           <archive>
             <manifest>
-              <mainClass>Main</mainClass>
+              <mainClass>executable.Main</mainClass>
             </manifest>
             <manifestEntries>
+              <!-- Make sure to keep the directives in core/pom.xml and test/pom.xml in sync with these. -->
+              <Add-Opens>java.base/java.lang java.base/java.io java.base/java.util java.desktop/com.sun.beans.introspect</Add-Opens>
               <Implementation-Version>${project.version}</Implementation-Version>
               <Hudson-Version>1.395</Hudson-Version>
               <Jenkins-Version>${project.version}</Jenkins-Version>
@@ -194,42 +276,27 @@ THE SOFTWARE.
         <executions>
           <execution>
             <id>list-dependencies</id>
-            <phase>generate-resources</phase>
             <goals>
               <goal>list</goal>
             </goals>
+            <phase>generate-resources</phase>
             <configuration>
               <outputFile>${project.build.outputDirectory}/dependencies.txt</outputFile>
             </configuration>
           </execution>
           <execution>
-            <!-- put executable war header -->
-            <id>executable-war-header</id>
-            <phase>generate-resources</phase>
-            <goals>
-              <goal>unpack-dependencies</goal>
-            </goals>
-            <configuration>
-              <includeGroupIds>org.jenkins-ci</includeGroupIds>
-              <includeArtifactIds>executable-war</includeArtifactIds>
-              <includeScope>provided</includeScope>
-              <includes>**/*.class</includes>
-              <outputDirectory>${project.build.directory}/${project.build.finalName}</outputDirectory>
-            </configuration>
-          </execution>
-          <execution>
             <id>resgen</id>
-            <phase>generate-resources</phase>
             <goals>
               <goal>copy</goal>
             </goals>
+            <phase>generate-resources</phase>
             <configuration>
               <artifactItems>
                 <!-- dependencies that goes to unusual locations -->
                 <artifactItem>
                   <groupId>org.jenkins-ci</groupId>
                   <artifactId>winstone</artifactId>
-                  <outputDirectory>${project.build.directory}/${project.build.finalName}</outputDirectory>
+                  <outputDirectory>${project.build.directory}/${project.build.finalName}/executable</outputDirectory>
                   <destFileName>winstone.jar</destFileName>
                 </artifactItem>
               </artifactItems>
@@ -242,125 +309,294 @@ THE SOFTWARE.
           </execution>
           <execution>
             <id>detached-plugins</id>
-            <phase>generate-resources</phase>
             <goals>
               <goal>copy</goal>
             </goals>
+            <phase>generate-resources</phase>
             <configuration>
               <artifactItems>
                 <!--
                   Detached plugins and their dependencies - detached plugins that used to be bundled plugins
                 -->
                 <artifactItem>
+                  <!-- dependency of checks-api, junit, and mailer -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>display-url-api</artifactId>
-                  <version>2.3.1</version>
+                  <version>2.3.7</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
+                  <!-- detached after 1.493 -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>mailer</artifactId>
-                  <version>1.32.1</version>
+                  <version>438.v02c7f0a_12fa_4</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
+                  <!-- detached after 1.535 -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>matrix-auth</artifactId>
-                  <version>2.6.6</version>
+                  <version>3.1.5</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
-                  <groupId>org.jenkins-ci.plugins</groupId>
-                  <artifactId>windows-slaves</artifactId>
-                  <version>1.0</version>
-                  <type>hpi</type>
-                </artifactItem>
-                <artifactItem>
+                  <!-- detached after 1.553 -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>antisamy-markup-formatter</artifactId>
-                  <version>1.1</version>
+                  <version>155.v795fb_8702324</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
+                  <!-- detached after 1.561 -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>matrix-project</artifactId>
-                  <version>1.18</version>
+                  <version>785.v06b_7f47b_c631</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
+                  <!-- dependency of command-launcher, junit, matrix-project, and workflow-support -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>script-security</artifactId>
-                  <version>1.75</version>
+                  <version>1229.v4880b_b_e905a_6</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
+                  <!-- detached after 1.577 -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>junit</artifactId>
-                  <version>1.29</version>
+                  <version>1177.v90374a_ef4d09</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
-                  <!-- dependency of junit -->
+                  <!-- dependency of junit and workflow-support -->
                   <groupId>org.jenkins-ci.plugins.workflow</groupId>
                   <artifactId>workflow-api</artifactId>
-                  <version>2.40</version>
+                  <version>1200.v8005c684b_a_c6</version>
+                  <type>hpi</type>
+                </artifactItem>
+                <artifactItem>
+                  <!-- dependency of checks-api, echarts-api, font-awesome-api, and junit -->
+                  <groupId>io.jenkins.plugins</groupId>
+                  <artifactId>plugin-util-api</artifactId>
+                  <version>2.20.0</version>
+                  <type>hpi</type>
+                </artifactItem>
+                <artifactItem>
+                  <!-- dependency of echarts-api and junit -->
+                  <groupId>io.jenkins.plugins</groupId>
+                  <artifactId>bootstrap5-api</artifactId>
+                  <version>5.2.1-3</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <!-- dependency of junit -->
+                  <groupId>io.jenkins.plugins</groupId>
+                  <artifactId>checks-api</artifactId>
+                  <version>1.8.1</version>
+                  <type>hpi</type>
+                </artifactItem>
+
+                <artifactItem>
+                  <!-- dependency of checks-api -->
+                  <groupId>org.jenkins-ci.plugins.workflow</groupId>
+                  <artifactId>workflow-support</artifactId>
+                  <version>839.v35e2736cfd5c</version>
+                  <type>hpi</type>
+                </artifactItem>
+
+                <artifactItem>
+                  <!-- dependency of junit and echarts-api -->
+                  <groupId>org.jenkins-ci.plugins</groupId>
+                  <artifactId>jackson2-api</artifactId>
+                  <version>2.13.4.20221013-295.v8e29ea_354141</version>
+                  <type>hpi</type>
+                </artifactItem>
+                <artifactItem>
+                  <!-- dependency of junit -->
+                  <groupId>io.jenkins.plugins</groupId>
+                  <artifactId>echarts-api</artifactId>
+                  <version>5.4.0-1</version>
+                  <type>hpi</type>
+                </artifactItem>
+
+                <artifactItem>
+                  <!-- dependency of jackson2-api -->
+                  <groupId>io.jenkins.plugins</groupId>
+                  <artifactId>snakeyaml-api</artifactId>
+                  <version>1.32-86.ve3f030a_75631</version>
+                  <type>hpi</type>
+                </artifactItem>
+
+                <artifactItem>
+                  <!-- dependency of script-security and workflow-support -->
+                  <groupId>io.jenkins.plugins</groupId>
+                  <artifactId>caffeine-api</artifactId>
+                  <version>2.9.3-65.v6a_47d0f4d1fe</version>
+                  <type>hpi</type>
+                </artifactItem>
+
+                <artifactItem>
+                  <!-- dependency of echarts-api -->
+                  <groupId>io.jenkins.plugins</groupId>
+                  <artifactId>jquery3-api</artifactId>
+                  <version>3.6.1-2</version>
+                  <type>hpi</type>
+                </artifactItem>
+
+                <artifactItem>
+                  <!-- dependency of bootstrap5-api -->
+                  <groupId>io.jenkins.plugins</groupId>
+                  <artifactId>popper2-api</artifactId>
+                  <version>2.11.6-2</version>
+                  <type>hpi</type>
+                </artifactItem>
+
+                <artifactItem>
+                  <!-- dependency of bootstrap5-api and echarts-api -->
+                  <groupId>io.jenkins.plugins</groupId>
+                  <artifactId>font-awesome-api</artifactId>
+                  <version>6.2.0-3</version>
+                  <type>hpi</type>
+                </artifactItem>
+
+                <artifactItem>
+                  <!-- dependency of checks-api, junit, workflow-api, and workflow-support -->
                   <groupId>org.jenkins-ci.plugins.workflow</groupId>
                   <artifactId>workflow-step-api</artifactId>
-                  <version>2.22</version>
+                  <version>639.v6eca_cd8c04a_a_</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
-                  <!-- dependency of workflow-api -->
+                  <!-- dependency of workflow-api and workflow-support -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>scm-api</artifactId>
-                  <version>2.4.1</version>
+                  <version>621.vda_a_b_055e58f7</version>
+                  <type>hpi</type>
+                </artifactItem>
+                <artifactItem>
+                  <!-- dependency of scm-api and workflow-step-api -->
+                  <groupId>org.jenkins-ci.plugins</groupId>
+                  <artifactId>structs</artifactId>
+                  <version>324.va_f5d6774f3a_d</version>
+                  <type>hpi</type>
+                </artifactItem>
+                <artifactItem>
+                  <!-- detached after 2.16 -->
+                  <groupId>org.jenkins-ci.plugins</groupId>
+                  <artifactId>bouncycastle-api</artifactId>
+                  <version>2.26</version>
+                  <type>hpi</type>
+                </artifactItem>
+                <artifactItem>
+                  <!-- detached after 2.86 -->
+                  <groupId>org.jenkins-ci.plugins</groupId>
+                  <artifactId>command-launcher</artifactId>
+                  <version>90.v669d7ccb_7c31</version>
+                  <type>hpi</type>
+                </artifactItem>
+                <artifactItem>
+                  <!-- detached after 2.112 -->
+                  <groupId>org.jenkins-ci.plugins</groupId>
+                  <artifactId>jdk-tool</artifactId>
+                  <version>63.v62d2fd4b_4793</version>
+                  <type>hpi</type>
+                </artifactItem>
+                <artifactItem>
+                  <!-- detached after 2.163 -->
+                  <groupId>io.jenkins.plugins</groupId>
+                  <artifactId>jaxb</artifactId>
+                  <version>2.3.7-1</version>
+                  <type>hpi</type>
+                </artifactItem>
+                <artifactItem>
+                  <!-- detached after 2.281 -->
+                  <groupId>org.jenkins-ci.modules</groupId>
+                  <artifactId>sshd</artifactId>
+                  <version>3.249.v2dc2ea_416e33</version>
+                  <type>hpi</type>
+                </artifactItem>
+                <artifactItem>
+                  <!-- detached after 2.184 -->
+                  <groupId>org.jenkins-ci.plugins</groupId>
+                  <artifactId>trilead-api</artifactId>
+                  <version>2.72.v2a_3236754f73</version>
+                  <type>hpi</type>
+                </artifactItem>
+                <artifactItem>
+                  <!-- detached after 2.330 -->
+                  <groupId>io.jenkins.plugins</groupId>
+                  <artifactId>javax-activation-api</artifactId>
+                  <version>1.2.0-5</version>
+                  <type>hpi</type>
+                </artifactItem>
+                <artifactItem>
+                  <!-- detached after 2.330 -->
+                  <groupId>io.jenkins.plugins</groupId>
+                  <artifactId>javax-mail-api</artifactId>
+                  <version>1.6.2-8</version>
+                  <type>hpi</type>
+                </artifactItem>
+                <artifactItem>
+                  <!-- detached after 2.356 -->
+                  <groupId>org.jenkins-ci.modules</groupId>
+                  <artifactId>instance-identity</artifactId>
+                  <version>116.vf8f487400980</version>
+                  <type>hpi</type>
+                </artifactItem>
+                <artifactItem>
+                  <!-- dependency of jdk-tool -->
+                  <groupId>org.jenkins-ci.plugins</groupId>
+                  <artifactId>apache-httpcomponents-client-4-api</artifactId>
+                  <version>4.5.13-138.v4e7d9a_7b_a_e61</version>
+                  <type>hpi</type>
+                </artifactItem>
+                <artifactItem>
+                  <!-- dependency of commons-text-api and plugin-util-api -->
+                  <groupId>io.jenkins.plugins</groupId>
+                  <artifactId>commons-lang3-api</artifactId>
+                  <version>3.12.0-36.vd97de6465d5b_</version>
+                  <type>hpi</type>
+                </artifactItem>
+                <artifactItem>
+                  <!-- dependency of plugin-util-api -->
+                  <groupId>io.jenkins.plugins</groupId>
+                  <artifactId>commons-text-api</artifactId>
+                  <version>1.10.0-27.vb_fa_3896786a_7</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <!-- dependency of junit -->
-                  <groupId>org.jenkins-ci.plugins</groupId>
-                  <artifactId>structs</artifactId>
-                  <version>1.20</version>
-                  <type>hpi</type>
-                </artifactItem>
-                <artifactItem>
-                  <groupId>org.jenkins-ci.plugins</groupId>
-                  <artifactId>bouncycastle-api</artifactId>
-                  <version>2.20</version>
-                  <type>hpi</type>
-                </artifactItem>
-                <artifactItem>
-                  <groupId>org.jenkins-ci.plugins</groupId>
-                  <artifactId>command-launcher</artifactId>
-                  <version>1.2</version>
-                  <type>hpi</type>
-                </artifactItem>
-                <artifactItem>
-                  <groupId>org.jenkins-ci.plugins</groupId>
-                  <artifactId>jdk-tool</artifactId>
-                  <version>1.0</version>
-                  <type>hpi</type>
-                </artifactItem>
-                <artifactItem>
                   <groupId>io.jenkins.plugins</groupId>
-                  <artifactId>jaxb</artifactId>
-                  <version>2.3.0</version>
+                  <artifactId>ionicons-api</artifactId>
+                  <version>31.v4757b_6987003</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
-                  <groupId>org.jenkins-ci.modules</groupId>
-                  <artifactId>sshd</artifactId>
-                  <version>3.0.3</version>
+                  <!-- dependency of jakarta-mail-api -->
+                  <groupId>io.jenkins.plugins</groupId>
+                  <artifactId>jakarta-activation-api</artifactId>
+                  <version>2.0.1-2</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
-                  <groupId>org.jenkins-ci.plugins</groupId>
-                  <artifactId>trilead-api</artifactId>
-                  <version>1.0.4</version>
+                  <!-- dependency of mailer -->
+                  <groupId>io.jenkins.plugins</groupId>
+                  <artifactId>jakarta-mail-api</artifactId>
+                  <version>2.0.1-2</version>
+                  <type>hpi</type>
+                </artifactItem>
+                <artifactItem>
+                  <!-- dependency of mina-sshd-api-core -->
+                  <groupId>io.jenkins.plugins.mina-sshd-api</groupId>
+                  <artifactId>mina-sshd-api-common</artifactId>
+                  <version>2.9.2-50.va_0e1f42659a_a</version>
+                  <type>hpi</type>
+                </artifactItem>
+                <artifactItem>
+                  <!-- dependency of sshd -->
+                  <groupId>io.jenkins.plugins.mina-sshd-api</groupId>
+                  <artifactId>mina-sshd-api-core</artifactId>
+                  <version>2.9.2-50.va_0e1f42659a_a</version>
                   <type>hpi</type>
                 </artifactItem>
               </artifactItems>
@@ -371,18 +607,19 @@ THE SOFTWARE.
               <overWriteSnapshots>true</overWriteSnapshots>
             </configuration>
           </execution>
-          <execution> <!-- see jetty-maven-plugin config and WebAppMain -->
+          <execution>
+            <!-- see jetty-maven-plugin config and WebAppMain -->
             <id>support-log-formatter</id>
-            <phase>generate-resources</phase>
             <goals>
               <goal>copy</goal>
             </goals>
+            <phase>generate-resources</phase>
             <configuration>
               <artifactItems>
                 <artifactItem>
                   <groupId>io.jenkins.lib</groupId>
                   <artifactId>support-log-formatter</artifactId>
-                  <version>1.0</version>
+                  <version>1.2</version>
                 </artifactItem>
               </artifactItems>
               <outputDirectory>${project.build.directory}</outputDirectory>
@@ -394,7 +631,29 @@ THE SOFTWARE.
           </execution>
         </executions>
       </plugin>
-      <plugin><!-- generate licenses.xml -->
+      <plugin>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>classes-copy</id>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <phase>prepare-package</phase>
+            <configuration>
+              <target>
+                <move todir="${project.build.directory}/${project.build.finalName}">
+                  <fileset dir="${project.build.directory}/classes">
+                    <include name="executable/**/*.class" />
+                  </fileset>
+                </move>
+              </target>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <!-- generate licenses.xml -->
         <groupId>com.cloudbees</groupId>
         <artifactId>maven-license-plugin</artifactId>
         <!-- version specified in grandparent pom -->
@@ -402,21 +661,24 @@ THE SOFTWARE.
           <generateLicenseXml>${project.build.outputDirectory}/META-INF/licenses.xml</generateLicenseXml>
           <generateLicenseHtml>${project.build.outputDirectory}/META-INF/licenses.html</generateLicenseHtml>
           <attach>true</attach>
-          <inlineScript>
-            filter {
+          <inlineScript>filter {
                 // add Winstone since we are bundling it.
                 def d = project.dependencies.find { it.artifactId=="winstone" };
                 def a = mojo.artifactFactory.createProjectArtifact(d.groupId,d.artifactId,d.version);
-                def p = mojo.projectBuilder.buildFromRepository(a, project.getRemoteArtifactRepositories(), mojo.localRepository)
+                def buildingRequest = new org.apache.maven.project.DefaultProjectBuildingRequest(mojo.session.projectBuildingRequest)
+                buildingRequest.remoteRepositories = project.remoteArtifactRepositories
+                buildingRequest.localRepository = mojo.localRepository
+                buildingRequest.processPlugins = false // improve performance
+                def p = mojo.projectBuilder.build(a, buildingRequest).project
                 models.put(a,p);
-            }
-          </inlineScript>
+            }</inlineScript>
         </configuration>
       </plugin>
       <plugin>
         <groupId>org.eclipse.jetty</groupId>
         <artifactId>jetty-maven-plugin</artifactId>
-        <version>9.4.43.v20210629</version>
+        dependabot/maven/org.eclipse.jetty-jetty-maven-plugin-9.4.43.v20210629
+        <version>10.0.13</version>
         <configuration>
           <!--
             Reload webapp when you hit ENTER. (See JETTY-282 for more)
@@ -433,60 +695,31 @@ THE SOFTWARE.
             </loginService>
           </loginServices>
           <systemProperties>
-            <systemProperty>
-              <name>JENKINS_HOME</name>
-              <value>${JENKINS_HOME}</value>
-            </systemProperty>
-            <systemProperty>
-              <!-- always reload views during debugging -->
-              <name>stapler.jelly.noCache</name>
-              <value>true</value>
-            </systemProperty>
-            <systemProperty>
-              <!-- show the stapler evaluation during execution -->
-              <name>stapler.trace</name>
-              <value>true</value>
-            </systemProperty>
-            <systemProperty>
-              <!-- show the full stack trace on errors (the oops page) -->
-              <name>jenkins.model.Jenkins.SHOW_STACK_TRACE</name>
-              <value>true</value>
-            </systemProperty>
-            <systemProperty>
-              <!-- always reload scripts during debugging -->
-              <name>hudson.script.noCache</name>
-              <value>true</value>
-            </systemProperty>
-            <systemProperty>
-              <!-- load view resources from the source directly, again for real time change -->
-              <name>stapler.resourcePath</name>
-              <value>
-                  ../core/src/main/resources;
-              </value>
-            </systemProperty>
-            <systemProperty>
-              <!-- enable the plugins in main by default -->
-              <name>hudson.bundled.plugins</name>
-              <value><!-- run "mvn install" once will generate the.hpl -->
-                  ${project.build.directory}/${project.build.finalName}/WEB-INF/plugins/*.hpi
-              </value>
-            </systemProperty>
-            <systemProperty>
-              <!-- stat collection pointless -->
-              <name>hudson.model.UsageStatistics.disabled</name>
-              <value>true</value>
-            </systemProperty>
-            <systemProperty>
-              <name>hudson.Main.development</name>
-              <value>true</value>
-            </systemProperty>
+            <JENKINS_HOME>${JENKINS_HOME}</JENKINS_HOME>
+            <!-- always reload views during debugging -->
+            <stapler.jelly.noCache>true</stapler.jelly.noCache>
+            <!-- show the stapler evaluation during execution -->
+            <stapler.trace>true</stapler.trace>
+            <!-- show the full stack trace on errors (the oops page) -->
+            <jenkins.model.Jenkins.SHOW_STACK_TRACE>true</jenkins.model.Jenkins.SHOW_STACK_TRACE>
+            <!-- always reload scripts during debugging -->
+            <hudson.script.noCache>true</hudson.script.noCache>
+            <!-- load view resources from the source directly, again for real time change -->
+            <stapler.resourcePath>../core/src/main/resources;</stapler.resourcePath>
+            <!-- enable the plugins in main by default -->
+            <!-- run "mvn install" once will generate the.hpl -->
+            <hudson.bundled.plugins>${project.build.directory}/${project.build.finalName}/WEB-INF/plugins/*.hpi</hudson.bundled.plugins>
+            <!-- stat collection pointless -->
+            <hudson.model.UsageStatistics.disabled>true</hudson.model.UsageStatistics.disabled>
+            <hudson.Main.development>true</hudson.Main.development>
           </systemProperties>
           <webApp>
             <!-- Allows resources to be reloaded, and enable nicer console logging. -->
             <extraClasspath>${project.basedir}/../core/src/main/resources,${project.basedir}/../core/target/classes,${project.build.directory}/support-log-formatter.jar</extraClasspath>
             <contextPath>${contextPath}</contextPath>
             <configurationDiscovered>false</configurationDiscovered>
-            <webInfIncludeJarPattern>NONE</webInfIncludeJarPattern><!-- see https://wiki.eclipse.org/Jetty/Howto/Avoid_slow_deployment -->
+            <!-- see https://wiki.eclipse.org/Jetty/Howto/Avoid_slow_deployment -->
+            <webInfIncludeJarPattern>NONE</webInfIncludeJarPattern>
           </webApp>
         </configuration>
       </plugin>
@@ -504,10 +737,10 @@ THE SOFTWARE.
             <executions>
               <execution>
                 <id>signWar</id>
-                <phase>pre-integration-test</phase>
                 <goals>
                   <goal>sign</goal>
                 </goals>
+                <phase>pre-integration-test</phase>
                 <configuration>
                   <archive>${project.build.directory}/${project.build.finalName}.war</archive>
                   <arguments>
@@ -521,7 +754,6 @@ THE SOFTWARE.
         </plugins>
       </build>
     </profile>
-
 
     <!--
       The following profiles are required to integration the node/yarn build into this maven build.
@@ -561,17 +793,44 @@ THE SOFTWARE.
             </executions>
           </plugin>
           <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-antrun-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>download-yarn</id>
+                <goals>
+                  <goal>run</goal>
+                </goals>
+                <phase>initialize</phase>
+                <configuration>
+                  <target>
+                    <property name="yarn.dest" value="${project.basedir}/.yarn/releases/yarn-${yarn-berry.version}.cjs" />
+                    <dirname file="${yarn.dest}" property="yarn.dest.dir" />
+                    <mkdir dir="${yarn.dest.dir}" />
+                    <get dest="${yarn.dest}" src="https://repo.yarnpkg.com/${yarn-berry.version}/packages/yarnpkg-cli/bin/yarn.js" usetimestamp="true" />
+                    <checksum algorithm="SHA-256" file="${yarn.dest}" property="${yarn-berry.sha256sum}" verifyProperty="yarn.checksum.matches" />
+                    <condition property="yarn.checksum.matches.fail">
+                      <equals arg1="${yarn.checksum.matches}" arg2="false" />
+                    </condition>
+                    <fail if="yarn.checksum.matches.fail">Checksum error</fail>
+                    <echo file="${project.basedir}/.yarnrc.yml">yarnPath: ${yarn.dest}</echo>
+                  </target>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
             <groupId>com.github.eirslett</groupId>
             <artifactId>frontend-maven-plugin</artifactId>
-            <version>1.12.0</version>
+            <version>1.12.1</version>
             <executions>
 
               <execution>
-                <phase>initialize</phase>
                 <id>install node and yarn</id>
                 <goals>
                   <goal>install-node-and-yarn</goal>
                 </goals>
+                <phase>initialize</phase>
                 <configuration>
                   <nodeVersion>v${node.version}</nodeVersion>
                   <yarnVersion>v${yarn.version}</yarnVersion>
@@ -581,50 +840,32 @@ THE SOFTWARE.
               </execution>
 
               <execution>
-                <phase>initialize</phase>
                 <id>yarn install</id>
                 <goals>
                   <goal>yarn</goal>
                 </goals>
-                <configuration>
-                  <!-- ensure only one concurrent 'yarn install' -->
-                  <!-- when yarn cache is empty, multiple yarns performing network fetches frequently results in opaque errors -->
-                  <arguments>--mutex network</arguments>
-                </configuration>
+                <phase>initialize</phase>
               </execution>
 
               <execution>
-                <phase>generate-sources</phase>
                 <id>yarn build</id>
                 <goals>
                   <goal>yarn</goal>
                 </goals>
+                <phase>generate-sources</phase>
                 <configuration>
                   <arguments>build</arguments>
                 </configuration>
               </execution>
 
               <execution>
-                <phase>test</phase>
-                <id>yarn test</id>
-                <goals>
-                  <goal>yarn</goal>
-                </goals>
-                <configuration>
-                  <arguments>test</arguments>
-                  <skip>${skipTests}</skip>
-                </configuration>
-              </execution>
-
-              <execution>
-                <phase>test</phase>
                 <id>yarn lint</id>
                 <goals>
                   <goal>yarn</goal>
                 </goals>
                 <configuration>
-                  <arguments>lint</arguments>
-                  <skip>${skipTests}</skip>
+                  <arguments>lint:ci</arguments>
+                  <skip>${yarn.lint.skip}</skip>
                 </configuration>
               </execution>
             </executions>
@@ -636,12 +877,12 @@ THE SOFTWARE.
     <profile>
       <id>clean-node</id>
       <activation>
-        <file>
-          <exists>package.json</exists>
-        </file>
         <property>
           <name>cleanNode</name>
         </property>
+        <file>
+          <exists>package.json</exists>
+        </file>
       </activation>
       <build>
         <plugins>

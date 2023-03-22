@@ -21,34 +21,29 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-.signup{
+
+form.signup {
   max-width: 480px;
   width: 100%;
 }
-.signupIntroDefault {
-  text-align: center;
-}
-form.signup{
-  max-width: 480px;
-  width: 100%;
-  text-align: left;
-}
+
 .inputHeader {
   display: flex;
   justify-content: space-between;
-  align-items: center;
 }
 #showPassword {
   width: unset;
   margin-right: 5px;
 }
-.combinedElement{
+.combinedElement {
   display: flex;
   align-items: center;
 }
-label {
-  margin-bottom: 7px;
-}
+
 #passwordStrengthWrapper {
   margin-top: 4px;
+}
+
+.password {
+  width: 98%;
 }

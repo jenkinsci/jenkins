@@ -1,16 +1,14 @@
 package jenkins.util;
 
-import hudson.util.OneShotEvent;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
+import hudson.util.OneShotEvent;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-
+import org.junit.Test;
 
 public class AtmostOneTaskExecutorTest {
 

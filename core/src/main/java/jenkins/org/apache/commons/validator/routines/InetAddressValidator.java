@@ -14,16 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/* Copied from commons-validator:commons-validator:1.6, with [PATCH] modifications */
-package jenkins.org.apache.commons.validator.routines;
+/* Copied from commons-validator:commons-validator:1.7, with [PATCH] modifications */
 
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
+package jenkins.org.apache.commons.validator.routines;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * <p><b>InetAddress</b> validation and conversion routines ({@code java.net.InetAddress}).</p>
@@ -34,7 +34,7 @@ import java.util.List;
  * This class is a Singleton; you can retrieve the instance via the {@link #getInstance()} method.
  * </p>
  *
- * @version $Revision: 1783032 $
+ * @version $Revision$
  * @since Validator 1.4
  */
 //[PATCH]
@@ -107,7 +107,7 @@ public class InetAddressValidator implements Serializable {
 
             try {
                 iIpSegment = Integer.parseInt(ipSegment);
-            } catch(NumberFormatException e) {
+            } catch (NumberFormatException e) {
                 return false;
             }
 
@@ -128,10 +128,38 @@ public class InetAddressValidator implements Serializable {
      * Validates an IPv6 address. Returns true if valid.
      * @param inet6Address the IPv6 address to validate
      * @return true if the argument contains a valid IPv6 address
-     * 
+     *
      * @since 1.4.1
      */
     public boolean isValidInet6Address(String inet6Address) {
+        String[] parts;
+        // remove prefix size. This will appear after the zone id (if any)
+        parts = inet6Address.split("/", -1);
+        if (parts.length > 2) {
+            return false; // can only have one prefix specifier
+        }
+        if (parts.length == 2) {
+            if (parts[1].matches("\\d{1,3}")) { // Need to eliminate signs
+                int bits = Integer.parseInt(parts[1]); // cannot fail because of RE check
+                if (bits < 0 || bits > 128) {
+                    return false; // out of range
+                }
+            } else {
+                return false; // not a valid number
+            }
+        }
+        // remove zone-id
+        parts = parts[0].split("%", -1);
+        if (parts.length > 2) {
+            return false;
+        } else if (parts.length == 2) {
+            // The id syntax is implemenatation independent, but it presumably cannot allow:
+            // whitespace, '/' or '%'
+            if (!parts[1].matches("[^\\s/%]+")) {
+                return false; // invalid id
+            }
+        }
+        inet6Address = parts[0];
         boolean containsCompressedZeroes = inet6Address.contains("::");
         if (containsCompressedZeroes && (inet6Address.indexOf("::") != inet6Address.lastIndexOf("::"))) {
             return false;

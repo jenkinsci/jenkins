@@ -13,6 +13,6 @@ import org.jenkinsci.Symbol;
  * @author Kohsuke Kawaguchi
  * @since 1.514
  */
-@Extension(ordinal=100) @Symbol("executors") // historically this was above normal widgets and below BuildQueueWidget
+@Extension(ordinal = 100) @Symbol("executors") // historically this was above normal widgets and below BuildQueueWidget
 public class ExecutorsWidget extends Widget {
 }

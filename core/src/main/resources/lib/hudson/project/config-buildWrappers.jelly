@@ -31,6 +31,7 @@ THE SOFTWARE.
   <j:if test="${!empty(wrappers)}">
     <f:descriptorList title="${%Build Environment}"
                       descriptors="${wrappers}"
-                      instances="${it.buildWrappers}" />
+                      instances="${it.buildWrappers}"
+                      icon="symbol-environment" />
   </j:if>
 </j:jelly>

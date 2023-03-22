@@ -21,9 +21,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.widgets;
 
 import com.google.common.collect.Iterables;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.model.AbstractBuild;
 import hudson.model.Job;
 import hudson.model.ParameterValue;
@@ -33,8 +36,6 @@ import hudson.model.Run;
 import hudson.search.UserSearchProperty;
 import hudson.util.Iterators;
 import hudson.widgets.HistoryWidget;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -59,9 +60,13 @@ public class HistoryPageFilter<T> {
     public final List<HistoryPageEntry<Queue.Item>> queueItems = new ArrayList<>();
     public final List<HistoryPageEntry<Run>> runs = new ArrayList<>();
 
+    @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD", justification = "read by Stapler")
     public boolean hasUpPage = false; // there are newer builds than on this page
+    @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD", justification = "read by Stapler")
     public boolean hasDownPage = false; // there are older builds than on this page
+    @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD", justification = "read by Stapler")
     public long nextBuildNumber;
+    @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD", justification = "read by Stapler")
     public HistoryWidget widget;
 
     public long newestOnPage = Long.MIN_VALUE; // see updateNewestOldest()
@@ -311,7 +316,7 @@ public class HistoryPageFilter<T> {
         } else if (fitsSearchString(item.getId())) {
             return true;
         }
-        // Non of the fuzzy matches "liked" the search term. 
+        // Non of the fuzzy matches "liked" the search term.
         return false;
     }
 
@@ -319,7 +324,7 @@ public class HistoryPageFilter<T> {
         if (searchString == null) {
             return true;
         }
-        
+
         if (fitsSearchString(run.getDisplayName())) {
             return true;
         } else if (fitsSearchString(run.getDescription())) {
@@ -338,8 +343,8 @@ public class HistoryPageFilter<T> {
                 return true;
             }
         }
-        
-        // Non of the fuzzy matches "liked" the search term. 
+
+        // Non of the fuzzy matches "liked" the search term.
         return false;
     }
 

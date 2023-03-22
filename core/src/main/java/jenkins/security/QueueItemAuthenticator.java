@@ -1,5 +1,6 @@
 package jenkins.security;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.ExtensionPoint;
 import hudson.Util;
 import hudson.model.AbstractDescribableImpl;
@@ -12,7 +13,6 @@ import hudson.model.Queue.Task;
 import hudson.model.queue.Tasks;
 import java.util.Calendar;
 import java.util.Collections;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
 import org.springframework.security.core.Authentication;
 
 /**
@@ -102,6 +102,6 @@ public abstract class QueueItemAuthenticator extends AbstractDescribableImpl<Que
 
     @Override
     public QueueItemAuthenticatorDescriptor getDescriptor() {
-        return (QueueItemAuthenticatorDescriptor)super.getDescriptor();
+        return (QueueItemAuthenticatorDescriptor) super.getDescriptor();
     }
 }

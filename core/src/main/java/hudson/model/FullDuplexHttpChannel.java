@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import hudson.remoting.Channel;
@@ -44,7 +45,7 @@ public abstract class FullDuplexHttpChannel extends FullDuplexHttpService {
     private Channel channel;
     private final boolean restricted;
 
-    public FullDuplexHttpChannel(UUID uuid, boolean restricted) throws IOException {
+    protected FullDuplexHttpChannel(UUID uuid, boolean restricted) throws IOException {
         super(uuid);
         this.restricted = restricted;
     }

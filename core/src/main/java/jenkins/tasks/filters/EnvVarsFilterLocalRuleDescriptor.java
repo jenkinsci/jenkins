@@ -21,17 +21,17 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.tasks.filters;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.DescriptorExtensionList;
 import hudson.model.Descriptor;
+import java.util.List;
+import java.util.stream.Collectors;
 import jenkins.model.Jenkins;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.Beta;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Descriptor for the local rule. Compared to the global rule, it's the descriptor that determine

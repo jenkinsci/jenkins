@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.logging;
 
 import java.io.UnsupportedEncodingException;
@@ -50,27 +51,27 @@ public final class WeakLogHandler extends Handler {
     @Override
     public void publish(LogRecord record) {
         Handler t = resolve();
-        if(t!=null)
+        if (t != null)
             t.publish(record);
     }
 
     @Override
     public void flush() {
         Handler t = resolve();
-        if(t!=null)
+        if (t != null)
             t.flush();
     }
 
     @Override
     public void close() throws SecurityException {
         Handler t = resolve();
-        if(t!=null)
+        if (t != null)
             t.close();
     }
 
     private Handler resolve() {
         Handler r = target.get();
-        if(r==null)
+        if (r == null)
             logger.removeHandler(this);
         return r;
     }
@@ -79,7 +80,7 @@ public final class WeakLogHandler extends Handler {
     public void setFormatter(Formatter newFormatter) throws SecurityException {
         super.setFormatter(newFormatter);
         Handler t = resolve();
-        if(t!=null)
+        if (t != null)
             t.setFormatter(newFormatter);
     }
 
@@ -87,7 +88,7 @@ public final class WeakLogHandler extends Handler {
     public void setEncoding(String encoding) throws SecurityException, UnsupportedEncodingException {
         super.setEncoding(encoding);
         Handler t = resolve();
-        if(t!=null)
+        if (t != null)
             t.setEncoding(encoding);
     }
 
@@ -95,7 +96,7 @@ public final class WeakLogHandler extends Handler {
     public void setFilter(Filter newFilter) throws SecurityException {
         super.setFilter(newFilter);
         Handler t = resolve();
-        if(t!=null)
+        if (t != null)
             t.setFilter(newFilter);
     }
 
@@ -103,7 +104,7 @@ public final class WeakLogHandler extends Handler {
     public void setErrorManager(ErrorManager em) {
         super.setErrorManager(em);
         Handler t = resolve();
-        if(t!=null)
+        if (t != null)
             t.setErrorManager(em);
     }
 
@@ -111,14 +112,14 @@ public final class WeakLogHandler extends Handler {
     public void setLevel(Level newLevel) throws SecurityException {
         super.setLevel(newLevel);
         Handler t = resolve();
-        if(t!=null)
+        if (t != null)
             t.setLevel(newLevel);
     }
 
     @Override
     public boolean isLoggable(LogRecord record) {
         Handler t = resolve();
-        if(t!=null)
+        if (t != null)
             return t.isLoggable(record);
         else
             return super.isLoggable(record);

@@ -27,6 +27,7 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <l:layout title="${it.displayName} ${%disconnect}">
     <st:include page="sidepanel.jelly" />
+    <l:breadcrumb title="${%Disconnect}" />
     <l:main-panel>
       <form method="post" action="doDisconnect">
         ${%disconnect.computer(it.displayName)}

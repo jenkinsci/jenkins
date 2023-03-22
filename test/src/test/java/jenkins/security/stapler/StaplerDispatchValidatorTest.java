@@ -24,8 +24,14 @@
 
 package jenkins.security.stapler;
 
+import static org.junit.Assert.assertEquals;
+
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.model.UnprotectedRootAction;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.util.Locale;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -33,13 +39,6 @@ import org.jvnet.hudson.test.For;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
-
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.util.Locale;
-
-import static org.junit.Assert.assertEquals;
 
 @Issue("SECURITY-534")
 public class StaplerDispatchValidatorTest {
@@ -60,8 +59,8 @@ public class StaplerDispatchValidatorTest {
         String[] urls = {"annotated/explicitRoot", "extended/explicitRoot", "extended/whitelistedRoot"};
         for (String url : urls) {
             HtmlPage root = j.createWebClient().goTo(url);
-            assertEquals("Fragment", root.getElementById("frag").asText());
-            assertEquals("Explicit Fragment", root.getElementById("explicit-frag").asText());
+            assertEquals("Fragment", root.getElementById("frag").asNormalizedText());
+            assertEquals("Explicit Fragment", root.getElementById("explicit-frag").asNormalizedText());
         }
     }
 
@@ -88,7 +87,7 @@ public class StaplerDispatchValidatorTest {
         String[] urls = {"annotated", "groovy", "jelly"};
         for (String url : urls) {
             HtmlPage root = j.createWebClient().goTo(url);
-            assertEquals("Fragment", root.getElementById("frag").asText());
+            assertEquals("Fragment", root.getElementById("frag").asNormalizedText());
         }
     }
 
@@ -97,7 +96,7 @@ public class StaplerDispatchValidatorTest {
         String[] urls = {"groovy/include", "jelly/include"};
         for (String url : urls) {
             HtmlPage root = j.createWebClient().goTo(url);
-            assertEquals("Fragment", root.getElementById("frag").asText());
+            assertEquals("Fragment", root.getElementById("frag").asNormalizedText());
         }
     }
 
@@ -106,7 +105,7 @@ public class StaplerDispatchValidatorTest {
         String[] urls = {"groovy/redirect", "jelly/redirect"};
         for (String url : urls) {
             HtmlPage root = j.createWebClient().goTo(url);
-            assertEquals("Fragment", root.getElementById("frag").asText());
+            assertEquals("Fragment", root.getElementById("frag").asNormalizedText());
         }
     }
 
@@ -115,7 +114,7 @@ public class StaplerDispatchValidatorTest {
         String[] urls = {"groovy/compress", "jelly/compress"};
         for (String url : urls) {
             HtmlPage root = j.createWebClient().goTo(url);
-            assertEquals("Fragment", root.getElementById("frag").asText());
+            assertEquals("Fragment", root.getElementById("frag").asNormalizedText());
         }
     }
 

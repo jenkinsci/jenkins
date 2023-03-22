@@ -29,7 +29,6 @@ import hudson.model.queue.CauseOfBlockage;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import org.apache.commons.lang.StringUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -50,7 +49,7 @@ public class CompositeCauseOfBlockage extends CauseOfBlockage {
 
     @Override
     public String getShortDescription() {
-        return StringUtils.join(uniqueReasons.keySet(), "; ");
+        return String.join("; ", uniqueReasons.keySet());
     }
 
     @Override

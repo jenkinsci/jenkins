@@ -20,7 +20,7 @@ public abstract class CyclicGraphDetector<N> {
     private final List<N> topologicalOrder = new ArrayList<>();
 
     public void run(Iterable<? extends N> allNodes) throws CycleDetectedException {
-        for (N n : allNodes){
+        for (N n : allNodes) {
             visit(n);
         }
     }
@@ -47,7 +47,7 @@ public abstract class CyclicGraphDetector<N> {
         visiting.add(p);
         path.push(p);
         for (N q : getEdges(p)) {
-            if (q==null)        continue;   // ignore unresolved references
+            if (q == null)        continue;   // ignore unresolved references
             if (visiting.contains(q))
                 detectedCycle(q);
             visit(q);
@@ -62,13 +62,13 @@ public abstract class CyclicGraphDetector<N> {
         path.push(q);
         reactOnCycle(q, path.subList(i, path.size()));
     }
-    
+
     /**
      * React on detected cycles - default implementation throws an exception.
      */
-    protected void reactOnCycle(N q, List<N> cycle) throws CycleDetectedException{
+    protected void reactOnCycle(N q, List<N> cycle) throws CycleDetectedException {
         throw new CycleDetectedException(cycle);
-    }    
+    }
 
     public static final class CycleDetectedException extends Exception {
         public final List cycle;

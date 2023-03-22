@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.util;
 
 import hudson.Util;
@@ -37,9 +38,9 @@ public class MemoryReductionUtil {
         if (elementsToHold <= 0) {
             return 0;
         } else if (elementsToHold < 3) {
-            return elementsToHold+1;
+            return elementsToHold + 1;
         } else {
-            return elementsToHold+elementsToHold/3; // Default load factor is 0.75, so we want to fill that much.
+            return elementsToHold + elementsToHold / 3; // Default load factor is 0.75, so we want to fill that much.
         }
     }
 
@@ -58,7 +59,7 @@ public class MemoryReductionUtil {
         } else if (input.length == 0) {
             return EMPTY_STRING_ARRAY;
         }
-        for (int i=0; i<input.length; i++) {
+        for (int i = 0; i < input.length; i++) {
             input[i] = Util.intern(input[i]);
         }
         return input;

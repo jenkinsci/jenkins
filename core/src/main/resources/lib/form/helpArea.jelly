@@ -23,11 +23,13 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
   <st:documentation>
     Place holder to lazy-load help text via AJAX.
   </st:documentation>
   <div class="help-area tr">
-      <div class="help">${%Loading...}</div>
+      <div class="help">
+        <l:spinner text="${%Loading...}" />
+      </div>
   </div>
 </j:jelly>

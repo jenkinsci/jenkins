@@ -29,6 +29,7 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <l:layout permission="${app.ADMINISTER}" title="${%title(it.fullName)}">
     <st:include page="sidepanel.jelly" />
+    <l:breadcrumb title="${%Configure}" />
     <l:main-panel>
       <f:form method="post" action="configSubmit" name="config">
         <j:set var="instance" value="${it}"/>
@@ -36,7 +37,7 @@ THE SOFTWARE.
           <f:textbox field="fullName"/>
         </f:entry>
         <f:entry title="${%Description}" help="/help/user/description.html">
-          <f:textarea field="description"/>
+          <f:textarea field="description" codemirror-mode="${app.markupFormatter.codeMirrorMode}" codemirror-config="${app.markupFormatter.codeMirrorConfig}" previewEndpoint="/markupFormatter/previewDescription"/>
         </f:entry>
 
         <!-- user property configurations -->

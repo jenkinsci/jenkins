@@ -29,10 +29,9 @@ import hudson.model.AutoCompletionCandidates;
 import hudson.model.Descriptor;
 import hudson.model.labels.LabelExpression;
 import hudson.util.FormValidation;
-import jenkins.model.Jenkins;
-
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
+import jenkins.model.Jenkins;
 import org.kohsuke.stapler.QueryParameter;
 
 /**
@@ -51,7 +50,7 @@ public abstract class ToolInstallerDescriptor<T extends ToolInstaller> extends D
         return true;
     }
 
-    public static DescriptorExtensionList<ToolInstaller,ToolInstallerDescriptor<?>> all() {
+    public static DescriptorExtensionList<ToolInstaller, ToolInstallerDescriptor<?>> all() {
         return Jenkins.get().getDescriptorList(ToolInstaller.class);
     }
 
@@ -61,7 +60,7 @@ public abstract class ToolInstallerDescriptor<T extends ToolInstaller> extends D
     public static List<ToolInstallerDescriptor<?>> for_(Class<? extends ToolInstallation> type) {
         List<ToolInstallerDescriptor<?>> r = new ArrayList<>();
         for (ToolInstallerDescriptor<?> d : all())
-            if(d.isApplicable(type))
+            if (d.isApplicable(type))
                 r.add(d);
         return r;
     }

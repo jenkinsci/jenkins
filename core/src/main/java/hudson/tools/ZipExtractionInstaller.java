@@ -24,24 +24,26 @@
 
 package hudson.tools;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.FilePath;
-import jenkins.MasterToSlaveFileCallable;
+import hudson.Functions;
 import hudson.ProxyConfiguration;
 import hudson.Util;
-import hudson.Functions;
 import hudson.model.Node;
 import hudson.model.TaskListener;
 import hudson.remoting.VirtualChannel;
 import hudson.util.FormValidation;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
-import java.net.URLConnection;
-
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import jenkins.MasterToSlaveFileCallable;
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -94,28 +96,44 @@ public class ZipExtractionInstaller extends ToolInstaller {
     @Extension @Symbol("zip")
     public static class DescriptorImpl extends ToolInstallerDescriptor<ZipExtractionInstaller> {
 
+        @NonNull
         @Override
         public String getDisplayName() {
             return Messages.ZipExtractionInstaller_DescriptorImpl_displayName();
         }
 
         @RequirePOST
-        public FormValidation doCheckUrl(@QueryParameter String value) {
+        public FormValidation doCheckUrl(@QueryParameter String value) throws InterruptedException {
             Jenkins.get().checkPermission(Jenkins.ADMINISTER);
-            
-            try {
-                URLConnection conn = ProxyConfiguration.open(new URL(value));
-                conn.connect();
-                if (conn instanceof HttpURLConnection) {
-                    if (((HttpURLConnection) conn).getResponseCode() != HttpURLConnection.HTTP_OK) {
-                        return FormValidation.error(Messages.ZipExtractionInstaller_bad_connection());
-                    }
-                }
+
+            value = Util.fixEmptyAndTrim(value);
+            if (value == null) {
                 return FormValidation.ok();
-            } catch (MalformedURLException x) {
-                return FormValidation.error(Messages.ZipExtractionInstaller_malformed_url());
-            } catch (IOException x) {
-                return FormValidation.error(x,Messages.ZipExtractionInstaller_could_not_connect());
+            }
+
+            URI uri;
+            try {
+                uri = new URI(value);
+            } catch (URISyntaxException e) {
+                return FormValidation.error(e, Messages.ZipExtractionInstaller_malformed_url());
+            }
+            HttpClient httpClient = ProxyConfiguration.newHttpClient();
+            HttpRequest httpRequest;
+            try {
+                httpRequest = ProxyConfiguration.newHttpRequestBuilder(uri)
+                        .method("HEAD", HttpRequest.BodyPublishers.noBody())
+                        .build();
+            } catch (IllegalArgumentException e) {
+                return FormValidation.error(e, Messages.ZipExtractionInstaller_malformed_url());
+            }
+            try {
+                HttpResponse<Void> httpResponse = httpClient.send(httpRequest, HttpResponse.BodyHandlers.discarding());
+                if (httpResponse.statusCode() == HttpURLConnection.HTTP_OK) {
+                    return FormValidation.ok();
+                }
+                return FormValidation.error(Messages.ZipExtractionInstaller_bad_connection());
+            } catch (IOException e) {
+                return FormValidation.error(e, Messages.ZipExtractionInstaller_could_not_connect());
             }
         }
 
@@ -127,12 +145,14 @@ public class ZipExtractionInstaller extends ToolInstaller {
      */
     static class ChmodRecAPlusX extends MasterToSlaveFileCallable<Void> {
         private static final long serialVersionUID = 1L;
+
         @Override
         public Void invoke(File d, VirtualChannel channel) throws IOException {
-            if(!Functions.isWindows())
+            if (!Functions.isWindows())
                 process(d);
             return null;
         }
+
         private void process(File f) {
             if (f.isFile()) {
                 f.setExecutable(true, false);

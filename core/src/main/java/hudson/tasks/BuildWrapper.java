@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Yahoo! Inc.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,11 +21,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.tasks;
 
+import hudson.DescriptorExtensionList;
 import hudson.ExtensionPoint;
 import hudson.Launcher;
-import hudson.DescriptorExtensionList;
 import hudson.LauncherDecorator;
 import hudson.Util;
 import hudson.console.ConsoleLogFilter;
@@ -39,14 +40,14 @@ import hudson.model.Descriptor;
 import hudson.model.Project;
 import hudson.model.Run.RunnerAbortedException;
 import hudson.util.ArgumentListBuilder;
-import jenkins.model.Jenkins;
-
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import jenkins.model.Jenkins;
 
 /**
  * Pluggability point for performing pre/post actions for the build process.
@@ -109,9 +110,9 @@ public abstract class BuildWrapper extends AbstractDescribableImpl<BuildWrapper>
          * @since 1.150
          */
         @Override
-        public boolean tearDown( AbstractBuild build, BuildListener listener ) throws IOException, InterruptedException {
+        public boolean tearDown(AbstractBuild build, BuildListener listener) throws IOException, InterruptedException {
             if (build instanceof Build)
-                return tearDown((Build)build, listener);
+                return tearDown((Build) build, listener);
             else
                 return true;
         }
@@ -121,7 +122,7 @@ public abstract class BuildWrapper extends AbstractDescribableImpl<BuildWrapper>
          *      Use {@link #tearDown(AbstractBuild, BuildListener)} instead.
          */
         @Deprecated
-        public boolean tearDown( Build build, BuildListener listener ) throws IOException, InterruptedException {
+        public boolean tearDown(Build build, BuildListener listener) throws IOException, InterruptedException {
             return true;
         }
     }
@@ -148,10 +149,10 @@ public abstract class BuildWrapper extends AbstractDescribableImpl<BuildWrapper>
      *      when a plugin does not support this type of build.
      * @since 1.150
      */
-    public Environment setUp( AbstractBuild build, Launcher launcher, BuildListener listener ) throws IOException, InterruptedException {
+    public Environment setUp(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
         // If it's a Build, and the plugin implements the deprecated API, use it.
         if (build instanceof Build && Util.isOverridden(BuildWrapper.class, getClass(), "setUp", Build.class, Launcher.class, BuildListener.class))
-            return setUp((Build)build,launcher,listener);
+            return setUp((Build) build, launcher, listener);
         else // not a supported build type
             throw new UnsupportedOperationException("Plugin class '" + this.getClass().getName() +
                     "' does not support a build of type '" + build.getClass().getName() + "'.");
@@ -165,10 +166,10 @@ public abstract class BuildWrapper extends AbstractDescribableImpl<BuildWrapper>
      *      Use {@link #setUp(AbstractBuild, Launcher, BuildListener)} instead.
      */
     @Deprecated
-    public Environment setUp( Build build, Launcher launcher, BuildListener listener ) throws IOException, InterruptedException {
+    public Environment setUp(Build build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
         if (Util.isOverridden(BuildWrapper.class, getClass(), "setUp", AbstractBuild.class, Launcher.class, BuildListener.class)) {
             // old client calling newer implementation. forward the call.
-            return setUp((AbstractBuild)build, launcher, listener);
+            return setUp((AbstractBuild) build, launcher, listener);
         } else {
             // happens only if the subtype fails to override either setUp method
             throw new AbstractMethodError("Plugin class '" + this.getClass().getName() + "' does not override " +
@@ -211,10 +212,10 @@ public abstract class BuildWrapper extends AbstractDescribableImpl<BuildWrapper>
 
     /**
      * Provides an opportunity for a {@link BuildWrapper} to decorate the {@link BuildListener} logger to be used by the build.
-     * 
+     *
      * <p>
      * This hook is called very early on in the build (even before {@link #setUp(AbstractBuild, Launcher, BuildListener)} is invoked.)
-     * 
+     *
      * <p>
      * The default implementation is no-op, which just returns the {@code logger} parameter as-is.
      * <p>({@link ArgumentListBuilder#add(String, boolean)} is a simpler way to suppress a single password.)
@@ -240,7 +241,7 @@ public abstract class BuildWrapper extends AbstractDescribableImpl<BuildWrapper>
      * Provides an opportunity for a {@link BuildWrapper} to perform some actions before SCM checkout.
      *
      * <p>
-     * This hook is called early on in the build (before {@link #setUp(AbstractBuild, Launcher, BuildListener)}, 
+     * This hook is called early on in the build (before {@link #setUp(AbstractBuild, Launcher, BuildListener)},
      * but after {@link #decorateLauncher(AbstractBuild, Launcher, BuildListener)} is invoked.)
      * The typical use is delete existing workspace before new build starts etc.
      *
@@ -250,18 +251,18 @@ public abstract class BuildWrapper extends AbstractDescribableImpl<BuildWrapper>
      *
      * <p>
      * The default implementation is no-op.
-     * 
+     *
      * @param build
      *      The build in progress for which this {@link BuildWrapper} is called. Never null.
      * @param launcher
-     *      The launcher. Never null. 
+     *      The launcher. Never null.
      * @param listener
      *      Connected to the build output. Never null. Can be used for error reporting.
      * @since 1.399
      */
     public void preCheckout(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException{
     }
-    
+
     /**
      * {@link Action} to be displayed in the job page.
      *
@@ -290,8 +291,8 @@ public abstract class BuildWrapper extends AbstractDescribableImpl<BuildWrapper>
     public Collection<? extends Action> getProjectActions(AbstractProject job) {
         // delegate to getJobAction (singular) for backward compatible behavior
         Action a = getProjectAction(job);
-        if (a==null)    return Collections.emptyList();
-        return Collections.singletonList(a);
+        if (a == null)    return Collections.emptyList();
+        return List.of(a);
     }
 
     /**
@@ -299,15 +300,15 @@ public abstract class BuildWrapper extends AbstractDescribableImpl<BuildWrapper>
      *
      * This provides an opportunity for a BuildWrapper to append any additional
      * build variables defined for the current build.
-     * 
+     *
      * @param build
      *      The build in progress for which this {@link BuildWrapper} is called. Never null.
      * @param variables
      *      Contains existing build variables. Add additional build variables that you contribute
      *      to this map.
      */
-    public void makeBuildVariables(AbstractBuild build, Map<String,String> variables) {
-    	// noop
+    public void makeBuildVariables(AbstractBuild build, Map<String, String> variables) {
+        // noop
     }
 
     /**
@@ -325,12 +326,12 @@ public abstract class BuildWrapper extends AbstractDescribableImpl<BuildWrapper>
     public void makeSensitiveBuildVariables(AbstractBuild build, Set<String> sensitiveVariables) {
         // noop
     }
-    
+
     /**
      * Returns all the registered {@link BuildWrapper} descriptors.
      */
     // for compatibility we can't use BuildWrapperDescriptor
-    public static DescriptorExtensionList<BuildWrapper,Descriptor<BuildWrapper>> all() {
+    public static DescriptorExtensionList<BuildWrapper, Descriptor<BuildWrapper>> all() {
         // use getDescriptorList and not getExtensionList to pick up legacy instances
         return Jenkins.get().getDescriptorList(BuildWrapper.class);
     }

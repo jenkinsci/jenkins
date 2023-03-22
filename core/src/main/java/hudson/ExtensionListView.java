@@ -21,16 +21,16 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson;
 
 import hudson.tasks.UserNameResolver;
-import jenkins.model.Jenkins;
 import hudson.util.CopyOnWriteList;
-
 import java.util.AbstractList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Collection;
+import jenkins.model.Jenkins;
 
 /**
  * Compatibility layer for legacy manual registration of extension points.
@@ -56,7 +56,7 @@ public class ExtensionListView {
      * Creates a plain {@link List} backed by the current {@link ExtensionList}.
      */
     public static <T> List<T> createList(final Class<T> type) {
-        return new AbstractList<T>() {
+        return new AbstractList<>() {
             private ExtensionList<T> storage() {
                 return Jenkins.get().getExtensionList(type);
             }
@@ -103,7 +103,7 @@ public class ExtensionListView {
      * Creates a seriously hacked up {@link CopyOnWriteList} that acts as a view to the current {@link ExtensionList}.
      */
     public static <T> CopyOnWriteList<T> createCopyOnWriteList(final Class<T> type) {
-        return new CopyOnWriteList<T>() {
+        return new CopyOnWriteList<>() {
             private ExtensionList<T> storage() {
                 return Jenkins.get().getExtensionList(type);
             }

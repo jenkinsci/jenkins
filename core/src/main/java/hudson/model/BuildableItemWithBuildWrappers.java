@@ -18,7 +18,7 @@ public interface BuildableItemWithBuildWrappers extends BuildableItem {
      * This method must be always implemented as {@code (AbstractProject)this}, but
      * defining this method emphasizes the fact that this cast must be doable.
      */
-    AbstractProject<?,?> asProject();
+    AbstractProject<?, ?> asProject();
 
     /**
      * {@link BuildWrapper}s associated with this {@link AbstractProject}.
@@ -27,5 +27,5 @@ public interface BuildableItemWithBuildWrappers extends BuildableItem {
      *      can be empty but never null. This list is live, and changes to it will be reflected
      *      to the project configuration.
      */
-    DescribableList<BuildWrapper,Descriptor<BuildWrapper>> getBuildWrappersList();
+    DescribableList<BuildWrapper, Descriptor<BuildWrapper>> getBuildWrappersList();
 }

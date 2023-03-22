@@ -1,28 +1,27 @@
 package hudson.model;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.emptyIterable;
 import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.MatcherAssert.assertThat;
 
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.security.ACL;
 import hudson.security.AuthorizationStrategy;
 import hudson.security.SecurityRealm;
+import java.util.Collection;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.LoggerRule;
 import org.jvnet.hudson.test.TestExtension;
-
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
-import java.util.Collection;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
 
 public class DescriptorVisibilityFilterTest {
 

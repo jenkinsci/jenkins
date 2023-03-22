@@ -1,17 +1,16 @@
 package hudson;
 
+import java.util.Collection;
+import java.util.Map;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.commons.jelly.JellyContext;
 import org.apache.commons.jelly.JellyException;
 import org.apache.commons.jelly.expression.Expression;
 import org.apache.commons.jelly.expression.ExpressionFactory;
 import org.apache.commons.jelly.expression.ExpressionSupport;
 import org.apache.commons.jexl.JexlContext;
-
-import java.util.Collection;
-import java.util.Map;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.springframework.security.access.AccessDeniedException;
@@ -73,14 +72,14 @@ final class ExpressionFactory2 implements ExpressionFactory {
         public Object evaluate(JellyContext context) {
             try {
                 CURRENT_CONTEXT.set(context);
-                JexlContext jexlContext = new JellyJexlContext( context );
+                JexlContext jexlContext = new JellyJexlContext(context);
                 return expression.evaluate(jexlContext);
             } catch (AccessDeniedException e) {
                 // let the security exception pass through
                 throw e;
             } catch (Exception e) {
                 StaplerRequest currentRequest = Stapler.getCurrentRequest();
-                LOGGER.log(Level.WARNING,"Caught exception evaluating: " + expression + " in " + (currentRequest != null ? currentRequest.getOriginalRequestURI() : "?") + ". Reason: " + e, e);
+                LOGGER.log(Level.WARNING, "Caught exception evaluating: " + expression + " in " + (currentRequest != null ? currentRequest.getOriginalRequestURI() : "?") + ". Reason: " + e, e);
                 return null;
             } finally {
                 CURRENT_CONTEXT.set(null);
@@ -94,13 +93,13 @@ final class ExpressionFactory2 implements ExpressionFactory {
         private Map vars;
 
         JellyJexlContext(JellyContext context) {
-            this.vars = new JellyMap( context );
+            this.vars = new JellyMap(context);
         }
 
         @Override
         public void setVars(Map vars) {
             this.vars.clear();
-            this.vars.putAll( vars );
+            this.vars.putAll(vars);
         }
 
         @Override
@@ -120,7 +119,7 @@ final class ExpressionFactory2 implements ExpressionFactory {
 
         @Override
         public Object get(Object key) {
-            return context.getVariable( (String) key );
+            return context.getVariable((String) key);
         }
 
         @Override

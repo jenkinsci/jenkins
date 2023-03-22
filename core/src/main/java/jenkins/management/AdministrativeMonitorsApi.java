@@ -3,15 +3,14 @@ package jenkins.management;
 import hudson.Extension;
 import hudson.model.PageDecorator;
 import hudson.model.RootAction;
+import java.io.IOException;
+import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.verb.GET;
-
-import javax.servlet.ServletException;
-import java.io.IOException;
 
 @Extension
 @Restricted(NoExternalUse.class)

@@ -21,16 +21,16 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.model;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionPoint;
 import hudson.model.Action;
 import hudson.model.Fingerprint;
+import java.util.List;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
-
-import java.util.List;
-import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * Plugin-specific additions to fingerprint information.
@@ -68,7 +68,7 @@ public abstract class FingerprintFacet implements ExtensionPoint {
      *      Timestamp when the use happened (when the facet has been created).
      */
     protected FingerprintFacet(@NonNull Fingerprint fingerprint, long timestamp) {
-        assert fingerprint!=null;
+        assert fingerprint != null;
         this.fingerprint = fingerprint;
         this.timestamp = timestamp;
     }
@@ -118,7 +118,7 @@ public abstract class FingerprintFacet implements ExtensionPoint {
      */
     @Restricted(NoExternalUse.class)
     public void _setOwner(Fingerprint fingerprint) {
-        assert fingerprint!=null;
+        assert fingerprint != null;
         this.fingerprint = fingerprint;
     }
 }

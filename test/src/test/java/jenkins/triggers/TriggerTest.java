@@ -1,6 +1,10 @@
 package jenkins.triggers;
 
-import antlr.ANTLRException;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
+
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.model.BuildableItem;
 import hudson.model.FreeStyleProject;
@@ -9,22 +13,15 @@ import hudson.triggers.SlowTriggerAdminMonitor;
 import hudson.triggers.TimerTrigger;
 import hudson.triggers.Trigger;
 import hudson.triggers.TriggerDescriptor;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.LoggerRule;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
 import org.jvnet.hudson.test.TestExtension;
-
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.MatcherAssert.assertThat;
 
 public class TriggerTest {
 
@@ -66,7 +63,7 @@ public class TriggerTest {
 
         private static final Logger LOGGER = Logger.getLogger(BadTimerTrigger.class.getName());
 
-        BadTimerTrigger(@NonNull final String specs) throws ANTLRException {
+        BadTimerTrigger(@NonNull final String specs) {
             super(specs);
         }
 
@@ -78,7 +75,7 @@ public class TriggerTest {
             }
 
             try {
-                Thread.sleep(Trigger.CRON_THRESHOLD*1000 + 100);
+                Thread.sleep(Trigger.CRON_THRESHOLD * 1000 + 100);
             } catch (Throwable e) {
                 LOGGER.log(Level.WARNING, "Interrupted: ", e);
             }
@@ -92,6 +89,7 @@ public class TriggerTest {
                 return item instanceof BuildableItem;
             }
 
+            @NonNull
             @Override
             public String getDisplayName() {
                 return "Bad";

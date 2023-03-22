@@ -21,18 +21,37 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import hudson.Util;
 import hudson.model.UsageStatistics.CombinedCipherInputStream;
 import hudson.node_monitors.ArchitectureMonitor;
-
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.security.KeyFactory;
+import java.security.interfaces.RSAPrivateKey;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import java.util.zip.GZIPInputStream;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -40,27 +59,6 @@ import org.apache.commons.io.IOUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
-
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.security.KeyFactory;
-import java.security.interfaces.RSAPrivateKey;
-import java.security.spec.PKCS8EncodedKeySpec;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.SortedSet;
-import java.util.TreeSet;
-import java.util.zip.GZIPInputStream;
-
-import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.instanceOf;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertTrue;
-import org.jvnet.hudson.test.TestPluginManager;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -75,23 +73,43 @@ public class UsageStatisticsTest {
      */
     @Test
     public void roundtrip() throws Exception {
-        ((TestPluginManager) j.jenkins.pluginManager).installDetachedPlugin("matrix-auth");
-
         j.createOnlineSlave();
         warmUpNodeMonitorCache();
 
         // key pair for testing
-        String privateKey = "30820276020100300d06092a864886f70d0101010500048202603082025c0201000281810084cababdb38040f659c2cb07a36d758f46e84ebc3d6ba39d967aedf1d396b0788ed3ab868d45ce280b1102b434c2a250ddc3254defe1785ab4f94d7038cf69ecca16753d2de3f6ad8976b3f74902d8634111d730982da74e1a6e3fc0bc3523bba53e45b8a8cbfd0321b94efc9f7fefbe66ad85281e3d0323d87f4426ec51204f0203010001028180784deaacdea8bd31f2d44578601954be3f714b93c2d977dbd76efb8f71303e249ad12dbeb2d2a1192a1d7923a6010768d7e06a3597b3df83de1d5688eb0f0e58c76070eddd696682730c93890dc727564c65dc8416bfbde5aad4eb7a97ed923efb55a291daf3c00810c0e43851298472fd539aab355af8cedcf1e9a0cbead661024100c498375102b068806c71dec838dc8dfa5624fb8a524a49cffadc19d10689a8c9c26db514faba6f96e50a605122abd3c9af16e82f2b7565f384528c9f31ea5947024100aceafd31d7f4872a873c7e5fe88f20c2fb086a053c6970026b3ce364768e2033100efb1ad8f2010fe53454a29decedc23a8a0c8df347742b1f13e11bd3a284b9024100931321470cd0f6cd24d4278bf8e61f9d69b6ef2bf3163a944aa340f91c7ffdf33aeea22b18cc43514af6714a21bb148d6cdca14530a8fa65acd7a8f62bfc9b5f024067452059f8438dc61466488336fce3f00ec483ad04db638dce45daf850e5a8cd5635dc39b87f2fab32940247ec5167ddabe06e870858104500967ac687aa73e102407e3b7997503e18d8d0f094d5e0bd5d57cb93cb39a2fc42cec1ea9a1562786438b61139e45813204d72c919f5397e139ad051d98e4d0f8a06d237f42c0d8440fb";
-        String publicKey = "30819f300d06092a864886f70d010101050003818d003081890281810084cababdb38040f659c2cb07a36d758f46e84ebc3d6ba39d967aedf1d396b0788ed3ab868d45ce280b1102b434c2a250ddc3254defe1785ab4f94d7038cf69ecca16753d2de3f6ad8976b3f74902d8634111d730982da74e1a6e3fc0bc3523bba53e45b8a8cbfd0321b94efc9f7fefbe66ad85281e3d0323d87f4426ec51204f0203010001";
+        String privateKey =
+                "30820276020100300d06092a864886f70d0101010500048202603082025c0201000281810084cababd"
+                    + "b38040f659c2cb07a36d758f46e84ebc3d6ba39d967aedf1d396b0788ed3ab868d45ce280b11"
+                    + "02b434c2a250ddc3254defe1785ab4f94d7038cf69ecca16753d2de3f6ad8976b3f74902d86341"
+                    + "11d730982da74e1a6e3fc0bc3523bba53e45b8a8cbfd0321b94efc9f7fefbe66ad85281e3d0323"
+                    + "d87f4426ec51204f0203010001028180784deaacdea8bd31f2d44578601954be3f714b93c2d977"
+                    + "dbd76efb8f71303e249ad12dbeb2d2a1192a1d7923a6010768d7e06a3597b3df83de1d5688eb0f"
+                    + "0e58c76070eddd696682730c93890dc727564c65dc8416bfbde5aad4eb7a97ed923efb55a291da"
+                    + "f3c00810c0e43851298472fd539aab355af8cedcf1e9a0cbead661024100c498375102b068806c"
+                    + "71dec838dc8dfa5624fb8a524a49cffadc19d10689a8c9c26db514faba6f96e50a605122abd3c9"
+                    + "af16e82f2b7565f384528c9f31ea5947024100aceafd31d7f4872a873c7e5fe88f20c2fb086a05"
+                    + "3c6970026b3ce364768e2033100efb1ad8f2010fe53454a29decedc23a8a0c8df347742b1f13e1"
+                    + "1bd3a284b9024100931321470cd0f6cd24d4278bf8e61f9d69b6ef2bf3163a944aa340f91c7ffd"
+                    + "f33aeea22b18cc43514af6714a21bb148d6cdca14530a8fa65acd7a8f62bfc9b5f024067452059"
+                    + "f8438dc61466488336fce3f00ec483ad04db638dce45daf850e5a8cd5635dc39b87f2fab329402"
+                    + "47ec5167ddabe06e870858104500967ac687aa73e102407e3b7997503e18d8d0f094d5e0bd5d57"
+                    + "cb93cb39a2fc42cec1ea9a1562786438b61139e45813204d72c919f5397e139ad051d98e4d0f8a"
+                    + "06d237f42c0d8440fb";
+        String publicKey =
+                "30819f300d06092a864886f70d010101050003818d003081890281810084cababdb38040f659c2cb07"
+                    + "a36d758f46e84ebc3d6ba39d967aedf1d396b0788ed3ab868d45ce280b1102b434c2a250ddc3"
+                    + "254defe1785ab4f94d7038cf69ecca16753d2de3f6ad8976b3f74902d8634111d730982da74e1a"
+                    + "6e3fc0bc3523bba53e45b8a8cbfd0321b94efc9f7fefbe66ad85281e3d0323d87f4426ec51204f"
+                    + "0203010001";
 
         String data = new UsageStatistics(publicKey).getStatData();
 
         KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-        RSAPrivateKey priv = (RSAPrivateKey)keyFactory.generatePrivate(new PKCS8EncodedKeySpec(Util.fromHexString(privateKey)));
+        RSAPrivateKey priv = (RSAPrivateKey) keyFactory.generatePrivate(new PKCS8EncodedKeySpec(Util.fromHexString(privateKey)));
 
         byte[] cipherText = Base64.getDecoder().decode(data.getBytes(StandardCharsets.UTF_8));
         InputStreamReader r = new InputStreamReader(new GZIPInputStream(
-                new CombinedCipherInputStream(new ByteArrayInputStream(cipherText),priv,"AES")), StandardCharsets.UTF_8);
+                new CombinedCipherInputStream(new ByteArrayInputStream(cipherText), priv, "AES")), StandardCharsets.UTF_8);
         JSONObject o = JSONObject.fromObject(IOUtils.toString(r));
         Jenkins jenkins = j.jenkins;
         // A bit intrusive with UsageStatistics internals, but done to prevent undetected changes
@@ -111,8 +129,8 @@ public class UsageStatisticsTest {
         keys.add("name");
         keys.add("version");
         Set<String> reported = new TreeSet<>();
-        for (JSONObject plugin: plugins) {
-            assertThat(plugin.keySet(), is((Set)keys));
+        for (JSONObject plugin : plugins) {
+            assertThat(plugin.keySet(), is(keys));
             assertThat(plugin.get("name"), instanceOf(String.class));
             assertThat(plugin.get("version"), instanceOf(String.class));
             String name = plugin.getString("name");
@@ -167,7 +185,7 @@ public class UsageStatisticsTest {
     private void compareWithFile(String fileName, Object object) throws IOException, URISyntaxException {
 
         Class clazz = this.getClass();
-        String fileContent = new String(Files.readAllBytes(Paths.get(clazz.getResource(clazz.getSimpleName() + "/" + fileName).toURI())), StandardCharsets.UTF_8);
+        String fileContent = Files.readString(Paths.get(clazz.getResource(clazz.getSimpleName() + "/" + fileName).toURI()), StandardCharsets.UTF_8);
         fileContent = fileContent.replace("JVMVENDOR", System.getProperty("java.vm.vendor"));
         fileContent = fileContent.replace("JVMNAME", System.getProperty("java.vm.name"));
         fileContent = fileContent.replace("JVMVERSION", System.getProperty("java.version"));

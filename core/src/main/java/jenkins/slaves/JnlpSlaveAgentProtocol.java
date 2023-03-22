@@ -4,9 +4,10 @@ import jenkins.security.HMACConfidentialKey;
 
 /**
  * This class was part of the old JNLP1 protocol, which has been removed.
- * The {@code SLAVE_SECRET} was still used by some plugins. It has been moved to
- * JnlpAgentReceiver as a more suitable location, but this alias retained
+ * The {@link #SLAVE_SECRET} was still used by some plugins. It has been moved to
+ * {@link JnlpAgentReceiver} as a more suitable location, but this alias retained
  * for compatibility. References should be updated to the new location.
+ * @deprecated use {@link JnlpAgentReceiver#SLAVE_SECRET}
  */
 @Deprecated
 public class JnlpSlaveAgentProtocol {

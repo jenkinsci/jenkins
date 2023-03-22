@@ -24,6 +24,7 @@
 
 package jenkins.model;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.model.PersistentDescriptor;
 import hudson.util.DescribableList;
@@ -32,27 +33,25 @@ import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.StaplerRequest;
 
-import edu.umd.cs.findbugs.annotations.NonNull;
-
 /**
  * List of configured {@link ArtifactManagerFactory}s.
  * @since 1.532
  */
 @Extension @Symbol("artifactManager")
 public class ArtifactManagerConfiguration extends GlobalConfiguration implements PersistentDescriptor {
-    
+
     public static @NonNull ArtifactManagerConfiguration get() {
         return GlobalConfiguration.all().getInstance(ArtifactManagerConfiguration.class);
     }
 
-    private final DescribableList<ArtifactManagerFactory,ArtifactManagerFactoryDescriptor> artifactManagerFactories = new DescribableList<>(this);
+    private final DescribableList<ArtifactManagerFactory, ArtifactManagerFactoryDescriptor> artifactManagerFactories = new DescribableList<>(this);
 
     private Object readResolve() {
         artifactManagerFactories.setOwner(this);
         return this;
     }
 
-    public DescribableList<ArtifactManagerFactory,ArtifactManagerFactoryDescriptor> getArtifactManagerFactories() {
+    public DescribableList<ArtifactManagerFactory, ArtifactManagerFactoryDescriptor> getArtifactManagerFactories() {
         return artifactManagerFactories;
     }
 

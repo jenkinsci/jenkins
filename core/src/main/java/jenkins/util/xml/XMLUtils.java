@@ -1,24 +1,18 @@
 package jenkins.util.xml;
 
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.InvalidPathException;
-import jenkins.util.SystemProperties;
-import org.w3c.dom.Document;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
-import org.xml.sax.helpers.XMLReaderFactory;
-
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
-import edu.umd.cs.findbugs.annotations.NonNull;
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -34,6 +28,12 @@ import javax.xml.transform.stream.StreamSource;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
+import jenkins.util.SystemProperties;
+import org.w3c.dom.Document;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
+import org.xml.sax.helpers.XMLReaderFactory;
 
 /**
   * Utilities useful when working with various XML types.
@@ -110,6 +110,7 @@ public final class XMLUtils {
      * @throws IOException Error reading from the steam.
      * @since 2.265
      */
+    @SuppressFBWarnings(value = "XXE_DOCUMENT", justification = "newDocumentBuilderFactory() does what FindSecBugs recommends, yet FindSecBugs cannot see this")
     public static @NonNull Document parse(@NonNull InputStream stream) throws SAXException, IOException {
         DocumentBuilder docBuilder;
 
@@ -134,6 +135,7 @@ public final class XMLUtils {
      * @throws IOException Error reading from the steam.
      * @since 2.0
      */
+    @SuppressFBWarnings(value = "XXE_DOCUMENT", justification = "newDocumentBuilderFactory() does what FindSecBugs recommends, yet FindSecBugs cannot see this")
     public static @NonNull Document parse(@NonNull Reader stream) throws SAXException, IOException {
         DocumentBuilder docBuilder;
 
@@ -265,6 +267,7 @@ public final class XMLUtils {
 
         return documentBuilderFactory;
     }
+
     private static void setDocumentBuilderFactoryFeature(DocumentBuilderFactory documentBuilderFactory, String feature, boolean state) {
         try {
             documentBuilderFactory.setFeature(feature, state);

@@ -2750,7 +2750,7 @@ version: 2.9.0
                     https://bugzilla.mozilla.org/show_bug.cgi?id=1370630
                     In the mean time, we should not make a redundant call to "submit",
                     because it leads to the form being submitted twice in some cases:
-                    https://issues.jenkins-ci.org/browse/JENKINS-58296
+                    https://issues.jenkins.io/browse/JENKINS-58296
                     TODO: once we know the exact Firefox version which will change this
                     behavior, we should add a "UA.gecko >= XX" condition and call "submit".
                 */

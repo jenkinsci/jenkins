@@ -22,12 +22,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:f="/lib/form">
   <st:documentation>
     Foldable block expanded when the corresponding item is selected in the drop-down list.
 
-    <st:attribute name="value" use="required">
-      value of the list item. set to &lt;option value="...">
+    <st:attribute name="value" use="required"> <![CDATA[
+      value of the list item. set to <option value="...">
+    ]]>
     </st:attribute>
     <st:attribute name="title" use="required">
       human readable text displayed for this list item.
@@ -39,9 +40,10 @@ THE SOFTWARE.
       provide hint for stapler data binding.
       typically set to ${descriptor.clazz.name} if dropdownList is for a list of descriptors.
     </st:attribute>
-    <st:attribute name="lazy">
+    <st:attribute name="lazy"> <![CDATA[
       If specified, the content of the dropdownListBlock will be rendered lazily when it first becomes visible.
-      The attribute value must be the variables to be captured. See the @capture of &lt;renderOnDemand> tag.
+      The attribute value must be the variables to be captured. See the @capture of <renderOnDemand> tag.
+    ]]>
     </st:attribute>
   </st:documentation>
   <j:choose>

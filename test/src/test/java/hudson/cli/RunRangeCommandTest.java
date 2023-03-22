@@ -24,25 +24,23 @@
 
 package hudson.cli;
 
-import hudson.Extension;
-import hudson.model.FreeStyleProject;
-import hudson.model.Item;
-import hudson.model.Run;
-import jenkins.model.Jenkins;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.jvnet.hudson.test.JenkinsRule;
-
-import java.util.List;
-
 import static hudson.cli.CLICommandInvoker.Matcher.failedWith;
 import static hudson.cli.CLICommandInvoker.Matcher.hasNoStandardOutput;
 import static hudson.cli.CLICommandInvoker.Matcher.succeeded;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.not;
+
+import hudson.Extension;
+import hudson.model.FreeStyleProject;
+import hudson.model.Item;
+import hudson.model.Run;
+import java.util.List;
+import jenkins.model.Jenkins;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import org.junit.Test;
+import org.jvnet.hudson.test.JenkinsRule;
 
 /**
  * @author pjanouse
@@ -55,15 +53,15 @@ public class RunRangeCommandTest {
     private static final String PROJECT_NAME = "aProject";
     private static final int BUILDS = 10;
 
-    private static final int[] deleted = {5,8,9};
+    private static final int[] deleted = {5, 8, 9};
 
     @ClassRule public static final JenkinsRule j = new JenkinsRule();
 
     @BeforeClass public static void setUpClass() throws Exception {
         command = new CLICommandInvoker(j,  new DummyRangeCommand());
         project = j.createFreeStyleProject(PROJECT_NAME);
-        for (int i=0; i<BUILDS; i++) {
-            assertThat(project.scheduleBuild2(0).get(), not(equalTo(null)));
+        for (int i = 0; i < BUILDS; i++) {
+            j.buildAndAssertSuccess(project);
         }
         assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds().size(),
                 equalTo(BUILDS));
@@ -116,15 +114,15 @@ public class RunRangeCommandTest {
     @Test public void dummyRangeShouldSuccessIfBuildDoesNotExist() {
         CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ, Item.READ)
-                .invokeWithArgs(PROJECT_NAME, String.valueOf(BUILDS+1));
+                .invokeWithArgs(PROJECT_NAME, String.valueOf(BUILDS + 1));
         assertThat(result, succeeded());
-        assertThat(result.stdout(), containsString("Builds: "+System.lineSeparator()));
+        assertThat(result.stdout(), containsString("Builds: " + System.lineSeparator()));
 
         result = command
                 .authorizedTo(Jenkins.READ, Item.READ)
                 .invokeWithArgs(PROJECT_NAME, String.valueOf(deleted[0]));
         assertThat(result, succeeded());
-        assertThat(result.stdout(), containsString("Builds: "+System.lineSeparator()));
+        assertThat(result.stdout(), containsString("Builds: " + System.lineSeparator()));
     }
 
     @Test public void dummyRangeNumberSingleShouldSuccess() {
@@ -133,28 +131,28 @@ public class RunRangeCommandTest {
                 .authorizedTo(Jenkins.READ, Item.READ)
                 .invokeWithArgs(PROJECT_NAME, "1");
         assertThat(result, succeeded());
-        assertThat(result.stdout(), containsString("Builds: 1"+System.lineSeparator()));
+        assertThat(result.stdout(), containsString("Builds: 1" + System.lineSeparator()));
 
         // First with plus symbol '+'
         result = command
                 .authorizedTo(Jenkins.READ, Item.READ)
                 .invokeWithArgs(PROJECT_NAME, "+1");
         assertThat(result, succeeded());
-        assertThat(result.stdout(), containsString("Builds: 1"+System.lineSeparator()));
+        assertThat(result.stdout(), containsString("Builds: 1" + System.lineSeparator()));
 
         // In the middle
         result = command
                 .authorizedTo(Jenkins.READ, Item.READ)
                 .invokeWithArgs(PROJECT_NAME, "10");
         assertThat(result, succeeded());
-        assertThat(result.stdout(), containsString("Builds: 10"+System.lineSeparator()));
+        assertThat(result.stdout(), containsString("Builds: 10" + System.lineSeparator()));
 
         // In the middle with plus symbol '+'
         result = command
                 .authorizedTo(Jenkins.READ, Item.READ)
                 .invokeWithArgs(PROJECT_NAME, "+10");
         assertThat(result, succeeded());
-        assertThat(result.stdout(), containsString("Builds: 10"+System.lineSeparator()));
+        assertThat(result.stdout(), containsString("Builds: 10" + System.lineSeparator()));
 
         // Last
         result = command
@@ -162,7 +160,7 @@ public class RunRangeCommandTest {
                 .invokeWithArgs(PROJECT_NAME, String.valueOf(BUILDS));
         assertThat(result, succeeded());
         assertThat(result.stdout(),
-                containsString(String.format("Builds: %s"+System.lineSeparator(), BUILDS)));
+                containsString(String.format("Builds: %s" + System.lineSeparator(), BUILDS)));
 
         // Last with the plus symbol '+'
         result = command
@@ -170,7 +168,7 @@ public class RunRangeCommandTest {
                 .invokeWithArgs(PROJECT_NAME, '+' + String.valueOf(BUILDS));
         assertThat(result, succeeded());
         assertThat(result.stdout(),
-                containsString(String.format("Builds: %s"+System.lineSeparator(), BUILDS)));
+                containsString(String.format("Builds: %s" + System.lineSeparator(), BUILDS)));
     }
 
     @Test public void dummyRangeNumberSingleShouldSuccessIfBuildNumberIsZero() {
@@ -178,13 +176,13 @@ public class RunRangeCommandTest {
                 .authorizedTo(Jenkins.READ, Item.READ)
                 .invokeWithArgs(PROJECT_NAME, "0");
         assertThat(result, succeeded());
-        assertThat(result.stdout(), containsString("Builds: "+System.lineSeparator()));
+        assertThat(result.stdout(), containsString("Builds: " + System.lineSeparator()));
 
         result = command
                 .authorizedTo(Jenkins.READ, Item.READ)
                 .invokeWithArgs(PROJECT_NAME, "+0");
         assertThat(result, succeeded());
-        assertThat(result.stdout(), containsString("Builds: "+System.lineSeparator()));
+        assertThat(result.stdout(), containsString("Builds: " + System.lineSeparator()));
     }
 
     @Test public void dummyRangeNumberSingleShouldFailIfBuildNumberIsNegative() {
@@ -226,7 +224,7 @@ public class RunRangeCommandTest {
                 .authorizedTo(Jenkins.READ, Item.READ)
                 .invokeWithArgs(PROJECT_NAME, "");
         assertThat(result, succeeded());
-        assertThat(result.stdout(), containsString("Builds: "+System.lineSeparator()));
+        assertThat(result.stdout(), containsString("Builds: " + System.lineSeparator()));
     }
 
     @Test public void dummyRangeNumberSingleShouldFailIfBuildNumberIsSpace() {
@@ -243,7 +241,7 @@ public class RunRangeCommandTest {
                 .authorizedTo(Jenkins.READ, Item.READ)
                 .invokeWithArgs(PROJECT_NAME, ",");
         assertThat(result, succeeded());
-        assertThat(result.stdout(), containsString("Builds: "+System.lineSeparator()));
+        assertThat(result.stdout(), containsString("Builds: " + System.lineSeparator()));
     }
 
     @Test public void dummyRangeNumberSingleShouldFailIfBuildNumberIsHyphen() {
@@ -260,60 +258,60 @@ public class RunRangeCommandTest {
                 .authorizedTo(Jenkins.READ, Item.READ)
                 .invokeWithArgs(PROJECT_NAME, "1,2");
         assertThat(result, succeeded());
-        assertThat(result.stdout(), containsString("Builds: 1,2"+System.lineSeparator()));
+        assertThat(result.stdout(), containsString("Builds: 1,2" + System.lineSeparator()));
 
         // With plus symbol '+'
         result = command
                 .authorizedTo(Jenkins.READ, Item.READ)
                 .invokeWithArgs(PROJECT_NAME, "1,+2,4");
         assertThat(result, succeeded());
-        assertThat(result.stdout(), containsString("Builds: 1,2,4"+System.lineSeparator()));
+        assertThat(result.stdout(), containsString("Builds: 1,2,4" + System.lineSeparator()));
 
         // Build specified twice
         result = command
                 .authorizedTo(Jenkins.READ, Item.READ)
                 .invokeWithArgs(PROJECT_NAME, "1,1");
         assertThat(result, succeeded());
-        assertThat(result.stdout(), containsString("Builds: 1,1"+System.lineSeparator()));
+        assertThat(result.stdout(), containsString("Builds: 1,1" + System.lineSeparator()));
 
         // Build with zero build number
         result = command
                 .authorizedTo(Jenkins.READ, Item.READ)
                 .invokeWithArgs(PROJECT_NAME, "0,1,2");
         assertThat(result, succeeded());
-        assertThat(result.stdout(), containsString("Builds: 1,2"+System.lineSeparator()));
+        assertThat(result.stdout(), containsString("Builds: 1,2" + System.lineSeparator()));
 
         result = command
                 .authorizedTo(Jenkins.READ, Item.READ)
                 .invokeWithArgs(PROJECT_NAME, "1,0,2");
         assertThat(result, succeeded());
-        assertThat(result.stdout(), containsString("Builds: 1,2"+System.lineSeparator()));
+        assertThat(result.stdout(), containsString("Builds: 1,2" + System.lineSeparator()));
 
         result = command
                 .authorizedTo(Jenkins.READ, Item.READ)
                 .invokeWithArgs(PROJECT_NAME, "1,2,0");
         assertThat(result, succeeded());
-        assertThat(result.stdout(), containsString("Builds: 1,2"+System.lineSeparator()));
+        assertThat(result.stdout(), containsString("Builds: 1,2" + System.lineSeparator()));
     }
 
     @Test public void dummyRangeNumberMultiShouldSuccessIfSomeBuildDoesNotExist() {
         CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ, Item.READ)
-                .invokeWithArgs(PROJECT_NAME, "1,2,"+deleted[0]);
+                .invokeWithArgs(PROJECT_NAME, "1,2," + deleted[0]);
         assertThat(result, succeeded());
-        assertThat(result.stdout(), containsString("Builds: 1,2"+System.lineSeparator()));
+        assertThat(result.stdout(), containsString("Builds: 1,2" + System.lineSeparator()));
 
         result = command
                 .authorizedTo(Jenkins.READ, Item.READ)
-                .invokeWithArgs(PROJECT_NAME, String.format("1,%d,%d", deleted[0], deleted[0]+1));
+                .invokeWithArgs(PROJECT_NAME, String.format("1,%d,%d", deleted[0], deleted[0] + 1));
         assertThat(result, succeeded());
-        assertThat(result.stdout(), containsString(String.format("Builds: 1,%d"+System.lineSeparator(), deleted[0]+1)));
+        assertThat(result.stdout(), containsString(String.format("Builds: 1,%d" + System.lineSeparator(), deleted[0] + 1)));
 
         result = command
                 .authorizedTo(Jenkins.READ, Item.READ)
-                .invokeWithArgs(PROJECT_NAME, String.format("%d,%d,%d", deleted[0]-1, deleted[0], deleted[0]+1));
+                .invokeWithArgs(PROJECT_NAME, String.format("%d,%d,%d", deleted[0] - 1, deleted[0], deleted[0] + 1));
         assertThat(result, succeeded());
-        assertThat(result.stdout(), containsString(String.format("Builds: %d,%d"+System.lineSeparator(), deleted[0]-1, deleted[0]+1)));
+        assertThat(result.stdout(), containsString(String.format("Builds: %d,%d" + System.lineSeparator(), deleted[0] - 1, deleted[0] + 1)));
     }
 
     @Test public void dummyRangeNumberMultiShouldFailIfBuildNumberIsNegative() {
@@ -503,29 +501,29 @@ public class RunRangeCommandTest {
                 .authorizedTo(Jenkins.READ, Item.READ)
                 .invokeWithArgs(PROJECT_NAME, "1-2");
         assertThat(result, succeeded());
-        assertThat(result.stdout(), containsString("Builds: 1,2"+System.lineSeparator()));
+        assertThat(result.stdout(), containsString("Builds: 1,2" + System.lineSeparator()));
 
         result = command
                 .authorizedTo(Jenkins.READ, Item.READ)
                 .invokeWithArgs(PROJECT_NAME, "+1-+2");
         assertThat(result, succeeded());
-        assertThat(result.stdout(), containsString("Builds: 1,2"+System.lineSeparator()));
+        assertThat(result.stdout(), containsString("Builds: 1,2" + System.lineSeparator()));
 
         result = command
                 .authorizedTo(Jenkins.READ, Item.READ)
                 .invokeWithArgs(PROJECT_NAME, "1-1");
         assertThat(result, succeeded());
-        assertThat(result.stdout(), containsString("Builds: 1"+System.lineSeparator()));
+        assertThat(result.stdout(), containsString("Builds: 1" + System.lineSeparator()));
 
         result = command
                 .authorizedTo(Jenkins.READ, Item.READ)
                 .invokeWithArgs(PROJECT_NAME, "+1-+1");
         assertThat(result, succeeded());
-        assertThat(result.stdout(), containsString("Builds: 1"+System.lineSeparator()));
+        assertThat(result.stdout(), containsString("Builds: 1" + System.lineSeparator()));
 
         result = command
                 .authorizedTo(Jenkins.READ, Item.READ)
-                .invokeWithArgs(PROJECT_NAME, "1-"+deleted[0]);
+                .invokeWithArgs(PROJECT_NAME, "1-" + deleted[0]);
         assertThat(result, succeeded());
         String builds = "";
         boolean next = false;
@@ -535,69 +533,69 @@ public class RunRangeCommandTest {
             builds += i;
             next = true;
         }
-        assertThat(result.stdout(), containsString("Builds: "+builds+System.lineSeparator()));
+        assertThat(result.stdout(), containsString("Builds: " + builds + System.lineSeparator()));
 
         result = command
                 .authorizedTo(Jenkins.READ, Item.READ)
-                .invokeWithArgs(PROJECT_NAME, "+1-+"+deleted[0]);
+                .invokeWithArgs(PROJECT_NAME, "+1-+" + deleted[0]);
         assertThat(result, succeeded());
-        assertThat(result.stdout(), containsString("Builds: "+builds+System.lineSeparator()));
+        assertThat(result.stdout(), containsString("Builds: " + builds + System.lineSeparator()));
 
         result = command
                 .authorizedTo(Jenkins.READ, Item.READ)
                 .invokeWithArgs(PROJECT_NAME, "0-1");
         assertThat(result, succeeded());
-        assertThat(result.stdout(), containsString("Builds: 1"+System.lineSeparator()));
+        assertThat(result.stdout(), containsString("Builds: 1" + System.lineSeparator()));
 
         result = command
                 .authorizedTo(Jenkins.READ, Item.READ)
                 .invokeWithArgs(PROJECT_NAME, "+0-+1");
         assertThat(result, succeeded());
-        assertThat(result.stdout(), containsString("Builds: 1"+System.lineSeparator()));
+        assertThat(result.stdout(), containsString("Builds: 1" + System.lineSeparator()));
 
         result = command
                 .authorizedTo(Jenkins.READ, Item.READ)
                 .invokeWithArgs(PROJECT_NAME, "0-2");
         assertThat(result, succeeded());
-        assertThat(result.stdout(), containsString("Builds: 1,2"+System.lineSeparator()));
+        assertThat(result.stdout(), containsString("Builds: 1,2" + System.lineSeparator()));
 
         result = command
                 .authorizedTo(Jenkins.READ, Item.READ)
                 .invokeWithArgs(PROJECT_NAME, "+0-+2");
         assertThat(result, succeeded());
-        assertThat(result.stdout(), containsString("Builds: 1,2"+System.lineSeparator()));
+        assertThat(result.stdout(), containsString("Builds: 1,2" + System.lineSeparator()));
 
         result = command
                 .authorizedTo(Jenkins.READ, Item.READ)
                 .invokeWithArgs(PROJECT_NAME, "0-0");
         assertThat(result, succeeded());
-        assertThat(result.stdout(), containsString("Builds: "+System.lineSeparator()));
+        assertThat(result.stdout(), containsString("Builds: " + System.lineSeparator()));
 
         result = command
                 .authorizedTo(Jenkins.READ, Item.READ)
                 .invokeWithArgs(PROJECT_NAME, "+0-+0");
         assertThat(result, succeeded());
-        assertThat(result.stdout(), containsString("Builds: "+System.lineSeparator()));
+        assertThat(result.stdout(), containsString("Builds: " + System.lineSeparator()));
     }
 
     @Test public void dummyRangeRangeSingleShouldSuccessIfSomeBuildDoesNotExist() {
         CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ, Item.READ)
-                .invokeWithArgs(PROJECT_NAME, String.format("%d-%d", deleted[0], deleted[0]+1));
+                .invokeWithArgs(PROJECT_NAME, String.format("%d-%d", deleted[0], deleted[0] + 1));
         assertThat(result, succeeded());
-        assertThat(result.stdout(), containsString(String.format("Builds: %d"+System.lineSeparator(), deleted[0] + 1)));
+        assertThat(result.stdout(), containsString(String.format("Builds: %d" + System.lineSeparator(), deleted[0] + 1)));
 
         result = command
                 .authorizedTo(Jenkins.READ, Item.READ)
-                .invokeWithArgs(PROJECT_NAME, String.format("%d-%d", deleted[0]-1, deleted[0]+1));
+                .invokeWithArgs(PROJECT_NAME, String.format("%d-%d", deleted[0] - 1, deleted[0] + 1));
         assertThat(result, succeeded());
-        assertThat(result.stdout(), containsString(String.format("Builds: %d,%d"+System.lineSeparator(), deleted[0]-1, deleted[0]+1)));
+        assertThat(result.stdout(), containsString(String.format("Builds: %d,%d" + System.lineSeparator(), deleted[0] - 1, deleted[0] + 1)));
 
         result = command
                 .authorizedTo(Jenkins.READ, Item.READ)
-                .invokeWithArgs(PROJECT_NAME, String.format("%d-%d", deleted[0]-1, deleted[0]));
+                .invokeWithArgs(PROJECT_NAME, String.format("%d-%d", deleted[0] - 1, deleted[0]));
         assertThat(result, succeeded());
-        assertThat(result.stdout(), containsString(String.format("Builds: %d"+System.lineSeparator(), deleted[0]-1)));
+        assertThat(result.stdout(), containsString(String.format("Builds: %d" + System.lineSeparator(), deleted[0] - 1)));
     }
 
     @Test public void dummyRangeRangeSingleShouldFailIfBuildRangeContainsZeroAndNegative() {
@@ -954,25 +952,25 @@ public class RunRangeCommandTest {
                 .authorizedTo(Jenkins.READ, Item.READ)
                 .invokeWithArgs(PROJECT_NAME, "1-2,3-4");
         assertThat(result, succeeded());
-        assertThat(result.stdout(), containsString("Builds: 1,2,3,4"+System.lineSeparator()));
+        assertThat(result.stdout(), containsString("Builds: 1,2,3,4" + System.lineSeparator()));
 
         result = command
                 .authorizedTo(Jenkins.READ, Item.READ)
                 .invokeWithArgs(PROJECT_NAME, "1-3,3-4");
         assertThat(result, succeeded());
-        assertThat(result.stdout(), containsString("Builds: 1,2,3,3,4"+System.lineSeparator()));
+        assertThat(result.stdout(), containsString("Builds: 1,2,3,3,4" + System.lineSeparator()));
 
         result = command
                 .authorizedTo(Jenkins.READ, Item.READ)
                 .invokeWithArgs(PROJECT_NAME, "1-4,2-3");
         assertThat(result, succeeded());
-        assertThat(result.stdout(), containsString("Builds: 1,2,3,4,2,3"+System.lineSeparator()));
+        assertThat(result.stdout(), containsString("Builds: 1,2,3,4,2,3" + System.lineSeparator()));
 
         result = command
                 .authorizedTo(Jenkins.READ, Item.READ)
                 .invokeWithArgs(PROJECT_NAME, "1-2,4-5");
         assertThat(result, succeeded());
-        assertThat(result.stdout(), containsString("Builds: 1,2,4"+System.lineSeparator()));
+        assertThat(result.stdout(), containsString("Builds: 1,2,4" + System.lineSeparator()));
     }
 
     @Extension

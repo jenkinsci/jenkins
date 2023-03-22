@@ -1,11 +1,14 @@
 package jenkins.model;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.Extension;
 import hudson.RestrictedSince;
 import hudson.model.Descriptor;
 import hudson.model.RootAction;
 import hudson.slaves.Cloud;
 import hudson.util.FormApply;
+import java.io.IOException;
+import javax.servlet.ServletException;
 import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
@@ -13,10 +16,6 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.verb.POST;
-
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import javax.servlet.ServletException;
-import java.io.IOException;
 
 /**
  * Provides a configuration form for {@link Jenkins#clouds}.
@@ -50,7 +49,7 @@ public class GlobalCloudConfiguration implements RootAction {
     public void doConfigure(StaplerRequest req, StaplerResponse rsp) throws Descriptor.FormException, IOException, ServletException {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         JSONObject json = req.getSubmittedForm();
-        Jenkins.get().clouds.rebuildHetero(req,json, Cloud.all(), "cloud");
+        Jenkins.get().clouds.rebuildHetero(req, json, Cloud.all(), "cloud");
         FormApply.success(req.getContextPath() + "/manage").generateResponse(req, rsp, null);
     }
 }

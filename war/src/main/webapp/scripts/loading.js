@@ -22,42 +22,47 @@
  * THE SOFTWARE.
  */
 const Fetch = {
-    get: function (url, callback) {
-        const xhr = new XMLHttpRequest();
-        xhr.open('GET', url, true);
-        xhr.onload = function () {
-            const status = xhr.status;
-            if(callback) {
-                callback(null, status);
-            }
-        };
-        xhr.onerror = function(){
-            const message = xhr.responseText;
-            const status = xhr.status;
-            if(callback) {
-                callback(message, status);
-            }
-        };
-        xhr.send();
-    }
+  get: function (url, callback) {
+    const xhr = new XMLHttpRequest();
+    xhr.open("GET", url, true);
+    xhr.onload = function () {
+      const status = xhr.status;
+      if (callback) {
+        callback(null, status);
+      }
+    };
+    xhr.onerror = function () {
+      const message = xhr.responseText;
+      const status = xhr.status;
+      if (callback) {
+        callback(message, status);
+      }
+    };
+    xhr.send();
+  },
 };
 
-function safeRedirector(url) {
-    const timeout = 5000;
-    window.setTimeout(function() {
-        const statusChecker = arguments.callee;
-        Fetch.get(url, function(error, status) {
-            if((status >= 502 && status <= 504) || status === 0) {
-                window.setTimeout(statusChecker, timeout)
-            } else {
-                window.location.replace(url);
-            }
-            if(error) {
-                console.error(error);
-            }
-        })
-    }, timeout);
+function safeRedirector(preferredUrl, fallbackUrl) {
+  const timeout = 5000;
+  window.setTimeout(function () {
+    const statusChecker = arguments.callee;
+    Fetch.get(preferredUrl, function (error, status) {
+      if ((status >= 502 && status <= 504) || status === 0) {
+        window.setTimeout(statusChecker, timeout);
+      } else {
+        if (status === 404) {
+          // Perhaps anonymous has Overall/Read but lacks other permissions (e.g. Item/Read+Discover), so go to root URL
+          window.location.replace(fallbackUrl);
+        } else {
+          window.location.replace(preferredUrl);
+        }
+      }
+      if (error) {
+        console.error(error);
+      }
+    });
+  }, timeout);
 }
 
 const rootUrl = document.head.getAttribute("data-rooturl");
-safeRedirector(rootUrl + '/');
+safeRedirector(window.location.href, rootUrl + "/");

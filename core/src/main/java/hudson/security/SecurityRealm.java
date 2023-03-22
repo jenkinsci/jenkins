@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,8 +21,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.security;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.ExtensionPoint;
@@ -35,10 +37,10 @@ import hudson.security.captcha.CaptchaSupport;
 import hudson.util.DescriptorList;
 import hudson.util.PluginServletFilter;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -49,10 +51,10 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpSession;
 import jenkins.model.IdStrategy;
 import jenkins.model.Jenkins;
-import jenkins.util.SystemProperties;
 import jenkins.security.AcegiSecurityExceptionFilter;
-import jenkins.security.BasicHeaderProcessor;
 import jenkins.security.AuthenticationSuccessHandler;
+import jenkins.security.BasicHeaderProcessor;
+import jenkins.util.SystemProperties;
 import net.sf.json.JSONObject;
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
@@ -78,8 +80,8 @@ import org.springframework.security.web.authentication.RememberMeServices;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
 import org.springframework.security.web.authentication.rememberme.AbstractRememberMeServices;
 import org.springframework.security.web.authentication.rememberme.RememberMeAuthenticationFilter;
-import org.springframework.security.web.authentication.www.BasicAuthenticationEntryPoint;
 import org.springframework.security.web.authentication.session.SessionFixationProtectionStrategy;
+import org.springframework.security.web.authentication.www.BasicAuthenticationEntryPoint;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 
 /**
@@ -272,7 +274,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
      * @return
      *      never null.
      * @since 2.266
-     * @see #doLogout(StaplerRequest, StaplerResponse) 
+     * @see #doLogout(StaplerRequest, StaplerResponse)
      */
     protected String getPostLogOutUrl2(StaplerRequest req, Authentication auth) {
         if (Util.isOverridden(SecurityRealm.class, getClass(), "getPostLogOutUrl", StaplerRequest.class, org.acegisecurity.Authentication.class) && !insideGetPostLogOutUrl.get()) {
@@ -283,8 +285,9 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
                 insideGetPostLogOutUrl.set(false);
             }
         }
-        return req.getContextPath()+"/";
+        return req.getContextPath() + "/";
     }
+
     private static final ThreadLocal<Boolean> insideGetPostLogOutUrl = ThreadLocal.withInitial(() -> false);
 
     /**
@@ -319,7 +322,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
      */
     public void doLogout(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         HttpSession session = req.getSession(false);
-        if(session!=null)
+        if (session != null)
             session.invalidate();
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         SecurityContextHolder.clearContext();
@@ -328,7 +331,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
         resetRememberMeCookie(req, rsp, contextPath);
         clearStaleSessionCookies(req, rsp, contextPath);
 
-        rsp.sendRedirect2(getPostLogOutUrl2(req,auth));
+        rsp.sendRedirect2(getPostLogOutUrl2(req, auth));
     }
 
     private void resetRememberMeCookie(StaplerRequest req, StaplerResponse rsp, String contextPath) {
@@ -388,16 +391,16 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
      */
     public boolean allowsSignup() {
         Class clz = getClass();
-        return clz.getClassLoader().getResource(clz.getName().replace('.','/')+"/signup.jelly")!=null;
+        return clz.getClassLoader().getResource(clz.getName().replace('.', '/') + "/signup.jelly") != null;
     }
 
     /**
      * Shortcut for {@link UserDetailsService#loadUserByUsername(String)}.
      *
-     * @throws UserMayOrMayNotExistException2
-     *      If the security realm cannot even tell if the user exists or not.
      * @return
      *      never null.
+     * @throws UserMayOrMayNotExistException2
+     *      If the security realm cannot even tell if the user exists or not.
      * @since 2.266
      */
     public UserDetails loadUserByUsername2(String username) throws UsernameNotFoundException {
@@ -572,7 +575,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
      */
     public Filter createFilter(FilterConfig filterConfig) {
         LOGGER.entering(SecurityRealm.class.getName(), "createFilter");
-        
+
         SecurityComponents sc = getSecurityComponents();
         List<Filter> filters = new ArrayList<>();
         {
@@ -613,7 +616,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
 
     protected final List<Filter> commonFilters() {
         // like Jenkins.ANONYMOUS:
-        AnonymousAuthenticationFilter apf = new AnonymousAuthenticationFilter("anonymous", "anonymous", Collections.singletonList(new SimpleGrantedAuthority("anonymous")));
+        AnonymousAuthenticationFilter apf = new AnonymousAuthenticationFilter("anonymous", "anonymous", List.of(new SimpleGrantedAuthority("anonymous")));
         ExceptionTranslationFilter etf = new ExceptionTranslationFilter(new HudsonAuthenticationEntryPoint("/" + getLoginUrl() + "?from={0}"));
         etf.setAccessDeniedHandler(new AccessDeniedHandlerImpl());
         UnwrapSecurityExceptionFilter usef = new UnwrapSecurityExceptionFilter();
@@ -636,7 +639,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
      */
     @Restricted(DoNotUse.class)
     public static String getFrom() {
-        String from = null, returnValue = null;
+        String from = null;
         final StaplerRequest request = Stapler.getCurrentRequest();
 
         // Try to obtain a return point from the query parameter
@@ -658,11 +661,9 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
         // If deduced entry point isn't deduced yet or the content is a blank value
         // use the root web point "/" as a fallback
         from = StringUtils.defaultIfBlank(from, "/").trim();
-        
+
         // Encode the return value
-        try {
-            returnValue = java.net.URLEncoder.encode(from, "UTF-8");
-        } catch (UnsupportedEncodingException e) { }
+        String returnValue = URLEncoder.encode(from, StandardCharsets.UTF_8);
 
         // Return encoded value or at least "/" in the case exception occurred during encode()
         // or if the encoded content is blank value
@@ -707,20 +708,21 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
         private Object readResolve() {
             return NO_AUTHENTICATION;
         }
-        
-        @Extension(ordinal=-100)
+
+        @Extension(ordinal = -100)
         @Symbol("none")
         public static class DescriptorImpl extends Descriptor<SecurityRealm> {
 
+            @NonNull
             @Override
             public String getDisplayName() {
                 return Messages.NoneSecurityRealm_DisplayName();
             }
-            
+
             @Override
             public SecurityRealm newInstance(StaplerRequest req, JSONObject formData) throws Descriptor.FormException {
                 return NO_AUTHENTICATION;
-            }    
+            }
         }
     }
 
@@ -731,7 +733,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
      * <p>
      * None of the fields are ever null.
      *
-     * @see SecurityRealm#createSecurityComponents() 
+     * @see SecurityRealm#createSecurityComponents()
      */
     public static final class SecurityComponents {
         /**
@@ -774,7 +776,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
         public SecurityComponents(AuthenticationManager manager) {
             // we use UserDetailsServiceProxy here just as an implementation that fails all the time,
             // not as a proxy. No one is supposed to use this as a proxy.
-            this(manager,new UserDetailsServiceProxy());
+            this(manager, new UserDetailsServiceProxy());
         }
 
         /**
@@ -789,7 +791,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
          * @since 2.266
          */
         public SecurityComponents(AuthenticationManager manager, UserDetailsService userDetails) {
-            this(manager,userDetails,createRememberMeService(userDetails));
+            this(manager, userDetails, createRememberMeService(userDetails));
         }
 
         /**
@@ -804,7 +806,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
          * @since 2.266
          */
         public SecurityComponents(AuthenticationManager manager, UserDetailsService userDetails, RememberMeServices rememberMe) {
-            assert manager!=null && userDetails!=null && rememberMe!=null;
+            assert manager != null && userDetails != null && rememberMe != null;
             this.manager2 = manager;
             this.userDetails2 = userDetails;
             this.rememberMe2 = rememberMe;
@@ -841,7 +843,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
     /**
      * Returns all the registered {@link SecurityRealm} descriptors.
      */
-    public static DescriptorExtensionList<SecurityRealm,Descriptor<SecurityRealm>> all() {
+    public static DescriptorExtensionList<SecurityRealm, Descriptor<SecurityRealm>> all() {
         return Jenkins.get().getDescriptorList(SecurityRealm.class);
     }
 

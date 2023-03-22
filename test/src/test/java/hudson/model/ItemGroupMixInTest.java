@@ -24,6 +24,14 @@
 
 package hudson.model;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.core.StringContains.containsString;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
+
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.WebRequest;
@@ -38,17 +46,16 @@ import hudson.tasks.BuildWrapperDescriptor;
 import hudson.tasks.Builder;
 import hudson.tasks.Publisher;
 import hudson.triggers.Trigger;
-import jenkins.model.Jenkins;
-import org.apache.commons.io.FileUtils;
-
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
-
-import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.hamcrest.MatcherAssert.assertThat;
-
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import jenkins.model.Jenkins;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -58,23 +65,13 @@ import org.jvnet.hudson.test.MockFolder;
 import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.recipes.LocalData;
 
-import java.io.File;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-
-import static org.hamcrest.core.StringContains.containsString;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.fail;
-
 public class ItemGroupMixInTest {
 
     @Rule public JenkinsRule r = new JenkinsRule();
 
     @Issue("JENKINS-20951")
     @LocalData
-    @Test public void xmlFileReadCannotResolveClassException() throws Exception {
+    @Test public void xmlFileReadCannotResolveClassException() {
         MockFolder d = r.jenkins.getItemByFullName("d", MockFolder.class);
         assertNotNull(d);
         Collection<TopLevelItem> items = d.getItems();
@@ -100,13 +97,13 @@ public class ItemGroupMixInTest {
 
     File configFile = project.getConfigFile().getFile();
 
-    List<String> lines = FileUtils.readLines(configFile).subList(0, 5);
+    List<String> lines = Files.readAllLines(configFile.toPath(), StandardCharsets.UTF_8).subList(0, 5);
     configFile.delete();
 
     // Remove half of the config.xml file to make "invalid" or fail to load
-    FileUtils.writeByteArrayToFile(configFile, lines.toString().getBytes());
+    Files.writeString(configFile.toPath(), lines.toString(), StandardCharsets.UTF_8);
     for (int i = lines.size() / 2; i < lines.size(); i++) {
-      FileUtils.writeStringToFile(configFile, lines.get(i), true);
+      Files.writeString(configFile.toPath(), lines.get(i), StandardCharsets.UTF_8, StandardOpenOption.APPEND);
     }
 
     // Reload Jenkins.
@@ -126,7 +123,7 @@ public class ItemGroupMixInTest {
   @LocalData
   @Issue("JENKINS-22811")
   @Test
-  public void xmlFileReadExceptionOnLoad() throws Exception {
+  public void xmlFileReadExceptionOnLoad() {
     MockFolder d = r.jenkins.getItemByFullName("d", MockFolder.class);
     assertNotNull(d);
     Collection<TopLevelItem> items = d.getItems();
@@ -136,7 +133,7 @@ public class ItemGroupMixInTest {
   @TestExtension
   public static class MockBuildWrapperThrowsError extends BuildWrapper {
     @Override
-    public Collection<? extends Action> getProjectActions(AbstractProject project){
+    public Collection<? extends Action> getProjectActions(AbstractProject project) {
       throw new NullPointerException();
     }
 
@@ -152,9 +149,10 @@ public class ItemGroupMixInTest {
   @TestExtension
   public static class MockBuilderThrowsError extends Builder {
     @Override
-    public Collection<? extends Action> getProjectActions(AbstractProject project){
+    public Collection<? extends Action> getProjectActions(AbstractProject project) {
       throw new NullPointerException();
     }
+
     @Extension public static final Descriptor DESCRIPTOR = new DescriptorImpl();
 
     public static class DescriptorImpl extends BuildStepDescriptor {
@@ -216,35 +214,35 @@ public class ItemGroupMixInTest {
                 "  <buildWrappers/>\n" +
                 "</project>";
 
-        Item foo = r.jenkins.createProjectFromXML("foo", new ByteArrayInputStream(xml.getBytes()));
+        Item foo = r.jenkins.createProjectFromXML("foo", new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8)));
         // if no exception then JAXP is swallowing these - so there should be no entity in the description.
         assertThat(Items.getConfigFile(foo).asString(), containsString("<description/>"));
     }
 
   @Issue("JENKINS-61956")
   @Test
-  public void copy_checkGoodName() throws Failure, IOException {
+  public void copy_checkGoodName() throws IOException {
     final String goodName = "calvin-jenkins";
     final String badName = "calvin@jenkins";
 
     Project goodProject = r.jenkins.createProject(FreeStyleProject.class, goodName);
 
-    Failure exception = assertThrows(Failure.class, () -> { r.jenkins.copy(goodProject, badName); });
+    Failure exception = assertThrows(Failure.class, () -> r.jenkins.copy(goodProject, badName));
     assertEquals(exception.getMessage(), Messages.Hudson_UnsafeChar("@"));
   }
 
   @Issue("JENKINS-61956")
   @Test
-  public void createProject_checkGoodName() throws Failure, IOException {
+  public void createProject_checkGoodName() {
     final String badName = "calvin@jenkins";
 
-    Failure exception = assertThrows(Failure.class, () -> { r.jenkins.createProject(MockFolder.class, badName); });
+    Failure exception = assertThrows(Failure.class, () -> r.jenkins.createProject(MockFolder.class, badName));
     assertEquals(exception.getMessage(), Messages.Hudson_UnsafeChar("@"));
   }
 
   @Issue("JENKINS-61956")
   @Test
-  public void createProjectFromXML_checkGoodName() throws Failure, IOException {
+  public void createProjectFromXML_checkGoodName() {
     final String badName = "calvin@jenkins";
 
     final String xml = "<?xml version='1.0' encoding='UTF-8'?>\n" +
@@ -264,9 +262,7 @@ public class ItemGroupMixInTest {
             "  <buildWrappers/>\n" +
             "</project>";
 
-    Failure exception = assertThrows(Failure.class, () -> {
-      r.jenkins.createProjectFromXML(badName, new ByteArrayInputStream(xml.getBytes()));
-    });
+    Failure exception = assertThrows(Failure.class, () -> r.jenkins.createProjectFromXML(badName, new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8))));
     assertEquals(exception.getMessage(), Messages.Hudson_UnsafeChar("@"));
   }
 
@@ -288,13 +284,9 @@ public class ItemGroupMixInTest {
     req.setAdditionalHeader("Content-Type", "application/xml");
     req.setRequestBody(VALID_XML_BAD_FIELD_USER_XML);
 
-    try {
-      wc.getPage(req);
-      fail("Should have returned failure.");
-    } catch (FailingHttpStatusCodeException e) {
-      // This really shouldn't return 500, but that's what it does now.
-      assertThat(e.getStatusCode(), equalTo(500));
-    }
+    FailingHttpStatusCodeException e = assertThrows(FailingHttpStatusCodeException.class, () -> wc.getPage(req));
+    // This really shouldn't return 500, but that's what it does now.
+    assertThat(e.getStatusCode(), equalTo(500));
 
     OldDataMonitor odm = ExtensionList.lookupSingleton(OldDataMonitor.class);
     Map<Saveable, OldDataMonitor.VersionRange> data = odm.getData();

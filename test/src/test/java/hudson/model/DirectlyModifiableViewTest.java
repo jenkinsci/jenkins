@@ -21,27 +21,25 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
-import static org.junit.Assert.assertFalse;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import com.gargoylesoftware.htmlunit.HttpMethod;
+import com.gargoylesoftware.htmlunit.Page;
+import com.gargoylesoftware.htmlunit.WebRequest;
+import com.gargoylesoftware.htmlunit.WebResponse;
 import java.io.IOException;
 import java.net.URL;
-
-
-import com.gargoylesoftware.htmlunit.WebRequest;
 import org.hamcrest.Matchers;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.MockFolder;
-
-import com.gargoylesoftware.htmlunit.HttpMethod;
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.WebResponse;
 
 public class DirectlyModifiableViewTest {
 
@@ -179,7 +177,8 @@ public class DirectlyModifiableViewTest {
         ListView folderView = new ListView("folder_view", folder);
         folder.addView(folderView);
 
-        assertBadStatus( // Item is scoped to different ItemGroup
+        // Item is scoped to different ItemGroup
+        assertBadStatus(
                 doPost(folderView, "addJobToView?name=top_project"),
                 "Query parameter 'name' does not correspond to a known item"
         );

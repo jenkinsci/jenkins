@@ -24,9 +24,8 @@
 
 package hudson;
 
-import org.kohsuke.accmod.Restricted;
-
 import java.lang.annotation.Documented;
+import org.kohsuke.accmod.Restricted;
 
 /**
  * Accompanies {@link Restricted} annotation to indicate when the access restriction was placed.
