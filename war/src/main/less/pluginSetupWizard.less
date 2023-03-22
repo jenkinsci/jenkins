@@ -6,15 +6,11 @@
 .bootstrap-3 [class*="col-"] {
   // simple reset
   margin: initial;
-  padding: initial;
 }
 
 .plugin-setup-wizard() {
   position: fixed;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
+  inset: 0;
   z-index: 1000;
   background: rgba(0, 0, 0, 0.2);
   text-align: initial;
@@ -43,14 +39,6 @@
   }
 
   .spin(@duration: 2s) {
-    -webkit-animation-name: spin;
-    -webkit-animation-duration: @duration;
-    -webkit-animation-iteration-count: infinite;
-    -webkit-animation-timing-function: linear;
-    -moz-animation-name: spin;
-    -moz-animation-duration: @duration;
-    -moz-animation-iteration-count: infinite;
-    -moz-animation-timing-function: linear;
     animation-name: spin;
     animation-duration: @duration;
     animation-iteration-count: infinite;
@@ -58,8 +46,6 @@
   }
 
   .no-spin() {
-    -webkit-animation-name: none;
-    -moz-animation-name: none;
     animation-name: none;
   }
 
@@ -100,6 +86,11 @@
 
   .error {
     margin-bottom: 1em;
+  }
+
+  .danger {
+    border: 1px solid;
+    border-color: var(--danger-color, #c4000a);
   }
 
   .modal-body {
@@ -656,10 +647,7 @@
 
     .install-console-scroll {
       position: absolute;
-      top: 6px;
-      right: 0;
-      bottom: 2em;
-      left: 0;
+      inset: 6px 0 2em;
       overflow: auto;
       font: 12px monospace;
     }
@@ -904,10 +892,7 @@
     &.security-panel,
     > iframe {
       position: absolute;
-      top: 0;
-      left: 0;
-      bottom: 0;
-      right: 0;
+      inset: 0;
       border: 0;
       width: 100%;
       height: 100%;
@@ -918,36 +903,6 @@
 
   .alert {
     font-size: initial;
-  }
-}
-
-@-ms-keyframes spin {
-  from {
-    -ms-transform: rotate(0deg);
-  }
-
-  to {
-    -ms-transform: rotate(360deg);
-  }
-}
-
-@-moz-keyframes spin {
-  from {
-    -moz-transform: rotate(0deg);
-  }
-
-  to {
-    -moz-transform: rotate(360deg);
-  }
-}
-
-@-webkit-keyframes spin {
-  from {
-    -webkit-transform: rotate(0deg);
-  }
-
-  to {
-    -webkit-transform: rotate(360deg);
   }
 }
 
@@ -1050,4 +1005,8 @@ body .plugin-setup-wizard {
 .bootstrap-3 .plugins {
   padding-left: 0;
   padding-right: 0;
+}
+
+.setup-wizard-heading {
+  margin-top: -24px;
 }

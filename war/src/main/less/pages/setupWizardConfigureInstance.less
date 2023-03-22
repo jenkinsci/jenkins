@@ -9,25 +9,13 @@
 
 .configure-instance h1 {
   font-size: 48px;
-  margin-top: 30px;
   font-weight: 500;
 }
 
 .configure-instance tr td {
   padding-bottom: 2px;
-}
-
-.configure-instance tr td,
-.configure-instance input {
   line-height: 25px;
   margin-bottom: 6px;
-}
-
-.configure-instance input[type="text"],
-.configure-instance input[type="password"] {
-  border: 1px solid #ddd;
-  border-radius: 2px;
-  padding: 1px 8px;
 }
 
 .configure-instance tr.has-error label {
@@ -37,8 +25,8 @@
 .configure-instance tr.has-error td input[type="text"],
 .configure-instance tr.has-error td input[type="password"],
 .configure-instance tr.has-error td textarea {
-  border-color: #c00;
-  background-color: #fdeaea;
+  border: 1px solid;
+  border-color: var(--danger-color, #c4000a);
 }
 
 .configure-instance tr td .help-text {

@@ -48,7 +48,6 @@ import hudson.model.TaskListener;
 import hudson.model.User;
 import hudson.remoting.Channel;
 import hudson.remoting.ChannelBuilder;
-import hudson.remoting.ChannelClosedException;
 import hudson.remoting.CommandTransport;
 import hudson.remoting.Engine;
 import hudson.remoting.Launcher;
@@ -90,6 +89,7 @@ import jenkins.slaves.RemotingVersionInfo;
 import jenkins.slaves.systemInfo.SlaveSystemInfo;
 import jenkins.util.Listeners;
 import jenkins.util.SystemProperties;
+import org.jenkinsci.remoting.ChannelStateException;
 import org.jenkinsci.remoting.util.LoggingChannelListener;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.Beta;
@@ -780,6 +780,23 @@ public class SlaveComputer extends Computer {
             return channel.call(new SlaveLogFetcher());
     }
 
+    /**
+     * Inline editing of description
+     */
+    @RequirePOST
+    @Restricted(NoExternalUse.class)
+    public synchronized void doSubmitDescription(StaplerResponse rsp, @QueryParameter String description) throws IOException {
+        checkPermission(CONFIGURE);
+
+        final Slave node = this.getNode();
+        if (node != null) {
+            node.setNodeDescription(description);
+        } else { // Node has been disabled/removed during other session tries to change the description.
+            throw new IOException("Description will be not set. The node " + nodeName + " does not exist (anymore).");
+        }
+        rsp.sendRedirect(".");
+    }
+
     @RequirePOST
     public HttpResponse doDoDisconnect(@QueryParameter String offlineMessage) {
         if (channel != null) {
@@ -1113,7 +1130,7 @@ public class SlaveComputer extends Computer {
 
             try {
                 getChannelOrFail().setProperty("agent", Boolean.TRUE); // indicate that this side of the channel is the agent side.
-            } catch (ChannelClosedException e) {
+            } catch (ChannelStateException e) {
                 throw new IllegalStateException(e);
             }
 
