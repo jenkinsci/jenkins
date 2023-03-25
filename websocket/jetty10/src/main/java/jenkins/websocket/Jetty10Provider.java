@@ -26,6 +26,7 @@ package jenkins.websocket;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import javax.servlet.http.HttpServletRequest;
@@ -44,14 +45,34 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 @MetaInfServices(Provider.class)
 public class Jetty10Provider implements Provider {
 
+    /**
+     * Number of seconds a WebsocketConnection may stay idle until it expires.
+     * Zero to disable.
+     * This value must be higher than the <code>jenkins.websocket.pingInterval</code>.
+     * Per <a href=https://www.eclipse.org/jetty/documentation/jetty-10/programming-guide/index.html#pg-websocket-session-ping>Jetty 10 documentation</a>
+     * a ping mechanism should keep the websocket active. Therefore, the idle timeout must be higher than the ping
+     * interval to avoid timeout issues.
+     */
+    private static long IDLE_TIMEOUT_SECONDS = Long.getLong("jenkins.websocket.idleTimeout", 60L);
+
     private static final String ATTR_LISTENER = Jetty10Provider.class.getName() + ".listener";
+
+    private boolean initialized = false;
 
     public Jetty10Provider() {
         JettyWebSocketServerContainer.class.hashCode();
     }
 
+    private void init(HttpServletRequest req) {
+        if (!initialized) {
+            JettyWebSocketServerContainer.getContainer(req.getServletContext()).setIdleTimeout(Duration.ofSeconds(IDLE_TIMEOUT_SECONDS));
+            initialized = true;
+        }
+    }
+
     @Override
     public Handler handle(HttpServletRequest req, HttpServletResponse rsp, Listener listener) throws Exception {
+        init(req);
         req.setAttribute(ATTR_LISTENER, listener);
         // TODO Jetty 10 has no obvious equivalent to WebSocketServerFactory.isUpgradeRequest; RFC6455Negotiation?
         if (!"websocket".equalsIgnoreCase(req.getHeader("Upgrade"))) {

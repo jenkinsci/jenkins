@@ -10,10 +10,7 @@
 
 .plugin-setup-wizard() {
   position: fixed;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
+  inset: 0;
   z-index: 1000;
   background: rgba(0, 0, 0, 0.2);
   text-align: initial;
@@ -650,10 +647,7 @@
 
     .install-console-scroll {
       position: absolute;
-      top: 6px;
-      right: 0;
-      bottom: 2em;
-      left: 0;
+      inset: 6px 0 2em;
       overflow: auto;
       font: 12px monospace;
     }
@@ -898,10 +892,7 @@
     &.security-panel,
     > iframe {
       position: absolute;
-      top: 0;
-      left: 0;
-      bottom: 0;
-      right: 0;
+      inset: 0;
       border: 0;
       width: 100%;
       height: 100%;

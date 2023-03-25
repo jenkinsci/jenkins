@@ -50,7 +50,7 @@ Behaviour.specify(
         });
         i++;
       });
-    Element.remove(prototypes);
+    prototypes.remove();
 
     // Initialize drag & drop for this component
     var withDragDrop = registerSortableDragDrop(e);
