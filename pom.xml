@@ -74,7 +74,7 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.396</revision>
+    <revision>2.397</revision>
     <changelist>-SNAPSHOT</changelist>
 
     <!-- configuration for patch tracker plugin  -->
@@ -96,7 +96,7 @@ THE SOFTWARE.
 
     <access-modifier.version>1.31</access-modifier.version>
     <antlr.version>4.12.0</antlr.version>
-    <bridge-method-injector.version>1.25</bridge-method-injector.version>
+    <bridge-method-injector.version>1.26</bridge-method-injector.version>
     <spotless.version>2.35.0</spotless.version>
     <!-- Make sure to keep the jetty-maven-plugin version in war/pom.xml in sync with the Jetty release in Winstone: -->
     <winstone.version>6.10</winstone.version>
@@ -333,7 +333,7 @@ THE SOFTWARE.
             <dependency>
               <groupId>com.puppycrawl.tools</groupId>
               <artifactId>checkstyle</artifactId>
-              <version>10.8.1</version>
+              <version>10.9.2</version>
             </dependency>
           </dependencies>
           <executions>

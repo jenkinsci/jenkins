@@ -39,7 +39,7 @@ THE SOFTWARE.
 
   <properties>
     <asm.version>9.4</asm.version>
-    <slf4jVersion>2.0.6</slf4jVersion>
+    <slf4jVersion>2.0.7</slf4jVersion>
     <stapler.version>1777.v7c6fe6d54a_0c</stapler.version>
     <groovy.version>2.4.21</groovy.version>
   </properties>
@@ -56,7 +56,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.springframework</groupId>
         <artifactId>spring-framework-bom</artifactId>
-        <version>5.3.25</version>
+        <version>5.3.26</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>

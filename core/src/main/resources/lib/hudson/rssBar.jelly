@@ -44,7 +44,7 @@ THE SOFTWARE.
   </div>
 
   <template id="template-icon-legend">
-    <st:include page="legend.jelly" it="${app}" />
+    <st:include page="_legend.jelly" it="${app}" />
   </template>
 
   <script src="${resURL}/jsbundles/pages/dashboard.js" type="text/javascript" defer="true" />
