@@ -6,16 +6,14 @@ import static org.junit.Assert.assertNull;
 
 import hudson.model.Computer;
 import hudson.model.ComputerSet;
-import hudson.model.Node;
+import hudson.model.Slave;
 import hudson.model.User;
 import hudson.slaves.DumbSlave;
-import hudson.slaves.JNLPLauncher;
 import hudson.slaves.OfflineCause;
-import hudson.slaves.RetentionStrategy;
 import hudson.slaves.SlaveComputer;
-import java.util.Collections;
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.InboundAgentRule;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 
@@ -26,6 +24,9 @@ public class ResponseTimeMonitorTest {
 
     @Rule
     public JenkinsRule j = new JenkinsRule();
+
+    @Rule
+    public InboundAgentRule inboundAgents = new InboundAgentRule();
 
     /**
      * Makes sure that it doesn't try to monitor an already-offline agent.
@@ -54,11 +55,11 @@ public class ResponseTimeMonitorTest {
 
     @Test
     public void doNotDisconnectBeforeLaunched() throws Exception {
-        DumbSlave slave = new DumbSlave("dummy", "dummy", j.createTmpDir().getPath(), "1", Node.Mode.NORMAL, "", new JNLPLauncher(), RetentionStrategy.NOOP, Collections.EMPTY_LIST);
-        j.jenkins.addNode(slave);
+        Slave slave = inboundAgents.createAgent(j, InboundAgentRule.Options.newBuilder().skipStart().build());
         Computer c = slave.toComputer();
         assertNotNull(c);
         OfflineCause originalOfflineCause = c.getOfflineCause();
+        assertNotNull(originalOfflineCause);
 
         ResponseTimeMonitor rtm = ComputerSet.getMonitors().get(ResponseTimeMonitor.class);
         for (int i = 0; i < 10; i++) {

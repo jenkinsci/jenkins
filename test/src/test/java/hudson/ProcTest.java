@@ -38,33 +38,33 @@ public class ProcTest {
      */
     @Test
     public void remoteProcOutputSync() throws Exception {
-        assumeFalse("TODO: Implement this test for Windows", Functions.isWindows());
         VirtualChannel ch = createSlaveChannel();
 
         // keep the pipe fairly busy
         final Pipe p = Pipe.createRemoteToLocal();
         for (int i = 0; i < 10; i++)
             ch.callAsync(new ChannelFiller(p.getOut()));
-        new Thread() {
-            @Override
-            public void run() {
-                try {
-                    IOUtils.drain(p.getIn());
-                } catch (IOException e) {
-                }
+        new Thread(() -> {
+            try {
+                IOUtils.drain(p.getIn());
+            } catch (IOException e) {
             }
-        }.start();
+        }).start();
 
-        RemoteLauncher launcher = new RemoteLauncher(TaskListener.NULL, ch, true);
+        RemoteLauncher launcher = new RemoteLauncher(TaskListener.NULL, ch, !Functions.isWindows());
 
-        String str = "";
-        for (int i = 0; i < 256; i++)
-            str += "oxox";
+        StringBuilder str = new StringBuilder();
+        str.append("oxox".repeat(256));
 
         for (int i = 0; i < 1000; i++) {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            launcher.launch().cmds("echo", str).stdout(baos).join();
-            assertEquals(str, baos.toString(Charset.defaultCharset()).trim());
+            if (Functions.isWindows()) {
+                launcher.launch().cmds(new String[] {"cmd", "/c", "echo ", str.toString()}).stdout(baos).join();
+            }
+            else {
+                launcher.launch().cmds("echo", str.toString()).stdout(baos).join();
+            }
+            assertEquals(str.toString(), baos.toString(Charset.defaultCharset()).trim());
         }
 
         ch.close();

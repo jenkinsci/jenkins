@@ -102,10 +102,7 @@
   &::before {
     content: "";
     position: absolute;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    right: 0;
+    inset: 0;
     background: var(--text-color);
     opacity: 0.1;
     border-radius: inherit;
@@ -115,10 +112,7 @@
   &::after {
     content: "";
     position: absolute;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    right: 0;
+    inset: 0;
     border: 1px solid rgba(125, 125, 125, 0.35);
     box-shadow: var(--form-input-glow);
     border-radius: inherit;
@@ -152,6 +146,22 @@
 
 .jenkins-select-help a.jenkins-help-button {
   position: absolute;
-  top: -4rem;
+  top: -3.7rem;
   right: -2rem;
+}
+
+.jenkins-edited-section-label {
+  color: var(--text-color-secondary);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-left: 0.4rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: default;
+
+  svg {
+    width: 1rem;
+    height: 1rem;
+  }
 }

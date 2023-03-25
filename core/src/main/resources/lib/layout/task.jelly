@@ -24,10 +24,10 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout">
-  <st:documentation>
-    This tag inside &lt;l:tasks> tag renders the left navigation bar of Hudson.
-    Each &lt;task> tag gets an icon and link.
-
+  <st:documentation> <![CDATA[
+    This tag inside <l:tasks> tag renders the left navigation bar of Jenkins.
+    Each <task> tag gets an icon and link.
+    ]]>
     <st:attribute name="href" use="required">
       Link target. Relative to the current page.
     </st:attribute>
@@ -66,20 +66,17 @@ THE SOFTWARE.
 
       If both permission and permissions is set, then permissions will be used
     </st:attribute>
-    <st:attribute name="post" type="boolean">
+    <st:attribute name="post" type="boolean" since="1.504">
       If true, send a POST rather than a GET request.
       (onclick supersedes this except in the context menu.)
-      (since 1.504)
     </st:attribute>
-    <st:attribute name="requiresConfirmation" type="boolean">
+    <st:attribute name="requiresConfirmation" type="boolean" since="1.512">
       If true, require confirmation before clicking.
       Generally used with post="true".
       (onclick supersedes this except in the context menu.)
-      (since 1.512)
     </st:attribute>
-    <st:attribute name="confirmationMessage">
+    <st:attribute name="confirmationMessage" since="1.512">
       Message to use for confirmation, if requested; defaults to title.
-      (since 1.512)
     </st:attribute>
   </st:documentation>
 

@@ -51,7 +51,6 @@
       { "name": "pipeline-github-lib", "suggested": true, "added": "2.0" },
       { "name": "pipeline-stage-view", "suggested": true, "added": "2.0" },
       { "name": "conditional-buildstep" },
-      { "name": "jenkins-multijob-plugin" },
       { "name": "parameterized-trigger" },
       { "name": "copyartifact" }
     ]
@@ -75,8 +74,7 @@
     "category": "Distributed Builds",
     "plugins": [
       { "name": "matrix-project" },
-      { "name": "ssh-slaves", "suggested": true },
-      { "name": "windows-slaves" }
+      { "name": "ssh-slaves", "suggested": true }
     ]
   },
   {

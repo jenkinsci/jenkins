@@ -49,7 +49,6 @@
 
     function close() {
       amMonitorRoot.classList.remove("visible");
-      amList.innerHTML = "";
       document.removeEventListener("click", onClose);
       document.removeEventListener("keydown", onEscClose);
     }

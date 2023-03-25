@@ -80,6 +80,14 @@ public class UserRestartTest {
         });
         sessions.then(r -> {
             FreeStyleProject p = r.jenkins.getItemByFullName("p", FreeStyleProject.class);
+            /*
+             * User.Replacer.readResolve() is racy, as its comments acknowledge. The loading of jobs
+             * and the initialization of UserIdMapper run concurrently, and UserIdMapper may not
+             * have been initialized yet when we are loading the job. The only way for this test to
+             * work reliably is to reload the job after UserIdMapper has been initialized, thus
+             * assuring that the job's reference to the user can be properly deserialized.
+             */
+            p.doReload();
             User u = p.getProperty(BadProperty.class).user; // do not inline: call User.get second
             assertEquals(User.get("pqhacker"), u);
         });

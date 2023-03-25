@@ -1,8 +1,6 @@
 package jenkins.security;
 
 import hudson.remoting.Callable;
-import hudson.remoting.Channel;
-import hudson.remoting.ChannelClosedException;
 import jenkins.slaves.RemotingVersionInfo;
 import org.jenkinsci.remoting.RoleChecker;
 
@@ -23,25 +21,5 @@ public abstract class MasterToSlaveCallable<V, T extends Throwable> implements C
     @Override
     public void checkRoles(RoleChecker checker) throws SecurityException {
         checker.check(this, Roles.SLAVE);
-    }
-
-    //TODO: remove once Minimum supported Remoting version is 3.15 or above
-    @Override
-    public Channel getChannelOrFail() throws ChannelClosedException {
-        final Channel ch = Channel.current();
-        if (ch == null) {
-            throw new ChannelClosedException((Channel) null, new IllegalStateException("No channel associated with the thread"));
-        }
-        return ch;
-    }
-
-    //TODO: remove Callable#getOpenChannelOrFail() once minimum supported Remoting version is 3.15 or above
-    @Override
-    public Channel getOpenChannelOrFail() throws ChannelClosedException {
-        final Channel ch = getChannelOrFail();
-        if (ch.isClosingOrClosed()) { // TODO: Since Remoting 2.33, we still need to explicitly declare minimum Remoting version
-            throw new ChannelClosedException(ch, new IllegalStateException("The associated channel " + ch + " is closing down or has closed down", ch.getCloseRequestCause()));
-        }
-        return ch;
     }
 }

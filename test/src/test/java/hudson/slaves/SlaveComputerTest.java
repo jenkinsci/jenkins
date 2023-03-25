@@ -24,6 +24,7 @@
 
 package hudson.slaves;
 
+import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsString;
@@ -105,7 +106,7 @@ public class SlaveComputerTest {
     @Issue("JENKINS-57111")
     public void startupShouldNotFailOnExceptionOnlineListener() throws Exception {
         DumbSlave nodeA = j.createOnlineSlave();
-        Assert.assertTrue(nodeA.getComputer() instanceof SlaveComputer);
+        assertThat(nodeA.getComputer(), instanceOf(SlaveComputer.class));
 
         int retries = 10;
         while (IOExceptionOnOnlineListener.onOnlineCount == 0 && retries > 0) {
@@ -161,7 +162,7 @@ public class SlaveComputerTest {
     public void startupShouldFailOnErrorOnlineListener() throws Exception {
         assumeFalse("TODO: Windows container agents do not have enough resources to run this test", Functions.isWindows() && System.getenv("CI") != null);
         DumbSlave nodeA = j.createSlave();
-        Assert.assertTrue(nodeA.getComputer() instanceof SlaveComputer);
+        assertThat(nodeA.getComputer(), instanceOf(SlaveComputer.class));
         int retries = 10;
         while (ErrorOnOnlineListener.onOnlineCount == 0 && retries > 0) {
             retries--;

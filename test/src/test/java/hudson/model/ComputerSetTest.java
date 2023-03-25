@@ -33,11 +33,14 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 
+import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.cli.CLICommandInvoker;
 import hudson.slaves.DumbSlave;
+import hudson.slaves.OfflineCause;
 import java.net.HttpURLConnection;
+import java.util.concurrent.Future;
 import jenkins.model.Jenkins;
 import org.junit.Rule;
 import org.junit.Test;
@@ -132,5 +135,45 @@ public class ComputerSetTest {
         // and the OK (save) button is visible
         responseContent = page.getWebResponse().getContentAsString();
         assertThat(responseContent, containsString("OK"));
+    }
+
+    @Test
+    @Issue("SECURITY-2120")
+    public void testTerminatedNodeStatusPageDoesNotShowTrace() throws Exception {
+        DumbSlave agent = j.createOnlineSlave();
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.setAssignedNode(agent);
+
+        Future<FreeStyleBuild> r = ExecutorTest.startBlockingBuild(p);
+
+        String message = "It went away";
+        p.getLastBuild().getBuiltOn().toComputer().disconnect(
+                new OfflineCause.ChannelTermination(new RuntimeException(message))
+        );
+
+        WebClient wc = j.createWebClient();
+        Page page = wc.getPage(wc.createCrumbedUrl(agent.toComputer().getUrl()));
+        String content = page.getWebResponse().getContentAsString();
+        assertThat(content, not(containsString(message)));
+    }
+
+    @Test
+    @Issue("SECURITY-2120")
+    public void testTerminatedNodeAjaxExecutorsDoesNotShowTrace() throws Exception {
+        DumbSlave agent = j.createOnlineSlave();
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.setAssignedNode(agent);
+
+        Future<FreeStyleBuild> r = ExecutorTest.startBlockingBuild(p);
+
+        String message = "It went away";
+        p.getLastBuild().getBuiltOn().toComputer().disconnect(
+                new OfflineCause.ChannelTermination(new RuntimeException(message))
+        );
+
+        WebClient wc = j.createWebClient();
+        Page page = wc.getPage(wc.createCrumbedUrl("ajaxExecutors"));
+        String content = page.getWebResponse().getContentAsString();
+        assertThat(content, not(containsString(message)));
     }
 }
