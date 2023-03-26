@@ -51,6 +51,9 @@ THE SOFTWARE.
                         autofocus="true"
                         value="${request.getParameter('filter')}" />
         </div>
+        <div class="jenkins-app-bar__controls">
+          <st:include page="check.jelly"/>
+        </div>
       </div>
 
       <st:adjunct includes="hudson.PluginManager._table"/>
@@ -261,7 +264,6 @@ THE SOFTWARE.
                 <f:submit value="${%Download now and install after restart}"/>
               </j:if>
             </l:isAdmin>
-            <st:include page="check.jelly"/>
           </div>
         </div>
         <d:invokeBody/>
