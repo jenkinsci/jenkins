@@ -24,12 +24,11 @@
 
 package hudson;
 
+import com.gargoylesoftware.htmlunit.html.DomElement;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-
-import com.gargoylesoftware.htmlunit.html.DomElement;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import jenkins.RestartRequiredException;
 import jenkins.model.Jenkins;
 import org.apache.commons.io.FileUtils;
