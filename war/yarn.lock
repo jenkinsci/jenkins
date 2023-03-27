@@ -4251,14 +4251,14 @@ __metadata:
     postcss: 8.4.21
     postcss-less: 6.0.0
     postcss-loader: 7.1.0
-    prettier: 2.8.5
+    prettier: 2.8.6
     sortablejs: 1.15.0
     style-loader: 3.3.2
     stylelint: 15.3.0
     stylelint-checkstyle-reporter: 0.2.0
     stylelint-config-standard: 31.0.0
     tippy.js: ^6.3.7
-    webpack: 5.76.2
+    webpack: 5.76.3
     webpack-cli: 5.0.1
     webpack-remove-empty-scripts: 1.0.1
     window-handle: 1.0.1
@@ -5715,12 +5715,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"prettier@npm:2.8.5":
-  version: 2.8.5
-  resolution: "prettier@npm:2.8.5"
+"prettier@npm:2.8.6":
+  version: 2.8.6
+  resolution: "prettier@npm:2.8.6"
   bin:
     prettier: bin-prettier.js
-  checksum: b7f8d30e14061e0478bc5a59d4d889688d804c173a0daa91b1b85dc08eef5eb6956d1b59f4037770776fda5b967f6c9ca3b7a8a43c50bedb4c7b182029f865aa
+  checksum: 8ac94fa67aec0e65743ea15ebf954ef2f1e52638abd129dc04e8b49e8bb3224c0233c98df6b5c98efd31bd2a43866590486559438ee4ead09dc81be389068572
   languageName: node
   linkType: hard
 
@@ -6845,9 +6845,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"webpack@npm:5.76.2":
-  version: 5.76.2
-  resolution: "webpack@npm:5.76.2"
+"webpack@npm:5.76.3":
+  version: 5.76.3
+  resolution: "webpack@npm:5.76.3"
   dependencies:
     "@types/eslint-scope": ^3.7.3
     "@types/estree": ^0.0.51
@@ -6878,7 +6878,7 @@ __metadata:
       optional: true
   bin:
     webpack: bin/webpack.js
-  checksum: 86db98299a175c371031449c26077e87b33acd8f45de7f7945ed4b9b37c8ca11bc5169af9c44743efccd4d55e08042a3aa3a3bc42aff831309a0821ffbcd395e
+  checksum: 363f536b56971d056e34ab4cffa4cbc630b220e51be1a8c3adea87d9f0b51c49cfc7c3720d6614a1fd2c8c63f1ab3100db916fe8367c8bb9299327ff8c3f856d
   languageName: node
   linkType: hard
 
