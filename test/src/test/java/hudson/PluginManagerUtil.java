@@ -27,6 +27,9 @@ package hudson;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+
+import com.gargoylesoftware.htmlunit.html.DomElement;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import jenkins.RestartRequiredException;
 import jenkins.model.Jenkins;
 import org.apache.commons.io.FileUtils;
@@ -70,5 +73,9 @@ public class PluginManagerUtil {
             new File(dest.getPath() + ".disabled").createNewFile();
         }
         jenkins.pluginManager.dynamicLoad(dest);
+    }
+
+    public static DomElement getCheckForUpdatesButton(HtmlPage page) {
+        return page.getElementById("button-refresh");
     }
 }
