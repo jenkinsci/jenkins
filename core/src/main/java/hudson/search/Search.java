@@ -89,7 +89,7 @@ public class Search implements StaplerProxy {
                     SuggestedItem target = find(index, query, smo);
                     if (target != null) {
                         // found
-                        rsp.sendRedirect2(req.getContextPath() + target.getUrl());
+                        rsp.sendRedirect2(a.getUrl() + target.getUrl());
                         return;
                     }
                 }
