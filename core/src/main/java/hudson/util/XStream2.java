@@ -46,7 +46,8 @@ import com.thoughtworks.xstream.io.HierarchicalStreamDriver;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import com.thoughtworks.xstream.io.ReaderWrapper;
-import com.thoughtworks.xstream.io.xml.KXml2Driver;
+import com.thoughtworks.xstream.io.xml.PrettyPrintWriter;
+import com.thoughtworks.xstream.io.xml.StandardStaxDriver;
 import com.thoughtworks.xstream.mapper.CannotResolveClassException;
 import com.thoughtworks.xstream.mapper.Mapper;
 import com.thoughtworks.xstream.mapper.MapperWrapper;
@@ -74,6 +75,7 @@ import java.io.Writer;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.Map;
@@ -123,7 +125,26 @@ public class XStream2 extends XStream {
      * @return a new instance of the HierarchicalStreamDriver we want to use
      */
     public static HierarchicalStreamDriver getDefaultDriver() {
-        return new KXml2Driver();
+        return new StandardStaxDriver() {
+            /*
+             * The below two methods are copied from com.thoughtworks.xstream.io.xml.AbstractXppDriver to preserve
+             * compatibility.
+             */
+
+            @Override
+            public HierarchicalStreamWriter createWriter(Writer out) {
+                return new PrettyPrintWriter(out, getNameCoder());
+            }
+
+            @Override
+            public HierarchicalStreamWriter createWriter(OutputStream out) {
+                /*
+                 * While it is tempting to use StandardCharsets.UTF_8 here, this would break
+                 * hudson.util.XStream2EncodingTest#toXMLUnspecifiedEncoding.
+                 */
+                return createWriter(new OutputStreamWriter(out, Charset.defaultCharset()));
+            }
+        };
     }
 
     public XStream2() {
