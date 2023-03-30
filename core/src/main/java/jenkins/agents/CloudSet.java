@@ -72,7 +72,7 @@ public class CloudSet extends AbstractModelObject implements Describable<CloudSe
     @Override
     @Restricted(NoExternalUse.class)
     public Object getTarget() {
-        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+        Jenkins.get().checkPermission(Jenkins.SYSTEM_READ);
         return this;
     }
 
