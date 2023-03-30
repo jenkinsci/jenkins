@@ -59,7 +59,6 @@ import org.kohsuke.stapler.verb.POST;
 
 @ExportedBean
 @Restricted(NoExternalUse.class)
-@Extension
 public class CloudSet extends AbstractModelObject implements Describable<CloudSet>, ModelObjectWithChildren, RootAction, StaplerProxy {
     @Override
     public Descriptor<CloudSet> getDescriptor() {
