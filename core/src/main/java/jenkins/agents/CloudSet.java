@@ -234,7 +234,8 @@ public class CloudSet extends AbstractModelObject implements Describable<CloudSe
     }
 
     @Extension
-    public static class DescriptorImpl extends Descriptor<CloudSet> {
+    public static class DescriptorImpl extends Descriptor<CloudSet> implements StaplerProxy {
+
         /**
          * Auto-completion for the "copy from" field in the new cloud page.
          */
@@ -245,6 +246,12 @@ public class CloudSet extends AbstractModelObject implements Describable<CloudSe
                     .filter(c -> c.name.startsWith(value))
                     .forEach(c -> r.add(c.name));
             return r;
+        }
+
+        @Override
+        public Object getTarget() {
+            Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+            return this;
         }
     }
 }
