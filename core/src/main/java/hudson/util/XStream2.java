@@ -157,7 +157,8 @@ public class XStream2 extends XStream {
         @Override
         protected XMLInputFactory createInputFactory() {
             final XMLInputFactory instance = XMLInputFactory.newInstance();
-            instance.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, Boolean.FALSE);
+            instance.setProperty(XMLInputFactory.IS_NAMESPACE_AWARE, false);
+            instance.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
             return instance;
         }
 
