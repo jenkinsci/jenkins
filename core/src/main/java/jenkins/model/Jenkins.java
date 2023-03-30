@@ -2189,14 +2189,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         return clouds.getByName(name);
     }
 
-    /**
-     * Only there to bind to /cloud/ URL.
-     */
-    @Restricted(DoNotUse.class)
-    public CloudSet getCloud() {
-        return new CloudSet();
-    }
-
     @Override
     protected ConcurrentMap<Node, Computer> getComputerMap() {
         return computers;
