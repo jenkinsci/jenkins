@@ -27,7 +27,7 @@ THE SOFTWARE.
 
   The flow of this is:
 
-    new.jelly -> CloudSet.doCreateItem -> _new2.jelly -> CloudSet.doDoCreateItem
+    new.jelly -> CloudSet.doCreate -> _new2.jelly -> CloudSet.doDoCreate
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
@@ -36,7 +36,7 @@ THE SOFTWARE.
     <l:breadcrumb title="${%New cloud}" />
     <l:main-panel>
       <j:invokeStatic var="clouds" className="hudson.slaves.Cloud" method="all" />
-      <n:form title="${%New cloud}" nameTitle="${%Cloud name}" copyTitle="${%Copy Existing Cloud}" showCopyOption="${!empty(it._cloudNames)}"
+      <n:form title="${%New cloud}" nameTitle="${%Cloud name}" copyTitle="${%Copy Existing Cloud}" showCopyOption="${!empty(it._cloudNames)}" action="create"
               descriptors="${clouds}" checkUrl="checkName" xmlns:n="/lib/hudson/newFromList" />
     </l:main-panel>
   </l:layout>

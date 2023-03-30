@@ -161,7 +161,7 @@ public class CloudSet extends AbstractModelObject implements Describable<CloudSe
      * First check point in creating a new cloud.
      */
     @RequirePOST
-    public synchronized void doCreateItem(StaplerRequest req, StaplerResponse rsp,
+    public synchronized void doCreate(StaplerRequest req, StaplerResponse rsp,
                                           @QueryParameter String name, @QueryParameter String mode,
                                           @QueryParameter String from) throws IOException, ServletException, Descriptor.FormException {
         final Jenkins jenkins = Jenkins.get();
@@ -217,7 +217,7 @@ public class CloudSet extends AbstractModelObject implements Describable<CloudSe
      * Really creates a new agent.
      */
     @POST
-    public synchronized void doDoCreateItem(StaplerRequest req, StaplerResponse rsp,
+    public synchronized void doDoCreate(StaplerRequest req, StaplerResponse rsp,
                                             @QueryParameter String type) throws IOException, ServletException, Descriptor.FormException {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         Jenkins.get().clouds.add(Cloud.all().find(type).newInstance(req, req.getSubmittedForm()));

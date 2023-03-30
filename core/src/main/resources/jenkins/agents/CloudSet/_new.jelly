@@ -31,7 +31,7 @@ THE SOFTWARE.
   <l:layout permission="${app.ADMINISTER}" type="one-column" title="${%New cloud}">
     <l:breadcrumb title="${%New cloud}"/>
     <l:main-panel>
-      <f:form method="post" action="doCreateItem" name="config" class="jenkins-form">
+      <f:form method="post" action="doCreate" name="config" class="jenkins-form">
         <h1>${%New cloud}</h1>
         <!-- main body of the configuration -->
         <st:include it="${requestScope.instance}" page="config.jelly" />
