@@ -49,6 +49,7 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerFallback;
+import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
@@ -58,7 +59,7 @@ import org.kohsuke.stapler.verb.POST;
 
 @ExportedBean
 @Restricted(NoExternalUse.class)
-public class CloudSet extends AbstractModelObject implements Describable<CloudSet>, ModelObjectWithChildren, RootAction {
+public class CloudSet extends AbstractModelObject implements Describable<CloudSet>, ModelObjectWithChildren, RootAction, StaplerProxy {
     @Override
     public Descriptor<CloudSet> getDescriptor() {
         return Jenkins.get().getDescriptorOrDie(CloudSet.class);
@@ -66,6 +67,13 @@ public class CloudSet extends AbstractModelObject implements Describable<CloudSe
 
     public Cloud getDynamic(String token) {
         return Jenkins.get().getCloud(token);
+    }
+
+    @Override
+    @Restricted(NoExternalUse.class)
+    public Object getTarget() {
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+        return this;
     }
 
     @Override
