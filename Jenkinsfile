@@ -29,7 +29,7 @@ for (i = 0; i < buildTypes.size(); i++) {
       if (buildType == 'Windows') {
         agentContainerLabel += '-windows'
       }
-      retry(conditions: [kubernetesAgent(handleNonKubernetes: true), nonresumable()], count: 2) {
+      retry(conditions: [kubernetesAgent(), nonresumable()], count: 2) {
         node(agentContainerLabel) {
           // First stage is actually checking out the source. Since we're using Multibranch
           // currently, we can use "checkout scm".
