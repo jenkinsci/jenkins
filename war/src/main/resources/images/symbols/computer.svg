@@ -1,11 +1,11 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg width="512px" height="512px" viewBox="0 0 512 512" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-    <title>Slice</title>
-    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" stroke-linejoin="round">
-        <g id="desktop-outline" transform="translate(32.000000, 64.000000)" stroke="currentColor" stroke-width="32">
-            <rect id="Rectangle" x="0" y="0" width="448" height="320" rx="32"></rect>
-            <polygon id="Path" stroke-linecap="round" fill-rule="nonzero" points="272 384 264 320 184 320 176 384"></polygon>
-            <line x1="336" y1="384" x2="112" y2="384" id="Path" stroke-linecap="round"></line>
-        </g>
-    </g>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Uploaded to: SVG Repo, www.svgrepo.com, Generator: SVG Repo Mixer Tools -->
+<svg width="800px" height="800px" viewBox="0 0 24 24" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/">
+ <g transform="translate(0 -1028.4)">
+  <path d="m8.875 19c0.0128 0.169 0.0312 0.327 0.0312 0.5 0 1.863-0.7465 3.505-1.9062 4.5h4 2 4c-1.16-0.995-1.906-2.637-1.906-4.5 0-0.173 0.018-0.331 0.031-0.5h-2.125-2-2.125z" transform="translate(0 1028.4)" fill="#95a5a6"/>
+  <path d="m8.875 1047.4c0.0128 0.1 0.0312 0.3 0.0312 0.5 0 0.5-0.0462 1-0.1562 1.5h6.5c-0.11-0.5-0.156-1-0.156-1.5 0-0.2 0.018-0.4 0.031-0.5h-2.125-2-2.125z" fill="#7f8c8d"/>
+  <path d="m1 1031.4c-0.55228 0-1 0.4-1 1v1 2 2 2 1 1 1 2 2 1c0 0.5 0.44772 1 1 1h1 13 6 1 1c0.552 0 1-0.5 1-1v-1-7-1-1-2-2-1c0-0.6-0.448-1-1-1h-1-5-1-9-4-1-1z" fill="#bdc3c7"/>
+  <rect height="14" width="22" y="1032.4" x="1" fill="#34495e"/>
+  <path d="m23 1033.4-21 13h19.582 1.418v-1.6-11.4z" fill="#2c3e50"/>
+ </g>
 </svg>

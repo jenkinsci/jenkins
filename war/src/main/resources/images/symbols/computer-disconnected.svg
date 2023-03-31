@@ -1,15 +1,63 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg width="512px" height="512px" viewBox="0 0 512 512" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-    <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-        <g transform="translate(32.000000, 64.000000)" stroke="currentColor" stroke-width="32">
-            <g>
-                <rect x="0" y="0" width="448" height="320" rx="32"></rect>
-                <polygon stroke-linecap="round" points="272 384 264 320 184 320 176 384"></polygon>
-                <line x1="336" y1="384" x2="112" y2="384" stroke-linecap="round"></line>
-            </g>
-            <g stroke="var(--yellow)" stroke-linecap="round" transform="translate(152.000000, 88.000000)">
-                <path d="M144,144 L0,0 M144,0 L0,144" ></path>
-            </g>
-        </g>
-    </g>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Uploaded to: SVG Repo, www.svgrepo.com, Generator: SVG Repo Mixer Tools -->
+
+<svg
+   width="800px"
+   height="800px"
+   viewBox="0 0 24 24"
+   version="1.1"
+   id="svg14"
+   sodipodi:docname="computer-disconnected.svg"
+   inkscape:version="1.1 (c68e22c387, 2021-05-23)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs18" />
+  <sodipodi:namedview
+     id="namedview16"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     showgrid="false"
+     inkscape:zoom="1.04"
+     inkscape:cx="399.51923"
+     inkscape:cy="323.07692"
+     inkscape:current-layer="svg14" />
+  <g
+     transform="translate(0 -1028.4)"
+     id="g12">
+    <path
+       d="m8.875 19c0.0128 0.169 0.0312 0.327 0.0312 0.5 0 1.863-0.7465 3.505-1.9062 4.5h4 2 4c-1.16-0.995-1.906-2.637-1.906-4.5 0-0.173 0.018-0.331 0.031-0.5h-2.125-2-2.125z"
+       transform="translate(0 1028.4)"
+       fill="#95a5a6"
+       id="path2" />
+    <path
+       d="m8.875 1047.4c0.0128 0.1 0.0312 0.3 0.0312 0.5 0 0.5-0.0462 1-0.1562 1.5h6.5c-0.11-0.5-0.156-1-0.156-1.5 0-0.2 0.018-0.4 0.031-0.5h-2.125-2-2.125z"
+       fill="#7f8c8d"
+       id="path4" />
+    <path
+       d="m1 1031.4c-0.55228 0-1 0.4-1 1v1 2 2 2 1 1 1 2 2 1c0 0.5 0.44772 1 1 1h1 13 6 1 1c0.552 0 1-0.5 1-1v-1-7-1-1-2-2-1c0-0.6-0.448-1-1-1h-1-5-1-9-4-1-1z"
+       fill="#bdc3c7"
+       id="path6" />
+    <rect
+       height="14"
+       width="22"
+       y="1032.4"
+       x="1"
+       fill="#34495e"
+       id="rect8" />
+    <path
+       d="m23 1033.4-21 13h19.582 1.418v-1.6-11.4z"
+       fill="#2c3e50"
+       id="path10" />
+  </g>
+  <path
+     d="m 7.05015,7.2961385 3.5357,3.5999995 -3.5357,3.5 1.4142,1.4 3.5355,-3.5 3.536,3.5 1.414,-1.4 -3.536,-3.5 3.536,-3.5999995 -1.414,-1.4 -3.536,3.5 -3.5355,-3.5 z"
+     fill="#9c0001"
+     id="path8" />
 </svg>

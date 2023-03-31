@@ -1,6 +1,2 @@
-<svg xmlns="http://www.w3.org/2000/svg" class="ionicon" viewBox="0 0 512 512"><title>Parameters</title>
-<path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="32" d="M368 96h80M64 96h240M368 416h80M64 416h240M208 256h240M64 256h80"/>
-<circle cx="336" cy="96" r="32" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="32"/>
-<circle cx="176" cy="256" r="32" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="32"/>
-<circle cx="336" cy="416" r="32" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="32"/>
-</svg>
+<?xml version="1.0" encoding="utf-8"?><!-- Uploaded to: SVG Repo, www.svgrepo.com, Generator: SVG Repo Mixer Tools -->
+<svg width="800px" height="800px" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><title>70 Basic icons by Xicons.co</title><path d="M45,43H3a2,2,0,0,1,0-4H45A2,2,0,0,1,45,43Z" fill="#c8c8c8"/><rect x="8" y="35" width="14" height="12" rx="2" ry="2" fill="#f6c253"/><path d="M45,26H3a2,2,0,0,1,0-4H45A2,2,0,0,1,45,26Z" fill="#c8c8c8"/><path d="M45,9H3A2,2,0,0,1,3,5H45A2,2,0,0,1,45,9Z" fill="#c8c8c8"/><rect x="8" y="1" width="14" height="12" rx="2" ry="2" fill="#ec5044"/><rect x="26" y="18" width="14" height="12" rx="2" ry="2" fill="#4dbe86"/></svg>

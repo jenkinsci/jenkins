@@ -1,1 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" class="ionicon" viewBox="0 0 512 512"><title>Arrow Forward</title><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="32" d="M268 112l144 144-144 144M392 256H100"/></svg>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Uploaded to: SVG Repo, www.svgrepo.com, Generator: SVG Repo Mixer Tools -->
+<svg width="800px" height="800px" viewBox="0 0 24 24" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/">
+ <g transform="translate(0 -1028.4)">
+  <path d="m22 12c0 5.523-4.477 10-10 10-5.5228 0-10-4.477-10-10 0-5.5228 4.4772-10 10-10 5.523 0 10 4.4772 10 10z" transform="matrix(-1 0 0 1 24 1029.4)" fill="#2980b9"/>
+  <path d="m22 12c0 5.523-4.477 10-10 10-5.5228 0-10-4.477-10-10 0-5.5228 4.4772-10 10-10 5.523 0 10 4.4772 10 10z" transform="matrix(-1 0 0 1 24 1028.4)" fill="#3498db"/>
+  <path d="m6 1042.4v-2h9l-4-3 1-2 7 6-7 6-1-2 4-3z" fill="#2980b9"/>
+  <path d="m6 1041.4v-2h9l-4-3 1-2 7 6-7 6-1-2 4-3z" fill="#ecf0f1"/>
+ </g>
+</svg>

@@ -1,1 +1,11 @@
-<svg xmlns="http://www.w3.org/2000/svg" class="ionicon" viewBox="0 0 512 512"><title>Pricetag</title><path d="M435.25 48h-122.9a14.46 14.46 0 00-10.2 4.2L56.45 297.9a28.85 28.85 0 000 40.7l117 117a28.85 28.85 0 0040.7 0L459.75 210a14.46 14.46 0 004.2-10.2v-123a28.66 28.66 0 00-28.7-28.8z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="32"/><path d="M384 160a32 32 0 1132-32 32 32 0 01-32 32z" fill="currentColor"/></svg>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Uploaded to: SVG Repo, www.svgrepo.com, Generator: SVG Repo Mixer Tools -->
+<svg width="800px" height="800px" viewBox="0 0 24 24" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/">
+ <g transform="translate(0 -1028.4)">
+  <path d="m2 1029.4c-1.1046 0-2 0.9-2 2v7.1 0.1c0.016343 0.5 0.24566 1 0.59375 1.4l10.968 10.9c0.365 0.4 0.871 0.6 1.438 0.6s1.073-0.2 1.438-0.6l7.062-7c0.408-0.4 0.656-0.9 0.656-1.5s-0.248-1.2-0.656-1.5l-10.906-10.9c-0.355-0.4-0.8668-0.6-1.4065-0.6h-0.0313-7.1562zm3 3c1.1046 0 2 0.9 2 2s-0.8954 2-2 2-2-0.9-2-2 0.8954-2 2-2z" fill="#27ae60"/>
+  <path d="m2 0c-1.1046 0-2 0.89544-2 2v7.1562 0.0626c0.016343 0.5271 0.24566 1.0272 0.59375 1.3752l10.968 10.968c0.365 0.38 0.871 0.594 1.438 0.594s1.073-0.214 1.438-0.594l7.062-7.062c0.408-0.366 0.656-0.909 0.656-1.5s-0.248-1.134-0.656-1.5l-10.906-10.906c-0.355-0.35526-0.8668-0.58564-1.4065-0.594h-0.0313-7.1562zm3 3c1.1046 0 2 0.8954 2 2s-0.8954 2-2 2-2-0.8954-2-2 0.8954-2 2-2z" transform="translate(0 1028.4)" fill="#2ecc71"/>
+  <path d="m13 1049.4 7-7-8-8-7 7z" fill="#27ae60"/>
+  <path d="m13 20 7-7-8-8-7 7z" transform="translate(0 1028.4)" fill="#ecf0f1"/>
+  <path fill="#7f8c8d" d="m12 1036.4-3.5 3.5-0.5 0.5 0.5 0.5 4-4-0.5-0.5zm2 2-3.5 3.5-0.5 0.5 0.5 0.5 4-4-0.5-0.5zm2 2-3.5 3.5-0.5 0.5 0.5 0.5 4-4-0.5-0.5z"/>
+ </g>
+</svg>

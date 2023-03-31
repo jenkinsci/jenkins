@@ -1,17 +1,20 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg width="512px" height="512px" viewBox="0 0 512 512" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-    <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" stroke-linecap="round">
-        <path d="M448,341.339707 L448,170.579707 C447.98613,159.20656 441.936771,148.695371 432.11,142.969707 L280.11,54.5097067 C265.201263,45.8300978 246.778737,45.8300978 231.87,54.5097067 L79.89,142.969707 C70.0632289,148.695371 64.0138705,159.20656 64,170.579707 L64,341.339707 C64.0067627,352.719997 70.0570661,363.240443 79.89,368.969707 L231.89,457.429707 C246.802122,466.096765 265.217878,466.096765 280.13,457.429707 L432.13,368.969707 C441.955241,363.235397 448,352.715896 448,341.339707 Z" stroke="currentColor" stroke-width="32" stroke-linejoin="round"></path>
-        <line x1="69" y1="153.959707" x2="256" y2="263.959707" id="Path" stroke="currentColor" stroke-width="32" stroke-linejoin="round"></line>
-        <line x1="256" y1="263.959707" x2="318" y2="226" id="Path" stroke="currentColor" stroke-width="32" stroke-linejoin="round"></line>
-        <line x1="382.5" y1="190.5" x2="443" y2="153.959707" id="Path" stroke="currentColor" stroke-width="32" stroke-linejoin="round"></line>
-        <line x1="163" y1="208.959707" x2="225" y2="171" id="Path" stroke="currentColor" stroke-width="32" stroke-linejoin="round"></line>
-        <line x1="289.5" y1="135.5" x2="350" y2="98.9597067" id="Path" stroke="currentColor" stroke-width="32" stroke-linejoin="round"></line>
-        <line x1="256" y1="463.959707" x2="256" y2="263.959707" id="Path" stroke="currentColor" stroke-width="32" stroke-linejoin="round"></line>
-        <line x1="131" y1="115.959707" x2="318" y2="225.959707" id="Path" stroke="currentColor" stroke-width="32" stroke-linejoin="round"></line>
-        <line x1="191" y1="80.9597067" x2="378" y2="190.959707" id="Path" stroke="currentColor" stroke-width="32" stroke-linejoin="round"></line>
-        <line x1="318" y1="227" x2="317.991704" y2="345.768179" id="Path-3" stroke="currentColor" stroke-width="32"></line>
-        <line x1="382.876735" y1="194.959707" x2="382.876735" y2="308.645029" id="Path-4" stroke="currentColor" stroke-width="32"></line>
-        <line x1="318" y1="346" x2="382.876735" y2="308.645029" id="Path-5" stroke="currentColor" stroke-width="32"></line>
-    </g>
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!-- Uploaded to: SVG Repo, www.svgrepo.com, Generator: SVG Repo Mixer Tools -->
+<svg height="800px" width="800px" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" 
+	 viewBox="0 0 512 512" xml:space="preserve">
+<path style="fill:#715038;" d="M509.702,48.479c-3.075-5.471-8.925-9.174-15.648-9.174H121.029c-3.059,0-6.068,0.781-8.74,2.272
+	L9.206,99.056c-5.145,2.869-8.509,8.057-9.102,13.843C0.042,113.504,0,114.114,0,114.73v340.019c0,9.911,8.035,17.946,17.946,17.946
+	h376.848c3.497,0,6.76-1,9.52-2.73l98.515-55.231c5.663-3.174,9.171-9.161,9.171-15.654V57.251
+	C512,54.063,511.16,51.074,509.702,48.479z"/>
+<path d="M394.795,112.898L394.795,112.898L394.795,112.898z"/>
+<path style="fill:#7E604A;" d="M494.054,39.305H121.029c-3.059,0-6.068,0.781-8.74,2.272L9.206,99.056
+	c-5.145,2.869-8.509,8.057-9.102,13.843C0.042,113.504,0,114.114,0,114.73v340.019c0,9.911,8.035,17.946,17.946,17.946h376.848
+	V112.898l0,0l114.907-64.42C506.627,43.008,500.776,39.305,494.054,39.305z"/>
+<path style="fill:#AC825A;" d="M323.365,39.305H121.029c-3.059,0-6.068,0.781-8.74,2.272L9.206,99.056
+	c-5.145,2.869-8.509,8.057-9.102,13.843C0.042,113.504,0,114.114,0,114.73v340.019c0,9.911,8.035,17.946,17.946,17.946h186.081
+	V112.898L323.365,39.305z"/>
+<polygon style="fill:#FF9900;" points="281.542,39.305 152.028,112.898 152.028,472.695 241.514,472.695 241.514,112.898 
+	371.028,39.305 "/>
+<polygon style="fill:#FAD52A;" points="281.542,39.305 152.028,112.898 152.028,472.695 195.995,472.695 195.995,112.898 
+	323.365,39.305 "/>
 </svg>
