@@ -134,8 +134,10 @@ for (i = 0; i < buildTypes.size(); i++) {
                */
               if (currentBuild.currentResult == 'SUCCESS') {
                 launchable.install()
-                launchable('verify')
-                launchable('record commit')
+                withCredentials([string(credentialsId: 'launchable-jenkins-bom', variable: 'LAUNCHABLE_TOKEN')]) {
+                  launchable('verify')
+                  launchable('record commit')
+                }
               }
 
               def changelist = readFile(changelistF)
