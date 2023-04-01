@@ -29,7 +29,7 @@
     "clean-webpack-plugin": "4.0.0",
     "copy-webpack-plugin": "11.0.0",
     "css-loader": "6.7.3",
-    "css-minimizer-webpack-plugin": "4.2.2",
+    "css-minimizer-webpack-plugin": "5.0.0",
     "eslint": "8.36.0",
     "eslint-config-prettier": "8.8.0",
     "handlebars": "4.7.7",
