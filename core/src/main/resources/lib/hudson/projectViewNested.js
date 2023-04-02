@@ -40,9 +40,7 @@ Behaviour.specify(
       // fetch the nested view and load it when it's ready
       fetch(img.getAttribute("url"), {
         method: 'post',
-        headers: {
-          [document.head.dataset.crumbHeader]: document.head.dataset.crumbValue
-        },
+        headers: crumb.wrap({}),
       }).then(rsp => {
         rsp.text()
           .then(responseText => {

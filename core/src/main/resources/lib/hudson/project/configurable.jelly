@@ -32,9 +32,7 @@ THE SOFTWARE.
             function build_${id}(a) {
                 fetch(a.href, {
                   method: 'post',
-                    headers: {
-                        [document.head.dataset.crumbHeader]: document.head.dataset.crumbValue
-                    },
+                    headers: crumb.wrap({}),
                 }).then(_ => {
                     hoverNotification('${%Build scheduled}',a.parentNode);
                     return false;

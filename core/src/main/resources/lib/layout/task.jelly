@@ -152,9 +152,7 @@ THE SOFTWARE.
                     function postRequest_${id}(a) {
                       fetch(a.href, {
                         method: 'post',
-                        headers: {
-                          [document.head.dataset.crumbHeader]: document.head.dataset.crumbValue
-                        },
+                        headers: crumb.wrap({}),
                       }).then(_ => {
                         hoverNotification('${%Done.}', a.parentNode);
                         return false;

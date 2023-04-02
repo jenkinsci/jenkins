@@ -15,9 +15,7 @@
     }
     fetch(urlToTest, {
       cache: 'no-cache',
-      headers: {
-        [document.head.dataset.crumbHeader]: document.head.dataset.crumbValue
-      },
+      headers: crumb.wrap({}),
       body
     }).then(rsp => callback(rsp))
       .catch(rsp => callback(rsp))

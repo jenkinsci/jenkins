@@ -34,9 +34,7 @@ window.revokeToken = function (anchorRevoke) {
     fetch(targetUrl, {
       body: new URLSearchParams({ tokenUuid: tokenUuid }),
       method: 'post',
-      headers: {
-        [document.head.dataset.crumbHeader]: document.head.dataset.crumbValue
-      },
+      headers: crumb.wrap({}),
     }).then(rsp => {
       if (rsp.ok) {
           if (repeatedChunk.querySelectorAll(".legacy-token").length > 0) {
@@ -72,9 +70,7 @@ window.saveApiToken = function (button) {
   fetch(targetUrl, {
     body: new URLSearchParams({ newTokenName: tokenName }),
     method: 'post',
-    headers: {
-      [document.head.dataset.crumbHeader]: document.head.dataset.crumbValue
-    },
+    headers: crumb.wrap({}),
   }).then(rsp => {
     if (rsp.ok) {
       rsp.json()

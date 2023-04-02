@@ -289,9 +289,7 @@ THE SOFTWARE.
           <!-- trigger -->
           fetch(btn.getAttribute('url')+"/make"+(btn.checked?"Enable":"Disable")+"d", {
             method: 'post',
-            headers: {
-              [document.head.dataset.crumbHeader]: document.head.dataset.crumbValue
-            },
+            headers: crumb.wrap({}),
           }).then(rsp => {
             if (!rsp.ok) {
               $('needRestart').innerHTML = req.responseText;

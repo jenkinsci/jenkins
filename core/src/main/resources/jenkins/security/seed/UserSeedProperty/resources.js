@@ -35,9 +35,7 @@ window.resetSeed = function (button) {
   if (confirm(confirmMessage)) {
     fetch(targetUrl, {
       method: 'post',
-      headers: {
-        [document.head.dataset.crumbHeader]: document.head.dataset.crumbValue
-      }
+      headers: crumb.wrap({})
     }).then(rsp => {
       if (rsp.ok) {
         if (redirectAfterClick) {

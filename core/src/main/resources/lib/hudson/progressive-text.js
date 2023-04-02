@@ -18,9 +18,7 @@ Behaviour.specify(
       Where to retrieve additional text from
   */
     function fetchNext(e, href, onFinishEvent) {
-      var headers = {
-        [document.head.dataset.crumbHeader]: document.head.dataset.crumbValue
-      };
+      var headers = crumb.wrap({});
       if (e.consoleAnnotator !== undefined) {
         headers["X-ConsoleAnnotator"] = e.consoleAnnotator;
       }

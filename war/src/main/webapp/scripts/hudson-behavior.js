@@ -2563,9 +2563,7 @@ function validateButton(checkUrl, paramList, button) {
   var urlSearchParams = new URLSearchParams(parameters);
   fetch(checkUrl + "?" + urlSearchParams, {
     method: 'post',
-    headers: {
-      [document.head.dataset.crumbHeader]: document.head.dataset.crumbValue
-    },
+    headers: crumb.wrap({}),
   })
     .then(rsp => {
       rsp.text()

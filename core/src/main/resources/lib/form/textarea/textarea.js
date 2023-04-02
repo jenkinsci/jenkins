@@ -70,9 +70,7 @@ Behaviour.specify(
 
       fetch(rootURL + showPreview.getAttribute("previewEndpoint"), {
         method: 'post',
-        headers: {
-          [document.head.dataset.crumbHeader]: document.head.dataset.crumbValue
-        },
+        headers: crumb.wrap({}),
         body: new URLSearchParams({
           text: text
         })

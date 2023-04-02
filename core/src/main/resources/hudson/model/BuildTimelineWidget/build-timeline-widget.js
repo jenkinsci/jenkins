@@ -19,9 +19,7 @@ function getData(eventSource1, current, min, max) {
         }),
       {
         method: "POST",
-        headers: {
-          [document.head.dataset.crumbHeader]: document.head.dataset.crumbValue,
-        },
+        headers: crumb.wrap({}),
       }
     ).then((t) => {
       if (t.ok) {
