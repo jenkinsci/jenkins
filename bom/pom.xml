@@ -175,6 +175,7 @@ THE SOFTWARE.
         <artifactId>jcip-annotations</artifactId>
         <version>1.0</version>
       </dependency>
+      <!-- TODO remove after determining this will not break plugins -->
       <dependency>
         <groupId>net.sf.kxml</groupId>
         <artifactId>kxml2</artifactId>
