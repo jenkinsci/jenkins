@@ -31,6 +31,7 @@ import static org.junit.Assert.assertThrows;
 
 import com.gargoylesoftware.htmlunit.ElementNotFoundException;
 import com.gargoylesoftware.htmlunit.WebClientUtil;
+import com.gargoylesoftware.htmlunit.html.DomNode;
 import com.gargoylesoftware.htmlunit.html.HtmlButton;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
@@ -46,6 +47,8 @@ import hudson.model.RootAction;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+
 import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -593,6 +596,10 @@ public class RepeatableTest {
             f.getElementsByAttribute("input", "type", "radio").get(4).click(); // outer=one
             Thread.sleep(500);
             f.getElementsByTagName("button").get(3).click(); // 2nd "Add Moo" button
+            System.out.println("The list is here ");
+            System.out.println(f.getElementsByTagName("button"));
+            System.out.println(f.getElementsByTagName("button").stream().map(DomNode::getTextContent).collect(Collectors.toList()));
+            System.out.println("The list is above ");
             WebClientUtil.waitForJSExec(wc);
             f.getElementsByAttribute("input", "type", "radio").get(7).click(); // inner=intwo
             f.getElementsByTagName("button").get(4).click();
