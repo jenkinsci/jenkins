@@ -128,6 +128,17 @@ for (i = 0; i < buildTypes.size(); i++) {
               if (failFast && currentBuild.result == 'UNSTABLE') {
                 error 'Static analysis quality gates not passed; halting early'
               }
+              /*
+               * If the current build was successful, we send the commits to Launchable so that the
+               * result can be consumed by a Launchable build in the future.
+               */
+              if (currentBuild.currentResult == 'SUCCESS') {
+                launchable.install()
+                withCredentials([string(credentialsId: 'launchable-jenkins-bom', variable: 'LAUNCHABLE_TOKEN')]) {
+                  launchable('verify')
+                  launchable('record commit')
+                }
+              }
 
               def changelist = readFile(changelistF)
               dir(m2repo) {
