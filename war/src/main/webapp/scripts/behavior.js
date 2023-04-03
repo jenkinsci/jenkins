@@ -59,7 +59,7 @@ var Behaviour = (function() {
     },
 
         /** @deprecated For backward compatibility only; use {@link specify} instead. */
-	list : new Array,
+	list : [],
 
         /** @deprecated For backward compatibility only; use {@link specify} instead. */
 	register : function(sheet){
@@ -87,19 +87,19 @@ var Behaviour = (function() {
      *      this semantics is preserved.
      */
     applySubtree : function(startNode,includeSelf) {
-        if (!(startNode instanceof Array)) {
+        if (!(Array.isArray(startNode))) {
             startNode = [startNode];
         }
-        storage._each(function (registration) {
+        storage.forEach(function (registration) {
             if (registration.id == '_deprecated') {
-                Behaviour.list._each(function(sheet) {
+                Behaviour.list.forEach(function(sheet) {
                     for (var selector in sheet){
-                        startNode._each(function (n) {
+                        startNode.forEach(function (n) {
                           try {
                             var list = findElementsBySelector(n, selector, includeSelf);
                             if (list.length > 0) { // just to simplify setting of a breakpoint.
                                 //console.log('deprecated:' + selector + ' on ' + list.length + ' elements');
-                                list._each(sheet[selector]);
+                                list.forEach(sheet[selector]);
                             }
                           } catch (e) {
                               console.error(e)
@@ -108,12 +108,12 @@ var Behaviour = (function() {
                     }
                 });
             } else {
-                startNode._each(function (node) {
+                startNode.forEach(function (node) {
                   try {
                     var list = findElementsBySelector(node, registration.selector, includeSelf);
                     if (list.length > 0) {
                         //console.log(registration.id + ':' + registration.selector + ' @' + registration.priority + ' on ' + list.length + ' elements');
-                        list._each(registration.behavior);
+                        list.forEach(registration.behavior);
                     }
                   } catch (e) {
                       console.error(e)
@@ -170,9 +170,9 @@ function findElementsBySelector(startNode,selector,includeSelf) {
               c = c.parentNode;
           }
         }
-        return Prototype.Selector.select(selector, startNode.parentNode).filter(isSelfOrChild);
+        return Array.from(startNode.parentNode.querySelectorAll(selector)).filter(isSelfOrChild);
     } else {
-        return Prototype.Selector.select(selector, startNode);
+        return Array.from(startNode.querySelectorAll(selector));
     }
 }
 
