@@ -130,10 +130,7 @@ div.to-be-removed {
       &::before {
         content: "";
         position: absolute;
-        top: 0;
-        left: 0;
-        bottom: 0;
-        right: 0;
+        inset: 0;
         background: var(--text-color);
         border-radius: var(--form-input-border-radius);
         opacity: 0;
@@ -143,10 +140,7 @@ div.to-be-removed {
       &::after {
         content: "";
         position: absolute;
-        top: 0;
-        left: 4px;
-        bottom: 0;
-        right: 4px;
+        inset: 0 4px;
         background-color: var(--text-color);
         mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' class='ionicon' viewBox='0 0 512 512'%3E%3Ctitle%3EReorder Three%3C/title%3E%3Cpath fill='none' stroke='currentColor' stroke-linecap='round' stroke-linejoin='round' stroke-width='32' d='M96 256h320M96 176h320M96 336h320'/%3E%3C/svg%3E");
         mask-position: center;
@@ -183,10 +177,7 @@ div.to-be-removed {
     &::before {
       content: "";
       position: absolute;
-      top: 0;
-      left: 0;
-      bottom: 0;
-      right: 0;
+      inset: 0;
       background: currentColor;
       border-radius: 100px;
       z-index: -1;
@@ -197,10 +188,7 @@ div.to-be-removed {
     &::after {
       content: "";
       position: absolute;
-      top: 0;
-      left: 0;
-      bottom: 0;
-      right: 0;
+      inset: 0;
       box-shadow: 0 0 0 10px transparent;
       border-radius: 100px;
       z-index: -1;
