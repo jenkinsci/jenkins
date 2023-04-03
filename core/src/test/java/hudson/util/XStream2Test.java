@@ -40,6 +40,7 @@ import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.thoughtworks.xstream.mapper.CannotResolveClassException;
 import hudson.model.Result;
 import hudson.model.Run;
+import java.io.InputStream;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -570,4 +571,23 @@ public class XStream2Test {
     @XStreamAlias("C-5")
     public static final class C5 {}
 
+    @Issue("JENKINS-69129")
+    @Test
+    public void testEmoji() throws Exception {
+        Bar bar;
+        try (InputStream is = getClass().getResource("XStream2Emoji.xml").openStream()) {
+            bar = (Bar) new XStream2().fromXML(is);
+        }
+        assertEquals("Fox 🦊", bar.s);
+    }
+
+    @Issue("JENKINS-69129")
+    @Test
+    public void testEmojiEscaped() throws Exception {
+        Bar bar;
+        try (InputStream is = getClass().getResource("XStream2EmojiEscaped.xml").openStream()) {
+            bar = (Bar) new XStream2().fromXML(is);
+        }
+        assertEquals("Fox 🦊", bar.s);
+    }
 }
