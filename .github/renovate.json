@@ -7,7 +7,7 @@
   ],
   "enabledManagers": ["npm", "regex"],
   "postUpdateOptions": [
-    "yarnDedupeFewer"
+    "yarnDedupeHighest"
   ],
   "packageRules": [
     {
