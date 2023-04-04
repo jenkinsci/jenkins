@@ -86,11 +86,10 @@ window.breadcrumbs = (function () {
     fetch(url, {
       method: 'post',
       headers: crumb.wrap({}),
-    }).then(_ => {
-      if (event.length == 1 && event[0].target != null) {
-        hoverNotification("Done.", event[0].target);
-      }
     })
+    if (event.length == 1 && event[0].target != null) {
+      hoverNotification("Done.", event[0].target);
+    }
   }
 
   function requireConfirmation(action, event, cfg) {
