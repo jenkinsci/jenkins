@@ -35,7 +35,7 @@ THE SOFTWARE.
             <l:hasAdministerOrManage>
               <a class="jenkins-button jenkins-button--primary" href="new">
                 <l:icon src="symbol-add"/>
-                ${%New cloud}
+                ${%newCloud}
               </a>
             </l:hasAdministerOrManage>
           </l:app-bar>
@@ -77,10 +77,10 @@ THE SOFTWARE.
             <section class="empty-state-section">
               <j:choose>
                 <j:when test="${it.cloudAvailable}">
-                  <p>${%There are no clouds currently setup, create one or install a plugin for more cloud options.}</p>
+                  <p>${%noCloudAvailable}</p>
                 </j:when>
                 <j:otherwise>
-                  <p>${%There are no cloud implementations for dynamically allocated agents installed.}</p>
+                  <p>${%noCloudPlugin}</p>
                 </j:otherwise>
               </j:choose>
               <ul class="empty-state-section-list">
@@ -88,7 +88,7 @@ THE SOFTWARE.
                   <li class="content-block">
                     <a href="new"
                        class="content-block__link">
-                      <span>${%New cloud}</span>
+                      <span>${%newCloud}</span>
                       <span class="trailing-icon">
                         <l:icon class="icon-md" src="symbol-arrow-right"/>
                       </span>
@@ -98,7 +98,7 @@ THE SOFTWARE.
                 <li class="content-block">
                   <a href="${rootURL}/manage/pluginManager/available?filter=${it.cloudUpdateCenterCategoryLabel}"
                      class="content-block__link">
-                    <span>${%Install a plugin}</span>
+                    <span>${%installCloudPlugin}</span>
                     <span class="trailing-icon">
                       <l:icon class="icon-md" src="symbol-arrow-right"/>
                     </span>
