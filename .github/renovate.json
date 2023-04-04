@@ -6,6 +6,9 @@
     ":semanticCommitsDisabled"
   ],
   "enabledManagers": ["npm", "regex"],
+  "postUpdateOptions": [
+    "yarnDedupeFewer"
+  ],
   "packageRules": [
     {
       "matchDatasources": ["npm"],
