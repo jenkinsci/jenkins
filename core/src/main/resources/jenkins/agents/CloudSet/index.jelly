@@ -107,7 +107,7 @@ THE SOFTWARE.
                 <li class="content-block">
                   <a href="https://www.jenkins.io/redirect/distributed-builds"
                      class="content-block__link content-block__help-link"
-                     target="_blank">
+                     target="_blank" rel="noopener noreferrer">
                     <span>${%learnMoreDistributedBuilds}</span>
                     <span class="trailing-icon">
                       <l:icon class="icon-md" src="symbol-link"/>
