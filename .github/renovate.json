@@ -6,9 +6,7 @@
     ":semanticCommitsDisabled"
   ],
   "enabledManagers": ["npm", "regex"],
-  "postUpdateOptions": [
-    "yarnDedupeHighest"
-  ],
+  "postUpdateOptions": ["yarnDedupeHighest"],
   "packageRules": [
     {
       "matchDatasources": ["npm"],
