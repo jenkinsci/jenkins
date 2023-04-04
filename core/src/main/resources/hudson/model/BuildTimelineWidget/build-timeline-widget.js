@@ -22,7 +22,7 @@ function getData(eventSource1, current, min, max) {
         headers: crumb.wrap({}),
       }
     ).then((t) => {
-      if (t.status !== 0) {
+      if (t.ok) {
         t.json()
           .then((json) => {
             eventSource1.loadJSON(json, ".");
