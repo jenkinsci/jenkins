@@ -77,10 +77,7 @@
       &::after {
         content: "";
         position: absolute;
-        top: 0;
-        left: 0;
-        bottom: 0;
-        right: 0;
+        inset: 0;
         transition: var(--standard-transition);
         background: var(--text-color-secondary);
         mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' class='ionicon' viewBox='0 0 512 512'%3E%3Ctitle%3EChevron Forward%3C/title%3E%3Cpath fill='none' stroke='currentColor' stroke-linecap='round' stroke-linejoin='round' stroke-width='48' d='M184 112l144 144-144 144'/%3E%3C/svg%3E");
@@ -124,10 +121,7 @@
       &::before {
         content: "";
         position: absolute;
-        top: -14px;
-        left: -5px;
-        bottom: -14px;
-        right: -5px;
+        inset: -14px -5px;
         background: transparent;
       }
     }
@@ -264,10 +258,7 @@
     &::after {
       content: "";
       position: absolute;
-      top: -7px;
-      left: -10px;
-      bottom: -7px;
-      right: -10px;
+      inset: -7px -10px;
       opacity: 0;
       border-radius: 6px;
       transition: var(--standard-transition);
