@@ -49,18 +49,15 @@ THE SOFTWARE.
             <l:icon class="icon-red icon-md"/>
             <l:icon class="icon-nobuilt icon-md"/>
           </div>
-          <p class="info jenkins-checkbox" style="font-weight: normal">
+          <p class="info">
             <j:if test="${app.lifecycle.canRestart()}">
               <j:if test="${app.isQuietingDown() or it.isRestartScheduled()}">
-                <input id="scheduleRestartCheckbox" type="checkbox" checked="checked" />
+                <f:checkbox checked="true" id="scheduleRestartCheckbox" name="scheduleRestart" title="${%warning}" />
               </j:if>
               <j:if test="${!app.isQuietingDown() and !it.isRestartScheduled()}">
-                <input id="scheduleRestartCheckbox" type="checkbox" />
+                <f:checkbox readonly="true" id="scheduleRestartCheckbox" name="scheduleRestart" title="${%warning}" />
               </j:if>
             </j:if>
-            <label for="scheduleRestartCheckbox">
-              ${%warning}
-            </label>
           </p>
         </l:isAdmin>
       </form>

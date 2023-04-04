@@ -228,10 +228,7 @@
 
     &::before,
     &::after {
-      top: -7px;
-      left: -10px;
-      bottom: -7px;
-      right: -10px;
+      inset: -7px -10px;
       border-radius: 6px;
     }
   }
@@ -240,20 +237,14 @@
     margin-left: 1rem !important;
 
     &::before {
-      top: -5px;
-      left: -8px;
-      bottom: -5px;
-      right: -8px;
+      inset: -5px -8px;
       border-radius: 13px;
       background: currentColor;
       opacity: 0.05;
     }
 
     &::after {
-      top: -5px;
-      left: -8px;
-      bottom: -5px;
-      right: -8px;
+      inset: -5px -8px;
       box-shadow: 0 0 0 10px currentColor;
       opacity: 0;
     }
