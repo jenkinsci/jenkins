@@ -286,7 +286,6 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
         Objects.hash(PERMISSION_SCOPE, PROVISION);
     }
 
-    @Exported
     public String getIcon() {
         return "symbol-cloud";
     }
