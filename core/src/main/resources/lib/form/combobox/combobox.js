@@ -20,7 +20,10 @@ Behaviour.specify("INPUT.combobox2", "combobox", 100, function (e) {
 
   refillOnChange(e, function (params) {
     var urlSearchParams = new URLSearchParams(params);
-    fetch(e.getAttribute("fillUrl") + "?" + urlSearchParams)
+    fetch(e.getAttribute("fillUrl") + "?" + urlSearchParams, {
+      headers: crumb.wrap({}),
+      method: 'post',
+    })
       .then(rsp => {
         if (rsp.ok) {
           rsp.json()
