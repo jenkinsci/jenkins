@@ -155,4 +155,6 @@ function init() {
   }
 }
 
-export default { init };
+document.addEventListener("DOMContentLoaded", () => {
+  init();
+});
