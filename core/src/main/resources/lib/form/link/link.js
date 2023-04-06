@@ -12,14 +12,14 @@ Behaviour.specify("A.post", "link.post", 0, function (element) {
 
 Behaviour.specify("A.post-async", "link.post-async", 0, function (element) {
   element.onclick = function () {
-    fetch(element.getAttribute("href"))
+    fetch(element.getAttribute("href"));
     return false;
   };
 });
 
 Behaviour.specify("A.async", "link.async", 0, function (element) {
   element.onclick = function () {
-    fetch(element.getAttribute("href"))
+    fetch(element.getAttribute("href"));
     return false;
   };
 });

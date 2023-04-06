@@ -14,13 +14,14 @@
       body = new URLSearchParams({ testWithContext: "true" });
     }
     fetch(urlToTest, {
-      cache: 'no-cache',
+      cache: "no-cache",
       headers: crumb.wrap({}),
-      body
-    }).then(rsp => callback(rsp))
+      body,
+    })
+      .then((rsp) => callback(rsp))
       // normally you don't need a catch function with fetch because HTTP errors doesn't reject a promise,
       // but it does reject on network errors which is exactly what this is testing for.
-      .catch(rsp => callback(rsp))
+      .catch((rsp) => callback(rsp));
   };
 
   var displayWarningMessage = function (withContextMessage) {

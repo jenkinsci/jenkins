@@ -115,8 +115,8 @@ window.confirmAndRevokeAllSelected = function (button) {
       fetch(url, {
         method: "post",
         body: JSON.stringify({ values: selectedValues }),
-        headers: crumb.wrap({'Content-Type': "application/json"}),
-      }).then(() => window.location.reload())
+        headers: crumb.wrap({ "Content-Type": "application/json" }),
+      }).then(() => window.location.reload());
     }
   }
 };

@@ -69,13 +69,13 @@ Behaviour.specify(
       };
 
       fetch(rootURL + showPreview.getAttribute("previewEndpoint"), {
-        method: 'post',
+        method: "post",
         headers: crumb.wrap({}),
         body: new URLSearchParams({
-          text: text
-        })
-      }).then(rsp => {
-        rsp.text().then(responseText => {
+          text: text,
+        }),
+      }).then((rsp) => {
+        rsp.text().then((responseText) => {
           if (rsp.ok) {
             render(responseText);
           } else {
@@ -84,8 +84,8 @@ Behaviour.specify(
             );
           }
           return false;
-        })
-      })
+        });
+      });
     };
 
     hidePreview.onclick = function () {

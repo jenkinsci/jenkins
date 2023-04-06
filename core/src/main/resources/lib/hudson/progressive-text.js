@@ -24,12 +24,12 @@ Behaviour.specify(
       }
 
       fetch(href, {
-        method: 'post',
+        method: "post",
         headers,
         body: new URLSearchParams({
-          start: e.fetchedBytes
-        })
-      }).then(rsp => {
+          start: e.fetchedBytes,
+        }),
+      }).then((rsp) => {
         if (rsp.status >= 500 || rsp.status === 0) {
           setTimeout(function () {
             fetchNext(e, href, onFinishEvent);
@@ -43,35 +43,34 @@ Behaviour.specify(
         }
         /* append text and do autoscroll if applicable */
         var stickToBottom = scroller.isSticking();
-        rsp.text()
-          .then(responseText => {
-            var text = responseText;
-            if (text !== "") {
-              var p = document.createElement("DIV");
-              e.appendChild(p); // Needs to be first for IE
-              p.innerHTML = text;
-              Behaviour.applySubtree(p);
-              if (stickToBottom) {
-                scroller.scrollToBottom();
-              }
+        rsp.text().then((responseText) => {
+          var text = responseText;
+          if (text !== "") {
+            var p = document.createElement("DIV");
+            e.appendChild(p); // Needs to be first for IE
+            p.innerHTML = text;
+            Behaviour.applySubtree(p);
+            if (stickToBottom) {
+              scroller.scrollToBottom();
             }
+          }
 
-            e.fetchedBytes = rsp.headers.get("X-Text-Size");
-            e.consoleAnnotator = rsp.headers.get("X-ConsoleAnnotator");
-            if (rsp.headers.get("X-More-Data") === "true") {
-              setTimeout(function () {
-                fetchNext(e, href, onFinishEvent);
-              }, 1000);
-            } else {
-              if (spinner !== "") {
-                $(spinner).style.display = "none";
-              }
-              if (onFinishEvent) {
-                Event.fire(window, onFinishEvent);
-              }
+          e.fetchedBytes = rsp.headers.get("X-Text-Size");
+          e.consoleAnnotator = rsp.headers.get("X-ConsoleAnnotator");
+          if (rsp.headers.get("X-More-Data") === "true") {
+            setTimeout(function () {
+              fetchNext(e, href, onFinishEvent);
+            }, 1000);
+          } else {
+            if (spinner !== "") {
+              $(spinner).style.display = "none";
             }
-          })
-      })
+            if (onFinishEvent) {
+              Event.fire(window, onFinishEvent);
+            }
+          }
+        });
+      });
     }
     $(idref).fetchedBytes = startOffset !== "" ? Number(startOffset) : 0;
     fetchNext($(idref), href, onFinishEvent);

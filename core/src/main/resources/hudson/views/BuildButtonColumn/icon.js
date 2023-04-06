@@ -11,9 +11,9 @@ Behaviour.specify(
     icon.onclick = function () {
       // TODO what is this doing? this is just ignored? is it notifying if url succeeded?
       fetch(url, {
-        method: 'post',
-        headers: crumb.wrap({})
-      })
+        method: "post",
+        headers: crumb.wrap({}),
+      });
       hoverNotification(message, this, -100);
       return false;
     };

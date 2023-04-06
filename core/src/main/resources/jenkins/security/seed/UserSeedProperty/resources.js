@@ -34,9 +34,9 @@ window.resetSeed = function (button) {
 
   if (confirm(confirmMessage)) {
     fetch(targetUrl, {
-      method: 'post',
-      headers: crumb.wrap({})
-    }).then(rsp => {
+      method: "post",
+      headers: crumb.wrap({}),
+    }).then((rsp) => {
       if (rsp.ok) {
         if (redirectAfterClick) {
           window.location.href = redirectAfterClick;
@@ -45,8 +45,7 @@ window.resetSeed = function (button) {
             warningMessage.addClassName("visible");
           }
         }
-
       }
-    })
+    });
   }
 };

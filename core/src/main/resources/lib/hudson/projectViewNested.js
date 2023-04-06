@@ -39,24 +39,22 @@ Behaviour.specify(
 
       // fetch the nested view and load it when it's ready
       fetch(img.getAttribute("url"), {
-        method: 'post',
+        method: "post",
         headers: crumb.wrap({}),
-      }).then(rsp => {
-        rsp.text()
-          .then(responseText => {
-            var cont = document.createElement("div");
-            cont.innerHTML = responseText;
-            var rows = $A(cont.firstElementChild.rows);
-            var anim = { opacity: { from: 0, to: 1 } };
-            rows.reverse().each(function (r) {
-              YAHOO.util.Dom.setStyle(r, "opacity", 0); // hide
-              YAHOO.util.Dom.insertAfter(r, tr);
-              Behaviour.applySubtree(r);
-              new YAHOO.util.Anim(r, anim, 0.3).animate();
-            });
-
-          })
-      })
+      }).then((rsp) => {
+        rsp.text().then((responseText) => {
+          var cont = document.createElement("div");
+          cont.innerHTML = responseText;
+          var rows = $A(cont.firstElementChild.rows);
+          var anim = { opacity: { from: 0, to: 1 } };
+          rows.reverse().each(function (r) {
+            YAHOO.util.Dom.setStyle(r, "opacity", 0); // hide
+            YAHOO.util.Dom.insertAfter(r, tr);
+            Behaviour.applySubtree(r);
+            new YAHOO.util.Anim(r, anim, 0.3).animate();
+          });
+        });
+      });
     };
     e = null;
   }

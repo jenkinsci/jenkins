@@ -84,9 +84,9 @@ window.breadcrumbs = (function () {
 
   function postRequest(action, event, url) {
     fetch(url, {
-      method: 'post',
+      method: "post",
       headers: crumb.wrap({}),
-    })
+    });
     if (event.length == 1 && event[0].target != null) {
       hoverNotification("Done.", event[0].target);
     }
