@@ -36,7 +36,7 @@ THE SOFTWARE.
     <l:breadcrumb title="${%New cloud}" />
     <l:main-panel>
       <j:invokeStatic var="clouds" className="hudson.slaves.Cloud" method="all" />
-      <n:form title="${%New cloud}" nameTitle="${%Cloud name}" copyTitle="${%Copy Existing Cloud}" showCopyOption="${!empty(it._cloudNames)}" action="create"
+      <n:form title="${%New cloud}" nameTitle="${%Cloud name}" copyTitle="${%Copy Existing Cloud}" showCopyOption="${it.hasClouds()}" action="create"
               descriptors="${clouds}" checkUrl="checkName" xmlns:n="/lib/hudson/newFromList" />
     </l:main-panel>
   </l:layout>

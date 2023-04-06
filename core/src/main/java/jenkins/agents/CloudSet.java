@@ -25,6 +25,7 @@
 package jenkins.agents;
 
 import hudson.Extension;
+import hudson.Functions;
 import hudson.Util;
 import hudson.model.AbstractModelObject;
 import hudson.model.AutoCompletionCandidates;
@@ -38,25 +39,21 @@ import hudson.util.FormValidation;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
-import java.util.stream.Collectors;
 import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithChildren;
 import jenkins.model.ModelObjectWithContextMenu;
 import net.sf.json.JSONObject;
 import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.export.Exported;
-import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.kohsuke.stapler.verb.POST;
 
-@ExportedBean
 @Restricted(NoExternalUse.class)
 public class CloudSet extends AbstractModelObject implements Describable<CloudSet>, ModelObjectWithChildren, RootAction, StaplerProxy {
     @Override
@@ -95,11 +92,6 @@ public class CloudSet extends AbstractModelObject implements Describable<CloudSe
         return "/cloud/";
     }
 
-    @Exported(name = "cloud", inline = true)
-    public Jenkins.CloudList get_all() {
-        return Jenkins.get().clouds;
-    }
-
     @SuppressWarnings("unused") // stapler
     public boolean isCloudAvailable() {
         return !Cloud.all().isEmpty();
@@ -113,7 +105,7 @@ public class CloudSet extends AbstractModelObject implements Describable<CloudSe
     @Override
     public ModelObjectWithContextMenu.ContextMenu doChildrenContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
         ModelObjectWithContextMenu.ContextMenu m = new ModelObjectWithContextMenu.ContextMenu();
-        get_all().stream().forEach(c -> m.add(c));
+        Jenkins.get().clouds.stream().forEach(c -> m.add(c));
         return m;
     }
 
@@ -121,15 +113,16 @@ public class CloudSet extends AbstractModelObject implements Describable<CloudSe
         return Jenkins.get().clouds.getByName(name);
     }
 
-    /**
-     * Gets all the agent names.
-     */
     @SuppressWarnings("unused") // stapler
-    public List<String> get_cloudNames() {
-        return Jenkins.get().clouds
-                .stream()
-                .map(c -> c.name)
-                .collect(Collectors.toList());
+    @Restricted(DoNotUse.class) // stapler
+    public Jenkins.CloudList getClouds() {
+        return Jenkins.get().clouds;
+    }
+
+    @SuppressWarnings("unused") // stapler
+    @Restricted(DoNotUse.class) // stapler
+    public boolean hasClouds() {
+        return !Jenkins.get().clouds.isEmpty();
     }
 
     /**
@@ -193,7 +186,7 @@ public class CloudSet extends AbstractModelObject implements Describable<CloudSe
             Cloud result = (Cloud) Jenkins.XSTREAM.fromXML(xml);
             jenkins.clouds.add(result);
             // send the browser to the config page
-            rsp.sendRedirect2("../../" + result.getUrl() + "configure");
+            rsp.sendRedirect2(Functions.getNearestAncestorUrl(req, jenkins) + "/" + result.getUrl() + "configure");
         } else {
             // proceed to step 2
             if (mode == null) {

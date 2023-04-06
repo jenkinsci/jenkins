@@ -30,14 +30,14 @@ THE SOFTWARE.
   <l:layout title="${it.displayName}" type="one-column">
     <l:main-panel>
       <j:choose>
-        <j:when test="${it.cloudAvailable and !it._all.isEmpty()}">
+        <j:when test="${it.cloudAvailable and it.hasClouds()}">
           <l:app-bar title="${%Clouds}">
-            <l:hasAdministerOrManage>
+            <l:hasPermission permission="${app.ADMINISTER}">
               <a class="jenkins-button jenkins-button--primary" href="new">
                 <l:icon src="symbol-add"/>
                 ${%newCloud}
               </a>
-            </l:hasAdministerOrManage>
+            </l:hasPermission>
           </l:app-bar>
           <table id="clouds" class="jenkins-table sortable">
             <thead>
@@ -48,7 +48,7 @@ THE SOFTWARE.
               </tr>
             </thead>
             <tbody>
-              <j:forEach var="cloud" items="${it._all}">
+              <j:forEach var="cloud" items="${it.clouds}">
                 <tr id="cloud_${cloud.name}">
                   <td data="${cloud.icon}" class="jenkins-table__cell--tight jenkins-table__icon">
                     <div class="jenkins-table__cell__button-wrapper">
@@ -56,11 +56,11 @@ THE SOFTWARE.
                     </div>
                   </td>
                   <td>
-                    <a href="${app.rootUrl}${cloud.url}" class="jenkins-table__link model-link inside">${cloud.name}</a>
+                    <a href="${h.getNearestAncestorUrl(request,app)}/${cloud.url}" class="jenkins-table__link model-link inside">${cloud.name}</a>
                   </td>
                   <td class="jenkins-table__cell--tight">
                     <div class="jenkins-table__cell__button-wrapper">
-                      <a href="${app.rootUrl}${cloud.url}configure" class="jenkins-table__button">
+                      <a href="${h.getNearestAncestorUrl(request,app)}/${cloud.url}configure" class="jenkins-table__button">
                         <l:icon src="symbol-settings"/>
                       </a>
                     </div>
