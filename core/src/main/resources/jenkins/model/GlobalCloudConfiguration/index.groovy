@@ -12,7 +12,7 @@ l.layout(norefresh:true, permission:app.SYSTEM_READ, title:my.displayName) {
     set("readOnlyMode", !app.hasPermission(app.ADMINISTER))
     l.side_panel {
         l.tasks {
-            l.task(icon:"symbol-settings", href: "../computer/", title:_("Manage Nodes"))
+            l.task(icon:"symbol-settings", href: "../computer/", title:_("Nodes"))
         }
     }
     l.main_panel {

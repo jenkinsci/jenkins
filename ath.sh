@@ -6,11 +6,14 @@ set -o xtrace
 cd "$(dirname "$0")"
 
 # https://github.com/jenkinsci/acceptance-test-harness/releases
-export ATH_VERSION=5478.vb_b_cd04943676
+export ATH_VERSION=5528.v806749710b_83
 
-# TODO use Artifactory proxy?
+MVN='mvn -B -ntp -Pquick-build -am -pl war package'
+if [[ -n ${MAVEN_SETTINGS-} ]]; then
+	MVN="${MVN} -s ${MAVEN_SETTINGS}"
+fi
 
-[[ -f war/target/jenkins.war ]] || mvn -B -ntp -Pquick-build -am -pl war package
+[[ -f war/target/jenkins.war ]] || $MVN
 
 mkdir -p target/ath-reports
 chmod a+rwx target/ath-reports

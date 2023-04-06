@@ -19,7 +19,7 @@ import org.apache.commons.lang.StringUtils;
 
 /**
  * Helper class to load symbols from Jenkins core or plugins.
- * @since TODO
+ * @since 2.383
  */
 public final class Symbol {
     private static final Logger LOGGER = Logger.getLogger(Symbol.class.getName());
@@ -39,7 +39,7 @@ public final class Symbol {
      * Generates the svg markup for the given symbol name and attributes.
      * @param request the symbol request object.
      * @return The svg markup for the symbol.
-     * @since TODO
+     * @since 2.383
      */
     public static String get(@NonNull SymbolRequest request) {
         String name = request.getName();
@@ -94,7 +94,6 @@ public final class Symbol {
                      .replaceAll("(class=\").*?(\")", "")
                      .replaceAll("(tooltip=\").*?(\")", "")
                      .replaceAll("(data-html-tooltip=\").*?(\")", "")
-                     .replaceAll("(id=\").*?(\")", "")
                      .replace("stroke:#000", "stroke:currentColor");
     }
 

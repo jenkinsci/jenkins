@@ -166,3 +166,15 @@
   // https://medium.com/@jessebeach/beware-smushed-off-screen-accessible-text-5952a4c2cbfe
   white-space: nowrap;
 }
+
+.jenkins-mobile-show {
+  @media (min-width: 767px) {
+    display: none !important;
+  }
+}
+
+.jenkins-mobile-hide {
+  @media (max-width: 767px) {
+    display: none !important;
+  }
+}

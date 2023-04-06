@@ -27,10 +27,8 @@ THE SOFTWARE.
   <s:documentation> <![CDATA[
     Submit button. This should be always used instead of the plain <button> tag.
     ]]>
-    <s:attribute name="id">
+    <s:attribute name="id" since="2.376">
       If specified the ID of the button.
-
-      @since TODO
     </s:attribute>
     <s:attribute name="name">
       If specified, becomes the value of the name attribute.
@@ -41,16 +39,14 @@ THE SOFTWARE.
       The text of the submit button, defaults to 'Submit'
       It's recommended to be more descriptive when possible, e.g. 'Create', 'Next'
     </s:attribute>
-    <s:attribute name="primary">
+    <s:attribute name="primary" since="2.376">
       Sets whether this button is a primary button or not.
       Defaults to true.
-
-      @since TODO
     </s:attribute>
     <s:attribute name="clazz" />
   </s:documentation>
 
-  <button id="${attrs.id}" name="${attrs.name ?: 'Submit'}"
+  <button id="${attrs.id}" name="${attrs.name ?: 'Submit'}" formNoValidate="formNoValidate"
           class="jenkins-button ${attrs.primary != 'false' ? 'jenkins-button--primary' : ''} ${attrs.clazz}">
     ${attrs.value ?: '%Submit'}
   </button>

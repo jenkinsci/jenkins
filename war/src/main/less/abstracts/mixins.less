@@ -50,6 +50,7 @@
   position: relative;
   z-index: 0;
   text-decoration: none !important;
+  border-radius: 0.66rem;
 
   &::before,
   &::after {
@@ -57,7 +58,7 @@
     content: "";
     inset: 0;
     z-index: -1;
-    border-radius: 0.66rem;
+    border-radius: inherit;
     transition: var(--standard-transition);
     pointer-events: none;
   }
