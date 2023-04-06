@@ -74,7 +74,7 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.399</revision>
+    <revision>2.400</revision>
     <changelist>-SNAPSHOT</changelist>
 
     <!-- configuration for patch tracker plugin  -->
@@ -387,7 +387,7 @@ THE SOFTWARE.
         <plugin>
           <groupId>org.jacoco</groupId>
           <artifactId>jacoco-maven-plugin</artifactId>
-          <version>0.8.8</version>
+          <version>0.8.9</version>
         </plugin>
       </plugins>
     </pluginManagement>
