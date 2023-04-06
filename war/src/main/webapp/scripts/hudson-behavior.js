@@ -1996,7 +1996,10 @@ function refreshPart(id, url) {
   var intervalID = null;
   var f = function () {
     if (isPageVisible()) {
-      fetch(url).then((rsp) => {
+      fetch(url, {
+        headers: crumb.wrap({}),
+        method: "post",
+      }).then((rsp) => {
         if (rsp.ok) {
           rsp.text().then((responseText) => {
             var hist = $(id);
