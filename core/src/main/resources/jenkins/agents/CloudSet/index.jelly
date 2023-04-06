@@ -32,12 +32,12 @@ THE SOFTWARE.
       <j:choose>
         <j:when test="${it.cloudAvailable and it.hasClouds()}">
           <l:app-bar title="${%Clouds}">
-            <l:hasPermission permission="${app.ADMINISTER}">
+            <l:isAdmin>
               <a class="jenkins-button jenkins-button--primary" href="new">
                 <l:icon src="symbol-add"/>
                 ${%newCloud}
               </a>
-            </l:hasPermission>
+            </l:isAdmin>
           </l:app-bar>
           <table id="clouds" class="jenkins-table sortable">
             <thead>
