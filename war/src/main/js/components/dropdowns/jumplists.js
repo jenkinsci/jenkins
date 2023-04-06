@@ -100,7 +100,13 @@ function mapChildrenItemsToDropdownItems(items) {
               form.submit();
             }
           } else {
-            new Ajax.Request(item.url);
+            fetch(item.url, {
+              method: "post",
+              headers: crumb.wrap({}),
+            });
+            if (event.length === 1 && event[0].target != null) {
+              hoverNotification("Done.", event[0].target);
+            }
           }
         }
       },
