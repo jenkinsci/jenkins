@@ -408,7 +408,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
                 if (!ResourceDomainConfiguration.isResourceRequest(req)) {
                     // if we're serving this from the main domain, set CSP headers
                     String csp = SystemProperties.getString(CSP_PROPERTY_NAME, DEFAULT_CSP_VALUE);
-                    if (!csp.trim().equals("")) {
+                    if (!csp.trim().isEmpty()) {
                         // allow users to prevent sending this header by setting empty system property
                         for (String header : new String[]{"Content-Security-Policy", "X-WebKit-CSP", "X-Content-Security-Policy"}) {
                             rsp.setHeader(header, csp);
