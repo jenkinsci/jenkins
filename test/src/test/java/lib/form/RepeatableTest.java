@@ -568,10 +568,6 @@ public class RepeatableTest {
             f.getElementsByAttribute("input", "type", "radio").get(4).click(); // outer=one
             Thread.sleep(500);
             f.getElementsByTagName("button").get(1).click(); // 2nd "Add Moo" button
-            System.out.println("The list is here ");
-            System.out.println(f.getElementsByTagName("button"));
-            System.out.println(f.getElementsByTagName("button").stream().map(htmlElement -> htmlElement.getTextContent().trim()).collect(Collectors.toList()));
-            System.out.println("The list is above ");
             WebClientUtil.waitForJSExec(wc);
             f.getElementsByAttribute("input", "type", "radio").get(7).click(); // inner=intwo
             f.getElementsByTagName("button").get(1).click();
@@ -585,7 +581,6 @@ public class RepeatableTest {
         assertEqualsJsonArray("[{\"moo\":{\"inner\":\"inone\"},\"outer\":\"two\"},"
                 + "{\"moo\":[{\"inner\":\"intwo\"},{\"inner\":\"inone\"}],\"outer\":\"one\"}]",
                 rootAction.formData.get("items"));
-        fail();
     }
 
     @Test
@@ -601,10 +596,22 @@ public class RepeatableTest {
             clickButton(wc, f, "Add", false);
             f.getElementsByAttribute("input", "type", "radio").get(4).click(); // outer=one
             Thread.sleep(500);
+            System.out.println("The list is here ");
+            System.out.println(f.getElementsByTagName("button"));
+            System.out.println(f.getElementsByTagName("button").stream().map(htmlElement -> htmlElement.getTextContent().trim()).collect(Collectors.toList()));
+            System.out.println("The list is above ");
             f.getElementsByTagName("button").get(3).click(); // 2nd "Add Moo" button
+            System.out.println("The list is here 2");
+            System.out.println(f.getElementsByTagName("button"));
+            System.out.println(f.getElementsByTagName("button").stream().map(htmlElement -> htmlElement.getTextContent().trim()).collect(Collectors.toList()));
+            System.out.println("The list is above ");
             WebClientUtil.waitForJSExec(wc);
             f.getElementsByAttribute("input", "type", "radio").get(7).click(); // inner=intwo
             f.getElementsByTagName("button").get(4).click();
+            System.out.println("The list is here 3");
+            System.out.println(f.getElementsByTagName("button"));
+            System.out.println(f.getElementsByTagName("button").stream().map(htmlElement -> htmlElement.getTextContent().trim()).collect(Collectors.toList()));
+            System.out.println("The list is above ");
             WebClientUtil.waitForJSExec(wc);
             f.getElementsByAttribute("input", "type", "radio").get(8).click(); // inner=inone
         } catch (Exception e) {
@@ -615,6 +622,7 @@ public class RepeatableTest {
         assertEqualsJsonArray("[{\"moo\":{\"inner\":\"inone\"},\"outer\":\"two\"},"
                 + "{\"moo\":[{\"inner\":\"intwo\"},{\"inner\":\"inone\"}],\"outer\":\"one\"}]",
                 rootAction.formData.get("items"));
+        fail();
     }
 
     private void assertEqualsJsonArray(String golden, Object jsonArray) {
