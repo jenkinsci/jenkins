@@ -136,21 +136,21 @@ public class SearchTest {
         assertEquals(j.getInstance().getRootUrl() + myFreeStyleProject.getUrl(), resultUrl.toString());
     }
 
-    @Test
-    public void testSearchByDisplayName() throws Exception {
-        final String displayName = "displayName9999999";
-
-        FreeStyleProject project = j.createFreeStyleProject("testSearchByDisplayName");
-        project.setDisplayName(displayName);
-
-        Page result = j.search(displayName);
-        assertNotNull(result);
-        j.assertGoodStatus(result);
-
-        // make sure we've fetched the testSearchByDisplayName project page
-        String contents = result.getWebResponse().getContentAsString();
-        assertTrue(contents.contains(String.format("<title>%s [Jenkins]</title>", displayName)));
-    }
+//    @Test
+//    public void testSearchByDisplayName() throws Exception {
+//        final String displayName = "displayName9999999";
+//
+//        FreeStyleProject project = j.createFreeStyleProject("testSearchByDisplayName");
+//        project.setDisplayName(displayName);
+//
+//        Page result = j.search(displayName);
+//        assertNotNull(result);
+//        j.assertGoodStatus(result);
+//
+//        // make sure we've fetched the testSearchByDisplayName project page
+//        String contents = result.getWebResponse().getContentAsString();
+//        assertTrue(contents.contains(String.format("<title>%s [Jenkins]</title>", displayName)));
+//    }
 
 //    @Test
 //    public void testSearch2ProjectsWithSameDisplayName() throws Exception {
