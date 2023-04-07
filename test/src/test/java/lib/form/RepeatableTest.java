@@ -598,7 +598,7 @@ public class RepeatableTest {
             f.getElementsByTagName("button").get(3).click(); // 2nd "Add Moo" button
             System.out.println("The list is here ");
             System.out.println(f.getElementsByTagName("button"));
-            System.out.println(f.getElementsByTagName("button").stream().map(DomNode::getTextContent).collect(Collectors.toList()));
+            System.out.println(f.getElementsByTagName("button").stream().map(htmlElement -> htmlElement.getTextContent().trim()).collect(Collectors.toList()));
             System.out.println("The list is above ");
             WebClientUtil.waitForJSExec(wc);
             f.getElementsByAttribute("input", "type", "radio").get(7).click(); // inner=intwo
