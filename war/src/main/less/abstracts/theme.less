@@ -170,6 +170,16 @@
   --dropdown-backdrop-filter: contrast(0.6) brightness(2.5) saturate(1.5) blur(20px);
   --dropdown-box-shadow: 0 10px 30px rgba(0, 0, 20, 0.2), 0 2px 10px rgba(0, 0, 20, 0.05), inset 0 -1px 2px rgba(255, 255, 255, 0.025);
 
+  // Modals
+  ::backdrop {
+    --modal-backdrop-background: hsla(240, 10%, 20%, 0.8);
+  }
+
+  --modal-backdrop-filter: brightness(3) blur(50px);
+  --modal-box-shadow: 0 10px 40px rgba(0, 0, 20, 0.15),
+                      0 2px 15px rgba(0, 0, 20, 0.05),
+                      inset 0 0 2px 2px rgba(255, 255, 255, 0.025);
+
   // Dark link
   --link-dark-color: var(--text-color);
   --link-dark-visited-color: var(--link-dark-color);
@@ -190,6 +200,15 @@
   --pane-text-color: var(--text-color);
   --pane-link-color: black;
   --pane-link-color--visited: black;
+
+  // Cards
+  --card-background: transparent;
+  --card-background--hover: transparent;
+  --card-background--active: transparent;
+  --card-border-color: hsla(240, 0.25, 0.75, 0.25);
+  --card-border-color--hover: hsla(240, 0.25, 0.75, 0.5);
+  --card-border-color--active: hsla(240, 0.25, 0.75, 0.75);
+  --card-border-width: 2px;
 
   // Tab bar
   --tabs-background: var(--panel-header-bg-color);
@@ -243,7 +262,7 @@
   --form-item-max-width--medium: ~"min(50vw, 1400px)";
   --form-item-max-width--small: ~"min(35vw, 1200px)";
 
-  @media screen and (max-width: 768px) {
+  @media screen and (max-width: 970px) {
     --form-item-max-width: 100%;
     --form-item-max-width--medium: 100%;
     --form-item-max-width--small: 100%;

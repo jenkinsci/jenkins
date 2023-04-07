@@ -39,6 +39,7 @@ import hudson.security.ACL;
 import hudson.security.ACLContext;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
@@ -476,5 +477,43 @@ public class SearchTest {
 
         URL resultUrl = searchResult.getUrl();
         assertEquals(j.getInstance().getRootUrl() + freeStyleProject.getUrl(), resultUrl.toString());
+    }
+
+    @Test
+    @Issue("SECURITY-2399")
+    public void testSearchBound() throws Exception {
+
+        final String projectName1 = "projectName1";
+        final String projectName2 = "projectName2";
+        final String projectName3 = "projectName3";
+
+        j.createFreeStyleProject(projectName1);
+        j.createFreeStyleProject(projectName2);
+        j.createFreeStyleProject(projectName3);
+
+        final JenkinsRule.WebClient wc = j.createWebClient();
+
+        Page result = wc.goTo("search/suggest?query=projectName", "application/json");
+        JSONArray suggestions = getSearchJson(result);
+        assertEquals(3, suggestions.size());
+
+        Field declaredField = Search.class.getDeclaredField("MAX_SEARCH_SIZE");
+        declaredField.setAccessible(true);
+        declaredField.set(null, 2);
+
+        Page maximizedResult = wc.goTo("search/suggest?query=projectName", "application/json");
+        JSONArray maximizedSuggestions = getSearchJson(maximizedResult);
+        assertEquals(2, maximizedSuggestions.size());
+    }
+
+    private JSONArray getSearchJson(Page page) {
+        assertNotNull(page);
+        j.assertGoodStatus(page);
+        String content = page.getWebResponse().getContentAsString();
+        JSONObject jsonContent = (JSONObject) JSONSerializer.toJSON(content);
+        assertNotNull(jsonContent);
+        JSONArray jsonArray = jsonContent.getJSONArray("suggestions");
+        assertNotNull(jsonArray);
+        return jsonArray;
     }
 }
