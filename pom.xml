@@ -355,9 +355,6 @@ THE SOFTWARE.
               <antlr4Formatter />
             </antlr4>
             <java>
-              <cleanthat>
-                <version>2.8</version>
-              </cleanthat>
               <endWithNewline />
               <importOrder />
               <indent>
