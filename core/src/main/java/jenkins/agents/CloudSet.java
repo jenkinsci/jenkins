@@ -205,10 +205,9 @@ public class CloudSet extends AbstractModelObject implements Describable<CloudSe
         checkName(name);
         JSONObject formData = req.getSubmittedForm();
         formData.put("name", name);
-        formData.put("cloudName", name);
+        formData.put("cloudName", name); // ec2 uses that field name
         formData.remove("mode"); // Cloud descriptors won't have this field.
-        Cloud instance = descriptor.newInstance(req, formData); // Not great but that's the best I have so far to pass the given name.
-        req.setAttribute("instance", instance);
+        req.setAttribute("instance", formData);
         req.setAttribute("descriptor", descriptor);
         req.getView(this, "_new.jelly").forward(req, rsp);
     }
