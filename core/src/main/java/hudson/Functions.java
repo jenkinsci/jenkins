@@ -2171,8 +2171,8 @@ public class Functions {
         // Views are expected to contain a slash and a period, neither as the first char, and the last slash before the first period: Class/view.jelly
         // Nested classes use slashes, so we do not expect period before: Class/Nested/view.jelly
         String views = Arrays.stream(threadName.split(" ")).filter(part -> {
-            int slash = part.lastIndexOf('/');
-            int firstPeriod = part.indexOf('.');
+            int slash = part.lastIndexOf("/");
+            int firstPeriod = part.indexOf(".");
             return slash > 0 && firstPeriod > 0 && slash < firstPeriod;
         }).collect(Collectors.joining(" "));
         if (StringUtils.isBlank(views)) {
