@@ -54,6 +54,7 @@ import java.util.concurrent.Future;
 import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
+import org.apache.commons.lang.Validate;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -117,6 +118,7 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
     public final String name;
 
     protected Cloud(String name) {
+        Validate.notEmpty(name, Messages.Cloud_RequiredName());
         this.name = name;
     }
 
