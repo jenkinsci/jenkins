@@ -42,7 +42,7 @@
     "prettier": "2.8.7",
     "style-loader": "3.3.2",
     "stylelint": "15.4.0",
-    "stylelint-config-standard": "31.0.0",
+    "stylelint-config-standard": "32.0.0",
     "webpack": "5.77.0",
     "webpack-cli": "5.0.1",
     "webpack-remove-empty-scripts": "1.0.1"
