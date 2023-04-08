@@ -26,5 +26,6 @@ module.exports = {
     "no-duplicate-selectors": null,
     "no-invalid-position-at-import-rule": null,
     "hue-degree-notation": "number",
+    "media-feature-range-notation": null,
   },
 };
