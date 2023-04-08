@@ -4000,15 +4000,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jenkins-js-modules@npm:1.5.4":
-  version: 1.5.4
-  resolution: "jenkins-js-modules@npm:1.5.4"
-  dependencies:
-    window-handle: 0.0.6
-  checksum: b2657e75dc4972bf40a3487297d6af5af842d8e857ff4b17e8ac98bf3090ddf3ced907c7b524014366267b1128a767afb9209c60cfc31855b4914787bffb9add
-  languageName: node
-  linkType: hard
-
 "jenkins-ui@workspace:.":
   version: 0.0.0-use.local
   resolution: "jenkins-ui@workspace:."
@@ -4028,7 +4019,6 @@ __metadata:
     handlebars: 4.7.7
     handlebars-loader: 1.7.3
     hotkeys-js: 3.10.2
-    jenkins-js-modules: 1.5.4
     jquery: 3.6.4
     less: 4.1.3
     less-loader: 11.1.0
@@ -6649,13 +6639,6 @@ __metadata:
   version: 2.0.0
   resolution: "wildcard@npm:2.0.0"
   checksum: 1f4fe4c03dfc492777c60f795bbba597ac78794f1b650d68f398fbee9adb765367c516ebd4220889b6a81e9626e7228bbe0d66237abb311573c2ee1f4902a5ad
-  languageName: node
-  linkType: hard
-
-"window-handle@npm:0.0.6":
-  version: 0.0.6
-  resolution: "window-handle@npm:0.0.6"
-  checksum: fc06c4dbbeb2816276076e8f7c7c2530d55972230d01ee74e45da79ad382ab55f21c35e5d8abf8e558bfafa0224532ffc86a49675aae0a1505620108996a776d
   languageName: node
   linkType: hard
 
