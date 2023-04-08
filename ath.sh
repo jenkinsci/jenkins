@@ -6,7 +6,7 @@ set -o xtrace
 cd "$(dirname "$0")"
 
 # https://github.com/jenkinsci/acceptance-test-harness/releases
-export ATH_VERSION=5509.v07855a_003fc1
+export ATH_VERSION=5528.v806749710b_83
 
 MVN='mvn -B -ntp -Pquick-build -am -pl war package'
 if [[ -n ${MAVEN_SETTINGS-} ]]; then

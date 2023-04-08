@@ -4,7 +4,9 @@ Behaviour.specify(
   0,
   function (copyButton) {
     copyButton.addEventListener("click", () => {
-      if (isSecureContext) {
+      // HTMLUnit 2.70.0 does not recognize isSecureContext
+      // https://issues.jenkins.io/browse/JENKINS-70895
+      if (!window.isRunAsTest && isSecureContext) {
         // Make an invisible textarea element containing the text
         const fakeInput = document.createElement("textarea");
         fakeInput.value = copyButton.getAttribute("text");
