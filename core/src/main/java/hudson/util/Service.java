@@ -57,7 +57,7 @@ public class Service {
                 String line;
                 while ((line = configFile.readLine()) != null) {
                     line = line.trim();
-                    if (line.startsWith("#") || line.length() == 0) continue;
+                    if (line.startsWith("#") || line.isEmpty()) continue;
 
                     try {
                         Class<?> t = classLoader.loadClass(line);
@@ -89,7 +89,7 @@ public class Service {
                         if (line.startsWith("#"))
                             continue;   // comment line
                         line = line.trim();
-                        if (line.length() == 0)
+                        if (line.isEmpty())
                             continue;   // empty line. ignore.
 
                         try {

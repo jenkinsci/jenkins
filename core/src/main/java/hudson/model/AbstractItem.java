@@ -479,7 +479,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     @Exported
     public final String getFullName() {
         String n = getParent().getFullName();
-        if (n.length() == 0)   return getName();
+        if (n.isEmpty())   return getName();
         else                return n + '/' + getName();
     }
 
@@ -487,7 +487,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     @Exported
     public final String getFullDisplayName() {
         String n = getParent().getFullDisplayName();
-        if (n.length() == 0)   return getDisplayName();
+        if (n.isEmpty())   return getDisplayName();
         else                return n + " » " + getDisplayName();
     }
 
