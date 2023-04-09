@@ -170,7 +170,7 @@ public class SecretRewriter {
                 if (child.isDirectory()) {
                     if (!isIgnoredDir(child))
                         rewritten += rewriteRecursive(child,
-                                relative.length() == 0 ? cn : relative + '/' + cn,
+                                relative.isEmpty() ? cn : relative + '/' + cn,
                                 listener);
                 }
             }

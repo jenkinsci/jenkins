@@ -560,7 +560,7 @@ public class Maven extends Builder {
             // olamy : but will add a dependency on maven in core -> so not so good
             String mavenVersion = launcher.getChannel().call(new GetMavenVersion(getHome()));
 
-            if (!mavenVersion.equals("")) {
+            if (!mavenVersion.isEmpty()) {
                 if (mavenReqVersion == MAVEN_20) {
                     if (mavenVersion.startsWith("2."))
                         return true;
