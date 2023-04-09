@@ -46,8 +46,12 @@ window.breadcrumbs = (function () {
 
   function makeMenuHtml(icon, iconXml, displayName, badge) {
     var displaynameSpan = "<span>" + displayName + "</span>";
-    const badgeText = xmlEscape(badge?.text);
-    const badgeTooltip = xmlEscape(badge?.tooltip);
+    let badgeText;
+    let badgeTooltip;
+    if (badge) {
+      badgeText = xmlEscape(badge?.text);
+      badgeTooltip = xmlEscape(badge?.tooltip);
+    }
     const badgeSpan =
       badge === null
         ? ""
