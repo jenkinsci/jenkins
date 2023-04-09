@@ -181,7 +181,7 @@ public class HistoryPageFilter<T> {
                         break;
                     }
                 }
-                if (itemsToAdd.size() == 0) {
+                if (itemsToAdd.isEmpty()) {
                     // All builds are older than newerThan ?
                     hasDownPage = true;
                 } else {
