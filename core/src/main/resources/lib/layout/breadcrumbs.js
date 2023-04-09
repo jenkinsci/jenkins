@@ -24,6 +24,10 @@ window.breadcrumbs = (function () {
 
   // TODO - Use util/security.js xmlEscape in #7474
   function xmlEscape(str) {
+    if (!str) {
+      return;
+    }
+
     return str.replace(/[<>&'"]/g, (match) => {
       switch (match) {
         case "<":
