@@ -22,10 +22,28 @@ window.breadcrumbs = (function () {
   var logger = function () {};
   // logger = function() { console.log.apply(console,arguments) };  // uncomment this line to enable logging
 
+  // TODO - Use util/security.js xmlEscape in #7474
+  function xmlEscape(str) {
+    return str.replace(/[<>&'"]/g, (match) => {
+      switch (match) {
+        case "<":
+          return "&lt;";
+        case ">":
+          return "&gt;";
+        case "&":
+          return "&amp;";
+        case "'":
+          return "&apos;";
+        case '"':
+          return "&quot;";
+      }
+    });
+  }
+
   function makeMenuHtml(icon, iconXml, displayName, badge) {
     var displaynameSpan = "<span>" + displayName + "</span>";
-    const badgeText = badge?.text.escapeHTML();
-    const badgeTooltip = badge?.tooltip.escapeHTML();
+    const badgeText = xmlEscape(badge?.text);
+    const badgeTooltip = xmlEscape(badge?.tooltip);
     const badgeSpan =
       badge === null
         ? ""
