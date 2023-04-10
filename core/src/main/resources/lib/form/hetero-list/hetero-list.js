@@ -195,11 +195,10 @@ Behaviour.specify(
 );
 
 Behaviour.specify("DIV.dd-handle", "hetero-list", -100, function (e) {
-  e = $(e);
-  e.on("mouseover", function () {
-    $(this).up(".repeated-chunk").addClassName("hover");
+  e.addEventListener("mouseover", function () {
+    this.closest(".repeated-chunk").classList.add("hover");
   });
-  e.on("mouseout", function () {
-    $(this).up(".repeated-chunk").removeClassName("hover");
+  e.addEventListener("mouseout", function () {
+    this.closest(".repeated-chunk").classList.remove("hover");
   });
 });
