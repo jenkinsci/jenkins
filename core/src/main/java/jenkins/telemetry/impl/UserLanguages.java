@@ -82,7 +82,7 @@ public class UserLanguages extends Telemetry {
 
     @Override
     public JSONObject createContent() {
-        if (requestsByLanguage.size() == 0) {
+        if (requestsByLanguage.isEmpty()) {
             return null;
         }
         Map<String, AtomicLong> currentRequests = new TreeMap<>(requestsByLanguage);

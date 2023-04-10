@@ -35,8 +35,10 @@ export default function makeKeyboardNavigable(
           selectedItem = items[0];
         }
 
-        selectedItem.scrollIntoView(false);
-        selectedItem?.classList.add(selectedClass);
+        if (selectedItem !== null) {
+          selectedItem.scrollIntoView(false);
+          selectedItem.classList.add(selectedClass);
+        }
       } else if (e.key === "ArrowUp") {
         e.preventDefault();
 
@@ -53,10 +55,14 @@ export default function makeKeyboardNavigable(
           selectedItem = items[items.length - 1];
         }
 
-        selectedItem.scrollIntoView(false);
-        selectedItem?.classList.add(selectedClass);
+        if (selectedItem !== null) {
+          selectedItem.scrollIntoView(false);
+          selectedItem.classList.add(selectedClass);
+        }
       } else if (e.key === "Enter") {
-        selectedItem?.click();
+        if (selectedItem !== null) {
+          selectedItem.click();
+        }
       } else {
         additionalBehaviours(selectedItem, e.key);
       }

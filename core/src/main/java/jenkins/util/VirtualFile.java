@@ -1096,7 +1096,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
         @Override
         @Restricted(NoExternalUse.class)
         public boolean isDescendant(String potentialChildRelativePath) throws IOException {
-            if (potentialChildRelativePath.equals("") && cacheDescendant) {
+            if (potentialChildRelativePath.isEmpty() && cacheDescendant) {
                 return true;
             }
 
