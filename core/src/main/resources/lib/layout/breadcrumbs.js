@@ -49,8 +49,8 @@ window.breadcrumbs = (function () {
     let badgeText;
     let badgeTooltip;
     if (badge) {
-      badgeText = xmlEscape(badge?.text);
-      badgeTooltip = xmlEscape(badge?.tooltip);
+      badgeText = xmlEscape(badge.text);
+      badgeTooltip = xmlEscape(badge.tooltip);
     }
     const badgeSpan =
       badge === null
