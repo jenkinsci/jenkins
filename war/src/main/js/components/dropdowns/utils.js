@@ -76,9 +76,16 @@ function generateDropdownItems(items) {
     SELECTED_ITEM_CLASS,
     (selectedItem, key) => {
       switch (key) {
-        case "ArrowLeft":
-          selectedItem.closest("[data-tippy-root]")?._tippy?.hide();
+        case "ArrowLeft": {
+          const root = selectedItem.closest("[data-tippy-root]");
+          if (root) {
+            const tippy = root._tippy;
+            if (tippy) {
+              tippy.hide();
+            }
+          }
           break;
+        }
         case "ArrowRight": {
           const tippy = selectedItem._tippy;
           if (!tippy) {
