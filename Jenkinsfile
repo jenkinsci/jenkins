@@ -101,30 +101,22 @@ for (i = 0; i < buildTypes.size(); i++) {
                 sourceCodeEncoding: 'UTF-8',
                 skipBlames: true,
                 trendChartType: 'TOOLS_ONLY',
-                qualityGates: [
-                  [threshold: 1, type: 'NEW', unstable: true],
-                ]])
+                qualityGates: [[threshold: 1, type: 'NEW', unstable: true]]])
               recordIssues([tool: checkStyle(pattern: '**/target/checkstyle-result.xml'),
                 sourceCodeEncoding: 'UTF-8',
                 skipBlames: true,
                 trendChartType: 'TOOLS_ONLY',
-                qualityGates: [
-                  [threshold: 1, type: 'TOTAL', unstable: true],
-                ]])
+                qualityGates: [[threshold: 1, type: 'TOTAL', unstable: true]]])
               recordIssues([tool: esLint(pattern: '**/target/eslint-warnings.xml'),
                 sourceCodeEncoding: 'UTF-8',
                 skipBlames: true,
                 trendChartType: 'TOOLS_ONLY',
-                qualityGates: [
-                  [threshold: 1, type: 'TOTAL', unstable: true],
-                ]])
+                qualityGates: [[threshold: 1, type: 'TOTAL', unstable: true]]])
               recordIssues([tool: styleLint(pattern: '**/target/stylelint-warnings.xml'),
                 sourceCodeEncoding: 'UTF-8',
                 skipBlames: true,
                 trendChartType: 'TOOLS_ONLY',
-                qualityGates: [
-                  [threshold: 1, type: 'TOTAL', unstable: true],
-                ]])
+                qualityGates: [[threshold: 1, type: 'TOTAL', unstable: true]]])
               if (failFast && currentBuild.result == 'UNSTABLE') {
                 error 'Static analysis quality gates not passed; halting early'
               }
