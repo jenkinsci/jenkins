@@ -79,21 +79,21 @@ function generateDropdownItems(items) {
         case "ArrowLeft": {
           const root = selectedItem.closest("[data-tippy-root]");
           if (root) {
-            const tippy = root._tippy;
-            if (tippy) {
-              tippy.hide();
+            const tippyReference = root._tippy;
+            if (tippyReference) {
+              tippyReference.hide();
             }
           }
           break;
         }
         case "ArrowRight": {
-          const tippy = selectedItem._tippy;
-          if (!tippy) {
+          const tippyReference = selectedItem._tippy;
+          if (!tippyReference) {
             break;
           }
 
-          tippy.show();
-          tippy.props.content
+          tippyReference.show();
+          tippyReference.props.content
             .querySelector(".jenkins-dropdown__item")
             .classList.add(SELECTED_ITEM_CLASS);
           break;
