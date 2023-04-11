@@ -153,10 +153,9 @@ THE SOFTWARE.
                       fetch(a.href, {
                         method: 'post',
                         headers: crumb.wrap({}),
-                      }).then(_ => {
-                        hoverNotification('${%Done.}', a.parentNode);
-                        return false;
                       })
+                      hoverNotification('${%Done.}', a.parentNode);
+                      return false;
                     }
                 </script>
             </j:if>
