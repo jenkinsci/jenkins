@@ -87,13 +87,13 @@ function generateDropdownItems(items) {
           break;
         }
         case "ArrowRight": {
-          const tippyReference = selectedItem._tippy;
-          if (!tippyReference) {
+          const tippyRef = selectedItem._tippy;
+          if (!tippyRef) {
             break;
           }
 
-          tippyReference.show();
-          tippyReference.props.content
+          tippyRef.show();
+          tippyRef.props.content
             .querySelector(".jenkins-dropdown__item")
             .classList.add(SELECTED_ITEM_CLASS);
           break;
