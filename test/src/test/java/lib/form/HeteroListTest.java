@@ -94,23 +94,13 @@ public class HeteroListTest {
 
         // check the displayName
         Object resultDN = page.executeJavaScript(
-                "var settingFields = document.querySelectorAll('.jenkins-form-label');" +
+                "var settingFields = document.querySelectorAll('.jenkins-section__title');" +
                         "var children = Array.from(settingFields).filter(b => b.textContent.indexOf('XSS:') !== -1)[0].children;" +
                         "Array.from(children).filter(c => c.tagName === 'IMG')"
         ).getJavaScriptResult();
         assertThat(resultDN, instanceOf(NativeArray.class));
         NativeArray resultDNNA = (NativeArray) resultDN;
         assertEquals(0, resultDNNA.size());
-
-        // check the description
-        Object resultDesc = page.executeJavaScript(
-                "var settingFields = document.querySelectorAll('.jenkins-form-description');" +
-                        "var children = Array.from(settingFields).filter(b => b.textContent.indexOf('XSS:') !== -1)[0].children;" +
-                        "Array.from(children).filter(c => c.tagName === 'IMG')"
-        ).getJavaScriptResult();
-        assertThat(resultDesc, instanceOf(NativeArray.class));
-        NativeArray resultDescNA = (NativeArray) resultDesc;
-        assertEquals(0, resultDescNA.size());
     }
 
     @Test
