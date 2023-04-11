@@ -33,10 +33,9 @@ THE SOFTWARE.
                 fetch(a.href, {
                   method: 'post',
                     headers: crumb.wrap({}),
-                }).then(_ => {
-                    hoverNotification('${%Build scheduled}',a.parentNode);
-                    return false;
                 })
+                hoverNotification('${%Build scheduled}',a.parentNode);
+                return false;
             }
         </script>
     </j:if>

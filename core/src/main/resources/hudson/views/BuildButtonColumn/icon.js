@@ -9,7 +9,6 @@ Behaviour.specify(
     var icon = document.getElementById(id);
 
     icon.onclick = function () {
-      // TODO what is this doing? this is just ignored? is it notifying if url succeeded?
       fetch(url, {
         method: "post",
         headers: crumb.wrap({}),
