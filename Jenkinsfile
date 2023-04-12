@@ -86,7 +86,7 @@ for (i = 0; i < buildTypes.size(); i++) {
               if (folders.length > 1) {
                 discoverGitReferenceBuild(scm: folders[1])
               }
-              recordCoverage(tools: [[parser: 'JACOCO', pattern: 'coverage/target/site/jacoco-aggregate/jacoco.xml']], sourceCodeRetention: 'LAST_BUILD')
+              recordCoverage(tools: [[parser: 'JACOCO', pattern: 'coverage/target/site/jacoco-aggregate/jacoco.xml']], sourceCodeRetention: 'MODIFIED')
 
               echo "Recording static analysis results for '${buildType}'"
               recordIssues(
