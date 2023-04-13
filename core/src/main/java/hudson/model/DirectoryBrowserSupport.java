@@ -306,7 +306,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
                 return;
             }
 
-            if (rest.length() == 0) {
+            if (rest.isEmpty()) {
                 // if the target page to be displayed is a directory and the path doesn't end with '/', redirect
                 StringBuffer reqUrl = req.getRequestURL();
                 if (reqUrl.charAt(reqUrl.length() - 1) != '/') {
@@ -408,7 +408,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
                 if (!ResourceDomainConfiguration.isResourceRequest(req)) {
                     // if we're serving this from the main domain, set CSP headers
                     String csp = SystemProperties.getString(CSP_PROPERTY_NAME, DEFAULT_CSP_VALUE);
-                    if (!csp.trim().equals("")) {
+                    if (!csp.trim().isEmpty()) {
                         // allow users to prevent sending this header by setting empty system property
                         for (String header : new String[]{"Content-Security-Policy", "X-WebKit-CSP", "X-Content-Security-Policy"}) {
                             rsp.setHeader(header, csp);
@@ -500,7 +500,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
 
     private String getPath(StaplerRequest req) {
         String path = req.getRestOfPath();
-        if (path.length() == 0)
+        if (path.isEmpty())
             path = "/";
         return path;
     }

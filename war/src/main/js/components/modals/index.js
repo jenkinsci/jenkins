@@ -55,5 +55,7 @@ export function showModal(contents, options = {}) {
 
   modal.showModal();
 
-  closeButton?.blur();
+  if (closeButton !== null) {
+    closeButton.blur();
+  }
 }

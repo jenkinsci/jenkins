@@ -79,7 +79,7 @@ public class CrumbFilter implements Filter {
         private static String canonicalPath(String path) {
             List<String> r = new ArrayList<>(Arrays.asList(path.split("/+")));
             for (int i = 0; i < r.size(); ) {
-                if (r.get(i).length() == 0 || r.get(i).equals(".")) {
+                if (r.get(i).isEmpty() || r.get(i).equals(".")) {
                     // empty token occurs for example, "".split("/+") is [""]
                     r.remove(i);
                 } else

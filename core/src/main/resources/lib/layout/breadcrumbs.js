@@ -9,7 +9,7 @@ window.breadcrumbs = (function () {
   /**
    * Used for fetching the content of the menu asynchronously from the server
    */
-  var xhr;
+  var controller;
 
   /**
    * Current mouse cursor position in the page coordinate.
@@ -83,7 +83,10 @@ window.breadcrumbs = (function () {
   }
 
   function postRequest(action, event, url) {
-    new Ajax.Request(url);
+    fetch(url, {
+      method: "post",
+      headers: crumb.wrap({}),
+    });
     if (event.length == 1 && event[0].target != null) {
       hoverNotification("Done.", event[0].target);
     }
@@ -156,8 +159,8 @@ window.breadcrumbs = (function () {
     }
 
     // ignore the currently pending call
-    if (xhr) {
-      xhr.options.onComplete = function () {};
+    if (controller) {
+      controller.abort();
     }
 
     if (e.items) {
@@ -165,11 +168,13 @@ window.breadcrumbs = (function () {
       showMenu(e.items());
     } else {
       // fetch menu on demand
-      xhr = new Ajax.Request(
-        combinePath(e.getAttribute("href"), contextMenuUrl),
-        {
-          onComplete: function (x) {
-            var items = x.responseText.evalJSON().items;
+      controller = new AbortController();
+      let { signal } = controller;
+      fetch(combinePath(e.getAttribute("href"), contextMenuUrl), { signal })
+        .then((response) => {
+          response.json().then((json) => {
+            const items = json.items;
+
             function fillMenuItem(e) {
               if (e.type === "HEADER") {
                 e.text = makeMenuHtml(
@@ -201,14 +206,21 @@ window.breadcrumbs = (function () {
                 delete e.url;
               }
             }
-            items.each(fillMenuItem);
+
+            items.forEach(fillMenuItem);
             e.items = function () {
               return items;
             };
             showMenu(items);
-          },
-        }
-      );
+          });
+        })
+        .catch((err) => {
+          if (err.name === "AbortError") {
+            // ignore user aborting request, browser console will get unnecessary spam if we don't catch this
+          } else {
+            throw err;
+          }
+        });
     }
 
     return false;
