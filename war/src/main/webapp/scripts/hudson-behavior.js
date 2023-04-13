@@ -2555,10 +2555,24 @@ function validateButton(checkUrl, paramList, button) {
   var spinner = button.up("DIV").children[0];
   var target = spinner.next().next();
   spinner.style.display = "block";
-  var urlSearchParams = new URLSearchParams(parameters);
-  fetch(checkUrl + "?" + urlSearchParams, {
+
+  // https://stackoverflow.com/a/37562814/4951015
+  // Code could be simplified if support for HTMLUnit is dropped
+  // body: new URLSearchParams(parameters) is enough then but it doesn't work in HTMLUnit currently
+  let formBody = [];
+  for (const property in parameters) {
+    const encodedKey = encodeURIComponent(property);
+    const encodedValue = encodeURIComponent(parameters[property]);
+    formBody.push(encodedKey + "=" + encodedValue);
+  }
+  formBody = formBody.join("&");
+
+  fetch(checkUrl, {
     method: "post",
-    headers: crumb.wrap({}),
+    body: formBody,
+    headers: crumb.wrap({
+      'Content-Type': 'application/x-www-form-urlencoded'
+    }),
   }).then((rsp) => {
     rsp.text().then((responseText) => {
       spinner.style.display = "none";
