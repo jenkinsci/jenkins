@@ -28,7 +28,6 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import com.gargoylesoftware.htmlunit.html.DomElement;
@@ -51,7 +50,6 @@ import java.io.File;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import net.sourceforge.htmlunit.corejs.javascript.NativeArray;
 import org.jenkinsci.Symbol;
 import org.junit.Rule;
 import org.junit.Test;
