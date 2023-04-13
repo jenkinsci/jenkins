@@ -26,6 +26,7 @@ THE SOFTWARE.
   <f:section title="${%title(descriptor.displayName)}">
     <d:taglib uri="local">
       <d:tag name="section">
+        <!-- While there's no longer a title/description for f:entry at the top level, keep this around for f:entries in tool config pages to be safe -->
         <j:set var="escapeEntryTitleAndDescription" value="true"/>
         <f:entry>
           <f:repeatable name="tool" var="instance" items="${descriptor.installations}" enableTopButton="true"
