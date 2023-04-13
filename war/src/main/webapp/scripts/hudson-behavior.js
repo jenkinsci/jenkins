@@ -2571,7 +2571,7 @@ function validateButton(checkUrl, paramList, button) {
     method: "post",
     body: formBody,
     headers: crumb.wrap({
-      'Content-Type': 'application/x-www-form-urlencoded'
+      "Content-Type": "application/x-www-form-urlencoded",
     }),
   }).then((rsp) => {
     rsp.text().then((responseText) => {
