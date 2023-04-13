@@ -29,9 +29,9 @@ Behaviour.specify("TEXTAREA.codemirror", "textarea", 0, function (e) {
   scroller.style.height = Math.max(lineHeight * lineCount + 30, 130) + "px";
 
   // the form needs to be populated before the "Apply" button
-  if (e.up("form")) {
+  if (e.closest("form")) {
     // Protect against undefined element
-    Element.on(e.up("form"), "jenkins:apply", function () {
+    Element.on(e.closest("form"), "jenkins:apply", function () {
       e.value = codemirror.getValue();
     });
   }
