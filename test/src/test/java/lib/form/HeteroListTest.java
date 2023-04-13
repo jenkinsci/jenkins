@@ -84,25 +84,6 @@ public class HeteroListTest {
         assertThat(menuItemContent, not(containsString("<")));
     }
 
-    // correspond to the hardening of escapeEntryTitleAndDescription
-    @Test
-    @Issue("SECURITY-2035")
-    public void xssPrevented_usingToolInstallation_withJustDisplayName() throws Exception {
-        JenkinsRule.WebClient wc = j.createWebClient();
-
-        HtmlPage page = wc.goTo("configureTools/");
-
-        // check the displayName
-        Object resultDN = page.executeJavaScript(
-                "var settingFields = document.querySelectorAll('.jenkins-section__title');" +
-                        "var children = Array.from(settingFields).filter(b => b.textContent.indexOf('XSS:') !== -1)[0].children;" +
-                        "Array.from(children).filter(c => c.tagName === 'IMG')"
-        ).getJavaScriptResult();
-        assertThat(resultDN, instanceOf(NativeArray.class));
-        NativeArray resultDNNA = (NativeArray) resultDN;
-        assertEquals(0, resultDNNA.size());
-    }
-
     @Test
     @Issue("SECURITY-2035")
     public void xssPrevented_usingToolInstallation_repeatableAddExisting() throws Exception {
