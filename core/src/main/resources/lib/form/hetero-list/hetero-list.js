@@ -63,7 +63,8 @@ Behaviour.specify(
       menuAlign.split("-"),
       250
     );
-    menuButton._button.classList.add(btn.className); // copy class names
+    // Don't even think about changing the next line without testing the change in HtmlUnit/Rhino…
+    $(menuButton._button).addClassName(btn.className); // copy class names
     menuButton._button.setAttribute("suffix", btn.getAttribute("suffix"));
     menuButton.getMenu().clickEvent.subscribe(function (type, args) {
       var item = args[1];
