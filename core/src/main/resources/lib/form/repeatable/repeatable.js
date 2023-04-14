@@ -258,8 +258,9 @@ Behaviour.specify("DIV.repeated-chunk", "repeatable", -200, function (d) {
 
       // Uniquify the "id" of <input> and "for" of <label>
       inputs[i].id = inputs[i].name + "_" + inputs[i].id;
-      if (inputs[i].nextElementSibling.tagName === "LABEL") {
-        inputs[i].nextElementSibling.setAttribute("for", inputs[i].id);
+      var next = inputs[i].nextElementSibling;
+      if (next != null && next.tagName === "LABEL") {
+        next.setAttribute("for", inputs[i].id);
       }
     }
   }

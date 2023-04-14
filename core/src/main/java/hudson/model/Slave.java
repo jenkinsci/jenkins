@@ -201,7 +201,7 @@ public abstract class Slave extends Node implements Serializable {
 
         this.nodeProperties.replaceBy(nodeProperties);
 
-        if (name.equals(""))
+        if (name.isEmpty())
             throw new FormException(Messages.Slave_InvalidConfig_NoName(), null);
 
         if (this.numExecutors <= 0)
