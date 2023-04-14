@@ -61,6 +61,4 @@ THE SOFTWARE.
       </div>
     </j:if>
   </div>
-
-  <l:js src="jsbundles/components/row-selection-controller.js" />
 </j:jelly>

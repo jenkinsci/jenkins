@@ -34,7 +34,6 @@
     "css-minimizer-webpack-plugin": "5.0.0",
     "eslint": "8.38.0",
     "eslint-config-prettier": "8.8.0",
-    "handlebars": "4.7.7",
     "handlebars-loader": "1.7.3",
     "less": "4.1.3",
     "less-loader": "11.1.0",
@@ -53,8 +52,8 @@
   },
   "dependencies": {
     "bootstrap": "3.4.1",
+    "handlebars": "4.7.7",
     "hotkeys-js": "3.10.2",
-    "jenkins-js-modules": "1.5.4",
     "jquery": "3.6.4",
     "lodash": "4.17.21",
     "sortablejs": "1.15.0",

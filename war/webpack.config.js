@@ -10,7 +10,6 @@ const { CleanWebpackPlugin: CleanPlugin } = require("clean-webpack-plugin");
 module.exports = (env, argv) => ({
   mode: "development",
   entry: {
-    "page-init": [path.join(__dirname, "src/main/js/page-init.js")],
     pluginSetupWizard: [
       path.join(__dirname, "src/main/js/pluginSetupWizard.js"),
       path.join(__dirname, "src/main/less/pluginSetupWizard.less"),
