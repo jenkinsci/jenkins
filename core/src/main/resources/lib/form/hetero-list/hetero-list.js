@@ -64,9 +64,9 @@ Behaviour.specify(
       250
     );
     // copy class names
-    btn.classList.forEach(function (className) {
-      menuButton._button.classList.add(className);
-    });
+    for (i = 0; i < btn.classList.length; i++) {
+      menuButton._button.classList.add(btn.classList.item(i));
+    }
     menuButton._button.setAttribute("suffix", btn.getAttribute("suffix"));
     menuButton.getMenu().clickEvent.subscribe(function (type, args) {
       var item = args[1];
