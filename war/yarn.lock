@@ -4025,7 +4025,6 @@ __metadata:
     lodash: 4.17.21
     mini-css-extract-plugin: 2.7.5
     postcss: 8.4.21
-    postcss-less: 6.0.0
     postcss-loader: 7.2.4
     postcss-scss: ^4.0.6
     prettier: 2.8.7
@@ -5103,15 +5102,6 @@ __metadata:
   peerDependencies:
     postcss: ^8.2.15
   checksum: f2d244bb574cf2c0974c56a1af7131f3833e14515be99c68e6fa6fe82df47cb2c9befa413b9ec92f5f067567c682dc253980a0dede3cc697f6cc9135dfc17ec7
-  languageName: node
-  linkType: hard
-
-"postcss-less@npm:6.0.0":
-  version: 6.0.0
-  resolution: "postcss-less@npm:6.0.0"
-  peerDependencies:
-    postcss: ^8.3.5
-  checksum: 04ec95fc8637380e4633f0329ba3a65436360b57b289bb867ee25aada51e2e45a110cdb1eaa8e8c09c61009aff4207ef6bf21efd4e2ff12f6a7ffc6861a8647e
   languageName: node
   linkType: hard
 
