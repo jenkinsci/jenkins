@@ -1,4 +1,4 @@
-@use "../abstracts/mixins" as mixins;
+@use "../abstracts/mixins";
 
 .jenkins-button {
   --item-background--hover: var(--button-background--hover);

@@ -12,7 +12,7 @@ module.exports = (env, argv) => ({
   entry: {
     pluginSetupWizard: [
       path.join(__dirname, "src/main/js/pluginSetupWizard.js"),
-      path.join(__dirname, "src/main/scss/pluginSetupWizard.scss"),
+      path.join(__dirname, "src/main/scss/pluginSetupWizard.less"),
     ],
     "plugin-manager-ui": [
       path.join(__dirname, "src/main/js/plugin-manager-ui.js"),
@@ -80,6 +80,23 @@ module.exports = (env, argv) => ({
   ],
   module: {
     rules: [
+      {
+        test: /\.(less)$/,
+        use: [
+          {
+            loader: "css-loader",
+            options: {
+              sourceMap: true,
+            },
+          },
+          {
+            loader: "less-loader",
+            options: {
+              sourceMap: true,
+            },
+          },
+        ],
+      },
       {
         test: /\.(css|scss)$/,
         use: [
