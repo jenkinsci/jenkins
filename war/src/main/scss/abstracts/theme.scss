@@ -1,31 +1,34 @@
 @use "sass:color";
 
 $colors: (
-        'blue': #007aff,
-        'brown': #a2845e,
-        'cyan': #32ade6,
-        'green': #1ea64b,
-        'indigo': #5856d6,
-        'orange': #fe820a,
-        'pink': #fb0f45,
-        'purple': #af52de,
-        'red': #e6001f,
-        'yellow': #ffb31a
+  "blue": #007aff,
+  "brown": #a2845e,
+  "cyan": #32ade6,
+  "green": #1ea64b,
+  "indigo": #5856d6,
+  "orange": #fe820a,
+  "pink": #fb0f45,
+  "purple": #af52de,
+  "red": #e6001f,
+  "yellow": #ffb31a,
 );
 
 $semantics: (
-        'error': var(--red),
-        'warning': var(--orange),
-        'success': var(--green),
-        'destructive': var(--red),
-        'build': var(--green)
+  "error": var(--red),
+  "warning": var(--orange),
+  "success": var(--green),
+  "destructive": var(--red),
+  "build": var(--green),
 );
 
-:root, .app-theme-picker__picker[data-theme="none"] {
+:root,
+.app-theme-picker__picker[data-theme="none"] {
   // Font related properties
-  --font-family-sans: system-ui, "Segoe UI", roboto, "Noto Sans", oxygen, ubuntu, cantarell,
-  "Fira Sans", "Droid Sans", "Helvetica Neue", arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
-  --font-family-mono: ui-monospace, sfmono-regular, sf mono, jetbrainsmono, consolas, monospace;
+  --font-family-sans: system-ui, "Segoe UI", roboto, "Noto Sans", oxygen, ubuntu,
+    cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", arial, sans-serif,
+    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+  --font-family-mono: ui-monospace, sfmono-regular, sf mono, jetbrainsmono,
+    consolas, monospace;
   --font-size-base: 1rem; // 16px
   --font-size-sm: 0.875rem; // 14px
   --font-size-xs: 0.75rem; // 12px
@@ -38,14 +41,14 @@ $semantics: (
   // Color palette
   --white: #fff;
   --very-light-grey: #f8f8f8;
-  --light-grey: hsl(240deg, 20%, 96.5%);
+  --light-grey: hsl(240, 20%, 96.5%);
   --medium-grey: #9ba7af;
   --dark-grey: #4d545d;
-  --black: hsl(240deg, 20%, 10%);
+  --black: hsl(240, 20%, 10%);
 
   // branding
-  --primary: hsl(212deg, 100%, 41%);
-  --secondary: hsl(240deg, 10%, 50%);
+  --primary: hsl(212, 100%, 41%);
+  --secondary: hsl(240, 10%, 50%);
   --success: var(--green);
   --danger: var(--red);
   --warning: var(--orange);
@@ -94,10 +97,10 @@ $semantics: (
   --header-item-border-radius: 4px;
 
   // Breadcrumbs bar
-  --breadcrumbs-bar-background: hsla(240deg, 20%, 96.5%, 80%);
+  --breadcrumbs-bar-background: hsla(240, 20%, 96.5%, 0.8);
 
   // Footer
-  --footer-background: hsla(240deg, 20%, 96.5%, 80%);
+  --footer-background: hsla(240, 20%, 96.5%, 0.8);
 
   // Alert call outs
   --alert-success-text-color: #155724;
@@ -185,23 +188,27 @@ $semantics: (
   --link-font-weight: 600;
 
   // Tooltips
-  --tooltip-backdrop-filter: contrast(0.6) brightness(2.4) saturate(2) blur(15px);
+  --tooltip-backdrop-filter: contrast(0.6) brightness(2.4) saturate(2)
+    blur(15px);
   --tooltip-color: var(--text-color);
-  --tooltip-box-shadow: 0 0 8px 2px rgba(0, 0, 30, 0.05), 0 0 1px 1px rgba(0, 0, 20, 0.025), 0 10px 20px rgba(0, 0, 20, 0.15);
+  --tooltip-box-shadow: 0 0 8px 2px rgba(0, 0, 30, 0.05),
+    0 0 1px 1px rgba(0, 0, 20, 0.025), 0 10px 20px rgba(0, 0, 20, 0.15);
 
   // Dropdowns
-  --dropdown-backdrop-filter: contrast(0.6) brightness(2.5) saturate(1.5) blur(20px);
-  --dropdown-box-shadow: 0 10px 30px rgba(0, 0, 20, 0.2), 0 2px 10px rgba(0, 0, 20, 0.05), inset 0 -1px 2px rgba(255, 255, 255, 0.025);
+  --dropdown-backdrop-filter: contrast(0.6) brightness(2.5) saturate(1.5)
+    blur(20px);
+  --dropdown-box-shadow: 0 10px 30px rgba(0, 0, 20, 0.2),
+    0 2px 10px rgba(0, 0, 20, 0.05), inset 0 -1px 2px rgba(255, 255, 255, 0.025);
 
   // Modals
   ::backdrop {
-    --modal-backdrop-background: hsla(240deg, 10%, 20%, 80%);
+    --modal-backdrop-background: hsla(240, 10%, 20%, 0.8);
   }
 
   --modal-backdrop-filter: brightness(3) blur(50px);
   --modal-box-shadow: 0 10px 40px rgba(0, 0, 20, 0.15),
-                      0 2px 15px rgba(0, 0, 20, 0.05),
-                      inset 0 0 2px 2px rgba(255, 255, 255, 0.025);
+    0 2px 15px rgba(0, 0, 20, 0.05),
+    inset 0 0 2px 2px rgba(255, 255, 255, 0.025);
 
   // Dark link
   --link-dark-color: var(--text-color);
@@ -228,9 +235,9 @@ $semantics: (
   --card-background: transparent;
   --card-background--hover: transparent;
   --card-background--active: transparent;
-  --card-border-color: hsla(240deg, 25%, 75%, 25%);
-  --card-border-color--hover: hsla(240deg, 25%, 75%, 5%);
-  --card-border-color--active: hsla(240deg, 25%, 75%, 75%);
+  --card-border-color: hsla(240, 25%, 75%, 0.25);
+  --card-border-color--hover: hsla(240, 25%, 75%, 0.05);
+  --card-border-color--active: hsla(240, 25%, 75%, 0.75);
   --card-border-width: 2px;
 
   // Tab bar
@@ -340,24 +347,24 @@ $semantics: (
   --call-to-action-text-color: var(--alert-info-text-color);
 
   // Default button
-  --button-background: hsla(240deg, 25%, 75%, 10%);
-  --button-background--hover: hsla(240deg, 25%, 75%, 17.5%);
-  --button-background--active: hsla(240deg, 25%, 75%, 25%);
-  --button-box-shadow--focus: hsla(240deg, 25%, 75%, 10%);
+  --button-background: hsla(240, 25%, 75%, 0.1);
+  --button-background--hover: hsla(240, 25%, 75%, 0.175);
+  --button-background--active: hsla(240, 25%, 75%, 0.25);
+  --button-box-shadow--focus: hsla(240, 25%, 75%, 0.1);
 
   // Variables for sidebar items, card items
-  --item-background--hover: hsla(240deg, 25%, 75%, 15%);
-  --item-background--active: hsla(240deg, 25%, 75%, 22.5%);
-  --item-box-shadow--focus: hsla(240deg, 25%, 75%, 10.5%);
+  --item-background--hover: hsla(240, 25%, 75%, 0.15);
+  --item-background--active: hsla(240, 25%, 75%, 0.225);
+  --item-box-shadow--focus: hsla(240, 25%, 75%, 0.105);
 
   // Colors
   @each $key, $value in $colors {
     --light-#{$key}: #{lighten($value, 20%)};
     --#{$key}: #{$value};
     --dark-#{$key}: #{darken($value, 20%)};
-  };
+  }
 
   @each $key, $value in $semantics {
     --#{$key}-color: #{$value};
-  };
+  }
 }

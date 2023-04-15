@@ -20,7 +20,7 @@ $unit: 0.4rem;
   .jenkins-\!-margin-right-#{value} {
     margin-right: $i * $unit !important;
   }
-};
+}
 
 .jenkins-\!-margin-auto {
   margin: 0 auto;
@@ -46,4 +46,4 @@ $unit: 0.4rem;
   .jenkins-\!-padding-right-#{value} {
     padding-right: $i * $unit !important;
   }
-};
+}

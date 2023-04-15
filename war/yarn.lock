@@ -4027,6 +4027,7 @@ __metadata:
     postcss: 8.4.21
     postcss-less: 6.0.0
     postcss-loader: 7.2.4
+    postcss-scss: ^4.0.6
     prettier: 2.8.7
     sass: ^1.62.0
     sass-loader: ^13.2.2
@@ -5407,6 +5408,15 @@ __metadata:
   peerDependencies:
     postcss: ^8.3.3
   checksum: 06c733eaad83a3954367e7ee02ddfe3796e7a44d4299ccf9239f40964a4daac153c7d77613f32964b5a86c0c6c2f6167738f31d578b73b17cb69d0c4446f0ebe
+  languageName: node
+  linkType: hard
+
+"postcss-scss@npm:^4.0.6":
+  version: 4.0.6
+  resolution: "postcss-scss@npm:4.0.6"
+  peerDependencies:
+    postcss: ^8.4.19
+  checksum: 133a1cba31e2e167f4e841e66ec6a798eaf44c7911f9182ade0b5b1e71a8198814aa390b8c9d5db6b01358115232e5b15b1a4f8c5198acfccfb1f3fdbd328cdf
   languageName: node
   linkType: hard
 
