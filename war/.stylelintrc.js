@@ -15,6 +15,20 @@ module.exports = {
     ],
     "property-no-vendor-prefix": null,
     "at-rule-no-vendor-prefix": null,
+    "at-rule-no-unknown": [
+      true,
+      {
+        ignoreAtRules: [
+          "function",
+          "if",
+          "each",
+          "include",
+          "mixin",
+          "for",
+          "use",
+        ],
+      },
+    ],
     "color-function-notation": "legacy",
     "alpha-value-notation": "number",
     "number-max-precision": 5,
