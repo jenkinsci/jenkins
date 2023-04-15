@@ -281,9 +281,9 @@ $semantics: (
   --input-border: #c3ccd1;
   --input-border-hover: #5c7889;
   --input-hidden-password-bg-color: #f9f9f9;
-  --form-item-max-width: "min(65vw, 1600px)";
-  --form-item-max-width--medium: "min(50vw, 1400px)";
-  --form-item-max-width--small: "min(35vw, 1200px)";
+  --form-item-max-width: min(65vw, 1600px);
+  --form-item-max-width--medium: min(50vw, 1400px);
+  --form-item-max-width--small: min(35vw, 1200px);
 
   @media screen and (max-width: 970px) {
     --form-item-max-width: 100%;
