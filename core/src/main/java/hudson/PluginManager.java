@@ -662,7 +662,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
         for (String pluginPath : plugins) {
             String fileName = pluginPath.substring(pluginPath.lastIndexOf('/') + 1);
-            if (fileName.length() == 0) {
+            if (fileName.isEmpty()) {
                 // see http://www.nabble.com/404-Not-Found-error-when-clicking-on-help-td24508544.html
                 // I suspect some containers are returning directory names.
                 continue;
