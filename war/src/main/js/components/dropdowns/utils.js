@@ -1,6 +1,7 @@
 import Templates from "@/components/dropdowns/templates";
 import makeKeyboardNavigable from "@/util/keyboard";
 import tippy from "tippy.js";
+import behaviorShim from "@/util/behavior-shim";
 
 const SELECTED_ITEM_CLASS = "jenkins-dropdown__item--selected";
 
@@ -122,6 +123,8 @@ function generateDropdownItems(items) {
       return isVisible && isLastDropdown;
     }
   );
+
+  behaviorShim.applySubtree(menuItems);
 
   return menuItems;
 }

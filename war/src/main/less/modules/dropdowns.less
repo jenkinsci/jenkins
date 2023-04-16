@@ -154,6 +154,22 @@
       }
     }
 
+    &__badge {
+      position: relative;
+      margin-left: auto;
+      font-weight: 600;
+      margin-right: -0.85rem;
+
+      &::before {
+        content: "";
+        position: absolute;
+        inset: -0.0625rem -0.375rem;
+        background: var(--text-color-secondary);
+        opacity: 0.1;
+        border-radius: 100vmax;
+      }
+    }
+
     &__chevron {
       position: absolute;
       top: 0;

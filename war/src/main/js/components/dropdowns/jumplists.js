@@ -85,6 +85,7 @@ function mapChildrenItemsToDropdownItems(items) {
       label: item.displayName,
       url: item.url,
       type: item.post || item.requiresConfirmation ? "button" : "link",
+      badge: item.badge,
       onClick: () => {
         if (item.post || item.requiresConfirmation) {
           if (item.requiresConfirmation) {

@@ -36,6 +36,12 @@ function menuItem(options) {
   );
 
   const label = xmlEscape(itemOptions.label);
+  let badgeText;
+  let badgeTooltip;
+  if (itemOptions.badge) {
+    badgeText = xmlEscape(itemOptions.badge.text);
+    badgeTooltip = xmlEscape(itemOptions.badge.tooltip);
+  }
   const tag = itemOptions.type === "link" ? "a" : "button";
 
   const item = createElementFromHtml(`
@@ -50,6 +56,11 @@ function menuItem(options) {
               : ``
           }
           ${label}
+                    ${
+                      itemOptions.badge != null
+                        ? `<span class="jenkins-dropdown__item__badge" tooltip="${badgeTooltip}">${badgeText}</span>`
+                        : ``
+                    }
           ${
             itemOptions.subMenu != null
               ? `<span class="jenkins-dropdown__item__chevron"></span>`
