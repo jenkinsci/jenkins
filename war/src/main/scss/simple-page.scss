@@ -24,6 +24,12 @@
 
 @use "./abstracts/mixins";
 @use "./abstracts/theme";
+@use "./base/typography";
+@use "./base/spacing";
+@use "./form/checkbox";
+@use "./form/input";
+@use "./form/layout";
+@use "./modules/buttons";
 
 body {
   background: var(--background);
