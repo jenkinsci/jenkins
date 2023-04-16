@@ -15,10 +15,7 @@ Behaviour.specify("TEXTAREA.codemirror", "textarea", 0, function (e) {
   if (typeof codemirror.getScrollerElement !== "function") {
     // Maybe older versions of CodeMirror do not provide getScrollerElement method.
     codemirror.getScrollerElement = function () {
-      return findElementsBySelector(
-        codemirror.getWrapperElement(),
-        ".CodeMirror-scroll"
-      )[0];
+      return codemirror.getWrapperElement().querySelector(".CodeMirror-scroll");
     };
   }
   var lineCount = codemirror.lineCount();
@@ -42,11 +39,11 @@ Behaviour.specify(
   "textarea",
   100,
   function (e) {
-    var previewDiv = findElementsBySelector(e, ".textarea-preview")[0];
-    var showPreview = findElementsBySelector(e, ".textarea-show-preview")[0];
-    var hidePreview = findElementsBySelector(e, ".textarea-hide-preview")[0];
-    $(hidePreview).hide();
-    $(previewDiv).hide();
+    var previewDiv = e.querySelector(".textarea-preview");
+    var showPreview = e.querySelector(".textarea-show-preview");
+    var hidePreview = e.querySelector(".textarea-hide-preview");
+    hidePreview.style.display = "none";
+    previewDiv.style.display = "none";
 
     showPreview.onclick = function () {
       // Several TEXTAREAs may exist if CodeMirror is enabled. The first one has reference to the CodeMirror object.
@@ -62,8 +59,8 @@ Behaviour.specify(
           : textarea.value;
       }
       var render = function (txt) {
-        $(hidePreview).show();
-        $(previewDiv).show();
+        hidePreview.style.display = "";
+        previewDiv.style.display = "";
         previewDiv.innerHTML = txt;
         layoutUpdateCallback.call();
       };
@@ -85,8 +82,8 @@ Behaviour.specify(
     };
 
     hidePreview.onclick = function () {
-      $(hidePreview).hide();
-      $(previewDiv).hide();
+      hidePreview.style.display = "none";
+      previewDiv.style.display = "none";
     };
   }
 );

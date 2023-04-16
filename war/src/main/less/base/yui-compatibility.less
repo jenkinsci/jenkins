@@ -230,3 +230,18 @@ div.yahooTree td {
 .yui-panel .bd {
   background-color: var(--background) !important;
 }
+
+.yui-menu-badge {
+  position: relative;
+  margin-left: auto;
+  font-weight: 600;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0 -0.375rem;
+    background: var(--text-color-secondary);
+    opacity: 0.1;
+    border-radius: 100vmax;
+  }
+}
