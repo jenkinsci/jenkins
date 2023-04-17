@@ -24,6 +24,7 @@
 
 package jenkins.widgets;
 
+import hudson.Functions;
 import hudson.Util;
 import hudson.model.BallColor;
 import hudson.model.Run;
@@ -42,7 +43,7 @@ public class BuildListTable extends RunListProgressiveRendering {
         element.put("url", build.getUrl());
         element.put("iconName", build.getIconColor().getIconName());
         element.put("parentUrl", build.getParent().getUrl());
-        element.put("parentFullDisplayName", build.getParent().getFullDisplayName());
+        element.put("parentFullDisplayName", Functions.breakableString(Functions.escape(build.getParent().getFullDisplayName())));
         element.put("displayName", build.getDisplayName());
         element.put("timestampString", build.getTimestampString());
         element.put("timestampString2", build.getTimestampString2());

@@ -149,7 +149,8 @@ window.displayBuilds = function (data) {
     a1.classList.add("jenkins-table__link", "model-link");
     a1.href = rootUrl + "/" + e.parentUrl;
     var span1 = document.createElement("span");
-    span1.textContent = e.parentFullDisplayName;
+    // TODO port Functions#breakableString to JavaScript and use .textContent rather than .innerHTML
+    span1.innerHTML = e.parentFullDisplayName;
     a1.appendChild(span1);
     td2.appendChild(a1);
     var a2 = document.createElement("a");
