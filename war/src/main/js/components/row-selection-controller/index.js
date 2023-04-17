@@ -22,14 +22,17 @@ rowSelectionControllers.forEach((headerCheckbox) => {
   }
 
   const allCheckboxesSelected = () => {
-    return (
-      tableCheckboxes.length ===
-      [...tableCheckboxes].filter((e) => e.checked).length
+    const selectedCheckboxes = Array.from(tableCheckboxes).filter(
+      (e) => e.checked
     );
+    return tableCheckboxes.length === selectedCheckboxes.length;
   };
 
   const anyCheckboxesSelected = () => {
-    return [...tableCheckboxes].filter((e) => e.checked).length > 0;
+    const selectedCheckboxes = Array.from(tableCheckboxes).filter(
+      (e) => e.checked
+    );
+    return selectedCheckboxes.length > 0;
   };
 
   tableCheckboxes.forEach((checkbox) => {

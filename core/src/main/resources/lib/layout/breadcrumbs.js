@@ -22,15 +22,51 @@ window.breadcrumbs = (function () {
   var logger = function () {};
   // logger = function() { console.log.apply(console,arguments) };  // uncomment this line to enable logging
 
-  function makeMenuHtml(icon, iconXml, displayName) {
+  // TODO - Use util/security.js xmlEscape in #7474
+  function xmlEscape(str) {
+    if (!str) {
+      return;
+    }
+
+    return str.replace(/[<>&'"]/g, (match) => {
+      switch (match) {
+        case "<":
+          return "&lt;";
+        case ">":
+          return "&gt;";
+        case "&":
+          return "&amp;";
+        case "'":
+          return "&apos;";
+        case '"':
+          return "&quot;";
+      }
+    });
+  }
+
+  function makeMenuHtml(icon, iconXml, displayName, badge) {
     var displaynameSpan = "<span>" + displayName + "</span>";
+    let badgeText;
+    let badgeTooltip;
+    if (badge) {
+      badgeText = xmlEscape(badge.text);
+      badgeTooltip = xmlEscape(badge.tooltip);
+    }
+    const badgeSpan =
+      badge === null
+        ? ""
+        : `<span class="yui-menu-badge" tooltip="${badgeTooltip}">${badgeText}</span>`;
 
     if (iconXml != null) {
-      return iconXml + displaynameSpan;
+      return iconXml + displaynameSpan + badgeSpan;
     }
 
     if (icon === null) {
-      return "<span style='margin: 2px 4px 2px 2px;' />" + displaynameSpan;
+      return (
+        "<span style='margin: 2px 4px 2px 2px;' />" +
+        displaynameSpan +
+        badgeSpan
+      );
     }
 
     // TODO: move this to the API response in a clean way
@@ -41,11 +77,13 @@ window.breadcrumbs = (function () {
           icon +
           "' />" +
           "</svg>" +
-          displaynameSpan
+          displaynameSpan +
+          badgeSpan
       : "<img src='" +
           icon +
           "' width=24 height=24 style='margin: 2px 4px 2px 2px;' alt=''>" +
-          displaynameSpan;
+          displaynameSpan +
+          badgeSpan;
   }
 
   Event.observe(window, "load", function () {
@@ -156,6 +194,8 @@ window.breadcrumbs = (function () {
       menu.addItems(items);
       menu.render("breadcrumb-menu-target");
       menu.show();
+
+      Behaviour.applySubtree(menu.body);
     }
 
     // ignore the currently pending call
@@ -180,14 +220,20 @@ window.breadcrumbs = (function () {
                 e.text = makeMenuHtml(
                   e.icon,
                   e.iconXml,
-                  "<span class='header'>" + e.displayName + "</span>"
+                  "<span class='header'>" + e.displayName + "</span>",
+                  e.badge
                 );
                 e.disabled = true;
               } else if (e.type === "SEPARATOR") {
                 e.text = "<span class='separator'>--</span>";
                 e.disabled = true;
               } else {
-                e.text = makeMenuHtml(e.icon, e.iconXml, e.displayName);
+                e.text = makeMenuHtml(
+                  e.icon,
+                  e.iconXml,
+                  e.displayName,
+                  e.badge
+                );
               }
               if (e.subMenu != null) {
                 e.subMenu = {

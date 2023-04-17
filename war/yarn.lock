@@ -1367,10 +1367,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@eslint/js@npm:8.37.0":
-  version: 8.37.0
-  resolution: "@eslint/js@npm:8.37.0"
-  checksum: 7a07fb085c94ce1538949012c292fd3a6cd734f149bc03af6157dfbd8a7477678899ef57b4a27e15b36470a997389ad79a0533d5880c71e67720ae1a7de7c62d
+"@eslint/js@npm:8.38.0":
+  version: 8.38.0
+  resolution: "@eslint/js@npm:8.38.0"
+  checksum: 1f28987aa8c9cd93e23384e16c7220863b39b5dc4b66e46d7cdbccce868040f455a98d24cd8b567a884f26545a0555b761f7328d4a00c051e7ef689cbea5fce1
   languageName: node
   linkType: hard
 
@@ -3136,14 +3136,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint@npm:8.37.0":
-  version: 8.37.0
-  resolution: "eslint@npm:8.37.0"
+"eslint@npm:8.38.0":
+  version: 8.38.0
+  resolution: "eslint@npm:8.38.0"
   dependencies:
     "@eslint-community/eslint-utils": ^4.2.0
     "@eslint-community/regexpp": ^4.4.0
     "@eslint/eslintrc": ^2.0.2
-    "@eslint/js": 8.37.0
+    "@eslint/js": 8.38.0
     "@humanwhocodes/config-array": ^0.11.8
     "@humanwhocodes/module-importer": ^1.0.1
     "@nodelib/fs.walk": ^1.2.8
@@ -3182,7 +3182,7 @@ __metadata:
     text-table: ^0.2.0
   bin:
     eslint: bin/eslint.js
-  checksum: 80f3d5cdce2d671f4794e392d234a78d039c347673defb0596268bd481e8f30a53d93c01ff4f66a546c87d97ab4122c0e9cafe1371f87cb03cee6b7d5aa97595
+  checksum: 73b6d9b650d0434aa7c07d0a1802f099b086ee70a8d8ba7be730439a26572a5eb71def12125c82942be2ec8ee5be38a6f1b42a13e40d4b67f11a148ec9e263eb
   languageName: node
   linkType: hard
 
@@ -4000,15 +4000,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jenkins-js-modules@npm:1.5.4":
-  version: 1.5.4
-  resolution: "jenkins-js-modules@npm:1.5.4"
-  dependencies:
-    window-handle: 0.0.6
-  checksum: b2657e75dc4972bf40a3487297d6af5af842d8e857ff4b17e8ac98bf3090ddf3ced907c7b524014366267b1128a767afb9209c60cfc31855b4914787bffb9add
-  languageName: node
-  linkType: hard
-
 "jenkins-ui@workspace:.":
   version: 0.0.0-use.local
   resolution: "jenkins-ui@workspace:."
@@ -4023,12 +4014,11 @@ __metadata:
     copy-webpack-plugin: 11.0.0
     css-loader: 6.7.3
     css-minimizer-webpack-plugin: 5.0.0
-    eslint: 8.37.0
+    eslint: 8.38.0
     eslint-config-prettier: 8.8.0
     handlebars: 4.7.7
     handlebars-loader: 1.7.3
     hotkeys-js: 3.10.2
-    jenkins-js-modules: 1.5.4
     jquery: 3.6.4
     less: 4.1.3
     less-loader: 11.1.0
@@ -4046,7 +4036,7 @@ __metadata:
     tippy.js: 6.3.7
     webpack: 5.78.0
     webpack-cli: 5.0.1
-    webpack-remove-empty-scripts: 1.0.1
+    webpack-remove-empty-scripts: 1.0.3
     window-handle: 1.0.1
   languageName: unknown
   linkType: soft
@@ -6559,14 +6549,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"webpack-remove-empty-scripts@npm:1.0.1":
-  version: 1.0.1
-  resolution: "webpack-remove-empty-scripts@npm:1.0.1"
+"webpack-remove-empty-scripts@npm:1.0.3":
+  version: 1.0.3
+  resolution: "webpack-remove-empty-scripts@npm:1.0.3"
   dependencies:
     ansis: 1.5.2
   peerDependencies:
     webpack: ">=5.32.0"
-  checksum: 4ed2817cb3ea05dbd5822e3a0a62e70e455077455ff33c994311b53b40ad68da045d132d27e75745f5d30ad23bd8ae28180ee07179c16ed1e7766823e458d412
+  checksum: af7e2626608304037b8723f05b81690f280b50766fccc28e4a0bdbe29eb58b5aa95808449f26b67a92ba26f1d707a118820f5c2571cc340f3588a33751853b54
   languageName: node
   linkType: hard
 
@@ -6649,13 +6639,6 @@ __metadata:
   version: 2.0.0
   resolution: "wildcard@npm:2.0.0"
   checksum: 1f4fe4c03dfc492777c60f795bbba597ac78794f1b650d68f398fbee9adb765367c516ebd4220889b6a81e9626e7228bbe0d66237abb311573c2ee1f4902a5ad
-  languageName: node
-  linkType: hard
-
-"window-handle@npm:0.0.6":
-  version: 0.0.6
-  resolution: "window-handle@npm:0.0.6"
-  checksum: fc06c4dbbeb2816276076e8f7c7c2530d55972230d01ee74e45da79ad382ab55f21c35e5d8abf8e558bfafa0224532ffc86a49675aae0a1505620108996a776d
   languageName: node
   linkType: hard
 

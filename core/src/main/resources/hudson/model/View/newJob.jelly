@@ -27,9 +27,10 @@ THE SOFTWARE.
   <j:getStatic var="permission" className="hudson.model.Item" field="CREATE"/>
 
   <l:layout type="one-column" permission="${permission}" title="${%NewJob(it.newPronoun)}">
-
-    <l:js src="jsbundles/add-item.js" />
-    <l:css src="jsbundles/add-item.css" />
+    <l:header>
+      <link rel="stylesheet" href="${resURL}/jsbundles/add-item.css" type="text/css" />
+      <script src="${resURL}/jsbundles/add-item.js" type="text/javascript" defer="true" />
+    </l:header>
 
     <l:main-panel>
     <div class="container" id="add-item-panel" style="display: none;">
