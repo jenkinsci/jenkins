@@ -5674,6 +5674,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         "adjuncts", // #getAdjuncts
         "error", // AbstractModelObject/error.jelly
         "oops", // .jelly
+        "404", // .jelly
         "signup", // #doSignup
         "tcpSlaveAgentListener", // #getTcpSlaveAgentListener
         "federatedLoginService", // #getFederatedLoginService
