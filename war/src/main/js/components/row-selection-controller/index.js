@@ -22,14 +22,17 @@ rowSelectionControllers.forEach((headerCheckbox) => {
   }
 
   const allCheckboxesSelected = () => {
-    return (
-      tableCheckboxes.length ===
-      [...tableCheckboxes].filter((e) => e.checked).length
+    const selectedCheckboxes = Array.from(tableCheckboxes).filter(
+      (e) => e.checked
     );
+    return tableCheckboxes.length === selectedCheckboxes.length;
   };
 
   const anyCheckboxesSelected = () => {
-    return [...tableCheckboxes].filter((e) => e.checked).length > 0;
+    const selectedCheckboxes = Array.from(tableCheckboxes).filter(
+      (e) => e.checked
+    );
+    return selectedCheckboxes.length > 0;
   };
 
   tableCheckboxes.forEach((checkbox) => {
@@ -44,22 +47,28 @@ rowSelectionControllers.forEach((headerCheckbox) => {
     updateIcon();
   });
 
-  moreOptionsAllButton?.addEventListener("click", () => {
-    tableCheckboxes.forEach((e) => (e.checked = true));
-    updateIcon();
-  });
+  if (moreOptionsAllButton !== null) {
+    moreOptionsAllButton.addEventListener("click", () => {
+      tableCheckboxes.forEach((e) => (e.checked = true));
+      updateIcon();
+    });
+  }
 
-  moreOptionsNoneButton?.addEventListener("click", () => {
-    tableCheckboxes.forEach((e) => (e.checked = false));
-    updateIcon();
-  });
+  if (moreOptionsNoneButton !== null) {
+    moreOptionsNoneButton.addEventListener("click", () => {
+      tableCheckboxes.forEach((e) => (e.checked = false));
+      updateIcon();
+    });
+  }
 
   function updateIcon() {
     headerCheckbox.classList.remove("jenkins-table__checkbox--all");
     headerCheckbox.classList.remove("jenkins-table__checkbox--indeterminate");
-    moreOptionsDropdown?.classList.remove(
-      "jenkins-table__checkbox-dropdown--visible"
-    );
+    if (moreOptionsDropdown !== null) {
+      moreOptionsDropdown.classList.remove(
+        "jenkins-table__checkbox-dropdown--visible"
+      );
+    }
 
     if (allCheckboxesSelected()) {
       headerCheckbox.classList.add("jenkins-table__checkbox--all");
@@ -72,23 +81,26 @@ rowSelectionControllers.forEach((headerCheckbox) => {
   }
 
   document.addEventListener("click", (event) => {
-    if (
-      moreOptionsDropdown?.contains(event.target) ||
-      event.target === moreOptionsButton
-    ) {
-      return;
+    if (moreOptionsDropdown !== null) {
+      if (
+        moreOptionsDropdown.contains(event.target) ||
+        event.target === moreOptionsButton
+      ) {
+        return;
+      }
+      moreOptionsDropdown.classList.remove(
+        "jenkins-table__checkbox-dropdown--visible"
+      );
     }
-
-    moreOptionsDropdown?.classList.remove(
-      "jenkins-table__checkbox-dropdown--visible"
-    );
   });
 
-  moreOptionsButton?.addEventListener("click", () => {
-    moreOptionsDropdown.classList.toggle(
-      "jenkins-table__checkbox-dropdown--visible"
-    );
-  });
+  if (moreOptionsButton !== null) {
+    moreOptionsButton.addEventListener("click", () => {
+      moreOptionsDropdown.classList.toggle(
+        "jenkins-table__checkbox-dropdown--visible"
+      );
+    });
+  }
 
   window.updateTableHeaderCheckbox = updateIcon;
 });

@@ -37,7 +37,7 @@ public class TreeStringBuilder {
          * if any.
          */
         public Child intern(final String s) {
-            if (s.length() == 0) {
+            if (s.isEmpty()) {
                 return this;
             }
 

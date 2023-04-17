@@ -420,7 +420,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
             si.errors.put("captcha", Messages.HudsonPrivateSecurityRealm_CreateAccount_TextNotMatchWordInImage());
         }
 
-        if (si.username == null || si.username.length() == 0) {
+        if (si.username == null || si.username.isEmpty()) {
             si.errors.put("username", Messages.HudsonPrivateSecurityRealm_CreateAccount_UserNameRequired());
         } else if (!containsOnlyAcceptableCharacters(si.username)) {
             if (ID_REGEX == null) {
@@ -445,7 +445,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
             si.errors.put("password1", Messages.HudsonPrivateSecurityRealm_CreateAccount_PasswordRequired());
         }
 
-        if (si.fullname == null || si.fullname.length() == 0) {
+        if (si.fullname == null || si.fullname.isEmpty()) {
             si.fullname = si.username;
         }
 

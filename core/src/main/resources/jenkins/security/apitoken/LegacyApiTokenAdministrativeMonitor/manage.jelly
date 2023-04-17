@@ -27,6 +27,7 @@ THE SOFTWARE.
     <l:layout title="${%title}">
         <st:adjunct includes="jenkins.security.apitoken.LegacyApiTokenAdministrativeMonitor.resources"/>
         <st:include page="sidepanel.jelly" it="${app}"/>
+        <l:breadcrumb title="${%title}" />
         <l:main-panel>
             <div class="legacy-token-usage">
                 

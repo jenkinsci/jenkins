@@ -21,7 +21,7 @@
         text-align: left;
         padding-top: calc((var(--table-padding) * 1.7) - 7.5px);
         padding-bottom: calc((var(--table-padding) * 1.7) - 2.5px);
-        padding-left: var(--table-padding);
+        padding-left: 1.6rem;
         font-weight: 600;
         font-size: 0.85rem;
 
@@ -44,6 +44,16 @@
         a {
           color: var(--table-header-foreground);
           font-weight: 700;
+
+          span.sortarrow {
+            width: 24px;
+          }
+        }
+
+        svg {
+          vertical-align: middle;
+          width: 0.8rem;
+          height: 0.8rem;
         }
       }
     }
@@ -51,15 +61,14 @@
 
   & > tbody {
     & > tr {
-      background: var(--table-body-background);
       color: var(--table-body-foreground);
 
       & > td {
+        background: var(--table-body-background);
         vertical-align: middle;
-        padding: var(--table-padding) 0 var(--table-padding)
-          var(--table-padding);
+        padding: var(--table-padding) 0 var(--table-padding) 1.6rem;
         font-weight: 500;
-        height: 50px;
+        height: 3rem;
 
         &:first-of-type {
           padding-left: calc(var(--table-padding) * 2);
@@ -113,9 +122,9 @@
 
   &__cell--tight {
     padding-left: 0 !important;
-    text-align: center !important;
+    text-align: right !important;
     white-space: nowrap;
-    width: 3.5rem;
+    width: 4rem;
   }
 
   &__cell--checkbox {
@@ -148,8 +157,8 @@
     svg,
     .build-status-icon__wrapper,
     img {
-      width: 24px !important;
-      height: 24px !important;
+      width: 1.5rem !important;
+      height: 1.5rem !important;
     }
   }
 
@@ -166,8 +175,8 @@
       svg,
       .build-status-icon__wrapper,
       img {
-        width: 20px !important;
-        height: 20px !important;
+        width: 1.3rem !important;
+        height: 1.3rem !important;
       }
     }
   }
@@ -185,8 +194,8 @@
       svg,
       .build-status-icon__wrapper,
       img {
-        width: 16px !important;
-        height: 16px !important;
+        width: 1rem !important;
+        height: 1rem !important;
       }
     }
   }
@@ -219,10 +228,7 @@
 
     &::before,
     &::after {
-      top: -7px;
-      left: -10px;
-      bottom: -7px;
-      right: -10px;
+      inset: -7px -10px;
       border-radius: 6px;
     }
   }
@@ -231,20 +237,14 @@
     margin-left: 1rem !important;
 
     &::before {
-      top: -5px;
-      left: -8px;
-      bottom: -5px;
-      right: -8px;
+      inset: -5px -8px;
       border-radius: 13px;
       background: currentColor;
       opacity: 0.05;
     }
 
     &::after {
-      top: -5px;
-      left: -8px;
-      bottom: -5px;
-      right: -8px;
+      inset: -5px -8px;
       box-shadow: 0 0 0 10px currentColor;
       opacity: 0;
     }

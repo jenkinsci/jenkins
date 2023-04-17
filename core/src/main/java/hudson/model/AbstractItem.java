@@ -111,7 +111,6 @@ import org.xml.sax.SAXException;
 // Item doesn't necessarily have to be Actionable, but
 // Java doesn't let multiple inheritance.
 @ExportedBean
-@SuppressFBWarnings(value = "THROWS_METHOD_THROWS_CLAUSE_THROWABLE", justification = "TODO needs triage")
 public abstract class AbstractItem extends Actionable implements Item, HttpDeletable, AccessControlled, DescriptorByNameOwner, StaplerProxy {
 
     private static final Logger LOGGER = Logger.getLogger(AbstractItem.class.getName());
@@ -480,7 +479,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     @Exported
     public final String getFullName() {
         String n = getParent().getFullName();
-        if (n.length() == 0)   return getName();
+        if (n.isEmpty())   return getName();
         else                return n + '/' + getName();
     }
 
@@ -488,7 +487,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     @Exported
     public final String getFullDisplayName() {
         String n = getParent().getFullDisplayName();
-        if (n.length() == 0)   return getDisplayName();
+        if (n.isEmpty())   return getDisplayName();
         else                return n + " » " + getDisplayName();
     }
 

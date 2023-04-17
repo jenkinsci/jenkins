@@ -166,7 +166,7 @@ var repeatableSupport = {
     for (var i = 0; i < inputs.length; i++) {
       var input = inputs[i];
       if (input.name == "hudson-tools-InstallSourceProperty") {
-        updateOptionalBlock(input, false);
+        updateOptionalBlock(input);
       }
     }
     layoutUpdateCallback.call();
@@ -254,6 +254,13 @@ Behaviour.specify("DIV.repeated-chunk", "repeatable", -200, function (d) {
       // Reselect anything unselected by browser before names uniquified:
       if (inputs[i].defaultChecked) {
         inputs[i].checked = true;
+      }
+
+      // Uniquify the "id" of <input> and "for" of <label>
+      inputs[i].id = inputs[i].name + "_" + inputs[i].id;
+      var next = inputs[i].nextElementSibling;
+      if (next != null && next.tagName === "LABEL") {
+        next.setAttribute("for", inputs[i].id);
       }
     }
   }

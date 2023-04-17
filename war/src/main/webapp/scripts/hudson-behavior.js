@@ -132,6 +132,7 @@ var crumb = {
   appendToForm: function (form) {
     if (this.fieldName == null) return; // noop
     var div = document.createElement("div");
+    div.classList.add("jenkins-!-display-contents");
     div.innerHTML =
       "<input type=hidden name='" +
       this.fieldName +
@@ -207,6 +208,12 @@ var FormChecker = {
   // won't work.
   inProgress: 0,
 
+  // defines the maximum number of parallel checks to be run
+  // should be '1' when http1.1 is used as browsers will usually throttle the number of connections
+  // and having a higher value can even have a negative impact. But with http2 enabled, this can
+  // be a great performance improvement
+  maxParallel: 1,
+
   /**
    * Schedules a form field check. Executions are serialized to reduce the bandwidth impact.
    *
@@ -233,7 +240,7 @@ var FormChecker = {
   },
 
   schedule: function () {
-    if (this.inProgress > 0) return;
+    if (this.inProgress >= this.maxParallel) return;
     if (this.queue.length == 0) return;
 
     var next = this.queue.shift();
@@ -249,6 +256,29 @@ var FormChecker = {
     this.inProgress++;
   },
 };
+
+/**
+ * Detects if http2 protocol is enabled.
+ */
+function isHttp2Enabled() {
+  try {
+    const p = performance.getEntriesByType("resource");
+    if (p.length > 0) {
+      if ("nextHopProtocol" in p[0] && p[0].nextHopProtocol === "h2") {
+        return true;
+      }
+    }
+  } catch (e) {
+    console.error(e.stack || e);
+  }
+  return false;
+}
+
+// detect if we're using http2 and if yes increase the maxParallel connections
+// of the FormChecker
+if (isHttp2Enabled()) {
+  FormChecker.maxParallel = 30;
+}
 
 /**
  * Find the sibling (in the sense of the structured form submission) form item of the given name,
@@ -347,17 +377,11 @@ function qs(owner) {
 
 // find the nearest ancestor node that has the given tag name
 function findAncestor(e, tagName) {
-  do {
-    e = e.parentNode;
-  } while (e != null && e.tagName != tagName);
-  return e;
+  return e.closest(tagName);
 }
 
 function findAncestorClass(e, cssClass) {
-  do {
-    e = e.parentNode;
-  } while (e != null && !Element.hasClassName(e, cssClass));
-  return e;
+  return e.closest("." + cssClass);
 }
 
 function isTR(tr, nodeClass) {
@@ -508,9 +532,6 @@ function fireEvent(element, event) {
     return element.fireEvent("on" + event, evt);
   }
 }
-
-// shared tooltip object
-var tooltip;
 
 // Behavior rules
 //========================================================
@@ -857,9 +878,7 @@ function makeButton(e, onclick) {
     the behavior re-executes when the removed master copy gets reinserted later.
  */
 function isInsideRemovable(e) {
-  return Element.ancestors(e).find(function (f) {
-    return f.hasClassName("to-be-removed");
-  });
+  return !!e.closest(".to-be-removed");
 }
 
 /**
@@ -891,7 +910,7 @@ function renderOnDemand(e, callback, noBehaviour) {
       e.parentNode.insertBefore(n, e);
       if (n.nodeType == 1 && !noBehaviour) elements.push(n);
     }
-    Element.remove(e);
+    e.remove();
 
     evalInnerHtmlScripts(t.responseText, function () {
       Behaviour.applySubtree(elements, true);
@@ -943,14 +962,6 @@ function sequencer(fs) {
 function progressBarOnClick() {
   var href = this.getAttribute("href");
   if (href != null) window.location = href;
-}
-
-function expandButton(e) {
-  var link = e.target;
-  while (!Element.hasClassName(link, "advancedLink")) link = link.parentNode;
-  link.style.display = "none";
-  $(link).next().style.display = "block";
-  layoutUpdateCallback.call();
 }
 
 function labelAttachPreviousOnClick() {
@@ -1090,10 +1101,6 @@ function rowvgStartEachRow(recursive, f) {
 
 (function () {
   var p = 20;
-  Behaviour.specify("BODY", "body", ++p, function () {
-    tooltip = new YAHOO.widget.Tooltip("tt", { context: [], zindex: 999 });
-  });
-
   Behaviour.specify("TABLE.sortable", "table-sortable", ++p, function (e) {
     // sortable table
     e.sortable = new Sortable.Sortable(e);
@@ -1106,15 +1113,6 @@ function rowvgStartEachRow(recursive, f) {
     function (e) {
       // progressBar.jelly
       e.onclick = progressBarOnClick;
-    }
-  );
-
-  Behaviour.specify(
-    "INPUT.expand-button",
-    "input-expand-button",
-    ++p,
-    function (e) {
-      makeButton(e, expandButton);
     }
   );
 
@@ -1371,6 +1369,7 @@ function rowvgStartEachRow(recursive, f) {
     if (Element.hasClassName(form, "no-json")) return;
     // add the hidden 'json' input field, which receives the form structure in JSON
     var div = document.createElement("div");
+    div.classList.add("jenkins-!-display-contents");
     div.innerHTML = "<input type=hidden name=json value=init>";
     form.appendChild(div);
 
@@ -1386,12 +1385,6 @@ function rowvgStartEachRow(recursive, f) {
     }
 
     form = null; // memory leak prevention
-  });
-
-  // hook up tooltip.
-  //   add nodismiss="" if you'd like to display the tooltip forever as long as the mouse is on the element.
-  Behaviour.specify("[tooltip]", "-tooltip-", ++p, function (e) {
-    applyTooltip(e, e.getAttribute("tooltip"));
   });
 
   Behaviour.specify(
@@ -1475,7 +1468,7 @@ function rowvgStartEachRow(recursive, f) {
     ++p,
     function (e) {
       e.addEventListener("click", function () {
-        updateOptionalBlock(e, true);
+        updateOptionalBlock(e);
       });
     }
   );
@@ -1518,7 +1511,7 @@ function rowvgStartEachRow(recursive, f) {
       // this requires "TR.row-set-end" to mark rows
       // Get the `input` from the checkbox container
       var checkbox = e.querySelector("input[type='checkbox']");
-      updateOptionalBlock(checkbox, false);
+      updateOptionalBlock(checkbox);
     }
   );
 
@@ -1771,36 +1764,6 @@ var hudsonRules = {}; // legacy name
 // now empty, but plugins can stuff things in here later:
 Behaviour.register(hudsonRules);
 
-function applyTooltip(e, text) {
-  // copied from YAHOO.widget.Tooltip.prototype.configContext to efficiently add a new element
-  // event registration via YAHOO.util.Event.addListener leaks memory, so do it by ourselves here
-  e.onmouseover = function (ev) {
-    var delay = this.getAttribute("nodismiss") != null ? 99999999 : 5000;
-    tooltip.cfg.setProperty("autodismissdelay", delay);
-    return tooltip.onContextMouseOver.call(
-      this,
-      YAHOO.util.Event.getEvent(ev),
-      tooltip
-    );
-  };
-  e.onmousemove = function (ev) {
-    return tooltip.onContextMouseMove.call(
-      this,
-      YAHOO.util.Event.getEvent(ev),
-      tooltip
-    );
-  };
-  e.onmouseout = function (ev) {
-    return tooltip.onContextMouseOut.call(
-      this,
-      YAHOO.util.Event.getEvent(ev),
-      tooltip
-    );
-  };
-  e.title = text;
-  e = null; // avoid memory leak
-}
-
 var Path = {
   tail: function (p) {
     var idx = p.lastIndexOf("/");
@@ -1853,10 +1816,18 @@ function xor(a, b) {
 }
 
 // used by editableDescription.jelly to replace the description field with a form
-function replaceDescription() {
+function replaceDescription(initialDescription, submissionUrl) {
   var d = document.getElementById("description");
   $(d).down().next().innerHTML = "<div class='jenkins-spinner'></div>";
+  let parameters = {};
+  if (initialDescription !== undefined && submissionUrl !== undefined) {
+    parameters = {
+      description: initialDescription,
+      submissionUrl: submissionUrl,
+    };
+  }
   new Ajax.Request("./descriptionForm", {
+    parameters: parameters,
     onComplete: function (x) {
       d.innerHTML = x.responseText;
       evalInnerHtmlScripts(x.responseText, function () {
@@ -1893,26 +1864,18 @@ function applyNameRefHelper(s, e, id) {
 
 // used by optionalBlock.jelly to update the form status
 //   @param c     checkbox element
-function updateOptionalBlock(c, scroll) {
+function updateOptionalBlock(c) {
   // find the start TR
-  var s = $(c);
-  while (!s.hasClassName("optional-block-start")) s = s.up();
+  var s = c;
+  while (!s.classList.contains("optional-block-start")) s = s.parentNode;
 
   // find the beginning of the rowvg
   var vg = s;
-  while (!vg.hasClassName("rowvg-start")) vg = vg.next();
+  while (!vg.classList.contains("rowvg-start")) vg = vg.nextElementSibling;
 
-  var checked = xor(c.checked, Element.hasClassName(c, "negative"));
+  var checked = xor(c.checked, c.classList.contains("negative"));
 
   vg.rowVisibilityGroup.makeInnerVisible(checked);
-
-  if (checked && scroll) {
-    var D = YAHOO.util.Dom;
-
-    var r = D.getRegion(s);
-    r = r.union(D.getRegion(vg.rowVisibilityGroup.end));
-    scrollIntoView(r);
-  }
 
   if (c.name == "hudson-tools-InstallSourceProperty") {
     // Hack to hide tool home when "Install automatically" is checked.
@@ -1996,39 +1959,6 @@ function AutoScroller(scrollContainer) {
       scrollDiv.scrollTop = currentHeight;
     },
   };
-}
-
-// scroll the current window to display the given element or the region.
-function scrollIntoView(e) {
-  function calcDelta(ex1, ex2, vx1, vw) {
-    var vx2 = vx1 + vw;
-    var a;
-    a = Math.min(vx1 - ex1, vx2 - ex2);
-    if (a > 0) return -a;
-    a = Math.min(ex1 - vx1, ex2 - vx2);
-    if (a > 0) return a;
-    return 0;
-  }
-
-  var D = YAHOO.util.Dom;
-
-  var r;
-  if (e.tagName != null) r = D.getRegion(e);
-  else r = e;
-
-  var dx = calcDelta(
-    r.left,
-    r.right,
-    document.body.scrollLeft,
-    D.getViewportWidth()
-  );
-  var dy = calcDelta(
-    r.top,
-    r.bottom,
-    document.body.scrollTop,
-    D.getViewportHeight()
-  );
-  window.scrollBy(dx, dy);
 }
 
 // used in expandableTextbox.jelly to change a input field into a text area
@@ -2243,7 +2173,7 @@ function ensureVisible(e) {
   }
 
   // if there are any stickers around, subtract them from the viewport
-  handleStickers("top-sticker", function (t) {
+  handleStickers("jenkins-breadcrumbs", function (t) {
     t = t.clientHeight;
     Y += t;
     H -= t;
@@ -2524,55 +2454,6 @@ function buildFormTree(form) {
   }
 }
 
-var hoverNotification = (function () {
-  var msgBox;
-  var body;
-
-  // animation effect that automatically hide the message box
-  var effect = function (overlay, dur) {
-    var o = YAHOO.widget.ContainerEffect.FADE(overlay, dur);
-    o.animateInCompleteEvent.subscribe(function () {
-      window.setTimeout(function () {
-        msgBox.hide();
-      }, 1500);
-    });
-    return o;
-  };
-
-  function init() {
-    if (msgBox != null) return; // already initialized
-
-    var div = document.createElement("DIV");
-    document.body.appendChild(div);
-    div.innerHTML =
-      "<div id=hoverNotification class='jenkins-tooltip'><div class=bd></div></div>";
-    body = $("hoverNotification");
-
-    msgBox = new YAHOO.widget.Overlay(body, {
-      visible: false,
-      zIndex: 1000,
-      effect: {
-        effect: effect,
-        duration: 0.25,
-      },
-    });
-    msgBox.render();
-  }
-
-  return function (title, anchor, offset) {
-    if (typeof offset === "undefined") {
-      offset = 48;
-    }
-    init();
-    body.innerHTML = title;
-    var xy = YAHOO.util.Dom.getXY(anchor);
-    xy[0] += offset;
-    xy[1] += anchor.offsetHeight;
-    msgBox.cfg.setProperty("xy", xy);
-    msgBox.show();
-  };
-})();
-
 // Decrease vertical padding for checkboxes
 window.addEventListener("load", function () {
   document.querySelectorAll(".jenkins-form-item").forEach(function (element) {
@@ -2631,8 +2512,7 @@ function loadScript(href, callback) {
 }
 
 // logic behind <f:validateButton />
-function safeValidateButton(yuiButton) {
-  var button = yuiButton._button;
+function safeValidateButton(button) {
   var descriptorUrl = button.getAttribute(
     "data-validate-button-descriptor-url"
   );
@@ -2642,14 +2522,12 @@ function safeValidateButton(yuiButton) {
   // optional, by default = empty string
   var paramList = button.getAttribute("data-validate-button-with") || "";
 
-  validateButton(checkUrl, paramList, yuiButton);
+  validateButton(checkUrl, paramList, button);
 }
 
 // this method should not be called directly, only get called by safeValidateButton
 // kept "public" for legacy compatibility
 function validateButton(checkUrl, paramList, button) {
-  button = button._button;
-
   var parameters = {};
 
   paramList.split(",").each(function (name) {
@@ -2728,96 +2606,5 @@ var layoutUpdateCallback = {
   call: function () {
     for (var i = 0, length = this.callbacks.length; i < length; i++)
       this.callbacks[i]();
-  },
-};
-
-// Notification bar
-// ==============================
-// this control displays a single line message at the top of the page, like StackOverflow does
-// see ui-samples for more details
-var notificationBar = {
-  OPACITY: 1,
-  DELAY: 3000, // milliseconds to auto-close the notification
-  div: null, // the main 'notification-bar' DIV
-  token: null, // timer for cancelling auto-close
-  defaultIcon: "svg-sprite-action-symbol.svg#ic_info_24px",
-  defaultAlertClass: "notif-alert-default",
-
-  OK: {
-    // standard option values for typical OK notification
-    icon: "svg-sprite-action-symbol.svg#ic_check_circle_24px",
-    alertClass: "notif-alert-success",
-  },
-  WARNING: {
-    // likewise, for warning
-    icon: "svg-sprite-action-symbol.svg#ic_report_problem_24px",
-    alertClass: "notif-alert-warn",
-  },
-  ERROR: {
-    // likewise, for error
-    icon: "svg-sprite-action-symbol.svg#ic_highlight_off_24px",
-    alertClass: "notif-alert-err",
-    sticky: true,
-  },
-
-  init: function () {
-    if (this.div == null) {
-      this.div = document.createElement("div");
-      YAHOO.util.Dom.setStyle(this.div, "opacity", 0);
-      this.div.id = "notification-bar";
-      document.body.insertBefore(this.div, document.body.firstElementChild);
-      var self = this;
-      this.div.onclick = function () {
-        self.hide();
-      };
-    } else {
-      this.div.innerHTML = "";
-    }
-  },
-  // cancel pending auto-hide timeout
-  clearTimeout: function () {
-    if (this.token) window.clearTimeout(this.token);
-    this.token = null;
-  },
-  // hide the current notification bar, if it's displayed
-  hide: function () {
-    this.clearTimeout();
-    this.div.classList.remove("notif-alert-show");
-    this.div.classList.add("notif-alert-clear");
-  },
-  // show a notification bar
-  show: function (text, options) {
-    options = options || {};
-    this.init();
-    var icon = this.div.appendChild(document.createElement("div"));
-    icon.style.display = "inline-block";
-    if (options.iconColor || this.defaultIconColor) {
-      icon.style.color = options.iconColor || this.defaultIconColor;
-    }
-    var svg = icon.appendChild(
-      document.createElementNS("http://www.w3.org/2000/svg", "svg")
-    );
-    svg.setAttribute("viewBox", "0 0 24 24");
-    svg.setAttribute("focusable", "false");
-    svg.setAttribute("class", "svg-icon");
-    var use = svg.appendChild(
-      document.createElementNS("http://www.w3.org/2000/svg", "use")
-    );
-    use.setAttribute(
-      "href",
-      rootURL + "/images/material-icons/" + (options.icon || this.defaultIcon)
-    );
-    var message = this.div.appendChild(document.createElement("span"));
-    message.appendChild(document.createTextNode(text));
-
-    this.div.className = options.alertClass || this.defaultAlertClass;
-    this.div.classList.add("notif-alert-show");
-
-    this.clearTimeout();
-    var self = this;
-    if (!options.sticky)
-      this.token = window.setTimeout(function () {
-        self.hide();
-      }, this.DELAY);
   },
 };

@@ -255,17 +255,17 @@ public class Items {
 
         Stack<String> name = new Stack<>();
         for (int i = 0; i < c.length; i++) {
-            if (i == 0 && c[i].equals("")) continue;
+            if (i == 0 && c[i].isEmpty()) continue;
             name.push(c[i]);
         }
         for (int i = 0; i < p.length; i++) {
-            if (i == 0 && p[i].equals("")) {
+            if (i == 0 && p[i].isEmpty()) {
                 // Absolute path starting with a "/"
                 name.clear();
                 continue;
             }
             if (p[i].equals("..")) {
-                if (name.size() == 0) {
+                if (name.isEmpty()) {
                     throw new IllegalArgumentException(String.format(
                             "Illegal relative path '%s' within context '%s'", path, context.getFullName()
                     ));

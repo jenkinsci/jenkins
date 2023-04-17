@@ -25,10 +25,11 @@
 package lib.form;
 
 import static com.gargoylesoftware.htmlunit.HttpMethod.POST;
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebRequest;
@@ -188,7 +189,7 @@ public class ExpandableTextboxTest {
         HtmlInput expandButton = (HtmlInput) input.getParentNode().getNextSibling().getFirstChild();
         HtmlElementUtil.click(expandButton);
         final DomElement textArea = configurePage.getElementByName("_.theField");
-        assertTrue(textArea instanceof HtmlTextArea);
+        assertThat(textArea, instanceOf(HtmlTextArea.class));
         assertEquals("foo\nbar\nbaz", ((HtmlTextArea) textArea).getText());
     }
 

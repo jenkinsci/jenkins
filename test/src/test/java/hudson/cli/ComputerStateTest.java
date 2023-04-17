@@ -31,8 +31,8 @@ import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import com.gargoylesoftware.htmlunit.ElementNotFoundException;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
@@ -165,9 +165,9 @@ public class ComputerStateTest {
     }
 
     private void assertLinkDoesNotExist(HtmlPage page, String text) {
-        try {
-            page.getAnchorByText(text);
-            fail(text + " link should not exist");
-        } catch (ElementNotFoundException ex) { /*expected*/ }
+        assertThrows(
+                text + " link should not exist",
+                ElementNotFoundException.class,
+                () -> page.getAnchorByText(text));
     }
 }

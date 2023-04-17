@@ -10,7 +10,6 @@ const { CleanWebpackPlugin: CleanPlugin } = require("clean-webpack-plugin");
 module.exports = (env, argv) => ({
   mode: "development",
   entry: {
-    "page-init": [path.join(__dirname, "src/main/js/page-init.js")],
     pluginSetupWizard: [
       path.join(__dirname, "src/main/js/pluginSetupWizard.js"),
       path.join(__dirname, "src/main/less/pluginSetupWizard.less"),
@@ -22,13 +21,16 @@ module.exports = (env, argv) => ({
       path.join(__dirname, "src/main/js/add-item.js"),
       path.join(__dirname, "src/main/js/add-item.less"),
     ],
-    "config-scrollspy": [
-      path.join(__dirname, "src/main/js/config-scrollspy.js"),
-      path.join(__dirname, "src/main/js/config-scrollspy.less"),
+    "pages/dashboard": [path.join(__dirname, "src/main/js/pages/dashboard")],
+    "pages/manage-jenkins/system-information": [
+      path.join(
+        __dirname,
+        "src/main/js/pages/manage-jenkins/system-information"
+      ),
     ],
-    "config-tabbar": [
-      path.join(__dirname, "src/main/js/config-tabbar.js"),
-      path.join(__dirname, "src/main/js/config-tabbar.less"),
+    app: [path.join(__dirname, "src/main/js/app.js")],
+    "pages/manage-jenkins": [
+      path.join(__dirname, "src/main/js/pages/manage-jenkins"),
     ],
     "keyboard-shortcuts": [
       path.join(__dirname, "src/main/js/keyboard-shortcuts.js"),
@@ -178,6 +180,7 @@ module.exports = (env, argv) => ({
   },
   resolve: {
     alias: {
+      "@": path.resolve(__dirname, "src/main/js"),
       // Needed to be able to register helpers at runtime
       handlebars: "handlebars/runtime",
     },

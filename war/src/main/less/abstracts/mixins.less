@@ -49,6 +49,7 @@
 .item() {
   position: relative;
   z-index: 0;
+  border-radius: 0.66rem;
 
   &::before,
   &::after {
@@ -56,7 +57,7 @@
     content: "";
     inset: 0;
     z-index: -1;
-    border-radius: 0.66rem;
+    border-radius: inherit;
     transition: var(--standard-transition);
     pointer-events: none;
   }
@@ -92,7 +93,7 @@
 
   &:focus-visible {
     &::after {
-      box-shadow: 0 0 0 0.33rem var(--text-color) !important;
+      box-shadow: 0 0 0 0.2rem var(--text-color) !important;
       opacity: 1 !important;
     }
   }

@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.87</version>
+    <version>1.97</version>
     <relativePath />
   </parent>
 
@@ -70,11 +70,11 @@ THE SOFTWARE.
 
   <issueManagement>
     <system>jira</system>
-    <url>https://issues.jenkins.io/browse/JENKINS/component/15593</url>
+    <url>https://issues.jenkins.io/issues/?jql=component=15593</url>
   </issueManagement>
 
   <properties>
-    <revision>2.369</revision>
+    <revision>2.401</revision>
     <changelist>-SNAPSHOT</changelist>
 
     <!-- configuration for patch tracker plugin  -->
@@ -87,52 +87,20 @@ THE SOFTWARE.
     <changelog.url>https://www.jenkins.io/changelog</changelog.url>
 
     <!-- Bundled Remoting version -->
-    <remoting.version>3046.v38db_38a_b_7a_86</remoting.version>
+    <remoting.version>3107.v665000b_51092</remoting.version>
     <!-- Minimum Remoting version, which is tested for API compatibility -->
-    <remoting.minimum.supported.version>4.2.1</remoting.minimum.supported.version>
+    <remoting.minimum.supported.version>4.7</remoting.minimum.supported.version>
 
     <spotbugs.effort>Max</spotbugs.effort>
     <spotbugs.threshold>Medium</spotbugs.threshold>
-    <spotbugs.excludeFilterFile>${maven.multiModuleProjectDirectory}/src/spotbugs/spotbugs-excludes.xml</spotbugs.excludeFilterFile>
 
-    <access-modifier.version>1.27</access-modifier.version>
-    <bridge-method-injector.version>1.23</bridge-method-injector.version>
-    <mockito.version>4.7.0</mockito.version>
-    <spotless.version>2.25.0</spotless.version>
+    <access-modifier.version>1.31</access-modifier.version>
+    <antlr.version>4.12.0</antlr.version>
+    <bridge-method-injector.version>1.26</bridge-method-injector.version>
+    <spotless.version>2.36.0</spotless.version>
+    <!-- Make sure to keep the jetty-maven-plugin version in war/pom.xml in sync with the Jetty release in Winstone: -->
+    <winstone.version>6.10</winstone.version>
   </properties>
-
-  <dependencyManagement>
-    <!-- any dependencies that can be used by plugins must be defined in the bom and not here -->
-    <dependencies>
-      <dependency>
-        <!--  make sure these old servlet versions are never used by us or by any plugins which end up depending on this version -->
-        <!--  plugin-pom tries to fudge servlet support to be compatible with cores < 2.0 and JTH which needs 3.x for jetty, and ends up causing issues with some IDEs -->
-        <groupId>javax.servlet</groupId>
-        <!-- the old artifactID for the servlet API -->
-        <artifactId>servlet-api</artifactId>
-        <version>[0]</version>
-        <!--
-          "[0]" is a range that must be exactly 0
-          this is different to "0" which is hint to use version 0.
-          therefore unless anyone else uses ranges (they should not) this version will always win
-          We have deployed a version 0 to jenkins repo which has an empty jar
-          This prevents conflicts between the old Servet API and the new Servlet API as the groupIDs have changed
-          see https://github.com/jenkinsci/jenkins/pull/3033/files#r141325857 for a fuller description
-        -->
-        <scope>provided</scope>
-        <optional>true</optional>
-      </dependency>
-    </dependencies>
-  </dependencyManagement>
-
-  <dependencies>
-    <dependency>
-      <!-- make sure our dependency tree and all others are clean of the legacy servlet api.  -->
-      <groupId>javax.servlet</groupId>
-      <!-- the old artifactID for the servlet API -->
-      <artifactId>servlet-api</artifactId>
-    </dependency>
-  </dependencies>
 
   <!--
     Note that the 'repositories' and 'pluginRepositories' blocks below are actually copy-pasted
@@ -233,8 +201,6 @@ THE SOFTWARE.
               <forkedProcessTimeoutInSeconds>3600</forkedProcessTimeoutInSeconds>
               <java.awt.headless>true</java.awt.headless>
             </systemPropertyVariables>
-            <!-- SUREFIRE-1226 workaround -->
-            <trimStackTrace>false</trimStackTrace>
             <runOrder>alphabetical</runOrder>
           </configuration>
         </plugin>
@@ -299,9 +265,9 @@ THE SOFTWARE.
           <version>${bridge-method-injector.version}</version>
         </plugin>
         <plugin>
-          <groupId>org.codehaus.mojo</groupId>
-          <artifactId>antlr-maven-plugin</artifactId>
-          <version>2.2</version>
+          <groupId>org.antlr</groupId>
+          <artifactId>antlr4-maven-plugin</artifactId>
+          <version>${antlr.version}</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
@@ -367,7 +333,7 @@ THE SOFTWARE.
             <dependency>
               <groupId>com.puppycrawl.tools</groupId>
               <artifactId>checkstyle</artifactId>
-              <version>10.3.3</version>
+              <version>10.9.3</version>
             </dependency>
           </dependencies>
           <executions>
@@ -385,6 +351,9 @@ THE SOFTWARE.
           <artifactId>spotless-maven-plugin</artifactId>
           <version>${spotless.version}</version>
           <configuration>
+            <antlr4>
+              <antlr4Formatter />
+            </antlr4>
             <java>
               <endWithNewline />
               <importOrder />
@@ -418,7 +387,7 @@ THE SOFTWARE.
         <plugin>
           <groupId>org.jacoco</groupId>
           <artifactId>jacoco-maven-plugin</artifactId>
-          <version>0.8.8</version>
+          <version>0.8.9</version>
         </plugin>
       </plugins>
     </pluginManagement>
@@ -428,8 +397,6 @@ THE SOFTWARE.
         <artifactId>maven-release-plugin</artifactId>
         <!-- Version specified in parent POM -->
         <configuration>
-          <!-- enable release profile during the release, create IPS package, and sign bits. -->
-          <arguments>-P release,sign</arguments>
           <!-- work around for a bug in javadoc plugin that causes the release to fail. see MRELEASE-271 -->
           <preparationGoals>clean install</preparationGoals>
           <goals>-DskipTests -Dspotbugs.skip -Dmaven.checkstyle.skip -Dspotless.check.skip generate-resources javadoc:javadoc deploy</goals>
@@ -468,10 +435,8 @@ THE SOFTWARE.
             <configuration>
               <rules>
                 <bannedDependencies>
-                  <excludes>
+                  <excludes combine.children="append">
                     <exclude>org.sonatype.sisu:sisu-guice</exclude>
-                    <exclude>log4j:log4j:*:jar:compile</exclude>
-                    <exclude>log4j:log4j:*:jar:runtime</exclude>
                     <exclude>commons-logging:commons-logging:*:jar:compile</exclude>
                     <exclude>commons-logging:commons-logging:*:jar:runtime</exclude>
                   </excludes>
@@ -495,21 +460,6 @@ THE SOFTWARE.
   </build>
 
   <profiles>
-    <profile>
-      <id>metrics</id>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>com.github.spotbugs</groupId>
-            <artifactId>spotbugs-maven-plugin</artifactId>
-            <!-- Version specified in parent POM -->
-            <configuration>
-              <threshold>High</threshold>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
     <profile>
       <id>debug</id>
       <activation>
