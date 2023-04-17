@@ -169,10 +169,12 @@ window.displayBuilds = function (data) {
     var button = document.createElement("button");
     button.classList.add("jenkins-table__link");
     button.setAttribute("tooltip", p.dataset.scrollTooltip);
-    button.onclick =
+    button.setAttribute(
+      "onclick",
       'javascript:tl.getBand(0).scrollToCenter(Timeline.DateTime.parseGregorianDateTime("' +
-      e.timestampString3 +
-      '"))';
+        e.timestampString3 +
+        '"))'
+    );
     button.textContent = e.timestampString;
     td3.appendChild(button);
     tr.appendChild(td3);
