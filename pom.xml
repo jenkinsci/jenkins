@@ -354,6 +354,15 @@ THE SOFTWARE.
             <antlr4>
               <antlr4Formatter />
             </antlr4>
+            <groovy>
+              <includes>
+                <include>Jenkinsfile</include>
+                <include>licenseCompleter.groovy</include>
+              </includes>
+              <greclipse>
+                <file>config/greclipse.properties</file>
+              </greclipse>
+            </groovy>
             <java>
               <endWithNewline />
               <importOrder />
@@ -374,6 +383,13 @@ THE SOFTWARE.
               </sortPom>
             </pom>
           </configuration>
+          <dependencies>
+            <dependency>
+              <groupId>io.jenkins.lib</groupId>
+              <artifactId>shared-resources</artifactId>
+              <version>1.0</version>
+            </dependency>
+          </dependencies>
           <executions>
             <execution>
               <!-- Runs in verify phase by default -->
