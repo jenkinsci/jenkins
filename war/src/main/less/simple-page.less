@@ -29,6 +29,7 @@
 @import url("./form/input");
 @import url("./form/layout");
 @import url("./modules/buttons");
+@import url("./pages/about");
 
 body {
   background: var(--background);
@@ -36,6 +37,18 @@ body {
 
 a {
   .link();
+}
+
+.nope {
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  margin: 0;
+}
+
+.simple-page {
+  width: 100vw;
+  height: 100vh;
 }
 
 .simple-page h1 {
@@ -77,10 +90,6 @@ html {
   width: 100%;
 }
 
-.simple-page .jenkins-input {
-  width: 94%;
-}
-
 .simple-page .logo {
   text-align: center;
 }
@@ -102,4 +111,183 @@ html {
 
 .simple-page .alert {
   color: var(--danger-color, #c4000a);
+}
+
+.longhorn-host {
+  display: grid;
+  grid-template-columns: 0.7fr 1fr;
+  align-items: stretch;
+}
+
+.longhorn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: -20vmax;
+    left: -20vmax;
+    bottom: -20vmax;
+    right: -20vmax;
+    object-fit: cover;
+    background-color: var(--color);
+    background-image:
+            radial-gradient(at 40% 20%, hsla(28,100%,74%,1) 0, transparent 50%),
+            radial-gradient(at 80% 0%, hsla(189,100%,56%,1) 0, transparent 50%),
+            radial-gradient(at 0% 50%, hsla(355,85%,93%,1) 0, transparent 50%),
+            radial-gradient(at 80% 50%, hsl(359, 70%, 46%) 0, transparent 50%),
+            radial-gradient(at 0% 100%, hsla(22,100%,77%,1) 0, transparent 50%),
+            radial-gradient(at 80% 100%, hsla(242,100%,70%,1) 0, transparent 50%),
+            radial-gradient(at 0% 0%, hsla(343,100%,76%,1) 0, transparent 50%);
+    z-index: -1;
+    opacity: 0.3;
+    animation: aurora-one 5s linear infinite;
+  }
+
+  &::after {
+    content: "";
+    position: absolute;
+    top: -20vmax;
+    left: -20vmax;
+    bottom: -20vmax;
+    right: -20vmax;
+    object-fit: cover;
+    background-image:
+            radial-gradient(at 40% 20%, hsla(212,100%,74%,1) 0, transparent 50%),
+            radial-gradient(at 80% 0%, hsla(13,100%,56%,1) 0, transparent 50%),
+            radial-gradient(at 0% 50%, hsla(179,85%,93%,1) 0, transparent 50%),
+            radial-gradient(at 80% 50%, hsla(164,100%,76%,1) 0, transparent 50%),
+            radial-gradient(at 0% 100%, hsla(206,100%,77%,1) 0, transparent 50%),
+            radial-gradient(at 80% 100%, hsla(66,100%,70%,1) 0, transparent 50%),
+            radial-gradient(at 0% 0%, hsla(167,100%,76%,1) 0, transparent 50%);
+    z-index: -1;
+    opacity: 0.1;
+    animation: aurora-two 8s linear infinite;
+  }
+
+  img {
+    height: 15rem;
+  }
+}
+
+.longhorn2 {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.longhorn3 {
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  flex-direction: column;
+  min-width: 430px;
+  padding: 2rem;
+  gap: 1.6rem;
+
+  * {
+    box-sizing: border-box;
+  }
+
+  h1 {
+    font-size: 1.8rem;
+    font-family: "Georgia", Serif;
+    text-align: left;
+    margin-bottom: 0;
+  }
+
+  input {
+    padding: 0.6rem 0.75rem;
+    border-radius: 0.66rem;
+    font-size: 0.95rem;
+  }
+
+  .longhornlabel {
+    display: block;
+    font-size: 0.95rem;
+    margin-bottom: 0.35rem;
+    font-weight: 500;
+  }
+
+  button {
+    padding: 0.9rem 1rem;
+    font-size: 0.95rem;
+  }
+
+  form {
+    display: contents;
+  }
+
+  .line-text {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &::before {
+      content: "";
+      position: absolute;
+      inset: calc(50% + 1px) 0;
+      height: 2px;
+      background-color: var(--input-border);
+    }
+
+    p {
+      background-color: var(--background);
+      z-index: 1;
+      padding: 0 1.6rem;
+      font-weight: 500;
+      font-size: 0.95rem;
+      margin: 0;
+      color: var(--text-color);
+
+      a {
+        font-weight: inherit;
+      }
+    }
+  }
+
+  .jenkins-checkbox {
+    font-size: 0.95rem;
+  }
+
+  .footer {
+    &:empty {
+      display: none;
+    }
+  }
+
+}
+
+
+@keyframes aurora-one {
+  0% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 0.15;
+    transform: rotate(-180deg);
+  }
+  100% {
+    opacity: 0.3;
+    transform: rotate(-360deg);
+  }
+}
+
+@keyframes aurora-two {
+  0% {
+    opacity: 0.15;
+  }
+  50% {
+    opacity: 0.5;
+    transform: rotate(180deg);
+  }
+  100% {
+    opacity: 0.15;
+    transform: rotate(360deg);
+  }
 }
