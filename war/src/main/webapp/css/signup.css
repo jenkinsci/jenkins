@@ -22,28 +22,12 @@
  * THE SOFTWARE.
  */
 
-form.signup {
-  max-width: 480px;
-  width: 100%;
-}
-
 .inputHeader {
   display: flex;
   justify-content: space-between;
 }
-#showPassword {
-  width: unset;
-  margin-right: 5px;
-}
-.combinedElement {
-  display: flex;
-  align-items: center;
-}
 
 #passwordStrengthWrapper {
-  margin-top: 4px;
-}
-
-.password {
-  width: 98%;
+  margin-top: 0.75rem;
+  font-size: 0.95rem;
 }
