@@ -26,7 +26,7 @@ $unit: 0.4rem;
   margin: 0 auto;
 }
 
-@for $i from 1 through 6 {
+@for $i from 0 through 6 {
   .jenkins-\!-padding-#{$i} {
     padding: $i * $unit !important;
   }
