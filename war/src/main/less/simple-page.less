@@ -149,7 +149,7 @@ html {
     position: absolute;
     inset: 0;
     z-index: 1;
-    backdrop-filter: brightness(1.02) blur(100px);
+    backdrop-filter: invert(2%) blur(100px);
     mask-image: repeating-conic-gradient(from var(--opacity),
             var(--background) 0deg,
             transparent 20deg
@@ -160,34 +160,33 @@ html {
   &::before, &::after {
     content: "";
     position: absolute;
-    width: 180%;
+    width: 130vh;
     aspect-ratio: 1;
     object-fit: cover;
-    border-radius: 100%;
     z-index: -1;
   }
 
   &::before {
     background-image:
-            radial-gradient(at 40% 20%, hsla(28,100%,74%,1) 0, transparent 50%),
-            radial-gradient(at 80% 0%, hsla(189,100%,56%,1) 0, transparent 50%),
-            radial-gradient(at 0% 50%, hsla(355,85%,93%,1) 0, transparent 50%),
-            radial-gradient(at 80% 50%, hsl(359, 70%, 46%) 0, transparent 50%),
-            radial-gradient(at 0% 100%, hsla(22,100%,77%,1) 0, transparent 50%),
-            radial-gradient(at 80% 100%, hsla(242,100%,70%,1) 0, transparent 50%),
-            radial-gradient(at 0% 0%, hsla(343,100%,76%,1) 0, transparent 50%);
+            radial-gradient(at 40% 20%, var(--orange) 0, transparent 50%),
+            radial-gradient(at 80% 0%, var(--cyan) 0, transparent 50%),
+            radial-gradient(at 0% 50%, var(--light-pink) 0, transparent 50%),
+            radial-gradient(at 80% 50%, var(--light-red) 0, transparent 50%),
+            radial-gradient(at 0% 100%, var(--light-yellow) 0, transparent 50%),
+            radial-gradient(at 80% 100%, var(--dark-purple) 0, transparent 50%),
+            radial-gradient(at 0% 0%, var(--pink) 0, transparent 50%);
     animation: aurora-one 5s linear infinite;
   }
 
   &::after {
     background-image:
-            radial-gradient(at 40% 20%, hsla(212,100%,74%,1) 0, transparent 50%),
-            radial-gradient(at 80% 0%, hsla(13,100%,56%,1) 0, transparent 50%),
-            radial-gradient(at 0% 50%, hsla(179,85%,93%,1) 0, transparent 50%),
-            radial-gradient(at 80% 50%, hsla(164,100%,76%,1) 0, transparent 50%),
-            radial-gradient(at 0% 100%, hsla(206,100%,77%,1) 0, transparent 50%),
-            radial-gradient(at 80% 100%, hsla(66,100%,70%,1) 0, transparent 50%),
-            radial-gradient(at 0% 0%, hsla(167,100%,76%,1) 0, transparent 50%);
+            radial-gradient(at 40% 20%, var(--light-cyan) 0, transparent 50%),
+            radial-gradient(at 80% 0%, var(--dark-orange) 0, transparent 50%),
+            radial-gradient(at 0% 50%, var(--light-blue) 0, transparent 50%),
+            radial-gradient(at 80% 50%, var(--light-green) 0, transparent 50%),
+            radial-gradient(at 0% 100%, var(--light-red) 0, transparent 50%),
+            radial-gradient(at 80% 100%, var(--light-yellow) 0, transparent 50%),
+            radial-gradient(at 0% 0%, var(--cyan) 0, transparent 50%);
     animation: aurora-two 8s linear infinite;
   }
 
