@@ -157,15 +157,17 @@ html {
     animation: app-about-starburst2 100s linear infinite;
   }
 
-  &::before {
+  &::before, &::after {
     content: "";
     position: absolute;
-    top: -20vmax;
-    left: -20vmax;
-    bottom: -20vmax;
-    right: -20vmax;
+    width: 180%;
+    aspect-ratio: 1;
     object-fit: cover;
-    background-color: var(--color);
+    border-radius: 100%;
+    z-index: -1;
+  }
+
+  &::before {
     background-image:
             radial-gradient(at 40% 20%, hsla(28,100%,74%,1) 0, transparent 50%),
             radial-gradient(at 80% 0%, hsla(189,100%,56%,1) 0, transparent 50%),
@@ -174,19 +176,10 @@ html {
             radial-gradient(at 0% 100%, hsla(22,100%,77%,1) 0, transparent 50%),
             radial-gradient(at 80% 100%, hsla(242,100%,70%,1) 0, transparent 50%),
             radial-gradient(at 0% 0%, hsla(343,100%,76%,1) 0, transparent 50%);
-    z-index: -1;
-    opacity: 0.3;
     animation: aurora-one 5s linear infinite;
   }
 
   &::after {
-    content: "";
-    position: absolute;
-    top: -20vmax;
-    left: -20vmax;
-    bottom: -20vmax;
-    right: -20vmax;
-    object-fit: cover;
     background-image:
             radial-gradient(at 40% 20%, hsla(212,100%,74%,1) 0, transparent 50%),
             radial-gradient(at 80% 0%, hsla(13,100%,56%,1) 0, transparent 50%),
@@ -195,8 +188,6 @@ html {
             radial-gradient(at 0% 100%, hsla(206,100%,77%,1) 0, transparent 50%),
             radial-gradient(at 80% 100%, hsla(66,100%,70%,1) 0, transparent 50%),
             radial-gradient(at 0% 0%, hsla(167,100%,76%,1) 0, transparent 50%);
-    z-index: -1;
-    opacity: 0.1;
     animation: aurora-two 8s linear infinite;
   }
 
