@@ -63,7 +63,10 @@ Behaviour.specify(
       menuAlign.split("-"),
       250
     );
-    menuButton._button.classList.add(btn.className); // copy class names
+    // copy class names
+    for (i = 0; i < btn.classList.length; i++) {
+      menuButton._button.classList.add(btn.classList.item(i));
+    }
     menuButton._button.setAttribute("suffix", btn.getAttribute("suffix"));
     menuButton.getMenu().clickEvent.subscribe(function (type, args) {
       var item = args[1];
