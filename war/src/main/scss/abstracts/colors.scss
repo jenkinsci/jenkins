@@ -2,18 +2,18 @@
 
 // Generates a series of color override classes and their variations,
 // e.g. .jenkins-!-color-blue, .jenkins-!-color-light-blue, .jenkins-!-color-dark-blue
-@each $key in theme.$colors {
-  .jenkins-\!-color-light-#{key} {
+@each $key, $value in theme.$colors {
+  .jenkins-\!-color-light-#{$key} {
     --color: var(--light-#{$key});
 
     color: var(--light-#{$key}) !important;
   }
-  .jenkins-\!-color-#{key} {
-    --color: #{"var(--#{$key})"};
+  .jenkins-\!-color-#{$key} {
+    --color: var(--#{$key});
 
-    color: "var(--#{$key})" !important;
+    color: var(--#{$key}) !important;
   }
-  .jenkins-\!-color-dark-#{key} {
+  .jenkins-\!-color-dark-#{$key} {
     --color: var(--dark-#{$key});
 
     color: var(--dark-#{$key}) !important;
