@@ -69,6 +69,7 @@ THE SOFTWARE.
           <j:otherwise>
             <div class="simple-page longhorn-host" role="main">
               <div class="longhorn">
+                <div class="startburst"></div>
                 <img src="${imagesURL}/svgs/logo.svg" alt="${%logo}" />
               </div>
               <div class="longhorn2">

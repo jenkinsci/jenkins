@@ -116,6 +116,22 @@ html {
   display: grid;
   grid-template-columns: 0.7fr 1fr;
   align-items: stretch;
+
+  @media (max-width: 992px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+@property --opacity {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@keyframes app-about-starburst2 {
+  to {
+    --opacity: 360deg;
+  }
 }
 
 .longhorn {
@@ -124,6 +140,22 @@ html {
   align-items: center;
   justify-content: center;
   overflow: hidden;
+
+  @media (max-width: 992px) {
+    display: none;
+  }
+
+  .startburst {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    backdrop-filter: brightness(1.02) blur(100px);
+    mask-image: repeating-conic-gradient(from var(--opacity),
+            var(--background) 0deg,
+            transparent 20deg
+    );
+    animation: app-about-starburst2 100s linear infinite;
+  }
 
   &::before {
     content: "";
@@ -170,6 +202,7 @@ html {
 
   img {
     height: 15rem;
+    z-index: 1;
   }
 }
 
@@ -184,9 +217,13 @@ html {
   align-items: stretch;
   justify-content: center;
   flex-direction: column;
-  width: 430px;
-  padding: 2rem;
+  padding: calc(var(--section-padding) * 3) var(--section-padding);
   gap: 1.6rem;
+  width: 100%;
+
+  @media (min-width: 430px) {
+    width: 430px;
+  }
 
   * {
     box-sizing: border-box;
@@ -194,9 +231,13 @@ html {
 
   h1 {
     font-size: 1.8rem;
-    font-family: "Georgia", Serif;
+    font-family: "Georgia", serif;
     text-align: left;
     margin-bottom: 0;
+
+    @media (max-width: 600px) {
+      font-size: 1.6rem;
+    }
   }
 
   input {
