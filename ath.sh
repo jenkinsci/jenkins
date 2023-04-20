@@ -6,7 +6,7 @@ set -o xtrace
 cd "$(dirname "$0")"
 
 # https://github.com/jenkinsci/acceptance-test-harness/releases
-export ATH_VERSION=5541.va_c0a_36b_b_f825
+export ATH_VERSION=5545.v924953404220
 
 if [[ $# -eq 0 ]]; then
 	export BROWSER=firefox
