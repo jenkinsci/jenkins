@@ -84,6 +84,12 @@ module.exports = (env, argv) => ({
         test: /\.(less)$/,
         use: [
           {
+            loader: MiniCSSExtractPlugin.loader,
+            options: {
+              esModule: false,
+            },
+          },
+          {
             loader: "css-loader",
             options: {
               sourceMap: true,
