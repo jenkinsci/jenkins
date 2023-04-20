@@ -135,7 +135,9 @@ html {
 }
 
 .longhorn {
-  position: relative;
+  position: sticky;
+  top: 0;
+
   display: flex;
   align-items: center;
   justify-content: center;
@@ -198,8 +200,16 @@ html {
 
 .longhorn2 {
   display: flex;
+  justify-content: center;
+  flex: 1;
+}
+
+.spaceandtime {
+  display: flex;
   align-items: center;
   justify-content: center;
+  flex-grow: 1;
+  padding: calc(var(--section-padding) * 3) var(--section-padding);
 }
 
 .longhorn3 {
@@ -207,7 +217,6 @@ html {
   align-items: stretch;
   justify-content: center;
   flex-direction: column;
-  padding: calc(var(--section-padding) * 3) var(--section-padding);
   gap: 1.6rem;
   width: 100%;
 
