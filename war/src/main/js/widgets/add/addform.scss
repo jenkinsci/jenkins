@@ -263,10 +263,8 @@
     background-color: var(--background);
     border-color: var(--input-border);
     box-shadow: inset 999rem 0 var(--background);
+    -webkit-touch-callout: text;
     user-select: text;
-    -moz-transition: 0.5s;
-    -webkit-transition: 0.5s;
-    -o-transition: 0.5s;
     transition: 0.5s;
 
     .icon {
@@ -276,10 +274,6 @@
 
   li {
     -webkit-touch-callout: none;
-    -webkit-user-select: none;
-    -khtml-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
     user-select: none;
     cursor: pointer;
     border: 1px solid transparent;
