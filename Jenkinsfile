@@ -12,6 +12,38 @@ properties([
   disableConcurrentBuilds(abortPrevious: true)
 ])
 
+stage('Record build') {
+  retry(conditions: [kubernetesAgent(handleNonKubernetes: true), nonresumable()], count: 2) {
+    node('maven-11') {
+      infra.checkoutSCM()
+      launchable.install()
+
+      /*
+       * Record the primary build for this CI job.
+       */
+      withCredentials([string(credentialsId: 'launchable-jenkins-jenkins', variable: 'LAUNCHABLE_TOKEN')]) {
+        launchable('verify')
+        /*
+         * TODO Add the commits of the transitive closure of the Jenkins WAR under test to this build.
+         */
+        launchable("record build --name ${env.BUILD_TAG} --source jenkinsci/jenkins=. --link \"View build in CI\"=${env.BUILD_URL}")
+      }
+
+      /*
+       * Record commits for use in downstream CI jobs that may consume this artifact.
+       */
+      withCredentials([string(credentialsId: 'launchable-jenkins-acceptance-test-harness', variable: 'LAUNCHABLE_TOKEN')]) {
+        launchable('verify')
+        launchable('record commit')
+      }
+      withCredentials([string(credentialsId: 'launchable-jenkins-bom', variable: 'LAUNCHABLE_TOKEN')]) {
+        launchable('verify')
+        launchable('record commit')
+      }
+    }
+  }
+}
+
 def builds = [:]
 
 def axes = [
@@ -120,34 +152,11 @@ axes.values().combinations {
             launchable.install()
             withCredentials([string(credentialsId: 'launchable-jenkins-jenkins', variable: 'LAUNCHABLE_TOKEN')]) {
               launchable('verify')
-              /*
-               * TODO Create a Launchable build and session earlier, and replace "--no-build" with
-               * "--session" to associate these test results with a particular build. The commits
-               * associated with the Launchable build should be the commits of the transitive
-               * closure of the Jenkins WAR under test in this build.
-               */
-              launchable("record tests --no-build --flavor platform=${platform} --flavor jdk=${jdk} maven './**/target/surefire-reports'")
+              launchable("record tests --build ${env.BUILD_TAG} --flavor platform=${platform} --flavor jdk=${jdk} --link \"View session in CI\"=${env.BUILD_URL} maven './**/target/surefire-reports'")
             }
             if (failFast && currentBuild.result == 'UNSTABLE') {
               error 'Static analysis quality gates not passed; halting early'
             }
-            /*
-             * If the current build was successful, we send the commits to Launchable so that
-             * these commits can be consumed by a build in the Launchable BOM workspace in the
-             * future.
-             *
-             * TODO Move this up to before the present parallel block starts (or move the ATH run
-             * in this file to after joining on the present parallel block) so that these commits
-             * can be consumed by a build in the Launchable ATH workspace in this file in the
-             * future.
-             */
-            if (currentBuild.currentResult == 'SUCCESS') {
-              withCredentials([string(credentialsId: 'launchable-jenkins-bom', variable: 'LAUNCHABLE_TOKEN')]) {
-                launchable('verify')
-                launchable('record commit')
-              }
-            }
-
             def changelist = readFile(changelistF)
             dir(m2repo) {
               archiveArtifacts(
@@ -181,18 +190,18 @@ athAxes.values().combinations {
           sh 'bash ath.sh ' + browser
         }
         junit testResults: 'target/ath-reports/TEST-*.xml', testDataPublishers: [[$class: 'AttachmentPublisher']]
-        launchable.install()
-        withCredentials([string(credentialsId: 'launchable-jenkins-acceptance-test-harness', variable: 'LAUNCHABLE_TOKEN')]) {
-          launchable('verify')
-          /*
-           * TODO Create a Launchable build and session earlier, and replace "--no-build" with
-           * "--session" to associate these test results with a particular build. The commits
-           * associated with the Launchable build should be the commits of the transitive closure of
-           * the Jenkins WAR under test in this build as well as the commits of the transitive closure
-           * of the ATH JAR.
-           */
-          launchable("record tests --no-build --flavor platform=${platform} --flavor jdk=${jdk} --flavor browser=${browser} maven './target/ath-reports'")
-        }
+        /*
+         * Currently disabled, as the fact that this is a manually created subset will confuse Launchable,
+         * which expects this to be a full build. When we implement subsetting, this can be re-enabled using
+         * Launchable's subset rather than our own.
+         */
+        /*
+         launchable.install()
+         withCredentials([string(credentialsId: 'launchable-jenkins-acceptance-test-harness', variable: 'LAUNCHABLE_TOKEN')]) {
+         launchable('verify')
+         launchable("record tests --no-build --flavor platform=${platform} --flavor jdk=${jdk} --flavor browser=${browser} --link \"View session in CI\"=${env.BUILD_URL} maven './target/ath-reports'")
+         }
+         */
       }
     }
   }
