@@ -24,20 +24,6 @@
 
 package hudson.cli;
 
-import hudson.model.Computer;
-import hudson.model.FreeStyleBuild;
-import hudson.model.FreeStyleProject;
-import hudson.slaves.DumbSlave;
-import hudson.slaves.OfflineCause;
-import hudson.util.OneShotEvent;
-import jenkins.model.Jenkins;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.jvnet.hudson.test.JenkinsRule;
-
-import java.util.concurrent.Future;
-
 import static hudson.cli.CLICommandInvoker.Matcher.failedWith;
 import static hudson.cli.CLICommandInvoker.Matcher.hasNoStandardOutput;
 import static hudson.cli.CLICommandInvoker.Matcher.succeededSilently;
@@ -48,6 +34,21 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.not;
 
+import hudson.model.Computer;
+import hudson.model.FreeStyleBuild;
+import hudson.model.FreeStyleProject;
+import hudson.model.Slave;
+import hudson.slaves.DumbSlave;
+import hudson.slaves.OfflineCause;
+import hudson.util.OneShotEvent;
+import java.util.concurrent.Future;
+import jenkins.model.Jenkins;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.InboundAgentRule;
+import org.jvnet.hudson.test.JenkinsRule;
+
 /**
  * @author pjanouse
  */
@@ -57,6 +58,9 @@ public class OfflineNodeCommandTest {
 
     @Rule
     public final JenkinsRule j = new JenkinsRule();
+
+    @Rule
+    public InboundAgentRule inboundAgents = new InboundAgentRule();
 
     @Before
     public void setUp() {
@@ -77,7 +81,7 @@ public class OfflineNodeCommandTest {
     }
 
     @Test
-    public void offlineNodeShouldFailIfNodeDoesNotExist() throws Exception {
+    public void offlineNodeShouldFailIfNodeDoesNotExist() {
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Computer.DISCONNECT, Jenkins.READ)
                 .invokeWithArgs("never_created");
@@ -85,21 +89,6 @@ public class OfflineNodeCommandTest {
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("ERROR: No such agent \"never_created\" exists."));
         assertThat(result.stderr(), not(containsString("ERROR: " + CLICommand.CLI_LISTPARAM_SUMMARY_ERROR_TEXT)));
-    }
-
-    @Test
-    public void offlineNodeShouldSucceed() throws Exception {
-        DumbSlave slave = j.createSlave("aNode", "", null);
-        assertThat(slave.toComputer().getOfflineCause(), equalTo(null));
-
-        final CLICommandInvoker.Result result = command
-                .authorizedTo(Computer.DISCONNECT, Jenkins.READ)
-                .invokeWithArgs("aNode");
-        assertThat(result, succeededSilently());
-        assertThat(slave.toComputer().isOffline(), equalTo(true));
-        assertThat(slave.toComputer().isTemporarilyOffline(), equalTo(true));
-        assertThat(slave.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
-        assertThat(((OfflineCause.ByCLI) slave.toComputer().getOfflineCause()).message, equalTo(null));
     }
 
     @Test
@@ -122,7 +111,7 @@ public class OfflineNodeCommandTest {
 
     @Test
     public void offlineNodeShouldSucceedOnOfflineNode() throws Exception {
-        DumbSlave slave = j.createSlave("aNode", "", null);
+        Slave slave = inboundAgents.createAgent(j, InboundAgentRule.Options.newBuilder().name("aNode").skipStart().build());
         slave.toComputer().setTemporarilyOffline(true, null);
         assertThat(slave.toComputer().isOffline(), equalTo(true));
         assertThat(slave.toComputer().isTemporarilyOffline(), equalTo(true));
@@ -162,21 +151,6 @@ public class OfflineNodeCommandTest {
     }
 
     @Test
-    public void offlineNodeShouldSucceedWithCause() throws Exception {
-        DumbSlave slave = j.createSlave("aNode", "", null);
-        assertThat(slave.toComputer().getOfflineCause(), equalTo(null));
-
-        final CLICommandInvoker.Result result = command
-                .authorizedTo(Computer.DISCONNECT, Jenkins.READ)
-                .invokeWithArgs("aNode", "-m", "aCause");
-        assertThat(result, succeededSilently());
-        assertThat(slave.toComputer().isOffline(), equalTo(true));
-        assertThat(slave.toComputer().isTemporarilyOffline(), equalTo(true));
-        assertThat(slave.toComputer().getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
-        assertThat(((OfflineCause.ByCLI) slave.toComputer().getOfflineCause()).message, equalTo("aCause"));
-    }
-
-    @Test
     public void offlineNodeShouldSucceedOnOnlineNodeWithCause() throws Exception {
         DumbSlave slave = j.createSlave("aNode", "", null);
         slave.toComputer().waitUntilOnline();
@@ -196,7 +170,7 @@ public class OfflineNodeCommandTest {
 
     @Test
     public void offlineNodeShouldSucceedOnOfflineNodeWithCause() throws Exception {
-        DumbSlave slave = j.createSlave("aNode", "", null);
+        Slave slave = inboundAgents.createAgent(j, InboundAgentRule.Options.newBuilder().name("aNode").skipStart().build());
         slave.toComputer().setTemporarilyOffline(true, null);
         assertThat(slave.toComputer().isOffline(), equalTo(true));
         assertThat(slave.toComputer().isTemporarilyOffline(), equalTo(true));
@@ -452,7 +426,7 @@ public class OfflineNodeCommandTest {
     }
 
     @Test
-    public void offlineNodeShouldSucceedOnMaster() throws Exception {
+    public void offlineNodeShouldSucceedOnMaster() {
         final Computer masterComputer = Jenkins.get().getComputer("");
 
         final CLICommandInvoker.Result result = command
@@ -466,7 +440,7 @@ public class OfflineNodeCommandTest {
     }
 
     @Test
-    public void offlineNodeShouldSucceedOnMasterWithCause() throws Exception {
+    public void offlineNodeShouldSucceedOnMasterWithCause() {
         final Computer masterComputer = Jenkins.get().getComputer("");
 
         final CLICommandInvoker.Result result = command

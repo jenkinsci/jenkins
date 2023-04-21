@@ -21,11 +21,21 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.widgets;
 
 import hudson.Util;
 import hudson.model.Descriptor;
 import hudson.util.PackedMap;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.servlet.ServletException;
 import org.apache.commons.jelly.JellyContext;
 import org.apache.commons.jelly.JellyTagException;
 import org.apache.commons.jelly.Script;
@@ -37,16 +47,6 @@ import org.kohsuke.stapler.framework.adjunct.AdjunctsInPage;
 import org.kohsuke.stapler.jelly.DefaultScriptInvoker;
 import org.xml.sax.SAXException;
 
-import javax.servlet.ServletException;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 /**
  * Captured Jelly {@link Script} that can be rendered later on demand from JavaScript.
  *
@@ -57,23 +57,23 @@ public class RenderOnDemandClosure {
      * Captures the recursive taglib call stack.
      */
     private final Script[] bodyStack;
-    private final Map<String,Object> variables;
+    private final Map<String, Object> variables;
     private final String currentDescriptorByNameUrl;
 
     private final String[] adjuncts;
 
     public RenderOnDemandClosure(JellyContext context, String attributesToCapture) {
         List<Script> bodyStack = new ArrayList<>();
-        for (JellyContext c = context; c!=null; c=c.getParent()) {
+        for (JellyContext c = context; c != null; c = c.getParent()) {
             Script script = (Script) c.getVariables().get("org.apache.commons.jelly.body");
-            if(script!=null) bodyStack.add(script);
+            if (script != null) bodyStack.add(script);
         }
         this.bodyStack = bodyStack.toArray(new Script[0]);
         assert !bodyStack.isEmpty();    // there must be at least one, which is the direct child of <l:renderOnDemand>
 
-        Map<String,Object> variables = new HashMap<>();
+        Map<String, Object> variables = new HashMap<>();
         for (String v : Util.fixNull(attributesToCapture).split(","))
-            variables.put(v.intern(),context.getVariable(v));
+            variables.put(v.intern(), context.getVariable(v));
 
         // capture the current base of context for descriptors
         currentDescriptorByNameUrl = Descriptor.getCurrentDescriptorByNameUrl();
@@ -102,14 +102,14 @@ public class RenderOnDemandClosure {
                         @Override
                         protected JellyContext createContext(StaplerRequest req, StaplerResponse rsp, Script script, Object it) {
                             JellyContext context = super.createContext(req, rsp, script, it);
-                            for (int i=bodyStack.length-1; i>0; i--) {// exclude bodyStack[0]
+                            for (int i = bodyStack.length - 1; i > 0; i--) { // exclude bodyStack[0]
                                 context = new JellyContext(context);
-                                context.setVariable("org.apache.commons.jelly.body",bodyStack[i]);
+                                context.setVariable("org.apache.commons.jelly.body", bodyStack[i]);
                             }
                             try {
                                 AdjunctsInPage.get().assumeIncluded(adjuncts);
                             } catch (IOException | SAXException e) {
-                                LOGGER.log(Level.WARNING, "Failed to resurrect adjunct context",e);
+                                LOGGER.log(Level.WARNING, "Failed to resurrect adjunct context", e);
                             }
                             return context;
                         }
@@ -118,12 +118,12 @@ public class RenderOnDemandClosure {
                         protected void exportVariables(StaplerRequest req, StaplerResponse rsp, Script script, Object it, JellyContext context) {
                             super.exportVariables(req, rsp, script, it, context);
                             context.setVariables(variables);
-                            req.setAttribute("currentDescriptorByNameUrl",currentDescriptorByNameUrl);
+                            req.setAttribute("currentDescriptorByNameUrl", currentDescriptorByNameUrl);
                         }
-                    }.invokeScript(req,rsp,bodyStack[0],null);
+                    }.invokeScript(req, rsp, bodyStack[0], null);
                 } catch (JellyTagException e) {
                     LOGGER.log(Level.WARNING, "Failed to evaluate the template closure", e);
-                    throw new IOException("Failed to evaluate the template closure",e);
+                    throw new IOException("Failed to evaluate the template closure", e);
                 }
             }
         };

@@ -63,26 +63,32 @@ public interface UserDetails extends Serializable {
             public GrantedAuthority[] getAuthorities() {
                 return GrantedAuthority.fromSpring(ud.getAuthorities());
             }
+
             @Override
             public String getPassword() {
                 return ud.getPassword();
             }
+
             @Override
             public String getUsername() {
                 return ud.getUsername();
             }
+
             @Override
             public boolean isAccountNonExpired() {
                 return ud.isAccountNonExpired();
             }
+
             @Override
             public boolean isAccountNonLocked() {
                 return ud.isAccountNonLocked();
             }
+
             @Override
             public boolean isCredentialsNonExpired() {
                 return ud.isCredentialsNonExpired();
             }
+
             @Override
             public boolean isEnabled() {
                 return ud.isEnabled();

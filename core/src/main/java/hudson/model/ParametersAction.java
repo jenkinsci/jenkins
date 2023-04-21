@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Jean-Baptiste Quenot, Seiji Sogabe, Tom Huybrechts
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,10 +21,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
-import hudson.Util;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.EnvVars;
+import hudson.Util;
 import hudson.diagnosis.OldDataMonitor;
 import hudson.model.Queue.QueueAction;
 import hudson.model.labels.LabelAssignmentAction;
@@ -32,12 +36,6 @@ import hudson.model.queue.SubTask;
 import hudson.tasks.BuildStep;
 import hudson.tasks.BuildWrapper;
 import hudson.util.VariableResolver;
-import jenkins.model.RunAction2;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.stapler.export.Exported;
-import org.kohsuke.stapler.export.ExportedBean;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -49,10 +47,12 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
+import jenkins.model.RunAction2;
 import jenkins.util.SystemProperties;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
 
 /**
  * Records the parameter values used for a build.
@@ -111,7 +111,7 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
      * The additional safe parameters should be only those considered safe to override the environment
      * and what is declared in the project config in addition to those specified by the user in
      * {@link #SAFE_PARAMETERS_SYSTEM_PROPERTY_NAME}.
-     * See <a href="https://issues.jenkins-ci.org/browse/SECURITY-170">SECURITY-170</a>
+     * See <a href="https://issues.jenkins.io/browse/SECURITY-170">SECURITY-170</a>
      *
      * @param parameters the parameters
      * @param additionalSafeParameters additional safe parameters
@@ -123,21 +123,21 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
             safeParameters.addAll(additionalSafeParameters);
         }
     }
-    
+
     public ParametersAction(ParameterValue... parameters) {
         this(Arrays.asList(parameters));
     }
 
-    public void createBuildWrappers(AbstractBuild<?,?> build, Collection<? super BuildWrapper> result) {
+    public void createBuildWrappers(AbstractBuild<?, ?> build, Collection<? super BuildWrapper> result) {
         for (ParameterValue p : getParameters()) {
             if (p == null) continue;
             BuildWrapper w = p.createBuildWrapper(build);
-            if(w!=null) result.add(w);
+            if (w != null) result.add(w);
         }
     }
 
     @Override
-    public void buildEnvironment(Run<?,?> run, EnvVars env) {
+    public void buildEnvironment(Run<?, ?> run, EnvVars env) {
         for (ParameterValue p : getParameters()) {
             if (p == null) continue;
             p.buildEnvironment(run, env);
@@ -149,35 +149,35 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
     /**
      * Performs a variable substitution to the given text and return it.
      */
-    public String substitute(AbstractBuild<?,?> build, String text) {
-        return Util.replaceMacro(text,createVariableResolver(build));
+    public String substitute(AbstractBuild<?, ?> build, String text) {
+        return Util.replaceMacro(text, createVariableResolver(build));
     }
 
     /**
      * Creates an {@link VariableResolver} that aggregates all the parameters.
      *
      * <p>
-     * If you are a {@link BuildStep}, most likely you should call {@link AbstractBuild#getBuildVariableResolver()}. 
+     * If you are a {@link BuildStep}, most likely you should call {@link AbstractBuild#getBuildVariableResolver()}.
      */
-    public VariableResolver<String> createVariableResolver(AbstractBuild<?,?> build) {
-        VariableResolver[] resolvers = new VariableResolver[getParameters().size()+1];
-        int i=0;
+    public VariableResolver<String> createVariableResolver(AbstractBuild<?, ?> build) {
+        VariableResolver[] resolvers = new VariableResolver[getParameters().size() + 1];
+        int i = 0;
         for (ParameterValue p : getParameters()) {
             if (p == null) continue;
             resolvers[i++] = p.createVariableResolver(build);
         }
-            
+
         resolvers[i] = build.getBuildVariableResolver();
 
         return new VariableResolver.Union<String>(resolvers);
     }
-    
+
     @Override
     public Iterator<ParameterValue> iterator() {
         return getParameters().iterator();
     }
 
-    @Exported(visibility=2)
+    @Exported(visibility = 2)
     public List<ParameterValue> getParameters() {
         return Collections.unmodifiableList(filter(parameters));
     }
@@ -196,7 +196,7 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
         for (ParameterValue p : getParameters()) {
             if (p == null) continue;
             Label l = p.getAssignedLabel(task);
-            if (l!=null)    return l;
+            if (l != null)    return l;
         }
         return null;
     }
@@ -208,7 +208,7 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
 
     @Override
     public String getIconFileName() {
-        return "document-properties.png";
+        return "symbol-parameters";
     }
 
     @Override
@@ -227,7 +227,7 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
         } else {
             // I don't think we need multiple ParametersActions, but let's be defensive
             Set<ParameterValue> params = new HashSet<>();
-            for (ParametersAction other: others) {
+            for (ParametersAction other : others) {
                 params.addAll(other.parameters);
             }
             return !params.equals(new HashSet<>(this.parameters));
@@ -241,7 +241,7 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
      */
     @NonNull
     public ParametersAction createUpdated(Collection<? extends ParameterValue> overrides) {
-        if(overrides == null) {
+        if (overrides == null) {
             ParametersAction parametersAction = new ParametersAction(parameters);
             parametersAction.safeParameters = this.safeParameters;
             return parametersAction;
@@ -249,7 +249,7 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
         List<ParameterValue> combinedParameters = new ArrayList<>(overrides);
         Set<String> names = new HashSet<>();
 
-        for(ParameterValue v : overrides) {
+        for (ParameterValue v : overrides) {
             if (v == null) continue;
             names.add(v.getName());
         }
@@ -286,6 +286,7 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
         return parametersAction;
     }
 
+    @SuppressFBWarnings(value = "RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE", justification = "parameters in readResolve is needed for data migration.")
     private Object readResolve() {
         if (parameters == null) { // JENKINS-39495
             parameters = Collections.emptyList();
@@ -334,10 +335,11 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
             if (this.parameterDefinitionNames.contains(v.getName()) || isSafeParameter(v.getName())) {
                 filteredParameters.add(v);
             } else if (shouldKeepFlag == null) {
-                LOGGER.log(Level.WARNING, "Skipped parameter `{0}` as it is undefined on `{1}`. Set `-D{2}=true` to allow "
-                        + "undefined parameters to be injected as environment variables or `-D{3}=[comma-separated list]` to whitelist specific parameter names, "
-                        + "even though it represents a security breach or `-D{2}=false` to no longer show this message.",
-                        new Object [] { v.getName(), run.getParent().getFullName(), KEEP_UNDEFINED_PARAMETERS_SYSTEM_PROPERTY_NAME, SAFE_PARAMETERS_SYSTEM_PROPERTY_NAME });
+                LOGGER.log(Level.WARNING, "Skipped parameter `{0}` as it is undefined on `{1}` (#{2}). Set `-D{3}=true` to allow "
+                        + "undefined parameters to be injected as environment variables or `-D{4}=[comma-separated list]` to whitelist specific parameter names, "
+                        + "even though it represents a security breach or `-D{3}=false` to no longer show this message.",
+                        new Object [] { v.getName(), run.getParent().getFullName(), run.getNumber(),
+                                KEEP_UNDEFINED_PARAMETERS_SYSTEM_PROPERTY_NAME, SAFE_PARAMETERS_SYSTEM_PROPERTY_NAME });
             }
         }
 

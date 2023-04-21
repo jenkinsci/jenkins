@@ -21,32 +21,30 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.jobs;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.hamcrest.MatcherAssert.assertThat;
 
+import com.gargoylesoftware.htmlunit.HttpMethod;
 import com.gargoylesoftware.htmlunit.Page;
+import com.gargoylesoftware.htmlunit.WebRequest;
 import hudson.model.Failure;
+import hudson.model.FreeStyleProject;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.listeners.ItemListener;
-
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.MessageFormat;
-
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-
-import com.gargoylesoftware.htmlunit.HttpMethod;
-import com.gargoylesoftware.htmlunit.WebRequest;
-import hudson.model.FreeStyleProject;
 import org.jvnet.hudson.test.MockFolder;
 import org.jvnet.hudson.test.TestExtension;
 
@@ -108,8 +106,8 @@ public class CreateItemTest {
                 .withThrowExceptionOnFailingStatusCode(false)
                 .getPage(request);
 
-        assertEquals("Creating job from copy should fail.", 
-                HttpURLConnection.HTTP_BAD_REQUEST, 
+        assertEquals("Creating job from copy should fail.",
+                HttpURLConnection.HTTP_BAD_REQUEST,
                 p.getWebResponse().getStatusCode());
         assertThat(rule.jenkins.getItem("newJob"), nullValue());
     }

@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.util.io;
 
 import java.io.File;
@@ -56,11 +57,11 @@ public class RewindableFileOutputStream extends OutputStream {
                 try {
                     current = Files.newOutputStream(out.toPath(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
                 } catch (FileNotFoundException | NoSuchFileException | InvalidPathException e) {
-                    throw new IOException("Failed to open "+out,e);
+                    throw new IOException("Failed to open " + out, e);
                 }
             }
             else {
-                throw new IOException(out.getName()+" stream is closed");
+                throw new IOException(out.getName() + " stream is closed");
             }
         }
         return current;

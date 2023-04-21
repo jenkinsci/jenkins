@@ -21,16 +21,15 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.search;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import hudson.Util;
-
 import java.util.ArrayList;
 import java.util.List;
-
 import org.junit.Test;
 
 /**
@@ -41,10 +40,10 @@ public class SearchTest {
     @Test
     public void findAndSuggest() {
         SearchIndex si = new SearchIndexBuilder()
-            .add("abc-def-ghi","abc def ghi")
-            .add(SearchItems.create("abc","abc",
+            .add("abc-def-ghi", "abc def ghi")
+            .add(SearchItems.create("abc", "abc",
                 new SearchIndexBuilder()
-                    .add("def-ghi","def ghixxx")
+                    .add("def-ghi", "def ghixxx")
                     .make()))
             .make();
 
@@ -53,9 +52,9 @@ public class SearchTest {
         assertEquals("/abc-def-ghi", x.getUrl());
 
         List<SuggestedItem> l = Search.suggest(si, "abc def ghi");
-        assertEquals(2,l.size());
-        assertEquals("/abc-def-ghi",l.get(0).getUrl());
-        assertEquals("/abc/def-ghi",l.get(1).getUrl());
+        assertEquals(2, l.size());
+        assertEquals("/abc-def-ghi", l.get(0).getUrl());
+        assertEquals("/abc/def-ghi", l.get(1).getUrl());
     }
 
     /**
@@ -72,13 +71,15 @@ public class SearchTest {
             public SearchIndex getSearchIndex() {
                     return null;
             }
+
             @Override
             public String getSearchName() {
                 return searchName;
             }
+
             @Override
             public String getSearchUrl() {
-                return "/job/"+Util.rawEncode(query) + "/";
+                return "/job/" + Util.rawEncode(query) + "/";
             }
         };
 
@@ -87,10 +88,12 @@ public class SearchTest {
             public SearchIndex getSearchIndex() {
                     return null;
             }
+
             @Override
             public String getSearchName() {
                 return searchName;
             }
+
             @Override
             public String getSearchUrl() {
                 return "/job/someotherJob/";

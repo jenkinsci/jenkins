@@ -40,11 +40,11 @@ public abstract class AbstractAuthenticationToken implements Authentication {
     private Object details;
     private boolean authenticated;
 
-    public AbstractAuthenticationToken() {
+    protected AbstractAuthenticationToken() {
         this.authorities = new GrantedAuthority[0];
     }
 
-    public AbstractAuthenticationToken(GrantedAuthority[] authorities) {
+    protected AbstractAuthenticationToken(GrantedAuthority[] authorities) {
         this.authorities = authorities;
     }
 

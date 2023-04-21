@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.widgets;
 
 import hudson.model.Build;
@@ -35,12 +36,6 @@ import hudson.model.Queue;
 import hudson.model.Result;
 import hudson.model.Run;
 import hudson.model.StringParameterValue;
-
-import org.junit.Assert;
-import org.junit.Test;
-import org.jvnet.hudson.test.Issue;
-import org.mockito.Mockito;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -48,6 +43,11 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import org.junit.Assert;
+import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
+import org.mockito.Mockito;
 
 /**
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
@@ -342,8 +342,8 @@ public class HistoryPageFilterTest {
     @Issue("JENKINS-40718")
     public void should_search_builds_by_build_variables() {
         Iterable<ModelObject> runs = Arrays.asList(
-                new MockBuild(2).withBuildVariables(Collections.singletonMap("env", "dummyEnv")),
-                new MockBuild(1).withBuildVariables(Collections.singletonMap("env", "otherEnv")));
+                new MockBuild(2).withBuildVariables(Map.of("env", "dummyEnv")),
+                new MockBuild(1).withBuildVariables(Map.of("env", "otherEnv")));
         assertOneMatchingBuildForGivenSearchStringAndRunItems("dummyEnv", runs);
     }
 
@@ -351,8 +351,8 @@ public class HistoryPageFilterTest {
     @Issue("JENKINS-40718")
     public void should_search_builds_by_build_params() throws IOException {
         Iterable<ModelObject> runs = Arrays.asList(
-                new MockBuild(2).withBuildParameters(Collections.singletonMap("env", "dummyEnv")),
-                new MockBuild(1).withBuildParameters(Collections.singletonMap("env", "otherEnv")));
+                new MockBuild(2).withBuildParameters(Map.of("env", "dummyEnv")),
+                new MockBuild(1).withBuildParameters(Map.of("env", "otherEnv")));
         assertOneMatchingBuildForGivenSearchStringAndRunItems("dummyEnv", runs);
     }
 
@@ -360,7 +360,7 @@ public class HistoryPageFilterTest {
     @Issue("JENKINS-40718")
     public void should_ignore_sensitive_parameters_in_search_builds_by_build_params() throws IOException {
         Iterable<ModelObject> runs = Arrays.asList(
-                new MockBuild(2).withBuildParameters(Collections.singletonMap("plainPassword", "pass1plain")),
+                new MockBuild(2).withBuildParameters(Map.of("plainPassword", "pass1plain")),
                 new MockBuild(1).withSensitiveBuildParameters("password", "pass1"));
         assertOneMatchingBuildForGivenSearchStringAndRunItems("pass1", runs);
     }
@@ -493,23 +493,20 @@ public class HistoryPageFilterTest {
             return this;
         }
 
-        MockBuild withBuildParameters(Map<String, String> buildParametersAsMap) throws IOException {
+        MockBuild withBuildParameters(Map<String, String> buildParametersAsMap) {
             addAction(new ParametersAction(buildPropertiesMapToParameterValues(buildParametersAsMap), buildParametersAsMap.keySet()));
             return this;
         }
 
-        //TODO: Rewrite in functional style when Java 8 is available
         private List<ParameterValue> buildPropertiesMapToParameterValues(Map<String, String> buildParametersAsMap) {
-            List<ParameterValue> parameterValues = new ArrayList<>();
-            for (Map.Entry<String, String> parameter : buildParametersAsMap.entrySet()) {
-                parameterValues.add(new StringParameterValue(parameter.getKey(), parameter.getValue()));
-            }
-            return parameterValues;
+            return buildParametersAsMap.entrySet().stream()
+                    .map(parameter -> new StringParameterValue(parameter.getKey(), parameter.getValue()))
+                    .collect(Collectors.toList());
         }
 
         MockBuild withSensitiveBuildParameters(String paramName, String paramValue) {
-            addAction(new ParametersAction(Collections.singletonList(createSensitiveStringParameterValue(paramName, paramValue)),
-                    Collections.singletonList(paramName)));
+            addAction(new ParametersAction(List.of(createSensitiveStringParameterValue(paramName, paramValue)),
+                    List.of(paramName)));
             return this;
         }
 

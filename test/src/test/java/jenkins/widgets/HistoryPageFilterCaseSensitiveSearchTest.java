@@ -1,16 +1,5 @@
 package jenkins.widgets;
 
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collections;
-
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
-import org.jvnet.hudson.test.Issue;
-import org.jvnet.hudson.test.JenkinsRule;
-import org.mockito.Mockito;
-
 import hudson.model.Job;
 import hudson.model.ModelObject;
 import hudson.model.Result;
@@ -20,6 +9,16 @@ import hudson.search.UserSearchProperty;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
 import hudson.security.AuthorizationStrategy;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.function.Consumer;
+import org.junit.Assert;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.JenkinsRule;
+import org.mockito.Mockito;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 
 /**
@@ -37,27 +36,20 @@ public class HistoryPageFilterCaseSensitiveSearchTest {
 
     @Test
     public void should_search_case_sensitively_when_enabled_for_user() throws IOException {
-        setCaseSensitiveSearchForUserAndCheckAssertionForGivenSearchString("FAILURE", new SearchResultAssertFunction() {
-            @Override
-            public void doAssertion(HistoryPageFilter<ModelObject> historyPageFilter) {
+        setCaseSensitiveSearchForUserAndCheckAssertionForGivenSearchString("FAILURE", historyPageFilter -> {
                 Assert.assertEquals(1, historyPageFilter.runs.size());
                 Assert.assertEquals(HistoryPageEntry.getEntryId(2), historyPageFilter.runs.get(0).getEntryId());
-            }
         });
     }
 
     @Test
     public void should_skip_result_with_different_capitalization_when_case_sensitively_search_is_enabled_for_user() throws IOException {
-        setCaseSensitiveSearchForUserAndCheckAssertionForGivenSearchString("failure", new SearchResultAssertFunction() {
-            @Override
-            public void doAssertion(HistoryPageFilter<ModelObject> historyPageFilter) {
-                Assert.assertEquals(0, historyPageFilter.runs.size());
-            }
-        });
+        setCaseSensitiveSearchForUserAndCheckAssertionForGivenSearchString(
+                "failure", historyPageFilter -> Assert.assertEquals(0, historyPageFilter.runs.size()));
     }
 
     private void setCaseSensitiveSearchForUserAndCheckAssertionForGivenSearchString(final String searchString,
-                                                                                    SearchResultAssertFunction assertionOnSearchResults) throws IOException {
+                                                                                    Consumer<HistoryPageFilter<ModelObject>> assertionOnSearchResults) throws IOException {
         AuthorizationStrategy.Unsecured strategy = new AuthorizationStrategy.Unsecured();
         j.jenkins.setAuthorizationStrategy(strategy);
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
@@ -74,7 +66,7 @@ public class HistoryPageFilterCaseSensitiveSearchTest {
     }
 
     private void assertNoMatchingBuildsForGivenSearchStringAndRunItems(String searchString, Iterable<ModelObject> runs,
-                                                                       SearchResultAssertFunction assertionOnSearchResults) {
+                                                                       Consumer<HistoryPageFilter<ModelObject>> assertionOnSearchResults) {
         //given
         HistoryPageFilter<ModelObject> historyPageFilter = new HistoryPageFilter<>(5);
         //and
@@ -84,7 +76,7 @@ public class HistoryPageFilterCaseSensitiveSearchTest {
         historyPageFilter.add(runs, Collections.emptyList());
 
         //then
-        assertionOnSearchResults.doAssertion(historyPageFilter);
+        assertionOnSearchResults.accept(historyPageFilter);
     }
 
     @SuppressWarnings("unchecked")
@@ -125,10 +117,5 @@ public class HistoryPageFilterCaseSensitiveSearchTest {
         public int getNumber() {
             return (int) queueId;
         }
-    }
-
-    //Waiting for Java 8... - coming soon - April 2017?
-    private interface SearchResultAssertFunction {
-        void doAssertion(HistoryPageFilter<ModelObject> historyPageFilter);
     }
 }

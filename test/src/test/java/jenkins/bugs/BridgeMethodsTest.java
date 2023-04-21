@@ -1,5 +1,14 @@
 package jenkins.bugs;
 
+import static org.hamcrest.CoreMatchers.allOf;
+import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.beans.HasPropertyWithValue.hasProperty;
+import static org.hamcrest.collection.IsIterableWithSize.iterableWithSize;
+
+import hudson.model.Queue;
+import hudson.model.queue.QueueTaskFuture;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
@@ -7,14 +16,6 @@ import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
-import hudson.model.Queue;
-import hudson.model.queue.QueueTaskFuture;
-import static org.hamcrest.CoreMatchers.allOf;
-import static org.hamcrest.CoreMatchers.hasItem;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.beans.HasPropertyWithValue.hasProperty;
-import static org.hamcrest.collection.IsIterableWithSize.iterableWithSize;
 
 public class BridgeMethodsTest {
 

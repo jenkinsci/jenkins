@@ -21,11 +21,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.cli;
 
 import hudson.Extension;
 import hudson.model.Run;
-
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.HashSet;
@@ -66,7 +66,7 @@ public class DeleteBuildsCommand extends RunRangeCommand {
             }
         }
 
-        stdout.println("Deleted "+hsBuilds.size()+" builds");
+        stdout.println("Deleted " + hsBuilds.size() + " builds");
 
         return 0;
     }

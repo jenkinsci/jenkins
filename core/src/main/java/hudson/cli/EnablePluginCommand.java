@@ -27,12 +27,11 @@ package hudson.cli;
 import hudson.Extension;
 import hudson.PluginManager;
 import hudson.PluginWrapper;
+import java.io.IOException;
+import java.util.List;
 import jenkins.model.Jenkins;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.Option;
-
-import java.io.IOException;
-import java.util.List;
 
 /**
  * Enables one or more installed plugins. The listed plugins must already be installed along with its dependencies.

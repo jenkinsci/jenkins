@@ -24,25 +24,24 @@
 
 package hudson.cli;
 
-import hudson.PluginManager;
-import hudson.PluginWrapper;
-import org.junit.Assume;
-import org.junit.Rule;
-import org.junit.Test;
-import org.jvnet.hudson.test.Issue;
-import org.jvnet.hudson.test.JenkinsRule;
-
-import java.io.IOException;
-
 import static hudson.cli.CLICommandInvoker.Matcher.failedWith;
 import static hudson.cli.CLICommandInvoker.Matcher.succeeded;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertFalse;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
+
+import hudson.PluginManager;
+import hudson.PluginWrapper;
+import java.io.IOException;
+import org.junit.Assume;
 import org.junit.Ignore;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.JenkinsRule;
 
 public class EnablePluginCommandTest {
 

@@ -24,11 +24,12 @@
 
 package hudson.cli;
 
-import org.junit.Test;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.hamcrest.MatcherAssert.assertThat;
+
 import org.junit.Rule;
+import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 
@@ -39,7 +40,7 @@ public class InstallPluginCommandTest {
 
     @Issue("JENKINS-41745")
     @Test
-    public void fromStdin() throws Exception {
+    public void fromStdin() {
         assertNull(r.jenkins.getPluginManager().getPlugin("token-macro"));
         assertThat(new CLICommandInvoker(r, "install-plugin").
                 withStdin(InstallPluginCommandTest.class.getResourceAsStream("/plugins/token-macro.hpi")).

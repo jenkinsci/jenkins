@@ -21,11 +21,23 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebResponse;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
+import java.io.File;
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import javax.servlet.http.HttpServletResponse;
 import net.sf.json.JSONObject;
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -35,18 +47,6 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.xml.sax.SAXException;
-
-import javax.servlet.http.HttpServletResponse;
-import java.io.File;
-import java.io.IOException;
-import java.net.HttpURLConnection;
-
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertEquals;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -72,7 +72,7 @@ public class ApiTest {
 
         String s = wc.goTo(p.getUrl() + "api/json?tree=name&jsonp=wrap", "application/javascript").getWebResponse().getContentAsString();
         assertTrue(s.startsWith("wrap("));
-        assertEquals(')', s.charAt(s.length()-1));
+        assertEquals(')', s.charAt(s.length() - 1));
         json = JSONObject.fromObject(s.substring("wrap(".length(), s.length() - 1));
         assertEquals("p", json.get("name"));
     }
@@ -105,7 +105,7 @@ public class ApiTest {
     @Issue("JENKINS-3267")
     public void wrappedOneItem() throws Exception {
         Page page = j.createWebClient().goTo("api/xml?wrapper=root&xpath=/hudson/view/name", "application/xml");
-        assertEquals("<root><name>"+ AllView.DEFAULT_VIEW_NAME+"</name></root>", page.getWebResponse().getContentAsString());
+        assertEquals("<root><name>" + AllView.DEFAULT_VIEW_NAME + "</name></root>", page.getWebResponse().getContentAsString());
     }
 
     @Test
@@ -124,15 +124,22 @@ public class ApiTest {
     @Test
     public void unwrappedOneItem() throws Exception {
         Page page = j.createWebClient().goTo("api/xml?xpath=/hudson/view/name", "application/xml");
-        assertEquals("<name>"+ AllView.DEFAULT_VIEW_NAME+"</name>", page.getWebResponse().getContentAsString());
+        assertEquals("<name>" + AllView.DEFAULT_VIEW_NAME + "</name>", page.getWebResponse().getContentAsString());
     }
 
     @Test
     public void unwrappedLongString() throws Exception {
-        j.jenkins.setSystemMessage("Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.");
+        j.jenkins.setSystemMessage(
+                "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor"
+                    + " incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis"
+                    + " nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo"
+                    + " consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse"
+                    + " cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat"
+                    + " non proident, sunt in culpa qui officia deserunt mollit anim id est"
+                    + " laborum.");
         Page page = j.createWebClient().goTo("api/xml?xpath=/hudson/description", "application/xml");
         assertEquals(
-                "<description>"+j.jenkins.getSystemMessage()+"</description>",
+                "<description>" + j.jenkins.getSystemMessage() + "</description>",
                 page.getWebResponse().getContentAsString());
     }
 
@@ -297,7 +304,8 @@ public class ApiTest {
         @ExportedBean
         static class CustomData {
             private String secret;
-            CustomData(String secret){
+
+            CustomData(String secret) {
                 this.secret = secret;
             }
         }

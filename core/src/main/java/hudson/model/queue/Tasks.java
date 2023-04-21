@@ -21,14 +21,15 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model.queue;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.Queue;
 import hudson.model.Queue.Item;
 import hudson.model.Queue.Task;
-import edu.umd.cs.findbugs.annotations.CheckForNull;
 import java.util.Collection;
-import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.security.QueueItemAuthenticator;
 import jenkins.security.QueueItemAuthenticatorProvider;
 import org.springframework.security.core.Authentication;
@@ -53,7 +54,7 @@ public class Tasks {
         return t.getSameNodeConstraint();
     }
 
-    /** deprecated call {@link SubTask#getOwnerTask} directly */
+    /** @deprecated call {@link SubTask#getOwnerTask} directly */
     @Deprecated
     public static @NonNull Task getOwnerTaskOf(@NonNull SubTask t) {
         return t.getOwnerTask();
@@ -76,7 +77,7 @@ public class Tasks {
             }
             p = o;
         }
-        return p instanceof hudson.model.Item ? (hudson.model.Item)p : null;
+        return p instanceof hudson.model.Item ? (hudson.model.Item) p : null;
     }
 
     /** @deprecated call {@link Queue.Task#getDefaultAuthentication()} directly */

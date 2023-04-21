@@ -1,14 +1,12 @@
 package jenkins.security;
 
-import hudson.Extension;
-import hudson.Lookup;
-import hudson.init.InitMilestone;
-import hudson.util.Secret;
-import jenkins.model.Jenkins;
-import org.kohsuke.MetaInfServices;
-
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.Extension;
+import hudson.Lookup;
+import hudson.Util;
+import hudson.init.InitMilestone;
+import hudson.util.Secret;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -19,6 +17,8 @@ import java.util.ServiceLoader;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import jenkins.model.Jenkins;
+import org.kohsuke.MetaInfServices;
 
 /**
  * The actual storage for the data held by {@link ConfidentialKey}s, and the holder
@@ -68,7 +68,7 @@ public abstract class ConfidentialStore {
      * Retrieves the currently active singleton instance of {@link ConfidentialStore}.
      */
     public static @NonNull ConfidentialStore get() {
-        if (TEST!=null) return TEST.get();
+        if (TEST != null) return TEST.get();
 
         Jenkins j = Jenkins.getInstanceOrNull();
         if (j == null) {
@@ -76,18 +76,18 @@ public abstract class ConfidentialStore {
         }
         Lookup lookup = j.lookup;
         ConfidentialStore cs = lookup.get(ConfidentialStore.class);
-        if (cs==null) {
+        if (cs == null) {
             try {
                 Iterator<ConfidentialStore> it = ServiceLoader.load(ConfidentialStore.class, ConfidentialStore.class.getClassLoader()).iterator();
                 if (it.hasNext()) {
                     cs = it.next();
                 }
             } catch (ServiceConfigurationError e) {
-                LOGGER.log(Level.WARNING, "Failed to list up ConfidentialStore implementations",e);
+                LOGGER.log(Level.WARNING, "Failed to list up ConfidentialStore implementations", e);
                 // fall through
             }
 
-            if (cs==null)
+            if (cs == null)
                 try {
                     cs = new DefaultConfidentialStore();
                 } catch (Exception e) {
@@ -95,7 +95,7 @@ public abstract class ConfidentialStore {
                     throw new Error(e);
                 }
 
-            cs = lookup.setIfNull(ConfidentialStore.class,cs);
+            cs = lookup.setIfNull(ConfidentialStore.class, cs);
         }
         return cs;
     }
@@ -130,14 +130,14 @@ public abstract class ConfidentialStore {
 
         @Override
         protected void store(ConfidentialKey key, byte[] payload) throws IOException {
-            LOGGER.fine(() -> "storing " + key.getId() + " " + hudson.Util.getDigestOf(hudson.Util.toHexString(payload)));
+            LOGGER.fine(() -> "storing " + key.getId() + " " + Util.getDigestOf(Util.toHexString(payload)));
             data.put(key.getId(), payload);
         }
 
         @Override
         protected byte[] load(ConfidentialKey key) throws IOException {
             byte[] payload = data.get(key.getId());
-            LOGGER.fine(() -> "loading " + key.getId() + " " + (payload != null ? hudson.Util.getDigestOf(hudson.Util.toHexString(payload)) : "null"));
+            LOGGER.fine(() -> "loading " + key.getId() + " " + (payload != null ? Util.getDigestOf(Util.toHexString(payload)) : "null"));
             return payload;
         }
 

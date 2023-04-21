@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import jenkins.model.RunAction2;
@@ -32,7 +33,7 @@ import jenkins.model.RunAction2;
 public interface RunAction extends Action {
     /**
      * Called after the build is loaded and the object is added to the build list.
-     * 
+     *
      * Because {@link RunAction}s are persisted with {@link Run}, the implementation
      * can keep a reference to {@link Run} in a field (which is set via {@link #onAttached(Run)})
      */

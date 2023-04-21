@@ -24,10 +24,13 @@
 
 package jenkins.util.io;
 
-import hudson.Functions;
-import org.junit.rules.ExternalResource;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasKey;
+import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertTrue;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.Functions;
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
@@ -37,11 +40,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
-import static org.hamcrest.Matchers.hasKey;
-import static org.hamcrest.Matchers.not;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertTrue;
+import org.junit.rules.ExternalResource;
 
 /**
  * Helper class for tracking which files are locked.

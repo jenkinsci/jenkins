@@ -19,7 +19,7 @@ public class ResilientJsonObjectTest {
     @Issue("JENKINS-15105")
     public void databindingShouldIgnoreUnrecognizedJsonProperty() {
         JSONObject o = JSONObject.fromObject("{a:1,b:2}");
-        Foo f = (Foo)JSONObject.toBean(o,Foo.class);
+        Foo f = (Foo) JSONObject.toBean(o, Foo.class);
         assertEquals(1, f.a);
     }
 }

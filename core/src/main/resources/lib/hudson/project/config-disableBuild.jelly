@@ -22,11 +22,21 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<!--
-  Configuration entry for disabling a project; applies to ParameterizedJob
--->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <f:optionalBlock name="disable" title="${%Disable this project}" checked="${it.disabled}"
-                   help="/help/project-config/disable.html" inline="true" />
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:f="/lib/form">
+  <st:documentation>
+    Configuration entry for disabling a project; applies to ParameterizedJob
+
+    <st:attribute name="tooltip" use="optional">
+      Replaces the default tooltip for the toggle switch
+    </st:attribute>
+  </st:documentation>
+
+  <f:toggleSwitch id="enable-disable-project"
+                  name="enable"
+                  title="${%Disabled}"
+                  checkedTitle="${%Enabled}"
+                  checked="${!it.disabled}"
+                  invertLabel="true"
+                  tooltip="${tooltip ?: '%Enable or disable the current project'}" />
 </j:jelly>

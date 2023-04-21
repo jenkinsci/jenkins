@@ -6,7 +6,7 @@ package jenkins.util.io;
  *
  * <p>
  * This marker interface is for plugin developers to quickly
- * tell if they can take a specific object from a master to
+ * tell if they can take a specific object from a controller to
  * an agent.
  *
  * (Core developers, if you find classes/interfaces that extend

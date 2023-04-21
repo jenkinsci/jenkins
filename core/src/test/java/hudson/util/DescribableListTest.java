@@ -24,11 +24,12 @@
 
 package hudson.util;
 
+import static org.junit.Assert.assertEquals;
+
 import com.thoughtworks.xstream.converters.basic.AbstractSingleValueConverter;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
 import org.junit.Test;
-import static org.junit.Assert.assertEquals;
 import org.jvnet.hudson.test.Issue;
 
 public class DescribableListTest {
@@ -49,7 +50,7 @@ public class DescribableListTest {
 
     private static final class Data {
 
-        final DescribableList<Datum,Descriptor<Datum>> list = new DescribableList<>();
+        final DescribableList<Datum, Descriptor<Datum>> list = new DescribableList<>();
 
         @Override
         public String toString() {
@@ -68,7 +69,7 @@ public class DescribableListTest {
 
         @Override
         public Descriptor<Datum> getDescriptor() {
-            return new Descriptor<Datum>(Datum.class) {};
+            return new Descriptor<>(Datum.class) {};
         }
 
         @Override

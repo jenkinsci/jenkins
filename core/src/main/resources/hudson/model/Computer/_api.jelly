@@ -31,9 +31,17 @@ THE SOFTWARE.
 
   <h2>Fetch/Update config.xml</h2>
   <p>
-    To programmatically obtain <tt>config.xml</tt>, hit <a href="../config.xml">this URL</a>.
-    You can also POST an updated <tt>config.xml</tt> to the same URL to programmatically
+    To programmatically obtain <code>config.xml</code>, hit <a href="../config.xml">this URL</a>.
+    You can also POST an updated <code>config.xml</code> to the same URL to programmatically
     update the configuration of a node.
+  </p>
+
+  <h2>Marking this node temporarily offline</h2>
+  <p>
+      You can POST to <a href="../toggleOffline?offlineMessage=some%20text">this URL</a>
+      to mark this node temporary offline, or bring it back online.
+      Or you can POST to <a href="../changeOfflineCause?offlineMessage=some%20text">this URL</a>
+      to mark this node temporary offline, or adjust the offline cause message if it is already offline.
   </p>
 
 </j:jelly>

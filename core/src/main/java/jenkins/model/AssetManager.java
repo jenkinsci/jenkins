@@ -1,23 +1,20 @@
 package jenkins.model;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.model.UnprotectedRootAction;
-
+import java.io.IOException;
+import java.net.URL;
+import java.util.Enumeration;
 import java.util.concurrent.TimeUnit;
-
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletResponse;
 import jenkins.ClassLoaderReflectionToolkit;
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.net.URL;
-import java.util.Enumeration;
 
 /**
  * Serves files located in the {@code /assets} classpath directory via the Jenkins core ClassLoader.

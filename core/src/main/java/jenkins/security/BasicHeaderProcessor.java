@@ -1,13 +1,14 @@
 package jenkins.security;
 
+import static java.util.logging.Level.FINE;
+import static java.util.logging.Level.FINER;
+
 import hudson.security.ACL;
 import hudson.security.ACLContext;
 import hudson.security.SecurityRealm;
 import hudson.util.Scrambler;
 import java.io.IOException;
 import java.util.List;
-import static java.util.logging.Level.FINE;
-import static java.util.logging.Level.FINER;
 import java.util.logging.Logger;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -64,13 +65,13 @@ public class BasicHeaderProcessor implements Filter {
         HttpServletResponse rsp = (HttpServletResponse) response;
         String authorization = req.getHeader("Authorization");
 
-        if (StringUtils.startsWithIgnoreCase(authorization,"Basic ")) {
+        if (StringUtils.startsWithIgnoreCase(authorization, "Basic ")) {
             // authenticate the user
             String uidpassword = Scrambler.descramble(authorization.substring(6));
             int idx = uidpassword.indexOf(':');
             if (idx >= 0) {
                 String username = uidpassword.substring(0, idx);
-                String password = uidpassword.substring(idx+1);
+                String password = uidpassword.substring(idx + 1);
 
                 if (!authenticationIsRequired(username)) {
                     chain.doFilter(request, response);
@@ -80,8 +81,8 @@ public class BasicHeaderProcessor implements Filter {
                 for (BasicHeaderAuthenticator a : all()) {
                     LOGGER.log(FINER, "Attempting to authenticate with {0}", a);
                     Authentication auth = a.authenticate2(req, rsp, username, password);
-                    if (auth!=null) {
-                        LOGGER.log(FINE, "Request authenticated as {0} by {1}", new Object[]{auth,a});
+                    if (auth != null) {
+                        LOGGER.log(FINE, "Request authenticated as {0} by {1}", new Object[]{auth, a});
                         success(req, rsp, chain, auth);
                         return;
                     }
@@ -110,7 +111,7 @@ public class BasicHeaderProcessor implements Filter {
         // (see SEC-53)
         Authentication existingAuth = SecurityContextHolder.getContext().getAuthentication();
 
-        if(existingAuth == null || !existingAuth.isAuthenticated()) {
+        if (existingAuth == null || !existingAuth.isAuthenticated()) {
             return true;
         }
 
@@ -134,8 +135,8 @@ public class BasicHeaderProcessor implements Filter {
     protected void success(HttpServletRequest req, HttpServletResponse rsp, FilterChain chain, Authentication auth) throws IOException, ServletException {
         rememberMeServices.loginSuccess(req, rsp, auth);
 
-        try (ACLContext ctx = ACL.as2(auth)){
-            chain.doFilter(req,rsp);
+        try (ACLContext ctx = ACL.as2(auth)) {
+            chain.doFilter(req, rsp);
         }
     }
 

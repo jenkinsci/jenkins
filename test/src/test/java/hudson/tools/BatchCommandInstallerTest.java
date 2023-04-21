@@ -15,7 +15,7 @@ public class BatchCommandInstallerTest {
     public JenkinsRule rule = new JenkinsRule();
 
     @Test
-    public void validateBatchCommandInstallerCommandEOL() throws Exception {
+    public void validateBatchCommandInstallerCommandEOL() {
         BatchCommandInstaller obj = new BatchCommandInstaller("", "echo A\necho B\recho C", "");
         rule.assertStringContains(obj.getCommand(), "echo A\r\necho B\r\necho C");
     }

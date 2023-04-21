@@ -13,7 +13,7 @@ import org.jenkinsci.Symbol;
  * @author Kohsuke Kawaguchi
  * @since 1.514
  */
-@Extension(ordinal=200) @Symbol("buildQueue") // historically this was the top most widget
+@Extension(ordinal = 200) @Symbol("buildQueue") // historically this was the top most widget
 public class BuildQueueWidget extends Widget {
 
 }

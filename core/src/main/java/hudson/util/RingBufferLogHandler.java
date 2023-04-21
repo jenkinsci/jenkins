@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.util;
 
 import java.util.AbstractList;
@@ -39,11 +40,12 @@ public class RingBufferLogHandler extends Handler {
 
     private int start = 0;
     private final LogRecord[] records;
-    private volatile int size = 0;
+    private int size;
 
     /**
      * This constructor is deprecated. It can't access system properties with {@link jenkins.util.SystemProperties}
      * as it's not legal to use it on remoting agents.
+     * @deprecated use {@link #RingBufferLogHandler(int)}
      */
     @Deprecated
     public RingBufferLogHandler() {
@@ -56,7 +58,7 @@ public class RingBufferLogHandler extends Handler {
 
     /**
      * @return int DEFAULT_RING_BUFFER_SIZE
-     * @see <a href="https://issues.jenkins-ci.org/browse/JENKINS-50669">JENKINS-50669</a>
+     * @see <a href="https://issues.jenkins.io/browse/JENKINS-50669">JENKINS-50669</a>
      * @since 2.259
      */
     public static int getDefaultRingBufferSize() {
@@ -64,13 +66,18 @@ public class RingBufferLogHandler extends Handler {
     }
 
     @Override
-    public synchronized void publish(LogRecord record) {
-        int len = records.length;
-        records[(start+size)%len]=record;
-        if(size==len) {
-            start = (start+1)%len;
-        } else {
-            size++;
+    public void publish(LogRecord record) {
+        if (record == null) {
+            return;
+        }
+        synchronized (this) {
+            int len = records.length;
+            records[(start + size) % len] = record;
+            if (size == len) {
+                start = (start + 1) % len;
+            } else {
+                size++;
+            }
         }
     }
 
@@ -86,18 +93,25 @@ public class RingBufferLogHandler extends Handler {
      * New records are always placed early in the list.
      */
     public List<LogRecord> getView() {
-        return new AbstractList<LogRecord>() {
+        // Since Jenkins.logRecords is a field used as an API, we are forced to implement a dynamic list.
+        return new AbstractList<>() {
             @Override
             public LogRecord get(int index) {
                 // flip the order
                 synchronized (RingBufferLogHandler.this) {
-                    return records[(start+(size-(index+1)))%records.length];
+                    return records[(start + (size - (index + 1))) % records.length];
                 }
             }
 
             @Override
             public int size() {
-                return size;
+                synchronized (RingBufferLogHandler.this) {
+                    // Not actually correct if a log record is added
+                    // after this is called but before the list is iterated.
+                    // However the size should only ever grow, up to the ring buffer max,
+                    // so get(int) should never throw AIOOBE.
+                    return size;
+                }
             }
         };
     }
@@ -105,6 +119,7 @@ public class RingBufferLogHandler extends Handler {
     // noop
     @Override
     public void flush() {}
+
     @Override
     public void close() throws SecurityException {}
 }

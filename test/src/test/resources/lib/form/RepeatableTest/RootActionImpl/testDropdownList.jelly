@@ -28,7 +28,7 @@ THE SOFTWARE.
   <l:main-panel>
     <form method="post" name="config" action="submitTest">
       <f:repeatable var="fruity" items="${it.list}" name="items">
-        <table>
+        <div>
           <f:dropdownList name="fruit" title="Fruits">
             <j:forEach var="descriptor" items="${it.fruitDescriptors}" varStatus="loop">
               <j:set var="fruit" value="${descriptor==fruity.fruit.descriptor?fruity.fruit:null}"/>
@@ -41,7 +41,7 @@ THE SOFTWARE.
           <f:entry title="Word">
             <f:textbox name="word" value="${fruity.word}"/>
           </f:entry>
-        </table>
+        </div>
       </f:repeatable>
       <f:submit value="submit"/>
     </form>

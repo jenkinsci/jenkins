@@ -12,12 +12,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package jenkins.security;
+
+import static java.util.logging.Level.FINER;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import java.io.IOException;
-import static java.util.logging.Level.FINER;
 import java.util.logging.Logger;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -61,7 +63,7 @@ public class BasicHeaderRealPasswordAuthenticator extends BasicHeaderAuthenticat
             return a;
         } catch (AuthenticationException failed) {
             // Authentication failed
-            LOGGER.log(FINER, "Authentication request for user: {0} failed: {1}", new Object[]{username,failed});
+            LOGGER.log(FINER, "Authentication request for user: {0} failed: {1}", new Object[]{username, failed});
             return null;
         }
     }
@@ -72,6 +74,6 @@ public class BasicHeaderRealPasswordAuthenticator extends BasicHeaderAuthenticat
      * Legacy property to disable the real password support.
      * Now that this is an extension, {@link ExtensionFilter} is a better way to control this.
      */
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
     public static boolean DISABLE = SystemProperties.getBoolean("jenkins.security.ignoreBasicAuth");
 }

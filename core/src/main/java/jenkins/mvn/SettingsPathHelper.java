@@ -6,11 +6,10 @@ import hudson.Util;
 import hudson.model.AbstractBuild;
 import hudson.model.TaskListener;
 import hudson.util.IOUtils;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-
 import java.io.File;
 import java.io.IOException;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 @Restricted(NoExternalUse.class)
 class SettingsPathHelper {
@@ -29,7 +28,7 @@ class SettingsPathHelper {
                     wsSettings = mrSettings;
                 }
             } catch (Exception e) {
-                throw new IllegalStateException("failed to find settings.xml at: " + wsSettings.getRemote());
+                throw new IllegalStateException("failed to find settings.xml at: " + wsSettings.getRemote(), e);
             }
             return wsSettings;
         }

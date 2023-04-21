@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,17 +21,17 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.tasks;
 
-import hudson.model.AbstractProject;
-import hudson.model.Descriptor;
-import jenkins.model.Jenkins;
-import hudson.model.AbstractProject.AbstractProjectDescriptor;
 import hudson.Extension;
+import hudson.model.AbstractProject;
+import hudson.model.AbstractProject.AbstractProjectDescriptor;
+import hudson.model.Descriptor;
 import hudson.util.DescriptorList;
-
 import java.util.ArrayList;
 import java.util.List;
+import jenkins.model.Jenkins;
 
 /**
  * List of all installed {@link BuildWrapper}.
@@ -56,14 +56,14 @@ public class BuildWrappers {
      */
     public static List<Descriptor<BuildWrapper>> getFor(AbstractProject<?, ?> project) {
         List<Descriptor<BuildWrapper>> result = new ArrayList<>();
-        Descriptor pd = Jenkins.get().getDescriptor((Class)project.getClass());
+        Descriptor pd = Jenkins.get().getDescriptor((Class) project.getClass());
 
         for (Descriptor<BuildWrapper> w : BuildWrapper.all()) {
-            if (pd instanceof AbstractProjectDescriptor && !((AbstractProjectDescriptor)pd).isApplicable(w))
+            if (pd instanceof AbstractProjectDescriptor && !((AbstractProjectDescriptor) pd).isApplicable(w))
                 continue;
             if (w instanceof BuildWrapperDescriptor) {
                 BuildWrapperDescriptor bwd = (BuildWrapperDescriptor) w;
-                if(bwd.isApplicable(project))
+                if (bwd.isApplicable(project))
                     result.add(bwd);
             } else {
                 // old BuildWrapper that doesn't implement BuildWrapperDescriptor

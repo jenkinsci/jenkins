@@ -27,7 +27,7 @@ public abstract class TransientBuildActionFactory implements ExtensionPoint {
      */
     public Collection<? extends Action> createFor(Run target) {
         if (target instanceof AbstractBuild)
-            return createFor((AbstractBuild)target);
+            return createFor((AbstractBuild) target);
         else
             return Collections.emptyList();
     }

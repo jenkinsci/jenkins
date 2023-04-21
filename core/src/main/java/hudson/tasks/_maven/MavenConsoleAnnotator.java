@@ -21,10 +21,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.tasks._maven;
 
 import hudson.console.LineTransformationOutputStream;
-
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
@@ -71,7 +71,7 @@ public class MavenConsoleAnnotator extends LineTransformationOutputStream.Delega
         if (m.find())
             new MavenErrorNote().encodeTo(out);
 
-        out.write(b,0,len);
+        out.write(b, 0, len);
     }
 
 }

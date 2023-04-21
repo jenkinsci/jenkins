@@ -24,15 +24,14 @@
 
 package jenkins.model;
 
+import static org.junit.Assert.assertEquals;
+
+import java.net.HttpURLConnection;
+import java.net.URL;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-
-import java.net.HttpURLConnection;
-import java.net.URL;
-
-import static org.junit.Assert.assertEquals;
 
 public class AssetManagerTest {
 

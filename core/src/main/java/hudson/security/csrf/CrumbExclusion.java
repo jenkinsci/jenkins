@@ -3,16 +3,16 @@
  * All rights reserved.
  * The copyrights to the contents of this file are licensed under the MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
+
 package hudson.security.csrf;
 
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
-
+import java.io.IOException;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 
 /**
  * Allows plugins to define exceptions to the CSRF protection filter.

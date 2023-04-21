@@ -45,7 +45,7 @@ complete {
     }
 
     match(["org.jenkins-ci.groovy:*"]) {
-        // see http://groovy.codehaus.org/License+Information
+        // see https://groovy-lang.org/faq.html
         // see http://jmdns.sourceforge.net/license.html
         rewriteLicense([],apacheLicense)
     }
@@ -81,13 +81,4 @@ complete {
     match("net.jcip:jcip-annotations") {
         rewriteLicense([],ccby)
     }
-
-    //
-    // Choose from multi-licensed modules
-    //==========================================================================
-
-    match("*:jna-posix") {
-        accept("GNU Lesser General Public License Version 2.1")
-    }
-
 }

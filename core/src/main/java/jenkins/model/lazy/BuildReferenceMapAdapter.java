@@ -1,9 +1,8 @@
 package jenkins.model.lazy;
 
+import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.util.AdaptedIterator;
 import hudson.util.Iterators;
-
-import edu.umd.cs.findbugs.annotations.Nullable;
 import java.lang.reflect.Array;
 import java.util.AbstractMap;
 import java.util.ArrayList;
@@ -24,10 +23,10 @@ import java.util.SortedMap;
  *
  * @author Kohsuke Kawaguchi
  */
-class BuildReferenceMapAdapter<R> implements SortedMap<Integer,R> {
+class BuildReferenceMapAdapter<R> implements SortedMap<Integer, R> {
     private final AbstractLazyLoadRunMap<R> loader;
 
-    private final SortedMap<Integer,BuildReference<R>> core;
+    private final SortedMap<Integer, BuildReference<R>> core;
 
     BuildReferenceMapAdapter(AbstractLazyLoadRunMap<R> loader, SortedMap<Integer, BuildReference<R>> core) {
         this.loader = loader;
@@ -35,16 +34,16 @@ class BuildReferenceMapAdapter<R> implements SortedMap<Integer,R> {
     }
 
     private R unwrap(@Nullable BuildReference<R> ref) {
-        if (ref==null)  return null;
+        if (ref == null)  return null;
 
         R v = ref.get();
-        if (v==null)
+        if (v == null)
             v = loader.getById(ref.id);
         return v;
     }
 
     private BuildReference<R> wrap(@Nullable R value) {
-        if (value==null)    return null;
+        if (value == null)    return null;
         return loader.createReference(value);
     }
 
@@ -92,7 +91,7 @@ class BuildReferenceMapAdapter<R> implements SortedMap<Integer,R> {
     }
 
     @Override
-    public Set<Entry<Integer,R>> entrySet() {
+    public Set<Entry<Integer, R>> entrySet() {
         return new SetAdapter(core.entrySet());
     }
 
@@ -183,7 +182,7 @@ class BuildReferenceMapAdapter<R> implements SortedMap<Integer,R> {
         public Iterator<R> iterator() {
             // silently drop null, as if we didn't have them in this collection in the first place
             // this shouldn't be indistinguishable from concurrent modifications to the collection
-            return Iterators.removeNull(new AdaptedIterator<BuildReference<R>,R>(core.iterator()) {
+            return Iterators.removeNull(new AdaptedIterator<>(core.iterator()) {
                 @Override
                 protected R adapt(BuildReference<R> ref) {
                     return unwrap(ref);
@@ -201,14 +200,14 @@ class BuildReferenceMapAdapter<R> implements SortedMap<Integer,R> {
         public <T> T[] toArray(T[] a) {
             int size = size();
             T[] r = a;
-            if (r.length>size)
+            if (r.length > size)
                 r = (T[]) Array.newInstance(a.getClass().getComponentType(), size);
 
             Iterator<R> itr = iterator();
-            int i=0;
+            int i = 0;
 
             while (itr.hasNext()) {
-                r[i++] = (T)itr.next();
+                r[i++] = (T) itr.next();
             }
 
             return r;
@@ -237,7 +236,7 @@ class BuildReferenceMapAdapter<R> implements SortedMap<Integer,R> {
 
         @Override
         public boolean addAll(Collection<? extends R> c) {
-            boolean b=false;
+            boolean b = false;
             for (R r : c) {
                 b |= add(r);
             }
@@ -246,9 +245,9 @@ class BuildReferenceMapAdapter<R> implements SortedMap<Integer,R> {
 
         @Override
         public boolean removeAll(Collection<?> c) {
-            boolean b=false;
+            boolean b = false;
             for (Object o : c) {
-                b|=remove(o);
+                b |= remove(o);
             }
             return b;
         }
@@ -300,7 +299,7 @@ class BuildReferenceMapAdapter<R> implements SortedMap<Integer,R> {
 
         @Override
         public Iterator<Entry<Integer, R>> iterator() {
-            return Iterators.removeNull(new AdaptedIterator<Entry<Integer,BuildReference<R>>,Entry<Integer, R>>(core.iterator()) {
+            return Iterators.removeNull(new AdaptedIterator<>(core.iterator()) {
                 @Override
                 protected Entry<Integer, R> adapt(Entry<Integer, BuildReference<R>> e) {
                     return _unwrap(e);
@@ -318,14 +317,14 @@ class BuildReferenceMapAdapter<R> implements SortedMap<Integer,R> {
         public <T> T[] toArray(T[] a) {
             int size = size();
             T[] r = a;
-            if (r.length>size)
+            if (r.length > size)
                 r = (T[]) Array.newInstance(a.getClass().getComponentType(), size);
 
             Iterator<Entry<Integer, R>> itr = iterator();
-            int i=0;
+            int i = 0;
 
             while (itr.hasNext()) {
-                r[i++] = (T)itr.next();
+                r[i++] = (T) itr.next();
             }
 
             return r;
@@ -353,9 +352,9 @@ class BuildReferenceMapAdapter<R> implements SortedMap<Integer,R> {
         }
 
         @Override
-        public boolean addAll(Collection<? extends Entry<Integer,R>> c) {
-            boolean b=false;
-            for (Entry<Integer,R> r : c) {
+        public boolean addAll(Collection<? extends Entry<Integer, R>> c) {
+            boolean b = false;
+            for (Entry<Integer, R> r : c) {
                 b |= add(r);
             }
             return b;
@@ -363,9 +362,9 @@ class BuildReferenceMapAdapter<R> implements SortedMap<Integer,R> {
 
         @Override
         public boolean removeAll(Collection<?> c) {
-            boolean b=false;
+            boolean b = false;
             for (Object o : c) {
-                b|=remove(o);
+                b |= remove(o);
             }
             return b;
         }
@@ -391,12 +390,13 @@ class BuildReferenceMapAdapter<R> implements SortedMap<Integer,R> {
             return core.hashCode();
         }
 
-        private Entry<Integer,BuildReference<R>> _wrap(Entry<Integer,R> e) {
-            return new AbstractMap.SimpleEntry<>(e.getKey(),wrap(e.getValue()));
+        private Entry<Integer, BuildReference<R>> _wrap(Entry<Integer, R> e) {
+            return new AbstractMap.SimpleEntry<>(e.getKey(), wrap(e.getValue()));
         }
+
         private Entry<Integer, R> _unwrap(Entry<Integer, BuildReference<R>> e) {
             R v = unwrap(e.getValue());
-            if (v==null)
+            if (v == null)
                 return null;
             return new AbstractMap.SimpleEntry<>(e.getKey(), v);
         }

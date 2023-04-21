@@ -21,23 +21,23 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.console;
 
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.model.Run;
-import java.util.concurrent.TimeUnit;
-import org.jvnet.tiger_types.Types;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.WebMethod;
-
-import javax.servlet.ServletException;
 import java.io.IOException;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.net.URL;
+import java.util.concurrent.TimeUnit;
+import javax.servlet.ServletException;
+import org.jvnet.tiger_types.Types;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.WebMethod;
 
 /**
  * Entry point to the {@link ConsoleAnnotator} extension point. This class creates a new instance
@@ -62,7 +62,7 @@ import java.net.URL;
  * in the same resource directory that you normally put Jelly scripts), which will be loaded into
  * the HTML page whenever the console notes are used. This allows you to use minimal markup in
  * code generation, and do the styling in CSS and perform the rest of the interesting work as a CSS behaviour/JavaScript.
- * 
+ *
  * @author Kohsuke Kawaguchi
  * @since 1.349
  */
@@ -88,7 +88,7 @@ public abstract class ConsoleAnnotatorFactory<T> implements ExtensionPoint {
     public Class<?> type() {
         Type type = Types.getBaseClass(getClass(), ConsoleAnnotatorFactory.class);
         if (type instanceof ParameterizedType)
-            return Types.erasure(Types.getTypeArgument(type,0));
+            return Types.erasure(Types.getTypeArgument(type, 0));
         else
             return Object.class;
     }
@@ -97,27 +97,27 @@ public abstract class ConsoleAnnotatorFactory<T> implements ExtensionPoint {
      * Returns true if this descriptor has a JavaScript to be inserted on applicable console page.
      */
     public boolean hasScript() {
-        return getResource("/script.js") !=null;
+        return getResource("/script.js") != null;
     }
 
     public boolean hasStylesheet() {
-        return getResource("/style.css") !=null;
+        return getResource("/style.css") != null;
     }
 
     private URL getResource(String fileName) {
         Class<?> c = getClass();
-        return c.getClassLoader().getResource(c.getName().replace('.','/').replace('$','/')+ fileName);
+        return c.getClassLoader().getResource(c.getName().replace('.', '/').replace('$', '/') + fileName);
     }
 
     /**
      * Serves the JavaScript file associated with this console annotator factory.
      */
-    @WebMethod(name="script.js")
+    @WebMethod(name = "script.js")
     public void doScriptJs(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         rsp.serveFile(req, getResource("/script.js"), TimeUnit.DAYS.toMillis(1));
     }
 
-    @WebMethod(name="style.css")
+    @WebMethod(name = "style.css")
     public void doStyleCss(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         rsp.serveFile(req, getResource("/style.css"), TimeUnit.DAYS.toMillis(1));
     }

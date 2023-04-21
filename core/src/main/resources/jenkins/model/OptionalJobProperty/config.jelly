@@ -25,9 +25,7 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:f="/lib/form">
-    <f:block>
-        <f:optionalBlock title="${descriptor.displayName}" name="specified" checked="${instance != null}" inline="true" help="${descriptor.helpFile}">
-            <st:include page="config-details" from="${descriptor}" class="${descriptor.clazz}"/>
-        </f:optionalBlock>
-    </f:block>
+    <f:optionalBlock title="${descriptor.displayName}" name="specified" checked="${instance != null}" inline="true" help="${descriptor.helpFile}">
+        <st:include page="config-details" from="${descriptor}" class="${descriptor.clazz}"/>
+    </f:optionalBlock>
 </j:jelly>

@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.tasks.filters;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
@@ -30,11 +31,10 @@ import hudson.Launcher;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.Run;
+import java.io.Serializable;
 import jenkins.model.Jenkins;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.Beta;
-
-import java.io.Serializable;
 
 /**
  * Environment variables filter rule that is configured globally for all jobs. <p>
@@ -58,5 +58,5 @@ public interface EnvVarsFilterGlobalRule extends Describable<EnvVarsFilterGlobal
      * @param launcher The launcher that will be used to run the command
      * @return true iff the rule can be applied to that builder
      */
-    boolean isApplicable(@CheckForNull Run<?,?> run, @NonNull Object builder, @NonNull Launcher launcher);
+    boolean isApplicable(@CheckForNull Run<?, ?> run, @NonNull Object builder, @NonNull Launcher launcher);
 }

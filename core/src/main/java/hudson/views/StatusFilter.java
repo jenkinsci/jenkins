@@ -21,20 +21,20 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.views;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.model.Descriptor;
 import hudson.model.TopLevelItem;
 import hudson.model.View;
+import java.util.ArrayList;
+import java.util.List;
 import jenkins.model.ParameterizedJobMixIn;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Job Filter that will filter jobs based on its disabled status
@@ -61,7 +61,7 @@ public final class StatusFilter extends ViewJobFilter {
         List<TopLevelItem> filtered = new ArrayList<>();
         for (TopLevelItem item : added) {
             if (!(item instanceof ParameterizedJobMixIn.ParameterizedJob) // TODO or better to call the more generic Job.isBuildable?
-                    || ((ParameterizedJobMixIn.ParameterizedJob<?,?>) item).isDisabled() ^ statusFilter)
+                    || ((ParameterizedJobMixIn.ParameterizedJob<?, ?>) item).isDisabled() ^ statusFilter)
                 filtered.add(item);
         }
         return filtered;

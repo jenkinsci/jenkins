@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.util.jna;
 
 import com.sun.jna.Pointer;
@@ -57,7 +58,7 @@ typedef struct _SHELLEXECUTEINFO {
  * @author Kohsuke Kawaguchi
  * @see <a href="http://msdn.microsoft.com/en-us/library/bb759784(v=VS.85).aspx">MSDN: SHELLEXECUTEINFO</a>
  */
-@SuppressFBWarnings(value = {"UUF_UNUSED_PUBLIC_OR_PROTECTED_FIELD", "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"}, 
+@SuppressFBWarnings(value = {"UUF_UNUSED_PUBLIC_OR_PROTECTED_FIELD", "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"},
         justification = "JNA Data Structure")
 public class SHELLEXECUTEINFO extends Structure {
     public int cbSize = size();
@@ -88,7 +89,7 @@ public class SHELLEXECUTEINFO extends Structure {
                 "hProcess");
     }
 
-    @SuppressFBWarnings(value = {"UUF_UNUSED_PUBLIC_OR_PROTECTED_FIELD", "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"}, 
+    @SuppressFBWarnings(value = {"UUF_UNUSED_PUBLIC_OR_PROTECTED_FIELD", "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"},
             justification = "JNA Data Structure")
     public static class DUMMYUNIONNAME_union extends Union {
         public Pointer hIcon;
@@ -103,11 +104,11 @@ public class SHELLEXECUTEINFO extends Structure {
         }
 
         public static class ByReference extends DUMMYUNIONNAME_union implements Structure.ByReference {
-            
+
         }
 
         public static class ByValue extends DUMMYUNIONNAME_union implements Structure.ByValue {
-            
+
         }
     }
 }

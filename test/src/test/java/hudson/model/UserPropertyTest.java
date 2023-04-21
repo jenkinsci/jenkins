@@ -1,6 +1,21 @@
 package hudson.model;
 
-import org.apache.commons.io.FileUtils;
+import static java.lang.System.currentTimeMillis;
+import static java.util.Collections.emptyMap;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.core.IsNull.notNullValue;
+import static org.junit.Assert.assertNotNull;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
+import java.util.Collections;
+import java.util.List;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
@@ -11,21 +26,6 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.recipes.LocalData;
 import org.kohsuke.stapler.DataBoundConstructor;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.UncheckedIOException;
-import java.util.Collections;
-import java.util.List;
-
-import static java.lang.System.currentTimeMillis;
-import static java.util.Collections.emptyMap;
-import static org.apache.commons.io.FileUtils.writeStringToFile;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.core.IsNull.notNullValue;
-import static org.junit.Assert.assertNotNull;
-import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -79,7 +79,7 @@ public class UserPropertyTest {
 
         SetUserUserProperty property = user.getProperty(SetUserUserProperty.class);
         File testFile = property.getInnerUserClass().userFile;
-        List<String> fileLines = FileUtils.readLines(testFile);
+        List<String> fileLines = Files.readAllLines(testFile.toPath(), StandardCharsets.US_ASCII);
         assertThat(fileLines, hasSize(1));
 
         j.configRoundtrip(user);
@@ -87,12 +87,12 @@ public class UserPropertyTest {
         user = User.get("nestedUserReference", false, Collections.emptyMap());
         assertThat("nested reference should exist after user configuration change", user, nestedUserSet());
 
-        fileLines = FileUtils.readLines(testFile);
+        fileLines = Files.readAllLines(testFile.toPath(), StandardCharsets.US_ASCII);
         assertThat(fileLines, hasSize(1));
     }
 
     public static Matcher<User> nestedUserSet() {
-        return new BaseMatcher<User>() {
+        return new BaseMatcher<>() {
             @Override
             public boolean matches(Object item) {
                 User user = (User) item;
@@ -183,7 +183,7 @@ public class UserPropertyTest {
             this.user = user;
             try {
                 File userFile = getUserFile();
-                writeStringToFile(userFile, String.valueOf(currentTimeMillis()), true);
+                Files.writeString(userFile.toPath(), String.valueOf(currentTimeMillis()), StandardCharsets.US_ASCII, StandardOpenOption.APPEND);
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
             }

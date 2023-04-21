@@ -21,16 +21,15 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.triggers;
 
-import antlr.ANTLRException;
 import hudson.scheduler.CronTabList;
 import hudson.scheduler.Hash;
+import java.util.TimeZone;
 import org.junit.Assert;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
-
-import java.util.TimeZone;
 
 /**
  * @author Kanstantsin Shautsou
@@ -38,7 +37,7 @@ import java.util.TimeZone;
 public class TimerTriggerTest {
     @Issue("JENKINS-29790")
     @Test
-    public void testNoNPE() throws ANTLRException {
+    public void testNoNPE() {
         new TimerTrigger("").run();
     }
 

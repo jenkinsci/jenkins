@@ -24,14 +24,6 @@
 
 package hudson.cli;
 
-import hudson.model.Computer;
-import hudson.slaves.DumbSlave;
-import jenkins.model.Jenkins;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.jvnet.hudson.test.JenkinsRule;
-
 import static hudson.cli.CLICommandInvoker.Matcher.failedWith;
 import static hudson.cli.CLICommandInvoker.Matcher.hasNoStandardOutput;
 import static hudson.cli.CLICommandInvoker.Matcher.succeededSilently;
@@ -39,6 +31,14 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
+
+import hudson.model.Computer;
+import hudson.slaves.DumbSlave;
+import jenkins.model.Jenkins;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.JenkinsRule;
 
 /**
  * @author pjanouse
@@ -65,7 +65,7 @@ public class ConnectNodeCommandTest {
         assertThat(result.stderr(), not(containsString("ERROR: " + CLICommand.CLI_LISTPARAM_SUMMARY_ERROR_TEXT)));
     }
 
-    @Test public void connectNodeShouldFailIfNodeDoesNotExist() throws Exception {
+    @Test public void connectNodeShouldFailIfNodeDoesNotExist() {
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Computer.CONNECT, Jenkins.READ)
                 .invokeWithArgs("never_created");
@@ -172,7 +172,7 @@ public class ConnectNodeCommandTest {
         assertThat(slave2.toComputer().isOnline(), equalTo(true));
     }
 
-    @Test public void connectNodeShouldSucceedOnMaster() throws Exception {
+    @Test public void connectNodeShouldSucceedOnMaster() {
         final Computer masterComputer = j.jenkins.getComputer("");
 
         CLICommandInvoker.Result result = command

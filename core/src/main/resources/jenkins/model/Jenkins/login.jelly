@@ -72,74 +72,58 @@ THE SOFTWARE.
               <!-- login form -->
               <form name="login" action="${it.securityRealm.authenticationGatewayUrl}" method="post">
                 <j:if test="${it.securityRealm.allowsSignup()}">
-                  <div class="signupTag">
+                  <p class="signupTag simple-page--description">
                     ${%signUp}
-                  </div>
+                  </p>
                 </j:if>
                 <j:if test="${error}">
                   <div class="alert alert-danger">
                     ${%Invalid username or password}
                   </div>
                 </j:if>
-                <div class="formRow">
+                <div class="jenkins-form-item jenkins-form-item--tight">
                   <input
                     aria-label="${%Username}"
-                    class="${inputClass}"
+                    class="jenkins-input ${inputClass}"
                     type="text"
                     name="j_username"
                     id="j_username"
                     autocorrect="off"
                     autocomplete="off"
                     autocapitalize="off"
+                    autofocus="autofocus"
                     placeholder="${%Username}"
                   />
                 </div>
-                <div class="formRow">
+                <div class="jenkins-form-item jenkins-form-item--tight">
                   <input
                     aria-label="${%Password}"
-                    class="${inputClass}"
+                    class="jenkins-input ${inputClass}"
                     type="password"
                     name="j_password"
                     placeholder="${%Password}"
                   />
                 </div>
-                <input type="hidden" name="from" value="${from}" />
-                <div class="submit formRow"><f:submit value="${%signIn}" /></div>
-                <!-- focus the username field -->
-                <script type="text/javascript">
-                  document.getElementById('j_username').focus();
-                  var checkBoxClick = function(event) {
-                    document.getElementById('remember_me').click();
-                  }
-                </script>
 
                 <j:if test="${app.security.name()=='SECURED' and !app.disableRememberMe}">
                   <!-- remember me service only available for Spring Security -->
-                  <div class="Checkbox Checkbox-medium">
-                    <label class="Checkbox-wrapper">
-                      <input
-                        type="checkbox"
-                        id="remember_me"
-                        name="remember_me"
-                      />
-                      <div class="Checkbox-indicator">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          focusable="false"
-                          width="25"
-                          height="25"
-                          class="svg-icon check"
-                          viewBox="0 0 24 24">
-                          <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"></path>
-                        </svg>
-                      </div>
-                      <div class="Checkbox-text">
-                        ${%Keep me signed in}
-                      </div>
-                    </label>
+                  <div class="jenkins-checkbox jenkins-form-item jenkins-form-item--tight jenkins-!-margin-bottom-3">
+                    <input
+                      type="checkbox"
+                      id="remember_me"
+                      name="remember_me"
+                    />
+                    <label for="remember_me">${%Keep me signed in}</label>
                   </div>
                 </j:if>
-
+                <input type="hidden" name="from" value="${from}" />
+                <div class="submit">
+                  <button type="submit"
+                         name="Submit"
+                         class="jenkins-button jenkins-button--primary">
+                    ${%signIn}
+                  </button>
+                </div>
               </form>
 
               <j:forEach var="fls" items="${it.getFederatedLoginServices()}">

@@ -1,32 +1,35 @@
 package jenkins.slaves.restarter;
 
-import com.sun.akuma.Daemon;
-import com.sun.akuma.JavaVMArguments;
-import com.sun.jna.Native;
-import com.sun.jna.StringArray;
-import hudson.Extension;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.logging.Logger;
-
 import static hudson.util.jna.GNUCLibrary.FD_CLOEXEC;
 import static hudson.util.jna.GNUCLibrary.F_GETFD;
 import static hudson.util.jna.GNUCLibrary.F_SETFD;
 import static hudson.util.jna.GNUCLibrary.LIBC;
 import static java.util.logging.Level.FINE;
 
+import com.sun.jna.Native;
+import com.sun.jna.StringArray;
+import hudson.Extension;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
+import java.util.logging.Logger;
+import jenkins.util.JavaVMArguments;
+
 /**
  * On Unix, restart via exec-ing to itself.
  */
 @Extension
 public class UnixSlaveRestarter extends SlaveRestarter {
-    private transient JavaVMArguments args;
+    private transient List<String> args;
 
     @Override
     public boolean canWork() {
         try {
-            if (File.pathSeparatorChar!=':')
+            if (File.pathSeparatorChar != ':')
                 return false;     // quick test to reject non-Unix without loading all the rest of the classes
 
             args = JavaVMArguments.current();
@@ -36,12 +39,12 @@ public class UnixSlaveRestarter extends SlaveRestarter {
             int v = LIBC.fcntl(99999, F_GETFD);
             LIBC.fcntl(99999, F_SETFD, v);
 
-            Daemon.getCurrentExecutable();
-            LIBC.execv("positively/no/such/executable", new StringArray(new String[]{"a","b","c"}));
+            getCurrentExecutable();
+            LIBC.execv("positively/no/such/executable", new StringArray(new String[]{"a", "b", "c"}));
 
             return true;
-        } catch (UnsupportedOperationException | LinkageError | IOException e) {
-            LOGGER.log(FINE, getClass()+" unsuitable", e);
+        } catch (UnsupportedOperationException | LinkageError e) {
+            LOGGER.log(FINE, getClass() + " unsuitable", e);
             return false;
         }
     }
@@ -57,9 +60,39 @@ public class UnixSlaveRestarter extends SlaveRestarter {
         }
 
         // exec to self
-        String exe = Daemon.getCurrentExecutable();
+        String exe = getCurrentExecutable();
         LIBC.execv(exe, new StringArray(args.toArray(new String[0])));
         throw new IOException("Failed to exec '" + exe + "' " + LIBC.strerror(Native.getLastError()));
+    }
+
+    /**
+     * Gets the current executable name.
+     */
+    private static String getCurrentExecutable() {
+        ProcessHandle.Info info = ProcessHandle.current().info();
+        if (info.command().isPresent()) {
+            // Java 9+ approach
+            return info.command().get();
+        }
+
+        // Native approach
+        long pid = ProcessHandle.current().pid();
+        String name = "/proc/" + pid + "/exe";
+        try {
+            Path exe = Paths.get(name);
+            if (Files.exists(exe)) {
+                if (Files.isSymbolicLink(exe)) {
+                    return Files.readSymbolicLink(exe).toString();
+                } else {
+                    return exe.toString();
+                }
+            }
+        } catch (IOException | InvalidPathException | UnsupportedOperationException e) {
+            LOGGER.log(FINE, "Failed to resolve " + name, e);
+        }
+
+        // Legacy approach of last resort
+        return Paths.get(System.getProperty("java.home")).resolve("bin").resolve("java").toString();
     }
 
     private static final Logger LOGGER = Logger.getLogger(UnixSlaveRestarter.class.getName());

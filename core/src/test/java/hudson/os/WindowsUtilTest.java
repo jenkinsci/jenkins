@@ -24,11 +24,10 @@
 
 package hudson.os;
 
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
 
 import java.util.Arrays;
-
-import static org.junit.Assert.assertEquals;
+import org.junit.Test;
 
 /**
  * Test the test utility code, too!

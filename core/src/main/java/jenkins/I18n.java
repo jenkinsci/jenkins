@@ -21,18 +21,18 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins;
 
 import hudson.Extension;
 import hudson.model.RootAction;
 import hudson.util.HttpResponses;
+import java.util.Locale;
 import jenkins.util.ResourceBundleUtil;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
-
-import java.util.Locale;
 
 /**
  * Internationalization REST (ish) API.
@@ -108,7 +108,7 @@ public class I18n implements RootAction {
             }
 
             return HttpResponses.okJSON(ResourceBundleUtil.getBundle(baseName, locale));
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             return HttpResponses.errorJSON(e.getMessage());
         }
     }

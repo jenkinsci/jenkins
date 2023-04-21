@@ -21,13 +21,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.util;
 
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
-
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionEvent;
 
@@ -35,7 +35,7 @@ import javax.servlet.http.HttpSessionEvent;
  * {@link javax.servlet.http.HttpSessionListener} {@link ExtensionPoint} for Jenkins.
  * <p>
  * Allows plugins to listen to {@link HttpSession} lifecycle events.
- * 
+ *
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  * @since 2.2
  */

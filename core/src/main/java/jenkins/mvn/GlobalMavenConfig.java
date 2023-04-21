@@ -1,14 +1,12 @@
 package jenkins.mvn;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.model.PersistentDescriptor;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.GlobalConfigurationCategory;
 import jenkins.tools.ToolConfigurationCategory;
-
 import org.jenkinsci.Symbol;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
 
 //as close as it gets to the global Maven Project configuration
 @Extension(ordinal = 50) @Symbol("mavenGlobalConfig")

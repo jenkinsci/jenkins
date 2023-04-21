@@ -21,13 +21,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package test.security.realm;
 
 import hudson.security.AbstractPasswordBasedSecurityRealm;
 import hudson.security.GroupDetails;
 import java.util.Collection;
 import java.util.Collections;
-
 import java.util.HashMap;
 import java.util.Map;
 import org.springframework.security.core.AuthenticationException;

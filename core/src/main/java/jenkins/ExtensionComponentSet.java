@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins;
 
 import hudson.ExtensionComponent;
@@ -28,7 +29,6 @@ import hudson.ExtensionFinder;
 import hudson.ExtensionPoint;
 import hudson.model.Descriptor;
 import hudson.model.Hudson;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -68,7 +68,7 @@ public abstract class ExtensionComponentSet {
             public <T> Collection<ExtensionComponent<T>> find(Class<T> type) {
                 List<ExtensionComponent<T>> a = new ArrayList<>();
                 for (ExtensionComponent<T> c : base.find(type)) {
-                    if (ExtensionFilter.isAllowed(type,c))
+                    if (ExtensionFilter.isAllowed(type, c))
                         a.add(c);
                 }
                 return a;

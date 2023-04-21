@@ -8,6 +8,7 @@ import hudson.model.Descriptor;
 import hudson.model.InvisibleAction;
 import hudson.model.RootAction;
 import hudson.util.FormValidation;
+import java.util.EnumSet;
 import net.sf.json.JSONObject;
 import org.junit.Rule;
 import org.junit.Test;
@@ -15,8 +16,6 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
-
-import java.util.EnumSet;
 
 /**
  * @author Kohsuke Kawaguchi

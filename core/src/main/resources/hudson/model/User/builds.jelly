@@ -25,9 +25,9 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <l:layout title="${it.displayName}">
     <st:include page="sidepanel.jelly" />
+    <l:breadcrumb title="${%Builds}" />
     <l:main-panel>
       <h1>
-        <img src="${h.getUserAvatar(it,'48x48')}" alt="" height="48" width="48" />
         ${%title(it)}
       </h1>
 

@@ -24,10 +24,11 @@
 
 package hudson.cli;
 
-import hudson.model.FreeStyleProject;
-import static org.junit.Assert.assertFalse;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+
+import hudson.model.FreeStyleProject;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;

@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins;
 
 import hudson.Extension;
@@ -30,15 +31,14 @@ import hudson.model.DownloadService;
 import hudson.model.TaskListener;
 import hudson.model.UpdateSite;
 import hudson.util.FormValidation;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
-
-import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Implements a daily update check for update sites and {@link hudson.model.DownloadService.Downloadable}s that are due.
@@ -82,7 +82,7 @@ public final class DailyCheck extends AsyncPeriodicWork {
                 if (d.getDue() <= now) {
                     try {
                         d.updateNow();
-                    } catch(Exception e) {
+                    } catch (Exception e) {
                         LOGGER.log(Level.WARNING, String.format("Unable to update downloadable [%s]", d.getId()), e);
                     }
                 }

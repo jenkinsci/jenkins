@@ -7,7 +7,7 @@ package hudson.model.labels;
  * @see LabelExpression#accept(LabelVisitor, Object)
  * @since 1.420
  */
-public abstract class LabelVisitor<V,P> {
+public abstract class LabelVisitor<V, P> {
     public abstract V onAtom(LabelAtom a, P param);
 
     public abstract V onParen(LabelExpression.Paren p, P param);

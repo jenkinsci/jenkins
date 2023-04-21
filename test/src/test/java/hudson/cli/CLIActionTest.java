@@ -1,5 +1,7 @@
 package hudson.cli;
 
+import static org.junit.Assert.assertEquals;
+
 import hudson.Functions;
 import hudson.Launcher;
 import hudson.Proc;
@@ -15,11 +17,13 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.io.PrintWriter;
 import java.lang.reflect.Field;
 import java.net.HttpURLConnection;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -27,7 +31,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import jenkins.model.Jenkins;
 import jenkins.security.ApiTokenProperty;
-import jenkins.security.apitoken.ApiTokenTestHelper;
+import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
 import jenkins.util.FullDuplexHttpService;
 import jenkins.util.Timer;
 import org.apache.commons.io.FileUtils;
@@ -36,8 +40,6 @@ import org.apache.commons.io.input.NullInputStream;
 import org.apache.commons.io.output.CountingOutputStream;
 import org.apache.commons.io.output.NullOutputStream;
 import org.apache.commons.io.output.TeeOutputStream;
-import static org.junit.Assert.assertEquals;
-
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -59,9 +61,10 @@ public class CLIActionTest {
     public LoggerRule logging = new LoggerRule();
 
     @Test
-    @org.jvnet.hudson.test.recipes.PresetData(org.jvnet.hudson.test.recipes.PresetData.DataSet.NO_ANONYMOUS_READACCESS)
     @Issue("SECURITY-192")
     public void serveCliActionToAnonymousUserWithoutPermissions() throws Exception {
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy());
         JenkinsRule.WebClient wc = j.createWebClient();
         // The behavior changed due to SECURITY-192. index page is no longer accessible to anonymous
         wc.assertFails("cli", HttpURLConnection.HTTP_FORBIDDEN);
@@ -76,8 +79,9 @@ public class CLIActionTest {
     @Issue({"JENKINS-12543", "JENKINS-41745"})
     @Test
     public void authentication() throws Exception {
-        ApiTokenTestHelper.enableLegacyBehavior();
-        
+        ApiTokenPropertyConfiguration config = ApiTokenPropertyConfiguration.get();
+        config.setTokenGenerationOnCreationEnabled(true);
+
         logging.record(PlainCLIProtocol.class, Level.FINE);
         File jar = tmp.newFile("jenkins-cli.jar");
         FileUtils.copyURLToFile(j.jenkins.getJnlpJars("jenkins-cli.jar").getURL(), jar);
@@ -100,7 +104,7 @@ public class CLIActionTest {
     private static final String ADMIN = "admin@mycorp.com";
 
     private void assertExitCode(int code, boolean useApiToken, File jar, String... args) throws IOException, InterruptedException {
-        List<String> commands = new ArrayList<>(Arrays.asList("java", "-jar", jar.getAbsolutePath(), "-s", j.getURL().toString(), /* TODO until it is the default */ "-webSocket"));
+        List<String> commands = new ArrayList<>(Arrays.asList("java", "-jar", jar.getAbsolutePath(), "-s", j.getURL().toString()));
         if (useApiToken) {
             commands.add("-auth");
             commands.add(ADMIN + ":" + User.getOrCreateByIdOrFullName(ADMIN).getProperty(ApiTokenProperty.class).getApiToken());
@@ -110,21 +114,18 @@ public class CLIActionTest {
         final Proc proc = launcher.launch().cmds(commands).stdout(System.out).stderr(System.err).start();
         if (!Functions.isWindows()) {
             // Try to get a thread dump of the client if it hangs.
-            Timer.get().schedule(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        if (proc.isAlive()) {
-                            Field procF = Proc.LocalProc.class.getDeclaredField("proc");
-                            procF.setAccessible(true);
-                            ProcessTree.OSProcess osp = ProcessTree.get().get((Process) procF.get(proc));
-                            if (osp != null) {
-                                launcher.launch().cmds("kill", "-QUIT", Integer.toString(osp.getPid())).stdout(System.out).stderr(System.err).join();
-                            }
+            Timer.get().schedule(() -> {
+                try {
+                    if (proc.isAlive()) {
+                        Field procF = Proc.LocalProc.class.getDeclaredField("proc");
+                        procF.setAccessible(true);
+                        ProcessTree.OSProcess osp = ProcessTree.get().get((Process) procF.get(proc));
+                        if (osp != null) {
+                            launcher.launch().cmds("kill", "-QUIT", Integer.toString(osp.getPid())).stdout(System.out).stderr(System.err).join();
                         }
-                    } catch (Exception x) {
-                        throw new AssertionError(x);
                     }
+                } catch (Exception x) {
+                    throw new AssertionError(x);
                 }
             }, 1, TimeUnit.MINUTES);
         }
@@ -139,10 +140,9 @@ public class CLIActionTest {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         assertEquals(0, new Launcher.LocalLauncher(StreamTaskListener.fromStderr()).launch().cmds(
             "java", "-Dfile.encoding=ISO-8859-2", "-Duser.language=cs", "-Duser.country=CZ", "-jar", jar.getAbsolutePath(),
-                "-webSocket", // TODO as above
                 "-s", j.getURL().toString()./* just checking */replaceFirst("/$", ""), "test-diagnostic").
             stdout(baos).stderr(System.err).join());
-        assertEquals("encoding=ISO-8859-2 locale=cs_CZ", baos.toString().trim());
+        assertEquals("encoding=ISO-8859-2 locale=cs_CZ", baos.toString(Charset.forName("ISO-8859-2")).trim());
         // TODO test that stdout/stderr are in expected encoding (not true of -remoting mode!)
         // -ssh mode does not pass client locale or encoding
     }
@@ -156,21 +156,20 @@ public class CLIActionTest {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         PipedInputStream pis = new PipedInputStream();
         PipedOutputStream pos = new PipedOutputStream(pis);
-        PrintWriter pw = new PrintWriter(new TeeOutputStream(pos, System.err), true);
+        PrintWriter pw = new PrintWriter(new OutputStreamWriter(new TeeOutputStream(pos, System.err), Charset.defaultCharset()), true);
         Proc proc = new Launcher.LocalLauncher(StreamTaskListener.fromStderr()).launch().cmds(
             "java", "-jar", jar.getAbsolutePath(), "-s", j.getURL().toString(),
-                "-webSocket", // TODO as above
                 "groovysh").
             stdout(new TeeOutputStream(baos, System.out)).stderr(System.err).stdin(pis).start();
-        while (!baos.toString().contains("000")) { // cannot just search for, say, "groovy:000> " since there are ANSI escapes there (cf. StringEscapeUtils.escapeJava)
+        while (!baos.toString(Charset.defaultCharset()).contains("000")) { // cannot just search for, say, "groovy:000> " since there are ANSI escapes there (cf. StringEscapeUtils.escapeJava)
             Thread.sleep(100);
         }
         pw.println("11 * 11");
-        while (!baos.toString().contains("121")) { // ditto not "===> 121"
+        while (!baos.toString(Charset.defaultCharset()).contains("121")) { // ditto not "===> 121"
             Thread.sleep(100);
         }
         pw.println("11 * 11 * 11");
-        while (!baos.toString().contains("1331")) {
+        while (!baos.toString(Charset.defaultCharset()).contains("1331")) {
             Thread.sleep(100);
         }
         pw.println(":q");
@@ -244,7 +243,7 @@ public class CLIActionTest {
                 "large-upload").
             stdin(new NullInputStream(size)).
             stdout(baos).stderr(System.err).join());
-        assertEquals("received " + size + " bytes", baos.toString().trim());
+        assertEquals("received " + size + " bytes", baos.toString(Charset.defaultCharset()).trim());
     }
 
     @TestExtension("largeTransferWebSocket")
@@ -261,6 +260,7 @@ public class CLIActionTest {
             }
             return 0;
         }
+
         @Override
         public String getShortDescription() {
             return "";
@@ -271,16 +271,18 @@ public class CLIActionTest {
     public static final class LargeDownloadCommand extends CLICommand {
         @Option(name = "-size", required = true)
         public int size;
+
         @Override
         protected int run() throws Exception {
             try (OutputStream os = new BufferedOutputStream(stdout)) {
                 System.err.println("starting download");
                 long start = System.nanoTime();
                 IOUtils.copyLarge(new NullInputStream(size), os);
-                System.err.printf("finished download in %.1fs%n", ((System.nanoTime() - start) / 1_000_000_000.0));
+                System.err.printf("finished download in %.1fs%n", (System.nanoTime() - start) / 1_000_000_000.0);
             }
             return 0;
         }
+
         @Override
         public String getShortDescription() {
             return "";

@@ -1729,7 +1729,7 @@ _initSubTree: function () {
         
                 /*
                     Apply the "first-of-type" class to the first UL to mimic 
-                    the ":first-of-type" CSS3 psuedo class.
+                    the ":first-of-type" CSS3 pseudo class.
                 */
         
                 if (this._aListElements[0]) {
@@ -3852,7 +3852,7 @@ getConstrainedY: function (y) {
 
 
     /*
-         Uses the context element's position to calculate the availble height 
+         Uses the context element's position to calculate the available height 
          above and below it to display its corresponding Menu.
     */
 

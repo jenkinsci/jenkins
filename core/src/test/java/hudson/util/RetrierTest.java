@@ -1,7 +1,7 @@
 package hudson.util;
 
-import org.junit.Assert;
-import org.junit.Test;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.time.Duration;
@@ -9,12 +9,11 @@ import java.time.Instant;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import static junit.framework.TestCase.fail;
-import static org.junit.Assert.assertTrue;
+import org.junit.Assert;
+import org.junit.Test;
 
 public class RetrierTest {
-    private static Logger LOG = Logger.getLogger(RetrierTest.class.getName());
+    private static final Logger LOG = Logger.getLogger(RetrierTest.class.getName());
 
     @Test
     public void performedAtThirdAttemptTest() throws Exception {
@@ -24,9 +23,8 @@ public class RetrierTest {
         RingBufferLogHandler handler = new RingBufferLogHandler(20);
         Logger.getLogger(Retrier.class.getName()).addHandler(handler);
 
-        Retrier<Boolean> r = new Retrier.Builder<>
-                // Set the required params
-                (
+        // Set the required params
+        Retrier<Boolean> r = new Retrier.Builder<>(
                         // action to perform
                         () -> {
                             LOG.info("action performed");
@@ -66,9 +64,8 @@ public class RetrierTest {
         retrierLogger.setLevel(Level.FINE);
         retrierLogger.addHandler(handler);
 
-        Retrier<Boolean> r = new Retrier.Builder<>
-                // Set the required params
-                (
+        // Set the required params
+        Retrier<Boolean> r = new Retrier.Builder<>(
                         // action to perform
                         () -> {
                             LOG.info("action performed");
@@ -118,9 +115,8 @@ public class RetrierTest {
         RingBufferLogHandler handler = new RingBufferLogHandler(20);
         Logger.getLogger(Retrier.class.getName()).addHandler(handler);
 
-        Retrier<Boolean> r = new Retrier.Builder<>
-                // Set the required params
-                (
+        // Set the required params
+        Retrier<Boolean> r = new Retrier.Builder<>(
                         // action to perform
                         () -> {
                             LOG.info("action performed");
@@ -157,9 +153,8 @@ public class RetrierTest {
         RingBufferLogHandler handler = new RingBufferLogHandler(20);
         Logger.getLogger(Retrier.class.getName()).addHandler(handler);
 
-        Retrier<Boolean> r = new Retrier.Builder<>
-                // Set the required params
-                (
+        // Set the required params
+        Retrier<Boolean> r = new Retrier.Builder<>(
                         // action to perform
                         (Callable<Boolean>) () -> {
                             throw new IndexOutOfBoundsException("Exception allowed considered as failure");
@@ -197,9 +192,8 @@ public class RetrierTest {
         RingBufferLogHandler handler = new RingBufferLogHandler(20);
         Logger.getLogger(Retrier.class.getName()).addHandler(handler);
 
-        Retrier<Boolean> r = new Retrier.Builder<>
-                // Set the required params
-                (
+        // Set the required params
+        Retrier<Boolean> r = new Retrier.Builder<>(
                         // action to perform
                         (Callable<Boolean>) () -> {
                             throw new IndexOutOfBoundsException("Exception allowed considered as failure");
@@ -240,9 +234,8 @@ public class RetrierTest {
         RingBufferLogHandler handler = new RingBufferLogHandler(20);
         Logger.getLogger(Retrier.class.getName()).addHandler(handler);
 
-        Retrier<Boolean> r = new Retrier.Builder<>
-                // Set the required params
-                (
+        // Set the required params
+        Retrier<Boolean> r = new Retrier.Builder<>(
                         // action to perform
                         (Callable<Boolean>) () -> {
                             // This one is allowed because we allow IndexOutOfBoundsException (parent exception)
@@ -284,9 +277,8 @@ public class RetrierTest {
         RingBufferLogHandler handler = new RingBufferLogHandler(20);
         Logger.getLogger(Retrier.class.getName()).addHandler(handler);
 
-        Retrier<Boolean> r = new Retrier.Builder<>
-                // Set the required params
-                (
+        // Set the required params
+        Retrier<Boolean> r = new Retrier.Builder<>(
                         // action to perform
                         (Callable<Boolean>) () -> {
                             // This one is not allowed, so it is raised out of the start method
@@ -306,14 +298,8 @@ public class RetrierTest {
                 .build();
 
         // Begin the process that raises an unexpected exception
-        try {
-            r.start();
-            fail("The process should be exited with an unexpected exception");
-        } catch (IOException e) {
-            String testFailure = Messages.Retrier_ExceptionThrown(ATTEMPTS, ACTION);
-            assertTrue(String.format("The log should contain '%s'", testFailure), handler.getView().stream().anyMatch(m -> m.getMessage().contains(testFailure)));
-        } catch (Exception e) {
-            fail(String.format("Unexpected exception: %s", e));
-        }
+        assertThrows("The process should be exited with an unexpected exception", IOException.class, r::start);
+        String testFailure = Messages.Retrier_ExceptionThrown(ATTEMPTS, ACTION);
+        assertTrue(String.format("The log should contain '%s'", testFailure), handler.getView().stream().anyMatch(m -> m.getMessage().contains(testFailure)));
     }
 }

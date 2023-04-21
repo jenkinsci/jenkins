@@ -1,7 +1,6 @@
 package hudson.cli;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -19,32 +18,32 @@ import java.util.logging.Logger;
  */
 public class FullDuplexHttpStream {
     private final URL base;
-    
+
     private final OutputStream output;
     private final InputStream input;
 
     /**
-     * A way to get data from the server.
-     * There will be an initial zero byte used as a handshake which you should expect and ignore.
+     * Get data from the server.
+     * An initial zero byte is used as a handshake which you should expect and ignore.
      */
     public InputStream getInputStream() {
         return input;
     }
 
     /**
-     * A way to upload data to the server.
-     * You will need to write to this and {@link OutputStream#flush} it to finish establishing a connection.
+     * Upload data to the server.
+     * You will need to write to this and {@link OutputStream#flush} it to establish a connection.
      */
     public OutputStream getOutputStream() {
         return output;
     }
 
     /**
-     * @param base the base URL of Jenkins
+     * @param base the base URL of Jenkins.
      * @param relativeTarget
      *      The endpoint that we are making requests to.
      * @param authorization
-     *      The value of the authorization header, if non-null.
+     *      The value of the authorization header.
      */
     public FullDuplexHttpStream(URL base, String relativeTarget, String authorization) throws IOException {
         if (!base.toString().endsWith("/")) {
@@ -66,7 +65,7 @@ public class FullDuplexHttpStream {
         con.setDoOutput(true); // request POST to avoid caching
         con.setRequestMethod("POST");
         con.addRequestProperty("Session", uuid.toString());
-        con.addRequestProperty("Side","download");
+        con.addRequestProperty("Side", "download");
         if (authorization != null) {
             con.addRequestProperty("Authorization", authorization);
         }
@@ -76,7 +75,7 @@ public class FullDuplexHttpStream {
         if (con.getHeaderField("Hudson-Duplex") == null) {
             throw new CLI.NotTalkingToJenkinsException("There's no Jenkins running at " + target + ", or is not serving the HTTP Duplex transport");
         }
-        LOGGER.fine("established download side"); // calling getResponseCode or getHeaderFields breaks everything
+        LOGGER.fine("established download side"); // calling getResponseCode or getHeaderFields fails
 
         // client->server uses chunked encoded POST for unlimited capacity.
         LOGGER.fine("establishing upload side");
@@ -84,11 +83,11 @@ public class FullDuplexHttpStream {
         con.setDoOutput(true); // request POST
         con.setRequestMethod("POST");
         con.setChunkedStreamingMode(0);
-        con.setRequestProperty("Content-type","application/octet-stream");
+        con.setRequestProperty("Content-type", "application/octet-stream");
         con.addRequestProperty("Session", uuid.toString());
-        con.addRequestProperty("Side","upload");
+        con.addRequestProperty("Side", "upload");
         if (authorization != null) {
-        	con.addRequestProperty ("Authorization", authorization);
+            con.addRequestProperty("Authorization", authorization);
         }
         output = con.getOutputStream();
         LOGGER.fine("established upload side");
@@ -99,7 +98,7 @@ public class FullDuplexHttpStream {
         return (HttpURLConnection) target.openConnection();
     }
 
-    // As this transport mode is using POST, it is necessary to resolve possible redirections using GET first.    @SuppressFBWarnings(value = "URLCONNECTION_SSRF_FD", justification = "Client-side code doesn't involve SSRF.")
+    // As this transport mode is using POST, it is necessary to resolve possible redirections using GET first.
     private URL tryToResolveRedirects(URL base, String authorization) {
         try {
             HttpURLConnection con = openHttpConnection(base);
@@ -109,9 +108,8 @@ public class FullDuplexHttpStream {
             con.getInputStream().close();
             base = con.getURL();
         } catch (Exception ex) {
-            // Do not obscure the problem propagating the exception. If the problem is real it will manifest during the
-            // actual exchange so will be reported properly there. If it is not real (no permission in UI but sufficient
-            // for CLI connection using one of its mechanisms), there is no reason to bother user about it.
+            // If the exception is not real (permission for CLI connection but not for UI) do not inform user.
+            // Otherwise, the error will be reported during the exchange.
             LOGGER.log(Level.FINE, "Failed to resolve potential redirects", ex);
         }
         return base;
@@ -119,5 +117,5 @@ public class FullDuplexHttpStream {
 
     static final int BLOCK_SIZE = 1024;
     static final Logger LOGGER = Logger.getLogger(FullDuplexHttpStream.class.getName());
-    
+
 }

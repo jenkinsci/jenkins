@@ -36,6 +36,7 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import jenkins.util.SystemProperties;
 import jenkins.util.VirtualFile;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -51,22 +52,22 @@ public class StandardArtifactManager extends ArtifactManager {
 
     @Restricted(NoExternalUse.class)
     @VisibleForTesting
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
-    public static FilePath.TarCompression TAR_COMPRESSION = Boolean.getBoolean(StandardArtifactManager.class.getName() + ".disableTrafficCompression")
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
+    public static FilePath.TarCompression TAR_COMPRESSION = SystemProperties.getBoolean(StandardArtifactManager.class.getName() + ".disableTrafficCompression")
             ? FilePath.TarCompression.NONE
             : FilePath.TarCompression.GZIP;
 
-    protected transient Run<?,?> build;
+    protected transient Run<?, ?> build;
 
-    public StandardArtifactManager(Run<?,?> build) {
+    public StandardArtifactManager(Run<?, ?> build) {
         onLoad(build);
     }
 
-    @Override public final void onLoad(Run<?,?> build) {
+    @Override public final void onLoad(Run<?, ?> build) {
         this.build = build;
     }
 
-    @Override public void archive(FilePath workspace, Launcher launcher, BuildListener listener, final Map<String,String> artifacts) throws IOException, InterruptedException {
+    @Override public void archive(FilePath workspace, Launcher launcher, BuildListener listener, final Map<String, String> artifacts) throws IOException, InterruptedException {
         File dir = getArtifactsDir();
         String description = "transfer of " + artifacts.size() + " files"; // TODO improve when just one file
         workspace.copyRecursiveTo(new FilePath.ExplicitlySpecifiedDirScanner(artifacts), new FilePath(dir), description, TAR_COMPRESSION);

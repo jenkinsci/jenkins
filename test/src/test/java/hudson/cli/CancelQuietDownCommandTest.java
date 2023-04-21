@@ -24,17 +24,6 @@
 
 package hudson.cli;
 
-import hudson.model.FreeStyleBuild;
-import hudson.model.FreeStyleProject;
-import hudson.util.OneShotEvent;
-import jenkins.model.Jenkins;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.jvnet.hudson.test.JenkinsRule;
-
-import java.util.concurrent.Future;
-
 import static hudson.cli.CLICommandInvoker.Matcher.failedWith;
 import static hudson.cli.CLICommandInvoker.Matcher.hasNoStandardOutput;
 import static hudson.cli.CLICommandInvoker.Matcher.succeededSilently;
@@ -43,6 +32,16 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.nullValue;
+
+import hudson.model.FreeStyleBuild;
+import hudson.model.FreeStyleProject;
+import hudson.util.OneShotEvent;
+import java.util.concurrent.Future;
+import jenkins.model.Jenkins;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.JenkinsRule;
 
 /**
  * @author pjanouse
@@ -60,7 +59,7 @@ public class CancelQuietDownCommandTest {
     }
 
     @Test
-    public void cancelQuietDownShouldFailWithoutAdministerPermission() throws Exception {
+    public void cancelQuietDownShouldFailWithoutAdministerPermission() {
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ)
                 .invoke();
@@ -70,7 +69,7 @@ public class CancelQuietDownCommandTest {
     }
 
     @Test
-    public void cancelQuietDownShouldSuccessOnNoQuietDownedJenkins() throws Exception {
+    public void cancelQuietDownShouldSuccessOnNoQuietDownedJenkins() {
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ, Jenkins.ADMINISTER)
                 .invoke();
@@ -79,7 +78,7 @@ public class CancelQuietDownCommandTest {
     }
 
     @Test
-    public void cancelQuietDownShouldSuccessOnQuietDownedJenkins() throws Exception {
+    public void cancelQuietDownShouldSuccessOnQuietDownedJenkins() {
         j.jenkins.doQuietDown();
         QuietDownCommandTest.assertJenkinsInQuietMode(j);
         final CLICommandInvoker.Result result = command
@@ -110,7 +109,7 @@ public class CancelQuietDownCommandTest {
     @Test
     public void cancelQuietDownShouldSuccessOnNoQuietDownedJenkinsAndRunningExecutor() throws Exception {
         final FreeStyleProject project = j.createFreeStyleProject("aProject");
-        final OneShotEvent finish = new OneShotEvent();
+        OneShotEvent finish = new OneShotEvent();
         Future<FreeStyleBuild> build = OnlineNodeCommandTest.startBlockingAndFinishingBuild(project, finish);
         assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(1));
 
@@ -125,6 +124,7 @@ public class CancelQuietDownCommandTest {
         assertThat(project.isBuilding(), equalTo(false));
         j.assertBuildStatusSuccess(build);
         QuietDownCommandTest.assertJenkinsNotInQuietMode(j);
+        finish = new OneShotEvent();
         build = OnlineNodeCommandTest.startBlockingAndFinishingBuild(project, finish);
         assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(2));
         assertThat(project.isBuilding(), equalTo(true));
@@ -143,7 +143,7 @@ public class CancelQuietDownCommandTest {
     @Test
     public void cancelQuietDownShouldSuccessOnQuietDownedJenkinsAndRunningExecutor() throws Exception {
         final FreeStyleProject project = j.createFreeStyleProject("aProject");
-        final OneShotEvent finish = new OneShotEvent();
+        OneShotEvent finish = new OneShotEvent();
         Future<FreeStyleBuild> build = OnlineNodeCommandTest.startBlockingAndFinishingBuild(project, finish);
         assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(1));
         assertThat(project.isBuilding(), equalTo(true));
@@ -161,6 +161,7 @@ public class CancelQuietDownCommandTest {
         assertThat(project.isBuilding(), equalTo(false));
         j.assertBuildStatusSuccess(build);
         QuietDownCommandTest.assertJenkinsNotInQuietMode(j);
+        finish = new OneShotEvent();
         build = OnlineNodeCommandTest.startBlockingAndFinishingBuild(project, finish);
         assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(2));
         assertThat(project.isBuilding(), equalTo(true));

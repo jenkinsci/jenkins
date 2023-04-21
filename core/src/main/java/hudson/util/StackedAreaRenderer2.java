@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,8 +21,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.util;
 
+import java.awt.Graphics2D;
+import java.awt.Paint;
+import java.awt.Polygon;
+import java.awt.geom.Rectangle2D;
 import org.jfree.chart.axis.CategoryAxis;
 import org.jfree.chart.axis.ValueAxis;
 import org.jfree.chart.entity.EntityCollection;
@@ -34,11 +39,6 @@ import org.jfree.chart.renderer.category.StackedAreaRenderer;
 import org.jfree.chart.urls.CategoryURLGenerator;
 import org.jfree.data.category.CategoryDataset;
 import org.jfree.ui.RectangleEdge;
-
-import java.awt.Graphics2D;
-import java.awt.Polygon;
-import java.awt.Paint;
-import java.awt.geom.Rectangle2D;
 
 /**
  * Modified {@link StackedAreaRenderer}.
@@ -133,7 +133,7 @@ public class StackedAreaRenderer2 extends StackedAreaRenderer
                 // draw item labels, if visible
                 if (isItemLabelVisible(row, column)) {
                     drawItemLabel(g2, plot.getOrientation(), dataset, row, column,
-                            xx1, yy1, (y1 < 0.0));
+                            xx1, yy1, y1 < 0.0);
                 }
             }
         } else {
@@ -166,22 +166,22 @@ public class StackedAreaRenderer2 extends StackedAreaRenderer
                     // left half
                     Polygon p = new Polygon();
                     p.addPoint((int) xx0, (int) yy0);
-                    p.addPoint((int) (xx0+xx1)/2, (int) (yy0+yy1)/2);
-                    p.addPoint((int) (xx0+xx1)/2, (int) (previousHeightxx0+previousHeightxx1)/2);
+                    p.addPoint((int) (xx0 + xx1) / 2, (int) (yy0 + yy1) / 2);
+                    p.addPoint((int) (xx0 + xx1) / 2, (int) (previousHeightxx0 + previousHeightxx1) / 2);
                     p.addPoint((int) xx0, (int) previousHeightxx0);
 
-                    g2.setPaint(getItemPaint(row, column-1));
-                    g2.setStroke(getItemStroke(row, column-1));
+                    g2.setPaint(getItemPaint(row, column - 1));
+                    g2.setStroke(getItemStroke(row, column - 1));
                     g2.fill(p);
 
                     if (entities != null)
-                        addItemEntity(entities, dataset, row, column-1, p);
+                        addItemEntity(entities, dataset, row, column - 1, p);
 
                     // right half
                     p = new Polygon();
                     p.addPoint((int) xx1, (int) yy1);
-                    p.addPoint((int) (xx0+xx1)/2, (int) (yy0+yy1)/2);
-                    p.addPoint((int) (xx0+xx1)/2, (int) (previousHeightxx0+previousHeightxx1)/2);
+                    p.addPoint((int) (xx0 + xx1) / 2, (int) (yy0 + yy1) / 2);
+                    p.addPoint((int) (xx0 + xx1) / 2, (int) (previousHeightxx0 + previousHeightxx1) / 2);
                     p.addPoint((int) xx1, (int) previousHeightxx1);
 
                     g2.setPaint(getItemPaint(row, column));
@@ -193,7 +193,7 @@ public class StackedAreaRenderer2 extends StackedAreaRenderer
                 } else {
                     if (isItemLabelVisible(row, column)) {
                         drawItemLabel(g2, plot.getOrientation(), dataset, row,
-                                column, xx1, yy1, (y1 < 0.0));
+                                column, xx1, yy1, y1 < 0.0);
                     }
                 }
             }

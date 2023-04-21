@@ -1,4 +1,4 @@
-@import '../abstracts/theme.less';
+@import url("../abstracts/theme.less");
 
 .icon-help {
   color: var(--primary);
@@ -78,22 +78,20 @@
   .status-icon-color(var(--black), 0.5);
 }
 
+.icon-grey,
+.icon-grey-anime,
 .icon-nobuilt,
 .icon-nobuilt-anime {
   .status-icon-color(var(--primary));
 }
 
-[class*="icon-health-"] {
-  color: var(--weather-icon-color);
-  fill: var(--weather-icon-color);
-}
-
 .build-status-icon__wrapper {
-  display: inline-block;
+  display: inline-flex;
   position: relative;
 }
+
 .build-status-icon__outer {
-  display: block;
+  display: flex;
   position: absolute;
   top: 50%;
   left: 50%;
@@ -112,8 +110,26 @@
 .icon-yellow-anime .build-status-icon__outer,
 .icon-aborted-anime .build-status-icon__outer,
 .icon-disabled-anime .build-status-icon__outer,
+.icon-grey-anime .build-status-icon__outer,
 .icon-nobuilt-anime .build-status-icon__outer {
   .svg-icon {
-    animation: spin 2s linear infinite;
+    animation: spin 1.7s linear infinite;
+  }
+}
+
+@keyframes pulse-animation {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0;
+  }
+}
+
+.pulse-animation {
+  svg {
+    animation: pulse-animation 2s ease infinite;
   }
 }

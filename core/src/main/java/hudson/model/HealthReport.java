@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Stephen Connolly
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,22 +21,22 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import hudson.diagnosis.OldDataMonitor;
 import hudson.util.XStream2;
-import jenkins.model.Jenkins;
-import jenkins.util.NonLocalizable;
-import org.jvnet.localizer.Localizable;
-import org.kohsuke.stapler.export.Exported;
-import org.kohsuke.stapler.export.ExportedBean;
-
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import jenkins.model.Jenkins;
+import jenkins.util.NonLocalizable;
+import org.jvnet.localizer.Localizable;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
 
 /**
  * Represents health of something (typically project).
@@ -356,6 +356,7 @@ public class HealthReport implements Serializable, Comparable<HealthReport> {
      */
     public static class ConverterImpl extends XStream2.PassthruConverter<HealthReport> {
         public ConverterImpl(XStream2 xstream) { super(xstream); }
+
         @Override protected void callback(HealthReport hr, UnmarshallingContext context) {
             // If we are being read back in from an older version
             if (hr.localizibleDescription == null) {
