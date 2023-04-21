@@ -121,7 +121,7 @@ THE SOFTWARE.
                   </button>
                   <j:if test="${it.securityRealm.allowsSignup()}">
                     <div class="app-sign-in-register__switcher">
-                      <a href="signup">or register</a>
+                      <a href="signup">${%or register}</a>
                     </div>
                   </j:if>
                 </form>
