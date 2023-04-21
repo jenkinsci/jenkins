@@ -86,7 +86,7 @@ for (i = 0; i < buildTypes.size(); i++) {
               if (folders.length > 1) {
                 discoverGitReferenceBuild(scm: folders[1])
               }
-              publishCoverage calculateDiffForChangeRequests: true, adapters: [jacocoAdapter('coverage/target/site/jacoco-aggregate/jacoco.xml')]
+              recordCoverage(tools: [[parser: 'JACOCO', pattern: 'coverage/target/site/jacoco-aggregate/jacoco.xml']], sourceCodeRetention: 'MODIFIED')
 
               echo "Recording static analysis results for '${buildType}'"
               recordIssues(
@@ -101,39 +101,47 @@ for (i = 0; i < buildTypes.size(); i++) {
                 sourceCodeEncoding: 'UTF-8',
                 skipBlames: true,
                 trendChartType: 'TOOLS_ONLY',
-                qualityGates: [
-                  [threshold: 1, type: 'NEW', unstable: true],
-                ]])
+                qualityGates: [[threshold: 1, type: 'NEW', unstable: true]]])
               recordIssues([tool: checkStyle(pattern: '**/target/checkstyle-result.xml'),
                 sourceCodeEncoding: 'UTF-8',
                 skipBlames: true,
                 trendChartType: 'TOOLS_ONLY',
-                qualityGates: [
-                  [threshold: 1, type: 'TOTAL', unstable: true],
-                ]])
+                qualityGates: [[threshold: 1, type: 'TOTAL', unstable: true]]])
               recordIssues([tool: esLint(pattern: '**/target/eslint-warnings.xml'),
                 sourceCodeEncoding: 'UTF-8',
                 skipBlames: true,
                 trendChartType: 'TOOLS_ONLY',
-                qualityGates: [
-                  [threshold: 1, type: 'TOTAL', unstable: true],
-                ]])
+                qualityGates: [[threshold: 1, type: 'TOTAL', unstable: true]]])
               recordIssues([tool: styleLint(pattern: '**/target/stylelint-warnings.xml'),
                 sourceCodeEncoding: 'UTF-8',
                 skipBlames: true,
                 trendChartType: 'TOOLS_ONLY',
-                qualityGates: [
-                  [threshold: 1, type: 'TOTAL', unstable: true],
-                ]])
+                qualityGates: [[threshold: 1, type: 'TOTAL', unstable: true]]])
+              launchable.install()
+              withCredentials([string(credentialsId: 'launchable-jenkins-jenkins', variable: 'LAUNCHABLE_TOKEN')]) {
+                launchable('verify')
+                /*
+                 * TODO Create a Launchable build and session earlier, and replace "--no-build" with
+                 * "--session" to associate these test results with a particular build. The commits
+                 * associated with the Launchable build should be the commits of the transitive
+                 * closure of the Jenkins WAR under test in this build.
+                 */
+                launchable("record tests --no-build --flavor platform=${buildType.toLowerCase()} --flavor jdk=${jdk} maven './**/target/surefire-reports'")
+              }
               if (failFast && currentBuild.result == 'UNSTABLE') {
                 error 'Static analysis quality gates not passed; halting early'
               }
               /*
-               * If the current build was successful, we send the commits to Launchable so that the
-               * result can be consumed by a Launchable build in the future.
+               * If the current build was successful, we send the commits to Launchable so that
+               * these commits can be consumed by a build in the Launchable BOM workspace in the
+               * future.
+               *
+               * TODO Move this up to before the present parallel block starts (or move the ATH run
+               * in this file to after joining on the present parallel block) so that these commits
+               * can be consumed by a build in the Launchable ATH workspace in this file in the
+               * future.
                */
               if (currentBuild.currentResult == 'SUCCESS') {
-                launchable.install()
                 withCredentials([string(credentialsId: 'launchable-jenkins-bom', variable: 'LAUNCHABLE_TOKEN')]) {
                   launchable('verify')
                   launchable('record commit')
@@ -163,10 +171,23 @@ builds.ath = {
       // Just to be safe
       deleteDir()
       checkout scm
+      def browser = 'firefox'
       infra.withArtifactCachingProxy {
-        sh 'bash ath.sh'
+        sh 'bash ath.sh ' + browser
       }
       junit testResults: 'target/ath-reports/TEST-*.xml', testDataPublishers: [[$class: 'AttachmentPublisher']]
+      launchable.install()
+      withCredentials([string(credentialsId: 'launchable-jenkins-acceptance-test-harness', variable: 'LAUNCHABLE_TOKEN')]) {
+        launchable('verify')
+        /*
+         * TODO Create a Launchable build and session earlier, and replace "--no-build" with
+         * "--session" to associate these test results with a particular build. The commits
+         * associated with the Launchable build should be the commits of the transitive closure of
+         * the Jenkins WAR under test in this build as well as the commits of the transitive closure
+         * of the ATH JAR.
+         */
+        launchable("record tests --no-build --flavor platform=linux --flavor jdk=11 --flavor browser=${browser} maven './target/ath-reports'")
+      }
     }
   }
 }

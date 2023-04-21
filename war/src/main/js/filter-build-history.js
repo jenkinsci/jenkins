@@ -41,8 +41,18 @@ function updateBuilds(params) {
             responseText === '<table class="pane"></table>'
           ) {
             noBuildsBanner.style.display = "block";
+            if (
+              typeof params === "object" &&
+              "search" in params &&
+              params.search !== ""
+            ) {
+              pageSearchInputContainer.classList.remove("jenkins-hidden");
+            } else {
+              pageSearchInputContainer.classList.add("jenkins-hidden");
+            }
           } else {
             noBuildsBanner.style.display = "none";
+            pageSearchInputContainer.classList.remove("jenkins-hidden");
           }
 
           //delete rows with transitive data
@@ -480,8 +490,18 @@ function loadPage(params, focusOnSearch) {
 
         if (responseText === '<table class="pane"></table>') {
           noBuildsBanner.style.display = "block";
+          if (
+            typeof params === "object" &&
+            "search" in params &&
+            params.search !== ""
+          ) {
+            pageSearchInputContainer.classList.remove("jenkins-hidden");
+          } else {
+            pageSearchInputContainer.classList.add("jenkins-hidden");
+          }
         } else {
           noBuildsBanner.style.display = "none";
+          pageSearchInputContainer.classList.remove("jenkins-hidden");
         }
 
         var dataTable = getDataTable(buildHistoryContainer);

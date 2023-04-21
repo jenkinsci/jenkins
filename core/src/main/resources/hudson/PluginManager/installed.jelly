@@ -287,7 +287,7 @@ THE SOFTWARE.
           btn = Event.element(o);
 
           <!-- trigger -->
-          fetch(btn.getAttribute('url')+"/make"+(btn.checked?"Enable":"Disable")+"d", {
+          fetch(btn.getAttribute('url')+"/make"+(btn.checked?"Enabled":"Disabled"), {
             method: 'post',
             headers: crumb.wrap({}),
           }).then(rsp => {

@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import javax.servlet.ServletException;
+import jenkins.management.Badge;
 import org.apache.commons.jelly.JellyContext;
 import org.apache.commons.jelly.JellyException;
 import org.apache.commons.jelly.JellyTagException;
@@ -144,6 +145,19 @@ public interface ModelObjectWithContextMenu extends ModelObject {
                 item.iconXml = iconXml;
                 item.post = post;
                 item.requiresConfirmation = requiresConfirmation;
+                items.add(item);
+            }
+            return this;
+        }
+
+        /** @since TODO */
+        public ContextMenu add(String url, String icon, String iconXml, String text, boolean post, boolean requiresConfirmation, Badge badge) {
+            if (text != null && icon != null && url != null) {
+                MenuItem item = new MenuItem(url, icon, text);
+                item.iconXml = iconXml;
+                item.post = post;
+                item.requiresConfirmation = requiresConfirmation;
+                item.badge = badge;
                 items.add(item);
             }
             return this;
@@ -317,6 +331,8 @@ public interface ModelObjectWithContextMenu extends ModelObject {
         public boolean requiresConfirmation;
 
 
+        private Badge badge;
+
         /**
          * The type of menu item
          * @since 2.340
@@ -335,6 +351,15 @@ public interface ModelObjectWithContextMenu extends ModelObject {
         @Exported
         public String getIconXml() {
             return iconXml;
+        }
+
+        /**
+         * The badge to display for the context menu item
+         * @since TODO
+         */
+        @Exported
+        public Badge getBadge() {
+            return badge;
         }
 
         public MenuItem(String url, String icon, String displayName) {
