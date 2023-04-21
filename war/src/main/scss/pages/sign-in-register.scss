@@ -1,4 +1,3 @@
-@use "about";
 @use "../abstracts/mixins";
 @use "../abstracts/theme";
 @use "../base/typography";
@@ -14,25 +13,14 @@
   inherits: false;
 }
 
-.nope {
+.app-sign-in-register {
   width: 100vw;
   height: 100vh;
   padding: 0;
   margin: 0;
 }
 
-.longhorn-host {
-  width: 100%;
-  height: 100%;
-}
-
-@keyframes app-about-starburst2 {
-  to {
-    --opacity: 360deg;
-  }
-}
-
-.app-branding {
+.app-sign-in-register__branding {
   position: fixed;
   top: 0;
   bottom: 0;
@@ -46,22 +34,6 @@
 
   @media (max-width: 992px) {
     display: none;
-  }
-
-  button {
-    width: 100%;
-  }
-
-  .startburst {
-    position: absolute;
-    inset: 0;
-    z-index: 1;
-    backdrop-filter: invert(2%) blur(100px);
-    mask-image: repeating-conic-gradient(from var(--opacity),
-            var(--background) 0deg,
-            transparent 20deg
-    );
-    animation: app-about-starburst2 100s linear infinite;
   }
 
   &::before, &::after {
@@ -98,6 +70,24 @@
     animation: aurora-two 8s linear infinite;
   }
 
+  &__starburst {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    backdrop-filter: invert(2%) blur(100px);
+    mask-image: repeating-conic-gradient(from var(--opacity),
+            var(--background) 0deg,
+            transparent 20deg
+    );
+    animation: app-sign-in-register__branding__starburst-animation 100s linear infinite;
+
+    @keyframes app-sign-in-register__branding__starburst-animation {
+      to {
+        --opacity: 360deg;
+      }
+    }
+  }
+
   img {
     min-height: 15rem;
     height: 25vh;
@@ -106,7 +96,7 @@
   }
 }
 
-.longhorn2 {
+.app-sign-in-register__content {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -121,7 +111,7 @@
   }
 }
 
-.longhorn3 {
+.app-sign-in-register__content-inner {
   display: flex;
   align-items: stretch;
   flex-direction: column;
@@ -210,7 +200,6 @@
   }
 }
 
-
 @keyframes aurora-one {
   0% {
     opacity: 0.3;
@@ -239,13 +228,27 @@
   }
 }
 
-.longhorn-error {
+.app-sign-in-register__error {
   font-size: 0.95rem;
   color: var(--error-color);
   font-weight: 500;
+
+  &:empty {
+    display: none;
+  }
+
+  &:not(:empty) {
+    & + input {
+      margin-top: 0.7rem;
+    }
+  }
 }
 
-.wouldntbefair {
+.app-sign-in-register__password-notice {
   font-size: 0.95rem;
   color: var(--text-color-secondary);
+}
+
+.jenkins-input--error {
+  border-color: var(--error-color);
 }
