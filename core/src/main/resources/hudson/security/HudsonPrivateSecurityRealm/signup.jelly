@@ -51,10 +51,7 @@ THE SOFTWARE.
         <st:include it="${simpleDecorator}" page="simple-head.jelly" optional="true"/>
       </head>
       <body class="app-sign-in-register">
-        <div class="app-sign-in-register__branding">
-          <div class="app-sign-in-register__branding__starburst"></div>
-          <img src="${imagesURL}/svgs/logo.svg" alt="${%logo}"/>
-        </div>
+        <st:include it="${simpleDecorator}" page="simple-header.jelly" optional="true" />
         <main class="app-sign-in-register__content">
           <div class="app-sign-in-register__content-inner">
             <h1>${%Register}</h1>
