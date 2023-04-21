@@ -79,7 +79,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>ant</artifactId>
-        <version>481.v7b_09e538fcca</version>
+        <version>487.vd79d090d4ea_e</version>
       </dependency>
       <dependency>
         <!-- RequireUpperBoundDeps via mailer and junit -->
@@ -201,7 +201,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>matrix-project</artifactId>
-      <version>785.v06b_7f47b_c631</version>
+      <version>789.v57a_725b_63c79</version>
       <scope>test</scope>
     </dependency>
     <dependency>

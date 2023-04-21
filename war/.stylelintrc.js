@@ -1,6 +1,7 @@
 module.exports = {
   extends: "stylelint-config-standard",
-  customSyntax: "postcss-less",
+  customSyntax: "postcss-scss",
+  ignoreFiles: ["src/main/scss/pluginSetupWizard.less"],
   rules: {
     "no-descending-specificity": null,
     "selector-class-pattern": "[a-z]",
@@ -15,6 +16,20 @@ module.exports = {
     ],
     "property-no-vendor-prefix": null,
     "at-rule-no-vendor-prefix": null,
+    "at-rule-no-unknown": [
+      true,
+      {
+        ignoreAtRules: [
+          "function",
+          "if",
+          "each",
+          "include",
+          "mixin",
+          "for",
+          "use",
+        ],
+      },
+    ],
     "color-function-notation": "legacy",
     "alpha-value-notation": "number",
     "number-max-precision": 5,
