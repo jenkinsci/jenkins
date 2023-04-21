@@ -81,6 +81,11 @@ THE SOFTWARE.
     <async-supported>true</async-supported>
   </filter>
   <filter>
+    <filter-name>error-attribute-filter</filter-name>
+    <filter-class>jenkins.ErrorAttributeFilter</filter-class>
+    <async-supported>true</async-supported>
+  </filter>
+  <filter>
     <filter-name>plugins-filter</filter-name>
     <filter-class>hudson.util.PluginServletFilter</filter-class>
     <async-supported>true</async-supported>
@@ -153,6 +158,10 @@ THE SOFTWARE.
   </filter-mapping>
   <filter-mapping>
     <filter-name>csrf-filter</filter-name>
+    <url-pattern>/*</url-pattern>
+  </filter-mapping>
+  <filter-mapping>
+    <filter-name>error-attribute-filter</filter-name>
     <url-pattern>/*</url-pattern>
   </filter-mapping>
   <filter-mapping>

@@ -261,6 +261,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 import jenkins.AgentProtocol;
+import jenkins.ErrorAttributeFilter;
 import jenkins.ExtensionComponentSet;
 import jenkins.ExtensionRefreshException;
 import jenkins.InitReactorRunner;
@@ -4503,6 +4504,19 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         }
     }
 
+    @WebMethod(name = "404")
+    @Restricted(NoExternalUse.class)
+    public void generateNotFoundResponse(StaplerRequest req, StaplerResponse rsp) throws ServletException, IOException {
+        final Object attribute = req.getAttribute(ErrorAttributeFilter.USER_ATTRIBUTE);
+        if (attribute instanceof Authentication) {
+            try (ACLContext unused = ACL.as2((Authentication) attribute)) {
+                rsp.forward(this, "_404", req);
+            }
+        } else {
+            rsp.forward(this, "_404", req);
+        }
+    }
+
     /**
      * Queues up a restart of Jenkins for when there are no builds running, if we can.
      *
@@ -5667,7 +5681,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * <p>See also:{@link #getUnprotectedRootActions}.
      */
     private static final Set<String> ALWAYS_READABLE_PATHS = new HashSet<>(Arrays.asList(
-        "404", // .jelly
+        "404", // Web method
+        "_404", // .jelly
         "login", // .jelly
         "loginError", // .jelly
         "logout", // #doLogout

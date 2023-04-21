@@ -44,7 +44,7 @@
             <div id="visible-sec-am-insertion" class="page-header__am-wrapper" />
 
             <!-- user icon and login/logout links; only show if authentication is enabled and we're not handling a servlet error -->
-            <j:if test="${app.useSecurity &amp;&amp; request.getAttribute('javax.servlet.error.exception') == null and request.getAttribute('javax.servlet.error.status_code') == null}">
+            <j:if test="${app.useSecurity}">
                 <j:choose>
                     <j:when test="${!h.isAnonymous()}">
                         <j:invokeStatic var="user" className="hudson.model.User" method="current" />
