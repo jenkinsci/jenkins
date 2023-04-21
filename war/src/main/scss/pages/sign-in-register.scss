@@ -143,7 +143,7 @@
     font-size: 0.95rem;
   }
 
-  .longhornlabel {
+  .app-sign-in-register__form-label {
     display: block;
     font-size: 0.95rem;
     margin-bottom: 0.5rem;
@@ -159,7 +159,7 @@
     display: contents;
   }
 
-  .line-text {
+  .app-sign-in-register__switcher {
     position: relative;
     display: flex;
     align-items: center;
@@ -174,17 +174,42 @@
       background-color: var(--input-border);
     }
 
-    p {
-      background-color: var(--background);
+    a {
       z-index: 1;
-      padding: 0 1.6rem;
+      padding: 0 0.2rem;
       font-weight: 500;
       font-size: 0.95rem;
       margin: 0;
-      color: var(--text-color);
+      color: var(--link-color);
+      text-underline-offset: 2px;
+      text-decoration-thickness: 2px;
+      position: relative;
+      outline: none;
 
-      a {
-        font-weight: inherit;
+      &::before {
+        content: "";
+        position: absolute;
+        inset: 0 -0.5rem;
+        background-color: var(--background);
+        z-index: -1;
+      }
+
+      &::after {
+        content: "";
+        position: absolute;
+        inset: 0 -0.1rem;
+        border-radius: 0.4rem;
+        box-shadow: 0 0 0 0.625rem transparent;
+        transition: var(--standard-transition);
+        pointer-events: none;
+      }
+
+      &:focus-visible {
+        text-decoration: none;
+
+        &::after {
+          box-shadow: 0 0 0 0.2rem var(--text-color);
+        }
       }
     }
   }

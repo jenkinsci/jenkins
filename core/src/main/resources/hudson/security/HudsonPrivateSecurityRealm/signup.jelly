@@ -61,7 +61,7 @@ THE SOFTWARE.
             <h1>${%Register}</h1>
             <form class="signup" action="${rootURL}/securityRealm/createAccount" method="post">
               <div>
-                <label class="longhornlabel ${data.errors.containsKey('username') ? 'alert' : ''}"
+                <label class="app-sign-in-register__form-label ${data.errors.containsKey('username') ? 'alert' : ''}"
                         for="username"
                 >
                   ${%Username}
@@ -75,11 +75,12 @@ THE SOFTWARE.
                         type="text"
                         name="username"
                         id="username"
+                        autofocus="autofocus"
                 />
               </div>
               <div>
                 <label
-                        class="longhornlabel ${data.errors.containsKey('fullname') ? 'alert' : ''}"
+                        class="app-sign-in-register__form-label ${data.errors.containsKey('fullname') ? 'alert' : ''}"
                         for="fullname"
                 >
                   ${%Full name}
@@ -98,7 +99,7 @@ THE SOFTWARE.
               <j:if test="${it.mailerPluginPresent}">
                 <div>
                   <label
-                          class="longhornlabel ${data.errors.containsKey('email') ? 'alert' : ''}"
+                          class="app-sign-in-register__form-label ${data.errors.containsKey('email') ? 'alert' : ''}"
                           for="email"
                   >
                     ${%Email}
@@ -118,7 +119,7 @@ THE SOFTWARE.
               <j:if test="${it.isEnableCaptcha()}">
                 <div>
                   <label
-                          class="longhornlabel ${data.errors.containsKey('captcha') ? 'alert' : ''}"
+                          class="app-sign-in-register__form-label ${data.errors.containsKey('captcha') ? 'alert' : ''}"
                           for="captcha"
                   >${%Enter text as shown}
                   </label>
@@ -135,7 +136,7 @@ THE SOFTWARE.
               <div>
                 <div class="inputHeader password">
                   <label
-                          class="longhornlabel ${data.errors.containsKey('password1') ? 'alert' : ''}"
+                          class="app-sign-in-register__form-label ${data.errors.containsKey('password1') ? 'alert' : ''}"
                           for="password1"
                   >
                     ${%Password}
@@ -153,8 +154,7 @@ THE SOFTWARE.
                 <div class="app-sign-in-register__error">
                   ${data.errors.containsKey('password1') ? data.errors.get('password1') : ''}
                 </div>
-                <input
-                        onKeyUp="validatePassword()"
+                <input onKeyUp="validatePassword()"
                         class="jenkins-input ${data.errors.containsKey('password1') ? 'jenkins-input--error' : ''}"
                         value="${data.password1}"
                         type="password"
