@@ -24,6 +24,7 @@
 
 package jenkins.security;
 
+import hudson.Functions;
 import hudson.init.InitMilestone;
 import hudson.init.Initializer;
 import hudson.util.PluginServletFilter;
@@ -70,7 +71,7 @@ public class ResourceDomainFilter implements Filter {
             HttpServletResponse httpServletResponse = (HttpServletResponse) servletResponse;
             if (ResourceDomainConfiguration.isResourceRequest(httpServletRequest)) {
                 String path = httpServletRequest.getPathInfo();
-                if (!path.startsWith("/" + ResourceDomainRootAction.URL + "/") && !ALLOWED_PATHS.contains(path)) {
+                if (!path.startsWith("/" + ResourceDomainRootAction.URL + "/") && !ALLOWED_PATHS.contains(path) && !isImageResource(path)) {
                     LOGGER.fine(() -> "Rejecting request to " + httpServletRequest.getRequestURL() + " from " + httpServletRequest.getRemoteAddr() + " on resource domain");
                     httpServletResponse.sendError(404, ERROR_RESPONSE);
                     return;
@@ -84,6 +85,13 @@ public class ResourceDomainFilter implements Filter {
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
 
+    }
+
+    private boolean isImageResource(String path) {
+        if (path.startsWith(Functions.getResourcePath() + "/images")) {
+            return true;
+        }
+        return false;
     }
 
     @Override

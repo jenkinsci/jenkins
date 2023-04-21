@@ -274,6 +274,7 @@ import jenkins.security.ConfidentialKey;
 import jenkins.security.ConfidentialStore;
 import jenkins.security.MasterToSlaveCallable;
 import jenkins.security.RedactSecretJsonInErrorMessageSanitizer;
+import jenkins.security.ResourceDomainConfiguration;
 import jenkins.security.SecurityListener;
 import jenkins.security.stapler.DoActionFilter;
 import jenkins.security.stapler.StaplerDispatchValidator;
@@ -4507,13 +4508,17 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     @WebMethod(name = "404")
     @Restricted(NoExternalUse.class)
     public void generateNotFoundResponse(StaplerRequest req, StaplerResponse rsp) throws ServletException, IOException {
-        final Object attribute = req.getAttribute(ErrorAttributeFilter.USER_ATTRIBUTE);
-        if (attribute instanceof Authentication) {
-            try (ACLContext unused = ACL.as2((Authentication) attribute)) {
+        if (ResourceDomainConfiguration.isResourceRequest(req)) {
+            rsp.forward(this, "_404_simple", req);
+        } else {
+            final Object attribute = req.getAttribute(ErrorAttributeFilter.USER_ATTRIBUTE);
+            if (attribute instanceof Authentication) {
+                try (ACLContext unused = ACL.as2((Authentication) attribute)) {
+                    rsp.forward(this, "_404", req);
+                }
+            } else {
                 rsp.forward(this, "_404", req);
             }
-        } else {
-            rsp.forward(this, "_404", req);
         }
     }
 
@@ -5683,6 +5688,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     private static final Set<String> ALWAYS_READABLE_PATHS = new HashSet<>(Arrays.asList(
         "404", // Web method
         "_404", // .jelly
+        "_404_simple", // .jelly
         "login", // .jelly
         "loginError", // .jelly
         "logout", // #doLogout
