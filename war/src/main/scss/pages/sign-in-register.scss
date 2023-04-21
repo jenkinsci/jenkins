@@ -1,10 +1,8 @@
 @use "../abstracts/mixins";
 @use "../abstracts/theme";
 @use "../base/typography";
-@use "../base/spacing";
 @use "../form/checkbox";
 @use "../form/input";
-@use "../form/layout";
 @use "../modules/buttons";
 
 @property --opacity {
@@ -183,6 +181,8 @@
     }
 
     a {
+      @include mixins.link;
+
       z-index: 1;
       padding: 0 0.2rem;
       font-weight: 500;
