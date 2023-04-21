@@ -1,3 +1,5 @@
+@use "../abstracts/mixins";
+
 .tippy-box[data-theme~="dropdown"] {
   padding: 0.4rem;
   border-radius: 15px;
@@ -76,7 +78,7 @@
     --item-background--active: var(--button-background--active);
     --item-box-shadow--focus: var(--button-box-shadow--focus);
 
-    .item();
+    @include mixins.item;
 
     appearance: none;
     display: inline-flex;
