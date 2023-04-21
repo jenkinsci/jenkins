@@ -8,7 +8,7 @@
 @use "../modules/buttons";
 
 @property --opacity {
-  syntax: '<angle>';
+  syntax: "<angle>";
   initial-value: 0deg;
   inherits: false;
 }
@@ -26,7 +26,6 @@
   bottom: 0;
   left: 0;
   width: 40vw;
-
   display: flex;
   align-items: center;
   justify-content: center;
@@ -36,7 +35,8 @@
     display: none;
   }
 
-  &::before, &::after {
+  &::before,
+  &::after {
     content: "";
     position: absolute;
     min-height: 130%;
@@ -47,26 +47,32 @@
   }
 
   &::before {
-    background-image:
-            radial-gradient(at 40% 20%, var(--orange) 0, transparent 50%),
-            radial-gradient(at 80% 0%, var(--cyan) 0, transparent 50%),
-            radial-gradient(at 0% 50%, var(--light-pink) 0, transparent 50%),
-            radial-gradient(at 80% 50%, var(--light-red) 0, transparent 50%),
-            radial-gradient(at 0% 100%, var(--light-yellow) 0, transparent 50%),
-            radial-gradient(at 80% 100%, var(--dark-purple) 0, transparent 50%),
-            radial-gradient(at 0% 0%, var(--pink) 0, transparent 50%);
+    background-image: radial-gradient(
+        at 40% 20%,
+        var(--orange) 0,
+        transparent 50%
+      ),
+      radial-gradient(at 80% 0%, var(--cyan) 0, transparent 50%),
+      radial-gradient(at 0% 50%, var(--light-pink) 0, transparent 50%),
+      radial-gradient(at 80% 50%, var(--light-red) 0, transparent 50%),
+      radial-gradient(at 0% 100%, var(--light-yellow) 0, transparent 50%),
+      radial-gradient(at 80% 100%, var(--dark-purple) 0, transparent 50%),
+      radial-gradient(at 0% 0%, var(--pink) 0, transparent 50%);
     animation: aurora-one 5s linear infinite;
   }
 
   &::after {
-    background-image:
-            radial-gradient(at 40% 20%, var(--light-cyan) 0, transparent 50%),
-            radial-gradient(at 80% 0%, var(--dark-orange) 0, transparent 50%),
-            radial-gradient(at 0% 50%, var(--light-blue) 0, transparent 50%),
-            radial-gradient(at 80% 50%, var(--light-green) 0, transparent 50%),
-            radial-gradient(at 0% 100%, var(--light-red) 0, transparent 50%),
-            radial-gradient(at 80% 100%, var(--light-yellow) 0, transparent 50%),
-            radial-gradient(at 0% 0%, var(--cyan) 0, transparent 50%);
+    background-image: radial-gradient(
+        at 40% 20%,
+        var(--light-cyan) 0,
+        transparent 50%
+      ),
+      radial-gradient(at 80% 0%, var(--dark-orange) 0, transparent 50%),
+      radial-gradient(at 0% 50%, var(--light-blue) 0, transparent 50%),
+      radial-gradient(at 80% 50%, var(--light-green) 0, transparent 50%),
+      radial-gradient(at 0% 100%, var(--light-red) 0, transparent 50%),
+      radial-gradient(at 80% 100%, var(--light-yellow) 0, transparent 50%),
+      radial-gradient(at 0% 0%, var(--cyan) 0, transparent 50%);
     animation: aurora-two 8s linear infinite;
   }
 
@@ -75,11 +81,13 @@
     inset: 0;
     z-index: 1;
     backdrop-filter: invert(2%) blur(100px);
-    mask-image: repeating-conic-gradient(from var(--opacity),
-            var(--background) 0deg,
-            transparent 20deg
+    mask-image: repeating-conic-gradient(
+      from var(--opacity),
+      var(--background) 0deg,
+      transparent 20deg
     );
-    animation: app-sign-in-register__branding__starburst-animation 100s linear infinite;
+    animation: app-sign-in-register__branding__starburst-animation 100s linear
+      infinite;
 
     @keyframes app-sign-in-register__branding__starburst-animation {
       to {
@@ -128,7 +136,7 @@
 
   h1 {
     font-size: 1.8rem;
-    font-family: "Georgia", serif;
+    font-family: Georgia, serif;
     text-align: left;
     margin-bottom: 0;
 
@@ -229,10 +237,12 @@
   0% {
     opacity: 0.3;
   }
+
   50% {
     opacity: 0.15;
     transform: rotate(-180deg);
   }
+
   100% {
     opacity: 0.3;
     transform: rotate(-360deg);
@@ -243,10 +253,12 @@
   0% {
     opacity: 0.15;
   }
+
   50% {
     opacity: 0.5;
     transform: rotate(180deg);
   }
+
   100% {
     opacity: 0.15;
     transform: rotate(360deg);
