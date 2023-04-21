@@ -42,7 +42,7 @@ import org.kohsuke.stapler.StaplerRequest;
 /**
  * Per user experimental flags to enable features that still not completely ready to be active by default.
  *
- * @since TODO
+ * @since 2.395
  */
 public class UserExperimentalFlagsProperty extends UserProperty {
     private Map<String, String> flags = new HashMap<>();
