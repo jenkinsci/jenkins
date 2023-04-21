@@ -30,6 +30,7 @@ THE SOFTWARE.
   <l:layout title="${%Manage Jenkins}" permissions="${app.MANAGE_AND_SYSTEM_READ}">
     <j:if test="${taskTags==null}">
       <st:include page="sidepanel.jelly" it="${app}" />
+      <!-- no need for additional breadcrumb here as we're on an index page already including breadcrumb -->
     </j:if>
 
     <l:main-panel>
@@ -59,7 +60,7 @@ THE SOFTWARE.
               <j:set var="iconXml">
                 <l:icon src="${m.iconFileName}" />
               </j:set>
-              ${taskTags!=null and attrs.contextMenu!='false' ? it.addContextMenuItem(taskTags, m.urlName, iconSrc, iconXml, m.displayName, m.requiresPOST, m.requiresConfirmation) : null}
+              ${taskTags!=null and attrs.contextMenu!='false' ? it.addContextMenuItem(taskTags, m.urlName, iconSrc, iconXml, m.displayName, m.requiresPOST, m.requiresConfirmation, m.badge) : null}
               <j:choose>
                 <j:when test="${m.requiresConfirmation}">
                   <l:confirmationLink href="${m.urlName}" post="${m.requiresPOST}" message="${%are.you.sure(m.displayName)}">

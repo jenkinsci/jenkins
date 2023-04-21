@@ -29,6 +29,8 @@ import hudson.diagnosis.OldDataMonitor;
 import hudson.model.AdministrativeMonitor;
 import hudson.model.ManagementLink;
 import java.util.Locale;
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
 
 /**
  *  Definition of a badge that can be returned by a {@link ManagementLink} implementation.
@@ -46,8 +48,9 @@ import java.util.Locale;
  *  A badge might display the same information as an {@link AdministrativeMonitor}. While an {@link AdministrativeMonitor}
  *  can be disabled, a badge will always be shown. E.g. the badge of {@link OldDataMonitor.ManagementLinkImpl} always shows the number of old data entries.
  *
- *  @since TODO
+ *  @since 2.385
  */
+@ExportedBean
 public class Badge {
 
     private final String text;
@@ -75,6 +78,7 @@ public class Badge {
      *
      * @return badge text
      */
+    @Exported(visibility = 999)
     public String getText() {
         return text;
     }
@@ -84,6 +88,7 @@ public class Badge {
      *
      * @return tooltip
      */
+    @Exported(visibility = 999)
     public String getTooltip() {
         return tooltip;
     }

@@ -38,9 +38,9 @@ THE SOFTWARE.
   <description>The module contains dependencies that are used by a specific Jenkins version</description>
 
   <properties>
-    <asm.version>9.4</asm.version>
-    <slf4jVersion>2.0.6</slf4jVersion>
-    <stapler.version>1756.vec9071748061</stapler.version>
+    <asm.version>9.5</asm.version>
+    <slf4jVersion>2.0.7</slf4jVersion>
+    <stapler.version>1781.v62372c33644e</stapler.version>
     <groovy.version>2.4.21</groovy.version>
   </properties>
 
@@ -56,7 +56,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.springframework</groupId>
         <artifactId>spring-framework-bom</artifactId>
-        <version>5.3.24</version>
+        <version>5.3.27</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -64,7 +64,7 @@ THE SOFTWARE.
         <!-- https://docs.spring.io/spring-security/site/docs/5.5.4/reference/html5/#getting-maven-no-boot -->
         <groupId>org.springframework.security</groupId>
         <artifactId>spring-security-bom</artifactId>
-        <version>5.8.1</version>
+        <version>5.8.3</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -123,7 +123,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>commons-fileupload</groupId>
         <artifactId>commons-fileupload</artifactId>
-        <version>1.4</version>
+        <version>1.5</version>
       </dependency>
       <dependency>
         <groupId>commons-io</groupId>
@@ -163,7 +163,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>net.java.dev.jna</groupId>
         <artifactId>jna</artifactId>
-        <version>5.12.1</version>
+        <version>5.13.0</version>
       </dependency>
       <dependency>
         <groupId>net.java.sezpoz</groupId>
@@ -175,6 +175,7 @@ THE SOFTWARE.
         <artifactId>jcip-annotations</artifactId>
         <version>1.0</version>
       </dependency>
+      <!-- TODO remove after determining this will not break plugins -->
       <dependency>
         <groupId>net.sf.kxml</groupId>
         <artifactId>kxml2</artifactId>
@@ -188,12 +189,12 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.apache.ant</groupId>
         <artifactId>ant</artifactId>
-        <version>1.10.12</version>
+        <version>1.10.13</version>
       </dependency>
       <dependency>
         <groupId>org.apache.commons</groupId>
         <artifactId>commons-compress</artifactId>
-        <version>1.22</version>
+        <version>1.23.0</version>
       </dependency>
       <dependency>
         <groupId>org.codehaus.groovy</groupId>
@@ -259,7 +260,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jvnet.hudson</groupId>
         <artifactId>commons-jelly-tags-define</artifactId>
-        <version>1.0.1-hudson-20071021</version>
+        <version>1.1-jenkins-20230124</version>
       </dependency>
       <dependency>
         <groupId>org.jvnet.localizer</groupId>

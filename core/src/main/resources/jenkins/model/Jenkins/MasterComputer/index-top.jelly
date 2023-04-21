@@ -1,11 +1,5 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout">
-  <!-- Node name and status -->
-  <h1>
-    <l:icon src="${it.iconClassName}" class="icon-xlg" />
-    ${it.caption}
-  </h1>
-
   <!-- Node description -->
   <div class="jenkins-!-margin-bottom-5">
     ${%blurb}

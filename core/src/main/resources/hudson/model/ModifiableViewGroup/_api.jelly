@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core">
+    <h2>Create View</h2>
+    <p>
+        To create a new view, post <code>config.xml</code> to <a href="../createView">createView</a> with
+        query parameter <code>name=<i>VIEWNAME</i></code>. You need to send a <code>Content-Type: application/xml</code>
+        header. You will get a 200 status code if the creation is successful,
+        or 4xx/5xx code if it fails. <code>config.xml</code> is the format Jenkins uses to store the view
+        in the file system, so you can see examples of them in the Jenkins home directory, or by retrieving
+        the XML configuration of existing views from <code>/view/<i>VIEWNAME</i>/config.xml</code>.
+    </p>
+
+    <h2>Copy View</h2>
+    <p>
+        To copy a view, send a POST request to <a href="../createView">createView</a> with
+        three query parameters <code>name=<i>NEWVIEWNAME</i>&amp;mode=copy&amp;from=<i>FROMVIEWNAME</i></code>
+    </p>
+</j:jelly>

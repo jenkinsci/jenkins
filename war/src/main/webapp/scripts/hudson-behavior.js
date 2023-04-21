@@ -377,17 +377,11 @@ function qs(owner) {
 
 // find the nearest ancestor node that has the given tag name
 function findAncestor(e, tagName) {
-  do {
-    e = e.parentNode;
-  } while (e != null && e.tagName != tagName);
-  return e;
+  return e.closest(tagName);
 }
 
 function findAncestorClass(e, cssClass) {
-  do {
-    e = e.parentNode;
-  } while (e != null && !Element.hasClassName(e, cssClass));
-  return e;
+  return e.closest("." + cssClass);
 }
 
 function isTR(tr, nodeClass) {
@@ -884,9 +878,7 @@ function makeButton(e, onclick) {
     the behavior re-executes when the removed master copy gets reinserted later.
  */
 function isInsideRemovable(e) {
-  return Element.ancestors(e).find(function (f) {
-    return f.hasClassName("to-be-removed");
-  });
+  return !!e.closest(".to-be-removed");
 }
 
 /**
@@ -918,7 +910,7 @@ function renderOnDemand(e, callback, noBehaviour) {
       e.parentNode.insertBefore(n, e);
       if (n.nodeType == 1 && !noBehaviour) elements.push(n);
     }
-    Element.remove(e);
+    e.remove();
 
     evalInnerHtmlScripts(t.responseText, function () {
       Behaviour.applySubtree(elements, true);
@@ -970,14 +962,6 @@ function sequencer(fs) {
 function progressBarOnClick() {
   var href = this.getAttribute("href");
   if (href != null) window.location = href;
-}
-
-function expandButton(e) {
-  var link = e.target;
-  while (!Element.hasClassName(link, "advancedLink")) link = link.parentNode;
-  link.style.display = "none";
-  $(link).next().style.display = "block";
-  layoutUpdateCallback.call();
 }
 
 function labelAttachPreviousOnClick() {
@@ -1129,15 +1113,6 @@ function rowvgStartEachRow(recursive, f) {
     function (e) {
       // progressBar.jelly
       e.onclick = progressBarOnClick;
-    }
-  );
-
-  Behaviour.specify(
-    "INPUT.expand-button",
-    "input-expand-button",
-    ++p,
-    function (e) {
-      makeButton(e, expandButton);
     }
   );
 
@@ -1891,14 +1866,14 @@ function applyNameRefHelper(s, e, id) {
 //   @param c     checkbox element
 function updateOptionalBlock(c) {
   // find the start TR
-  var s = $(c);
-  while (!s.hasClassName("optional-block-start")) s = s.up();
+  var s = c;
+  while (!s.classList.contains("optional-block-start")) s = s.parentNode;
 
   // find the beginning of the rowvg
   var vg = s;
-  while (!vg.hasClassName("rowvg-start")) vg = vg.next();
+  while (!vg.classList.contains("rowvg-start")) vg = vg.nextElementSibling;
 
-  var checked = xor(c.checked, Element.hasClassName(c, "negative"));
+  var checked = xor(c.checked, c.classList.contains("negative"));
 
   vg.rowVisibilityGroup.makeInnerVisible(checked);
 
@@ -2537,8 +2512,7 @@ function loadScript(href, callback) {
 }
 
 // logic behind <f:validateButton />
-function safeValidateButton(yuiButton) {
-  var button = yuiButton._button;
+function safeValidateButton(button) {
   var descriptorUrl = button.getAttribute(
     "data-validate-button-descriptor-url"
   );
@@ -2548,14 +2522,12 @@ function safeValidateButton(yuiButton) {
   // optional, by default = empty string
   var paramList = button.getAttribute("data-validate-button-with") || "";
 
-  validateButton(checkUrl, paramList, yuiButton);
+  validateButton(checkUrl, paramList, button);
 }
 
 // this method should not be called directly, only get called by safeValidateButton
 // kept "public" for legacy compatibility
 function validateButton(checkUrl, paramList, button) {
-  button = button._button;
-
   var parameters = {};
 
   paramList.split(",").each(function (name) {

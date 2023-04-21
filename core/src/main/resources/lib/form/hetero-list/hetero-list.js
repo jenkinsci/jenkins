@@ -7,50 +7,50 @@ Behaviour.specify(
   "hetero-list",
   -100,
   function (e) {
-    e = $(e);
     if (isInsideRemovable(e)) {
       return;
     }
 
     // components for the add button
     var menu = document.createElement("SELECT");
-    var btns = findElementsBySelector(e, "INPUT.hetero-list-add"),
-      btn = btns[btns.length - 1]; // In case nested content also uses hetero-list
+    // In case nested content also uses hetero-list
+    var btn = Array.from(e.querySelectorAll("INPUT.hetero-list-add")).pop();
     if (!btn) {
       return;
     }
     YAHOO.util.Dom.insertAfter(menu, btn);
 
-    var prototypes = $(e.lastElementChild);
-    while (!prototypes.hasClassName("prototypes")) {
-      prototypes = prototypes.previous();
+    var prototypes = e.lastElementChild;
+    while (!prototypes.classList.contains("prototypes")) {
+      prototypes = prototypes.previousElementSibling;
     }
-    var insertionPoint = prototypes.previous(); // this is where the new item is inserted.
+    var insertionPoint = prototypes.previousElementSibling; // this is where the new item is inserted.
 
     // extract templates
     var templates = [];
-    var i = 0;
-    $(prototypes)
-      .childElements()
-      .each(function (n) {
-        var name = n.getAttribute("name");
-        var tooltip = n.getAttribute("tooltip");
-        var descriptorId = n.getAttribute("descriptorId");
-        // YUI Menu interprets this <option> text node as HTML, so let's escape it again!
-        var title = n.getAttribute("title");
-        if (title) {
-          title = title.escapeHTML();
-        }
-        menu.options[i] = new Option(title, "" + i);
-        templates.push({
-          html: n.innerHTML,
-          name: name,
-          tooltip: tooltip,
-          descriptorId: descriptorId,
-        });
-        i++;
+    var children = prototypes.children;
+    for (var i = 0; i < children.length; i++) {
+      var n = children[i];
+      var name = n.getAttribute("name");
+      var tooltip = n.getAttribute("tooltip");
+      var descriptorId = n.getAttribute("descriptorId");
+      // YUI Menu interprets this <option> text node as HTML, so let's escape it again!
+      var title = n.getAttribute("title");
+      if (title) {
+        title = title
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;");
+      }
+      menu.options[i] = new Option(title, "" + i);
+      templates.push({
+        html: n.innerHTML,
+        name: name,
+        tooltip: tooltip,
+        descriptorId: descriptorId,
       });
-    Element.remove(prototypes);
+    }
+    prototypes.remove();
 
     // Initialize drag & drop for this component
     var withDragDrop = registerSortableDragDrop(e);
@@ -63,8 +63,11 @@ Behaviour.specify(
       menuAlign.split("-"),
       250
     );
-    $(menuButton._button).addClassName(btn.className); // copy class names
-    $(menuButton._button).setAttribute("suffix", btn.getAttribute("suffix"));
+    // copy class names
+    for (i = 0; i < btn.classList.length; i++) {
+      menuButton._button.classList.add(btn.classList.item(i));
+    }
+    menuButton._button.setAttribute("suffix", btn.getAttribute("suffix"));
     menuButton.getMenu().clickEvent.subscribe(function (type, args) {
       var item = args[1];
       if (item.cfg.getProperty("disabled")) {
@@ -77,10 +80,10 @@ Behaviour.specify(
       nc.setAttribute("name", t.name);
       nc.setAttribute("descriptorId", t.descriptorId);
       nc.innerHTML = t.html;
-      $(nc).setOpacity(0);
+      nc.style.opacity = "0";
 
       renderOnDemand(
-        findElementsBySelector(nc, "div.config-page")[0],
+        nc.querySelector("div.config-page"),
         function () {
           function findInsertionPoint() {
             // given the element to be inserted 'prospect',
@@ -112,8 +115,8 @@ Behaviour.specify(
               return bestPos;
             }
 
-            var current = e.childElements().findAll(function (e) {
-              return e.match("DIV.repeated-chunk");
+            var current = Array.from(e.children).filter(function (e) {
+              return e.matches("DIV.repeated-chunk");
             });
 
             function o(did) {
@@ -135,10 +138,10 @@ Behaviour.specify(
               return insertionPoint;
             }
           }
-          (e.hasClassName("honor-order")
+          var referenceNode = e.classList.contains("honor-order")
             ? findInsertionPoint()
-            : insertionPoint
-          ).insert({ before: nc });
+            : insertionPoint;
+          referenceNode.parentNode.insertBefore(nc, referenceNode);
 
           // Initialize drag & drop for this component
           if (withDragDrop) {
@@ -176,14 +179,11 @@ Behaviour.specify(
     // does this container already has a configured instance of the specified descriptor ID?
     function has(id) {
       return (
-        Prototype.Selector.find(
-          e.childElements(),
-          'DIV.repeated-chunk[descriptorId="' + id + '"]'
-        ) != null
+        e.querySelector('DIV.repeated-chunk[descriptorId="' + id + '"]') != null
       );
     }
 
-    if (e.hasClassName("one-each")) {
+    if (e.classList.contains("one-each")) {
       menuButton.getMenu().showEvent.subscribe(function () {
         var items = menuButton.getMenu().getItems();
         for (i = 0; i < items.length; i++) {
@@ -195,11 +195,10 @@ Behaviour.specify(
 );
 
 Behaviour.specify("DIV.dd-handle", "hetero-list", -100, function (e) {
-  e = $(e);
-  e.on("mouseover", function () {
-    $(this).up(".repeated-chunk").addClassName("hover");
+  e.addEventListener("mouseover", function () {
+    this.closest(".repeated-chunk").classList.add("hover");
   });
-  e.on("mouseout", function () {
-    $(this).up(".repeated-chunk").removeClassName("hover");
+  e.addEventListener("mouseout", function () {
+    this.closest(".repeated-chunk").classList.remove("hover");
   });
 });

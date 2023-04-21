@@ -60,6 +60,7 @@ import hudson.slaves.OfflineCause;
 import hudson.slaves.OfflineCause.ByCLI;
 import hudson.slaves.RetentionStrategy;
 import hudson.slaves.WorkspaceList;
+import hudson.triggers.SafeTimerTask;
 import hudson.util.DaemonThreadFactory;
 import hudson.util.EditDistance;
 import hudson.util.ExceptionCatchingThreadFactory;
@@ -313,7 +314,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * @since 1.613
      */
     protected @NonNull File getLogDir() {
-        File dir = new File(Jenkins.get().getRootDir(), "logs/slaves/" + nodeName);
+        File dir = new File(SafeTimerTask.getLogsRoot(), "slaves/" + nodeName);
         synchronized (logDirLock) {
             try {
                 IOUtils.mkdirs(dir);
@@ -774,10 +775,6 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     public String getUrl() {
-        if (Jenkins.get().hasAnyPermission(Jenkins.MANAGE, Jenkins.SYSTEM_READ)) {
-            return "manage/computer/" + Util.fullEncode(getName()) + "/";
-        }
-
         return "computer/" + Util.fullEncode(getName()) + "/";
     }
 

@@ -27,10 +27,11 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:s="/lib/form">
-  <l:layout title="${%Installed plugins} - ${%Plugin Manager}" permission="${app.SYSTEM_READ}">
+  <l:layout title="${%Installed plugins} - ${%Plugins}" permission="${app.SYSTEM_READ}">
     <j:set var="readOnlyMode" value="${!app.hasPermission(app.ADMINISTER)}"/>
 
     <st:include page="sidepanel.jelly"/>
+    <!-- no need for additional breadcrumb here as the side panel offers enough functionality to browse between different pages -->
 
     <l:main-panel>
       <l:app-bar title="${%Plugins}" />
@@ -286,14 +287,15 @@ THE SOFTWARE.
           btn = Event.element(o);
 
           <!-- trigger -->
-          new Ajax.Request(btn.getAttribute('url')+"/make"+(btn.checked?"Enable":"Disable")+"d", {
-            method: "POST",
-            onFailure : function(req,o) {
-                $('needRestart').innerHTML = req.responseText;
+          fetch(btn.getAttribute('url')+"/make"+(btn.checked?"Enabled":"Disabled"), {
+            method: 'post',
+            headers: crumb.wrap({}),
+          }).then(rsp => {
+            if (!rsp.ok) {
+              $('needRestart').innerHTML = req.responseText;
             }
-          });
-
-          updateMsg();
+            updateMsg();
+          })
         }
 
         function updateMsg() {
