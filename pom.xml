@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.97</version>
+    <version>1.98</version>
     <relativePath />
   </parent>
 
@@ -74,7 +74,7 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.401</revision>
+    <revision>2.402</revision>
     <changelist>-SNAPSHOT</changelist>
 
     <!-- configuration for patch tracker plugin  -->
@@ -97,9 +97,9 @@ THE SOFTWARE.
     <access-modifier.version>1.31</access-modifier.version>
     <antlr.version>4.12.0</antlr.version>
     <bridge-method-injector.version>1.26</bridge-method-injector.version>
-    <spotless.version>2.36.0</spotless.version>
+    <spotless.check.skip>false</spotless.check.skip>
     <!-- Make sure to keep the jetty-maven-plugin version in war/pom.xml in sync with the Jetty release in Winstone: -->
-    <winstone.version>6.10</winstone.version>
+    <winstone.version>6.11</winstone.version>
   </properties>
 
   <!--
@@ -347,44 +347,6 @@ THE SOFTWARE.
           </executions>
         </plugin>
         <plugin>
-          <groupId>com.diffplug.spotless</groupId>
-          <artifactId>spotless-maven-plugin</artifactId>
-          <version>${spotless.version}</version>
-          <configuration>
-            <antlr4>
-              <antlr4Formatter />
-            </antlr4>
-            <java>
-              <endWithNewline />
-              <importOrder />
-              <indent>
-                <spaces>true</spaces>
-              </indent>
-              <removeUnusedImports />
-              <trimTrailingWhitespace />
-            </java>
-            <pom>
-              <sortPom>
-                <encoding>${project.build.sourceEncoding}</encoding>
-                <lineSeparator>\n</lineSeparator>
-                <expandEmptyElements>false</expandEmptyElements>
-                <spaceBeforeCloseEmptyElement>true</spaceBeforeCloseEmptyElement>
-                <sortDependencies>scope,groupId,artifactId</sortDependencies>
-                <sortDependencyExclusions>groupId,artifactId</sortDependencyExclusions>
-              </sortPom>
-            </pom>
-          </configuration>
-          <executions>
-            <execution>
-              <!-- Runs in verify phase by default -->
-              <goals>
-                <!-- Can be disabled using -Dspotless.check.skip -->
-                <goal>check</goal>
-              </goals>
-            </execution>
-          </executions>
-        </plugin>
-        <plugin>
           <groupId>org.jacoco</groupId>
           <artifactId>jacoco-maven-plugin</artifactId>
           <version>0.8.9</version>
@@ -393,6 +355,41 @@ THE SOFTWARE.
     </pluginManagement>
 
     <plugins>
+      <plugin>
+        <groupId>com.diffplug.spotless</groupId>
+        <artifactId>spotless-maven-plugin</artifactId>
+        <!-- Version specified in parent POM -->
+        <configuration>
+          <antlr4>
+            <antlr4Formatter />
+          </antlr4>
+          <groovy>
+            <includes>
+              <include>Jenkinsfile</include>
+              <include>licenseCompleter.groovy</include>
+            </includes>
+            <greclipse>
+              <file>config/greclipse.properties</file>
+            </greclipse>
+          </groovy>
+          <java combine.self="override">
+            <endWithNewline />
+            <importOrder />
+            <indent>
+              <spaces>true</spaces>
+            </indent>
+            <removeUnusedImports />
+            <trimTrailingWhitespace />
+          </java>
+        </configuration>
+        <dependencies>
+          <dependency>
+            <groupId>io.jenkins.lib</groupId>
+            <artifactId>shared-resources</artifactId>
+            <version>1.0</version>
+          </dependency>
+        </dependencies>
+      </plugin>
       <plugin>
         <artifactId>maven-release-plugin</artifactId>
         <!-- Version specified in parent POM -->
@@ -450,11 +447,6 @@ THE SOFTWARE.
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-checkstyle-plugin</artifactId>
         <!-- Version specified in parent POM -->
-      </plugin>
-      <plugin>
-        <groupId>com.diffplug.spotless</groupId>
-        <artifactId>spotless-maven-plugin</artifactId>
-        <version>${spotless.version}</version>
       </plugin>
     </plugins>
   </build>

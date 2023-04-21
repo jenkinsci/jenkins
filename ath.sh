@@ -6,7 +6,13 @@ set -o xtrace
 cd "$(dirname "$0")"
 
 # https://github.com/jenkinsci/acceptance-test-harness/releases
-export ATH_VERSION=5537.v26d6599fdc59
+export ATH_VERSION=5545.v924953404220
+
+if [[ $# -eq 0 ]]; then
+	export BROWSER=firefox
+else
+	export BROWSER=$1
+fi
 
 MVN='mvn -B -ntp -Pquick-build -am -pl war package'
 if [[ -n ${MAVEN_SETTINGS-} ]]; then
@@ -20,6 +26,7 @@ chmod a+rwx target/ath-reports
 
 exec docker run --rm \
 	--env ATH_VERSION \
+	--env BROWSER \
 	--shm-size 2g `# avoid selenium.WebDriverException exceptions like 'Failed to decode response from marionette' and webdriver closed` \
 	--volume "$(pwd)"/war/target/jenkins.war:/jenkins.war:ro \
 	--volume /var/run/docker.sock:/var/run/docker.sock:rw \
@@ -37,7 +44,7 @@ exec docker run --rm \
 		env | sort
 		git clone --branch "$ATH_VERSION" --depth 1 https://github.com/jenkinsci/acceptance-test-harness
 		cd acceptance-test-harness
-		run.sh firefox /jenkins.war \
+		run.sh "$BROWSER" /jenkins.war \
 			-Dmaven.test.failure.ignore \
 			-DforkCount=1 \
 			-Dgroups=org.jenkinsci.test.acceptance.junit.SmokeTest
