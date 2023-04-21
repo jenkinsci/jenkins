@@ -261,6 +261,9 @@ THE SOFTWARE.
                       class="jenkins-button jenkins-button--primary">
                 ${%Create account}
               </button>
+              <div class="app-sign-in-register__switcher">
+                <a href="login">${%or sign in}</a>
+              </div>
               <input type="hidden" name="${h.getCrumbRequestField()}" value="${h.getCrumb(request)}"/>
               <j:if test="${data.errorField != null}">
                 <script type="text/javascript">
