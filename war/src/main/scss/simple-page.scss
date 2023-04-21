@@ -1,0 +1,344 @@
+/*
+ * The MIT License
+ *
+ * Copyright (c) 2018-2020, CloudBees, Inc.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+@use "./abstracts/mixins";
+@use "./abstracts/theme";
+@use "./base/typography";
+@use "./base/spacing";
+@use "./form/checkbox";
+@use "./form/input";
+@use "./form/layout";
+@use "./modules/buttons";
+@use "./pages/about";
+
+body {
+  background: var(--background);
+}
+
+a {
+  @include mixins.link;
+}
+
+.nope {
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  margin: 0;
+}
+
+.simple-page {
+  width: 100vw;
+  height: 100vh;
+}
+
+.simple-page h1 {
+  font-size: 24px;
+  line-height: normal;
+}
+
+.simple-page h1,
+.simple-page .signupTag,
+.simple-page .restarting {
+  text-align: center;
+}
+
+.simple-page--description {
+  margin-top: 0;
+  margin-bottom: var(--section-padding);
+}
+
+.simple-page form {
+  width: 300px;
+}
+
+.simple-page .jenkins-form-item {
+  max-width: 100%;
+}
+
+.simple-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 90vh;
+}
+
+html {
+  color: var(--text-color);
+}
+
+.simple-page .jenkins-button {
+  width: 100%;
+}
+
+.simple-page .logo {
+  text-align: center;
+}
+
+.simple-page .logo > img {
+  height: 130px;
+}
+
+.simple-page form .submit input {
+  background-color: var(--btn-primary-bg, #0b6aa2);
+  border: solid 1px;
+  border-color: var(--btn-primary-bg, #0b6aa2);
+}
+
+.simple-page .danger {
+  border: 2px solid var(--error-color);
+}
+
+.simple-page .alert {
+  color: var(--error-color);
+}
+
+.longhorn-host {
+  display: grid;
+  grid-template-columns: 0.7fr 1fr;
+  align-items: stretch;
+
+  @media (max-width: 992px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+@property --opacity {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@keyframes app-about-starburst2 {
+  to {
+    --opacity: 360deg;
+  }
+}
+
+.longhorn {
+  position: sticky;
+  top: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+
+  @media (max-width: 992px) {
+    display: none;
+  }
+
+  .startburst {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    backdrop-filter: invert(2%) blur(100px);
+    mask-image: repeating-conic-gradient(from var(--opacity),
+            var(--background) 0deg,
+            transparent 20deg
+    );
+    animation: app-about-starburst2 100s linear infinite;
+  }
+
+  &::before, &::after {
+    content: "";
+    position: absolute;
+    width: 130vh;
+    aspect-ratio: 1;
+    object-fit: cover;
+    z-index: -1;
+  }
+
+  &::before {
+    background-image:
+            radial-gradient(at 40% 20%, var(--orange) 0, transparent 50%),
+            radial-gradient(at 80% 0%, var(--cyan) 0, transparent 50%),
+            radial-gradient(at 0% 50%, var(--light-pink) 0, transparent 50%),
+            radial-gradient(at 80% 50%, var(--light-red) 0, transparent 50%),
+            radial-gradient(at 0% 100%, var(--light-yellow) 0, transparent 50%),
+            radial-gradient(at 80% 100%, var(--dark-purple) 0, transparent 50%),
+            radial-gradient(at 0% 0%, var(--pink) 0, transparent 50%);
+    animation: aurora-one 5s linear infinite;
+  }
+
+  &::after {
+    background-image:
+            radial-gradient(at 40% 20%, var(--light-cyan) 0, transparent 50%),
+            radial-gradient(at 80% 0%, var(--dark-orange) 0, transparent 50%),
+            radial-gradient(at 0% 50%, var(--light-blue) 0, transparent 50%),
+            radial-gradient(at 80% 50%, var(--light-green) 0, transparent 50%),
+            radial-gradient(at 0% 100%, var(--light-red) 0, transparent 50%),
+            radial-gradient(at 80% 100%, var(--light-yellow) 0, transparent 50%),
+            radial-gradient(at 0% 0%, var(--cyan) 0, transparent 50%);
+    animation: aurora-two 8s linear infinite;
+  }
+
+  img {
+    height: 15rem;
+    z-index: 1;
+  }
+}
+
+.longhorn2 {
+  display: flex;
+  justify-content: center;
+  flex: 1;
+}
+
+.spaceandtime {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-grow: 1;
+  padding: calc(var(--section-padding) * 3) var(--section-padding);
+}
+
+.longhorn3 {
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  flex-direction: column;
+  gap: 1.6rem;
+  width: 100%;
+
+  @media (min-width: 430px) {
+    width: 430px;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  h1 {
+    font-size: 1.8rem;
+    font-family: "Georgia", serif;
+    text-align: left;
+    margin-bottom: 0;
+
+    @media (max-width: 600px) {
+      font-size: 1.6rem;
+    }
+  }
+
+  input {
+    padding: 0.6rem 0.75rem;
+    border-radius: 0.66rem;
+    font-size: 0.95rem;
+  }
+
+  .longhornlabel {
+    display: block;
+    font-size: 0.95rem;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+  }
+
+  button {
+    padding: 0.9rem 1rem;
+    font-size: 0.95rem;
+  }
+
+  form {
+    display: contents;
+  }
+
+  .line-text {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &::before {
+      content: "";
+      position: absolute;
+      inset: calc(50% + 1px) 0;
+      height: 2px;
+      border-radius: 10px;
+      background-color: var(--input-border);
+    }
+
+    p {
+      background-color: var(--background);
+      z-index: 1;
+      padding: 0 1.6rem;
+      font-weight: 500;
+      font-size: 0.95rem;
+      margin: 0;
+      color: var(--text-color);
+
+      a {
+        font-weight: inherit;
+      }
+    }
+  }
+
+  .jenkins-checkbox {
+    font-size: 0.95rem;
+  }
+
+  .footer {
+    &:empty {
+      display: none;
+    }
+  }
+
+}
+
+
+@keyframes aurora-one {
+  0% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 0.15;
+    transform: rotate(-180deg);
+  }
+  100% {
+    opacity: 0.3;
+    transform: rotate(-360deg);
+  }
+}
+
+@keyframes aurora-two {
+  0% {
+    opacity: 0.15;
+  }
+  50% {
+    opacity: 0.5;
+    transform: rotate(180deg);
+  }
+  100% {
+    opacity: 0.15;
+    transform: rotate(360deg);
+  }
+}
+
+.longhorn-error {
+  font-size: 0.95rem;
+  color: var(--error-color);
+  font-weight: 500;
+}
+
+.wouldntbefair {
+  font-size: 0.95rem;
+  color: var(--text-color-secondary);
+}
