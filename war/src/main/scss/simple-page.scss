@@ -39,11 +39,6 @@ a {
   @include mixins.link;
 }
 
-.simple-page {
-  width: 100vw;
-  height: 100vh;
-}
-
 .simple-page h1 {
   font-size: 24px;
   line-height: normal;
@@ -83,6 +78,10 @@ html {
   width: 100%;
 }
 
+.simple-page .jenkins-input {
+  width: 94%;
+}
+
 .simple-page .logo {
   text-align: center;
 }
@@ -98,9 +97,10 @@ html {
 }
 
 .simple-page .danger {
-  border: 2px solid var(--error-color);
+  border: 1px solid;
+  border-color: var(--danger-color, #c4000a);
 }
 
 .simple-page .alert {
-  color: var(--error-color);
+  color: var(--danger-color, #c4000a);
 }

@@ -49,7 +49,6 @@ THE SOFTWARE.
         <meta name="viewport" content="width=device-width, initial-scale=1"/>
         <!-- css styling, will fallback to default implementation -->
         <st:include it="${simpleDecorator}" page="simple-head.jelly" optional="true"/>
-        <link rel="stylesheet" href="${resURL}/css/signup.css" type="text/css"/>
       </head>
       <body class="app-sign-in-register">
         <div class="app-sign-in-register__branding">

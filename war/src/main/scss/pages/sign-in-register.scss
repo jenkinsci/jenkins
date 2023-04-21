@@ -289,3 +289,13 @@
 .jenkins-input--error {
   border-color: var(--error-color);
 }
+
+.inputHeader {
+  display: flex;
+  justify-content: space-between;
+}
+
+#passwordStrengthWrapper {
+  margin-top: 0.75rem;
+  font-size: 0.95rem;
+}
