@@ -35,7 +35,7 @@ import hudson.model.User;
  * User specific experimental flag to enable or disable specific behavior.
  * As it's user specific, usually this kind of feature flag is only used for UI.
  *
- * @since TODO
+ * @since 2.395
  */
 public abstract class UserExperimentalFlag<T> implements ExtensionPoint {
     private final String flagKey;
