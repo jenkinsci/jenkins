@@ -94,7 +94,6 @@ public final class Symbol {
                      .replaceAll("(class=\").*?(\")", "")
                      .replaceAll("(tooltip=\").*?(\")", "")
                      .replaceAll("(data-html-tooltip=\").*?(\")", "")
-                     .replaceAll("(id=\").*?(\")", "")
                      .replace("stroke:#000", "stroke:currentColor");
     }
 

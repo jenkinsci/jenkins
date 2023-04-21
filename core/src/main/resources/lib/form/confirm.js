@@ -77,12 +77,12 @@
       var button = buttons[i];
       name = button.getAttribute("name");
       if (name == "Submit" || name == "Apply" || name == "OK") {
-        $(button).on("click", function () {
+        button.addEventListener("click", function () {
           needToConfirm = false;
         });
       } else {
         if (isModifyingButton(button)) {
-          $(button).on("click", confirm);
+          button.addEventListener("click", confirm);
         }
       }
     }
@@ -92,9 +92,9 @@
       var input = inputs[i];
       if (!isIgnoringConfirm(input)) {
         if (input.type == "checkbox" || input.type == "radio") {
-          $(input).on("click", confirm);
+          input.addEventListener("click", confirm);
         } else {
-          $(input).on("input", confirm);
+          input.addEventListener("input", confirm);
         }
       }
     }
@@ -103,7 +103,7 @@
     for (let i = 0; i < inputs.length; i++) {
       let input = inputs[i];
       if (!isIgnoringConfirm(input)) {
-        $(input).on("change", confirm);
+        input.addEventListener("change", confirm);
       }
     }
 
@@ -111,7 +111,7 @@
     for (let i = 0; i < inputs.length; i++) {
       let input = inputs[i];
       if (!isIgnoringConfirm(input)) {
-        $(input).on("input", confirm);
+        input.addEventListener("input", confirm);
       }
     }
   }

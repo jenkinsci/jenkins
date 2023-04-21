@@ -82,7 +82,7 @@ abstract class TaskMethodFinder<T extends Annotation> extends TaskBuilder {
     protected String getDisplayNameOf(Method e, T i) {
         Class<?> c = e.getDeclaringClass();
         String key = displayNameOf(i);
-        if (key.length() == 0)  return c.getSimpleName() + "." + e.getName();
+        if (key.isEmpty())  return c.getSimpleName() + "." + e.getName();
         try {
             ResourceBundleHolder rb = ResourceBundleHolder.get(
                     c.getClassLoader().loadClass(c.getPackage().getName() + ".Messages"));
