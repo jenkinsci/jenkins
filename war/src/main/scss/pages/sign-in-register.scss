@@ -84,10 +84,10 @@
       var(--background) 0deg,
       transparent 20deg
     );
-    animation: app-sign-in-register__branding__starburst-animation 100s linear
+    animation: app-sign-in-register-branding-starburst-animation 100s linear
       infinite;
 
-    @keyframes app-sign-in-register__branding__starburst-animation {
+    @keyframes app-sign-in-register-branding-starburst-animation {
       to {
         --opacity: 360deg;
       }
