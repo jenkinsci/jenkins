@@ -40,6 +40,7 @@ import com.google.common.collect.ImmutableMap;
 import com.thoughtworks.xstream.XStreamException;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.thoughtworks.xstream.mapper.CannotResolveClassException;
+import hudson.Functions;
 import hudson.model.Result;
 import hudson.model.Run;
 import java.io.ByteArrayInputStream;
@@ -56,7 +57,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 
@@ -599,7 +599,6 @@ public class XStream2Test {
     }
 
     @Issue("JENKINS-71139")
-    @Ignore("TODO ParseError: The reference to entity \"y\" must end with the ';' delimiter.")
     @Test
     public void nullsWithoutEncodingDeclaration() throws Exception {
         Bar b = new Bar();
@@ -607,7 +606,12 @@ public class XStream2Test {
         b.s = text;
         StringWriter w = new StringWriter();
         XStream2 xs = new XStream2();
-        xs.toXML(b, w);
+        try {
+            xs.toXML(b, w);
+        } catch (RuntimeException x) {
+            assertThat("cause is com.thoughtworks.xstream.io.StreamException: Invalid character 0x0 in XML stream", Functions.printThrowable(x), containsString("0x0"));
+            return; // not supported to read either
+        }
         String xml = w.toString();
         assertThat(xml, not(containsString("version=\"1.1\"")));
         System.out.println(xml);
@@ -616,7 +620,6 @@ public class XStream2Test {
     }
 
     @Issue("JENKINS-71139")
-    @Ignore("TODO ParseError: The reference to entity \"y\" must end with the ';' delimiter.")
     @Test
     public void nullsWithEncodingDeclaration() throws Exception {
         Bar b = new Bar();
@@ -624,7 +627,12 @@ public class XStream2Test {
         b.s = text;
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         XStream2 xs = new XStream2();
-        xs.toXMLUTF8(b, baos);
+        try {
+            xs.toXMLUTF8(b, baos);
+        } catch (RuntimeException x) {
+            assertThat("cause is com.thoughtworks.xstream.io.StreamException: Invalid character 0x0 in XML stream", Functions.printThrowable(x), containsString("0x0"));
+            return; // not supported to read either
+        }
         String xml = baos.toString(StandardCharsets.UTF_8);
         System.out.println(xml);
         assertThat(xml, containsString("version=\"1.1\""));
