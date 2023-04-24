@@ -38,10 +38,10 @@ THE SOFTWARE.
   <description>The module contains dependencies that are used by a specific Jenkins version</description>
 
   <properties>
-    <asm.version>9.4</asm.version>
+    <asm.version>9.5</asm.version>
     <slf4jVersion>2.0.7</slf4jVersion>
     <!-- TODO https://github.com/jenkinsci/stapler/pull/452 -->
-    <stapler.version>1781.vb_db_f92deffb_0</stapler.version>
+    <stapler.version>1784.v2c15a_6b_9a_166</stapler.version>
     <groovy.version>2.4.21</groovy.version>
   </properties>
 
@@ -57,7 +57,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.springframework</groupId>
         <artifactId>spring-framework-bom</artifactId>
-        <version>5.3.26</version>
+        <version>5.3.27</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -65,7 +65,7 @@ THE SOFTWARE.
         <!-- https://docs.spring.io/spring-security/site/docs/5.5.4/reference/html5/#getting-maven-no-boot -->
         <groupId>org.springframework.security</groupId>
         <artifactId>spring-security-bom</artifactId>
-        <version>5.8.2</version>
+        <version>5.8.3</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>

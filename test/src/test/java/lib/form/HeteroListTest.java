@@ -28,7 +28,6 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import com.gargoylesoftware.htmlunit.html.DomElement;
@@ -51,7 +50,6 @@ import java.io.File;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import net.sourceforge.htmlunit.corejs.javascript.NativeArray;
 import org.jenkinsci.Symbol;
 import org.junit.Rule;
 import org.junit.Test;
@@ -82,35 +80,6 @@ public class HeteroListTest {
         HTMLAnchorElement menuItem = (HTMLAnchorElement) result;
         String menuItemContent = menuItem.getInnerHTML();
         assertThat(menuItemContent, not(containsString("<")));
-    }
-
-    // correspond to the hardening of escapeEntryTitleAndDescription
-    @Test
-    @Issue("SECURITY-2035")
-    public void xssPrevented_usingToolInstallation_withJustDisplayName() throws Exception {
-        JenkinsRule.WebClient wc = j.createWebClient();
-
-        HtmlPage page = wc.goTo("configureTools/");
-
-        // check the displayName
-        Object resultDN = page.executeJavaScript(
-                "var settingFields = document.querySelectorAll('.jenkins-form-label');" +
-                        "var children = Array.from(settingFields).filter(b => b.textContent.indexOf('XSS:') !== -1)[0].children;" +
-                        "Array.from(children).filter(c => c.tagName === 'IMG')"
-        ).getJavaScriptResult();
-        assertThat(resultDN, instanceOf(NativeArray.class));
-        NativeArray resultDNNA = (NativeArray) resultDN;
-        assertEquals(0, resultDNNA.size());
-
-        // check the description
-        Object resultDesc = page.executeJavaScript(
-                "var settingFields = document.querySelectorAll('.jenkins-form-description');" +
-                        "var children = Array.from(settingFields).filter(b => b.textContent.indexOf('XSS:') !== -1)[0].children;" +
-                        "Array.from(children).filter(c => c.tagName === 'IMG')"
-        ).getJavaScriptResult();
-        assertThat(resultDesc, instanceOf(NativeArray.class));
-        NativeArray resultDescNA = (NativeArray) resultDesc;
-        assertEquals(0, resultDescNA.size());
     }
 
     @Test

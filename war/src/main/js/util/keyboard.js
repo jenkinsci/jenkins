@@ -32,7 +32,9 @@ export default function makeKeyboardNavigable(
           selectedItem = items[0];
         }
 
-        selectedItem?.classList.add(selectedClass);
+        if (selectedItem !== null) {
+          selectedItem.classList.add(selectedClass);
+        }
       } else if (e.key === "ArrowUp") {
         if (selectedItem) {
           selectedItem.classList.remove(selectedClass);
@@ -47,9 +49,13 @@ export default function makeKeyboardNavigable(
           selectedItem = items[items.length - 1];
         }
 
-        selectedItem?.classList.add(selectedClass);
+        if (selectedItem !== null) {
+          selectedItem.classList.add(selectedClass);
+        }
       } else if (e.key === "Enter") {
-        selectedItem?.click();
+        if (selectedItem !== null) {
+          selectedItem.click();
+        }
       }
     }
   });
