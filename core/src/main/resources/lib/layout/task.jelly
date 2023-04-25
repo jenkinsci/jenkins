@@ -75,6 +75,9 @@ THE SOFTWARE.
       Generally used with post="true".
       (onclick supersedes this except in the context menu.)
     </st:attribute>
+    <st:attribute name="badge" since="TODO">
+      If set, displays the value as a small badge on the right side of the sidepanel item.
+    </st:attribute>
     <st:attribute name="confirmationMessage" since="1.512">
       Message to use for confirmation, if requested; defaults to title.
     </st:attribute>
@@ -133,6 +136,11 @@ THE SOFTWARE.
                 <l:icon src="${icon}" />
               </span>
               <span class="task-link-text">${title}</span>
+              <j:if test="${attrs.badge != null}">
+                <span class="task-icon-badge" tooltip="${attrs.badge.tooltip}">
+                  ${attrs.badge.text}
+                </span>
+              </j:if>
             </span>
           </span>
         </div>
@@ -164,6 +172,11 @@ THE SOFTWARE.
                     <l:icon src="${icon}" />
                   </span>
                   <span>${title}</span>
+                  <j:if test="${attrs.badge != null}">
+                    <span class="task-icon-badge" tooltip="${attrs.badge.tooltip}">
+                      ${attrs.badge.text}
+                    </span>
+                  </j:if>
                 </l:confirmationLink>
               </j:when>
 
@@ -173,6 +186,11 @@ THE SOFTWARE.
                     <l:icon src="${icon}" />
                   </span>
                   <span class="task-link-text">${title}</span>
+                  <j:if test="${attrs.badge != null}">
+                    <span class="task-icon-badge" tooltip="${attrs.badge.tooltip}">
+                      ${attrs.badge.text}
+                    </span>
+                  </j:if>
                 </a>
               </j:otherwise>
             </j:choose>

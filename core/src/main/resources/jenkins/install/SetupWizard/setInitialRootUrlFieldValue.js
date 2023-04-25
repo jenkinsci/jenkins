@@ -1,4 +1,4 @@
-var rootUrlField = $("root-url");
+var rootUrlField = document.getElementById("root-url");
 
 rootUrlField.focus();
 rootUrlField.onkeydown = function (event) {
