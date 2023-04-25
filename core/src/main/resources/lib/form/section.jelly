@@ -27,7 +27,7 @@ THE SOFTWARE.
   <st:documentation>
     Section header in the form table.
 
-    <st:attribute name="title" use="required"> <![CDATA[
+    <st:attribute name="title"> <![CDATA[
       The section header text.
       If null is given, the entire <f:section> tag becomes no-op.
       ]]>
@@ -43,7 +43,7 @@ THE SOFTWARE.
   <st:adjunct includes="lib.form.section_" />
 
   <f:rowSet name="${attrs.name}">
-    <div class="${attrs.title!=null ? 'jenkins-section' : ''}">
+    <section class="${attrs.title!=null ? 'jenkins-section' : ''}">
       <j:if test="${attrs.title!=null}">
         <div class="jenkins-section__title">
           <div class="jenkins-hidden">
@@ -53,6 +53,6 @@ THE SOFTWARE.
         </div>
       </j:if>
       <d:invokeBody />
-    </div>
+    </section>
   </f:rowSet>
 </j:jelly>
