@@ -40,6 +40,10 @@ THE SOFTWARE.
     <st:include page="sidepanel.jelly"/>
     <!-- no need for additional breadcrumb here as we're on an "index" page already including breadcrumb -->
 
+    <l:header>
+      <script src="${resURL}/jsbundles/components/row-selection-controller.js" type="text/javascript" defer="true" />
+    </l:header>
+
     <l:main-panel>
       <l:app-bar title="${%Plugins}" />
 

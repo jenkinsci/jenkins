@@ -1110,7 +1110,7 @@ public class Util {
      */
     @CheckForNull
     public static String fixEmpty(@CheckForNull String s) {
-        if (s == null || s.length() == 0)    return null;
+        if (s == null || s.isEmpty())    return null;
         return s;
     }
 
@@ -1487,7 +1487,7 @@ public class Util {
      */
     @CheckForNull
     public static Number tryParseNumber(@CheckForNull String numberStr, @CheckForNull Number defaultNumber) {
-        if (numberStr == null || numberStr.length() == 0) {
+        if (numberStr == null || numberStr.isEmpty()) {
             return defaultNumber;
         }
         try {

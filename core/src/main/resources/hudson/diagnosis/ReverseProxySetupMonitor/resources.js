@@ -9,13 +9,19 @@
 
   var urlToTest = redirectForm.getAttribute("data-url");
   var callUrlToTest = function (testWithContext, callback) {
-    var options = {
-      onComplete: callback,
-    };
+    var body = null;
     if (testWithContext === true) {
-      options.parameters = { testWithContext: true };
+      body = new URLSearchParams({ testWithContext: "true" });
     }
-    new Ajax.Request(urlToTest, options);
+    fetch(urlToTest, {
+      cache: "no-cache",
+      headers: crumb.wrap({}),
+      body,
+    })
+      .then((rsp) => callback(rsp))
+      // normally you don't need a catch function with fetch because HTTP errors doesn't reject a promise,
+      // but it does reject on network errors which is exactly what this is testing for.
+      .catch((rsp) => callback(rsp));
   };
 
   var displayWarningMessage = function (withContextMessage) {
