@@ -27,6 +27,7 @@ package hudson.model;
 import hudson.Extension;
 import hudson.Util;
 import java.io.IOException;
+import jenkins.management.Badge;
 import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithContextMenu;
 import org.apache.commons.jelly.JellyException;
@@ -78,13 +79,13 @@ public class ManageJenkinsAction implements RootAction, StaplerFallback, ModelOb
      * menu.
      */
     @Restricted(NoExternalUse.class)
-    public void addContextMenuItem(ContextMenu menu, String url, String icon, String iconXml, String text, boolean post, boolean requiresConfirmation) {
+    public void addContextMenuItem(ContextMenu menu, String url, String icon, String iconXml, String text, boolean post, boolean requiresConfirmation, Badge badge) {
         if (Stapler.getCurrentRequest().findAncestorObject(this.getClass()) != null || !Util.isSafeToRedirectTo(url)) {
             // Default behavior if the URL is absolute or scheme-relative, or the current object is an ancestor (i.e. would resolve correctly)
-            menu.add(url, icon, iconXml, text, post, requiresConfirmation);
+            menu.add(url, icon, iconXml, text, post, requiresConfirmation, badge);
             return;
         }
         // If neither is the case, rewrite the relative URL to point to inside the /manage/ URL space
-        menu.add("manage/" + url, icon, iconXml, text, post, requiresConfirmation);
+        menu.add("manage/" + url, icon, iconXml, text, post, requiresConfirmation, badge);
     }
 }

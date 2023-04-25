@@ -4229,7 +4229,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      *      if the given name is not good
      */
     public static void checkGoodName(String name) throws Failure {
-        if (name == null || name.length() == 0)
+        if (name == null || name.isEmpty())
             throw new Failure(Messages.Hudson_NoName());
 
         if (".".equals(name.trim()))

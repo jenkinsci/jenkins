@@ -26,18 +26,26 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:x="jelly:xml" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
          xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <div id="rss-bar" class="jenkins-buttons-row jenkins-buttons-row--invert">
-    <a href="${rootURL}/legend" class="jenkins-button jenkins-button--tertiary">${%legend}</a>
-      <a href="rssAll" class="jenkins-button jenkins-button--tertiary">
-        <l:icon src="symbol-rss" />
-        <span>Atom feed ${%forAll}</span>
-      </a>
-      <a href="rssFailed" class="jenkins-button jenkins-button--tertiary">
-        <l:icon src="symbol-rss" />
-        <span>Atom feed ${%forFailures}</span>
-      </a>
-      <a href="rssLatest" class="jenkins-button jenkins-button--tertiary">
-        <l:icon src="symbol-rss" />
-        <span>Atom feed ${%justLatestBuilds}</span>
-      </a>
+    <button class="jenkins-button jenkins-button--tertiary" id="button-icon-legend">
+      ${%legend}
+    </button>
+    <a href="rssAll" class="jenkins-button jenkins-button--tertiary">
+      <l:icon src="symbol-rss" />
+      <span>Atom feed ${%forAll}</span>
+    </a>
+    <a href="rssFailed" class="jenkins-button jenkins-button--tertiary">
+      <l:icon src="symbol-rss" />
+      <span>Atom feed ${%forFailures}</span>
+    </a>
+    <a href="rssLatest" class="jenkins-button jenkins-button--tertiary">
+      <l:icon src="symbol-rss" />
+      <span>Atom feed ${%justLatestBuilds}</span>
+    </a>
   </div>
+
+  <template id="template-icon-legend">
+    <st:include page="_legend.jelly" it="${app}" />
+  </template>
+
+  <script src="${resURL}/jsbundles/pages/dashboard.js" type="text/javascript" defer="true" />
 </j:jelly>
