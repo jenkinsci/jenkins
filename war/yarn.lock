@@ -1290,23 +1290,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@csstools/css-parser-algorithms@npm:^2.1.0":
-  version: 2.1.0
-  resolution: "@csstools/css-parser-algorithms@npm:2.1.0"
+"@csstools/css-parser-algorithms@npm:^2.1.1":
+  version: 2.1.1
+  resolution: "@csstools/css-parser-algorithms@npm:2.1.1"
   peerDependencies:
-    "@csstools/css-tokenizer": ^2.0.0
-  checksum: 197c8b0db9e721974d3850a44c73a7c1c0ebdddf981ddbc5f0a56d60c09c332bcd9f63ae391811ba3b11b9939faa50ada15c5cc38490861ba48f8933b599f660
+    "@csstools/css-tokenizer": ^2.1.1
+  checksum: 0ba3f3d38b99c933d12c6cb7fc348a9c0056a1e23b8a4b7e66b79295b5071bc443c4c3ed87ad7f155ce7e76e49c20c582dc27d804c9a45c82e5bd37585870d60
   languageName: node
   linkType: hard
 
-"@csstools/css-tokenizer@npm:^2.1.0":
-  version: 2.1.0
-  resolution: "@csstools/css-tokenizer@npm:2.1.0"
-  checksum: af3619557e18cd348810cfb41b3b7177b36d216df8dd4cac3979f241c15416baf8cdd55fb764ecc78fab5985b085363cfc8e8b8a18aaa361d00c9b9300b7c0f3
+"@csstools/css-tokenizer@npm:^2.1.1":
+  version: 2.1.1
+  resolution: "@csstools/css-tokenizer@npm:2.1.1"
+  checksum: d6ac4b08d7fdfc146755542f00b208af7248efd6cf2eb0f0f7d2ba3583a81f08ed9be6047d78b046925708b5bd0886f487edeeee2f90f0f34030dcbef4122d0e
   languageName: node
   linkType: hard
 
-"@csstools/media-query-list-parser@npm:^2.0.2":
+"@csstools/media-query-list-parser@npm:^2.0.4":
   version: 2.0.4
   resolution: "@csstools/media-query-list-parser@npm:2.0.4"
   peerDependencies:
@@ -4032,7 +4032,7 @@ __metadata:
     sass-loader: 13.2.2
     sortablejs: 1.15.0
     style-loader: 3.3.2
-    stylelint: 15.5.0
+    stylelint: 15.6.0
     stylelint-checkstyle-reporter: 0.2.0
     stylelint-config-standard: 32.0.0
     tippy.js: 6.3.7
@@ -5450,7 +5450,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"postcss@npm:8.4.23, postcss@npm:^8.4.19, postcss@npm:^8.4.21":
+"postcss@npm:8.4.23, postcss@npm:^8.4.19, postcss@npm:^8.4.21, postcss@npm:^8.4.22":
   version: 8.4.23
   resolution: "postcss@npm:8.4.23"
   dependencies:
@@ -6160,13 +6160,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"stylelint@npm:15.5.0":
-  version: 15.5.0
-  resolution: "stylelint@npm:15.5.0"
+"stylelint@npm:15.6.0":
+  version: 15.6.0
+  resolution: "stylelint@npm:15.6.0"
   dependencies:
-    "@csstools/css-parser-algorithms": ^2.1.0
-    "@csstools/css-tokenizer": ^2.1.0
-    "@csstools/media-query-list-parser": ^2.0.2
+    "@csstools/css-parser-algorithms": ^2.1.1
+    "@csstools/css-tokenizer": ^2.1.1
+    "@csstools/media-query-list-parser": ^2.0.4
     "@csstools/selector-specificity": ^2.2.0
     balanced-match: ^2.0.0
     colord: ^2.9.3
@@ -6191,7 +6191,7 @@ __metadata:
     micromatch: ^4.0.5
     normalize-path: ^3.0.0
     picocolors: ^1.0.0
-    postcss: ^8.4.21
+    postcss: ^8.4.22
     postcss-media-query-parser: ^0.2.3
     postcss-resolve-nested-selector: ^0.1.1
     postcss-safe-parser: ^6.0.0
@@ -6208,7 +6208,7 @@ __metadata:
     write-file-atomic: ^5.0.0
   bin:
     stylelint: bin/stylelint.js
-  checksum: 330d8cceac28d0b795ffed87bca893e290a498d242cc2cfc9747e983c710db5ebb7ea22028dcbe363095cec01d51909e53572e405b7b2aadbf735738c63ee7f7
+  checksum: da246969361a141a06533c57b975f6a120b7e3c8591e20057a0e561397c151d0d13f8efa423663a5c5108dc0ea9b8e73756031ea54b281f578222d1e11737263
   languageName: node
   linkType: hard
 
