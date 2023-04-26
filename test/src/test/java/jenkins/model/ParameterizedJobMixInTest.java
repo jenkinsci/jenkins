@@ -27,6 +27,7 @@ package jenkins.model;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
@@ -36,6 +37,7 @@ import hudson.model.FreeStyleProject;
 import hudson.model.ParametersDefinitionProperty;
 import hudson.model.Queue;
 import hudson.model.StringParameterDefinition;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import javax.servlet.http.HttpServletResponse;
 import org.junit.Assert;
@@ -87,7 +89,11 @@ public class ParameterizedJobMixInTest {
         project.setQuietPeriod(projectQuietPeriodInSeconds);
 
         final JenkinsRule.WebClient webClient = j.createWebClient();
-        webClient.getPage(webClient.addCrumb(new WebRequest(new URL(j.getURL(), project.getUrl() + "build"), HttpMethod.POST)));
+        HttpURLConnection conn = (HttpURLConnection) webClient.createCrumbedUrl(project.getUrl() + "build")
+                .openConnection();
+        conn.setRequestMethod("POST");
+        assertEquals(HttpURLConnection.HTTP_CREATED, conn.getResponseCode());
+
         long triggerTime = System.currentTimeMillis();
 
         Queue.Item item = Jenkins.get().getQueue().getItem(1);
