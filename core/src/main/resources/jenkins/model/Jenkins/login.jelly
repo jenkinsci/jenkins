@@ -68,7 +68,7 @@ THE SOFTWARE.
           </j:when>
           <j:otherwise>
             <st:include it="${simpleDecorator}" page="simple-header.jelly" optional="true" />
-            <main class="app-sign-in-register__content">
+            <main id="main-panel" class="app-sign-in-register__content">
               <div class="app-sign-in-register__content-inner">
                 <h1>Sign in to Jenkins</h1>
 

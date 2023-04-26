@@ -52,7 +52,7 @@ THE SOFTWARE.
       </head>
       <body class="app-sign-in-register">
         <st:include it="${simpleDecorator}" page="simple-header.jelly" optional="true" />
-        <main class="app-sign-in-register__content">
+        <main id="main-panel" class="app-sign-in-register__content">
           <div class="app-sign-in-register__content-inner">
             <h1>${%Register}</h1>
             <form class="signup" action="${rootURL}/securityRealm/createAccount" method="post">
