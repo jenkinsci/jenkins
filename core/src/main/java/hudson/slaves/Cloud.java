@@ -115,7 +115,9 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
      * This is expected to be short ID-like string that does not contain any character unsafe as variable name or
      * URL path token.
      */
-    public final String name;
+    public String name;
+
+    private transient boolean lookupByIndex;
 
     protected Cloud(String name) {
         Validate.notEmpty(name, Messages.Cloud_RequiredName());
@@ -337,6 +339,14 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
     private Cloud reconfigure(@NonNull final StaplerRequest req, JSONObject form) throws Descriptor.FormException {
         if (form == null)     return null;
         return getDescriptor().newInstance(req, form);
+    }
+
+    public void setLookupByIndex(boolean lookupByIndex) {
+        this.lookupByIndex = lookupByIndex;
+    }
+
+    public boolean isLookupByIndex() {
+        return lookupByIndex;
     }
 
     /**

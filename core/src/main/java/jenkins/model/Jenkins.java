@@ -1087,6 +1087,11 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             nodeRenameMigrationNeeded = true;
         }
 
+        Set<String> cloudNames = new HashSet<>();
+        for (Cloud c : this.clouds) {
+            c.setLookupByIndex(!cloudNames.add(c.name));
+        }
+
         return this;
     }
 

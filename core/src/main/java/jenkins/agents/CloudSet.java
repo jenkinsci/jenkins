@@ -39,6 +39,8 @@ import hudson.util.FormValidation;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithChildren;
@@ -56,6 +58,8 @@ import org.kohsuke.stapler.verb.POST;
 
 @Restricted(NoExternalUse.class)
 public class CloudSet extends AbstractModelObject implements Describable<CloudSet>, ModelObjectWithChildren, RootAction, StaplerProxy {
+    private static final Logger LOGGER = Logger.getLogger(CloudSet.class.getName());
+
     @Override
     public Descriptor<CloudSet> getDescriptor() {
         return Jenkins.get().getDescriptorOrDie(CloudSet.class);
@@ -90,6 +94,17 @@ public class CloudSet extends AbstractModelObject implements Describable<CloudSe
     @Override
     public String getSearchUrl() {
         return "/cloud/";
+    }
+
+    @SuppressWarnings("unused") // stapler
+    @Restricted(DoNotUse.class) // stapler
+    public String getCloudUrl(StaplerRequest request, Jenkins jenkins, Cloud cloud) {
+        String context = Functions.getNearestAncestorUrl(request, jenkins);
+        if (cloud.isLookupByIndex()) {
+            return context + "/clouds/" + getClouds().indexOf(cloud) + "/";
+        } else {
+            return context + "/" + cloud.getUrl();
+        }
     }
 
     @SuppressWarnings("unused") // stapler
@@ -219,7 +234,11 @@ public class CloudSet extends AbstractModelObject implements Describable<CloudSe
     public synchronized void doDoCreate(StaplerRequest req, StaplerResponse rsp,
                                             @QueryParameter String type) throws IOException, ServletException, Descriptor.FormException {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
-        Jenkins.get().clouds.add(Cloud.all().find(type).newInstance(req, req.getSubmittedForm()));
+        Cloud cloud = Cloud.all().find(type).newInstance(req, req.getSubmittedForm());
+        if (!Jenkins.get().clouds.add(cloud)) {
+            LOGGER.log(Level.WARNING, () -> "Creating duplicate cloud name " + cloud.name + ". Plugin " + Jenkins.get().getPluginManager().whichPlugin(cloud.getClass()) + " should be updated to support user provided name.");
+            cloud.setLookupByIndex(true);
+        }
         // take the user back to the cloud list top page
         rsp.sendRedirect2(".");
     }
