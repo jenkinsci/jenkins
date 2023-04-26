@@ -100,11 +100,18 @@ public class CloudSet extends AbstractModelObject implements Describable<CloudSe
     @Restricted(DoNotUse.class) // stapler
     public String getCloudUrl(StaplerRequest request, Jenkins jenkins, Cloud cloud) {
         String context = Functions.getNearestAncestorUrl(request, jenkins);
-        if (cloud.isLookupByIndex()) {
-            return context + "/clouds/" + getClouds().indexOf(cloud) + "/";
+        int cloudIndex = getClouds().indexOf(cloud);
+        if (Jenkins.get().getCloud(cloud.name) != cloud) { // this cloud is not the first occurrence with this name
+            return context + "/cloud/cloudByIndex/" + getClouds().indexOf(cloud) + "/";
         } else {
             return context + "/" + cloud.getUrl();
         }
+    }
+
+    @SuppressWarnings("unused") // stapler
+    @Restricted(DoNotUse.class) // stapler
+    public Cloud getCloudByIndex(int index) {
+        return Jenkins.get().clouds.get(index);
     }
 
     @SuppressWarnings("unused") // stapler
@@ -237,7 +244,6 @@ public class CloudSet extends AbstractModelObject implements Describable<CloudSe
         Cloud cloud = Cloud.all().find(type).newInstance(req, req.getSubmittedForm());
         if (!Jenkins.get().clouds.add(cloud)) {
             LOGGER.log(Level.WARNING, () -> "Creating duplicate cloud name " + cloud.name + ". Plugin " + Jenkins.get().getPluginManager().whichPlugin(cloud.getClass()) + " should be updated to support user provided name.");
-            cloud.setLookupByIndex(true);
         }
         // take the user back to the cloud list top page
         rsp.sendRedirect2(".");

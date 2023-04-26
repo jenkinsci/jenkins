@@ -117,8 +117,6 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
      */
     public String name;
 
-    private transient boolean lookupByIndex;
-
     protected Cloud(String name) {
         Validate.notEmpty(name, Messages.Cloud_RequiredName());
         this.name = name;
@@ -333,20 +331,12 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
         j.clouds.replace(this, result);
         j.save();
         // take the user back to the cloud top page.
-        return FormApply.success(j.getRootUrlFromRequest() + result.getUrl());
+        return FormApply.success(".");
     }
 
     private Cloud reconfigure(@NonNull final StaplerRequest req, JSONObject form) throws Descriptor.FormException {
         if (form == null)     return null;
         return getDescriptor().newInstance(req, form);
-    }
-
-    public void setLookupByIndex(boolean lookupByIndex) {
-        this.lookupByIndex = lookupByIndex;
-    }
-
-    public boolean isLookupByIndex() {
-        return lookupByIndex;
     }
 
     /**
