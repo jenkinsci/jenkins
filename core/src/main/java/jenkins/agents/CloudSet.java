@@ -100,7 +100,6 @@ public class CloudSet extends AbstractModelObject implements Describable<CloudSe
     @Restricted(DoNotUse.class) // stapler
     public String getCloudUrl(StaplerRequest request, Jenkins jenkins, Cloud cloud) {
         String context = Functions.getNearestAncestorUrl(request, jenkins);
-        int cloudIndex = getClouds().indexOf(cloud);
         if (Jenkins.get().getCloud(cloud.name) != cloud) { // this cloud is not the first occurrence with this name
             return context + "/cloud/cloudByIndex/" + getClouds().indexOf(cloud) + "/";
         } else {
