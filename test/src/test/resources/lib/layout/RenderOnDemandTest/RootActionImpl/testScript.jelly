@@ -33,7 +33,7 @@ THE SOFTWARE.
     <script>
       var x = null;
       var y = null;
-      $("button").onclick = function() {
+      document.getElementById("button").onclick = function() {
         renderOnDemand(document.getElementsBySelector('.lazy')[0]);
       }
     </script>

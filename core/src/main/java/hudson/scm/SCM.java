@@ -749,7 +749,7 @@ public abstract class SCM implements Describable<SCM>, ExtensionPoint {
 
     protected final String nullify(String s) {
         if (s == null)     return null;
-        if (s.trim().length() == 0)    return null;
+        if (s.trim().isEmpty())    return null;
         return s;
     }
 

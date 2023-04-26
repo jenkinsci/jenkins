@@ -26,7 +26,9 @@ package hudson.util;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
@@ -38,9 +40,15 @@ import com.google.common.collect.ImmutableMap;
 import com.thoughtworks.xstream.XStreamException;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.thoughtworks.xstream.mapper.CannotResolveClassException;
+import hudson.Functions;
 import hudson.model.Result;
 import hudson.model.Run;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.io.StringReader;
+import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -569,5 +577,67 @@ public class XStream2Test {
 
     @XStreamAlias("C-5")
     public static final class C5 {}
+
+    @Issue("JENKINS-69129")
+    @Test
+    public void testEmoji() throws Exception {
+        Bar bar;
+        try (InputStream is = getClass().getResource("XStream2Emoji.xml").openStream()) {
+            bar = (Bar) new XStream2().fromXML(is);
+        }
+        assertEquals("Fox 🦊", bar.s);
+    }
+
+    @Issue("JENKINS-69129")
+    @Test
+    public void testEmojiEscaped() throws Exception {
+        Bar bar;
+        try (InputStream is = getClass().getResource("XStream2EmojiEscaped.xml").openStream()) {
+            bar = (Bar) new XStream2().fromXML(is);
+        }
+        assertEquals("Fox 🦊", bar.s);
+    }
+
+    @Issue("JENKINS-71139")
+    @Test
+    public void nullsWithoutEncodingDeclaration() throws Exception {
+        Bar b = new Bar();
+        String text = "x\u0000y";
+        b.s = text;
+        StringWriter w = new StringWriter();
+        XStream2 xs = new XStream2();
+        try {
+            xs.toXML(b, w);
+        } catch (RuntimeException x) {
+            assertThat("cause is com.thoughtworks.xstream.io.StreamException: Invalid character 0x0 in XML stream", Functions.printThrowable(x), containsString("0x0"));
+            return; // not supported to read either
+        }
+        String xml = w.toString();
+        assertThat(xml, not(containsString("version=\"1.1\"")));
+        System.out.println(xml);
+        b = (Bar) xs.fromXML(xml);
+        assertEquals(text, b.s);
+    }
+
+    @Issue("JENKINS-71139")
+    @Test
+    public void nullsWithEncodingDeclaration() throws Exception {
+        Bar b = new Bar();
+        String text = "x\u0000y";
+        b.s = text;
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        XStream2 xs = new XStream2();
+        try {
+            xs.toXMLUTF8(b, baos);
+        } catch (RuntimeException x) {
+            assertThat("cause is com.thoughtworks.xstream.io.StreamException: Invalid character 0x0 in XML stream", Functions.printThrowable(x), containsString("0x0"));
+            return; // not supported to read either
+        }
+        String xml = baos.toString(StandardCharsets.UTF_8);
+        System.out.println(xml);
+        assertThat(xml, containsString("version=\"1.1\""));
+        b = (Bar) xs.fromXML(new ByteArrayInputStream(baos.toByteArray()));
+        assertEquals(text, b.s);
+    }
 
 }

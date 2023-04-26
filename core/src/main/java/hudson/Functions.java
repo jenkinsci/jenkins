@@ -1655,7 +1655,7 @@ public class Functions {
      * Converts "abc" to "Abc".
      */
     public static String capitalize(String s) {
-        if (s == null || s.length() == 0) return s;
+        if (s == null || s.isEmpty()) return s;
         return Character.toUpperCase(s.charAt(0)) + s.substring(1);
     }
 
@@ -1867,7 +1867,7 @@ public class Functions {
     public static String joinPath(String... components) {
         StringBuilder buf = new StringBuilder();
         for (String s : components) {
-            if (s.length() == 0)  continue;
+            if (s.isEmpty())  continue;
 
             if (buf.length() > 0) {
                 if (buf.charAt(buf.length() - 1) != '/')
