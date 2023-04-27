@@ -9,9 +9,11 @@ cd "$(dirname "$0")"
 export ATH_VERSION=5563.vc0824a_59da_2c
 
 if [[ $# -eq 0 ]]; then
+	export JDK=11
 	export BROWSER=firefox
 else
-	export BROWSER=$1
+	export JDK=$1
+	export BROWSER=$2
 fi
 
 MVN='mvn -B -ntp -Pquick-build -am -pl war package'
@@ -25,6 +27,7 @@ mkdir -p target/ath-reports
 chmod a+rwx target/ath-reports
 
 exec docker run --rm \
+	--env JDK \
 	--env ATH_VERSION \
 	--env BROWSER \
 	--shm-size 2g `# avoid selenium.WebDriverException exceptions like 'Failed to decode response from marionette' and webdriver closed` \
@@ -39,6 +42,7 @@ exec docker run --rm \
 		set -o pipefail
 		set -o xtrace
 		cd
+		set-java.sh "${JDK}"
 		# Start the VNC system provided by the image from the default user home directory
 		eval "$(vnc.sh)"
 		env | sort

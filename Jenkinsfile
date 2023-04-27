@@ -187,7 +187,7 @@ athAxes.values().combinations {
         deleteDir()
         checkout scm
         infra.withArtifactCachingProxy {
-          sh 'bash ath.sh ' + browser
+          sh "bash ath.sh ${jdk} ${browser}"
         }
         junit testResults: 'target/ath-reports/TEST-*.xml', testDataPublishers: [[$class: 'AttachmentPublisher']]
         /*
