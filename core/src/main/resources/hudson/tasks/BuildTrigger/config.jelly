@@ -26,7 +26,8 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
 	<f:entry title="${%Projects to build}">
 	  <f:textbox name="buildTrigger.childProjects" value="${instance.childProjectsValue}"
-               checkUrl="'descriptorByName/hudson.tasks.BuildTrigger/check?value='+encodeURIComponent(this.value)"
+               checkUrl="descriptorByName/hudson.tasks.BuildTrigger/check"
+               checkDependsOn=""
                autoCompleteDelimChar=","
                field="childProjects"/>
 	</f:entry>
