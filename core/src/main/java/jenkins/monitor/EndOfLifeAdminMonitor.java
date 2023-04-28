@@ -87,6 +87,11 @@ class EndOfLifeAdminMonitor extends AdministrativeMonitor {
         this.beginDisplayDate = beginDisplayDate;
         this.documentationURL = documentationURL;
         this.disabled = SystemProperties.getBoolean(EndOfLifeAdminMonitor.class.getName() + "." + identifier + ".disabled", false);
+        this.dataPatternMatched = patternMatched(dataFile, dataPattern);
+        LOGGER.log(INFO, "Matched is {0}", this.dataPatternMatched);
+    }
+
+    private boolean patternMatched(File dataFile, Pattern dataPattern) {
         boolean matched = false;
         LOGGER.log(INFO, "Reading file {0}", dataFile);
         if (dataFile.isFile()) {
@@ -105,8 +110,7 @@ class EndOfLifeAdminMonitor extends AdministrativeMonitor {
                 matched = false;
             }
         }
-        LOGGER.log(INFO, "Matched is {0}", matched);
-        this.dataPatternMatched = matched;
+        return matched;
     }
 
     @Override
@@ -146,4 +150,3 @@ class EndOfLifeAdminMonitor extends AdministrativeMonitor {
 
     static final Logger LOGGER = Logger.getLogger(EndOfLifeAdminMonitor.class.getName());
 }
-
