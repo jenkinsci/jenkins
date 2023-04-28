@@ -55,7 +55,7 @@ class EndOfLifeAdminMonitor extends AdministrativeMonitor {
     /** Display name of end of life admin monitor, like "Ubuntu 18.04 end of life" */
     final String displayName;
 
-    /** Name of the dependency, like "Ubuntu 18.04" */
+    /** Name of the dependency that will be end of life, like "Ubuntu 18.04" */
     final String dependencyName;
 
     /** Date to begin displaying the end of life admin monitor, like 2023-05-31 */
@@ -139,3 +139,4 @@ class EndOfLifeAdminMonitor extends AdministrativeMonitor {
 
     static final Logger LOGGER = Logger.getLogger(EndOfLifeAdminMonitor.class.getName());
 }
+
