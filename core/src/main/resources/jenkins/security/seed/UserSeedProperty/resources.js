@@ -33,9 +33,11 @@ window.resetSeed = function (button) {
   }
 
   if (confirm(confirmMessage)) {
-    new Ajax.Request(targetUrl, {
+    fetch(targetUrl, {
       method: "post",
-      onSuccess: function () {
+      headers: crumb.wrap({}),
+    }).then((rsp) => {
+      if (rsp.ok) {
         if (redirectAfterClick) {
           window.location.href = redirectAfterClick;
         } else {
@@ -43,7 +45,7 @@ window.resetSeed = function (button) {
             warningMessage.addClassName("visible");
           }
         }
-      },
+      }
     });
   }
 };
