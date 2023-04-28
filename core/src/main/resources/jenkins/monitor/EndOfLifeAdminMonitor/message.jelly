@@ -25,15 +25,14 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:f="/lib/form">
-    <j:invokeStatic var="currentRuntimeJavaVersion" className="jenkins.util.java.JavaUtils" method="getCurrentRuntimeJavaVersion" />
     <div class="alert alert-danger">
-        <form id="EndOfLifeAdminMonitor" method="post" action="${rootURL}/${it.url}/act" name="${it.id}">
-            <f:submit name="yes" value="${%More Info} - ${it.identifier}"/>
+        <form id="${it.id}" method="post" action="${rootURL}/${it.url}/act" name="${it.id}">
+            <f:submit name="yes" value="${%More Info}"/>
             <l:isAdmin>
-                <f:submit value="${%Ignore} for ${it.displayName}" name="no"/>
+                <f:submit value="${%Ignore} ${it.displayName}" name="no"/>
             </l:isAdmin>
         </form>
         <h2>${%End_of_Life_Heading(it.displayName)}</h2>
-        ${%End_of_Life(it.displayName, it.beginDisplayDate, it.documentationURL)}
+        ${%End_of_Life(it.dependencyName, it.beginDisplayDate, it.documentationURL)}
     </div>
 </j:jelly>

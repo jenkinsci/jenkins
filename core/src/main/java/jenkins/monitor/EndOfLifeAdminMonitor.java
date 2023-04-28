@@ -25,101 +25,100 @@
 
 package jenkins.monitor;
 
-import hudson.Extension;
+import static java.util.logging.Level.INFO;
+
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.AdministrativeMonitor;
-import hudson.security.Permission;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
-import java.text.DateFormat;
 import java.time.LocalDate;
-import java.time.format.DateTimeParseException;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
-import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
-@Extension
-@Restricted(NoExternalUse.class)
-@Symbol("endOfLifeUbuntu1804AdminMonitor")
-public class EndOfLifeAdminMonitor extends AdministrativeMonitor {
+/* Package protected so that it won't be visible outside this package */
+class EndOfLifeAdminMonitor extends AdministrativeMonitor {
 
-    /** Unique identifier of end of life admin monitor */
-    private final String identifier;
+    /** Unique identifier of end of life admin monitor, like "ubuntu_1804" */
+    final String identifier;
 
-    /** Display name of end of life admin monitor */
-    private final String displayName;
+    /** Display name of end of life admin monitor, like "Ubuntu 18.04 end of life" */
+    final String displayName;
 
-    /** Date to begin displaying the end of life admin monitor */
-    private final String beginDisplayDate;
+    /** Name of the dependency, like "Ubuntu 18.04" */
+    final String dependencyName;
 
-    /** URL with more information */
-    private final String documentationURL;
+    /** Date to begin displaying the end of life admin monitor, like 2023-05-31 */
+    final LocalDate beginDisplayDate;
+
+    /** URL with more information, like "https://www.jenkins.io/redirect/dependency-end-of-life" */
+    final String documentationURL;
+
+    /** True if the dataPattern matched content of the file when constructor was called */
+    final boolean dataPatternMatched;
 
     /* Each end of life admin monitor needs to be separately enabled and disabled */
     private Boolean disabled;
 
-    public EndOfLifeAdminMonitor() {
+    public EndOfLifeAdminMonitor(@NonNull String identifier,
+                                 @NonNull String dependencyName,
+                                 @NonNull LocalDate beginDisplayDate,
+                                 @NonNull String documentationURL,
+                                 @NonNull File dataFile,
+                                 @NonNull Pattern dataPattern) {
         super(EndOfLifeAdminMonitor.class.getName());
-        this.identifier = "id_ubuntu_1804";
-        this.displayName = "Display Ubuntu 18.04";
-        this.beginDisplayDate = "2023-01-01";
-        this.documentationURL = "https://www.jenkins.io/redirect/dependency-end-of-life";
-        this.disabled = SystemProperties.getBoolean(EndOfLifeAdminMonitor.class.getName() + "." + identifier + ".disabled", false);
-    }
-
-    public EndOfLifeAdminMonitor(String identifier, String displayName, String beginDisplayDate, String documentationURL) {
-        super(EndOfLifeAdminMonitor.class.getName());
-        this.identifier = identifier; // TODO: Check that the identifier is unique
-        this.displayName = displayName;
+        this.identifier = identifier;
+        this.dependencyName = dependencyName;
+        this.displayName = dependencyName + " end of life";
         this.beginDisplayDate = beginDisplayDate;
         this.documentationURL = documentationURL;
         this.disabled = SystemProperties.getBoolean(EndOfLifeAdminMonitor.class.getName() + "." + identifier + ".disabled", false);
+        boolean matched = false;
+        LOGGER.log(INFO, "Reading file {0}", dataFile);
+        if (dataFile.isFile()) {
+            try (BufferedReader reader = new BufferedReader(new FileReader(dataFile))) {
+                String line = reader.readLine();
+                while (line != null) {
+                    if (dataPattern.matcher(line).matches()) {
+                        matched = true;
+                        LOGGER.log(INFO, "Matched in file {0}", dataFile);
+                        break;
+                    }
+                    line = reader.readLine();
+                }
+            } catch (IOException e) {
+                LOGGER.log(INFO, "Exception reading file {0}", dataFile);
+                matched = false;
+            }
+        }
+        LOGGER.log(INFO, "Matched is {0}", matched);
+        this.dataPatternMatched = matched;
     }
 
     @Override
     public boolean isActivated() {
-        if (disabled) {
+        LOGGER.fine("Checking is activated");
+        if (disabled || !dataPatternMatched) {
+            LOGGER.fine("disabled or data pattern not matched");
             return false;
         }
-        DateFormat df = DateFormat.getDateInstance();
-        LocalDate beginDisplay = null;
-        try {
-            beginDisplay = LocalDate.parse(beginDisplayDate);
-        } catch (DateTimeParseException ex) {
-            LOGGER.warning("Parse exception creating end of life admin monitor '" + identifier + "' for begin date " + beginDisplayDate);
-            beginDisplay = LocalDate.now().minusDays(1);
-        }
         LocalDate now = LocalDate.now();
-        return now.isAfter(beginDisplay);
-    }
-
-    public String getIdentifier() {
-        return identifier;
-    }
-
-    public String getBeginDisplayDate() {
-        return beginDisplayDate;
-    }
-
-    public String getDocumentationURL() {
-        return documentationURL;
-    }
-
-    @Override
-    public String getDisplayName() {
-        return displayName;
-    }
-
-    @Override
-    public Permission getRequiredPermission() {
-        return Jenkins.SYSTEM_READ;
+        if (!now.isAfter(beginDisplayDate)) {
+            LOGGER.log(INFO, "Date is not after {0}", beginDisplayDate);
+            return false;
+        }
+        LOGGER.log(INFO, "Activated for date {0}", beginDisplayDate);
+        return true;
     }
 
     /**
@@ -128,6 +127,7 @@ public class EndOfLifeAdminMonitor extends AdministrativeMonitor {
     @Restricted(DoNotUse.class) // WebOnly
     @RequirePOST
     public HttpResponse doAct(@QueryParameter String no) throws IOException {
+        LOGGER.log(INFO, "Called doAct");
         if (no != null) { // dismiss
             Jenkins.get().checkPermission(Jenkins.ADMINISTER);
             disable(true);
