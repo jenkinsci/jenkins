@@ -298,4 +298,8 @@
 #passwordStrengthWrapper {
   margin-top: 0.75rem;
   font-size: 0.95rem;
+
+  #passwordStrength {
+    transition: var(--standard-transition);
+  }
 }

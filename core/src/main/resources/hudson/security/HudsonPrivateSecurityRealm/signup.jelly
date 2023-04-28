@@ -49,203 +49,102 @@ THE SOFTWARE.
         <meta name="viewport" content="width=device-width, initial-scale=1"/>
         <!-- css styling, will fallback to default implementation -->
         <st:include it="${simpleDecorator}" page="simple-head.jelly" optional="true"/>
+        <script src="${resURL}/jsbundles/pages/register.js" type="text/javascript" defer="true" />
       </head>
       <body class="app-sign-in-register">
         <st:include it="${simpleDecorator}" page="simple-header.jelly" optional="true" />
         <main id="main-panel" class="app-sign-in-register__content">
           <div class="app-sign-in-register__content-inner">
             <h1>${%Register}</h1>
+
+            <template id="i18n" data-strength-strong="${%Strong}"
+                                data-strength-moderate="${%Moderate}"
+                                data-strength-weak="${%Weak}"
+                                data-strength-poor="${%Poor}" />
+
             <form class="signup" action="${rootURL}/securityRealm/createAccount" method="post">
               <div>
-                <label class="app-sign-in-register__form-label ${data.errors.containsKey('username') ? 'alert' : ''}"
-                        for="username"
-                >
+                <label class="app-sign-in-register__form-label ${data.errors.containsKey('username') ? 'alert' : ''}" for="username">
                   ${%Username}
                 </label>
                 <div class="app-sign-in-register__error">
                   ${data.errors.containsKey('username') ? data.errors.get('username') : ''}
                 </div>
-                <input
-                        class="jenkins-input ${data.errors.containsKey('username') ? 'jenkins-input--error' : ''}"
-                        value="${data.username}"
-                        type="text"
-                        name="username"
-                        id="username"
-                        autofocus="autofocus"
-                />
+                <input class="jenkins-input ${data.errors.containsKey('username') ? 'jenkins-input--error' : ''}"
+                       autofocus="${(data.errors.containsKey('username') || !data) ? true : null}"
+                       value="${data.username}"
+                       type="text"
+                       name="username"
+                       id="username" />
               </div>
               <div>
-                <label
-                        class="app-sign-in-register__form-label ${data.errors.containsKey('fullname') ? 'alert' : ''}"
-                        for="fullname"
-                >
+                <label class="app-sign-in-register__form-label ${data.errors.containsKey('fullname') ? 'alert' : ''}" for="fullname">
                   ${%Full name}
                 </label>
                 <div class="app-sign-in-register__error">
                   ${data.errors.containsKey('fullname') ? data.errors.get('fullname') : ''}
                 </div>
-                <input
-                        class="jenkins-input ${data.errors.containsKey('fullname') ? 'jenkins-input--error' : ''}"
-                        value="${data.fullname}"
-                        type="text"
-                        name="fullname"
-                        id="fullname"
+                <input class="jenkins-input ${data.errors.containsKey('fullname') ? 'jenkins-input--error' : ''}"
+                       autofocus="${data.errors.containsKey('fullname') ? true : null}"
+                       value="${data.fullname}"
+                       type="text"
+                       name="fullname"
+                       id="fullname"
                 />
               </div>
               <j:if test="${it.mailerPluginPresent}">
                 <div>
-                  <label
-                          class="app-sign-in-register__form-label ${data.errors.containsKey('email') ? 'alert' : ''}"
-                          for="email"
+                  <label class="app-sign-in-register__form-label ${data.errors.containsKey('email') ? 'alert' : ''}" for="email"
                   >
                     ${%Email}
                   </label>
                   <div class="app-sign-in-register__error">
                     ${data.errors.containsKey('email') ? data.errors.get('email') : ''}
                   </div>
-                  <input
-                          class="jenkins-input ${data.errors.containsKey('email') ? 'jenkins-input--error' : ''}"
-                          value="${data.email}"
-                          type="text"
-                          name="email"
-                          id="email"
-                  />
+                  <input class="jenkins-input ${data.errors.containsKey('email') ? 'jenkins-input--error' : ''}"
+                         value="${data.email}"
+                         type="text"
+                         name="email"
+                         id="email"
+                         autofocus="${data.errors.containsKey('email') ? true : null}" />
                 </div>
               </j:if>
               <j:if test="${it.isEnableCaptcha()}">
                 <div>
-                  <label
-                          class="app-sign-in-register__form-label ${data.errors.containsKey('captcha') ? 'alert' : ''}"
-                          for="captcha"
-                  >${%Enter text as shown}
+                  <label class="app-sign-in-register__form-label ${data.errors.containsKey('captcha') ? 'alert' : ''}" for="captcha">
+                    ${%Enter text as shown}
                   </label>
-                  <input
-                          class="${data.errors.containsKey('captcha') ? 'jenkins-input--error' : ''}"
-                          type="text"
-                          name="captcha"
-                          id="captcha"
-                          autocomplete="off"
-                  />
+                  <input class="${data.errors.containsKey('captcha') ? 'jenkins-input--error' : ''}"
+                         autofocus="${data.errors.containsKey('captcha') ? true : null}"
+                         type="text"
+                         name="captcha"
+                         id="captcha"
+                         autocomplete="off" />
                   <img src="${rootURL}/securityRealm/captcha" alt="[captcha]"/>
                 </div>
               </j:if>
               <div>
                 <div class="inputHeader password">
-                  <label
-                          class="app-sign-in-register__form-label ${data.errors.containsKey('password1') ? 'alert' : ''}"
-                          for="password1"
-                  >
+                  <label class="app-sign-in-register__form-label ${data.errors.containsKey('password1') ? 'alert' : ''}" for="password1">
                     ${%Password}
                   </label>
                   <div class="jenkins-checkbox">
-                    <input
-                            type="checkbox"
-                            id="showPassword"
-                            onClick="togglePasswordType(this)"
-                            name="remember_me"
-                    />
+                    <input type="checkbox" id="showPassword" />
                     <label for="showPassword">${%Show}</label>
                   </div>
                 </div>
                 <div class="app-sign-in-register__error">
                   ${data.errors.containsKey('password1') ? data.errors.get('password1') : ''}
                 </div>
-                <input onKeyUp="validatePassword()"
-                        class="jenkins-input ${data.errors.containsKey('password1') ? 'jenkins-input--error' : ''}"
-                        value="${data.password1}"
-                        type="password"
-                        name="password1"
-                        id="password1"
-                />
-                <script type="text/javascript">
-                  const togglePasswordType = function (event) {
-                    const passwordField = document.getElementById('password1');
-                    const showPass = document.getElementById('showPassword');
-                    if (showPass.checked) {
-                      passwordField.type = 'text';
-                    } else {
-                      passwordField.type = 'password';
-                    }
-                  };
-
-                  const passwordScore = function (password) {
-                    var score = 0;
-                    if (!password) {
-                      return score
-                    }
-                    // award every unique letter until 5 repetitions
-                    var letters = {};
-                    for (var i = 0; i &lt; password.length; i++) {
-                      letters[password[i]] = (letters[password[i]] || 0) + 1
-                      score += 5.0 / letters[password[i]]
-                    }
-
-                    // bonus points for mixing it up
-                    var variations = {
-                      digits: /\d/.test(password),
-                      lower: /[a-z]/.test(password),
-                      upper: /[A-Z]/.test(password),
-                      nonWords: /\W/.test(password)
-                    };
-
-                    var variationCount = 0;
-                    for (var check in variations) {
-                      variationCount += variations[check] === true ? 1 : 0;
-                    }
-                    score += (variationCount - 1) * 10;
-                    return parseInt(score);
-                  };
-
-                  const passwordStrength = function (score) {
-                    if (score > 80) {
-                      return "${%Strong}";
-                    }
-                    if (score > 60) {
-                      return "${%Moderate}";
-                    }
-                    if (score >= 30) {
-                      return "${%Weak}";
-                    }
-                    return "${%Poor}";
-                  };
-
-                  const passwordStrengthColor = function (score) {
-                    if (score > 80) {
-                      return "var(--green)"
-                    }
-                    if (score > 60) {
-                      return "var(--yellow)"
-                    }
-                    if (score >= 30) {
-                      return "var(--orange)"
-                    }
-                    return "var(--error-color)"
-                  };
-
-                  const validatePassword = function () {
-                    const password = document.getElementById('password1');
-                    if (password) {
-                      const passwordStrengthWrapper =
-                              document.getElementById('passwordStrengthWrapper');
-                      passwordStrengthWrapper.hidden = false;
-                      const score = passwordScore(password.value);
-                      const passwordStrengthIndicator = document.getElementById('passwordStrength');
-                      passwordStrengthIndicator.innerText = passwordStrength(score);
-                      passwordStrengthIndicator.setAttribute('style', 'color: ' +
-                              passwordStrengthColor(score));
-                      document.getElementById('password2').value = password.value;
-                    }
-                  }
-                </script>
-                <div id="passwordStrengthWrapper">${%Strength}: <span id="passwordStrength">&#160;
-                </span>
+                <input class="jenkins-input ${data.errors.containsKey('password1') ? 'jenkins-input--error' : ''}"
+                       value="${data.password1}"
+                       type="password"
+                       name="password1"
+                       id="password1"
+                       autofocus="${data.errors.containsKey('password1') ? true : null}" />
+                <div id="passwordStrengthWrapper">
+                  ${%Strength}: <span id="passwordStrength"></span>
                 </div>
-                <script type="text/javascript">
-                  if (document.getElementById('passwordStrengthWrapper')) {
-                    document.getElementById('passwordStrengthWrapper').hidden = true;
-                  }
-                </script>
-
               </div>
               <div class="app-sign-in-register__password-notice">
                 ${%A strong password is a long password that's unique for every site. Try using a phrase with 5-6 words for the best security.}
@@ -262,17 +161,9 @@ THE SOFTWARE.
                 ${%Create account}
               </button>
               <div class="app-sign-in-register__switcher">
-                <a href="login">${%or sign in}</a>
+                <a href="${rootURL}/login">${%or sign in}</a>
               </div>
               <input type="hidden" name="${h.getCrumbRequestField()}" value="${h.getCrumb(request)}"/>
-              <j:if test="${data.errorField != null}">
-                <script type="text/javascript">
-                  const errorField = document.getElementById('${data.errorField}');
-                  if (errorField &amp;&amp; errorField.focus) {
-                    errorField.focus();
-                  }
-                </script>
-              </j:if>
               <div class="footer">
                 <j:forEach var="decorator" items="${simpleDecorators}">
                   <st:include it="${decorator}" page="simple-footer.jelly" optional="true"/>
