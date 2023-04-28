@@ -1,22 +1,21 @@
 (function () {
   function updateBuildCaptionIcon() {
-    new Ajax.Request("statusIcon", {
-      method: "get",
-      onComplete: function (rsp) {
-        var isBuilding = rsp.getResponseHeader("X-Building");
-        if (isBuilding == "true") {
-          setTimeout(updateBuildCaptionIcon, 5000);
-        } else {
-          var progressBar = document.querySelector(
-            ".build-caption-progress-container"
-          );
-          if (progressBar) {
-            progressBar.style.display = "none";
-          }
+    fetch("statusIcon").then((rsp) => {
+      var isBuilding = rsp.headers.get("X-Building");
+      if (isBuilding === "true") {
+        setTimeout(updateBuildCaptionIcon, 5000);
+      } else {
+        var progressBar = document.querySelector(
+          ".build-caption-progress-container"
+        );
+        if (progressBar) {
+          progressBar.style.display = "none";
         }
+      }
+      rsp.text().then((responseText) => {
         document.querySelector(".build-caption .icon-xlg").outerHTML =
-          rsp.responseText;
-      },
+          responseText;
+      });
     });
   }
 
