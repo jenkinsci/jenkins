@@ -64,7 +64,11 @@ class EndOfLifeAdminMonitor extends AdministrativeMonitor {
     /** URL with more information, like "https://www.jenkins.io/redirect/dependency-end-of-life" */
     final String documentationURL;
 
-    /** True if the dataPattern matched content of the file when constructor was called */
+    /**
+     * True if the dataPattern matched content of the file when
+     * constructor was called.  Assumes the content of the file is not
+     * changing while Jenkins is running.
+     */
     final boolean dataPatternMatched;
 
     /* Each end of life admin monitor needs to be separately enabled and disabled */
@@ -107,14 +111,17 @@ class EndOfLifeAdminMonitor extends AdministrativeMonitor {
 
     @Override
     public boolean isActivated() {
-        LOGGER.fine("Checking is activated");
-        if (disabled || !dataPatternMatched) {
-            LOGGER.fine("disabled or data pattern not matched");
+        if (disabled) {
+            LOGGER.fine("Not activated - disabled");
+            return false;
+        }
+        if (!dataPatternMatched) {
+            LOGGER.fine("Not activated - data pattern not matched");
             return false;
         }
         LocalDate now = LocalDate.now();
         if (!now.isAfter(beginDisplayDate)) {
-            LOGGER.log(INFO, "Date is not after {0}", beginDisplayDate);
+            LOGGER.log(INFO, "Not activated - Date is not after {0}", beginDisplayDate);
             return false;
         }
         LOGGER.log(INFO, "Activated for date {0}", beginDisplayDate);
