@@ -24,7 +24,6 @@ import java.util.Locale;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import jenkins.model.Jenkins;
-import jenkins.util.AntClassLoader;
 import jenkins.util.URLClassLoader2;
 import org.apache.commons.lang.StringUtils;
 import org.junit.jupiter.api.AfterAll;
@@ -106,14 +105,6 @@ public class PluginWrapperTest {
     @Issue("JENKINS-66563")
     @Test
     public void insertJarsIntoClassPath() throws Exception {
-        try (AntClassLoader cl = new AntClassLoader()) {
-            assertInjectingJarsWorks(cl);
-        }
-    }
-
-    @Issue("JENKINS-66563")
-    @Test
-    public void insertJarsIntoClassPathURLCL() throws Exception {
         try (URLClassLoader2 cl = new URLClassLoader2(new URL[0])) {
             assertInjectingJarsWorks(cl);
         }

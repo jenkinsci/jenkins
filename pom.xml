@@ -74,7 +74,7 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.402</revision>
+    <revision>2.403</revision>
     <changelist>-SNAPSHOT</changelist>
 
     <!-- configuration for patch tracker plugin  -->
@@ -333,7 +333,7 @@ THE SOFTWARE.
             <dependency>
               <groupId>com.puppycrawl.tools</groupId>
               <artifactId>checkstyle</artifactId>
-              <version>10.9.3</version>
+              <version>10.10.0</version>
             </dependency>
           </dependencies>
           <executions>
@@ -349,7 +349,7 @@ THE SOFTWARE.
         <plugin>
           <groupId>org.jacoco</groupId>
           <artifactId>jacoco-maven-plugin</artifactId>
-          <version>0.8.9</version>
+          <version>0.8.10</version>
         </plugin>
       </plugins>
     </pluginManagement>
