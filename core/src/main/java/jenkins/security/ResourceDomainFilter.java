@@ -24,6 +24,7 @@
 
 package jenkins.security;
 
+import hudson.Extension;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -42,6 +43,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  *
  * @since 2.200
  */
+@Extension
 @Restricted(NoExternalUse.class)
 public class ResourceDomainFilter implements HttpServletFilter {
 
