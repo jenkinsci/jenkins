@@ -25,7 +25,7 @@
 
 package jenkins.monitor;
 
-import static java.util.logging.Level.INFO;
+import static java.util.logging.Level.FINE;
 
 import hudson.Extension;
 import hudson.security.Permission;
@@ -52,7 +52,7 @@ public class EndOfLifeUbuntu1804AdminMonitor extends EndOfLifeAdminMonitor {
               Pattern.compile(".*Red Hat Enterprise Linux 8[.]7.*")
               // Pattern.compile(".*Ubuntu.*18[.]04.*")
               );
-        LOGGER.log(INFO, "Called EndOfLifeUbuntu1804AdminMonitor constructor");
+        LOGGER.log(FINE, "Called EndOfLifeUbuntu1804AdminMonitor constructor");
     }
 
     public String getIdentifier() {
@@ -69,17 +69,17 @@ public class EndOfLifeUbuntu1804AdminMonitor extends EndOfLifeAdminMonitor {
     }
 
     public String getBeginDisplayDate() {
-        LOGGER.log(INFO, "Called getBeginDisplayDate");
+        LOGGER.log(FINE, "Called getBeginDisplayDate");
         return beginDisplayDate.toString();
     }
 
     public String getDocumentationURL() {
-        LOGGER.log(INFO, "Called getDocumentationURL");
+        LOGGER.log(FINE, "Called getDocumentationURL");
         return documentationURL;
     }
 
     public boolean isUnsupported() {
-        LOGGER.log(INFO, "Called isUnsupported");
+        LOGGER.log(FINE, "Called isUnsupported");
         unsupported = LocalDate.now().isAfter(endOfSupportDate);
         return unsupported;
     }

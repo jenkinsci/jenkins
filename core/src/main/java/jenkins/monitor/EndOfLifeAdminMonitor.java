@@ -25,7 +25,7 @@
 
 package jenkins.monitor;
 
-import static java.util.logging.Level.INFO;
+import static java.util.logging.Level.FINE;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.AdministrativeMonitor;
@@ -96,25 +96,25 @@ class EndOfLifeAdminMonitor extends AdministrativeMonitor {
         this.documentationURL = documentationURL;
         this.disabled = SystemProperties.getBoolean(EndOfLifeAdminMonitor.class.getName() + "." + identifier + ".disabled", false);
         this.dataPatternMatched = patternMatched(dataFile, dataPattern);
-        LOGGER.log(INFO, "Matched is {0}", this.dataPatternMatched);
+        LOGGER.log(FINE, "Matched is {0}", this.dataPatternMatched);
     }
 
     private boolean patternMatched(File dataFile, Pattern dataPattern) {
         boolean matched = false;
-        LOGGER.log(INFO, "Reading file {0}", dataFile);
+        LOGGER.log(FINE, "Reading file {0}", dataFile);
         if (dataFile.isFile()) {
             try (BufferedReader reader = new BufferedReader(new FileReader(dataFile))) {
                 String line = reader.readLine();
                 while (line != null) {
                     if (dataPattern.matcher(line).matches()) {
                         matched = true;
-                        LOGGER.log(INFO, "Matched in file {0}", dataFile);
+                        LOGGER.log(FINE, "Matched in file {0}", dataFile);
                         break;
                     }
                     line = reader.readLine();
                 }
             } catch (IOException e) {
-                LOGGER.log(INFO, "Exception reading file {0}", dataFile);
+                LOGGER.log(FINE, "Exception reading file {0}", dataFile);
                 matched = false;
             }
         }
@@ -133,10 +133,10 @@ class EndOfLifeAdminMonitor extends AdministrativeMonitor {
         }
         LocalDate now = LocalDate.now();
         if (!now.isAfter(beginDisplayDate)) {
-            LOGGER.log(INFO, "Not activated - Date is not after {0}", beginDisplayDate);
+            LOGGER.log(FINE, "Not activated - Date is not after {0}", beginDisplayDate);
             return false;
         }
-        LOGGER.log(INFO, "Activated for date {0}", beginDisplayDate);
+        LOGGER.log(FINE, "Activated for date {0}", beginDisplayDate);
         return true;
     }
 
@@ -146,7 +146,7 @@ class EndOfLifeAdminMonitor extends AdministrativeMonitor {
     @Restricted(DoNotUse.class) // WebOnly
     @RequirePOST
     public HttpResponse doAct(@QueryParameter String no) throws IOException {
-        LOGGER.log(INFO, "Called doAct");
+        LOGGER.log(FINE, "Called doAct");
         if (no != null) { // dismiss
             Jenkins.get().checkPermission(Jenkins.ADMINISTER);
             disable(true);
