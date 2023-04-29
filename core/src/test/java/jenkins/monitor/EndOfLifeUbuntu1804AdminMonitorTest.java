@@ -24,8 +24,8 @@
 
 package jenkins.monitor;
 
-import static org.hamcrest.CoreMatchers.assertThat;
-import static org.hamcrest.MatcherAssert.is;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.time.LocalDate;
 import jenkins.model.Jenkins;

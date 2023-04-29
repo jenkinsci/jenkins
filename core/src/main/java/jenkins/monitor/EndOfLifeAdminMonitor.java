@@ -31,8 +31,9 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.AdministrativeMonitor;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.time.LocalDate;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -118,7 +119,7 @@ class EndOfLifeAdminMonitor extends AdministrativeMonitor {
         boolean matched = false;
         LOGGER.log(FINE, "Reading file {0}", dataFile);
         if (dataFile.isFile()) {
-            try (BufferedReader reader = new BufferedReader(new FileReader(dataFile))) {
+            try (BufferedReader reader = new BufferedReader(Files.newBufferedReader(dataFile.toPath(), Charset.defaultCharset()))) {
                 String line = reader.readLine();
                 while (line != null) {
                     if (dataPattern.matcher(line).matches()) {
