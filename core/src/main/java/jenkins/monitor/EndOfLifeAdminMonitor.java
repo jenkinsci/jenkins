@@ -96,7 +96,6 @@ class EndOfLifeAdminMonitor extends AdministrativeMonitor {
         this.documentationURL = documentationURL;
         this.disabled = SystemProperties.getBoolean(EndOfLifeAdminMonitor.class.getName() + "." + identifier + ".disabled", false);
         this.dataPatternMatched = patternMatched(dataFile, dataPattern);
-        LOGGER.log(FINE, "Matched is {0}", this.dataPatternMatched);
     }
 
     private boolean patternMatched(File dataFile, Pattern dataPattern) {
@@ -118,6 +117,7 @@ class EndOfLifeAdminMonitor extends AdministrativeMonitor {
                 matched = false;
             }
         }
+        LOGGER.log(FINE, "Matched is {0}", matched);
         return matched;
     }
 
@@ -146,12 +146,13 @@ class EndOfLifeAdminMonitor extends AdministrativeMonitor {
     @Restricted(DoNotUse.class) // WebOnly
     @RequirePOST
     public HttpResponse doAct(@QueryParameter String no) throws IOException {
-        LOGGER.log(FINE, "Called doAct");
         if (no != null) { // dismiss
             Jenkins.get().checkPermission(Jenkins.ADMINISTER);
             disable(true);
+            LOGGER.log(FINE, "Disabled admin monitor {0}", displayName);
             return HttpResponses.forwardToPreviousPage();
         } else {
+            LOGGER.log(FINE, "Enabled admin monitor {0}", displayName);
             return new HttpRedirect(documentationURL);
         }
     }
