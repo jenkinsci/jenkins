@@ -42,7 +42,7 @@ public class EndOfLifeRedHat7AdminMonitor extends EndOfLifeAdminMonitor {
     public EndOfLifeRedHat7AdminMonitor() {
         super("redhat_7",
               "Red Hat Enterprise Linux 7 and its derivatives",
-              LocalDate.of(2023, 4, 29),
+              LocalDate.of(2023, 4, 28),
               LocalDate.of(2023, 12, 31),
               "https://www.jenkins.io/redirect/dependency-end-of-life",
               new File("/etc/os-release"),
