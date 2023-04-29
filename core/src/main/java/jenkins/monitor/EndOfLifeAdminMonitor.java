@@ -78,7 +78,7 @@ class EndOfLifeAdminMonitor extends AdministrativeMonitor {
 
     /**
      * URL with more information, like
-     * "https://www.jenkins.io/redirect/dependency-end-of-life"
+     * "https://www.jenkins.io/redirect/operating-system-end-of-life"
      */
     final String documentationURL;
 

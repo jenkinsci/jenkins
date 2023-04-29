@@ -44,7 +44,7 @@ public class EndOfLifeRedHat7AdminMonitor extends EndOfLifeAdminMonitor {
               "Red Hat Enterprise Linux 7 and its derivatives",
               LocalDate.of(2023, 4, 28),
               LocalDate.of(2023, 12, 31),
-              "https://www.jenkins.io/redirect/dependency-end-of-life",
+              "https://www.jenkins.io/redirect/operating-system-end-of-life",
               new File("/etc/os-release"),
               Pattern.compile(".*(Red Hat.* 7|CentOS.* 7|Scientific.* 7|Oracle.* 7).*")
               );

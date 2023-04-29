@@ -60,7 +60,7 @@ public class EndOfLifeFedora36AdminMonitorTest {
 
     @Test
     public void testGetDocumentationURL() {
-        assertThat(monitor.getDocumentationURL(), is("https://www.jenkins.io/redirect/dependency-end-of-life"));
+        assertThat(monitor.getDocumentationURL(), is("https://www.jenkins.io/redirect/operating-system-end-of-life"));
     }
 
     @Test
