@@ -141,11 +141,11 @@ class EndOfLifeAdminMonitor extends AdministrativeMonitor {
     @Override
     public boolean isActivated() {
         if (disabled) {
-            LOGGER.fine("Not activated - disabled");
+            LOGGER.log(FINE, "Not activated - disabled");
             return false;
         }
         if (!dataPatternMatched) {
-            LOGGER.fine("Not activated - data pattern not matched");
+            LOGGER.log(FINE, "Not activated - data pattern not matched");
             return false;
         }
         LocalDate now = LocalDate.now();
