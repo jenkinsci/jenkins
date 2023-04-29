@@ -50,7 +50,7 @@ public class EndOfLifeFedora37AdminMonitorTest {
 
     @Test
     public void testGetDisplayName() {
-        assertThat(monitor.getDisplayName(), is("Fedora 37 end of life"));
+        assertThat(monitor.getDisplayName(), is("End of life for Fedora 37"));
     }
 
     @Test

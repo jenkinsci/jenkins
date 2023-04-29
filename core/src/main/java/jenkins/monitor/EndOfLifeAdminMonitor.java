@@ -107,7 +107,7 @@ class EndOfLifeAdminMonitor extends AdministrativeMonitor {
         super(EndOfLifeAdminMonitor.class.getName());
         this.identifier = identifier;
         this.dependencyName = dependencyName;
-        this.displayName = dependencyName + " end of life";
+        this.displayName = "End of life for " + dependencyName;
         this.beginDisplayDate = beginDisplayDate;
         this.endOfSupportDate = endOfSupportDate;
         this.documentationURL = documentationURL;

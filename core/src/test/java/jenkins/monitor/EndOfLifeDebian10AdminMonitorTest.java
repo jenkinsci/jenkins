@@ -50,7 +50,7 @@ public class EndOfLifeDebian10AdminMonitorTest {
 
     @Test
     public void testGetDisplayName() {
-        assertThat(monitor.getDisplayName(), is("Debian 10 end of life"));
+        assertThat(monitor.getDisplayName(), is("End of life for Debian 10"));
     }
 
     @Test

@@ -50,7 +50,7 @@ public class EndOfLifeUbuntu1804AdminMonitorTest {
 
     @Test
     public void testGetDisplayName() {
-        assertThat(monitor.getDisplayName(), is("Ubuntu 18.04 end of life"));
+        assertThat(monitor.getDisplayName(), is("End of life for Ubuntu 18.04"));
     }
 
     @Test

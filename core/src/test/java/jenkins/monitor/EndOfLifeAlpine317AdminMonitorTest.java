@@ -50,7 +50,7 @@ public class EndOfLifeAlpine317AdminMonitorTest {
 
     @Test
     public void testGetDisplayName() {
-        assertThat(monitor.getDisplayName(), is("Alpine 3.17 end of life"));
+        assertThat(monitor.getDisplayName(), is("End of life for Alpine 3.17"));
     }
 
     @Test

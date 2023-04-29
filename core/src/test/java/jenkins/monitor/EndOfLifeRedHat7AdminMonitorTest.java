@@ -50,12 +50,12 @@ public class EndOfLifeRedHat7AdminMonitorTest {
 
     @Test
     public void testGetDisplayName() {
-        assertThat(monitor.getDisplayName(), is("Red Hat Enterprise Linux 7 and its derivatives end of life"));
+        assertThat(monitor.getDisplayName(), is("End of life for Red Hat Enterprise Linux 7 and its derivatives"));
     }
 
     @Test
     public void testGetBeginDisplayDate() {
-        assertThat(monitor.getBeginDisplayDate(), is("2023-04-29"));
+        assertThat(monitor.getBeginDisplayDate(), is("2023-04-28"));
     }
 
     @Test
