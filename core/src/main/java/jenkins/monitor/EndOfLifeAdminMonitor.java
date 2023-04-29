@@ -22,7 +22,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
 package jenkins.monitor;
 
 import static java.util.logging.Level.FINE;
@@ -49,44 +48,60 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 /* Package protected so that it won't be visible outside this package */
 class EndOfLifeAdminMonitor extends AdministrativeMonitor {
 
-    /** Unique identifier of end of life admin monitor, like "ubuntu_1804" */
+    /**
+     * Unique identifier of end of life admin monitor, like "ubuntu_1804"
+     */
     final String identifier;
 
-    /** Display name of end of life admin monitor, like "Ubuntu 18.04 end of life" */
+    /**
+     * Display name of end of life admin monitor, like "Ubuntu 18.04 end of
+     * life"
+     */
     final String displayName;
 
-    /** Name of the dependency that will be end of life, like "Ubuntu 18.04" */
+    /**
+     * Name of the dependency that will be end of life, like "Ubuntu 18.04"
+     */
     final String dependencyName;
 
-    /** Date to begin displaying the end of life admin monitor, like 2023-01-31 */
+    /**
+     * Date to begin displaying the end of life admin monitor, like 2023-01-31
+     */
     final LocalDate beginDisplayDate;
 
-    /** Date that support ends, like 2023-05-31 */
+    /**
+     * Date that support ends, like 2023-05-31
+     */
     final LocalDate endOfSupportDate;
 
-    /** URL with more information, like "https://www.jenkins.io/redirect/dependency-end-of-life" */
+    /**
+     * URL with more information, like
+     * "https://www.jenkins.io/redirect/dependency-end-of-life"
+     */
     final String documentationURL;
 
     /**
-     * True if the dataPattern matched content of the file when
-     * constructor was called.  Assumes the content of the file is not
-     * changing while Jenkins is running.
+     * True if the dataPattern matched content of the file when constructor was
+     * called. Assumes the content of the file is not changing while Jenkins is
+     * running.
      */
     final boolean dataPatternMatched;
 
-    /** True if current date is after the end of support date */
+    /**
+     * True if current date is after the end of support date
+     */
     boolean unsupported;
 
     /* Each end of life admin monitor needs to be separately enabled and disabled */
     private Boolean disabled;
 
     public EndOfLifeAdminMonitor(@NonNull String identifier,
-                                 @NonNull String dependencyName,
-                                 @NonNull LocalDate beginDisplayDate,
-                                 @NonNull LocalDate endOfSupportDate,
-                                 @NonNull String documentationURL,
-                                 @NonNull File dataFile,
-                                 @NonNull Pattern dataPattern) {
+            @NonNull String dependencyName,
+            @NonNull LocalDate beginDisplayDate,
+            @NonNull LocalDate endOfSupportDate,
+            @NonNull String documentationURL,
+            @NonNull File dataFile,
+            @NonNull Pattern dataPattern) {
         super(EndOfLifeAdminMonitor.class.getName());
         this.identifier = identifier;
         this.dependencyName = dependencyName;
@@ -141,7 +156,8 @@ class EndOfLifeAdminMonitor extends AdministrativeMonitor {
     }
 
     /**
-     * Depending on whether the user said "yes" or "no", send him to the right place.
+     * Depending on whether the user said "yes" or "no", send him to the right
+     * place.
      */
     @Restricted(DoNotUse.class) // WebOnly
     @RequirePOST
