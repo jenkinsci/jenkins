@@ -117,43 +117,43 @@ class EndOfLifeAdminMonitor extends AdministrativeMonitor {
 
     private boolean patternMatched(File dataFile, Pattern dataPattern) {
         boolean matched = false;
-        LOGGER.log(FINE, "Reading file {0}", dataFile);
+        LOGGER.log(FINE, "Reading file {1} with monitor {0}", new Object[] {identifier, dataFile});
         if (dataFile.isFile()) {
             try (BufferedReader reader = new BufferedReader(Files.newBufferedReader(dataFile.toPath(), Charset.defaultCharset()))) {
                 String line = reader.readLine();
                 while (line != null) {
                     if (dataPattern.matcher(line).matches()) {
                         matched = true;
-                        LOGGER.log(FINE, "Matched in file {0}", dataFile);
+                        LOGGER.log(FINE, "{0} matched in file {1}", new Object[] {identifier, dataFile});
                         break;
                     }
                     line = reader.readLine();
                 }
             } catch (IOException e) {
-                LOGGER.log(FINE, "Exception reading file {0}", dataFile);
+                LOGGER.log(FINE, "Exception reading file {1} in context of {0}", new Object[] {identifier, dataFile});
                 matched = false;
             }
         }
-        LOGGER.log(FINE, "Matched is {0}", matched);
+    LOGGER.log(FINE, "Matched is {1} in context of {0}", new Object[] {identifier, matched});
         return matched;
     }
 
     @Override
     public boolean isActivated() {
         if (disabled) {
-            LOGGER.log(FINE, "Not activated - disabled");
+            LOGGER.log(FINE, "Not activated - disabled in {0}", identifier);
             return false;
         }
         if (!dataPatternMatched) {
-            LOGGER.log(FINE, "Not activated - data pattern not matched");
+            LOGGER.log(FINE, "Not activated - data pattern not matched - disabled in {0}", identifier);
             return false;
         }
         LocalDate now = LocalDate.now();
         if (!now.isAfter(beginDisplayDate)) {
-            LOGGER.log(FINE, "Not activated - Date is not after {0}", beginDisplayDate);
+            LOGGER.log(FINE, "Not activated - Date is not after {0} - disabled in {1}", new Object[] {beginDisplayDate, identifier});
             return false;
         }
-        LOGGER.log(FINE, "Activated for date {0}", beginDisplayDate);
+        LOGGER.log(FINE, "Activated for date {0} in {1}", new Object[] {beginDisplayDate, identifier});
         return true;
     }
 
