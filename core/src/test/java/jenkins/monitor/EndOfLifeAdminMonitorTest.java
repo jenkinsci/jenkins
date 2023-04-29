@@ -59,7 +59,7 @@ public class EndOfLifeAdminMonitorTest {
     }
 
     @Before
-    public void createDataFile() throws Exception {
+    public void createAdminMonitor() throws Exception {
         dataFile = tmp.newFile();
         Files.writeString(dataFile.toPath(), "PRETTY_NAME=\"Red Hat Enterprise Linux 8.7 (Ootpa)\"", StandardCharsets.UTF_8);
         monitor = new EndOfLifeAdminMonitor(id, name, threeDaysAgo, yesterday, url, dataFile, dataPattern);
