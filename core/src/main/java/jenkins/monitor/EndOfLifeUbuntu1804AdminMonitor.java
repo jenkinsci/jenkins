@@ -45,14 +45,12 @@ public class EndOfLifeUbuntu1804AdminMonitor extends EndOfLifeAdminMonitor {
     public EndOfLifeUbuntu1804AdminMonitor() {
         super("ubuntu_1804",
               "Ubuntu 18.04",
-              LocalDate.of(2023, 1, 1),
-              LocalDate.of(2023, 2, 2),
+              LocalDate.of(2023, 3, 1),
+              LocalDate.of(2023, 5, 31),
               "https://www.jenkins.io/redirect/dependency-end-of-life",
               new File("/etc/os-release"),
-              Pattern.compile(".*Red Hat Enterprise Linux 8[.]7.*")
-              // Pattern.compile(".*Ubuntu.*18[.]04.*")
+              Pattern.compile(".*Ubuntu.*18[.]04.*")
               );
-        LOGGER.log(FINE, "Called EndOfLifeUbuntu1804AdminMonitor constructor");
     }
 
     public String getIdentifier() {
@@ -69,17 +67,14 @@ public class EndOfLifeUbuntu1804AdminMonitor extends EndOfLifeAdminMonitor {
     }
 
     public String getBeginDisplayDate() {
-        LOGGER.log(FINE, "Called getBeginDisplayDate");
         return beginDisplayDate.toString();
     }
 
     public String getDocumentationURL() {
-        LOGGER.log(FINE, "Called getDocumentationURL");
         return documentationURL;
     }
 
     public boolean isUnsupported() {
-        LOGGER.log(FINE, "Called isUnsupported");
         unsupported = LocalDate.now().isAfter(endOfSupportDate);
         return unsupported;
     }
