@@ -25,13 +25,11 @@
 
 package jenkins.monitor;
 
-import static java.util.logging.Level.FINE;
 
 import hudson.Extension;
 import hudson.security.Permission;
 import java.io.File;
 import java.time.LocalDate;
-import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
