@@ -31,7 +31,6 @@ import java.time.LocalDate;
 import java.util.regex.Pattern;
 import org.junit.Test;
 
-
 public class EndOfLifeAdminMonitorTest {
 
     private final String id = "my-identifier";
@@ -43,7 +42,7 @@ public class EndOfLifeAdminMonitorTest {
     private final Pattern dataPattern = Pattern.compile(".* [0-9].*");
 
     private final LocalDate tomorrow = LocalDate.now().plusDays(1);
-    private final LocalDate nextWeek = LocalDate.now().plusDaysDays(7);
+    private final LocalDate nextWeek = LocalDate.now().plusDays(7);
 
     private final EndOfLifeAdminMonitor monitor = new EndOfLifeAdminMonitor(id, name, threeDaysAgo, yesterday, url, dataFile, dataPattern);
 
@@ -52,24 +51,29 @@ public class EndOfLifeAdminMonitorTest {
 
     @Test
     public void testIsActivated() {
+        /* Defaults should be activated */
         assertTrue(monitor.isActivated());
     }
 
     @Test
     public void testIsActivatedNotYetEndOfSupport() {
+        /* End of support is next week, start of message is yesterday, should be activated */
         EndOfLifeAdminMonitor notActive = new EndOfLifeAdminMonitor(id, name, yesterday, nextWeek, url, dataFile, dataPattern);
         assertTrue(notActive.isActivated());
     }
 
     @Test
     public void testIsActivatedNotYetBeginDate() {
+        /* End of support is next week, start of message is tomorrow, should not be activated */
         EndOfLifeAdminMonitor notActive = new EndOfLifeAdminMonitor(id, name, tomorrow, nextWeek, url, dataFile, dataPattern);
         assertFalse(notActive.isActivated());
     }
 
     @Test
-    public void testIsActivatedNotYetBeginDate() {
-        EndOfLifeAdminMonitor notActive = new EndOfLifeAdminMonitor(id, name, tomorrow, nextWeek, url, dataFile, dataPattern);
+    public void testIsActivatedPatternNotMatched() {
+        /* Pattern does not match, should not be activated */
+        Pattern nonMatching = Pattern.compile("xyzzy");
+        EndOfLifeAdminMonitor notActive = new EndOfLifeAdminMonitor(id, name, threeDaysAgo, yesterday, url, dataFile, nonMatching);
         assertFalse(notActive.isActivated());
     }
 }
