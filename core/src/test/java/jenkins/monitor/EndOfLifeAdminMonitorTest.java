@@ -28,26 +28,41 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.time.LocalDate;
 import java.util.regex.Pattern;
+import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 public class EndOfLifeAdminMonitorTest {
+
+    @Rule
+    public TemporaryFolder tmp = new TemporaryFolder();
 
     private final String id = "my-identifier";
     private final String name = "dependency name";
     private final LocalDate threeDaysAgo = LocalDate.now().minusDays(3);
     private final LocalDate yesterday = LocalDate.now().minusDays(1);
     private final String url = "https://www.jenkins.io/";
-    private final File dataFile = new File("/etc/os-release");
     private final Pattern dataPattern = Pattern.compile(".* [0-9].*");
 
     private final LocalDate tomorrow = LocalDate.now().plusDays(1);
     private final LocalDate nextWeek = LocalDate.now().plusDays(7);
 
-    private final EndOfLifeAdminMonitor monitor = new EndOfLifeAdminMonitor(id, name, threeDaysAgo, yesterday, url, dataFile, dataPattern);
+    private File dataFile = null; // Created for each test
+    private EndOfLifeAdminMonitor monitor = null; // Created for each test
 
     public EndOfLifeAdminMonitorTest() {
+    }
+
+    @Before
+    public void createDataFile() throws Exception {
+        dataFile = tmp.newFile();
+        Files.writeString(dataFile.toPath(), "PRETTY_NAME=\"Red Hat Enterprise Linux 8.7 (Ootpa)\"", StandardCharsets.UTF_8);
+        monitor = new EndOfLifeAdminMonitor(id, name, threeDaysAgo, yesterday, url, dataFile, dataPattern);
     }
 
     @Test
@@ -61,6 +76,14 @@ public class EndOfLifeAdminMonitorTest {
         /* End of support is next week, start of message is yesterday, should be activated */
         EndOfLifeAdminMonitor notActive = new EndOfLifeAdminMonitor(id, name, yesterday, nextWeek, url, dataFile, dataPattern);
         assertTrue(notActive.isActivated());
+    }
+
+    @Test
+    public void testIsActivatedDataFileMissing() {
+        /* End of support is next week, start of message is yesterday, but dataFile does not exist, should not be activated */
+        File nonExistentFile = new File("/tmp/this/file/does/not/exist");
+        EndOfLifeAdminMonitor notActive = new EndOfLifeAdminMonitor(id, name, yesterday, nextWeek, url, nonExistentFile, dataPattern);
+        assertFalse(notActive.isActivated());
     }
 
     @Test
