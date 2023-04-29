@@ -33,6 +33,13 @@ THE SOFTWARE.
             </l:isAdmin>
         </form>
         <h2>${%End_of_Life_Heading(it.displayName)}</h2>
-        ${%End_of_Life(it.dependencyName, it.beginDisplayDate, it.documentationURL)}
+        <j:choose>
+            <j:when test="${it.unsupported}">
+                ${%Past_End_of_Life(it.dependencyName, it.beginDisplayDate, it.documentationURL)}
+            </j:when>
+            <j:otherwise>
+                ${%Upcoming_End_of_Life(it.dependencyName, it.beginDisplayDate, it.documentationURL)}
+            </j:otherwise>
+        </j:choose>
     </div>
 </j:jelly>

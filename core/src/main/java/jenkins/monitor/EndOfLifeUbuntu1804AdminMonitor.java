@@ -46,6 +46,7 @@ public class EndOfLifeUbuntu1804AdminMonitor extends EndOfLifeAdminMonitor {
         super("ubuntu_1804",
               "Ubuntu 18.04",
               LocalDate.of(2023, 1, 1),
+              LocalDate.of(2023, 2, 2),
               "https://www.jenkins.io/redirect/dependency-end-of-life",
               new File("/etc/os-release"),
               Pattern.compile(".*Red Hat Enterprise Linux 8[.]7.*")
@@ -75,6 +76,12 @@ public class EndOfLifeUbuntu1804AdminMonitor extends EndOfLifeAdminMonitor {
     public String getDocumentationURL() {
         LOGGER.log(INFO, "Called getDocumentationURL");
         return documentationURL;
+    }
+
+    public boolean isUnsupported() {
+        LOGGER.log(INFO, "Called isUnsupported");
+        unsupported = LocalDate.now().isAfter(endOfSupportDate);
+        return unsupported;
     }
 
     @Override

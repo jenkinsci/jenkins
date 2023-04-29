@@ -58,8 +58,11 @@ class EndOfLifeAdminMonitor extends AdministrativeMonitor {
     /** Name of the dependency that will be end of life, like "Ubuntu 18.04" */
     final String dependencyName;
 
-    /** Date to begin displaying the end of life admin monitor, like 2023-05-31 */
+    /** Date to begin displaying the end of life admin monitor, like 2023-01-31 */
     final LocalDate beginDisplayDate;
+
+    /** Date that support ends, like 2023-05-31 */
+    final LocalDate endOfSupportDate;
 
     /** URL with more information, like "https://www.jenkins.io/redirect/dependency-end-of-life" */
     final String documentationURL;
@@ -71,12 +74,16 @@ class EndOfLifeAdminMonitor extends AdministrativeMonitor {
      */
     final boolean dataPatternMatched;
 
+    /** True if current date is after the end of support date */
+    boolean unsupported;
+
     /* Each end of life admin monitor needs to be separately enabled and disabled */
     private Boolean disabled;
 
     public EndOfLifeAdminMonitor(@NonNull String identifier,
                                  @NonNull String dependencyName,
                                  @NonNull LocalDate beginDisplayDate,
+                                 @NonNull LocalDate endOfSupportDate,
                                  @NonNull String documentationURL,
                                  @NonNull File dataFile,
                                  @NonNull Pattern dataPattern) {
@@ -85,6 +92,7 @@ class EndOfLifeAdminMonitor extends AdministrativeMonitor {
         this.dependencyName = dependencyName;
         this.displayName = dependencyName + " end of life";
         this.beginDisplayDate = beginDisplayDate;
+        this.endOfSupportDate = endOfSupportDate;
         this.documentationURL = documentationURL;
         this.disabled = SystemProperties.getBoolean(EndOfLifeAdminMonitor.class.getName() + "." + identifier + ".disabled", false);
         this.dataPatternMatched = patternMatched(dataFile, dataPattern);
