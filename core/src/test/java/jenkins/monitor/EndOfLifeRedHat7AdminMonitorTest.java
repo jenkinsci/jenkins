@@ -55,7 +55,7 @@ public class EndOfLifeRedHat7AdminMonitorTest {
 
     @Test
     public void testGetBeginDisplayDate() {
-        assertThat(monitor.getBeginDisplayDate(), is("2023-06-30"));
+        assertThat(monitor.getBeginDisplayDate(), is("2023-04-29"));
     }
 
     @Test
