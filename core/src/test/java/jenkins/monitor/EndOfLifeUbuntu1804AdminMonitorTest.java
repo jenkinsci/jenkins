@@ -21,12 +21,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.monitor;
+
+import static org.hamcrest.CoreMatchers.assertThat;
+import static org.hamcrest.MatcherAssert.is;
 
 import java.time.LocalDate;
 import jenkins.model.Jenkins;
-import static org.hamcrest.CoreMatchers.*;
-import static org.hamcrest.MatcherAssert.*;
 import org.junit.Test;
 
 public class EndOfLifeUbuntu1804AdminMonitorTest {

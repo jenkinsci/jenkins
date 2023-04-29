@@ -22,6 +22,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.monitor;
 
 import static java.util.logging.Level.FINE;
@@ -95,7 +96,7 @@ class EndOfLifeAdminMonitor extends AdministrativeMonitor {
     /* Each end of life admin monitor needs to be separately enabled and disabled */
     private Boolean disabled;
 
-    public EndOfLifeAdminMonitor(@NonNull String identifier,
+    EndOfLifeAdminMonitor(@NonNull String identifier,
             @NonNull String dependencyName,
             @NonNull LocalDate beginDisplayDate,
             @NonNull LocalDate endOfSupportDate,
