@@ -83,6 +83,4 @@ public class EndOfLifeUbuntu1804AdminMonitor extends EndOfLifeAdminMonitor {
     public Permission getRequiredPermission() {
         return Jenkins.SYSTEM_READ;
     }
-
-    static final Logger LOGGER = Logger.getLogger(EndOfLifeUbuntu1804AdminMonitor.class.getName());
 }
