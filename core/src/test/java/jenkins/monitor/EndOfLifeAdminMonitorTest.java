@@ -87,6 +87,15 @@ public class EndOfLifeAdminMonitorTest {
     }
 
     @Test
+    public void testIsActivatedDataFileDoesNotMatch() throws Exception {
+        /* End of support is next week, start of message is yesterday, but dataFile does notmatch, should not be activated */
+        File nonMatchingContentFile = tmp.newFile();
+        Files.writeString(nonMatchingContentFile.toPath(), "Unexpected content\nSecond line\nThird line\n", StandardCharsets.UTF_8);
+        EndOfLifeAdminMonitor notActive = new EndOfLifeAdminMonitor(id, name, threeDaysAgo, yesterday, url, nonMatchingContentFile, dataPattern);
+        assertFalse(notActive.isActivated());
+    }
+
+    @Test
     public void testIsActivatedNotYetBeginDate() {
         /* End of support is next week, start of message is tomorrow, should not be activated */
         EndOfLifeAdminMonitor notActive = new EndOfLifeAdminMonitor(id, name, tomorrow, nextWeek, url, dataFile, dataPattern);
