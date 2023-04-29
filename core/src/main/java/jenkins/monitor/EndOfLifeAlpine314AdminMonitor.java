@@ -47,7 +47,7 @@ public class EndOfLifeAlpine314AdminMonitor extends EndOfLifeAdminMonitor {
               LocalDate.of(2023, 5, 1),
               "https://www.jenkins.io/redirect/dependency-end-of-life",
               new File("/etc/os-release"),
-              Pattern.compile(".*Alpine.*3[.]14.*")
+              Pattern.compile(".*Alpine.* 3[.]14.*")
               );
     }
 

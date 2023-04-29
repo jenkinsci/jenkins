@@ -47,7 +47,7 @@ public class EndOfLifeFedora36AdminMonitor extends EndOfLifeAdminMonitor {
               LocalDate.of(2023, 5, 16),
               "https://www.jenkins.io/redirect/dependency-end-of-life",
               new File("/etc/os-release"),
-              Pattern.compile(".*Fedora.*36.*")
+              Pattern.compile(".*Fedora.* 36.*")
               );
     }
 
