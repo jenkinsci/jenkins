@@ -10,17 +10,16 @@ const { CleanWebpackPlugin: CleanPlugin } = require("clean-webpack-plugin");
 module.exports = (env, argv) => ({
   mode: "development",
   entry: {
-    "page-init": [path.join(__dirname, "src/main/js/page-init.js")],
     pluginSetupWizard: [
       path.join(__dirname, "src/main/js/pluginSetupWizard.js"),
-      path.join(__dirname, "src/main/less/pluginSetupWizard.less"),
+      path.join(__dirname, "src/main/scss/pluginSetupWizard.less"),
     ],
     "plugin-manager-ui": [
       path.join(__dirname, "src/main/js/plugin-manager-ui.js"),
     ],
     "add-item": [
       path.join(__dirname, "src/main/js/add-item.js"),
-      path.join(__dirname, "src/main/js/add-item.less"),
+      path.join(__dirname, "src/main/js/add-item.scss"),
     ],
     "pages/dashboard": [path.join(__dirname, "src/main/js/pages/dashboard")],
     "pages/manage-jenkins/system-information": [
@@ -49,8 +48,8 @@ module.exports = (env, argv) => ({
     "filter-build-history": [
       path.join(__dirname, "src/main/js/filter-build-history.js"),
     ],
-    "simple-page": [path.join(__dirname, "src/main/less/simple-page.less")],
-    styles: [path.join(__dirname, "src/main/less/styles.less")],
+    "simple-page": [path.join(__dirname, "src/main/scss/simple-page.scss")],
+    styles: [path.join(__dirname, "src/main/scss/styles.scss")],
   },
   output: {
     path: path.join(__dirname, "src/main/webapp/jsbundles"),
@@ -82,7 +81,30 @@ module.exports = (env, argv) => ({
   module: {
     rules: [
       {
-        test: /\.(css|less)$/,
+        test: /\.(less)$/,
+        use: [
+          {
+            loader: MiniCSSExtractPlugin.loader,
+            options: {
+              esModule: false,
+            },
+          },
+          {
+            loader: "css-loader",
+            options: {
+              sourceMap: true,
+            },
+          },
+          {
+            loader: "less-loader",
+            options: {
+              sourceMap: true,
+            },
+          },
+        ],
+      },
+      {
+        test: /\.(css|scss)$/,
         use: [
           "style-loader",
           {
@@ -99,7 +121,7 @@ module.exports = (env, argv) => ({
               // from the src/main/webapp/images dir
               url: {
                 filter: (url, resourcePath) => {
-                  return !resourcePath.includes("styles.less");
+                  return !resourcePath.includes("styles.scss");
                 },
               },
             },
@@ -111,7 +133,7 @@ module.exports = (env, argv) => ({
             },
           },
           {
-            loader: "less-loader",
+            loader: "sass-loader",
             options: {
               sourceMap: true,
             },

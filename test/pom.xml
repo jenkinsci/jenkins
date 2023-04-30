@@ -79,7 +79,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>ant</artifactId>
-        <version>481.v7b_09e538fcca</version>
+        <version>487.vd79d090d4ea_e</version>
       </dependency>
       <dependency>
         <!-- RequireUpperBoundDeps via mailer and junit -->
@@ -91,7 +91,7 @@ THE SOFTWARE.
         <!-- requireUpperBoundDeps via matrix-project and junit -->
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>script-security</artifactId>
-        <version>1229.v4880b_b_e905a_6</version>
+        <version>1244.ve463715a_f89c</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -106,7 +106,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>1952.v3a_b_0cd3f5a_03</version>
+      <version>1954.v2e3fd5465b_a_6</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -183,7 +183,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>junit</artifactId>
-      <version>1189.v1b_e593637fa_e</version>
+      <version>1198.ve38db_d1b_c975</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -195,13 +195,13 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>matrix-auth</artifactId>
-      <version>3.1.6</version>
+      <version>3.1.7</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>matrix-project</artifactId>
-      <version>785.v06b_7f47b_c631</version>
+      <version>789.v57a_725b_63c79</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -222,7 +222,7 @@ THE SOFTWARE.
     </dependency>
     <dependency>
       <groupId>org.mockito</groupId>
-      <artifactId>mockito-inline</artifactId>
+      <artifactId>mockito-core</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>

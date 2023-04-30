@@ -264,6 +264,7 @@ import jenkins.AgentProtocol;
 import jenkins.ExtensionComponentSet;
 import jenkins.ExtensionRefreshException;
 import jenkins.InitReactorRunner;
+import jenkins.agents.CloudSet;
 import jenkins.diagnostics.URICheckEncodingMonitor;
 import jenkins.install.InstallState;
 import jenkins.install.SetupWizard;
@@ -1573,6 +1574,14 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     @Deprecated
     public ComputerSet getComputer() {
         return new ComputerSet();
+    }
+
+    /**
+     * Only there to bind to /cloud/ URL. Otherwise /cloud/new gets resolved to getCloud("new") by stapler which is not what we want.
+     */
+    @Restricted(DoNotUse.class)
+    public CloudSet getCloud() {
+        return new CloudSet();
     }
 
     /**
