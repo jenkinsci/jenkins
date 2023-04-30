@@ -134,7 +134,7 @@ class EndOfLifeAdminMonitor extends AdministrativeMonitor {
                 matched = false;
             }
         }
-    LOGGER.log(FINE, "Matched is {1} in context of {0}", new Object[] {identifier, matched});
+        LOGGER.log(FINE, "Matched is {1} in context of {0}", new Object[] {identifier, matched});
         return matched;
     }
 
