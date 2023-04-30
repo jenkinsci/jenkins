@@ -31,6 +31,7 @@ import java.io.File;
 import java.time.LocalDate;
 import java.util.regex.Pattern;
 import jenkins.model.Jenkins;
+import jenkins.util.SystemProperties;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -48,6 +49,7 @@ public class EndOfLifeUbuntu1804AdminMonitor extends EndOfLifeAdminMonitor {
               new File("/etc/os-release"),
               Pattern.compile(".*Ubuntu.* 18[.]04.*")
               );
+        this.disabled = SystemProperties.getBoolean(EndOfLifeUbuntu1804AdminMonitor.class.getName() + ".disabled", false);
     }
 
     public String getIdentifier() {

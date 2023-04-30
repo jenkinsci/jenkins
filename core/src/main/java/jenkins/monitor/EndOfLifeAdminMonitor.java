@@ -38,7 +38,6 @@ import java.time.LocalDate;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import jenkins.model.Jenkins;
-import jenkins.util.SystemProperties;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.HttpRedirect;
@@ -95,7 +94,7 @@ class EndOfLifeAdminMonitor extends AdministrativeMonitor {
     boolean unsupported;
 
     /* Each end of life admin monitor needs to be separately enabled and disabled */
-    private Boolean disabled;
+    protected Boolean disabled;
 
     EndOfLifeAdminMonitor(@NonNull String identifier,
             @NonNull String dependencyName,
@@ -111,7 +110,6 @@ class EndOfLifeAdminMonitor extends AdministrativeMonitor {
         this.beginDisplayDate = beginDisplayDate;
         this.endOfSupportDate = endOfSupportDate;
         this.documentationURL = documentationURL;
-        this.disabled = SystemProperties.getBoolean(EndOfLifeAdminMonitor.class.getName() + "." + identifier + ".disabled", false);
         this.dataPatternMatched = patternMatched(dataFile, dataPattern);
     }
 

@@ -32,6 +32,7 @@ import java.io.File;
 import java.time.LocalDate;
 import java.util.regex.Pattern;
 import jenkins.model.Jenkins;
+import jenkins.util.SystemProperties;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -49,6 +50,7 @@ public class EndOfLifeAlpine317AdminMonitor extends EndOfLifeAdminMonitor {
               new File("/etc/os-release"),
               Pattern.compile(".*Alpine.* 3[.]17.*")
               );
+        this.disabled = SystemProperties.getBoolean(EndOfLifeAlpine317AdminMonitor.class.getName() + ".disabled", false);
     }
 
     public String getIdentifier() {
