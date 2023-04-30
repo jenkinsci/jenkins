@@ -39,11 +39,6 @@ public class EndOfLifeUbuntu1804AdminMonitorTest {
     }
 
     @Test
-    public void testGetIdentifier() {
-        assertThat(monitor.getIdentifier(), is("ubuntu_1804"));
-    }
-
-    @Test
     public void testGetDependencyName() {
         assertThat(monitor.getDependencyName(), is("Ubuntu 18.04"));
     }

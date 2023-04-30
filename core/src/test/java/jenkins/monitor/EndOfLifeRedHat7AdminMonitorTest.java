@@ -39,11 +39,6 @@ public class EndOfLifeRedHat7AdminMonitorTest {
     }
 
     @Test
-    public void testGetIdentifier() {
-        assertThat(monitor.getIdentifier(), is("redhat_7"));
-    }
-
-    @Test
     public void testGetDependencyName() {
         assertThat(monitor.getDependencyName(), is("Red Hat Enterprise Linux 7 and its derivatives"));
     }

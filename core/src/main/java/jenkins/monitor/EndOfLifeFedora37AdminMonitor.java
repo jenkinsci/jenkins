@@ -32,7 +32,6 @@ import java.io.File;
 import java.time.LocalDate;
 import java.util.regex.Pattern;
 import jenkins.model.Jenkins;
-import jenkins.util.SystemProperties;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -42,7 +41,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 @Symbol("endOfLifeFedora37AdminMonitor")
 public class EndOfLifeFedora37AdminMonitor extends EndOfLifeAdminMonitor {
     public EndOfLifeFedora37AdminMonitor() {
-        super("fedora_37",
+        super(EndOfLifeFedora37AdminMonitor.class.getName(),
               "Fedora 37",
               LocalDate.of(2023, 8, 14),
               LocalDate.of(2023, 11, 14),
@@ -50,11 +49,6 @@ public class EndOfLifeFedora37AdminMonitor extends EndOfLifeAdminMonitor {
               new File("/etc/os-release"),
               Pattern.compile(".*Fedora.* 37.*")
               );
-        this.disabled = SystemProperties.getBoolean(EndOfLifeFedora37AdminMonitor.class.getName() + ".disabled", false);
-    }
-
-    public String getIdentifier() {
-        return identifier;
     }
 
     public String getDependencyName() {

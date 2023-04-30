@@ -31,7 +31,6 @@ import java.io.File;
 import java.time.LocalDate;
 import java.util.regex.Pattern;
 import jenkins.model.Jenkins;
-import jenkins.util.SystemProperties;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -41,7 +40,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 @Symbol("endOfLifeRedHat7AdminMonitor")
 public class EndOfLifeRedHat7AdminMonitor extends EndOfLifeAdminMonitor {
     public EndOfLifeRedHat7AdminMonitor() {
-        super("redhat_7",
+        super(EndOfLifeRedHat7AdminMonitor.class.getName(),
               "Red Hat Enterprise Linux 7 and its derivatives",
               LocalDate.of(2023, 4, 28),
               LocalDate.of(2023, 12, 31),
@@ -49,11 +48,6 @@ public class EndOfLifeRedHat7AdminMonitor extends EndOfLifeAdminMonitor {
               new File("/etc/os-release"),
               Pattern.compile(".*(Red Hat.* 7|CentOS.* 7|Scientific.* 7|Oracle.* 7).*")
               );
-        this.disabled = SystemProperties.getBoolean(EndOfLifeRedHat7AdminMonitor.class.getName() + ".disabled", false);
-    }
-
-    public String getIdentifier() {
-        return identifier;
     }
 
     public String getDependencyName() {

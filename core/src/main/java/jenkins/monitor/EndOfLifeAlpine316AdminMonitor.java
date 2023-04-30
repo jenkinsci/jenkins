@@ -32,7 +32,6 @@ import java.io.File;
 import java.time.LocalDate;
 import java.util.regex.Pattern;
 import jenkins.model.Jenkins;
-import jenkins.util.SystemProperties;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -42,7 +41,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 @Symbol("endOfLifeAlpine316AdminMonitor")
 public class EndOfLifeAlpine316AdminMonitor extends EndOfLifeAdminMonitor {
     public EndOfLifeAlpine316AdminMonitor() {
-        super("alpine_316",
+        super(EndOfLifeAlpine316AdminMonitor.class.getName(),
               "Alpine 3.16",
               LocalDate.of(2024, 2, 23),
               LocalDate.of(2024, 5, 23),
@@ -50,11 +49,6 @@ public class EndOfLifeAlpine316AdminMonitor extends EndOfLifeAdminMonitor {
               new File("/etc/os-release"),
               Pattern.compile(".*Alpine.* 3[.]16.*")
               );
-        this.disabled = SystemProperties.getBoolean(EndOfLifeAlpine316AdminMonitor.class.getName() + ".disabled", false);
-    }
-
-    public String getIdentifier() {
-        return identifier;
     }
 
     public String getDependencyName() {

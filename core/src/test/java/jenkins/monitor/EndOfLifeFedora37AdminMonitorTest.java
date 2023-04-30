@@ -39,11 +39,6 @@ public class EndOfLifeFedora37AdminMonitorTest {
     }
 
     @Test
-    public void testGetIdentifier() {
-        assertThat(monitor.getIdentifier(), is("fedora_37"));
-    }
-
-    @Test
     public void testGetDependencyName() {
         assertThat(monitor.getDependencyName(), is("Fedora 37"));
     }

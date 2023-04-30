@@ -32,7 +32,6 @@ import java.io.File;
 import java.time.LocalDate;
 import java.util.regex.Pattern;
 import jenkins.model.Jenkins;
-import jenkins.util.SystemProperties;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -42,7 +41,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 @Symbol("endOfLifeDebian10AdminMonitor")
 public class EndOfLifeDebian10AdminMonitor extends EndOfLifeAdminMonitor {
     public EndOfLifeDebian10AdminMonitor() {
-        super("debian_10",
+        super(EndOfLifeDebian10AdminMonitor.class.getName(),
               "Debian 10",
               LocalDate.of(2024, 1, 1),
               LocalDate.of(2024, 6, 30),
@@ -50,11 +49,6 @@ public class EndOfLifeDebian10AdminMonitor extends EndOfLifeAdminMonitor {
               new File("/etc/os-release"),
               Pattern.compile(".*Debian.* 10.*")
               );
-        this.disabled = SystemProperties.getBoolean(EndOfLifeDebian10AdminMonitor.class.getName() + ".disabled", false);
-    }
-
-    public String getIdentifier() {
-        return identifier;
     }
 
     public String getDependencyName() {

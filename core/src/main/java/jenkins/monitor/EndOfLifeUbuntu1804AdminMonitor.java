@@ -31,7 +31,6 @@ import java.io.File;
 import java.time.LocalDate;
 import java.util.regex.Pattern;
 import jenkins.model.Jenkins;
-import jenkins.util.SystemProperties;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -41,7 +40,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 @Symbol("endOfLifeUbuntu1804AdminMonitor")
 public class EndOfLifeUbuntu1804AdminMonitor extends EndOfLifeAdminMonitor {
     public EndOfLifeUbuntu1804AdminMonitor() {
-        super("ubuntu_1804",
+        super(EndOfLifeUbuntu1804AdminMonitor.class.getName(),
               "Ubuntu 18.04",
               LocalDate.of(2023, 3, 1),
               LocalDate.of(2023, 5, 31),
@@ -49,11 +48,6 @@ public class EndOfLifeUbuntu1804AdminMonitor extends EndOfLifeAdminMonitor {
               new File("/etc/os-release"),
               Pattern.compile(".*Ubuntu.* 18[.]04.*")
               );
-        this.disabled = SystemProperties.getBoolean(EndOfLifeUbuntu1804AdminMonitor.class.getName() + ".disabled", false);
-    }
-
-    public String getIdentifier() {
-        return identifier;
     }
 
     public String getDependencyName() {

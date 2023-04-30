@@ -38,6 +38,7 @@ import java.time.LocalDate;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import jenkins.model.Jenkins;
+import jenkins.util.SystemProperties;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.HttpRedirect;
@@ -50,9 +51,9 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 class EndOfLifeAdminMonitor extends AdministrativeMonitor {
 
     /**
-     * Unique identifier of end of life admin monitor, like "ubuntu_1804"
+     * Unique identifier of end of life admin monitor.
      */
-    final String identifier;
+    private final String identifier;
 
     /**
      * Display name of end of life admin monitor, like "Ubuntu 18.04 end of
@@ -103,8 +104,9 @@ class EndOfLifeAdminMonitor extends AdministrativeMonitor {
             @NonNull String documentationURL,
             @NonNull File dataFile,
             @NonNull Pattern dataPattern) {
-        super(EndOfLifeAdminMonitor.class.getName());
+        super(identifier);
         this.identifier = identifier;
+        this.disabled = SystemProperties.getBoolean(identifier + ".disabled", false);
         this.dependencyName = dependencyName;
         this.displayName = "End of life for " + dependencyName;
         this.beginDisplayDate = beginDisplayDate;

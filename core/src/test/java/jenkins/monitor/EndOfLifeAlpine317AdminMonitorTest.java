@@ -39,11 +39,6 @@ public class EndOfLifeAlpine317AdminMonitorTest {
     }
 
     @Test
-    public void testGetIdentifier() {
-        assertThat(monitor.getIdentifier(), is("alpine_317"));
-    }
-
-    @Test
     public void testGetDependencyName() {
         assertThat(monitor.getDependencyName(), is("Alpine 3.17"));
     }
