@@ -25,7 +25,6 @@
 
 package jenkins.monitor;
 
-
 import hudson.Extension;
 import hudson.security.Permission;
 import java.io.File;
@@ -66,6 +65,10 @@ public class EndOfLifeUbuntu1804AdminMonitor extends EndOfLifeAdminMonitor {
 
     public String getBeginDisplayDate() {
         return beginDisplayDate.toString();
+    }
+
+    public String getEndOfSupportDate() {
+        return endOfSupportDate.toString();
     }
 
     public String getDocumentationURL() {

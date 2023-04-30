@@ -32,7 +32,7 @@ THE SOFTWARE.
                 <f:submit value="${%Ignore} ${it.displayName}" name="no"/>
             </l:isAdmin>
         </form>
-        <h2>${%End_of_Life_Heading(it.displayName)}</h2>
+        <h2>${it.displayName}</h2>
         <j:choose>
             <j:when test="${it.unsupported}">
                 ${%Past_End_of_Life(it.dependencyName, it.endOfSupportDate, it.documentationURL)}

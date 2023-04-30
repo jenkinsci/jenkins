@@ -68,6 +68,10 @@ public class EndOfLifeAlpine315AdminMonitor extends EndOfLifeAdminMonitor {
         return beginDisplayDate.toString();
     }
 
+    public String getEndOfSupportDate() {
+        return endOfSupportDate.toString();
+    }
+
     public String getDocumentationURL() {
         return documentationURL;
     }
