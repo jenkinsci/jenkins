@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2017 Red Hat, inc.
+Copyright (c) 2023, CloudBees Inc.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,19 +22,27 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
+<!--
+  2nd page in the "new cloud" page for displaying the entire configuration entries for the selected cloud type.
+-->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:t="/lib/hudson">
-    <l:header />
-    <l:side-panel>
-        <l:tasks>
-            <l:task contextMenu="false" href="." icon="symbol-computer" title="${%Status}"/>
-            <l:task href="configure" icon="symbol-settings"
-                    title="${app.hasPermission(app.ADMINISTER) ? '%Configure' : '%View Configuration'}"/>
-            <l:task href="delete" icon="icon-edit-delete icon-md" permission="${app.ADMINISTER}" title="${%Delete Cloud}"/>
-            <t:actions />
-        </l:tasks>
-        <j:forEach var="action" items="${it.allActions}">
-            <st:include it="${action}" page="box.jelly" optional="true"/>
-        </j:forEach>
-    </l:side-panel>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
+         xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <l:layout permission="${app.ADMINISTER}" type="one-column" title="${%New cloud}">
+    <l:breadcrumb title="${%New cloud}"/>
+    <l:main-panel>
+      <f:form method="post" action="doCreate" name="config" class="jenkins-form">
+        <h1>${%New cloud}</h1>
+        <!-- main body of the configuration -->
+        <st:include it="${requestScope.instance}" class="${requestScope.descriptor.clazz}" page="config.jelly" optional="true" />
+        
+        <f:bottomButtonBar>
+          <input type="hidden" name="type" value="${request.getParameter('mode')}"/>
+
+          <f:submit value="${%Save}"/>
+        </f:bottomButtonBar>
+      </f:form>
+      <st:adjunct includes="lib.form.confirm" />
+    </l:main-panel>
+  </l:layout>
 </j:jelly>
