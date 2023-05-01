@@ -40,7 +40,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 @Symbol("endOfLifeRedHat7AdminMonitor")
 public class EndOfLifeRedHat7AdminMonitor extends EndOfLifeAdminMonitor {
     private static final String OPERATING_SYSTEM_NAME = "Red Hat Enterprise Linux 7 and its derivatives";
-    private static final Pattern DEPENDENCY_PATTERN = Pattern.compile(".*(Red Hat.* 7|CentOS.* 7|Scientific.* 7|Oracle.* 7|Red Hat.* 8).*");
+    private static final Pattern DEPENDENCY_PATTERN = Pattern.compile(".*(Red Hat.* 7|CentOS.* 7|Scientific.* 7|Oracle.* 7).*");
 
     /* Package protected for test access */
     static final String DEPENDENCY_NAME = "Red Hat Enterprise Linux 7 and its derivatives";
