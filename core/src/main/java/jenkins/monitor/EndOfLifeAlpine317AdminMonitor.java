@@ -51,6 +51,18 @@ public class EndOfLifeAlpine317AdminMonitor extends EndOfLifeAdminMonitor {
               );
     }
 
+    /* Package protected for use by tests */
+    EndOfLifeAlpine317AdminMonitor(File dataFile) {
+        super(EndOfLifeAlpine317AdminMonitor.class.getName(),
+              "Alpine 3.17",
+              LocalDate.of(2024, 8, 22),
+              LocalDate.of(2024, 11, 22),
+              "https://www.jenkins.io/redirect/operating-system-end-of-life",
+              dataFile,
+              Pattern.compile(".*Alpine.* 3[.]17.*")
+              );
+    }
+
     public String getDependencyName() {
         return dependencyName;
     }

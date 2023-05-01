@@ -25,7 +25,6 @@
 
 package jenkins.monitor;
 
-
 import hudson.Extension;
 import hudson.security.Permission;
 import java.io.File;
@@ -47,6 +46,18 @@ public class EndOfLifeDebian10AdminMonitor extends EndOfLifeAdminMonitor {
               LocalDate.of(2024, 6, 30),
               "https://www.jenkins.io/redirect/operating-system-end-of-life",
               new File("/etc/os-release"),
+              Pattern.compile(".*Debian.* 10.*")
+              );
+    }
+
+    /* Package protected for use by tests */
+    EndOfLifeDebian10AdminMonitor(File dataFile) {
+        super(EndOfLifeDebian10AdminMonitor.class.getName(),
+              "Debian 10",
+              LocalDate.of(2024, 1, 1),
+              LocalDate.of(2024, 6, 30),
+              "https://www.jenkins.io/redirect/operating-system-end-of-life",
+              dataFile,
               Pattern.compile(".*Debian.* 10.*")
               );
     }

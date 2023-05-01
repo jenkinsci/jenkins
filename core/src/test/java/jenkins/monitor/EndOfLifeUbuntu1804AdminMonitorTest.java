@@ -27,6 +27,7 @@ package jenkins.monitor;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
+import java.io.File;
 import java.time.LocalDate;
 import jenkins.model.Jenkins;
 import org.junit.Test;
@@ -66,6 +67,18 @@ public class EndOfLifeUbuntu1804AdminMonitorTest {
     @Test
     public void testGetRequiredPermission() {
         assertThat(monitor.getRequiredPermission(), is(Jenkins.SYSTEM_READ));
+    }
+
+    @Test
+    public void testWithFileContents() throws Exception {
+        File osReleaseFile = new File(this.getClass().getResource("os-release-ubuntu-18.04").toURI());
+        EndOfLifeUbuntu1804AdminMonitor testFileMonitor = new EndOfLifeUbuntu1804AdminMonitor(osReleaseFile);
+        assertThat(testFileMonitor.getBeginDisplayDate(), is("2023-03-01"));
+        assertThat(testFileMonitor.getDependencyName(), is("Ubuntu 18.04"));
+        assertThat(testFileMonitor.getDisplayName(), is("End of life for Ubuntu 18.04"));
+        assertThat(testFileMonitor.getDocumentationURL(), is("https://www.jenkins.io/redirect/operating-system-end-of-life"));
+        assertThat(testFileMonitor.getRequiredPermission(), is(Jenkins.SYSTEM_READ));
+        assertThat(testFileMonitor.isUnsupported(), is(LocalDate.now().isAfter(LocalDate.of(2023, 5, 31))));
     }
 
 }

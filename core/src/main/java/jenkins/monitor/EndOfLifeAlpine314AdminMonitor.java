@@ -25,7 +25,6 @@
 
 package jenkins.monitor;
 
-
 import hudson.Extension;
 import hudson.security.Permission;
 import java.io.File;
@@ -47,6 +46,18 @@ public class EndOfLifeAlpine314AdminMonitor extends EndOfLifeAdminMonitor {
               LocalDate.of(2023, 5, 1),
               "https://www.jenkins.io/redirect/operating-system-end-of-life",
               new File("/etc/os-release"),
+              Pattern.compile(".*Alpine.* 3[.]14.*")
+              );
+    }
+
+    /* Package protected for use by tests */
+    EndOfLifeAlpine314AdminMonitor(File dataFile) {
+        super(EndOfLifeAlpine314AdminMonitor.class.getName(),
+              "Alpine 3.14",
+              LocalDate.of(2023, 3, 1),
+              LocalDate.of(2023, 5, 1),
+              "https://www.jenkins.io/redirect/operating-system-end-of-life",
+              dataFile,
               Pattern.compile(".*Alpine.* 3[.]14.*")
               );
     }

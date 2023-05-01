@@ -50,6 +50,18 @@ public class EndOfLifeUbuntu1804AdminMonitor extends EndOfLifeAdminMonitor {
               );
     }
 
+    /* Package protected for use by tests */
+    EndOfLifeUbuntu1804AdminMonitor(File dataFile) {
+        super(EndOfLifeUbuntu1804AdminMonitor.class.getName(),
+              "Ubuntu 18.04",
+              LocalDate.of(2023, 3, 1),
+              LocalDate.of(2023, 5, 31),
+              "https://www.jenkins.io/redirect/operating-system-end-of-life",
+              dataFile,
+              Pattern.compile(".*Ubuntu.* 18[.]04.*")
+              );
+    }
+
     public String getDependencyName() {
         return dependencyName;
     }

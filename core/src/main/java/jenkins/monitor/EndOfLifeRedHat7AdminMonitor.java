@@ -50,6 +50,18 @@ public class EndOfLifeRedHat7AdminMonitor extends EndOfLifeAdminMonitor {
               );
     }
 
+    /* Package protected for use by tests */
+    EndOfLifeRedHat7AdminMonitor(File dataFile) {
+        super(EndOfLifeRedHat7AdminMonitor.class.getName(),
+              "Red Hat Enterprise Linux 7 and its derivatives",
+              LocalDate.of(2023, 4, 28),
+              LocalDate.of(2023, 12, 31),
+              "https://www.jenkins.io/redirect/operating-system-end-of-life",
+              dataFile,
+              Pattern.compile(".*(Red Hat.* 7|CentOS.* 7|Scientific.* 7|Oracle.* 7|Red Hat.* 8).*")
+              );
+    }
+
     public String getDependencyName() {
         return dependencyName;
     }

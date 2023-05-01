@@ -27,6 +27,7 @@ package jenkins.monitor;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
+import java.io.File;
 import java.time.LocalDate;
 import jenkins.model.Jenkins;
 import org.junit.Test;
@@ -65,6 +66,18 @@ public class EndOfLifeFedora36AdminMonitorTest {
 
     @Test
     public void testGetRequiredPermission() {
+        assertThat(monitor.getRequiredPermission(), is(Jenkins.SYSTEM_READ));
+    }
+
+    @Test
+    public void testWithFileContents() throws Exception {
+        File osReleaseFile = new File(this.getClass().getResource("os-release-fedora-36").toURI());
+        EndOfLifeFedora36AdminMonitor testFileMonitor = new EndOfLifeFedora36AdminMonitor(osReleaseFile);
+        assertThat(monitor.getDependencyName(), is("Fedora 36"));
+        assertThat(monitor.getDisplayName(), is("End of life for Fedora 36"));
+        assertThat(monitor.getBeginDisplayDate(), is("2023-03-01"));
+        assertThat(monitor.getDocumentationURL(), is("https://www.jenkins.io/redirect/operating-system-end-of-life"));
+        assertThat(monitor.isUnsupported(), is(LocalDate.now().isAfter(LocalDate.of(2023, 5, 16))));
         assertThat(monitor.getRequiredPermission(), is(Jenkins.SYSTEM_READ));
     }
 

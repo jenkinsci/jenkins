@@ -27,6 +27,7 @@ package jenkins.monitor;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
+import java.io.File;
 import java.time.LocalDate;
 import jenkins.model.Jenkins;
 import org.junit.Test;
@@ -66,6 +67,18 @@ public class EndOfLifeAlpine316AdminMonitorTest {
     @Test
     public void testGetRequiredPermission() {
         assertThat(monitor.getRequiredPermission(), is(Jenkins.SYSTEM_READ));
+    }
+
+    @Test
+    public void testWithFileContents() throws Exception {
+        File osReleaseFile = new File(this.getClass().getResource("os-release-alpine-3.16").toURI());
+        EndOfLifeAlpine316AdminMonitor testFileMonitor = new EndOfLifeAlpine316AdminMonitor(osReleaseFile);
+        assertThat(testFileMonitor.getBeginDisplayDate(), is("2024-02-23"));
+        assertThat(testFileMonitor.getDependencyName(), is("Alpine 3.16"));
+        assertThat(testFileMonitor.getDisplayName(), is("End of life for Alpine 3.16"));
+        assertThat(testFileMonitor.getDocumentationURL(), is("https://www.jenkins.io/redirect/operating-system-end-of-life"));
+        assertThat(testFileMonitor.getRequiredPermission(), is(Jenkins.SYSTEM_READ));
+        assertThat(testFileMonitor.isUnsupported(), is(LocalDate.now().isAfter(LocalDate.of(2024, 5, 23))));
     }
 
 }

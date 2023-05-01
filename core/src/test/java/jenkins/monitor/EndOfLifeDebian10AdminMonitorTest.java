@@ -27,6 +27,7 @@ package jenkins.monitor;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
+import java.io.File;
 import java.time.LocalDate;
 import jenkins.model.Jenkins;
 import org.junit.Test;
@@ -66,6 +67,18 @@ public class EndOfLifeDebian10AdminMonitorTest {
     @Test
     public void testGetRequiredPermission() {
         assertThat(monitor.getRequiredPermission(), is(Jenkins.SYSTEM_READ));
+    }
+
+    @Test
+    public void testWithFileContents() throws Exception {
+        File osReleaseFile = new File(this.getClass().getResource("os-release-debian-10").toURI());
+        EndOfLifeDebian10AdminMonitor testFileMonitor = new EndOfLifeDebian10AdminMonitor(osReleaseFile);
+        assertThat(testFileMonitor.getBeginDisplayDate(), is("2024-01-01"));
+        assertThat(testFileMonitor.getDependencyName(), is("Debian 10"));
+        assertThat(testFileMonitor.getDisplayName(), is("End of life for Debian 10"));
+        assertThat(testFileMonitor.getDocumentationURL(), is("https://www.jenkins.io/redirect/operating-system-end-of-life"));
+        assertThat(testFileMonitor.getRequiredPermission(), is(Jenkins.SYSTEM_READ));
+        assertThat(testFileMonitor.isUnsupported(), is(LocalDate.now().isAfter(LocalDate.of(2024, 6, 30))));
     }
 
 }
