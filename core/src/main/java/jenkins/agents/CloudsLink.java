@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2012, CloudBees, Intl., Nicolas De loof
+ * Copyright (c) 2023, CloudBees Inc, and other contributors
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  */
 
-package jenkins.management;
+package jenkins.agents;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
@@ -31,41 +31,39 @@ import hudson.security.Permission;
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
 
-/**
- * @author <a href="mailto:nicolas.deloof@gmail.com">Nicolas De Loof</a>
- */
-@Extension(ordinal = Integer.MAX_VALUE - 1000) @Symbol("nodes")
-public class NodesLink extends ManagementLink {
-
-    @Override
-    public String getIconFileName() {
-        return "symbol-computer";
-    }
+@Extension
+@Symbol("clouds")
+public class CloudsLink extends ManagementLink {
 
     @Override
     public String getDisplayName() {
-        return Messages.NodesLink_DisplayName();
+        return Messages.CloudsLink_DisplayName();
     }
 
     @Override
     public String getDescription() {
-        return Messages.NodesLink_Description();
+        return Messages.CloudsLink_Description();
     }
 
-    @NonNull
     @Override
-    public Permission getRequiredPermission() {
-        return Jenkins.READ;
+    public String getIconFileName() {
+        return "symbol-cloud";
     }
 
     @Override
     public String getUrlName() {
-        return "computer";
+        return "cloud";
     }
 
     @NonNull
     @Override
     public Category getCategory() {
         return Category.CONFIGURATION;
+    }
+
+    @NonNull
+    @Override
+    public Permission getRequiredPermission() {
+        return Jenkins.SYSTEM_READ;
     }
 }

@@ -23,9 +23,9 @@
     "lint": "yarn lint:js && yarn lint:css"
   },
   "devDependencies": {
-    "@babel/cli": "7.21.0",
-    "@babel/core": "7.21.4",
-    "@babel/preset-env": "7.21.4",
+    "@babel/cli": "7.21.5",
+    "@babel/core": "7.21.5",
+    "@babel/preset-env": "7.21.5",
     "autoprefixer": "10.4.14",
     "babel-loader": "9.1.2",
     "clean-webpack-plugin": "4.0.0",
@@ -42,13 +42,13 @@
     "postcss-loader": "7.2.4",
     "postcss-scss": "4.0.6",
     "prettier": "2.8.8",
-    "sass": "1.62.0",
+    "sass": "1.62.1",
     "sass-loader": "13.2.2",
     "style-loader": "3.3.2",
     "stylelint": "15.6.0",
     "stylelint-checkstyle-reporter": "0.2.0",
     "stylelint-config-standard": "33.0.0",
-    "webpack": "5.80.0",
+    "webpack": "5.81.0",
     "webpack-cli": "5.0.2",
     "webpack-remove-empty-scripts": "1.0.3"
   },
