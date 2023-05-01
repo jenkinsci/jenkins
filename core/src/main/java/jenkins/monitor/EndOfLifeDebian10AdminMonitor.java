@@ -37,7 +37,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 @Extension
 @Restricted(NoExternalUse.class)
-@Symbol("endOfLifeDebian10AdminMonitor")
+@Symbol("endOfLifeDebian10")
 public class EndOfLifeDebian10AdminMonitor extends EndOfLifeAdminMonitor {
     private static final String OPERATING_SYSTEM_NAME = "Debian";
     private static final Pattern DEPENDENCY_PATTERN = Pattern.compile(".*" + OPERATING_SYSTEM_NAME + ".* 10.*");

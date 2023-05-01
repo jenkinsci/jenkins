@@ -37,7 +37,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 @Extension
 @Restricted(NoExternalUse.class)
-@Symbol("endOfLifeFedora36AdminMonitor")
+@Symbol("endOfLifeFedora36")
 public class EndOfLifeFedora36AdminMonitor extends EndOfLifeAdminMonitor {
     private static final String OPERATING_SYSTEM_NAME = "Fedora";
     private static final Pattern DEPENDENCY_PATTERN = Pattern.compile(".*" + OPERATING_SYSTEM_NAME + ".* 36.*");

@@ -37,7 +37,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 @Extension
 @Restricted(NoExternalUse.class)
-@Symbol("endOfLifeAlpine315AdminMonitor")
+@Symbol("endOfLifeAlpine315")
 public class EndOfLifeAlpine315AdminMonitor extends EndOfLifeAdminMonitor {
     private static final String OPERATING_SYSTEM_NAME = "Alpine";
     private static final Pattern DEPENDENCY_PATTERN = Pattern.compile(".*" + OPERATING_SYSTEM_NAME + ".* 3[.]15.*");

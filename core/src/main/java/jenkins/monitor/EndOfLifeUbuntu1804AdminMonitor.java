@@ -37,7 +37,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 @Extension
 @Restricted(NoExternalUse.class)
-@Symbol("endOfLifeUbuntu1804AdminMonitor")
+@Symbol("endOfLifeUbuntu1804")
 public class EndOfLifeUbuntu1804AdminMonitor extends EndOfLifeAdminMonitor {
     private static final String OPERATING_SYSTEM_NAME = "Ubuntu";
     private static final Pattern DEPENDENCY_PATTERN = Pattern.compile(".*" + OPERATING_SYSTEM_NAME + ".* 18[.]04.*");
