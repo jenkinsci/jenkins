@@ -39,24 +39,32 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 @Restricted(NoExternalUse.class)
 @Symbol("endOfLifeRedHat7AdminMonitor")
 public class EndOfLifeRedHat7AdminMonitor extends EndOfLifeAdminMonitor {
+    private static final String OPERATING_SYSTEM_NAME = "Red Hat Enterprise Linux 7 and its derivatives";
+    private static final Pattern DEPENDENCY_PATTERN = Pattern.compile(".*(Red Hat.* 7|CentOS.* 7|Scientific.* 7|Oracle.* 7|Red Hat.* 8).*");
+
+    /* Package protected for test access */
+    static final String DEPENDENCY_NAME = "Red Hat Enterprise Linux 7 and its derivatives";
+    static final LocalDate BEGIN_DISPLAY_DATE = LocalDate.of(2023, 4, 28);
+    static final LocalDate END_OF_SUPPORT_DATE = LocalDate.of(2023, 12, 31);
+
     public EndOfLifeRedHat7AdminMonitor() {
         super(EndOfLifeRedHat7AdminMonitor.class.getName(),
-              "Red Hat Enterprise Linux 7 and its derivatives",
-              LocalDate.of(2023, 4, 28),
-              LocalDate.of(2023, 12, 31),
+              DEPENDENCY_NAME,
+              BEGIN_DISPLAY_DATE,
+              END_OF_SUPPORT_DATE,
               new File("/etc/os-release"),
-              Pattern.compile(".*(Red Hat.* 7|CentOS.* 7|Scientific.* 7|Oracle.* 7|Red Hat.* 8).*")
+              DEPENDENCY_PATTERN
               );
     }
 
     /* Package protected for use by tests */
     EndOfLifeRedHat7AdminMonitor(File dataFile) {
         super(EndOfLifeRedHat7AdminMonitor.class.getName(),
-              "Red Hat Enterprise Linux 7 and its derivatives",
-              LocalDate.of(2023, 4, 28),
-              LocalDate.of(2023, 12, 31),
+              DEPENDENCY_NAME,
+              BEGIN_DISPLAY_DATE,
+              END_OF_SUPPORT_DATE,
               dataFile,
-              Pattern.compile(".*(Red Hat.* 7|CentOS.* 7|Scientific.* 7|Oracle.* 7|Red Hat.* 8).*")
+              DEPENDENCY_PATTERN
               );
     }
 

@@ -1,7 +1,6 @@
 /*
  * The MIT License
  *
- * Copyright 2021 Tim Jacomb.
  * Copyright 2023 Mark Waite.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -25,7 +24,6 @@
 
 package jenkins.monitor;
 
-
 import hudson.Extension;
 import hudson.security.Permission;
 import java.io.File;
@@ -40,24 +38,32 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 @Restricted(NoExternalUse.class)
 @Symbol("endOfLifeAlpine317AdminMonitor")
 public class EndOfLifeAlpine317AdminMonitor extends EndOfLifeAdminMonitor {
+    private static final String OPERATING_SYSTEM_NAME = "Alpine";
+    private static final Pattern DEPENDENCY_PATTERN = Pattern.compile(".*" + OPERATING_SYSTEM_NAME + ".* 3[.]17.*");
+
+    /* Package protected for test access */
+    static final String DEPENDENCY_NAME = OPERATING_SYSTEM_NAME + " 3.17";
+    static final LocalDate BEGIN_DISPLAY_DATE = LocalDate.of(2024, 8, 22);
+    static final LocalDate END_OF_SUPPORT_DATE = LocalDate.of(2024, 11, 22);
+
     public EndOfLifeAlpine317AdminMonitor() {
         super(EndOfLifeAlpine317AdminMonitor.class.getName(),
-              "Alpine 3.17",
-              LocalDate.of(2024, 8, 22),
-              LocalDate.of(2024, 11, 22),
+              DEPENDENCY_NAME,
+              BEGIN_DISPLAY_DATE,
+              END_OF_SUPPORT_DATE,
               new File("/etc/os-release"),
-              Pattern.compile(".*Alpine.* 3[.]17.*")
+              DEPENDENCY_PATTERN
               );
     }
 
     /* Package protected for use by tests */
     EndOfLifeAlpine317AdminMonitor(File dataFile) {
         super(EndOfLifeAlpine317AdminMonitor.class.getName(),
-              "Alpine 3.17",
-              LocalDate.of(2024, 8, 22),
-              LocalDate.of(2024, 11, 22),
+              DEPENDENCY_NAME,
+              BEGIN_DISPLAY_DATE,
+              END_OF_SUPPORT_DATE,
               dataFile,
-              Pattern.compile(".*Alpine.* 3[.]17.*")
+              DEPENDENCY_PATTERN
               );
     }
 

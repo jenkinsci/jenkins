@@ -25,7 +25,6 @@
 
 package jenkins.monitor;
 
-
 import hudson.Extension;
 import hudson.security.Permission;
 import java.io.File;
@@ -40,23 +39,31 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 @Restricted(NoExternalUse.class)
 @Symbol("endOfLifeAlpine316AdminMonitor")
 public class EndOfLifeAlpine316AdminMonitor extends EndOfLifeAdminMonitor {
+    private static final String OPERATING_SYSTEM_NAME = "Alpine";
+    private static final Pattern DEPENDENCY_PATTERN = Pattern.compile(".*" + OPERATING_SYSTEM_NAME + ".* 3[.]16.*");
+
+    /* Package protected for test access */
+    static final String DEPENDENCY_NAME = OPERATING_SYSTEM_NAME + " 3.16";
+    static final LocalDate BEGIN_DISPLAY_DATE = LocalDate.of(2024, 2, 23);
+    static final LocalDate END_OF_SUPPORT_DATE = LocalDate.of(2024, 5, 23);
+
     public EndOfLifeAlpine316AdminMonitor() {
         super(EndOfLifeAlpine316AdminMonitor.class.getName(),
-              "Alpine 3.16",
-              LocalDate.of(2024, 2, 23),
-              LocalDate.of(2024, 5, 23),
+              DEPENDENCY_NAME,
+              BEGIN_DISPLAY_DATE,
+              END_OF_SUPPORT_DATE,
               new File("/etc/os-release"),
-              Pattern.compile(".*Alpine.* 3[.]16.*")
+              DEPENDENCY_PATTERN
               );
     }
 
     EndOfLifeAlpine316AdminMonitor(File dataFile) {
         super(EndOfLifeAlpine316AdminMonitor.class.getName(),
-              "Alpine 3.16",
-              LocalDate.of(2024, 2, 23),
-              LocalDate.of(2024, 5, 23),
+              DEPENDENCY_NAME,
+              BEGIN_DISPLAY_DATE,
+              END_OF_SUPPORT_DATE,
               dataFile,
-              Pattern.compile(".*Alpine.* 3[.]16.*")
+              DEPENDENCY_PATTERN
               );
     }
 

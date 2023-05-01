@@ -39,24 +39,32 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 @Restricted(NoExternalUse.class)
 @Symbol("endOfLifeAlpine314AdminMonitor")
 public class EndOfLifeAlpine314AdminMonitor extends EndOfLifeAdminMonitor {
+    private static final String OPERATING_SYSTEM_NAME = "Alpine";
+    private static final Pattern DEPENDENCY_PATTERN = Pattern.compile(".*" + OPERATING_SYSTEM_NAME + ".* 3[.]14.*");
+
+    /* Package protected for test access */
+    static final String DEPENDENCY_NAME = OPERATING_SYSTEM_NAME + " 3.14";
+    static final LocalDate BEGIN_DISPLAY_DATE = LocalDate.of(2023, 3, 1);
+    static final LocalDate END_OF_SUPPORT_DATE = LocalDate.of(2023, 5, 1);
+
     public EndOfLifeAlpine314AdminMonitor() {
         super(EndOfLifeAlpine314AdminMonitor.class.getName(),
-              "Alpine 3.14",
-              LocalDate.of(2023, 3, 1),
-              LocalDate.of(2023, 5, 1),
+              DEPENDENCY_NAME,
+              BEGIN_DISPLAY_DATE,
+              END_OF_SUPPORT_DATE,
               new File("/etc/os-release"),
-              Pattern.compile(".*Alpine.* 3[.]14.*")
+              DEPENDENCY_PATTERN
               );
     }
 
     /* Package protected for use by tests */
     EndOfLifeAlpine314AdminMonitor(File dataFile) {
         super(EndOfLifeAlpine314AdminMonitor.class.getName(),
-              "Alpine 3.14",
-              LocalDate.of(2023, 3, 1),
-              LocalDate.of(2023, 5, 1),
+              DEPENDENCY_NAME,
+              BEGIN_DISPLAY_DATE,
+              END_OF_SUPPORT_DATE,
               dataFile,
-              Pattern.compile(".*Alpine.* 3[.]14.*")
+              DEPENDENCY_PATTERN
               );
     }
 

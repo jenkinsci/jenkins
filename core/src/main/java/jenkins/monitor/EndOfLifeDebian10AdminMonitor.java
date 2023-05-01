@@ -39,24 +39,32 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 @Restricted(NoExternalUse.class)
 @Symbol("endOfLifeDebian10AdminMonitor")
 public class EndOfLifeDebian10AdminMonitor extends EndOfLifeAdminMonitor {
+    private static final String OPERATING_SYSTEM_NAME = "Debian";
+    private static final Pattern DEPENDENCY_PATTERN = Pattern.compile(".*" + OPERATING_SYSTEM_NAME + ".* 10.*");
+
+    /* Package protected for test access */
+    static final String DEPENDENCY_NAME = OPERATING_SYSTEM_NAME + " 10";
+    static final LocalDate BEGIN_DISPLAY_DATE = LocalDate.of(2024, 1, 1);
+    static final LocalDate END_OF_SUPPORT_DATE = LocalDate.of(2024, 6, 30);
+
     public EndOfLifeDebian10AdminMonitor() {
         super(EndOfLifeDebian10AdminMonitor.class.getName(),
-              "Debian 10",
-              LocalDate.of(2024, 1, 1),
-              LocalDate.of(2024, 6, 30),
+              DEPENDENCY_NAME,
+              BEGIN_DISPLAY_DATE,
+              END_OF_SUPPORT_DATE,
               new File("/etc/os-release"),
-              Pattern.compile(".*Debian.* 10.*")
+              DEPENDENCY_PATTERN
               );
     }
 
     /* Package protected for use by tests */
     EndOfLifeDebian10AdminMonitor(File dataFile) {
         super(EndOfLifeDebian10AdminMonitor.class.getName(),
-              "Debian 10",
-              LocalDate.of(2024, 1, 1),
-              LocalDate.of(2024, 6, 30),
+              DEPENDENCY_NAME,
+              BEGIN_DISPLAY_DATE,
+              END_OF_SUPPORT_DATE,
               dataFile,
-              Pattern.compile(".*Debian.* 10.*")
+              DEPENDENCY_PATTERN
               );
     }
 

@@ -24,6 +24,9 @@
 
 package jenkins.monitor;
 
+import static jenkins.monitor.EndOfLifeRedHat7AdminMonitor.BEGIN_DISPLAY_DATE;
+import static jenkins.monitor.EndOfLifeRedHat7AdminMonitor.DEPENDENCY_NAME;
+import static jenkins.monitor.EndOfLifeRedHat7AdminMonitor.END_OF_SUPPORT_DATE;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
@@ -41,17 +44,17 @@ public class EndOfLifeRedHat7AdminMonitorTest {
 
     @Test
     public void testGetDependencyName() {
-        assertThat(monitor.getDependencyName(), is("Red Hat Enterprise Linux 7 and its derivatives"));
+        assertThat(monitor.getDependencyName(), is(DEPENDENCY_NAME));
     }
 
     @Test
     public void testGetDisplayName() {
-        assertThat(monitor.getDisplayName(), is("End of life for Red Hat Enterprise Linux 7 and its derivatives"));
+        assertThat(monitor.getDisplayName(), is("End of life for " + DEPENDENCY_NAME));
     }
 
     @Test
     public void testGetBeginDisplayDate() {
-        assertThat(monitor.getBeginDisplayDate(), is("2023-04-28"));
+        assertThat(monitor.getBeginDisplayDate(), is(BEGIN_DISPLAY_DATE.toString()));
     }
 
     @Test
@@ -61,7 +64,7 @@ public class EndOfLifeRedHat7AdminMonitorTest {
 
     @Test
     public void testIsUnsupported() {
-        assertThat(monitor.isUnsupported(), is(LocalDate.now().isAfter(LocalDate.of(2023, 12, 31))));
+        assertThat(monitor.isUnsupported(), is(LocalDate.now().isAfter(END_OF_SUPPORT_DATE)));
     }
 
     @Test
@@ -73,12 +76,44 @@ public class EndOfLifeRedHat7AdminMonitorTest {
     public void testWithFileContents() throws Exception {
         File osReleaseFile = new File(this.getClass().getResource("os-release-redhat-7").toURI());
         EndOfLifeRedHat7AdminMonitor testFileMonitor = new EndOfLifeRedHat7AdminMonitor(osReleaseFile);
-        assertThat(testFileMonitor.getBeginDisplayDate(), is("2023-04-28"));
-        assertThat(testFileMonitor.getDependencyName(), is("Red Hat Enterprise Linux 7 and its derivatives"));
-        assertThat(testFileMonitor.getDisplayName(), is("End of life for Red Hat Enterprise Linux 7 and its derivatives"));
-        assertThat(testFileMonitor.getDocumentationURL(), is("https://www.jenkins.io/redirect/operating-system-end-of-life"));
+        assertThat(testFileMonitor.getBeginDisplayDate(), is(BEGIN_DISPLAY_DATE.toString()));
+        assertThat(testFileMonitor.getDependencyName(), is(DEPENDENCY_NAME));
+        assertThat(testFileMonitor.getDisplayName(), is("End of life for " + DEPENDENCY_NAME));
         assertThat(testFileMonitor.getRequiredPermission(), is(Jenkins.SYSTEM_READ));
-        assertThat(testFileMonitor.isUnsupported(), is(LocalDate.now().isAfter(LocalDate.of(2023, 12, 31))));
+        assertThat(testFileMonitor.isUnsupported(), is(LocalDate.now().isAfter(END_OF_SUPPORT_DATE)));
+    }
+
+    @Test
+    public void testWithFileContentsScientificLinux7() throws Exception {
+        File osReleaseFile = new File(this.getClass().getResource("os-release-scientific-7").toURI());
+        EndOfLifeRedHat7AdminMonitor testFileMonitor = new EndOfLifeRedHat7AdminMonitor(osReleaseFile);
+        assertThat(testFileMonitor.getBeginDisplayDate(), is(BEGIN_DISPLAY_DATE.toString()));
+        assertThat(testFileMonitor.getDependencyName(), is(DEPENDENCY_NAME));
+        assertThat(testFileMonitor.getDisplayName(), is("End of life for " + DEPENDENCY_NAME));
+        assertThat(testFileMonitor.getRequiredPermission(), is(Jenkins.SYSTEM_READ));
+        assertThat(testFileMonitor.isUnsupported(), is(LocalDate.now().isAfter(END_OF_SUPPORT_DATE)));
+    }
+
+    @Test
+    public void testWithFileContentsCentOS7() throws Exception {
+        File osReleaseFile = new File(this.getClass().getResource("os-release-centos-7").toURI());
+        EndOfLifeRedHat7AdminMonitor testFileMonitor = new EndOfLifeRedHat7AdminMonitor(osReleaseFile);
+        assertThat(testFileMonitor.getBeginDisplayDate(), is(BEGIN_DISPLAY_DATE.toString()));
+        assertThat(testFileMonitor.getDependencyName(), is(DEPENDENCY_NAME));
+        assertThat(testFileMonitor.getDisplayName(), is("End of life for " + DEPENDENCY_NAME));
+        assertThat(testFileMonitor.getRequiredPermission(), is(Jenkins.SYSTEM_READ));
+        assertThat(testFileMonitor.isUnsupported(), is(LocalDate.now().isAfter(END_OF_SUPPORT_DATE)));
+    }
+
+    @Test
+    public void testWithFileContentsOracleLinux7() throws Exception {
+        File osReleaseFile = new File(this.getClass().getResource("os-release-oracle-7").toURI());
+        EndOfLifeRedHat7AdminMonitor testFileMonitor = new EndOfLifeRedHat7AdminMonitor(osReleaseFile);
+        assertThat(testFileMonitor.getBeginDisplayDate(), is(BEGIN_DISPLAY_DATE.toString()));
+        assertThat(testFileMonitor.getDependencyName(), is(DEPENDENCY_NAME));
+        assertThat(testFileMonitor.getDisplayName(), is("End of life for " + DEPENDENCY_NAME));
+        assertThat(testFileMonitor.getRequiredPermission(), is(Jenkins.SYSTEM_READ));
+        assertThat(testFileMonitor.isUnsupported(), is(LocalDate.now().isAfter(END_OF_SUPPORT_DATE)));
     }
 
 }

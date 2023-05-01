@@ -39,24 +39,32 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 @Restricted(NoExternalUse.class)
 @Symbol("endOfLifeUbuntu1804AdminMonitor")
 public class EndOfLifeUbuntu1804AdminMonitor extends EndOfLifeAdminMonitor {
+    private static final String OPERATING_SYSTEM_NAME = "Ubuntu";
+    private static final Pattern DEPENDENCY_PATTERN = Pattern.compile(".*" + OPERATING_SYSTEM_NAME + ".* 18[.]04.*");
+
+    /* Package protected for test access */
+    static final String DEPENDENCY_NAME = OPERATING_SYSTEM_NAME + " 18.04";
+    static final LocalDate BEGIN_DISPLAY_DATE = LocalDate.of(2023, 3, 1);
+    static final LocalDate END_OF_SUPPORT_DATE = LocalDate.of(2023, 5, 31);
+
     public EndOfLifeUbuntu1804AdminMonitor() {
         super(EndOfLifeUbuntu1804AdminMonitor.class.getName(),
-              "Ubuntu 18.04",
-              LocalDate.of(2023, 3, 1),
-              LocalDate.of(2023, 5, 31),
+              DEPENDENCY_NAME,
+              BEGIN_DISPLAY_DATE,
+              END_OF_SUPPORT_DATE,
               new File("/etc/os-release"),
-              Pattern.compile(".*Ubuntu.* 18[.]04.*")
+              DEPENDENCY_PATTERN
               );
     }
 
     /* Package protected for use by tests */
     EndOfLifeUbuntu1804AdminMonitor(File dataFile) {
         super(EndOfLifeUbuntu1804AdminMonitor.class.getName(),
-              "Ubuntu 18.04",
-              LocalDate.of(2023, 3, 1),
-              LocalDate.of(2023, 5, 31),
+              DEPENDENCY_NAME,
+              BEGIN_DISPLAY_DATE,
+              END_OF_SUPPORT_DATE,
               dataFile,
-              Pattern.compile(".*Ubuntu.* 18[.]04.*")
+              DEPENDENCY_PATTERN
               );
     }
 

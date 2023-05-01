@@ -24,6 +24,9 @@
 
 package jenkins.monitor;
 
+import static jenkins.monitor.EndOfLifeAlpine315AdminMonitor.BEGIN_DISPLAY_DATE;
+import static jenkins.monitor.EndOfLifeAlpine315AdminMonitor.DEPENDENCY_NAME;
+import static jenkins.monitor.EndOfLifeAlpine315AdminMonitor.END_OF_SUPPORT_DATE;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
@@ -41,17 +44,17 @@ public class EndOfLifeAlpine315AdminMonitorTest {
 
     @Test
     public void testGetDependencyName() {
-        assertThat(monitor.getDependencyName(), is("Alpine 3.15"));
+        assertThat(monitor.getDependencyName(), is(DEPENDENCY_NAME));
     }
 
     @Test
     public void testGetDisplayName() {
-        assertThat(monitor.getDisplayName(), is("End of life for Alpine 3.15"));
+        assertThat(monitor.getDisplayName(), is("End of life for " + DEPENDENCY_NAME));
     }
 
     @Test
     public void testGetBeginDisplayDate() {
-        assertThat(monitor.getBeginDisplayDate(), is("2023-08-01"));
+        assertThat(monitor.getBeginDisplayDate(), is(BEGIN_DISPLAY_DATE.toString()));
     }
 
     @Test
@@ -61,7 +64,7 @@ public class EndOfLifeAlpine315AdminMonitorTest {
 
     @Test
     public void testIsUnsupported() {
-        assertThat(monitor.isUnsupported(), is(LocalDate.now().isAfter(LocalDate.of(2023, 11, 1))));
+        assertThat(monitor.isUnsupported(), is(LocalDate.now().isAfter(END_OF_SUPPORT_DATE)));
     }
 
     @Test
@@ -73,12 +76,11 @@ public class EndOfLifeAlpine315AdminMonitorTest {
     public void testWithFileContents() throws Exception {
         File osReleaseFile = new File(this.getClass().getResource("os-release-alpine-3.15").toURI());
         EndOfLifeAlpine315AdminMonitor testFileMonitor = new EndOfLifeAlpine315AdminMonitor(osReleaseFile);
-        assertThat(testFileMonitor.getDependencyName(), is("Alpine 3.15"));
-        assertThat(testFileMonitor.getDisplayName(), is("End of life for Alpine 3.15"));
-        assertThat(testFileMonitor.getBeginDisplayDate(), is("2023-08-01"));
-        assertThat(testFileMonitor.getDocumentationURL(), is("https://www.jenkins.io/redirect/operating-system-end-of-life"));
-        assertThat(testFileMonitor.isUnsupported(), is(LocalDate.now().isAfter(LocalDate.of(2023, 11, 1))));
+        assertThat(testFileMonitor.getBeginDisplayDate(), is(BEGIN_DISPLAY_DATE.toString()));
+        assertThat(testFileMonitor.getDependencyName(), is(DEPENDENCY_NAME));
+        assertThat(testFileMonitor.getDisplayName(), is("End of life for " + DEPENDENCY_NAME));
         assertThat(testFileMonitor.getRequiredPermission(), is(Jenkins.SYSTEM_READ));
+        assertThat(testFileMonitor.isUnsupported(), is(LocalDate.now().isAfter(END_OF_SUPPORT_DATE)));
     }
 
 }

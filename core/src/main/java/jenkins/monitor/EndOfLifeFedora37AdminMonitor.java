@@ -39,24 +39,32 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 @Restricted(NoExternalUse.class)
 @Symbol("endOfLifeFedora37AdminMonitor")
 public class EndOfLifeFedora37AdminMonitor extends EndOfLifeAdminMonitor {
+    private static final String OPERATING_SYSTEM_NAME = "Fedora";
+    private static final Pattern DEPENDENCY_PATTERN = Pattern.compile(".*" + OPERATING_SYSTEM_NAME + ".* 37.*");
+
+    /* Package protected for test access */
+    static final String DEPENDENCY_NAME = OPERATING_SYSTEM_NAME + " 37";
+    static final LocalDate BEGIN_DISPLAY_DATE = LocalDate.of(2023, 8, 14);
+    static final LocalDate END_OF_SUPPORT_DATE = LocalDate.of(2023, 11, 14);
+
     public EndOfLifeFedora37AdminMonitor() {
         super(EndOfLifeFedora37AdminMonitor.class.getName(),
-              "Fedora 37",
-              LocalDate.of(2023, 8, 14),
-              LocalDate.of(2023, 11, 14),
+              DEPENDENCY_NAME,
+              BEGIN_DISPLAY_DATE,
+              END_OF_SUPPORT_DATE,
               new File("/etc/os-release"),
-              Pattern.compile(".*Fedora.* 37.*")
+              DEPENDENCY_PATTERN
               );
     }
 
     /* Package protected for use by tests */
     EndOfLifeFedora37AdminMonitor(File dataFile) {
         super(EndOfLifeFedora37AdminMonitor.class.getName(),
-              "Fedora 37",
-              LocalDate.of(2023, 8, 14),
-              LocalDate.of(2023, 11, 14),
+              DEPENDENCY_NAME,
+              BEGIN_DISPLAY_DATE,
+              END_OF_SUPPORT_DATE,
               dataFile,
-              Pattern.compile(".*Fedora.* 37.*")
+              DEPENDENCY_PATTERN
               );
     }
 

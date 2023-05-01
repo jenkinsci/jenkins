@@ -25,7 +25,6 @@
 
 package jenkins.monitor;
 
-
 import hudson.Extension;
 import hudson.security.Permission;
 import java.io.File;
@@ -40,24 +39,32 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 @Restricted(NoExternalUse.class)
 @Symbol("endOfLifeFedora36AdminMonitor")
 public class EndOfLifeFedora36AdminMonitor extends EndOfLifeAdminMonitor {
+    private static final String OPERATING_SYSTEM_NAME = "Fedora";
+    private static final Pattern DEPENDENCY_PATTERN = Pattern.compile(".*" + OPERATING_SYSTEM_NAME + ".* 36.*");
+
+    /* Package protected for test access */
+    static final String DEPENDENCY_NAME = OPERATING_SYSTEM_NAME + " 36";
+    static final LocalDate BEGIN_DISPLAY_DATE = LocalDate.of(2023, 3, 1);
+    static final LocalDate END_OF_SUPPORT_DATE = LocalDate.of(2023, 5, 16);
+
     public EndOfLifeFedora36AdminMonitor() {
         super(EndOfLifeFedora36AdminMonitor.class.getName(),
-              "Fedora 36",
-              LocalDate.of(2023, 3, 1),
-              LocalDate.of(2023, 5, 16),
+              DEPENDENCY_NAME,
+              BEGIN_DISPLAY_DATE,
+              END_OF_SUPPORT_DATE,
               new File("/etc/os-release"),
-              Pattern.compile(".*Fedora.* 36.*")
+              DEPENDENCY_PATTERN
               );
     }
 
     /* Package protected for use by tests */
     EndOfLifeFedora36AdminMonitor(File dataFile) {
         super(EndOfLifeFedora36AdminMonitor.class.getName(),
-              "Fedora 36",
-              LocalDate.of(2023, 3, 1),
-              LocalDate.of(2023, 5, 16),
+              DEPENDENCY_NAME,
+              BEGIN_DISPLAY_DATE,
+              END_OF_SUPPORT_DATE,
               dataFile,
-              Pattern.compile(".*Fedora.* 36.*")
+              DEPENDENCY_PATTERN
               );
     }
 
