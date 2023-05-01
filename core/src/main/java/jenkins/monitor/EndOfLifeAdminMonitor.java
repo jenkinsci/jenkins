@@ -56,8 +56,8 @@ class EndOfLifeAdminMonitor extends AdministrativeMonitor {
     private final String identifier;
 
     /**
-     * Display name of end of life admin monitor, like "Ubuntu 18.04 end of
-     * life"
+     * Display name of end of life admin monitor.
+     * Typically "End of life for (dependencyName)".
      */
     final String displayName;
 
