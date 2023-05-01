@@ -50,6 +50,9 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 /* Package protected so that it won't be visible outside this package */
 class EndOfLifeAdminMonitor extends AdministrativeMonitor {
 
+    /* URL of documentation that provides more details about operating system end of life */
+    static final String DOCUMENTATION_URL = "https://www.jenkins.io/redirect/operating-system-end-of-life";
+
     /**
      * Unique identifier of end of life admin monitor.
      */
@@ -79,7 +82,7 @@ class EndOfLifeAdminMonitor extends AdministrativeMonitor {
     /**
      * URL with more information.
      */
-    final String documentationURL = "https://www.jenkins.io/redirect/operating-system-end-of-life";
+    final String documentationURL = DOCUMENTATION_URL;
 
     /**
      * True if the dataPattern matched content of the file when constructor was

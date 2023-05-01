@@ -59,7 +59,7 @@ public class EndOfLifeAlpine314AdminMonitorTest {
 
     @Test
     public void testGetDocumentationURL() {
-        assertThat(monitor.getDocumentationURL(), is("https://www.jenkins.io/redirect/operating-system-end-of-life"));
+        assertThat(monitor.getDocumentationURL(), is(EndOfLifeAdminMonitor.DOCUMENTATION_URL));
     }
 
     @Test
