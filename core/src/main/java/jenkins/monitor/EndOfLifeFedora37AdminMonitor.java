@@ -44,8 +44,8 @@ public class EndOfLifeFedora37AdminMonitor extends EndOfLifeAdminMonitor {
 
     /* Package protected for test access */
     static final String DEPENDENCY_NAME = OPERATING_SYSTEM_NAME + " 37";
-    static final LocalDate BEGIN_DISPLAY_DATE = LocalDate.of(2023, 8, 14);
-    static final LocalDate END_OF_SUPPORT_DATE = LocalDate.of(2023, 11, 14);
+    static final LocalDate BEGIN_DISPLAY_DATE = LocalDate.of(2023, 9, 15);
+    static final LocalDate END_OF_SUPPORT_DATE = LocalDate.of(2023, 12, 15);
 
     public EndOfLifeFedora37AdminMonitor() {
         super(EndOfLifeFedora37AdminMonitor.class.getName(),
