@@ -52,7 +52,6 @@ THE SOFTWARE.
   <modules>
     <module>bom</module>
     <module>websocket/spi</module>
-    <module>websocket/jetty9</module>
     <module>websocket/jetty10</module>
     <module>core</module>
     <module>war</module>

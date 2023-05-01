@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2017 Red Hat, inc.
+Copyright (c) 2023, CloudBees Inc.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -23,18 +23,30 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:t="/lib/hudson">
-    <l:header />
-    <l:side-panel>
-        <l:tasks>
-            <l:task contextMenu="false" href="." icon="symbol-computer" title="${%Status}"/>
-            <l:task href="configure" icon="symbol-settings"
-                    title="${app.hasPermission(app.ADMINISTER) ? '%Configure' : '%View Configuration'}"/>
-            <l:task href="delete" icon="icon-edit-delete icon-md" permission="${app.ADMINISTER}" title="${%Delete Cloud}"/>
-            <t:actions />
-        </l:tasks>
-        <j:forEach var="action" items="${it.allActions}">
-            <st:include it="${action}" page="box.jelly" optional="true"/>
-        </j:forEach>
-    </l:side-panel>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:f="/lib/form">
+  <l:layout permission="${app.SYSTEM_READ}" title="${%title(it.name)}">
+    <j:set var="readOnlyMode" value="${!app.hasPermission(app.ADMINISTER)}"/>
+    <st:include page="sidepanel.jelly"/>
+    <l:breadcrumb title="${%Configure}"/>
+    <l:main-panel>
+      <h1>${%title(it.name)}</h1>
+      <f:form method="post" action="configSubmit" name="config" class="jenkins-form">
+        <j:set var="instance" value="${it}"/>
+        <j:set var="descriptor" value="${instance.descriptor}"/>
+
+        <!-- main body of the configuration -->
+        <st:include it="${instance}" page="config.jelly"/>
+
+        <l:isAdmin>
+          <f:bottomButtonBar>
+            <f:submit value="${%Save}"/>
+            <f:apply />
+          </f:bottomButtonBar>
+        </l:isAdmin>
+      </f:form>
+      <l:isAdmin>
+        <st:adjunct includes="lib.form.confirm"/>
+      </l:isAdmin>
+    </l:main-panel>
+  </l:layout>
 </j:jelly>
