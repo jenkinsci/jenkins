@@ -46,7 +46,6 @@ public class EndOfLifeAdminMonitorTest {
     private final String name = "dependency name";
     private final LocalDate threeDaysAgo = LocalDate.now().minusDays(3);
     private final LocalDate yesterday = LocalDate.now().minusDays(1);
-    private final String url = "https://www.jenkins.io/";
     private final Pattern dataPattern = Pattern.compile(".* [0-9].*");
 
     private final LocalDate tomorrow = LocalDate.now().plusDays(1);
@@ -62,7 +61,7 @@ public class EndOfLifeAdminMonitorTest {
     public void createAdminMonitor() throws Exception {
         dataFile = tmp.newFile();
         Files.writeString(dataFile.toPath(), "PRETTY_NAME=\"Red Hat Enterprise Linux 8.7 (Ootpa)\"", StandardCharsets.UTF_8);
-        monitor = new EndOfLifeAdminMonitor(id, name, threeDaysAgo, yesterday, url, dataFile, dataPattern);
+        monitor = new EndOfLifeAdminMonitor(id, name, threeDaysAgo, yesterday, dataFile, dataPattern);
     }
 
     @Test
@@ -74,7 +73,7 @@ public class EndOfLifeAdminMonitorTest {
     @Test
     public void testIsActivatedNotYetEndOfSupport() {
         /* End of support is next week, start of message is yesterday, should be activated */
-        EndOfLifeAdminMonitor notActive = new EndOfLifeAdminMonitor(id, name, yesterday, nextWeek, url, dataFile, dataPattern);
+        EndOfLifeAdminMonitor notActive = new EndOfLifeAdminMonitor(id, name, yesterday, nextWeek, dataFile, dataPattern);
         assertTrue(notActive.isActivated());
     }
 
@@ -82,7 +81,7 @@ public class EndOfLifeAdminMonitorTest {
     public void testIsActivatedDataFileMissing() {
         /* End of support is next week, start of message is yesterday, but dataFile does not exist, should not be activated */
         File nonExistentFile = new File("/tmp/this/file/does/not/exist");
-        EndOfLifeAdminMonitor notActive = new EndOfLifeAdminMonitor(id, name, yesterday, nextWeek, url, nonExistentFile, dataPattern);
+        EndOfLifeAdminMonitor notActive = new EndOfLifeAdminMonitor(id, name, yesterday, nextWeek, nonExistentFile, dataPattern);
         assertFalse(notActive.isActivated());
     }
 
@@ -91,14 +90,14 @@ public class EndOfLifeAdminMonitorTest {
         /* End of support is next week, start of message is yesterday, but dataFile does notmatch, should not be activated */
         File nonMatchingContentFile = tmp.newFile();
         Files.writeString(nonMatchingContentFile.toPath(), "Unexpected content\nSecond line\nThird line\n", StandardCharsets.UTF_8);
-        EndOfLifeAdminMonitor notActive = new EndOfLifeAdminMonitor(id, name, threeDaysAgo, yesterday, url, nonMatchingContentFile, dataPattern);
+        EndOfLifeAdminMonitor notActive = new EndOfLifeAdminMonitor(id, name, threeDaysAgo, yesterday, nonMatchingContentFile, dataPattern);
         assertFalse(notActive.isActivated());
     }
 
     @Test
     public void testIsActivatedNotYetBeginDate() {
         /* End of support is next week, start of message is tomorrow, should not be activated */
-        EndOfLifeAdminMonitor notActive = new EndOfLifeAdminMonitor(id, name, tomorrow, nextWeek, url, dataFile, dataPattern);
+        EndOfLifeAdminMonitor notActive = new EndOfLifeAdminMonitor(id, name, tomorrow, nextWeek, dataFile, dataPattern);
         assertFalse(notActive.isActivated());
     }
 
@@ -106,7 +105,7 @@ public class EndOfLifeAdminMonitorTest {
     public void testIsActivatedPatternNotMatched() {
         /* Pattern does not match, should not be activated */
         Pattern nonMatching = Pattern.compile("xyzzy");
-        EndOfLifeAdminMonitor notActive = new EndOfLifeAdminMonitor(id, name, threeDaysAgo, yesterday, url, dataFile, nonMatching);
+        EndOfLifeAdminMonitor notActive = new EndOfLifeAdminMonitor(id, name, threeDaysAgo, yesterday, dataFile, nonMatching);
         assertFalse(notActive.isActivated());
     }
 }

@@ -45,7 +45,6 @@ public class EndOfLifeAlpine315AdminMonitor extends EndOfLifeAdminMonitor {
               "Alpine 3.15",
               LocalDate.of(2023, 8, 1),
               LocalDate.of(2023, 11, 1),
-              "https://www.jenkins.io/redirect/operating-system-end-of-life",
               new File("/etc/os-release"),
               Pattern.compile(".*Alpine.* 3[.]15.*")
               );
@@ -57,7 +56,6 @@ public class EndOfLifeAlpine315AdminMonitor extends EndOfLifeAdminMonitor {
               "Alpine 3.15",
               LocalDate.of(2023, 8, 1),
               LocalDate.of(2023, 11, 1),
-              "https://www.jenkins.io/redirect/operating-system-end-of-life",
               dataFile,
               Pattern.compile(".*Alpine.* 3[.]15.*")
               );

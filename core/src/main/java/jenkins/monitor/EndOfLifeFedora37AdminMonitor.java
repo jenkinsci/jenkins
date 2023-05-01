@@ -44,7 +44,6 @@ public class EndOfLifeFedora37AdminMonitor extends EndOfLifeAdminMonitor {
               "Fedora 37",
               LocalDate.of(2023, 8, 14),
               LocalDate.of(2023, 11, 14),
-              "https://www.jenkins.io/redirect/operating-system-end-of-life",
               new File("/etc/os-release"),
               Pattern.compile(".*Fedora.* 37.*")
               );
@@ -56,7 +55,6 @@ public class EndOfLifeFedora37AdminMonitor extends EndOfLifeAdminMonitor {
               "Fedora 37",
               LocalDate.of(2023, 8, 14),
               LocalDate.of(2023, 11, 14),
-              "https://www.jenkins.io/redirect/operating-system-end-of-life",
               dataFile,
               Pattern.compile(".*Fedora.* 37.*")
               );

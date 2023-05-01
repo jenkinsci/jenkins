@@ -77,10 +77,9 @@ class EndOfLifeAdminMonitor extends AdministrativeMonitor {
     final LocalDate endOfSupportDate;
 
     /**
-     * URL with more information, like
-     * "https://www.jenkins.io/redirect/operating-system-end-of-life"
+     * URL with more information.
      */
-    final String documentationURL;
+    final String documentationURL = "https://www.jenkins.io/redirect/operating-system-end-of-life";
 
     /**
      * True if the dataPattern matched content of the file when constructor was
@@ -101,7 +100,6 @@ class EndOfLifeAdminMonitor extends AdministrativeMonitor {
             @NonNull String dependencyName,
             @NonNull LocalDate beginDisplayDate,
             @NonNull LocalDate endOfSupportDate,
-            @NonNull String documentationURL,
             @NonNull File dataFile,
             @NonNull Pattern dataPattern) {
         super(identifier);
@@ -111,7 +109,6 @@ class EndOfLifeAdminMonitor extends AdministrativeMonitor {
         this.displayName = "End of life for " + dependencyName;
         this.beginDisplayDate = beginDisplayDate;
         this.endOfSupportDate = endOfSupportDate;
-        this.documentationURL = documentationURL;
         this.dataPatternMatched = patternMatched(dataFile, dataPattern);
     }
 

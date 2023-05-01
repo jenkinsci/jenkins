@@ -44,7 +44,6 @@ public class EndOfLifeUbuntu1804AdminMonitor extends EndOfLifeAdminMonitor {
               "Ubuntu 18.04",
               LocalDate.of(2023, 3, 1),
               LocalDate.of(2023, 5, 31),
-              "https://www.jenkins.io/redirect/operating-system-end-of-life",
               new File("/etc/os-release"),
               Pattern.compile(".*Ubuntu.* 18[.]04.*")
               );
@@ -56,7 +55,6 @@ public class EndOfLifeUbuntu1804AdminMonitor extends EndOfLifeAdminMonitor {
               "Ubuntu 18.04",
               LocalDate.of(2023, 3, 1),
               LocalDate.of(2023, 5, 31),
-              "https://www.jenkins.io/redirect/operating-system-end-of-life",
               dataFile,
               Pattern.compile(".*Ubuntu.* 18[.]04.*")
               );

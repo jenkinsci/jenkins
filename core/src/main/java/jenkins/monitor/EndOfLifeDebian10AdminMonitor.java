@@ -44,7 +44,6 @@ public class EndOfLifeDebian10AdminMonitor extends EndOfLifeAdminMonitor {
               "Debian 10",
               LocalDate.of(2024, 1, 1),
               LocalDate.of(2024, 6, 30),
-              "https://www.jenkins.io/redirect/operating-system-end-of-life",
               new File("/etc/os-release"),
               Pattern.compile(".*Debian.* 10.*")
               );
@@ -56,7 +55,6 @@ public class EndOfLifeDebian10AdminMonitor extends EndOfLifeAdminMonitor {
               "Debian 10",
               LocalDate.of(2024, 1, 1),
               LocalDate.of(2024, 6, 30),
-              "https://www.jenkins.io/redirect/operating-system-end-of-life",
               dataFile,
               Pattern.compile(".*Debian.* 10.*")
               );
