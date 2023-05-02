@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2020 CloudBees, Inc.
+ * Copyright (c) 2023, CloudBees Inc, and other contributors
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,26 +22,48 @@
  * THE SOFTWARE.
  */
 
-package jenkins.util;
+package jenkins.agents;
 
-import static org.junit.Assert.assertNotNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.Extension;
+import hudson.model.ManagementLink;
+import hudson.security.Permission;
+import jenkins.model.Jenkins;
+import org.jenkinsci.Symbol;
 
-import org.junit.Rule;
-import org.junit.Test;
-import org.jvnet.hudson.test.Issue;
-import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.recipes.WithPlugin;
+@Extension
+@Symbol("clouds")
+public class CloudsLink extends ManagementLink {
 
-public class AntClassLoaderTest {
-
-    @Rule
-    public JenkinsRule r = new JenkinsRule();
-
-    @Issue("JENKINS-60644")
-    @WithPlugin("loads-resource.jpi")
-    @Test
-    public void loadsResource() throws Exception {
-        assertNotNull(r.jenkins.pluginManager.getPlugin("loads-resource").classLoader.getResourceAsStream("io/jenkins/plugins/loads_resource/stuff"));
+    @Override
+    public String getDisplayName() {
+        return Messages.CloudsLink_DisplayName();
     }
 
+    @Override
+    public String getDescription() {
+        return Messages.CloudsLink_Description();
+    }
+
+    @Override
+    public String getIconFileName() {
+        return "symbol-cloud";
+    }
+
+    @Override
+    public String getUrlName() {
+        return "cloud";
+    }
+
+    @NonNull
+    @Override
+    public Category getCategory() {
+        return Category.CONFIGURATION;
+    }
+
+    @NonNull
+    @Override
+    public Permission getRequiredPermission() {
+        return Jenkins.SYSTEM_READ;
+    }
 }

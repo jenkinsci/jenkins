@@ -62,7 +62,8 @@
           margin-right: 30px !important;
         }
 
-        &:hover {
+        &:hover,
+        &--open {
           margin-right: 30px !important;
         }
       }
@@ -210,6 +211,14 @@
       margin-left: -1.5rem !important;
     }
 
+    &--open {
+      &::before {
+        background-color: var(--item-background--hover) !important;
+        right: -30px !important;
+      }
+    }
+
+    &--open,
     &:hover {
       & + a.jenkins-table__badge {
         margin-left: -1.5rem !important;

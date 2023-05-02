@@ -56,7 +56,7 @@ THE SOFTWARE.
             </j:if>
            <j:if test="${showTmpDirWarning}">
              <p>
-                <img id="tmpdiralert" src="${imagesURL}/16x16/warning.png"/>
+               <img id="tmpdiralert" src="${imagesURL}/svgs/warning.svg" width="16" height="16" />
                ${%Tmp directories are hidden}
              </p>
             </j:if>
@@ -130,7 +130,7 @@ THE SOFTWARE.
             </j:if>
            <j:if test="${showTmpDirWarning}">
              <p>
-                <img id="alert" src="${imagesURL}/16x16/warning.png"/>
+                <img id="alert" src="${imagesURL}/svgs/warning.svg" width="16" height="16" />
                ${%Tmp directories are hidden}
              </p>
             </j:if>
