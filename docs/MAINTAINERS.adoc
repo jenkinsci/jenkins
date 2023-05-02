@@ -53,6 +53,23 @@ Their main responsibility is to triage and review the incoming pull requests
 and to guide newcomer contributors who are not familiar with the project's processes.
 GitHub team: link:https://github.com/orgs/jenkinsci/teams/core-pr-reviewers[@jenkinsci/core-pr-reviewers].
 
+.Members of the `jenkinsci/core-pr-reviewers` team:
+[%collapsible]
+====
+* Adrien Lecharpentier (link:https://github.com/alecharp[@alecharp])
+* Alexander Brandes (link:https://github.com/NotMyFault[@NotMyFault])
+* Basil Crow (link:https://github.com/basil[@basil])
+* Evaristo Gutiérrez (link:https://github.com/vayvol[@varyvol])
+* Francisco Javier Fernandez (link:https://github.com/fcojfernandez[@fcojfernandez])
+* Mark Waite (link:https://github.com/MarkEWaite[@MarkEWaite])
+* Marky Jackson (link:https://github.com/markyjackson-taulia[@markyjackson-taulia])
+* Matt Sicker (link:https://github.com/jvz[@jvz])
+* Oleg Nenashev (link:https://github.com/oleg-nenashev[@oleg-nenashev])
+* Raihaan Shouhell (link:https://github.com/res0nance[@res0nance])
+* Ramon Leon (link:https://github.com/MRamonLeon[@MRamonLeon])
+* Tim Jacomb (link:https://github.com/timja[@timja])
+====
+
 **Core Maintainers** get `Write` permissions in the repository, and hence they are able to merge pull requests.
 Their responsibility is to perform pull request reviews on a regular basis and to bring pull requests to closure,
 either by merging ready pull requests towards weekly releases (`master` branch)
@@ -61,9 +78,48 @@ Core maintainers make a commitment to bringing a pull request to closure by beco
 They are also responsible to monitor the weekly release status and to perform triage of critical issues.
 GitHub team: link:https://github.com/orgs/jenkinsci/teams/core[@jenkinsci/core].
 
+.Members of the `jenkinsci/core` team:
+[%collapsible]
+====
+* Alexander Brandes (link:https://github.com/NotMyFault[@NotMyFault])
+* Antonio Muniz (link:https://github.com/amuniz[@amuniz])
+* Baptiste Mathus (link:https://github.com/batmat[@batmat])
+* Basil Crow (link:https://github.com/basil[@basil])
+* Daniel Beck (link:https://github.com/daniel-beck[@daniel-beck])
+* Devin Nusbaum (link:https://github.com/dwnusbaum[@dwnusbaum])
+* James Nord (link:https://github.com/jtnord[@jtnord])
+* Jeff Thompson (link:https://github.com/jeffret-b[@jeffret-b])
+* Jesse Glick (link:https://github.com/jglick[@jglick])
+* Mark Waite (link:https://github.com/MarkEWaite[@MarkEWaite])
+* Oleg Nenashev (link:https://github.com/oleg-nenashev[@oleg-nenashev])
+* Olivier Lamy (link:https://github.com/olamy[@olamy])
+* Raihaan Shouhell (link:https://github.com/res0nance[@res0nance])
+* Robert Sandell (link:https://github.com/rsandell[@rsandell])
+* Vincent Latombe (link:https://github.com/Vlatombe[@Vlatombe])
+* Wadeck Follonier (link:https://github.com/Wadeck[@Wadeck])
+* Tim Jacomb (link:https://github.com/timja[@timja])
+====
+
 **Release Team Members** are responsible for Jenkins weekly and LTS releases.
 Led by the link:https://www.jenkins.io/project/team-leads/#release[Jenkins Release Officer], they initiate releases and backport changes into the link:https://www.jenkins.io/download/lts/[Stable release line].
 Team members get `Write` permissions in the Jenkins core repository, and they also get permissions to trigger release Pipelines. LTS release steps are documented in link:https://github.com/jenkins-infra/release/blob/master/.github/ISSUE_TEMPLATE/1-lts-release-checklist.md[jenkins-infra/release]
+GitHub team: link:https://github.com/orgs/jenkinsci/teams/release[@jenkinsci/release].
+
+.Members of the `jenkinsci/release` team:
+[%collapsible]
+====
+* Alexander Brandes (link:https://github.com/NotMyFault[@NotMyFault])
+* Basil Crow (link:https://github.com/basil[@basil])
+* Beatriz Muñoz (link:https://github.com/bmunozm[@bmunozm])
+* Cathy Chan (link:https://github.com/cathychan[@cathychan])
+* Ildefonso Montero (link:https://github.com/imonteroperez[@imonteroperez])
+* Mark Waite (link:https://github.com/MarkEWaite[@MarkEWaite])
+* Oleg Nenashev (link:https://github.com/oleg-nenashev[@oleg-nenashev])
+* Olivier Vernin (link:https://github.com/olblak[@olblack])
+* Raihaan Shouhell (link:https://github.com/res0nance[@res0nance])
+* Wadeck Follonier (link:https://github.com/Wadeck[@Wadeck])
+* Tim Jacomb (link:https://github.com/timja[@timja])
+====
 
 === Ladder
 
