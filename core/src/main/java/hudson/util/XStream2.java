@@ -138,7 +138,8 @@ public class XStream2 extends XStream {
 
         @Override
         public HierarchicalStreamWriter createWriter(Writer out) {
-            return new PrettyPrintWriter(out, PrettyPrintWriter.XML_1_1, getNameCoder());
+            // TODO JENKINS-71182 StaxWriter will not indent, XML_1_1 does not support emojis, and XML_QUIRKS writes unreadable "&#x0;", so 🤷 pick your poison
+            return new PrettyPrintWriter(out, PrettyPrintWriter.XML_QUIRKS, getNameCoder());
         }
 
         @Override

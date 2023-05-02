@@ -598,6 +598,21 @@ public class XStream2Test {
         assertEquals("Fox 🦊", bar.s);
     }
 
+    @Issue("JENKINS-71182")
+    @Test
+    public void writeEmoji() throws Exception {
+        Bar b = new Bar();
+        String text = "Fox 🦊";
+        b.s = text;
+        StringWriter w = new StringWriter();
+        XStream2 xs = new XStream2();
+        xs.toXML(b, w);
+        String xml = w.toString();
+        assertThat(xml, is("<hudson.util.XStream2Test_-Bar>\n  <s>Fox 🦊</s>\n</hudson.util.XStream2Test_-Bar>"));
+        b = (Bar) xs.fromXML(xml);
+        assertEquals(text, b.s);
+    }
+
     @Issue("JENKINS-71139")
     @Test
     public void nullsWithoutEncodingDeclaration() throws Exception {
@@ -615,8 +630,12 @@ public class XStream2Test {
         String xml = w.toString();
         assertThat(xml, not(containsString("version=\"1.1\"")));
         System.out.println(xml);
-        b = (Bar) xs.fromXML(xml);
-        assertEquals(text, b.s);
+        try {
+            b = (Bar) xs.fromXML(xml);
+            assertEquals(text, b.s);
+        } catch (RuntimeException x) {
+            assertThat("cause is XMLStreamException: ParseError at [row,col]:[2,13] Message: The reference to entity \"y\" must end with the ';' delimiter.", Functions.printThrowable(x), containsString("XMLStreamException: ParseError"));
+        }
     }
 
     @Issue("JENKINS-71139")
@@ -636,8 +655,12 @@ public class XStream2Test {
         String xml = baos.toString(StandardCharsets.UTF_8);
         System.out.println(xml);
         assertThat(xml, containsString("version=\"1.1\""));
-        b = (Bar) xs.fromXML(new ByteArrayInputStream(baos.toByteArray()));
-        assertEquals(text, b.s);
+        try {
+            b = (Bar) xs.fromXML(new ByteArrayInputStream(baos.toByteArray()));
+            assertEquals(text, b.s);
+        } catch (RuntimeException x) {
+            assertThat("cause is XMLStreamException: ParseError at [row,col]:[2,13] Message: The reference to entity \"y\" must end with the ';' delimiter.", Functions.printThrowable(x), containsString("XMLStreamException: ParseError"));
+        }
     }
 
 }
