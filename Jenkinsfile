@@ -156,14 +156,6 @@ axes.values().combinations {
               skipBlames: true,
               trendChartType: 'TOOLS_ONLY',
               qualityGates: [[threshold: 1, type: 'TOTAL', unstable: true]]])
-            launchable.install()
-            withCredentials([string(credentialsId: 'launchable-jenkins-jenkins', variable: 'LAUNCHABLE_TOKEN')]) {
-              launchable('verify')
-              def sessionFile = "launchable-session-${platform}-jdk${jdk}.txt"
-              unstash sessionFile
-              def session = readFile(sessionFile).trim()
-              launchable("record tests --session ${session} --flavor platform=${platform} --flavor jdk=${jdk} --link \"View session in CI\"=${env.BUILD_URL} maven './**/target/surefire-reports'")
-            }
             if (failFast && currentBuild.result == 'UNSTABLE') {
               error 'Static analysis quality gates not passed; halting early'
             }
@@ -176,6 +168,14 @@ axes.values().combinations {
                   fingerprint: true
                   )
             }
+          }
+          launchable.install()
+          withCredentials([string(credentialsId: 'launchable-jenkins-jenkins', variable: 'LAUNCHABLE_TOKEN')]) {
+            launchable('verify')
+            def sessionFile = "launchable-session-${platform}-jdk${jdk}.txt"
+            unstash sessionFile
+            def session = readFile(sessionFile).trim()
+            launchable("record tests --session ${session} --flavor platform=${platform} --flavor jdk=${jdk} --link \"View session in CI\"=${env.BUILD_URL} maven './**/target/surefire-reports'")
           }
         }
       }
