@@ -25,7 +25,9 @@
       }
     ).then((rsp) => {
       if (!rsp.ok) {
-        $("needRestart").innerHTML = rsp.responseText;
+        rsp.text().then((responseText) => {
+          $("needRestart").innerHTML = responseText;
+        });
       }
       updateMsg(btn);
     });
