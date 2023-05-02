@@ -27,7 +27,7 @@ THE SOFTWARE.
          xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <div id="rss-bar" class="jenkins-buttons-row jenkins-buttons-row--invert">
     <button class="jenkins-button jenkins-button--tertiary" id="button-icon-legend">
-      ${%legend}
+      ${%Legend}
     </button>
     <a href="rssAll" class="jenkins-button jenkins-button--tertiary">
       <l:icon src="symbol-rss" />
@@ -43,7 +43,7 @@ THE SOFTWARE.
     </a>
   </div>
 
-  <template id="template-icon-legend">
+  <template id="template-icon-legend" data-title="${%Icon legend}">
     <st:include page="_legend.jelly" it="${app}" />
   </template>
 

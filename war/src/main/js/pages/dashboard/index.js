@@ -2,13 +2,13 @@ import { showModal } from "@/components/modals";
 import { createElementFromHtml } from "@/util/dom";
 
 document.querySelector("#button-icon-legend").addEventListener("click", () => {
+  const template = document.querySelector("#template-icon-legend");
+  const title = template.getAttribute("data-title");
   const content = createElementFromHtml(
-    "<div>" +
-      document.querySelector("#template-icon-legend").innerHTML +
-      "</div>"
+    "<div>" + template.innerHTML + "</div>"
   );
 
-  showModal(content, {
+  showModal(content, title, {
     maxWidth: "550px",
   });
 });
