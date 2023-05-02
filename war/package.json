@@ -39,7 +39,7 @@
     "less-loader": "11.1.0",
     "mini-css-extract-plugin": "2.7.5",
     "postcss": "8.4.23",
-    "postcss-loader": "7.2.4",
+    "postcss-loader": "7.3.0",
     "postcss-scss": "4.0.6",
     "prettier": "2.8.8",
     "sass": "1.62.1",
