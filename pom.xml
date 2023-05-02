@@ -52,7 +52,6 @@ THE SOFTWARE.
   <modules>
     <module>bom</module>
     <module>websocket/spi</module>
-    <module>websocket/jetty9</module>
     <module>websocket/jetty10</module>
     <module>core</module>
     <module>war</module>
@@ -74,7 +73,7 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.403</revision>
+    <revision>2.404</revision>
     <changelist>-SNAPSHOT</changelist>
 
     <!-- configuration for patch tracker plugin  -->

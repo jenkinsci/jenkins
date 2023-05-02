@@ -106,11 +106,6 @@ THE SOFTWARE.
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.jenkins-ci.main</groupId>
-      <artifactId>websocket-jetty9</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
       <!--
         We bundle slf4j binding since we got some components (sshd for example)
         that uses slf4j.
@@ -180,7 +175,6 @@ THE SOFTWARE.
                     <exclude>org.jenkins-ci.main:cli</exclude>
                     <exclude>org.jenkins-ci.main:jenkins-core</exclude>
                     <exclude>org.jenkins-ci.main:remoting</exclude>
-                    <exclude>org.jenkins-ci.main:websocket-jetty9</exclude>
                     <exclude>org.jenkins-ci.main:websocket-jetty10</exclude>
                     <exclude>org.jenkins-ci.main:websocket-spi</exclude>
                     <exclude>org.jenkins-ci:memory-monitor</exclude>
