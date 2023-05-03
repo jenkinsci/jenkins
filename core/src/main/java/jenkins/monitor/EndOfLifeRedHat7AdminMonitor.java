@@ -41,13 +41,13 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 public class EndOfLifeRedHat7AdminMonitor extends EndOfLifeAdminMonitor {
     private static final String OPERATING_SYSTEM_NAME = "Red Hat Enterprise Linux";
     private static final String OPERATING_SYSTEM_VERSION = "7";
-    private static final Pattern DEPENDENCY_PATTERN = Pattern.compile(".*" +
-                                                                      "(Red Hat.* " + OPERATING_SYSTEM_VERSION +
+    private static final Pattern DEPENDENCY_PATTERN = Pattern.compile(".*(" +
+                                                                      "Red Hat.* " + OPERATING_SYSTEM_VERSION +
                                                                       "|CentOS.* " + OPERATING_SYSTEM_VERSION +
                                                                       "|Scientific.* " + OPERATING_SYSTEM_VERSION +
                                                                       "|Oracle.* " + OPERATING_SYSTEM_VERSION +
                                                                       // "|Red Hat.* 8)" + // TODO: Remove when Mark Waite testing complete
-                                                                      ".*");
+                                                                      ").*");
 
     /* Package protected for test access */
     static final String DEPENDENCY_NAME = OPERATING_SYSTEM_NAME + " 7";
