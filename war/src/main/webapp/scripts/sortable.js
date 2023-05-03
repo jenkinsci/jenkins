@@ -52,7 +52,7 @@ var Sortable = (function () {
     if (!firstRow) return;
 
     // We have a first row: assume it's the header, and make its contents clickable links
-    firstRow.each(
+    firstRow.forEach(
       function (cell) {
         var noSort = cell.getAttribute("data-sort-disable");
         if (noSort) {
@@ -86,7 +86,7 @@ var Sortable = (function () {
     // figure out the initial sort preference
     this.pref = this.getStoredPreference();
     if (this.pref == null) {
-      firstRow.each(
+      firstRow.forEach(
         function (cell, i) {
           var initialSortDir = cell.getAttribute("initialSortDir");
           if (initialSortDir != null) {
@@ -112,7 +112,7 @@ var Sortable = (function () {
 
     getFirstRow: function () {
       if (this.table.rows && this.table.rows.length > 0) {
-        return $A(this.table.rows[0].cells);
+        return Array.from(this.table.rows[0].cells);
       }
       return null;
     },
@@ -121,7 +121,7 @@ var Sortable = (function () {
       var newRows = [];
       var rows = this.table.rows;
       for (var j = 1; j < rows.length; j++) {
-        newRows.push($(rows[j]));
+        newRows.push(rows[j]);
       }
       return newRows;
     },
@@ -211,8 +211,8 @@ var Sortable = (function () {
       // we allow some rows to stick to the top and bottom, so that is our first sort criteria
       // regardless of the sort function
       function rowPos(r) {
-        if (r.hasClassName("sorttop")) return 0;
-        if (r.hasClassName("sortbottom")) return 2;
+        if (r.classList.contains("sorttop")) return 0;
+        if (r.classList.contains("sortbottom")) return 2;
         return 1;
       }
 
@@ -229,14 +229,14 @@ var Sortable = (function () {
         }.bind(this)
       );
 
-      rows.each(
+      rows.forEach(
         function (e) {
           this.table.tBodies[0].appendChild(e);
         }.bind(this)
       );
 
       // update arrow rendering
-      this.arrows.each(function (e, i) {
+      this.arrows.forEach(function (e, i) {
         // to check the columns with sort disabled
         if (e) {
           e.innerHTML = (i == column ? dir : arrowTable.none).text;
@@ -245,7 +245,9 @@ var Sortable = (function () {
     },
 
     getIndexOfSortableTable: function () {
-      return $(document.body).select("TABLE.sortable").indexOf(this.table);
+      return Array.from(document.querySelectorAll("TABLE.sortable")).indexOf(
+        this.table
+      );
     },
 
     getInnerText: function (el) {
