@@ -112,6 +112,7 @@ import javax.servlet.http.HttpServletResponse;
 import jenkins.model.Jenkins;
 import jenkins.model.queue.AsynchronousExecution;
 import jenkins.model.queue.CompositeCauseOfBlockage;
+import jenkins.model.queue.QueueItem;
 import jenkins.security.QueueItemAuthenticator;
 import jenkins.security.QueueItemAuthenticatorProvider;
 import jenkins.security.stapler.StaplerAccessibleType;
@@ -2117,7 +2118,7 @@ public class Queue extends ResourceController implements Saveable {
      * Item in a queue.
      */
     @ExportedBean(defaultVisibility = 999)
-    public abstract static class Item extends Actionable {
+    public abstract static class Item extends Actionable implements QueueItem {
 
         private final long id;
 
@@ -2128,6 +2129,7 @@ public class Queue extends ResourceController implements Saveable {
          * @since 1.601
          */
         @Exported
+        @Override
         public long getId() {
             return id;
         }
@@ -2147,11 +2149,18 @@ public class Queue extends ResourceController implements Saveable {
          * Project to be built.
          */
         @Exported
+        @NonNull
         public final Task task;
 
         private /*almost final*/ transient FutureImpl future;
 
         private final long inQueueSince;
+
+        @Override
+        @NonNull
+        public Task getTask() {
+            return task;
+        }
 
         /**
          * Build is blocked because another build is in progress,
@@ -2173,6 +2182,7 @@ public class Queue extends ResourceController implements Saveable {
          * True if the item is starving for an executor for too long.
          */
         @Exported
+        @Override
         public boolean isStuck() { return false; }
 
         /**
@@ -2188,6 +2198,7 @@ public class Queue extends ResourceController implements Saveable {
          * Returns a human readable presentation of how long this item is already in the queue.
          * E.g. something like '3 minutes 40 seconds'
          */
+        @Override
         public String getInQueueForString() {
             long duration = System.currentTimeMillis() - this.inQueueSince;
             return Util.getTimeSpanString(duration);
@@ -2250,6 +2261,7 @@ public class Queue extends ResourceController implements Saveable {
         }
 
         @Restricted(DoNotUse.class) // used from Jelly
+        @Override
         public String getCausesDescription() {
             List<Cause> causes = getCauses();
             StringBuilder s = new StringBuilder();
@@ -2259,15 +2271,11 @@ public class Queue extends ResourceController implements Saveable {
             return s.toString();
         }
 
-        protected Item(Task task, List<Action> actions, long id, FutureImpl future) {
-            this.task = task;
-            this.id = id;
-            this.future = future;
-            this.inQueueSince = System.currentTimeMillis();
-            for (Action action : actions) addAction(action);
+        protected Item(@NonNull Task task, @NonNull List<Action> actions, long id, FutureImpl future) {
+            this(task, actions, id, future, System.currentTimeMillis());
         }
 
-        protected Item(Task task, List<Action> actions, long id, FutureImpl future, long inQueueSince) {
+        protected Item(@NonNull Task task, @NonNull List<Action> actions, long id, FutureImpl future, long inQueueSince) {
             this.task = task;
             this.id = id;
             this.future = future;
@@ -2297,6 +2305,7 @@ public class Queue extends ResourceController implements Saveable {
          * Gets a human-readable status message describing why it's in the queue.
          */
         @Exported
+        @Override
         public final String getWhy() {
             CauseOfBlockage cob = getCauseOfBlockage();
             return cob != null ? cob.getShortDescription() : null;
@@ -2312,6 +2321,7 @@ public class Queue extends ResourceController implements Saveable {
          * @return String
          */
         @Exported
+        @Override
         public String getParams() {
             StringBuilder s = new StringBuilder();
             for (ParametersAction pa : getActions(ParametersAction.class)) {
@@ -2320,19 +2330,6 @@ public class Queue extends ResourceController implements Saveable {
                 }
             }
             return s.toString();
-        }
-
-        /**
-         * Checks whether a scheduled item may be canceled.
-         * @return by default, the same as {@link hudson.model.Queue.Task#hasAbortPermission}
-         */
-        public boolean hasCancelPermission() {
-            return task.hasAbortPermission();
-        }
-
-        @Override
-        public String getDisplayName() {
-            return null;
         }
 
         @Override
