@@ -34,9 +34,12 @@ stage('Record build') {
         launchable("record build --name ${env.BUILD_TAG} --source jenkinsci/jenkins=. --link \"View build in CI\"=${env.BUILD_URL}")
         axes.values().combinations {
           def (platform, jdk) = it
-          def sessionFile = "launchable-session-${platform}-jdk${jdk}.txt"
-          launchable("record session --build ${env.BUILD_TAG} --flavor platform=${platform} --flavor jdk=${jdk} --link \"View session in CI\"=${env.BUILD_URL} >${sessionFile}")
-          stash name: sessionFile, includes: sessionFile
+          // TODO https://github.com/jenkins-infra/helpdesk/issues/3484
+          if (platform != 'windows') {
+            def sessionFile = "launchable-session-${platform}-jdk${jdk}.txt"
+            launchable("record session --build ${env.BUILD_TAG} --flavor platform=${platform} --flavor jdk=${jdk} --link \"View session in CI\"=${env.BUILD_URL} >${sessionFile}")
+            stash name: sessionFile, includes: sessionFile
+          }
         }
       }
 
@@ -169,13 +172,16 @@ axes.values().combinations {
                   )
             }
           }
-          launchable.install()
-          withCredentials([string(credentialsId: 'launchable-jenkins-jenkins', variable: 'LAUNCHABLE_TOKEN')]) {
-            launchable('verify')
-            def sessionFile = "launchable-session-${platform}-jdk${jdk}.txt"
-            unstash sessionFile
-            def session = readFile(sessionFile).trim()
-            launchable("record tests --session ${session} --flavor platform=${platform} --flavor jdk=${jdk} --link \"View session in CI\"=${env.BUILD_URL} maven './**/target/surefire-reports'")
+          // TODO https://github.com/jenkins-infra/helpdesk/issues/3484
+          if (platform != 'windows') {
+            launchable.install()
+            withCredentials([string(credentialsId: 'launchable-jenkins-jenkins', variable: 'LAUNCHABLE_TOKEN')]) {
+              launchable('verify')
+              def sessionFile = "launchable-session-${platform}-jdk${jdk}.txt"
+              unstash sessionFile
+              def session = readFile(sessionFile).trim()
+              launchable("record tests --session ${session} --flavor platform=${platform} --flavor jdk=${jdk} --link \"View session in CI\"=${env.BUILD_URL} maven './**/target/surefire-reports'")
+            }
           }
         }
       }
