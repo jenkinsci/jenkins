@@ -6,7 +6,7 @@ const defaults = {
   hideCloseButton: false,
 };
 
-export function showModal(contents, title, options = {}) {
+export function showModal(contents, options = {}) {
   options = Object.assign({}, defaults, options);
   const modal = createElementFromHtml(
     `<dialog class='jenkins-modal'>
@@ -15,11 +15,13 @@ export function showModal(contents, title, options = {}) {
   );
   modal.style.maxWidth = options.maxWidth;
 
-  const titleElement = createElementFromHtml(
-    `<h1 class="jenkins-modal__title"></h1>`
-  );
-  titleElement.append(title);
-  modal.prepend(titleElement);
+  if ("title" in options) {
+    const titleElement = createElementFromHtml(
+      `<h1 class="jenkins-modal__title"></h1>`
+    );
+    titleElement.append(options.title);
+    modal.prepend(titleElement);
+  }
 
   let closeButton;
   if (options.hideCloseButton !== true) {

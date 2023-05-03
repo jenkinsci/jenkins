@@ -8,7 +8,8 @@ document.querySelector("#button-icon-legend").addEventListener("click", () => {
     "<div>" + template.innerHTML + "</div>"
   );
 
-  showModal(content, title, {
+  showModal(content, {
     maxWidth: "550px",
+    title: title,
   });
 });
