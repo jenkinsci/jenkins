@@ -16,7 +16,6 @@ package hudson.util;
 
 import com.thoughtworks.xstream.core.util.FastStack;
 import com.thoughtworks.xstream.core.util.QuickWriter;
-import com.thoughtworks.xstream.io.ExtendedHierarchicalStreamWriter;
 import com.thoughtworks.xstream.io.StreamException;
 import com.thoughtworks.xstream.io.naming.NameCoder;
 import com.thoughtworks.xstream.io.xml.AbstractXmlWriter;
@@ -53,7 +52,7 @@ import java.io.Writer;
  * @author Joe Walnes
  * @author J&ouml;rg Schaible
  */
-public class PrettyPrintWriter extends AbstractXmlWriter implements ExtendedHierarchicalStreamWriter {
+public class PrettyPrintWriter extends AbstractXmlWriter {
 
     public static int XML_QUIRKS = -1;
     public static int XML_1_0 = 0;
