@@ -46,7 +46,6 @@ import com.thoughtworks.xstream.io.HierarchicalStreamDriver;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import com.thoughtworks.xstream.io.ReaderWrapper;
-import com.thoughtworks.xstream.io.xml.PrettyPrintWriter;
 import com.thoughtworks.xstream.io.xml.StandardStaxDriver;
 import com.thoughtworks.xstream.mapper.CannotResolveClassException;
 import com.thoughtworks.xstream.mapper.Mapper;
@@ -138,8 +137,7 @@ public class XStream2 extends XStream {
 
         @Override
         public HierarchicalStreamWriter createWriter(Writer out) {
-            // TODO JENKINS-71182 StaxWriter will not indent, XML_1_1 does not support emojis, and XML_QUIRKS writes unreadable "&#x0;", so 🤷 pick your poison
-            return new PrettyPrintWriter(out, PrettyPrintWriter.XML_QUIRKS, getNameCoder());
+            return new PrettyPrintWriter(out, PrettyPrintWriter.XML_1_1, getNameCoder());
         }
 
         @Override

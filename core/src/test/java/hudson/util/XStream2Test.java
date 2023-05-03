@@ -28,12 +28,12 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.instanceOf;
-import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -43,12 +43,10 @@ import com.thoughtworks.xstream.mapper.CannotResolveClassException;
 import hudson.Functions;
 import hudson.model.Result;
 import hudson.model.Run;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -617,24 +615,12 @@ public class XStream2Test {
     @Test
     public void nullsWithoutEncodingDeclaration() throws Exception {
         Bar b = new Bar();
-        String text = "x\u0000y";
-        b.s = text;
-        StringWriter w = new StringWriter();
-        XStream2 xs = new XStream2();
+        b.s = "x\u0000y";
         try {
-            xs.toXML(b, w);
+            new XStream2().toXML(b, new StringWriter());
+            fail("expected to fail fast; not supported to read either");
         } catch (RuntimeException x) {
             assertThat("cause is com.thoughtworks.xstream.io.StreamException: Invalid character 0x0 in XML stream", Functions.printThrowable(x), containsString("0x0"));
-            return; // not supported to read either
-        }
-        String xml = w.toString();
-        assertThat(xml, not(containsString("version=\"1.1\"")));
-        System.out.println(xml);
-        try {
-            b = (Bar) xs.fromXML(xml);
-            assertEquals(text, b.s);
-        } catch (RuntimeException x) {
-            assertThat("cause is XMLStreamException: ParseError at [row,col]:[2,13] Message: The reference to entity \"y\" must end with the ';' delimiter.", Functions.printThrowable(x), containsString("XMLStreamException: ParseError"));
         }
     }
 
@@ -642,24 +628,12 @@ public class XStream2Test {
     @Test
     public void nullsWithEncodingDeclaration() throws Exception {
         Bar b = new Bar();
-        String text = "x\u0000y";
-        b.s = text;
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        XStream2 xs = new XStream2();
+        b.s = "x\u0000y";
         try {
-            xs.toXMLUTF8(b, baos);
+            new XStream2().toXMLUTF8(b, new ByteArrayOutputStream());
+            fail("expected to fail fast; not supported to read either");
         } catch (RuntimeException x) {
             assertThat("cause is com.thoughtworks.xstream.io.StreamException: Invalid character 0x0 in XML stream", Functions.printThrowable(x), containsString("0x0"));
-            return; // not supported to read either
-        }
-        String xml = baos.toString(StandardCharsets.UTF_8);
-        System.out.println(xml);
-        assertThat(xml, containsString("version=\"1.1\""));
-        try {
-            b = (Bar) xs.fromXML(new ByteArrayInputStream(baos.toByteArray()));
-            assertEquals(text, b.s);
-        } catch (RuntimeException x) {
-            assertThat("cause is XMLStreamException: ParseError at [row,col]:[2,13] Message: The reference to entity \"y\" must end with the ';' delimiter.", Functions.printThrowable(x), containsString("XMLStreamException: ParseError"));
         }
     }
 
