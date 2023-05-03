@@ -52,7 +52,7 @@ import java.io.Writer;
  * @author Joe Walnes
  * @author J&ouml;rg Schaible
  */
-public class PrettyPrintWriter extends AbstractXmlWriter {
+class PrettyPrintWriter extends AbstractXmlWriter {
 
     public static int XML_QUIRKS = -1;
     public static int XML_1_0 = 0;
@@ -80,7 +80,7 @@ public class PrettyPrintWriter extends AbstractXmlWriter {
     /**
      * @since 1.4
      */
-    public PrettyPrintWriter(final Writer writer, final int mode, final char[] lineIndenter, final NameCoder nameCoder) {
+    PrettyPrintWriter(final Writer writer, final int mode, final char[] lineIndenter, final NameCoder nameCoder) {
         super(nameCoder);
         this.writer = new QuickWriter(writer);
         this.lineIndenter = lineIndenter;
@@ -95,7 +95,7 @@ public class PrettyPrintWriter extends AbstractXmlWriter {
      * @deprecated As of 1.4 use {@link PrettyPrintWriter#PrettyPrintWriter(Writer, int, char[], NameCoder)} instead
      */
     @Deprecated
-    public PrettyPrintWriter(
+    PrettyPrintWriter(
             final Writer writer, final int mode, final char[] lineIndenter, final XmlFriendlyReplacer replacer) {
         this(writer, mode, lineIndenter, (NameCoder) replacer);
     }
@@ -103,29 +103,29 @@ public class PrettyPrintWriter extends AbstractXmlWriter {
     /**
      * @since 1.3
      */
-    public PrettyPrintWriter(final Writer writer, final int mode, final char[] lineIndenter) {
+    PrettyPrintWriter(final Writer writer, final int mode, final char[] lineIndenter) {
         this(writer, mode, lineIndenter, new XmlFriendlyNameCoder());
     }
 
-    public PrettyPrintWriter(final Writer writer, final char[] lineIndenter) {
+    PrettyPrintWriter(final Writer writer, final char[] lineIndenter) {
         this(writer, XML_QUIRKS, lineIndenter);
     }
 
     /**
      * @since 1.3
      */
-    public PrettyPrintWriter(final Writer writer, final int mode, final String lineIndenter) {
+    PrettyPrintWriter(final Writer writer, final int mode, final String lineIndenter) {
         this(writer, mode, lineIndenter.toCharArray());
     }
 
-    public PrettyPrintWriter(final Writer writer, final String lineIndenter) {
+    PrettyPrintWriter(final Writer writer, final String lineIndenter) {
         this(writer, lineIndenter.toCharArray());
     }
 
     /**
      * @since 1.4
      */
-    public PrettyPrintWriter(final Writer writer, final int mode, final NameCoder nameCoder) {
+    PrettyPrintWriter(final Writer writer, final int mode, final NameCoder nameCoder) {
         this(writer, mode, new char[]{' ', ' '}, nameCoder);
     }
 
@@ -134,14 +134,14 @@ public class PrettyPrintWriter extends AbstractXmlWriter {
      * @deprecated As of 1.4 use {@link PrettyPrintWriter#PrettyPrintWriter(Writer, int, NameCoder)} instead
      */
     @Deprecated
-    public PrettyPrintWriter(final Writer writer, final int mode, final XmlFriendlyReplacer replacer) {
+    PrettyPrintWriter(final Writer writer, final int mode, final XmlFriendlyReplacer replacer) {
         this(writer, mode, new char[]{' ', ' '}, replacer);
     }
 
     /**
      * @since 1.4
      */
-    public PrettyPrintWriter(final Writer writer, final NameCoder nameCoder) {
+    PrettyPrintWriter(final Writer writer, final NameCoder nameCoder) {
         this(writer, XML_QUIRKS, new char[]{' ', ' '}, nameCoder);
     }
 
@@ -149,18 +149,18 @@ public class PrettyPrintWriter extends AbstractXmlWriter {
      * @deprecated As of 1.4 use {@link PrettyPrintWriter#PrettyPrintWriter(Writer, NameCoder)} instead.
      */
     @Deprecated
-    public PrettyPrintWriter(final Writer writer, final XmlFriendlyReplacer replacer) {
+    PrettyPrintWriter(final Writer writer, final XmlFriendlyReplacer replacer) {
         this(writer, XML_QUIRKS, new char[]{' ', ' '}, replacer);
     }
 
     /**
      * @since 1.3
      */
-    public PrettyPrintWriter(final Writer writer, final int mode) {
+    PrettyPrintWriter(final Writer writer, final int mode) {
         this(writer, mode, new char[]{' ', ' '});
     }
 
-    public PrettyPrintWriter(final Writer writer) {
+    PrettyPrintWriter(final Writer writer) {
         this(writer, new char[]{' ', ' '});
     }
 
