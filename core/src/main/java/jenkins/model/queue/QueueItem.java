@@ -10,7 +10,7 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.Beta;
 
 /**
- * Interface used by Jelly views to render a queue item through &lt;t:queue&gt;.
+ * Interface used by Jelly views to render a queue item through {@code <t:queue>}.
  * @since TODO
  */
 @Restricted(Beta.class)
@@ -68,11 +68,11 @@ public interface QueueItem extends ModelObject {
     String getInQueueForString();
 
     /**
-     * @return a display name for this queue item. Would typically default to {@link Queue.Task#getFullDisplayName()}.
+     * @return a display name for this queue item; by default, {@link Queue.Task#getFullDisplayName()}
      */
     @CheckForNull
     @Override
     default String getDisplayName() {
-        return getTask().getDisplayName();
+        return getTask().getFullDisplayName();
     }
 }
