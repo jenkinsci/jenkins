@@ -126,8 +126,7 @@ THE SOFTWARE.
     <script src="${resURL}/scripts/prototype.js" type="text/javascript"/>
     <script src="${resURL}/scripts/behavior.js" type="text/javascript"/>
 
-    <!-- we include our own prototype.js, so don't let stapler pull in another. -->
-    <st:adjunct assumes="org.kohsuke.stapler.framework.prototype.prototype" includes="org.kohsuke.stapler.bind"/>
+    <st:adjunct includes="org.kohsuke.stapler.bind"/>
 
     <!-- To use the debug version of YUI, set the system property 'debug.YUI' to true -->
     <j:set var="yuiSuffix" value="${h.yuiSuffix}" />
