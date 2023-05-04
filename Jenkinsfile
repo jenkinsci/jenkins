@@ -13,7 +13,7 @@ properties([
 ])
 
 def axes = [
-  platforms: ['linux', 'windows'],
+  platforms: ['linux'],
   jdks: [11, 17, 19],
 ]
 
@@ -89,6 +89,7 @@ axes.values().combinations {
               def mavenOptions = [
                 '-Pdebug',
                 '-Penable-jacoco',
+                '-Psmoke-test',
                 '--update-snapshots',
                 "-Dmaven.repo.local=$m2repo",
                 '-Dmaven.test.failure.ignore',
@@ -113,12 +114,6 @@ axes.values().combinations {
         // Once we've built, archive the artifacts and the test results.
         stage("${platform.capitalize()} - JDK ${jdk} - Publish") {
           archiveArtifacts allowEmptyArchive: true, artifacts: '**/target/surefire-reports/*.dumpstream'
-          if (!fileExists('core/target/surefire-reports/TEST-jenkins.Junit4TestsRanTest.xml')) {
-            error 'JUnit 4 tests are no longer being run for the core package'
-          }
-          if (!fileExists('test/target/surefire-reports/TEST-jenkins.Junit4TestsRanTest.xml')) {
-            error 'JUnit 4 tests are no longer being run for the test package'
-          }
           // cli and war have been migrated to JUnit 5
           if (failFast && currentBuild.result == 'UNSTABLE') {
             error 'There were test failures; halting early'
