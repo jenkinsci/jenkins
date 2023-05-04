@@ -5,6 +5,7 @@ const defaults = {
   maxWidth: undefined,
   hideCloseButton: false,
   okButtonColor: "",
+  closeOnClick: true,
 };
 
 export function confirmationLink(message, title, href, post) {
@@ -27,6 +28,7 @@ export function confirmationLink(message, title, href, post) {
     title: title,
     callback: confirmed,
     okButtonColor: "jenkins-!-destructive-color",
+    closeOnClick: false,
   };
   showModal(content, options);
   return false;
@@ -102,13 +104,15 @@ export function showModal(contents, options = {}) {
     closeModal();
   });
 
-  modal.addEventListener("click", function (e) {
-    if (e.target !== e.currentTarget) {
-      return;
-    }
+  if (options.closeOnClick) {
+    modal.addEventListener("click", function (e) {
+      if (e.target !== e.currentTarget) {
+        return;
+      }
 
-    closeModal();
-  });
+      closeModal();
+    });
+  }
 
   function closeModal() {
     modal.classList.add("jenkins-modal--hidden");

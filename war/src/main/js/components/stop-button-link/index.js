@@ -21,6 +21,7 @@ function init() {
             hideCloseButton: true,
             callback: execute,
             okButtonColor: "jenkins-!-destructive-color",
+            closeOnClick: false,
           });
         } else {
           execute();
