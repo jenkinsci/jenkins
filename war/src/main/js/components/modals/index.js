@@ -63,7 +63,7 @@ export function showModal(contents, options = {}) {
 
   modal.showModal();
 
-  if (closeButton !== null) {
+  if (closeButton !== undefined) {
     closeButton.blur();
   }
 }
