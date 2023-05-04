@@ -45,6 +45,9 @@ module.exports = (env, argv) => ({
     "components/row-selection-controller": [
       path.join(__dirname, "src/main/js/components/row-selection-controller"),
     ],
+    "components/confirmation-link": [
+      path.join(__dirname, "src/main/js/components/confirmation-link"),
+    ],
     "filter-build-history": [
       path.join(__dirname, "src/main/js/filter-build-history.js"),
     ],

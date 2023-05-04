@@ -4,7 +4,33 @@ import { CLOSE } from "@/util/symbols";
 const defaults = {
   maxWidth: undefined,
   hideCloseButton: false,
+  okButtonColor: "",
 };
+
+export function confirmationLink(message, title, href, post) {
+  var content = createElementFromHtml("<div>" + message + "</div>");
+  var confirmed = function () {
+    var form = document.createElement("form");
+    form.setAttribute("method", post === "true" ? "POST" : "GET");
+    form.setAttribute("action", href);
+    if (post) {
+      crumb.appendToForm(form);
+    }
+    document.body.appendChild(form);
+    form.submit();
+  };
+  var options = {
+    maxWidth: "550px",
+    okButton: "Yes",
+    cancelButton: "Cancel",
+    hideCloseButton: true,
+    title: title,
+    callback: confirmed,
+    okButtonColor: "jenkins-!-destructive-color",
+  };
+  showModal(content, options);
+  return false;
+}
 
 export function showModal(contents, options = {}) {
   options = Object.assign({}, defaults, options);
@@ -35,7 +61,38 @@ export function showModal(contents, options = {}) {
     closeButton.addEventListener("click", () => closeModal());
   }
 
-  modal.querySelector("div").appendChild(contents);
+  let okButton;
+  let cancelButton;
+  let footer;
+  if ("okButton" in options) {
+    footer = createElementFromHtml(`
+        <div class="jenkins-modal__footer jenkins-buttons-row jenkins-buttons-row--equal-width"></div>
+    `);
+    okButton = createElementFromHtml(
+      `
+        <button class="jenkins-button jenkins-button--primary">` +
+        options.okButton +
+        `</button>
+    `
+    );
+    okButton.classList.add(options.okButtonColor);
+    okButton.addEventListener("click", () => ok());
+    footer.appendChild(okButton);
+    if ("cancelButton" in options) {
+      cancelButton = createElementFromHtml(
+        `
+          <button class="jenkins-button">` +
+          options.cancelButton +
+          `</button>
+      `
+      );
+      cancelButton.addEventListener("click", () => closeModal());
+      footer.appendChild(cancelButton);
+    }
+    modal.appendChild(footer);
+  }
+
+  modal.querySelector("div").append(contents);
 
   document.querySelector("body").appendChild(modal);
 
@@ -61,9 +118,24 @@ export function showModal(contents, options = {}) {
     });
   }
 
+  function ok() {
+    if ("callback" in options) {
+      options.callback(modal);
+    }
+    closeModal();
+  }
+
   modal.showModal();
 
-  if (closeButton !== null) {
+  if (closeButton !== undefined) {
     closeButton.blur();
+  }
+
+  if (okButton !== undefined) {
+    okButton.blur();
+  }
+
+  if (cancelButton !== undefined) {
+    cancelButton.blur();
   }
 }

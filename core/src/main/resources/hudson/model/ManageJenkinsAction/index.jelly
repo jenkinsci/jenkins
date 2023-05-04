@@ -57,13 +57,14 @@ THE SOFTWARE.
               <div class="jenkins-section__item">
               <j:set var="alt" value="${icon.replaceAll('\\d*\\.[^.]+$', '')}"/>
               <j:set var="iconSrc" value="${h.tryGetIconPath(m.iconFileName, context)}"/>
+              <j:set var="sure" value="${%sure}"/>
               <j:set var="iconXml">
                 <l:icon src="${m.iconFileName}" />
               </j:set>
-              ${taskTags!=null and attrs.contextMenu!='false' ? it.addContextMenuItem(taskTags, m.urlName, iconSrc, iconXml, m.displayName, m.requiresPOST, m.requiresConfirmation, m.badge) : null}
+              ${taskTags!=null and attrs.contextMenu!='false' ? it.addContextMenuItem(taskTags, m.urlName, iconSrc, iconXml, m.displayName, m.requiresPOST, m.requiresConfirmation, m.badge, sure) : null}
               <j:choose>
                 <j:when test="${m.requiresConfirmation}">
-                  <l:confirmationLink href="${m.urlName}" post="${m.requiresPOST}" message="${%are.you.sure(m.displayName)}">
+                  <l:confirmationLink href="${m.urlName}" post="${m.requiresPOST}" message="${%sure}" title="${m.displayName}">
                     <div class="jenkins-section__item__icon" aria-hidden="true">
                       <l:icon src="${m.iconFileName}" class="icon" />
                     </div>

@@ -153,7 +153,7 @@ THE SOFTWARE.
             <j:set var="iconXml">
               <l:icon src="${icon}" />
             </j:set>
-            ${taskTags!=null and attrs.contextMenu!='false' ? taskTags.add(href, iconSrc, iconXml, title, post == 'true', requiresConfirmation == 'true') : null}
+            ${taskTags!=null and attrs.contextMenu!='false' ? taskTags.add(href, iconSrc, iconXml, title, post == 'true', requiresConfirmation == 'true', null, confirmationMessage ?: null) : null}
             <j:set var="id" value="${h.generateId()}"/>
             <j:if test="${attrs.onclick == null and post and not requiresConfirmation}">
                 <script>
@@ -167,7 +167,7 @@ THE SOFTWARE.
 
             <j:choose>
               <j:when test="${requiresConfirmation and not attrs.onClick}">
-                <l:confirmationLink class="task-link ${isCurrent ? 'task-link--active' : ''}" href="${href}" post="${post}" message="${confirmationMessage ?: title}">
+                <l:confirmationLink class="task-link ${isCurrent ? 'task-link--active' : ''}" href="${href}" post="${post}" message="${confirmationMessage ?: title}" title="${title}">
                   <span class="task-icon-link">
                     <l:icon src="${icon}" />
                   </span>
