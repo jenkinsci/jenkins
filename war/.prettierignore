@@ -11,7 +11,6 @@ node/
 
 # libraries / external deps / generated files
 src/main/js/plugin-setup-wizard/bootstrap-detached.js
-src/main/webapp/scripts/behavior.js
 src/main/webapp/bootstrap
 src/main/webapp/scripts/yui
 src/main/webapp/scripts/prototype.js
