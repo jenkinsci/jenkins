@@ -1,7 +1,15 @@
 package jenkins.widgets;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
+import hudson.model.Computer;
+import hudson.model.ComputerSet;
+import hudson.model.View;
 import hudson.widgets.Widget;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
 
@@ -13,6 +21,56 @@ import org.jenkinsci.Symbol;
  * @author Kohsuke Kawaguchi
  * @since 1.514
  */
-@Extension(ordinal = 100) @Symbol("executors") // historically this was above normal widgets and below BuildQueueWidget
 public class ExecutorsWidget extends Widget {
+    private final List<Computer> computers;
+
+    public ExecutorsWidget(@NonNull List<Computer> computers) {
+        this.computers = new ArrayList<>(computers);
+    }
+
+    public List<Computer> getComputers() {
+        return Collections.unmodifiableList(computers);
+    }
+
+    @Extension(ordinal = 100) @Symbol("executors") // historically this was above normal widgets and below BuildQueueWidget
+    public static final class ViewFactoryImpl extends WidgetFactory<View> {
+        @Override
+        public Class<View> type() {
+            return View.class;
+        }
+
+        @NonNull
+        @Override
+        public Collection<? extends Widget> createFor(@NonNull View target) {
+            return List.of(new ExecutorsWidget(target.getComputers()));
+        }
+    }
+
+    @Extension(ordinal = 100) @Symbol("executors") // historically this was above normal widgets and below BuildQueueWidget
+    public static final class ComputerFactoryImpl extends WidgetFactory<Computer> {
+        @Override
+        public Class<Computer> type() {
+            return Computer.class;
+        }
+
+        @NonNull
+        @Override
+        public Collection<? extends Widget> createFor(@NonNull Computer target) {
+            return List.of(new ExecutorsWidget(List.of(target)));
+        }
+    }
+
+    @Extension(ordinal = 100) @Symbol("executors") // historically this was above normal widgets and below BuildQueueWidget
+    public static final class ComputerSetFactoryImpl extends WidgetFactory<ComputerSet> {
+        @Override
+        public Class<ComputerSet> type() {
+            return ComputerSet.class;
+        }
+
+        @NonNull
+        @Override
+        public Collection<? extends Widget> createFor(@NonNull ComputerSet target) {
+            return List.of(new ExecutorsWidget(List.of(target.get_all())));
+        }
+    }
 }

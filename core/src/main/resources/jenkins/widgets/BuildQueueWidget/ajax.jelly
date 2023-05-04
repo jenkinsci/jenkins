@@ -26,8 +26,8 @@ THE SOFTWARE.
   Used to asynchronously update build queue
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
   <l:ajax>
-    <t:queue items="${it.queueItems}" filtered="${it.isFilterQueue()}" />
+    <st:include page="index.jelly"/>
   </l:ajax>
 </j:jelly>
