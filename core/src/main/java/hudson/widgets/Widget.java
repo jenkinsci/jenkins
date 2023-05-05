@@ -24,6 +24,7 @@
 
 package hudson.widgets;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.model.View;
 
 /**
@@ -68,9 +69,18 @@ public abstract class Widget {
     }
 
     /**
-     * @return the URL relative to the parent object. Always ends with a trailing '/'.
+     * @return The URL of the owner of this widget relative to context path. Always ends with a trailing slash.
+     * Can be <code>null</code> for backward compatibility with widgets annotated with @Extension.
+     */
+    @CheckForNull
+    protected String getOwnerUrl() {
+        return null;
+    }
+
+    /**
+     * @return the URL relative to the context path. Always ends with a trailing '/'.
      */
     public String getUrl() {
-        return "widget/" + getUrlName() + '/';
+        return (getOwnerUrl() == null ? "" : getOwnerUrl()) + "widget/" + getUrlName() + '/';
     }
 }

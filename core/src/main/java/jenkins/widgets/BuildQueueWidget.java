@@ -39,17 +39,25 @@ import org.jenkinsci.Symbol;
 
 public class BuildQueueWidget extends Widget {
     @NonNull
+    private String ownerUrl;
+    @NonNull
     private List<Queue.Item> queueItems;
 
     private boolean filtered;
 
-    public BuildQueueWidget(@NonNull List<Queue.Item> queueItems) {
-        this(queueItems, false);
+    public BuildQueueWidget(@NonNull String ownerUrl, @NonNull List<Queue.Item> queueItems) {
+        this(ownerUrl, queueItems, false);
     }
 
-    public BuildQueueWidget(@NonNull List<Queue.Item> queueItems, boolean filtered) {
+    public BuildQueueWidget(@NonNull String ownerUrl, @NonNull List<Queue.Item> queueItems, boolean filtered) {
+        this.ownerUrl = ownerUrl;
         this.queueItems = new ArrayList<>(queueItems);
         this.filtered = filtered;
+    }
+
+    @Override
+    public String getOwnerUrl() {
+        return ownerUrl;
     }
 
     @NonNull
@@ -78,7 +86,7 @@ public class BuildQueueWidget extends Widget {
         @NonNull
         @Override
         public Collection<BuildQueueWidget> createFor(@NonNull View target) {
-            return List.of(new BuildQueueWidget(target.getQueueItems(), target.isFilterQueue()));
+            return List.of(new BuildQueueWidget(target.getUrl(), target.getQueueItems(), target.isFilterQueue()));
         }
     }
 
@@ -97,7 +105,7 @@ public class BuildQueueWidget extends Widget {
         @NonNull
         @Override
         public Collection<BuildQueueWidget> createFor(@NonNull ComputerSet target) {
-            return List.of(new BuildQueueWidget(List.of(Jenkins.get().getQueue().getItems())));
+            return List.of(new BuildQueueWidget("computer/", List.of(Jenkins.get().getQueue().getItems())));
         }
     }
 }

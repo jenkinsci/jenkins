@@ -22,10 +22,17 @@ import org.jenkinsci.Symbol;
  * @since 1.514
  */
 public class ExecutorsWidget extends Widget {
+    private final String ownerUrl;
     private final List<Computer> computers;
 
-    public ExecutorsWidget(@NonNull List<Computer> computers) {
+    public ExecutorsWidget(@NonNull String ownerUrl, @NonNull List<Computer> computers) {
+        this.ownerUrl = ownerUrl;
         this.computers = new ArrayList<>(computers);
+    }
+
+    @Override
+    protected String getOwnerUrl() {
+        return ownerUrl;
     }
 
     public List<Computer> getComputers() {
@@ -47,7 +54,7 @@ public class ExecutorsWidget extends Widget {
         @NonNull
         @Override
         public Collection<ExecutorsWidget> createFor(@NonNull View target) {
-            return List.of(new ExecutorsWidget(target.getComputers()));
+            return List.of(new ExecutorsWidget(target.getUrl(), target.getComputers()));
         }
     }
 
@@ -66,7 +73,7 @@ public class ExecutorsWidget extends Widget {
         @NonNull
         @Override
         public Collection<ExecutorsWidget> createFor(@NonNull Computer target) {
-            return List.of(new ExecutorsWidget(List.of(target)));
+            return List.of(new ExecutorsWidget(target.getUrl(), List.of(target)));
         }
     }
 
@@ -85,7 +92,7 @@ public class ExecutorsWidget extends Widget {
         @NonNull
         @Override
         public Collection<ExecutorsWidget> createFor(@NonNull ComputerSet target) {
-            return List.of(new ExecutorsWidget(List.of(target.get_all())));
+            return List.of(new ExecutorsWidget("computer/", List.of(target.get_all())));
         }
     }
 }
