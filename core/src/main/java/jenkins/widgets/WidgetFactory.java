@@ -71,7 +71,7 @@ public abstract class WidgetFactory<T extends HasWidgets, W extends Widget> impl
     public static <T extends HasWidgets, W extends Widget> Iterable<WidgetFactory<T,W>> factoriesFor(Class<T> type, Class<W> widgetType) {
         List<WidgetFactory<T,W>> result = new ArrayList<>();
         for (WidgetFactory wf : ExtensionList.lookup(WidgetFactory.class)) {
-            if (type.isAssignableFrom(wf.type()) && widgetType.isAssignableFrom(wf.widgetType())) {
+            if (wf.type().isAssignableFrom(type) && widgetType.isAssignableFrom(wf.widgetType())) {
                 result.add(wf);
             }
         }
@@ -80,7 +80,7 @@ public abstract class WidgetFactory<T extends HasWidgets, W extends Widget> impl
 
     public Collection<W> createWidgetsFor(HasWidgets hasWidgets) {
         try {
-            Collection<W> result = createFor(type().cast(this));
+            Collection<W> result = createFor(type().cast(hasWidgets));
             for (W w : result) {
                 if (!widgetType().isInstance(w)) {
                     LOGGER.log(Level.WARNING, "Widgets from {0} for {1} included {2} not assignable to {3}", new Object[] {this, hasWidgets, w, widgetType()});
