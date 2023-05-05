@@ -36,6 +36,7 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
@@ -58,6 +59,8 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import jenkins.model.Jenkins;
+import jenkins.widgets.ExecutorsWidget;
+import jenkins.widgets.HasWidgetHelper;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -253,7 +256,7 @@ public class ComputerTest {
         );
 
         WebClient wc = j.createWebClient();
-        Page page = wc.getPage(wc.createCrumbedUrl("ajaxExecutors"));
+        Page page = wc.getPage(wc.createCrumbedUrl(HasWidgetHelper.getWidget(agent.toComputer(), ExecutorsWidget.class).orElseThrow().getUrl() + "ajax"));
         String content = page.getWebResponse().getContentAsString();
         assertThat(content, not(containsString(message)));
     }
