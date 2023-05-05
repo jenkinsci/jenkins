@@ -211,17 +211,12 @@ Behaviour.specify("#filter-box", "_table", 0, function (e) {
 
     function addDependencyInfoRow(pluginTR, infoTR) {
       infoTR.classList.add("plugin-dependency-info");
-      pluginTR.insert({
-        after: infoTR,
-      });
+      pluginTR.parentNode.insertBefore(infoTR, pluginTR.nextElementSibling);
     }
     function removeDependencyInfoRow(pluginTR) {
-      var nextRows = pluginTR.nextSiblings();
-      if (nextRows && nextRows.length > 0) {
-        var nextRow = nextRows[0];
-        if (nextRow.classList.contains("plugin-dependency-info")) {
-          nextRow.remove();
-        }
+      var nextRow = pluginTR.nextElementSibling;
+      if (nextRow && nextRow.classList.contains("plugin-dependency-info")) {
+        nextRow.remove();
       }
     }
 
