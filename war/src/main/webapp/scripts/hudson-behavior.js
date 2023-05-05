@@ -844,7 +844,10 @@ function makeButton(e, onclick) {
   // similar to how the child nodes of a <button> are treated as HTML.
   // in standard HTML, we wouldn't expect the former case, yet here we are!
   if (e.tagName === "INPUT") {
-    attributes.label = e.value.escapeHTML();
+    attributes.label = e.value
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
   }
   var btn = new YAHOO.widget.Button(e, attributes);
   if (onclick != null) btn.addListener("click", onclick);
@@ -2233,7 +2236,10 @@ function createSearchBox(searchURL) {
 
   // update positions and sizes of the components relevant to search
   function updatePos() {
-    sizer.innerHTML = box.value.escapeHTML();
+    sizer.innerHTML = box.value
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
     var cssWidth,
       offsetWidth = sizer.offsetWidth;
     if (offsetWidth > 0) {
