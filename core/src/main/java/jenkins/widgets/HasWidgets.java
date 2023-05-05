@@ -35,6 +35,7 @@ import jenkins.security.stapler.StaplerDispatchable;
 
 /**
  * Classes implementing this interface can have widgets, and they can be accessed using relative urls "widget/widgetName"
+ * @since TODO
  */
 @StaplerAccessibleType
 public interface HasWidgets {
