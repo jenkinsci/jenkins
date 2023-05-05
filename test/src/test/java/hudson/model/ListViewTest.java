@@ -36,7 +36,9 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.gargoylesoftware.htmlunit.AlertHandler;
 import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
+import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.Functions;
 import hudson.matrix.AxisList;
@@ -59,10 +61,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.servlet.ReadListener;
 import javax.servlet.ServletInputStream;
 import jenkins.model.Jenkins;
 import org.apache.commons.io.IOUtils;
+import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
@@ -289,6 +293,23 @@ public class ListViewTest {
         // remove a not contained job
         Failure e = assertThrows(Failure.class, () -> view.doRemoveJobFromView("job2"));
         assertEquals("Query parameter 'name' does not correspond to a known and readable item", e.getMessage());
+    }
+
+    @Issue("JENKINS-71200")
+    @Test public void doApplyDoNotOverloadElements() throws Exception {
+        MockFolder folder = j.createFolder("folder");
+        FreeStyleProject job = folder.createProject(FreeStyleProject.class, "elements");
+        ListView view = new ListView("view", folder);
+        folder.addView(view);
+        view.add(job);
+
+        final AtomicBoolean alerts = new AtomicBoolean();
+        WebClient webClient = j.createWebClient();
+        webClient.setAlertHandler((AlertHandler) (page, s) -> alerts.set(true));
+        HtmlPage page = webClient.goTo(view.getUrl() + "configure");
+        HtmlForm form = page.getFormByName("viewConfig");
+        j.assertGoodStatus(j.submit(form));
+        Assert.assertFalse("No alert expected", alerts.get());
     }
 
     @Test public void getItemsNames() throws Exception {
