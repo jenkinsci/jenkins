@@ -135,9 +135,9 @@ function onLineClicked(event) {
 function onCheckChanged(checkBox) {
   var line = checkBox.up("tr");
   if (checkBox.checked) {
-    line.addClassName("selected");
+    line.classList.add("selected");
   } else {
-    line.removeClassName("selected");
+    line.classList.remove("selected");
   }
 }
 
@@ -146,7 +146,7 @@ function onCheckChanged(checkBox) {
     var allLines = document.querySelectorAll(".legacy-token-usage table tr");
     for (let i = 0; i < allLines.length; i++) {
       let line = allLines[i];
-      if (!line.hasClassName("no-token-line")) {
+      if (!line.classList.contains("no-token-line")) {
         line.onclick = onLineClicked;
       }
     }
