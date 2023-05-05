@@ -33,43 +33,58 @@ public class ExecutorsWidget extends Widget {
     }
 
     @Extension(ordinal = 100) @Symbol("executors") // historically this was above normal widgets and below BuildQueueWidget
-    public static final class ViewFactoryImpl extends WidgetFactory<View> {
+    public static final class ViewFactoryImpl extends WidgetFactory<View, ExecutorsWidget> {
         @Override
         public Class<View> type() {
             return View.class;
         }
 
+        @Override
+        public Class<ExecutorsWidget> widgetType() {
+            return ExecutorsWidget.class;
+        }
+
         @NonNull
         @Override
-        public Collection<? extends Widget> createFor(@NonNull View target) {
+        public Collection<ExecutorsWidget> createFor(@NonNull View target) {
             return List.of(new ExecutorsWidget(target.getComputers()));
         }
     }
 
     @Extension(ordinal = 100) @Symbol("executors") // historically this was above normal widgets and below BuildQueueWidget
-    public static final class ComputerFactoryImpl extends WidgetFactory<Computer> {
+    public static final class ComputerFactoryImpl extends WidgetFactory<Computer, ExecutorsWidget> {
         @Override
         public Class<Computer> type() {
             return Computer.class;
         }
 
+        @Override
+        public Class<ExecutorsWidget> widgetType() {
+            return ExecutorsWidget.class;
+        }
+
         @NonNull
         @Override
-        public Collection<? extends Widget> createFor(@NonNull Computer target) {
+        public Collection<ExecutorsWidget> createFor(@NonNull Computer target) {
             return List.of(new ExecutorsWidget(List.of(target)));
         }
     }
 
     @Extension(ordinal = 100) @Symbol("executors") // historically this was above normal widgets and below BuildQueueWidget
-    public static final class ComputerSetFactoryImpl extends WidgetFactory<ComputerSet> {
+    public static final class ComputerSetFactoryImpl extends WidgetFactory<ComputerSet, ExecutorsWidget> {
         @Override
         public Class<ComputerSet> type() {
             return ComputerSet.class;
         }
 
+        @Override
+        public Class<ExecutorsWidget> widgetType() {
+            return ExecutorsWidget.class;
+        }
+
         @NonNull
         @Override
-        public Collection<? extends Widget> createFor(@NonNull ComputerSet target) {
+        public Collection<ExecutorsWidget> createFor(@NonNull ComputerSet target) {
             return List.of(new ExecutorsWidget(List.of(target.get_all())));
         }
     }

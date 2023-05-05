@@ -46,7 +46,7 @@ THE SOFTWARE.
         <st:include it="${box}" page="box.jelly" />
     </j:forEach>
     <j:forEach var="w" items="${it.widgets}">
-      <st:include it="${w}" page="index.jelly" />
+      <st:include it="${w}" page="index" />
     </j:forEach>
   </l:side-panel>
 </j:jelly>

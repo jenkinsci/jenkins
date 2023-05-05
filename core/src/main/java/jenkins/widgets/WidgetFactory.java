@@ -36,12 +36,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
-public abstract class WidgetFactory<T> implements ExtensionPoint {
+public abstract class WidgetFactory<T extends HasWidgets, W extends Widget> implements ExtensionPoint {
     private static final Logger LOGGER = Logger.getLogger(WidgetFactory.class.getName());
 
     /**
@@ -55,23 +56,20 @@ public abstract class WidgetFactory<T> implements ExtensionPoint {
     /**
      * A supertype of any widgets this factory might produce.
      * Defined so that factories which produce irrelevant widgets need not be consulted.
-     * For historical reasons this defaults to {@link Widget} itself.
      * If your implementation was returning multiple disparate kinds of widgets, it is best to split it into two factories.
      * <p>If an API defines an abstract {@link Widget} subtype, and you are providing a concrete implementation,
      * you may return the API type here to delay class loading.
      * @return a bound for the result of {@link #createFor}
      */
-    public /* abstract */ Class<? extends Widget> widgetType() {
-        return Widget.class;
-    }
+    public abstract Class<W> widgetType();
 
     /**
      * Creates widgets for a given object.
      * This may be called frequently for the same object, so if your implementation is expensive, do your own caching.
      * @param target a widgetable object
-     * @return a possible empty set of widgets (typically either using {@link Collections#emptySet} or {@link Collections#singleton})
+     * @return a possible empty set of widgets (typically either using {@link Set#of}).
      */
-    public abstract @NonNull Collection<? extends Widget> createFor(@NonNull T target);
+    public abstract @NonNull Collection<W> createFor(@NonNull T target);
 
 
     /** @see <a href="http://stackoverflow.com/a/24336841/12916">no pairs/tuples in Java</a> */
@@ -96,16 +94,16 @@ public abstract class WidgetFactory<T> implements ExtensionPoint {
     }
 
     @SuppressWarnings("rawtypes")
-    private static final LoadingCache<ExtensionList<WidgetFactory>, LoadingCache<WidgetFactory.CacheKey, List<WidgetFactory<?>>>> cache =
+    private static final LoadingCache<ExtensionList<WidgetFactory>, LoadingCache<WidgetFactory.CacheKey, List<WidgetFactory<?,?>>>> cache =
             CacheBuilder.newBuilder().weakKeys().build(new CacheLoader<>() {
                 @Override
-                public LoadingCache<WidgetFactory.CacheKey, List<WidgetFactory<?>>> load(final ExtensionList<WidgetFactory> allFactories) {
-                    final LoadingCache<WidgetFactory.CacheKey, List<WidgetFactory<?>>> perJenkinsCache =
+                public LoadingCache<WidgetFactory.CacheKey, List<WidgetFactory<?,?>>> load(final ExtensionList<WidgetFactory> allFactories) {
+                    final LoadingCache<WidgetFactory.CacheKey, List<WidgetFactory<?,?>>> perJenkinsCache =
                             CacheBuilder.newBuilder().build(new CacheLoader<>() {
                                 @Override
-                                public List<WidgetFactory<?>> load(WidgetFactory.CacheKey key) {
-                                    List<WidgetFactory<?>> factories = new ArrayList<>();
-                                    for (WidgetFactory<?> wf : allFactories) {
+                                public List<WidgetFactory<?,?>> load(WidgetFactory.CacheKey key) {
+                                    List<WidgetFactory<?,?>> factories = new ArrayList<>();
+                                    for (WidgetFactory<?,?> wf : allFactories) {
                                         Class<? extends Widget> widgetType = wf.widgetType();
                                         if (wf.type().isAssignableFrom(key.type) && (key.widgetType.isAssignableFrom(widgetType) || widgetType.isAssignableFrom(key.widgetType))) {
                                             factories.add(wf);
@@ -125,14 +123,14 @@ public abstract class WidgetFactory<T> implements ExtensionPoint {
             });
 
     @Restricted(NoExternalUse.class) // pending a need for it outside HasWidgets
-    public static Iterable<? extends WidgetFactory<?>> factoriesFor(Class<?> type, Class<? extends Widget> widgetType) {
+    public static Iterable<? extends WidgetFactory<?,?>> factoriesFor(Class<?> type, Class<? extends Widget> widgetType) {
         return cache.getUnchecked(ExtensionList.lookup(WidgetFactory.class)).getUnchecked(new WidgetFactory.CacheKey(type, widgetType));
     }
 
-    public Collection<? extends Widget> createWidgetsFor(HasWidgets hasWidgets) {
+    public Collection<W> createWidgetsFor(HasWidgets hasWidgets) {
         try {
-            Collection<? extends Widget> result = createFor(type().cast(this));
-            for (Widget w : result) {
+            Collection<W> result = createFor(type().cast(this));
+            for (W w : result) {
                 if (!widgetType().isInstance(w)) {
                     LOGGER.log(Level.WARNING, "Widgets from {0} for {1} included {2} not assignable to {3}", new Object[] {this, hasWidgets, w, widgetType()});
                     return Collections.emptySet();

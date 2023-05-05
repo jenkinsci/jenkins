@@ -87,15 +87,20 @@ public class BuildHistoryWidget<T> extends HistoryWidget<Task, T> {
     }
 
     @Extension
-    public static final class FactoryImpl extends WidgetFactory<Job> {
+    public static final class FactoryImpl extends WidgetFactory<Job, BuildHistoryWidget> {
         @Override
         public Class<Job> type() {
             return Job.class;
         }
 
+        @Override
+        public Class<BuildHistoryWidget> widgetType() {
+            return BuildHistoryWidget.class;
+        }
+
         @NonNull
         @Override
-        public Collection<? extends Widget> createFor(@NonNull Job target) {
+        public Collection<BuildHistoryWidget> createFor(@NonNull Job target) {
             if (target instanceof Queue.Task) {
                 return List.of(new BuildHistoryWidget<>((Queue.Task) target, target.getBuilds(), Job.HISTORY_ADAPTER));
             }

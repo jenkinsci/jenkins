@@ -64,29 +64,39 @@ public class BuildQueueWidget extends Widget {
     }
 
     @Extension(ordinal = 200) @Symbol("buildQueue") // historically this was the top most widget
-    public static final class ViewFactoryImpl extends WidgetFactory<View> {
+    public static final class ViewFactoryImpl extends WidgetFactory<View, BuildQueueWidget> {
         @Override
-        public Class type() {
+        public Class<View> type() {
             return View.class;
+        }
+
+        @Override
+        public Class<BuildQueueWidget> widgetType() {
+            return BuildQueueWidget.class;
         }
 
         @NonNull
         @Override
-        public Collection<? extends Widget> createFor(@NonNull View target) {
+        public Collection<BuildQueueWidget> createFor(@NonNull View target) {
             return List.of(new BuildQueueWidget(target.getQueueItems(), target.isFilterQueue()));
         }
     }
 
     @Extension(ordinal = 200) @Symbol("buildQueue") // historically this was the top most widget
-    public static final class ComputerSetFactoryImpl extends WidgetFactory<ComputerSet> {
+    public static final class ComputerSetFactoryImpl extends WidgetFactory<ComputerSet, BuildQueueWidget> {
         @Override
-        public Class type() {
+        public Class<ComputerSet> type() {
             return ComputerSet.class;
+        }
+
+        @Override
+        public Class<BuildQueueWidget> widgetType() {
+            return BuildQueueWidget.class;
         }
 
         @NonNull
         @Override
-        public Collection<? extends Widget> createFor(@NonNull ComputerSet target) {
+        public Collection<BuildQueueWidget> createFor(@NonNull ComputerSet target) {
             return List.of(new BuildQueueWidget(List.of(Jenkins.get().getQueue().getItems())));
         }
     }
