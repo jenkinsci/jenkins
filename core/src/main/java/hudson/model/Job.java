@@ -615,7 +615,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     /**
      * @deprecated see {@link LazyBuildMixIn#createHistoryWidget()}
      */
-    @Deprecated
+    @Deprecated(forRemoval = true, since = "TODO")
     protected HistoryWidget createHistoryWidget() {
         return new HistoryWidget<Job, RunT>(this, getBuilds(), HISTORY_ADAPTER);
     }
