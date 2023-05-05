@@ -128,7 +128,8 @@ axes.values().combinations {
             if (folders.length > 1) {
               discoverGitReferenceBuild(scm: folders[1])
             }
-            recordCoverage(tools: [[parser: 'JACOCO', pattern: 'coverage/target/site/jacoco-aggregate/jacoco.xml']], sourceCodeRetention: 'MODIFIED')
+            recordCoverage(tools: [[parser: 'JACOCO', pattern: 'coverage/target/site/jacoco-aggregate/jacoco.xml']],
+            sourceCodeRetention: 'MODIFIED', sourceDirectories: [[path: 'core/src/main/java']])
 
             echo "Recording static analysis results for '${platform.capitalize()}'"
             recordIssues(
