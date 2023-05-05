@@ -85,16 +85,6 @@ public class MockItem extends Queue.Item {
         }
 
         @Override
-        public void checkAbortPermission() {
-
-        }
-
-        @Override
-        public boolean hasAbortPermission() {
-            return false;
-        }
-
-        @Override
         public String getUrl() {
             return null;
         }

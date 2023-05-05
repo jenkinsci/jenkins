@@ -1935,7 +1935,7 @@ public class Queue extends ResourceController implements Saveable {
          *
          * @throws AccessDeniedException if the permission is not granted.
          */
-        void checkAbortPermission();
+        default void checkAbortPermission() {}
 
         /**
          * Works just like {@link #checkAbortPermission()} except it indicates the status by a return value,
@@ -1948,7 +1948,9 @@ public class Queue extends ResourceController implements Saveable {
          * @return false
          *      if the user doesn't have the permission.
          */
-        boolean hasAbortPermission();
+        default boolean hasAbortPermission() {
+            return true;
+        }
 
         /**
          * Returns the URL of this task relative to the context root of the application.
