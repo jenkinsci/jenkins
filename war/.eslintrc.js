@@ -46,6 +46,7 @@ module.exports = {
     layoutUpdateCallback: "readonly",
     loadScript: "readonly",
     makeButton: "readonly",
+    notificationBar: "readonly",
     object: "readonly",
     onSetupWizardInitialized: "readonly",
     Prototype: "readonly",

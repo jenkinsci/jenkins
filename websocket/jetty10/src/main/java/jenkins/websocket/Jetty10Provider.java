@@ -104,10 +104,10 @@ public class Jetty10Provider implements Provider {
             }
 
             @Override
-            public void sendPing(ByteBuffer applicationData) throws IOException {
+            public Future<Void> sendPing(ByteBuffer applicationData) throws IOException {
                 CompletableFuture<Void> f = new CompletableFuture<>();
                 session().getRemote().sendPing(applicationData, new WriteCallbackImpl(f));
-                // TODO return f;
+                return f;
             }
 
             @Override
