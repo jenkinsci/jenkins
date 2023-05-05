@@ -68,4 +68,13 @@ document.addEventListener("DOMContentLoaded", function () {
   setTimeout(function () {
     layoutUpdateCallback.call();
   }, 350);
+
+  // Show update center error if element exists
+  const updateCenterError = document.querySelector("#update-center-error");
+  if (updateCenterError) {
+    notificationBar.show(
+      updateCenterError.content.textContent,
+      notificationBar.ERROR
+    );
+  }
 });

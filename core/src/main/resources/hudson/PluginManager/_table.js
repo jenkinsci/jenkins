@@ -491,4 +491,13 @@ Element.observe(window, "load", function () {
       window.updateTableHeaderCheckbox();
     });
   }
+
+  // Show update center error if element exists
+  const updateCenterError = document.querySelector("#update-center-error");
+  if (updateCenterError) {
+    notificationBar.show(
+      updateCenterError.content.textContent,
+      notificationBar.ERROR
+    );
+  }
 });
