@@ -1928,7 +1928,7 @@ function AutoScroller(scrollContainer) {
     scrollContainer: scrollContainer,
 
     getCurrentHeight: function () {
-      var scrollDiv = $(this.scrollContainer);
+      var scrollDiv = this.scrollContainer;
 
       if (scrollDiv.scrollHeight > 0) return scrollDiv.scrollHeight;
       else if (scrollDiv.offsetHeight > 0) return scrollDiv.offsetHeight;
@@ -1938,7 +1938,7 @@ function AutoScroller(scrollContainer) {
 
     // return true if we are in the "stick to bottom" mode
     isSticking: function () {
-      var scrollDiv = $(this.scrollContainer);
+      var scrollDiv = this.scrollContainer;
       var currentHeight = this.getCurrentHeight();
 
       // when used with the BODY tag, the height needs to be the viewport height, instead of
@@ -1956,7 +1956,7 @@ function AutoScroller(scrollContainer) {
     },
 
     scrollToBottom: function () {
-      var scrollDiv = $(this.scrollContainer);
+      var scrollDiv = this.scrollContainer;
       var currentHeight = this.getCurrentHeight();
       if (document.documentElement)
         document.documentElement.scrollTop = currentHeight;
