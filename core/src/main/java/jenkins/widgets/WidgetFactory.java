@@ -68,8 +68,8 @@ public abstract class WidgetFactory<T extends HasWidgets, W extends Widget> impl
     public abstract @NonNull Collection<W> createFor(@NonNull T target);
 
     @Restricted(NoExternalUse.class) // pending a need for it outside HasWidgets
-    public static <T extends HasWidgets, W extends Widget> Iterable<WidgetFactory<T,W>> factoriesFor(Class<T> type, Class<W> widgetType) {
-        List<WidgetFactory<T,W>> result = new ArrayList<>();
+    public static <T extends HasWidgets, W extends Widget> Iterable<WidgetFactory<T, W>> factoriesFor(Class<T> type, Class<W> widgetType) {
+        List<WidgetFactory<T, W>> result = new ArrayList<>();
         for (WidgetFactory wf : ExtensionList.lookup(WidgetFactory.class)) {
             if (wf.type().isAssignableFrom(type) && widgetType.isAssignableFrom(wf.widgetType())) {
                 result.add(wf);
