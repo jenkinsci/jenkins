@@ -24,12 +24,8 @@
 
 package jenkins.widgets;
 
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionList;
-import hudson.ExtensionListListener;
 import hudson.ExtensionPoint;
 import hudson.widgets.Widget;
 import java.util.ArrayList;
@@ -71,60 +67,15 @@ public abstract class WidgetFactory<T extends HasWidgets, W extends Widget> impl
      */
     public abstract @NonNull Collection<W> createFor(@NonNull T target);
 
-
-    /** @see <a href="http://stackoverflow.com/a/24336841/12916">no pairs/tuples in Java</a> */
-    private static class CacheKey {
-        private final Class<?> type;
-        private final Class<? extends Widget> widgetType;
-
-        CacheKey(Class<?> type, Class<? extends Widget> widgetType) {
-            this.type = type;
-            this.widgetType = widgetType;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            return obj instanceof WidgetFactory.CacheKey && type == ((WidgetFactory.CacheKey) obj).type && widgetType == ((WidgetFactory.CacheKey) obj).widgetType;
-        }
-
-        @Override
-        public int hashCode() {
-            return type.hashCode() ^ widgetType.hashCode();
-        }
-    }
-
-    @SuppressWarnings("rawtypes")
-    private static final LoadingCache<ExtensionList<WidgetFactory>, LoadingCache<WidgetFactory.CacheKey, List<WidgetFactory<?,?>>>> cache =
-            CacheBuilder.newBuilder().weakKeys().build(new CacheLoader<>() {
-                @Override
-                public LoadingCache<WidgetFactory.CacheKey, List<WidgetFactory<?,?>>> load(final ExtensionList<WidgetFactory> allFactories) {
-                    final LoadingCache<WidgetFactory.CacheKey, List<WidgetFactory<?,?>>> perJenkinsCache =
-                            CacheBuilder.newBuilder().build(new CacheLoader<>() {
-                                @Override
-                                public List<WidgetFactory<?,?>> load(WidgetFactory.CacheKey key) {
-                                    List<WidgetFactory<?,?>> factories = new ArrayList<>();
-                                    for (WidgetFactory<?,?> wf : allFactories) {
-                                        Class<? extends Widget> widgetType = wf.widgetType();
-                                        if (wf.type().isAssignableFrom(key.type) && (key.widgetType.isAssignableFrom(widgetType) || widgetType.isAssignableFrom(key.widgetType))) {
-                                            factories.add(wf);
-                                        }
-                                    }
-                                    return factories;
-                                }
-                            });
-                    allFactories.addListener(new ExtensionListListener() {
-                        @Override
-                        public void onChange() {
-                            perJenkinsCache.invalidateAll();
-                        }
-                    });
-                    return perJenkinsCache;
-                }
-            });
-
     @Restricted(NoExternalUse.class) // pending a need for it outside HasWidgets
-    public static Iterable<? extends WidgetFactory<?,?>> factoriesFor(Class<?> type, Class<? extends Widget> widgetType) {
-        return cache.getUnchecked(ExtensionList.lookup(WidgetFactory.class)).getUnchecked(new WidgetFactory.CacheKey(type, widgetType));
+    public static <T extends HasWidgets, W extends Widget> Iterable<WidgetFactory<T,W>> factoriesFor(Class<T> type, Class<W> widgetType) {
+        List<WidgetFactory<T,W>> result = new ArrayList<>();
+        for (WidgetFactory wf : ExtensionList.lookup(WidgetFactory.class)) {
+            if (type.isAssignableFrom(wf.type()) && widgetType.isAssignableFrom(wf.widgetType())) {
+                result.add(wf);
+            }
+        }
+        return result;
     }
 
     public Collection<W> createWidgetsFor(HasWidgets hasWidgets) {
