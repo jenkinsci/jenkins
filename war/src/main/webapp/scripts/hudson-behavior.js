@@ -965,7 +965,7 @@ function progressBarOnClick() {
 }
 
 function labelAttachPreviousOnClick() {
-  var e = $(this).previous();
+  var e = this.previousElementSibling;
   while (e != null) {
     if (e.classList.contains("jenkins-radio")) {
       e = e.querySelector("input");
@@ -974,7 +974,7 @@ function labelAttachPreviousOnClick() {
       e.click();
       break;
     }
-    e = e.previous();
+    e = e.previousElementSibling;
   }
 }
 
@@ -1556,7 +1556,7 @@ function rowvgStartEachRow(recursive, f) {
     var vdiv = c.nextElementSibling;
     if (vdiv.classList.contains("combobox-values")) {
       createComboBox(c, function () {
-        return vdiv.childElements().collect(function (value) {
+        return Array.from(vdiv.children).map(function (value) {
           return value.getAttribute("value");
         });
       });
