@@ -2083,20 +2083,23 @@ function encode(str) {
 // when there are multiple form elements of the same name,
 // this method returns the input field of the given name that pairs up
 // with the specified 'base' input element.
-Form.findMatchingInput = function (base, name) {
-  // find the FORM element that owns us
-  var f = base;
-  while (f.tagName != "FORM") f = f.parentNode;
+// TODO remove when Prototype.js is removed
+if (typeof Form === "object") {
+  Form.findMatchingInput = function (base, name) {
+    // find the FORM element that owns us
+    var f = base;
+    while (f.tagName != "FORM") f = f.parentNode;
 
-  var bases = Form.getInputs(f, null, base.name);
-  var targets = Form.getInputs(f, null, name);
+    var bases = Form.getInputs(f, null, base.name);
+    var targets = Form.getInputs(f, null, name);
 
-  for (var i = 0; i < bases.length; i++) {
-    if (bases[i] == base) return targets[i];
-  }
+    for (var i = 0; i < bases.length; i++) {
+      if (bases[i] == base) return targets[i];
+    }
 
-  return null; // not found
-};
+    return null; // not found
+  };
+}
 
 function toQueryString(params) {
   var query = "";
@@ -2442,7 +2445,14 @@ function buildFormTree(form) {
       }
     }
 
-    jsonElement.value = Object.toJSON(form.formDom);
+    // TODO simplify when Prototype.js is removed
+    if (Object.toJSON) {
+      // Prototype.js
+      jsonElement.value = Object.toJSON(form.formDom);
+    } else {
+      // Standard
+      jsonElement.value = JSON.stringify(form.formDom);
+    }
 
     // clean up
     for (i = 0; i < doms.length; i++) doms[i].formDom = null;
@@ -2593,9 +2603,12 @@ function createComboBox(idOrField, valueFunction) {
 
 // Exception in code during the AJAX processing should be reported,
 // so that our users can find them more easily.
-Ajax.Request.prototype.dispatchException = function (e) {
-  throw e;
-};
+// TODO remove when Prototype.js is removed
+if (typeof Ajax === "object" && Ajax.Request) {
+  Ajax.Request.prototype.dispatchException = function (e) {
+    throw e;
+  };
+}
 
 // event callback when layouts/visibility are updated and elements might have moved around
 var layoutUpdateCallback = {
