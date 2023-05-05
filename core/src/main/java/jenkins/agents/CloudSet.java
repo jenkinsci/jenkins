@@ -45,6 +45,7 @@ import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithChildren;
 import jenkins.model.ModelObjectWithContextMenu;
+import jenkins.widgets.HasWidgets;
 import net.sf.json.JSONObject;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
@@ -57,7 +58,7 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.kohsuke.stapler.verb.POST;
 
 @Restricted(NoExternalUse.class)
-public class CloudSet extends AbstractModelObject implements Describable<CloudSet>, ModelObjectWithChildren, RootAction, StaplerProxy {
+public class CloudSet extends AbstractModelObject implements Describable<CloudSet>, ModelObjectWithChildren, RootAction, StaplerProxy, HasWidgets {
     private static final Logger LOGGER = Logger.getLogger(CloudSet.class.getName());
 
     @Override
