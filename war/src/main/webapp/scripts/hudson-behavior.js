@@ -231,26 +231,37 @@ var FormChecker = {
   },
 
   sendRequest: function (url, params) {
-    if (params.method != "get") {
+    if (params.method !== "get") {
       var idx = url.indexOf("?");
       params.parameters = url.substring(idx + 1);
       url = url.substring(0, idx);
     }
-    new Ajax.Request(url, params);
+
+    fetch(url, {
+      method: "post",
+      headers: crumb.wrap({
+        "Content-Type": "application/x-www-form-urlencoded",
+      }),
+      body: params.parameters,
+    }).then((response) => {
+      params.onComplete(response);
+    });
   },
 
   schedule: function () {
     if (this.inProgress >= this.maxParallel) return;
-    if (this.queue.length == 0) return;
+    if (this.queue.length === 0) return;
 
     var next = this.queue.shift();
     this.sendRequest(next.url, {
       method: next.method,
       onComplete: function (x) {
-        updateValidationArea(next.target, x.responseText);
-        FormChecker.inProgress--;
-        FormChecker.schedule();
-        layoutUpdateCallback.call();
+        x.text().then((responseText) => {
+          updateValidationArea(next.target, responseText);
+          FormChecker.inProgress--;
+          FormChecker.schedule();
+          layoutUpdateCallback.call();
+        });
       },
     });
     this.inProgress++;
@@ -654,13 +665,15 @@ function registerValidator(e) {
     const validationArea = this.targetElement;
     FormChecker.sendRequest(this.targetUrl(), {
       method: method,
-      onComplete: function ({ status, responseText }) {
+      onComplete: function (response) {
         // TODO Add i18n support
-        const errorMessage = `<div class="error">An internal error occurred during form field validation (HTTP ${status}). Please reload the page and if the problem persists, ask the administrator for help.</div>`;
-        updateValidationArea(
-          validationArea,
-          status === 200 ? responseText : errorMessage
-        );
+        response.text().then((responseText) => {
+          const errorMessage = `<div class="error">An internal error occurred during form field validation (HTTP ${status}). Please reload the page and if the problem persists, ask the administrator for help.</div>`;
+          updateValidationArea(
+            validationArea,
+            response.status === 200 ? responseText : errorMessage
+          );
+        });
       },
     });
   };
@@ -1007,36 +1020,36 @@ function helpButtonOnClick() {
   if (div.style.display != "block") {
     div.style.display = "block";
     // make it visible
-    new Ajax.Request(this.getAttribute("helpURL"), {
-      method: "get",
-      onSuccess: function (x) {
-        // Which plugin is this from?
-        var from = x.getResponseHeader("X-Plugin-From");
-        div.innerHTML =
-          x.responseText +
-          (from ? "<div class='from-plugin'>" + from + "</div>" : "");
 
-        // Ensure links open in new window unless explicitly specified otherwise
-        var links = div.getElementsByTagName("a");
-        for (var i = 0; i < links.length; i++) {
-          var link = links[i];
-          if (link.hasAttribute("href")) {
-            // ignore document anchors
-            if (!link.hasAttribute("target")) {
-              link.setAttribute("target", "_blank");
-            }
-            if (!link.hasAttribute("rel")) {
-              link.setAttribute("rel", "noopener noreferrer");
+    fetch(this.getAttribute("helpURL")).then((rsp) => {
+      rsp.text().then((responseText) => {
+        if (rsp.ok) {
+          var from = rsp.headers.get("X-Plugin-From");
+          // Which plugin is this from?
+          div.innerHTML =
+            responseText +
+            (from ? "<div class='from-plugin'>" + from + "</div>" : "");
+
+          // Ensure links open in new window unless explicitly specified otherwise
+          var links = div.getElementsByTagName("a");
+          for (var i = 0; i < links.length; i++) {
+            var link = links[i];
+            if (link.hasAttribute("href")) {
+              // ignore document anchors
+              if (!link.hasAttribute("target")) {
+                link.setAttribute("target", "_blank");
+              }
+              if (!link.hasAttribute("rel")) {
+                link.setAttribute("rel", "noopener noreferrer");
+              }
             }
           }
+        } else {
+          div.innerHTML =
+            "<b>ERROR</b>: Failed to load help file: " + responseText;
         }
         layoutUpdateCallback.call();
-      },
-      onFailure: function (x) {
-        div.innerHTML =
-          "<b>ERROR</b>: Failed to load help file: " + x.statusText;
-        layoutUpdateCallback.call();
-      },
+      });
     });
   } else {
     div.style.display = "none";
@@ -1329,16 +1342,17 @@ function rowvgStartEachRow(recursive, f) {
   // deferred client-side clickable map.
   // this is useful where the generation of <map> element is time consuming
   Behaviour.specify("IMG[lazymap]", "img-lazymap-", ++p, function (e) {
-    new Ajax.Request(e.getAttribute("lazymap"), {
-      method: "get",
-      onSuccess: function (x) {
-        var div = document.createElement("div");
-        document.body.appendChild(div);
-        div.innerHTML = x.responseText;
-        var id = "map" + iota++;
-        div.firstElementChild.setAttribute("name", id);
-        e.setAttribute("usemap", "#" + id);
-      },
+    fetch(e.getAttribute("lazymap")).then((rsp) => {
+      if (rsp.ok) {
+        rsp.text().then((responseText) => {
+          var div = document.createElement("div");
+          document.body.appendChild(div);
+          div.innerHTML = responseText;
+          var id = "map" + iota++;
+          div.firstElementChild.setAttribute("name", id);
+          e.setAttribute("usemap", "#" + id);
+        });
+      }
     });
   });
 
@@ -1773,7 +1787,10 @@ function rowvgStartEachRow(recursive, f) {
             return;
           }
         }
-        new Ajax.Request(url);
+        fetch(url, {
+          method: "post",
+          headers: crumb.wrap({}),
+        });
       });
     }
   );
@@ -1846,18 +1863,21 @@ function replaceDescription(initialDescription, submissionUrl) {
       submissionUrl: submissionUrl,
     };
   }
-  new Ajax.Request("./descriptionForm", {
-    parameters: parameters,
-    onComplete: function (x) {
-      d.innerHTML = x.responseText;
-      evalInnerHtmlScripts(x.responseText, function () {
+  fetch("./descriptionForm", {
+    method: "post",
+    headers: crumb.wrap({}),
+    body: objectToUrlFormEncoded(parameters),
+  }).then((rsp) => {
+    rsp.text().then((responseText) => {
+      d.innerHTML = responseText;
+      evalInnerHtmlScripts(responseText, function () {
         Behaviour.applySubtree(d);
         d.getElementsByTagName("TEXTAREA")[0].focus();
       });
       layoutUpdateCallback.call();
-    },
+      return false;
+    });
   });
-  return false;
 }
 
 /**
@@ -2007,33 +2027,38 @@ function refreshPart(id, url) {
   var intervalID = null;
   var f = function () {
     if (isPageVisible()) {
-      new Ajax.Request(url, {
-        onSuccess: function (rsp) {
-          var hist = document.getElementById(id);
-          if (hist == null) {
-            console.log("There's no element that has ID of " + id);
-            if (intervalID !== null) window.clearInterval(intervalID);
-            return;
-          }
-          if (!rsp.responseText) {
-            console.log(
-              "Failed to retrieve response for ID " +
-                id +
-                ", perhaps Jenkins is unavailable"
-            );
-            return;
-          }
-          var p = hist.parentNode;
+      fetch(url, {
+        headers: crumb.wrap({}),
+        method: "post",
+      }).then((rsp) => {
+        if (rsp.ok) {
+          rsp.text().then((responseText) => {
+            var hist = document.getElementById(id);
+            if (hist == null) {
+              console.log("There's no element that has ID of " + id);
+              if (intervalID !== null) window.clearInterval(intervalID);
+              return;
+            }
+            if (!responseText) {
+              console.log(
+                "Failed to retrieve response for ID " +
+                  id +
+                  ", perhaps Jenkins is unavailable"
+              );
+              return;
+            }
+            var p = hist.parentNode;
 
-          var div = document.createElement("div");
-          div.innerHTML = rsp.responseText;
+            var div = document.createElement("div");
+            div.innerHTML = responseText;
 
-          var node = div.firstElementChild;
-          p.replaceChild(node, hist);
+            var node = div.firstElementChild;
+            p.replaceChild(node, hist);
 
-          Behaviour.applySubtree(node);
-          layoutUpdateCallback.call();
-        },
+            Behaviour.applySubtree(node);
+            layoutUpdateCallback.call();
+          });
+        }
       });
     }
   };
@@ -2103,20 +2128,23 @@ function encode(str) {
 // when there are multiple form elements of the same name,
 // this method returns the input field of the given name that pairs up
 // with the specified 'base' input element.
-Form.findMatchingInput = function (base, name) {
-  // find the FORM element that owns us
-  var f = base;
-  while (f.tagName != "FORM") f = f.parentNode;
+// TODO remove when Prototype.js is removed
+if (typeof Form === "object") {
+  Form.findMatchingInput = function (base, name) {
+    // find the FORM element that owns us
+    var f = base;
+    while (f.tagName != "FORM") f = f.parentNode;
 
-  var bases = Form.getInputs(f, null, base.name);
-  var targets = Form.getInputs(f, null, name);
+    var bases = Form.getInputs(f, null, base.name);
+    var targets = Form.getInputs(f, null, name);
 
-  for (var i = 0; i < bases.length; i++) {
-    if (bases[i] == base) return targets[i];
-  }
+    for (var i = 0; i < bases.length; i++) {
+      if (bases[i] == base) return targets[i];
+    }
 
-  return null; // not found
-};
+    return null; // not found
+  };
+}
 
 function toQueryString(params) {
   var query = "";
@@ -2465,7 +2493,14 @@ function buildFormTree(form) {
       }
     }
 
-    jsonElement.value = Object.toJSON(form.formDom);
+    // TODO simplify when Prototype.js is removed
+    if (Object.toJSON) {
+      // Prototype.js
+      jsonElement.value = Object.toJSON(form.formDom);
+    } else {
+      // Standard
+      jsonElement.value = JSON.stringify(form.formDom);
+    }
 
     // clean up
     for (i = 0; i < doms.length; i++) doms[i].formDom = null;
@@ -2565,20 +2600,25 @@ function validateButton(checkUrl, paramList, button) {
   var target = spinner.nextElementSibling.nextElementSibling;
   spinner.style.display = "block";
 
-  new Ajax.Request(checkUrl, {
-    parameters: parameters,
-    onComplete: function (rsp) {
+  fetch(checkUrl, {
+    method: "post",
+    body: objectToUrlFormEncoded(parameters),
+    headers: crumb.wrap({
+      "Content-Type": "application/x-www-form-urlencoded",
+    }),
+  }).then((rsp) => {
+    rsp.text().then((responseText) => {
       spinner.style.display = "none";
       target.innerHTML = `<div class="validation-error-area" />`;
-      updateValidationArea(target.children[0], rsp.responseText);
+      updateValidationArea(target.children[0], responseText);
       layoutUpdateCallback.call();
-      var s = rsp.getResponseHeader("script");
+      var s = rsp.headers.get("script");
       try {
         geval(s);
       } catch (e) {
         window.alert("failed to evaluate " + s + "\n" + e.message);
       }
-    },
+    });
   });
 }
 
@@ -2616,9 +2656,12 @@ function createComboBox(idOrField, valueFunction) {
 
 // Exception in code during the AJAX processing should be reported,
 // so that our users can find them more easily.
-Ajax.Request.prototype.dispatchException = function (e) {
-  throw e;
-};
+// TODO remove when Prototype.js is removed
+if (typeof Ajax === "object" && Ajax.Request) {
+  Ajax.Request.prototype.dispatchException = function (e) {
+    throw e;
+  };
+}
 
 // event callback when layouts/visibility are updated and elements might have moved around
 var layoutUpdateCallback = {
