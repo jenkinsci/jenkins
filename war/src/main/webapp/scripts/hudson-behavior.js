@@ -231,31 +231,57 @@ var FormChecker = {
   },
 
   sendRequest: function (url, params) {
-    if (params.method != "get") {
+    if (params.method !== "get") {
       var idx = url.indexOf("?");
       params.parameters = url.substring(idx + 1);
       url = url.substring(0, idx);
     }
-    new Ajax.Request(url, params);
+
+    fetch(url, {
+      method: 'post',
+      headers: crumb.wrap({
+        "Content-Type": "application/x-www-form-urlencoded",
+      }),
+      body: params.parameters,
+    })
+      .then(response => {
+        params.onComplete(response);
+      })
   },
 
   schedule: function () {
     if (this.inProgress >= this.maxParallel) return;
-    if (this.queue.length == 0) return;
+    if (this.queue.length === 0) return;
 
     var next = this.queue.shift();
     this.sendRequest(next.url, {
       method: next.method,
       onComplete: function (x) {
-        updateValidationArea(next.target, x.responseText);
-        FormChecker.inProgress--;
-        FormChecker.schedule();
-        layoutUpdateCallback.call();
+        x.text().then(responseText => {
+          updateValidationArea(next.target, responseText);
+          FormChecker.inProgress--;
+          FormChecker.schedule();
+          layoutUpdateCallback.call();
+        });
       },
     });
     this.inProgress++;
   },
 };
+
+function objectToUrlFormEncoded(parameters) {
+  console.log('parameters', parameters);
+  // https://stackoverflow.com/a/37562814/4951015
+  // Code could be simplified if support for HTMLUnit is dropped
+  // body: new URLSearchParams(parameters) is enough then, but it doesn't work in HTMLUnit currently
+  let formBody = [];
+  for (const property in parameters) {
+    const encodedKey = encodeURIComponent(property);
+    const encodedValue = encodeURIComponent(parameters[property]);
+    formBody.push(encodedKey + "=" + encodedValue);
+  }
+  return formBody.join("&");
+}
 
 /**
  * Detects if http2 protocol is enabled.
@@ -641,13 +667,15 @@ function registerValidator(e) {
     const validationArea = this.targetElement;
     FormChecker.sendRequest(this.targetUrl(), {
       method: method,
-      onComplete: function ({ status, responseText }) {
+      onComplete: function (response) {
         // TODO Add i18n support
-        const errorMessage = `<div class="error">An internal error occurred during form field validation (HTTP ${status}). Please reload the page and if the problem persists, ask the administrator for help.</div>`;
-        updateValidationArea(
-          validationArea,
-          status === 200 ? responseText : errorMessage
-        );
+        response.text().then((responseText) => {
+          const errorMessage = `<div class="error">An internal error occurred during form field validation (HTTP ${status}). Please reload the page and if the problem persists, ask the administrator for help.</div>`;
+          updateValidationArea(
+            validationArea,
+            response.status === 200 ? responseText : errorMessage
+          );
+        });
       },
     });
   };
@@ -2558,20 +2586,9 @@ function validateButton(checkUrl, paramList, button) {
   var target = spinner.next().next();
   spinner.style.display = "block";
 
-  // https://stackoverflow.com/a/37562814/4951015
-  // Code could be simplified if support for HTMLUnit is dropped
-  // body: new URLSearchParams(parameters) is enough then, but it doesn't work in HTMLUnit currently
-  let formBody = [];
-  for (const property in parameters) {
-    const encodedKey = encodeURIComponent(property);
-    const encodedValue = encodeURIComponent(parameters[property]);
-    formBody.push(encodedKey + "=" + encodedValue);
-  }
-  formBody = formBody.join("&");
-
   fetch(checkUrl, {
     method: "post",
-    body: formBody,
+    body: objectToUrlFormEncoded(parameters),
     headers: crumb.wrap({
       "Content-Type": "application/x-www-form-urlencoded",
     }),
