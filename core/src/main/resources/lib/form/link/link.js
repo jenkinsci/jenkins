@@ -12,16 +12,17 @@ Behaviour.specify("A.post", "link.post", 0, function (element) {
 
 Behaviour.specify("A.post-async", "link.post-async", 0, function (element) {
   element.onclick = function () {
-    new Ajax.Request(element.getAttribute("href"));
+    fetch(element.getAttribute("href"), {
+      method: "post",
+      headers: crumb.wrap({}),
+    });
     return false;
   };
 });
 
 Behaviour.specify("A.async", "link.async", 0, function (element) {
   element.onclick = function () {
-    new Ajax.Request(element.getAttribute("href"), {
-      method: "get",
-    });
+    fetch(element.getAttribute("href"));
     return false;
   };
 });
