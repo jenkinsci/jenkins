@@ -1512,7 +1512,6 @@ function rowvgStartEachRow(recursive, f) {
     function (e) {
       // see rowSet.jelly and optionalBlock.jelly
       // figure out the corresponding start block
-      e = $(e);
       var end = e;
 
       for (var depth = 0; ; e = e.previousElementSibling) {
