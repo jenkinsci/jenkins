@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  */
 window.selectAll = function (anchor) {
-  var parent = anchor.up(".legacy-token-usage");
+  var parent = anchor.closest(".legacy-token-usage");
   var allCheckBoxes = parent.querySelectorAll(".token-to-revoke");
   var concernedCheckBoxes = allCheckBoxes;
 
@@ -30,7 +30,7 @@ window.selectAll = function (anchor) {
 };
 
 window.selectFresh = function (anchor) {
-  var parent = anchor.up(".legacy-token-usage");
+  var parent = anchor.closest(".legacy-token-usage");
   var allCheckBoxes = parent.querySelectorAll(".token-to-revoke");
   var concernedCheckBoxes = parent.querySelectorAll(
     ".token-to-revoke.fresh-token"
@@ -40,7 +40,7 @@ window.selectFresh = function (anchor) {
 };
 
 window.selectRecent = function (anchor) {
-  var parent = anchor.up(".legacy-token-usage");
+  var parent = anchor.closest(".legacy-token-usage");
   var allCheckBoxes = parent.querySelectorAll(".token-to-revoke");
   var concernedCheckBoxes = parent.querySelectorAll(
     ".token-to-revoke.recent-token"
@@ -75,7 +75,7 @@ function checkTheDesiredOne(allCheckBoxes, concernedCheckBoxes) {
 }
 
 window.confirmAndRevokeAllSelected = function (button) {
-  var parent = button.up(".legacy-token-usage");
+  var parent = button.closest(".legacy-token-usage");
   var allCheckBoxes = parent.querySelectorAll(".token-to-revoke");
   var allCheckedCheckBoxes = [];
   for (let i = 0; i < allCheckBoxes.length; i++) {
@@ -133,11 +133,11 @@ function onLineClicked(event) {
 }
 
 function onCheckChanged(checkBox) {
-  var line = checkBox.up("tr");
+  var line = checkBox.closest("tr");
   if (checkBox.checked) {
-    line.addClassName("selected");
+    line.classList.add("selected");
   } else {
-    line.removeClassName("selected");
+    line.classList.remove("selected");
   }
 }
 
@@ -146,7 +146,7 @@ function onCheckChanged(checkBox) {
     var allLines = document.querySelectorAll(".legacy-token-usage table tr");
     for (let i = 0; i < allLines.length; i++) {
       let line = allLines[i];
-      if (!line.hasClassName("no-token-line")) {
+      if (!line.classList.contains("no-token-line")) {
         line.onclick = onLineClicked;
       }
     }
