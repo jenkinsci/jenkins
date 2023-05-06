@@ -25,8 +25,6 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout">
-  <h1 class="jenkins-modal__title">${%Icon legend}</h1>
-
   <h2 class="jenkins-modal__subtitle">${%Status}</h2>
 
   <dl class="app-icon-legend">
