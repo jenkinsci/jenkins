@@ -48,6 +48,7 @@ module.exports = {
     makeButton: "readonly",
     notificationBar: "readonly",
     object: "readonly",
+    objectToUrlFormEncoded: "readonly",
     onSetupWizardInitialized: "readonly",
     Prototype: "readonly",
     refillOnChange: "readonly",
