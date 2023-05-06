@@ -2550,7 +2550,7 @@ function validateButton(checkUrl, paramList, button) {
 
   // https://stackoverflow.com/a/37562814/4951015
   // Code could be simplified if support for HTMLUnit is dropped
-  // body: new URLSearchParams(parameters) is enough then but it doesn't work in HTMLUnit currently
+  // body: new URLSearchParams(parameters) is enough then, but it doesn't work in HTMLUnit currently
   let formBody = [];
   for (const property in parameters) {
     const encodedKey = encodeURIComponent(property);
