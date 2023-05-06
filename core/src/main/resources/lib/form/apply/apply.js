@@ -33,12 +33,12 @@ Behaviour.specify(
 
       // create a throw-away IFRAME to avoid back button from loading the POST result back
       id = "iframe" + iota++;
-      target = Element("iframe", {
-        id: id,
-        name: id,
-        style: "height:100%; width:100%",
-      });
-      $(containerId).appendChild(target);
+      target = document.createElement("iframe");
+      target.setAttribute("id", id);
+      target.setAttribute("name", id);
+      target.style.height = "100%";
+      target.style.width = "100%";
+      document.getElementById(containerId).appendChild(target);
 
       attachIframeOnload(target, function () {
         if (
@@ -56,26 +56,29 @@ Behaviour.specify(
           var contentWidth = r.width / 2;
           if (!error) {
             // fallback if it's not a regular error dialog from oops.jelly: use the entire body
-            error = Element("div", { id: "error-description" });
+            error = document.createElement("div");
+            error.setAttribute("id", "error-description");
             error.appendChild(doc.getElementsByTagName("body")[0]);
             contentHeight = (r.height * 3) / 4;
             contentWidth = (r.width * 3) / 4;
           }
 
-          let oldError = $("error-description");
+          let oldError = document.getElementById("error-description");
           if (oldError) {
             // Remove old error if there is any
-            $(containerId).removeChild(oldError);
+            document.getElementById(containerId).removeChild(oldError);
           }
 
-          $(containerId).appendChild(error);
+          document.getElementById(containerId).appendChild(error);
 
           var dialogStyleHeight = contentHeight + 40;
           var dialogStyleWidth = contentWidth + 20;
 
-          $(containerId).style.height = contentHeight + "px";
-          $(containerId).style.width = contentWidth + "px";
-          $(containerId).style.overflow = "scroll";
+          document.getElementById(containerId).style.height =
+            contentHeight + "px";
+          document.getElementById(containerId).style.width =
+            contentWidth + "px";
+          document.getElementById(containerId).style.overflow = "scroll";
 
           responseDialog.cfg.setProperty("width", dialogStyleWidth + "px");
           responseDialog.cfg.setProperty("height", dialogStyleHeight + "px");
@@ -84,13 +87,13 @@ Behaviour.specify(
         }
         window.setTimeout(function () {
           // otherwise Firefox will fail to leave the "connecting" state
-          $(id).remove();
+          document.getElementById(id).remove();
         }, 0);
       });
 
       f.target = target.id;
       f.elements["core:apply"].value = "true";
-      Event.fire(f, "jenkins:apply"); // give everyone a chance to write back to DOM
+      f.dispatchEvent(new Event("jenkins:apply")); // give everyone a chance to write back to DOM
       try {
         buildFormTree(f);
         f.submit();

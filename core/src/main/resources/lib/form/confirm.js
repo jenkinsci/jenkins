@@ -17,24 +17,24 @@
   }
 
   function isIgnoringConfirm(element) {
-    if (element.hasClassName("force-dirty")) {
+    if (element.classList.contains("force-dirty")) {
       return false;
     }
-    if (element.hasClassName("ignore-dirty")) {
+    if (element.classList.contains("ignore-dirty")) {
       return true;
     }
     // to allow sub-section of the form to ignore confirm
     // especially useful for "pure" JavaScript area
     // we try to gather the first parent with a marker,
-    var dirtyPanel = element.up(".ignore-dirty-panel,.force-dirty-panel");
+    var dirtyPanel = element.closest(".ignore-dirty-panel,.force-dirty-panel");
     if (!dirtyPanel) {
       return false;
     }
 
-    if (dirtyPanel.hasClassName("force-dirty-panel")) {
+    if (dirtyPanel.classList.contains("force-dirty-panel")) {
       return false;
     }
-    if (dirtyPanel.hasClassName("ignore-dirty-panel")) {
+    if (dirtyPanel.classList.contains("ignore-dirty-panel")) {
       return true;
     }
 
@@ -69,7 +69,7 @@
       configForm = document.getElementsByName("viewConfig")[0];
     }
 
-    YAHOO.util.Event.on($(configForm), "submit", clearConfirm, this);
+    configForm.addEventListener("submit", clearConfirm);
 
     var buttons = configForm.getElementsByTagName("button");
     var name;
@@ -117,5 +117,5 @@
   }
 
   window.onbeforeunload = confirmExit;
-  Event.on(window, "load", initConfirm);
+  window.addEventListener("load", initConfirm);
 })();
