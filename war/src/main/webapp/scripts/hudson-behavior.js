@@ -238,15 +238,14 @@ var FormChecker = {
     }
 
     fetch(url, {
-      method: 'post',
+      method: "post",
       headers: crumb.wrap({
         "Content-Type": "application/x-www-form-urlencoded",
       }),
       body: params.parameters,
-    })
-      .then(response => {
-        params.onComplete(response);
-      })
+    }).then((response) => {
+      params.onComplete(response);
+    });
   },
 
   schedule: function () {
@@ -257,7 +256,7 @@ var FormChecker = {
     this.sendRequest(next.url, {
       method: next.method,
       onComplete: function (x) {
-        x.text().then(responseText => {
+        x.text().then((responseText) => {
           updateValidationArea(next.target, responseText);
           FormChecker.inProgress--;
           FormChecker.schedule();
@@ -270,7 +269,6 @@ var FormChecker = {
 };
 
 function objectToUrlFormEncoded(parameters) {
-  console.log('parameters', parameters);
   // https://stackoverflow.com/a/37562814/4951015
   // Code could be simplified if support for HTMLUnit is dropped
   // body: new URLSearchParams(parameters) is enough then, but it doesn't work in HTMLUnit currently
