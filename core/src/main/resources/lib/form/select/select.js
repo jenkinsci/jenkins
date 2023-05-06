@@ -112,7 +112,7 @@ function updateListBox(listBox, url, config) {
     headers: crumb.wrap({
       "Content-Type": "application/x-www-form-urlencoded",
     }),
-    body: formBody
+    body: formBody,
   }).then((response) => {
     if (response.ok) {
       config.onSuccess(response);
