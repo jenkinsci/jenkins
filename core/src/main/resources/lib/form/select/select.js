@@ -4,7 +4,7 @@ function updateListBox(listBox, url, config) {
   config = config || {};
   config = object(config);
   var originalOnSuccess = config.onSuccess;
-  var l = $(listBox);
+  var l = listBox;
 
   // Hacky function to retrofit compatibility with tables-to-divs
   // If the <select> tag parent is a <td> element we can consider it's following a
@@ -43,7 +43,7 @@ function updateListBox(listBox, url, config) {
     status.innerHTML = "";
   }
   config.onSuccess = function (rsp) {
-    l.removeClassName("select-ajax-pending");
+    l.classList.remove("select-ajax-pending");
     var currentSelection = l.value;
 
     // clear the contents
@@ -77,7 +77,7 @@ function updateListBox(listBox, url, config) {
     });
   };
   config.onFailure = function (rsp) {
-    l.removeClassName("select-ajax-pending");
+    l.classList.remove("select-ajax-pending");
     rsp.text().then((responseText) => {
       status.innerHTML = responseText;
       if (status.firstElementChild) {
@@ -95,24 +95,13 @@ function updateListBox(listBox, url, config) {
     });
   };
 
-  // https://stackoverflow.com/a/37562814/4951015
-  // Code could be simplified if support for HTMLUnit is dropped
-  // body: new URLSearchParams(parameters) is enough then, but it doesn't work in HTMLUnit currently
-  let formBody = [];
-  for (const property in config.parameters) {
-    const encodedKey = encodeURIComponent(property);
-    const encodedValue = encodeURIComponent(config.parameters[property]);
-    formBody.push(encodedKey + "=" + encodedValue);
-  }
-  formBody = formBody.join("&");
-
-  l.addClassName("select-ajax-pending");
+  l.classList.add("select-ajax-pending");
   fetch(url, {
     method: "post",
     headers: crumb.wrap({
       "Content-Type": "application/x-www-form-urlencoded",
     }),
-    body: formBody,
+    body: objectToUrlFormEncoded(config.parameters),
   }).then((response) => {
     if (response.ok) {
       config.onSuccess(response);
