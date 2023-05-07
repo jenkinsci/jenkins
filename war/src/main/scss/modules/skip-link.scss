@@ -14,7 +14,8 @@ $skip-link-box-shadow: 0 0 50px -15px var(--yellow);
   border-radius: 0.66rem;
   outline: none;
   text-decoration: none !important;
-  transition: var(--elastic-transition), box-shadow var(--standard-transition) 0.1s;
+  transition: var(--elastic-transition),
+    box-shadow var(--standard-transition) 0.1s;
   opacity: 0;
   scale: 80%;
   pointer-events: none;
