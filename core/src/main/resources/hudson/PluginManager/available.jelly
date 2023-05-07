@@ -27,8 +27,9 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:f="/lib/form">
-  <l:layout title="${%Available plugins} - ${%Plugin Manager}" permission="${app.SYSTEM_READ}">
+  <l:layout title="${%Available plugins} - ${%Plugins}" permission="${app.SYSTEM_READ}">
     <st:include page="sidepanel.jelly"/>
+    <!-- no need for additional breadcrumb here as the side panel offers enough functionality to browse between different pages -->
 
     <l:main-panel>
       <l:app-bar title="${%Plugins}" />
@@ -40,6 +41,9 @@ THE SOFTWARE.
                         id="filter-box"
                         autofocus="true"
                         value="${request.getParameter('filter')}" />
+        </div>
+        <div class="jenkins-app-bar__controls">
+          <st:include page="check.jelly"/>
         </div>
       </div>
 
@@ -72,11 +76,9 @@ THE SOFTWARE.
               <span style="margin-left:2em;"></span>
               <f:submit value="${%Download now and install after restart}"/>
             </l:isAdmin>
-            <st:include page="check.jelly"/>
           </div>
         </div>
       </form>
-
     </l:main-panel>
   </l:layout>
 

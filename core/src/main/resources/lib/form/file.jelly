@@ -47,7 +47,7 @@ THE SOFTWARE.
     <st:attribute name="accept">
       Defines the file types the file input should accept. This string is a comma-separated list.
     </st:attribute>
-    @since TODO
+    @since 2.385
   </st:documentation>
   <f:prepareDatabinding />
 
