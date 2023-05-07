@@ -219,23 +219,19 @@ var FormChecker = {
    *
    * @param url
    *      Remote doXYZ URL that performs the check. Query string should include the field value.
-   * @param method
-   *      HTTP method. GET or POST. I haven't confirmed specifics, but some browsers seem to cache GET requests.
    * @param target
    *      HTML element whose innerHTML will be overwritten when the check is completed.
    */
-  delayedCheck: function (url, method, target) {
-    if (url == null || method == null || target == null) return; // don't know whether we should throw an exception or ignore this. some broken plugins have illegal parameters
-    this.queue.push({ url: url, method: method, target: target });
+  delayedCheck: function (url, target) {
+    if (url == null || target == null) return; // don't know whether we should throw an exception or ignore this. some broken plugins have illegal parameters
+    this.queue.push({ url: url, target: target });
     this.schedule();
   },
 
   sendRequest: function (url, params) {
-    if (params.method !== "get") {
-      var idx = url.indexOf("?");
-      params.parameters = url.substring(idx + 1);
-      url = url.substring(0, idx);
-    }
+    const idx = url.indexOf("?");
+    params.parameters = url.substring(idx + 1);
+    url = url.substring(0, idx);
 
     fetch(url, {
       method: "post",
@@ -254,7 +250,6 @@ var FormChecker = {
 
     var next = this.queue.shift();
     this.sendRequest(next.url, {
-      method: next.method,
       onComplete: function (x) {
         x.text().then((responseText) => {
           updateValidationArea(next.target, responseText);
@@ -644,15 +639,14 @@ function registerValidator(e) {
       return url + q.toString();
     }
   };
-  var method = e.getAttribute("checkMethod") || "post";
 
   var url = e.targetUrl();
   try {
-    FormChecker.delayedCheck(url, method, e.targetElement);
+    FormChecker.delayedCheck(url, e.targetElement);
   } catch (x) {
     // this happens if the checkUrl refers to a non-existing element.
     // don't let this kill off the entire JavaScript
-    YAHOO.log(
+    console.warn(
       "Failed to register validation method: " +
         e.getAttribute("checkUrl") +
         " : " +
@@ -664,7 +658,6 @@ function registerValidator(e) {
   var checker = function () {
     const validationArea = this.targetElement;
     FormChecker.sendRequest(this.targetUrl(), {
-      method: method,
       onComplete: function (response) {
         // TODO Add i18n support
         response.text().then((responseText) => {
@@ -850,13 +843,6 @@ function preventInputEe(event) {
   }
 }
 
-function escapeHTML(html) {
-  return html
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
-}
-
 /**
  * Wraps a <button> into YUI button.
  *
@@ -877,7 +863,10 @@ function makeButton(e, onclick) {
   // similar to how the child nodes of a <button> are treated as HTML.
   // in standard HTML, we wouldn't expect the former case, yet here we are!
   if (e.tagName === "INPUT") {
-    attributes.label = escapeHTML(e.value);
+    attributes.label = e.value
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
   }
   var btn = new YAHOO.widget.Button(e, attributes);
   if (onclick != null) btn.addListener("click", onclick);
@@ -1063,11 +1052,22 @@ function helpButtonOnClick() {
   return false;
 }
 
-function isCommandKey(event) {
-  return event.key === "Meta";
+function isGeckoCommandKey() {
+  return Prototype.Browser.Gecko && event.keyCode == 224;
+}
+function isOperaCommandKey() {
+  return Prototype.Browser.Opera && event.keyCode == 17;
+}
+function isWebKitCommandKey() {
+  return (
+    Prototype.Browser.WebKit && (event.keyCode == 91 || event.keyCode == 93)
+  );
+}
+function isCommandKey() {
+  return isGeckoCommandKey() || isOperaCommandKey() || isWebKitCommandKey();
 }
 function isReturnKeyDown() {
-  return event.type == "keydown" && event.key === "Enter";
+  return event.type == "keydown" && event.keyCode == Event.KEY_RETURN;
 }
 function getParentForm(element) {
   if (element == null) throw "not found a parent form";
@@ -1309,10 +1309,10 @@ function rowvgStartEachRow(recursive, f) {
 
           // Mac (Command + Enter)
           if (navigator.userAgent.indexOf("Mac") > -1) {
-            if (event.type == "keydown" && isCommandKey(event)) {
+            if (event.type == "keydown" && isCommandKey()) {
               cmdKeyDown = true;
             }
-            if (event.type == "keyup" && isCommandKey(event)) {
+            if (event.type == "keyup" && isCommandKey()) {
               cmdKeyDown = false;
             }
             if (cmdKeyDown && isReturnKeyDown()) {
@@ -2270,7 +2270,10 @@ function createSearchBox(searchURL) {
 
   // update positions and sizes of the components relevant to search
   function updatePos() {
-    sizer.innerHTML = escapeHTML(box.value);
+    sizer.innerHTML = box.value
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
     var cssWidth,
       offsetWidth = sizer.offsetWidth;
     if (offsetWidth > 0) {

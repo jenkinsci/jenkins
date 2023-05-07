@@ -57,11 +57,6 @@ THE SOFTWARE.
       If @field is specified, this will be inferred automatically,
       which is the recommended approach.
     </st:attribute>
-    <st:attribute name="checkMethod" use="optional" type="String">
-      Specify 'get' (must be lowercase) to change the HTTP method used for the AJAX requests to @checkUrl from a POST to a GET.
-      If any other value is specified then requests will use POST.
-      The historical default was GET and 'post' had to be specified to change that, but this was changed in Jenkins 2.285.
-    </st:attribute>
     <st:attribute name="codemirror-mode">
       Turns this text area into CodeMirror-assisted code editing text area.
       This attribute specifies the mode of CodeMirror, such as "text/x-java".
@@ -93,7 +88,7 @@ THE SOFTWARE.
       <textarea id="${attrs.id}" style="${attrs.style}"
                 name ="${name}"
                 class="jenkins-input ${attrs.checkUrl!=null?'validated':''} ${attrs['codemirror-mode']!=null?'codemirror':''} ${attrs.class}"
-                checkUrl="${attrs.checkUrl}" checkDependsOn="${attrs.checkDependsOn}" checkMethod="${attrs.checkMethod}"
+                checkUrl="${attrs.checkUrl}" checkDependsOn="${attrs.checkDependsOn}"
                 rows="${h.determineRows(value)}"
                 readonly="${attrs.readonly}"
                 codemirror-mode="${attrs['codemirror-mode']}"
