@@ -1,18 +1,42 @@
-import { confirmationLink } from "@/components/modals";
 import behaviorShim from "@/util/behavior-shim";
 
-behaviorShim.specify(
-  "A.confirmation-link",
-  "confirmation-link",
-  0,
-  function (element) {
-    element.onclick = function () {
-      var post = element.getAttribute("data-post");
-      var href = element.getAttribute("data-url");
-      var message = element.getAttribute("data-message");
-      var title = element.getAttribute("data-title");
-      confirmationLink(message, title, href, post);
-      return false;
-    };
+function registerConfirmationLink(element) {
+  const post = element.getAttribute("data-post") === "true";
+  const href = element.getAttribute("data-url");
+  const message = element.getAttribute("data-message");
+  const title = element.getAttribute("data-title");
+  const destructive = element.getAttribute("data-destructive");
+  let type = "default";
+  if (destructive === "true") {
+    type = "destructive";
   }
-);
+
+  element.addEventListener("click", function () {
+    dialog.confirm(message, { title: title, type: type }).then(
+      () => {
+        var form = document.createElement("form");
+        form.setAttribute("method", post ? "POST" : "GET");
+        form.setAttribute("action", href);
+        if (post) {
+          crumb.appendToForm(form);
+        }
+        document.body.appendChild(form);
+        form.submit();
+      },
+      () => {}
+    );
+  });
+}
+
+function init() {
+  behaviorShim.specify(
+    "A.confirmation-link",
+    "confirmation-link",
+    0,
+    (element) => {
+      registerConfirmationLink(element);
+    }
+  );
+}
+
+export default { init };

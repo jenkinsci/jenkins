@@ -32,7 +32,7 @@ window.resetSeed = function (button) {
     warningMessage.removeClassName("visible");
   }
 
-  if (confirm(confirmMessage)) {
+  confirmationDialog(confirmMessage, null, {}, function () {
     fetch(targetUrl, {
       method: "post",
       headers: crumb.wrap({}),
@@ -47,5 +47,5 @@ window.resetSeed = function (button) {
         }
       }
     });
-  }
+  });
 };

@@ -30,7 +30,7 @@ window.revokeToken = function (anchorRevoke) {
   var inputUuid = repeatedChunk.querySelector("input.token-uuid-input");
   var tokenUuid = inputUuid.value;
 
-  if (confirm(confirmMessage)) {
+  confirmationDialog(confirmMessage, null, {}, function () {
     new Ajax.Request(targetUrl, {
       method: "post",
       parameters: { tokenUuid: tokenUuid },
@@ -48,7 +48,7 @@ window.revokeToken = function (anchorRevoke) {
         adjustTokenEmptyListMessage(tokenList);
       },
     });
-  }
+  });
 
   return false;
 };

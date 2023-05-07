@@ -4,35 +4,9 @@ import { CLOSE } from "@/util/symbols";
 const defaults = {
   maxWidth: undefined,
   hideCloseButton: false,
-  okButtonColor: "",
+  okButtonColor: null,
   closeOnClick: true,
 };
-
-export function confirmationLink(message, title, href, post) {
-  var content = createElementFromHtml("<div>" + message + "</div>");
-  var confirmed = function () {
-    var form = document.createElement("form");
-    form.setAttribute("method", post === "true" ? "POST" : "GET");
-    form.setAttribute("action", href);
-    if (post) {
-      crumb.appendToForm(form);
-    }
-    document.body.appendChild(form);
-    form.submit();
-  };
-  var options = {
-    maxWidth: "550px",
-    okButton: "Yes",
-    cancelButton: "Cancel",
-    hideCloseButton: true,
-    title: title,
-    callback: confirmed,
-    okButtonColor: "jenkins-!-destructive-color",
-    closeOnClick: false,
-  };
-  showModal(content, options);
-  return false;
-}
 
 export function showModal(contents, options = {}) {
   options = Object.assign({}, defaults, options);
@@ -70,24 +44,16 @@ export function showModal(contents, options = {}) {
     footer = createElementFromHtml(`
         <div class="jenkins-modal__footer jenkins-buttons-row jenkins-buttons-row--equal-width"></div>
     `);
-    okButton = createElementFromHtml(
-      `
-        <button class="jenkins-button jenkins-button--primary">` +
-        options.okButton +
-        `</button>
-    `
-    );
-    okButton.classList.add(options.okButtonColor);
+    okButton = createElementFromHtml(`
+      <button class="jenkins-button jenkins-button--primary">${options.okButton}</button>`);
+    if (options.okButtonColor !== "" && options.okButtonColor != null) {
+      okButton.classList.add(options.okButtonColor);
+    }
     okButton.addEventListener("click", () => ok());
     footer.appendChild(okButton);
     if ("cancelButton" in options) {
-      cancelButton = createElementFromHtml(
-        `
-          <button class="jenkins-button">` +
-          options.cancelButton +
-          `</button>
-      `
-      );
+      cancelButton = createElementFromHtml(`
+          <button class="jenkins-button">${options.cancelButton}</button>`);
       cancelButton.addEventListener("click", () => closeModal());
       footer.appendChild(cancelButton);
     }

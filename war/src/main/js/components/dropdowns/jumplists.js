@@ -1,7 +1,6 @@
 import Path from "@/util/path";
 import behaviorShim from "@/util/behavior-shim";
 import Utils from "@/components/dropdowns/utils";
-import { confirmationLink } from "@/components/modals";
 
 function init() {
   generateJumplistAccessors();
@@ -90,12 +89,18 @@ function mapChildrenItemsToDropdownItems(items) {
       onClick: () => {
         if (item.post || item.requiresConfirmation) {
           if (item.requiresConfirmation) {
-            confirmationLink(
-              item.message,
-              item.displayName,
-              item.url,
-              item.post
-            );
+            dialog
+              .confirm(item.message, { title: item.displayName })
+              .then(() => {
+                const form = document.createElement("form");
+                form.setAttribute("method", item.post ? "POST" : "GET");
+                form.setAttribute("action", item.url);
+                if (item.post) {
+                  crumb.appendToForm(form);
+                }
+                document.body.appendChild(form);
+                form.submit();
+              });
           } else {
             fetch(item.url, {
               method: "post",

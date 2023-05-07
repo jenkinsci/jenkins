@@ -33,7 +33,7 @@ THE SOFTWARE.
       <l:task href="." icon="symbol-journal" title="${%Log records}"/>
       <l:isAdmin>
         <l:task href="configure" icon="symbol-settings" title="${%Configure}"/>
-        <l:task href="delete" icon="icon-edit-delete icon-md" title="${%Delete}"/>
+        <l:delete title="${%Delete}" message="${%delete.logrecorder(it.displayName)}" />
       </l:isAdmin>
     </l:tasks>
   </l:side-panel>

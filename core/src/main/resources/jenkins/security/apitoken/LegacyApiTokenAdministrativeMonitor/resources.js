@@ -87,14 +87,14 @@ window.confirmAndRevokeAllSelected = function (button) {
 
   if (allCheckedCheckBoxes.length === 0) {
     var nothingSelected = button.getAttribute("data-nothing-selected");
-    alert(nothingSelected);
+    dialog.alert(nothingSelected);
   } else {
     var confirmMessageTemplate = button.getAttribute("data-confirm-template");
     var confirmMessage = confirmMessageTemplate.replace(
       "%num%",
       allCheckedCheckBoxes.length
     );
-    if (confirm(confirmMessage)) {
+    confirmationDialog(confirmMessage, null, {}, function () {
       var url = button.getAttribute("data-url");
       var selectedValues = [];
 
@@ -114,7 +114,7 @@ window.confirmAndRevokeAllSelected = function (button) {
           window.location.reload();
         },
       });
-    }
+    });
   }
 };
 
