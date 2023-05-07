@@ -96,11 +96,6 @@ Behaviour.specify("#filter-box", "_table", 0, function (e) {
       return;
     }
 
-    var pluginI18n = select(".plugins.i18n");
-    function i18n(messageId) {
-      return pluginI18n.getAttribute("data-" + messageId);
-    }
-
     // Create a map of the plugin rows, making it easy to index them.
     var plugins = {};
     for (var i = 0; i < pluginTRs.length; i++) {
@@ -482,6 +477,32 @@ window.addEventListener("load", function () {
     });
   }
 
+  const uninstallButtons = document.querySelectorAll(
+    "[data-action='uninstall']"
+  );
+  uninstallButtons.forEach((uninstallButton) => {
+    uninstallButton.addEventListener("click", () => {
+      const message = uninstallButton.dataset.message;
+      const href = uninstallButton.dataset.href;
+
+      const options = {
+        title: message,
+        type: "destructive",
+      };
+
+      dialog.confirm(i18n("uninstall-description"), options).then(
+        () => {
+          var form = document.createElement("form");
+          form.setAttribute("method", "POST");
+          form.setAttribute("action", href);
+          crumb.appendToForm(form);
+          document.body.appendChild(form);
+          form.submit();
+        },
+        () => {}
+      );
+    });
+  });
   // Show update center error if element exists
   const updateCenterError = document.querySelector("#update-center-error");
   if (updateCenterError) {
@@ -491,3 +512,7 @@ window.addEventListener("load", function () {
     );
   }
 });
+
+function i18n(messageId) {
+  return document.querySelector("#i18n").getAttribute("data-" + messageId);
+}
