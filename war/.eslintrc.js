@@ -26,7 +26,6 @@ module.exports = {
     buildFormTree: "readonly",
     CodeMirror: "readonly",
     ComboBox: "readonly",
-    confirmationDialog: "readonly",
     createFilterMenuButton: "readonly",
     createSearchBox: "readonly",
     crumb: "readonly",

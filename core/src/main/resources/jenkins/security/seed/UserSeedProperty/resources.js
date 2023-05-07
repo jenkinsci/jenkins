@@ -32,7 +32,7 @@ window.resetSeed = function (button) {
     warningMessage.classList.remove("visible");
   }
 
-  confirmationDialog(confirmMessage, null, {}, function () {
+  dialog.confirm(confirmMessage).then(() => {
     fetch(targetUrl, {
       method: "post",
       headers: crumb.wrap({}),
