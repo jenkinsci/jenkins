@@ -18,8 +18,6 @@ src/main/fonts/font-awesome
 src/main/webapp/css/font-awesome
 src/main/fonts/google-fonts/roboto/css/roboto.css
 src/main/webapp/css/google-fonts/roboto/css/roboto.css
-src/main/fonts/icomoon/css/icomoon.css
-src/main/webapp/css/icomoon/css/icomoon.css
 src/main/webapp/jsbundles/
 
 # test files that we don't need formatted
