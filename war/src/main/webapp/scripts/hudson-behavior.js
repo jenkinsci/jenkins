@@ -1787,7 +1787,10 @@ function rowvgStartEachRow(recursive, f) {
             return;
           }
         }
-        fetch(url);
+        fetch(url, {
+          method: "post",
+          headers: crumb.wrap({}),
+        });
       });
     }
   );
@@ -1860,8 +1863,11 @@ function replaceDescription(initialDescription, submissionUrl) {
       submissionUrl: submissionUrl,
     };
   }
-  var urlSearchParams = new URLSearchParams(parameters);
-  fetch("./descriptionForm?" + urlSearchParams).then((rsp) => {
+  fetch("./descriptionForm", {
+    method: "post",
+    headers: crumb.wrap({}),
+    body: objectToUrlFormEncoded(parameters),
+  }).then((rsp) => {
     rsp.text().then((responseText) => {
       d.innerHTML = responseText;
       evalInnerHtmlScripts(responseText, function () {
