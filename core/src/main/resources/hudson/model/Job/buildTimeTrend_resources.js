@@ -45,13 +45,17 @@ window.buildTimeTrend_displayBuilds = function (data) {
       if (e.builtOn) {
         buildInfo = document.createElement("a");
         buildInfo.href = rootURL + "/computer/" + e.builtOn;
-        buildInfo.classList.add("model-link inside");
+        buildInfo.classList.add("model-link", "inside");
         buildInfo.innerText = buildInfoStr;
       } else {
         buildInfo = buildInfoStr;
       }
       td = document.createElement("td");
-      td.innerText = buildInfo;
+      if (buildInfo instanceof Node) {
+        td.appendChild(buildInfo);
+      } else {
+        td.innerText = buildInfo;
+      }
       tr.appendChild(td);
     }
     p.appendChild(tr);
