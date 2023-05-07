@@ -105,13 +105,6 @@ window.confirmAndRevokeAllSelected = function (button) {
         selectedValues.push({ userId: userId, uuid: uuid });
       }
 
-      // Workaround prototype.js breaking JSON.stringify
-      // Given this page is isolated, it's safe to not restore these after to the prototype version
-      delete Array.prototype.toJSON;
-      delete Object.prototype.toJSON;
-      delete Hash.prototype.toJSON;
-      delete String.prototype.toJSON;
-
       fetch(url, {
         method: "post",
         body: JSON.stringify({ values: selectedValues }),
