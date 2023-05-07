@@ -850,6 +850,13 @@ function preventInputEe(event) {
   }
 }
 
+function escapeHTML(html) {
+  return html
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
 /**
  * Wraps a <button> into YUI button.
  *
