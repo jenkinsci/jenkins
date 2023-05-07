@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  */
 window.selectAll = function (anchor) {
-  var parent = anchor.up(".legacy-token-usage");
+  var parent = anchor.closest(".legacy-token-usage");
   var allCheckBoxes = parent.querySelectorAll(".token-to-revoke");
   var concernedCheckBoxes = allCheckBoxes;
 
@@ -30,7 +30,7 @@ window.selectAll = function (anchor) {
 };
 
 window.selectFresh = function (anchor) {
-  var parent = anchor.up(".legacy-token-usage");
+  var parent = anchor.closest(".legacy-token-usage");
   var allCheckBoxes = parent.querySelectorAll(".token-to-revoke");
   var concernedCheckBoxes = parent.querySelectorAll(
     ".token-to-revoke.fresh-token"
@@ -40,7 +40,7 @@ window.selectFresh = function (anchor) {
 };
 
 window.selectRecent = function (anchor) {
-  var parent = anchor.up(".legacy-token-usage");
+  var parent = anchor.closest(".legacy-token-usage");
   var allCheckBoxes = parent.querySelectorAll(".token-to-revoke");
   var concernedCheckBoxes = parent.querySelectorAll(
     ".token-to-revoke.recent-token"
@@ -75,7 +75,7 @@ function checkTheDesiredOne(allCheckBoxes, concernedCheckBoxes) {
 }
 
 window.confirmAndRevokeAllSelected = function (button) {
-  var parent = button.up(".legacy-token-usage");
+  var parent = button.closest(".legacy-token-usage");
   var allCheckBoxes = parent.querySelectorAll(".token-to-revoke");
   var allCheckedCheckBoxes = [];
   for (let i = 0; i < allCheckBoxes.length; i++) {
@@ -94,27 +94,33 @@ window.confirmAndRevokeAllSelected = function (button) {
       "%num%",
       allCheckedCheckBoxes.length
     );
-    confirmationDialog(confirmMessage, null, {}, function () {
-      var url = button.getAttribute("data-url");
-      var selectedValues = [];
+    dialog.confirm(confirmMessage).then(
+      () => {
+        var url = button.getAttribute("data-url");
+        var selectedValues = [];
 
-      for (var i = 0; i < allCheckedCheckBoxes.length; i++) {
-        var checkBox = allCheckedCheckBoxes[i];
-        var userId = checkBox.getAttribute("data-user-id");
-        var uuid = checkBox.getAttribute("data-uuid");
-        selectedValues.push({ userId: userId, uuid: uuid });
-      }
+        for (var i = 0; i < allCheckedCheckBoxes.length; i++) {
+          var checkBox = allCheckedCheckBoxes[i];
+          var userId = checkBox.getAttribute("data-user-id");
+          var uuid = checkBox.getAttribute("data-uuid");
+          selectedValues.push({ userId: userId, uuid: uuid });
+        }
 
-      var params = { values: selectedValues };
-      new Ajax.Request(url, {
-        postBody: Object.toJSON(params),
-        contentType: "application/json",
-        encoding: "UTF-8",
-        onComplete: function () {
-          window.location.reload();
-        },
-      });
-    });
+        // Workaround prototype.js breaking JSON.stringify
+        // Given this page is isolated, it's safe to not restore these after to the prototype version
+        delete Array.prototype.toJSON;
+        delete Object.prototype.toJSON;
+        delete Hash.prototype.toJSON;
+        delete String.prototype.toJSON;
+
+        fetch(url, {
+          method: "post",
+          body: JSON.stringify({ values: selectedValues }),
+          headers: crumb.wrap({ "Content-Type": "application/json" }),
+        }).then(() => window.location.reload());
+      },
+      () => {}
+    );
   }
 };
 
@@ -130,11 +136,11 @@ function onLineClicked(event) {
 }
 
 function onCheckChanged(checkBox) {
-  var line = checkBox.up("tr");
+  var line = checkBox.closest("tr");
   if (checkBox.checked) {
-    line.addClassName("selected");
+    line.classList.add("selected");
   } else {
-    line.removeClassName("selected");
+    line.classList.remove("selected");
   }
 }
 
@@ -143,7 +149,7 @@ function onCheckChanged(checkBox) {
     var allLines = document.querySelectorAll(".legacy-token-usage table tr");
     for (let i = 0; i < allLines.length; i++) {
       let line = allLines[i];
-      if (!line.hasClassName("no-token-line")) {
+      if (!line.classList.contains("no-token-line")) {
         line.onclick = onLineClicked;
       }
     }

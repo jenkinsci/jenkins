@@ -24,6 +24,8 @@
 
 package hudson;
 
+import com.gargoylesoftware.htmlunit.html.DomElement;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -70,5 +72,9 @@ public class PluginManagerUtil {
             new File(dest.getPath() + ".disabled").createNewFile();
         }
         jenkins.pluginManager.dynamicLoad(dest);
+    }
+
+    public static DomElement getCheckForUpdatesButton(HtmlPage page) {
+        return page.getElementById("button-refresh");
     }
 }

@@ -120,7 +120,7 @@ Behaviour.specify(
             });
 
             function o(did) {
-              if (Object.isElement(did)) {
+              if (did instanceof Element) {
                 did = did.getAttribute("descriptorId");
               }
               for (var i = 0; i < templates.length; i++) {

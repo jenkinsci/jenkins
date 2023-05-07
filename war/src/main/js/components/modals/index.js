@@ -37,29 +37,6 @@ export function showModal(contents, options = {}) {
     closeButton.addEventListener("click", () => closeModal());
   }
 
-  let okButton;
-  let cancelButton;
-  let footer;
-  if ("okButton" in options) {
-    footer = createElementFromHtml(`
-        <div class="jenkins-modal__footer jenkins-buttons-row jenkins-buttons-row--equal-width"></div>
-    `);
-    okButton = createElementFromHtml(`
-      <button class="jenkins-button jenkins-button--primary">${options.okButton}</button>`);
-    if (options.okButtonColor !== "" && options.okButtonColor != null) {
-      okButton.classList.add(options.okButtonColor);
-    }
-    okButton.addEventListener("click", () => ok());
-    footer.appendChild(okButton);
-    if ("cancelButton" in options) {
-      cancelButton = createElementFromHtml(`
-          <button class="jenkins-button">${options.cancelButton}</button>`);
-      cancelButton.addEventListener("click", () => closeModal());
-      footer.appendChild(cancelButton);
-    }
-    modal.appendChild(footer);
-  }
-
   modal.querySelector("div").append(contents);
 
   document.querySelector("body").appendChild(modal);
@@ -70,16 +47,6 @@ export function showModal(contents, options = {}) {
     closeModal();
   });
 
-  if (options.closeOnClick) {
-    modal.addEventListener("click", function (e) {
-      if (e.target !== e.currentTarget) {
-        return;
-      }
-
-      closeModal();
-    });
-  }
-
   function closeModal() {
     modal.classList.add("jenkins-modal--hidden");
 
@@ -88,24 +55,9 @@ export function showModal(contents, options = {}) {
     });
   }
 
-  function ok() {
-    if ("callback" in options) {
-      options.callback(modal);
-    }
-    closeModal();
-  }
-
   modal.showModal();
 
   if (closeButton !== undefined) {
     closeButton.blur();
-  }
-
-  if (okButton !== undefined) {
-    okButton.blur();
-  }
-
-  if (cancelButton !== undefined) {
-    cancelButton.blur();
   }
 }

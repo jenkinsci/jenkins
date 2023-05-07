@@ -71,7 +71,7 @@ THE SOFTWARE.
   </j:if>
 
   <j:set var="url" value="doDelete" />
-  <j:if test="${attrs.urlPrefix != ''}">
+  <j:if test="${attrs.urlPrefix != null}">
     <j:set var="url" value="${urlPrefix}/doDelete" />
   </j:if>
 

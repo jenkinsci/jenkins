@@ -84,11 +84,7 @@ function init() {
     },
 
     _close: function () {
-      this.dialog.classList.add("jenkins-dialog--hidden");
-
-      this.dialog.addEventListener("animationEnd", () => {
-        this.dialog.remove();
-      });
+      this.dialog.remove();
     },
 
     _show: function () {

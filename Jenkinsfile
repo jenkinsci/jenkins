@@ -12,6 +12,11 @@ properties([
   disableConcurrentBuilds(abortPrevious: true)
 ])
 
+def axes = [
+  platforms: ['linux', 'windows'],
+  jdks: [11, 17, 19],
+]
+
 stage('Record build') {
   retry(conditions: [kubernetesAgent(handleNonKubernetes: true), nonresumable()], count: 2) {
     node('maven-11') {
@@ -27,6 +32,15 @@ stage('Record build') {
          * TODO Add the commits of the transitive closure of the Jenkins WAR under test to this build.
          */
         launchable("record build --name ${env.BUILD_TAG} --source jenkinsci/jenkins=. --link \"View build in CI\"=${env.BUILD_URL}")
+        axes.values().combinations {
+          def (platform, jdk) = it
+          // TODO https://github.com/jenkins-infra/helpdesk/issues/3484
+          if (platform != 'windows') {
+            def sessionFile = "launchable-session-${platform}-jdk${jdk}.txt"
+            launchable("record session --build ${env.BUILD_TAG} --flavor platform=${platform} --flavor jdk=${jdk} --link \"View session in CI\"=${env.BUILD_URL} >${sessionFile}")
+            stash name: sessionFile, includes: sessionFile
+          }
+        }
       }
 
       /*
@@ -46,10 +60,6 @@ stage('Record build') {
 
 def builds = [:]
 
-def axes = [
-  platforms: ['linux', 'windows'],
-  jdks: [11, 17, 19],
-]
 axes.values().combinations {
   def (platform, jdk) = it
   if (platform == 'windows' && jdk != 17) {
@@ -118,7 +128,8 @@ axes.values().combinations {
             if (folders.length > 1) {
               discoverGitReferenceBuild(scm: folders[1])
             }
-            recordCoverage(tools: [[parser: 'JACOCO', pattern: 'coverage/target/site/jacoco-aggregate/jacoco.xml']], sourceCodeRetention: 'MODIFIED')
+            recordCoverage(tools: [[parser: 'JACOCO', pattern: 'coverage/target/site/jacoco-aggregate/jacoco.xml']],
+            sourceCodeRetention: 'MODIFIED', sourceDirectories: [[path: 'core/src/main/java']])
 
             echo "Recording static analysis results for '${platform.capitalize()}'"
             recordIssues(
@@ -149,11 +160,6 @@ axes.values().combinations {
               skipBlames: true,
               trendChartType: 'TOOLS_ONLY',
               qualityGates: [[threshold: 1, type: 'TOTAL', unstable: true]]])
-            launchable.install()
-            withCredentials([string(credentialsId: 'launchable-jenkins-jenkins', variable: 'LAUNCHABLE_TOKEN')]) {
-              launchable('verify')
-              launchable("record tests --build ${env.BUILD_TAG} --flavor platform=${platform} --flavor jdk=${jdk} --link \"View session in CI\"=${env.BUILD_URL} maven './**/target/surefire-reports'")
-            }
             if (failFast && currentBuild.result == 'UNSTABLE') {
               error 'Static analysis quality gates not passed; halting early'
             }
@@ -165,6 +171,17 @@ axes.values().combinations {
                   allowEmptyArchive: true, // in case we forgot to reincrementalify
                   fingerprint: true
                   )
+            }
+          }
+          // TODO https://github.com/jenkins-infra/helpdesk/issues/3484
+          if (platform != 'windows') {
+            launchable.install()
+            withCredentials([string(credentialsId: 'launchable-jenkins-jenkins', variable: 'LAUNCHABLE_TOKEN')]) {
+              launchable('verify')
+              def sessionFile = "launchable-session-${platform}-jdk${jdk}.txt"
+              unstash sessionFile
+              def session = readFile(sessionFile).trim()
+              launchable("record tests --session ${session} --flavor platform=${platform} --flavor jdk=${jdk} --link \"View session in CI\"=${env.BUILD_URL} maven './**/target/surefire-reports'")
             }
           }
         }

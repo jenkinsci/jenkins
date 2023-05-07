@@ -32,6 +32,7 @@ module.exports = (env, argv) => ({
     "pages/manage-jenkins": [
       path.join(__dirname, "src/main/js/pages/manage-jenkins"),
     ],
+    "pages/register": [path.join(__dirname, "src/main/js/pages/register")],
     "keyboard-shortcuts": [
       path.join(__dirname, "src/main/js/keyboard-shortcuts.js"),
     ],

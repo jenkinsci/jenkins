@@ -85,13 +85,11 @@ THE SOFTWARE.
         <j:set var="help" value="${descriptor.helpFile}" />
 
         <div class="repeated-chunk__header">
-          <j:if test="${attrs.hasHeader}">
-            <div class="${attrs.disableDragAndDrop or readOnlyMode ? '' : 'dd-handle'}"/>
+          <div class="${attrs.disableDragAndDrop or readOnlyMode ? '' : 'dd-handle'}"/>
 
-            ${descriptor.displayName}
+          ${descriptor.displayName}
 
-            <f:helpLink url="${help}"/>
-          </j:if>
+          <f:helpLink url="${help}"/>
 
           <j:if test="${!readOnlyMode}">
             <f:repeatableDeleteButton value="${attrs.deleteCaption}" />
