@@ -69,7 +69,7 @@ function init() {
       if (this.dialogtype === "prompt") {
         this.input.focus();
       } else {
-        this.input.style.display = "none";
+        this.input.parentNode.style.display = "none";
         this.ok.focus();
       }
 
