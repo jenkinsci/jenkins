@@ -1,14 +1,10 @@
-@import (css) "../fonts/font-awesome/css/font-awesome.min.css";
-@import (css) "../fonts/icomoon/css/icomoon.css";
-@import (css) "../fonts/google-fonts/roboto/css/roboto.css";
-
 .bootstrap-3 *,
 .bootstrap-3 [class*="col-"] {
   // simple reset
   margin: initial;
 }
 
-.plugin-setup-wizard() {
+@mixin plugin-setup-wizard {
   position: fixed;
   inset: 0;
   z-index: 1000;
@@ -16,8 +12,7 @@
   text-align: initial;
   font-size: 13px;
 
-  input,
-  password {
+  input {
     // get rid of the ms X (it doesn't fire a change event!), we provide our own
     &::-ms-clear {
       width: 0;
@@ -38,14 +33,14 @@
     }
   }
 
-  .spin(@duration: 2s) {
+  @mixin spin($duration: 2s) {
     animation-name: spin;
-    animation-duration: @duration;
+    animation-duration: $duration;
     animation-iteration-count: infinite;
     animation-timing-function: linear;
   }
 
-  .no-spin() {
+  @mixin no-spin {
     animation-name: none;
   }
 
@@ -425,9 +420,9 @@
             }
           }
 
-          @badge-color: #555;
-          @badge-background: #f8f8f8;
-          @link-color: #337ab7;
+          $badge-color: #555;
+          $badge-background: #f8f8f8;
+          $link-color: #337ab7;
 
           .website-link {
             position: relative;
@@ -444,7 +439,7 @@
             content: "";
             left: 2px;
             top: 3px;
-            background: @badge-color;
+            background: $badge-color;
             border-radius: 4px;
           }
 
@@ -459,7 +454,7 @@
             width: 14px;
             height: 14px;
             border-radius: 2px;
-            color: @badge-background;
+            color: $badge-background;
           }
 
           .website-link:hover::before,
@@ -469,7 +464,7 @@
 
           .website-link:hover::after,
           .website-link:focus::after {
-            color: @link-color;
+            color: $link-color;
             width: 16px;
             height: 16px;
             font-size: 17px;
@@ -482,7 +477,7 @@
             position: absolute;
             top: 0;
             right: 0;
-            color: @badge-color;
+            color: $badge-color;
             border: 0;
             text-decoration: none;
             padding: 5px 13px;
@@ -492,8 +487,8 @@
             .badge {
               margin-left: 7px;
               padding-left: 9px;
-              background: @badge-background;
-              color: @badge-color;
+              background: $badge-background;
+              color: $badge-color;
               box-shadow: 0 0 1px 0 rgba(0, 0, 0, 0.25);
 
               &::after {
@@ -514,7 +509,7 @@
               outline: none;
 
               .badge {
-                background: @badge-color;
+                background: $badge-color;
                 color: #fff;
               }
             }
@@ -541,8 +536,8 @@
             .badge {
               padding: 4px 8px;
               margin: 5px 3px 0 0;
-              background: @badge-background;
-              color: @badge-color;
+              background: $badge-background;
+              color: $badge-color;
               box-shadow: 0 0 1px 0 rgba(0, 0, 0, 0.25);
 
               &::after {
@@ -554,7 +549,7 @@
               &:active,
               &:focus {
                 color: #fff;
-                background: @link-color;
+                background: $link-color;
                 text-decoration: none;
               }
             }
@@ -597,7 +592,7 @@
           background: transparent;
           border: none;
           font-weight: 500;
-          border-radius: none;
+          border-radius: 0;
 
           &::after {
             content: "";
@@ -918,16 +913,15 @@
 
 body .plugin-setup-wizard {
   // need specificity, revisit the CSS inclusion order
-  .plugin-setup-wizard();
+  @include plugin-setup-wizard;
 }
 
-@fb-loader-color: #e6e6e6;
+$fb-loader-color: #e6e6e6;
 
 .loader,
 .loader::before,
 .loader::after {
-  background: @fb-loader-color;
-  -webkit-animation: fb-loader 1s infinite ease-in-out;
+  background: $fb-loader-color;
   animation: fb-loader 1s infinite ease-in-out;
   width: 7px;
   height: 8px;
@@ -942,7 +936,6 @@ body .plugin-setup-wizard {
 
 .loader::before {
   left: -10px;
-  -webkit-animation-delay: -0.32s;
   animation-delay: -0.32s;
 }
 
@@ -952,10 +945,7 @@ body .plugin-setup-wizard {
   margin: -4px auto 0;
   position: relative;
   font-size: 6px;
-  -webkit-transform: translateZ(0);
-  -ms-transform: translateZ(0);
   transform: translateZ(0);
-  -webkit-animation-delay: -0.16s;
   animation-delay: -0.16s;
 }
 
@@ -963,30 +953,16 @@ body .plugin-setup-wizard {
   left: 10px;
 }
 
-@-webkit-keyframes fb-loader {
-  0%,
-  80%,
-  100% {
-    box-shadow: 0 0 @fb-loader-color;
-    height: 4em;
-  }
-
-  40% {
-    box-shadow: 0 -2em @fb-loader-color;
-    height: 5em;
-  }
-}
-
 @keyframes fb-loader {
   0%,
   80%,
   100% {
-    box-shadow: 0 0 @fb-loader-color;
+    box-shadow: 0 0 $fb-loader-color;
     height: 4em;
   }
 
   40% {
-    box-shadow: 0 -2em @fb-loader-color;
+    box-shadow: 0 -2em $fb-loader-color;
     height: 5em;
   }
 }

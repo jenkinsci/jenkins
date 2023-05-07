@@ -1,7 +1,6 @@
 module.exports = {
   extends: "stylelint-config-standard",
   customSyntax: "postcss-scss",
-  ignoreFiles: ["src/main/scss/pluginSetupWizard.less"],
   rules: {
     "no-descending-specificity": null,
     "selector-class-pattern": "[a-z]",

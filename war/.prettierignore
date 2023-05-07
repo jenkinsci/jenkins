@@ -30,6 +30,3 @@ src/main/webapp/jsbundles/
 *.hbs
 
 .yarn
-
-# TODO not sure why this fails
-src/main/less/abstracts/theme.less
