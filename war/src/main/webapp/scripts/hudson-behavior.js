@@ -219,23 +219,19 @@ var FormChecker = {
    *
    * @param url
    *      Remote doXYZ URL that performs the check. Query string should include the field value.
-   * @param method
-   *      HTTP method. GET or POST. I haven't confirmed specifics, but some browsers seem to cache GET requests.
    * @param target
    *      HTML element whose innerHTML will be overwritten when the check is completed.
    */
-  delayedCheck: function (url, method, target) {
-    if (url == null || method == null || target == null) return; // don't know whether we should throw an exception or ignore this. some broken plugins have illegal parameters
-    this.queue.push({ url: url, method: method, target: target });
+  delayedCheck: function (url, target) {
+    if (url == null || target == null) return; // don't know whether we should throw an exception or ignore this. some broken plugins have illegal parameters
+    this.queue.push({ url: url, target: target });
     this.schedule();
   },
 
   sendRequest: function (url, params) {
-    if (params.method !== "get") {
-      var idx = url.indexOf("?");
-      params.parameters = url.substring(idx + 1);
-      url = url.substring(0, idx);
-    }
+    const idx = url.indexOf("?");
+    params.parameters = url.substring(idx + 1);
+    url = url.substring(0, idx);
 
     fetch(url, {
       method: "post",
@@ -254,7 +250,6 @@ var FormChecker = {
 
     var next = this.queue.shift();
     this.sendRequest(next.url, {
-      method: next.method,
       onComplete: function (x) {
         x.text().then((responseText) => {
           updateValidationArea(next.target, responseText);
@@ -644,15 +639,14 @@ function registerValidator(e) {
       return url + q.toString();
     }
   };
-  var method = e.getAttribute("checkMethod") || "post";
 
   var url = e.targetUrl();
   try {
-    FormChecker.delayedCheck(url, method, e.targetElement);
+    FormChecker.delayedCheck(url, e.targetElement);
   } catch (x) {
     // this happens if the checkUrl refers to a non-existing element.
     // don't let this kill off the entire JavaScript
-    YAHOO.log(
+    console.warn(
       "Failed to register validation method: " +
         e.getAttribute("checkUrl") +
         " : " +
@@ -664,7 +658,6 @@ function registerValidator(e) {
   var checker = function () {
     const validationArea = this.targetElement;
     FormChecker.sendRequest(this.targetUrl(), {
-      method: method,
       onComplete: function (response) {
         // TODO Add i18n support
         response.text().then((responseText) => {
