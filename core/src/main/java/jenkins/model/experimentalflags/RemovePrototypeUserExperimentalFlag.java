@@ -38,7 +38,7 @@ public final class RemovePrototypeUserExperimentalFlag extends BooleanUserExperi
     @NonNull
     @Override
     public Boolean getDefaultValue() {
-        return false;
+        return true;
     }
 
     @Override
