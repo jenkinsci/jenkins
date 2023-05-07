@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2018, CloudBees, Inc.
+ * Copyright (c) 2023, CloudBees Inc, and other contributors
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,28 +22,48 @@
  * THE SOFTWARE.
  */
 
-form.signup {
-  max-width: 480px;
-  width: 100%;
-}
+package jenkins.agents;
 
-.inputHeader {
-  display: flex;
-  justify-content: space-between;
-}
-#showPassword {
-  width: unset;
-  margin-right: 5px;
-}
-.combinedElement {
-  display: flex;
-  align-items: center;
-}
+import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.Extension;
+import hudson.model.ManagementLink;
+import hudson.security.Permission;
+import jenkins.model.Jenkins;
+import org.jenkinsci.Symbol;
 
-#passwordStrengthWrapper {
-  margin-top: 4px;
-}
+@Extension
+@Symbol("clouds")
+public class CloudsLink extends ManagementLink {
 
-.password {
-  width: 98%;
+    @Override
+    public String getDisplayName() {
+        return Messages.CloudsLink_DisplayName();
+    }
+
+    @Override
+    public String getDescription() {
+        return Messages.CloudsLink_Description();
+    }
+
+    @Override
+    public String getIconFileName() {
+        return "symbol-cloud";
+    }
+
+    @Override
+    public String getUrlName() {
+        return "cloud";
+    }
+
+    @NonNull
+    @Override
+    public Category getCategory() {
+        return Category.CONFIGURATION;
+    }
+
+    @NonNull
+    @Override
+    public Permission getRequiredPermission() {
+        return Jenkins.SYSTEM_READ;
+    }
 }
