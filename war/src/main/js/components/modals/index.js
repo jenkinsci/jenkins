@@ -4,8 +4,6 @@ import { CLOSE } from "@/util/symbols";
 const defaults = {
   maxWidth: undefined,
   hideCloseButton: false,
-  okButtonColor: null,
-  closeOnClick: true,
 };
 
 export function showModal(contents, options = {}) {
@@ -37,12 +35,20 @@ export function showModal(contents, options = {}) {
     closeButton.addEventListener("click", () => closeModal());
   }
 
-  modal.querySelector("div").append(contents);
+  modal.querySelector("div").appendChild(contents);
 
   document.querySelector("body").appendChild(modal);
 
   modal.addEventListener("cancel", (e) => {
     e.preventDefault();
+
+    closeModal();
+  });
+
+  modal.addEventListener("click", function (e) {
+    if (e.target !== e.currentTarget) {
+      return;
+    }
 
     closeModal();
   });
