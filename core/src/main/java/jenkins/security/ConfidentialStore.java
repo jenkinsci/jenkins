@@ -68,8 +68,6 @@ public abstract class ConfidentialStore {
      * Retrieves the currently active singleton instance of {@link ConfidentialStore}.
      */
     public static @NonNull ConfidentialStore get() {
-        if (TEST != null) return TEST.get();
-
         Jenkins j = Jenkins.getInstanceOrNull();
         if (j == null) {
             return Mock.INSTANCE;
@@ -99,12 +97,6 @@ public abstract class ConfidentialStore {
         }
         return cs;
     }
-
-   /**
-     * @deprecated No longer needed.
-     */
-    @Deprecated
-    /*package*/ static ThreadLocal<ConfidentialStore> TEST = null;
 
     static final class Mock extends ConfidentialStore {
 

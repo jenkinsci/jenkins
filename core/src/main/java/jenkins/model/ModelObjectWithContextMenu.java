@@ -9,6 +9,7 @@ import hudson.model.Computer;
 import hudson.model.Job;
 import hudson.model.ModelObject;
 import hudson.model.Node;
+import hudson.slaves.Cloud;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -218,6 +219,13 @@ public interface ModelObjectWithContextMenu extends ModelObject {
                 .withDisplayName(c.getDisplayName())
                 .withIconClass(c.getIconClassName())
                 .withContextRelativeUrl(c.getUrl()));
+        }
+
+        public ContextMenu add(Cloud c) {
+            return add(new MenuItem()
+                    .withDisplayName(c.getDisplayName())
+                    .withIconClass(c.getIconClassName())
+                    .withContextRelativeUrl(c.getUrl()));
         }
 
         /**
