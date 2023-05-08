@@ -44,7 +44,7 @@ var repeatableSupport = {
     // nc = document.importNode(node,true);
     var nc = document.createElement("div");
     nc.className = "repeated-chunk";
-    nc.setOpacity(0);
+    nc.style.opacity = 0;
     nc.setAttribute("name", this.name);
     nc.innerHTML = this.blockHTML;
     if (!addOnTop) {

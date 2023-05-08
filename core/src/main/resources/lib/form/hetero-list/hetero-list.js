@@ -37,10 +37,7 @@ Behaviour.specify(
       // YUI Menu interprets this <option> text node as HTML, so let's escape it again!
       var title = n.getAttribute("title");
       if (title) {
-        title = title
-          .replace(/&/g, "&amp;")
-          .replace(/</g, "&lt;")
-          .replace(/>/g, "&gt;");
+        title = escapeHTML(title);
       }
       menu.options[i] = new Option(title, "" + i);
       templates.push({
