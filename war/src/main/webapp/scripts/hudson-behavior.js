@@ -640,6 +640,14 @@ function registerValidator(e) {
     }
   };
 
+  var deprecatedMethodAttribute = e.getAttribute("checkMethod");
+  if (deprecatedMethodAttribute) {
+    console.warn(
+      "checkMethod attribute is deprecated, it no longer does anything and can be safely removed.",
+      e
+    );
+  }
+
   var url = e.targetUrl();
   try {
     FormChecker.delayedCheck(url, e.targetElement);
