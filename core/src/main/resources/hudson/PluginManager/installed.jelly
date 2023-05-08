@@ -292,7 +292,9 @@ THE SOFTWARE.
             headers: crumb.wrap({}),
           }).then(rsp => {
             if (!rsp.ok) {
-              document.getElementById('needRestart').innerHTML = req.responseText;
+              rsp.text().then((responseText) => {
+                document.getElementById('needRestart').innerHTML = responseText;
+              });
             }
             updateMsg();
           })
