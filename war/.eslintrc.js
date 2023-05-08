@@ -30,6 +30,7 @@ module.exports = {
     createSearchBox: "readonly",
     crumb: "readonly",
     ensureVisible: "readonly",
+    escapeHTML: "readonly",
     findAncestor: "readonly",
     findAncestorClass: "readonly",
     findElementsBySelector: "readonly",
