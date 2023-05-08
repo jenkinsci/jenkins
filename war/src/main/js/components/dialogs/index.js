@@ -118,7 +118,7 @@ function init() {
         message: message,
         dialogtype: "alert",
       };
-      options = { ...defaults, ...options };
+      options = Object.assign({}, defaults, options);
       this._init(options);
       this._show()
         .then()
@@ -132,7 +132,7 @@ function init() {
         okText: "Yes",
         cancel: true,
       };
-      options = { ...defaults, ...options };
+      options = Object.assign({}, defaults, options);
       this._init(options);
       return this._show();
     },
@@ -144,7 +144,7 @@ function init() {
         minWidth: "400px",
         cancel: true,
       };
-      options = { ...defaults, ...options };
+      options = Object.assign({}, defaults, options);
       this._init(options);
       return this._show();
     },
