@@ -1046,22 +1046,11 @@ function helpButtonOnClick() {
   return false;
 }
 
-function isGeckoCommandKey() {
-  return Prototype.Browser.Gecko && event.keyCode == 224;
-}
-function isOperaCommandKey() {
-  return Prototype.Browser.Opera && event.keyCode == 17;
-}
-function isWebKitCommandKey() {
-  return (
-    Prototype.Browser.WebKit && (event.keyCode == 91 || event.keyCode == 93)
-  );
-}
-function isCommandKey() {
-  return isGeckoCommandKey() || isOperaCommandKey() || isWebKitCommandKey();
+function isCommandKey(event) {
+  return event.key === "Meta";
 }
 function isReturnKeyDown() {
-  return event.type == "keydown" && event.keyCode == Event.KEY_RETURN;
+  return event.type == "keydown" && event.key === "Enter";
 }
 function getParentForm(element) {
   if (element == null) throw "not found a parent form";
@@ -1303,10 +1292,10 @@ function rowvgStartEachRow(recursive, f) {
 
           // Mac (Command + Enter)
           if (navigator.userAgent.indexOf("Mac") > -1) {
-            if (event.type == "keydown" && isCommandKey()) {
+            if (event.type == "keydown" && isCommandKey(event)) {
               cmdKeyDown = true;
             }
-            if (event.type == "keyup" && isCommandKey()) {
+            if (event.type == "keyup" && isCommandKey(event)) {
               cmdKeyDown = false;
             }
             if (cmdKeyDown && isReturnKeyDown()) {
