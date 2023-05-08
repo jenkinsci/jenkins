@@ -843,6 +843,13 @@ function preventInputEe(event) {
   }
 }
 
+function escapeHTML(html) {
+  return html
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
 /**
  * Wraps a <button> into YUI button.
  *
@@ -863,10 +870,7 @@ function makeButton(e, onclick) {
   // similar to how the child nodes of a <button> are treated as HTML.
   // in standard HTML, we wouldn't expect the former case, yet here we are!
   if (e.tagName === "INPUT") {
-    attributes.label = e.value
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;");
+    attributes.label = escapeHTML(e.value);
   }
   var btn = new YAHOO.widget.Button(e, attributes);
   if (onclick != null) btn.addListener("click", onclick);
@@ -1052,22 +1056,11 @@ function helpButtonOnClick() {
   return false;
 }
 
-function isGeckoCommandKey() {
-  return Prototype.Browser.Gecko && event.keyCode == 224;
-}
-function isOperaCommandKey() {
-  return Prototype.Browser.Opera && event.keyCode == 17;
-}
-function isWebKitCommandKey() {
-  return (
-    Prototype.Browser.WebKit && (event.keyCode == 91 || event.keyCode == 93)
-  );
-}
-function isCommandKey() {
-  return isGeckoCommandKey() || isOperaCommandKey() || isWebKitCommandKey();
+function isCommandKey(event) {
+  return event.key === "Meta";
 }
 function isReturnKeyDown() {
-  return event.type == "keydown" && event.keyCode == Event.KEY_RETURN;
+  return event.type == "keydown" && event.key === "Enter";
 }
 function getParentForm(element) {
   if (element == null) throw "not found a parent form";
@@ -1309,10 +1302,10 @@ function rowvgStartEachRow(recursive, f) {
 
           // Mac (Command + Enter)
           if (navigator.userAgent.indexOf("Mac") > -1) {
-            if (event.type == "keydown" && isCommandKey()) {
+            if (event.type == "keydown" && isCommandKey(event)) {
               cmdKeyDown = true;
             }
-            if (event.type == "keyup" && isCommandKey()) {
+            if (event.type == "keyup" && isCommandKey(event)) {
               cmdKeyDown = false;
             }
             if (cmdKeyDown && isReturnKeyDown()) {
@@ -2270,10 +2263,7 @@ function createSearchBox(searchURL) {
 
   // update positions and sizes of the components relevant to search
   function updatePos() {
-    sizer.innerHTML = box.value
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;");
+    sizer.innerHTML = escapeHTML(box.value);
     var cssWidth,
       offsetWidth = sizer.offsetWidth;
     if (offsetWidth > 0) {
