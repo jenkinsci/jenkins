@@ -28,7 +28,7 @@ Behaviour.specify("TEXTAREA.codemirror", "textarea", 0, function (e) {
   // the form needs to be populated before the "Apply" button
   if (e.closest("form")) {
     // Protect against undefined element
-    Element.on(e.closest("form"), "jenkins:apply", function () {
+    e.closest("form").addEventListener("jenkins:apply", function () {
       e.value = codemirror.getValue();
     });
   }
