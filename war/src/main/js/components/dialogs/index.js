@@ -114,35 +114,38 @@ function init() {
     },
 
     alert: function (message, options) {
-      this._init({
+      const defaults = {
         message: message,
         dialogtype: "alert",
-        ...options,
-      });
+      };
+      options = { ...defaults, ...options };
+      this._init(options);
       this._show()
         .then()
         .catch(() => {});
     },
 
     confirm: function (message, options) {
-      this._init({
+      const defaults = {
         message: message,
         dialogtype: "confirm",
         okText: "Yes",
         cancel: true,
-        ...options,
-      });
+      };
+      options = { ...defaults, ...options };
+      this._init(options);
       return this._show();
     },
 
     prompt: function (message, options) {
-      this._init({
+      const defaults = {
         message: message,
         dialogtype: "prompt",
         minWidth: "400px",
         cancel: true,
-        ...options,
-      });
+      };
+      options = { ...defaults, ...options };
+      this._init(options);
       return this._show();
     },
   };
