@@ -26,6 +26,7 @@
 package hudson.model;
 
 import static hudson.init.InitMilestone.JOB_CONFIG_ADAPTED;
+import static hudson.model.Item.CANCEL;
 import static hudson.util.Iterators.reverse;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -1930,25 +1931,32 @@ public class Queue extends ResourceController implements Saveable {
          * Checks the permission to see if the current user can abort this executable.
          * Returns normally from this method if it's OK.
          * <p>
-         * NOTE: If you have implemented {@link AccessControlled} this should just be
+         * NOTE: If you have implemented {@link AccessControlled} this defaults to
          * {@code checkPermission(hudson.model.Item.CANCEL);}
          *
          * @throws AccessDeniedException if the permission is not granted.
          */
-        default void checkAbortPermission() {}
+        default void checkAbortPermission() {
+            if (this instanceof AccessControlled) {
+                ((AccessControlled) this).checkPermission(CANCEL);
+            }
+        }
 
         /**
          * Works just like {@link #checkAbortPermission()} except it indicates the status by a return value,
          * instead of exception.
          * Also used by default for {@link hudson.model.Queue.Item#hasCancelPermission}.
          * <p>
-         * NOTE: If you have implemented {@link AccessControlled} this should just be
+         * NOTE: If you have implemented {@link AccessControlled} this returns by default
          * {@code return hasPermission(hudson.model.Item.CANCEL);}
          *
          * @return false
          *      if the user doesn't have the permission.
          */
         default boolean hasAbortPermission() {
+            if (this instanceof AccessControlled) {
+                return ((AccessControlled) this).hasPermission(CANCEL);
+            }
             return true;
         }
 
