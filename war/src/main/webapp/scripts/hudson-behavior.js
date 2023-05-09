@@ -228,29 +228,33 @@ var FormChecker = {
    * @param url
    *      Remote doXYZ URL that performs the check. Query string should include the field value.
    * @param method
-   *     Unused, kept to maintain compatibility with the old signature.
+   *      HTTP method. GET or POST. I haven't confirmed specifics, but some browsers seem to cache GET requests.
    * @param target
    *      HTML element whose innerHTML will be overwritten when the check is completed.
    */
   delayedCheck: function (url, method, target) {
-    if (url == null || target == null) {
+    if (url == null || method == null || target == null) {
       return; // don't know whether we should throw an exception or ignore this. some broken plugins have illegal parameters
     }
-    this.queue.push({ url: url, target: target });
+    this.queue.push({ url: url, method: method, target: target });
     this.schedule();
   },
 
   sendRequest: function (url, params) {
-    const idx = url.indexOf("?");
-    params.parameters = url.substring(idx + 1);
-    url = url.substring(0, idx);
+    if (params.method !== "get") {
+      const idx = url.indexOf("?");
+      params.parameters = url.substring(idx + 1);
+      url = url.substring(0, idx);
+    }
 
-    fetch(url, {
-      method: "post",
+    const method = (params.method || "post").toLowerCase();
+    const parsedUrl = method === "get" ? `${url}?${params.parameters}` : url;
+    fetch(parsedUrl, {
+      method,
       headers: crumb.wrap({
         "Content-Type": "application/x-www-form-urlencoded",
       }),
-      body: params.parameters,
+      body: method !== "get" ? params.parameters : null,
     }).then((response) => {
       params.onComplete(response);
     });
@@ -266,6 +270,7 @@ var FormChecker = {
 
     var next = this.queue.shift();
     this.sendRequest(next.url, {
+      method: next.method,
       onComplete: function (x) {
         x.text().then((responseText) => {
           updateValidationArea(next.target, responseText);
