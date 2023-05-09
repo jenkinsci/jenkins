@@ -227,10 +227,12 @@ var FormChecker = {
    *
    * @param url
    *      Remote doXYZ URL that performs the check. Query string should include the field value.
+   * @param method
+   *     Unused, kept to maintain compatibility with the old signature.
    * @param target
    *      HTML element whose innerHTML will be overwritten when the check is completed.
    */
-  delayedCheck: function (url, target) {
+  delayedCheck: function (url, method, target) {
     if (url == null || target == null) {
       return; // don't know whether we should throw an exception or ignore this. some broken plugins have illegal parameters
     }
@@ -258,7 +260,7 @@ var FormChecker = {
     if (this.inProgress >= this.maxParallel) {
       return;
     }
-    if (this.queue.length == 0) {
+    if (this.queue.length === 0) {
       return;
     }
 
@@ -266,8 +268,6 @@ var FormChecker = {
     this.sendRequest(next.url, {
       onComplete: function (x) {
         x.text().then((responseText) => {
-          console.log('next.target', next.target)
-          console.log('responseText', responseText)
           updateValidationArea(next.target, responseText);
           FormChecker.inProgress--;
           FormChecker.schedule();
@@ -706,7 +706,7 @@ function registerValidator(e) {
 
   var url = e.targetUrl();
   try {
-    FormChecker.delayedCheck(url, e.targetElement);
+    FormChecker.delayedCheck(url, null, e.targetElement);
   } catch (x) {
     // this happens if the checkUrl refers to a non-existing element.
     // don't let this kill off the entire JavaScript
