@@ -1282,6 +1282,20 @@ var createPluginSetupWizard = function (appendTarget) {
   // do this so the page isn't blank while doing connectivity checks and other downloads
   setPanel(loadingPanel);
 
+  /* exported defaultUpdateSiteId */
+  var defaultUpdateSiteId = function () {
+    var defaultSiteId = document
+      .querySelector("#default-site-id")
+      .getAttribute("data-default-update-site-id");
+    return defaultSiteId ? defaultSiteId.replace("'", "") : "default";
+  };
+
+  var setupWizardExtensions = [];
+  // eslint-disable-next-line no-unused-vars
+  var onSetupWizardInitialized = function (extension) {
+    setupWizardExtensions.push(extension);
+  };
+
   // Process extensions
   var extensionTranslationOverrides = [];
   if ("undefined" !== typeof setupWizardExtensions) {
