@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2018, CloudBees, Inc.
+ * Copyright (c) 2023, CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,28 +22,33 @@
  * THE SOFTWARE.
  */
 
-form.signup {
-  max-width: 480px;
-  width: 100%;
-}
+package jenkins.model.experimentalflags;
 
-.inputHeader {
-  display: flex;
-  justify-content: space-between;
-}
-#showPassword {
-  width: unset;
-  margin-right: 5px;
-}
-.combinedElement {
-  display: flex;
-  align-items: center;
-}
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
+import hudson.Extension;
 
-#passwordStrengthWrapper {
-  margin-top: 4px;
-}
+@Extension
+public final class RemovePrototypeUserExperimentalFlag extends BooleanUserExperimentalFlag {
 
-.password {
-  width: 98%;
+    public RemovePrototypeUserExperimentalFlag() {
+        super("remove-prototype.flag");
+    }
+
+    @NonNull
+    @Override
+    public Boolean getDefaultValue() {
+        return false;
+    }
+
+    @Override
+    public String getDisplayName() {
+        return "Remove Prototype.js";
+    }
+
+    @Nullable
+    @Override
+    public String getShortDescription() {
+        return "Remove Prototype.js from all Jenkins UI pages. This will break anything that depends on Prototype.js.";
+    }
 }
