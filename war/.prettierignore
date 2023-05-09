@@ -16,8 +16,6 @@ src/main/webapp/scripts/yui
 src/main/webapp/scripts/prototype.js
 src/main/fonts/font-awesome
 src/main/webapp/css/font-awesome
-src/main/fonts/icomoon/css/icomoon.css
-src/main/webapp/css/icomoon/css/icomoon.css
 src/main/webapp/jsbundles/
 
 # test files that we don't need formatted
