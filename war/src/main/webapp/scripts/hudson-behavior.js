@@ -1110,7 +1110,7 @@ function helpButtonOnClick() {
           }
         } else {
           div.innerHTML =
-            "<b>ERROR</b>: Failed to load help file: " + responseText;
+            "<b>ERROR</b>: Failed to load help file: " + rsp.statusText;
         }
         layoutUpdateCallback.call();
       });
