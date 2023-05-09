@@ -266,6 +266,8 @@ var FormChecker = {
     this.sendRequest(next.url, {
       onComplete: function (x) {
         x.text().then((responseText) => {
+          console.log('next.target', next.target)
+          console.log('responseText', responseText)
           updateValidationArea(next.target, responseText);
           FormChecker.inProgress--;
           FormChecker.schedule();
