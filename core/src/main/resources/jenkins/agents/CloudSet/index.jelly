@@ -27,8 +27,7 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
-  <l:layout title="${it.displayName}">
-    <st:include page="sidepanel.jelly" />
+  <l:layout title="${it.displayName}" type="one-column">
     <l:main-panel>
       <j:choose>
         <j:when test="${it.cloudAvailable and it.hasClouds()}">
