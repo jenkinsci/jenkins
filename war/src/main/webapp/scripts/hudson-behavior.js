@@ -707,7 +707,7 @@ function registerValidator(e) {
       onComplete: function (response) {
         // TODO Add i18n support
         response.text().then((responseText) => {
-          const errorMessage = `<div class="error">An internal error occurred during form field validation (HTTP ${status}). Please reload the page and if the problem persists, ask the administrator for help.</div>`;
+          const errorMessage = `<div class="error">An internal error occurred during form field validation (HTTP ${response.status}). Please reload the page and if the problem persists, ask the administrator for help.</div>`;
           updateValidationArea(
             validationArea,
             response.status === 200 ? responseText : errorMessage
