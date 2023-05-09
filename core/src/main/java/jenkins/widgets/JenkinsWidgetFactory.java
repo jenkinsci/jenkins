@@ -35,7 +35,6 @@ import org.kohsuke.accmod.restrictions.DoNotUse;
 
 /**
  * Add widgets annotated with @Extension, or added manually to Jenkins via <code>Jenkins.get().getWidgets().add(...)</code>
- * @since TODO
  */
 @Extension
 @Restricted(DoNotUse.class)
