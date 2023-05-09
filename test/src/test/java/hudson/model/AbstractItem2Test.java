@@ -62,7 +62,15 @@ public class AbstractItem2Test {
         sessions.then(j -> {
                 FreeStyleProject p1 = j.jenkins.getItemByFullName("p1", FreeStyleProject.class);
                 FreeStyleProject p2 = j.jenkins.getItemByFullName("p2", FreeStyleProject.class);
-                assertEquals(/* does not work yet: p1 */ null, p2.getProperty(BadProperty.class).other);
+                /*
+                 * AbstractItem.Replacer.readResolve() is racy, as its comments acknowledge. Jobs
+                 * are loaded in parallel, and p1 may not have been loaded yet when we are loading
+                 * p2. The only way for this test to work reliably is to reload p2 after p1 has
+                 * already been loaded, thus assuring that p2's reference to p1 can be properly
+                 * deserialized.
+                 */
+                p2.doReload();
+                assertEquals(p1, p2.getProperty(BadProperty.class).other);
         });
     }
 

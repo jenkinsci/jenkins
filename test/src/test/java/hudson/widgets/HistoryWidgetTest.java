@@ -1,5 +1,10 @@
 package hudson.widgets;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+import com.gargoylesoftware.htmlunit.html.DomNode;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.model.FreeStyleProject;
 import org.junit.Rule;
 import org.junit.Test;
@@ -24,4 +29,23 @@ public class HistoryWidgetTest {
         wc.goTo("job/" + p.getName() + "/buildHistory/all");
     }
 
+    @Test
+    public void displayFilterInput() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+        JenkinsRule.WebClient wc = j.createWebClient();
+
+        { // Filter input shouldn't display when there's no build
+            HtmlPage page = wc.goTo("job/" + p.getName());
+            DomNode searchInputContainer = page.querySelector(".jenkins-search");
+            assertTrue(searchInputContainer.getAttributes().getNamedItem("class").getNodeValue().contains("jenkins-hidden"));
+        }
+
+        j.buildAndAssertSuccess(p);  // Add a build
+
+        { // Filter input should display when there's a build
+            HtmlPage page = wc.goTo("job/" + p.getName());
+            DomNode searchInputContainer = page.querySelector(".jenkins-search");
+            assertFalse(searchInputContainer.getAttributes().getNamedItem("class").getNodeValue().contains("jenkins-hidden"));
+        }
+    }
 }

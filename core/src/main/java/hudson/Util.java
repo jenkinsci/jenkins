@@ -924,6 +924,8 @@ public class Util {
      * All characters outside numbers and letters without diacritic are encoded.
      * Note that slash ({@code /}) is encoded, so the given string should be a
      * single path component used in constructing a URL.
+     *
+     * @since 2.308
      */
     @NonNull
     public static String fullEncode(@NonNull String s) {
@@ -1108,7 +1110,7 @@ public class Util {
      */
     @CheckForNull
     public static String fixEmpty(@CheckForNull String s) {
-        if (s == null || s.length() == 0)    return null;
+        if (s == null || s.isEmpty())    return null;
         return s;
     }
 
@@ -1485,7 +1487,7 @@ public class Util {
      */
     @CheckForNull
     public static Number tryParseNumber(@CheckForNull String numberStr, @CheckForNull Number defaultNumber) {
-        if (numberStr == null || numberStr.length() == 0) {
+        if (numberStr == null || numberStr.isEmpty()) {
             return defaultNumber;
         }
         try {

@@ -31,6 +31,7 @@ THE SOFTWARE.
   <l:layout permission="${it.EXTENDED_READ}" title="${it.displayName}">
     <j:set var="readOnlyMode" value="${!h.hasPermission(it, it.CONFIGURE)}" />
     <st:include page="sidepanel.jelly"/>
+    <l:breadcrumb title="${%Configure}" />
     <l:main-panel>
       <f:form method="post" action="configSubmit" name="config">
         <j:set var="instance" value="${it.node}" />
@@ -55,9 +56,9 @@ THE SOFTWARE.
         <f:descriptorList title="${%Node Properties}" descriptors="${h.getNodePropertyDescriptors(descriptor.clazz)}" field="nodeProperties" />
 
         <l:hasPermission permission="${it.CONFIGURE}">
-          <f:block>
+          <f:bottomButtonBar>
             <f:submit value="${%Save}"/>
-          </f:block>
+          </f:bottomButtonBar>
         </l:hasPermission>
       </f:form>
     </l:main-panel>

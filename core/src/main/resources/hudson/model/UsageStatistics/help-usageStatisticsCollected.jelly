@@ -11,7 +11,7 @@
         <p>Jenkins reports the following general usage statistics:</p>
         <ul>
             <li>Your Jenkins version</li>
-            <li>For your master and each agent, the OS type and number of executors</li>
+            <li>For your controller and each agent, the OS type and number of executors</li>
             <li>Installed plugins and their versions</li>
             <li>Number of items (like jobs) of each item type</li>
         </ul>

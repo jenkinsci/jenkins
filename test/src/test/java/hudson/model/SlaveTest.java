@@ -32,7 +32,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assume.assumeThat;
 
 import com.gargoylesoftware.htmlunit.Page;
@@ -160,13 +160,7 @@ public class SlaveTest {
     private void assertJnlpJarUrlFails(@NonNull Slave slave, @NonNull String url) throws Exception {
         // Raw access to API
         Slave.JnlpJar jnlpJar = slave.getComputer().getJnlpJars(url);
-        try {
-            jnlpJar.getURL();
-        } catch (MalformedURLException ex) {
-            // we expect the exception here
-            return;
-        }
-        fail("Expected the MalformedURLException for " + url);
+        assertThrows(MalformedURLException.class, () -> jnlpJar.getURL());
     }
 
     private void assertJnlpJarUrlIsAllowed(@NonNull Slave slave, @NonNull String url) throws Exception {

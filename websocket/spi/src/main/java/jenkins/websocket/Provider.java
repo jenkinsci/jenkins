@@ -47,7 +47,9 @@ interface Provider {
 
     interface Listener {
 
-        void onWebSocketConnect();
+        void onWebSocketConnect(Object providerSession);
+
+        Object getProviderSession();
 
         void onWebSocketClose(int statusCode, String reason);
 
@@ -67,7 +69,7 @@ interface Provider {
 
         Future<Void> sendText(String text) throws IOException;
 
-        void sendPing(ByteBuffer applicationData) throws IOException;
+        Future<Void> sendPing(ByteBuffer applicationData) throws IOException;
 
         void close() throws IOException;
 

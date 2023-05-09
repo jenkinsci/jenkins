@@ -63,11 +63,18 @@ document.addEventListener("DOMContentLoaded", function () {
     filterInput.parentElement.classList.add("jenkins-search--loading");
   });
 
-  filterInput.focus();
-
   applyFilter(filterInput.value);
 
   setTimeout(function () {
     layoutUpdateCallback.call();
   }, 350);
+
+  // Show update center error if element exists
+  const updateCenterError = document.querySelector("#update-center-error");
+  if (updateCenterError) {
+    notificationBar.show(
+      updateCenterError.content.textContent,
+      notificationBar.ERROR
+    );
+  }
 });

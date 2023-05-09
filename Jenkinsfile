@@ -12,27 +12,70 @@ properties([
   disableConcurrentBuilds(abortPrevious: true)
 ])
 
-def buildTypes = ['Linux', 'Windows']
-def jdks = [11, 17]
+def axes = [
+  platforms: ['linux', 'windows'],
+  jdks: [11, 17, 19],
+]
+
+stage('Record build') {
+  retry(conditions: [kubernetesAgent(handleNonKubernetes: true), nonresumable()], count: 2) {
+    node('maven-11') {
+      infra.checkoutSCM()
+      launchable.install()
+
+      /*
+       * Record the primary build for this CI job.
+       */
+      withCredentials([string(credentialsId: 'launchable-jenkins-jenkins', variable: 'LAUNCHABLE_TOKEN')]) {
+        launchable('verify')
+        /*
+         * TODO Add the commits of the transitive closure of the Jenkins WAR under test to this build.
+         */
+        launchable("record build --name ${env.BUILD_TAG} --source jenkinsci/jenkins=. --link \"View build in CI\"=${env.BUILD_URL}")
+        axes.values().combinations {
+          def (platform, jdk) = it
+          // TODO https://github.com/jenkins-infra/helpdesk/issues/3484
+          if (platform != 'windows') {
+            def sessionFile = "launchable-session-${platform}-jdk${jdk}.txt"
+            launchable("record session --build ${env.BUILD_TAG} --flavor platform=${platform} --flavor jdk=${jdk} --link \"View session in CI\"=${env.BUILD_URL} >${sessionFile}")
+            stash name: sessionFile, includes: sessionFile
+          }
+        }
+      }
+
+      /*
+       * Record commits for use in downstream CI jobs that may consume this artifact.
+       */
+      withCredentials([string(credentialsId: 'launchable-jenkins-acceptance-test-harness', variable: 'LAUNCHABLE_TOKEN')]) {
+        launchable('verify')
+        launchable('record commit')
+      }
+      withCredentials([string(credentialsId: 'launchable-jenkins-bom', variable: 'LAUNCHABLE_TOKEN')]) {
+        launchable('verify')
+        launchable('record commit')
+      }
+    }
+  }
+}
 
 def builds = [:]
-for (i = 0; i < buildTypes.size(); i++) {
-  for (j = 0; j < jdks.size(); j++) {
-    def buildType = buildTypes[i]
-    def jdk = jdks[j]
-    if (buildType == 'Windows' && jdk == 17) {
-      continue // TODO pending jenkins-infra/helpdesk#2822
+
+axes.values().combinations {
+  def (platform, jdk) = it
+  if (platform == 'windows' && jdk != 17) {
+    return // unnecessary use of hardware
+  }
+  builds["${platform}-jdk${jdk}"] = {
+    // see https://github.com/jenkins-infra/documentation/blob/master/ci.adoc#node-labels for information on what node types are available
+    def agentContainerLabel = 'maven-' + jdk
+    if (platform == 'windows') {
+      agentContainerLabel += '-windows'
     }
-    builds["${buildType}-jdk${jdk}"] = {
-      // see https://github.com/jenkins-infra/documentation/blob/master/ci.adoc#node-labels for information on what node types are available
-      def agentContainerLabel = 'maven-' + jdk
-      if (buildType == 'Windows') {
-        agentContainerLabel += '-windows'
-      }
+    retry(conditions: [kubernetesAgent(handleNonKubernetes: true), nonresumable()], count: 2) {
       node(agentContainerLabel) {
         // First stage is actually checking out the source. Since we're using Multibranch
         // currently, we can use "checkout scm".
-        stage('Checkout') {
+        stage("${platform.capitalize()} - JDK ${jdk} - Checkout") {
           infra.checkoutSCM()
         }
 
@@ -40,7 +83,7 @@ for (i = 0; i < buildTypes.size(); i++) {
         def m2repo = "${pwd tmp: true}/m2repo"
 
         // Now run the actual build.
-        stage("${buildType} Build / Test") {
+        stage("${platform.capitalize()} - JDK ${jdk} - Build / Test") {
           timeout(time: 6, unit: 'HOURS') {
             realtimeJUnit(healthScaleFactor: 20.0, testResults: '*/target/surefire-reports/*.xml') {
               def mavenOptions = [
@@ -49,6 +92,7 @@ for (i = 0; i < buildTypes.size(); i++) {
                 '--update-snapshots',
                 "-Dmaven.repo.local=$m2repo",
                 '-Dmaven.test.failure.ignore',
+                '-DforkCount=2',
                 '-Dspotbugs.failOnError=false',
                 '-Dcheckstyle.failOnViolation=false',
                 '-Dset.changelist',
@@ -58,20 +102,17 @@ for (i = 0; i < buildTypes.size(); i++) {
                 'clean',
                 'install',
               ]
-              try {
-                infra.runMaven(mavenOptions, jdk)
-                if (isUnix()) {
-                  sh 'git add . && git diff --exit-code HEAD'
-                }
-              } finally {
-                archiveArtifacts allowEmptyArchive: true, artifacts: '**/target/surefire-reports/*.dumpstream'
+              infra.runMaven(mavenOptions, jdk)
+              if (isUnix()) {
+                sh 'git add . && git diff --exit-code HEAD'
               }
             }
           }
         }
 
         // Once we've built, archive the artifacts and the test results.
-        stage("${buildType} Publishing") {
+        stage("${platform.capitalize()} - JDK ${jdk} - Publish") {
+          archiveArtifacts allowEmptyArchive: true, artifacts: '**/target/surefire-reports/*.dumpstream'
           if (!fileExists('core/target/surefire-reports/TEST-jenkins.Junit4TestsRanTest.xml')) {
             error 'JUnit 4 tests are no longer being run for the core package'
           }
@@ -82,14 +123,15 @@ for (i = 0; i < buildTypes.size(); i++) {
           if (failFast && currentBuild.result == 'UNSTABLE') {
             error 'There were test failures; halting early'
           }
-          if (buildType == 'Linux' && jdk == jdks[0]) {
+          if (platform == 'linux' && jdk == axes['jdks'][0]) {
             def folders = env.JOB_NAME.split('/')
             if (folders.length > 1) {
               discoverGitReferenceBuild(scm: folders[1])
             }
-            publishCoverage calculateDiffForChangeRequests: true, adapters: [jacocoAdapter('coverage/target/site/jacoco-aggregate/jacoco.xml')]
+            recordCoverage(tools: [[parser: 'JACOCO', pattern: 'coverage/target/site/jacoco-aggregate/jacoco.xml']],
+            sourceCodeRetention: 'MODIFIED', sourceDirectories: [[path: 'core/src/main/java']])
 
-            echo "Recording static analysis results for '${buildType}'"
+            echo "Recording static analysis results for '${platform.capitalize()}'"
             recordIssues(
                 enabledForFailure: true,
                 tools: [java(), javaDoc()],
@@ -102,34 +144,25 @@ for (i = 0; i < buildTypes.size(); i++) {
               sourceCodeEncoding: 'UTF-8',
               skipBlames: true,
               trendChartType: 'TOOLS_ONLY',
-              qualityGates: [
-                [threshold: 1, type: 'NEW', unstable: true],
-              ]])
+              qualityGates: [[threshold: 1, type: 'NEW', unstable: true]]])
             recordIssues([tool: checkStyle(pattern: '**/target/checkstyle-result.xml'),
               sourceCodeEncoding: 'UTF-8',
               skipBlames: true,
               trendChartType: 'TOOLS_ONLY',
-              qualityGates: [
-                [threshold: 1, type: 'TOTAL', unstable: true],
-              ]])
-             recordIssues([tool: esLint(pattern: '**/target/eslint-warnings.xml'),
+              qualityGates: [[threshold: 1, type: 'TOTAL', unstable: true]]])
+            recordIssues([tool: esLint(pattern: '**/target/eslint-warnings.xml'),
               sourceCodeEncoding: 'UTF-8',
               skipBlames: true,
               trendChartType: 'TOOLS_ONLY',
-              qualityGates: [
-                [threshold: 1, type: 'TOTAL', unstable: true],
-              ]])
-              recordIssues([tool: styleLint(pattern: '**/target/stylelint-warnings.xml'),
+              qualityGates: [[threshold: 1, type: 'TOTAL', unstable: true]]])
+            recordIssues([tool: styleLint(pattern: '**/target/stylelint-warnings.xml'),
               sourceCodeEncoding: 'UTF-8',
               skipBlames: true,
               trendChartType: 'TOOLS_ONLY',
-              qualityGates: [
-                [threshold: 1, type: 'TOTAL', unstable: true],
-              ]])
+              qualityGates: [[threshold: 1, type: 'TOTAL', unstable: true]]])
             if (failFast && currentBuild.result == 'UNSTABLE') {
               error 'Static analysis quality gates not passed; halting early'
             }
-
             def changelist = readFile(changelistF)
             dir(m2repo) {
               archiveArtifacts(
@@ -140,36 +173,53 @@ for (i = 0; i < buildTypes.size(); i++) {
                   )
             }
           }
+          // TODO https://github.com/jenkins-infra/helpdesk/issues/3484
+          if (platform != 'windows') {
+            launchable.install()
+            withCredentials([string(credentialsId: 'launchable-jenkins-jenkins', variable: 'LAUNCHABLE_TOKEN')]) {
+              launchable('verify')
+              def sessionFile = "launchable-session-${platform}-jdk${jdk}.txt"
+              unstash sessionFile
+              def session = readFile(sessionFile).trim()
+              launchable("record tests --session ${session} --flavor platform=${platform} --flavor jdk=${jdk} --link \"View session in CI\"=${env.BUILD_URL} maven './**/target/surefire-reports'")
+            }
+          }
         }
       }
     }
   }
 }
 
-builds.ath = {
-  node('docker-highmem') {
-    // Just to be safe
-    deleteDir()
-    def fileUri
-    def metadataPath
-    dir('sources') {
-      checkout scm
-      def mavenOptions = [
-        '-Pquick-build',
-        '-Dmaven.repo.local=$WORKSPACE_TMP/m2repo',
-        '-am',
-        '-pl',
-        'war',
-        'package',
-      ]
-      infra.runMaven(mavenOptions, 11)
-      dir('war/target') {
-        fileUri = 'file://' + pwd() + '/jenkins.war'
+def athAxes = [
+  platforms: ['linux'],
+  jdks: [11],
+  browsers: ['firefox'],
+]
+athAxes.values().combinations {
+  def (platform, jdk, browser) = it
+  builds["ath-${platform}-jdk${jdk}-${browser}"] = {
+    retry(conditions: [agent(), nonresumable()], count: 2) {
+      node('docker-highmem') {
+        // Just to be safe
+        deleteDir()
+        checkout scm
+        infra.withArtifactCachingProxy {
+          sh "bash ath.sh ${jdk} ${browser}"
+        }
+        junit testResults: 'target/ath-reports/TEST-*.xml', testDataPublishers: [[$class: 'AttachmentPublisher']]
+        /*
+         * Currently disabled, as the fact that this is a manually created subset will confuse Launchable,
+         * which expects this to be a full build. When we implement subsetting, this can be re-enabled using
+         * Launchable's subset rather than our own.
+         */
+        /*
+         launchable.install()
+         withCredentials([string(credentialsId: 'launchable-jenkins-acceptance-test-harness', variable: 'LAUNCHABLE_TOKEN')]) {
+         launchable('verify')
+         launchable("record tests --no-build --flavor platform=${platform} --flavor jdk=${jdk} --flavor browser=${browser} --link \"View session in CI\"=${env.BUILD_URL} maven './target/ath-reports'")
+         }
+         */
       }
-      metadataPath = pwd() + '/essentials.yml'
-    }
-    dir('ath') {
-      runATH jenkins: fileUri, metadataFile: metadataPath
     }
   }
 }

@@ -25,10 +25,11 @@ THE SOFTWARE.
 <!-- This page have not existed historically so plugins might well not provide any views. -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
-    <l:layout title="${it.name}">
+    <l:layout title="${%Cloud(it.name)}" permission="${app.SYSTEM_READ}">
         <st:include page="sidepanel.jelly" it="${it}"/>
+        <!-- no need for additional breadcrumb here as we're on an index page already including breadcrumb -->
         <l:main-panel>
-            <h1>${%Cloud} ${it.name}</h1>
+            <h1>${%Cloud(it.name)}</h1>
 
             <st:include page="top.jelly" optional="true"/>
 

@@ -1085,7 +1085,8 @@ public abstract class View extends AbstractModelObject implements AccessControll
         try {
             Jenkins.checkGoodName(value);
             value = value.trim(); // why trim *after* checkGoodName? not sure, but ItemGroupMixIn.createTopLevelItem does the same
-            Jenkins.get().getProjectNamingStrategy().checkName(value);
+            ItemGroup<?> parent = getOwner().getItemGroup();
+            Jenkins.get().getProjectNamingStrategy().checkName(parent.getFullName(), value);
         } catch (Failure e) {
             return FormValidation.error(e.getMessage());
         }
@@ -1356,7 +1357,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
         if (owner.getView(name) != null)
             throw new Failure(Messages.Hudson_ViewAlreadyExists(name));
 
-        if (mode == null || mode.length() == 0) {
+        if (mode == null || mode.isEmpty()) {
             if (isXmlSubmission) {
                 View v = createViewFromXML(name, req.getInputStream());
                 owner.getACL().checkCreatePermission(owner, v.getDescriptor());
