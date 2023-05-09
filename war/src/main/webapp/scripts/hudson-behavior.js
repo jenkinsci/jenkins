@@ -234,7 +234,8 @@ var FormChecker = {
    */
   delayedCheck: function (url, method, target) {
     if (url == null || method == null || target == null) {
-      return; // don't know whether we should throw an exception or ignore this. some broken plugins have illegal parameters
+      // don't know whether we should throw an exception or ignore this. some broken plugins have illegal parameters
+      return;
     }
     this.queue.push({ url: url, method: method, target: target });
     this.schedule();
@@ -242,19 +243,18 @@ var FormChecker = {
 
   sendRequest: function (url, params) {
     if (params.method !== "get") {
-      const idx = url.indexOf("?");
+      var idx = url.indexOf("?");
       params.parameters = url.substring(idx + 1);
       url = url.substring(0, idx);
     }
 
-    const method = (params.method || "post").toLowerCase();
-    const parsedUrl = method === "get" ? `${url}?${params.parameters}` : url;
+    const parsedUrl = params.method === "get" ? `${url}?${params.parameters}` : url;
     fetch(parsedUrl, {
-      method,
+      method: params.method,
       headers: crumb.wrap({
         "Content-Type": "application/x-www-form-urlencoded",
       }),
-      body: method !== "get" ? params.parameters : null,
+      body: params.method !== "get" ? params.parameters : null,
     }).then((response) => {
       params.onComplete(response);
     });
@@ -701,17 +701,11 @@ function registerValidator(e) {
     }
   };
 
-  var deprecatedMethodAttribute = e.getAttribute("checkMethod");
-  if (deprecatedMethodAttribute) {
-    console.warn(
-      "checkMethod attribute is deprecated, it no longer does anything and can be safely removed.",
-      e
-    );
-  }
+  var method = (e.getAttribute("checkMethod") || "post").toLowerCase();
 
   var url = e.targetUrl();
   try {
-    FormChecker.delayedCheck(url, null, e.targetElement);
+    FormChecker.delayedCheck(url, method, e.targetElement);
   } catch (x) {
     // this happens if the checkUrl refers to a non-existing element.
     // don't let this kill off the entire JavaScript
