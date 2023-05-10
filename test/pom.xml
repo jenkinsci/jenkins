@@ -183,7 +183,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>junit</artifactId>
-      <version>1198.ve38db_d1b_c975</version>
+      <version>1202.v79a_986785076</version>
       <scope>test</scope>
     </dependency>
     <dependency>
