@@ -469,8 +469,12 @@ public class XStream2 extends XStream {
      */
     private static final class AssociatedConverterImpl implements Converter {
         private final XStream xstream;
-        private final ConcurrentHashMap<Class<?>, Converter> cache =
-                new ConcurrentHashMap<>();
+        private final ClassValue<Converter> cache = new ClassValue<Converter>() {
+            @Override
+            protected Converter computeValue(Class<?> type) {
+                return computeConverter(type);
+            }
+        };
 
         private AssociatedConverterImpl(XStream xstream) {
             this.xstream = xstream;
@@ -481,17 +485,21 @@ public class XStream2 extends XStream {
             if (t == null) {
                 return null;
             }
+            return cache.get(t);
+        }
 
-            Converter result = cache.get(t);
-            if (result != null)
-                // ConcurrentHashMap does not allow null, so use this object to represent null
-                return result == this ? null : result;
+        @CheckForNull
+        private Converter computeConverter(@NonNull Class<?> t) {
             try {
                 final ClassLoader classLoader = t.getClassLoader();
                 if (classLoader == null) {
                     return null;
                 }
-                Class<?> cl = classLoader.loadClass(t.getName() + "$ConverterImpl");
+                String name = t.getName() + "$ConverterImpl";
+                if (classLoader.getResource(name.replace('.', '/') + ".class") == null) {
+                    return null;
+                }
+                Class<?> cl = classLoader.loadClass(name);
                 Constructor<?> c = cl.getConstructors()[0];
 
                 Class<?>[] p = c.getParameterTypes();
@@ -506,13 +514,10 @@ public class XStream2 extends XStream {
 
                 }
                 ConverterMatcher cm = (ConverterMatcher) c.newInstance(args);
-                result = cm instanceof SingleValueConverter
+                return cm instanceof SingleValueConverter
                         ? new SingleValueConverterWrapper((SingleValueConverter) cm)
                         : (Converter) cm;
-                cache.put(t, result);
-                return result;
             } catch (ClassNotFoundException e) {
-                cache.put(t, this);  // See above.. this object in cache represents null
                 return null;
             } catch (IllegalAccessException e) {
                 IllegalAccessError x = new IllegalAccessError();
