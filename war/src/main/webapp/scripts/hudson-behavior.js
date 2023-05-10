@@ -248,7 +248,8 @@ var FormChecker = {
       url = url.substring(0, idx);
     }
 
-    const parsedUrl = params.method === "get" ? `${url}?${params.parameters}` : url;
+    const parsedUrl =
+      params.method === "get" ? `${url}?${params.parameters}` : url;
     fetch(parsedUrl, {
       method: params.method,
       headers: crumb.wrap({
