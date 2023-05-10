@@ -469,6 +469,12 @@ public class XStream2 extends XStream {
      */
     private static final class AssociatedConverterImpl implements Converter {
         private final XStream xstream;
+        private static final ClassValue<Class<? extends ConverterMatcher>> classCache = new ClassValue<Class<? extends ConverterMatcher>>() {
+            @Override
+            protected Class<? extends ConverterMatcher> computeValue(Class<?> type) {
+                return computeConverterClass(type);
+            }
+        };
         private final ClassValue<Converter> cache = new ClassValue<Converter>() {
             @Override
             protected Converter computeValue(Class<?> type) {
@@ -489,7 +495,7 @@ public class XStream2 extends XStream {
         }
 
         @CheckForNull
-        private Converter computeConverter(@NonNull Class<?> t) {
+        private static Class<? extends ConverterMatcher> computeConverterClass(@NonNull Class<?> t) {
             try {
                 final ClassLoader classLoader = t.getClassLoader();
                 if (classLoader == null) {
@@ -499,7 +505,19 @@ public class XStream2 extends XStream {
                 if (classLoader.getResource(name.replace('.', '/') + ".class") == null) {
                     return null;
                 }
-                Class<?> cl = classLoader.loadClass(name);
+                return classLoader.loadClass(name).asSubclass(ConverterMatcher.class);
+            } catch (ClassNotFoundException e) {
+                return null;
+            }
+        }
+
+        @CheckForNull
+        private Converter computeConverter(@NonNull Class<?> t) {
+            Class<? extends ConverterMatcher> cl = classCache.get(t);
+            if (cl == null) {
+                return null;
+            }
+            try {
                 Constructor<?> c = cl.getConstructors()[0];
 
                 Class<?>[] p = c.getParameterTypes();
@@ -517,8 +535,6 @@ public class XStream2 extends XStream {
                 return cm instanceof SingleValueConverter
                         ? new SingleValueConverterWrapper((SingleValueConverter) cm)
                         : (Converter) cm;
-            } catch (ClassNotFoundException e) {
-                return null;
             } catch (IllegalAccessException e) {
                 IllegalAccessError x = new IllegalAccessError();
                 x.initCause(e);
