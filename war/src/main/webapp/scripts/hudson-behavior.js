@@ -721,6 +721,7 @@ function registerValidator(e) {
   var checker = function () {
     const validationArea = this.targetElement;
     FormChecker.sendRequest(this.targetUrl(), {
+      method: method,
       onComplete: function (response) {
         // TODO Add i18n support
         response.text().then((responseText) => {
