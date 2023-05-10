@@ -242,20 +242,20 @@ var FormChecker = {
   },
 
   sendRequest: function (url, params) {
-    if (params.method !== "get") {
+    const method = params.method.toLowerCase();
+    if (method !== "get") {
       var idx = url.indexOf("?");
       params.parameters = url.substring(idx + 1);
       url = url.substring(0, idx);
     }
 
-    const parsedUrl =
-      params.method === "get" ? `${url}?${params.parameters}` : url;
+    const parsedUrl = method === "get" ? `${url}?${params.parameters}` : url;
     fetch(parsedUrl, {
       method: params.method,
       headers: crumb.wrap({
         "Content-Type": "application/x-www-form-urlencoded",
       }),
-      body: params.method !== "get" ? params.parameters : null,
+      body: method !== "get" ? params.parameters : null,
     }).then((response) => {
       params.onComplete(response);
     });
@@ -702,7 +702,7 @@ function registerValidator(e) {
     }
   };
 
-  var method = (e.getAttribute("checkMethod") || "post").toLowerCase();
+  var method = e.getAttribute("checkMethod") || "post";
 
   var url = e.targetUrl();
   try {
