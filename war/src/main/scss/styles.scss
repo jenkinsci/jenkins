@@ -16,6 +16,7 @@
 @use "./form/reorderable-list";
 @use "./form/search-bar";
 @use "./form/select";
+@use "./form/textarea";
 @use "./form/toggle-switch";
 @use "./form/validation";
 @use "./modules/app-bar";
@@ -34,6 +35,7 @@
 @use "./modules/section";
 @use "./modules/side-panel-tasks";
 @use "./modules/side-panel-widgets";
+@use "./modules/skip-link";
 @use "./modules/spinner";
 @use "./modules/progress-animation";
 @use "./modules/row-selection-controller";

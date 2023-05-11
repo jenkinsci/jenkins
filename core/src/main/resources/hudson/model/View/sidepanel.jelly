@@ -57,7 +57,7 @@ THE SOFTWARE.
         <l:task href="${rootURL}/${it.viewUrl}configure" icon="symbol-settings" permission="${it.CONFIGURE}" title="${%Edit View}"/>
       </j:if>
       <j:if test="${it.owner.canDelete(it)}">
-        <l:task href="delete" icon="icon-edit-delete icon-md" permission="${it.DELETE}" title="${%Delete View}"/>
+        <l:task confirmationMessage="${%delete.view(it.displayName)}" href="doDelete" icon="icon-edit-delete icon-md" permission="${it.DELETE}" title="${%Delete View}" post="true" requiresConfirmation="true"/>
       </j:if>
       <j:if test="${app.fingerprintMap.ready}">
         <l:task href="${rootURL}/projectRelationship" icon="symbol-project-relationship" title="${%Project Relationship}"/>
