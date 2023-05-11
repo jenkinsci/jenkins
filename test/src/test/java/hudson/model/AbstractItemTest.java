@@ -154,7 +154,7 @@ public class AbstractItemTest {
         return u.getPath().substring(j.contextPath.length() + 1);
     }
 
-    @TestExtension
+    @TestExtension("reload")
     public static class TestSaveableListener extends SaveableListener {
         private Saveable saveable;
 
