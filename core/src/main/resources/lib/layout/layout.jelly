@@ -180,7 +180,7 @@ THE SOFTWARE.
 
     <j:if test="${layoutType!='full-screen'}">
       <!-- for accessibility, skip the entire navigation bar and etc and go straight to the head of the content -->
-      <a href="#skip2content" class="skiplink">Skip to content</a>
+      <a href="#skip2content" class="jenkins-skip-link">Skip to content</a>
 
       <l:pageHeader title="${%title}"
                     logoAlt="${%jenkinshead.alt}"
