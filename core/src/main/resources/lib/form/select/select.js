@@ -4,6 +4,7 @@ function updateListBox(listBox, url, config) {
   config = config || {};
   config = object(config);
   var originalOnSuccess = config.onSuccess;
+  var originalOnFailure = config.onFailure;
   var l = listBox;
 
   // Hacky function to retrofit compatibility with tables-to-divs
@@ -92,6 +93,9 @@ function updateListBox(listBox, url, config) {
           l.options[0] = null;
         }
       }
+      if (originalOnFailure !== undefined) {
+        originalOnFailure(rsp);
+      }
     });
   };
 
@@ -129,7 +133,15 @@ Behaviour.specify("SELECT.select", "select", 1000, function (e) {
   }
 
   // controls that this SELECT box depends on
-  refillOnChange(e, function (params) {
+  var onChange = function (params) {
+    if (e.hasAttribute("isRefilling")) {
+      // Still refilling; wait until the first refill operation is complete before beginning the second one.
+      setTimeout(function () {
+        onChange(params);
+      }, 100);
+      return;
+    }
+    e.setAttribute("isRefilling", true);
     var value = e.value;
     updateListBox(e, e.getAttribute("fillUrl"), {
       parameters: params,
@@ -153,7 +165,12 @@ Behaviour.specify("SELECT.select", "select", 1000, function (e) {
         if (hasChanged(e, value)) {
           fireEvent(e, "change");
         }
+        e.removeAttribute("isRefilling");
+      },
+      onFailure: function () {
+        e.removeAttribute("isRefilling");
       },
     });
-  });
+  };
+  refillOnChange(e, onChange);
 });
