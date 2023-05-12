@@ -39,7 +39,7 @@ Behaviour.specify(
   "textarea",
   100,
   function (e) {
-    var previewDiv = e.querySelector(".textarea-preview");
+    var previewDiv = e.nextSibling;
     var showPreview = e.querySelector(".textarea-show-preview");
     var hidePreview = e.querySelector(".textarea-hide-preview");
     hidePreview.style.display = "none";

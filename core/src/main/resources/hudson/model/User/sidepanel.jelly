@@ -38,7 +38,7 @@ THE SOFTWARE.
       <t:actions actions="${it.propertyActions}"/>
       <t:actions actions="${it.transientActions}"/>
       <j:if test="${it.canDelete()}">
-        <l:task href="${rootURL}/${it.url}/delete" icon="icon-edit-delete icon-md" title="${%Delete}"/>
+        <l:task confirmationMessage="${%delete.user(it.displayName)}" href="${rootURL}/${it.url}/doDelete" icon="icon-edit-delete icon-md" title="${%Delete}" post="true" requiresConfirmation="true"/>
       </j:if>
     </l:tasks>
   </l:side-panel>
