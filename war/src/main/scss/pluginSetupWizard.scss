@@ -1,3 +1,5 @@
+@use "bootstrap";
+
 .bootstrap-3 *,
 .bootstrap-3 [class*="col-"] {
   // simple reset
@@ -960,10 +962,6 @@ $fb-loader-color: #e6e6e6;
     box-shadow: 0 -2em $fb-loader-color;
     height: 5em;
   }
-}
-
-.bootstrap-3 {
-  @import url("_bootstrap.scss");
 }
 
 .bootstrap-3 [class*="col-"] {
