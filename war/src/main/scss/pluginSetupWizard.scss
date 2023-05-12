@@ -963,7 +963,7 @@ $fb-loader-color: #e6e6e6;
 }
 
 .bootstrap-3 {
-  @import url("bootstrap");
+  @import url("_bootstrap.scss");
 }
 
 .bootstrap-3 [class*="col-"] {
