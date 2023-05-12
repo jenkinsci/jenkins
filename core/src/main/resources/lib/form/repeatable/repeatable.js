@@ -24,7 +24,7 @@ var repeatableSupport = {
     master.parentNode.removeChild(master);
     this.insertionPoint = insertionPoint;
     this.name = master.getAttribute("name");
-    if (this.container.getAttribute("enableTopButton") === "true") {
+    if (this.container.getAttribute("enableTopButton") == "true") {
       this.enableTopButton = true;
     } else {
       this.enableTopButton = false;
@@ -44,7 +44,7 @@ var repeatableSupport = {
     // nc = document.importNode(node,true);
     var nc = document.createElement("div");
     nc.className = "repeated-chunk";
-    nc.style.opacity = "0";
+    nc.style.opacity = 0;
     nc.setAttribute("name", this.name);
     nc.innerHTML = this.blockHTML;
     if (!addOnTop) {
@@ -79,27 +79,27 @@ var repeatableSupport = {
       return n.classList.contains("repeated-chunk");
     });
 
-    if (children.length === 0) {
+    if (children.length == 0) {
       var addButtonElements = Array.from(this.container.children).filter(
         function (b) {
           return b.classList.contains("repeatable-add");
         }
       );
 
-      if (addButtonElements.length === 2) {
+      if (addButtonElements.length == 2) {
         var buttonElement = addButtonElements[0];
         var parentOfButton = buttonElement.parentNode;
         parentOfButton.removeChild(buttonElement);
       }
     } else {
-      if (children.length === 1) {
+      if (children.length == 1) {
         addButtonElements = Array.from(this.container.children).filter(
           function (b) {
             return b.classList.contains("repeatable-add");
           }
         );
 
-        if (addButtonElements.length === 1 && this.enableTopButton) {
+        if (addButtonElements.length == 1 && this.enableTopButton) {
           buttonElement = addButtonElements[0];
           parentOfButton = buttonElement.parentNode;
           var addTopButton = document.createElement("input");
@@ -160,7 +160,7 @@ var repeatableSupport = {
     var inputs = n.getElementsByTagName("INPUT");
     for (var i = 0; i < inputs.length; i++) {
       var input = inputs[i];
-      if (input.name === "hudson-tools-InstallSourceProperty") {
+      if (input.name == "hudson-tools-InstallSourceProperty") {
         updateOptionalBlock(input);
       }
     }
@@ -237,7 +237,7 @@ Behaviour.specify(
 Behaviour.specify("DIV.repeated-chunk", "repeatable", -200, function (d) {
   var inputs = d.getElementsByTagName("INPUT");
   for (var i = 0; i < inputs.length; i++) {
-    if (inputs[i].type === "radio") {
+    if (inputs[i].type == "radio") {
       // Need to uniquify each set of radio buttons in repeatable content.
       // buildFormTree will remove the prefix before form submission.
       var prefix = d.getAttribute("radioPrefix");
