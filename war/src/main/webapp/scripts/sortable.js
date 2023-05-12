@@ -49,7 +49,9 @@ var Sortable = (function () {
     this.arrows = [];
 
     var firstRow = this.getFirstRow();
-    if (!firstRow) return;
+    if (!firstRow) {
+      return;
+    }
 
     // We have a first row: assume it's the header, and make its contents clickable links
     firstRow.forEach(
@@ -162,7 +164,9 @@ var Sortable = (function () {
      */
     getSorter: function (column) {
       var rows = this.table.rows;
-      if (rows.length <= 1) return sorter.fallback;
+      if (rows.length <= 1) {
+        return sorter.fallback;
+      }
 
       var itm = this.extractData(rows[1].cells[column]).trim();
       return sorter.determine(itm);
@@ -197,7 +201,10 @@ var Sortable = (function () {
      * @since 1.484
      */
     refresh: function () {
-      if (this.pref == null) return; // not sorting
+      if (this.pref == null) {
+        // not sorting
+        return;
+      }
 
       var column = this.pref.column;
       var dir = this.pref.direction;
@@ -211,8 +218,12 @@ var Sortable = (function () {
       // we allow some rows to stick to the top and bottom, so that is our first sort criteria
       // regardless of the sort function
       function rowPos(r) {
-        if (r.classList.contains("sorttop")) return 0;
-        if (r.classList.contains("sortbottom")) return 2;
+        if (r.classList.contains("sorttop")) {
+          return 0;
+        }
+        if (r.classList.contains("sortbottom")) {
+          return 2;
+        }
         return 1;
       }
 
@@ -220,7 +231,9 @@ var Sortable = (function () {
       rows.sort(
         function (a, b) {
           var x = rowPos(a) - rowPos(b);
-          if (x != 0) return x;
+          if (x != 0) {
+            return x;
+          }
 
           return s(
             this.extractData(a.cells[column]),
@@ -251,11 +264,16 @@ var Sortable = (function () {
     },
 
     getInnerText: function (el) {
-      if (typeof el == "string") return el;
+      if (typeof el == "string") {
+        return el;
+      }
       if (typeof el == "undefined") {
         return el;
       }
-      if (el.innerText) return el.innerText; //Not needed but it is faster
+      if (el.innerText) {
+        // Not needed but it is faster
+        return el.innerText;
+      }
       var str = "";
 
       var cs = el.childNodes;
@@ -275,9 +293,13 @@ var Sortable = (function () {
 
     // extract data for sorting from a cell
     extractData: function (x) {
-      if (x == null) return "";
+      if (x == null) {
+        return "";
+      }
       var data = x.getAttribute("data");
-      if (data != null) return data;
+      if (data != null) {
+        return data;
+      }
       return this.getInnerText(x);
     },
   };
@@ -350,10 +372,16 @@ var Sortable = (function () {
     percent: function (a, b) {
       a = a.replace(/[^0-9.<>]/g, "");
       b = b.replace(/[^0-9.<>]/g, "");
-      if (a == "<100") a = "99.9";
-      else if (a == ">0") a = "0.1";
-      if (b == "<100") b = "99.9";
-      else if (b == ">0") b = "0.1";
+      if (a == "<100") {
+        a = "99.9";
+      } else if (a == ">0") {
+        a = "0.1";
+      }
+      if (b == "<100") {
+        b = "99.9";
+      } else if (b == ">0") {
+        b = "0.1";
+      }
       a = a.replace(/[^0-9.]/g, "");
       b = b.replace(/[^0-9.]/g, "");
       return parseFloat(a) - parseFloat(b);
@@ -361,9 +389,13 @@ var Sortable = (function () {
 
     numeric: function (a, b) {
       a = parseFloat(a);
-      if (isNaN(a)) a = 0;
+      if (isNaN(a)) {
+        a = 0;
+      }
       b = parseFloat(b);
-      if (isNaN(b)) b = 0;
+      if (isNaN(b)) {
+        b = 0;
+      }
       return a - b;
     },
 
@@ -372,8 +404,12 @@ var Sortable = (function () {
     },
 
     fallback: function (a, b) {
-      if (a == b) return 0;
-      if (a < b) return -1;
+      if (a == b) {
+        return 0;
+      }
+      if (a < b) {
+        return -1;
+      }
       return 1;
     },
 
@@ -384,10 +420,18 @@ var Sortable = (function () {
      */
     determine: function (itm) {
       var sortfn = this.caseInsensitive;
-      if (itm.match(date_pattern)) sortfn = this.date;
-      if (itm.match(/^[£$]/)) sortfn = this.currency;
-      if (itm.match(/\%$/)) sortfn = this.percent;
-      if (itm.match(/^-?[\d]+(\.[\d]+)?$/)) sortfn = this.numeric;
+      if (itm.match(date_pattern)) {
+        sortfn = this.date;
+      }
+      if (itm.match(/^[£$]/)) {
+        sortfn = this.currency;
+      }
+      if (itm.match(/\%$/)) {
+        sortfn = this.percent;
+      }
+      if (itm.match(/^-?[\d]+(\.[\d]+)?$/)) {
+        sortfn = this.numeric;
+      }
       return sortfn;
     },
 
