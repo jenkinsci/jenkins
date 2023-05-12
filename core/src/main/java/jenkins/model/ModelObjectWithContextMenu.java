@@ -2,7 +2,6 @@ package jenkins.model;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Functions;
-import hudson.Util;
 import hudson.model.Action;
 import hudson.model.Actionable;
 import hudson.model.BallColor;
@@ -10,6 +9,7 @@ import hudson.model.Computer;
 import hudson.model.Job;
 import hudson.model.ModelObject;
 import hudson.model.Node;
+import hudson.slaves.Cloud;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -221,6 +221,13 @@ public interface ModelObjectWithContextMenu extends ModelObject {
                 .withContextRelativeUrl(c.getUrl()));
         }
 
+        public ContextMenu add(Cloud c) {
+            return add(new MenuItem()
+                    .withDisplayName(c.getDisplayName())
+                    .withIconClass(c.getIconClassName())
+                    .withContextRelativeUrl(c.getUrl()));
+        }
+
         /**
          * Adds a child item when rendering context menu of its parent.
          *
@@ -414,7 +421,7 @@ public interface ModelObjectWithContextMenu extends ModelObject {
         }
 
         public MenuItem withDisplayName(String displayName) {
-            this.displayName = Util.escape(displayName);
+            this.displayName = displayName;
             return this;
         }
 

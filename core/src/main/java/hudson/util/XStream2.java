@@ -46,7 +46,6 @@ import com.thoughtworks.xstream.io.HierarchicalStreamDriver;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import com.thoughtworks.xstream.io.ReaderWrapper;
-import com.thoughtworks.xstream.io.xml.PrettyPrintWriter;
 import com.thoughtworks.xstream.io.xml.StandardStaxDriver;
 import com.thoughtworks.xstream.mapper.CannotResolveClassException;
 import com.thoughtworks.xstream.mapper.Mapper;
@@ -138,7 +137,7 @@ public class XStream2 extends XStream {
 
         @Override
         public HierarchicalStreamWriter createWriter(Writer out) {
-            return new PrettyPrintWriter(out, getNameCoder());
+            return new PrettyPrintWriter(out, PrettyPrintWriter.XML_1_1, getNameCoder());
         }
 
         @Override

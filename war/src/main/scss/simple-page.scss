@@ -21,22 +21,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
-@use "./abstracts/mixins";
-@use "./abstracts/theme";
-@use "./base/typography";
-@use "./base/spacing";
-@use "./form/checkbox";
-@use "./form/input";
-@use "./form/layout";
-@use "./modules/buttons";
+@use "./pages/sign-in-register";
 
 body {
   background: var(--background);
-}
-
-a {
-  @include mixins.link;
 }
 
 .simple-page h1 {

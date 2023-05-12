@@ -9,42 +9,56 @@ window.buildTimeTrend_displayBuilds = function (data) {
 
   for (var x = 0; data.length > x; x++) {
     var e = data[x];
-    var tr = new Element("tr");
-    tr.insert(
-      new Element("td", { data: e.iconColorOrdinal }).insert(
-        new Element("a", {
-          class: "build-status-link",
-          href: e.number + "/console",
-        }).insert(generateSVGIcon(e.iconName))
-      )
-    );
-    tr.insert(
-      new Element("td", { data: e.number }).insert(
-        new Element("a", {
-          href: e.number + "/",
-          class: "model-link inside",
-        }).update(e.displayName.escapeHTML())
-      )
-    );
-    tr.insert(
-      new Element("td", { data: e.duration }).update(
-        e.durationString.escapeHTML()
-      )
-    );
+    var tr = document.createElement("tr");
+
+    let td = document.createElement("td");
+    td.setAttribute("data", e.iconColorOrdinal);
+
+    let link = document.createElement("a");
+    link.classList.add("build-status-link");
+    link.href = e.number + "/console";
+    td.appendChild(link);
+    let svg = generateSVGIcon(e.iconName);
+    link.appendChild(svg);
+    tr.appendChild(td);
+
+    td = document.createElement("td");
+    td.setAttribute("data", e.number);
+
+    link = document.createElement("a");
+    link.href = e.number + "/";
+    link.classList.add("model-link", "inside");
+    link.innerText = escapeHTML(e.displayName);
+
+    td.appendChild(link);
+    tr.appendChild(td);
+
+    td = document.createElement("td");
+    td.setAttribute("data", e.duration);
+
+    td.innerText = escapeHTML(e.durationString);
+
+    tr.appendChild(td);
     if (isDistributedBuildsEnabled) {
       var buildInfo = null;
-      var buildInfoStr = (e.builtOnStr || "").escapeHTML();
+      var buildInfoStr = escapeHTML(e.builtOnStr || "");
       if (e.builtOn) {
-        buildInfo = new Element("a", {
-          href: rootURL + "/computer/" + e.builtOn,
-          class: "model-link inside",
-        }).update(buildInfoStr);
+        buildInfo = document.createElement("a");
+        buildInfo.href = rootURL + "/computer/" + e.builtOn;
+        buildInfo.classList.add("model-link", "inside");
+        buildInfo.innerText = buildInfoStr;
       } else {
         buildInfo = buildInfoStr;
       }
-      tr.insert(new Element("td").update(buildInfo));
+      td = document.createElement("td");
+      if (buildInfo instanceof Node) {
+        td.appendChild(buildInfo);
+      } else {
+        td.innerText = buildInfo;
+      }
+      tr.appendChild(td);
     }
-    p.insert(tr);
+    p.appendChild(tr);
     Behaviour.applySubtree(tr);
   }
   ts_refresh(p);
@@ -112,13 +126,15 @@ function generateSVGIcon(iconName, iconSizeClass) {
   );
   svg2.appendChild(use2);
 
-  const span = new Element("span", {
-    class: "build-status-icon__wrapper icon-" + iconName,
-  })
-    .insert(
-      new Element("span", { class: "build-status-icon__outer" }).insert(svg1)
-    )
-    .insert(svg2);
+  const span = document.createElement("span");
+  span.classList.add("build-status-icon__wrapper", "icon-" + iconName);
+
+  let span2 = document.createElement("span");
+  span2.classList.add("build-status-icon__outer");
+  span2.appendChild(svg1);
+
+  span.appendChild(span2);
+  span.appendChild(svg2);
 
   return span;
 }
