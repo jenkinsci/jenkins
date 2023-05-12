@@ -4,6 +4,7 @@ function updateListBox(listBox, url, config) {
   config = config || {};
   config = object(config);
   var originalOnSuccess = config.onSuccess;
+  var originalOnFailure = config.onFailure;
   var l = listBox;
 
   // Hacky function to retrofit compatibility with tables-to-divs
@@ -53,46 +54,65 @@ function updateListBox(listBox, url, config) {
 
     var selectionSet = false; // is the selection forced by the server?
     var possibleIndex = null; // if there's a new option that matches the current value, remember its index
-    var opts = JSON.parse(rsp.responseText).values;
-    for (var i = 0; i < opts.length; i++) {
-      l.options[i] = new Option(opts[i].name, opts[i].value);
-      if (opts[i].selected) {
-        l.selectedIndex = i;
-        selectionSet = true;
+    rsp.json().then((result) => {
+      var opts = result.values;
+      for (var i = 0; i < opts.length; i++) {
+        l.options[i] = new Option(opts[i].name, opts[i].value);
+        if (opts[i].selected) {
+          l.selectedIndex = i;
+          selectionSet = true;
+        }
+        if (opts[i].value === currentSelection) {
+          possibleIndex = i;
+        }
       }
-      if (opts[i].value == currentSelection) {
-        possibleIndex = i;
+
+      // if no value is explicitly selected by the server, try to select the same value
+      if (!selectionSet && possibleIndex != null) {
+        l.selectedIndex = possibleIndex;
       }
-    }
 
-    // if no value is explicitly selected by the server, try to select the same value
-    if (!selectionSet && possibleIndex != null) {
-      l.selectedIndex = possibleIndex;
-    }
-
-    if (originalOnSuccess !== undefined) {
-      originalOnSuccess(rsp);
-    }
+      if (originalOnSuccess !== undefined) {
+        originalOnSuccess(rsp);
+      }
+    });
   };
   config.onFailure = function (rsp) {
     l.classList.remove("select-ajax-pending");
-    status.innerHTML = rsp.responseText;
-    if (status.firstElementChild) {
-      status.firstElementChild.setAttribute("data-select-ajax-error", "true");
-    }
-    Behaviour.applySubtree(status);
-    // deleting values can result in the data loss, so let's not do that unless instructed
-    var header = rsp.getResponseHeader("X-Jenkins-Select-Error");
-    if (header && "clear" === header.toLowerCase()) {
-      // clear the contents
-      while (l.length > 0) {
-        l.options[0] = null;
+    rsp.text().then((responseText) => {
+      status.innerHTML = responseText;
+      if (status.firstElementChild) {
+        status.firstElementChild.setAttribute("data-select-ajax-error", "true");
       }
-    }
+      Behaviour.applySubtree(status);
+      // deleting values can result in the data loss, so let's not do that unless instructed
+      var header = rsp.headers.get("X-Jenkins-Select-Error");
+      if (header && "clear" === header.toLowerCase()) {
+        // clear the contents
+        while (l.length > 0) {
+          l.options[0] = null;
+        }
+      }
+      if (originalOnFailure !== undefined) {
+        originalOnFailure(rsp);
+      }
+    });
   };
 
   l.classList.add("select-ajax-pending");
-  new Ajax.Request(url, config);
+  fetch(url, {
+    method: "post",
+    headers: crumb.wrap({
+      "Content-Type": "application/x-www-form-urlencoded",
+    }),
+    body: objectToUrlFormEncoded(config.parameters),
+  }).then((response) => {
+    if (response.ok) {
+      config.onSuccess(response);
+    } else {
+      config.onFailure(response);
+    }
+  });
 }
 
 Behaviour.specify("SELECT.select", "select", 1000, function (e) {
@@ -113,7 +133,15 @@ Behaviour.specify("SELECT.select", "select", 1000, function (e) {
   }
 
   // controls that this SELECT box depends on
-  refillOnChange(e, function (params) {
+  var onChange = function (params) {
+    if (e.hasAttribute("isRefilling")) {
+      // Still refilling; wait until the first refill operation is complete before beginning the second one.
+      setTimeout(function () {
+        onChange(params);
+      }, 100);
+      return;
+    }
+    e.setAttribute("isRefilling", true);
     var value = e.value;
     updateListBox(e, e.getAttribute("fillUrl"), {
       parameters: params,
@@ -137,7 +165,12 @@ Behaviour.specify("SELECT.select", "select", 1000, function (e) {
         if (hasChanged(e, value)) {
           fireEvent(e, "change");
         }
+        e.removeAttribute("isRefilling");
+      },
+      onFailure: function () {
+        e.removeAttribute("isRefilling");
       },
     });
-  });
+  };
+  refillOnChange(e, onChange);
 });
