@@ -227,28 +227,35 @@ var FormChecker = {
    *
    * @param url
    *      Remote doXYZ URL that performs the check. Query string should include the field value.
+   * @param method
+   *      HTTP method. GET or POST. I haven't confirmed specifics, but some browsers seem to cache GET requests.
    * @param target
    *      HTML element whose innerHTML will be overwritten when the check is completed.
    */
-  delayedCheck: function (url, target) {
-    if (url == null || target == null) {
-      return; // don't know whether we should throw an exception or ignore this. some broken plugins have illegal parameters
+  delayedCheck: function (url, method, target) {
+    if (url == null || method == null || target == null) {
+      // don't know whether we should throw an exception or ignore this. some broken plugins have illegal parameters
+      return;
     }
-    this.queue.push({ url: url, target: target });
+    this.queue.push({ url: url, method: method, target: target });
     this.schedule();
   },
 
   sendRequest: function (url, params) {
-    const idx = url.indexOf("?");
-    params.parameters = url.substring(idx + 1);
-    url = url.substring(0, idx);
+    const method = params.method.toLowerCase();
+    if (method !== "get") {
+      var idx = url.indexOf("?");
+      params.parameters = url.substring(idx + 1);
+      url = url.substring(0, idx);
+    }
 
-    fetch(url, {
-      method: "post",
+    const parsedUrl = method === "get" ? `${url}?${params.parameters}` : url;
+    fetch(parsedUrl, {
+      method: params.method,
       headers: crumb.wrap({
         "Content-Type": "application/x-www-form-urlencoded",
       }),
-      body: params.parameters,
+      body: method !== "get" ? params.parameters : null,
     }).then((response) => {
       params.onComplete(response);
     });
@@ -258,12 +265,13 @@ var FormChecker = {
     if (this.inProgress >= this.maxParallel) {
       return;
     }
-    if (this.queue.length == 0) {
+    if (this.queue.length === 0) {
       return;
     }
 
     var next = this.queue.shift();
     this.sendRequest(next.url, {
+      method: next.method,
       onComplete: function (x) {
         x.text().then((responseText) => {
           updateValidationArea(next.target, responseText);
@@ -276,6 +284,22 @@ var FormChecker = {
     this.inProgress++;
   },
 };
+
+/**
+ * Converts a JavaScript object to a URL form encoded string.
+ */
+function objectToUrlFormEncoded(parameters) {
+  // https://stackoverflow.com/a/37562814/4951015
+  // Code could be simplified if support for HTMLUnit is dropped
+  // body: new URLSearchParams(parameters) is enough then, but it doesn't work in HTMLUnit currently
+  let formBody = [];
+  for (const property in parameters) {
+    const encodedKey = encodeURIComponent(property);
+    const encodedValue = encodeURIComponent(parameters[property]);
+    formBody.push(encodedKey + "=" + encodedValue);
+  }
+  return formBody.join("&");
+}
 
 /**
  * Detects if http2 protocol is enabled.
@@ -678,9 +702,11 @@ function registerValidator(e) {
     }
   };
 
+  var method = e.getAttribute("checkMethod") || "post";
+
   var url = e.targetUrl();
   try {
-    FormChecker.delayedCheck(url, e.targetElement);
+    FormChecker.delayedCheck(url, method, e.targetElement);
   } catch (x) {
     // this happens if the checkUrl refers to a non-existing element.
     // don't let this kill off the entire JavaScript
@@ -696,10 +722,11 @@ function registerValidator(e) {
   var checker = function () {
     const validationArea = this.targetElement;
     FormChecker.sendRequest(this.targetUrl(), {
+      method: method,
       onComplete: function (response) {
         // TODO Add i18n support
         response.text().then((responseText) => {
-          const errorMessage = `<div class="error">An internal error occurred during form field validation (HTTP ${status}). Please reload the page and if the problem persists, ask the administrator for help.</div>`;
+          const errorMessage = `<div class="error">An internal error occurred during form field validation (HTTP ${response.status}). Please reload the page and if the problem persists, ask the administrator for help.</div>`;
           updateValidationArea(
             validationArea,
             response.status === 200 ? responseText : errorMessage
@@ -1102,7 +1129,7 @@ function helpButtonOnClick() {
           }
         } else {
           div.innerHTML =
-            "<b>ERROR</b>: Failed to load help file: " + responseText;
+            "<b>ERROR</b>: Failed to load help file: " + rsp.statusText;
         }
         layoutUpdateCallback.call();
       });

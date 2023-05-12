@@ -23,20 +23,10 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <st:documentation>
-    <!-- Shared between PluginManager/index.jelly and PluginManager/available.jelly -->
-    <st:attribute name="list">
-      Variable to contain List of Plugin
-    </st:attribute>
-    <st:attribute name="page">
-      Page name to be passed to local:tabBar; 'updates' or 'available'.
-    </st:attribute>
-    <st:attribute name="filtered">
-      If true, will hide all rows by default, and only the filter field will show them.
-    </st:attribute>
-  </st:documentation>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:f="/lib/form">
   <l:layout title="${%Updates} - ${%Plugins}" permission="${app.SYSTEM_READ}">
+    <j:set var="list" value="${app.updateCenter.updates}" />
+
     <st:include page="sidepanel.jelly"/>
     <!-- no need for additional breadcrumb here as we're on an "index" page already including breadcrumb -->
 
@@ -63,8 +53,6 @@ THE SOFTWARE.
       <st:adjunct includes="hudson.PluginManager._table"/>
 
       <form method="post" action="install">
-        <j:set var="isUpdates" value="${attrs.page=='updates'}"/>
-
         <j:set var="cache" value="${it.createCache()}"/>
 
         <table id="plugins" class="jenkins-table sortable">
@@ -84,29 +72,19 @@ THE SOFTWARE.
                   </l:rowSelectionController>
                 </th>
               </l:isAdmin>
-              <th initialSortDir="${isUpdates?'down':null}">${%Name}</th>
+              <th initialSortDir="down">${%Name}</th>
               <th>${%Released}</th>
-              <j:if test="${isUpdates}">
-                <th>${%Installed}</th>
-              </j:if>
+              <th>${%Installed}</th>
             </tr>
           </thead>
           <j:choose>
             <j:when test="${!empty(list)}">
-              <j:if test="${filtered == 'true'}">
-                <tr id="hidden-by-default-instructions">
-                  <td colspan="5" align="center" id="hidden-by-default-instructions-td"
-                      data-loaded-text="${%instructions}">
-                    ${%loading}
-                  </td>
-                </tr>
-              </j:if>
               <j:forEach var="p" items="${list}">
-                <j:set var="installJob" value="${isUpdates ? app.updateCenter.getJob(p) : null}"/>
+                <j:set var="installJob" value="${app.updateCenter.getJob(p)}"/>
                 <j:set var="installedOk"
                        value="${installJob.status.success and installJob.plugin.version==p.version}"/>
                 <tr
-                  class="${installJob!=null ? 'already-upgraded' : ''} plugin ${filtered == 'true' ? 'hidden hidden-by-default' : ''}"
+                  class="${installJob!=null ? 'already-upgraded' : ''} plugin"
                   name="${p.displayName}"
                   data-plugin-id="${h.xmlEscape(p.name)}">
                   <l:isAdmin>
@@ -228,20 +206,18 @@ THE SOFTWARE.
                       </time>
                     </j:if>
                   </td>
-                  <j:if test="${isUpdates}">
-                    <td>
-                      <j:choose>
-                        <j:when test="${p.installed.active}">
-                          <st:out value="${p.installed.version}"/>
-                        </j:when>
-                        <j:otherwise>
-                          <span title="${%Inactive}">
-                            (<st:out value="${p.installed.version}"/>)
-                          </span>
-                        </j:otherwise>
-                      </j:choose>
-                    </td>
-                  </j:if>
+                  <td>
+                    <j:choose>
+                      <j:when test="${p.installed.active}">
+                        <st:out value="${p.installed.version}"/>
+                      </j:when>
+                      <j:otherwise>
+                        <span title="${%Inactive}">
+                          (<st:out value="${p.installed.version}"/>)
+                        </span>
+                      </j:otherwise>
+                    </j:choose>
+                  </td>
                 </tr>
               </j:forEach>
             </j:when>
@@ -261,10 +237,6 @@ THE SOFTWARE.
           <div class="bottom-sticker-inner">
             <l:isAdmin>
               <j:if test="${!empty(list)}">
-                <j:if test="${!isUpdates}">
-                  <f:submit value="${%Install without restart}" name="dynamicLoad"/>
-                  <span style="margin-left:2em;"></span>
-                </j:if>
                 <f:submit value="${%Download now and install after restart}"/>
               </j:if>
             </l:isAdmin>
