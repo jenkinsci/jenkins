@@ -362,15 +362,6 @@ THE SOFTWARE.
           <antlr4>
             <antlr4Formatter />
           </antlr4>
-          <groovy>
-            <includes>
-              <include>Jenkinsfile</include>
-              <include>licenseCompleter.groovy</include>
-            </includes>
-            <greclipse>
-              <file>config/greclipse.properties</file>
-            </greclipse>
-          </groovy>
           <java combine.self="override">
             <endWithNewline />
             <importOrder />
