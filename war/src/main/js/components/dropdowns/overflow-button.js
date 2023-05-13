@@ -11,9 +11,10 @@ function init() {
     1000,
     (element) => {
       Utils.generateDropdown(element, (instance) => {
-        instance.setContent(element.nextElementSibling.content)
-      })
-    });
+        instance.setContent(element.nextElementSibling.content);
+      });
+    }
+  );
 }
 
 export default { init };

@@ -19,7 +19,8 @@
 .page-footer__flex-row > *:not(script) {
   display: flex;
   align-items: center;
-  padding: calc(var(--section-padding) / 2) calc(var(--section-padding) - 0.85rem);
+  padding: calc(var(--section-padding) / 2)
+    calc(var(--section-padding) - 0.85rem);
   gap: calc(var(--section-padding) / 2);
 }
 
@@ -39,7 +40,8 @@
     color: var(--text-color) !important;
   }
 
-  svg, .jenkins-overflow-button__ellipsis {
+  svg,
+  .jenkins-overflow-button__ellipsis {
     display: none;
   }
 }
