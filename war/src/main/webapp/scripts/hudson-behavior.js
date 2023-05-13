@@ -249,8 +249,7 @@ var FormChecker = {
       url = url.substring(0, idx);
     }
 
-    const parsedUrl = method === "get" ? `${url}?${params.parameters}` : url;
-    fetch(parsedUrl, {
+    fetch(url, {
       method: params.method,
       headers: crumb.wrap({
         "Content-Type": "application/x-www-form-urlencoded",
