@@ -1906,7 +1906,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@webpack-cli/serve@npm:^2.0.3":
+"@webpack-cli/serve@npm:^2.0.4":
   version: 2.0.4
   resolution: "@webpack-cli/serve@npm:2.0.4"
   peerDependencies:
@@ -4007,7 +4007,7 @@ __metadata:
     stylelint-config-standard: 33.0.0
     tippy.js: 6.3.7
     webpack: 5.82.0
-    webpack-cli: 5.1.0
+    webpack-cli: 5.1.1
     webpack-remove-empty-scripts: 1.0.3
     window-handle: 1.0.1
   languageName: unknown
@@ -6519,14 +6519,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"webpack-cli@npm:5.1.0":
-  version: 5.1.0
-  resolution: "webpack-cli@npm:5.1.0"
+"webpack-cli@npm:5.1.1":
+  version: 5.1.1
+  resolution: "webpack-cli@npm:5.1.1"
   dependencies:
     "@discoveryjs/json-ext": ^0.5.0
     "@webpack-cli/configtest": ^2.1.0
     "@webpack-cli/info": ^2.0.1
-    "@webpack-cli/serve": ^2.0.3
+    "@webpack-cli/serve": ^2.0.4
     colorette: ^2.0.14
     commander: ^10.0.1
     cross-spawn: ^7.0.3
@@ -6547,7 +6547,7 @@ __metadata:
       optional: true
   bin:
     webpack-cli: bin/cli.js
-  checksum: 73749b9e27e16007011266dcd7b935168cc61cd4e346e4c09a697be066a310b822c1f386ba4a87417851eedd6df5812389918be68e275542c8a18e05ca1a719c
+  checksum: 7738e6a84a0098886e1e0c0fd0dab44b7dedfbb0580afbb5ef734c5109dcaee80140bebb5d9f4b40f425029563bb09bcbda8b08d904fa14e60ff632e6dcc8a17
   languageName: node
   linkType: hard
 
