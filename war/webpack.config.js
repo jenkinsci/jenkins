@@ -4,7 +4,6 @@ const path = require("path");
 const MiniCSSExtractPlugin = require("mini-css-extract-plugin");
 const CssMinimizerPlugin = require("css-minimizer-webpack-plugin");
 const RemoveEmptyScriptsPlugin = require("webpack-remove-empty-scripts");
-const CopyPlugin = require("copy-webpack-plugin");
 const { CleanWebpackPlugin: CleanPlugin } = require("clean-webpack-plugin");
 
 module.exports = (env, argv) => ({
@@ -32,6 +31,7 @@ module.exports = (env, argv) => ({
     "pages/manage-jenkins": [
       path.join(__dirname, "src/main/js/pages/manage-jenkins"),
     ],
+    "pages/register": [path.join(__dirname, "src/main/js/pages/register")],
     "keyboard-shortcuts": [
       path.join(__dirname, "src/main/js/keyboard-shortcuts.js"),
     ],
@@ -63,17 +63,6 @@ module.exports = (env, argv) => ({
     new MiniCSSExtractPlugin({
       filename: "[name].css",
     }),
-    new CopyPlugin({
-      // Copies fonts to the src/main/webapp/css for compat purposes
-      // Some plugins or parts of the UI try to load them from these paths
-      patterns: [
-        {
-          context: "src/main/fonts",
-          from: "**/*",
-          to: path.join(__dirname, "src/main/webapp/css"),
-        },
-      ],
-    }),
     // Clean all assets within the specified output.
     // It will not clean copied fonts
     new CleanPlugin(),
@@ -91,6 +80,12 @@ module.exports = (env, argv) => ({
           },
           {
             loader: "css-loader",
+            options: {
+              sourceMap: true,
+            },
+          },
+          {
+            loader: "postcss-loader",
             options: {
               sourceMap: true,
             },

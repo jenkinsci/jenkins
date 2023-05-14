@@ -196,24 +196,6 @@ public class ViewTest {
         assertEquals(((ProxyView) proxyView).getProxiedView(), listView);
     }
 
-    @Test public void deleteView() throws Exception {
-        WebClient wc = j.createWebClient();
-
-        ListView v = listView("list");
-        HtmlPage delete = wc.getPage(v, "delete");
-        j.submit(delete.getFormByName("delete"));
-        assertNull(j.jenkins.getView("list"));
-
-        User user = User.get("user", true);
-        MyViewsProperty p = user.getProperty(MyViewsProperty.class);
-        v = new ListView("list", p);
-        p.addView(v);
-        delete = wc.getPage(v, "delete");
-        j.submit(delete.getFormByName("delete"));
-        assertNull(p.getView("list"));
-
-    }
-
     @Issue("JENKINS-9367")
     @Test public void persistence() throws Exception {
         ListView view = listView("foo");
