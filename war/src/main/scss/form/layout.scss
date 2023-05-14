@@ -44,7 +44,7 @@
   align-items: center;
   font-weight: var(--form-label-font-weight);
   margin-top: 0;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.5rem;
   padding-inline-start: 0;
   padding-inline-end: 0;
 }
@@ -52,7 +52,7 @@
 .jenkins-form-description {
   display: block;
   // Tweaked margin so that it appears visually centred when placed next to `.jenkins-form-label`
-  margin: -0.2rem 0 0.8rem;
+  margin: -0.2rem 0 0.5rem;
   color: var(--text-color-secondary);
   line-height: 1.66;
 }
