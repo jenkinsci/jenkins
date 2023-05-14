@@ -1,0 +1,34 @@
+html {
+  height: 100%;
+  box-sizing: border-box;
+  // Ensure that the 1rem size is 16px and scales with the browser zoom
+  // This is needed because bootstrap 3 overrides the font-size when loaded.
+  //
+  // It's set to 16px instead of 100% because using percentages would trigger
+  // known browser bugs where elements with a font-family: monospace declaration
+  // would not respect relative font-size rules.
+  // The downside is that the page does not resize with the browser's font size,
+  // only with the zoom level.
+  font-size: 16px !important;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--background);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: inherit;
+}
+
+::selection {
+  background: var(--selection-color);
+}
