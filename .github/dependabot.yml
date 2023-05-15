@@ -53,7 +53,7 @@ updates:
         versions: [">=6.0.0"]
   - package-ecosystem: "maven"
     directory: "/"
-    target-branch: "stable-2.375"
+    target-branch: "stable-2.401"
     labels:
       - "into-lts"
       - "needs-justification"
