@@ -55,7 +55,7 @@ updates:
       # Starting with 7.x, Guice switches from javax.* to jakarta.* bindings.
       # See https://github.com/google/guice/wiki/Guice700
       - dependency-name: "com.google.inject:guice-bom"
-        versions: [">=6.0.0"]
+        versions: [">=7.0.0"]
   - package-ecosystem: "maven"
     directory: "/"
     target-branch: "stable-2.375"
