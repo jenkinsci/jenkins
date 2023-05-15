@@ -24,6 +24,9 @@
 
 package jenkins.model.lazy;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.arrayWithSize;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -382,6 +385,19 @@ public class AbstractLazyLoadRunMapTest {
         for (Map.Entry<Integer, Build> e : a.entrySet()) {
             assertTrue(a.entrySet().contains(e));
         }
+    }
+
+    @Test
+    public void toArray() {
+        var es = a.entrySet();
+        assertThat(es.size(), is(3));
+        assertThat(es.toArray(), arrayWithSize(3));
+        assertThat(es.toArray(Object[]::new), arrayWithSize(3));
+        var c = a.getLoadedBuilds().values();
+        assertThat(c.size(), is(3));
+        assertThat(c.toArray(), arrayWithSize(3));
+        assertThat(c.toArray(Object[]::new), arrayWithSize(3));
+        // TODO check behavior of subMap
     }
 
     @Issue("JENKINS-22767")
