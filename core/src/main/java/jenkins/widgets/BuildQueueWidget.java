@@ -27,13 +27,13 @@ package jenkins.widgets;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.model.ComputerSet;
-import hudson.model.Queue;
 import hudson.model.View;
 import hudson.widgets.Widget;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import jenkins.model.Jenkins;
+import jenkins.model.queue.QueueItem;
 import org.jenkinsci.Symbol;
 
 
@@ -41,15 +41,15 @@ public class BuildQueueWidget extends Widget {
     @NonNull
     private String ownerUrl;
     @NonNull
-    private List<Queue.Item> queueItems;
+    private List<QueueItem> queueItems;
 
     private boolean filtered;
 
-    public BuildQueueWidget(@NonNull String ownerUrl, @NonNull List<Queue.Item> queueItems) {
+    public BuildQueueWidget(@NonNull String ownerUrl, @NonNull List<QueueItem> queueItems) {
         this(ownerUrl, queueItems, false);
     }
 
-    public BuildQueueWidget(@NonNull String ownerUrl, @NonNull List<Queue.Item> queueItems, boolean filtered) {
+    public BuildQueueWidget(@NonNull String ownerUrl, @NonNull List<QueueItem> queueItems, boolean filtered) {
         this.ownerUrl = ownerUrl;
         this.queueItems = new ArrayList<>(queueItems);
         this.filtered = filtered;
@@ -62,7 +62,7 @@ public class BuildQueueWidget extends Widget {
 
     @NonNull
     @SuppressWarnings("unused") // stapler
-    public List<Queue.Item> getQueueItems() {
+    public List<QueueItem> getQueueItems() {
         return queueItems;
     }
 
@@ -86,7 +86,7 @@ public class BuildQueueWidget extends Widget {
         @NonNull
         @Override
         public Collection<BuildQueueWidget> createFor(@NonNull View target) {
-            return List.of(new BuildQueueWidget(target.getUrl(), target.getQueueItems(), target.isFilterQueue()));
+            return List.of(new BuildQueueWidget(target.getUrl(), new ArrayList<>(target.getQueueItems()), target.isFilterQueue()));
         }
     }
 
