@@ -2253,25 +2253,30 @@ function encode(str) {
 // when there are multiple form elements of the same name,
 // this method returns the input field of the given name that pairs up
 // with the specified 'base' input element.
+function findMatchingFormInput(base, name) {
+  // find the FORM element that owns us
+  var f = base.closest("form");
+
+  var bases = f.querySelectorAll('input[name="' + base.name + '"]');
+  var targets = f.querySelectorAll('input[name="' + name + '"]');
+
+  for (var i = 0; i < bases.length; i++) {
+    if (bases[i] == base) {
+      return targets[i];
+    }
+  }
+
+  return null; // not found
+}
+
 // TODO remove when Prototype.js is removed
 if (typeof Form === "object") {
+  /** @deprecated For backward compatibility only; use {@link findMatchingFormInput} instead. */
   Form.findMatchingInput = function (base, name) {
-    // find the FORM element that owns us
-    var f = base;
-    while (f.tagName != "FORM") {
-      f = f.parentNode;
-    }
-
-    var bases = Form.getInputs(f, null, base.name);
-    var targets = Form.getInputs(f, null, name);
-
-    for (var i = 0; i < bases.length; i++) {
-      if (bases[i] == base) {
-        return targets[i];
-      }
-    }
-
-    return null; // not found
+    console.warn(
+      "Deprecated call to Form.findMatchingInput detected; use findMatchingFormInput instead."
+    );
+    return findMatchingFormInput(base, name);
   };
 }
 
