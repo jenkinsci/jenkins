@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Ullrich Hafner
+Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, id:cactusman
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,12 +22,26 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<!--
-  Displays the link to delete the build.
--->
+<!-- Confirm deletion of the build/run -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout">
-  <j:if test="${!it.building and !it.keepLog}">
-    <l:task href="${buildUrl.baseUrl}/confirmDelete" icon="icon-edit-delete icon-md" permission="${it.DELETE}" title="${%delete.build(it.displayName)}"/>
-  </j:if>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
+         xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+  <l:layout title="${it.fullDisplayName}">
+    <st:include page="sidepanel.jelly"/>
+    <l:breadcrumb title="${%Confirm deletion}" />
+    <l:main-panel>
+      <j:set var="msg" value="${it.whyKeepLog}"/>
+      <j:if test="${msg!=null}">
+        <p class="warning">${%Warning}: ${msg}</p>
+      </j:if>
+
+      <j:if test="${msg==null}">
+        <form method="post" action="doDelete">
+          <span class="jenkins-!-margin-right-1">${%delete.build(it.displayName)}</span>
+          <f:submit value="${%Delete}" clazz="jenkins-!-destructive-color" />
+        </form>
+      </j:if>
+
+    </l:main-panel>
+  </l:layout>
 </j:jelly>
