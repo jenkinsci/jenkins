@@ -20,6 +20,6 @@
   }
 
   window.addEventListener("load", function () {
-    Event.observe(window, "jenkins:consoleFinished", updateBuildCaptionIcon);
+    window.addEventListener("jenkins:consoleFinished", updateBuildCaptionIcon);
   });
 })();
