@@ -46,7 +46,6 @@ import hudson.model.RootAction;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -640,7 +639,7 @@ public class RepeatableTest {
      */
     private static List<?> getButtonsList(HtmlForm form, String buttonCaption) {
         return form.getByXPath(
-                String.format("//button[text() = '%s' or contains(text(), '%s') or @tooltip = '%s']", buttonCaption, buttonCaption, buttonCaption
+                String.format("//button[text() = '%s'] | //button[@tooltip = '%s']", buttonCaption, buttonCaption, buttonCaption
                 )
         );
     }
