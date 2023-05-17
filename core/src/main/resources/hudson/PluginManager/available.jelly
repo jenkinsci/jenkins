@@ -42,6 +42,9 @@ THE SOFTWARE.
                         autofocus="true"
                         value="${request.getParameter('filter')}" />
         </div>
+        <div class="jenkins-app-bar__controls">
+          <st:include page="check.jelly"/>
+        </div>
       </div>
 
       <script src="${resURL}/jsbundles/plugin-manager-ui.js" type="text/javascript"/>
@@ -58,9 +61,6 @@ THE SOFTWARE.
               </l:isAdmin>
               <th initialSortDir="down">${%Name}</th>
               <th>${%Released}</th>
-              <j:if test="${isUpdates}">
-                <th>${%Installed}</th>
-              </j:if>
             </tr>
           </thead>
           <tbody/>
@@ -73,11 +73,9 @@ THE SOFTWARE.
               <span style="margin-left:2em;"></span>
               <f:submit value="${%Download now and install after restart}"/>
             </l:isAdmin>
-            <st:include page="check.jelly"/>
           </div>
         </div>
       </form>
-
     </l:main-panel>
   </l:layout>
 

@@ -46,7 +46,6 @@ import com.thoughtworks.xstream.io.HierarchicalStreamDriver;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import com.thoughtworks.xstream.io.ReaderWrapper;
-import com.thoughtworks.xstream.io.xml.PrettyPrintWriter;
 import com.thoughtworks.xstream.io.xml.StandardStaxDriver;
 import com.thoughtworks.xstream.mapper.CannotResolveClassException;
 import com.thoughtworks.xstream.mapper.Mapper;
@@ -138,7 +137,7 @@ public class XStream2 extends XStream {
 
         @Override
         public HierarchicalStreamWriter createWriter(Writer out) {
-            return new PrettyPrintWriter(out, getNameCoder());
+            return new PrettyPrintWriter(out, PrettyPrintWriter.XML_1_1, getNameCoder());
         }
 
         @Override
@@ -470,8 +469,18 @@ public class XStream2 extends XStream {
      */
     private static final class AssociatedConverterImpl implements Converter {
         private final XStream xstream;
-        private final ConcurrentHashMap<Class<?>, Converter> cache =
-                new ConcurrentHashMap<>();
+        private static final ClassValue<Class<? extends ConverterMatcher>> classCache = new ClassValue<Class<? extends ConverterMatcher>>() {
+            @Override
+            protected Class<? extends ConverterMatcher> computeValue(Class<?> type) {
+                return computeConverterClass(type);
+            }
+        };
+        private final ClassValue<Converter> cache = new ClassValue<Converter>() {
+            @Override
+            protected Converter computeValue(Class<?> type) {
+                return computeConverter(type);
+            }
+        };
 
         private AssociatedConverterImpl(XStream xstream) {
             this.xstream = xstream;
@@ -482,17 +491,33 @@ public class XStream2 extends XStream {
             if (t == null) {
                 return null;
             }
+            return cache.get(t);
+        }
 
-            Converter result = cache.get(t);
-            if (result != null)
-                // ConcurrentHashMap does not allow null, so use this object to represent null
-                return result == this ? null : result;
+        @CheckForNull
+        private static Class<? extends ConverterMatcher> computeConverterClass(@NonNull Class<?> t) {
             try {
                 final ClassLoader classLoader = t.getClassLoader();
                 if (classLoader == null) {
                     return null;
                 }
-                Class<?> cl = classLoader.loadClass(t.getName() + "$ConverterImpl");
+                String name = t.getName() + "$ConverterImpl";
+                if (classLoader.getResource(name.replace('.', '/') + ".class") == null) {
+                    return null;
+                }
+                return classLoader.loadClass(name).asSubclass(ConverterMatcher.class);
+            } catch (ClassNotFoundException e) {
+                return null;
+            }
+        }
+
+        @CheckForNull
+        private Converter computeConverter(@NonNull Class<?> t) {
+            Class<? extends ConverterMatcher> cl = classCache.get(t);
+            if (cl == null) {
+                return null;
+            }
+            try {
                 Constructor<?> c = cl.getConstructors()[0];
 
                 Class<?>[] p = c.getParameterTypes();
@@ -507,14 +532,9 @@ public class XStream2 extends XStream {
 
                 }
                 ConverterMatcher cm = (ConverterMatcher) c.newInstance(args);
-                result = cm instanceof SingleValueConverter
+                return cm instanceof SingleValueConverter
                         ? new SingleValueConverterWrapper((SingleValueConverter) cm)
                         : (Converter) cm;
-                cache.put(t, result);
-                return result;
-            } catch (ClassNotFoundException e) {
-                cache.put(t, this);  // See above.. this object in cache represents null
-                return null;
             } catch (IllegalAccessException e) {
                 IllegalAccessError x = new IllegalAccessError();
                 x.initCause(e);

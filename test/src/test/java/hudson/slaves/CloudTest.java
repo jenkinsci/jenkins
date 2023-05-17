@@ -82,7 +82,7 @@ public class CloudTest {
     public void cloudNameIsEncodedInGetUrl() {
         ACloud aCloud = new ACloud("../../gibberish", "0");
 
-        assertEquals("Cloud name is encoded in Cloud#getUrl", "cloud/..%2F..%2Fgibberish", aCloud.getUrl());
+        assertEquals("Cloud name is encoded in Cloud#getUrl", "cloud/..%2F..%2Fgibberish/", aCloud.getUrl());
     }
 
     public static final class ACloud extends AbstractCloudImpl {

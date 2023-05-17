@@ -124,6 +124,10 @@ body.full-screen #main-panel {
     border-right: none;
   }
 
+  body.two-column #tasks {
+    margin-right: 20px;
+  }
+
   body.two-column #main-panel {
     margin-left: 0;
     width: 100%;
