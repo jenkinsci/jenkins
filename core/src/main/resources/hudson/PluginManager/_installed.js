@@ -11,8 +11,8 @@
       });
   });
 
-  function flip(o) {
-    let btn = Event.element(o);
+  function flip(event) {
+    let btn = event.target;
 
     // trigger
     fetch(
@@ -26,7 +26,7 @@
     ).then((rsp) => {
       if (!rsp.ok) {
         rsp.text().then((responseText) => {
-          $("needRestart").innerHTML = responseText;
+          document.getElementById("needRestart").innerHTML = responseText;
         });
       }
       updateMsg(btn);
@@ -35,8 +35,11 @@
 
   function updateMsg() {
     // has anything changed since its original state?
-    // eslint-disable-next-line no-undef
-    let e = $A(Form.getInputs("plugins", "checkbox")).find(function (e) {
+    let e = Array.from(
+      document
+        .getElementById("plugins")
+        .querySelectorAll("input[type='checkbox']")
+    ).find(function (e) {
       return String(e.checked) !== e.getAttribute("original");
     });
 
@@ -44,7 +47,8 @@
       e = true;
     }
 
-    $("needRestart").style.display = e != null ? "block" : "none";
+    document.getElementById("needRestart").style.display =
+      e != null ? "block" : "none";
   }
 
   updateMsg(); // set the initial state
