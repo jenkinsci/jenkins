@@ -105,7 +105,8 @@ var repeatableSupport = {
           var addTopButton = document.createElement("button");
           addTopButton.type = "button";
           addTopButton.innerHTML = buttonElement.innerHTML;
-          addTopButton.className = "jenkins-button repeatable-add repeatable-add-top";
+          addTopButton.className =
+            "jenkins-button repeatable-add repeatable-add-top";
           parentOfButton.insertBefore(addTopButton, parentOfButton.firstChild);
           Behaviour.applySubtree(addTopButton, true);
         }
