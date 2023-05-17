@@ -1,3 +1,5 @@
+@use "../abstracts/mixins";
+
 @media (prefers-color-scheme: light) {
   :root {
     --command-palette-results-backdrop-filter: contrast(0.7) brightness(1.5)
@@ -112,7 +114,7 @@
     }
 
     &__item {
-      .item();
+      @include mixins.item;
 
       display: flex;
       align-items: center;
