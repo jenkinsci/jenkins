@@ -323,7 +323,7 @@ public class Security3030Test {
         }
 
         protected HttpResponse processMultipart(StaplerRequest req) throws ServletException {
-            new MultipartFormDataParser(req);
+            new MultipartFormDataParser(req).close();
             return HttpResponses.ok();
         }
     }

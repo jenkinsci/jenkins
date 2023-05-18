@@ -84,11 +84,12 @@ public class BulkChangeTest {
     @Test
     public void bulkChange() throws Exception {
         Point pt = new Point();
-        BulkChange bc = new BulkChange(pt);
-        try {
-            pt.set(0, 0);
-        } finally {
-            bc.commit();
+        try (BulkChange bc = new BulkChange(pt)) {
+            try {
+                pt.set(0, 0);
+            } finally {
+                bc.commit();
+            }
         }
         assertEquals(1, pt.saveCount);
     }
@@ -100,22 +101,25 @@ public class BulkChangeTest {
     public void nestedBulkChange() throws Exception {
         Point pt = new Point();
         Point pt2 = new Point();
-        BulkChange bc1 = new BulkChange(pt);
-        try {
-            BulkChange bc2 = new BulkChange(pt2);
+        try (BulkChange bc1 = new BulkChange(pt)) {
             try {
-                BulkChange bc3 = new BulkChange(pt);
-                try {
-                    pt.set(0, 0);
-                } finally {
-                    bc3.commit();
+                try (BulkChange bc2 = new BulkChange(pt2)) {
+                    try {
+                        try (BulkChange bc3 = new BulkChange(pt)) {
+                            try {
+                                pt.set(0, 0);
+                            } finally {
+                                bc3.commit();
+                            }
+                        }
+                    } finally {
+                        bc2.commit();
+                    }
                 }
+                pt.set(0, 0);
             } finally {
-                bc2.commit();
+                bc1.commit();
             }
-            pt.set(0, 0);
-        } finally {
-            bc1.commit();
         }
         assertEquals(1, pt.saveCount);
     }

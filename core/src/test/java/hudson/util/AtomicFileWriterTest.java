@@ -83,7 +83,7 @@ public class AtomicFileWriterTest {
 
         final Path childFileInSymlinkToDir = Paths.get(zeSymlink.toString(), "childFileInSymlinkToDir");
 
-        new AtomicFileWriter(childFileInSymlinkToDir, StandardCharsets.UTF_8);
+        new AtomicFileWriter(childFileInSymlinkToDir, StandardCharsets.UTF_8).close();
     }
 
     @Test
@@ -168,14 +168,15 @@ public class AtomicFileWriterTest {
         Path filePath = newFile.toPath();
 
         // when
-        AtomicFileWriter w = new AtomicFileWriter(filePath, StandardCharsets.UTF_8);
-        w.write("whatever");
-        w.commit();
+        try (AtomicFileWriter w = new AtomicFileWriter(filePath, StandardCharsets.UTF_8)) {
+            w.write("whatever");
+            w.commit();
 
-        // then
-        assertFalse(w.getTemporaryPath().toFile().exists());
-        assertTrue(filePath.toFile().exists());
+            // then
+            assertFalse(w.getTemporaryPath().toFile().exists());
+            assertTrue(filePath.toFile().exists());
 
-        assertThat(Files.getPosixFilePermissions(filePath), equalTo(DEFAULT_GIVEN_PERMISSIONS));
+            assertThat(Files.getPosixFilePermissions(filePath), equalTo(DEFAULT_GIVEN_PERMISSIONS));
+        }
     }
 }

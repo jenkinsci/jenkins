@@ -50,14 +50,15 @@ public class RewindableRotatingFileOutputStreamTest {
             + "file open, so this case should never occur", Functions.isWindows());
         File dir = tmp.newFolder("dir");
         File base = new File(dir, "x.log");
-        RewindableRotatingFileOutputStream os = new RewindableRotatingFileOutputStream(base, 3);
-        for (int i = 0; i < 2; i++) {
-            FileUtils.deleteDirectory(dir);
-            os.write('.');
-            FileUtils.deleteDirectory(dir);
-            os.write('.');
-            FileUtils.deleteDirectory(dir);
-            os.rewind();
+        try (RewindableRotatingFileOutputStream os = new RewindableRotatingFileOutputStream(base, 3)) {
+            for (int i = 0; i < 2; i++) {
+                FileUtils.deleteDirectory(dir);
+                os.write('.');
+                FileUtils.deleteDirectory(dir);
+                os.write('.');
+                FileUtils.deleteDirectory(dir);
+                os.rewind();
+            }
         }
     }
 

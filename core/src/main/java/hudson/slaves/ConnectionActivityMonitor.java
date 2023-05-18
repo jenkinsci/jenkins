@@ -62,23 +62,24 @@ public class ConnectionActivityMonitor extends AsyncPeriodicWork {
         for (Computer c : Jenkins.get().getComputers()) {
             VirtualChannel ch = c.getChannel();
             if (ch instanceof Channel) {
-                Channel channel = (Channel) ch;
-                if (now - channel.getLastHeard() > TIME_TILL_PING) {
-                    // haven't heard from this agent for a while.
-                    Long lastPing = (Long) channel.getProperty(ConnectionActivityMonitor.class);
+                try (Channel channel = (Channel) ch) {
+                    if (now - channel.getLastHeard() > TIME_TILL_PING) {
+                        // haven't heard from this agent for a while.
+                        Long lastPing = (Long) channel.getProperty(ConnectionActivityMonitor.class);
 
-                    if (lastPing != null && now - lastPing > TIMEOUT) {
-                        LOGGER.info("Repeated ping attempts failed on " + c.getName() + ". Disconnecting");
-                        c.disconnect(OfflineCause.create(Messages._ConnectionActivityMonitor_OfflineCause()));
+                        if (lastPing != null && now - lastPing > TIMEOUT) {
+                            LOGGER.info("Repeated ping attempts failed on " + c.getName() + ". Disconnecting");
+                            c.disconnect(OfflineCause.create(Messages._ConnectionActivityMonitor_OfflineCause()));
+                        } else {
+                            // send a ping. if we receive a reply, it will be reflected in the next getLastHeard() call.
+                            channel.callAsync(PING_COMMAND);
+                            if (lastPing == null)
+                                channel.setProperty(ConnectionActivityMonitor.class, now);
+                        }
                     } else {
-                        // send a ping. if we receive a reply, it will be reflected in the next getLastHeard() call.
-                        channel.callAsync(PING_COMMAND);
-                        if (lastPing == null)
-                            channel.setProperty(ConnectionActivityMonitor.class, now);
+                        // we are receiving data nicely
+                        channel.setProperty(ConnectionActivityMonitor.class, null);
                     }
-                } else {
-                    // we are receiving data nicely
-                    channel.setProperty(ConnectionActivityMonitor.class, null);
                 }
             }
         }

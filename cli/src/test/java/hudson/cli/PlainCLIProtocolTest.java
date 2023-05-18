@@ -72,10 +72,11 @@ public class PlainCLIProtocolTest {
             }
 
             void newop() throws IOException {
-                DataOutputStream dos = new DataOutputStream(upload);
-                dos.writeInt(0);
-                dos.writeByte(99);
-                dos.flush();
+                try (DataOutputStream dos = new DataOutputStream(upload)) {
+                    dos.writeInt(0);
+                    dos.writeByte(99);
+                    dos.flush();
+                }
             }
         }
 
@@ -129,10 +130,11 @@ public class PlainCLIProtocolTest {
             }
 
             void newop() throws IOException {
-                DataOutputStream dos = new DataOutputStream(download);
-                dos.writeInt(0);
-                dos.writeByte(99);
-                dos.flush();
+                try (DataOutputStream dos = new DataOutputStream(download)) {
+                    dos.writeInt(0);
+                    dos.writeByte(99);
+                    dos.flush();
+                }
             }
         }
 
