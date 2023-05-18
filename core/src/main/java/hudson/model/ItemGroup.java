@@ -127,7 +127,7 @@ public interface ItemGroup<T extends Item> extends PersistenceRoot, ModelObject 
      * and filter them by the given type.
      * @since 2.93
      */
-    default <T extends Item> List<T> getAllItems(Class<T> type) {
+    default <R extends Item> List<R> getAllItems(Class<R> type) {
         return Items.getAllItems(this, type);
     }
 
@@ -135,7 +135,7 @@ public interface ItemGroup<T extends Item> extends PersistenceRoot, ModelObject 
      * Similar to {@link #getAllItems(Class)} with additional predicate filtering
      * @since 2.221
      */
-    default <T extends Item> List<T> getAllItems(Class<T> type, Predicate<T> pred) {
+    default <R extends Item> List<R> getAllItems(Class<R> type, Predicate<R> pred) {
         return Items.getAllItems(this, type, pred);
     }
 
@@ -144,7 +144,7 @@ public interface ItemGroup<T extends Item> extends PersistenceRoot, ModelObject 
      * and filter them by the given type.
      * @since 2.93
      */
-    default <T extends Item> Iterable<T> allItems(Class<T> type) {
+    default <R extends Item> Iterable<R> allItems(Class<R> type) {
         return Items.allItems(this, type);
     }
 
@@ -153,7 +153,7 @@ public interface ItemGroup<T extends Item> extends PersistenceRoot, ModelObject 
      * and filter them by the given type and given predicate
      * @since 2.221
      */
-    default <T extends Item> Iterable<T> allItems(Class<T> type, Predicate<T> pred) {
+    default <R extends Item> Iterable<R> allItems(Class<R> type, Predicate<R> pred) {
         return Items.allItems(this, type, pred);
     }
 
