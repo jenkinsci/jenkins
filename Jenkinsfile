@@ -174,7 +174,7 @@ axes.values().combinations {
               sh "launchable verify && launchable record tests --session ${session} --flavor platform=${platform} --flavor jdk=${jdk} maven './**/target/surefire-reports'"
             } else {
               // TODO launchable.exe still not working for some reason
-              bat "python -m launchable verify && python -m launchable record tests --session ${session} --flavor platform=${platform} --flavor jdk=${jdk} maven '.\\**\\target\\surefire-reports'"
+              bat "python -m launchable verify && python -m launchable record tests --session ${session} --flavor platform=${platform} --flavor jdk=${jdk} maven ./**/target/surefire-reports"
             }
           }
         }
