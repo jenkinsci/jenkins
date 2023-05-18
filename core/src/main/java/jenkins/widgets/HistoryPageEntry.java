@@ -25,14 +25,14 @@
 package jenkins.widgets;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
-import hudson.model.Queue;
 import hudson.model.Run;
+import jenkins.model.queue.QueueItem;
 
 /**
  * Represents an entry used by the {@link HistoryPageFilter}.
  *
  * <p>
- * Wraps {@link Queue.Item} and {@link Run} instances from the build queue, normalizing
+ * Wraps {@link QueueItem} and {@link Run} instances from the build queue, normalizing
  * access to the info required for pagination.
  *
  *
@@ -55,8 +55,8 @@ public class HistoryPageEntry<T> {
     }
 
     protected static long getEntryId(@NonNull Object entry) {
-        if (entry instanceof Queue.Item) {
-            return ((Queue.Item) entry).getId();
+        if (entry instanceof QueueItem) {
+            return ((QueueItem) entry).getId();
         } else if (entry instanceof Run) {
             Run run = (Run) entry;
             return Long.MIN_VALUE + run.getNumber();

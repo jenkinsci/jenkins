@@ -4,7 +4,6 @@ function updateListBox(listBox, url, config) {
   config = config || {};
   config = object(config);
   var originalOnSuccess = config.onSuccess;
-  var originalOnFailure = config.onFailure;
   var l = listBox;
 
   // Hacky function to retrofit compatibility with tables-to-divs
@@ -44,17 +43,18 @@ function updateListBox(listBox, url, config) {
     status.innerHTML = "";
   }
   config.onSuccess = function (rsp) {
-    l.classList.remove("select-ajax-pending");
-    var currentSelection = l.value;
-
-    // clear the contents
-    while (l.length > 0) {
-      l.options[0] = null;
-    }
-
-    var selectionSet = false; // is the selection forced by the server?
-    var possibleIndex = null; // if there's a new option that matches the current value, remember its index
     rsp.json().then((result) => {
+      l.classList.remove("select-ajax-pending");
+      var currentSelection = l.value;
+
+      // clear the contents
+      while (l.length > 0) {
+        l.options[0] = null;
+      }
+
+      var selectionSet = false; // is the selection forced by the server?
+      var possibleIndex = null; // if there's a new option that matches the current value, remember its index
+
       var opts = result.values;
       for (var i = 0; i < opts.length; i++) {
         l.options[i] = new Option(opts[i].name, opts[i].value);
@@ -78,8 +78,8 @@ function updateListBox(listBox, url, config) {
     });
   };
   config.onFailure = function (rsp) {
-    l.classList.remove("select-ajax-pending");
     rsp.text().then((responseText) => {
+      l.classList.remove("select-ajax-pending");
       status.innerHTML = responseText;
       if (status.firstElementChild) {
         status.firstElementChild.setAttribute("data-select-ajax-error", "true");
@@ -92,9 +92,6 @@ function updateListBox(listBox, url, config) {
         while (l.length > 0) {
           l.options[0] = null;
         }
-      }
-      if (originalOnFailure !== undefined) {
-        originalOnFailure(rsp);
       }
     });
   };
@@ -133,15 +130,7 @@ Behaviour.specify("SELECT.select", "select", 1000, function (e) {
   }
 
   // controls that this SELECT box depends on
-  var onChange = function (params) {
-    if (e.hasAttribute("isRefilling")) {
-      // Still refilling; wait until the first refill operation is complete before beginning the second one.
-      setTimeout(function () {
-        onChange(params);
-      }, 100);
-      return;
-    }
-    e.setAttribute("isRefilling", true);
+  refillOnChange(e, function (params) {
     var value = e.value;
     updateListBox(e, e.getAttribute("fillUrl"), {
       parameters: params,
@@ -165,12 +154,7 @@ Behaviour.specify("SELECT.select", "select", 1000, function (e) {
         if (hasChanged(e, value)) {
           fireEvent(e, "change");
         }
-        e.removeAttribute("isRefilling");
-      },
-      onFailure: function () {
-        e.removeAttribute("isRefilling");
       },
     });
-  };
-  refillOnChange(e, onChange);
+  });
 });
