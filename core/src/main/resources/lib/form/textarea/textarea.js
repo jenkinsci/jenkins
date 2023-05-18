@@ -28,7 +28,7 @@ Behaviour.specify("TEXTAREA.codemirror", "textarea", 0, function (e) {
   // the form needs to be populated before the "Apply" button
   if (e.closest("form")) {
     // Protect against undefined element
-    Element.on(e.closest("form"), "jenkins:apply", function () {
+    e.closest("form").addEventListener("jenkins:apply", function () {
       e.value = codemirror.getValue();
     });
   }
@@ -39,7 +39,7 @@ Behaviour.specify(
   "textarea",
   100,
   function (e) {
-    var previewDiv = e.querySelector(".textarea-preview");
+    var previewDiv = e.nextSibling;
     var showPreview = e.querySelector(".textarea-show-preview");
     var hidePreview = e.querySelector(".textarea-hide-preview");
     hidePreview.style.display = "none";

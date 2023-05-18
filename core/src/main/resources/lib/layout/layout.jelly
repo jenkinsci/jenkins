@@ -123,11 +123,13 @@ THE SOFTWARE.
     <link rel="mask-icon" href="${resURL}/mask-icon.svg" color="#191717" />
     <meta name="theme-color" content="#ffffff" />
 
-    <script src="${resURL}/scripts/prototype.js" type="text/javascript"/>
+    <l:userExperimentalFlag var="removePrototype" flagClassName="jenkins.model.experimentalflags.RemovePrototypeUserExperimentalFlag" />
+    <j:if test="${!removePrototype}">
+      <script src="${resURL}/scripts/prototype.js" type="text/javascript"/>
+    </j:if>
     <script src="${resURL}/scripts/behavior.js" type="text/javascript"/>
 
-    <!-- we include our own prototype.js, so don't let stapler pull in another. -->
-    <st:adjunct assumes="org.kohsuke.stapler.framework.prototype.prototype" includes="org.kohsuke.stapler.bind"/>
+    <st:adjunct includes="org.kohsuke.stapler.bind"/>
 
     <!-- To use the debug version of YUI, set the system property 'debug.YUI' to true -->
     <j:set var="yuiSuffix" value="${h.yuiSuffix}" />
@@ -178,7 +180,7 @@ THE SOFTWARE.
 
     <j:if test="${layoutType!='full-screen'}">
       <!-- for accessibility, skip the entire navigation bar and etc and go straight to the head of the content -->
-      <a href="#skip2content" class="skiplink">Skip to content</a>
+      <a href="#skip2content" class="jenkins-skip-link">Skip to content</a>
 
       <l:pageHeader title="${%title}"
                     logoAlt="${%jenkinshead.alt}"
