@@ -1,6 +1,6 @@
 (function () {
   const restartRequired = document
-    .querySelector("#is-restart-required-for-completion")
+    .getElementById("is-restart-required-for-completion")
     .getAttribute("data-is-restart-required");
 
   document.addEventListener("DOMContentLoaded", function () {
@@ -29,7 +29,7 @@
           document.getElementById("needRestart").innerHTML = responseText;
         });
       }
-      updateMsg(btn);
+      updateMsg();
     });
   }
 
