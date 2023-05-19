@@ -23,7 +23,7 @@
  */
 package jenkins.monitor;
 
-import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -58,7 +58,7 @@ public final class EndOfLifeOperatingSystemAdminMonitor extends EndOfLifeAdminMo
         super(identifier, dependencyName, beginDisplayDate, endOfSupportDate, dataFile, dataPattern);
     }
 
-    EndOfLifeOperatingSystemAdminMonitor() {
+    EndOfLifeOperatingSystemAdminMonitor() throws IOException {
         super("identifier", "dependencyName", null, null, new File("."), null);
         fillOperatingSystemList();
     }
@@ -68,26 +68,17 @@ public final class EndOfLifeOperatingSystemAdminMonitor extends EndOfLifeAdminMo
      *
      * @return JSON array with the operating system list
      */
-    @CheckForNull
-    private JSONArray getOperatingSystemList() {
-        JSONArray initialOperatingSystemList = null;
-        try {
-            ClassLoader cl = getClass().getClassLoader();
-            URL localOperatingSystemData = cl.getResource("jenkins/monitor/EndOfLifeAdminMonitor/end-of-life-data.json");
-            String initialOperatingSystemJson = IOUtils.toString(localOperatingSystemData.openStream(), StandardCharsets.UTF_8);
-            initialOperatingSystemList = JSONArray.fromObject(initialOperatingSystemJson);
-        } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, e.getMessage(), e);
-        }
+    @NonNull
+    private JSONArray getOperatingSystemList() throws IOException {
+        ClassLoader cl = getClass().getClassLoader();
+        URL localOperatingSystemData = cl.getResource("jenkins/monitor/EndOfLifeAdminMonitor/end-of-life-data.json");
+        String initialOperatingSystemJson = IOUtils.toString(localOperatingSystemData.openStream(), StandardCharsets.UTF_8);
+        JSONArray initialOperatingSystemList = JSONArray.fromObject(initialOperatingSystemJson);
         return initialOperatingSystemList;
     }
 
-    private void fillOperatingSystemList() {
+    private void fillOperatingSystemList() throws IOException {
         JSONArray systems = getOperatingSystemList();
-        if (systems == null) {
-            System.out.println("Empty operating system list");
-            return;
-        }
         for (Object systemObj : systems) {
             if (!(systemObj instanceof JSONObject)) {
                 LOGGER.log(Level.SEVERE, "Wrong object type in operating system end of life monitor data file");
@@ -106,13 +97,13 @@ public final class EndOfLifeOperatingSystemAdminMonitor extends EndOfLifeAdminMo
             if (system.has("start")) {
                 startDate = LocalDate.parse(system.getString("start"));
             } else {
-                LOGGER.log(Level.SEVERE, "No start date for operating system in end of life monitor");
+                LOGGER.log(Level.SEVERE, "No start date for operating system in end of life monitor for pattern {0}", pattern);
                 break;
             }
             if (system.has("effective")) {
                 effectiveDate = LocalDate.parse(system.getString("effective"));
             } else {
-                LOGGER.log(Level.SEVERE, "No effective date for operating system in end of life monitor");
+                LOGGER.log(Level.SEVERE, "No effective date for operating system in end of life monitor for pattern {0}", pattern);
                 break;
             }
             LOGGER.log(Level.FINE, "Pattern {0} starts {1} and is effective {2}",
@@ -121,5 +112,4 @@ public final class EndOfLifeOperatingSystemAdminMonitor extends EndOfLifeAdminMo
         }
 
     }
-}
 }
