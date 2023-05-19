@@ -59,7 +59,7 @@ public final class EndOfLifeOperatingSystemAdminMonitor extends EndOfLifeAdminMo
         JSONArray initialOperatingSystemList = null;
         try {
             ClassLoader cl = getClass().getClassLoader();
-            URL localOperatingSystemData = cl.getResource("jenkins/install/platform-plugins.json");
+            URL localOperatingSystemData = cl.getResource("jenkins/monitor/EndOfLifeAdminMonitor/end-of-life-data.json");
             String initialOperatingSystemJson = IOUtils.toString(localOperatingSystemData.openStream(), StandardCharsets.UTF_8);
             initialOperatingSystemList = JSONArray.fromObject(initialOperatingSystemJson);
         } catch (IOException e) {
