@@ -106,14 +106,22 @@ axes.values().combinations {
             ]
             if (env.CHANGE_ID && !pullRequest.labels.contains('full-test')) {
               def excludesFile
+              def target
+              if (platform == 'windows') {
+                target = '33%'
+              } else if (platform == 'linux' && jdk == 11) {
+                target = '75%'
+              } else {
+                target = '100%'
+              }
               withCredentials([string(credentialsId: 'launchable-jenkins-jenkins', variable: 'LAUNCHABLE_TOKEN')]) {
                 if (isUnix()) {
                   excludesFile = "${tmpDir}/excludes.txt"
-                  sh "launchable verify && launchable subset --session ${session} --time 180m --get-tests-from-previous-sessions --output-exclusion-rules maven >${excludesFile}"
+                  sh "launchable verify && launchable subset --session ${session} --target ${target} --get-tests-from-previous-sessions --output-exclusion-rules maven >${excludesFile}"
                 } else {
                   excludesFile = "${tmpDir}\\excludes.txt"
                   // TODO launchable.exe still not working for some reason
-                  bat "python -m launchable verify && python -m launchable subset --session ${session} --time 180m --get-tests-from-previous-sessions --output-exclusion-rules maven >${excludesFile}"
+                  bat "python -m launchable verify && python -m launchable subset --session ${session} --target ${target} --get-tests-from-previous-sessions --output-exclusion-rules maven >${excludesFile}"
                 }
               }
               mavenOptions.add(0, "-Dsurefire.excludesFile=${excludesFile}")
