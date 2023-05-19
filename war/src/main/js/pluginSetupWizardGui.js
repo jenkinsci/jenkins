@@ -1291,7 +1291,7 @@ var createPluginSetupWizard = function (appendTarget) {
   })();
 
   var setupWizardExtensions = [];
-  /* exported defaultUpdateSiteId */
+  /* exported onSetupWizardInitialized */
   var onSetupWizardInitialized = function (extension) {
     setupWizardExtensions.push(extension);
   };
