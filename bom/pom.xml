@@ -40,7 +40,7 @@ THE SOFTWARE.
   <properties>
     <asm.version>9.5</asm.version>
     <slf4jVersion>2.0.7</slf4jVersion>
-    <stapler.version>1784.v56a_94d9727f2</stapler.version>
+    <stapler.version>1785.vf9cb_74a_b_ec5b_</stapler.version>
     <groovy.version>2.4.21</groovy.version>
   </properties>
 
@@ -49,7 +49,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>com.google.inject</groupId>
         <artifactId>guice-bom</artifactId>
-        <version>5.1.0</version>
+        <version>6.0.0</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>

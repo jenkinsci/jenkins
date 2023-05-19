@@ -21,25 +21,20 @@ stage('Record build') {
   retry(conditions: [kubernetesAgent(handleNonKubernetes: true), nonresumable()], count: 2) {
     node('maven-11') {
       infra.checkoutSCM()
-      launchable.install()
 
       /*
        * Record the primary build for this CI job.
        */
       withCredentials([string(credentialsId: 'launchable-jenkins-jenkins', variable: 'LAUNCHABLE_TOKEN')]) {
-        launchable('verify')
         /*
          * TODO Add the commits of the transitive closure of the Jenkins WAR under test to this build.
          */
-        launchable("record build --name ${env.BUILD_TAG} --source jenkinsci/jenkins=. --link \"View build in CI\"=${env.BUILD_URL}")
+        sh 'launchable verify && launchable record build --name ${BUILD_TAG} --source jenkinsci/jenkins=.'
         axes.values().combinations {
           def (platform, jdk) = it
-          // TODO https://github.com/jenkins-infra/helpdesk/issues/3484
-          if (platform != 'windows') {
-            def sessionFile = "launchable-session-${platform}-jdk${jdk}.txt"
-            launchable("record session --build ${env.BUILD_TAG} --flavor platform=${platform} --flavor jdk=${jdk} --link \"View session in CI\"=${env.BUILD_URL} >${sessionFile}")
-            stash name: sessionFile, includes: sessionFile
-          }
+          def sessionFile = "launchable-session-${platform}-jdk${jdk}.txt"
+          sh "launchable record session --build ${env.BUILD_TAG} --flavor platform=${platform} --flavor jdk=${jdk} >${sessionFile}"
+          stash name: sessionFile, includes: sessionFile
         }
       }
 
@@ -47,12 +42,10 @@ stage('Record build') {
        * Record commits for use in downstream CI jobs that may consume this artifact.
        */
       withCredentials([string(credentialsId: 'launchable-jenkins-acceptance-test-harness', variable: 'LAUNCHABLE_TOKEN')]) {
-        launchable('verify')
-        launchable('record commit')
+        sh 'launchable verify && launchable record commit'
       }
       withCredentials([string(credentialsId: 'launchable-jenkins-bom', variable: 'LAUNCHABLE_TOKEN')]) {
-        launchable('verify')
-        launchable('record commit')
+        sh 'launchable verify && launchable record commit'
       }
     }
   }
@@ -173,15 +166,15 @@ axes.values().combinations {
                   )
             }
           }
-          // TODO https://github.com/jenkins-infra/helpdesk/issues/3484
-          if (platform != 'windows') {
-            launchable.install()
-            withCredentials([string(credentialsId: 'launchable-jenkins-jenkins', variable: 'LAUNCHABLE_TOKEN')]) {
-              launchable('verify')
-              def sessionFile = "launchable-session-${platform}-jdk${jdk}.txt"
-              unstash sessionFile
-              def session = readFile(sessionFile).trim()
-              launchable("record tests --session ${session} --flavor platform=${platform} --flavor jdk=${jdk} --link \"View session in CI\"=${env.BUILD_URL} maven './**/target/surefire-reports'")
+          withCredentials([string(credentialsId: 'launchable-jenkins-jenkins', variable: 'LAUNCHABLE_TOKEN')]) {
+            def sessionFile = "launchable-session-${platform}-jdk${jdk}.txt"
+            unstash sessionFile
+            def session = readFile(sessionFile).trim()
+            if (isUnix()) {
+              sh "launchable verify && launchable record tests --session ${session} --flavor platform=${platform} --flavor jdk=${jdk} maven './**/target/surefire-reports'"
+            } else {
+              // TODO launchable.exe still not working for some reason
+              bat "python -m launchable verify && python -m launchable record tests --session ${session} --flavor platform=${platform} --flavor jdk=${jdk} maven ./**/target/surefire-reports"
             }
           }
         }
@@ -213,10 +206,8 @@ athAxes.values().combinations {
          * Launchable's subset rather than our own.
          */
         /*
-         launchable.install()
          withCredentials([string(credentialsId: 'launchable-jenkins-acceptance-test-harness', variable: 'LAUNCHABLE_TOKEN')]) {
-         launchable('verify')
-         launchable("record tests --no-build --flavor platform=${platform} --flavor jdk=${jdk} --flavor browser=${browser} --link \"View session in CI\"=${env.BUILD_URL} maven './target/ath-reports'")
+         sh "launchable verify && launchable record tests --no-build --flavor platform=${platform} --flavor jdk=${jdk} --flavor browser=${browser} maven './target/ath-reports'"
          }
          */
       }
