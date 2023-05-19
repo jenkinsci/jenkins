@@ -80,27 +80,24 @@ public final class EndOfLifeOperatingSystemAdminMonitor {
                 break;
             }
             JSONObject system = (JSONObject) systemObj;
-            Pattern pattern;
-            LocalDate startDate;
-            LocalDate effectiveDate;
-            if (system.has("pattern")) {
-                pattern = Pattern.compile(system.getString("pattern"));
-            } else {
+            if (!system.has("pattern")) {
                 LOGGER.log(Level.SEVERE, "No pattern to be matched in operating system end of life monitor");
                 break;
             }
-            if (system.has("start")) {
-                startDate = LocalDate.parse(system.getString("start"));
-            } else {
+            Pattern pattern = Pattern.compile(system.getString("pattern"));
+
+            if (!system.has("start")) {
                 LOGGER.log(Level.SEVERE, "No start date for operating system in end of life monitor for pattern {0}", pattern);
                 break;
             }
-            if (system.has("effective")) {
-                effectiveDate = LocalDate.parse(system.getString("effective"));
-            } else {
+            LocalDate startDate = LocalDate.parse(system.getString("start"));
+
+            if (!system.has("effective")) {
                 LOGGER.log(Level.SEVERE, "No effective date for operating system in end of life monitor for pattern {0}", pattern);
                 break;
             }
+            LocalDate effectiveDate = LocalDate.parse(system.getString("effective"));
+
             LOGGER.log(Level.FINE, "Pattern {0} starts {1} and is effective {2}",
                     new Object[]{pattern, startDate, effectiveDate});
             data.add(new EndOfLifeData(pattern, startDate, effectiveDate));
