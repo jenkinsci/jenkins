@@ -106,14 +106,7 @@ axes.values().combinations {
             ]
             if (env.CHANGE_ID && !pullRequest.labels.contains('full-test')) {
               def excludesFile
-              def target
-              if (platform == 'windows') {
-                target = '30%'
-              } else if (platform == 'linux' && jdk == 11) {
-                target = '80%'
-              } else {
-                target = '100%'
-              }
+              def target = platform == 'windows' ? '30%' : '100%'
               withCredentials([string(credentialsId: 'launchable-jenkins-jenkins', variable: 'LAUNCHABLE_TOKEN')]) {
                 if (isUnix()) {
                   excludesFile = "${tmpDir}/excludes.txt"
