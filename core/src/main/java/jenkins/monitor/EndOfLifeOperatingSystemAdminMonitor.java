@@ -24,6 +24,7 @@
 package jenkins.monitor;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.model.AdministrativeMonitor;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -37,7 +38,9 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.IOUtils;
 
-public final class EndOfLifeOperatingSystemAdminMonitor {
+public final class EndOfLifeOperatingSystemAdminMonitor extends AdministrativeMonitor {
+
+    private boolean disabled = false;
 
     private static class EndOfLifeData {
 
@@ -103,6 +106,15 @@ public final class EndOfLifeOperatingSystemAdminMonitor {
             data.add(new EndOfLifeData(pattern, startDate, effectiveDate));
         }
 
+    }
+
+    @Override
+    public boolean isActivated() {
+        if (disabled) {
+            LOGGER.log(Level.FINE, "Not activated - disabled in {0}", "xyzzy");
+            return false;
+        }
+        return true;
     }
 
     static final Logger LOGGER = Logger.getLogger(EndOfLifeOperatingSystemAdminMonitor.class.getName());

@@ -28,22 +28,20 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 
-/**
- *
- * @author mwaite
- */
 public class EndOfLifeOperatingSystemAdminMonitorTest {
 
     public EndOfLifeOperatingSystemAdminMonitorTest() {
     }
 
-    /**
-     * Test of getOperatingSystemList method, of class
-     * EndOfLifeOperatingSystemAdminMonitor.
-     */
     @Test
     public void testGetOperatingSystemList() throws IOException {
         assertNotNull(new EndOfLifeOperatingSystemAdminMonitor());
+    }
+
+    @Test
+    public void testIsActivated() throws IOException {
+        EndOfLifeOperatingSystemAdminMonitor monitor = new EndOfLifeOperatingSystemAdminMonitor();
+        assertTrue(monitor.isActivated());
     }
 
 }
