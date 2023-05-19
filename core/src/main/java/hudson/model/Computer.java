@@ -170,9 +170,16 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
 
     /**
      * Contains info about reason behind computer being offline.
+     * This is set when the computer gets disconnected (e.g. due to something calling
+     * {@link #disconnect(OfflineCause)}, the remote process terminating or network problems).
+     * For historic reasons this is also set when a computer is set temporarily offline.
      */
     protected volatile OfflineCause offlineCause;
 
+    /**
+     * Contains the information why the computer was put temporarily offline. Temporarily offline means
+     * that the computer is not accepting new tasks for execution, but it can be still connected.
+     */
     protected volatile OfflineCause temporarilyOfflineCause;
 
     private long connectTime = 0;
@@ -356,7 +363,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     /**
-     * If the computer was offline (either temporarily or not),
+     * If the computer is offline (either temporarily or not),
      * this method will return the cause.
      *
      * @return
@@ -364,7 +371,10 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     @Exported
     public OfflineCause getOfflineCause() {
-        return offlineCause;
+        if (offlineCause != null) {
+            return offlineCause;
+        }
+        return temporarilyOfflineCause;
     }
 
     /**
@@ -380,7 +390,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     /**
-     * If the computer was offline (either temporarily or not),
+     * If the computer is offline (either temporarily or not),
      * this method will return the cause as a string (without user info).
      *
      * @return
@@ -755,7 +765,6 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     public void setTemporarilyOffline(boolean temporarilyOffline, OfflineCause cause) {
         temporarilyOfflineCause = temporarilyOffline ? cause : null;
-        offlineCause = temporarilyOfflineCause;
         this.temporarilyOffline = temporarilyOffline;
         Node node = getNode();
         if (node != null) {
