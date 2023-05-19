@@ -57,7 +57,13 @@ public final class EndOfLifeOperatingSystemAdminMonitor extends AdministrativeMo
 
     private final List<EndOfLifeData> data = new ArrayList<>();
 
+    public EndOfLifeOperatingSystemAdminMonitor(String id) throws IOException {
+        super(id);
+        fillOperatingSystemList();
+    }
+
     public EndOfLifeOperatingSystemAdminMonitor() throws IOException {
+        super();
         fillOperatingSystemList();
     }
 
