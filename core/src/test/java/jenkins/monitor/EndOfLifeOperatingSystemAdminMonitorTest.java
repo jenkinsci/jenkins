@@ -44,4 +44,11 @@ public class EndOfLifeOperatingSystemAdminMonitorTest {
         assertTrue(monitor.isActivated());
     }
 
+    @Test
+    public void testNotIsActivatedWhenDisabled() throws IOException {
+        EndOfLifeOperatingSystemAdminMonitor monitor = new EndOfLifeOperatingSystemAdminMonitor();
+        monitor.setDisabled(true);
+        assertFalse(monitor.isActivated());
+    }
+
 }

@@ -117,5 +117,10 @@ public final class EndOfLifeOperatingSystemAdminMonitor extends AdministrativeMo
         return true;
     }
 
+    /* Package protected for tests */
+    void setDisabled(boolean value) {
+        disabled = value;
+    }
+
     static final Logger LOGGER = Logger.getLogger(EndOfLifeOperatingSystemAdminMonitor.class.getName());
 }
