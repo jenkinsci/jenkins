@@ -23,6 +23,7 @@
  */
 package jenkins.monitor;
 
+import java.io.IOException;
 import static org.junit.Assert.*;
 
 import org.junit.Test;
@@ -41,9 +42,8 @@ public class EndOfLifeOperatingSystemAdminMonitorTest {
      * EndOfLifeOperatingSystemAdminMonitor.
      */
     @Test
-    public void testGetOperatingSystemList() {
-        EndOfLifeOperatingSystemAdminMonitor instance = new EndOfLifeOperatingSystemAdminMonitor();
-        assertNotNull(instance);
+    public void testGetOperatingSystemList() throws IOException {
+        assertNotNull(new EndOfLifeOperatingSystemAdminMonitor());
     }
 
 }

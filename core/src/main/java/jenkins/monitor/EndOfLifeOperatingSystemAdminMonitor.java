@@ -24,7 +24,6 @@
 package jenkins.monitor;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
-import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -32,12 +31,13 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.IOUtils;
 
-public final class EndOfLifeOperatingSystemAdminMonitor extends EndOfLifeAdminMonitor {
+public final class EndOfLifeOperatingSystemAdminMonitor {
 
     private static class EndOfLifeData {
 
@@ -54,12 +54,7 @@ public final class EndOfLifeOperatingSystemAdminMonitor extends EndOfLifeAdminMo
 
     private final List<EndOfLifeData> data = new ArrayList<>();
 
-    public EndOfLifeOperatingSystemAdminMonitor(String identifier, String dependencyName, LocalDate beginDisplayDate, LocalDate endOfSupportDate, File dataFile, Pattern dataPattern) {
-        super(identifier, dependencyName, beginDisplayDate, endOfSupportDate, dataFile, dataPattern);
-    }
-
-    EndOfLifeOperatingSystemAdminMonitor() throws IOException {
-        super("identifier", "dependencyName", null, null, new File("."), null);
+    public EndOfLifeOperatingSystemAdminMonitor() throws IOException {
         fillOperatingSystemList();
     }
 
@@ -112,4 +107,6 @@ public final class EndOfLifeOperatingSystemAdminMonitor extends EndOfLifeAdminMo
         }
 
     }
+
+    static final Logger LOGGER = Logger.getLogger(EndOfLifeOperatingSystemAdminMonitor.class.getName());
 }
