@@ -121,7 +121,7 @@ axes.values().combinations {
                 } else {
                   excludesFile = "${tmpDir}\\excludes.txt"
                   // TODO launchable.exe still not working for some reason
-                  bat "python -m launchable verify && python -m launchable subset --session ${session} --target ${target} --get-tests-from-previous-sessions --output-exclusion-rules maven >${excludesFile}"
+                  bat "python -m launchable verify && python -m launchable subset --session ${session} --target ${target}% --get-tests-from-previous-sessions --output-exclusion-rules maven >${excludesFile}"
                 }
               }
               mavenOptions.add(0, "-Dsurefire.excludesFile=${excludesFile}")
