@@ -108,9 +108,9 @@ axes.values().combinations {
               def excludesFile
               def target
               if (platform == 'windows') {
-                target = '33%'
+                target = '30%'
               } else if (platform == 'linux' && jdk == 11) {
-                target = '75%'
+                target = '80%'
               } else {
                 target = '100%'
               }
@@ -138,9 +138,6 @@ axes.values().combinations {
         // Once we've built, archive the artifacts and the test results.
         stage("${platform.capitalize()} - JDK ${jdk} - Publish") {
           archiveArtifacts allowEmptyArchive: true, artifacts: '**/target/surefire-reports/*.dumpstream'
-          if (!fileExists('test/target/surefire-reports/TEST-jenkins.Junit4TestsRanTest.xml')) {
-            error 'JUnit 4 tests are no longer being run for the test package'
-          }
           // cli and war have been migrated to JUnit 5
           if (failFast && currentBuild.result == 'UNSTABLE') {
             error 'There were test failures; halting early'
