@@ -412,7 +412,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * @return
      *      empty string if the cause is null
      */
-    private String getOfflineCauseReason(OfflineCause cause) {
+    private static String getOfflineCauseReason(OfflineCause cause) {
         if (cause == null) {
             return "";
         }
@@ -672,15 +672,12 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     /**
      * Helper for the UI
      *
-     * @return
-     *   true if the agent is offline and not trying to connect currently and the cause differs from the temporarily offline cause
+     * @return true if the agent is offline and not trying to connect currently and the cause differs from the temporarily offline cause
      */
     @Restricted(NoExternalUse.class)
-    public boolean isOfflineAfterDisconnect()
-    {
-      return offlineCause != null && offlineCause != temporarilyOfflineCause && isOffline() && ! isConnecting();
+    public boolean isOfflineAfterDisconnect() {
+        return offlineCause != null && offlineCause != temporarilyOfflineCause && isOffline() && !isConnecting();
     }
-
 
     /**
      * This method is called to determine whether manual launching of the agent is allowed at this point in time.
