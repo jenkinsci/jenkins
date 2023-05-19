@@ -23,14 +23,35 @@
  */
 package jenkins.monitor;
 
-import static org.junit.Assert.*;
-
 import java.io.IOException;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 public class EndOfLifeOperatingSystemAdminMonitorTest {
 
-    public EndOfLifeOperatingSystemAdminMonitorTest() {
+    private final EndOfLifeOperatingSystemAdminMonitor monitor;
+
+    public EndOfLifeOperatingSystemAdminMonitorTest() throws IOException {
+        this.monitor = new EndOfLifeOperatingSystemAdminMonitor();
+    }
+
+    @Test
+    public void testGetDisplayName() {
+        assertThat(monitor.getDisplayName(), is(monitor.getClass().getName()));
+    }
+
+    @Test
+    public void testGetUrl() {
+        assertThat(monitor.getUrl(), is("administrativeMonitor/" + monitor.getClass().getName()));
+    }
+
+    @Test
+    public void testGetSearchUrl() {
+        assertThat(monitor.getSearchUrl(), is("administrativeMonitor/" + monitor.getClass().getName()));
     }
 
     @Test
@@ -40,13 +61,11 @@ public class EndOfLifeOperatingSystemAdminMonitorTest {
 
     @Test
     public void testIsActivated() throws IOException {
-        EndOfLifeOperatingSystemAdminMonitor monitor = new EndOfLifeOperatingSystemAdminMonitor();
         assertTrue(monitor.isActivated());
     }
 
     @Test
     public void testNotIsActivatedWhenDisabled() throws IOException {
-        EndOfLifeOperatingSystemAdminMonitor monitor = new EndOfLifeOperatingSystemAdminMonitor();
         monitor.setDisabled(true);
         assertFalse(monitor.isActivated());
     }
