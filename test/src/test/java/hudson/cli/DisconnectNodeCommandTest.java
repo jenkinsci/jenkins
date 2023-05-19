@@ -236,8 +236,7 @@ public class DisconnectNodeCommandTest {
         assertComputerState("aCause", slave2);
     }
 
-    private void assertComputerState(String message, DumbSlave agent)
-    {
+    private static void assertComputerState(String message, DumbSlave agent) {
         Computer computer = agent.toComputer();
         assertThat(computer.isOffline(), equalTo(true));
         assertThat(computer.getOfflineCause(), instanceOf(OfflineCause.ByCLI.class));
