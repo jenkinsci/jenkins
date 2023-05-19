@@ -31,7 +31,6 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.logging.Level;
 import java.util.regex.Pattern;
-import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
 import org.apache.commons.io.IOUtils;
 

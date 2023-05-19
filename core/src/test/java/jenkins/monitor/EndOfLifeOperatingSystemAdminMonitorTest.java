@@ -23,10 +23,10 @@
  */
 package jenkins.monitor;
 
+import static org.junit.Assert.*;
+
 import net.sf.json.JSONArray;
 import org.junit.Test;
-import static org.junit.Assert.*;
-import org.junit.Rule;
 
 /**
  *

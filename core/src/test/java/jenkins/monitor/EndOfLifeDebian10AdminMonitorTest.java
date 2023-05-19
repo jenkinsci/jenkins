@@ -102,19 +102,4 @@ public class EndOfLifeDebian10AdminMonitorTest {
         assertThat(testFileMonitor.getRequiredPermission(), is(Jenkins.SYSTEM_READ));
         assertThat(testFileMonitor.isUnsupported(), is(LocalDate.now().isAfter(END_OF_SUPPORT_DATE)));
     }
-
-    /**
-     * Test of getEndOfSupportDate method, of class EndOfLifeDebian10AdminMonitor.
-     */
-    @Test
-    public void testGetEndOfSupportDate() {
-        System.out.println("getEndOfSupportDate");
-        EndOfLifeDebian10AdminMonitor instance = new EndOfLifeDebian10AdminMonitor();
-        String expResult = "";
-        String result = instance.getEndOfSupportDate();
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
 }
