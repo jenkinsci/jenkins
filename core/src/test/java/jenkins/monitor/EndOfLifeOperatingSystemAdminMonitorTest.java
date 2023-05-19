@@ -23,12 +23,13 @@
  */
 package jenkins.monitor;
 
-import java.io.IOException;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+
+import java.io.IOException;
 import org.junit.Test;
 
 public class EndOfLifeOperatingSystemAdminMonitorTest {
@@ -68,6 +69,11 @@ public class EndOfLifeOperatingSystemAdminMonitorTest {
     public void testNotIsActivatedWhenDisabled() throws IOException {
         monitor.setDisabled(true);
         assertFalse(monitor.isActivated());
+    }
+
+    @Test
+    public void testIsSecurity() throws IOException {
+        assertFalse(monitor.isSecurity());
     }
 
 }

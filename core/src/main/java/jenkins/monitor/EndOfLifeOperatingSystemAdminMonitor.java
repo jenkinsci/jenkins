@@ -41,6 +41,7 @@ import org.apache.commons.io.IOUtils;
 public final class EndOfLifeOperatingSystemAdminMonitor extends AdministrativeMonitor {
 
     private boolean disabled = false;
+    private boolean afterStartDate = false;
 
     private static class EndOfLifeData {
 
@@ -117,7 +118,11 @@ public final class EndOfLifeOperatingSystemAdminMonitor extends AdministrativeMo
     @Override
     public boolean isActivated() {
         if (disabled) {
-            LOGGER.log(Level.FINE, "Not activated - disabled in {0}", "xyzzy");
+            LOGGER.log(Level.FINE, "Not activated because disabled");
+            return false;
+        }
+        if (!afterStartDate) {
+            LOGGER.log(Level.FINE, "Not activated because it is before the start date");
             return false;
         }
         return true;
