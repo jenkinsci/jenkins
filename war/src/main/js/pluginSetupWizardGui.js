@@ -1291,7 +1291,7 @@ var createPluginSetupWizard = function (appendTarget) {
   })();
 
   var setupWizardExtensions = [];
-  // eslint-disable-next-line no-unused-vars
+  /* exported defaultUpdateSiteId */
   var onSetupWizardInitialized = function (extension) {
     setupWizardExtensions.push(extension);
   };
