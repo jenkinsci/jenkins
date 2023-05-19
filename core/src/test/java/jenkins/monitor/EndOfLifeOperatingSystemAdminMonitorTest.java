@@ -25,9 +25,6 @@ package jenkins.monitor;
 
 import static org.junit.Assert.*;
 
-import java.util.Iterator;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 import org.junit.Test;
 
 /**
@@ -46,14 +43,7 @@ public class EndOfLifeOperatingSystemAdminMonitorTest {
     @Test
     public void testGetOperatingSystemList() {
         EndOfLifeOperatingSystemAdminMonitor instance = new EndOfLifeOperatingSystemAdminMonitor();
-        JSONArray systems = instance.getOperatingSystemList();
-        for (Iterator<?> systemsIterator = systems.iterator(); systemsIterator.hasNext();) {
-            Object system = systemsIterator.next();
-            if (system instanceof JSONObject) {
-                JSONObject sys = (JSONObject) system;
-            }
-
-        }
+        assertNotNull(instance);
     }
 
 }

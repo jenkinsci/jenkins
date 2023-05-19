@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2023 mwaite.
+ * Copyright 2023 Mark Waite.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,23 +29,38 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.regex.Pattern;
 import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 import org.apache.commons.io.IOUtils;
 
 public final class EndOfLifeOperatingSystemAdminMonitor extends EndOfLifeAdminMonitor {
 
-    private final JSONArray data;
+    private static class EndOfLifeData {
+
+        final Pattern pattern;
+        final LocalDate startDate;
+        final LocalDate effectiveDate;
+
+        public EndOfLifeData(Pattern pattern, LocalDate startDate, LocalDate effectiveDate) {
+            this.pattern = pattern;
+            this.startDate = startDate;
+            this.effectiveDate = effectiveDate;
+        }
+    }
+
+    private final List<EndOfLifeData> data = new ArrayList<>();
 
     public EndOfLifeOperatingSystemAdminMonitor(String identifier, String dependencyName, LocalDate beginDisplayDate, LocalDate endOfSupportDate, File dataFile, Pattern dataPattern) {
         super(identifier, dependencyName, beginDisplayDate, endOfSupportDate, dataFile, dataPattern);
-        data = getOperatingSystemList();
     }
 
     EndOfLifeOperatingSystemAdminMonitor() {
         super("identifier", "dependencyName", null, null, new File("."), null);
-        data = getOperatingSystemList();
+        fillOperatingSystemList();
     }
 
     /**
@@ -54,8 +69,7 @@ public final class EndOfLifeOperatingSystemAdminMonitor extends EndOfLifeAdminMo
      * @return JSON array with the operating system list
      */
     @CheckForNull
-    /*package*/ JSONArray getOperatingSystemList() {
-        // Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+    private JSONArray getOperatingSystemList() {
         JSONArray initialOperatingSystemList = null;
         try {
             ClassLoader cl = getClass().getClassLoader();
@@ -68,4 +82,44 @@ public final class EndOfLifeOperatingSystemAdminMonitor extends EndOfLifeAdminMo
         return initialOperatingSystemList;
     }
 
+    private void fillOperatingSystemList() {
+        JSONArray systems = getOperatingSystemList();
+        if (systems == null) {
+            System.out.println("Empty operating system list");
+            return;
+        }
+        for (Object systemObj : systems) {
+            if (!(systemObj instanceof JSONObject)) {
+                LOGGER.log(Level.SEVERE, "Wrong object type in operating system end of life monitor data file");
+                break;
+            }
+            JSONObject system = (JSONObject) systemObj;
+            Pattern pattern;
+            LocalDate startDate;
+            LocalDate effectiveDate;
+            if (system.has("pattern")) {
+                pattern = Pattern.compile(system.getString("pattern"));
+            } else {
+                LOGGER.log(Level.SEVERE, "No pattern to be matched in operating system end of life monitor");
+                break;
+            }
+            if (system.has("start")) {
+                startDate = LocalDate.parse(system.getString("start"));
+            } else {
+                LOGGER.log(Level.SEVERE, "No start date for operating system in end of life monitor");
+                break;
+            }
+            if (system.has("effective")) {
+                effectiveDate = LocalDate.parse(system.getString("effective"));
+            } else {
+                LOGGER.log(Level.SEVERE, "No effective date for operating system in end of life monitor");
+                break;
+            }
+            LOGGER.log(Level.FINE, "Pattern {0} starts {1} and is effective {2}",
+                    new Object[]{pattern, startDate, effectiveDate});
+            data.add(new EndOfLifeData(pattern, startDate, effectiveDate));
+        }
+
+    }
+}
 }

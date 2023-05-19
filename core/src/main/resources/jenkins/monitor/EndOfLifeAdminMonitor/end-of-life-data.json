@@ -6,17 +6,17 @@
   },
   {
     "pattern": "Oracle Linux.* 7",
-    "startdate": "2023-05-06",
-    "effectivedate": "2023-07-08",
+    "start": "2023-05-06",
+    "effective": "2023-07-08",
   },
   {
     "pattern": "Scientific Linux.* 7",
-    "startdate": "2023-09-10",
-    "effectivedate": "2023-11-12",
+    "start": "2023-09-10",
+    "effective": "2023-11-12",
   },
   {
     "pattern": "CentOS Linux.* 7",
-    "startdate": "2023-01-02",
-    "effectivedate": "2023-03-04",
+    "start": "2023-01-02",
+    "effective": "2023-03-04",
   }
 ]
