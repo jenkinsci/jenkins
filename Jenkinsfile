@@ -32,6 +32,9 @@ stage('Record build') {
         sh 'launchable verify && launchable record build --name ${BUILD_TAG} --source jenkinsci/jenkins=.'
         axes.values().combinations {
           def (platform, jdk) = it
+          if (platform == 'windows' && jdk != 17) {
+            return // unnecessary use of hardware
+          }
           def sessionFile = "launchable-session-${platform}-jdk${jdk}.txt"
           sh "launchable record session --build ${env.BUILD_TAG} --flavor platform=${platform} --flavor jdk=${jdk} >${sessionFile}"
           stash name: sessionFile, includes: sessionFile
@@ -72,29 +75,50 @@ axes.values().combinations {
           infra.checkoutSCM()
         }
 
-        def changelistF = "${pwd tmp: true}/changelist"
-        def m2repo = "${pwd tmp: true}/m2repo"
+        def tmpDir = pwd(tmp: true)
+        def changelistF = "${tmpDir}/changelist"
+        def m2repo = "${tmpDir}/m2repo"
+        def session
 
         // Now run the actual build.
         stage("${platform.capitalize()} - JDK ${jdk} - Build / Test") {
           timeout(time: 6, unit: 'HOURS') {
+            dir(tmpDir) {
+              def sessionFile = "launchable-session-${platform}-jdk${jdk}.txt"
+              unstash sessionFile
+              session = readFile(sessionFile).trim()
+            }
+            def mavenOptions = [
+              '-Pdebug',
+              '-Penable-jacoco',
+              '--update-snapshots',
+              "-Dmaven.repo.local=$m2repo",
+              '-Dmaven.test.failure.ignore',
+              '-DforkCount=2',
+              '-Dspotbugs.failOnError=false',
+              '-Dcheckstyle.failOnViolation=false',
+              '-Dset.changelist',
+              'help:evaluate',
+              '-Dexpression=changelist',
+              "-Doutput=$changelistF",
+              'clean',
+              'install',
+            ]
+            if (env.CHANGE_ID && !pullRequest.labels.contains('full-test')) {
+              def excludesFile
+              withCredentials([string(credentialsId: 'launchable-jenkins-jenkins', variable: 'LAUNCHABLE_TOKEN')]) {
+                if (isUnix()) {
+                  excludesFile = "${tmpDir}/excludes.txt"
+                  sh "launchable verify && launchable subset --session ${session} --time 180m --get-tests-from-previous-sessions --output-exclusion-rules maven >${excludesFile}"
+                } else {
+                  excludesFile = "${tmpDir}\\excludes.txt"
+                  // TODO launchable.exe still not working for some reason
+                  bat "python -m launchable verify && python -m launchable subset --session ${session} --time 180m --get-tests-from-previous-sessions --output-exclusion-rules maven >${excludesFile}"
+                }
+              }
+              mavenOptions.add(0, "-Dsurefire.excludesFile=${excludesFile}")
+            }
             realtimeJUnit(healthScaleFactor: 20.0, testResults: '*/target/surefire-reports/*.xml') {
-              def mavenOptions = [
-                '-Pdebug',
-                '-Penable-jacoco',
-                '--update-snapshots',
-                "-Dmaven.repo.local=$m2repo",
-                '-Dmaven.test.failure.ignore',
-                '-DforkCount=2',
-                '-Dspotbugs.failOnError=false',
-                '-Dcheckstyle.failOnViolation=false',
-                '-Dset.changelist',
-                'help:evaluate',
-                '-Dexpression=changelist',
-                "-Doutput=$changelistF",
-                'clean',
-                'install',
-              ]
               infra.runMaven(mavenOptions, jdk)
               if (isUnix()) {
                 sh 'git add . && git diff --exit-code HEAD'
@@ -167,9 +191,6 @@ axes.values().combinations {
             }
           }
           withCredentials([string(credentialsId: 'launchable-jenkins-jenkins', variable: 'LAUNCHABLE_TOKEN')]) {
-            def sessionFile = "launchable-session-${platform}-jdk${jdk}.txt"
-            unstash sessionFile
-            def session = readFile(sessionFile).trim()
             if (isUnix()) {
               sh "launchable verify && launchable record tests --session ${session} --flavor platform=${platform} --flavor jdk=${jdk} maven './**/target/surefire-reports'"
             } else {
