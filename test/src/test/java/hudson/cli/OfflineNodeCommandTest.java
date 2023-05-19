@@ -415,7 +415,7 @@ public class OfflineNodeCommandTest {
         assertOfflineComputerState("aCause", masterComputer.getNode());
     }
 
-    public void assertOfflineComputerState(String message, Node ... agents) {
+    private static void assertOfflineComputerState(String message, Node... agents) {
         for (Node agent : agents) {
             Computer computer = agent.toComputer();
             assertThat(computer.isOffline(), equalTo(true));
