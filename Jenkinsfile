@@ -138,9 +138,6 @@ axes.values().combinations {
         // Once we've built, archive the artifacts and the test results.
         stage("${platform.capitalize()} - JDK ${jdk} - Publish") {
           archiveArtifacts allowEmptyArchive: true, artifacts: '**/target/surefire-reports/*.dumpstream'
-          if (!fileExists('core/target/surefire-reports/TEST-jenkins.Junit4TestsRanTest.xml')) {
-            error 'JUnit 4 tests are no longer being run for the core package'
-          }
           if (!fileExists('test/target/surefire-reports/TEST-jenkins.Junit4TestsRanTest.xml')) {
             error 'JUnit 4 tests are no longer being run for the test package'
           }
