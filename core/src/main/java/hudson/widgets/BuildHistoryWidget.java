@@ -24,11 +24,11 @@
 
 package hudson.widgets;
 
-import hudson.model.Queue.Item;
 import hudson.model.Queue.Task;
 import java.util.LinkedList;
 import java.util.List;
 import jenkins.model.Jenkins;
+import jenkins.model.queue.QueueItem;
 import jenkins.widgets.HistoryPageFilter;
 
 /**
@@ -52,17 +52,17 @@ public class BuildHistoryWidget<T> extends HistoryWidget<Task, T> {
     /**
      * Returns the first queue item if the owner is scheduled for execution in the queue.
      */
-    public Item getQueuedItem() {
+    public QueueItem getQueuedItem() {
         return Jenkins.get().getQueue().getItem(owner);
     }
 
     /**
      * Returns the queue item if the owner is scheduled for execution in the queue, in REVERSE ORDER
      */
-    public List<Item> getQueuedItems() {
-        LinkedList<Item> list = new LinkedList<>();
-        for (Item item : Jenkins.get().getQueue().getItems()) {
-            if (item.task == owner) {
+    public List<QueueItem> getQueuedItems() {
+        LinkedList<QueueItem> list = new LinkedList<>();
+        for (QueueItem item : Jenkins.get().getQueue().getItems()) {
+            if (item.getTask() == owner) {
                 list.addFirst(item);
             }
         }
