@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.monitor;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -49,7 +50,7 @@ public final class EndOfLifeOperatingSystemAdminMonitor extends AdministrativeMo
         final LocalDate startDate;
         final LocalDate effectiveDate;
 
-        public EndOfLifeData(Pattern pattern, LocalDate startDate, LocalDate effectiveDate) {
+        EndOfLifeData(Pattern pattern, LocalDate startDate, LocalDate effectiveDate) {
             this.pattern = pattern;
             this.startDate = startDate;
             this.effectiveDate = effectiveDate;
@@ -64,7 +65,6 @@ public final class EndOfLifeOperatingSystemAdminMonitor extends AdministrativeMo
     }
 
     public EndOfLifeOperatingSystemAdminMonitor() throws IOException {
-        super();
         fillOperatingSystemList();
     }
 
