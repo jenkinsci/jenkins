@@ -33,6 +33,10 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import java.io.File;
 import java.time.LocalDate;
 import jenkins.model.Jenkins;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class EndOfLifeDebian10AdminMonitorTest {
@@ -40,6 +44,22 @@ public class EndOfLifeDebian10AdminMonitorTest {
     private final EndOfLifeDebian10AdminMonitor monitor = new EndOfLifeDebian10AdminMonitor();
 
     public EndOfLifeDebian10AdminMonitorTest() {
+    }
+
+    @BeforeClass
+    public static void setUpClass() throws Exception {
+    }
+
+    @AfterClass
+    public static void tearDownClass() throws Exception {
+    }
+
+    @Before
+    public void setUp() throws Exception {
+    }
+
+    @After
+    public void tearDown() throws Exception {
     }
 
     @Test
@@ -81,6 +101,20 @@ public class EndOfLifeDebian10AdminMonitorTest {
         assertThat(testFileMonitor.getDisplayName(), is("End of life for " + DEPENDENCY_NAME));
         assertThat(testFileMonitor.getRequiredPermission(), is(Jenkins.SYSTEM_READ));
         assertThat(testFileMonitor.isUnsupported(), is(LocalDate.now().isAfter(END_OF_SUPPORT_DATE)));
+    }
+
+    /**
+     * Test of getEndOfSupportDate method, of class EndOfLifeDebian10AdminMonitor.
+     */
+    @Test
+    public void testGetEndOfSupportDate() {
+        System.out.println("getEndOfSupportDate");
+        EndOfLifeDebian10AdminMonitor instance = new EndOfLifeDebian10AdminMonitor();
+        String expResult = "";
+        String result = instance.getEndOfSupportDate();
+        assertEquals(expResult, result);
+        // TODO review the generated test code and remove the default call to fail.
+        fail("The test case is a prototype.");
     }
 
 }
