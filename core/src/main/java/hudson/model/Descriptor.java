@@ -440,8 +440,8 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
             QueryParameter qp = p.annotation(QueryParameter.class);
             if (qp != null) {
                 String name = qp.value();
-                if (name.length() == 0) name = p.name();
-                if (name == null || name.length() == 0)
+                if (name.isEmpty()) name = p.name();
+                if (name == null || name.isEmpty())
                     continue;   // unknown parameter name. we'll report the error when the form is submitted.
 
                 RelativePath rp = p.annotation(RelativePath.class);

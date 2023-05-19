@@ -265,6 +265,7 @@ THE SOFTWARE.
       <groupId>net.jcip</groupId>
       <artifactId>jcip-annotations</artifactId>
     </dependency>
+    <!-- TODO remove after determining this will not break plugins -->
     <dependency>
       <groupId>net.sf.kxml</groupId>
       <artifactId>kxml2</artifactId>
@@ -327,9 +328,10 @@ THE SOFTWARE.
       <artifactId>websocket-spi</artifactId>
       <version>${project.version}</version>
       <exclusions>
+        <!-- Provided by Jetty/Winstone -->
         <exclusion>
-          <groupId>javax.servlet</groupId>
-          <artifactId>javax.servlet-api</artifactId>
+          <groupId>jakarta.servlet</groupId>
+          <artifactId>jakarta.servlet-api</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -508,7 +510,7 @@ THE SOFTWARE.
     </dependency>
     <dependency>
       <groupId>org.mockito</groupId>
-      <artifactId>mockito-inline</artifactId>
+      <artifactId>mockito-core</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -545,6 +547,9 @@ THE SOFTWARE.
             <phase>generate-sources</phase>
             <configuration>
               <sources>
+                <!-- The antlr4 sources are found automatically by the maven compiler,
+                but listing them explicitly avoids a missing classpath entry when importing the maven project in eclipse. -->
+                <source>${project.build.directory}/generated-sources/antlr4</source>
                 <source>${project.build.directory}/generated-sources/localizer</source>
                 <source>${project.build.directory}/generated-sources/taglib-interface</source>
               </sources>

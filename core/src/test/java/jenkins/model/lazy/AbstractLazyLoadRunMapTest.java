@@ -150,8 +150,11 @@ public class AbstractLazyLoadRunMapTest {
     @Test
     public void lookupWithBogusKeyType() {
         assertNull(a.get(null));
-        assertNull(a.get("foo"));
-        assertNull(a.get(this));
+        // don't inline, otherwise some IDEs will immediately complain about the wrong key type
+        Object badKey = "foo";
+        assertNull(a.get(badKey));
+        badKey = this;
+        assertNull(a.get(badKey));
     }
 
     @Test

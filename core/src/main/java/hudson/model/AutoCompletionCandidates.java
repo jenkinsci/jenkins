@@ -149,7 +149,7 @@ public class AutoCompletionCandidates implements HttpResponse {
             }
 
             private String contextualNameOf(Item i) {
-                if (prefix.endsWith("/") || prefix.length() == 0)
+                if (prefix.endsWith("/") || prefix.isEmpty())
                     return prefix + i.getName();
                 else
                     return prefix + '/' + i.getName();
