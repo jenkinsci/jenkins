@@ -113,8 +113,7 @@ axes.values().combinations {
                   sh "launchable verify && launchable subset --session ${session} --target ${target} --get-tests-from-previous-sessions --output-exclusion-rules maven >${excludesFile}"
                 } else {
                   excludesFile = "${tmpDir}\\excludes.txt"
-                  // TODO launchable.exe still not working for some reason
-                  bat "python -m launchable verify && python -m launchable subset --session ${session} --target ${target}% --get-tests-from-previous-sessions --output-exclusion-rules maven >${excludesFile}"
+                  bat "launchable verify && launchable subset --session ${session} --target ${target}% --get-tests-from-previous-sessions --output-exclusion-rules maven >${excludesFile}"
                 }
               }
               mavenOptions.add(0, "-Dsurefire.excludesFile=${excludesFile}")
@@ -189,8 +188,7 @@ axes.values().combinations {
             if (isUnix()) {
               sh "launchable verify && launchable record tests --session ${session} --flavor platform=${platform} --flavor jdk=${jdk} maven './**/target/surefire-reports'"
             } else {
-              // TODO launchable.exe still not working for some reason
-              bat "python -m launchable verify && python -m launchable record tests --session ${session} --flavor platform=${platform} --flavor jdk=${jdk} maven ./**/target/surefire-reports"
+              bat "launchable verify && launchable record tests --session ${session} --flavor platform=${platform} --flavor jdk=${jdk} maven ./**/target/surefire-reports"
             }
           }
         }
