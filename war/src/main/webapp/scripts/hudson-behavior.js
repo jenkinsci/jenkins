@@ -242,29 +242,19 @@ var FormChecker = {
   },
 
   sendRequest: function (url, params) {
-    const method = params.method.toLowerCase();
-    if (method !== "get") {
+    if (params.method != "get") {
       var idx = url.indexOf("?");
       params.parameters = url.substring(idx + 1);
       url = url.substring(0, idx);
     }
-
-    fetch(url, {
-      method: params.method,
-      headers: crumb.wrap({
-        "Content-Type": "application/x-www-form-urlencoded",
-      }),
-      body: method !== "get" ? params.parameters : null,
-    }).then((response) => {
-      params.onComplete(response);
-    });
+    new Ajax.Request(url, params);
   },
 
   schedule: function () {
     if (this.inProgress >= this.maxParallel) {
       return;
     }
-    if (this.queue.length === 0) {
+    if (this.queue.length == 0) {
       return;
     }
 
@@ -272,33 +262,15 @@ var FormChecker = {
     this.sendRequest(next.url, {
       method: next.method,
       onComplete: function (x) {
-        x.text().then((responseText) => {
-          updateValidationArea(next.target, responseText);
-          FormChecker.inProgress--;
-          FormChecker.schedule();
-          layoutUpdateCallback.call();
-        });
+        updateValidationArea(next.target, x.responseText);
+        FormChecker.inProgress--;
+        FormChecker.schedule();
+        layoutUpdateCallback.call();
       },
     });
     this.inProgress++;
   },
 };
-
-/**
- * Converts a JavaScript object to a URL form encoded string.
- */
-function objectToUrlFormEncoded(parameters) {
-  // https://stackoverflow.com/a/37562814/4951015
-  // Code could be simplified if support for HTMLUnit is dropped
-  // body: new URLSearchParams(parameters) is enough then, but it doesn't work in HTMLUnit currently
-  let formBody = [];
-  for (const property in parameters) {
-    const encodedKey = encodeURIComponent(property);
-    const encodedValue = encodeURIComponent(parameters[property]);
-    formBody.push(encodedKey + "=" + encodedValue);
-  }
-  return formBody.join("&");
-}
 
 /**
  * Detects if http2 protocol is enabled.
@@ -700,7 +672,6 @@ function registerValidator(e) {
       return url + q.toString();
     }
   };
-
   var method = e.getAttribute("checkMethod") || "post";
 
   var url = e.targetUrl();
@@ -709,7 +680,7 @@ function registerValidator(e) {
   } catch (x) {
     // this happens if the checkUrl refers to a non-existing element.
     // don't let this kill off the entire JavaScript
-    console.warn(
+    YAHOO.log(
       "Failed to register validation method: " +
         e.getAttribute("checkUrl") +
         " : " +
@@ -722,15 +693,13 @@ function registerValidator(e) {
     const validationArea = this.targetElement;
     FormChecker.sendRequest(this.targetUrl(), {
       method: method,
-      onComplete: function (response) {
+      onComplete: function ({ status, responseText }) {
         // TODO Add i18n support
-        response.text().then((responseText) => {
-          const errorMessage = `<div class="error">An internal error occurred during form field validation (HTTP ${response.status}). Please reload the page and if the problem persists, ask the administrator for help.</div>`;
-          updateValidationArea(
-            validationArea,
-            response.status === 200 ? responseText : errorMessage
-          );
-        });
+        const errorMessage = `<div class="error">An internal error occurred during form field validation (HTTP ${status}). Please reload the page and if the problem persists, ask the administrator for help.</div>`;
+        updateValidationArea(
+          validationArea,
+          status === 200 ? responseText : errorMessage
+        );
       },
     });
   };
@@ -1102,36 +1071,36 @@ function helpButtonOnClick() {
   if (div.style.display != "block") {
     div.style.display = "block";
     // make it visible
+    new Ajax.Request(this.getAttribute("helpURL"), {
+      method: "get",
+      onSuccess: function (x) {
+        // Which plugin is this from?
+        var from = x.getResponseHeader("X-Plugin-From");
+        div.innerHTML =
+          x.responseText +
+          (from ? "<div class='from-plugin'>" + from + "</div>" : "");
 
-    fetch(this.getAttribute("helpURL")).then((rsp) => {
-      rsp.text().then((responseText) => {
-        if (rsp.ok) {
-          var from = rsp.headers.get("X-Plugin-From");
-          // Which plugin is this from?
-          div.innerHTML =
-            responseText +
-            (from ? "<div class='from-plugin'>" + from + "</div>" : "");
-
-          // Ensure links open in new window unless explicitly specified otherwise
-          var links = div.getElementsByTagName("a");
-          for (var i = 0; i < links.length; i++) {
-            var link = links[i];
-            if (link.hasAttribute("href")) {
-              // ignore document anchors
-              if (!link.hasAttribute("target")) {
-                link.setAttribute("target", "_blank");
-              }
-              if (!link.hasAttribute("rel")) {
-                link.setAttribute("rel", "noopener noreferrer");
-              }
+        // Ensure links open in new window unless explicitly specified otherwise
+        var links = div.getElementsByTagName("a");
+        for (var i = 0; i < links.length; i++) {
+          var link = links[i];
+          if (link.hasAttribute("href")) {
+            // ignore document anchors
+            if (!link.hasAttribute("target")) {
+              link.setAttribute("target", "_blank");
+            }
+            if (!link.hasAttribute("rel")) {
+              link.setAttribute("rel", "noopener noreferrer");
             }
           }
-        } else {
-          div.innerHTML =
-            "<b>ERROR</b>: Failed to load help file: " + rsp.statusText;
         }
         layoutUpdateCallback.call();
-      });
+      },
+      onFailure: function (x) {
+        div.innerHTML =
+          "<b>ERROR</b>: Failed to load help file: " + x.statusText;
+        layoutUpdateCallback.call();
+      },
     });
   } else {
     div.style.display = "none";
@@ -1425,17 +1394,16 @@ function rowvgStartEachRow(recursive, f) {
   // deferred client-side clickable map.
   // this is useful where the generation of <map> element is time consuming
   Behaviour.specify("IMG[lazymap]", "img-lazymap-", ++p, function (e) {
-    fetch(e.getAttribute("lazymap")).then((rsp) => {
-      if (rsp.ok) {
-        rsp.text().then((responseText) => {
-          var div = document.createElement("div");
-          document.body.appendChild(div);
-          div.innerHTML = responseText;
-          var id = "map" + iota++;
-          div.firstElementChild.setAttribute("name", id);
-          e.setAttribute("usemap", "#" + id);
-        });
-      }
+    new Ajax.Request(e.getAttribute("lazymap"), {
+      method: "get",
+      onSuccess: function (x) {
+        var div = document.createElement("div");
+        document.body.appendChild(div);
+        div.innerHTML = x.responseText;
+        var id = "map" + iota++;
+        div.firstElementChild.setAttribute("name", id);
+        e.setAttribute("usemap", "#" + id);
+      },
     });
   });
 
@@ -1892,10 +1860,7 @@ function rowvgStartEachRow(recursive, f) {
             return;
           }
         }
-        fetch(url, {
-          method: "post",
-          headers: crumb.wrap({}),
-        });
+        new Ajax.Request(url);
       });
     }
   );
@@ -1972,21 +1937,18 @@ function replaceDescription(initialDescription, submissionUrl) {
       submissionUrl: submissionUrl,
     };
   }
-  fetch("./descriptionForm", {
-    method: "post",
-    headers: crumb.wrap({}),
-    body: objectToUrlFormEncoded(parameters),
-  }).then((rsp) => {
-    rsp.text().then((responseText) => {
-      d.innerHTML = responseText;
-      evalInnerHtmlScripts(responseText, function () {
+  new Ajax.Request("./descriptionForm", {
+    parameters: parameters,
+    onComplete: function (x) {
+      d.innerHTML = x.responseText;
+      evalInnerHtmlScripts(x.responseText, function () {
         Behaviour.applySubtree(d);
         d.getElementsByTagName("TEXTAREA")[0].focus();
       });
       layoutUpdateCallback.call();
-      return false;
-    });
+    },
   });
+  return false;
 }
 
 /**
@@ -2147,40 +2109,35 @@ function refreshPart(id, url) {
   var intervalID = null;
   var f = function () {
     if (isPageVisible()) {
-      fetch(url, {
-        headers: crumb.wrap({}),
-        method: "post",
-      }).then((rsp) => {
-        if (rsp.ok) {
-          rsp.text().then((responseText) => {
-            var hist = document.getElementById(id);
-            if (hist == null) {
-              console.log("There's no element that has ID of " + id);
-              if (intervalID !== null) {
-                window.clearInterval(intervalID);
-              }
-              return;
+      new Ajax.Request(url, {
+        onSuccess: function (rsp) {
+          var hist = document.getElementById(id);
+          if (hist == null) {
+            console.log("There's no element that has ID of " + id);
+            if (intervalID !== null) {
+              window.clearInterval(intervalID);
             }
-            if (!responseText) {
-              console.log(
-                "Failed to retrieve response for ID " +
-                  id +
-                  ", perhaps Jenkins is unavailable"
-              );
-              return;
-            }
-            var p = hist.parentNode;
+            return;
+          }
+          if (!rsp.responseText) {
+            console.log(
+              "Failed to retrieve response for ID " +
+                id +
+                ", perhaps Jenkins is unavailable"
+            );
+            return;
+          }
+          var p = hist.parentNode;
 
-            var div = document.createElement("div");
-            div.innerHTML = responseText;
+          var div = document.createElement("div");
+          div.innerHTML = rsp.responseText;
 
-            var node = div.firstElementChild;
-            p.replaceChild(node, hist);
+          var node = div.firstElementChild;
+          p.replaceChild(node, hist);
 
-            Behaviour.applySubtree(node);
-            layoutUpdateCallback.call();
-          });
-        }
+          Behaviour.applySubtree(node);
+          layoutUpdateCallback.call();
+        },
       });
     }
   };
@@ -2767,25 +2724,20 @@ function validateButton(checkUrl, paramList, button) {
   var target = spinner.nextElementSibling.nextElementSibling;
   spinner.style.display = "block";
 
-  fetch(checkUrl, {
-    method: "post",
-    body: objectToUrlFormEncoded(parameters),
-    headers: crumb.wrap({
-      "Content-Type": "application/x-www-form-urlencoded",
-    }),
-  }).then((rsp) => {
-    rsp.text().then((responseText) => {
+  new Ajax.Request(checkUrl, {
+    parameters: parameters,
+    onComplete: function (rsp) {
       spinner.style.display = "none";
       target.innerHTML = `<div class="validation-error-area" />`;
-      updateValidationArea(target.children[0], responseText);
+      updateValidationArea(target.children[0], rsp.responseText);
       layoutUpdateCallback.call();
-      var s = rsp.headers.get("script");
+      var s = rsp.getResponseHeader("script");
       try {
         geval(s);
       } catch (e) {
         window.alert("failed to evaluate " + s + "\n" + e.message);
       }
-    });
+    },
   });
 }
 

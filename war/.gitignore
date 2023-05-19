@@ -18,3 +18,5 @@ node_modules/
 
 # Generated JavaScript Bundles
 jsbundles
+
+src/main/webapp/css/font-awesome
