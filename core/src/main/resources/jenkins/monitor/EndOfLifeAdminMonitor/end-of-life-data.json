@@ -2,21 +2,21 @@
   {
     "pattern": "Red Hat Enterprise Linux.* 7",
     "start": "2023-01-02",
-    "effective": "2023-03-04",
+    "effective": "2023-03-04"
   },
   {
     "pattern": "Oracle Linux.* 7",
     "start": "2023-05-06",
-    "effective": "2023-07-08",
+    "effective": "2023-07-08"
   },
   {
     "pattern": "Scientific Linux.* 7",
     "start": "2023-09-10",
-    "effective": "2023-11-12",
+    "effective": "2023-11-12"
   },
   {
     "pattern": "CentOS Linux.* 7",
     "start": "2023-01-02",
-    "effective": "2023-03-04",
+    "effective": "2023-03-04"
   }
 ]
