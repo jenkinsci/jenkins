@@ -94,5 +94,5 @@
   {
     "pattern": "Ubuntu.* 22.04",
     "endOfLife": "2027-04-01"
-  },
+  }
 ]
