@@ -93,20 +93,17 @@ public class EndOfLifeOperatingSystemAdminMonitor extends AdministrativeMonitor 
         JSONArray systems = JSONArray.fromObject(initialOperatingSystemJson);
         for (Object systemObj : systems) {
             if (!(systemObj instanceof JSONObject)) {
-                LOGGER.log(Level.SEVERE, "Wrong object type in operating system end of life monitor data file");
-                break;
+                throw new IOException("Wrong object type in operating system end of life monitor data file");
             }
             JSONObject system = (JSONObject) systemObj;
 
             if (!system.has("pattern")) {
-                LOGGER.log(Level.SEVERE, "No pattern to be matched in operating system end of life monitor");
-                break;
+                throw new IOException("Missing pattern in operating system end of life monitor definition file");
             }
             String pattern = system.getString("pattern");
 
             if (!system.has("endOfLife")) {
-                LOGGER.log(Level.SEVERE, "No end of life date in operating system end of life monitor for {0}", pattern);
-                break;
+                throw new IOException("No end of life date in operating system end of life monitor for {0}", pattern);
             }
             LocalDate endOfLife = LocalDate.parse(system.getString("endOfLife"));
 
