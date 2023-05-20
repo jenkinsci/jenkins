@@ -92,6 +92,7 @@ public class EndOfLifeOperatingSystemAdminMonitor extends AdministrativeMonitor 
             /* If not enabled, do not read the data files or perform any checks */
             return;
         }
+        LocalDate now = LocalDate.now();
         ClassLoader cl = getClass().getClassLoader();
         URL localOperatingSystemData = cl.getResource("jenkins/monitor/EndOfLifeAdminMonitor/end-of-life-data.json");
         String initialOperatingSystemJson = IOUtils.toString(localOperatingSystemData.openStream(), StandardCharsets.UTF_8);
@@ -134,6 +135,9 @@ public class EndOfLifeOperatingSystemAdminMonitor extends AdministrativeMonitor 
             String prettyName = readPrettyName(dataFile, pattern);
             if (!prettyName.isEmpty()) {
                 operatingSystemList.add(new EndOfLifeData(prettyName, startDate, effectiveDate));
+                if (startDate.isBefore(now)) {
+                    afterStartDate = true;
+                }
             }
         }
 
