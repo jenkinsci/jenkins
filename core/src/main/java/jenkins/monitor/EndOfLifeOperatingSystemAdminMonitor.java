@@ -41,6 +41,10 @@ import org.apache.commons.io.IOUtils;
 
 public final class EndOfLifeOperatingSystemAdminMonitor extends AdministrativeMonitor {
 
+    /** 
+     * ignore this end of life monitor. Allows tests to disable the end of life
+     * monitor without requiring a Jenkinsrule. 
+     */
     private boolean ignoreEndOfLife = false;
     private boolean afterStartDate = false;
 
