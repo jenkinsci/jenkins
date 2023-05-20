@@ -34,7 +34,7 @@ THE SOFTWARE.
         </form>
         <h2 class="h3">${it.displayName}</h2>
         <j:choose>
-            <j:when test="${it.unsupported}">
+            <j:when test="${it.afterEndOfLifeDate}">
                 ${%Past_End_of_Life(it.prettyName, it.endOfLifeDate)}
             </j:when>
             <j:otherwise>
