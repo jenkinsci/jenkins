@@ -24,7 +24,9 @@
 
 package jenkins.monitor;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.model.AdministrativeMonitor;
 import hudson.security.Permission;
@@ -111,8 +113,7 @@ public class EndOfLifeOperatingSystemAdminMonitor extends AdministrativeMonitor 
             /* Start date defaults to 6 months before end of life */
             LocalDate startDate = system.has("start") ? LocalDate.parse(system.getString("start")) : endOfLife.minusMonths(6);
 
-            /* dataFile defaults to /etc/os-release */
-            File dataFile = new File(system.has("file") ? system.getString("file") : "/etc/os-release");
+            File dataFile = getDataFile(system);
 
             LOGGER.log(Level.FINEST, "Pattern {0} starts {1} and reaches end of life {2} from file {3}",
                     new Object[]{pattern, startDate, endOfLife, dataFile});
@@ -145,26 +146,39 @@ public class EndOfLifeOperatingSystemAdminMonitor extends AdministrativeMonitor 
         }
     }
 
+    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN",
+                        justification = "File path defined in war file, not by user")
+    @CheckForNull
+    private File getDataFile(@NonNull JSONObject system) {
+        /* dataFile defaults to /etc/os-release */
+        String fileName = "/etc/os-release";
+        if (system.has("file")) {
+            fileName = system.getString("file");
+        }
+        File dataFile = new File(fileName);
+        return dataFile;
+    }
+
     /* Package protected for testing */
     @NonNull
-    String readOperatingSystemName(File dataFile, String patternStr) {
-        if (!dataFile.exists()) {
+    String readOperatingSystemName(File dataFile, @NonNull String patternStr) {
+        if (dataFile == null || !dataFile.exists()) {
             return "";
         }
         Pattern pattern = Pattern.compile("^PRETTY_NAME=[\"](" + patternStr + ".*)[\"]");
-        String operatingSystemName = "";
+        String name = "";
         try {
             List<String> lines = Files.readAllLines(dataFile.toPath());
             for (String line : lines) {
                 Matcher matcher = pattern.matcher(line);
                 if (matcher.matches()) {
-                    operatingSystemName = matcher.group(1);
+                    name = matcher.group(1);
                 }
             }
         } catch (IOException ioe) {
             LOGGER.log(Level.SEVERE, "File read exception", ioe);
         }
-        return operatingSystemName;
+        return name;
     }
 
     @NonNull
