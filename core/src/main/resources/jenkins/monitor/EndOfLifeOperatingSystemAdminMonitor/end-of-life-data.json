@@ -25,6 +25,7 @@
   },
   {
     "pattern": "CentOS Linux.* 7",
+    "start": "2023-05-01",
     "endOfLife": "2023-11-16"
   },
   {
@@ -53,14 +54,17 @@
   },
   {
     "pattern": "Oracle Linux.* 7",
+    "start": "2023-05-01",
     "endOfLife": "2023-11-16"
   },
   {
     "pattern": "Red Hat Enterprise Linux.* 7",
+    "start": "2023-05-01",
     "endOfLife": "2023-11-16"
   },
   {
     "pattern": "Scientific Linux.* 7",
+    "start": "2023-05-01",
     "endOfLife": "2023-11-16"
   },
   {
