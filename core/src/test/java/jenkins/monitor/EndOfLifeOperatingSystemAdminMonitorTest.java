@@ -21,23 +21,26 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
 package jenkins.monitor;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 
 import java.io.IOException;
+import java.util.Random;
 import org.junit.Test;
 
 public class EndOfLifeOperatingSystemAdminMonitorTest {
 
     private final EndOfLifeOperatingSystemAdminMonitor monitor;
+    private final Random random = new Random();
+    private final String PREFIX = "administrativeMonitor/";
 
     public EndOfLifeOperatingSystemAdminMonitorTest() throws IOException {
-        this.monitor = new EndOfLifeOperatingSystemAdminMonitor();
+        this.monitor = random.nextBoolean()
+                ? new EndOfLifeOperatingSystemAdminMonitor()
+                : new EndOfLifeOperatingSystemAdminMonitor(EndOfLifeOperatingSystemAdminMonitor.class.getName());
     }
 
     @Test
@@ -47,17 +50,12 @@ public class EndOfLifeOperatingSystemAdminMonitorTest {
 
     @Test
     public void testGetUrl() {
-        assertThat(monitor.getUrl(), is("administrativeMonitor/" + monitor.getClass().getName()));
+        assertThat(monitor.getUrl(), is(PREFIX + monitor.getClass().getName()));
     }
 
     @Test
     public void testGetSearchUrl() {
-        assertThat(monitor.getSearchUrl(), is("administrativeMonitor/" + monitor.getClass().getName()));
-    }
-
-    @Test
-    public void testGetOperatingSystemList() throws IOException {
-        assertNotNull(new EndOfLifeOperatingSystemAdminMonitor());
+        assertThat(monitor.getSearchUrl(), is(PREFIX + monitor.getClass().getName()));
     }
 
     @Test
@@ -66,8 +64,8 @@ public class EndOfLifeOperatingSystemAdminMonitorTest {
     }
 
     @Test
-    public void testNotIsActivatedWhenDisabled() throws IOException {
-        monitor.setDisabled(true);
+    public void testNotIsActivatedWhenIgnoreEndOfLife() throws IOException {
+        monitor.setIgnoreEndOfLife(true);
         assertFalse(monitor.isActivated());
     }
 
