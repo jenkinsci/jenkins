@@ -371,10 +371,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     @Exported
     public OfflineCause getOfflineCause() {
-        if (offlineCause != null) {
-            return offlineCause;
-        }
-        return temporarilyOfflineCause;
+        return offlineCause;
     }
 
     /**
@@ -770,6 +767,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     public void setTemporarilyOffline(boolean temporarilyOffline, OfflineCause cause) {
         temporarilyOfflineCause = temporarilyOffline ? cause : null;
+        offlineCause = temporarilyOfflineCause;
         this.temporarilyOffline = temporarilyOffline;
         Node node = getNode();
         if (node != null) {
