@@ -109,39 +109,34 @@ public class EndOfLifeOperatingSystemAdminMonitor extends AdministrativeMonitor 
             /* Start date defaults to 6 months before end of life */
             LocalDate startDate = system.has("start") ? LocalDate.parse(system.getString("start")) : endOfLife.minusMonths(6);
 
-            LOGGER.log(Level.FINE, "Pattern {0} starts {1} and reaches end of life {2}",
-                    new Object[]{pattern, startDate, endOfLife});
+            /* dataFile defaults to /etc/os-release */
+            File dataFile = new File(system.has("file") ? system.getString("file") : "/etc/os-release");
 
-            File dataFile;
-            if (!system.has("file")) {
-                dataFile = new File("/etc/os-release");
-            } else {
-                dataFile = new File(system.getString("file"));
-            }
-            LOGGER.log(Level.FINE, "Pattern {0} reading data file {1}",
-                       new Object[]{pattern, dataFile});
+            LOGGER.log(Level.FINEST, "Pattern {0} starts {1} and reaches end of life {2} from file {3}",
+                       new Object[]{pattern, startDate, endOfLife, dataFile});
 
             String name = readOperatingSystemName(dataFile, pattern);
-            if (!name.isEmpty()) {
-                LOGGER.log(Level.FINE, "Matched operating system {0}", name);
-                if (startDate.isBefore(now)) {
-                    LOGGER.log(Level.FINE, "Operating system {0} starts warnings {1} and reaches end of life {2}",
-                               new Object[]{name, startDate, endOfLife});
-                    afterStartDate = true;
-                    this.operatingSystemName = name;
-                    this.endOfLifeDate = endOfLife.toString();
-                    if (endOfLife.isBefore(now)) {
-                        LOGGER.log(Level.FINE, "Operating system {0} is after end of life {1}",
-                               new Object[]{name, endOfLife});
-                        afterEndOfLifeDate = true;
-                    }
-                }
-            } else {
-                LOGGER.log(Level.FINE, "Pattern {0} did not match in data file {1}",
+            if (name.isEmpty()) {
+                LOGGER.log(Level.FINEST, "Pattern {0} did not match in data file {1}",
                            new Object[]{pattern, dataFile});
+                break;
+            }
+
+            LOGGER.log(Level.FINE, "Matched operating system {0}", name);
+            if (startDate.isBefore(now)) {
+                afterStartDate = true;
+                this.operatingSystemName = name;
+                this.endOfLifeDate = endOfLife.toString();
+                if (endOfLife.isBefore(now)) {
+                    LOGGER.log(Level.FINE, "Operating system {0} is after end of life {1}",
+                               new Object[]{name, endOfLife});
+                    afterEndOfLifeDate = true;
+                } else {
+                    LOGGER.log(Level.FINE, "Operating system {0} started warnings {1} and reaches end of life {2}",
+                               new Object[]{name, startDate, endOfLife});
+                }
             }
         }
-
     }
 
     /* Package protected for testing */
