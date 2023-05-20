@@ -34,7 +34,6 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -59,28 +58,15 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 @Symbol("operatingSystemEndOfLife")
 public class EndOfLifeOperatingSystemAdminMonitor extends AdministrativeMonitor {
 
-    /** Allow tests to disable the end of life monitor without a JenkinsRule. */
+    /**
+     * Allow tests to disable the end of life monitor without a JenkinsRule.
+     */
     boolean ignoreEndOfLife = false;
 
     private boolean afterStartDate = false;
     private boolean afterEndOfLifeDate = false;
     private String prettyName = "unrecognized operating system";
     private String endOfLifeDate = "unknown date";
-
-    private static class EndOfLifeData {
-
-        final String prettyName;
-        final LocalDate startDate;
-        final LocalDate endOfLifeDate;
-
-        EndOfLifeData(String prettyName, LocalDate startDate, LocalDate endOfLifeDate) {
-            this.prettyName = prettyName;
-            this.startDate = startDate;
-            this.endOfLifeDate = endOfLifeDate;
-        }
-    }
-
-    private final List<EndOfLifeData> operatingSystemList = new ArrayList<>();
 
     public EndOfLifeOperatingSystemAdminMonitor(String id) throws IOException {
         super(id);
@@ -124,10 +110,10 @@ public class EndOfLifeOperatingSystemAdminMonitor extends AdministrativeMonitor 
                 LOGGER.log(Level.SEVERE, "No end of life date in operating system end of life monitor for {0}", pattern);
                 break;
             }
-            LocalDate endOfLifeDate = LocalDate.parse(system.getString("endOfLife"));
+            LocalDate endOfLife = LocalDate.parse(system.getString("endOfLife"));
 
             LOGGER.log(Level.FINE, "Pattern {0} starts {1} and reaches end of life {2}",
-                    new Object[]{pattern, startDate, endOfLifeDate});
+                    new Object[]{pattern, startDate, endOfLife});
 
             File dataFile;
             if (!system.has("file")) {
@@ -136,14 +122,13 @@ public class EndOfLifeOperatingSystemAdminMonitor extends AdministrativeMonitor 
                 dataFile = new File(system.getString("file"));
             }
 
-            String operatingSystemName = readPrettyName(dataFile, pattern);
+            String operatingSystemName = readOperatingSystemName(dataFile, pattern);
             if (!operatingSystemName.isEmpty()) {
-                operatingSystemList.add(new EndOfLifeData(operatingSystemName, startDate, endOfLifeDate));
                 if (startDate.isBefore(now)) {
                     afterStartDate = true;
                     this.prettyName = operatingSystemName;
-                    this.endOfLifeDate = endOfLifeDate.toString();
-                    if (endOfLifeDate.isBefore(now)) {
+                    this.endOfLifeDate = endOfLife.toString();
+                    if (endOfLife.isBefore(now)) {
                         afterEndOfLifeDate = true;
                     }
                 }
@@ -154,24 +139,24 @@ public class EndOfLifeOperatingSystemAdminMonitor extends AdministrativeMonitor 
 
     /* Package protected for testing */
     @NonNull
-    String readPrettyName(File dataFile, String patternStr) {
+    String readOperatingSystemName(File dataFile, String patternStr) {
         if (!dataFile.exists()) {
             return "";
         }
         Pattern pattern = Pattern.compile("^PRETTY_NAME=[\"](" + patternStr + ".*)[\"]");
-        String prettyName = "";
+        String operatingSystemName = "";
         try {
             List<String> lines = Files.readAllLines(dataFile.toPath());
             for (String line : lines) {
                 Matcher matcher = pattern.matcher(line);
                 if (matcher.matches()) {
-                    prettyName = matcher.group(1);
+                    operatingSystemName = matcher.group(1);
                 }
             }
         } catch (IOException ioe) {
             LOGGER.log(Level.SEVERE, "File read exception", ioe);
         }
-        return prettyName;
+        return operatingSystemName;
     }
 
     @Override
@@ -197,9 +182,8 @@ public class EndOfLifeOperatingSystemAdminMonitor extends AdministrativeMonitor 
         return "Operating system end of life monitor";
     }
 
-    /**
-     * Depending on whether the user said "yes" or "no", send him to the right
-     * place.
+    /*
+     * Send use to the right place depending on "yes" or "no".
      */
     @Restricted(DoNotUse.class) // WebOnly
     @RequirePOST
