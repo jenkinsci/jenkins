@@ -127,12 +127,21 @@ axes.values().combinations {
             echo "Recording static analysis results for '${platform.capitalize()}'"
             recordIssues(
                 enabledForFailure: true,
-                tools: [java(), javaDoc()],
+                tools: [java()],
                 filters: [excludeFile('.*Assert.java')],
                 sourceCodeEncoding: 'UTF-8',
                 skipBlames: true,
                 trendChartType: 'TOOLS_ONLY'
                 )
+            recordIssues(
+                enabledForFailure: true,
+                tools: [javaDoc()],
+                filters: [excludeFile('.*Assert.java')],
+                sourceCodeEncoding: 'UTF-8',
+                skipBlames: true,
+                trendChartType: 'TOOLS_ONLY',
+                qualityGates: [[threshold: 1, type: 'NEW', unstable: true]]
+            )
             recordIssues([tool: spotBugs(pattern: '**/target/spotbugsXml.xml'),
               sourceCodeEncoding: 'UTF-8',
               skipBlames: true,
