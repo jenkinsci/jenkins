@@ -27,6 +27,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertFalse;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Random;
 import org.junit.Test;
@@ -74,4 +75,13 @@ public class EndOfLifeOperatingSystemAdminMonitorTest {
         assertFalse(monitor.isSecurity());
     }
 
+    @Test
+    public void testReadPrettyName() {
+        assertThat(monitor.readPrettyName(new File("/etc/os-release"), "Red .* 8"), is("Red Hat Enterprise Linux 8.8 (Ootpa)"));
+    }
+
+    @Test
+    public void testReadPrettyNameBadFile() {
+        assertThat(monitor.readPrettyName(new File("/this/file/does/not/exist"), "Red .* 8"), is(""));
+    }
 }

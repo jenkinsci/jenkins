@@ -23,15 +23,19 @@
  */
 package jenkins.monitor;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.AdministrativeMonitor;
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
@@ -40,21 +44,21 @@ import org.apache.commons.io.IOUtils;
 
 public final class EndOfLifeOperatingSystemAdminMonitor extends AdministrativeMonitor {
 
-    /** 
+    /**
      * ignore this end of life monitor. Allows tests to disable the end of life
-     * monitor without requiring a Jenkinsrule. 
+     * monitor without requiring a Jenkinsrule.
      */
     private boolean ignoreEndOfLife = false;
     private boolean afterStartDate = false;
 
     private static class EndOfLifeData {
 
-        final Pattern pattern;
+        final String prettyName;
         final LocalDate startDate;
         final LocalDate effectiveDate;
 
-        EndOfLifeData(Pattern pattern, LocalDate startDate, LocalDate effectiveDate) {
-            this.pattern = pattern;
+        EndOfLifeData(String prettyName, LocalDate startDate, LocalDate effectiveDate) {
+            this.prettyName = prettyName;
             this.startDate = startDate;
             this.effectiveDate = effectiveDate;
         }
@@ -86,11 +90,12 @@ public final class EndOfLifeOperatingSystemAdminMonitor extends AdministrativeMo
                 break;
             }
             JSONObject system = (JSONObject) systemObj;
+
             if (!system.has("pattern")) {
                 LOGGER.log(Level.SEVERE, "No pattern to be matched in operating system end of life monitor");
                 break;
             }
-            Pattern pattern = Pattern.compile(system.getString("pattern"));
+            String pattern = system.getString("pattern");
 
             if (!system.has("start")) {
                 LOGGER.log(Level.SEVERE, "No start date for operating system in end of life monitor for pattern {0}", pattern);
@@ -106,9 +111,42 @@ public final class EndOfLifeOperatingSystemAdminMonitor extends AdministrativeMo
 
             LOGGER.log(Level.FINE, "Pattern {0} starts {1} and is effective {2}",
                     new Object[]{pattern, startDate, effectiveDate});
-            operatingSystemList.add(new EndOfLifeData(pattern, startDate, effectiveDate));
+
+            File dataFile;
+            if (!system.has("file")) {
+                dataFile = new File("/etc/os-release");
+            } else {
+                dataFile = new File(system.getString("file"));
+            }
+
+            String prettyName = readPrettyName(dataFile, pattern);
+            if (!prettyName.isEmpty()) {
+                operatingSystemList.add(new EndOfLifeData(prettyName, startDate, effectiveDate));
+            }
         }
 
+    }
+
+    /* Package protected for testing */
+    @NonNull
+    String readPrettyName(File dataFile, String patternStr) {
+        if (!dataFile.exists()) {
+            return "";
+        }
+        Pattern pattern = Pattern.compile("^PRETTY_NAME=[\"](" + patternStr + ".*)[\"]");
+        String prettyName = "";
+        try {
+            List<String> lines = Files.readAllLines(dataFile.toPath());
+            for (String line : lines) {
+                Matcher matcher = pattern.matcher(line);
+                if (matcher.matches()) {
+                    prettyName = matcher.group(1);
+                }
+            }
+        } catch (IOException ioe) {
+            LOGGER.log(Level.SEVERE, "File read exception", ioe);
+        }
+        return prettyName;
     }
 
     @Override

@@ -1,5 +1,10 @@
 [
   {
+    "pattern": "Red Hat Enterprise Linux.* 8",
+    "start": "2029-12-31",
+    "effective": "2030-12-31"
+  },
+  {
     "pattern": "Red Hat Enterprise Linux.* 7",
     "start": "2023-01-02",
     "effective": "2023-03-04"
