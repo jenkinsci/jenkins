@@ -64,7 +64,7 @@ public class EndOfLifeOperatingSystemAdminMonitor extends AdministrativeMonitor 
 
     private boolean afterStartDate = false;
     private String prettyName = "unrecognized operating system";
-    private String endOfSupportDate = "unknown date";
+    private String endOfLifeDate = "unknown date";
 
     private static class EndOfLifeData {
 
@@ -141,7 +141,7 @@ public class EndOfLifeOperatingSystemAdminMonitor extends AdministrativeMonitor 
                 if (startDate.isBefore(now)) {
                     afterStartDate = true;
                     this.prettyName = operatingSystemName;
-                    this.endOfSupportDate = effectiveDate.toString();
+                    this.endOfLifeDate = effectiveDate.toString();
                 }
             }
         }
@@ -217,8 +217,8 @@ public class EndOfLifeOperatingSystemAdminMonitor extends AdministrativeMonitor 
     }
 
     @NonNull
-    public String getEndOfSupportDate() {
-        return endOfSupportDate;
+    public String getEndOfLifeDate() {
+        return endOfLifeDate;
     }
 
     static final Logger LOGGER = Logger.getLogger(EndOfLifeOperatingSystemAdminMonitor.class.getName());

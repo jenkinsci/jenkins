@@ -35,10 +35,10 @@ THE SOFTWARE.
         <h2 class="h3">${it.displayName}</h2>
         <j:choose>
             <j:when test="${it.unsupported}">
-                ${%Past_End_of_Life(it.prettyName, it.endOfSupportDate)}
+                ${%Past_End_of_Life(it.prettyName, it.endOfLifeDate)}
             </j:when>
             <j:otherwise>
-                ${%Upcoming_End_of_Life(it.prettyName, it.endOfSupportDate)}
+                ${%Upcoming_End_of_Life(it.prettyName, it.endOfLifeDate)}
             </j:otherwise>
         </j:choose>
     </div>
