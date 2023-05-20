@@ -1,10 +1,23 @@
+@use "bootstrap";
+
 .bootstrap-3 *,
 .bootstrap-3 [class*="col-"] {
   // simple reset
   margin: initial;
 }
 
-.plugin-setup-wizard() {
+@mixin spin($duration: 2s) {
+  animation-name: spin;
+  animation-duration: $duration;
+  animation-iteration-count: infinite;
+  animation-timing-function: linear;
+}
+
+@mixin no-spin {
+  animation-name: none;
+}
+
+@mixin plugin-setup-wizard {
   position: fixed;
   inset: 0;
   z-index: 1000;
@@ -12,8 +25,7 @@
   text-align: initial;
   font-size: 13px;
 
-  input,
-  password {
+  input {
     // get rid of the ms X (it doesn't fire a change event!), we provide our own
     &::-ms-clear {
       width: 0;
@@ -32,17 +44,6 @@
     &:active {
       outline: 0;
     }
-  }
-
-  .spin(@duration: 2s) {
-    animation-name: spin;
-    animation-duration: @duration;
-    animation-iteration-count: infinite;
-    animation-timing-function: linear;
-  }
-
-  .no-spin() {
-    animation-name: none;
   }
 
   .modal {
@@ -421,9 +422,9 @@
             }
           }
 
-          @badge-color: #555;
-          @badge-background: #f8f8f8;
-          @link-color: #337ab7;
+          $badge-color: #555;
+          $badge-background: #f8f8f8;
+          $link-color: #337ab7;
 
           .website-link {
             position: relative;
@@ -443,19 +444,19 @@
             mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cpath d='M384 224v184a40 40 0 01-40 40H104a40 40 0 01-40-40V168a40 40 0 0140-40h167.48M336 64h112v112M224 288L440 72' fill='none' stroke='currentColor' stroke-linecap='round' stroke-linejoin='round' stroke-width='32'/%3E%3C/svg%3E");
             mask-size: contain;
             mask-position: center;
-            background: @badge-color;
+            background: $badge-color;
           }
 
           .website-link:hover::after,
           .website-link:focus::after {
-            background: @link-color;
+            background: $link-color;
           }
 
           .toggle-dependency-list {
             position: absolute;
             top: 0;
             right: 0;
-            color: @badge-color;
+            color: $badge-color;
             border: 0;
             text-decoration: none;
             padding: 5px 13px;
@@ -465,8 +466,8 @@
             .badge {
               margin-left: 7px;
               padding-left: 9px;
-              background: @badge-background;
-              color: @badge-color;
+              background: $badge-background;
+              color: $badge-color;
               box-shadow: 0 0 1px 0 rgba(0, 0, 0, 0.25);
 
               &::after {
@@ -475,7 +476,7 @@
                 width: 13px;
                 height: 13px;
                 margin: -2px -2px 0 1px;
-                background: @badge-color;
+                background: $badge-color;
                 vertical-align: middle;
                 mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cpath fill='none' stroke='currentColor' stroke-linecap='round' stroke-linejoin='round' stroke-width='48' d='M184 112l144 144-144 144'/%3E%3C/svg%3E");
                 mask-size: contain;
@@ -516,8 +517,8 @@
             .badge {
               padding: 4px 8px;
               margin: 5px 3px 0 0;
-              background: @badge-background;
-              color: @badge-color;
+              background: $badge-background;
+              color: $badge-color;
               box-shadow: 0 0 1px 0 rgba(0, 0, 0, 0.25);
 
               &::after {
@@ -535,7 +536,7 @@
               &:active,
               &:focus {
                 color: #fff;
-                background: @link-color;
+                background: $link-color;
                 text-decoration: none;
               }
             }
@@ -740,7 +741,8 @@
           mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cpath d='M400 148l-21.12-24.57A191.43 191.43 0 00240 64C134 64 48 150 48 256s86 192 192 192a192.09 192.09 0 00181.07-128' fill='none' stroke='currentColor' stroke-linecap='round' stroke-miterlimit='10' stroke-width='32'/%3E%3Cpath d='M464 97.42V208a16 16 0 01-16 16H337.42c-14.26 0-21.4-17.23-11.32-27.31L436.69 86.1C446.77 76 464 83.16 464 97.42z'/%3E%3C/svg%3E");
           mask-size: contain;
           mask-position: center;
-          .spin();
+
+          @include spin();
         }
       }
 
@@ -753,7 +755,7 @@
           mask-size: contain;
           mask-position: center;
 
-          .no-spin();
+          @include no-spin();
         }
       }
 
@@ -765,7 +767,8 @@
           mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cpath fill='none' stroke='currentColor' stroke-linecap='round' stroke-linejoin='round' stroke-width='32' d='M368 368L144 144M368 144L144 368'/%3E%3C/svg%3E");
           mask-size: contain;
           mask-position: center;
-          .no-spin();
+
+          @include no-spin();
         }
       }
     }
@@ -907,16 +910,15 @@
 
 body .plugin-setup-wizard {
   // need specificity, revisit the CSS inclusion order
-  .plugin-setup-wizard();
+  @include plugin-setup-wizard;
 }
 
-@fb-loader-color: #e6e6e6;
+$fb-loader-color: #e6e6e6;
 
 .loader,
 .loader::before,
 .loader::after {
-  background: @fb-loader-color;
-  -webkit-animation: fb-loader 1s infinite ease-in-out;
+  background: $fb-loader-color;
   animation: fb-loader 1s infinite ease-in-out;
   width: 7px;
   height: 8px;
@@ -931,7 +933,6 @@ body .plugin-setup-wizard {
 
 .loader::before {
   left: -10px;
-  -webkit-animation-delay: -0.32s;
   animation-delay: -0.32s;
 }
 
@@ -941,10 +942,7 @@ body .plugin-setup-wizard {
   margin: -4px auto 0;
   position: relative;
   font-size: 6px;
-  -webkit-transform: translateZ(0);
-  -ms-transform: translateZ(0);
   transform: translateZ(0);
-  -webkit-animation-delay: -0.16s;
   animation-delay: -0.16s;
 }
 
@@ -952,36 +950,18 @@ body .plugin-setup-wizard {
   left: 10px;
 }
 
-@-webkit-keyframes fb-loader {
-  0%,
-  80%,
-  100% {
-    box-shadow: 0 0 @fb-loader-color;
-    height: 4em;
-  }
-
-  40% {
-    box-shadow: 0 -2em @fb-loader-color;
-    height: 5em;
-  }
-}
-
 @keyframes fb-loader {
   0%,
   80%,
   100% {
-    box-shadow: 0 0 @fb-loader-color;
+    box-shadow: 0 0 $fb-loader-color;
     height: 4em;
   }
 
   40% {
-    box-shadow: 0 -2em @fb-loader-color;
+    box-shadow: 0 -2em $fb-loader-color;
     height: 5em;
   }
-}
-
-.bootstrap-3 {
-  @import (less) "~bootstrap/less/bootstrap.less";
 }
 
 .bootstrap-3 [class*="col-"] {
