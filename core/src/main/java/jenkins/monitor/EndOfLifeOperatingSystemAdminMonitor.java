@@ -63,7 +63,7 @@ public class EndOfLifeOperatingSystemAdminMonitor extends AdministrativeMonitor 
      */
     boolean ignoreEndOfLife = false;
 
-    private boolean afterStartDate = false;
+    private LocalDate warningsStartDate = LocalDate.now().plusYears(10);
     private boolean afterEndOfLifeDate = false;
     private String operatingSystemName = "unrecognized operating system";
     private String endOfLifeDate = "unknown date";
@@ -80,9 +80,9 @@ public class EndOfLifeOperatingSystemAdminMonitor extends AdministrativeMonitor 
     private void fillOperatingSystemList() throws IOException {
         if (Jenkins.getInstanceOrNull() != null && !isEnabled()) {
             /* If not enabled, do not read the data files or perform any checks */
+            LOGGER.log(Level.FINEST, "Operating system end of life monitor is not enabled, reading no data");
             return;
         }
-        LocalDate now = LocalDate.now();
         ClassLoader cl = getClass().getClassLoader();
         URL localOperatingSystemData = cl.getResource("jenkins/monitor/EndOfLifeOperatingSystemAdminMonitor/end-of-life-data.json");
         String initialOperatingSystemJson = IOUtils.toString(localOperatingSystemData.openStream(), StandardCharsets.UTF_8);
@@ -117,17 +117,21 @@ public class EndOfLifeOperatingSystemAdminMonitor extends AdministrativeMonitor 
 
             String name = readOperatingSystemName(dataFile, pattern);
             if (name.isEmpty()) {
-                LOGGER.log(Level.FINEST, "Pattern {0} did not match in data file {1}",
+                LOGGER.log(Level.FINE, "Pattern {0} did not match from file {1}",
                            new Object[]{pattern, dataFile});
-                break;
+                continue;
+            }
+
+            if (startDate.isBefore(warningsStartDate)) {
+                warningsStartDate = startDate;
+                LOGGER.log(Level.FINE, "Warnings start date is now {0}", warningsStartDate);
             }
 
             LOGGER.log(Level.FINE, "Matched operating system {0}", name);
-            if (startDate.isBefore(now)) {
-                afterStartDate = true;
+            if (startDate.isBefore(LocalDate.now())) {
                 this.operatingSystemName = name;
                 this.endOfLifeDate = endOfLife.toString();
-                if (endOfLife.isBefore(now)) {
+                if (endOfLife.isBefore(LocalDate.now())) {
                     LOGGER.log(Level.FINE, "Operating system {0} is after end of life {1}",
                                new Object[]{name, endOfLife});
                     afterEndOfLifeDate = true;
@@ -161,27 +165,18 @@ public class EndOfLifeOperatingSystemAdminMonitor extends AdministrativeMonitor 
         return operatingSystemName;
     }
 
-    @Override
-    public boolean isActivated() {
-        if (ignoreEndOfLife) {
-            LOGGER.log(Level.FINE, "Not activated because ignoring end of life monitor");
-            return false;
-        }
-        if (!afterStartDate) {
-            LOGGER.log(Level.FINE, "Not activated because it is before the start date");
-            return false;
-        }
-        return true;
+    @NonNull
+    public String getOperatingSystemName() {
+        return operatingSystemName;
     }
 
-    @Override
-    public Permission getRequiredPermission() {
-        return Jenkins.SYSTEM_READ;
+    @NonNull
+    public String getEndOfLifeDate() {
+        return endOfLifeDate;
     }
 
-    @Override
-    public String getDisplayName() {
-        return "Operating system end of life monitor";
+    public boolean getAfterEndOfLifeDate() {
+        return afterEndOfLifeDate;
     }
 
     /*
@@ -201,18 +196,28 @@ public class EndOfLifeOperatingSystemAdminMonitor extends AdministrativeMonitor 
         }
     }
 
-    @NonNull
-    public String getOperatingSystemName() {
-        return operatingSystemName;
+    @Override
+    public boolean isActivated() {
+        if (ignoreEndOfLife) {
+            LOGGER.log(Level.FINE, "Not activated because ignoring end of life monitor");
+            return false;
+        }
+        if (LocalDate.now().isBefore(warningsStartDate)) {
+            LOGGER.log(Level.FINE, "Not activated because it is before the start date {0}", warningsStartDate);
+            return false;
+        }
+        LOGGER.log(Level.FINEST, "Activated because it is after the warnings start date {0}", warningsStartDate);
+        return true;
     }
 
-    @NonNull
-    public String getEndOfLifeDate() {
-        return endOfLifeDate;
+    @Override
+    public Permission getRequiredPermission() {
+        return Jenkins.SYSTEM_READ;
     }
 
-    public boolean getAfterEndOfLifeDate() {
-        return afterEndOfLifeDate;
+    @Override
+    public String getDisplayName() {
+        return "Operating system end of life monitor";
     }
 
     static final Logger LOGGER = Logger.getLogger(EndOfLifeOperatingSystemAdminMonitor.class.getName());
