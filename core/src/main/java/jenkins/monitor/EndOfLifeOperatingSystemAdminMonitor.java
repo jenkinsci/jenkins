@@ -58,6 +58,8 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 @Symbol("operatingSystemEndOfLife")
 public class EndOfLifeOperatingSystemAdminMonitor extends AdministrativeMonitor {
 
+    static final Logger LOGGER = Logger.getLogger(EndOfLifeOperatingSystemAdminMonitor.class.getName());
+
     /**
      * Allow tests to disable the end of life monitor without a JenkinsRule.
      */
@@ -113,12 +115,12 @@ public class EndOfLifeOperatingSystemAdminMonitor extends AdministrativeMonitor 
             File dataFile = new File(system.has("file") ? system.getString("file") : "/etc/os-release");
 
             LOGGER.log(Level.FINEST, "Pattern {0} starts {1} and reaches end of life {2} from file {3}",
-                       new Object[]{pattern, startDate, endOfLife, dataFile});
+                    new Object[]{pattern, startDate, endOfLife, dataFile});
 
             String name = readOperatingSystemName(dataFile, pattern);
             if (name.isEmpty()) {
                 LOGGER.log(Level.FINE, "Pattern {0} did not match from file {1}",
-                           new Object[]{pattern, dataFile});
+                        new Object[]{pattern, dataFile});
                 continue;
             }
 
@@ -133,11 +135,11 @@ public class EndOfLifeOperatingSystemAdminMonitor extends AdministrativeMonitor 
                 this.endOfLifeDate = endOfLife.toString();
                 if (endOfLife.isBefore(LocalDate.now())) {
                     LOGGER.log(Level.FINE, "Operating system {0} is after end of life {1}",
-                               new Object[]{name, endOfLife});
+                            new Object[]{name, endOfLife});
                     afterEndOfLifeDate = true;
                 } else {
                     LOGGER.log(Level.FINE, "Operating system {0} started warnings {1} and reaches end of life {2}",
-                               new Object[]{name, startDate, endOfLife});
+                            new Object[]{name, startDate, endOfLife});
                 }
             }
         }
@@ -220,5 +222,18 @@ public class EndOfLifeOperatingSystemAdminMonitor extends AdministrativeMonitor 
         return "Operating system end of life monitor";
     }
 
-    static final Logger LOGGER = Logger.getLogger(EndOfLifeOperatingSystemAdminMonitor.class.getName());
+    /* Package protected test method */
+    void setwarningsStartDate(LocalDate date) {
+        this.warningsStartDate = date;
+    }
+
+    /* Package protected test method */
+    void setOperatingSystemName(String name) {
+        this.operatingSystemName = name;
+    }
+
+    /* Package protected test method */
+    void setEndOfLifeDate(String value) {
+        endOfLifeDate = value;
+    }
 }

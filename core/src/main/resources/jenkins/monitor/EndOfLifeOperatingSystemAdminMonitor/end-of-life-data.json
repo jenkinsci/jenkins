@@ -73,7 +73,7 @@
   },
   {
     "pattern": "Red Hat Enterprise Linux.* 8",
-    "endOfLife": "2029-03-31"
+    "endOfLife": "2023-03-31"
   },
   {
     "pattern": "Rocky Linux.* 8",
