@@ -1,27 +1,42 @@
 [
   {
-    "pattern": "Red Hat Enterprise Linux.* 8",
-    "start": "2023-02-03",
-    "endOfLife": "2023-03-04"
-  },
-  {
-    "pattern": "Red Hat Enterprise Linux.* 7",
-    "start": "2023-01-02",
-    "endOfLife": "2023-03-04"
+    "pattern": "CentOS Linux.* 7",
+    "start": "2023-05-01",
+    "endOfLife": "2023-11-16"
   },
   {
     "pattern": "Oracle Linux.* 7",
-    "start": "2023-05-06",
-    "endOfLife": "2023-07-08"
+    "start": "2023-05-01",
+    "endOfLife": "2023-11-16"
+  },
+  {
+    "pattern": "Red Hat Enterprise Linux.* 7",
+    "start": "2023-05-01",
+    "endOfLife": "2023-11-16"
   },
   {
     "pattern": "Scientific Linux.* 7",
-    "start": "2023-09-10",
-    "endOfLife": "2023-11-12"
+    "start": "2023-05-01",
+    "endOfLife": "2023-11-16"
   },
   {
-    "pattern": "CentOS Linux.* 7",
-    "start": "2023-01-02",
-    "endOfLife": "2023-03-04"
-  }
+    "pattern": "CentOS Linux.* 8",
+    "start": "2028-03-31",
+    "endOfLife": "2029-03-31"
+  },
+  {
+    "pattern": "Oracle Linux.* 8",
+    "start": "2028-03-31",
+    "endOfLife": "2029-03-31"
+  },
+  {
+    "pattern": "Red Hat Enterprise Linux.* 8",
+    "start": "2028-03-31",
+    "endOfLife": "2029-03-31"
+  },
+  {
+    "pattern": "Scientific Linux.* 8",
+    "start": "2028-03-31",
+    "endOfLife": "2029-03-31"
+  },
 ]
