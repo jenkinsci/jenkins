@@ -60,7 +60,7 @@ public class EndOfLifeOperatingSystemAdminMonitorTest {
         assertThat(monitor.getSearchUrl(), is(PREFIX + monitor.getClass().getName()));
     }
 
-    // @Test - ignored while developing
+    @Test
     public void testIsActivated() throws IOException {
         // Will fail if operating system running the test is reaching end of life soon
         assertFalse(monitor.isActivated());
