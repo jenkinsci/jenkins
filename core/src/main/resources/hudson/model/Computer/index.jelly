@@ -37,17 +37,17 @@ THE SOFTWARE.
           <j:when test="${it.temporarilyOffline}">
             <l:hasPermission permission="${it.CONNECT}">
               <form method="post" action="toggleOffline">
-                <f:submit value="${%submit.temporarilyOffline}"  />
+                <f:submit value="${%submit.temporarilyOffline}"/>
               </form>
               <form method="post" action="setOfflineCause">
-              <f:submit primary="false" value="${%submit.updateOfflineCause}"  />
+              <f:submit primary="false" value="${%submit.updateOfflineCause}"/>
               </form>
             </l:hasPermission>
           </j:when>
           <j:otherwise>
             <l:hasPermission permission="${it.DISCONNECT}">
               <form method="post" action="markOffline">
-                <f:submit primary="false" value="${%submit.not.temporarilyOffline}"  />
+                <f:submit primary="false" value="${%submit.not.temporarilyOffline}" tooltip="${%submit.not.temporarilyOffline.tooltip}"/>
               </form>
             </l:hasPermission>
           </j:otherwise>

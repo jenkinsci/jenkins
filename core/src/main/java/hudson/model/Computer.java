@@ -398,7 +398,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     @Exported
     public String getOfflineCauseReason() {
-        return getOfflineCauseReason(offlineCause);
+        return getOfflineCauseReason(offlineCause, false);
     }
 
     /**
@@ -410,7 +410,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     @Exported
     public String getTemporarilyOfflineCauseReason() {
-        return getOfflineCauseReason(temporarilyOfflineCause);
+        return getOfflineCauseReason(temporarilyOfflineCause, true);
     }
 
     /**
@@ -422,12 +422,17 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * @return
      *      empty string if the cause is null
      */
-    private static String getOfflineCauseReason(OfflineCause cause) {
+    private static String getOfflineCauseReason(OfflineCause cause, boolean temporarilyOfflineCause) {
         if (cause == null) {
             return "";
         }
+        String gsub_base = null;
         // fetch the localized string for "Disconnected By"
-        String gsub_base = hudson.slaves.Messages.SlaveComputer_DisconnectedBy("", "");
+        if (temporarilyOfflineCause) {
+            gsub_base = hudson.slaves.Messages.SlaveComputer_DisconnectedBy("", "");
+        } else {
+            gsub_base = hudson.slaves.Messages.SlaveComputer_SetTempOfflineBy("", "");
+        }
         // regex to remove commented reason base string
         String gsub1 = "^" + gsub_base + "[\\w\\W]* \\: ";
         // regex to remove non-commented reason base string
@@ -1468,7 +1473,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
             checkPermission(DISCONNECT);
             offlineMessage = Util.fixEmptyAndTrim(offlineMessage);
             setTemporarilyOffline(!temporarilyOffline,
-                    new OfflineCause.UserCause(User.current(), offlineMessage));
+                    new OfflineCause.UserCause(User.current(), offlineMessage, true));
         } else {
             checkPermission(CONNECT);
             setTemporarilyOffline(!temporarilyOffline, null);
@@ -1481,7 +1486,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         checkPermission(DISCONNECT);
         offlineMessage = Util.fixEmptyAndTrim(offlineMessage);
         setTemporarilyOffline(true,
-                new OfflineCause.UserCause(User.current(), offlineMessage));
+                new OfflineCause.UserCause(User.current(), offlineMessage, true));
         return HttpResponses.redirectToDot();
     }
 

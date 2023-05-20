@@ -43,11 +43,14 @@ THE SOFTWARE.
       Sets whether this button is a primary button or not.
       Defaults to true.
     </s:attribute>
+    <s:attribute name="tooltip" since="TODO">
+      Used as tooltip of the button
+    </s:attribute>
     <s:attribute name="clazz" />
   </s:documentation>
 
   <button id="${attrs.id}" name="${attrs.name ?: 'Submit'}" formNoValidate="formNoValidate"
-          class="jenkins-button ${attrs.primary != 'false' ? 'jenkins-button--primary' : ''} ${attrs.clazz}">
+          class="jenkins-button ${attrs.primary != 'false' ? 'jenkins-button--primary' : ''} ${attrs.clazz}" tooltip="${attrs.tooltip}">
     ${attrs.value ?: '%Submit'}
   </button>
 </j:jelly>
