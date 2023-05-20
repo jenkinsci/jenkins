@@ -23,7 +23,6 @@
  */
 package jenkins.monitor;
 
-import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.AdministrativeMonitor;
 import java.io.IOException;
 import java.net.URL;
