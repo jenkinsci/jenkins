@@ -25,8 +25,11 @@
 package jenkins.monitor;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
 
 import java.io.File;
 import java.io.IOException;
@@ -182,5 +185,39 @@ public class EndOfLifeOperatingSystemAdminMonitorTest {
     @Test
     public void testReadOperatingSystemNameMissingFile() {
         assertThat(monitor.readOperatingSystemName(new File("/this/file/does/not/exist"), ".*"), is(""));
+    }
+
+    @Test
+    public void testReadOperatingSystemListEmptySet() {
+        IOException e = assertThrows(IOException.class, () -> monitor.readOperatingSystemList("[]"));
+        assertThat(e.getMessage(), is("Empty data set"));
+    }
+
+    @Test
+    public void testReadOperatingSystemListNoPattern() {
+        IOException e = assertThrows(IOException.class, () -> monitor.readOperatingSystemList("[{\"endOfLife\": \"2029-03-31\"}]"));
+        assertThat(e.getMessage(), is("Missing pattern in definition file"));
+    }
+
+    @Test
+    public void testReadOperatingSystemListNoEndOfLife() {
+        IOException e = assertThrows(IOException.class, () -> monitor.readOperatingSystemList("[{\"pattern\": \"Alpine\"}]"));
+        assertThat(e.getMessage(), is("No end of life date for Alpine"));
+    }
+
+    @Test
+    public void testGetOperatingSystemName() {
+        /* Operating system name depends on the operating system runnning test */
+        assertThat(monitor.getOperatingSystemName(), not(nullValue()));
+    }
+
+    @Test
+    public void testGetEndOfLifeDate() {
+        assertThat(monitor.getEndOfLifeDate(), is("2099-12-31"));
+    }
+
+    @Test
+    public void testGetAfterEndOfLifeDate() {
+        assertFalse(monitor.getAfterEndOfLifeDate());
     }
 }

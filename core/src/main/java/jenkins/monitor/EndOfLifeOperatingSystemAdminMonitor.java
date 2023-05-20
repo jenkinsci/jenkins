@@ -69,8 +69,8 @@ public class EndOfLifeOperatingSystemAdminMonitor extends AdministrativeMonitor 
 
     private LocalDate warningsStartDate = LocalDate.now().plusYears(10);
     private boolean afterEndOfLifeDate = false;
-    private String operatingSystemName = "unrecognized operating system";
-    private String endOfLifeDate = "unknown date";
+    private String operatingSystemName = System.getProperty("os.name", "Unknown");
+    private String endOfLifeDate = "2099-12-31";
 
     public EndOfLifeOperatingSystemAdminMonitor(String id) throws IOException {
         super(id);
@@ -90,7 +90,15 @@ public class EndOfLifeOperatingSystemAdminMonitor extends AdministrativeMonitor 
         ClassLoader cl = getClass().getClassLoader();
         URL localOperatingSystemData = cl.getResource("jenkins/monitor/EndOfLifeOperatingSystemAdminMonitor/end-of-life-data.json");
         String initialOperatingSystemJson = IOUtils.toString(localOperatingSystemData.openStream(), StandardCharsets.UTF_8);
+        readOperatingSystemList(initialOperatingSystemJson);
+    }
+
+    /* Package protected for testing */
+    void readOperatingSystemList(String initialOperatingSystemJson) throws IOException {
         JSONArray systems = JSONArray.fromObject(initialOperatingSystemJson);
+        if (systems.isEmpty()) {
+            throw new IOException("Empty data set");
+        }
         for (Object systemObj : systems) {
             if (!(systemObj instanceof JSONObject)) {
                 throw new IOException("Wrong object type in data file");
