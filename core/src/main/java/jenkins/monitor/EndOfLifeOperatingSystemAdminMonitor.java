@@ -121,17 +121,27 @@ public class EndOfLifeOperatingSystemAdminMonitor extends AdministrativeMonitor 
             } else {
                 dataFile = new File(system.getString("file"));
             }
+            LOGGER.log(Level.FINE, "Pattern {0} reading data file {1}",
+                       new Object[]{pattern, dataFile});
 
-            String operatingSystemName = readOperatingSystemName(dataFile, pattern);
-            if (!operatingSystemName.isEmpty()) {
+            String name = readOperatingSystemName(dataFile, pattern);
+            if (!name.isEmpty()) {
+                LOGGER.log(Level.FINE, "Matched operating system {0}", name);
                 if (startDate.isBefore(now)) {
+                    LOGGER.log(Level.FINE, "Operating system {0} starts warnings {1} and reaches end of life {2}",
+                               new Object[]{name, startDate, endOfLife});
                     afterStartDate = true;
-                    this.operatingSystemName = operatingSystemName;
+                    this.operatingSystemName = name;
                     this.endOfLifeDate = endOfLife.toString();
                     if (endOfLife.isBefore(now)) {
+                        LOGGER.log(Level.FINE, "Operating system {0} is after end of life {1}",
+                               new Object[]{name, endOfLife});
                         afterEndOfLifeDate = true;
                     }
                 }
+            } else {
+                LOGGER.log(Level.FINE, "Pattern {0} did not match in data file {1}",
+                           new Object[]{pattern, dataFile});
             }
         }
 
