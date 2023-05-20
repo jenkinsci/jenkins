@@ -221,19 +221,4 @@ public class EndOfLifeOperatingSystemAdminMonitor extends AdministrativeMonitor 
     public String getDisplayName() {
         return "Operating system end of life monitor";
     }
-
-    /* Package protected test method */
-    void setwarningsStartDate(LocalDate date) {
-        this.warningsStartDate = date;
-    }
-
-    /* Package protected test method */
-    void setOperatingSystemName(String name) {
-        this.operatingSystemName = name;
-    }
-
-    /* Package protected test method */
-    void setEndOfLifeDate(String value) {
-        endOfLifeDate = value;
-    }
 }
