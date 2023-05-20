@@ -100,17 +100,14 @@ public class EndOfLifeOperatingSystemAdminMonitor extends AdministrativeMonitor 
             }
             String pattern = system.getString("pattern");
 
-            if (!system.has("start")) {
-                LOGGER.log(Level.SEVERE, "No start date in operating system end of life monitor for {0}", pattern);
-                break;
-            }
-            LocalDate startDate = LocalDate.parse(system.getString("start"));
-
             if (!system.has("endOfLife")) {
                 LOGGER.log(Level.SEVERE, "No end of life date in operating system end of life monitor for {0}", pattern);
                 break;
             }
             LocalDate endOfLife = LocalDate.parse(system.getString("endOfLife"));
+
+            /* Start date defaults to 6 months before end of life */
+            LocalDate startDate = system.has("start") ? LocalDate.parse(system.getString("start")) : endOfLife.minusMonths(6);
 
             LOGGER.log(Level.FINE, "Pattern {0} starts {1} and reaches end of life {2}",
                     new Object[]{pattern, startDate, endOfLife});
