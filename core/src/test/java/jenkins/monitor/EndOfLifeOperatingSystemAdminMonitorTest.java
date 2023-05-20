@@ -21,7 +21,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
 package jenkins.monitor;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -147,6 +146,30 @@ public class EndOfLifeOperatingSystemAdminMonitorTest {
     public void testReadOperatingSystemNameScientific7() throws Exception {
         File releaseFile = new File(this.getClass().getResource("os-release-scientific-7").toURI());
         assertThat(monitor.readOperatingSystemName(releaseFile, "Scientific Linux.* 7"), is("Scientific Linux 7.9 (Nitrogen)"));
+    }
+
+    @Test
+    public void testReadOperatingSystemNameAlma8() throws Exception {
+        File releaseFile = new File(this.getClass().getResource("os-release-alma-8").toURI());
+        assertThat(monitor.readOperatingSystemName(releaseFile, "AlmaLinux.* 8"), is("AlmaLinux 8.7 (Stone Smilodon)"));
+    }
+
+    @Test
+    public void testReadOperatingSystemNameOracle8() throws Exception {
+        File releaseFile = new File(this.getClass().getResource("os-release-oracle-8").toURI());
+        assertThat(monitor.readOperatingSystemName(releaseFile, "Oracle Linux.* 8"), is("Oracle Linux Server 8.7"));
+    }
+
+    @Test
+    public void testReadOperatingSystemNameRedHat8() throws Exception {
+        File releaseFile = new File(this.getClass().getResource("os-release-redhat-8").toURI());
+        assertThat(monitor.readOperatingSystemName(releaseFile, "Red Hat Enterprise Linux.* 8"), is("Red Hat Enterprise Linux 8.8 (Ootpa)"));
+    }
+
+    @Test
+    public void testReadOperatingSystemNameRocky8() throws Exception {
+        File releaseFile = new File(this.getClass().getResource("os-release-rocky-8").toURI());
+        assertThat(monitor.readOperatingSystemName(releaseFile, "Rocky Linux.* 8"), is("Rocky Linux 8.7 (Green Obsidian)"));
     }
 
     @Test

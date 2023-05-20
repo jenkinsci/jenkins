@@ -1,5 +1,9 @@
 [
   {
+    "pattern": "AlmaLinux.* 8",
+    "endOfLife": "2029-03-31"
+  },
+  {
     "pattern": "Alpine Linux v3.14",
     "endOfLife": "2023-05-01"
   },
@@ -58,10 +62,6 @@
   {
     "pattern": "Scientific Linux.* 7",
     "endOfLife": "2023-11-16"
-  },
-  {
-    "pattern": "Alma Linux.* 8",
-    "endOfLife": "2029-03-31"
   },
   {
     "pattern": "CentOS Linux.* 8",
