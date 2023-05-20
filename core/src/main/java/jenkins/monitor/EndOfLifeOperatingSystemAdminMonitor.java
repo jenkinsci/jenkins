@@ -71,12 +71,12 @@ public class EndOfLifeOperatingSystemAdminMonitor extends AdministrativeMonitor 
 
         final String prettyName;
         final LocalDate startDate;
-        final LocalDate effectiveDate;
+        final LocalDate endOfLifeDate;
 
-        EndOfLifeData(String prettyName, LocalDate startDate, LocalDate effectiveDate) {
+        EndOfLifeData(String prettyName, LocalDate startDate, LocalDate endOfLifeDate) {
             this.prettyName = prettyName;
             this.startDate = startDate;
-            this.effectiveDate = effectiveDate;
+            this.endOfLifeDate = endOfLifeDate;
         }
     }
 
@@ -115,19 +115,19 @@ public class EndOfLifeOperatingSystemAdminMonitor extends AdministrativeMonitor 
             String pattern = system.getString("pattern");
 
             if (!system.has("start")) {
-                LOGGER.log(Level.SEVERE, "No start date for operating system in end of life monitor for pattern {0}", pattern);
+                LOGGER.log(Level.SEVERE, "No start date in operating system end of life monitor for {0}", pattern);
                 break;
             }
             LocalDate startDate = LocalDate.parse(system.getString("start"));
 
-            if (!system.has("effective")) {
-                LOGGER.log(Level.SEVERE, "No effective date for operating system in end of life monitor for pattern {0}", pattern);
+            if (!system.has("endOfLife")) {
+                LOGGER.log(Level.SEVERE, "No end of life date in operating system end of life monitor for {0}", pattern);
                 break;
             }
-            LocalDate effectiveDate = LocalDate.parse(system.getString("effective"));
+            LocalDate endOfLifeDate = LocalDate.parse(system.getString("endOfLife"));
 
-            LOGGER.log(Level.FINE, "Pattern {0} starts {1} and is effective {2}",
-                    new Object[]{pattern, startDate, effectiveDate});
+            LOGGER.log(Level.FINE, "Pattern {0} starts {1} and reaches end of life {2}",
+                    new Object[]{pattern, startDate, endOfLifeDate});
 
             File dataFile;
             if (!system.has("file")) {
@@ -138,12 +138,12 @@ public class EndOfLifeOperatingSystemAdminMonitor extends AdministrativeMonitor 
 
             String operatingSystemName = readPrettyName(dataFile, pattern);
             if (!operatingSystemName.isEmpty()) {
-                operatingSystemList.add(new EndOfLifeData(operatingSystemName, startDate, effectiveDate));
+                operatingSystemList.add(new EndOfLifeData(operatingSystemName, startDate, endOfLifeDate));
                 if (startDate.isBefore(now)) {
                     afterStartDate = true;
                     this.prettyName = operatingSystemName;
-                    this.endOfLifeDate = effectiveDate.toString();
-                    if (effectiveDate.isBefore(now)) {
+                    this.endOfLifeDate = endOfLifeDate.toString();
+                    if (endOfLifeDate.isBefore(now)) {
                         afterEndOfLifeDate = true;
                     }
                 }
