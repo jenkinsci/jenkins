@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.monitor;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -96,7 +97,7 @@ public class EndOfLifeOperatingSystemAdminMonitor extends AdministrativeMonitor 
         }
         LocalDate now = LocalDate.now();
         ClassLoader cl = getClass().getClassLoader();
-        URL localOperatingSystemData = cl.getResource("jenkins/monitor/EndOfLifeAdminMonitor/end-of-life-data.json");
+        URL localOperatingSystemData = cl.getResource("jenkins/monitor/EndOfLifeOperatingSystemAdminMonitor/end-of-life-data.json");
         String initialOperatingSystemJson = IOUtils.toString(localOperatingSystemData.openStream(), StandardCharsets.UTF_8);
         JSONArray systems = JSONArray.fromObject(initialOperatingSystemJson);
         for (Object systemObj : systems) {
