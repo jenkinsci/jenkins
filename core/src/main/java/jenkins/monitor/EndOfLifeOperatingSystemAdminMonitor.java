@@ -62,6 +62,7 @@ public class EndOfLifeOperatingSystemAdminMonitor extends AdministrativeMonitor 
     boolean ignoreEndOfLife = false;
 
     private boolean afterStartDate = false;
+    private String prettyName = "an unrecognized operating system";
 
     private static class EndOfLifeData {
 
@@ -132,11 +133,12 @@ public class EndOfLifeOperatingSystemAdminMonitor extends AdministrativeMonitor 
                 dataFile = new File(system.getString("file"));
             }
 
-            String prettyName = readPrettyName(dataFile, pattern);
-            if (!prettyName.isEmpty()) {
-                operatingSystemList.add(new EndOfLifeData(prettyName, startDate, effectiveDate));
+            String operatingSystemName = readPrettyName(dataFile, pattern);
+            if (!operatingSystemName.isEmpty()) {
+                operatingSystemList.add(new EndOfLifeData(operatingSystemName, startDate, effectiveDate));
                 if (startDate.isBefore(now)) {
                     afterStartDate = true;
+                    this.prettyName = operatingSystemName;
                 }
             }
         }
@@ -204,6 +206,12 @@ public class EndOfLifeOperatingSystemAdminMonitor extends AdministrativeMonitor 
             LOGGER.log(Level.FINE, "Enabled operating system end of life monitor");
             return new HttpRedirect("https://www.jenkins.io/redirect/operating-system-end-of-life");
         }
+    }
+
+    @NonNull
+    public String getPrettyName()
+    {
+        return prettyName;
     }
 
     static final Logger LOGGER = Logger.getLogger(EndOfLifeOperatingSystemAdminMonitor.class.getName());
