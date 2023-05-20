@@ -24,7 +24,9 @@
 package jenkins.monitor;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.Extension;
 import hudson.model.AdministrativeMonitor;
+import hudson.security.Permission;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -41,14 +43,24 @@ import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.IOUtils;
+import org.jenkinsci.Symbol;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.HttpRedirect;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.HttpResponses;
+import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
-public final class EndOfLifeOperatingSystemAdminMonitor extends AdministrativeMonitor {
+@Extension
+@Restricted(NoExternalUse.class)
+@Symbol("operatingSystemEndOfLife")
+public class EndOfLifeOperatingSystemAdminMonitor extends AdministrativeMonitor {
 
-    /**
-     * ignore this end of life monitor. Allows tests to disable the end of life
-     * monitor without requiring a Jenkinsrule.
-     */
-    private boolean ignoreEndOfLife = false;
+    /** Allow tests to disable the end of life monitor without a JenkinsRule. */
+    boolean ignoreEndOfLife = false;
+
     private boolean afterStartDate = false;
 
     private static class EndOfLifeData {
@@ -162,11 +174,33 @@ public final class EndOfLifeOperatingSystemAdminMonitor extends AdministrativeMo
         return true;
     }
 
-    /* Package protected for tests */
-    void setIgnoreEndOfLife(boolean value) {
-        ignoreEndOfLife = value;
+    @Override
+    public Permission getRequiredPermission() {
+        return Jenkins.SYSTEM_READ;
     }
 
-    static final Logger LOGGER = Logger.getLogger(EndOfLifeOperatingSystemAdminMonitor.class
-            .getName());
+    @Override
+    public String getDisplayName() {
+        return "Operating system end of life monitor";
+    }
+
+    /**
+     * Depending on whether the user said "yes" or "no", send him to the right
+     * place.
+     */
+    @Restricted(DoNotUse.class) // WebOnly
+    @RequirePOST
+    public HttpResponse doAct(@QueryParameter String no) throws IOException {
+        if (no != null) { // dismiss
+            Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+            disable(true);
+            LOGGER.log(Level.FINE, "Disabled operating system end of life monitor");
+            return HttpResponses.forwardToPreviousPage();
+        } else {
+            LOGGER.log(Level.FINE, "Enabled operating system end of life monitor");
+            return new HttpRedirect("https://www.jenkins.io/redirect/operating-system-end-of-life");
+        }
+    }
+
+    static final Logger LOGGER = Logger.getLogger(EndOfLifeOperatingSystemAdminMonitor.class.getName());
 }

@@ -66,7 +66,7 @@ public class EndOfLifeOperatingSystemAdminMonitorTest {
 
     @Test
     public void testNotIsActivatedWhenIgnoreEndOfLife() throws IOException {
-        monitor.setIgnoreEndOfLife(true);
+        monitor.ignoreEndOfLife = true;
         assertFalse(monitor.isActivated());
     }
 
