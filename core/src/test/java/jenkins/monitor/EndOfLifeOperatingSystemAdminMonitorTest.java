@@ -207,7 +207,7 @@ public class EndOfLifeOperatingSystemAdminMonitorTest {
 
     @Test
     public void testGetOperatingSystemName() {
-        /* Operating system name depends on the operating system runnning test */
+        /* Operating system name depends on the operating system running test */
         assertThat(monitor.getOperatingSystemName(), not(nullValue()));
     }
 
