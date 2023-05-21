@@ -11,12 +11,10 @@ node/
 
 # libraries / external deps / generated files
 src/main/js/plugin-setup-wizard/bootstrap-detached.js
-src/main/webapp/bootstrap
 src/main/webapp/scripts/yui
 src/main/webapp/scripts/prototype.js
-src/main/fonts/font-awesome
-src/main/webapp/css/font-awesome
 src/main/webapp/jsbundles/
+src/main/scss/_bootstrap.scss
 
 # test files that we don't need formatted
 ../test/src/test/resources
@@ -26,6 +24,3 @@ src/main/webapp/jsbundles/
 *.hbs
 
 .yarn
-
-# TODO not sure why this fails
-src/main/less/abstracts/theme.less
