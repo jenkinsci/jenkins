@@ -70,31 +70,32 @@
     box-shadow: 0 0 0 0.66rem transparent;
   }
 
-  &:hover,
-  &:focus {
-    &::before {
-      background-color: var(--item-background--hover);
-    }
-  }
-
-  &:active,
-  &:focus {
-    outline: none !important;
-    z-index: 1;
-
-    &::before {
-      background-color: var(--item-background--active);
+  &:not(:disabled) {
+    &:hover,
+    &:focus-visible {
+      &::before {
+        background-color: var(--item-background--hover);
+      }
     }
 
-    &::after {
-      box-shadow: 0 0 0 0.33rem var(--item-box-shadow--focus);
-    }
-  }
+    &:active {
+      outline: none !important;
+      z-index: 1;
 
-  &:focus-visible {
-    &::after {
-      box-shadow: 0 0 0 0.2rem var(--text-color) !important;
-      opacity: 1 !important;
+      &::before {
+        background-color: var(--item-background--active);
+      }
+
+      &::after {
+        box-shadow: 0 0 0 0.33rem var(--item-box-shadow--focus);
+      }
+    }
+
+    &:focus-visible {
+      &::after {
+        box-shadow: 0 0 0 0.2rem var(--text-color) !important;
+        opacity: 1 !important;
+      }
     }
   }
 }
