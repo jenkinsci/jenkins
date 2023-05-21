@@ -485,7 +485,7 @@ window.addEventListener("load", function () {
   // Enable/disable the 'Update' button depending on if any updates are checked
   const anyCheckboxesSelected = () => {
     return (
-      document.querySelectorAll("input[type='checkbox']:checked").length > 0
+      document.querySelectorAll("input[type='checkbox']:checked:not(:disabled)").length > 0
     );
   };
   const updateButton = document.querySelector("#button-update");
