@@ -36,16 +36,16 @@ import java.io.IOException;
 import java.util.Random;
 import org.junit.Test;
 
-public class EndOfLifeOperatingSystemAdminMonitorTest {
+public class OperatingSystemEndOfLifeAdminMonitorTest {
 
-    private final EndOfLifeOperatingSystemAdminMonitor monitor;
+    private final OperatingSystemEndOfLifeAdminMonitor monitor;
     private final Random random = new Random();
     private final String PREFIX = "administrativeMonitor/";
 
-    public EndOfLifeOperatingSystemAdminMonitorTest() throws IOException {
+    public OperatingSystemEndOfLifeAdminMonitorTest() throws IOException {
         this.monitor = random.nextBoolean()
-                ? new EndOfLifeOperatingSystemAdminMonitor()
-                : new EndOfLifeOperatingSystemAdminMonitor(EndOfLifeOperatingSystemAdminMonitor.class.getName());
+                ? new OperatingSystemEndOfLifeAdminMonitor()
+                : new OperatingSystemEndOfLifeAdminMonitor(OperatingSystemEndOfLifeAdminMonitor.class.getName());
     }
 
     @Test

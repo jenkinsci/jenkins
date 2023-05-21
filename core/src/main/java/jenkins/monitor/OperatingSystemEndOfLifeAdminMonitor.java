@@ -58,9 +58,9 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 @Extension
 @Restricted(NoExternalUse.class)
 @Symbol("operatingSystemEndOfLife")
-public class EndOfLifeOperatingSystemAdminMonitor extends AdministrativeMonitor {
+public class OperatingSystemEndOfLifeAdminMonitor extends AdministrativeMonitor {
 
-    static final Logger LOGGER = Logger.getLogger(EndOfLifeOperatingSystemAdminMonitor.class.getName());
+    static final Logger LOGGER = Logger.getLogger(OperatingSystemEndOfLifeAdminMonitor.class.getName());
 
     /**
      * Allow tests to disable the end of life monitor without a JenkinsRule.
@@ -72,12 +72,12 @@ public class EndOfLifeOperatingSystemAdminMonitor extends AdministrativeMonitor 
     private String operatingSystemName = System.getProperty("os.name", "Unknown");
     private String endOfLifeDate = "2099-12-31";
 
-    public EndOfLifeOperatingSystemAdminMonitor(String id) throws IOException {
+    public OperatingSystemEndOfLifeAdminMonitor(String id) throws IOException {
         super(id);
         fillOperatingSystemList();
     }
 
-    public EndOfLifeOperatingSystemAdminMonitor() throws IOException {
+    public OperatingSystemEndOfLifeAdminMonitor() throws IOException {
         fillOperatingSystemList();
     }
 
@@ -88,7 +88,7 @@ public class EndOfLifeOperatingSystemAdminMonitor extends AdministrativeMonitor 
             return;
         }
         ClassLoader cl = getClass().getClassLoader();
-        URL localOperatingSystemData = cl.getResource("jenkins/monitor/EndOfLifeOperatingSystemAdminMonitor/end-of-life-data.json");
+        URL localOperatingSystemData = cl.getResource("jenkins/monitor/OperatingSystemEndOfLifeAdminMonitor/end-of-life-data.json");
         String initialOperatingSystemJson = IOUtils.toString(localOperatingSystemData.openStream(), StandardCharsets.UTF_8);
         readOperatingSystemList(initialOperatingSystemJson);
     }
