@@ -84,10 +84,6 @@
     "endOfLife": "2023-11-16"
   },
   {
-    "pattern": "Scientific Linux.* 8",
-    "endOfLife": "2029-03-31"
-  },
-  {
     "pattern": "Ubuntu.* 18.04",
     "endOfLife": "2023-05-31"
   },
