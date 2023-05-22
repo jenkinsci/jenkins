@@ -62,7 +62,7 @@ THE SOFTWARE.
                                     <strong>${%Safe Restart}</strong>
                                 </p>
                                 <p>
-                                    ${%Jobs on agents can usually continue.}
+                                    ${%safeRestartInfo}
                                 </p>
                             </div>
                         </j:if>

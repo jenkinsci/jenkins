@@ -4147,7 +4147,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     @RequirePOST
     public HttpRedirect doQuietDown(@QueryParameter boolean block,
                                     @QueryParameter int timeout,
-                                    @QueryParameter @CheckForNull String message, @QueryParameter boolean safeRestart) throws InterruptedException, IOException {
+                                    @QueryParameter @CheckForNull String message,
+                                    @QueryParameter boolean safeRestart) throws InterruptedException, IOException {
         synchronized (this) {
             checkPermission(MANAGE);
             quietDownInfo = new QuietDownInfo(message, safeRestart);
@@ -4545,7 +4546,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     /**
-     * Queues up a safe restart of Jenkins. Jobs have to finish or pause before it can proceed. No new jobs are accepted.
+     * Queues up a safe restart of Jenkins.
+     * Builds that cannot continue while the controller is not running have to finish or pause before it can proceed.
+     * No new builds will be started. No new jobs are accepted.
      *
      * @deprecated use {@link #doSafeRestart(StaplerRequest, String)} instead.
      *
@@ -4611,6 +4614,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     /**
      * Queues up a restart to be performed once there are no builds currently running.
+     * @since 1.332
      * @deprecated use {@link #safeRestart(String)} instead.
      */
     @Deprecated(since = "TODO")

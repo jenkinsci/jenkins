@@ -29,15 +29,17 @@ import hudson.cli.CLICommand;
 import hudson.cli.Messages;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.args4j.Option;
 
 /**
  * Safe Restart Jenkins - do not accept any new jobs and try to pause existing.
  *
- * @author meiswjn
  * @since TODO
  */
 @Extension
+@Restricted(NoExternalUse.class)
 public class SafeRestartCommand extends CLICommand {
     private static final Logger LOGGER = Logger.getLogger(SafeRestartCommand.class.getName());
 
