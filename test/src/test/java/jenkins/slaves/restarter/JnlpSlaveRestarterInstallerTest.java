@@ -69,7 +69,6 @@ public class JnlpSlaveRestarterInstallerTest {
                     builder.webSocket();
                 }
                 Slave s = inboundAgents.createAgent(r, builder.build());
-                r.waitOnline(s);
                 assertEquals(1, s.getChannel().call(new JVMCount()).intValue());
                 while (logging.getMessages().stream().noneMatch(msg -> msg.contains("Effective SlaveRestarter on remote:"))) {
                     Thread.sleep(100);
