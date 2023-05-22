@@ -547,6 +547,9 @@ THE SOFTWARE.
             <phase>generate-sources</phase>
             <configuration>
               <sources>
+                <!-- The antlr4 sources are found automatically by the maven compiler,
+                but listing them explicitly avoids a missing classpath entry when importing the maven project in eclipse. -->
+                <source>${project.build.directory}/generated-sources/antlr4</source>
                 <source>${project.build.directory}/generated-sources/localizer</source>
                 <source>${project.build.directory}/generated-sources/taglib-interface</source>
               </sources>
