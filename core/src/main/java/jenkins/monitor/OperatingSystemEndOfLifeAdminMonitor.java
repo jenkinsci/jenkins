@@ -32,6 +32,8 @@ import hudson.model.AdministrativeMonitor;
 import hudson.security.Permission;
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -71,6 +73,7 @@ public class OperatingSystemEndOfLifeAdminMonitor extends AdministrativeMonitor 
     private boolean afterEndOfLifeDate = false;
     private String operatingSystemName = System.getProperty("os.name", "Unknown");
     private String endOfLifeDate = "2099-12-31";
+    private String documentationUrl = "https://www.jenkins.io/redirect/operating-system-end-of-life";
 
     public OperatingSystemEndOfLifeAdminMonitor(String id) throws IOException {
         super(id);
@@ -138,6 +141,7 @@ public class OperatingSystemEndOfLifeAdminMonitor extends AdministrativeMonitor 
             LOGGER.log(Level.FINE, "Matched operating system {0}", name);
             if (startDate.isBefore(LocalDate.now())) {
                 this.operatingSystemName = name;
+                this.documentationUrl = buildDocumentationUrl(this.operatingSystemName);
                 this.endOfLifeDate = endOfLife.toString();
                 if (endOfLife.isBefore(LocalDate.now())) {
                     LOGGER.log(Level.FINE, "Operating system {0} is after end of life {1}",
@@ -200,8 +204,41 @@ public class OperatingSystemEndOfLifeAdminMonitor extends AdministrativeMonitor 
         return afterEndOfLifeDate;
     }
 
+    @NonNull
+    public String getDocumentationUrl() {
+        return documentationUrl;
+    }
+
+    /* Package protected for tests */
+    @NonNull
+    String readDocumentationUrl(File dataFile, @NonNull String patternStr) {
+        if (dataFile == null || !dataFile.exists()) {
+            return "";
+        }
+        String operatingSystemName = readOperatingSystemName(dataFile, patternStr);
+        return buildDocumentationUrl(operatingSystemName);
+    }
+
+    private String buildDocumentationUrl(String operatingSystemName) {
+        String fragment = operatingSystemName.replace(" ", "-").replace("/", "-").replace("(", "").replace(")", "");
+
+        String scheme = "https";
+        String hostName = "www.jenkins.io";
+        String path = "/redirect/operating-system-end-of-life";
+        String query = "q=" + fragment;
+
+        String url = documentationUrl;
+        try {
+            URI documentationURI = new URI(scheme, hostName, path, query, fragment);
+            url = documentationURI.toString();
+        } catch (URISyntaxException e) {
+            url = scheme + "://" + hostName + path;
+        }
+        return url;
+    }
+
     /*
-     * Send use to the right place depending on "yes" or "no".
+     * Send user to the right place depending on "yes" or "no".
      */
     @Restricted(DoNotUse.class) // WebOnly
     @RequirePOST
@@ -213,7 +250,7 @@ public class OperatingSystemEndOfLifeAdminMonitor extends AdministrativeMonitor 
             return HttpResponses.forwardToPreviousPage();
         } else {
             LOGGER.log(Level.FINE, "Enabled operating system end of life monitor");
-            return new HttpRedirect("https://www.jenkins.io/redirect/operating-system-end-of-life");
+            return new HttpRedirect(documentationUrl);
         }
     }
 
