@@ -81,7 +81,7 @@ THE SOFTWARE.
                 <j:if test="${stuck}">
                   <td class="pane" width="16" align="center" valign="middle">
                     <a href="https://www.jenkins.io/redirect/troubleshooting/executor-starvation">
-                      <l:icon class="icon-hourglass icon-sm"/>
+                      <l:icon src="symbol-hourglass" class="icon-sm"/>
                     </a>
                   </td>
                 </j:if>
