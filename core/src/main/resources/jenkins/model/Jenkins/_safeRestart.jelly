@@ -25,33 +25,36 @@ THE SOFTWARE.
 <!-- Delete view -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-	<l:layout title="Safely Restart Jenkins">
+	<l:layout title="${%Safe restart}">
 		<st:include page="sidepanel.jelly" />
-		<l:breadcrumb title="${%Safe Restart}" />
+		<l:breadcrumb title="${%Safe restart}" />
 		<l:main-panel>
+			<l:app-bar title="${%Safe restart}" />
 			<j:choose>
 				<j:when test="${app.lifecycle.canRestart()}">
-					<form method="post" action="safeRestart">
-						<f:entry title="${%Restart Message}">
-						  <f:textbox name="message" value="${app.quietDownReason ?: null}"/>
-						</f:entry>
-						${%confirmRestart}
-						<f:bottomButtonBar>
-							<f:submit clazz="jenkins-!-destructive-color" value="${%Restart}" />
-						</f:bottomButtonBar>
-					</form>
+          <p>${%restartWarning}</p>
+
+          <form method="post" action="safeRestart">
+            <f:entry title="${%Jenkins is restarting banner}"
+                     description="${%This will be displayed on the Jenkins dashboard, you can use it to let users know what is happening. A default message will be added if you don't supply one.}">
+              <f:textbox name="message" value="${app.quietDownReason ?: null}"/>
+            </f:entry>
+            <div>
+            <f:submit clazz="jenkins-!-destructive-color" value="${%Restart}"/>
+            </div>
+          </form>
+          <j:if test="${app.isQuietingDown()}">
+            <f:form method="post" action="cancelQuietDown" name="cancelRestart">
+              <p>
+                <f:submit value="${%Cancel}"/>
+              </p>
+            </f:form>
+          </j:if>
 				</j:when>
 				<j:otherwise>
 					${%Jenkins cannot restart itself as currently configured.}
 				</j:otherwise>
 			</j:choose>
-			<j:if test="${app.isQuietingDown()}">
-				<f:form method="post" action="cancelQuietDown" name="cancelRestart">
-					<f:bottomButtonBar>
-						<f:submit value="${%Cancel}" />
-					</f:bottomButtonBar>
-				</f:form>
-			</j:if>
 		</l:main-panel>
 	</l:layout>
 </j:jelly>
