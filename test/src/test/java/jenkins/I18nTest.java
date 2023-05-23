@@ -103,4 +103,14 @@ public class I18nTest {
         Assert.assertEquals("value", data.getString("Key"));
     }
 
+    @Test // testing with unsupported language
+    public void test_unsupported_language() throws IOException, SAXException {
+        try {
+            JSONObject response = jenkinsRule.getJSON("i18n/resourceBundle?baseName=jenkins.i18n.Messages&language=xyz").getJSONObject();
+        } catch (FailingHttpStatusCodeException e) {
+            Assert.assertNotNull(e);
+            Assert.assertTrue(e.getMessage().contains("Unsupported language 'xyz'."));
+        }
+    }
+
 }
