@@ -30,11 +30,8 @@ import hudson.ExtensionPoint;
 import hudson.widgets.Widget;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -45,8 +42,6 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  * @since TODO
  */
 public abstract class WidgetFactory<T extends HasWidgets, W extends Widget> implements ExtensionPoint {
-    private static final Logger LOGGER = Logger.getLogger(WidgetFactory.class.getName());
-
     /**
      * The type of object this factory cares about.
      * Declared separately, rather than by having {@link #createFor} do a check-cast,
@@ -84,19 +79,4 @@ public abstract class WidgetFactory<T extends HasWidgets, W extends Widget> impl
         return result;
     }
 
-    public Collection<W> createWidgetsFor(HasWidgets hasWidgets) {
-        try {
-            Collection<W> result = createFor(type().cast(hasWidgets));
-            for (W w : result) {
-                if (!widgetType().isInstance(w)) {
-                    LOGGER.log(Level.WARNING, "Widgets from {0} for {1} included {2} not assignable to {3}", new Object[] {this, hasWidgets, w, widgetType()});
-                    return Collections.emptySet();
-                }
-            }
-            return result;
-        } catch (RuntimeException e) {
-            LOGGER.log(Level.WARNING, "Could not load widgets from " + this + " for " + hasWidgets, e);
-            return Collections.emptySet();
-        }
-    }
 }

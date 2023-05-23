@@ -27,8 +27,10 @@ package jenkins.widgets;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.widgets.Widget;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.security.stapler.StaplerAccessibleType;
 import jenkins.security.stapler.StaplerDispatchable;
@@ -48,13 +50,25 @@ public interface HasWidgets {
         List<Widget> result = new ArrayList<>();
         WidgetFactory
                 .factoriesFor(getClass(), Widget.class)
-                .forEach(wf -> result.addAll(wf.createWidgetsFor(this)));
+                .forEach(wf -> {
+                    try {
+                        Collection<Widget> wfResult = wf.createFor(wf.type().cast(this));
+                        for (Widget w : wfResult) {
+                            if (wf.widgetType().isInstance(w)) {
+                                result.add(w);
+                            } else {
+                                LOGGER.log(Level.WARNING, "Widget from {0} for {1} included {2} not assignable to {3}", new Object[] {wf, this, w, wf.widgetType()});
+                            }
+                        }
+                    } catch (RuntimeException e) {
+                        LOGGER.log(Level.WARNING, "Could not load all widgets from " + wf + " for " + this, e);
+                    }
+                });
         return Collections.unmodifiableList(result);
     }
 
     /**
      * Returns the named widget, or <code>null</code> if it does not exist.
-     *
      * Defaults to iterating on widgets and filtering based on the defined <code>urlName</code>.
      *
      * @param name the name of the widget within the current context.
