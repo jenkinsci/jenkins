@@ -37,6 +37,8 @@ import jenkins.model.Jenkins;
 import jenkins.model.queue.QueueItem;
 import jenkins.widgets.HistoryPageFilter;
 import jenkins.widgets.WidgetFactory;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 
 /**
  * Displays the build history on the side panel.
@@ -87,6 +89,7 @@ public class BuildHistoryWidget<T> extends HistoryWidget<Task, T> {
     }
 
     @Extension
+    @Restricted(DoNotUse.class)
     public static final class FactoryImpl extends WidgetFactory<Job, BuildHistoryWidget> {
         @Override
         public Class<Job> type() {

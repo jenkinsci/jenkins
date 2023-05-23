@@ -35,9 +35,12 @@ import org.kohsuke.accmod.restrictions.DoNotUse;
 
 /**
  * Add widgets annotated with @Extension, or added manually to Jenkins via <code>Jenkins.get().getWidgets().add(...)</code>
+ *
+ * @deprecated New widgets should provide a {@link WidgetFactory} instead of relying on this legacy lookup.
  */
 @Extension
 @Restricted(DoNotUse.class)
+@Deprecated
 public final class JenkinsWidgetFactory extends WidgetFactory<View, Widget> {
     @Override
     public Class<View> type() {

@@ -81,6 +81,7 @@ public abstract class Widget {
      * @return the URL relative to the context path. Always ends with a trailing '/'.
      */
     public String getUrl() {
-        return (getOwnerUrl() == null ? "" : getOwnerUrl()) + "widget/" + getUrlName() + '/';
+        String ownerUrl = getOwnerUrl();
+        return (ownerUrl == null ? "" : ownerUrl) + "widget/" + getUrlName() + '/';
     }
 }

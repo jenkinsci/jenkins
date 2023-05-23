@@ -36,7 +36,14 @@ import jenkins.model.Jenkins;
 import jenkins.model.queue.QueueItem;
 import org.jenkinsci.Symbol;
 
-
+/**
+ * Show the default build queue.
+ *
+ * A plugin may remove this from {@link Jenkins#getWidgets()} and swap in their own.
+ *
+ * @author Kohsuke Kawaguchi
+ * @since 1.514
+ */
 public class BuildQueueWidget extends Widget {
     @NonNull
     private String ownerUrl;
