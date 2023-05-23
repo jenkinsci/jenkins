@@ -36,23 +36,19 @@ THE SOFTWARE.
 
           <form method="post" action="safeRestart">
             <f:entry title="${%Jenkins is restarting banner}"
-                     description="${%This will be displayed on the Jenkins dashboard, you can use it to let users know what is happening. A default message will be added if you don't supply one.}">
+                     description="${%description}">
               <f:textbox name="message" value="${app.quietDownReason ?: null}"/>
             </f:entry>
-            <div>
-            <f:submit clazz="jenkins-!-destructive-color" value="${%Restart}"/>
-            </div>
+            <f:bottomButtonBar>
+              <f:submit clazz="jenkins-!-destructive-color" value="${%Restart}"/>
+              <j:if test="${app.isQuietingDown()}">
+                <f:submit name="cancel" primary="false" value="${%Cancel}"/>
+              </j:if>
+            </f:bottomButtonBar>
           </form>
-          <j:if test="${app.isQuietingDown()}">
-            <f:form method="post" action="cancelQuietDown" name="cancelRestart">
-              <p>
-                <f:submit value="${%Cancel}"/>
-              </p>
-            </f:form>
-          </j:if>
 				</j:when>
 				<j:otherwise>
-					${%Jenkins cannot restart itself as currently configured.}
+					${%cannotRestart}
 				</j:otherwise>
 			</j:choose>
 		</l:main-panel>

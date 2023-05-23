@@ -4565,8 +4565,13 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     public HttpResponse doSafeRestart(StaplerRequest req, @QueryParameter("message") String message) throws IOException, ServletException, RestartNotSupportedException {
         checkPermission(MANAGE);
-        if (req != null && req.getMethod().equals("GET"))
+        if (req != null && req.getMethod().equals("GET")) {
             return HttpResponses.forwardToView(this, "_safeRestart.jelly");
+        }
+
+        if (req != null && req.getParameter("cancel") != null) {
+            return doCancelQuietDown();
+        }
 
         if (req == null || req.getMethod().equals("POST")) {
             safeRestart(message);
