@@ -5,18 +5,22 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
 
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.model.AbstractBuild.AbstractBuildExecution;
 import hudson.model.AbstractProject;
+import hudson.model.BuildListener;
 import hudson.model.FreeStyleProject;
 import hudson.model.Item;
 import java.io.IOException;
+import java.io.PrintStream;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.mockito.Mockito;
 import org.xml.sax.SAXException;
 
 /**
@@ -78,4 +82,23 @@ public class SCMCheckoutStrategyTest {
             }
         }
     }
+
+    @Test
+    public void testCheckoutPrintsHello() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+        TestSCMCheckoutStrategy strategy = new TestSCMCheckoutStrategy();
+        p.setScmCheckoutStrategy(strategy);
+
+        AbstractBuildExecution mockExecution = mock(AbstractBuildExecution.class);
+        BuildListener mockListener = mock(BuildListener.class);
+        PrintStream mockPrintStream = mock(PrintStream.class);
+
+        Mockito.when(mockExecution.getListener()).thenReturn(mockListener);
+        Mockito.when(mockListener.getLogger()).thenReturn(mockPrintStream);
+
+        strategy.checkout(mockExecution);
+
+        Mockito.verify(mockPrintStream).println("Hello!");
+    }
+
 }
