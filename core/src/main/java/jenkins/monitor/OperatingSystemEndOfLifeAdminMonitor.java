@@ -220,16 +220,14 @@ public class OperatingSystemEndOfLifeAdminMonitor extends AdministrativeMonitor 
     }
 
     private String buildDocumentationUrl(String operatingSystemName) {
-        String fragment = operatingSystemName.replace(" ", "-").replace("/", "-").replace("(", "").replace(")", "");
-
         String scheme = "https";
         String hostName = "www.jenkins.io";
         String path = "/redirect/operating-system-end-of-life";
-        String query = "q=" + fragment;
+        String query = "q=" + operatingSystemName.replace(" ", "-").replace("/", "-").replace("(", "").replace(")", "");
 
         String url = documentationUrl;
         try {
-            URI documentationURI = new URI(scheme, hostName, path, query, fragment);
+            URI documentationURI = new URI(scheme, hostName, path, query, null);
             url = documentationURI.toString();
         } catch (URISyntaxException e) {
             url = scheme + "://" + hostName + path;

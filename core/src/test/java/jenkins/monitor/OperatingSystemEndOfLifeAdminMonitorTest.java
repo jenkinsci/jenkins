@@ -102,7 +102,7 @@ public class OperatingSystemEndOfLifeAdminMonitorTest {
     }
 
     private String docsUrl(String component) {
-        return "https://www.jenkins.io/redirect/operating-system-end-of-life?q=" + component + "#" + component;
+        return "https://www.jenkins.io/redirect/operating-system-end-of-life?q=" + component;
     }
 
     @Test
