@@ -21,15 +21,15 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-window.selectAll = function (anchor) {
+function selectAll(anchor) {
   var parent = anchor.closest(".legacy-token-usage");
   var allCheckBoxes = parent.querySelectorAll(".token-to-revoke");
   var concernedCheckBoxes = allCheckBoxes;
 
   checkTheDesiredOne(allCheckBoxes, concernedCheckBoxes);
-};
+}
 
-window.selectFresh = function (anchor) {
+function selectFresh(anchor) {
   var parent = anchor.closest(".legacy-token-usage");
   var allCheckBoxes = parent.querySelectorAll(".token-to-revoke");
   var concernedCheckBoxes = parent.querySelectorAll(
@@ -37,9 +37,9 @@ window.selectFresh = function (anchor) {
   );
 
   checkTheDesiredOne(allCheckBoxes, concernedCheckBoxes);
-};
+}
 
-window.selectRecent = function (anchor) {
+function selectRecent(anchor) {
   var parent = anchor.closest(".legacy-token-usage");
   var allCheckBoxes = parent.querySelectorAll(".token-to-revoke");
   var concernedCheckBoxes = parent.querySelectorAll(
@@ -47,7 +47,7 @@ window.selectRecent = function (anchor) {
   );
 
   checkTheDesiredOne(allCheckBoxes, concernedCheckBoxes);
-};
+}
 
 function checkTheDesiredOne(allCheckBoxes, concernedCheckBoxes) {
   var mustCheck = false;
@@ -74,7 +74,7 @@ function checkTheDesiredOne(allCheckBoxes, concernedCheckBoxes) {
   }
 }
 
-window.confirmAndRevokeAllSelected = function (button) {
+function confirmAndRevokeAllSelected(button) {
   var parent = button.closest(".legacy-token-usage");
   var allCheckBoxes = parent.querySelectorAll(".token-to-revoke");
   var allCheckedCheckBoxes = [];
@@ -115,7 +115,7 @@ window.confirmAndRevokeAllSelected = function (button) {
       }).then(() => window.location.reload());
     }
   }
-};
+}
 
 function onLineClicked(event) {
   var line = this;
@@ -154,5 +154,32 @@ function onCheckChanged(checkBox) {
         onCheckChanged(this);
       };
     }
+
+    document
+      .getElementById("legacy-api-token-monitor-select-all")
+      .addEventListener("click", function (event) {
+        event.preventDefault();
+        selectAll(event.target);
+      });
+
+    document
+      .getElementById("legacy-api-token-monitor-select-fresh")
+      .addEventListener("click", function (event) {
+        event.preventDefault();
+        selectFresh(event.target);
+      });
+
+    document
+      .getElementById("legacy-api-token-monitor-select-recent")
+      .addEventListener("click", function (event) {
+        event.preventDefault();
+        selectRecent(event.target);
+      });
+
+    document
+      .querySelector(".action-revoke-selected")
+      .addEventListener("click", function (event) {
+        confirmAndRevokeAllSelected(event.target);
+      });
   });
 })();
