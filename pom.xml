@@ -112,6 +112,11 @@ THE SOFTWARE.
       <url>https://repo.jenkins-ci.org/public/</url>
       <!-- allow snapshots -->
     </repository>
+    <repository>
+      <id>incrementals.jenkins-ci.org</id>
+      <url>https://repo.jenkins-ci.org/incrementals/</url>
+      <!-- allow snapshots -->
+    </repository>
   </repositories>
 
   <pluginRepositories>
