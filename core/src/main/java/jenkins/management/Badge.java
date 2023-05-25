@@ -29,8 +29,6 @@ import hudson.diagnosis.OldDataMonitor;
 import hudson.model.AdministrativeMonitor;
 import hudson.model.ManagementLink;
 import java.util.Locale;
-import org.kohsuke.stapler.export.Exported;
-import org.kohsuke.stapler.export.ExportedBean;
 
 /**
  *  Definition of a badge that can be returned by a {@link ManagementLink} implementation.
@@ -50,7 +48,6 @@ import org.kohsuke.stapler.export.ExportedBean;
  *
  *  @since 2.385
  */
-@ExportedBean
 public class Badge {
 
     private final String text;
@@ -78,7 +75,6 @@ public class Badge {
      *
      * @return badge text
      */
-    @Exported(visibility = 999)
     public String getText() {
         return text;
     }
@@ -88,7 +84,6 @@ public class Badge {
      *
      * @return tooltip
      */
-    @Exported(visibility = 999)
     public String getTooltip() {
         return tooltip;
     }
