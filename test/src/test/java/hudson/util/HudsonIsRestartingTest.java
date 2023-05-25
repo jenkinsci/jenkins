@@ -2,11 +2,11 @@ package hudson.util;
 
 import static javax.servlet.http.HttpServletResponse.SC_SERVICE_UNAVAILABLE;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import com.gargoylesoftware.htmlunit.Page;
-import org.hamcrest.CoreMatchers;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -36,8 +36,8 @@ public class HudsonIsRestartingTest {
         assertTrue(p.isHtmlPage());
         assertEquals(SC_SERVICE_UNAVAILABLE, p.getWebResponse().getStatusCode());
         String body = p.getWebResponse().getContentAsString();
-        assertThat(body, CoreMatchers.containsString("data-resurl=\""));
-        assertThat(body, CoreMatchers.containsString("data-rooturl=\""));
-        assertThat(body, CoreMatchers.containsString("resURL=\""));
+        assertThat(body, containsString("data-resurl=\""));
+        assertThat(body, containsString("data-rooturl=\""));
+        assertThat(body, containsString("resURL=\""));
     }
 }
