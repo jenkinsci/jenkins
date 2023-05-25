@@ -3,7 +3,7 @@ newPRWelcomeComment: >
   Thank you so much!
   <br>
   <br>
-  A contributor will be by to provide feedback soon.
+  A contributor will provide feedback soon.
   Meanwhile, you can join the [chats](https://app.gitter.im/#/room/#jenkins-ci:matrix.org) and [community forums](https://community.jenkins.io/) to connect with other Jenkins users, developers, and maintainers.
 
 firstPRMergeComment: >
