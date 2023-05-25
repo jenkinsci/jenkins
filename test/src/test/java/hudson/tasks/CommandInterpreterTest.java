@@ -1,7 +1,7 @@
 package hudson.tasks;
 
-import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.instanceOf;
 
 import hudson.FilePath;
 import hudson.model.AbstractProject;

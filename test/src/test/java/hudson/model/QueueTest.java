@@ -916,18 +916,23 @@ public class QueueTest {
              if (e.isIdle()) {
                  assertTrue("Node went to idle before project had" + project2.getDisplayName() + " been started", v.isDone());
              }
+             Thread.sleep(1000);
+        }
+        if (project2.getLastBuild() == null) {
+            Queue.getInstance().cancel(projectError); // cancel job which cause dead of executor
+            while (!e.isIdle()) { //executor should take project2 from queue
                 Thread.sleep(1000);
+            }
+            //project2 should not be in pendings
+            List<Queue.BuildableItem> items = Queue.getInstance().getPendingItems();
+            for (Queue.BuildableItem item : items) {
+                assertNotEquals("Project " + project2.getDisplayName() + " stuck in pendings", item.task.getName(), project2.getName());
+            }
         }
-        if (project2.getLastBuild() != null)
-            return;
-        Queue.getInstance().cancel(projectError); // cancel job which cause dead of executor
-        while (!e.isIdle()) { //executor should take project2 from queue
-            Thread.sleep(1000);
-        }
-        //project2 should not be in pendings
-        List<Queue.BuildableItem> items = Queue.getInstance().getPendingItems();
-        for (Queue.BuildableItem item : items) {
-            assertNotEquals("Project " + project2.getDisplayName() + " stuck in pendings", item.task.getName(), project2.getName());
+        for (var p : r.jenkins.allItems(FreeStyleProject.class)) {
+            for (var b : p.getBuilds()) {
+                r.waitForCompletion(b);
+            }
         }
     }
 
