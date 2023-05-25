@@ -1,0 +1,15 @@
+NAME="Scientific Linux"
+VERSION="7.9 (Nitrogen)"
+ID="scientific"
+ID_LIKE="rhel centos fedora"
+VERSION_ID="7.9"
+PRETTY_NAME="Scientific Linux 7.9 (Nitrogen)"
+ANSI_COLOR="0;31"
+CPE_NAME="cpe:/o:scientificlinux:scientificlinux:7.9:GA"
+HOME_URL="http://www.scientificlinux.org//"
+BUG_REPORT_URL="mailto:scientific-linux-devel@listserv.fnal.gov"
+
+REDHAT_BUGZILLA_PRODUCT="Scientific Linux 7"
+REDHAT_BUGZILLA_PRODUCT_VERSION=7.9
+REDHAT_SUPPORT_PRODUCT="Scientific Linux"
+REDHAT_SUPPORT_PRODUCT_VERSION="7.9"
