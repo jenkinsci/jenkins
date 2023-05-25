@@ -123,11 +123,13 @@ THE SOFTWARE.
     <link rel="mask-icon" href="${resURL}/mask-icon.svg" color="#191717" />
     <meta name="theme-color" content="#ffffff" />
 
-    <script src="${resURL}/scripts/prototype.js" type="text/javascript"/>
+    <l:userExperimentalFlag var="removePrototype" flagClassName="jenkins.model.experimentalflags.RemovePrototypeUserExperimentalFlag" />
+    <j:if test="${!removePrototype}">
+      <script src="${resURL}/scripts/prototype.js" type="text/javascript"/>
+    </j:if>
     <script src="${resURL}/scripts/behavior.js" type="text/javascript"/>
 
-    <!-- we include our own prototype.js, so don't let stapler pull in another. -->
-    <st:adjunct assumes="org.kohsuke.stapler.framework.prototype.prototype" includes="org.kohsuke.stapler.bind"/>
+    <st:adjunct includes="org.kohsuke.stapler.bind"/>
 
     <!-- To use the debug version of YUI, set the system property 'debug.YUI' to true -->
     <j:set var="yuiSuffix" value="${h.yuiSuffix}" />
@@ -178,7 +180,7 @@ THE SOFTWARE.
 
     <j:if test="${layoutType!='full-screen'}">
       <!-- for accessibility, skip the entire navigation bar and etc and go straight to the head of the content -->
-      <a href="#skip2content" class="skiplink">Skip to content</a>
+      <a href="#skip2content" class="jenkins-skip-link">Skip to content</a>
 
       <l:pageHeader title="${%title}"
                     logoAlt="${%jenkinshead.alt}"
@@ -212,8 +214,7 @@ THE SOFTWARE.
     </div>
 
     <j:if test="${layoutType!='full-screen'}">
-    <footer class="page-footer">
-      <div class="container-fluid">
+      <footer class="page-footer jenkins-mobile-hide">
         <div class="page-footer__flex-row">
           <div class="page-footer__footer-id-placeholder" id="footer"></div>
 
@@ -223,20 +224,40 @@ THE SOFTWARE.
             </j:forEach>
           </j:if>
 
-          <j:if test="${!empty(it.api)}">
-            <div class="page-footer__links rest_api hidden-xs">
-              <a href="api/">REST API</a>
-            </div>
-          </j:if>
+          <div class="page-footer__links">
+            <j:if test="${!empty(it.api)}">
+              <a class="jenkins-button jenkins-button--tertiary rest-api" href="api/">REST API</a>
+            </j:if>
 
-          <div class="page-footer__links page-footer__links--white jenkins_ver">
-            <a href="${h.getFooterURL()}" rel="noopener noreferrer" target="_blank">Jenkins ${h.version}</a>
+            <l:overflowButton text="Jenkins ${h.version}"
+                              clazz="jenkins-button--tertiary jenkins_ver"
+                              icon="${null}"
+                              tooltip="${null}">
+              <l:hasPermission permission="${app.SYSTEM_READ}">
+                <a class="jenkins-dropdown__item" href="${rootURL}/manage/about">
+                  <div class="jenkins-dropdown__item__icon">
+                    <l:icon src="symbol-jenkins" />
+                  </div>
+                  ${%About Jenkins}
+                </a>
+                <div class="jenkins-dropdown__separator"></div>
+              </l:hasPermission>
+              <a class="jenkins-dropdown__item" href="https://www.jenkins.io/participate/" rel="noopener noreferrer" target="_blank">
+                <div class="jenkins-dropdown__item__icon">
+                  <l:icon src="symbol-heart" />
+                </div>
+                ${%Get involved}
+              </a>
+              <a class="jenkins-dropdown__item" href="${h.getFooterURL()}" rel="noopener noreferrer" target="_blank">
+                <div class="jenkins-dropdown__item__icon">
+                  <l:icon src="symbol-external" />
+                </div>
+                ${%Website}
+              </a>
+            </l:overflowButton>
           </div>
-
         </div>
-
-      </div>
-    </footer>
+      </footer>
     </j:if>
   </body>
 </html>

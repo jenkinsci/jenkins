@@ -74,7 +74,7 @@ THE SOFTWARE.
         <!-- RequireUpperBoundDeps between checks-api, echarts-api, font-awesome-api, and junit -->
         <groupId>io.jenkins.plugins</groupId>
         <artifactId>plugin-util-api</artifactId>
-        <version>3.2.0</version>
+        <version>3.2.1</version>
       </dependency>
       <dependency>
         <groupId>org.jenkins-ci.plugins</groupId>
@@ -106,12 +106,16 @@ THE SOFTWARE.
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>1954.v2e3fd5465b_a_6</version>
+      <version>1994.vd69d1ecff273</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
           <groupId>${project.groupId}</groupId>
           <artifactId>jenkins-war</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.hamcrest</groupId>
+          <artifactId>hamcrest-core</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -148,7 +152,7 @@ THE SOFTWARE.
     </dependency>
     <dependency>
       <groupId>org.hamcrest</groupId>
-      <artifactId>hamcrest-core</artifactId>
+      <artifactId>hamcrest</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -177,13 +181,13 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>credentials</artifactId>
-      <version>1224.vc23ca_a_9a_2cb_0</version>
+      <version>1254.vb_96f366e7b_a_d</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>junit</artifactId>
-      <version>1198.ve38db_d1b_c975</version>
+      <version>1202.v79a_986785076</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -219,6 +223,12 @@ THE SOFTWARE.
       <groupId>org.junit.vintage</groupId>
       <artifactId>junit-vintage-engine</artifactId>
       <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>org.hamcrest</groupId>
+          <artifactId>hamcrest-core</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.mockito</groupId>

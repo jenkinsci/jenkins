@@ -35,7 +35,7 @@ class Build {
     }
 
     public void asserts(int n) {
-        assert this.n == n;
+        assert this.n == n : "expected " + n + " but was " + this.n;
     }
 
     @Override public String toString() {
