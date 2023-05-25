@@ -24,9 +24,9 @@
 
 package jenkins;
 
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import java.io.IOException;
 import net.sf.json.JSONObject;
+import org.htmlunit.FailingHttpStatusCodeException;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
