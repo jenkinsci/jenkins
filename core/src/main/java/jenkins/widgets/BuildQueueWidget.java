@@ -78,7 +78,7 @@ public class BuildQueueWidget extends Widget {
         return filtered;
     }
 
-    @Extension(ordinal = 200) @Symbol("buildQueue") // historically this was the top most widget
+    @Extension(ordinal = 200) @Symbol("buildQueueView") // historically this was the top most widget
     public static final class ViewFactoryImpl extends WidgetFactory<View, BuildQueueWidget> {
         @Override
         public Class<View> type() {
@@ -97,7 +97,7 @@ public class BuildQueueWidget extends Widget {
         }
     }
 
-    @Extension(ordinal = 200) @Symbol("buildQueue") // historically this was the top most widget
+    @Extension(ordinal = 200) @Symbol("buildQueueComputer") // historically this was the top most widget
     public static final class ComputerSetFactoryImpl extends WidgetFactory<ComputerSet, BuildQueueWidget> {
         @Override
         public Class<ComputerSet> type() {

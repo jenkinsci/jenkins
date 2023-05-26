@@ -30,6 +30,7 @@ import hudson.model.View;
 import hudson.widgets.Widget;
 import java.util.Collection;
 import jenkins.model.Jenkins;
+import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 
@@ -41,6 +42,7 @@ import org.kohsuke.accmod.restrictions.DoNotUse;
 @Extension
 @Restricted(DoNotUse.class)
 @Deprecated
+@Symbol("jenkins")
 public final class JenkinsWidgetFactory extends WidgetFactory<View, Widget> {
     @Override
     public Class<View> type() {

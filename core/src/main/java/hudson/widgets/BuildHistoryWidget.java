@@ -37,6 +37,7 @@ import jenkins.model.Jenkins;
 import jenkins.model.queue.QueueItem;
 import jenkins.widgets.HistoryPageFilter;
 import jenkins.widgets.WidgetFactory;
+import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 
@@ -90,6 +91,7 @@ public class BuildHistoryWidget<T> extends HistoryWidget<Task, T> {
 
     @Extension
     @Restricted(DoNotUse.class)
+    @Symbol("buildHistory")
     public static final class FactoryImpl extends WidgetFactory<Job, BuildHistoryWidget> {
         @Override
         public Class<Job> type() {

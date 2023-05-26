@@ -58,7 +58,7 @@ public class ExecutorsWidget extends Widget {
         }
     }
 
-    @Extension(ordinal = 100) @Symbol("executors") // historically this was above normal widgets and below BuildQueueWidget
+    @Extension(ordinal = 100) @Symbol("executorsComputer") // historically this was above normal widgets and below BuildQueueWidget
     public static final class ComputerFactoryImpl extends WidgetFactory<Computer, ExecutorsWidget> {
         @Override
         public Class<Computer> type() {
@@ -77,7 +77,7 @@ public class ExecutorsWidget extends Widget {
         }
     }
 
-    @Extension(ordinal = 100) @Symbol("executors") // historically this was above normal widgets and below BuildQueueWidget
+    @Extension(ordinal = 100) @Symbol("executorsComputerSet") // historically this was above normal widgets and below BuildQueueWidget
     public static final class ComputerSetFactoryImpl extends WidgetFactory<ComputerSet, ExecutorsWidget> {
         @Override
         public Class<ComputerSet> type() {
