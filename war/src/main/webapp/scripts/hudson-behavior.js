@@ -35,6 +35,7 @@ if (window.isRunAsTest) {
 }
 
 // create a new object whose prototype is the given object
+// eslint-disable-next-line no-unused-vars
 function object(o) {
   function F() {}
   F.prototype = o;
@@ -175,8 +176,8 @@ var crumb = {
 var isRunAsTest = undefined;
 // Be careful, this variable does not include the absolute root URL as in Java part of Jenkins,
 // but the contextPath only, like /jenkins
-var rootURL = "not-defined-yet";
-var resURL = "not-defined-yet";
+var rootURL = "not-defined-yet"; // eslint-disable-line no-unused-vars
+var resURL = "not-defined-yet"; // eslint-disable-line no-unused-vars
 
 (function initializeUnitTestAndURLs() {
   var dataUnitTest = document.head.getAttribute("data-unit-test");
@@ -359,6 +360,7 @@ function findNearBy(e, name) {
 
   function locate(iterator, e) {
     // keep finding elements until we find the good match
+    // eslint-disable-next-line no-constant-condition
     while (true) {
       e = iterator(e, name);
       if (e == null) {
@@ -570,6 +572,7 @@ function findNextFormItem(src, name) {
 /**
  * Parse HTML into DOM.
  */
+// eslint-disable-next-line no-unused-vars
 function parseHtml(html) {
   var c = document.createElement("div");
   c.innerHTML = html;
@@ -597,15 +600,16 @@ function geval(script) {
  * @param {String} event
  *      like 'change', 'blur', etc.
  */
+// eslint-disable-next-line no-unused-vars
 function fireEvent(element, event) {
   if (document.createEvent) {
     // dispatch for firefox + others
-    var evt = document.createEvent("HTMLEvents");
+    let evt = document.createEvent("HTMLEvents");
     evt.initEvent(event, true, true); // event type,bubbling,cancelable
     return !element.dispatchEvent(evt);
   } else {
     // dispatch for IE
-    var evt = document.createEventObject();
+    let evt = document.createEventObject();
     return element.fireEvent("on" + event, evt);
   }
 }
@@ -825,6 +829,7 @@ function registerMinMaxValidator(e) {
   e.targetElement = tr;
   var checkMessage = e.getAttribute("checkMessage");
   if (checkMessage) {
+    // eslint-disable-next-line no-undef
     message = checkMessage;
   }
   var oldOnchange = e.onchange;
@@ -953,7 +958,7 @@ function makeButton(e, onclick) {
   }
   var be = btn.get("element");
   var classesSeparatedByWhitespace = clsName.split(" ");
-  for (var i = 0; i < classesSeparatedByWhitespace.length; i++) {
+  for (let i = 0; i < classesSeparatedByWhitespace.length; i++) {
     var singleClass = classesSeparatedByWhitespace[i];
     if (singleClass) {
       be.classList.add(singleClass);
@@ -966,7 +971,7 @@ function makeButton(e, onclick) {
 
   // keep the data-* attributes from the source
   var length = e.attributes.length;
-  for (var i = 0; i < length; i++) {
+  for (let i = 0; i < length; i++) {
     var attribute = e.attributes[i];
     var attributeName = attribute.name;
     if (attributeName.startsWith("data-")) {
@@ -1270,7 +1275,7 @@ function rowvgStartEachRow(recursive, f) {
   Behaviour.specify("INPUT.number", "input-number", ++p, function (e) {
     e.addEventListener("keypress", preventInputEe);
     registerMinMaxValidator(e);
-    registerRegexpValidator(e, /^((\-?\d+)|)$/, "Not an integer");
+    registerRegexpValidator(e, /^((-?\d+)|)$/, "Not an integer");
   });
 
   Behaviour.specify(
@@ -1280,7 +1285,7 @@ function rowvgStartEachRow(recursive, f) {
     function (e) {
       e.addEventListener("keypress", preventInputEe);
       registerMinMaxValidator(e);
-      registerRegexpValidator(e, /^\-?(\d+)$/, "Not an integer");
+      registerRegexpValidator(e, /^-?(\d+)$/, "Not an integer");
     }
   );
 
@@ -1385,6 +1390,7 @@ function rowvgStartEachRow(recursive, f) {
       var mode = e.getAttribute("script-mode") || "text/x-groovy";
       var readOnly = eval(e.getAttribute("script-readOnly")) || false;
 
+      // eslint-disable-next-line no-unused-vars
       var w = CodeMirror.fromTextArea(e, {
         mode: mode,
         lineNumbers: true,
@@ -1446,7 +1452,7 @@ function rowvgStartEachRow(recursive, f) {
     const resizer = document.createElement("div");
     resizer.className = "jenkins-codemirror-resizer";
 
-    let start_x;
+    let start_x; // eslint-disable-line no-unused-vars
     let start_y;
     let start_h;
 
@@ -1701,8 +1707,7 @@ function rowvgStartEachRow(recursive, f) {
       }
 
       var subForms = [];
-      var start = findInFollowingTR(e, "dropdownList-container"),
-        end;
+      var start = findInFollowingTR(e, "dropdownList-container");
 
       do {
         start = start.firstElementChild;
@@ -1918,6 +1923,7 @@ var Path = {
 /**
  * Install change handlers based on the 'fillDependsOn' attribute.
  */
+// eslint-disable-next-line no-unused-vars
 function refillOnChange(e, onChange) {
   var deps = [];
 
@@ -1961,6 +1967,7 @@ function xor(a, b) {
 }
 
 // used by editableDescription.jelly to replace the description field with a form
+// eslint-disable-next-line no-unused-vars
 function replaceDescription(initialDescription, submissionUrl) {
   var d = document.getElementById("description");
   d.firstElementChild.nextElementSibling.innerHTML =
@@ -2051,6 +2058,7 @@ function updateOptionalBlock(c) {
 // Auto-scroll support for progressive log output.
 //   See http://radio.javaranch.com/pascarello/2006/08/17/1155837038219.html
 //
+// eslint-disable-next-line no-unused-vars
 function AutoScroller(scrollContainer) {
   // get the height of the viewport.
   // See http://www.howtocreate.co.uk/tutorials/javascript/browserwindow
@@ -2122,6 +2130,7 @@ function AutoScroller(scrollContainer) {
 }
 
 // used in expandableTextbox.jelly to change a input field into a text area
+// eslint-disable-next-line no-unused-vars
 function expandTextArea(button, id) {
   button.style.display = "none";
   var field = button.parentNode.previousSibling.children[0];
@@ -2143,6 +2152,7 @@ function expandTextArea(button, id) {
 
 // refresh a part of the HTML specified by the given ID,
 // by using the contents fetched from the given URL.
+// eslint-disable-next-line no-unused-vars
 function refreshPart(id, url) {
   var intervalID = null;
   var f = function () {
@@ -2198,6 +2208,7 @@ function refreshPart(id, url) {
     Taken from http://www.cresc.co.jp/tech/java/URLencoding/JavaScript_URLEncoding.htm
     @deprecated Use standard javascript method "encodeURIComponent" instead
 */
+// eslint-disable-next-line no-unused-vars
 function encode(str) {
   var s, u;
   var s0 = ""; // encoded str
@@ -2280,11 +2291,12 @@ if (typeof Form === "object") {
   };
 }
 
+// eslint-disable-next-line no-unused-vars
 function toQueryString(params) {
   var query = "";
   if (params) {
     for (var paramName in params) {
-      if (params.hasOwnProperty(paramName)) {
+      if (Object.prototype.hasOwnProperty.call(params, paramName)) {
         if (query === "") {
           query = "?";
         } else {
@@ -2297,6 +2309,7 @@ function toQueryString(params) {
   return query;
 }
 
+// eslint-disable-next-line no-unused-vars
 function getElementOverflowParams(element) {
   // First we force it to wrap so we can get those dimension.
   // Then we force it to "nowrap", so we can get those dimension.
@@ -2344,6 +2357,7 @@ function getStyle(e, a) {
  * @param {HTMLElement} e
  *      The element to bring into the viewport.
  */
+// eslint-disable-next-line no-unused-vars
 function ensureVisible(e) {
   var viewport = YAHOO.util.Dom.getClientRegion();
   var pos = YAHOO.util.Dom.getRegion(e);
@@ -2378,7 +2392,7 @@ function ensureVisible(e) {
   if (d > 0) {
     document.body.scrollTop += d;
   } else {
-    var d = Y - y;
+    d = Y - y;
     if (d > 0) {
       document.body.scrollTop -= d;
     }
@@ -2386,6 +2400,7 @@ function ensureVisible(e) {
 }
 
 // set up logic behind the search box
+// eslint-disable-next-line no-unused-vars
 function createSearchBox(searchURL) {
   var ds = new YAHOO.util.XHRDataSource(searchURL + "suggest");
   ds.responseType = YAHOO.util.XHRDataSource.TYPE_JSON;
@@ -2518,7 +2533,7 @@ function buildFormTree(form) {
     var doms = []; // DOMs that we added 'formDom' for.
     doms.push(form);
 
-    function addProperty(parent, name, value) {
+    let addProperty = function (parent, name, value) {
       name = shortenName(name);
       if (parent[name] != null) {
         if (parent[name].push == null) {
@@ -2529,11 +2544,11 @@ function buildFormTree(form) {
       } else {
         parent[name] = value;
       }
-    }
+    };
 
     // find the grouping parent node, which will have @name.
     // then return the corresponding object in the map
-    function findParent(e) {
+    let findParent = function (e) {
       var p = findFormParent(e, form);
       if (p == null) {
         return {};
@@ -2547,7 +2562,7 @@ function buildFormTree(form) {
         addProperty(findParent(p), p.getAttribute("name"), m);
       }
       return m;
-    }
+    };
 
     var jsonElement = null;
 
@@ -2586,7 +2601,7 @@ function buildFormTree(form) {
           p = findParent(e);
           var checked = xor(e.checked, e.classList.contains("negative"));
           if (!e.groupingNode) {
-            v = e.getAttribute("json");
+            let v = e.getAttribute("json");
             if (v) {
               // if the special attribute is present, we'll either set the value or not. useful for an array of checkboxes
               // we can't use @value because IE6 sets the value to be "on" if it's left unspecified.
@@ -2739,6 +2754,7 @@ function loadScript(href, callback) {
 }
 
 // logic behind <f:validateButton />
+// eslint-disable-next-line no-unused-vars
 function safeValidateButton(button) {
   var descriptorUrl = button.getAttribute(
     "data-validate-button-descriptor-url"
