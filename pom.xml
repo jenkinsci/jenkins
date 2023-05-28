@@ -73,7 +73,7 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.404</revision>
+    <revision>2.407</revision>
     <changelist>-SNAPSHOT</changelist>
 
     <!-- configuration for patch tracker plugin  -->
@@ -332,7 +332,7 @@ THE SOFTWARE.
             <dependency>
               <groupId>com.puppycrawl.tools</groupId>
               <artifactId>checkstyle</artifactId>
-              <version>10.10.0</version>
+              <version>10.11.0</version>
             </dependency>
           </dependencies>
           <executions>
@@ -362,15 +362,6 @@ THE SOFTWARE.
           <antlr4>
             <antlr4Formatter />
           </antlr4>
-          <groovy>
-            <includes>
-              <include>Jenkinsfile</include>
-              <include>licenseCompleter.groovy</include>
-            </includes>
-            <greclipse>
-              <file>config/greclipse.properties</file>
-            </greclipse>
-          </groovy>
           <java combine.self="override">
             <endWithNewline />
             <importOrder />

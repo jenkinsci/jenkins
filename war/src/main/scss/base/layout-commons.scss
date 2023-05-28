@@ -1,3 +1,5 @@
+@use "../base/breakpoints";
+
 html {
   height: 100%;
   box-sizing: border-box;
@@ -50,7 +52,7 @@ body {
 }
 
 .app-page-body__sidebar {
-  @media (min-width: 970px) {
+  @media (min-width: breakpoints.$tablet-breakpoint) {
     &--sticky {
       position: sticky;
       top: 44px;
@@ -70,7 +72,7 @@ body {
 }
 
 #main-panel {
-  padding: 2rem;
+  padding: var(--section-padding);
   display: inline-block;
   width: 100%;
 }
@@ -113,19 +115,14 @@ body.full-screen #main-panel {
   padding: 0;
 }
 
-@media (max-width: 970px) {
+@media (max-width: breakpoints.$tablet-breakpoint) {
   body.two-column #page-body {
     flex-wrap: wrap;
   }
 
   body.two-column #side-panel {
     width: 100%;
-    padding-bottom: 20px;
     border-right: none;
-  }
-
-  body.two-column #tasks {
-    margin-right: 20px;
   }
 
   body.two-column #main-panel {

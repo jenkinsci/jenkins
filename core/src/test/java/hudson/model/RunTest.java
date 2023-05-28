@@ -78,7 +78,8 @@ public class RunTest {
                 }).get();
                 TimeZone.setDefault(TimeZone.getTimeZone("America/Los_Angeles"));
                 id = r.getId();
-                assertEquals(id, svc.submit(r::getId).get());
+                // explicitly cast to callable to make the Eclipse compiler happy
+                assertEquals(id, svc.submit((Callable) r::getId).get());
             } finally {
                 svc.shutdown();
             }
@@ -86,7 +87,8 @@ public class RunTest {
             svc = Executors.newSingleThreadExecutor();
             try {
                 assertEquals(id, r.getId());
-                assertEquals(id, svc.submit(r::getId).get());
+                // explicitly cast to callable to make the Eclipse compiler happy
+                assertEquals(id, svc.submit((Callable) r::getId).get());
             } finally {
                 svc.shutdown();
             }
