@@ -24,8 +24,8 @@
 
 package jenkins.security.stapler;
 
-import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 
 import com.gargoylesoftware.htmlunit.Page;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
