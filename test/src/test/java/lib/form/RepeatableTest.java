@@ -27,7 +27,6 @@ package lib.form;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThrows;
 
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
@@ -40,15 +39,17 @@ import hudson.model.RootAction;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import org.htmlunit.ElementNotFoundException;
 import org.htmlunit.WebClientUtil;
 import org.htmlunit.html.HtmlButton;
 import org.htmlunit.html.HtmlForm;
+import org.htmlunit.html.HtmlInput;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.html.HtmlSelect;
+import org.htmlunit.html.HtmlTextInput;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -168,10 +169,12 @@ public class RepeatableTest {
         JenkinsRule.WebClient wc = j.createWebClient();
         HtmlPage p = wc.goTo("self/testSimple");
         HtmlForm f = p.getFormByName("config");
-        f.getInputByValue("").setValue("value one");
-        f.getInputByValue("").setValue("value two");
-        f.getInputByValue("").setValue("value three");
-        assertThrows(ElementNotFoundException.class, () -> f.getInputByValue(""));
+
+        List<HtmlInput> inputs = getHtmlInputsWithEmptyValue(f);
+
+        inputs.get(0).setValue("value one");
+        inputs.get(1).setValue("value two");
+        inputs.get(2).setValue("value three");
         f.getInputsByName("bool").get(2).click();
         j.submit(f);
         assertEqualsJsonArray("[{\"bool\":false,\"txt\":\"value one\"},"
@@ -186,8 +189,10 @@ public class RepeatableTest {
         JenkinsRule.WebClient wc = j.createWebClient();
         HtmlPage p = wc.goTo("self/testSimple");
         HtmlForm f = p.getFormByName("config");
-        f.getInputByValue("").setValue("new one");
-        assertThrows(ElementNotFoundException.class, () -> f.getInputByValue(""));
+
+        List<HtmlInput> inputs = getHtmlInputsWithEmptyValue(f);
+
+        inputs.get(0).setValue("new one");
         f.getInputsByName("bool").get(1).click();
         j.submit(f);
         assertEqualsJsonArray("[{\"bool\":true,\"txt\":\"existing one\"},"
@@ -437,14 +442,16 @@ public class RepeatableTest {
         HtmlForm f = p.getFormByName("config");
         try {
             clickButton(wc, f, "Add", true);
-            f.getInputByValue("").setValue("title one");
+
+            getHtmlInputsWithEmptyValue(f).get(0).setValue("title one");
             clickButton(wc, f, "Add Foo", true);
-            f.getInputByValue("").setValue("txt one");
+
+            getHtmlInputsWithEmptyValue(f).get(0).setValue("txt one");
             clickButton(wc, f, "Add Foo", false);
-            f.getInputByValue("").setValue("txt two");
+            getHtmlInputsWithEmptyValue(f).get(0).setValue("txt two");
             f.getInputsByName("bool").get(1).click();
             clickButton(wc, f, "Add", false);
-            f.getInputByValue("").setValue("title two");
+            getHtmlInputsWithEmptyValue(f).get(0).setValue("title two");
             f.getElementsByTagName("button").get(1).click(); // 2nd "Add Foo" button
             WebClientUtil.waitForJSExec(wc);
             f.getInputByValue("").setValue("txt 2.1");
@@ -456,6 +463,15 @@ public class RepeatableTest {
         j.submit(f);
         assertEquals("[FooList:title one:[foo:txt one:false,foo:txt two:true], "
                      + "FooList:title two:[foo:txt 2.1:false]]", rootAction.bindResult.toString());
+    }
+
+    private static List<HtmlInput> getHtmlInputsWithEmptyValue(HtmlForm f) {
+        List<HtmlInput> inputs;
+        inputs = f.getInputsByValue("")
+                .stream()
+                .filter(element -> element instanceof HtmlTextInput)
+                .collect(Collectors.toList());
+        return inputs;
     }
 
     /** Tests nested repeatable and use of @DataBoundConstructor to process formData */
