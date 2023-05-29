@@ -1282,8 +1282,9 @@ var createPluginSetupWizard = function (appendTarget) {
   // do this so the page isn't blank while doing connectivity checks and other downloads
   setPanel(loadingPanel);
 
-  /* exported defaultUpdateSiteId */
-  var defaultUpdateSiteId = (function () {
+  // Expose the function defaultUpdateSiteId to the window objects
+  // so it can be used globally.
+  window.defaultUpdateSiteId = (function () {
     var defaultSiteId = document
       .querySelector("#default-site-id")
       .getAttribute("data-default-update-site-id");
@@ -1291,9 +1292,9 @@ var createPluginSetupWizard = function (appendTarget) {
   })();
 
   var setupWizardExtensions = [];
-  /* exported onSetupWizardInitialized */
-  // eslint-disable-next-line no-unused-vars
-  var onSetupWizardInitialized = function (extension) {
+  // Expose the function onSetupWizardInitialized to the window objects
+  // so it can be used globally.
+  window.onSetupWizardInitialized = function (extension) {
     setupWizardExtensions.push(extension);
   };
 
