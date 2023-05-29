@@ -3939,7 +3939,7 @@ __metadata:
     lodash: 4.17.21
     mini-css-extract-plugin: 2.7.6
     postcss: 8.4.23
-    postcss-loader: 7.3.0
+    postcss-loader: 7.3.1
     postcss-scss: 4.0.6
     prettier: 2.8.8
     sass: 1.62.1
@@ -4945,9 +4945,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"postcss-loader@npm:7.3.0":
-  version: 7.3.0
-  resolution: "postcss-loader@npm:7.3.0"
+"postcss-loader@npm:7.3.1":
+  version: 7.3.1
+  resolution: "postcss-loader@npm:7.3.1"
   dependencies:
     cosmiconfig: ^8.1.3
     jiti: ^1.18.2
@@ -4956,7 +4956,7 @@ __metadata:
   peerDependencies:
     postcss: ^7.0.0 || ^8.0.1
     webpack: ^5.0.0
-  checksum: f09fe68bde5f686c264cc96c51bcdc0be00c55e856d73161ce86b302fdd503098fe5c9172231eb3b316a1969080101a4c46463bda784b408d4a4cb15e7b01fc5
+  checksum: a8e0b8a078f309b1e90d0f947190ea24659c7ea2b922389b773c4983b116dfdf0a87b915e4c7477c7db99a5014c34d41cc1975b37075772ea2e6da3d0bbc0ca6
   languageName: node
   linkType: hard
 
