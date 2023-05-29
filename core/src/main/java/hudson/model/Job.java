@@ -1013,6 +1013,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * Failing to find 3 of those, it will return up to 3 last unsuccessful builds.
      *
      * In any case it will not go more than 6 builds into the past to avoid costly build loading.
+     * @see LazyBuildMixIn#getEstimatedDurationCandidates
      */
     protected List<RunT> getEstimatedDurationCandidates() {
         List<RunT> candidates = new ArrayList<>(3);

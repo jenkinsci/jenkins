@@ -106,7 +106,6 @@ THE SOFTWARE.
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <!-- TODO https://github.com/jenkinsci/jenkins-test-harness/pull/589 -->
       <version>1995.v96366f69785f</version>
       <scope>test</scope>
       <exclusions>
@@ -194,7 +193,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>mailer</artifactId>
-      <version>448.v5b_97805e3767</version>
+      <version>457.v3f72cb_e015e5</version>
       <scope>test</scope>
     </dependency>
     <dependency>

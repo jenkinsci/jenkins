@@ -53,6 +53,16 @@ public class SCMCheckoutStrategyTest {
         assertTrue(pageHasUI(p));
     }
 
+    @Test
+    public void configWithoutSCMCheckoutStrategy() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.setScmCheckoutStrategy(null);
+        j.configRoundtrip((Item) p);
+        SCMCheckoutStrategy after = p.getScmCheckoutStrategy();
+        assertEquals(DefaultSCMCheckoutStrategyImpl.class, after.getClass());
+        assertFalse(pageHasUI(p));
+    }
+
     private boolean pageHasUI(FreeStyleProject p) throws IOException, SAXException {
         HtmlPage page = j.createWebClient().getPage(p, "configure");
         return page.getWebResponse().getContentAsString().contains("Advanced Source Code Management");

@@ -1940,12 +1940,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"acorn-import-assertions@npm:^1.7.6":
-  version: 1.8.0
-  resolution: "acorn-import-assertions@npm:1.8.0"
+"acorn-import-assertions@npm:^1.9.0":
+  version: 1.9.0
+  resolution: "acorn-import-assertions@npm:1.9.0"
   peerDependencies:
     acorn: ^8
-  checksum: 5c4cf7c850102ba7ae0eeae0deb40fb3158c8ca5ff15c0bca43b5c47e307a1de3d8ef761788f881343680ea374631ae9e9615ba8876fee5268dbe068c98bcba6
+  checksum: 944fb2659d0845c467066bdcda2e20c05abe3aaf11972116df457ce2627628a81764d800dd55031ba19de513ee0d43bb771bc679cc0eda66dc8b4fade143bc0c
   languageName: node
   linkType: hard
 
@@ -2962,13 +2962,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"enhanced-resolve@npm:^5.14.0":
-  version: 5.14.0
-  resolution: "enhanced-resolve@npm:5.14.0"
+"enhanced-resolve@npm:^5.14.1":
+  version: 5.14.1
+  resolution: "enhanced-resolve@npm:5.14.1"
   dependencies:
     graceful-fs: ^4.2.4
     tapable: ^2.2.0
-  checksum: fff1aaebbf376371e5df4502e111967f6247c37611ad3550e4e7fca657f6dcb29ef7ffe88bf14e5010b78997f1ddd984a8db97af87ee0a5477771398fd326f5b
+  checksum: ad2a31928b6649eed40d364838449587f731baa63863e83d2629bebaa8be1eabac18b90f89c1784bc805b0818363e99b22547159edd485d7e5ccf18cdc640642
   languageName: node
   linkType: hard
 
@@ -3939,18 +3939,18 @@ __metadata:
     lodash: 4.17.21
     mini-css-extract-plugin: 2.7.6
     postcss: 8.4.23
-    postcss-loader: 7.3.0
+    postcss-loader: 7.3.1
     postcss-scss: 4.0.6
     prettier: 2.8.8
     sass: 1.62.1
-    sass-loader: 13.2.2
+    sass-loader: 13.3.0
     sortablejs: 1.15.0
     style-loader: 3.3.3
     stylelint: 15.6.2
     stylelint-checkstyle-reporter: 0.2.0
     stylelint-config-standard: 33.0.0
     tippy.js: 6.3.7
-    webpack: 5.83.1
+    webpack: 5.84.1
     webpack-cli: 5.1.1
     webpack-remove-empty-scripts: 1.0.3
     window-handle: 1.0.1
@@ -4945,9 +4945,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"postcss-loader@npm:7.3.0":
-  version: 7.3.0
-  resolution: "postcss-loader@npm:7.3.0"
+"postcss-loader@npm:7.3.1":
+  version: 7.3.1
+  resolution: "postcss-loader@npm:7.3.1"
   dependencies:
     cosmiconfig: ^8.1.3
     jiti: ^1.18.2
@@ -4956,7 +4956,7 @@ __metadata:
   peerDependencies:
     postcss: ^7.0.0 || ^8.0.1
     webpack: ^5.0.0
-  checksum: f09fe68bde5f686c264cc96c51bcdc0be00c55e856d73161ce86b302fdd503098fe5c9172231eb3b316a1969080101a4c46463bda784b408d4a4cb15e7b01fc5
+  checksum: a8e0b8a078f309b1e90d0f947190ea24659c7ea2b922389b773c4983b116dfdf0a87b915e4c7477c7db99a5014c34d41cc1975b37075772ea2e6da3d0bbc0ca6
   languageName: node
   linkType: hard
 
@@ -5598,15 +5598,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sass-loader@npm:13.2.2":
-  version: 13.2.2
-  resolution: "sass-loader@npm:13.2.2"
+"sass-loader@npm:13.3.0":
+  version: 13.3.0
+  resolution: "sass-loader@npm:13.3.0"
   dependencies:
     klona: ^2.0.6
     neo-async: ^2.6.2
   peerDependencies:
     fibers: ">= 3.1.0"
-    node-sass: ^4.0.0 || ^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0
+    node-sass: ^4.0.0 || ^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0 || ^9.0.0
     sass: ^1.3.0
     sass-embedded: "*"
     webpack: ^5.0.0
@@ -5619,7 +5619,7 @@ __metadata:
       optional: true
     sass-embedded:
       optional: true
-  checksum: 0368e4eaa4e2109bb6c6b6bc7dbfb9d8e412a0ab965f98672d336e84bd103575a1551cfe98395f20335b350f2a94e67f7c816cc8e3f4ab85147a1c1221e22fd8
+  checksum: a3b57eaf09ae853fa95298bd7a42d64409f3f3b97f46ec4c61178763ffb61edddd5f89cc03940ef963aa328b4f6dcd4f1153e810e5eb29fb07ac02ddc121749c
   languageName: node
   linkType: hard
 
@@ -6419,9 +6419,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"webpack@npm:5.83.1":
-  version: 5.83.1
-  resolution: "webpack@npm:5.83.1"
+"webpack@npm:5.84.1":
+  version: 5.84.1
+  resolution: "webpack@npm:5.84.1"
   dependencies:
     "@types/eslint-scope": ^3.7.3
     "@types/estree": ^1.0.0
@@ -6429,10 +6429,10 @@ __metadata:
     "@webassemblyjs/wasm-edit": ^1.11.5
     "@webassemblyjs/wasm-parser": ^1.11.5
     acorn: ^8.7.1
-    acorn-import-assertions: ^1.7.6
+    acorn-import-assertions: ^1.9.0
     browserslist: ^4.14.5
     chrome-trace-event: ^1.0.2
-    enhanced-resolve: ^5.14.0
+    enhanced-resolve: ^5.14.1
     es-module-lexer: ^1.2.1
     eslint-scope: 5.1.1
     events: ^3.2.0
@@ -6452,7 +6452,7 @@ __metadata:
       optional: true
   bin:
     webpack: bin/webpack.js
-  checksum: 219d5ef50380bc0fd3702ed17feddf13819d8173b78f7a5b857dc74ac177e63d1f79c050792754411cc088bbc02e0971b989efddadbb8e393cf27d64c0ad9ff8
+  checksum: 646b645df5badf2dac2ddd0193c9e9a177d51283d18f918eead36a0cdf7b750c4111d9ac11d9825c1334cbd0a6fb8f82628fbfb90d0066f927265dd11b47b192
   languageName: node
   linkType: hard
 

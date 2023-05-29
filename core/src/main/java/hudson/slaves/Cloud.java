@@ -334,7 +334,7 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
         return FormApply.success(".");
     }
 
-    private Cloud reconfigure(@NonNull final StaplerRequest req, JSONObject form) throws Descriptor.FormException {
+    public Cloud reconfigure(@NonNull final StaplerRequest req, JSONObject form) throws Descriptor.FormException {
         if (form == null)     return null;
         return getDescriptor().newInstance(req, form);
     }
