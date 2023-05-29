@@ -28,6 +28,7 @@ import org.htmlunit.WebRequest;
 import org.htmlunit.WebResponse;
 import org.htmlunit.html.DomElement;
 import org.htmlunit.html.HtmlForm;
+import org.htmlunit.html.HtmlHiddenInput;
 import org.htmlunit.html.HtmlPage;
 import org.junit.Assert;
 import org.junit.Before;
@@ -221,7 +222,7 @@ public class DefaultCrumbIssuerTest {
 
     private void replaceAllCrumbInPageBy(HtmlPage page, String newCrumb) {
         for (DomElement el : page.getElementsByName("Jenkins-Crumb")) {
-            el.setValue(newCrumb);
+            ((HtmlHiddenInput) el).setValue(newCrumb);
         }
     }
 
