@@ -72,7 +72,7 @@ public class ParametersTest {
         HtmlTextInput stringParameterInput = DomNodeUtil.selectSingleNode(element, ".//input[@name='value']");
         assertEquals("defaultValue", stringParameterInput.getAttribute("value"));
         assertEquals("string", ((HtmlElement) DomNodeUtil.selectSingleNode(element.getParentNode(), "div[contains(@class, 'jenkins-form-label')]")).getTextContent());
-        stringParameterInput.setAttribute("value", "newValue");
+        stringParameterInput.setValue("newValue");
 
         element = DomNodeUtil.selectSingleNode(form, "//div[input/@value='boolean']");
         assertNotNull(element);

@@ -221,7 +221,7 @@ public class DefaultCrumbIssuerTest {
 
     private void replaceAllCrumbInPageBy(HtmlPage page, String newCrumb) {
         for (DomElement el : page.getElementsByName("Jenkins-Crumb")) {
-            el.setAttribute("value", newCrumb);
+            el.setValue(newCrumb);
         }
     }
 
