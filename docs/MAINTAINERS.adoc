@@ -584,7 +584,7 @@ Any Jenkins contributors are welcome to participate in backporting and release c
   Lists unresolved recent regressions, unresolved recent core bugs, and popular new issues.
 * link:https://github.com/jenkinsci/core-pr-tester[Core Pull Request Tester]
 * link:https://github.com/jenkinsci/core-changelog-generator[Core Changelog Generator]
-* link:https://github.com/jenkins-infra/backend-commit-history-parser[Toolkit for LTS backporting]
+* link:https://github.com/jenkins-infra/release/tree/master/tools[Toolkit for LTS backporting]
 * link:/update-since-todo.sh[Javadoc @since version updater]
 
 == Feedback
