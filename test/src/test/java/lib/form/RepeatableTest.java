@@ -27,6 +27,7 @@ package lib.form;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
 
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
@@ -43,13 +44,13 @@ import java.util.stream.Collectors;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import org.htmlunit.ElementNotFoundException;
 import org.htmlunit.WebClientUtil;
 import org.htmlunit.html.HtmlButton;
 import org.htmlunit.html.HtmlForm;
 import org.htmlunit.html.HtmlInput;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.html.HtmlSelect;
-import org.htmlunit.html.HtmlTextInput;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -75,11 +76,11 @@ public class RepeatableTest {
     // ========================================================================
 
     private void doTestSimple(HtmlForm f, JenkinsRule.WebClient wc) throws Exception {
-        f.getInputByValue("").setValue("value one");
+        getInputByValue(f, "").setValue("value one");
         clickButton(wc, f, "Add", false);
-        f.getInputByValue("").setValue("value two");
+        getInputByValue(f, "").setValue("value two");
         clickButton(wc, f, "Add", false);
-        f.getInputByValue("").setValue("value three");
+        getInputByValue(f, "").setValue("value three");
         f.getInputsByName("bool").get(2).click();
         j.submit(f);
     }
@@ -169,12 +170,10 @@ public class RepeatableTest {
         JenkinsRule.WebClient wc = j.createWebClient();
         HtmlPage p = wc.goTo("self/testSimple");
         HtmlForm f = p.getFormByName("config");
-
-        List<HtmlInput> inputs = getHtmlInputsWithEmptyValue(f);
-
-        inputs.get(0).setValue("value one");
-        inputs.get(1).setValue("value two");
-        inputs.get(2).setValue("value three");
+        getInputByValue(f, "").setValue("value one");
+        getInputByValue(f, "").setValue("value two");
+        getInputByValue(f, "").setValue("value three");
+        assertThrows(ElementNotFoundException.class, () -> getInputByValue(f, ""));
         f.getInputsByName("bool").get(2).click();
         j.submit(f);
         assertEqualsJsonArray("[{\"bool\":false,\"txt\":\"value one\"},"
@@ -189,10 +188,8 @@ public class RepeatableTest {
         JenkinsRule.WebClient wc = j.createWebClient();
         HtmlPage p = wc.goTo("self/testSimple");
         HtmlForm f = p.getFormByName("config");
-
-        List<HtmlInput> inputs = getHtmlInputsWithEmptyValue(f);
-
-        inputs.get(0).setValue("new one");
+        getInputByValue(f, "").setValue("new one");
+        assertThrows(ElementNotFoundException.class, () -> getInputByValue(f, ""));
         f.getInputsByName("bool").get(1).click();
         j.submit(f);
         assertEqualsJsonArray("[{\"bool\":true,\"txt\":\"existing one\"},"
@@ -276,10 +273,10 @@ public class RepeatableTest {
         HtmlPage p = wc.goTo("self/testRadio");
         HtmlForm f = p.getFormByName("config");
         clickButton(wc, f, "Add", true);
-        f.getInputByValue("").setValue("txt one");
+        getInputByValue(f, "").setValue("txt one");
         f.getElementsByAttribute("INPUT", "type", "radio").get(1).click();
         clickButton(wc, f, "Add", false);
-        f.getInputByValue("").setValue("txt two");
+        getInputByValue(f, "").setValue("txt two");
         f.getElementsByAttribute("INPUT", "type", "radio").get(3).click();
         j.submit(f);
         assertEqualsJsonArray("[{\"radio\":\"two\",\"txt\":\"txt one\"},"
@@ -305,7 +302,7 @@ public class RepeatableTest {
         HtmlPage p = wc.goTo("self/testRadio");
         HtmlForm f = p.getFormByName("config");
         clickButton(wc, f, "Add", false);
-        f.getInputByValue("").setValue("txt 4");
+        getInputByValue(f, "").setValue("txt 4");
         f.getElementsByAttribute("INPUT", "type", "radio").get(7).click();
         j.submit(f);
         assertEqualsJsonArray("[{\"radio\":\"one\",\"txt\":\"1\"},{\"radio\":\"two\",\"txt\":\"2\"},"
@@ -321,14 +318,14 @@ public class RepeatableTest {
         HtmlPage p = wc.goTo("self/testRadioBlock");
         HtmlForm f = p.getFormByName("config");
         clickButton(wc, f, "Add", true);
-        f.getInputByValue("").setValue("txt one");
-        f.getInputByValue("").setValue("avalue do not send");
+        getInputByValue(f, "").setValue("txt one");
+        getInputByValue(f, "").setValue("avalue do not send");
         f.getElementsByAttribute("INPUT", "type", "radio").get(1).click();
-        f.getInputByValue("").setValue("bvalue");
+        getInputByValue(f, "").setValue("bvalue");
         clickButton(wc, f, "Add", false);
-        f.getInputByValue("").setValue("txt two");
+        getInputByValue(f, "").setValue("txt two");
         f.getElementsByAttribute("INPUT", "type", "radio").get(2).click();
-        f.getInputByValue("").setValue("avalue two");
+        getInputByValue(f, "").setValue("avalue two");
         j.submit(f);
         assertEqualsJsonArray("[{\"radio\":{\"b\":\"bvalue\",\"value\":\"two\"},\"txt\":\"txt one\"},"
                      + "{\"radio\":{\"a\":\"avalue two\",\"value\":\"one\"},\"txt\":\"txt two\"}]",
@@ -398,13 +395,13 @@ public class RepeatableTest {
         HtmlPage p = wc.goTo("self/testDropdownList");
         HtmlForm f = p.getFormByName("config");
         clickButton(wc, f, "Add", true);
-        f.getInputByValue("").setValue("17"); // seeds
-        f.getInputByValue("").setValue("pie"); // word
+        getInputByValue(f, "").setValue("17"); // seeds
+        getInputByValue(f, "").setValue("pie"); // word
         clickButton(wc, f, "Add", false);
         // select banana in 2nd select element:
         ((HtmlSelect) f.getElementsByTagName("select").get(1)).getOption(1).click();
         f.getInputsByName("yellow").get(1).click(); // checkbox
-        f.getInputsByValue("").get(1).setValue("split"); // word
+        getInputsByValue(f, "").get(1).setValue("split"); // word
         String xml = f.asXml();
         rootAction.bindClass = Fruity.class;
         j.submit(f);
@@ -443,18 +440,18 @@ public class RepeatableTest {
         try {
             clickButton(wc, f, "Add", true);
 
-            getHtmlInputsWithEmptyValue(f).get(0).setValue("title one");
+            getInputsByValue(f, "").get(0).setValue("title one");
             clickButton(wc, f, "Add Foo", true);
 
-            getHtmlInputsWithEmptyValue(f).get(0).setValue("txt one");
+            getInputsByValue(f, "").get(0).setValue("txt one");
             clickButton(wc, f, "Add Foo", false);
-            getHtmlInputsWithEmptyValue(f).get(0).setValue("txt two");
+            getInputsByValue(f, "").get(0).setValue("txt two");
             f.getInputsByName("bool").get(1).click();
             clickButton(wc, f, "Add", false);
-            getHtmlInputsWithEmptyValue(f).get(0).setValue("title two");
+            getInputsByValue(f, "").get(0).setValue("title two");
             f.getElementsByTagName("button").get(1).click(); // 2nd "Add Foo" button
             WebClientUtil.waitForJSExec(wc);
-            f.getInputByValue("").setValue("txt 2.1");
+            getInputByValue(f, "").setValue("txt 2.1");
         } catch (Exception e) {
             System.err.println("HTML at time of failure:\n" + p.getBody().asXml());
             throw e;
@@ -465,15 +462,6 @@ public class RepeatableTest {
                      + "FooList:title two:[foo:txt 2.1:false]]", rootAction.bindResult.toString());
     }
 
-    private static List<HtmlInput> getHtmlInputsWithEmptyValue(HtmlForm f) {
-        List<HtmlInput> inputs;
-        inputs = f.getInputsByValue("")
-                .stream()
-                .filter(element -> element instanceof HtmlTextInput)
-                .collect(Collectors.toList());
-        return inputs;
-    }
-
     /** Tests nested repeatable and use of @DataBoundConstructor to process formData */
     @Test
     public void testNestedEnabledTopButton() throws Exception {
@@ -482,17 +470,17 @@ public class RepeatableTest {
         HtmlForm f = p.getFormByName("config");
         try {
             clickButton(wc, f, "Add", true);
-            f.getInputByValue("").setValue("title one");
+            getInputByValue(f, "").setValue("title one");
             clickButton(wc, f, "Add Foo", true);
-            f.getInputByValue("").setValue("txt one");
+            getInputByValue(f, "").setValue("txt one");
             clickButton(wc, f, "Add Foo", false);
-            f.getInputByValue("").setValue("txt two");
+            getInputByValue(f, "").setValue("txt two");
             f.getInputsByName("bool").get(1).click();
             clickButton(wc, f, "Add", false);
-            f.getInputByValue("").setValue("title two");
+            getInputByValue(f, "").setValue("title two");
             f.getElementsByTagName("button").get(3).click(); // 2nd "Add Foo" button
             WebClientUtil.waitForJSExec(wc);
-            f.getInputByValue("").setValue("txt 2.1");
+            getInputByValue(f, "").setValue("txt 2.1");
         } catch (Exception e) {
             System.err.println("HTML at time of failure:\n" + p.getBody().asXml());
             throw e;
@@ -511,17 +499,17 @@ public class RepeatableTest {
         HtmlForm f = p.getFormByName("config");
         try {
             clickButton(wc, f, "Add", true);
-            f.getInputByValue("").setValue("title one");
+            getInputByValue(f, "").setValue("title one");
             clickButton(wc, f, "Add Foo", true);
-            f.getInputByValue("").setValue("txt one");
+            getInputByValue(f, "").setValue("txt one");
             clickButton(wc, f, "Add Foo", false);
-            f.getInputByValue("").setValue("txt two");
+            getInputByValue(f, "").setValue("txt two");
             f.getInputsByName("bool").get(1).click();
             clickButton(wc, f, "Add", false);
-            f.getInputByValue("").setValue("title two");
+            getInputByValue(f, "").setValue("title two");
             f.getElementsByTagName("button").get(2).click(); // 2nd "Add Foo" button
             WebClientUtil.waitForJSExec(wc);
-            f.getInputByValue("").setValue("txt 2.1");
+            getInputByValue(f, "").setValue("txt 2.1");
         } catch (Exception e) {
             System.err.println("HTML at time of failure:\n" + p.getBody().asXml());
             throw e;
@@ -540,17 +528,17 @@ public class RepeatableTest {
         HtmlForm f = p.getFormByName("config");
         try {
             clickButton(wc, f, "Add", true);
-            f.getInputByValue("").setValue("title one");
+            getInputByValue(f, "").setValue("title one");
             clickButton(wc, f, "Add Foo", true);
-            f.getInputByValue("").setValue("txt one");
+            getInputByValue(f, "").setValue("txt one");
             clickButton(wc, f, "Add Foo", false);
-            f.getInputByValue("").setValue("txt two");
+            getInputByValue(f, "").setValue("txt two");
             f.getInputsByName("bool").get(1).click();
             clickButton(wc, f, "Add", false);
-            f.getInputByValue("").setValue("title two");
+            getInputByValue(f, "").setValue("title two");
             f.getElementsByTagName("button").get(2).click(); // 2nd "Add Foo" button
             WebClientUtil.waitForJSExec(wc);
-            f.getInputByValue("").setValue("txt 2.1");
+            getInputByValue(f, "").setValue("txt 2.1");
         } catch (Exception e) {
             System.err.println("HTML at time of failure:\n" + p.getBody().asXml());
             throw e;
@@ -685,5 +673,33 @@ public class RepeatableTest {
         public String getUrlName() {
             return "self";
         }
+    }
+
+    /**
+     * Returns the first input in this form with the specified value.
+     * @param value the value to search for
+     * @return the first input in this form with the specified value
+     * @throws ElementNotFoundException if this form does not contain any inputs with the specified value
+     */
+    private static HtmlInput getInputByValue(final HtmlForm f, final String value) throws ElementNotFoundException {
+        return f.getInputsByValue(value).stream()
+                .filter(HtmlInput.class::isInstance)
+                .map(HtmlInput.class::cast)
+                .filter(input -> input.getValue().equals(value))
+                .findFirst()
+                .orElseThrow(() -> new ElementNotFoundException("input", "value", value));
+    }
+
+    /**
+     * Returns all the inputs in this form with the specified value.
+     * @param value the value to search for
+     * @return all the inputs in this form with the specified value
+     */
+    private static List<HtmlInput> getInputsByValue(final HtmlForm f, final String value) {
+        return f.getInputsByValue(value).stream()
+                .filter(HtmlInput.class::isInstance)
+                .map(HtmlInput.class::cast)
+                .filter(input -> input.getValue().equals(value))
+                .collect(Collectors.toList());
     }
 }
