@@ -439,16 +439,14 @@ public class RepeatableTest {
         HtmlForm f = p.getFormByName("config");
         try {
             clickButton(wc, f, "Add", true);
-
-            getInputsByValue(f, "").get(0).setValue("title one");
+            getInputByValue(f, "").setValue("title one");
             clickButton(wc, f, "Add Foo", true);
-
-            getInputsByValue(f, "").get(0).setValue("txt one");
+            getInputByValue(f, "").setValue("txt one");
             clickButton(wc, f, "Add Foo", false);
-            getInputsByValue(f, "").get(0).setValue("txt two");
+            getInputByValue(f, "").setValue("txt two");
             f.getInputsByName("bool").get(1).click();
             clickButton(wc, f, "Add", false);
-            getInputsByValue(f, "").get(0).setValue("title two");
+            getInputByValue(f, "").setValue("title two");
             f.getElementsByTagName("button").get(1).click(); // 2nd "Add Foo" button
             WebClientUtil.waitForJSExec(wc);
             getInputByValue(f, "").setValue("txt 2.1");
