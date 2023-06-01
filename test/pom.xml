@@ -199,7 +199,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>matrix-auth</artifactId>
-      <version>3.1.7</version>
+      <version>3.1.8</version>
       <scope>test</scope>
     </dependency>
     <dependency>
