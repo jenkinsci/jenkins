@@ -24,19 +24,25 @@ THE SOFTWARE.
 
 <!-- list of feed links -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
-    <div class="jenkins-buttons-row jenkins-buttons-row--invert">
-        <a href="rss" class="jenkins-button jenkins-button--tertiary">
-            <l:icon src="symbol-rss" />
-            <span>${%All}</span>
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout">
+    <l:overflowButton icon="symbol-rss" text="${%Atom feed}" tooltip="${null}">
+        <a class="jenkins-dropdown__item" href="rss">
+            <div class="jenkins-dropdown__item__icon">
+                <l:icon src="symbol-rss" />
+            </div>
+            ${%All}
         </a>
-        <a href="rss?level=SEVERE" class="jenkins-button jenkins-button--tertiary">
-            <l:icon src="symbol-rss" />
-            <span>${%SEVERE}</span>
+        <a class="jenkins-dropdown__item" href="rss?level=SEVERE">
+            <div class="jenkins-dropdown__item__icon">
+                <l:icon src="symbol-rss" />
+            </div>
+            ${%SEVERE}
         </a>
-        <a href="rss?level=WARNING" class="jenkins-button jenkins-button--tertiary">
-            <l:icon src="symbol-rss" />
-            <span>${%WARNING}</span>
+        <a class="jenkins-dropdown__item" href="rss?level=WARNING">
+            <div class="jenkins-dropdown__item__icon">
+                <l:icon src="symbol-rss" />
+            </div>
+            ${%WARNING}
         </a>
-    </div>
+    </l:overflowButton>
 </j:jelly>
