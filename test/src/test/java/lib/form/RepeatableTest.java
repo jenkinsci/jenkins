@@ -682,6 +682,7 @@ public class RepeatableTest {
      * @throws ElementNotFoundException if this form does not contain any inputs with the specified value
      */
     private static HtmlInput getInputByValue(final HtmlForm f, final String value) throws ElementNotFoundException {
+        // TODO https://github.com/HtmlUnit/htmlunit/issues/602
         return f.getInputsByValue(value).stream()
                 .filter(HtmlInput.class::isInstance)
                 .map(HtmlInput.class::cast)
@@ -696,6 +697,7 @@ public class RepeatableTest {
      * @return all the inputs in this form with the specified value
      */
     private static List<HtmlInput> getInputsByValue(final HtmlForm f, final String value) {
+        // TODO https://github.com/HtmlUnit/htmlunit/issues/602
         return f.getInputsByValue(value).stream()
                 .filter(HtmlInput.class::isInstance)
                 .map(HtmlInput.class::cast)
