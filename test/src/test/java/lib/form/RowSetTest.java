@@ -31,6 +31,7 @@ public class RowSetTest {
         public void doSubmitTest1(StaplerRequest req) throws Exception {
             JSONObject json = req.getSubmittedForm();
             json.remove(CrumbIssuer.DEFAULT_CRUMB_NAME);
+            json.remove("Submit");
             System.out.println(json);
 
             JSONObject expected = JSONObject.fromObject(

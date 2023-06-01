@@ -52,6 +52,7 @@ public class NameRefTest {
 
         public HttpResponse doSubmitTest1(StaplerRequest req) throws Exception {
             JSONObject f = req.getSubmittedForm();
+            f.remove("Submit");
             System.out.println(f);
             assertEquals("{\"foo\":{\"bar\":{\"zot\":\"zot\"}}}", f.toString());
             return HttpResponses.ok();
