@@ -46,12 +46,15 @@ THE SOFTWARE.
         <st:include it="${it.parent}" page="feeds.jelly" />
         <l:isAdmin>
           <div class="jenkins-dropdown__separator"></div>
-          <a class="jenkins-dropdown__item jenkins-!-destructive-color">
+          <l:confirmationLink class="jenkins-dropdown__item jenkins-!-destructive-color"
+                              href="doDelete"
+                              message="${%delete.logrecorder(it.displayName)}"
+                              post="true">
             <div class="jenkins-dropdown__item__icon">
               <l:icon src="symbol-trash" />
             </div>
-            Delete logger
-          </a>
+            ${%Delete log recorder}
+          </l:confirmationLink>
         </l:isAdmin>
       </l:overflowButton>
     </l:app-bar>
