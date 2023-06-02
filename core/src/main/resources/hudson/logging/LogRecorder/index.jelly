@@ -27,8 +27,7 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-<l:layout title="Log" permission="${app.SYSTEM_READ}">
-  <st:include page="sidepanel.jelly" />
+<l:layout title="Log" permission="${app.SYSTEM_READ}" type="one-column">
   <!-- no need for additional breadcrumb here as we're on an index page already including breadcrumb -->
   <l:main-panel>
     <l:app-bar title="${it.displayName}">
@@ -39,7 +38,20 @@ THE SOFTWARE.
                     primary="false" />
         </form>
       </l:isAdmin>
-      <st:include it="${it.parent}" page="feeds.jelly" />
+      <a class="jenkins-button" href="configure">
+        Configure
+      </a>
+      <l:overflowButton>
+        <span class="jenkins-dropdown__heading">${%Atom feed}</span>
+        <st:include it="${it.parent}" page="feeds.jelly" />
+        <div class="jenkins-dropdown__separator"></div>
+        <a class="jenkins-dropdown__item jenkins-!-destructive-color">
+          <div class="jenkins-dropdown__item__icon">
+            <l:icon src="symbol-trash" />
+          </div>
+          Delete logger
+        </a>
+      </l:overflowButton>
     </l:app-bar>
 
     <t:logRecords logRecords="${it.logRecords}"/>

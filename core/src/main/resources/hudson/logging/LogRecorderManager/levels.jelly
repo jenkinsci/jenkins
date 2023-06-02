@@ -27,8 +27,7 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <l:layout title="${%Logger Configuration}">
-    <st:include page="sidepanel.jelly"/>
+  <l:layout title="${%Logger Configuration}" type="one-column">
     <l:breadcrumb title="${%Log Levels}" />
 
     <l:main-panel>

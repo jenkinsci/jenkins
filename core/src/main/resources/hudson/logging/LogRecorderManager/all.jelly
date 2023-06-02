@@ -31,7 +31,9 @@ THE SOFTWARE.
   <l:breadcrumb title="${%All Jenkins Logs}" />
   <l:main-panel>
     <l:app-bar title="${%All Jenkins Logs}">
-      <st:include page="feeds.jelly" />
+      <l:overflowButton icon="symbol-rss" text="${%Atom feed}" tooltip="${null}">
+        <st:include page="feeds.jelly" />
+      </l:overflowButton>
     </l:app-bar>
 
     <div class="alert alert-info">
