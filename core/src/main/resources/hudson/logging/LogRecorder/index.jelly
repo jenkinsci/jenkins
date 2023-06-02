@@ -37,20 +37,22 @@ THE SOFTWARE.
                     value="${%Clear This Log}"
                     primary="false" />
         </form>
+        <a class="jenkins-button" href="configure">
+          Configure
+        </a>
       </l:isAdmin>
-      <a class="jenkins-button" href="configure">
-        Configure
-      </a>
       <l:overflowButton>
         <span class="jenkins-dropdown__heading">${%Atom feed}</span>
         <st:include it="${it.parent}" page="feeds.jelly" />
-        <div class="jenkins-dropdown__separator"></div>
-        <a class="jenkins-dropdown__item jenkins-!-destructive-color">
-          <div class="jenkins-dropdown__item__icon">
-            <l:icon src="symbol-trash" />
-          </div>
-          Delete logger
-        </a>
+        <l:isAdmin>
+          <div class="jenkins-dropdown__separator"></div>
+          <a class="jenkins-dropdown__item jenkins-!-destructive-color">
+            <div class="jenkins-dropdown__item__icon">
+              <l:icon src="symbol-trash" />
+            </div>
+            Delete logger
+          </a>
+        </l:isAdmin>
       </l:overflowButton>
     </l:app-bar>
 
