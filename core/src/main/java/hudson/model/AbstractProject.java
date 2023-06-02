@@ -953,6 +953,11 @@ public abstract class AbstractProject<P extends AbstractProject<P, R>, R extends
         return buildMixIn.getNearestOldBuild(n);
     }
 
+    @Override
+    protected List<R> getEstimatedDurationCandidates() {
+        return buildMixIn.getEstimatedDurationCandidates();
+    }
+
     /**
      * Type token for the corresponding build type.
      * The build class must have two constructors:

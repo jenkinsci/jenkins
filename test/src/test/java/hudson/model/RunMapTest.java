@@ -192,7 +192,6 @@ public class RunMapTest {
     @Test
     public void runLoadCounterFirst() throws Exception {
         FreeStyleProject p = r.createFreeStyleProject();
-        RunLoadCounter.prepare(p);
         for (int i = 0; i < 10; i++) {
             r.buildAndAssertSuccess(p);
         }
@@ -204,7 +203,6 @@ public class RunMapTest {
     @Test
     public void runLoadCounterLimit() throws Exception {
         FreeStyleProject p = r.createFreeStyleProject();
-        RunLoadCounter.prepare(p);
         for (int i = 0; i < 10; i++) {
             r.buildAndAssertSuccess(p);
         }
