@@ -30,7 +30,7 @@ function generateDropdown(element, callback) {
       },
       onShown(instance) {
         behaviorShim.applySubtree(instance.popper);
-      }
+      },
     })
   );
 }
