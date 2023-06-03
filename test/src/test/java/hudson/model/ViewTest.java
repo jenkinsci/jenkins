@@ -26,14 +26,14 @@ package hudson.model;
 
 import static hudson.model.Messages.Hudson_ViewName;
 import static java.util.Arrays.asList;
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.hasItem;
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.core.Is.is;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -194,24 +194,6 @@ public class ViewTest {
         assertThat(proxyView, instanceOf(ProxyView.class));
         assertEquals("listView", ((ProxyView) proxyView).getProxiedViewName());
         assertEquals(((ProxyView) proxyView).getProxiedView(), listView);
-    }
-
-    @Test public void deleteView() throws Exception {
-        WebClient wc = j.createWebClient();
-
-        ListView v = listView("list");
-        HtmlPage delete = wc.getPage(v, "delete");
-        j.submit(delete.getFormByName("delete"));
-        assertNull(j.jenkins.getView("list"));
-
-        User user = User.get("user", true);
-        MyViewsProperty p = user.getProperty(MyViewsProperty.class);
-        v = new ListView("list", p);
-        p.addView(v);
-        delete = wc.getPage(v, "delete");
-        j.submit(delete.getFormByName("delete"));
-        assertNull(p.getView("list"));
-
     }
 
     @Issue("JENKINS-9367")

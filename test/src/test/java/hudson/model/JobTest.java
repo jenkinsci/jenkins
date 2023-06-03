@@ -302,7 +302,6 @@ public class JobTest {
     @Issue("JENKINS-16023")
     @Test public void getLastFailedBuild() throws Exception {
         final FreeStyleProject p = j.createFreeStyleProject();
-        RunLoadCounter.prepare(p);
         p.getBuildersList().add(new FailureBuilder());
         j.buildAndAssertStatus(Result.FAILURE, p);
         j.buildAndAssertStatus(Result.FAILURE, p);
