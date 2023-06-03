@@ -36,6 +36,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.RunLoadCounter;
 import org.jvnet.hudson.test.SleepBuilder;
 
 public class LazyBuildMixInTest {
@@ -96,4 +97,19 @@ public class LazyBuildMixInTest {
         assertSame(b2, b1.getNextBuild());
         r.assertBuildStatusSuccess(r.waitForCompletion(b2));
     }
+
+    @Test
+    public void newBuildsShouldNotLoadOld() throws Throwable {
+        var p = r.createFreeStyleProject("p");
+        for (int i = 0; i < 10; i++) {
+            r.buildAndAssertSuccess(p);
+        }
+        RunLoadCounter.assertMaxLoads(p, /* just lastBuild */ 1, () -> {
+            for (int i = 0; i < 5; i++) {
+                r.buildAndAssertSuccess(p);
+            }
+            return null;
+        });
+    }
+
 }

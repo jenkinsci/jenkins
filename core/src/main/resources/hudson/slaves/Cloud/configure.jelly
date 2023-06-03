@@ -35,7 +35,7 @@ THE SOFTWARE.
         <j:set var="descriptor" value="${instance.descriptor}"/>
 
         <!-- main body of the configuration -->
-        <st:include it="${instance}" page="config.jelly"/>
+        <st:include it="${instance}" page="config.jelly" optional="true"/>
 
         <l:isAdmin>
           <f:bottomButtonBar>
