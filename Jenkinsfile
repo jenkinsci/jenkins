@@ -83,45 +83,47 @@ axes.values().combinations {
         // Now run the actual build.
         stage("${platform.capitalize()} - JDK ${jdk} - Build / Test") {
           timeout(time: 6, unit: 'HOURS') {
-            dir(tmpDir) {
-              def sessionFile = "launchable-session-${platform}-jdk${jdk}.txt"
-              unstash sessionFile
-              session = readFile(sessionFile).trim()
-            }
-            def mavenOptions = [
-              '-Pdebug',
-              '-Penable-jacoco',
-              '--update-snapshots',
-              "-Dmaven.repo.local=$m2repo",
-              '-Dmaven.test.failure.ignore',
-              '-DforkCount=2',
-              '-Dspotbugs.failOnError=false',
-              '-Dcheckstyle.failOnViolation=false',
-              '-Dset.changelist',
-              'help:evaluate',
-              '-Dexpression=changelist',
-              "-Doutput=$changelistF",
-              'clean',
-              'install',
-            ]
-            if (env.CHANGE_ID && !pullRequest.labels.contains('full-test')) {
-              def excludesFile
-              def target = platform == 'windows' ? '30%' : '100%'
-              withCredentials([string(credentialsId: 'launchable-jenkins-jenkins', variable: 'LAUNCHABLE_TOKEN')]) {
-                if (isUnix()) {
-                  excludesFile = "${tmpDir}/excludes.txt"
-                  sh "launchable verify && launchable subset --session ${session} --target ${target} --get-tests-from-previous-sessions --output-exclusion-rules maven >${excludesFile}"
-                } else {
-                  excludesFile = "${tmpDir}\\excludes.txt"
-                  bat "launchable verify && launchable subset --session ${session} --target ${target}% --get-tests-from-previous-sessions --output-exclusion-rules maven >${excludesFile}"
-                }
+            ansiColor('xterm') {
+              dir(tmpDir) {
+                def sessionFile = "launchable-session-${platform}-jdk${jdk}.txt"
+                unstash sessionFile
+                session = readFile(sessionFile).trim()
               }
-              mavenOptions.add(0, "-Dsurefire.excludesFile=${excludesFile}")
-            }
-            realtimeJUnit(healthScaleFactor: 20.0, testResults: '*/target/surefire-reports/*.xml') {
-              infra.runMaven(mavenOptions, jdk)
-              if (isUnix()) {
-                sh 'git add . && git diff --exit-code HEAD'
+              def mavenOptions = [
+                      '-Pdebug',
+                      '-Penable-jacoco',
+                      '--update-snapshots',
+                      "-Dmaven.repo.local=$m2repo",
+                      '-Dmaven.test.failure.ignore',
+                      '-DforkCount=2',
+                      '-Dspotbugs.failOnError=false',
+                      '-Dcheckstyle.failOnViolation=false',
+                      '-Dset.changelist',
+                      'help:evaluate',
+                      '-Dexpression=changelist',
+                      "-Doutput=$changelistF",
+                      'clean',
+                      'install',
+              ]
+              if (env.CHANGE_ID && !pullRequest.labels.contains('full-test')) {
+                def excludesFile
+                def target = platform == 'windows' ? '30%' : '100%'
+                withCredentials([string(credentialsId: 'launchable-jenkins-jenkins', variable: 'LAUNCHABLE_TOKEN')]) {
+                  if (isUnix()) {
+                    excludesFile = "${tmpDir}/excludes.txt"
+                    sh "launchable verify && launchable subset --session ${session} --target ${target} --get-tests-from-previous-sessions --output-exclusion-rules maven >${excludesFile}"
+                  } else {
+                    excludesFile = "${tmpDir}\\excludes.txt"
+                    bat "launchable verify && launchable subset --session ${session} --target ${target}% --get-tests-from-previous-sessions --output-exclusion-rules maven >${excludesFile}"
+                  }
+                }
+                mavenOptions.add(0, "-Dsurefire.excludesFile=${excludesFile}")
+              }
+              realtimeJUnit(healthScaleFactor: 20.0, testResults: '*/target/surefire-reports/*.xml') {
+                infra.runMaven(mavenOptions, jdk)
+                if (isUnix()) {
+                  sh 'git add . && git diff --exit-code HEAD'
+                }
               }
             }
           }
@@ -159,6 +161,12 @@ axes.values().combinations {
                 skipBlames: true,
                 trendChartType: 'TOOLS_ONLY',
                 qualityGates: [[threshold: 1, type: 'TOTAL', unstable: true]]
+            )
+            recordIssues(
+                enabledForFailure: true,
+                tool: mavenConsole(),
+                skipBlames: true,
+                trendChartType: 'TOOLS_ONLY'
             )
             recordIssues([tool: spotBugs(pattern: '**/target/spotbugsXml.xml'),
               sourceCodeEncoding: 'UTF-8',
