@@ -62,5 +62,5 @@
     "defaults",
     "not IE 11"
   ],
-  "packageManager": "yarn@3.5.1"
+  "packageManager": "yarn@3.6.0"
 }
