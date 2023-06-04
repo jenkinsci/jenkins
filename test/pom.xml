@@ -68,7 +68,7 @@ THE SOFTWARE.
         <!-- RequireUpperBoundDeps between bootstrap5-api and echarts-api -->
         <groupId>io.jenkins.plugins</groupId>
         <artifactId>font-awesome-api</artifactId>
-        <version>6.3.0-2</version>
+        <version>6.3.0-3</version>
       </dependency>
       <dependency>
         <!-- RequireUpperBoundDeps between checks-api, echarts-api, font-awesome-api, and junit -->
@@ -106,8 +106,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <!-- TODO https://github.com/jenkinsci/jenkins-test-harness/pull/589 -->
-      <version>2011.vf7edf4d6253d</version>
+      <version>2010.v1888f1a_cd45a_</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
