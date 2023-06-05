@@ -24,11 +24,11 @@
 
 package lib.layout;
 
-import com.gargoylesoftware.htmlunit.html.DomElement;
-import com.gargoylesoftware.htmlunit.html.HtmlLink;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import jenkins.widgets.ExecutorsWidget;
 import jenkins.widgets.HasWidgetHelper;
+import org.htmlunit.html.DomElement;
+import org.htmlunit.html.HtmlLink;
+import org.htmlunit.html.HtmlPage;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;

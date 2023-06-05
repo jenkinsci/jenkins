@@ -35,7 +35,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assume.assumeThat;
 
-import com.gargoylesoftware.htmlunit.Page;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import groovy.util.XmlSlurper;
@@ -58,6 +57,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.Set;
 import org.apache.commons.io.IOUtils;
+import org.htmlunit.Page;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;

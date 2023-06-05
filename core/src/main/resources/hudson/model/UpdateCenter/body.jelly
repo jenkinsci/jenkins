@@ -49,16 +49,16 @@ THE SOFTWARE.
             <l:icon class="icon-red icon-md"/>
             <l:icon class="icon-nobuilt icon-md"/>
           </div>
-          <p class="info">
-            <j:if test="${app.lifecycle.canRestart()}">
+          <j:if test="${app.lifecycle.canRestart()}">
+            <p class="info">
               <j:if test="${app.isQuietingDown() or it.isRestartScheduled()}">
                 <f:checkbox checked="true" id="scheduleRestartCheckbox" name="scheduleRestart" title="${%warning}" />
               </j:if>
               <j:if test="${!app.isQuietingDown() and !it.isRestartScheduled()}">
                 <f:checkbox readonly="true" id="scheduleRestartCheckbox" name="scheduleRestart" title="${%warning}" />
               </j:if>
-            </j:if>
-          </p>
+            </p>
+          </j:if>
         </l:isAdmin>
       </form>
     </div>
