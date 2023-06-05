@@ -34,8 +34,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.WebResponse;
 import hudson.EnvVars;
 import hudson.Functions;
 import hudson.Launcher;
@@ -56,6 +54,8 @@ import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import org.htmlunit.Page;
+import org.htmlunit.WebResponse;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;

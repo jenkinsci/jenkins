@@ -14,13 +14,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThrows;
 
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
-import com.gargoylesoftware.htmlunit.HttpMethod;
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.xml.XmlPage;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Util;
 import hudson.model.Cause;
@@ -40,6 +33,13 @@ import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
 import jenkins.security.apitoken.ApiTokenStore;
 import jenkins.security.apitoken.TokenUuidAndPlainValue;
 import net.sf.json.JSONObject;
+import org.htmlunit.FailingHttpStatusCodeException;
+import org.htmlunit.HttpMethod;
+import org.htmlunit.Page;
+import org.htmlunit.WebRequest;
+import org.htmlunit.html.HtmlForm;
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.xml.XmlPage;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -81,7 +81,7 @@ public class ApiTokenPropertyTest {
         // Make sure the UI shows the token to the user
         HtmlPage config = wc.goTo(u.getUrl() + "/configure");
         HtmlForm form = config.getFormByName("config");
-        assertEquals(token, form.getInputByName("_.apiToken").getValueAttribute());
+        assertEquals(token, form.getInputByName("_.apiToken").getValue());
 
         // round-trip shouldn't change the API token
         j.submit(form);
@@ -127,7 +127,7 @@ public class ApiTokenPropertyTest {
         WebClient wc = createClientForUser("bar");
         HtmlPage config = wc.goTo(u.getUrl() + "/configure");
         HtmlForm form = config.getFormByName("config");
-        assertEquals(Messages.ApiTokenProperty_ChangeToken_TokenIsHidden(), form.getInputByName("_.apiToken").getValueAttribute());
+        assertEquals(Messages.ApiTokenProperty_ChangeToken_TokenIsHidden(), form.getInputByName("_.apiToken").getValue());
     }
 
     @Issue("SECURITY-200")

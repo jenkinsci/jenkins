@@ -34,12 +34,6 @@ import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeFalse;
 
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.TextPage;
-import com.gargoylesoftware.htmlunit.WebAssert;
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlFormUtil;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.FilePath;
 import hudson.Functions;
@@ -64,6 +58,12 @@ import java.util.concurrent.atomic.AtomicReference;
 import jenkins.model.Jenkins;
 import jenkins.model.ProjectNamingStrategy;
 import org.hamcrest.Matchers;
+import org.htmlunit.Page;
+import org.htmlunit.TextPage;
+import org.htmlunit.WebAssert;
+import org.htmlunit.html.HtmlForm;
+import org.htmlunit.html.HtmlFormUtil;
+import org.htmlunit.html.HtmlPage;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.FailureBuilder;
@@ -571,7 +571,7 @@ public class JobTest {
         FreeStyleProject job = j.createFreeStyleProject(initialName);
         WebClient wc = j.createWebClient();
         HtmlForm form = wc.getPage(job, "confirm-rename").getFormByName("config");
-        form.getInputByName("newName").setValueAttribute(submittedName);
+        form.getInputByName("newName").setValue(submittedName);
         HtmlPage resultPage = j.submit(form);
 
         String urlString = MessageFormat.format(
