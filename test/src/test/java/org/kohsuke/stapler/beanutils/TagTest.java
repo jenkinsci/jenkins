@@ -5,9 +5,9 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.model.InvisibleAction;
 import hudson.model.RootAction;
+import org.htmlunit.html.HtmlPage;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
