@@ -34,7 +34,7 @@ THE SOFTWARE.
       <l:isAdmin>
         <a href="new" class="jenkins-button jenkins-button--primary">
           <l:icon src="symbol-add" />
-          ${%Add new log recorder}
+          ${%Add recorder}
         </a>
       </l:isAdmin>
       <a href="levels" class="jenkins-button">
