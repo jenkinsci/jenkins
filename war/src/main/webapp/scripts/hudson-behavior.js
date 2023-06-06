@@ -2268,8 +2268,24 @@ function findMatchingFormInput(base, name) {
   // find the FORM element that owns us
   var f = base.closest("form");
 
-  var bases = f.querySelectorAll('input[name="' + base.name + '"]');
-  var targets = f.querySelectorAll('input[name="' + name + '"]');
+  var bases = f.querySelectorAll(
+    'input[name="' +
+      base.name +
+      '"], textarea[name="' +
+      base.name +
+      '"], select[name="' +
+      base.name +
+      '"]'
+  );
+  var targets = f.querySelectorAll(
+    'input[name="' +
+      name +
+      '"], textarea[name="' +
+      name +
+      '"], select[name="' +
+      name +
+      '"]'
+  );
 
   for (var i = 0; i < bases.length; i++) {
     if (bases[i] == base) {
