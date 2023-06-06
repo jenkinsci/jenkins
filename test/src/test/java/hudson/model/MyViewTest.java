@@ -32,12 +32,12 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeThat;
 
-import com.gargoylesoftware.htmlunit.html.HtmlElement;
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
 import java.io.IOException;
 import java.util.logging.Level;
+import org.htmlunit.html.HtmlElement;
+import org.htmlunit.html.HtmlForm;
+import org.htmlunit.html.HtmlPage;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -86,7 +86,7 @@ public class MyViewTest {
         HtmlPage newItemPage = rule.createWebClient().goTo("view/" + view.getDisplayName() + "/newJob");
         HtmlForm form = newItemPage.getFormByName("createItem");
         // Set the name of the item
-        form.getInputByName("name").setValueAttribute("job");
+        form.getInputByName("name").setValue("job");
         form.getInputByName("name").blur();
         // Select the item clicking on the first item type shown
         HtmlElement itemType = newItemPage.getFirstByXPath("//div[@class='category']/ul/li");

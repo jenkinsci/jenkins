@@ -24,17 +24,13 @@
 
 package jenkins.security;
 
-import static org.hamcrest.CoreMatchers.allOf;
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.hasItem;
-import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.not;
 
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlInput;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.RootAction;
@@ -44,6 +40,10 @@ import java.io.StringWriter;
 import java.util.logging.Level;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
+import org.htmlunit.Page;
+import org.htmlunit.html.HtmlForm;
+import org.htmlunit.html.HtmlInput;
+import org.htmlunit.html.HtmlPage;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -77,13 +77,13 @@ public class RedactSecretJsonInErrorMessageSanitizerHtmlTest {
 
         String textSimple = "plain-1";
         String pwdSimple = "secret-1";
-        ((HtmlInput) page.getElementById("text-simple")).setValueAttribute(textSimple);
-        ((HtmlInput) page.getElementById("pwd-simple")).setValueAttribute(pwdSimple);
+        ((HtmlInput) page.getElementById("text-simple")).setValue(textSimple);
+        ((HtmlInput) page.getElementById("pwd-simple")).setValue(pwdSimple);
 
         String textLevelOne = "plain-2";
         String pwdLevelOneA = "secret-2";
-        ((HtmlInput) page.getElementById("text-level-one")).setValueAttribute(textLevelOne);
-        ((HtmlInput) page.getElementById("pwd-level-one-a")).setValueAttribute(pwdLevelOneA);
+        ((HtmlInput) page.getElementById("text-level-one")).setValue(textLevelOne);
+        ((HtmlInput) page.getElementById("pwd-level-one-a")).setValue(pwdLevelOneA);
 
         HtmlForm form = page.getFormByName("config");
         Page formSubmitPage = j.submit(form);
@@ -154,7 +154,7 @@ public class RedactSecretJsonInErrorMessageSanitizerHtmlTest {
         wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
         HtmlPage page = wc.goTo("testDescribable");
         String secret = "s3cr3t";
-        ((HtmlInput) page.getElementById("password")).setValueAttribute(secret);
+        ((HtmlInput) page.getElementById("password")).setValue(secret);
 
         HtmlForm form = page.getFormByName("config");
         Page formSubmitPage = j.submit(form);
@@ -197,7 +197,7 @@ public class RedactSecretJsonInErrorMessageSanitizerHtmlTest {
         wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
         HtmlPage page = wc.goTo("testStapler");
         String secret = "s3cr3t";
-        ((HtmlInput) page.getElementById("password")).setValueAttribute(secret);
+        ((HtmlInput) page.getElementById("password")).setValue(secret);
 
         HtmlForm form = page.getFormByName("config");
         Page formSubmitPage = j.submit(form);

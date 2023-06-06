@@ -35,11 +35,6 @@ import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeFalse;
 
-import com.gargoylesoftware.htmlunit.AlertHandler;
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.PluginManager.UberClassLoader;
 import hudson.model.DownloadService;
 import hudson.model.Hudson;
@@ -90,6 +85,11 @@ import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.FileUtils;
+import org.htmlunit.AlertHandler;
+import org.htmlunit.Page;
+import org.htmlunit.html.HtmlAnchor;
+import org.htmlunit.html.HtmlForm;
+import org.htmlunit.html.HtmlPage;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -123,7 +123,7 @@ public class PluginManagerTest {
         File dir = tmp.newFolder();
         File plugin = new File(dir, "htmlpublisher.jpi");
         FileUtils.copyURLToFile(getClass().getClassLoader().getResource("plugins/htmlpublisher.jpi"), plugin);
-        f.getInputByName("name").setValueAttribute(plugin.getAbsolutePath());
+        f.getInputByName("name").setValue(plugin.getAbsolutePath());
         r.submit(f);
 
         assertTrue(new File(r.jenkins.getRootDir(), "plugins/htmlpublisher.jpi").exists());
@@ -138,7 +138,7 @@ public class PluginManagerTest {
         File dir = tmp.newFolder();
         File plugin = new File(dir, "legacy.hpi");
         FileUtils.copyURLToFile(getClass().getClassLoader().getResource("plugins/legacy.hpi"), plugin);
-        f.getInputByName("name").setValueAttribute(plugin.getAbsolutePath());
+        f.getInputByName("name").setValue(plugin.getAbsolutePath());
         r.submit(f);
 
         // uploaded legacy plugins get renamed to *.jpi
@@ -148,7 +148,7 @@ public class PluginManagerTest {
     @Test public void deployJpiFromUrl() throws Exception {
         HtmlPage page = r.createWebClient().goTo("pluginManager/advanced");
         HtmlForm f = page.getFormByName("uploadPlugin");
-        f.getInputByName("pluginUrl").setValueAttribute(Jenkins.get().getRootUrl() + "pluginManagerGetPlugin/htmlpublisher.jpi");
+        f.getInputByName("pluginUrl").setValue(Jenkins.get().getRootUrl() + "pluginManagerGetPlugin/htmlpublisher.jpi");
         r.submit(f);
 
         assertTrue(new File(r.jenkins.getRootDir(), "plugins/htmlpublisher.jpi").exists());
@@ -560,7 +560,7 @@ public class PluginManagerTest {
         File dir = tmp.newFolder();
         File plugin = new File(dir, "mandatory-depender-0.0.2.hpi");
         FileUtils.copyURLToFile(getClass().getClassLoader().getResource("plugins/mandatory-depender-0.0.2.hpi"), plugin);
-        f.getInputByName("name").setValueAttribute(plugin.getAbsolutePath());
+        f.getInputByName("name").setValue(plugin.getAbsolutePath());
         r.submit(f);
 
         assertTrue(r.jenkins.getUpdateCenter().getJobs().size() > 0);
@@ -743,7 +743,7 @@ public class PluginManagerTest {
         File dir = tmp.newFolder();
         File plugin = new File(dir, "htmlpublisher.jpi");
         FileUtils.copyURLToFile(Objects.requireNonNull(getClass().getClassLoader().getResource("plugins/htmlpublisher.jpi")), plugin);
-        f.getInputByName("name").setValueAttribute(plugin.getAbsolutePath());
+        f.getInputByName("name").setValue(plugin.getAbsolutePath());
         r.submit(f);
 
         File tmpDir = new File(File.createTempFile("tmp", ".tmp").getParent());
