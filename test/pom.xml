@@ -71,6 +71,16 @@ THE SOFTWARE.
         <version>6.4.0-1</version>
       </dependency>
       <dependency>
+        <groupId>io.jenkins.plugins</groupId>
+        <artifactId>ionicons-api</artifactId>
+        <version>56.v1b_1c8c49374e</version>
+      </dependency>
+      <dependency>
+        <groupId>io.jenkins.plugins</groupId>
+        <artifactId>javax-activation-api</artifactId>
+        <version>1.2.0-6</version>
+      </dependency>
+      <dependency>
         <!-- RequireUpperBoundDeps between checks-api, echarts-api, font-awesome-api, and junit -->
         <groupId>io.jenkins.plugins</groupId>
         <artifactId>plugin-util-api</artifactId>
@@ -187,7 +197,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>junit</artifactId>
-      <version>1202.v79a_986785076</version>
+      <version>1207.va_09d5100410f</version>
       <scope>test</scope>
     </dependency>
     <dependency>
