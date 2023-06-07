@@ -43,6 +43,7 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import jenkins.model.Jenkins;
+import jenkins.util.HttpServletFilter;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -96,6 +97,11 @@ public final class PluginServletFilter implements Filter, ExtensionPoint {
         config.getServletContext().setAttribute(KEY, this);
     }
 
+    /**
+     * Dynamically register a new filter.
+     * May be paired with {@link #removeFilter}.
+     * <p>For most purposes you can instead use {@link HttpServletFilter}.
+     */
     public static void addFilter(Filter filter) throws ServletException {
         Jenkins j = Jenkins.getInstanceOrNull();
 

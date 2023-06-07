@@ -32,7 +32,6 @@ THE SOFTWARE.
   <st:include page="sidepanel.jelly" />
   <l:main-panel>
     <h1>
-      <l:icon class="icon-error icon-xlg"/>
       This page has moved
     </h1>
     <p>

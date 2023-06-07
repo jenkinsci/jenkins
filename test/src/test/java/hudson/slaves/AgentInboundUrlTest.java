@@ -26,13 +26,13 @@ package hudson.slaves;
 
 import static org.junit.Assert.assertEquals;
 
-import com.gargoylesoftware.htmlunit.xml.XmlPage;
 import hudson.model.Slave;
 import java.util.logging.Level;
 import jenkins.model.Jenkins;
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.dom4j.io.DOMReader;
+import org.htmlunit.xml.XmlPage;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.FlagRule;

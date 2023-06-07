@@ -1,4 +1,7 @@
 #add-item-panel {
+  max-width: 950px;
+  margin: auto;
+
   form > .header {
     position: relative;
     border: 1px solid var(--input-border);

@@ -6,7 +6,10 @@ function registerStopButton(link) {
   link.addEventListener("click", function (e) {
     e.preventDefault();
     var execute = function () {
-      new Ajax.Request(url);
+      fetch(url, {
+        method: "post",
+        headers: crumb.wrap({}),
+      });
     };
     if (question != null) {
       dialog.confirm(question).then(() => {

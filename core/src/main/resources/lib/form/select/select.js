@@ -43,17 +43,18 @@ function updateListBox(listBox, url, config) {
     status.innerHTML = "";
   }
   config.onSuccess = function (rsp) {
-    l.classList.remove("select-ajax-pending");
-    var currentSelection = l.value;
-
-    // clear the contents
-    while (l.length > 0) {
-      l.options[0] = null;
-    }
-
-    var selectionSet = false; // is the selection forced by the server?
-    var possibleIndex = null; // if there's a new option that matches the current value, remember its index
     rsp.json().then((result) => {
+      l.classList.remove("select-ajax-pending");
+      var currentSelection = l.value;
+
+      // clear the contents
+      while (l.length > 0) {
+        l.options[0] = null;
+      }
+
+      var selectionSet = false; // is the selection forced by the server?
+      var possibleIndex = null; // if there's a new option that matches the current value, remember its index
+
       var opts = result.values;
       for (var i = 0; i < opts.length; i++) {
         l.options[i] = new Option(opts[i].name, opts[i].value);
@@ -77,8 +78,8 @@ function updateListBox(listBox, url, config) {
     });
   };
   config.onFailure = function (rsp) {
-    l.classList.remove("select-ajax-pending");
     rsp.text().then((responseText) => {
+      l.classList.remove("select-ajax-pending");
       status.innerHTML = responseText;
       if (status.firstElementChild) {
         status.firstElementChild.setAttribute("data-select-ajax-error", "true");

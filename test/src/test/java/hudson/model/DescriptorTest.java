@@ -30,7 +30,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import hudson.Launcher;
 import hudson.model.Descriptor.PropertyType;
 import hudson.tasks.BuildStepDescriptor;
@@ -41,6 +40,7 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
+import org.htmlunit.FailingHttpStatusCodeException;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;

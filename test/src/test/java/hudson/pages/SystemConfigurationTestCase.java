@@ -26,10 +26,10 @@ package hudson.pages;
 
 import static org.junit.Assert.assertEquals;
 
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.model.PageDecorator;
 import net.sf.json.JSONObject;
+import org.htmlunit.html.HtmlForm;
+import org.htmlunit.html.HtmlPage;
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
@@ -61,7 +61,7 @@ public class SystemConfigurationTestCase {
         j.assertXPath(page, "//div[@name='hudson-pages-SystemConfigurationTestCase$PageDecoratorImpl']");
 
         HtmlForm form = page.getFormByName("config");
-        form.getInputByName("_.decoratorId").setValueAttribute("this_is_a_profile");
+        form.getInputByName("_.decoratorId").setValue("this_is_a_profile");
         j.submit(form);
         assertEquals("The decorator field was incorrect", "this_is_a_profile", pageDecoratorImpl.getDecoratorId());
     }

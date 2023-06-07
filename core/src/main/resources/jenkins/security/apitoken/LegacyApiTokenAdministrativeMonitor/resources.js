@@ -108,14 +108,12 @@ window.confirmAndRevokeAllSelected = function (button) {
 
         // Workaround prototype.js breaking JSON.stringify
         // Given this page is isolated, it's safe to not restore these after to the prototype version
-        delete Array.prototype.toJSON;
-        delete Object.prototype.toJSON;
-        delete Hash.prototype.toJSON;
-        delete String.prototype.toJSON;
 
         fetch(url, {
           method: "post",
-          body: JSON.stringify({ values: selectedValues }),
+          body: Object.toJSON
+            ? Object.toJSON({ values: selectedValues })
+            : JSON.stringify({ values: selectedValues }),
           headers: crumb.wrap({ "Content-Type": "application/json" }),
         }).then(() => window.location.reload());
       },

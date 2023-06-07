@@ -940,8 +940,6 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
             }
         });
         Jenkins.get().rebuildDependencyGraphAsync();
-
-        SaveableListener.fireOnChange(this, getConfigFile());
     }
 
 
