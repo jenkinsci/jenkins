@@ -1,9 +1,9 @@
 package hudson;
 
-import com.gargoylesoftware.htmlunit.ScriptException;
-import com.gargoylesoftware.htmlunit.WebClientUtil;
 import hudson.model.InvisibleAction;
 import hudson.model.RootAction;
+import org.htmlunit.ScriptException;
+import org.htmlunit.WebClientUtil;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;

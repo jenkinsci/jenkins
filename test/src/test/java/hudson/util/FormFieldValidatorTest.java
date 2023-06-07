@@ -25,9 +25,6 @@
 package hudson.util;
 
 
-import com.gargoylesoftware.htmlunit.ScriptResult;
-import com.gargoylesoftware.htmlunit.WebResponseListener;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.model.AbstractProject;
 import hudson.model.FreeStyleProject;
 import hudson.tasks.BuildStepDescriptor;
@@ -35,6 +32,9 @@ import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Builder;
 import hudson.tasks.Publisher;
 import java.io.IOException;
+import org.htmlunit.ScriptResult;
+import org.htmlunit.WebResponseListener;
+import org.htmlunit.html.HtmlPage;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;

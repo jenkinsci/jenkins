@@ -183,7 +183,8 @@ Behaviour.start();
 
 function findElementsBySelector(startNode, selector, includeSelf) {
   if (includeSelf) {
-    function isSelfOrChild(c) {
+    var isSelfOrChild = function (c) {
+      // eslint-disable-next-line no-constant-condition
       while (true) {
         if (startNode == c) {
           return true;
@@ -193,7 +194,7 @@ function findElementsBySelector(startNode, selector, includeSelf) {
         }
         c = c.parentNode;
       }
-    }
+    };
     return Array.from(startNode.parentNode.querySelectorAll(selector)).filter(
       isSelfOrChild
     );
