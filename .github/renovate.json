@@ -6,18 +6,13 @@
     ":semanticCommitsDisabled"
   ],
   "enabledManagers": ["npm", "regex"],
+  "postUpdateOptions": ["yarnDedupeHighest"],
   "packageRules": [
     {
       "matchDatasources": ["npm"],
       "addLabels": ["javascript"],
       "stabilityDays": 3,
       "reviewers": ["team:sig-ux"]
-    },
-    {
-      "matchPackageNames": ["bootstrap"],
-      "allowedVersions": "<=3.4.1",
-      "description": "https://issues.jenkins.io/browse/JENKINS-69409",
-      "enabled": false
     },
     {
       "matchPackageNames": ["node"],

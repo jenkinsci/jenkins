@@ -264,6 +264,7 @@ import jenkins.AgentProtocol;
 import jenkins.ExtensionComponentSet;
 import jenkins.ExtensionRefreshException;
 import jenkins.InitReactorRunner;
+import jenkins.agents.CloudSet;
 import jenkins.diagnostics.URICheckEncodingMonitor;
 import jenkins.install.InstallState;
 import jenkins.install.SetupWizard;
@@ -1131,7 +1132,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     public void setInstallState(@NonNull InstallState newState) {
         String prior = installStateName;
         installStateName = newState.name();
-        LOGGER.log(Main.isDevelopmentMode ? Level.INFO : Level.FINE, "Install state transitioning from: {0} to : {1}", new Object[] { prior, installStateName });
+        LOGGER.log(Main.isDevelopmentMode ? Level.INFO : Level.FINE, "Install state transitioning from: {0} to: {1}", new Object[] { prior, installStateName });
         if (!installStateName.equals(prior)) {
             getSetupWizard().onInstallStateUpdate(newState);
             newState.initializeState();
@@ -1573,6 +1574,14 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     @Deprecated
     public ComputerSet getComputer() {
         return new ComputerSet();
+    }
+
+    /**
+     * Only there to bind to /cloud/ URL. Otherwise /cloud/new gets resolved to getCloud("new") by stapler which is not what we want.
+     */
+    @Restricted(DoNotUse.class)
+    public CloudSet getCloud() {
+        return new CloudSet();
     }
 
     /**
@@ -4229,7 +4238,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      *      if the given name is not good
      */
     public static void checkGoodName(String name) throws Failure {
-        if (name == null || name.length() == 0)
+        if (name == null || name.isEmpty())
             throw new Failure(Messages.Hudson_NoName());
 
         if (".".equals(name.trim()))

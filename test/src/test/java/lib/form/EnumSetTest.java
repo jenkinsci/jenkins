@@ -1,7 +1,5 @@
 package lib.form;
 
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.BallColor;
 import hudson.model.Descriptor;
@@ -10,6 +8,8 @@ import hudson.model.RootAction;
 import hudson.util.FormValidation;
 import java.util.EnumSet;
 import net.sf.json.JSONObject;
+import org.htmlunit.html.HtmlForm;
+import org.htmlunit.html.HtmlPage;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;

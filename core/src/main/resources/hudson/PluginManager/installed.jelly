@@ -284,29 +284,32 @@ THE SOFTWARE.
       <script>
         <!-- function to toggle the enable/disable state -->
         function flip(o) {
-          btn = Event.element(o);
+          btn = o.target;
 
           <!-- trigger -->
-          new Ajax.Request(btn.getAttribute('url')+"/make"+(btn.checked?"Enable":"Disable")+"d", {
-            method: "POST",
-            onFailure : function(req,o) {
-                $('needRestart').innerHTML = req.responseText;
+          fetch(btn.getAttribute('url')+"/make"+(btn.checked?"Enabled":"Disabled"), {
+            method: 'post',
+            headers: crumb.wrap({}),
+          }).then(rsp => {
+            if (!rsp.ok) {
+              rsp.text().then((responseText) => {
+                document.getElementById('needRestart').innerHTML = responseText;
+              });
             }
-          });
-
-          updateMsg();
+            updateMsg();
+          })
         }
 
         function updateMsg() {
           <!-- is anything changed since its original state? -->
-          var e = $A(Form.getInputs('plugins', 'checkbox')).find(function(e) {
+          var e = Array.from(document.getElementById('plugins').querySelectorAll('input[type="checkbox"]')).find(function(e) {
             return String(e.checked)!=e.getAttribute('original');
           });
 
           <j:if test="${app.updateCenter.isRestartRequiredForCompletion()}">
             e = true;
           </j:if>
-          $('needRestart').style.display = (e!=null?"block":"none");
+          document.getElementById('needRestart').style.display = (e!=null?"block":"none");
         }
 
         updateMsg(); // set the initial state
