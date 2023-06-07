@@ -26,6 +26,7 @@
 package hudson.model;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.Util;
 import hudson.diagnosis.OldDataMonitor;
@@ -142,7 +143,7 @@ public class ListView extends View implements DirectlyModifiableView {
                 includePattern = Pattern.compile(includeRegex);
             } catch (PatternSyntaxException x) {
                 includeRegex = null;
-                OldDataMonitor.report(this, Collections.singleton(x));
+                OldDataMonitor.report(this, Set.of(x));
             }
         }
         synchronized (this) {
@@ -451,7 +452,7 @@ public class ListView extends View implements DirectlyModifiableView {
             }
             for (TopLevelItem item : items) {
                 String relativeNameFrom = item.getRelativeNameFrom(getOwner().getItemGroup());
-                if (req.getParameter(relativeNameFrom) != null) {
+                if (req.getParameter("item_" + relativeNameFrom) != null) {
                     jobNames.add(relativeNameFrom);
                 }
             }
@@ -499,6 +500,7 @@ public class ListView extends View implements DirectlyModifiableView {
 
     @Extension @Symbol("list")
     public static class DescriptorImpl extends ViewDescriptor {
+        @NonNull
         @Override
         public String getDisplayName() {
             return Messages.ListView_DisplayName();

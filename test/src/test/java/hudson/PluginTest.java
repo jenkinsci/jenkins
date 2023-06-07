@@ -25,7 +25,6 @@
 package hudson;
 
 import hudson.model.UpdateCenter;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Future;
 import javax.servlet.http.HttpServletResponse;
@@ -35,7 +34,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.TestPluginManager;
 
 public class PluginTest {
 
@@ -43,9 +41,8 @@ public class PluginTest {
 
     @Issue({"SECURITY-131", "SECURITY-155", "SECURITY-705"})
     @Test public void doDynamic() throws Exception {
-        ((TestPluginManager) r.jenkins.pluginManager).installDetachedPlugin("matrix-auth");
-        r.createWebClient().goTo("plugin/matrix-auth/images/user-disabled.png", "image/png");
-        r.createWebClient().goTo("plugin/matrix-auth/images/../images/user-disabled.png", "image/png"); // collapsed somewhere before it winds up in restOfPath
+        r.createWebClient().goTo("plugin/matrix-auth/images/select-all.svg", "image/svg+xml");
+        r.createWebClient().goTo("plugin/matrix-auth/images/../images/select-all.svg", "image/svg+xml"); // collapsed somewhere before it winds up in restOfPath
         /* TODO https://github.com/apache/httpcomponents-client/commit/8c04c6ae5e5ba1432e40684428338ce68431766b#r32873542
         r.createWebClient().assertFails("plugin/matrix-auth/images/%2E%2E/images/user-disabled.png", HttpServletResponse.SC_INTERNAL_SERVER_ERROR); // IAE from TokenList.<init>
         r.createWebClient().assertFails("plugin/matrix-auth/images/%252E%252E/images/user-disabled.png", HttpServletResponse.SC_BAD_REQUEST); // SECURITY-131
@@ -71,11 +68,12 @@ public class PluginTest {
     public void preventTimestamp2_toBeServed() throws Exception {
         // impossible to use installDetachedPlugin("credentials") since we want to have it exploded like with WAR
         Jenkins.get().getUpdateCenter().getSites().get(0).updateDirectlyNow(false);
-        List<Future<UpdateCenter.UpdateCenterJob>> pluginInstalled = r.jenkins.pluginManager.install(Collections.singletonList("credentials"), true);
+        List<Future<UpdateCenter.UpdateCenterJob>> pluginInstalled = r.jenkins.pluginManager.install(List.of("credentials"), true);
 
         for (Future<UpdateCenter.UpdateCenterJob> job : pluginInstalled) {
             job.get();
         }
         r.createWebClient().assertFails("plugin/matrix-auth/.timestamp2", HttpServletResponse.SC_BAD_REQUEST);
     }
+
 }

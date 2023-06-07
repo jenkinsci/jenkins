@@ -22,54 +22,56 @@
  * THE SOFTWARE.
  */
 
-Behaviour.specify('.secret', 'secret-button', 0, function (e) {
-    var secretUpdateBtn = e.querySelector('.secret-update-btn');
-    if (secretUpdateBtn === null) return;
+Behaviour.specify(".secret", "secret-button", 0, function (e) {
+  var secretUpdateBtn = e.querySelector(".secret-update-btn");
+  if (secretUpdateBtn === null) {
+    return;
+  }
 
-    var id = 'secret-' + (iota++);
-    var name = e.getAttribute('data-name');
-    var placeholder = e.getAttribute('data-placeholder');
-    var prompt = e.getAttribute('data-prompt');
+  var id = "secret-" + iota++;
+  var name = e.getAttribute("data-name");
+  var placeholder = e.getAttribute("data-placeholder");
+  var prompt = e.getAttribute("data-prompt");
 
-    var appendSecretInput = function () {
-        var textarea = document.createElement('textarea');
-        textarea.setAttribute('id', id);
-        textarea.setAttribute('name', name);
-        if (placeholder !== null && placeholder !== '') {
-            textarea.setAttribute('placeholder', placeholder);
-        }
-        var secretInput = document.createElement('div');
-        secretInput.setAttribute('class', 'secret-input');
-        secretInput.appendChild(textarea);
-        e.appendChild(secretInput);
+  var appendSecretInput = function () {
+    var textarea = document.createElement("textarea");
+    textarea.setAttribute("id", id);
+    textarea.setAttribute("name", name);
+    if (placeholder !== null && placeholder !== "") {
+      textarea.setAttribute("placeholder", placeholder);
     }
+    var secretInput = document.createElement("div");
+    secretInput.setAttribute("class", "secret-input");
+    secretInput.appendChild(textarea);
+    e.appendChild(secretInput);
+  };
 
-    var clearSecretValue = function () {
-        var secretValue = e.querySelector('input[type="hidden"]');
-        if (secretValue !== null) {
-            secretValue.parentNode.removeChild(secretValue);
-        }
+  var clearSecretValue = function () {
+    var secretValue = e.querySelector('input[type="hidden"]');
+    if (secretValue !== null) {
+      secretValue.parentNode.removeChild(secretValue);
     }
+  };
 
-    var replaceUpdateButton = function () {
-        var secretLabel = document.createElement('label');
-        secretLabel.setAttribute('for', id);
-        secretLabel.appendChild(document.createTextNode(prompt));
-        secretUpdateBtn.parentNode.replaceChild(secretLabel, secretUpdateBtn);
+  var replaceUpdateButton = function () {
+    var secretLabel = document.createElement("label");
+    secretLabel.setAttribute("for", id);
+    secretLabel.appendChild(document.createTextNode(prompt));
+    secretUpdateBtn.parentNode.replaceChild(secretLabel, secretUpdateBtn);
+  };
+
+  var removeSecretLegendLabel = function () {
+    var secretLegend = e.querySelector(".secret-legend");
+    var secretLegendText = secretLegend.querySelector("span");
+    if (secretLegendText !== null) {
+      secretLegend.removeChild(secretLegendText);
     }
+  };
 
-    var removeSecretLegendLabel = function () {
-        var secretLegend = e.querySelector('.secret-legend');
-        var secretLegendText = secretLegend.querySelector('span');
-        if (secretLegendText !== null) {
-            secretLegend.removeChild(secretLegendText);
-        }
-    }
-
-    secretUpdateBtn.onclick = function () {
-        appendSecretInput();
-        clearSecretValue();
-        replaceUpdateButton();
-        removeSecretLegendLabel();
-    };
+  secretUpdateBtn.onclick = function () {
+    appendSecretInput();
+    clearSecretValue();
+    replaceUpdateButton();
+    removeSecretLegendLabel();
+  };
 });

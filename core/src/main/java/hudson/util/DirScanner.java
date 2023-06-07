@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.io.Serializable;
+import java.nio.file.OpenOption;
 import java.util.HashSet;
 import java.util.Set;
 import org.apache.tools.ant.BuildException;
@@ -106,25 +107,25 @@ public abstract class DirScanner implements Serializable {
         private final String includes, excludes;
 
         private boolean useDefaultExcludes = true;
-        private final boolean followSymlinks;
+        private OpenOption[] openOptions;
 
         public Glob(String includes, String excludes) {
-            this(includes, excludes, true, true);
+            this(includes, excludes, true, new OpenOption[0]);
         }
 
         public Glob(String includes, String excludes, boolean useDefaultExcludes) {
-            this(includes, excludes, useDefaultExcludes, true);
+            this(includes, excludes, useDefaultExcludes, new OpenOption[0]);
         }
 
         /**
          * @since 2.275 and 2.263.2
          */
         @Restricted(NoExternalUse.class)
-        public Glob(String includes, String excludes, boolean useDefaultExcludes, boolean followSymlinks) {
+        public Glob(String includes, String excludes, boolean useDefaultExcludes, OpenOption... openOptions) {
             this.includes = includes;
             this.excludes = excludes;
             this.useDefaultExcludes = useDefaultExcludes;
-            this.followSymlinks = followSymlinks;
+            this.openOptions = openOptions;
         }
 
         @Override
@@ -136,7 +137,7 @@ public abstract class DirScanner implements Serializable {
             }
 
             FileSet fs = Util.createFileSet(dir, includes, excludes);
-            fs.setFollowSymlinks(followSymlinks);
+            fs.setFollowSymlinks(!FilePath.isNoFollowLink(openOptions));
             fs.setDefaultexcludes(useDefaultExcludes);
 
             if (dir.exists()) {

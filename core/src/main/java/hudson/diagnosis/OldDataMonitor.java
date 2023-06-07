@@ -57,6 +57,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import jenkins.management.Badge;
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
@@ -149,7 +150,7 @@ public class OldDataMonitor extends AdministrativeMonitor {
     };
 
     @Extension
-    public static final RunListener<Run> runDeleteListener = new RunListener<Run>() {
+    public static final RunListener<Run> runDeleteListener = new RunListener<>() {
         @Override
         public void onDeleted(Run run) {
             remove(run, true);
@@ -454,7 +455,7 @@ public class OldDataMonitor extends AdministrativeMonitor {
 
         @Override
         public String getIconFileName() {
-            return "symbol-cube";
+            return "symbol-trash-bin";
         }
 
         @Override
@@ -470,6 +471,15 @@ public class OldDataMonitor extends AdministrativeMonitor {
         @Override
         public String getDisplayName() {
             return Messages.OldDataMonitor_DisplayName();
+        }
+
+        @Override
+        public Badge getBadge() {
+            int size = get(Jenkins.get()).data.size();
+            if (size > 0) {
+                return new Badge(Integer.toString(size), Messages.OldDataMonitor_OldDataTooltip(), Badge.Severity.WARNING);
+            }
+            return null;
         }
     }
 }

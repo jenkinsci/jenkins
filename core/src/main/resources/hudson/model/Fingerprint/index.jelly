@@ -23,20 +23,10 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <l:layout title="${it.fileName}">
-    <l:header>
-      <!-- RSS? -->
-    </l:header>
-    <l:side-panel>
-      <l:tasks>
-        <l:task href="${rootURL}/" icon="icon-up icon-md" title="${%Back to Dashboard}"/>
-        <t:actions/>
-      </l:tasks>
-    </l:side-panel>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:t="/lib/hudson">
+  <l:layout title="${it.fileName}" type="one-column">
     <l:main-panel>
       <h1>
-        <l:icon class="icon-fingerprint icon-xlg"/>
         ${it.fileName}
       </h1>
       <div class="md5sum">
@@ -77,9 +67,9 @@ THE SOFTWARE.
                     <td>
                       <t:buildRangeLink job="${job}" range="${range}" />
                     </td>
-                  </td>  
+                  </td>
                 </tr>
-              </j:if>    
+              </j:if>
             </j:forEach>
           </table>
         </j:otherwise>

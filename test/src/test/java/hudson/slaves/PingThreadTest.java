@@ -24,6 +24,7 @@
 
 package hudson.slaves;
 
+import static org.awaitility.Awaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -31,13 +32,18 @@ import static org.junit.Assert.assertThrows;
 import static org.junit.Assume.assumeFalse;
 
 import hudson.Functions;
+import hudson.Platform;
 import hudson.model.Computer;
 import hudson.remoting.Channel;
 import hudson.remoting.ChannelClosedException;
 import hudson.remoting.PingThread;
 import java.io.IOException;
-import java.lang.management.ManagementFactory;
 import java.lang.reflect.Method;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
+import java.nio.file.Paths;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import jenkins.security.MasterToSlaveCallable;
 import org.junit.Rule;
@@ -54,12 +60,12 @@ public class PingThreadTest {
 
     @Test
     public void failedPingThreadResetsComputerChannel() throws Exception {
-        assumeFalse("We simulate hung agent by sending the SIGTSTP signal", Functions.isWindows());
+        assumeFalse("We simulate hung agent by sending the SIGSTOP signal", Functions.isWindows() || Platform.isDarwin());
 
         DumbSlave slave = j.createOnlineSlave();
         Computer computer = slave.toComputer();
         Channel channel = (Channel) slave.getChannel();
-        String pid = channel.call(new GetPid());
+        long pid = channel.call(new GetPid());
 
         PingThread pingThread = null;
         for (Thread it : Thread.getAllStackTraces().keySet()) {
@@ -69,26 +75,76 @@ public class PingThreadTest {
         }
         assertNotNull(pingThread);
 
-        // Simulate lost connection
-        assertEquals(0, new ProcessBuilder("kill", "-TSTP", pid).start().waitFor());
+        /*
+         * Simulate lost connection by sending a STOP signal. We use the STOP signal rather than the
+         * TSTP signal because the latter relies on an interactive terminal, which we do not have in
+         * our CI builds. We wait for the signal to be delivered and visible in the
+         * /proc/${PID}/stat output for the process because otherwise we would be testing something
+         * other than the ping thread.
+         */
+        kill(pid, "-STOP", 'T');
         try {
             // ... do not wait for Ping Thread to notice
             Method onDead = PingThread.class.getDeclaredMethod("onDead", Throwable.class);
             onDead.setAccessible(true);
             onDead.invoke(pingThread, new TimeoutException("No ping"));
 
+            /*
+             * Channel termination happens asynchronously, so wait for the asynchronous activity to
+             * complete before proceeding with the test.
+             */
+            await().pollInterval(250, TimeUnit.MILLISECONDS)
+                    .atMost(10, TimeUnit.SECONDS)
+                    .until(channel::isClosingOrClosed);
             assertThrows(ChannelClosedException.class, () -> channel.call(new GetPid()));
 
             assertNull(slave.getComputer().getChannel());
             assertNull(computer.getChannel());
         } finally {
-            assertEquals(0, new ProcessBuilder("kill", "-CONT", pid).start().waitFor());
+            /*
+             * If we fail to wait for the process to resume and start tearing down the test right
+             * away, the test teardown process will hang waiting for the remote process to close,
+             * which will never happen because the process is suspended. On the other hand, waiting
+             * to confirm that the process has resumed via /proc/${PID}/stat is not reliable either,
+             * because once the process resumes it will realize that the controller side of the
+             * connection has been closed and terminate itself. Therefore we wait until either the
+             * process is in the resumed state or has terminated.
+             */
+            kill(pid, "-CONT", 'S');
         }
     }
 
-    private static final class GetPid extends MasterToSlaveCallable<String, IOException> {
-        @Override public String call() {
-            return ManagementFactory.getRuntimeMXBean().getName().replaceAll("@.*", "");
+    private static void kill(long pid, String signal, char expectedState)
+            throws IOException, InterruptedException {
+        Process process =
+                new ProcessBuilder("kill", signal, Long.toString(pid))
+                        .redirectErrorStream(true)
+                        .start();
+        int result = process.waitFor();
+        String output = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+        assertEquals(output, 0, result);
+
+        await().pollInterval(250, TimeUnit.MILLISECONDS)
+                .atMost(10, TimeUnit.SECONDS)
+                .until(() -> {
+                    try {
+                        String status = Files.readString(Paths.get("/proc/" + pid + "/stat"), StandardCharsets.UTF_8);
+                        char actualState = status.charAt(status.lastIndexOf(')') + 2);
+                        return actualState == expectedState;
+                    } catch (NoSuchFileException e) {
+                        if (expectedState == 'S') {
+                            // As soon as the process resumes, it is going to exit. Do not treat as failure.
+                            return true;
+                        } else {
+                            throw e;
+                        }
+                    }
+                });
+    }
+
+    private static final class GetPid extends MasterToSlaveCallable<Long, IOException> {
+        @Override public Long call() {
+            return ProcessHandle.current().pid();
         }
     }
 }

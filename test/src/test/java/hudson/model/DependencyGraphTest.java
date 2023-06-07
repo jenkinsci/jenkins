@@ -30,10 +30,10 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import hudson.security.ACL;
+import hudson.security.ACLContext;
 import hudson.tasks.BuildTrigger;
 import hudson.tasks.MailMessageIdAction;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import jenkins.model.DependencyDeclarer;
@@ -62,7 +62,7 @@ public class DependencyGraphTest {
             down1 = j.createFreeStyleProject(), down2 = j.createFreeStyleProject();
         // Add one standard downstream job:
         p.getPublishersList().add(
-                new BuildTrigger(Collections.singletonList(down1), Result.SUCCESS));
+                new BuildTrigger(List.of(down1), Result.SUCCESS));
         // Add one downstream job with custom Dependency impl:
         p.getBuildersList().add(new TestDeclarer(Result.UNSTABLE, down2));
         j.jenkins.rebuildDependencyGraph();
@@ -129,9 +129,8 @@ public class DependencyGraphTest {
     public void testItemReadPermission() {
         // Rebuild dependency graph as anonymous user:
         j.jenkins.rebuildDependencyGraph();
-        try {
-            // Switch to full access to check results:
-            ACL.impersonate2(ACL.SYSTEM2);
+        // Switch to full access to check results:
+        try (ACLContext ignored = ACL.as2(ACL.SYSTEM2)) {
             // @LocalData for this test has jobs w/o anonymous Item.READ
             AbstractProject up = (AbstractProject) j.jenkins.getItem("hiddenUpstream");
             assertNotNull("hiddenUpstream project not found", up);

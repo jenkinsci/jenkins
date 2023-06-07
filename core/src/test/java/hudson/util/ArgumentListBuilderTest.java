@@ -24,16 +24,15 @@
 
 package hudson.util;
 
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -199,7 +198,7 @@ public class ArgumentListBuilderTest {
         KEY_VALUES.put("key3", "value3");
     }
 
-    private static final Set<String> MASKS = Collections.singleton("key2");
+    private static final Set<String> MASKS = Set.of("key2");
 
     @Test
     public void assertKeyValuePairsWithMask() {

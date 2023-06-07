@@ -26,14 +26,14 @@ package hudson.model;
 
 import static hudson.model.Messages.Hudson_ViewName;
 import static java.util.Arrays.asList;
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.hasItem;
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.core.Is.is;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -43,19 +43,8 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import com.cloudbees.hudson.plugins.folder.Folder;
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
-import com.gargoylesoftware.htmlunit.FormEncodingType;
-import com.gargoylesoftware.htmlunit.HttpMethod;
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.html.DomNodeUtil;
-import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlLabel;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.javascript.host.html.HTMLElement;
-import com.gargoylesoftware.htmlunit.util.NameValuePair;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionList;
 import hudson.XmlFile;
 import hudson.diagnosis.OldDataMonitor;
@@ -74,9 +63,9 @@ import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -85,6 +74,18 @@ import java.util.logging.LogRecord;
 import jenkins.model.Jenkins;
 import jenkins.model.ProjectNamingStrategy;
 import jenkins.security.NotReallyRoleSensitiveCallable;
+import org.htmlunit.FailingHttpStatusCodeException;
+import org.htmlunit.FormEncodingType;
+import org.htmlunit.HttpMethod;
+import org.htmlunit.Page;
+import org.htmlunit.WebRequest;
+import org.htmlunit.html.DomNodeUtil;
+import org.htmlunit.html.HtmlAnchor;
+import org.htmlunit.html.HtmlForm;
+import org.htmlunit.html.HtmlLabel;
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.javascript.host.html.HTMLElement;
+import org.htmlunit.util.NameValuePair;
 import org.jenkins.ui.icon.Icon;
 import org.jenkins.ui.icon.IconSet;
 import org.junit.Ignore;
@@ -150,7 +151,7 @@ public class ViewTest {
 
         WebClient wc = j.createWebClient();
         HtmlForm form = wc.goTo("newView").getFormByName("createItem");
-        form.getInputByName("name").setValueAttribute("foo");
+        form.getInputByName("name").setValue("foo");
         form.getRadioButtonsByName("mode").get(0).setChecked(true);
         j.submit(form);
         assertNotNull(j.jenkins.getView("foo"));
@@ -181,7 +182,7 @@ public class ViewTest {
 
         HtmlPage newViewPage = wc.goTo("user/me/my-views/newView");
         HtmlForm form = newViewPage.getFormByName("createItem");
-        form.getInputByName("name").setValueAttribute("proxy-view");
+        form.getInputByName("name").setValue("proxy-view");
         form.getInputByValue("hudson.model.ProxyView").setChecked(true);
         HtmlPage proxyViewConfigurePage = j.submit(form);
         View proxyView = user.getProperty(MyViewsProperty.class).getView("proxy-view");
@@ -190,27 +191,9 @@ public class ViewTest {
         form.getSelectByName("proxiedViewName").setSelectedAttribute("listView", true);
         j.submit(form);
 
-        assertTrue(proxyView instanceof ProxyView);
+        assertThat(proxyView, instanceOf(ProxyView.class));
         assertEquals("listView", ((ProxyView) proxyView).getProxiedViewName());
         assertEquals(((ProxyView) proxyView).getProxiedView(), listView);
-    }
-
-    @Test public void deleteView() throws Exception {
-        WebClient wc = j.createWebClient();
-
-        ListView v = listView("list");
-        HtmlPage delete = wc.getPage(v, "delete");
-        j.submit(delete.getFormByName("delete"));
-        assertNull(j.jenkins.getView("list"));
-
-        User user = User.get("user", true);
-        MyViewsProperty p = user.getProperty(MyViewsProperty.class);
-        v = new ListView("list", p);
-        p.addView(v);
-        delete = wc.getPage(v, "delete");
-        j.submit(delete.getFormByName("delete"));
-        assertNull(p.getView("list"));
-
     }
 
     @Issue("JENKINS-9367")
@@ -248,7 +231,7 @@ public class ViewTest {
         WebClient wc = j.createWebClient()
                 .withThrowExceptionOnFailingStatusCode(false);
         HtmlForm form = wc.goTo("newView").getFormByName("createItem");
-        form.getInputByName("name").setValueAttribute("..");
+        form.getInputByName("name").setValue("..");
         form.getRadioButtonsByName("mode").get(0).setChecked(true);
 
         HtmlPage page = j.submit(form);
@@ -262,7 +245,7 @@ public class ViewTest {
     @Test public void unicodeName() throws Exception {
         HtmlForm form = j.createWebClient().goTo("newView").getFormByName("createItem");
         String name = "I ♥ NY";
-        form.getInputByName("name").setValueAttribute(name);
+        form.getInputByName("name").setValue(name);
         form.getRadioButtonsByName("mode").get(0).setChecked(true);
         j.submit(form);
         View view = j.jenkins.getView(name);
@@ -381,7 +364,7 @@ public class ViewTest {
         MatrixProject matrixJob = j.jenkins.createProject(MatrixProject.class, "matrix");
         view1.add(matrixJob);
         matrixJob.setAxes(new AxisList(
-                new LabelAxis("label", Collections.singletonList("label1"))
+                new LabelAxis("label", List.of("label1"))
         ));
 
         FreeStyleProject noLabelJob = j.createFreeStyleProject("not-assigned-label");
@@ -495,7 +478,7 @@ public class ViewTest {
     @Test
     public void testGetProperties() throws Exception {
         View view = listView("foo");
-        Thread.sleep(100000);
+        Thread.sleep(1000);
         HtmlForm f = j.createWebClient().getPage(view, "configure").getFormByName("viewConfig");
         ((HtmlLabel) DomNodeUtil.selectSingleNode(f, ".//LABEL[text()='Test property']")).click();
         j.submit(f);
@@ -518,6 +501,7 @@ public class ViewTest {
 
         @TestExtension
         public static class DescriptorImpl extends ViewPropertyDescriptor {
+            @NonNull
             @Override
             public String getDisplayName() {
                 return "Test property";
@@ -886,7 +870,7 @@ public class ViewTest {
         JenkinsRule.WebClient wc = j.createWebClient();
         WebRequest req = new WebRequest(wc.createCrumbedUrl("createView"), HttpMethod.POST);
         req.setEncodingType(FormEncodingType.URL_ENCODED);
-        req.setRequestBody("name=ViewName&mode=hudson.model.ListView&json=" + URLEncoder.encode("{\"mode\":\"hudson.model.ListView\",\"name\":\"DifferentViewName\"}", "UTF-8"));
+        req.setRequestBody("name=ViewName&mode=hudson.model.ListView&json=" + URLEncoder.encode("{\"mode\":\"hudson.model.ListView\",\"name\":\"DifferentViewName\"}", StandardCharsets.UTF_8));
         wc.getPage(req);
         assertNull(j.jenkins.getView("DifferentViewName"));
         assertNotNull(j.jenkins.getView("ViewName"));
@@ -953,6 +937,7 @@ public class ViewTest {
             return customId;
         }
 
+        @NonNull
         @Override
         public String getDisplayName() {
             return customDisplayName;

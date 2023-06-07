@@ -10,18 +10,18 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import com.gargoylesoftware.htmlunit.CookieManager;
-import com.gargoylesoftware.htmlunit.util.Cookie;
-import com.gargoylesoftware.htmlunit.xml.XmlPage;
 import hudson.model.User;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Base64;
-import java.util.Collections;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import jenkins.model.Jenkins;
 import jenkins.security.seed.UserSeedProperty;
+import org.htmlunit.CookieManager;
+import org.htmlunit.util.Cookie;
+import org.htmlunit.xml.XmlPage;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -84,7 +84,7 @@ public class TokenBasedRememberMeServices2Test {
         @Override
         protected UserDetails authenticate2(String username, String password) throws AuthenticationException {
             if (username.equals(password)) {
-                return new org.springframework.security.core.userdetails.User(username, password, Collections.singleton(new SimpleGrantedAuthority("myteam")));
+                return new org.springframework.security.core.userdetails.User(username, password, Set.of(new SimpleGrantedAuthority("myteam")));
             }
             throw new BadCredentialsException(username);
         }
@@ -335,7 +335,7 @@ public class TokenBasedRememberMeServices2Test {
         expiryTime += deltaDuration;
 
         HudsonPrivateSecurityRealm.Details details = user.getProperty(HudsonPrivateSecurityRealm.Details.class);
-        String signatureValue = tokenService.makeTokenSignature(expiryTime, details.getUsername(), details.getPassword());
+        String signatureValue = tokenService.makeTokenSignature(expiryTime, details.getUsername());
         String tokenValue = user.getId() + ":" + expiryTime + ":" + signatureValue;
         String tokenValueBase64 = Base64.getEncoder().encodeToString(tokenValue.getBytes(StandardCharsets.UTF_8));
         return new Cookie(j.getURL().getHost(), tokenService.getCookieName(), tokenValueBase64);

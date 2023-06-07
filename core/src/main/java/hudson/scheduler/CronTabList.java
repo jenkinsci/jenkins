@@ -91,11 +91,19 @@ public final class CronTabList {
         return null;
     }
 
-    public static CronTabList create(@NonNull String format) throws ANTLRException {
+    /**
+     * @param format the crontab entry to be parsed
+     * @throws IllegalArgumentException if the crontab entry cannot be parsed
+     */
+    public static CronTabList create(@NonNull String format) {
         return create(format, null);
     }
 
-    public static CronTabList create(@NonNull String format, Hash hash) throws ANTLRException {
+    /**
+     * @param format the crontab entry to be parsed
+     * @throws IllegalArgumentException if the crontab entry cannot be parsed
+     */
+    public static CronTabList create(@NonNull String format, Hash hash) {
         Vector<CronTab> r = new Vector<>();
         int lineNumber = 0;
         String timezone = null;
@@ -115,12 +123,12 @@ public final class CronTabList {
                 continue;
             }
 
-            if (line.length() == 0 || line.startsWith("#"))
+            if (line.isEmpty() || line.startsWith("#"))
                 continue;   // ignorable line
             try {
                 r.add(new CronTab(line, lineNumber, hash, timezone));
-            } catch (ANTLRException e) {
-                throw new ANTLRException(Messages.CronTabList_InvalidInput(line, e.toString()), e);
+            } catch (IllegalArgumentException e) {
+                throw new ANTLRException(Messages.CronTabList_InvalidInput(line, e.getMessage()), e);
             }
         }
 

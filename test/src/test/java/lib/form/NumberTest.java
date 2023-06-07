@@ -4,13 +4,13 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.emptyString;
 import static org.junit.Assert.assertEquals;
 
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlInput;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.javascript.host.event.Event;
 import hudson.model.InvisibleAction;
 import hudson.model.RootAction;
 import java.io.IOException;
+import org.htmlunit.html.HtmlForm;
+import org.htmlunit.html.HtmlInput;
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.javascript.host.event.Event;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -177,7 +177,7 @@ public class NumberTest {
         input.reset();  // Remove the value that already in the <input>
         input.type(value);  // Type value to <input>
         input.fireEvent(Event.TYPE_CHANGE);  // The error message is triggered by change event
-        return input.getParentNode().getNextSibling().getChildNodes().get(1).getChildNodes().get(0).getTextContent();
+        return input.getParentNode().getNextSibling().getTextContent();
     }
 
 

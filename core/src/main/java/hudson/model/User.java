@@ -441,7 +441,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
             super(
                     username, "",
                     true, true, true, true,
-                    Collections.singleton(SecurityRealm.AUTHENTICATED_AUTHORITY2)
+                    Set.of(SecurityRealm.AUTHENTICATED_AUTHORITY2)
             );
         }
     }
@@ -878,11 +878,12 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
                 } else {
                     p = d.newInstance(req, o);
                 }
-                p.setUser(this);
             }
 
-            if (p != null)
+            if (p != null) {
+                p.setUser(this);
                 props.add(p);
+            }
         }
         this.properties = props;
 
@@ -1065,6 +1066,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         }
 
         private Object readResolve() {
+            // Will generally only work if called after UserIdMapper.init:
             return getById(id, false);
         }
     }

@@ -248,7 +248,7 @@ public class ArgumentListBuilder implements Serializable, Cloneable {
      */
     private static VariableResolver<String> propertiesGeneratingResolver(final VariableResolver<String> original) {
 
-        return new VariableResolver<String>() {
+        return new VariableResolver<>() {
 
             @Override
             public String resolve(String name) {
@@ -297,7 +297,7 @@ public class ArgumentListBuilder implements Serializable, Cloneable {
         for (String arg : args) {
             if (buf.length() > 0)  buf.append(' ');
 
-            if (arg.indexOf(' ') >= 0 || arg.length() == 0)
+            if (arg.indexOf(' ') >= 0 || arg.isEmpty())
                 buf.append('"').append(arg).append('"');
             else
                 buf.append(arg);
@@ -439,7 +439,7 @@ public class ArgumentListBuilder implements Serializable, Cloneable {
 
             if (buf.length() > 0)  buf.append(' ');
 
-            if (arg.indexOf(' ') >= 0 || arg.length() == 0)
+            if (arg.indexOf(' ') >= 0 || arg.isEmpty())
                 buf.append('"').append(arg).append('"');
             else
                 buf.append(arg);

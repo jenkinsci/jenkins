@@ -24,9 +24,9 @@
 
 package jenkins.slaves;
 
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
 
 import hudson.EnvVars;
 import hudson.Launcher;
@@ -83,16 +83,16 @@ public class OldRemotingAgentTest {
     @Before
     public void extractAgent() throws Exception {
         agentJar = new File(tmpDir.getRoot(), "old-agent.jar");
-        FileUtils.copyURLToFile(OldRemotingAgentTest.class.getResource("/old-remoting/remoting-minimal-supported.jar"), agentJar);
+        FileUtils.copyURLToFile(OldRemotingAgentTest.class.getResource("/old-remoting/remoting-minimum-supported.jar"), agentJar);
     }
 
     @Test
     @Issue("JENKINS-48761")
-    public void shouldBeAbleToConnectAgentWithMinimalSupportedVersion() throws Exception {
+    public void shouldBeAbleToConnectAgentWithMinimumSupportedVersion() throws Exception {
         Label agentLabel = new LabelAtom("old-agent");
         Slave agent = j.createOnlineSlave(agentLabel);
         boolean isUnix = agent.getComputer().isUnix();
-        assertThat("Received wrong agent version. A minimal supported version is expected",
+        assertThat("Received wrong agent version. A minimum supported version is expected",
                 agent.getComputer().getSlaveVersion(),
                 equalTo(RemotingVersionInfo.getMinimumSupportedVersion().toString()));
 

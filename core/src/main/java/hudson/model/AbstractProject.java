@@ -31,7 +31,6 @@ package hudson.model;
 import static hudson.scm.PollingResult.BUILD_NOW;
 import static hudson.scm.PollingResult.NO_CHANGES;
 
-import antlr.ANTLRException;
 import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -268,7 +267,7 @@ public abstract class AbstractProject<P extends AbstractProject<P, R>, R extends
     }
 
     private LazyBuildMixIn<P, R> createBuildMixIn() {
-        return new LazyBuildMixIn<P, R>() {
+        return new LazyBuildMixIn<>() {
             @SuppressWarnings("unchecked") // untypable
             @Override protected P asJob() {
                 return (P) AbstractProject.this;
@@ -414,7 +413,7 @@ public abstract class AbstractProject<P extends AbstractProject<P, R>, R extends
         try {
             Label.parseExpression(assignedNode);
             return assignedNode;
-        } catch (ANTLRException e) {
+        } catch (IllegalArgumentException e) {
             // must be old label or host name that includes whitespace or other unsafe chars
             return LabelAtom.escape(assignedNode);
         }
@@ -684,7 +683,7 @@ public abstract class AbstractProject<P extends AbstractProject<P, R>, R extends
      */
     public FormValidation doCheckRetryCount(@QueryParameter String value)throws IOException, ServletException {
         // retry count is optional so this is ok
-        if (value == null || value.trim().equals(""))
+        if (value == null || value.trim().isEmpty())
             return FormValidation.ok();
         if (!value.matches("[0-9]*")) {
             return FormValidation.error("Invalid retry count");
@@ -954,6 +953,11 @@ public abstract class AbstractProject<P extends AbstractProject<P, R>, R extends
         return buildMixIn.getNearestOldBuild(n);
     }
 
+    @Override
+    protected List<R> getEstimatedDurationCandidates() {
+        return buildMixIn.getEstimatedDurationCandidates();
+    }
+
     /**
      * Type token for the corresponding build type.
      * The build class must have two constructors:
@@ -1100,16 +1104,28 @@ public abstract class AbstractProject<P extends AbstractProject<P, R>, R extends
 
     /**
      * Returns the project if any of the downstream project is either
-     * building, waiting, pending or buildable.
+     * building, or queued and not blocked by an upstream/downstream project build.
      * <p>
      * This means eventually there will be an automatic triggering of
      * the given project (provided that all builds went smoothly.)
      */
     public AbstractProject getBuildingDownstream() {
-        Set<Task> unblockedTasks = Jenkins.get().getQueue().getUnblockedTasks();
+        // Unblocked downstream tasks must block this project.
+        Set<Task> tasks = Jenkins.get().getQueue().getUnblockedTasks();
+        // Blocked downstream tasks must block this project.
+        // Projects blocked by upstream or downstream builds
+        // are ignored to break deadlocks.
+        for (Queue.BlockedItem item : Jenkins.get().getQueue().getBlockedItems()) {
+            if (item.isCauseOfBlockageNull() ||
+                    item.getCauseOfBlockage() instanceof AbstractProject.BecauseOfUpstreamBuildInProgress ||
+                    item.getCauseOfBlockage() instanceof AbstractProject.BecauseOfDownstreamBuildInProgress) {
+                continue;
+            }
+            tasks.add(item.task);
+        }
 
         for (AbstractProject tup : getTransitiveDownstreamProjects()) {
-            if (tup != this && (tup.isBuilding() || unblockedTasks.contains(tup)))
+            if (tup != this && (tup.isBuilding() || tasks.contains(tup)))
                 return tup;
         }
         return null;
@@ -1117,16 +1133,28 @@ public abstract class AbstractProject<P extends AbstractProject<P, R>, R extends
 
     /**
      * Returns the project if any of the upstream project is either
-     * building or is in the queue.
+     * building, or queued and not blocked by an upstream/downstream project build.
      * <p>
      * This means eventually there will be an automatic triggering of
      * the given project (provided that all builds went smoothly.)
      */
     public AbstractProject getBuildingUpstream() {
-        Set<Task> unblockedTasks = Jenkins.get().getQueue().getUnblockedTasks();
+        // Unblocked upstream tasks must block this project.
+        Set<Task> tasks = Jenkins.get().getQueue().getUnblockedTasks();
+        // Blocked upstream tasks must block this project.
+        // Projects blocked by upstream or downstream builds
+        // are ignored to break deadlocks.
+        for (Queue.BlockedItem item : Jenkins.get().getQueue().getBlockedItems()) {
+            if (item.isCauseOfBlockageNull() ||
+                    item.getCauseOfBlockage() instanceof AbstractProject.BecauseOfUpstreamBuildInProgress ||
+                    item.getCauseOfBlockage() instanceof AbstractProject.BecauseOfDownstreamBuildInProgress) {
+                continue;
+            }
+            tasks.add(item.task);
+        }
 
         for (AbstractProject tup : getTransitiveUpstreamProjects()) {
-            if (tup != this && (tup.isBuilding() || unblockedTasks.contains(tup)))
+            if (tup != this && (tup.isBuilding() || tasks.contains(tup)))
                 return tup;
         }
         return null;
@@ -1746,7 +1774,7 @@ public abstract class AbstractProject<P extends AbstractProject<P, R>, R extends
         super.submit(req, rsp);
         JSONObject json = req.getSubmittedForm();
 
-        makeDisabled(json.optBoolean("disable"));
+        makeDisabled(!json.optBoolean("enable"));
 
         jdk = json.optString("jdk", null);
 

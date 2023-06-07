@@ -37,24 +37,12 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
-import com.gargoylesoftware.htmlunit.ElementNotFoundException;
-import com.gargoylesoftware.htmlunit.HttpMethod;
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.WebResponse;
-import com.gargoylesoftware.htmlunit.html.DomNode;
-import com.gargoylesoftware.htmlunit.html.DomNodeList;
-import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlInput;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.FilePath;
 import hudson.Functions;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.matrix.MatrixProject;
 import hudson.scm.NullSCM;
-import hudson.scm.SCM;
 import hudson.scm.SCMDescriptor;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
 import hudson.tasks.BatchFile;
@@ -71,15 +59,26 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.Set;
 import java.util.Vector;
 import java.util.concurrent.Future;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.IOUtils;
+import org.htmlunit.ElementNotFoundException;
+import org.htmlunit.HttpMethod;
+import org.htmlunit.Page;
+import org.htmlunit.WebRequest;
+import org.htmlunit.WebResponse;
+import org.htmlunit.html.DomNode;
+import org.htmlunit.html.DomNodeList;
+import org.htmlunit.html.HtmlAnchor;
+import org.htmlunit.html.HtmlForm;
+import org.htmlunit.html.HtmlInput;
+import org.htmlunit.html.HtmlPage;
 import org.jenkinsci.plugins.matrixauth.AuthorizationType;
 import org.jenkinsci.plugins.matrixauth.PermissionEntry;
 import org.junit.Rule;
@@ -241,7 +240,7 @@ public class AbstractProjectTest {
 
             @Override
             public SCMDescriptor<?> getDescriptor() {
-                return new SCMDescriptor<SCM>(null) {
+                return new SCMDescriptor<>(null) {
                 };
             }
         });
@@ -485,11 +484,11 @@ public class AbstractProjectTest {
     @Issue("JENKINS-30742")
     public void resolveForCLI() throws Exception {
         CmdLineException e = assertThrows(CmdLineException.class, () -> AbstractProject.resolveForCLI("never_created"));
-        assertEquals("No such job \u2018never_created\u2019 exists.", e.getMessage());
+        assertEquals("No such job ‘never_created’ exists.", e.getMessage());
 
         AbstractProject<?, ?> project = j.jenkins.createProject(FreeStyleProject.class, "never_created");
         e = assertThrows(CmdLineException.class, () -> AbstractProject.resolveForCLI("never_created1"));
-        assertEquals("No such job \u2018never_created1\u2019 exists. Perhaps you meant \u2018never_created\u2019?", e.getMessage());
+        assertEquals("No such job ‘never_created1’ exists. Perhaps you meant ‘never_created’?", e.getMessage());
     }
 
     public static class MockBuildTriggerThrowsNPEOnStart extends Trigger<Item> {
@@ -514,10 +513,10 @@ public class AbstractProjectTest {
     public void upstreamDownstreamExportApi() throws Exception {
         FreeStyleProject us = j.createFreeStyleProject("upstream-project");
         FreeStyleProject ds = j.createFreeStyleProject("downstream-project");
-        us.getPublishersList().add(new BuildTrigger(Collections.singleton(ds), Result.SUCCESS));
+        us.getPublishersList().add(new BuildTrigger(Set.of(ds), Result.SUCCESS));
         j.jenkins.rebuildDependencyGraph();
-        assertEquals(Collections.singletonList(ds), us.getDownstreamProjects());
-        assertEquals(Collections.singletonList(us), ds.getUpstreamProjects());
+        assertEquals(List.of(ds), us.getDownstreamProjects());
+        assertEquals(List.of(us), ds.getUpstreamProjects());
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().
                 grant(Jenkins.READ).everywhere().toEveryone().
@@ -613,17 +612,16 @@ public class AbstractProjectTest {
          * </div>
          */
         DomNodeList<DomNode> domNodes = htmlPage.getDocumentElement().querySelectorAll("*");
-        assertThat(domNodes, hasSize(5));
+        assertThat(domNodes, hasSize(4));
         assertEquals("head", domNodes.get(0).getNodeName());
         assertEquals("body", domNodes.get(1).getNodeName());
         assertEquals("div", domNodes.get(2).getNodeName());
-        assertEquals("img", domNodes.get(3).getNodeName());
-        assertEquals("a", domNodes.get(4).getNodeName());
+        assertEquals("a", domNodes.get(3).getNodeName());
 
         // only: "><img src=x onerror=alert(123)>
         // the first double quote was escaped during creation (with the backslash)
         String unquotedLabel = Label.parseExpression(label).getName();
-        HtmlAnchor anchor = (HtmlAnchor) domNodes.get(4);
+        HtmlAnchor anchor = (HtmlAnchor) domNodes.get(3);
         assertThat(anchor.getHrefAttribute(), containsString(Util.rawEncode(unquotedLabel)));
 
         assertThat(responseContent, containsString("ok"));

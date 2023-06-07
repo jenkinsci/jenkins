@@ -24,6 +24,7 @@
 
 package hudson.console;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.MarkupText;
 import java.io.IOException;
@@ -67,6 +68,7 @@ public class ExpandableDetailsNote extends ConsoleNote {
 
     @Extension
     public static final class DescriptorImpl extends ConsoleAnnotationDescriptor {
+        @NonNull
         @Override
         public String getDisplayName() {
             return "Expandable details";

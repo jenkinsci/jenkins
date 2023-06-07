@@ -83,6 +83,7 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -581,7 +582,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
     @Override
     public Collection<? extends Job> getAllJobs() {
-        return Collections.<Job>singleton(this);
+        return Set.of(this);
     }
 
     /**
@@ -699,7 +700,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         return new HistoryWidget<Job, RunT>(this, getBuilds(), HISTORY_ADAPTER);
     }
 
-    public static final HistoryWidget.Adapter<Run> HISTORY_ADAPTER = new Adapter<Run>() {
+    public static final HistoryWidget.Adapter<Run> HISTORY_ADAPTER = new Adapter<>() {
         @Override
         public int compare(Run record, String key) {
             try {
@@ -1101,6 +1102,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * Failing to find 3 of those, it will return up to 3 last unsuccessful builds.
      *
      * In any case it will not go more than 6 builds into the past to avoid costly build loading.
+     * @see LazyBuildMixIn#getEstimatedDurationCandidates
      */
     protected List<RunT> getEstimatedDurationCandidates() {
         List<RunT> candidates = new ArrayList<>(3);
@@ -1209,7 +1211,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         RSS.forwardToRss(
                 getDisplayName() + scmDisplayName + " changes",
                 getUrl() + "changes",
-                entries, new FeedAdapter<FeedItem>() {
+                entries, new FeedAdapter<>() {
                     @Override
                     public String getEntryTitle(FeedItem item) {
                         return "#" + item.getBuild().number + ' ' + item.e.getMsg() + " (" + item.e.getAuthor() + ")";
@@ -1440,7 +1442,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
             final ProjectNamingStrategy namingStrategy = Jenkins.get().getProjectNamingStrategy();
                 if (namingStrategy.isForceExistingJobs()) {
-                    namingStrategy.checkName(name);
+                    namingStrategy.checkName(getParent().getFullName(), name);
                 }
                 FormApply.success(".").generateResponse(req, rsp, null);
         } catch (JSONException e) {

@@ -24,12 +24,13 @@
 
 package hudson.security;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.model.Descriptor;
+import jakarta.inject.Inject;
 import java.util.Collections;
 import java.util.List;
-import javax.inject.Inject;
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
@@ -103,6 +104,7 @@ public class FullControlOnceLoggedInAuthorizationStrategy extends AuthorizationS
             DESCRIPTOR = this;
         }
 
+        @NonNull
         @Override
         public String getDisplayName() {
             return Messages.FullControlOnceLoggedInAuthorizationStrategy_DisplayName();

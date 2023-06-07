@@ -319,6 +319,7 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     /**
      * Creates a new {@link Run}.
      * @param job Owner job
+     * @see LazyBuildMixIn#newBuild
      */
     protected Run(@NonNull JobT job) throws IOException {
         this(job, System.currentTimeMillis());
@@ -347,6 +348,7 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
     /**
      * Loads a run from a log file.
+     * @see LazyBuildMixIn#loadBuild
      */
     protected Run(@NonNull JobT project, @NonNull File buildDir) throws IOException {
         this.project = project;
@@ -536,7 +538,8 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * @return true if after started and before completed.
      * @since 1.538
      */
-    protected boolean isInProgress() {
+    @Exported
+    public boolean isInProgress() {
         return state.equals(State.BUILDING) || state.equals(State.POST_PRODUCTION);
     }
 
@@ -2541,7 +2544,7 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     /**
      * Sort by date. Newer ones first.
      */
-    public static final Comparator<Run> ORDER_BY_DATE = new Comparator<Run>() {
+    public static final Comparator<Run> ORDER_BY_DATE = new Comparator<>() {
         @Override
         public int compare(@NonNull Run lhs, @NonNull Run rhs) {
             long lt = lhs.getTimeInMillis();

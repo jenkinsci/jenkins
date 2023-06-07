@@ -8,15 +8,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import com.gargoylesoftware.htmlunit.html.DomNodeUtil;
-import com.gargoylesoftware.htmlunit.html.HtmlCheckBoxInput;
-import com.gargoylesoftware.htmlunit.html.HtmlElement;
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlFormUtil;
-import com.gargoylesoftware.htmlunit.html.HtmlOption;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.html.HtmlSelect;
-import com.gargoylesoftware.htmlunit.html.HtmlTextInput;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.markup.MarkupFormatter;
 import java.io.IOException;
@@ -25,6 +16,15 @@ import java.net.HttpURLConnection;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.htmlunit.html.DomNodeUtil;
+import org.htmlunit.html.HtmlCheckBoxInput;
+import org.htmlunit.html.HtmlElement;
+import org.htmlunit.html.HtmlForm;
+import org.htmlunit.html.HtmlFormUtil;
+import org.htmlunit.html.HtmlOption;
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.html.HtmlSelect;
+import org.htmlunit.html.HtmlTextInput;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ErrorCollector;
@@ -72,7 +72,7 @@ public class ParametersTest {
         HtmlTextInput stringParameterInput = DomNodeUtil.selectSingleNode(element, ".//input[@name='value']");
         assertEquals("defaultValue", stringParameterInput.getAttribute("value"));
         assertEquals("string", ((HtmlElement) DomNodeUtil.selectSingleNode(element.getParentNode(), "div[contains(@class, 'jenkins-form-label')]")).getTextContent());
-        stringParameterInput.setAttribute("value", "newValue");
+        stringParameterInput.setValue("newValue");
 
         element = DomNodeUtil.selectSingleNode(form, "//div[input/@value='boolean']");
         assertNotNull(element);
@@ -266,11 +266,31 @@ public class ParametersTest {
         collector.checkThat("parameters page should not leave param description unescaped", text, not(containsString("<param description>")));
     }
 
+    @Test
+    @Issue("JENKINS-69637")
+    public void emptyParameterDefinitionProperty() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.addProperty(new ParametersDefinitionProperty());
+
+        JenkinsRule.WebClient wc = j.createWebClient()
+                .withThrowExceptionOnFailingStatusCode(false);
+        HtmlPage page;
+
+        page = wc.getPage(p, "build?delay=0sec");
+        collector.checkThat(page.getWebResponse().getStatusCode(), is(HttpURLConnection.HTTP_BAD_METHOD));
+        HtmlForm form = page.getFormByName("parameters");
+        page = j.submit(form);
+        collector.checkThat(page.getWebResponse().getStatusCode(), is(HttpURLConnection.HTTP_OK));
+        j.waitUntilNoActivity();
+        FreeStyleBuild b = p.getBuildByNumber(1);
+        collector.checkThat(b.getResult(), is(Result.SUCCESS));
+    }
+
     static class MyMarkupFormatter extends MarkupFormatter {
         @Override
         public void translate(String markup, @NonNull Writer output) throws IOException {
             Matcher m = Pattern.compile("[<>]").matcher(markup);
-            StringBuffer buf = new StringBuffer();
+            StringBuilder buf = new StringBuilder();
             while (m.find()) {
                 m.appendReplacement(buf, m.group().equals("<") ? "<b>[</b>" : "<b>]</b>");
             }

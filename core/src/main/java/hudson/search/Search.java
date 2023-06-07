@@ -69,6 +69,11 @@ import org.kohsuke.stapler.export.Flavor;
  */
 public class Search implements StaplerProxy {
 
+    /**
+     * Limits the maximum number of search results.
+     */
+    private static /* nonfinal for Jenkins script console */ int MAX_SEARCH_SIZE = Integer.getInteger(Search.class.getName() + ".MAX_SEARCH_SIZE", 500);
+
     public void doIndex(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
         String query = req.getParameter("q");
         List<Ancestor> l = req.getAncestors();
@@ -174,7 +179,10 @@ public class Search implements StaplerProxy {
     public SearchResult getSuggestions(StaplerRequest req, String query) {
         Set<String> paths = new HashSet<>();  // paths already added, to control duplicates
         SearchResultImpl r = new SearchResultImpl();
-        int max = req.hasParameter("max") ? Integer.parseInt(req.getParameter("max")) : 100;
+        int max = Math.min(
+                req.hasParameter("max") ? Integer.parseInt(req.getParameter("max")) : 100,
+                MAX_SEARCH_SIZE
+        );
         SearchableModelObject smo = findClosestSearchableModelObject(req);
         for (SuggestedItem i : suggest(makeSuggestIndex(req), query, smo)) {
             if (r.size() >= max) {
@@ -199,6 +207,10 @@ public class Search implements StaplerProxy {
             }
         }
         return r;
+    }
+
+    public int getMaxSearchSize() {
+        return MAX_SEARCH_SIZE;
     }
 
     private @CheckForNull SearchableModelObject findClosestSearchableModelObject(StaplerRequest req) {
@@ -388,7 +400,7 @@ public class Search implements StaplerProxy {
          * (both end inclusive.)
          */
         public List<String> subSequence(final int start) {
-            return new AbstractList<String>() {
+            return new AbstractList<>() {
                 @Override
                 public String get(int index) {
                     StringBuilder buf = new StringBuilder();

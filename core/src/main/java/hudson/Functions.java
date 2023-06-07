@@ -100,7 +100,6 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.Serializable;
 import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
 import java.lang.management.LockInfo;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MonitorInfo;
@@ -135,6 +134,7 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TimeZone;
 import java.util.TreeMap;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Predicate;
 import java.util.logging.Level;
@@ -699,6 +699,13 @@ public class Functions {
         return tz.getDisplayName(tz.observesDaylightTime(), TimeZone.SHORT);
     }
 
+    @Restricted(NoExternalUse.class)
+    public static long getHourLocalTimezone() {
+        // Work around JENKINS-68215. When JENKINS-68215 is resolved, this logic can be moved back to Jelly.
+        TimeZone tz = TimeZone.getDefault();
+        return TimeUnit.MILLISECONDS.toHours(tz.getRawOffset() + tz.getDSTSavings());
+    }
+
     /**
      * Finds the given object in the ancestor list and returns its URL.
      * This is used to determine the "current" URL assigned to the given object,
@@ -739,10 +746,7 @@ public class Functions {
     public static String nbspIndent(String size) {
         int i = size.indexOf('x');
         i = Integer.parseInt(i > 0 ? size.substring(0, i) : size) / 10;
-        StringBuilder buf = new StringBuilder(30);
-        for (int j = 2; j <= i; j++)
-            buf.append("&nbsp;");
-        return buf.toString();
+        return "&nbsp;".repeat(Math.max(0, i - 1));
     }
 
     public static String getWin32ErrorMessage(IOException e) {
@@ -754,6 +758,19 @@ public class Functions {
         return s.indexOf('\r') >= 0 || s.indexOf('\n') >= 0;
     }
 
+    /**
+     * Percent-encodes space and non-ASCII UTF-8 characters for use in URLs.
+     * <pre>
+     * Input example  1: !"£$%^&amp;*()_+}{:@~?&gt;&lt;|¬`,./;'#[]- =
+     * Output example 1: !"%C2%A3$%^&amp;*()_+}{:@~?&gt;&lt;|%C2%AC`,./;'#[]-%20=
+     * </pre>
+     * Notes:
+     * <ul>
+     * <li>a blank space will render as %20</li>
+     * <li>this methods only escapes non-ASCII but leaves other URL-unsafe characters, such as '#'</li>
+     * <li>{@link hudson.Util#rawEncode(String)} in the {@link hudson.Util} library should generally be used instead (do check the documentation for that method)</li>
+     * </ul>
+     */
     public static String encode(String s) {
         return Util.encode(s);
     }
@@ -762,6 +779,13 @@ public class Functions {
      * Shortcut function for calling {@link URLEncoder#encode(String,String)} (with UTF-8 encoding).<br>
      * Useful for encoding URL query parameters in jelly code (as in {@code "...?param=${h.urlEncode(something)}"}).<br>
      * For convenience in jelly code, it also accepts null parameter, and then returns an empty string.
+     * <pre>
+     * Input example  1: &amp; " ' &lt; &gt;
+     * Output example 1: %26+%22+%27+%3C+%3E
+     * Input example  2: !"£$%^&amp;*()_+}{:@~?&gt;&lt;|¬`,./;'#[]-=
+     * Output example 2: %21%22%C2%A3%24%25%5E%26*%28%29_%2B%7D%7B%3A%40%7E%3F%3E%3C%7C%C2%AC%60%2C.%2F%3B%27%23%5B%5D-%3D
+     * </pre>
+     * Note: A blank space will render as + (You can see this in above examples)
      *
      * @since 2.200
      */
@@ -769,17 +793,34 @@ public class Functions {
         if (s == null) {
             return "";
         }
-        try {
-            return URLEncoder.encode(s, StandardCharsets.UTF_8.name());
-        } catch (UnsupportedEncodingException e) {
-            throw new Error(e); // impossible
-        }
+        return URLEncoder.encode(s, StandardCharsets.UTF_8);
     }
 
+    /**
+     * Transforms the input string so it renders as written in HTML output: newlines are converted to HTML line breaks, consecutive spaces are retained as {@code &amp;nbsp;}, and HTML metacharacters are escaped.
+     * <pre>
+     * Input example  1: &amp; " ' &lt; &gt;
+     * Output example 1: &amp;amp; &amp;quot; &amp;#039; &amp;lt; &amp;gt;
+     * Input example  2: !"£$%^&amp;*()_+}{:@~?&gt;&lt;|¬`,./;'#[]-=
+     * Output example 2: !&amp;quot;£$%^&amp;amp;*()_+}{:@~?&amp;gt;&amp;lt;|¬`,./;&amp;#039;#[]-=
+     * </pre>
+     * @see #xmlEscape
+     * @see hudson.Util#escape
+     */
     public static String escape(String s) {
         return Util.escape(s);
     }
 
+    /**
+     * Escapes XML unsafe characters
+     * <pre>
+     * Input example  1: &lt; &gt; &amp;
+     * Output example 1: &amp;lt; &amp;gt; &amp;amp;
+     * Input example  2: !"£$%^&amp;*()_+}{:@~?&gt;&lt;|¬`,./;'#[]-=
+     * Output example 2: !"£$%^&amp;amp;*()_+}{:@~?&amp;gt;&amp;lt;|¬`,./;'#[]-=
+     * </pre>
+     *  @see hudson.Util#xmlEscape
+     */
     public static String xmlEscape(String s) {
         return Util.xmlEscape(s);
     }
@@ -788,6 +829,16 @@ public class Functions {
         return s.replace("&lt;", "<").replace("&gt;", ">").replace("&amp;", "&");
     }
 
+    /**
+     * Escapes a string so it can be used in an HTML attribute value.
+     * <pre>
+     * Input example  1: &amp; " ' &lt; &gt;
+     * Output example 1: &amp;amp; &amp;quot; &amp;#39; &amp;lt; &amp;gt;
+     * Input example  2: !"£$%^&amp;*()_+}{:@~?&gt;&lt;|¬`,./;'#[]-=
+     * Output example 2: !&amp;quot;£$%^&amp;amp;*()_+}{:@~?&amp;gt;&amp;lt;|¬`,./;&amp;#39;#[]-=
+     * </pre>
+     * Note: 2 consecutive blank spaces will not render any special chars.
+     */
     public static String htmlAttributeEscape(String text) {
         StringBuilder buf = new StringBuilder(text.length() + 64);
         for (int i = 0; i < text.length(); i++) {
@@ -1569,6 +1620,15 @@ public class Functions {
         return Collections.emptyList();
     }
 
+    /**
+     * Escape a string so variable values can be used in inline JavaScript in views.
+     * Note that inline JavaScript and especially passing variables is discouraged, see the documentation for alternatives.
+     * <pre>
+     * Input example : \ \\ ' "
+     * Output example: \\ \\\\ \' \"
+     * </pre>
+     * @see <a href="https://www.jenkins.io/doc/developer/security/xss-prevention/#passing-values-to-javascript">Passing values to JavaScript</a>
+     */
     public static String jsStringEscape(String s) {
         if (s == null) return null;
         StringBuilder buf = new StringBuilder();
@@ -1595,7 +1655,7 @@ public class Functions {
      * Converts "abc" to "Abc".
      */
     public static String capitalize(String s) {
-        if (s == null || s.length() == 0) return s;
+        if (s == null || s.isEmpty()) return s;
         return Character.toUpperCase(s.charAt(0)) + s.substring(1);
     }
 
@@ -1807,7 +1867,7 @@ public class Functions {
     public static String joinPath(String... components) {
         StringBuilder buf = new StringBuilder();
         for (String s : components) {
-            if (s.length() == 0)  continue;
+            if (s.isEmpty())  continue;
 
             if (buf.length() > 0) {
                 if (buf.charAt(buf.length() - 1) != '/')
@@ -1845,7 +1905,7 @@ public class Functions {
 
     /**
      * Escapes the character unsafe for e-mail address.
-     * See http://en.wikipedia.org/wiki/E-mail_address for the details,
+     * See <a href="https://en.wikipedia.org/wiki/Email_address">the Wikipedia page</a> for the details,
      * but here the vocabulary is even more restricted.
      */
     public static String toEmailSafeString(String projectName) {
@@ -1925,19 +1985,26 @@ public class Functions {
      *
      * Used in {@code task.jelly} to decide if the page should be highlighted.
      */
-    public boolean hyperlinkMatchesCurrentPage(String href) throws UnsupportedEncodingException {
+    public boolean hyperlinkMatchesCurrentPage(String href) {
         String url = Stapler.getCurrentRequest().getRequestURL().toString();
         if (href == null || href.length() <= 1) return ".".equals(href) && url.endsWith("/");
-        url = URLDecoder.decode(url, "UTF-8");
-        href = URLDecoder.decode(href, "UTF-8");
+        url = URLDecoder.decode(url, StandardCharsets.UTF_8);
+        href = URLDecoder.decode(href, StandardCharsets.UTF_8);
         if (url.endsWith("/")) url = url.substring(0, url.length() - 1);
         if (href.endsWith("/")) href = href.substring(0, href.length() - 1);
 
         return url.endsWith(href);
     }
 
+    /**
+     * @deprecated From JEXL expressions ({@code ${…}}) in {@code *.jelly} files
+     *             you can use {@code [obj]} syntax to construct an {@code Object[]}
+     *             (which may be usable where a {@link List} is expected)
+     *             rather than {@code h.singletonList(obj)}.
+     */
+    @Deprecated
     public <T> List<T> singletonList(T t) {
-        return Collections.singletonList(t);
+        return List.of(t);
     }
 
     /**
@@ -2334,7 +2401,7 @@ public class Functions {
         String[] arr = iconSrc.split(" ");
         for (String element : arr) {
             if (element.startsWith("plugin-")) {
-                return element.replace("plugin-", "");
+                return element.replaceFirst("plugin-", "");
             }
         }
 
@@ -2352,33 +2419,34 @@ public class Functions {
         }
 
         StaplerRequest currentRequest = Stapler.getCurrentRequest();
-        currentRequest.getWebApp().getDispatchValidator().allowDispatch(currentRequest, Stapler.getCurrentResponse());
         String rootURL = currentRequest.getContextPath();
         Icon iconMetadata = tryGetIcon(iconGuess);
-        String iconSource = null;
 
+        String iconSource;
         if (iconMetadata != null) {
-            iconSource = iconMetadata.getQualifiedUrl(context);
+            iconSource = IconSet.tryTranslateTangoIconToSymbol(iconMetadata.getClassSpec(), () -> iconMetadata.getQualifiedUrl(context));
+        } else {
+            iconSource = guessIcon(iconGuess, rootURL);
         }
+        return iconSource;
+    }
 
-        if (iconMetadata == null) {
-            //noinspection HttpUrlsUsage
-            if (iconGuess.startsWith("http://") || iconGuess.startsWith("https://")) {
-                return iconGuess;
-            }
+    static String guessIcon(String iconGuess, String rootURL) {
+        String iconSource;
+        //noinspection HttpUrlsUsage
+        if (iconGuess.startsWith("http://") || iconGuess.startsWith("https://")) {
+            iconSource = iconGuess;
+        } else {
             if (!iconGuess.startsWith("/")) {
                 iconGuess = "/" + iconGuess;
             }
+            if (iconGuess.startsWith(rootURL)) {
+                if ((!rootURL.equals("/images") && !rootURL.equals("/plugin")) || iconGuess.startsWith(rootURL + rootURL)) {
+                    iconGuess = iconGuess.substring(rootURL.length());
+                }
+            }
             iconSource = rootURL + (iconGuess.startsWith("/images/") || iconGuess.startsWith("/plugin/") ? getResourcePath() : "") + iconGuess;
         }
-
-        if (iconMetadata != null && iconMetadata.getClassSpec() != null) {
-            String translatedIcon = IconSet.tryTranslateTangoIconToSymbol(iconMetadata.getClassSpec());
-            if (translatedIcon != null) {
-                return translatedIcon;
-            }
-        }
-
         return iconSource;
     }
 

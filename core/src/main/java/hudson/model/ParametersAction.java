@@ -208,7 +208,7 @@ public class ParametersAction implements RunAction2, Iterable<ParameterValue>, Q
 
     @Override
     public String getIconFileName() {
-        return "document-properties.png";
+        return "symbol-parameters";
     }
 
     @Override

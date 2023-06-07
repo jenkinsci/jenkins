@@ -39,8 +39,8 @@ import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
@@ -112,7 +112,7 @@ public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
     @NonNull
     @Override
     public Collection<Action> getJobActions(Job<?, ?> job) {
-        return Collections.singleton(this);
+        return Set.of(this);
     }
 
     @Deprecated
@@ -145,20 +145,23 @@ public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
         List<ParameterValue> values = new ArrayList<>();
 
         JSONObject formData = req.getSubmittedForm();
-        JSONArray a = JSONArray.fromObject(formData.get("parameter"));
+        Object parameter = formData.get("parameter");
+        if (parameter != null) {
+            JSONArray a = JSONArray.fromObject(parameter);
 
-        for (Object o : a) {
-            JSONObject jo = (JSONObject) o;
-            String name = jo.getString("name");
+            for (Object o : a) {
+                JSONObject jo = (JSONObject) o;
+                String name = jo.getString("name");
 
-            ParameterDefinition d = getParameterDefinition(name);
-            if (d == null)
-                throw new IllegalArgumentException("No such parameter definition: " + name);
-            ParameterValue parameterValue = d.createValue(req, jo);
-            if (parameterValue != null) {
-                values.add(parameterValue);
-            } else {
-                throw new IllegalArgumentException("Cannot retrieve the parameter value: " + name);
+                ParameterDefinition d = getParameterDefinition(name);
+                if (d == null)
+                    throw new IllegalArgumentException("No such parameter definition: " + name);
+                ParameterValue parameterValue = d.createValue(req, jo);
+                if (parameterValue != null) {
+                    values.add(parameterValue);
+                } else {
+                    throw new IllegalArgumentException("Cannot retrieve the parameter value: " + name);
+                }
             }
         }
 

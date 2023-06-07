@@ -22,15 +22,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:i="jelly:fmt" xmlns:x="jelly:xml">
-  <st:documentation>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
+  <st:documentation> <![CDATA[
     Adds one more in-page breadcrumb that jumps to sections in the page.
-    Put this tag right before &lt;l:main-panel>
+    Put this tag right before <l:main-panel>
+    ]]>
     <st:attribute name="title">
       Optional title for this breadcrumb
     </st:attribute>
   </st:documentation>
 
-  <st:adjunct includes="lib.form.breadcrumb-config-outline.init"/>
   <l:breadcrumb title="${attrs.title?:'%configuration'}" id="inpage-nav" />
 </j:jelly>

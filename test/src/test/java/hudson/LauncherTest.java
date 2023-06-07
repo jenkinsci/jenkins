@@ -58,9 +58,9 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
-import org.apache.commons.io.FileUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -158,6 +158,7 @@ public class LauncherTest {
         }
 
         @Extension public static final class DescriptorImpl extends Shell.DescriptorImpl {
+            @NonNull
             @Override public String getDisplayName() {
                 return "QuietShell";
             }
@@ -174,6 +175,7 @@ public class LauncherTest {
         }
 
         @Extension public static final class DescriptorImpl extends BuildStepDescriptor<Builder> {
+            @NonNull
             @Override public String getDisplayName() {
                 return "QuietBatchFile";
             }
@@ -188,23 +190,25 @@ public class LauncherTest {
     @Issue("JENKINS-52729")
     @Test public void remotable() throws Exception {
         File log = new File(rule.jenkins.root, "log");
-        TaskListener listener = new RemotableBuildListener(log);
-        Launcher.ProcStarter ps = rule.createOnlineSlave().createLauncher(listener).launch();
-        if (Functions.isWindows()) {
-            ps.cmds("cmd", "/c", "echo", "hello");
-        } else {
-            ps.cmds("echo", "hello");
+        try (var listener = new RemotableBuildListener(log)) {
+            Launcher.ProcStarter ps = rule.createOnlineSlave().createLauncher(listener).launch();
+            if (Functions.isWindows()) {
+                ps.cmds("cmd", "/c", "echo", "hello");
+            } else {
+                ps.cmds("echo", "hello");
+            }
+            assertEquals(0, ps.stdout(listener).join());
+            assertThat(Files.readString(log.toPath(), StandardCharsets.UTF_8).replace("\r\n", "\n"),
+                containsString("[master → slave0] $ " + (Functions.isWindows() ? "cmd /c " : "") + "echo hello\n" +
+                               "[master → slave0] hello"));
         }
-        assertEquals(0, ps.stdout(listener).join());
-        assertThat(FileUtils.readFileToString(log, StandardCharsets.UTF_8).replace("\r\n", "\n"),
-            containsString("[master → slave0] $ " + (Functions.isWindows() ? "cmd /c " : "") + "echo hello\n" +
-                           "[master → slave0] hello"));
     }
 
-    private static class RemotableBuildListener implements BuildListener {
+    private static class RemotableBuildListener implements BuildListener, AutoCloseable {
         private static final long serialVersionUID = 1;
         /** location of log file streamed to by multiple sources */
         private final File logFile;
+        private OutputStream fos;
         /** records allocation & deserialization history; e.g., {@code master → agentName} */
         private final String id;
         private transient PrintStream logger;
@@ -221,7 +225,6 @@ public class LauncherTest {
         @NonNull
         @Override public PrintStream getLogger() {
             if (logger == null) {
-                final OutputStream fos;
                 try {
                     fos = new FileOutputStream(logFile, true);
                     logger = new PrintStream(new LineTransformationOutputStream() {
@@ -229,7 +232,7 @@ public class LauncherTest {
                             fos.write(("[" + id + "] ").getBytes(StandardCharsets.UTF_8));
                             fos.write(b, 0, len);
                         }
-                    }, true, "UTF-8");
+                    }, true, StandardCharsets.UTF_8);
                 } catch (IOException x) {
                     throw new AssertionError(x);
                 }
@@ -241,6 +244,13 @@ public class LauncherTest {
             Thread.dumpStack();
             String name = Channel.current().getName();
             return new RemotableBuildListener(logFile, id + " → " + name);
+        }
+
+        @Override
+        public void close() throws Exception {
+            if (fos != null) {
+                fos.close();
+            }
         }
     }
 
@@ -291,11 +301,11 @@ public class LauncherTest {
         psCustomizer.run(ps, baos1, baos2, listener);
         assertEquals(message, 0, ps.join());
         if (outputIn2) {
-            assertThat(message, baos2.toString(Charset.defaultCharset().name()), containsString("hello"));
-            assertThat(message, baos1.toString(Charset.defaultCharset().name()), is(emptyString()));
+            assertThat(message, baos2.toString(Charset.defaultCharset()), containsString("hello"));
+            assertThat(message, baos1.toString(Charset.defaultCharset()), is(emptyString()));
         } else {
-            assertThat(message, baos1.toString(Charset.defaultCharset().name()), containsString("hello"));
-            assertThat(message, baos2.toString(Charset.defaultCharset().name()), is(emptyString()));
+            assertThat(message, baos1.toString(Charset.defaultCharset()), containsString("hello"));
+            assertThat(message, baos2.toString(Charset.defaultCharset()), is(emptyString()));
         }
     }
 

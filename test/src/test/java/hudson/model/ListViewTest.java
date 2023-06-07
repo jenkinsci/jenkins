@@ -36,8 +36,6 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.Functions;
 import hudson.matrix.AxisList;
 import hudson.matrix.MatrixProject;
@@ -59,10 +57,16 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.servlet.ReadListener;
 import javax.servlet.ServletInputStream;
 import jenkins.model.Jenkins;
 import org.apache.commons.io.IOUtils;
+import org.htmlunit.AlertHandler;
+import org.htmlunit.html.HtmlAnchor;
+import org.htmlunit.html.HtmlForm;
+import org.htmlunit.html.HtmlPage;
+import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
@@ -142,7 +146,7 @@ public class ListViewTest {
         v.setIncludeRegex(".*");
         v.setRecurse(true);
         // Note: did not manage to reproduce CCE until I changed expand to use ‘for (TopLevelItem item : items)’ rather than ‘for (Item item : items)’; perhaps a compiler-specific issue?
-        assertEquals(Collections.singletonList(mp), v.getItems());
+        assertEquals(List.of(mp), v.getItems());
     }
 
     @Issue("JENKINS-18680")
@@ -247,7 +251,7 @@ public class ListViewTest {
         try (ACLContext acl = ACL.as(User.getOrCreateByIdOrFullName("alice"))) {
             p.renameTo("p2");
         }
-        assertEquals(Collections.singletonList(p), v.getItems());
+        assertEquals(List.of(p), v.getItems());
     }
 
     @Issue("JENKINS-41128")
@@ -261,7 +265,7 @@ public class ListViewTest {
 
         when(req.getMethod()).thenReturn("POST");
         when(req.getParameter("name")).thenReturn("job1");
-        when(req.getInputStream()).thenReturn(new Stream(IOUtils.toInputStream(configXml)));
+        when(req.getInputStream()).thenReturn(new Stream(IOUtils.toInputStream(configXml, StandardCharsets.UTF_8)));
         when(req.getContentType()).thenReturn("application/xml");
         v.doCreateItem(req, rsp);
         List<TopLevelItem> items = v.getItems();
@@ -289,6 +293,23 @@ public class ListViewTest {
         // remove a not contained job
         Failure e = assertThrows(Failure.class, () -> view.doRemoveJobFromView("job2"));
         assertEquals("Query parameter 'name' does not correspond to a known and readable item", e.getMessage());
+    }
+
+    @Issue("JENKINS-71200")
+    @Test public void doApplyDoNotOverloadElements() throws Exception {
+        MockFolder folder = j.createFolder("folder");
+        FreeStyleProject job = folder.createProject(FreeStyleProject.class, "elements");
+        ListView view = new ListView("view", folder);
+        folder.addView(view);
+        view.add(job);
+
+        final AtomicBoolean alerts = new AtomicBoolean();
+        WebClient webClient = j.createWebClient();
+        webClient.setAlertHandler((AlertHandler) (page, s) -> alerts.set(true));
+        HtmlPage page = webClient.goTo(view.getUrl() + "configure");
+        HtmlForm form = page.getFormByName("viewConfig");
+        j.assertGoodStatus(j.submit(form));
+        Assert.assertFalse("No alert expected", alerts.get());
     }
 
     @Test public void getItemsNames() throws Exception {
@@ -338,7 +359,7 @@ public class ListViewTest {
         FreeStyleProject p3 = f1.createProject(FreeStyleProject.class, "p3");
         FreeStyleProject p4 = f2.createProject(FreeStyleProject.class, "p4");
         ListView lv = new ListView("view", Jenkins.get());
-        lv.setJobFilters(Collections.singletonList(new AllFilter()));
+        lv.setJobFilters(List.of(new AllFilter()));
         lv.setRecurse(false);
         assertThat(lv.getItems(), containsInAnyOrder(f1, f2, p1, p2));
         lv.setRecurse(true);

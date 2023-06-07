@@ -28,12 +28,12 @@ import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 
-import com.gargoylesoftware.htmlunit.WebAssert;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.matrix.MatrixProject;
 import hudson.model.Descriptor.FormException;
 import java.util.logging.Level;
 import net.sf.json.JSONObject;
+import org.htmlunit.WebAssert;
+import org.htmlunit.html.HtmlPage;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;

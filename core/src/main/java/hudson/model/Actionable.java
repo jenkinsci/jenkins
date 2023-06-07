@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -163,11 +164,13 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      * though technically consistent from the concurrency contract of {@link CopyOnWriteArrayList} (we would need
      * some form of transactions or a different backing type).
      *
+     * <p>See also {@link #addOrReplaceAction(Action)} if you want to know whether the backing
+     * {@link #actions} was modified, for example in cases where the caller would need to persist
+     * the {@link Actionable} in order to persist the change and there is a desire to elide
+     * unnecessary persistence of unmodified objects.
+     *
      * @param a an action to add/replace
      * @since 1.548
-     * @see #addOrReplaceAction(Action) if you want to know whether the backing {@link #actions} was modified, for
-     * example in cases where the caller would need to persist the {@link Actionable} in order to persist the change
-     * and there is a desire to elide unnecessary persistence of unmodified objects.
      */
     public void replaceAction(@NonNull Action a) {
         addOrReplaceAction(a);
@@ -227,7 +230,7 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
             return false;
         }
         // CopyOnWriteArrayList does not support Iterator.remove, so need to do it this way:
-        return getActions().removeAll(Collections.singleton(a));
+        return getActions().removeAll(Set.of(a));
     }
 
     /**

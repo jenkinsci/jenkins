@@ -175,6 +175,7 @@ public class ApiTokenProperty extends UserProperty {
 
     @NonNull
     @Restricted(NoExternalUse.class)
+    @SuppressFBWarnings(value = "UNSAFE_HASH_EQUALS", justification = "Used to prevent use of pre-2013 API tokens, then returning the API token value")
     /*package*/ String getApiTokenInsecure() {
         if (apiToken == null) {
             return Messages.ApiTokenProperty_NoLegacyToken();
@@ -408,6 +409,7 @@ public class ApiTokenProperty extends UserProperty {
     @Extension
     @Symbol("apiToken")
     public static final class DescriptorImpl extends UserPropertyDescriptor {
+        @NonNull
         @Override
         public String getDisplayName() {
             return Messages.ApiTokenProperty_DisplayName();

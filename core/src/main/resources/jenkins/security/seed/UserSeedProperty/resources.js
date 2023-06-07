@@ -21,29 +21,31 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-function resetSeed(button){
-    var userSeedPanel = button.up('.user-seed-panel');
-    var confirmMessage = button.getAttribute('data-confirm');
-    var targetUrl = button.getAttribute('data-target-url');
-    var redirectAfterClick = button.getAttribute('data-redirect-url');
-    
-    var warningMessage = userSeedPanel.querySelector('.display-after-reset');
-    if (warningMessage.hasClassName('visible')) {
-        warningMessage.removeClassName('visible');
-    }
-    
-    if (confirm(confirmMessage)) {
-        new Ajax.Request(targetUrl, {
-            method: "post",
-            onSuccess: function(rsp, _) {
-                if (redirectAfterClick) {
-                    window.location.href = redirectAfterClick;
-                } else {
-                    if (!warningMessage.hasClassName('visible')) {
-                        warningMessage.addClassName('visible');
-                    }
-                }
-            }
-        });
-    }
-}
+window.resetSeed = function (button) {
+  var userSeedPanel = button.closest(".user-seed-panel");
+  var confirmMessage = button.getAttribute("data-confirm");
+  var targetUrl = button.getAttribute("data-target-url");
+  var redirectAfterClick = button.getAttribute("data-redirect-url");
+
+  var warningMessage = userSeedPanel.querySelector(".display-after-reset");
+  if (warningMessage.classList.contains("visible")) {
+    warningMessage.classList.remove("visible");
+  }
+
+  if (confirm(confirmMessage)) {
+    fetch(targetUrl, {
+      method: "post",
+      headers: crumb.wrap({}),
+    }).then((rsp) => {
+      if (rsp.ok) {
+        if (redirectAfterClick) {
+          window.location.href = redirectAfterClick;
+        } else {
+          if (!warningMessage.classList.contains("visible")) {
+            warningMessage.classList.add("visible");
+          }
+        }
+      }
+    });
+  }
+};

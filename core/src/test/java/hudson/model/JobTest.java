@@ -1,12 +1,12 @@
 package hudson.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mockStatic;
 
 import hudson.EnvVars;
 import hudson.Platform;
-import org.hamcrest.CoreMatchers;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -73,7 +73,7 @@ public class JobTest {
 
         assertThat("The contributed PATH was not joined using the path separator defined in agent node", //
                 env.get("PATH"), //
-                CoreMatchers.containsString(path + (agentPlatform == Platform.WINDOWS ? ';' : ':')));
+                containsString(path + (agentPlatform == Platform.WINDOWS ? ';' : ':')));
         }
     }
 }

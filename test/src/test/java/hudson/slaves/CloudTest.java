@@ -8,7 +8,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.Action;
 import hudson.model.Computer;
@@ -22,6 +21,7 @@ import java.util.Collections;
 import jenkins.model.Jenkins;
 import jenkins.model.TransientActionFactory;
 import org.acegisecurity.acls.sid.Sid;
+import org.htmlunit.html.HtmlPage;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -76,6 +76,13 @@ public class CloudTest {
         HtmlPage actionPage = page.getAnchorByText("Task Action").click();
         out = actionPage.getWebResponse().getContentAsString();
         assertThat(out, containsString("doIndex called")); // doIndex
+    }
+
+    @Test
+    public void cloudNameIsEncodedInGetUrl() {
+        ACloud aCloud = new ACloud("../../gibberish", "0");
+
+        assertEquals("Cloud name is encoded in Cloud#getUrl", "cloud/..%2F..%2Fgibberish/", aCloud.getUrl());
     }
 
     public static final class ACloud extends AbstractCloudImpl {

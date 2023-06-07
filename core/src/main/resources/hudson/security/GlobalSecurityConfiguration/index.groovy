@@ -11,16 +11,10 @@ def f=namespace(lib.FormTagLib)
 def l=namespace(lib.LayoutTagLib)
 def st=namespace("jelly:stapler")
 
-l.layout(permission:app.SYSTEM_READ, title:my.displayName, cssclass:request.getParameter('decorate')) {
-    l.side_panel {
-        l.tasks {
-            l.task(icon: "icon-up icon-md", href: rootURL + '/', title: _("Back to Dashboard"))
-            l.task(icon: "icon-gear icon-md", href: "${rootURL}/manage", title: _("Manage Jenkins"))
-        }
-    }
-    l.app_bar(title: my.displayName)
-
+l.layout(permission:app.SYSTEM_READ, title:my.displayName, cssclass:request.getParameter('decorate'), type:"one-column") {
     l.main_panel {
+        l.app_bar(title: my.displayName)
+
         set("readOnlyMode", !app.hasPermission(app.ADMINISTER))
 
         p()

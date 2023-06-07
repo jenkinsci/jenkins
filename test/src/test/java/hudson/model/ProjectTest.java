@@ -24,27 +24,22 @@
 
 package hudson.model;
 
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
-import antlr.ANTLRException;
-import com.gargoylesoftware.htmlunit.HttpMethod;
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.html.HtmlElement;
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.javascript.host.event.Event;
 import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.Functions;
 import hudson.Launcher;
 import hudson.Launcher.RemoteLauncher;
-import hudson.Util;
 import hudson.model.AbstractProject.BecauseOfDownstreamBuildInProgress;
 import hudson.model.AbstractProject.BecauseOfUpstreamBuildInProgress;
 import hudson.model.Cause.UserIdCause;
@@ -77,13 +72,16 @@ import hudson.triggers.SCMTrigger;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.io.UncheckedIOException;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -94,11 +92,18 @@ import jenkins.model.Jenkins;
 import jenkins.model.WorkspaceWriter;
 import jenkins.scm.DefaultSCMCheckoutStrategyImpl;
 import jenkins.scm.SCMCheckoutStrategy;
+import org.htmlunit.HttpMethod;
+import org.htmlunit.WebRequest;
+import org.htmlunit.html.HtmlElement;
+import org.htmlunit.html.HtmlForm;
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.javascript.host.event.Event;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.reactor.ReactorException;
 import org.jvnet.hudson.test.FakeChangeLogSCM;
+import org.jvnet.hudson.test.InboundAgentRule;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestBuilder;
@@ -111,6 +116,9 @@ import org.jvnet.hudson.test.TestExtension;
 public class ProjectTest {
 
     @Rule public JenkinsRule j = new JenkinsRule();
+
+    @Rule public InboundAgentRule inboundAgents = new InboundAgentRule();
+
     public static boolean createAction = false;
     public static boolean getFilePath = false;
     public static boolean createSubTask = false;
@@ -247,7 +255,7 @@ public class ProjectTest {
     public void testGetScmCheckoutStrategy() throws IOException {
         FreeStyleProject p = j.createFreeStyleProject("project");
         p.setScmCheckoutStrategy(null);
-        assertTrue("Project should return default checkout strategy if scm checkout strategy is not set.", p.getScmCheckoutStrategy() instanceof DefaultSCMCheckoutStrategyImpl);
+        assertThat("Project should return default checkout strategy if scm checkout strategy is not set.", p.getScmCheckoutStrategy(), instanceOf(DefaultSCMCheckoutStrategyImpl.class));
         SCMCheckoutStrategy strategy = new SCMCheckoutStrategyImpl();
         p.setScmCheckoutStrategy(strategy);
         assertEquals("Project should return its scm checkout strategy if this strategy is not null", strategy, p.getScmCheckoutStrategy());
@@ -260,10 +268,10 @@ public class ProjectTest {
         j.jenkins.setScmCheckoutRetryCount(6);
         assertEquals("Scm retry count should be the same as global scm retry count.", 6, p.getScmCheckoutRetryCount());
         HtmlForm form = j.createWebClient().goTo(p.getUrl() + "/configure").getFormByName("config");
-        ((HtmlElement) form.getByXPath("//div[@class='advancedLink']//button").get(0)).click();
+        ((HtmlElement) form.querySelectorAll(".advancedButton").get(0)).click();
         // required due to the new default behavior of click
         form.getInputByName("hasCustomScmCheckoutRetryCount").click(new Event(), false, false, false, true);
-        form.getInputByName("scmCheckoutRetryCount").setValueAttribute("7");
+        form.getInputByName("scmCheckoutRetryCount").setValue("7");
         j.submit(form);
         assertEquals("Scm retry count was set.", 7, p.getScmCheckoutRetryCount());
     }
@@ -306,7 +314,7 @@ public class ProjectTest {
     }
 
     @Test
-    public void testScheduleBuild2() throws IOException, InterruptedException {
+    public void testScheduleBuild2() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject("project");
         p.setAssignedLabel(j.jenkins.getLabel("nonExist"));
         p.scheduleBuild(0, new UserIdCause());
@@ -317,12 +325,14 @@ public class ProjectTest {
             Thread.sleep(1000); //give some time to start build
             count++;
         }
-        assertNotNull("Build should be done or in progress.", p.getLastBuild());
+        FreeStyleBuild b = p.getLastBuild();
+        assertNotNull("Build should be done or in progress.", b);
+        j.assertBuildStatusSuccess(j.waitForCompletion(b));
     }
 
 
     @Test
-    public void testSchedulePolling() throws IOException, ANTLRException {
+    public void testSchedulePolling() throws IOException {
         FreeStyleProject p = j.createFreeStyleProject("project");
         assertFalse("Project should not schedule polling because no scm trigger is set.", p.schedulePolling());
         SCMTrigger trigger = new SCMTrigger("0 0 * * *");
@@ -347,7 +357,7 @@ public class ProjectTest {
         p.setCustomWorkspace("/some/path");
         j.jenkins.reload();
         assertNotNull("Project did not save scm.", p.getScm());
-        assertTrue("Project did not save scm checkout strategy.", p.getScmCheckoutStrategy() instanceof SCMCheckoutStrategyImpl);
+        assertThat("Project did not save scm checkout strategy.", p.getScmCheckoutStrategy(), instanceOf(SCMCheckoutStrategyImpl.class));
         assertEquals("Project did not save quiet period.", 15, p.getQuietPeriod());
         assertTrue("Project did not save block if downstream is building.", p.blockBuildWhenDownstreamBuilding());
         assertTrue("Project did not save block if upstream is building.", p.blockBuildWhenUpstreamBuilding());
@@ -374,23 +384,23 @@ public class ProjectTest {
         FreeStyleProject p = j.createFreeStyleProject("project");
         p.getBuildersList().add(Functions.isWindows() ? new BatchFile("ping -n 10 127.0.0.1 >nul") : new Shell("sleep 10"));
         QueueTaskFuture<FreeStyleBuild> b1 = waitForStart(p);
-        assertInstanceOf("Build can not start because previous build has not finished: " + p.getCauseOfBlockage(), p.getCauseOfBlockage(), BlockedBecauseOfBuildInProgress.class);
+        assertThat("Build can not start because previous build has not finished: " + p.getCauseOfBlockage(), p.getCauseOfBlockage(), instanceOf(BlockedBecauseOfBuildInProgress.class));
         p.getLastBuild().getExecutor().interrupt();
         b1.get();   // wait for it to finish
 
         FreeStyleProject downstream = j.createFreeStyleProject("project-downstream");
         downstream.getBuildersList().add(Functions.isWindows() ? new BatchFile("ping -n 10 127.0.0.1 >nul") : new Shell("sleep 10"));
-        p.getPublishersList().add(new BuildTrigger(Collections.singleton(downstream), Result.SUCCESS));
+        p.getPublishersList().add(new BuildTrigger(Set.of(downstream), Result.SUCCESS));
         Jenkins.get().rebuildDependencyGraph();
         p.setBlockBuildWhenDownstreamBuilding(true);
         QueueTaskFuture<FreeStyleBuild> b2 = waitForStart(downstream);
-        assertInstanceOf("Build can not start because build of downstream project has not finished.", p.getCauseOfBlockage(), BecauseOfDownstreamBuildInProgress.class);
+        assertThat("Build can not start because build of downstream project has not finished.", p.getCauseOfBlockage(), instanceOf(BecauseOfDownstreamBuildInProgress.class));
         downstream.getLastBuild().getExecutor().interrupt();
         b2.get();
 
         downstream.setBlockBuildWhenUpstreamBuilding(true);
         QueueTaskFuture<FreeStyleBuild> b3 = waitForStart(p);
-        assertInstanceOf("Build can not start because build of upstream project has not finished.", downstream.getCauseOfBlockage(), BecauseOfUpstreamBuildInProgress.class);
+        assertThat("Build can not start because build of upstream project has not finished.", downstream.getCauseOfBlockage(), instanceOf(BecauseOfUpstreamBuildInProgress.class));
         b3.get();
     }
 
@@ -403,12 +413,6 @@ public class ProjectTest {
         f.waitForStart();
         LOGGER.info("Wait:" + TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start));
         return f;
-    }
-
-    private void assertInstanceOf(String msg, Object o, Class t) {
-        if (t.isInstance(o))
-            return;
-        fail(msg + ": " + o);
     }
 
     @Test
@@ -517,7 +521,11 @@ public class ProjectTest {
         downstream.getBuildersList().add(new TestBuilder() {
             @Override public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) {
                 for (Run<?, ?>.Artifact a : upstream.getLastBuild().getArtifacts()) {
-                    Util.copyFile(a.getFile(), new File(build.getWorkspace().child(a.getFileName()).getRemote()));
+                    try {
+                        Files.copy(a.getFile().toPath(), new File(build.getWorkspace().child(a.getFileName()).getRemote()).toPath(), REPLACE_EXISTING);
+                    } catch (IOException e) {
+                        throw new UncheckedIOException(e);
+                    }
                 }
                 return true;
             }
@@ -728,7 +736,7 @@ public class ProjectTest {
 
         //Now create another slave. And restrict the job to that slave. The slave is offline, leaving the job with no assignable nodes.
         //We tell our mock SCM to return that it has got changes. But since there are no agents, we get the desired result.
-        Slave s2 = j.createSlave();
+        Slave s2 = inboundAgents.createAgent(j, InboundAgentRule.Options.newBuilder().skipStart().build());
         proj.setAssignedLabel(s2.getSelfLabel());
         requiresWorkspaceScm.hasChange = true;
 
@@ -747,7 +755,7 @@ public class ProjectTest {
          */
         HtmlPage log = j.createWebClient().getPage(proj, "scmPollLog");
         String logastext = log.asNormalizedText();
-        assertTrue(logastext.contains("(" + AbstractProject.WorkspaceOfflineReason.all_suitable_nodes_are_offline.name() + ")"));
+        assertThat(logastext, containsString("(" + AbstractProject.WorkspaceOfflineReason.all_suitable_nodes_are_offline.name() + ")"));
 
     }
 
@@ -840,7 +848,7 @@ public class ProjectTest {
         }
 
         @Override public SCMDescriptor<?> getDescriptor() {
-            return new SCMDescriptor<SCM>(null) {};
+            return new SCMDescriptor<>(null) {};
         }
 
         @Override

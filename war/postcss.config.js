@@ -1,7 +1,5 @@
 /* eslint-env node */
 module.exports = {
-  parser: "postcss-less",
-  plugins: [
-    require('autoprefixer')
-  ]
+  parser: "postcss-scss",
+  plugins: [require("autoprefixer")],
 };

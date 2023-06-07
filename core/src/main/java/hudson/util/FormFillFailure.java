@@ -31,7 +31,6 @@ import java.io.IOException;
 import java.util.Locale;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
-import jenkins.model.Jenkins;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
@@ -95,7 +94,7 @@ public abstract class FormFillFailure extends IOException implements HttpRespons
         }
 
         return _errorWithMarkup(Util.escape(message) +
-                " <a href='#' class='showDetails'>"
+                " </div><div><a href='#' class='showDetails'>"
                 + Messages.FormValidation_Error_Details()
                 + "</a><pre style='display:none'>"
                 + Util.escape(Functions.printThrowable(e)) +
@@ -137,9 +136,7 @@ public abstract class FormFillFailure extends IOException implements HttpRespons
                 if (req == null) { // being called from some other context
                     return message;
                 }
-                // 1x16 spacer needed for IE since it doesn't support min-height
-                return "<div class=" + getKind().name().toLowerCase(Locale.ENGLISH) + "><img src='" +
-                        req.getContextPath() + Jenkins.RESOURCE_PATH + "/images/none.gif' height=16 width=1>" +
+                return "<div class=" + getKind().name().toLowerCase(Locale.ENGLISH) + ">" +
                         message + "</div>";
             }
 

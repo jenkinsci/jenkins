@@ -48,7 +48,6 @@ import hudson.model.TaskListener;
 import hudson.model.User;
 import hudson.remoting.Channel;
 import hudson.remoting.ChannelBuilder;
-import hudson.remoting.ChannelClosedException;
 import hudson.remoting.CommandTransport;
 import hudson.remoting.Engine;
 import hudson.remoting.Launcher;
@@ -90,6 +89,7 @@ import jenkins.slaves.RemotingVersionInfo;
 import jenkins.slaves.systemInfo.SlaveSystemInfo;
 import jenkins.util.Listeners;
 import jenkins.util.SystemProperties;
+import org.jenkinsci.remoting.ChannelStateException;
 import org.jenkinsci.remoting.util.LoggingChannelListener;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.Beta;
@@ -666,7 +666,7 @@ public class SlaveComputer extends Computer {
                         "Rejecting the connection because the Remoting version is older than the"
                             + " minimum required version (%s). To allow the connection anyway, set"
                             + " the hudson.slaves.SlaveComputer.allowUnsupportedRemotingVersions"
-                            + " system property to true.%n",
+                            + " system property to true.",
                         RemotingVersionInfo.getMinimumSupportedVersion());
                 disconnect(new OfflineCause.LaunchFailed());
                 return;
@@ -674,7 +674,7 @@ public class SlaveComputer extends Computer {
                 taskListener.error(
                         "The Remoting version is older than the minimum required version (%s)."
                             + " The connection will be allowed, but compatibility is NOT"
-                            + " guaranteed.%n",
+                            + " guaranteed.",
                         RemotingVersionInfo.getMinimumSupportedVersion());
             }
         }
@@ -778,6 +778,23 @@ public class SlaveComputer extends Computer {
             return Collections.emptyList();
         else
             return channel.call(new SlaveLogFetcher());
+    }
+
+    /**
+     * Inline editing of description
+     */
+    @RequirePOST
+    @Restricted(NoExternalUse.class)
+    public synchronized void doSubmitDescription(StaplerResponse rsp, @QueryParameter String description) throws IOException {
+        checkPermission(CONFIGURE);
+
+        final Slave node = this.getNode();
+        if (node != null) {
+            node.setNodeDescription(description);
+        } else { // Node has been disabled/removed during other session tries to change the description.
+            throw new IOException("Description will be not set. The node " + nodeName + " does not exist (anymore).");
+        }
+        rsp.sendRedirect(".");
     }
 
     @RequirePOST
@@ -921,7 +938,7 @@ public class SlaveComputer extends Computer {
         if (c != null) {
             try {
                 c.close();
-            } catch (IOException e) {
+            } catch (Exception e) {
                 logger.log(Level.SEVERE, "Failed to terminate channel to " + getDisplayName(), e);
             }
             Listeners.notify(ComputerListener.class, true, l -> l.onOffline(this, offlineCause));
@@ -1113,7 +1130,7 @@ public class SlaveComputer extends Computer {
 
             try {
                 getChannelOrFail().setProperty("agent", Boolean.TRUE); // indicate that this side of the channel is the agent side.
-            } catch (ChannelClosedException e) {
+            } catch (ChannelStateException e) {
                 throw new IllegalStateException(e);
             }
 

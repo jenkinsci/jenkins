@@ -44,14 +44,19 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.reflect.Method;
+import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.Stream;
 import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
@@ -198,7 +203,7 @@ public abstract class FormValidation extends IOException implements HttpResponse
         if (e == null)    return _errorWithMarkup(Util.escape(message), kind);
 
         return _errorWithMarkup(Util.escape(message) +
-            " <a href='#' class='showDetails'>"
+            " </div><div><a href='#' class='showDetails'>"
             + Messages.FormValidation_Error_Details()
             + "</a><pre style='display:none'>"
             + Util.escape(Functions.printThrowable(e)) +
@@ -272,9 +277,7 @@ public abstract class FormValidation extends IOException implements HttpResponse
                 if (req == null) { // being called from some other context
                     return message;
                 }
-                // 1x16 spacer needed for IE since it doesn't support min-height
-                return "<div class=" + kind.name().toLowerCase(Locale.ENGLISH) + "><img src='" +
-                        req.getContextPath() + Jenkins.RESOURCE_PATH + "/images/none.gif' height=16 width=1>" +
+                return "<div class=\"" + kind.name().toLowerCase(Locale.ENGLISH) + "\">" +
                         message + "</div>";
             }
 
@@ -446,7 +449,7 @@ public abstract class FormValidation extends IOException implements HttpResponse
                     return error(errorMessage);
             }
             v = v.trim();
-            if (!allowEmpty && v.length() == 0)
+            if (!allowEmpty && v.isEmpty())
                 return error(errorMessage);
 
             Base64.getDecoder().decode(v.getBytes(StandardCharsets.UTF_8));
@@ -464,9 +467,45 @@ public abstract class FormValidation extends IOException implements HttpResponse
      */
     public abstract static class URLCheck {
         /**
+         * Open the given URI and read text content from it. This method honors the Content-type
+         * header.
+         *
+         * @throws IOException if the URI scheme is not supported, the connection was interrupted,
+         *     or the response was an error
+         * @since 2.382
+         */
+        protected Stream<String> open(URI uri) throws IOException {
+            HttpClient httpClient = ProxyConfiguration.newHttpClient();
+            HttpRequest httpRequest;
+            try {
+                httpRequest = ProxyConfiguration.newHttpRequestBuilder(uri).GET().build();
+            } catch (IllegalArgumentException e) {
+                throw new IOException(e);
+            }
+            java.net.http.HttpResponse<Stream<String>> httpResponse;
+            try {
+                httpResponse =
+                        httpClient.send(httpRequest, java.net.http.HttpResponse.BodyHandlers.ofLines());
+            } catch (InterruptedException e) {
+                throw new IOException(e);
+            }
+            if (httpResponse.statusCode() != HttpURLConnection.HTTP_OK) {
+                throw new IOException(
+                        "Server returned HTTP response code "
+                                + httpResponse.statusCode()
+                                + " for URI "
+                                + uri);
+            }
+            return httpResponse.body();
+        }
+
+        /**
          * Opens the given URL and reads text content from it.
          * This method honors Content-type header.
+         *
+         * @deprecated use {@link #open(URI)}
          */
+        @Deprecated
         protected BufferedReader open(URL url) throws IOException {
             // use HTTP content type to find out the charset.
             URLConnection con = ProxyConfiguration.open(url);
@@ -478,10 +517,24 @@ public abstract class FormValidation extends IOException implements HttpResponse
         }
 
         /**
+         * Find the string literal from the given stream of lines.
+         *
+         * @return true if found, false otherwise
+         * @since 2.382
+         */
+        protected boolean findText(Stream<String> in, String literal) {
+            try (in) {
+                return in.anyMatch(line -> line.contains(literal));
+            }
+        }
+
+        /**
          * Finds the string literal from the given reader.
          * @return
          *      true if found, false otherwise.
+         * @deprecated use {@link #findText(Stream, String)}
          */
+        @Deprecated
         protected boolean findText(BufferedReader in, String literal) throws IOException {
             String line;
             while ((line = in.readLine()) != null)
@@ -501,9 +554,9 @@ public abstract class FormValidation extends IOException implements HttpResponse
             // any invalid URL comes here
             if (e.getMessage().equals(url))
                 // Sun JRE (and probably others too) often return just the URL in the error.
-                return error("Unable to connect " + url);
+                return error("Unable to connect " + url, e);
             else
-                return error(e.getMessage());
+                return error(e.getMessage(), e);
         }
 
         /**
@@ -602,8 +655,8 @@ public abstract class FormValidation extends IOException implements HttpResponse
                 QueryParameter qp = p.annotation(QueryParameter.class);
                 if (qp != null) {
                     String name = qp.value();
-                    if (name.length() == 0) name = p.name();
-                    if (name == null || name.length() == 0)
+                    if (name.isEmpty()) name = p.name();
+                    if (name == null || name.isEmpty())
                         continue;   // unknown parameter name. we'll report the error when the form is submitted.
                     if (name.equals("value"))
                         continue;   // 'value' parameter is implicit

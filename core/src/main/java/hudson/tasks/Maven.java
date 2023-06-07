@@ -446,6 +446,7 @@ public class Maven extends Builder {
             return super.getHelpFile(fieldName);
         }
 
+        @NonNull
         @Override
         public String getDisplayName() {
             return Messages.Maven_DisplayName();
@@ -559,7 +560,7 @@ public class Maven extends Builder {
             // olamy : but will add a dependency on maven in core -> so not so good
             String mavenVersion = launcher.getChannel().call(new GetMavenVersion(getHome()));
 
-            if (!mavenVersion.equals("")) {
+            if (!mavenVersion.isEmpty()) {
                 if (mavenReqVersion == MAVEN_20) {
                     if (mavenVersion.startsWith("2."))
                         return true;
@@ -684,6 +685,7 @@ public class Maven extends Builder {
 
         @Extension @Symbol("maven")
         public static class DescriptorImpl extends ToolDescriptor<MavenInstallation> {
+            @NonNull
             @Override
             public String getDisplayName() {
                 return "Maven";
@@ -691,7 +693,7 @@ public class Maven extends Builder {
 
             @Override
             public List<? extends ToolInstaller> getDefaultInstallers() {
-                return Collections.singletonList(new MavenInstaller(null));
+                return List.of(new MavenInstaller(null));
             }
 
             // overriding them for backward compatibility.
@@ -764,6 +766,7 @@ public class Maven extends Builder {
 
         @Extension @Symbol("maven")
         public static final class DescriptorImpl extends DownloadFromUrlInstaller.DescriptorImpl<MavenInstaller> {
+            @NonNull
             @Override
             public String getDisplayName() {
                 return Messages.InstallFromApache();

@@ -50,6 +50,7 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
@@ -58,8 +59,6 @@ import java.util.logging.Logger;
 import jenkins.ClassLoaderReflectionToolkit;
 import jenkins.ExtensionFilter;
 import jenkins.plugins.DetachedPluginsUtil;
-import jenkins.util.AntClassLoader;
-import jenkins.util.SystemProperties;
 import jenkins.util.URLClassLoader2;
 import org.apache.commons.io.output.NullOutputStream;
 import org.apache.tools.ant.BuildException;
@@ -289,30 +288,17 @@ public class ClassicPluginStrategy implements PluginStrategy {
         boolean usePluginFirstClassLoader =
                 atts != null && Boolean.parseBoolean(atts.getValue("PluginFirstClassLoader"));
 
-        if (useAntClassLoader) {
-            AntClassLoader classLoader;
-            if (usePluginFirstClassLoader) {
-                classLoader = new PluginFirstClassLoader();
-                classLoader.setParentFirst(false);
-                classLoader.setParent(parent);
-            } else {
-                classLoader = new AntClassLoader(parent, true);
-            }
-            classLoader.addPathFiles(paths);
-            return classLoader;
-        } else {
-            List<URL> urls = new ArrayList<>();
-            for (File path : paths) {
-                urls.add(path.toURI().toURL());
-            }
-            URLClassLoader2 classLoader;
-            if (usePluginFirstClassLoader) {
-                classLoader = new PluginFirstClassLoader2(urls.toArray(new URL[0]), parent);
-            } else {
-                classLoader = new URLClassLoader2(urls.toArray(new URL[0]), parent);
-            }
-            return classLoader;
+        List<URL> urls = new ArrayList<>();
+        for (File path : paths) {
+            urls.add(path.toURI().toURL());
         }
+        URLClassLoader2 classLoader;
+        if (usePluginFirstClassLoader) {
+            classLoader = new PluginFirstClassLoader2(urls.toArray(new URL[0]), parent);
+        } else {
+            classLoader = new URLClassLoader2(urls.toArray(new URL[0]), parent);
+        }
+        return classLoader;
     }
 
     /**
@@ -338,7 +324,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
         List<ExtensionFinder> finders;
         if (type == ExtensionFinder.class) {
             // Avoid infinite recursion of using ExtensionFinders to find ExtensionFinders
-            finders = Collections.singletonList(new ExtensionFinder.Sezpoz());
+            finders = List.of(new ExtensionFinder.Sezpoz());
         } else {
             finders = hudson.getExtensionList(ExtensionFinder.class);
         }
@@ -430,17 +416,6 @@ public class ClassicPluginStrategy implements PluginStrategy {
         for (; classLoader != null; classLoader = classLoader.getParent()) {
             if (classLoader instanceof DependencyClassLoader) {
                 return (DependencyClassLoader) classLoader;
-            }
-
-            if (classLoader instanceof AntClassLoader) {
-                // AntClassLoaders hold parents not only as AntClassLoader#getParent()
-                // but also as AntClassLoader#getConfiguredParent()
-                DependencyClassLoader ret = findAncestorDependencyClassLoader(
-                        ((AntClassLoader) classLoader).getConfiguredParent()
-                );
-                if (ret != null) {
-                    return ret;
-                }
             }
         }
         return null;
@@ -597,7 +572,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
         DependencyClassLoader(ClassLoader parent, File archive, List<Dependency> dependencies, PluginManager pluginManager) {
             super(parent);
             this._for = archive;
-            this.dependencies = Collections.unmodifiableList(new ArrayList<>(dependencies));
+            this.dependencies = List.copyOf(dependencies);
             this.pluginManager = pluginManager;
         }
 
@@ -612,7 +587,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
             synchronized (this) {
               localTransitiveDependencies = transitiveDependencies;
               if (localTransitiveDependencies == null) {
-                CyclicGraphDetector<PluginWrapper> cgd = new CyclicGraphDetector<PluginWrapper>() {
+                CyclicGraphDetector<PluginWrapper> cgd = new CyclicGraphDetector<>() {
                     @Override
                     protected List<PluginWrapper> getEdges(PluginWrapper pw) {
                         List<PluginWrapper> dep = new ArrayList<>();
@@ -629,7 +604,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
                     for (Dependency d : dependencies) {
                         PluginWrapper p = pluginManager.getPlugin(d.shortName);
                         if (p != null && p.isActive())
-                            cgd.run(Collections.singleton(p));
+                            cgd.run(Set.of(p));
                     }
                 } catch (CycleDetectedException e) {
                     throw new AssertionError(e);    // such error should have been reported earlier
@@ -715,7 +690,4 @@ public class ClassicPluginStrategy implements PluginStrategy {
             return null;
         }
     }
-
-    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
-    public static /* not final */ boolean useAntClassLoader = SystemProperties.getBoolean(ClassicPluginStrategy.class.getName() + ".useAntClassLoader");
 }

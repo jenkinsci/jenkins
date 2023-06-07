@@ -516,9 +516,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
         // Check root project for sub-job projects (e.g. matrix jobs).
         if (item.task instanceof AbstractProject<?, ?>) {
             AbstractProject<?, ?> project = (AbstractProject<?, ?>) item.task;
-            if (viewItems.contains(project.getRootProject())) {
-                return true;
-            }
+            return viewItems.contains(project.getRootProject());
         }
         return false;
     }
@@ -1087,7 +1085,8 @@ public abstract class View extends AbstractModelObject implements AccessControll
         try {
             Jenkins.checkGoodName(value);
             value = value.trim(); // why trim *after* checkGoodName? not sure, but ItemGroupMixIn.createTopLevelItem does the same
-            Jenkins.get().getProjectNamingStrategy().checkName(value);
+            ItemGroup<?> parent = getOwner().getItemGroup();
+            Jenkins.get().getProjectNamingStrategy().checkName(parent.getFullName(), value);
         } catch (Failure e) {
             return FormValidation.error(e.getMessage());
         }
@@ -1265,7 +1264,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
     public ModelObjectWithContextMenu.ContextMenu doChildrenContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
         ModelObjectWithContextMenu.ContextMenu m = new ModelObjectWithContextMenu.ContextMenu();
         for (TopLevelItem i : getItems())
-            m.add(i.getShortUrl(), i.getDisplayName());
+            m.add(Functions.getRelativeLinkTo(i), Functions.getRelativeDisplayNameFrom(i, getOwner().getItemGroup()));
         return m;
     }
 
@@ -1358,7 +1357,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
         if (owner.getView(name) != null)
             throw new Failure(Messages.Hudson_ViewAlreadyExists(name));
 
-        if (mode == null || mode.length() == 0) {
+        if (mode == null || mode.isEmpty()) {
             if (isXmlSubmission) {
                 View v = createViewFromXML(name, req.getInputStream());
                 owner.getACL().checkCreatePermission(owner, v.getDescriptor());

@@ -21,7 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 import jenkins.model.Jenkins;
 import jenkins.security.ApiTokenProperty;
-import jenkins.security.apitoken.ApiTokenTestHelper;
+import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
 import org.apache.commons.io.FileUtils;
 import org.junit.Assume;
 import org.junit.Before;
@@ -118,7 +118,7 @@ public class CLIEnvVarTest {
                     "-auth", String.format("%s:%s", "admin", token),
                     "who-am-i")
             );
-            assertThat(baos.toString(Charset.defaultCharset().name()), containsString("Authenticated as: admin"));
+            assertThat(baos.toString(Charset.defaultCharset()), containsString("Authenticated as: admin"));
         }
     }
 
@@ -135,7 +135,7 @@ public class CLIEnvVarTest {
                     "-s", r.getURL().toString(),
                     "who-am-i")
             );
-            assertThat(baos.toString(Charset.defaultCharset().name()), containsString("Authenticated as: anonymous"));
+            assertThat(baos.toString(Charset.defaultCharset()), containsString("Authenticated as: anonymous"));
         }
     }
 
@@ -153,7 +153,7 @@ public class CLIEnvVarTest {
                     "-s", r.getURL().toString(),
                     "who-am-i")
             );
-            assertThat(baos.toString(Charset.defaultCharset().name()), containsString("Authenticated as: admin"));
+            assertThat(baos.toString(Charset.defaultCharset()), containsString("Authenticated as: admin"));
         }
     }
 
@@ -204,12 +204,13 @@ public class CLIEnvVarTest {
                     "-auth", String.format("%s:%s", "admin", token),
                     "who-am-i")
             );
-            assertThat(baos.toString(Charset.defaultCharset().name()), containsString("Authenticated as: admin"));
+            assertThat(baos.toString(Charset.defaultCharset()), containsString("Authenticated as: admin"));
         }
     }
 
     private String getToken() {
-        ApiTokenTestHelper.enableLegacyBehavior();
+        ApiTokenPropertyConfiguration config = ApiTokenPropertyConfiguration.get();
+        config.setTokenGenerationOnCreationEnabled(true);
 
         r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
         r.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.ADMINISTER).everywhere().to("admin"));

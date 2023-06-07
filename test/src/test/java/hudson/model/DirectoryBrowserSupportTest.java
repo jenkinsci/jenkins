@@ -24,25 +24,21 @@
 
 package hudson.model;
 
-import static org.hamcrest.CoreMatchers.allOf;
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.hasItem;
-import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.UnexpectedPage;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.util.NameValuePair;
 import com.sun.management.UnixOperatingSystemMXBean;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionList;
@@ -50,9 +46,11 @@ import hudson.FilePath;
 import hudson.Functions;
 import hudson.Launcher;
 import hudson.Util;
+import hudson.slaves.WorkspaceList;
 import hudson.tasks.ArtifactArchiver;
 import hudson.tasks.BatchFile;
 import hudson.tasks.Shell;
+import hudson.util.StreamTaskListener;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -67,6 +65,8 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -82,10 +82,12 @@ import jenkins.model.ArtifactManagerFactory;
 import jenkins.model.ArtifactManagerFactoryDescriptor;
 import jenkins.model.Jenkins;
 import jenkins.util.VirtualFile;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
+import org.htmlunit.Page;
+import org.htmlunit.UnexpectedPage;
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.util.NameValuePair;
 import org.junit.Assume;
 import org.junit.Rule;
 import org.junit.Test;
@@ -158,7 +160,7 @@ public class DirectoryBrowserSupportTest {
         p.getBuildersList().add(new TestBuilder() {
             @Override
             public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
-                build.getWorkspace().child("\u6F22\u5B57.bin").touch(0); // Kanji
+                build.getWorkspace().child("漢字.bin").touch(0); // Kanji
                 return true;
             }
         }); // Kanji
@@ -579,7 +581,7 @@ public class DirectoryBrowserSupportTest {
         File secretsFolder = new File(j.jenkins.getRootDir(), "secrets");
         File secretTarget = new File(secretsFolder, "goal.txt");
         String secretContent = "secret";
-        FileUtils.write(secretTarget, secretContent, StandardCharsets.UTF_8);
+        Files.writeString(secretTarget.toPath(), secretContent, StandardCharsets.UTF_8);
 
         /*
          *  secrets/
@@ -718,10 +720,10 @@ public class DirectoryBrowserSupportTest {
         File secretsFolder = new File(j.jenkins.getRootDir(), "secrets");
         File secretTarget = new File(secretsFolder, "goal.txt");
         String secretContent = "secret";
-        FileUtils.write(secretTarget, secretContent, StandardCharsets.UTF_8);
-        FileUtils.write(new File(secretsFolder, "public_fake1.key"), secretContent, StandardCharsets.UTF_8);
-        FileUtils.write(new File(secretsFolder, "public_fake2.key"), secretContent, StandardCharsets.UTF_8);
-        FileUtils.write(new File(secretsFolder, "public_fake3.key"), secretContent, StandardCharsets.UTF_8);
+        Files.writeString(secretTarget.toPath(), secretContent, StandardCharsets.UTF_8);
+        Files.writeString(secretsFolder.toPath().resolve("public_fake1.key"), secretContent, StandardCharsets.UTF_8);
+        Files.writeString(secretsFolder.toPath().resolve("public_fake2.key"), secretContent, StandardCharsets.UTF_8);
+        Files.writeString(secretsFolder.toPath().resolve("public_fake3.key"), secretContent, StandardCharsets.UTF_8);
 
         /*
          *  secrets/
@@ -792,7 +794,7 @@ public class DirectoryBrowserSupportTest {
         File secretsFolder = new File(j.jenkins.getRootDir(), "secrets");
         File secretTarget = new File(secretsFolder, "goal.txt");
         String secretContent = "secret";
-        FileUtils.write(secretTarget, secretContent, StandardCharsets.UTF_8);
+        Files.writeString(secretTarget.toPath(), secretContent, StandardCharsets.UTF_8);
 
         /*
          *  secrets/
@@ -917,6 +919,8 @@ public class DirectoryBrowserSupportTest {
             List<String> entryNames = getListOfEntriesInDownloadedZip((UnexpectedPage) zipPage);
             assertThat(entryNames, contains("intermediateFolder/public2.key"));
         }
+        // Explicitly delete everything including junctions, which TemporaryDirectoryAllocator.dispose may have trouble with:
+        new Launcher.LocalLauncher(StreamTaskListener.fromStderr()).launch().cmds("cmd", "/c", "rmdir", "/s", "/q", j.jenkins.getRootDir().getAbsolutePath()).start().join();
     }
 
     private List<String> getListOfEntriesInDownloadedZip(UnexpectedPage zipPage) throws Exception {
@@ -1013,7 +1017,7 @@ public class DirectoryBrowserSupportTest {
         folderInsideWorkspace.mkdir();
         File fileTarget = new File(folderInsideWorkspace, "goal.txt");
         String publicContent = "not-secret";
-        FileUtils.write(fileTarget, publicContent, StandardCharsets.UTF_8);
+        Files.writeString(fileTarget.toPath(), publicContent, StandardCharsets.UTF_8);
 
         /*
          *  workspace/
@@ -1091,8 +1095,8 @@ public class DirectoryBrowserSupportTest {
         if (resourceUrl == null) {
             fail("The resource with fileName " + fileNameInResources + " is not present in the resources of the test");
         }
-        File resourceFile = new File(resourceUrl.toURI());
-        return FileUtils.readFileToString(resourceFile, StandardCharsets.UTF_8);
+        Path resourcePath = Paths.get(resourceUrl.toURI());
+        return Files.readString(resourcePath, StandardCharsets.UTF_8);
     }
 
     @Test
@@ -1100,14 +1104,14 @@ public class DirectoryBrowserSupportTest {
     public void windows_cannotViewAbsolutePath() throws Exception {
         Assume.assumeTrue("can only be tested this on Windows", Functions.isWindows());
 
-        File targetTmpFile = File.createTempFile("sec2481", "tmp");
+        Path targetTmpPath = Files.createTempFile("sec2481", "tmp");
         String content = "random data provided as fixed value";
-        FileUtils.writeStringToFile(targetTmpFile, content, StandardCharsets.UTF_8);
+        Files.writeString(targetTmpPath, content, StandardCharsets.UTF_8);
 
         JenkinsRule.WebClient wc = j.createWebClient().withThrowExceptionOnFailingStatusCode(false);
-        Page page = wc.goTo("userContent/" + targetTmpFile.getAbsolutePath() + "/*view*", null);
+        Page page = wc.goTo("userContent/" + targetTmpPath.toAbsolutePath() + "/*view*", null);
 
-        MatcherAssert.assertThat(page.getWebResponse().getStatusCode(), CoreMatchers.equalTo(404));
+        MatcherAssert.assertThat(page.getWebResponse().getStatusCode(), equalTo(404));
     }
 
     @Test
@@ -1118,15 +1122,15 @@ public class DirectoryBrowserSupportTest {
         String originalValue = System.getProperty(DirectoryBrowserSupport.ALLOW_ABSOLUTE_PATH_PROPERTY_NAME);
         System.setProperty(DirectoryBrowserSupport.ALLOW_ABSOLUTE_PATH_PROPERTY_NAME, "true");
         try {
-            File targetTmpFile = File.createTempFile("sec2481", "tmp");
+            Path targetTmpPath = Files.createTempFile("sec2481", "tmp");
             String content = "random data provided as fixed value";
-            FileUtils.writeStringToFile(targetTmpFile, content, StandardCharsets.UTF_8);
+            Files.writeString(targetTmpPath, content, StandardCharsets.UTF_8);
 
             JenkinsRule.WebClient wc = j.createWebClient().withThrowExceptionOnFailingStatusCode(false);
-            Page page = wc.goTo("userContent/" + targetTmpFile.getAbsolutePath() + "/*view*", null);
+            Page page = wc.goTo("userContent/" + targetTmpPath.toAbsolutePath() + "/*view*", null);
 
-            MatcherAssert.assertThat(page.getWebResponse().getStatusCode(), CoreMatchers.equalTo(200));
-            MatcherAssert.assertThat(page.getWebResponse().getContentAsString(), CoreMatchers.containsString(content));
+            MatcherAssert.assertThat(page.getWebResponse().getStatusCode(), equalTo(200));
+            MatcherAssert.assertThat(page.getWebResponse().getContentAsString(), containsString(content));
         } finally {
             if (originalValue == null) {
                 System.clearProperty(DirectoryBrowserSupport.ALLOW_ABSOLUTE_PATH_PROPERTY_NAME);
@@ -1138,17 +1142,221 @@ public class DirectoryBrowserSupportTest {
     }
 
     @Test
+    @Issue("SECURITY-1807")
+    public void tmpNotListed() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.getBuildersList().add(new TestBuilder() {
+            @Override
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+                FilePath ws = build.getWorkspace();
+                ws.child("anotherDir").mkdirs();
+                WorkspaceList.tempDir(ws.child("subdir")).mkdirs();
+                return true;
+            }
+        });
+        assertEquals(Result.SUCCESS, p.scheduleBuild2(0).get().getResult());
+
+        String text = j.createWebClient().goTo("job/" + p.getName() + "/ws/").asNormalizedText();
+        assertTrue(text, text.contains("anotherDir"));
+        assertFalse(text, text.contains("subdir"));
+    }
+
+    @Test
+    @Issue("SECURITY-1807")
+    public void tmpNotListedWithGlob() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+
+        assertEquals(Result.SUCCESS, p.scheduleBuild2(0).get().getResult());
+        FilePath ws = p.getSomeWorkspace();
+
+        FilePath anotherDir = ws.child("anotherDir");
+        anotherDir.mkdirs();
+        anotherDir.child("insideDir").mkdirs();
+
+        FilePath mainTmp = WorkspaceList.tempDir(ws.child("subDir"));
+        mainTmp.mkdirs();
+
+        FilePath anotherTmp = WorkspaceList.tempDir(anotherDir.child("insideDir"));
+        anotherTmp.mkdirs();
+
+        ws.child("anotherDir/one.txt").touch(0);
+        ws.child("anotherDir/insideDir/two.txt").touch(0);
+        mainTmp.child("three.txt").touch(0);
+        anotherTmp.child("four.txt").touch(0);
+
+        assertEquals(Result.SUCCESS, p.scheduleBuild2(0).get().getResult());
+
+        String text = j.createWebClient().goTo("job/" + p.getName() + "/ws/**/*.txt").asNormalizedText();
+        assertTrue(text, text.contains("one.txt"));
+        assertTrue(text, text.contains("two.txt"));
+        assertFalse(text, text.contains("three.txt"));
+        assertFalse(text, text.contains("four.txt"));
+    }
+
+    @Test
+    @Issue("SECURITY-1807")
+    public void noDirectAccessToTmp() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.getBuildersList().add(new TestBuilder() {
+            @Override
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+                FilePath ws = build.getWorkspace();
+
+                FilePath folder = ws.child("anotherDir");
+                folder.mkdirs();
+                folder.child("one.txt").touch(0);
+
+                FilePath mainTmp = WorkspaceList.tempDir(ws.child("subDir"));
+                mainTmp.mkdirs();
+                mainTmp.child("two.txt").touch(0);
+
+                return true;
+            }
+        });
+        assertEquals(Result.SUCCESS, p.scheduleBuild2(0).get().getResult());
+
+        JenkinsRule.WebClient wc = j.createWebClient();
+        wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
+
+        Page page = wc.goTo(p.getUrl() + "ws/anotherDir/", null);
+        assertThat(page.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_OK));
+        page = wc.goTo(p.getUrl() + "ws/anotherDir/one.txt", null);
+        assertThat(page.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_OK));
+
+        page = wc.goTo(p.getUrl() + "ws/subdir@tmp/", null);
+        assertThat(page.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_NOT_FOUND));
+
+        page = wc.goTo(p.getUrl() + "ws/subdir@tmp/two.txt", null);
+        assertThat(page.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_NOT_FOUND));
+    }
+
+    @Test
+    @Issue("SECURITY-1807")
+    public void tmpNotListedInPlain() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.getBuildersList().add(new TestBuilder() {
+            @Override
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+                FilePath ws = build.getWorkspace();
+                ws.child("anotherDir").mkdirs();
+                WorkspaceList.tempDir(ws.child("subdir")).mkdirs();
+                return true;
+            }
+        });
+        assertEquals(Result.SUCCESS, p.scheduleBuild2(0).get().getResult());
+
+        String text = j.createWebClient().goTo("job/" + p.getName() + "/ws/*plain*", "text/plain").getWebResponse().getContentAsString();
+        assertTrue(text, text.contains("anotherDir"));
+        assertFalse(text, text.contains("subdir"));
+    }
+
+    @Test
+    @Issue("SECURITY-1807")
+    public void tmpNotListedInZipWithoutGlob() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.getBuildersList().add(new TestBuilder() {
+            @Override
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+                FilePath ws = build.getWorkspace();
+
+                FilePath anotherDir = ws.child("anotherDir");
+                anotherDir.mkdirs();
+                anotherDir.child("insideDir").mkdirs();
+
+                FilePath mainTmp = WorkspaceList.tempDir(ws.child("subDir"));
+                mainTmp.mkdirs();
+
+                FilePath anotherTmp = WorkspaceList.tempDir(anotherDir.child("insideDir"));
+                anotherTmp.mkdirs();
+
+                ws.child("anotherDir/one.txt").touch(0);
+                ws.child("anotherDir/insideDir/two.txt").touch(0);
+                mainTmp.child("three.txt").touch(0);
+                anotherTmp.child("four.txt").touch(0);
+                return true;
+            }
+        });
+        assertEquals(Result.SUCCESS, p.scheduleBuild2(0).get().getResult());
+
+        JenkinsRule.WebClient wc = j.createWebClient();
+        wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
+
+        //http://localhost:54407/jenkins/job/test0/ws/**/*.txt/*zip*/glob.zip
+        Page zipPage = wc.goTo("job/" + p.getName() + "/ws/*zip*/" + p.getName(), null);
+        assertThat(zipPage.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_OK));
+
+        List<String> entryNames = getListOfEntriesInDownloadedZip((UnexpectedPage) zipPage);
+        assertThat(entryNames, hasSize(2));
+        assertThat(entryNames, containsInAnyOrder(
+                "test0/anotherDir/one.txt",
+                "test0/anotherDir/insideDir/two.txt"
+        ));
+
+        zipPage = wc.goTo("job/" + p.getName() + "/ws/anotherDir/*zip*/" + p.getName(), null);
+        assertThat(zipPage.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_OK));
+
+        entryNames = getListOfEntriesInDownloadedZip((UnexpectedPage) zipPage);
+        assertThat(entryNames, hasSize(2));
+        assertThat(entryNames, containsInAnyOrder(
+                "anotherDir/one.txt",
+                "anotherDir/insideDir/two.txt"
+        ));
+    }
+
+    @Test
+    @Issue("SECURITY-1807")
+    public void tmpNotListedInZipWithGlob() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.getBuildersList().add(new TestBuilder() {
+            @Override
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+                FilePath ws = build.getWorkspace();
+
+                FilePath anotherDir = ws.child("anotherDir");
+                anotherDir.mkdirs();
+                anotherDir.child("insideDir").mkdirs();
+
+                FilePath mainTmp = WorkspaceList.tempDir(ws.child("subDir"));
+                mainTmp.mkdirs();
+
+                FilePath anotherTmp = WorkspaceList.tempDir(anotherDir.child("insideDir"));
+                anotherTmp.mkdirs();
+
+                ws.child("anotherDir/one.txt").touch(0);
+                ws.child("anotherDir/insideDir/two.txt").touch(0);
+                mainTmp.child("three.txt").touch(0);
+                anotherTmp.child("four.txt").touch(0);
+                return true;
+            }
+        });
+        assertEquals(Result.SUCCESS, p.scheduleBuild2(0).get().getResult());
+
+        JenkinsRule.WebClient wc = j.createWebClient();
+        wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
+
+        Page zipPage = wc.goTo("job/" + p.getName() + "/ws/**/*.txt/*zip*/glob.zip", null);
+        assertThat(zipPage.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_OK));
+
+        List<String> entryNames = getListOfEntriesInDownloadedZip((UnexpectedPage) zipPage);
+        assertThat(entryNames, hasSize(2));
+        assertThat(entryNames, containsInAnyOrder(
+                "anotherDir/one.txt",
+                "anotherDir/insideDir/two.txt"
+        ));
+    }
+
+    @Test
     public void canViewRelativePath() throws Exception {
         File testFile = new File(j.jenkins.getRootDir(), "userContent/test.txt");
         String content = "random data provided as fixed value";
 
-        FileUtils.writeStringToFile(testFile, content, StandardCharsets.UTF_8);
+        Files.writeString(testFile.toPath(), content, StandardCharsets.UTF_8);
 
         JenkinsRule.WebClient wc = j.createWebClient().withThrowExceptionOnFailingStatusCode(false);
         Page page = wc.goTo("userContent/test.txt/*view*", null);
 
-        MatcherAssert.assertThat(page.getWebResponse().getStatusCode(), CoreMatchers.equalTo(200));
-        MatcherAssert.assertThat(page.getWebResponse().getContentAsString(), CoreMatchers.containsString(content));
+        MatcherAssert.assertThat(page.getWebResponse().getStatusCode(), equalTo(200));
+        MatcherAssert.assertThat(page.getWebResponse().getContentAsString(), containsString(content));
     }
 
     public static final class SimulatedExternalArtifactManagerFactory extends ArtifactManagerFactory {

@@ -29,7 +29,6 @@ import hudson.ExtensionList;
 import hudson.model.Computer;
 import java.io.IOException;
 import java.net.Socket;
-import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -37,11 +36,10 @@ import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPrivateKey;
-import java.util.Collections;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.inject.Inject;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
@@ -50,7 +48,6 @@ import jenkins.model.identity.InstanceIdentityProvider;
 import org.jenkinsci.Symbol;
 import org.jenkinsci.remoting.engine.JnlpConnectionState;
 import org.jenkinsci.remoting.engine.JnlpProtocol4Handler;
-import org.jenkinsci.remoting.protocol.IOHub;
 import org.jenkinsci.remoting.protocol.cert.PublicKeyMatchingX509ExtendedTrustManager;
 
 /**
@@ -72,42 +69,27 @@ public class JnlpSlaveAgentProtocol4 extends AgentProtocol {
     /**
      * Our keystore.
      */
-    private final KeyStore keyStore;
-    /**
-     * Our trust manager.
-     */
-    private final TrustManager trustManager;
-
-    /**
-     * The provider of our {@link IOHub}
-     */
-    private IOHubProvider hub;
+    private KeyStore keyStore;
 
     /**
      * Our handler.
      */
     private JnlpProtocol4Handler handler;
-    /**
-     * Our SSL context.
-     */
-    private SSLContext sslContext;
 
-    /**
-     * Constructor.
-     *
-     * @throws KeyStoreException      if things go wrong.
-     * @throws KeyManagementException if things go wrong.
-     * @throws IOException            if things go wrong.
-     */
-    public JnlpSlaveAgentProtocol4() throws KeyStoreException, KeyManagementException, IOException {
+    private synchronized void init() throws Exception {
+        if (handler != null) {
+            LOGGER.fine("already initialized");
+            return;
+        }
+        LOGGER.fine("initializing");
         // prepare our local identity and certificate
         X509Certificate identityCertificate = InstanceIdentityProvider.RSA.getCertificate();
         if (identityCertificate == null) {
-            throw new KeyStoreException("JENKINS-41987: no X509Certificate found; perhaps instance-identity module is missing or too old");
+            throw new KeyStoreException("JENKINS-41987: no X509Certificate found; perhaps instance-identity plugin is not installed");
         }
         RSAPrivateKey privateKey = InstanceIdentityProvider.RSA.getPrivateKey();
         if (privateKey == null) {
-            throw new KeyStoreException("JENKINS-41987: no RSAPrivateKey found; perhaps instance-identity module is missing or too old");
+            throw new KeyStoreException("JENKINS-41987: no RSAPrivateKey found; perhaps instance-identity plugin is not installed");
         }
 
         // prepare our keyStore so we can provide our authentication
@@ -135,32 +117,24 @@ public class JnlpSlaveAgentProtocol4 extends AgentProtocol {
         }
 
         // prepare our trustManagers
-        trustManager = new PublicKeyMatchingX509ExtendedTrustManager(false, true);
+        TrustManager trustManager = new PublicKeyMatchingX509ExtendedTrustManager(false, true);
         TrustManager[] trustManagers = {trustManager};
 
         // prepare our SSLContext
+        SSLContext sslContext;
         try {
             sslContext = SSLContext.getInstance("TLS");
         } catch (NoSuchAlgorithmException e) {
             throw new IllegalStateException("Java runtime specification requires support for TLS algorithm", e);
         }
         sslContext.init(kmf.getKeyManagers(), trustManagers, null);
+        IOHubProvider hub = ExtensionList.lookupSingleton(IOHubProvider.class);
+        handler = new JnlpProtocol4Handler(JnlpAgentReceiver.DATABASE, Computer.threadPoolForRemoting, hub.getHub(),
+                sslContext, false, true);
     }
 
     private char[] constructPassword() {
         return "password".toCharArray();
-    }
-
-    /**
-     * Inject the {@link IOHubProvider}
-     *
-     * @param hub the hub provider.
-     */
-    @Inject
-    public void setHub(IOHubProvider hub) {
-        this.hub = hub;
-        handler = new JnlpProtocol4Handler(JnlpAgentReceiver.DATABASE, Computer.threadPoolForRemoting, hub.getHub(),
-                sslContext, false, true);
     }
 
     @Override
@@ -175,11 +149,18 @@ public class JnlpSlaveAgentProtocol4 extends AgentProtocol {
 
     @Override
     public String getName() {
-        return handler.getName();
+        return "JNLP4-connect"; // matches JnlpProtocol4Handler.getName
     }
 
     @Override
     public void handle(Socket socket) throws IOException, InterruptedException {
+        try {
+            init();
+        } catch (IOException x) {
+            throw x;
+        } catch (Exception x) {
+            throw new IOException(x);
+        }
         try {
             X509Certificate certificate = (X509Certificate) keyStore.getCertificate("jenkins");
             if (certificate == null
@@ -194,7 +175,7 @@ public class JnlpSlaveAgentProtocol4 extends AgentProtocol {
             LOGGER.log(Level.FINEST, "Ignored", e);
         }
         handler.handle(socket,
-                Collections.singletonMap(JnlpConnectionState.COOKIE_KEY, JnlpAgentReceiver.generateCookie()),
+                Map.of(JnlpConnectionState.COOKIE_KEY, JnlpAgentReceiver.generateCookie()),
                 ExtensionList.lookup(JnlpAgentReceiver.class));
     }
 

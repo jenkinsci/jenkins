@@ -56,6 +56,8 @@ import java.io.InputStream;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
+import java.nio.file.OpenOption;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -86,10 +88,10 @@ public class VirtualFileTest {
     @Test public void outsideSymlinks() throws Exception {
         assumeFalse(Functions.isWindows());
         File ws = tmp.newFolder("ws");
-        FileUtils.write(new File(ws, "safe"), "safe", StandardCharsets.US_ASCII, false);
+        Files.writeString(ws.toPath().resolve("safe"), "safe", StandardCharsets.US_ASCII);
         Util.createSymlink(ws, "safe", "supported", TaskListener.NULL);
         File other = tmp.newFolder("other");
-        FileUtils.write(new File(other, "secret"), "s3cr3t", StandardCharsets.US_ASCII, false);
+        Files.writeString(other.toPath().resolve("secret"), "s3cr3t", StandardCharsets.US_ASCII);
         Util.createSymlink(ws, "../other/secret", "hack", TaskListener.NULL);
         VirtualFile root = VirtualFile.forFile(ws);
         VirtualFile supported = root.child("supported");
@@ -235,7 +237,7 @@ public class VirtualFileTest {
 
         File root = tmp.getRoot();
         VirtualFile virtualRoot = VirtualFile.forFile(root);
-        Collection<String> children = virtualRoot.list("**", null, true, true);
+        Collection<String> children = virtualRoot.list("**", null, true, LinkOption.NOFOLLOW_LINKS);
         assertThat(children, containsInAnyOrder(
                 "a/aa/aa.txt",
                 "a/ab/ab.txt",
@@ -251,7 +253,7 @@ public class VirtualFileTest {
 
         File root = tmp.getRoot();
         VirtualFile virtualRoot = VirtualFile.forFilePath(new FilePath(root));
-        Collection<String> children = virtualRoot.list("**", null, true, true);
+        Collection<String> children = virtualRoot.list("**", null, true, LinkOption.NOFOLLOW_LINKS);
         assertThat(children, containsInAnyOrder(
                 "a/aa/aa.txt",
                 "a/ab/ab.txt",
@@ -269,7 +271,7 @@ public class VirtualFileTest {
 
         VirtualFile sourcePath = VirtualFile.forFilePath(new FilePath(source));
         try (FileOutputStream outputStream = new FileOutputStream(zipFile)) {
-            sourcePath.zip(outputStream, "**", null, true, true, "");
+            sourcePath.zip(outputStream, "**", null, true, "", LinkOption.NOFOLLOW_LINKS);
         }
         FilePath zipPath = new FilePath(zipFile);
         assertTrue(zipPath.exists());
@@ -298,7 +300,7 @@ public class VirtualFileTest {
         VirtualFile sourcePath = VirtualFile.forFilePath(new FilePath(source));
         String prefix = "test1";
         try (FileOutputStream outputStream = new FileOutputStream(zipFile)) {
-            sourcePath.zip(outputStream, "**", null, true, true, prefix + "/");
+            sourcePath.zip(outputStream, "**", null, true, prefix + "/", LinkOption.NOFOLLOW_LINKS);
         }
         FilePath zipPath = new FilePath(zipFile);
         assertTrue(zipPath.exists());
@@ -327,7 +329,7 @@ public class VirtualFileTest {
 
         VirtualFile sourcePath = VirtualFile.forFile(source);
         try (FileOutputStream outputStream = new FileOutputStream(zipFile)) {
-            sourcePath.zip(outputStream, "**", null, true, true, "");
+            sourcePath.zip(outputStream, "**", null, true, "", LinkOption.NOFOLLOW_LINKS);
         }
         FilePath zipPath = new FilePath(zipFile);
         assertTrue(zipPath.exists());
@@ -356,7 +358,7 @@ public class VirtualFileTest {
         String prefix = "test1";
         VirtualFile sourcePath = VirtualFile.forFile(source);
         try (FileOutputStream outputStream = new FileOutputStream(zipFile)) {
-            sourcePath.zip(outputStream, "**", null, true, true, prefix + "/");
+            sourcePath.zip(outputStream, "**", null, true, prefix + "/", LinkOption.NOFOLLOW_LINKS);
         }
         FilePath zipPath = new FilePath(zipFile);
         assertTrue(zipPath.exists());
@@ -414,7 +416,7 @@ public class VirtualFileTest {
 
         File root = tmp.getRoot();
         VirtualFile virtualRoot = VirtualFile.forFile(root);
-        List<VirtualFile> children = Arrays.asList(virtualRoot.list(true));
+        List<VirtualFile> children = Arrays.asList(virtualRoot.list(LinkOption.NOFOLLOW_LINKS));
         assertThat(children, hasSize(2));
         assertThat(children, containsInAnyOrder(
                 VFMatcher.hasName("a"),
@@ -429,7 +431,7 @@ public class VirtualFileTest {
 
         File root = tmp.getRoot();
         VirtualFile virtualRoot = VirtualFile.forFilePath(new FilePath(root));
-        List<VirtualFile> children = Arrays.asList(virtualRoot.list(true));
+        List<VirtualFile> children = Arrays.asList(virtualRoot.list(LinkOption.NOFOLLOW_LINKS));
         assertThat(children, hasSize(2));
         assertThat(children, containsInAnyOrder(
                 VFMatcher.hasName("a"),
@@ -465,7 +467,7 @@ public class VirtualFileTest {
         Util.createSymlink(root, "a", symlinkName, null);
         File symlinkFile = new File(root, symlinkName);
         VirtualFile virtualRootSymlink = VirtualFile.forFile(symlinkFile);
-        List<VirtualFile> children = Arrays.asList(virtualRootSymlink.list(true));
+        List<VirtualFile> children = Arrays.asList(virtualRootSymlink.list(LinkOption.NOFOLLOW_LINKS));
         assertThat(children, containsInAnyOrder(
                 VFMatcher.hasName("aa"),
                 VFMatcher.hasName("ab")
@@ -482,7 +484,7 @@ public class VirtualFileTest {
         Util.createSymlink(root, "a", symlinkName, null);
         File symlinkFile = new File(root, symlinkName);
         VirtualFile virtualRootSymlink = VirtualFile.forFilePath(new FilePath(symlinkFile));
-        List<VirtualFile> children = Arrays.asList(virtualRootSymlink.list(true));
+        List<VirtualFile> children = Arrays.asList(virtualRootSymlink.list(LinkOption.NOFOLLOW_LINKS));
         assertThat(children, containsInAnyOrder(
                 VFMatcher.hasName("aa"),
                 VFMatcher.hasName("ab")
@@ -502,7 +504,7 @@ public class VirtualFileTest {
         FilePath symlinkPath = new FilePath(symlinkFile);
         VirtualFile symlinkVirtualPath = VirtualFile.forFilePath(symlinkPath);
         VirtualFile symlinkChildVirtualPath = symlinkVirtualPath.child("aa");
-        Collection<String> children = symlinkChildVirtualPath.list("**", null, true, true);
+        Collection<String> children = symlinkChildVirtualPath.list("**", null, true, LinkOption.NOFOLLOW_LINKS);
         assertThat(children, contains("aa.txt"));
     }
 
@@ -517,7 +519,7 @@ public class VirtualFileTest {
         File symlinkFile = new File(root, symlinkName);
         VirtualFile symlinkVirtualFile = VirtualFile.forFile(symlinkFile);
         VirtualFile symlinkChildVirtualFile = symlinkVirtualFile.child("aa");
-        Collection<String> children = symlinkChildVirtualFile.list("**", null, true, true);
+        Collection<String> children = symlinkChildVirtualFile.list("**", null, true, LinkOption.NOFOLLOW_LINKS);
         assertThat(children, contains("aa.txt"));
     }
 
@@ -529,7 +531,7 @@ public class VirtualFileTest {
         File root = tmp.getRoot();
         VirtualFile rootVirtualFile = VirtualFile.forFile(root);
         VirtualFile virtualRootChildA = rootVirtualFile.child("a");
-        List<VirtualFile> children = Arrays.asList(virtualRootChildA.list(true));
+        List<VirtualFile> children = Arrays.asList(virtualRootChildA.list(LinkOption.NOFOLLOW_LINKS));
         assertThat(children, containsInAnyOrder(
                 VFMatcher.hasName("aa"),
                 VFMatcher.hasName("ab")
@@ -545,7 +547,7 @@ public class VirtualFileTest {
         FilePath rootPath = new FilePath(root);
         VirtualFile rootVirtualPath = VirtualFile.forFilePath(rootPath);
         VirtualFile virtualRootChildA = rootVirtualPath.child("a");
-        List<VirtualFile> children = Arrays.asList(virtualRootChildA.list(true));
+        List<VirtualFile> children = Arrays.asList(virtualRootChildA.list(LinkOption.NOFOLLOW_LINKS));
         assertThat(children, containsInAnyOrder(
                 VFMatcher.hasName("aa"),
                 VFMatcher.hasName("ab")
@@ -568,7 +570,7 @@ public class VirtualFileTest {
         File root = tmp.getRoot();
         FileUtils.touch(root);
         VirtualFile virtualRoot = VirtualFile.forFile(root);
-        Collection<String> children = virtualRoot.list("**", null, true, true);
+        Collection<String> children = virtualRoot.list("**", null, true, LinkOption.NOFOLLOW_LINKS);
         assertThat(children, empty());
     }
 
@@ -578,7 +580,7 @@ public class VirtualFileTest {
         File root = tmp.getRoot();
         FileUtils.touch(root);
         VirtualFile virtualRoot = VirtualFile.forFilePath(new FilePath(root));
-        Collection<String> children = virtualRoot.list("**", null, true, true);
+        Collection<String> children = virtualRoot.list("**", null, true, LinkOption.NOFOLLOW_LINKS);
         assertThat(children, empty());
     }
 
@@ -588,7 +590,7 @@ public class VirtualFileTest {
         File root = tmp.getRoot();
         FileUtils.touch(root);
         VirtualFile virtualRoot = VirtualFile.forFilePath(new FilePath(root));
-        List<VirtualFile> children = Arrays.asList(virtualRoot.list(false));
+        List<VirtualFile> children = Arrays.asList(virtualRoot.list(new OpenOption[0]));
         assertThat(children, empty());
     }
 
@@ -680,7 +682,7 @@ public class VirtualFileTest {
 
         File root = tmp.getRoot();
         VirtualFile virtualRoot = new VirtualFileMinimalImplementation(root);
-        List<VirtualFile> children = Arrays.asList(virtualRoot.list(true));
+        List<VirtualFile> children = Arrays.asList(virtualRoot.list(LinkOption.NOFOLLOW_LINKS));
         assertThat(children, hasSize(2));
         assertThat(children, containsInAnyOrder(
                 VFMatcher.hasName("a"),
@@ -719,7 +721,7 @@ public class VirtualFileTest {
         File root = tmp.getRoot();
         VirtualFile virtualRoot = new VirtualFileMinimalImplementation(root);
         VirtualFile virtualRootChildA = virtualRoot.child("a");
-        List<VirtualFile> children = Arrays.asList(virtualRootChildA.list(true));
+        List<VirtualFile> children = Arrays.asList(virtualRootChildA.list(LinkOption.NOFOLLOW_LINKS));
         assertThat(children, hasSize(3));
         assertThat(children, containsInAnyOrder(
                 VFMatcher.hasName("aa"),
@@ -759,19 +761,19 @@ public class VirtualFileTest {
         File aaa = new File(aa, "aaa");
         aaa.mkdirs();
         File aaTxt = new File(aa, "aa.txt");
-        FileUtils.write(aaTxt, "aa", StandardCharsets.US_ASCII, false);
+        Files.writeString(aaTxt.toPath(), "aa", StandardCharsets.US_ASCII);
 
         File ab = new File(a, "ab");
         ab.mkdirs();
         File abTxt = new File(ab, "ab.txt");
-        FileUtils.write(abTxt, "ab", StandardCharsets.US_ASCII, false);
+        Files.writeString(abTxt.toPath(), "ab", StandardCharsets.US_ASCII);
 
         File b = new File(root, "b");
 
         File ba = new File(b, "ba");
         ba.mkdirs();
         File baTxt = new File(ba, "ba.txt");
-        FileUtils.write(baTxt, "ba", StandardCharsets.US_ASCII, false);
+        Files.writeString(baTxt.toPath(), "ba", StandardCharsets.US_ASCII);
 
         File _a = new File(b, "_a");
         new FilePath(_a).symlinkTo(a.getAbsolutePath(), TaskListener.NULL);
@@ -1041,7 +1043,7 @@ public class VirtualFileTest {
     public void testLength_FileVF() throws IOException {
         File ws = tmp.newFolder("ws");
         String childString = "child";
-        FileUtils.write(new File(ws, childString), childString);
+        Files.writeString(ws.toPath().resolve(childString), childString, StandardCharsets.US_ASCII);
         VirtualFile child = VirtualFile.forFile(ws).child(childString);
         assertThat(child.length(), is((long) childString.length()));
     }
@@ -1120,7 +1122,7 @@ public class VirtualFileTest {
         // which generally does nothing.
         File ws = tmp.newFolder("ws");
         String childString = "child";
-        FileUtils.write(new File(ws, childString), childString);
+        Files.writeString(ws.toPath().resolve(childString), childString, StandardCharsets.US_ASCII);
         VirtualFile child = new VirtualFileMinimalImplementation(ws).child(childString);
         String fileContents = IOUtils.toString(child.open());
         assertThat(childString, is(fileContents));
@@ -1134,12 +1136,12 @@ public class VirtualFileTest {
         // which generally does nothing.
         File ws = tmp.newFolder("ws");
         String childString = "child";
-        FileUtils.write(new File(ws, childString), childString);
+        Files.writeString(ws.toPath().resolve(childString), childString, StandardCharsets.US_ASCII);
         String linkString = "link";
         Util.createSymlink(ws, childString, linkString, TaskListener.NULL);
 
         VirtualFile link = new VirtualFileMinimalImplementation(ws).child(linkString);
-        String fileContents = IOUtils.toString(link.open(true));
+        String fileContents = IOUtils.toString(link.open(LinkOption.NOFOLLOW_LINKS));
         assertThat(childString, is(fileContents));
     }
 
@@ -1148,12 +1150,12 @@ public class VirtualFileTest {
     public void testOpenNoFollowLinks_NoFollowsLink_FileVF() throws Exception {
         File ws = tmp.newFolder("ws");
         String childString = "child";
-        FileUtils.write(new File(ws, childString), childString);
+        Files.writeString(ws.toPath().resolve(childString), childString, StandardCharsets.US_ASCII);
         String linkString = "link";
         Util.createSymlink(ws, childString, linkString, TaskListener.NULL);
 
         VirtualFile link = VirtualFile.forFile(ws).child(linkString);
-        assertThrows("Should have not followed links", IOException.class, () -> link.open(true));
+        assertThrows("Should have not followed links", IOException.class, () -> link.open(LinkOption.NOFOLLOW_LINKS));
     }
 
     @Test
@@ -1164,10 +1166,10 @@ public class VirtualFileTest {
         String symlinkName = "symlink";
         Util.createSymlink(tmp.getRoot(), ws.getName(), symlinkName, null);
         String childString = "child";
-        FileUtils.write(new File(ws, childString), childString);
+        Files.writeString(ws.toPath().resolve(childString), childString, StandardCharsets.US_ASCII);
         File childThroughSymlink = new File(tmp.getRoot(), "/" + symlinkName + "/" + childString);
         VirtualFile child = rootVirtualFile.child(symlinkName).child(childString);
-        assertThrows("Should have not followed links", IOException.class, () -> child.open(true));
+        assertThrows("Should have not followed links", IOException.class, () -> child.open(LinkOption.NOFOLLOW_LINKS));
     }
 
     @Test
@@ -1177,10 +1179,10 @@ public class VirtualFileTest {
         String symlinkName = "symlink";
         Util.createSymlink(tmp.getRoot(), ws.getName(), symlinkName, null);
         String childString = "child";
-        FileUtils.write(new File(ws, childString), childString);
+        Files.writeString(ws.toPath().resolve(childString), childString, StandardCharsets.US_ASCII);
         VirtualFile rootVirtualPath = VirtualFile.forFilePath(new FilePath(tmp.getRoot()));
         VirtualFile childVirtualPath = rootVirtualPath.child(symlinkName).child(childString);
-        assertThrows("Should have not followed links", IOException.class, () -> childVirtualPath.open(true));
+        assertThrows("Should have not followed links", IOException.class, () -> childVirtualPath.open(LinkOption.NOFOLLOW_LINKS));
     }
 
     @Test
@@ -1188,12 +1190,12 @@ public class VirtualFileTest {
     public void testOpenNoFollowLinks_NoFollowsLink_FilePathVF() throws Exception {
         File ws = tmp.newFolder("ws");
         String childString = "child";
-        FileUtils.write(new File(ws, childString), childString);
+        Files.writeString(ws.toPath().resolve(childString), childString, StandardCharsets.US_ASCII);
         String linkString = "link";
         Util.createSymlink(ws, childString, linkString, TaskListener.NULL);
 
         VirtualFile link = VirtualFile.forFilePath(new FilePath(ws)).child(linkString);
-        assertThrows("Should have not followed links", IOException.class, () -> link.open(true));
+        assertThrows("Should have not followed links", IOException.class, () -> link.open(LinkOption.NOFOLLOW_LINKS));
     }
 
     @Test
@@ -1236,7 +1238,7 @@ public class VirtualFileTest {
     public void testLength_FilePathVF() throws IOException {
         File ws = tmp.newFolder("ws");
         String childString = "child";
-        FileUtils.write(new File(ws, childString), childString);
+        Files.writeString(ws.toPath().resolve(childString), childString, StandardCharsets.US_ASCII);
         VirtualFile child = VirtualFile.forFilePath(new FilePath(ws)).child(childString);
         assertThat(child.length(), is((long) childString.length()));
     }
@@ -1441,13 +1443,13 @@ public class VirtualFileTest {
         // This test checks the method's behavior in the abstract base class,
         // which generally does nothing.
         VirtualFile virtualRoot = new VirtualFileMinimalImplementation(tmp.getRoot());
-        assertFalse(virtualRoot.hasSymlink(true));
+        assertFalse(virtualRoot.hasSymlink(LinkOption.NOFOLLOW_LINKS));
     }
 
     @Test
     public void hasSymlink_False_FilePathVF() throws IOException {
         VirtualFile virtualRoot = VirtualFile.forFilePath(new FilePath(tmp.getRoot()));
-        assertFalse(virtualRoot.hasSymlink(true));
+        assertFalse(virtualRoot.hasSymlink(LinkOption.NOFOLLOW_LINKS));
     }
 
     @Test
@@ -1459,13 +1461,13 @@ public class VirtualFileTest {
         FilePath symlinkPath = rootPath.child("symlink");
         symlinkPath.symlinkTo(childPath.getName(), null);
         VirtualFile virtualFile = VirtualFile.forFilePath(symlinkPath);
-        assertTrue(virtualFile.hasSymlink(true));
+        assertTrue(virtualFile.hasSymlink(LinkOption.NOFOLLOW_LINKS));
     }
 
     @Test
     public void hasSymlink_False_FileVF() throws IOException {
         VirtualFile virtualRoot = VirtualFile.forFile(tmp.getRoot());
-        assertFalse(virtualRoot.hasSymlink(true));
+        assertFalse(virtualRoot.hasSymlink(LinkOption.NOFOLLOW_LINKS));
     }
 
     @Test
@@ -1477,7 +1479,7 @@ public class VirtualFileTest {
         FilePath symlinkPath = rootPath.child("symlink");
         symlinkPath.symlinkTo(childPath.getName(), null);
         VirtualFile virtualFile = VirtualFile.forFile(new File(symlinkPath.toURI()));
-        assertTrue(virtualFile.hasSymlink(true));
+        assertTrue(virtualFile.hasSymlink(LinkOption.NOFOLLOW_LINKS));
     }
 
     private File createInvalidDirectorySymlink(String invalidSymlinkName) throws IOException, InterruptedException {
@@ -1493,7 +1495,7 @@ public class VirtualFileTest {
         String externalFolderName = "external";
         File externalFile = tmp.newFolder(externalFolderName);
         String childString = "child";
-        FileUtils.write(new File(externalFile, childString), childString);
+        Files.writeString(externalFile.toPath().resolve(childString), childString, StandardCharsets.US_ASCII);
         Util.createSymlink(ws, "../" + externalFolderName, "invalidSymlink", TaskListener.NULL);
         return ws;
     }

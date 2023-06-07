@@ -143,6 +143,7 @@ public class RunParameterDefinition extends SimpleParameterDefinition {
 
     @Extension @Symbol({"run", "runParam"})
     public static class DescriptorImpl extends ParameterDescriptor {
+        @NonNull
         @Override
         public String getDisplayName() {
             return Messages.RunParameterDefinition_DisplayName();

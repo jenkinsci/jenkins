@@ -26,50 +26,53 @@ THE SOFTWARE.
   Config page. derived class specific entries should go to configure-entries.jsp
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:f="/lib/form">
-
-  <l:layout type="one-column" permission="${it.EXTENDED_READ}" title="${%Config(it.displayName)}">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:f="/lib/form" xmlns:p="/lib/hudson/project">
+  <l:layout permission="${it.EXTENDED_READ}" title="${%Config(it.displayName)}">
     <j:set var="readOnlyMode" value="${!it.hasPermission(it.CONFIGURE)}" />
 
-    <l:js src="jsbundles/config-scrollspy.js" />
-    <l:css src="jsbundles/config-scrollspy.css" />
+    <l:header>
+      <script src="${resURL}/jsbundles/section-to-sidebar-items.js" type="text/javascript" defer="true" />
+    </l:header>
+
+    <l:breadcrumb title="${%Configuration}" />
+
+    <l:side-panel>
+      <l:app-bar title="${%Configure}" />
+      <div id="tasks" />
+    </l:side-panel>
 
     <l:main-panel>
-    <div class="container">
-      <div class="row">
-        <div class="jenkins-config-container">
+      <div class="behavior-loading"><l:spinner text="${%LOADING}"/></div>
 
-          <div class="behavior-loading"><l:spinner text="${%LOADING}"/></div>
+      <f:form method="post" class="jenkins-form" action="configSubmit" name="config" tableClass="config-table">
+        <l:app-bar title="${%General}" headingLevel="h2">
+          <p:config-disableBuild />
+        </l:app-bar>
 
-          <f:form method="post" action="configSubmit" name="config" tableClass="config-table scrollspy">
-            <j:set var="descriptor" value="${it.descriptor}" />
-            <j:set var="instance" value="${it}" />
+        <j:set var="descriptor" value="${it.descriptor}" />
+        <j:set var="instance" value="${it}" />
 
-            <div class="jenkins-section">
-              <f:entry title="${%Description}" help="${app.markupFormatter.helpUrl}">
-                <f:textarea name="description" value="${it.description}" codemirror-mode="${app.markupFormatter.codeMirrorMode}" codemirror-config="${app.markupFormatter.codeMirrorConfig}" previewEndpoint="/markupFormatter/previewDescription"/>
-              </f:entry>
-            </div>
-
-            <f:descriptorList field="properties" descriptors="${h.getJobPropertyDescriptors(it)}" forceRowSet="true"/>
-
-            <!-- additional entries from derived classes -->
-            <st:include page="configure-entries.jelly" />
-
-            <j:if test="${h.hasPermission(it,it.CONFIGURE)}">
-              <f:bottomButtonBar>
-                <!--<input type="button" name="StructureTest" value="Test" onclick="buildFormTree(this.form)" />-->
-                <f:submit value="${%Save}" large="true"/>
-                <f:apply value="${%Apply}" large="true" />
-              </f:bottomButtonBar>
-            </j:if>
-          </f:form>
-          <j:if test="${h.hasPermission(it,it.CONFIGURE)}">
-            <st:adjunct includes="lib.form.confirm" />
-          </j:if>
+        <div class="jenkins-section jenkins-section--no-border jenkins-!-margin-top-6">
+          <f:entry title="${%Description}" help="${app.markupFormatter.helpUrl}">
+            <f:textarea name="description" value="${it.description}" codemirror-mode="${app.markupFormatter.codeMirrorMode}" codemirror-config="${app.markupFormatter.codeMirrorConfig}" previewEndpoint="/markupFormatter/previewDescription"/>
+          </f:entry>
         </div>
-      </div>
-    </div>
+
+        <f:descriptorList field="properties" descriptors="${h.getJobPropertyDescriptors(it)}" forceRowSet="true"/>
+
+        <!-- additional entries from derived classes -->
+        <st:include page="configure-entries.jelly" />
+
+        <j:if test="${h.hasPermission(it,it.CONFIGURE)}">
+          <f:bottomButtonBar>
+            <f:submit value="${%Save}" />
+            <f:apply value="${%Apply}" />
+          </f:bottomButtonBar>
+        </j:if>
+      </f:form>
+      <j:if test="${h.hasPermission(it,it.CONFIGURE)}">
+        <st:adjunct includes="lib.form.confirm" />
+      </j:if>
     </l:main-panel>
   </l:layout>
 </j:jelly>

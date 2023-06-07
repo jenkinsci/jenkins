@@ -31,7 +31,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
 
-import com.gargoylesoftware.htmlunit.WebResponse;
 import hudson.Launcher;
 import hudson.Proc;
 import hudson.model.FreeStyleProject;
@@ -54,6 +53,7 @@ import javax.servlet.http.HttpServletResponse;
 import jenkins.model.Jenkins;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.output.TeeOutputStream;
+import org.htmlunit.WebResponse;
 import org.junit.ClassRule;
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -108,7 +108,7 @@ public class CLITest {
         args.addAll(Arrays.asList(modeArgs));
         args.addAll(Arrays.asList("build", "-s", "-v", "p"));
         Proc proc = new Launcher.LocalLauncher(StreamTaskListener.fromStderr()).launch().cmds(args).stdout(new TeeOutputStream(baos, System.out)).stderr(System.err).start();
-        while (!baos.toString(Charset.defaultCharset().name()).contains("Sleeping ")) {
+        while (!baos.toString(Charset.defaultCharset()).contains("Sleeping ")) {
             if (!proc.isAlive()) {
                 throw new AssertionError("Process failed to start with " + proc.join());
             }
@@ -129,7 +129,7 @@ public class CLITest {
                 "java", "-jar", jar.getAbsolutePath(), "-s", url, "-http", "-user", "asdf", "who-am-i"
         ).stdout(baos).stderr(baos).join();
 
-        assertThat(baos.toString(Charset.defaultCharset().name()), containsString("There's no Jenkins running at"));
+        assertThat(baos.toString(Charset.defaultCharset()), containsString("There's no Jenkins running at"));
         assertNotEquals(0, ret);
         // TODO -webSocket currently produces a stack trace
     }
@@ -187,7 +187,7 @@ public class CLITest {
             ).stdout(baos).stderr(baos).join();
 
             //assertThat(baos.toString(), containsString("There's no Jenkins running at"));
-            assertThat(baos.toString(Charset.defaultCharset().name()), containsString("Authenticated as: anonymous"));
+            assertThat(baos.toString(Charset.defaultCharset()), containsString("Authenticated as: anonymous"));
             assertEquals(0, ret);
         }
     }
@@ -209,7 +209,7 @@ public class CLITest {
                     .stderr(baos)
                     .stdin(CLITest.class.getResourceAsStream("huge-stdin.txt"))
                     .join();
-            assertThat(baos.toString(Charset.defaultCharset().name()), not(containsString("java.io.IOException: Stream is closed")));
+            assertThat(baos.toString(Charset.defaultCharset()), not(containsString("java.io.IOException: Stream is closed")));
             assertEquals(0, ret);
         }
     }

@@ -26,7 +26,6 @@ package jenkins.scm;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.model.Job;
 import hudson.model.Result;
 import hudson.model.Run;
@@ -35,7 +34,6 @@ import hudson.scm.ChangeLogSet;
 import hudson.scm.SCM;
 import hudson.util.AdaptedIterator;
 import java.util.AbstractSet;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -49,7 +47,6 @@ import org.kohsuke.stapler.export.Exported;
  *
  * @since 2.60
  */
-@SuppressFBWarnings(value = "NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE", justification = "TODO needs triage")
 public interface RunWithSCM<JobT extends Job<JobT, RunT>,
         RunT extends Run<JobT, RunT> & RunWithSCM<JobT, RunT>> {
 
@@ -96,12 +93,12 @@ public interface RunWithSCM<JobT extends Job<JobT, RunT>,
             return calculateCulprits();
         }
 
-        return new AbstractSet<User>() {
-            private Set<String> culpritIds = Collections.unmodifiableSet(new HashSet<>(getCulpritIds()));
+        return new AbstractSet<>() {
+            private Set<String> culpritIds = Set.copyOf(getCulpritIds());
 
             @Override
             public Iterator<User> iterator() {
-                return new AdaptedIterator<String, User>(culpritIds.iterator()) {
+                return new AdaptedIterator<>(culpritIds.iterator()) {
                     @Override
                     protected User adapt(String id) {
                         // TODO: Probably it should not auto-create users

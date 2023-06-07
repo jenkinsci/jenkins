@@ -28,7 +28,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
 
-import com.gargoylesoftware.htmlunit.Page;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.FilePath;
 import hudson.model.DownloadService;
@@ -42,6 +41,8 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
@@ -54,11 +55,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import jenkins.model.Jenkins;
 import jenkins.util.JSONSignatureValidator;
-import org.apache.commons.io.FileUtils;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.handler.AbstractHandler;
+import org.htmlunit.Page;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -90,7 +91,7 @@ public class SetupWizardTest {
         final FilePath adminPassFile = wizard.getInitialAdminPasswordFile();
         ByteArrayOutputStream ostream = new ByteArrayOutputStream();
         adminPassFile.copyTo(ostream);
-        final String password = ostream.toString(StandardCharsets.UTF_8.name());
+        final String password = ostream.toString(StandardCharsets.UTF_8);
     }
 
     @Test
@@ -184,11 +185,11 @@ public class SetupWizardTest {
         }
 
         public void init() throws IOException {
-            File newFile = new File(tmpdir, "platform-plugins.json");
-            FileUtils.write(newFile, "[ { "
+            Path newPath = tmpdir.toPath().resolve("platform-plugins.json");
+            Files.writeString(newPath, "[ { "
                     + "\"category\":\"Organization and Administration\", "
                     + "\"plugins\": [ { \"name\": \"antisamy-markup-formatter\" } ]"
-                    + "} ]");
+                    + "} ]", StandardCharsets.UTF_8);
         }
     }
 
@@ -202,11 +203,11 @@ public class SetupWizardTest {
         }
 
         public void init() throws IOException {
-            File newFile = new File(tmpdir, "platform-plugins.json");
-            FileUtils.write(newFile, "{ \"categories\" : [ { "
+            Path newPath = tmpdir.toPath().resolve("platform-plugins.json");
+            Files.writeString(newPath, "{ \"categories\" : [ { "
                     + "\"category\":\"Administration and Organization\", "
                     + "\"plugins\": [ { \"name\": \"dashboard-view\"} ]"
-                    + "} ] }");
+                    + "} ] }", StandardCharsets.UTF_8);
         }
     }
 

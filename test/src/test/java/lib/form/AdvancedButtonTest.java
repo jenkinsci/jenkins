@@ -4,13 +4,13 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlFormUtil;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.model.InvisibleAction;
 import hudson.model.RootAction;
 import hudson.util.FormValidation;
 import net.sf.json.JSONObject;
+import org.htmlunit.html.HtmlForm;
+import org.htmlunit.html.HtmlFormUtil;
+import org.htmlunit.html.HtmlPage;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -31,7 +31,7 @@ public class AdvancedButtonTest {
     public void testNestedOptionalBlock() throws Exception {
         HtmlPage page = j.createWebClient().goTo("self/testNestedOptionalBlock");
         HtmlForm form = page.getFormByName("config");
-        HtmlFormUtil.getButtonByCaption(form, "Advanced...").click();
+        HtmlFormUtil.getButtonByCaption(form, "Advanced").click();
         form.getInputByName("c").click();
 
         j.submit(form);
@@ -43,7 +43,7 @@ public class AdvancedButtonTest {
         HtmlPage page = j.createWebClient().goTo("self/testSectionInsideOfAdvanced");
         HtmlForm form = page.getFormByName("config");
         assertFalse(form.getInputByName("b").isDisplayed());
-        HtmlFormUtil.getButtonByCaption(form, "Advanced...").click();
+        HtmlFormUtil.getButtonByCaption(form, "Advanced").click();
         assertTrue(form.getInputByName("b").isDisplayed());
     }
 

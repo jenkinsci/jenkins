@@ -36,7 +36,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.Collections;
-import java.util.concurrent.Callable;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -68,7 +68,7 @@ public class OldDataMonitorTest {
         OldDataMonitor odm = OldDataMonitor.get(r.jenkins);
         FreeStyleProject p = r.jenkins.getItemByFullName("busted", FreeStyleProject.class);
         assertNotNull(p);
-        assertEquals(Collections.singleton(p), odm.getData().keySet());
+        assertEquals(Set.of(p), odm.getData().keySet());
         odm.doDiscard(null, null);
         assertEquals(Collections.emptySet(), odm.getData().keySet());
         // did not manage to save p, but at least we are not holding onto a reference to it anymore
@@ -83,7 +83,7 @@ public class OldDataMonitorTest {
         r.jenkins.getQueue().clearLeftItems();
         p._getRuns().purgeCache();
         b = p.getBuildByNumber(1);
-        assertEquals(Collections.singleton(b), OldDataMonitor.get(r.jenkins).getData().keySet());
+        assertEquals(Set.of(b), OldDataMonitor.get(r.jenkins).getData().keySet());
         WeakReference<?> ref = new WeakReference<>(b);
         b = null;
         MemoryAssert.assertGC(ref, true);
@@ -102,26 +102,20 @@ public class OldDataMonitorTest {
         final OldDataMonitor oldDataMonitor = OldDataMonitor.get(r.jenkins);
         final CountDownLatch ensureEntry = new CountDownLatch(1);
         final CountDownLatch preventExit = new CountDownLatch(1);
-        Saveable slowSavable = new Saveable() {
-            @Override
-            public void save() {
-                try {
-                    ensureEntry.countDown();
-                    preventExit.await();
-                } catch (InterruptedException e) {
-                }
+        Saveable slowSavable = () -> {
+            try {
+                ensureEntry.countDown();
+                preventExit.await();
+            } catch (InterruptedException e) {
             }
         };
 
         OldDataMonitor.report(slowSavable, (String) null);
         ExecutorService executors = Executors.newSingleThreadExecutor();
 
-        Future<Void> discardFuture = executors.submit(new Callable<Void>() {
-            @Override
-            public Void call() {
-                oldDataMonitor.doDiscard(Stapler.getCurrentRequest(), Stapler.getCurrentResponse());
-                return null;
-            }
+        Future<Void> discardFuture = executors.submit(() -> {
+            oldDataMonitor.doDiscard(Stapler.getCurrentRequest(), Stapler.getCurrentResponse());
+            return null;
         });
 
         ensureEntry.await();
@@ -129,7 +123,7 @@ public class OldDataMonitorTest {
         File xml = File.createTempFile("OldDataMonitorTest.slowDiscard", "xml");
         xml.deleteOnExit();
         OldDataMonitor.changeListener
-                .onChange(new Saveable() { @Override public void save() {} },
+                .onChange(() -> {},
                         new XmlFile(xml));
 
         preventExit.countDown();
@@ -145,7 +139,7 @@ public class OldDataMonitorTest {
         p.delete();
         OldDataMonitor.report(build, (String) null);
 
-        assertEquals(Collections.singleton(build), odm.getData().keySet());
+        assertEquals(Set.of(build), odm.getData().keySet());
         odm.doDiscard(null, null);
         assertEquals(Collections.emptySet(), odm.getData().keySet());
 

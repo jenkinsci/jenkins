@@ -24,19 +24,20 @@
 
 package jenkins.model;
 
-import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThrows;
 
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
-import com.gargoylesoftware.htmlunit.HttpMethod;
-import com.gargoylesoftware.htmlunit.WebRequest;
 import hudson.model.FreeStyleProject;
 import hudson.model.ParametersDefinitionProperty;
 import hudson.model.Queue;
 import hudson.model.StringParameterDefinition;
 import java.net.URL;
 import javax.servlet.http.HttpServletResponse;
+import org.htmlunit.FailingHttpStatusCodeException;
+import org.htmlunit.HttpMethod;
+import org.htmlunit.WebRequest;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -90,8 +91,8 @@ public class ParameterizedJobMixInTest {
         long triggerTime = System.currentTimeMillis();
 
         Queue.Item item = Jenkins.get().getQueue().getItem(1);
-        Assert.assertTrue(item instanceof Queue.WaitingItem);
-        Assert.assertTrue(item.task instanceof FreeStyleProject);
+        assertThat(item, instanceOf(Queue.WaitingItem.class));
+        assertThat(item.task, instanceOf(FreeStyleProject.class));
 
         Queue.WaitingItem waitingItem = (Queue.WaitingItem) item;
         Assert.assertTrue(waitingItem.timestamp.getTimeInMillis() - triggerTime > 45000);

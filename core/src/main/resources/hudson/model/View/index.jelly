@@ -27,6 +27,7 @@ THE SOFTWARE.
     <l:layout title="${(it.class.name=='hudson.model.AllView' and it.ownerItemGroup == app) ? '%Dashboard' : it.displayName}${not empty it.ownerItemGroup.fullDisplayName?' ['+it.ownerItemGroup.fullDisplayName+']':''}">
       <j:set var="view" value="${it}"/> <!-- expose view to the scripts we include from owner -->
         <st:include page="sidepanel.jelly" />
+        <!-- no need for additional breadcrumb here as we're on an index page already including breadcrumb -->
         <l:main-panel>
           <st:include page="view-index-top.jelly" it="${it.owner}" optional="true">
             <!-- allow the owner to take over the top section, but we also need the default to be backward compatible -->
@@ -37,21 +38,15 @@ THE SOFTWARE.
               <t:editableDescription permission="${it.CONFIGURE}"/>
             </div>
           </st:include>
-          
+
           <j:set var="items" value="${it.items}"/>
           <st:include page="main.jelly" />
         </l:main-panel>
         <l:header>
-            <!-- for screen resolution detection -->
-            <l:yui module="cookie" />
-                <script id="screenResolution-script" data-use-secure-cookie="${request.secure}">
-                  var selfScript = document.querySelector('#screenResolution-script');
-                  var secureCookie = selfScript.getAttribute('data-use-secure-cookie');
-                  YAHOO.util.Cookie.set("screenResolution", screen.width+"x"+screen.height, {
-                    path: "/",
-                    secure: secureCookie === 'true'
-                  });
-                </script>
+          <!-- for screen resolution detection -->
+          <l:yui module="cookie" />
+          <script id="screenResolution-script" data-use-secure-cookie="${request.secure}"/>
+          <st:adjunct includes="hudson.model.View.screen-resolution"/>
         </l:header>
     </l:layout>
 </st:compress>

@@ -176,6 +176,7 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
 
         @Extension(ordinal = 100) @Symbol("always")
         public static class DescriptorImpl extends Descriptor<RetentionStrategy<?>> {
+            @NonNull
             @Override
             public String getDisplayName() {
                 return Messages.RetentionStrategy_Always_displayName();
@@ -289,6 +290,7 @@ public abstract class RetentionStrategy<T extends Computer> extends AbstractDesc
 
         @Extension @Symbol("demand")
         public static class DescriptorImpl extends Descriptor<RetentionStrategy<?>> {
+            @NonNull
             @Override
             public String getDisplayName() {
                 return Messages.RetentionStrategy_Demand_displayName();

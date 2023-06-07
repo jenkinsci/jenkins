@@ -30,6 +30,7 @@ import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.BulkChange;
 import hudson.DescriptorExtensionList;
 import hudson.ExtensionList;
@@ -59,13 +60,13 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -439,8 +440,8 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
             QueryParameter qp = p.annotation(QueryParameter.class);
             if (qp != null) {
                 String name = qp.value();
-                if (name.length() == 0) name = p.name();
-                if (name == null || name.length() == 0)
+                if (name.isEmpty()) name = p.name();
+                if (name == null || name.isEmpty())
                     continue;   // unknown parameter name. we'll report the error when the form is submitted.
 
                 RelativePath rp = p.annotation(RelativePath.class);
@@ -568,7 +569,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
      *      Always non-null (see note above.) This object includes represents the entire submission.
      * @param formData
      *      The JSON object that captures the configuration data for this {@link Descriptor}.
-     *      See https://www.jenkins.io/doc/developer/forms/structured-form-submission/
+     *      See <a href="https://www.jenkins.io/doc/developer/forms/structured-form-submission/">the developer documentation</a>.
      *      Always non-null.
      *
      * @throws FormException
@@ -599,7 +600,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
      * Replacement for {@link StaplerRequest#bindJSON(Class, JSONObject)} which honors {@link #newInstance(StaplerRequest, JSONObject)}.
      * This is automatically used inside {@link #newInstance(StaplerRequest, JSONObject)} so a direct call would only be necessary
      * in case the top level binding might use a {@link Descriptor} which overrides {@link #newInstance(StaplerRequest, JSONObject)}.
-     * @since TODO
+     * @since 2.342
      */
     public static <T> T bindJSON(StaplerRequest req, Class<T> type, JSONObject src) {
         return bindJSON(req, type, src, false);
@@ -755,6 +756,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
         return getHelpFile(getKlass(), fieldName);
     }
 
+    @SuppressFBWarnings(value = "SBSC_USE_STRINGBUFFER_CONCATENATION", justification = "no big deal")
     public String getHelpFile(Klass<?> clazz, String fieldName) {
         HelpRedirect r = helpRedirect.get(fieldName);
         if (r != null)    return r.resolve();
@@ -820,7 +822,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
      *
      * @param json
      *      The JSON object that captures the configuration data for this {@link Descriptor}.
-     *      See https://www.jenkins.io/doc/developer/forms/structured-form-submission/
+     *      See <a href="https://www.jenkins.io/doc/developer/forms/structured-form-submission/">the developer documentation</a>.
      * @return false
      *      to keep the client in the same config page.
      */
@@ -863,7 +865,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
     }
 
     private String getViewPage(Class<?> clazz, String pageName, String defaultValue) {
-        return getViewPage(clazz, Collections.singleton(pageName), defaultValue);
+        return getViewPage(clazz, Set.of(pageName), defaultValue);
     }
 
     private String getViewPage(Class<?> clazz, Collection<String> pageNames, String defaultValue) {
@@ -978,7 +980,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
                 rsp.setContentType("text/html;charset=UTF-8");
                 try (InputStream in = url.openStream()) {
                     String literal = IOUtils.toString(in, StandardCharsets.UTF_8);
-                    rsp.getWriter().println(Util.replaceMacro(literal, Collections.singletonMap("rootURL", req.getContextPath())));
+                    rsp.getWriter().println(Util.replaceMacro(literal, Map.of("rootURL", req.getContextPath())));
                 }
                 return;
             }

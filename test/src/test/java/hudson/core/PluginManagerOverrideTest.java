@@ -1,10 +1,11 @@
 package hudson.core;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.PluginManagerStaplerOverride;
+import org.htmlunit.html.HtmlPage;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -23,7 +24,7 @@ public class PluginManagerOverrideTest {
     public void testViewOverrides() throws Exception {
         // Verify extension registered correctly and comes back in overrides
         assertEquals(1, PluginManagerStaplerOverride.all().size());
-        assertTrue(PluginManagerStaplerOverride.all().get(0) instanceof BasicPluginManagerOverride);
+        assertThat(PluginManagerStaplerOverride.all().get(0), instanceOf(BasicPluginManagerOverride.class));
 
         // Verify we can load untouched resources
         JenkinsRule.WebClient client = j.createWebClient();

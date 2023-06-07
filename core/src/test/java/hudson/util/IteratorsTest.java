@@ -25,6 +25,9 @@
 package hudson.util;
 
 import static java.util.Arrays.asList;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -62,7 +65,7 @@ public class IteratorsTest {
     public void wrap() {
         List<Integer> lst = Iterators.sequence(1, 4);
         Iterable<Integer> wrapped = Iterators.wrap(lst);
-        assertFalse(wrapped instanceof List);
+        assertThat(wrapped, not(instanceOf(List.class)));
         Iterator<Integer> iter = wrapped.iterator();
         assertTrue(iter.hasNext());
         assertEquals(1, (int) iter.next());

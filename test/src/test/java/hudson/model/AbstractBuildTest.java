@@ -26,6 +26,7 @@ package hudson.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
@@ -33,8 +34,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.WebResponse;
 import hudson.EnvVars;
 import hudson.Functions;
 import hudson.Launcher;
@@ -50,12 +49,13 @@ import hudson.tasks.Shell;
 import hudson.util.OneShotEvent;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import org.htmlunit.Page;
+import org.htmlunit.WebResponse;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -157,10 +157,10 @@ public class AbstractBuildTest {
 
             Object culpritsArray = json.get("culprits");
             assertNotNull(culpritsArray);
-            assertTrue(culpritsArray instanceof JSONArray);
+            assertThat(culpritsArray, instanceOf(JSONArray.class));
             Set<String> fromApi = new TreeSet<>();
             for (Object o : ((JSONArray) culpritsArray).toArray()) {
-                assertTrue(o instanceof JSONObject);
+                assertThat(o, instanceOf(JSONObject.class));
                 Object id = ((JSONObject) o).get("id");
                 if (id instanceof String) {
                     fromApi.add((String) id);
@@ -203,7 +203,7 @@ public class AbstractBuildTest {
 
         // 4th build, unstable. culprit list should continue
         scm.addChange().withAuthor("dave");
-        p.getBuildersList().replaceBy(Collections.singleton(new UnstableBuilder()));
+        p.getBuildersList().replaceBy(Set.of(new UnstableBuilder()));
         b = j.buildAndAssertStatus(Result.UNSTABLE, p);
         assertCulprits(b, "bob", "charlie", "dave");
 

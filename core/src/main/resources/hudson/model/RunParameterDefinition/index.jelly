@@ -28,9 +28,9 @@ THE SOFTWARE.
 	xmlns:i="jelly:fmt" xmlns:p="/lib/hudson/project">
         <j:set var="escapeEntryTitleAndDescription" value="false"/>
         <f:entry title="${h.escape(it.name)}" description="${it.formattedDescription}">
-		<div name="parameter">
+		<div class="jenkins-select" name="parameter">
 			<input type="hidden" name="name" value="${it.name}" />
-            <select name="runId">
+            <select class="jenkins-select__input" name="runId">
               <j:forEach var="run" items="${it.builds}">
                 <option value="${run.externalizableId}">${run.fullDisplayName}</option>
               </j:forEach>
