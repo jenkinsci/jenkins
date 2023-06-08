@@ -46,7 +46,6 @@ import org.apache.commons.fileupload.FileItemHeaders;
 import org.apache.commons.fileupload.disk.DiskFileItem;
 import org.apache.commons.fileupload.util.FileItemHeadersImpl;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.IOUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -288,9 +287,7 @@ public class FileParameterValue extends ParameterValue {
         @Override
         public byte[] get() {
             try {
-                try (InputStream inputStream = Files.newInputStream(file.toPath())) {
-                    return IOUtils.toByteArray(inputStream);
-                }
+                return Files.readAllBytes(file.toPath());
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
             }

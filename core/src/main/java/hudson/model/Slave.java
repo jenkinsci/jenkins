@@ -71,7 +71,6 @@ import jenkins.model.Jenkins;
 import jenkins.security.MasterToSlaveCallable;
 import jenkins.slaves.WorkspaceLocator;
 import jenkins.util.SystemProperties;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
@@ -470,7 +469,7 @@ public abstract class Slave extends Node implements Serializable {
 
         public byte[] readFully() throws IOException {
             try (InputStream in = connect().getInputStream()) {
-                return IOUtils.toByteArray(in);
+                return in.readAllBytes();
             }
         }
 

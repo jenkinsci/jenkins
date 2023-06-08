@@ -7,13 +7,13 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlFormUtil;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.model.User;
 import java.io.IOException;
 import java.net.URL;
 import jenkins.model.Jenkins;
+import org.htmlunit.html.HtmlForm;
+import org.htmlunit.html.HtmlFormUtil;
+import org.htmlunit.html.HtmlPage;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -68,8 +68,8 @@ public class LoginTest {
         WebClient wc = j.createWebClient();
         HtmlPage page = wc.goTo("login");
         HtmlForm form = page.getFormByName("login");
-        form.getInputByName("j_username").setValueAttribute("alice");
-        form.getInputByName("j_password").setValueAttribute("oops I forgot");
+        form.getInputByName("j_username").setValue("alice");
+        form.getInputByName("j_password").setValue("oops I forgot");
         wc.setThrowExceptionOnFailingStatusCode(false);
         page = (HtmlPage) HtmlFormUtil.submit(form, null);
         assertThat(page.asNormalizedText(), containsString("Invalid username or password"));
@@ -80,8 +80,8 @@ public class LoginTest {
         HtmlPage page = wc.goTo("login");
 
         HtmlForm form = page.getFormByName("login");
-        form.getInputByName("j_username").setValueAttribute("alice");
-        form.getInputByName("j_password").setValueAttribute("alice");
+        form.getInputByName("j_username").setValue("alice");
+        form.getInputByName("j_password").setValue("alice");
         form.getInputByName("remember_me").setChecked(true);
         return form;
     }

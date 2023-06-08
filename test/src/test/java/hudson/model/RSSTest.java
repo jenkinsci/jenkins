@@ -35,7 +35,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
-import com.gargoylesoftware.htmlunit.xml.XmlPage;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -45,6 +44,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import jenkins.model.Jenkins;
+import org.htmlunit.xml.XmlPage;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.FailureBuilder;

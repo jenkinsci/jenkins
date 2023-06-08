@@ -33,9 +33,7 @@ THE SOFTWARE.
     </l:header>
 
     <l:main-panel>
-    <div class="container" id="add-item-panel" style="display: none;">
-      <div class="row">
-        <div class="col-md-offset-2 col-md-20">
+    <div id="add-item-panel" style="display: none;">
           <form method="post" action="createItem" name="createItem" id="createItem">
             <div class="header">
               <div class="add-item-name">
@@ -71,9 +69,7 @@ THE SOFTWARE.
               </div>
             </div>
           </form>
-        </div>
       </div>
-    </div>
     </l:main-panel>
   </l:layout>
 </j:jelly>

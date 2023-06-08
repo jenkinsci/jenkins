@@ -2,8 +2,8 @@ package jenkins.install;
 
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
+import jakarta.inject.Provider;
 import java.util.List;
-import javax.inject.Provider;
 
 /**
  * Allows plugging in to the lifecycle when determining InstallState
