@@ -728,7 +728,8 @@ table.parameters > tbody:hover {
 }
 
 #buildHistory .build-rss-links {
-  float: right;
+  display: flex;
+  justify-content: end;
 }
 
 #buildHistory .build-rss-links a {
