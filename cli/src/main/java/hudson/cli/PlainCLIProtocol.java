@@ -277,7 +277,7 @@ class PlainCLIProtocol {
                 onStart();
                 return true;
             case STDIN:
-                onStdin(IOUtils.toByteArray(dis));
+                onStdin(dis.readAllBytes());
                 return true;
             case END_STDIN:
                 onEndStdin();
@@ -327,10 +327,10 @@ class PlainCLIProtocol {
                 onExit(dis.readInt());
                 return true;
             case STDOUT:
-                onStdout(IOUtils.toByteArray(dis));
+                onStdout(dis.readAllBytes());
                 return true;
             case STDERR:
-                onStderr(IOUtils.toByteArray(dis));
+                onStderr(dis.readAllBytes());
                 return true;
             default:
                 return false;

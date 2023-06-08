@@ -405,7 +405,7 @@ public class DirectoryBrowserSupportTest {
             Map.Entry<String, String> entry = artifacts.entrySet().iterator().next();
             assertEquals("f", entry.getKey());
             try (InputStream is = workspace.child(entry.getValue()).read()) {
-                byte[] data = IOUtils.toByteArray(is);
+                byte[] data = is.readAllBytes();
                 ExtensionList.lookupSingleton(ContentAddressableStore.class).files.add(data);
                 hash = Util.getDigestOf(new ByteArrayInputStream(data));
             }
@@ -1378,7 +1378,7 @@ public class DirectoryBrowserSupportTest {
             Map.Entry<String, String> entry = artifacts.entrySet().iterator().next();
             assertEquals("f", entry.getKey());
             try (InputStream is = workspace.child(entry.getValue()).read()) {
-                byte[] data = IOUtils.toByteArray(is);
+                byte[] data = is.readAllBytes();
                 ExtensionList.lookupSingleton(ContentAddressableStore.class).files.add(data);
                 hash = Util.getDigestOf(new ByteArrayInputStream(data));
             }
