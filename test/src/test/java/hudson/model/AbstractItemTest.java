@@ -3,13 +3,13 @@ package hudson.model;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertThrows;
 
-import com.gargoylesoftware.htmlunit.HttpMethod;
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.util.NameValuePair;
+import hudson.ExtensionList;
+import hudson.XmlFile;
+import hudson.model.listeners.SaveableListener;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
 import hudson.security.AccessDeniedException3;
@@ -22,12 +22,17 @@ import java.nio.file.Path;
 import java.util.List;
 import jenkins.model.Jenkins;
 import jenkins.model.ProjectNamingStrategy;
+import org.htmlunit.HttpMethod;
+import org.htmlunit.Page;
+import org.htmlunit.WebRequest;
+import org.htmlunit.util.NameValuePair;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.SleepBuilder;
+import org.jvnet.hudson.test.TestExtension;
 
 public class AbstractItemTest {
 
@@ -50,8 +55,14 @@ public class AbstractItemTest {
         Path path = p.getConfigFile().getFile().toPath();
         Files.writeString(path, Files.readString(path, StandardCharsets.UTF_8).replaceAll("Hello World", "Good Evening"), StandardCharsets.UTF_8);
 
+        TestSaveableListener testSaveableListener = ExtensionList.lookupSingleton(TestSaveableListener.class);
+        testSaveableListener.setSaveable(p);
+
         // reload away
         p.doReload();
+
+        assertFalse(SaveableListener.class.getSimpleName() + " should not have been called", testSaveableListener.wasCalled());
+
 
         assertEquals("Good Evening", p.getDescription());
 
@@ -143,4 +154,25 @@ public class AbstractItemTest {
         return u.getPath().substring(j.contextPath.length() + 1);
     }
 
+    @TestExtension("reload")
+    public static class TestSaveableListener extends SaveableListener {
+        private Saveable saveable;
+
+        private boolean called;
+
+        private void setSaveable(Saveable saveable) {
+            this.saveable = saveable;
+        }
+
+        public boolean wasCalled() {
+            return called;
+        }
+
+        @Override
+        public void onChange(Saveable o, XmlFile file) {
+            if (o == saveable) {
+                this.called = true;
+            }
+        }
+    }
 }
