@@ -52,6 +52,8 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import jenkins.model.Jenkins;
+import jenkins.widgets.ExecutorsWidget;
+import jenkins.widgets.HasWidgetHelper;
 import org.htmlunit.FailingHttpStatusCodeException;
 import org.htmlunit.HttpMethod;
 import org.htmlunit.Page;
@@ -253,7 +255,7 @@ public class ComputerTest {
         );
 
         WebClient wc = j.createWebClient();
-        Page page = wc.getPage(wc.createCrumbedUrl("ajaxExecutors"));
+        Page page = wc.getPage(wc.createCrumbedUrl(HasWidgetHelper.getWidget(agent.toComputer(), ExecutorsWidget.class).orElseThrow().getUrl() + "ajax"));
         String content = page.getWebResponse().getContentAsString();
         assertThat(content, not(containsString(message)));
     }

@@ -585,7 +585,7 @@ Any Jenkins contributors are welcome to participate in backporting and release c
 * link:https://github.com/jenkinsci/core-pr-tester[Core Pull Request Tester]
 * link:https://github.com/jenkinsci/core-changelog-generator[Core Changelog Generator]
 * link:https://github.com/jenkins-infra/release/tree/master/tools[Toolkit for LTS backporting]
-* link:/update-since-todo.sh[Javadoc @since version updater]
+* link:/update-since-todo.py[@since version updater]
 
 == Feedback
 
