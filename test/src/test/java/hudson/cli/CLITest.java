@@ -31,7 +31,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
 
-import com.gargoylesoftware.htmlunit.WebResponse;
 import hudson.Launcher;
 import hudson.Proc;
 import hudson.model.FreeStyleProject;
@@ -54,6 +53,7 @@ import javax.servlet.http.HttpServletResponse;
 import jenkins.model.Jenkins;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.output.TeeOutputStream;
+import org.htmlunit.WebResponse;
 import org.junit.ClassRule;
 import org.junit.Ignore;
 import org.junit.Rule;

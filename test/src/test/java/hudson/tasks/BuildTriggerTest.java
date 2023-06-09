@@ -168,7 +168,7 @@ public class BuildTriggerTest {
         config.getButtonByCaption("Add post-build action").click(); // lib/hudson/project/config-publishers2.jelly
         page.getAnchorByText("Build other projects").click();
         HtmlTextInput childProjects = config.getInputByName("buildTrigger.childProjects");
-        childProjects.setValueAttribute(downstreamName);
+        childProjects.setValue(downstreamName);
         submit(config);
         */
         assertEquals(List.of(downstream), upstream.getDownstreamProjects());

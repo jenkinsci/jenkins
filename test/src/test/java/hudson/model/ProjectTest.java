@@ -25,9 +25,9 @@
 package hudson.model;
 
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
-import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -35,12 +35,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
-import com.gargoylesoftware.htmlunit.HttpMethod;
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.html.HtmlElement;
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.javascript.host.event.Event;
 import hudson.EnvVars;
 import hudson.FilePath;
 import hudson.Functions;
@@ -98,6 +92,12 @@ import jenkins.model.Jenkins;
 import jenkins.model.WorkspaceWriter;
 import jenkins.scm.DefaultSCMCheckoutStrategyImpl;
 import jenkins.scm.SCMCheckoutStrategy;
+import org.htmlunit.HttpMethod;
+import org.htmlunit.WebRequest;
+import org.htmlunit.html.HtmlElement;
+import org.htmlunit.html.HtmlForm;
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.javascript.host.event.Event;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
@@ -271,7 +271,7 @@ public class ProjectTest {
         ((HtmlElement) form.querySelectorAll(".advancedButton").get(0)).click();
         // required due to the new default behavior of click
         form.getInputByName("hasCustomScmCheckoutRetryCount").click(new Event(), false, false, false, true);
-        form.getInputByName("scmCheckoutRetryCount").setValueAttribute("7");
+        form.getInputByName("scmCheckoutRetryCount").setValue("7");
         j.submit(form);
         assertEquals("Scm retry count was set.", 7, p.getScmCheckoutRetryCount());
     }

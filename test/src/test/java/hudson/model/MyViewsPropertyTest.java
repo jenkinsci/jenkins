@@ -30,12 +30,12 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import hudson.model.Descriptor.FormException;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
 import hudson.security.Permission;
 import java.io.IOException;
 import jenkins.model.Jenkins;
+import org.htmlunit.html.HtmlForm;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -217,7 +217,7 @@ public class MyViewsPropertyTest {
         property.setUser(user);
         user.addProperty(property);
         HtmlForm form = rule.createWebClient().goTo(property.getUrl() + "/newView").getFormByName("createItem");
-        form.getInputByName("name").setValueAttribute("foo");
+        form.getInputByName("name").setValue("foo");
         form.getRadioButtonsByName("mode").get(0).setChecked(true);
         rule.submit(form);
         assertNotNull("Property should contain view foo", property.getView("foo"));
