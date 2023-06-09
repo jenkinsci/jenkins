@@ -34,9 +34,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.model.Computer;
 import hudson.remoting.VirtualChannel;
 import hudson.util.FormValidation;
@@ -48,6 +45,9 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 import jenkins.security.MasterToSlaveCallable;
+import org.htmlunit.FailingHttpStatusCodeException;
+import org.htmlunit.html.HtmlForm;
+import org.htmlunit.html.HtmlPage;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -70,7 +70,7 @@ public class LogRecorderManagerTest {
 
         HtmlPage page = j.createWebClient().goTo("log/levels");
         HtmlForm form = page.getFormByName("configLogger");
-        form.getInputByName("name").setValueAttribute("foo.bar.zot");
+        form.getInputByName("name").setValue("foo.bar.zot");
         form.getSelectByName("level").getOptionByValue("finest").setSelected(true);
         j.submit(form);
 
@@ -80,7 +80,7 @@ public class LogRecorderManagerTest {
     @Test public void loggerConfigNotFound() throws Exception {
         HtmlPage page = j.createWebClient().goTo("log/levels");
         HtmlForm form = page.getFormByName("configLogger");
-        form.getInputByName("name").setValueAttribute("foo.bar.zot");
+        form.getInputByName("name").setValue("foo.bar.zot");
         form.getSelectByName("level").getOptionByValue("finest").setSelected(true);
         FailingHttpStatusCodeException e = assertThrows(FailingHttpStatusCodeException.class, () -> j.submit(form));
         assertThat(e.getStatusCode(), equalTo(HttpURLConnection.HTTP_BAD_REQUEST));

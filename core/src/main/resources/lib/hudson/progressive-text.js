@@ -63,16 +63,17 @@ Behaviour.specify(
             }, 1000);
           } else {
             if (spinner !== "") {
-              $(spinner).style.display = "none";
+              document.getElementById(spinner).style.display = "none";
             }
             if (onFinishEvent) {
-              Event.fire(window, onFinishEvent);
+              window.dispatchEvent(new Event(onFinishEvent));
             }
           }
         });
       });
     }
-    $(idref).fetchedBytes = startOffset !== "" ? Number(startOffset) : 0;
-    fetchNext($(idref), href, onFinishEvent);
+    document.getElementById(idref).fetchedBytes =
+      startOffset !== "" ? Number(startOffset) : 0;
+    fetchNext(document.getElementById(idref), href, onFinishEvent);
   }
 );
