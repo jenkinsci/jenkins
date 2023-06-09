@@ -31,12 +31,12 @@ import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-import com.gargoylesoftware.htmlunit.WebRequest;
 import hudson.FilePath;
 import hudson.tasks.Mailer;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import org.htmlunit.WebRequest;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;

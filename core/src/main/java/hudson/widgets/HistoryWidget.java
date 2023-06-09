@@ -97,6 +97,11 @@ public class HistoryWidget<O extends ModelObject, T> extends Widget {
         this.searchString = currentRequest.getParameter("search");
     }
 
+    @Override
+    protected String getOwnerUrl() {
+        return baseUrl;
+    }
+
     /**
      * Title of the widget.
      */
