@@ -4017,7 +4017,7 @@ __metadata:
     stylelint-checkstyle-reporter: 0.2.0
     stylelint-config-standard: 33.0.0
     tippy.js: 6.3.7
-    webpack: 5.85.1
+    webpack: 5.86.0
     webpack-cli: 5.1.3
     webpack-remove-empty-scripts: 1.0.3
     window-handle: 1.0.1
@@ -6486,9 +6486,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"webpack@npm:5.85.1":
-  version: 5.85.1
-  resolution: "webpack@npm:5.85.1"
+"webpack@npm:5.86.0":
+  version: 5.86.0
+  resolution: "webpack@npm:5.86.0"
   dependencies:
     "@types/eslint-scope": ^3.7.3
     "@types/estree": ^1.0.0
@@ -6519,7 +6519,7 @@ __metadata:
       optional: true
   bin:
     webpack: bin/webpack.js
-  checksum: 6fa659ef5e53211e6eeaed1987ac415ddd219584414b2d5ca0d528f0c7dd49be5363a9840e1def33efe1b3305ef3ad3c91f803bd87e41d2771b125340caa4df7
+  checksum: 682b1aa8328bb9d52ae66a1d0a1078af88f9e3b3b3a9c9e1ce203e669581a8e61d522420ef253130eacd510d24d7275b840c1311d50bd048d6fd7c1af186ce55
   languageName: node
   linkType: hard
 
