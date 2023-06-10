@@ -48,7 +48,7 @@ THE SOFTWARE.
         </div>
       </div>
 
-      <t:buildCaption>${it.displayName} <span style="color: var(--text-color-secondary)">(<i:formatDate value="${it.timestamp.time}" type="both" dateStyle="medium" timeStyle="medium"/>)</span></t:buildCaption>
+      <t:buildCaption>${it.displayName} (<i:formatDate value="${it.timestamp.time}" type="both" dateStyle="medium" timeStyle="medium"/>)</t:buildCaption>
 
       <div>
         <t:editableDescription permission="${it.UPDATE}" />
