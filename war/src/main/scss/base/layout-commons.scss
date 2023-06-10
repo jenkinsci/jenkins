@@ -141,20 +141,6 @@ body.full-screen #main-panel {
   }
 }
 
-/* -------------------------------------- */
-
-h1.build-caption.page-headline {
-  display: flex;
-  align-items: center;
-}
-
-h1.build-caption.page-headline > span {
-  max-width: 1200px;
-  overflow: hidden;
-  line-height: 2.4rem;
-  text-overflow: ellipsis;
-}
-
 // Clearfixes extracted from responsive-grid.css as they essential
 .clearfix::before,
 .clearfix::after,

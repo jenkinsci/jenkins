@@ -13,7 +13,7 @@
         }
       }
       rsp.text().then((responseText) => {
-        document.querySelector(".build-caption .icon-xlg").outerHTML =
+        document.querySelector(".jenkins-build-caption .icon-xlg").outerHTML =
           responseText;
       });
     });
