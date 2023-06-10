@@ -149,7 +149,7 @@ public class StreamTaskListener extends AbstractTaskListener implements TaskList
      */
     @Deprecated
     public StreamTaskListener() throws IOException {
-        this(new NullStream());
+        this(OutputStream.nullOutputStream());
     }
 
     public static StreamTaskListener fromStdout() {
