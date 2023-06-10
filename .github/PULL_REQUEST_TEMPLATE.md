@@ -62,6 +62,7 @@ If you need an accelerated review process by the community (e.g., for critical b
 -->
 
 Before the changes are marked as `ready-for-merge`:
+
 ```[tasklist]
 ### Maintainer checklist
 - [ ] There are at least two (2) approvals for the pull request and no outstanding requests for change.
