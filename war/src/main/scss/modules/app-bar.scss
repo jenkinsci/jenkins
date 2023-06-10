@@ -73,7 +73,7 @@
 
 .jenkins-build-caption {
   display: flex;
-  flex-direction: row  !important;
+  flex-direction: row !important;
   align-items: center;
   justify-content: start !important;
   gap: 1rem;
@@ -81,7 +81,8 @@
   overflow: hidden;
   text-overflow: ellipsis;
 
-  .build-status-icon__wrapper, .build-status-icon__wrapper svg {
+  .build-status-icon__wrapper,
+  .build-status-icon__wrapper svg {
     width: 2rem !important;
     height: 2rem !important;
   }
