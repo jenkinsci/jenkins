@@ -1,4 +1,3 @@
-import { showModal } from "@/components/modals";
 import { createElementFromHtml } from "@/util/dom";
 
 document.querySelector("#button-icon-legend").addEventListener("click", () => {
@@ -8,7 +7,7 @@ document.querySelector("#button-icon-legend").addEventListener("click", () => {
     "<div>" + template.innerHTML + "</div>"
   );
 
-  showModal(content, {
+  dialog.modal(content, {
     maxWidth: "550px",
     title: title,
   });

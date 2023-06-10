@@ -1,126 +1,194 @@
 import { createElementFromHtml } from "@/util/dom";
+import { CLOSE } from "@/util/symbols";
 
-function init() {
-  window.dialog = {
-    dialog: null,
-    options: {
-      title: null,
-      message: null,
-      cancel: false,
-      dialogtype: null,
-      okText: "OK",
-      cancelText: "Cancel",
-      maxWidth: "475px",
-      minWidth: "",
-      type: "default",
-    },
+class Dialog {
+  dialog;
+  input = null;
+  ok = null;
+  dialogType;
 
-    typeClassMap: {
-      default: "",
-      destructive: "jenkins-!-destructive-color",
-    },
+  static #defaults = {
+    title: null,
+    message: null,
+    cancel: false,
+    okText: "OK",
+    cancelText: "Cancel",
+    maxWidth: "475px",
+    minWidth: "",
+    type: "default",
+    hideCloseButton: false,
+  };
 
-    _init: function (options) {
-      options = Object.assign({}, this.options, options);
-      this.dialog = createElementFromHtml(
-        `<dialog class='jenkins-dialog'>
-          <div data-id="title" class='jenkins-dialog__title'></div>
-          <div data-id="message" class='jenkins-dialog__contents'></div>
-          <div class="jenkins-dialog__input">
-            <input data-id="input" type="text" class='jenkins-input'></div>
-          </div>
-          <div class="jenkins-buttons-row jenkins-buttons-row--equal-width">
-            <button data-id="ok" class="jenkins-button jenkins-button--primary ${
-              this.typeClassMap[options.type]
-            }">${options.okText}</button>
-            <button data-id="cancel" class="jenkins-button">${
-              options.cancelText
-            }</button>
-          </div>
-        </dialog>`
+  static #typeClassMap = {
+    default: "",
+    destructive: "jenkins-!-destructive-color",
+  };
+
+  constructor(dialogType, options) {
+    this.dialogType = dialogType;
+    this.options = Object.assign({}, Dialog.#defaults, options);
+
+    this.dialog = document.createElement("dialog");
+    this.dialog.classList.add("jenkins-dialog");
+    this.dialog.style.maxWidth = options.maxWidth;
+    this.dialog.style.maxWidth = options.minWidth;
+
+    let contentStyle = "jenkins-dialog__contents";
+    if (options.title != null) {
+      const title = createElementFromHtml(
+        `<div class='jenkins-dialog__title'/>`
       );
-      document.body.appendChild(this.dialog);
-      this.dialog.style.maxWidth = options.maxWidth;
-      this.dialog.style.maxWidth = options.minWidth;
-      this.ok = this.dialog.querySelector("[data-id=ok]");
-      this.cancel = this.dialog.querySelector("[data-id=cancel]");
-      this.cancel.addEventListener("click", () => {
-        this._close();
+      this.dialog.appendChild(title);
+      title.innerText = options.title;
+      contentStyle = "jenkins-dialog__contents_title";
+    }
+
+    if (this.dialogType === "modal") {
+      if (options.content != null) {
+        const content = createElementFromHtml(`<div class='${contentStyle}'/>`);
+        content.appendChild(options.content);
+        this.dialog.appendChild(content);
+      }
+      if (options.hideCloseButton !== true) {
+        const closeButton = createElementFromHtml(`
+            <button class="jenkins-dialog__close-button jenkins-button">
+              <span class="jenkins-visually-hidden">Close</span>
+              ${CLOSE}
+            </button>
+          `);
+        this.dialog.appendChild(closeButton);
+        closeButton.addEventListener("click", () =>
+          this.dialog.dispatchEvent(new Event("cancel"))
+        );
+      }
+      this.dialog.addEventListener("click", function (e) {
+        if (e.target !== e.currentTarget) {
+          return;
+        }
+        this.dispatchEvent(new Event("cancel"));
       });
-      this.title = this.dialog.querySelector("[data-id=title]");
-      this.message = this.dialog.querySelector("[data-id=message]");
-      this.input = this.dialog.querySelector("[data-id=input]");
-
-      if (!options.cancel) {
-        this.cancel.style.display = "none";
-      }
-      if (options.title != null) {
-        this.title.innerText = options.title;
-      } else {
-        this.title.style.display = "none";
-      }
+      this.ok = null;
+    } else {
       if (options.message != null) {
-        this.message.innerText = options.message;
-      } else {
-        this.message.hidden = true;
+        const message = createElementFromHtml(`<div class='${contentStyle}'/>`);
+        this.dialog.appendChild(message);
+        message.innerText = options.message;
       }
 
-      this.dialogtype = options.dialogtype;
-      if (this.dialogtype === "prompt") {
-        this.input.focus();
-      } else {
-        this.input.parentNode.style.display = "none";
-        this.ok.focus();
+      if (this.dialogType === "prompt") {
+        let inputDiv =
+          createElementFromHtml(`<div class="jenkins-dialog__input">
+            <input data-id="input" type="text" class='jenkins-input'></div>`);
+        this.dialog.appendChild(inputDiv);
+        this.input = inputDiv.querySelector("[data-id=input]");
       }
+
+      this.#appendButtons();
 
       this.dialog.addEventListener("keydown", (e) => {
         if (e.key === "Enter") {
+          e.preventDefault();
           this.ok.dispatchEvent(new Event("click"));
         }
         if (e.key === "Escape") {
-          this._close();
+          e.preventDefault();
+          this.dialog.dispatchEvent(new Event("cancel"));
         }
       });
-    },
+    }
+    document.body.appendChild(this.dialog);
+  }
 
-    _close: function () {
-      this.dialog.remove();
-    },
+  #appendButtons() {
+    const buttons = createElementFromHtml(`<div
+        class="jenkins-buttons-row jenkins-buttons-row--equal-width jenkins-dialog__buttons">
+        <button data-id="ok" class="jenkins-button jenkins-button--primary ${
+          Dialog.#typeClassMap[this.options.type]
+        }">${this.options.okText}</button>
+        <button data-id="cancel" class="jenkins-button">${
+          this.options.cancelText
+        }</button>
+      </div>`);
 
-    _show: function () {
+    this.dialog.appendChild(buttons);
+
+    this.ok = buttons.querySelector("[data-id=ok]");
+    this.cancel = buttons.querySelector("[data-id=cancel]");
+    if (!this.options.cancel) {
+      this.cancel.style.display = "none";
+    } else {
+      this.cancel.addEventListener("click", (e) => {
+        e.preventDefault();
+        this.dialog.dispatchEvent(new Event("cancel"));
+      });
+    }
+  }
+
+  show() {
+    return new Promise((resolve, cancel) => {
       this.dialog.showModal();
-      return new Promise((resolve, cancel) => {
-        this.dialog.addEventListener(
-          "cancel",
-          () => {
+      this.dialog.addEventListener(
+        "cancel",
+        (e) => {
+          e.preventDefault();
+          this.dialog.addEventListener("webkitAnimationEnd", () => {
+            this.dialog.remove();
             cancel();
-            this._close();
-          },
-          { once: true }
-        );
+          });
+          this.dialog.classList.add("jenkins-dialog--hidden");
+        },
+        { once: true }
+      );
+      this.dialog.focus();
+      if (this.input != null) {
+        this.input.focus();
+      }
+      if (this.ok != null) {
         this.ok.addEventListener(
           "click",
-          () => {
+          (e) => {
+            e.preventDefault();
+
             let value = true;
-            if (this.dialogtype === "prompt") {
+            if (this.dialogType === "prompt") {
               value = this.input.value;
             }
-            resolve(value);
-            this._close();
+            this.dialog.addEventListener("webkitAnimationEnd", () => {
+              this.dialog.remove();
+              resolve(value);
+            });
+            this.dialog.classList.add("jenkins-dialog--hidden");
           },
           { once: true }
         );
-      });
+      }
+    });
+  }
+}
+
+function init() {
+  window.dialog = {
+    modal: function (content, options) {
+      const defaults = {
+        content: content,
+        ok: false,
+      };
+      options = Object.assign({}, defaults, options);
+      let dialog = new Dialog("modal", options);
+      dialog
+        .show()
+        .then()
+        .catch(() => {});
     },
 
     alert: function (message, options) {
       const defaults = {
         message: message,
-        dialogtype: "alert",
       };
       options = Object.assign({}, defaults, options);
-      this._init(options);
-      this._show()
+      let dialog = new Dialog("alert", options);
+      dialog
+        .show()
         .then()
         .catch(() => {});
     },
@@ -128,25 +196,23 @@ function init() {
     confirm: function (message, options) {
       const defaults = {
         message: message,
-        dialogtype: "confirm",
         okText: "Yes",
         cancel: true,
       };
       options = Object.assign({}, defaults, options);
-      this._init(options);
-      return this._show();
+      let dialog = new Dialog("confirm", options);
+      return dialog.show();
     },
 
     prompt: function (message, options) {
       const defaults = {
         message: message,
-        dialogtype: "prompt",
         minWidth: "400px",
         cancel: true,
       };
       options = Object.assign({}, defaults, options);
-      this._init(options);
-      return this._show();
+      let dialog = new Dialog("prompt", options);
+      return dialog.show();
     },
   };
 }

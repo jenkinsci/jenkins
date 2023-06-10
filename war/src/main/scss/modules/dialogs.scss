@@ -8,28 +8,72 @@ $jenkins-dialog-padding: 1.5rem;
   backdrop-filter: var(--modal-backdrop-filter);
   animation: jenkins-dialog-animate-in 0.25s cubic-bezier(0, 0.68, 0.5, 1.5);
   overflow: hidden;
-  padding: 15px;
-  max-height: 75vh;
+  padding: 0;
 
   &::backdrop {
     background: var(--modal-backdrop-background);
     animation: jenkins-dialog-backdrop-animate-in 0.15s;
   }
 
+  &__contents_title {
+    overflow: auto;
+    padding: 0 1.5rem 1.5rem;
+    max-height: 75vh;
+  }
+
   &__contents {
     overflow: auto;
-    padding-bottom: $jenkins-dialog-padding;
+    padding: $jenkins-dialog-padding;
+    max-height: 75vh;
   }
 
   &__input {
     display: flex;
-    padding-bottom: $jenkins-dialog-padding;
+    padding: 0 1.5rem 1.5rem;
+  }
+
+  &__buttons {
+    padding: 0 1.5rem 1.5rem;
   }
 
   &__title {
     font-size: 1.1rem;
     font-weight: 600;
-    padding-bottom: $jenkins-dialog-padding;
+    padding: $jenkins-dialog-padding;
+  }
+
+  &__subtitle {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-color-secondary);
+    padding: 0;
+    margin: 0 0 1.5rem;
+  }
+
+  &__close-button {
+    position: absolute;
+    top: $jenkins-dialog-padding - 0.5rem;
+    right: $jenkins-dialog-padding - 0.5rem;
+    aspect-ratio: 1;
+    padding: 0;
+
+    &::before,
+    &::after {
+      border-radius: 100%;
+      outline: none;
+    }
+
+    &::after {
+      backdrop-filter: contrast(0.9) blur(5px);
+    }
+  }
+}
+
+.jenkins-dialog--hidden {
+  animation: jenkins-dialog-animate-out 0.1s linear;
+
+  &::backdrop {
+    animation: jenkins-dialog-backdrop-animate-out 0.1s ease;
   }
 }
 
@@ -41,6 +85,19 @@ $jenkins-dialog-padding: 1.5rem;
 
 @keyframes jenkins-dialog-animate-in {
   from {
+    scale: 85%;
+    opacity: 0;
+  }
+}
+
+@keyframes jenkins-dialog-backdrop-animate-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes jenkins-dialog-animate-out {
+  to {
     scale: 85%;
     opacity: 0;
   }

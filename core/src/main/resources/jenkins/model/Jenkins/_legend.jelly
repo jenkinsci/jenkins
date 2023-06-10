@@ -25,7 +25,7 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout">
-  <h2 class="jenkins-modal__subtitle">${%Status}</h2>
+  <h2 class="jenkins-dialog__subtitle">${%Status}</h2>
 
   <dl class="app-icon-legend">
     <dt>
@@ -113,7 +113,7 @@ THE SOFTWARE.
     </dd>
   </dl>
 
-  <h2 class="jenkins-modal__subtitle">${%Project Health}</h2>
+  <h2 class="jenkins-dialog__subtitle">${%Project Health}</h2>
 
   <dl class="app-icon-legend">
     <dt>
