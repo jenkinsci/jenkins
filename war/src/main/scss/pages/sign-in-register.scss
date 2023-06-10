@@ -123,6 +123,7 @@
   flex-direction: column;
   gap: 1.6rem;
   margin: calc(var(--section-padding) * 3) var(--section-padding);
+  width: 100%;
 
   @media (min-width: 430px) {
     width: 430px;
@@ -147,6 +148,10 @@
     padding: 0.6rem 0.75rem;
     border-radius: 0.66rem;
     font-size: 0.95rem;
+
+    @media (max-width: 600px) {
+      font-size: 1rem;
+    }
   }
 
   .app-sign-in-register__form-label {
