@@ -173,7 +173,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
       <artifactId>instance-identity</artifactId>
-      <version>142.v04572ca_5b_265</version>
+      <version>173.va_37c494ec4e5</version>
       <scope>test</scope>
     </dependency>
     <dependency>
