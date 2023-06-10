@@ -24,27 +24,22 @@
 
 package hudson.util;
 
-import static hudson.init.InitMilestone.JOB_CONFIG_ADAPTED;
-import static javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
-
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import hudson.Extension;
+import hudson.ExtensionList;
+import hudson.Main;
 import hudson.Util;
-import hudson.init.Initializer;
-import hudson.triggers.SafeTimerTask;
+import hudson.model.AdministrativeMonitor;
+import hudson.model.AperiodicWork;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
+import java.time.Duration;
 import java.util.Random;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
-import jenkins.util.Timer;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
  * Makes sure that no other Hudson uses our {@code JENKINS_HOME} directory,
@@ -63,21 +58,15 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
  * @author Kohsuke Kawaguchi
  * @since 1.178
  */
-@SuppressFBWarnings(value = "PREDICTABLE_RANDOM", justification = "The random is just used for load distribution.")
-public class DoubleLaunchChecker {
+@Extension
+public class DoubleLaunchChecker extends AdministrativeMonitor {
     /**
      * The timestamp of the owner file when we updated it for the last time.
      * 0 to indicate that there was no update before.
      */
     private long lastWriteTime = 0L;
 
-    /**
-     * Once the error is reported, the user can choose to ignore and proceed anyway,
-     * in which case the flag is set to true.
-     */
-    private boolean ignore = false;
-
-    private final Random random = new Random();
+    private boolean activated;
 
     public final File home;
 
@@ -91,20 +80,29 @@ public class DoubleLaunchChecker {
         home = Jenkins.get().getRootDir();
     }
 
+    @Override
+    public String getDisplayName() {
+        return Messages.DoubleLaunchChecker_duplicate_jenkins_checker();
+    }
+
+    @Override
+    public boolean isActivated() {
+        return activated;
+    }
+
     protected void execute() {
+        LOGGER.fine("running detector");
         File timestampFile = new File(home, ".owner");
 
         long t = timestampFile.lastModified();
-        if (t != 0 && lastWriteTime != 0 && t != lastWriteTime && !ignore) {
+        if (t != 0 && lastWriteTime != 0 && t != lastWriteTime && isEnabled()) {
             try {
                 collidingId = Files.readString(Util.fileToPath(timestampFile), Charset.defaultCharset());
             } catch (IOException e) {
                 LOGGER.log(Level.SEVERE, "Failed to read collision file", e);
             }
             // we noticed that someone else have updated this file.
-            // switch GUI to display this error.
-            // TODO seems drastic; could this just be switched to an AdministrativeMonitor?
-            Jenkins.get().servletContext.setAttribute("app", this);
+            activated = true;
             LOGGER.severe("Collision detected. timestamp=" + t + ", expected=" + lastWriteTime);
             // we need to continue updating this file, so that the other Hudson would notice the problem, too.
         }
@@ -113,11 +111,10 @@ public class DoubleLaunchChecker {
             Files.writeString(Util.fileToPath(timestampFile), getId(), Charset.defaultCharset());
             lastWriteTime = timestampFile.lastModified();
         } catch (IOException e) {
+            LOGGER.log(Level.FINE, null, e);
             // if failed to write, err on the safe side and assume things are OK.
             lastWriteTime = 0;
         }
-
-        schedule();
     }
 
     /**
@@ -131,44 +128,29 @@ public class DoubleLaunchChecker {
         return collidingId;
     }
 
-    /**
-     * Schedules the next execution.
-     */
-    public void schedule() {
-        // randomize the scheduling so that multiple Hudson instances will write at the file at different time
-        long MINUTE = 1000 * 60; // TODO use TimeUnit.MINUTE.toMillis
+    @SuppressFBWarnings(value = "PREDICTABLE_RANDOM", justification = "The random is just used for load distribution.")
+    @Extension
+    public static final class Schedule extends AperiodicWork {
 
-        Timer.get()
-            .schedule(new SafeTimerTask() {
-                @Override
-                protected void doRun() {
-                    execute();
-                }
-            }, (random.nextInt(30) + 60) * MINUTE, TimeUnit.MILLISECONDS);
-    }
+        private final Random random = new Random();
 
-    @Initializer(after = JOB_CONFIG_ADAPTED)
-    public static void init() {
-        // TODO AperiodicWork would be more idiomatic
-        new DoubleLaunchChecker().schedule();
-    }
+        @Override
+        public AperiodicWork getNewInstance() {
+            // Awkward to use DoubleLaunchChecker itself as the AperiodicWork since it is stateful, and we may not return this.
+            return new Schedule();
+        }
 
-    /**
-     * Serve all URLs with the index view.
-     */
-    public void doDynamic(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
-        rsp.setStatus(SC_INTERNAL_SERVER_ERROR);
-        req.getView(this, "index.jelly").forward(req, rsp);
-    }
+        @Override
+        public long getRecurrencePeriod() {
+            // randomize the scheduling so that multiple Jenkins instances will write at the file at different time
+            return (Main.isUnitTest ? Duration.ofSeconds(random.nextInt(10) + 20) : Duration.ofMinutes(random.nextInt(30) + 60)).toMillis();
+        }
 
-    /**
-     * Ignore the problem and go back to using Hudson.
-     */
-    @RequirePOST
-    public void doIgnore(StaplerRequest req, StaplerResponse rsp) throws IOException {
-        ignore = true;
-        Jenkins.get().servletContext.setAttribute("app", Jenkins.get());
-        rsp.sendRedirect2(req.getContextPath() + '/');
+        @Override
+        protected void doAperiodicRun() {
+            ExtensionList.lookupSingleton(DoubleLaunchChecker.class).execute();
+        }
+
     }
 
     private static final Logger LOGGER = Logger.getLogger(DoubleLaunchChecker.class.getName());
