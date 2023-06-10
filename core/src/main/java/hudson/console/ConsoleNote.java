@@ -34,7 +34,6 @@ import hudson.model.Describable;
 import hudson.model.Run;
 import hudson.remoting.ClassFilter;
 import hudson.remoting.ObjectInputStreamEx;
-import hudson.util.IOUtils;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -54,6 +53,7 @@ import jenkins.model.Jenkins;
 import jenkins.security.HMACConfidentialKey;
 import jenkins.util.JenkinsJVM;
 import jenkins.util.SystemProperties;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.tools.ant.BuildListener;
 import org.jenkinsci.remoting.util.AnonymousClassWarnings;
@@ -306,12 +306,12 @@ public abstract class ConsoleNote<T> implements Serializable, Describable<Consol
         DataInputStream decoded = new DataInputStream(Base64.getDecoder().wrap(in));
         int macSz = - decoded.readInt();
         if (macSz > 0) { // new format
-            IOUtils.skip(decoded, macSz);
+            IOUtils.skipFully(decoded, macSz);
             int sz = decoded.readInt();
-            IOUtils.skip(decoded, sz);
+            IOUtils.skipFully(decoded, sz);
         } else { // old format
             int sz = -macSz;
-            IOUtils.skip(decoded, sz);
+            IOUtils.skipFully(decoded, sz);
         }
 
         byte[] postamble = new byte[POSTAMBLE.length];

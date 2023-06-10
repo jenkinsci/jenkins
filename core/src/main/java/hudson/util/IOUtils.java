@@ -81,7 +81,9 @@ public class IOUtils {
      * So to reliably skip just the N bytes, we'll actually read all those bytes.
      *
      * @since 1.349
+     * @deprecated use {@link org.apache.commons.io.IOUtils#skipFully(InputStream, long)}
      */
+    @Deprecated
     public static InputStream skip(InputStream in, long size) throws IOException {
         DataInputStream di = new DataInputStream(in);
 
