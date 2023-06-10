@@ -22,7 +22,7 @@ import org.kohsuke.stapler.StaplerRequest;
  * An option to present a single section for your plugin in the Jenkins global configuration page is
  * to use this class to manage the configuration for your plugin and its extension points. To access
  * properties defined in your GlobalConfiguration subclass, here are two possibilities:
- * <ul><li>@{@link javax.inject.Inject} into your other {@link hudson.Extension}s (so this does <i>not</i> work
+ * <ul><li>@{@link jakarta.inject.Inject} into your other {@link hudson.Extension}s (so this does <i>not</i> work
  * for classes not annotated with {@link hudson.Extension})</li>
  * <li>access it via a call to {@code ExtensionList.lookupSingleton(<your GlobalConfiguration subclass>.class)}</li></ul>
  *
