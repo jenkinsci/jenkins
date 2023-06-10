@@ -44,20 +44,25 @@ THE SOFTWARE.
         </div>
         <div class="jenkins-app-bar__controls">
           <l:isAdmin>
-            <l:overflowButton id="button-install" icon="symbol-download" text="${%Install}" tooltip="${null}" clazz="jenkins-button--primary">
-              <button form="form" type="submit" name="dynamicLoad" class="jenkins-dropdown__item">
+            <div class="jenkins-split-button">
+              <button id="button-install" form="form" type="submit" name="dynamicLoad" class="jenkins-button jenkins-button--primary">
                 <div class="jenkins-dropdown__item__icon">
                   <l:icon src="symbol-download" />
                 </div>
-                ${%Install without restart}
+                ${%Install}
               </button>
-              <button form="form" type="submit" class="jenkins-dropdown__item">
-                <div class="jenkins-dropdown__item__icon">
-                  <l:icon src="symbol-download" />
-                </div>
-                ${%Install after restart}
-              </button>
-            </l:overflowButton>
+              <l:overflowButton id="button-install-after-restart"
+                                icon="symbol-chevron-down"
+                                tooltip="${null}"
+                                clazz="jenkins-button--primary">
+                <button form="form" type="submit" class="jenkins-dropdown__item">
+                  <div class="jenkins-dropdown__item__icon">
+                    <l:icon src="symbol-download" />
+                  </div>
+                  ${%Install after restart}
+                </button>
+              </l:overflowButton>
+            </div>
           </l:isAdmin>
           <st:include page="check.jelly"/>
         </div>

@@ -90,8 +90,9 @@ function updateInstallButtonState() {
     );
   };
   const installButton = document.querySelector("#button-install");
+  const installAfterRestartButton = document.querySelector("#button-install-after-restart");
   installButton.disabled = true;
-  console.log(installButton)
+  installAfterRestartButton.disabled = true;
   const checkboxes = document.querySelectorAll(
     "input[type='checkbox']"
   );
@@ -99,6 +100,7 @@ function updateInstallButtonState() {
     checkbox.addEventListener("click", () => {
       setTimeout(() => {
         installButton.disabled = !anyCheckboxesSelected();
+        installAfterRestartButton.disabled = !anyCheckboxesSelected();
       });
     });
   });
