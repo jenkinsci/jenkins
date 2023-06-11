@@ -164,11 +164,8 @@ Dialog.prototype.show = function () {
           if (this.dialogType === "prompt") {
             value = this.input.value;
           }
-          this.dialog.addEventListener("webkitAnimationEnd", () => {
-            this.dialog.remove();
-            resolve(value);
-          });
-          this.dialog.classList.add("jenkins-dialog--hidden");
+          this.dialog.remove();
+          resolve(value);
         },
         { once: true }
       );
