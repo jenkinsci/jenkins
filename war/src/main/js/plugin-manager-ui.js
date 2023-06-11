@@ -85,17 +85,16 @@ function updateInstallButtonState() {
   // Enable/disable the 'Install' button depending on if any plugins are checked
   const anyCheckboxesSelected = () => {
     return (
-      document.querySelectorAll("input[type='checkbox']:checked")
-        .length > 0
+      document.querySelectorAll("input[type='checkbox']:checked").length > 0
     );
   };
   const installButton = document.querySelector("#button-install");
-  const installAfterRestartButton = document.querySelector("#button-install-after-restart");
+  const installAfterRestartButton = document.querySelector(
+    "#button-install-after-restart"
+  );
   installButton.disabled = true;
   installAfterRestartButton.disabled = true;
-  const checkboxes = document.querySelectorAll(
-    "input[type='checkbox']"
-  );
+  const checkboxes = document.querySelectorAll("input[type='checkbox']");
   checkboxes.forEach((checkbox) => {
     checkbox.addEventListener("click", () => {
       setTimeout(() => {
