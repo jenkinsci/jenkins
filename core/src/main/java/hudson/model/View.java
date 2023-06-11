@@ -59,7 +59,6 @@ import hudson.util.FormValidation;
 import hudson.util.RunList;
 import hudson.util.XStream2;
 import hudson.views.ListViewColumn;
-import hudson.widgets.Widget;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -103,6 +102,7 @@ import jenkins.scm.RunWithSCM;
 import jenkins.security.stapler.StaplerAccessibleType;
 import jenkins.util.ProgressiveRendering;
 import jenkins.util.xml.XMLUtils;
+import jenkins.widgets.HasWidgets;
 import net.sf.json.JSON;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -147,7 +147,7 @@ import org.xml.sax.SAXException;
  * @see ViewGroup
  */
 @ExportedBean
-public abstract class View extends AbstractModelObject implements AccessControlled, Describable<View>, ExtensionPoint, Saveable, ModelObjectWithChildren, DescriptorByNameOwner {
+public abstract class View extends AbstractModelObject implements AccessControlled, Describable<View>, ExtensionPoint, Saveable, ModelObjectWithChildren, DescriptorByNameOwner, HasWidgets {
 
     /**
      * Container of this view. Set right after the construction
@@ -410,16 +410,6 @@ public abstract class View extends AbstractModelObject implements AccessControll
      */
     public boolean isFilterQueue() {
         return filterQueue;
-    }
-
-    /**
-     * Gets the {@link Widget}s registered on this object.
-     *
-     * <p>
-     * For now, this just returns the widgets registered to Hudson.
-     */
-    public List<Widget> getWidgets() {
-        return Collections.unmodifiableList(Jenkins.get().getWidgets());
     }
 
     /**

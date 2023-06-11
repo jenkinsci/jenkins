@@ -142,11 +142,8 @@ Dialog.prototype.show = function () {
       "cancel",
       (e) => {
         e.preventDefault();
-        this.dialog.addEventListener("webkitAnimationEnd", () => {
-          this.dialog.remove();
-          cancel();
-        });
-        this.dialog.classList.add("jenkins-dialog--hidden");
+        this.dialog.remove();
+        cancel();
       },
       { once: true }
     );

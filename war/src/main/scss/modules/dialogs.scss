@@ -69,14 +69,6 @@ $jenkins-dialog-padding: 1.5rem;
   }
 }
 
-.jenkins-dialog--hidden {
-  animation: jenkins-dialog-animate-out 0.1s linear;
-
-  &::backdrop {
-    animation: jenkins-dialog-backdrop-animate-out 0.1s ease;
-  }
-}
-
 @keyframes jenkins-dialog-backdrop-animate-in {
   from {
     opacity: 0;
@@ -85,19 +77,6 @@ $jenkins-dialog-padding: 1.5rem;
 
 @keyframes jenkins-dialog-animate-in {
   from {
-    scale: 85%;
-    opacity: 0;
-  }
-}
-
-@keyframes jenkins-dialog-backdrop-animate-out {
-  to {
-    opacity: 0;
-  }
-}
-
-@keyframes jenkins-dialog-animate-out {
-  to {
     scale: 85%;
     opacity: 0;
   }

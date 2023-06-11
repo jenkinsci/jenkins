@@ -2674,15 +2674,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cosmiconfig@npm:^8.1.3":
-  version: 8.1.3
-  resolution: "cosmiconfig@npm:8.1.3"
+"cosmiconfig@npm:^8.1.3, cosmiconfig@npm:^8.2.0":
+  version: 8.2.0
+  resolution: "cosmiconfig@npm:8.2.0"
   dependencies:
     import-fresh: ^3.2.1
     js-yaml: ^4.1.0
     parse-json: ^5.0.0
     path-type: ^4.0.0
-  checksum: b3d277bc3a8a9e649bf4c3fc9740f4c52bf07387481302aa79839f595045368903bf26ea24a8f7f7b8b180bf46037b027c5cb63b1391ab099f3f78814a147b2b
+  checksum: 836d5d8efa750f3fb17b03d6ca74cd3154ed025dffd045304b3ef59637f662bde1e5dc88f8830080d180ec60841719cf4ea2ce73fb21ec694b16865c478ff297
   languageName: node
   linkType: hard
 
@@ -4013,12 +4013,12 @@ __metadata:
     sass-loader: 13.3.1
     sortablejs: 1.15.0
     style-loader: 3.3.3
-    stylelint: 15.6.3
+    stylelint: 15.7.0
     stylelint-checkstyle-reporter: 0.2.0
     stylelint-config-standard: 33.0.0
     tippy.js: 6.3.7
-    webpack: 5.85.0
-    webpack-cli: 5.1.2
+    webpack: 5.86.0
+    webpack-cli: 5.1.4
     webpack-remove-empty-scripts: 1.0.3
     window-handle: 1.0.1
   languageName: unknown
@@ -6046,9 +6046,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"stylelint@npm:15.6.3":
-  version: 15.6.3
-  resolution: "stylelint@npm:15.6.3"
+"stylelint@npm:15.7.0":
+  version: 15.7.0
+  resolution: "stylelint@npm:15.7.0"
   dependencies:
     "@csstools/css-parser-algorithms": ^2.2.0
     "@csstools/css-tokenizer": ^2.1.1
@@ -6056,7 +6056,7 @@ __metadata:
     "@csstools/selector-specificity": ^2.2.0
     balanced-match: ^2.0.0
     colord: ^2.9.3
-    cosmiconfig: ^8.1.3
+    cosmiconfig: ^8.2.0
     css-functions-list: ^3.1.0
     css-tree: ^2.3.1
     debug: ^4.3.4
@@ -6094,7 +6094,7 @@ __metadata:
     write-file-atomic: ^5.0.1
   bin:
     stylelint: bin/stylelint.js
-  checksum: dfd046ebd3c90e19c1ba480e46ca7af7d949c1c4fb495f0f17e5d318185833820bfe746eb2070a6f723d631d24ea6f92e81686b7cd9bcab1db24575e5b822f55
+  checksum: 041bcb4396f5a7fd706a305d2518f4671dc93108336d31a1a717c564ebebe6fd503af9151e3d1d0cf01198e7925266911d0561eaed9c38a03becff817bf18bf3
   languageName: node
   linkType: hard
 
@@ -6426,9 +6426,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"webpack-cli@npm:5.1.2":
-  version: 5.1.2
-  resolution: "webpack-cli@npm:5.1.2"
+"webpack-cli@npm:5.1.4":
+  version: 5.1.4
+  resolution: "webpack-cli@npm:5.1.4"
   dependencies:
     "@discoveryjs/json-ext": ^0.5.0
     "@webpack-cli/configtest": ^2.1.1
@@ -6454,7 +6454,7 @@ __metadata:
       optional: true
   bin:
     webpack-cli: bin/cli.js
-  checksum: 7bf33c82a6737dbf53294f467066395545884f648f44f961fbe16ed06d6c5fb3239ce51ad4b3af5b1ab038352a24861dbde8d92e0985a34c7bbd1893096b750e
+  checksum: 3a4ad0d0342a6815c850ee4633cc2a8a5dae04f918e7847f180bf24ab400803cf8a8943707ffbed03eb20fe6ce647f996f60a2aade87b0b4a9954da3da172ce0
   languageName: node
   linkType: hard
 
@@ -6486,9 +6486,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"webpack@npm:5.85.0":
-  version: 5.85.0
-  resolution: "webpack@npm:5.85.0"
+"webpack@npm:5.86.0":
+  version: 5.86.0
+  resolution: "webpack@npm:5.86.0"
   dependencies:
     "@types/eslint-scope": ^3.7.3
     "@types/estree": ^1.0.0
@@ -6519,7 +6519,7 @@ __metadata:
       optional: true
   bin:
     webpack: bin/webpack.js
-  checksum: b013be9fbc7f6810d1f229f570c70710ddbc7290f817411acffe4214b2b6c783a041ab1f2005d9e1109f4ab21c136f0f8d8c067a5fb64f20a82dcbc1ee0d3f42
+  checksum: 682b1aa8328bb9d52ae66a1d0a1078af88f9e3b3b3a9c9e1ce203e669581a8e61d522420ef253130eacd510d24d7275b840c1311d50bd048d6fd7c1af186ce55
   languageName: node
   linkType: hard
 

@@ -372,13 +372,6 @@ THE SOFTWARE.
             <trimTrailingWhitespace />
           </java>
         </configuration>
-        <dependencies>
-          <dependency>
-            <groupId>io.jenkins.lib</groupId>
-            <artifactId>shared-resources</artifactId>
-            <version>1.0</version>
-          </dependency>
-        </dependencies>
       </plugin>
       <plugin>
         <artifactId>maven-release-plugin</artifactId>

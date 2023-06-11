@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2018-2020, CloudBees, Inc.
+ * Copyright 2023, CloudBees Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,67 +21,42 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-@use "./base/core";
-@use "./pages/sign-in-register";
 
-.simple-page h1 {
-  font-size: 24px;
-  line-height: normal;
-}
+package jenkins.widgets;
 
-.simple-page h1,
-.simple-page .signupTag,
-.simple-page .restarting {
-  text-align: center;
-}
+import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.Extension;
+import hudson.model.View;
+import hudson.widgets.Widget;
+import java.util.Collection;
+import jenkins.model.Jenkins;
+import org.jenkinsci.Symbol;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 
-.simple-page--description {
-  margin-top: 0;
-  margin-bottom: var(--section-padding);
-}
+/**
+ * Add widgets annotated with @Extension, or added manually to Jenkins via <code>Jenkins.get().getWidgets().add(...)</code>
+ *
+ * @deprecated New widgets should provide a {@link WidgetFactory} instead of relying on this legacy lookup.
+ */
+@Extension
+@Restricted(DoNotUse.class)
+@Deprecated
+@Symbol("jenkins")
+public final class JenkinsWidgetFactory extends WidgetFactory<View, Widget> {
+    @Override
+    public Class<View> type() {
+        return View.class;
+    }
 
-.simple-page form {
-  width: 300px;
-}
+    @Override
+    public Class<Widget> widgetType() {
+        return Widget.class;
+    }
 
-.simple-page .jenkins-form-item {
-  max-width: 100%;
-}
-
-.simple-page {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 90vh;
-}
-
-.simple-page .jenkins-button {
-  width: 100%;
-}
-
-.simple-page .jenkins-input {
-  width: 94%;
-}
-
-.simple-page .logo {
-  text-align: center;
-}
-
-.simple-page .logo > img {
-  height: 130px;
-}
-
-.simple-page form .submit input {
-  background-color: var(--btn-primary-bg, #0b6aa2);
-  border: solid 1px;
-  border-color: var(--btn-primary-bg, #0b6aa2);
-}
-
-.simple-page .danger {
-  border: 1px solid;
-  border-color: var(--danger-color, #c4000a);
-}
-
-.simple-page .alert {
-  color: var(--danger-color, #c4000a);
+    @NonNull
+    @Override
+    public Collection<Widget> createFor(@NonNull View target) {
+        return Jenkins.get().getWidgets();
+    }
 }
