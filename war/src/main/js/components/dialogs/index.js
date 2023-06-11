@@ -29,14 +29,14 @@ Dialog.prototype.init = function () {
   this.dialog = document.createElement("dialog");
   this.dialog.classList.add("jenkins-dialog");
   this.dialog.style.maxWidth = this.options.maxWidth;
-  this.dialog.style.maxWidth = this.options.minWidth;
+  this.dialog.style.minWidth = this.options.minWidth;
 
   let contentStyle = "jenkins-dialog__contents";
   if (this.options.title != null) {
     const title = createElementFromHtml(`<div class='jenkins-dialog__title'/>`);
     this.dialog.appendChild(title);
     title.innerText = this.options.title;
-    contentStyle = "jenkins-dialog__contents_title";
+    contentStyle += " jenkins-dialog__contents--title";
   }
 
   if (this.dialogType === "modal") {

@@ -15,16 +15,15 @@ $jenkins-dialog-padding: 1.5rem;
     animation: jenkins-dialog-backdrop-animate-in 0.15s;
   }
 
-  &__contents_title {
-    overflow: auto;
-    padding: 0 1.5rem 1.5rem;
-    max-height: 75vh;
-  }
-
   &__contents {
-    overflow: auto;
+    overflow-y: auto;
+    overflow-wrap: break-word;
     padding: $jenkins-dialog-padding;
     max-height: 75vh;
+
+    &--title {
+      padding-top: 0;
+    }
   }
 
   &__input {
@@ -34,6 +33,7 @@ $jenkins-dialog-padding: 1.5rem;
 
   &__buttons {
     padding: 0 1.5rem 1.5rem;
+    justify-content: center;
   }
 
   &__title {
@@ -47,7 +47,7 @@ $jenkins-dialog-padding: 1.5rem;
     font-weight: 600;
     color: var(--text-color-secondary);
     padding: 0;
-    margin: 0 0 1.5rem;
+    margin: 0 0 1rem;
   }
 
   &__close-button {
