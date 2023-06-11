@@ -36,7 +36,7 @@ THE SOFTWARE.
         </j:if>
       </div>
     </j:if>
-    <a name="skip2content" />
+    <a id="skip2content" />
     <d:invokeBody />
   </j:if>
 </j:jelly>

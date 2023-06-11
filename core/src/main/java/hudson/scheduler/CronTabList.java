@@ -123,7 +123,7 @@ public final class CronTabList {
                 continue;
             }
 
-            if (line.length() == 0 || line.startsWith("#"))
+            if (line.isEmpty() || line.startsWith("#"))
                 continue;   // ignorable line
             try {
                 r.add(new CronTab(line, lineNumber, hash, timezone));

@@ -222,7 +222,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
 
         List<Pattern> r = new ArrayList<>();
         for (String s : noProxyHost.split("[ \t\n,|]+")) {
-            if (s.length() == 0)  continue;
+            if (s.isEmpty())  continue;
             r.add(Pattern.compile(s.replace(".", "\\.").replace("*", ".*")));
         }
         return r;

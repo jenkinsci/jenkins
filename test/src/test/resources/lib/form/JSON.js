@@ -5,7 +5,14 @@ if (typeof JSON=="undefined") {
             return String.evalJSON(str);
         },
         stringify : function (obj) {
-            return Object.toJSON(obj);
+            // TODO simplify when Prototype.js is removed
+            if (Object.toJSON) {
+              // Prototype.js
+              return Object.toJSON(obj);
+            } else {
+              // Standard
+              return JSON.stringify(obj);
+            }
        }
     };
 }

@@ -66,20 +66,20 @@ THE SOFTWARE.
 
       If both permission and permissions is set, then permissions will be used
     </st:attribute>
-    <st:attribute name="post" type="boolean">
+    <st:attribute name="post" type="boolean" since="1.504">
       If true, send a POST rather than a GET request.
       (onclick supersedes this except in the context menu.)
-      (since 1.504)
     </st:attribute>
-    <st:attribute name="requiresConfirmation" type="boolean">
+    <st:attribute name="requiresConfirmation" type="boolean" since="1.512">
       If true, require confirmation before clicking.
       Generally used with post="true".
       (onclick supersedes this except in the context menu.)
-      (since 1.512)
     </st:attribute>
-    <st:attribute name="confirmationMessage">
+    <st:attribute name="badge" since="TODO">
+      If set, displays the value as a small badge on the right side of the sidepanel item.
+    </st:attribute>
+    <st:attribute name="confirmationMessage" since="1.512">
       Message to use for confirmation, if requested; defaults to title.
-      (since 1.512)
     </st:attribute>
   </st:documentation>
 
@@ -136,6 +136,11 @@ THE SOFTWARE.
                 <l:icon src="${icon}" />
               </span>
               <span class="task-link-text">${title}</span>
+              <j:if test="${attrs.badge != null}">
+                <span class="task-icon-badge" tooltip="${attrs.badge.tooltip}">
+                  ${attrs.badge.text}
+                </span>
+              </j:if>
             </span>
           </span>
         </div>
@@ -153,9 +158,12 @@ THE SOFTWARE.
             <j:if test="${attrs.onclick == null and post and not requiresConfirmation}">
                 <script>
                     function postRequest_${id}(a) {
-                        new Ajax.Request(a.href);
-                        hoverNotification('${%Done.}', a.parentNode);
-                        return false;
+                      fetch(a.href, {
+                        method: 'post',
+                        headers: crumb.wrap({}),
+                      })
+                      hoverNotification('${%Done.}', a.parentNode);
+                      return false;
                     }
                 </script>
             </j:if>
@@ -167,6 +175,11 @@ THE SOFTWARE.
                     <l:icon src="${icon}" />
                   </span>
                   <span>${title}</span>
+                  <j:if test="${attrs.badge != null}">
+                    <span class="task-icon-badge" tooltip="${attrs.badge.tooltip}">
+                      ${attrs.badge.text}
+                    </span>
+                  </j:if>
                 </l:confirmationLink>
               </j:when>
 
@@ -176,6 +189,11 @@ THE SOFTWARE.
                     <l:icon src="${icon}" />
                   </span>
                   <span class="task-link-text">${title}</span>
+                  <j:if test="${attrs.badge != null}">
+                    <span class="task-icon-badge" tooltip="${attrs.badge.tooltip}">
+                      ${attrs.badge.text}
+                    </span>
+                  </j:if>
                 </a>
               </j:otherwise>
             </j:choose>

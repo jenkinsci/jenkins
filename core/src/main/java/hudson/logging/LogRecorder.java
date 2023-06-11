@@ -312,27 +312,27 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
         public boolean includes(LogRecord r) {
             if (r.getLevel().intValue() < level)
                 return false;   // below the threshold
-            if (name.length() == 0) {
+            if (name.isEmpty()) {
                 return true; // like root logger, includes everything
             }
             String logName = r.getLoggerName();
             if (logName == null || !logName.startsWith(name))
                 return false;   // not within this logger
             String rest = logName.substring(name.length());
-            return rest.startsWith(".") || rest.length() == 0;
+            return rest.startsWith(".") || rest.isEmpty();
         }
 
         @SuppressFBWarnings(value = "NP_BOOLEAN_RETURN_NULL", justification = "converting this to YesNoMaybe would break backward compatibility")
         public Boolean matches(LogRecord r) {
             boolean levelSufficient = r.getLevel().intValue() >= level;
-            if (name.length() == 0) {
+            if (name.isEmpty()) {
                 return levelSufficient; // include if level matches
             }
             String logName = r.getLoggerName();
             if (logName == null || !logName.startsWith(name))
                 return null; // not in the domain of this logger
             String rest = logName.substring(name.length());
-            if (rest.startsWith(".") || rest.length() == 0) {
+            if (rest.startsWith(".") || rest.isEmpty()) {
                 return levelSufficient; // include if level matches
             }
             return null;

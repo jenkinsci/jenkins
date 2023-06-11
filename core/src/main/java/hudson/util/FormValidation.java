@@ -449,7 +449,7 @@ public abstract class FormValidation extends IOException implements HttpResponse
                     return error(errorMessage);
             }
             v = v.trim();
-            if (!allowEmpty && v.length() == 0)
+            if (!allowEmpty && v.isEmpty())
                 return error(errorMessage);
 
             Base64.getDecoder().decode(v.getBytes(StandardCharsets.UTF_8));
@@ -655,8 +655,8 @@ public abstract class FormValidation extends IOException implements HttpResponse
                 QueryParameter qp = p.annotation(QueryParameter.class);
                 if (qp != null) {
                     String name = qp.value();
-                    if (name.length() == 0) name = p.name();
-                    if (name == null || name.length() == 0)
+                    if (name.isEmpty()) name = p.name();
+                    if (name == null || name.isEmpty())
                         continue;   // unknown parameter name. we'll report the error when the form is submitted.
                     if (name.equals("value"))
                         continue;   // 'value' parameter is implicit

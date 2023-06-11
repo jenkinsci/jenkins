@@ -19,11 +19,16 @@ Behaviour.specify("INPUT.combobox2", "combobox", 100, function (e) {
   );
 
   refillOnChange(e, function (params) {
-    new Ajax.Request(e.getAttribute("fillUrl"), {
-      parameters: params,
-      onSuccess: function (rsp) {
-        items = JSON.parse(rsp.responseText);
-      },
+    var urlSearchParams = new URLSearchParams(params);
+    fetch(e.getAttribute("fillUrl") + "?" + urlSearchParams, {
+      headers: crumb.wrap({}),
+      method: "post",
+    }).then((rsp) => {
+      if (rsp.ok) {
+        rsp.json().then((json) => {
+          items = json;
+        });
+      }
     });
   });
 });
