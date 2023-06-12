@@ -1,4 +1,4 @@
-$jenkins-dialog-padding: 1.5rem;
+$jenkins-dialog-padding: 1rem;
 
 .jenkins-dialog {
   border-radius: 0.6rem;
@@ -28,11 +28,11 @@ $jenkins-dialog-padding: 1.5rem;
 
   &__input {
     display: flex;
-    padding: 0 1.5rem 1.5rem;
+    padding: 0 1rem 1rem;
   }
 
   &__buttons {
-    padding: 0 1.5rem 1.5rem;
+    padding: 0 1rem 1rem;
     justify-content: center;
   }
 

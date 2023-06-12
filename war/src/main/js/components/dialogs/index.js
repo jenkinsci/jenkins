@@ -34,7 +34,6 @@ Dialog.prototype.init = function () {
   this.dialog.style.minWidth = this.options.minWidth;
   document.body.appendChild(this.dialog);
 
-
   let contentStyle = "jenkins-dialog__contents";
   if (this.options.title != null) {
     const title = createElementFromHtml(`<div class='jenkins-dialog__title'/>`);
