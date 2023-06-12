@@ -64,6 +64,7 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.LinkOption;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
@@ -255,7 +256,7 @@ public class Util {
         // See: https://issues.jenkins.io/browse/JENKINS-49060?focusedCommentId=325989&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-325989
         try {
             return FileUtils.readFileToString(logfile, charset);
-        } catch (FileNotFoundException e) {
+        } catch (FileNotFoundException | NoSuchFileException e) {
             return "";
         } catch (Exception e) {
             throw new IOException("Failed to fully read " + logfile, e);

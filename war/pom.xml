@@ -444,7 +444,7 @@ THE SOFTWARE.
                   <!-- detached after 2.16 -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>bouncycastle-api</artifactId>
-                  <version>2.26</version>
+                  <version>2.27</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -500,7 +500,7 @@ THE SOFTWARE.
                   <!-- detached after 2.356 -->
                   <groupId>org.jenkins-ci.modules</groupId>
                   <artifactId>instance-identity</artifactId>
-                  <version>116.vf8f487400980</version>
+                  <version>173.va_37c494ec4e5</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
