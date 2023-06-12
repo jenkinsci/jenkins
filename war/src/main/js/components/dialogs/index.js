@@ -70,11 +70,11 @@ Dialog.prototype.init = function () {
   } else {
     this.form = null;
     if (this.options.form != null && this.dialogType === "form") {
-      const content = createElementFromHtml(`<div class='${contentStyle}'/>`);
+      const contents = createElementFromHtml(`<div class='${contentStyle}'/>`);
       this.form = this.options.form;
-      content.appendChild(this.options.form);
-      this.dialog.appendChild(content);
-      behaviorShim.applySubtree(content, true);
+      contents.appendChild(this.options.form);
+      this.dialog.appendChild(contents);
+      behaviorShim.applySubtree(contents, true);
     }
     if (this.options.message != null && this.dialogType !== "form") {
       const message = createElementFromHtml(`<div class='${contentStyle}'/>`);
