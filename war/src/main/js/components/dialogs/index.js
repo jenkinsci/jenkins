@@ -1,13 +1,12 @@
 import { createElementFromHtml } from "@/util/dom";
 import { CLOSE } from "@/util/symbols";
 import behaviorShim from "@/util/behavior-shim";
+import jenkins from "@/util/jenkins";
 
-var _defaults = {
+let _defaults = {
   title: null,
   message: null,
   cancel: true,
-  okText: "OK",
-  cancelText: "Cancel",
   maxWidth: "475px",
   minWidth: "",
   type: "default",
@@ -16,10 +15,16 @@ var _defaults = {
   submitButton: false,
 };
 
-var _typeClassMap = {
+let _typeClassMap = {
   default: "",
   destructive: "jenkins-!-destructive-color",
 };
+
+jenkins.loadTranslations("jenkins.dialogs", function (localizations) {
+  window.dialog.translations = localizations;
+  _defaults.cancelText = localizations.cancel;
+  _defaults.okText = localizations.ok;
+});
 
 function Dialog(dialogType, options) {
   this.dialogType = dialogType;
@@ -219,7 +224,7 @@ function init() {
     confirm: function (message, options) {
       const defaults = {
         message: message,
-        okText: "Yes",
+        okText: window.dialog.translations.yes,
       };
       options = Object.assign({}, defaults, options);
       let dialog = new Dialog("confirm", options);
@@ -242,7 +247,7 @@ function init() {
         minWidth: "600px",
         maxWidth: "900px",
         submitButton: true,
-        okText: "Submit",
+        okText: window.dialog.translations.submit,
       };
       options = Object.assign({}, defaults, options);
       let dialog = new Dialog("form", options);
