@@ -1,10 +1,11 @@
 import { createElementFromHtml } from "@/util/dom";
 import { CLOSE } from "@/util/symbols";
+import behaviorShim from "@/util/behavior-shim";
 
 var _defaults = {
   title: null,
   message: null,
-  cancel: false,
+  cancel: true,
   okText: "OK",
   cancelText: "Cancel",
   maxWidth: "475px",
@@ -12,6 +13,7 @@ var _defaults = {
   type: "default",
   hideCloseButton: false,
   allowEmpty: false,
+  submitButton: false,
 };
 
 var _typeClassMap = {
@@ -30,6 +32,8 @@ Dialog.prototype.init = function () {
   this.dialog.classList.add("jenkins-dialog");
   this.dialog.style.maxWidth = this.options.maxWidth;
   this.dialog.style.minWidth = this.options.minWidth;
+  document.body.appendChild(this.dialog);
+
 
   let contentStyle = "jenkins-dialog__contents";
   if (this.options.title != null) {
@@ -65,7 +69,15 @@ Dialog.prototype.init = function () {
     });
     this.ok = null;
   } else {
-    if (this.options.message != null) {
+    this.form = null;
+    if (this.options.form != null && this.dialogType === "form") {
+      const content = createElementFromHtml(`<div class='${contentStyle}'/>`);
+      this.form = this.options.form;
+      content.appendChild(this.options.form);
+      this.dialog.appendChild(content);
+      behaviorShim.applySubtree(content, true);
+    }
+    if (this.options.message != null && this.dialogType !== "form") {
       const message = createElementFromHtml(`<div class='${contentStyle}'/>`);
       this.dialog.appendChild(message);
       message.innerText = this.options.message;
@@ -96,7 +108,6 @@ Dialog.prototype.init = function () {
       }
     });
   }
-  document.body.appendChild(this.dialog);
 };
 
 Dialog.prototype.checkInput = function () {
@@ -110,9 +121,11 @@ Dialog.prototype.checkInput = function () {
 Dialog.prototype.appendButtons = function () {
   const buttons = createElementFromHtml(`<div
       class="jenkins-buttons-row jenkins-buttons-row--equal-width jenkins-dialog__buttons">
-      <button data-id="ok" class="jenkins-button jenkins-button--primary ${
-        _typeClassMap[this.options.type]
-      }">${this.options.okText}</button>
+      <button data-id="ok" type="${
+        this.options.submitButton ? "submit" : "button"
+      }" class="jenkins-button jenkins-button--primary ${
+    _typeClassMap[this.options.type]
+  }">${this.options.okText}</button>
       <button data-id="cancel" class="jenkins-button">${
         this.options.cancelText
       }</button>
@@ -155,14 +168,21 @@ Dialog.prototype.show = function () {
       this.ok.addEventListener(
         "click",
         (e) => {
-          e.preventDefault();
+          if (this.dialogType === "form" && this.options.submitButton) {
+            this.form.submit();
+          } else {
+            e.preventDefault();
 
-          let value = true;
-          if (this.dialogType === "prompt") {
-            value = this.input.value;
+            let value = true;
+            if (this.dialogType === "prompt") {
+              value = this.input.value;
+            }
+            if (this.dialogType === "form") {
+              value = new FormData(this.form);
+            }
+            this.dialog.remove();
+            resolve(value);
           }
-          this.dialog.remove();
-          resolve(value);
         },
         { once: true }
       );
@@ -175,7 +195,6 @@ function init() {
     modal: function (content, options) {
       const defaults = {
         content: content,
-        ok: false,
       };
       options = Object.assign({}, defaults, options);
       let dialog = new Dialog("modal", options);
@@ -188,6 +207,7 @@ function init() {
     alert: function (message, options) {
       const defaults = {
         message: message,
+        cancel: false,
       };
       options = Object.assign({}, defaults, options);
       let dialog = new Dialog("alert", options);
@@ -201,7 +221,6 @@ function init() {
       const defaults = {
         message: message,
         okText: "Yes",
-        cancel: true,
       };
       options = Object.assign({}, defaults, options);
       let dialog = new Dialog("confirm", options);
@@ -212,10 +231,22 @@ function init() {
       const defaults = {
         message: message,
         minWidth: "400px",
-        cancel: true,
       };
       options = Object.assign({}, defaults, options);
       let dialog = new Dialog("prompt", options);
+      return dialog.show();
+    },
+
+    form: function (form, options) {
+      const defaults = {
+        form: form,
+        minWidth: "600px",
+        maxWidth: "900px",
+        submitButton: true,
+        okText: "Submit",
+      };
+      options = Object.assign({}, defaults, options);
+      let dialog = new Dialog("form", options);
       return dialog.show();
     },
   };
