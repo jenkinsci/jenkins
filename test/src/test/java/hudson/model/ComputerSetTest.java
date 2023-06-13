@@ -33,15 +33,17 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.cli.CLICommandInvoker;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.OfflineCause;
 import java.net.HttpURLConnection;
 import java.util.concurrent.Future;
 import jenkins.model.Jenkins;
+import jenkins.widgets.ExecutorsWidget;
+import jenkins.widgets.HasWidgetHelper;
+import org.htmlunit.Page;
+import org.htmlunit.html.HtmlForm;
+import org.htmlunit.html.HtmlPage;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -172,7 +174,7 @@ public class ComputerSetTest {
         );
 
         WebClient wc = j.createWebClient();
-        Page page = wc.getPage(wc.createCrumbedUrl("ajaxExecutors"));
+        Page page = wc.getPage(wc.createCrumbedUrl(HasWidgetHelper.getWidget(j.jenkins.getComputer(), ExecutorsWidget.class).orElseThrow().getUrl() + "ajax"));
         String content = page.getWebResponse().getContentAsString();
         assertThat(content, not(containsString(message)));
     }
