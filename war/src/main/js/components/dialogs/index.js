@@ -8,7 +8,7 @@ let _defaults = {
   message: null,
   cancel: true,
   maxWidth: "475px",
-  minWidth: "",
+  minWidth: "300px",
   type: "default",
   hideCloseButton: false,
   allowEmpty: false,

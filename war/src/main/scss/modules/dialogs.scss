@@ -33,7 +33,8 @@ $jenkins-dialog-padding: 1rem;
 
   &__buttons {
     padding: 0.5rem 1rem 1rem;
-    justify-content: center;
+    justify-content: right;
+    flex-direction: row-reverse;
   }
 
   &__title {
