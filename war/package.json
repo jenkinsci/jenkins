@@ -23,9 +23,9 @@
     "lint": "yarn lint:js && yarn lint:css"
   },
   "devDependencies": {
-    "@babel/cli": "7.21.5",
-    "@babel/core": "7.22.1",
-    "@babel/preset-env": "7.22.4",
+    "@babel/cli": "7.22.5",
+    "@babel/core": "7.22.5",
+    "@babel/preset-env": "7.22.5",
     "autoprefixer": "10.4.14",
     "babel-loader": "9.1.2",
     "clean-webpack-plugin": "4.0.0",
