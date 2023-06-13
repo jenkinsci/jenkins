@@ -4010,7 +4010,7 @@ __metadata:
     postcss-scss: 4.0.6
     prettier: 2.8.8
     sass: 1.63.2
-    sass-loader: 13.3.1
+    sass-loader: 13.3.2
     sortablejs: 1.15.0
     style-loader: 3.3.3
     stylelint: 15.7.0
@@ -5665,11 +5665,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sass-loader@npm:13.3.1":
-  version: 13.3.1
-  resolution: "sass-loader@npm:13.3.1"
+"sass-loader@npm:13.3.2":
+  version: 13.3.2
+  resolution: "sass-loader@npm:13.3.2"
   dependencies:
-    klona: ^2.0.6
     neo-async: ^2.6.2
   peerDependencies:
     fibers: ">= 3.1.0"
@@ -5686,7 +5685,7 @@ __metadata:
       optional: true
     sass-embedded:
       optional: true
-  checksum: 0cd4fcb6a6d7154412b27d19c65c3d84003c8e13dbf8196a905055043a4f70888cbb6c6d70d8b9e7ce55a6835644d8bdafe44eb6fd4a779188d528d558d492fb
+  checksum: 7394a8d1b818a289b9caabd979543c907b83e28ae08bc80ccb836e0ccabc4ae574c077ab2fa520ba5fb8abb2ec3e7c9822a1cbd8c58a28ff30018be9d1dc6c27
   languageName: node
   linkType: hard
 
