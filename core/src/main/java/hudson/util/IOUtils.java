@@ -35,8 +35,9 @@ public class IOUtils {
      * Drains the input stream and closes it.
      */
     public static void drain(InputStream in) throws IOException {
-        org.apache.commons.io.IOUtils.copy(in, new NullStream());
-        in.close();
+        try (in; OutputStream out = OutputStream.nullOutputStream()) {
+            org.apache.commons.io.IOUtils.copy(in, out);
+        }
     }
 
     public static void copy(File src, OutputStream out) throws IOException {
