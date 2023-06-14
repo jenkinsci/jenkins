@@ -20,10 +20,6 @@ $jenkins-dialog-padding: 1rem;
     overflow-wrap: break-word;
     padding: $jenkins-dialog-padding;
     max-height: 75vh;
-
-    &--title {
-      padding-top: 0;
-    }
   }
 
   &__input {
@@ -32,15 +28,24 @@ $jenkins-dialog-padding: 1rem;
   }
 
   &__buttons {
-    padding: 0.5rem 1rem 1rem;
-    justify-content: right;
-    flex-direction: row-reverse;
+    padding: $jenkins-dialog-padding;
+    background-color: var(--light-grey);
+
+    &--right-windows {
+      justify-content: right;
+    }
+
+    &--right-unix {
+      justify-content: right;
+      flex-direction: row-reverse;
+    }
   }
 
   &__title {
     font-size: 1.1rem;
     font-weight: 600;
     padding: $jenkins-dialog-padding;
+    background-color: var(--light-grey);
   }
 
   &__subtitle {

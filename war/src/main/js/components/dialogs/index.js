@@ -39,17 +39,15 @@ Dialog.prototype.init = function () {
   this.dialog.style.minWidth = this.options.minWidth;
   document.body.appendChild(this.dialog);
 
-  let contentStyle = "jenkins-dialog__contents";
   if (this.options.title != null) {
     const title = createElementFromHtml(`<div class='jenkins-dialog__title'/>`);
     this.dialog.appendChild(title);
     title.innerText = this.options.title;
-    contentStyle += " jenkins-dialog__contents--title";
   }
 
   if (this.dialogType === "modal") {
     if (this.options.content != null) {
-      const content = createElementFromHtml(`<div class='${contentStyle}'/>`);
+      const content = createElementFromHtml(`<div class='jenkins-dialog__contents'/>`);
       content.appendChild(this.options.content);
       this.dialog.appendChild(content);
     }
@@ -75,14 +73,14 @@ Dialog.prototype.init = function () {
   } else {
     this.form = null;
     if (this.options.form != null && this.dialogType === "form") {
-      const contents = createElementFromHtml(`<div class='${contentStyle}'/>`);
+      const contents = createElementFromHtml(`<div class='jenkins-dialog__contents'/>`);
       this.form = this.options.form;
       contents.appendChild(this.options.form);
       this.dialog.appendChild(contents);
       behaviorShim.applySubtree(contents, true);
     }
     if (this.options.message != null && this.dialogType !== "form") {
-      const message = createElementFromHtml(`<div class='${contentStyle}'/>`);
+      const message = createElementFromHtml(`<div class='jenkins-dialog__contents'/>`);
       this.dialog.appendChild(message);
       message.innerText = this.options.message;
     }
@@ -134,6 +132,14 @@ Dialog.prototype.appendButtons = function () {
         this.options.cancelText
       }</button>
     </div>`);
+
+  if (this.dialogType !== "form" && this.dialogType !== "prompt") {
+    if (navigator.appVersion.indexOf("Win") != -1) {
+      buttons.classList.add("jenkins-dialog__buttons--right-windows");
+    } else {
+      buttons.classList.add("jenkins-dialog__buttons--right-unix");
+    }
+  }
 
   this.dialog.appendChild(buttons);
 
