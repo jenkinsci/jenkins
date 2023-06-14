@@ -47,7 +47,9 @@ Dialog.prototype.init = function () {
 
   if (this.dialogType === "modal") {
     if (this.options.content != null) {
-      const content = createElementFromHtml(`<div class='jenkins-dialog__contents'/>`);
+      const content = createElementFromHtml(
+        `<div class='jenkins-dialog__contents'/>`
+      );
       content.appendChild(this.options.content);
       this.dialog.appendChild(content);
     }
@@ -73,14 +75,18 @@ Dialog.prototype.init = function () {
   } else {
     this.form = null;
     if (this.options.form != null && this.dialogType === "form") {
-      const contents = createElementFromHtml(`<div class='jenkins-dialog__contents'/>`);
+      const contents = createElementFromHtml(
+        `<div class='jenkins-dialog__contents'/>`
+      );
       this.form = this.options.form;
       contents.appendChild(this.options.form);
       this.dialog.appendChild(contents);
       behaviorShim.applySubtree(contents, true);
     }
     if (this.options.message != null && this.dialogType !== "form") {
-      const message = createElementFromHtml(`<div class='jenkins-dialog__contents'/>`);
+      const message = createElementFromHtml(
+        `<div class='jenkins-dialog__contents'/>`
+      );
       this.dialog.appendChild(message);
       message.innerText = this.options.message;
     }
