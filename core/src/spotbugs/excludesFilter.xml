@@ -64,7 +64,11 @@
   <Match>
     <And>
       <Bug pattern="DM_DEFAULT_ENCODING"/>
-      <Class name="hudson.util.TextFile"/>
+      <Or>
+        <Class name="hudson.console.ConsoleNote"/>
+        <Class name="hudson.lifecycle.WindowsServiceLifecycle"/>
+        <Class name="hudson.util.TextFile"/>
+      </Or>
     </And>
   </Match>
   <Match>
