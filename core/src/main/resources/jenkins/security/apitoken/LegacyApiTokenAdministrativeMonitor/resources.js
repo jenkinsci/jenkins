@@ -106,7 +106,7 @@ window.confirmAndRevokeAllSelected = function (button) {
           selectedValues.push({ userId: userId, uuid: uuid });
         }
 
-                // TODO simplify when Prototype.js is removed
+        // TODO simplify when Prototype.js is removed
 
         fetch(url, {
           method: "post",
