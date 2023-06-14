@@ -32,8 +32,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import com.gargoylesoftware.htmlunit.ScriptResult;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.tasks.ArtifactArchiver;
@@ -54,6 +52,8 @@ import jenkins.model.ArtifactManagerFactory;
 import jenkins.model.ArtifactManagerFactoryDescriptor;
 import jenkins.model.Jenkins;
 import jenkins.util.VirtualFile;
+import org.htmlunit.ScriptResult;
+import org.htmlunit.html.HtmlPage;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;

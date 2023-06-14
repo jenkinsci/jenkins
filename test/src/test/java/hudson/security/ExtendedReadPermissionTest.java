@@ -2,12 +2,12 @@ package hudson.security;
 
 import static org.junit.Assert.assertNull;
 
-import com.gargoylesoftware.htmlunit.html.HtmlButton;
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.model.Item;
 import java.net.HttpURLConnection;
 import jenkins.model.Jenkins;
+import org.htmlunit.html.HtmlButton;
+import org.htmlunit.html.HtmlForm;
+import org.htmlunit.html.HtmlPage;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;

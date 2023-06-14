@@ -33,7 +33,6 @@ import hudson.util.ClassLoaderSanityThreadFactory;
 import hudson.util.DaemonThreadFactory;
 import hudson.util.ExceptionCatchingThreadFactory;
 import hudson.util.NamingThreadFactory;
-import hudson.util.NullStream;
 import hudson.util.ProcessTree;
 import hudson.util.StreamCopyThread;
 import java.io.File;
@@ -429,7 +428,7 @@ public abstract class Proc {
         }
 
         public static final InputStream SELFPUMP_INPUT = new NullInputStream(0);
-        public static final OutputStream SELFPUMP_OUTPUT = new NullStream();
+        public static final OutputStream SELFPUMP_OUTPUT = OutputStream.nullOutputStream();
     }
 
     /**

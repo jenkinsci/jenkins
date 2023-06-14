@@ -102,11 +102,11 @@ var repeatableSupport = {
         if (addButtonElements.length == 1 && this.enableTopButton) {
           buttonElement = addButtonElements[0];
           parentOfButton = buttonElement.parentNode;
-          var addTopButton = document.createElement("input");
+          var addTopButton = document.createElement("button");
           addTopButton.type = "button";
-          addTopButton.value =
-            buttonElement.textContent || buttonElement.innerText;
-          addTopButton.className = "repeatable-add repeatable-add-top";
+          addTopButton.innerHTML = buttonElement.innerHTML;
+          addTopButton.className =
+            "jenkins-button repeatable-add repeatable-add-top";
           parentOfButton.insertBefore(addTopButton, parentOfButton.firstChild);
           Behaviour.applySubtree(addTopButton, true);
         }
@@ -185,12 +185,17 @@ Behaviour.specify("DIV.repeated-container", "repeatable", -100, function (e) {
 });
 
 // button to add a new repeatable block
-Behaviour.specify("INPUT.repeatable-add", "repeatable", 0, function (e) {
-  makeButton(e, function (e) {
-    repeatableSupport.onAdd(e.target);
-  });
-  e = null; // avoid memory leak
-});
+Behaviour.specify(
+  "INPUT.repeatable-add, BUTTON.repeatable-add",
+  "repeatable",
+  0,
+  function (button) {
+    button.addEventListener("click", ({ currentTarget: button }) => {
+      repeatableSupport.onAdd(button);
+    });
+    button = null; // avoid memory leak
+  }
+);
 
 /**
  * Converts markup for plugins that aren't using the repeatableDeleteButton tag
