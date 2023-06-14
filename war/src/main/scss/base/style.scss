@@ -25,13 +25,13 @@
  */
 
 /* Panel */
-@media (min-width: 1600px) {
+@media (width >= 1600px) {
   body#jenkins.j-hide-left #main-panel {
     max-width: 75%;
   }
 }
 
-@media (min-width: 2000px) {
+@media (width >= 2000px) {
   body#jenkins.j-hide-left #main-panel {
     max-width: 85%;
   }
