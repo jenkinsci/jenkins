@@ -11,7 +11,8 @@ function registerConfirmationLink(element) {
     type = "destructive";
   }
 
-  element.addEventListener("click", function () {
+  element.addEventListener("click", function (e) {
+    e.preventDefault();
     dialog.confirm(message, { title: title, type: type }).then(
       () => {
         var form = document.createElement("form");
@@ -25,6 +26,7 @@ function registerConfirmationLink(element) {
       },
       () => {}
     );
+    return false;
   });
 }
 
