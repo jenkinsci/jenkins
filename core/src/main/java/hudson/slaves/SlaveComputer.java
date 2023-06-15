@@ -56,7 +56,6 @@ import hudson.security.ACL;
 import hudson.security.ACLContext;
 import hudson.slaves.OfflineCause.ChannelTermination;
 import hudson.util.Futures;
-import hudson.util.NullStream;
 import hudson.util.RingBufferLogHandler;
 import hudson.util.StreamTaskListener;
 import hudson.util.VersionNumber;
@@ -386,7 +385,7 @@ public class SlaveComputer extends Computer {
             return log;
         } catch (IOException e) {
             logger.log(Level.SEVERE, "Failed to create log file " + getLogFile(), e);
-            return new NullStream();
+            return OutputStream.nullOutputStream();
         }
     }
 
