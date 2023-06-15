@@ -4,14 +4,14 @@ $jenkins-dialog-padding: 1rem;
   border-radius: 0.6rem;
   border: none;
   background: transparent;
-  box-shadow: var(--modal-box-shadow);
-  backdrop-filter: var(--modal-backdrop-filter);
+  box-shadow: var(--dialog-box-shadow);
+  backdrop-filter: var(--dialog-backdrop-filter);
   animation: jenkins-dialog-animate-in 0.25s cubic-bezier(0, 0.68, 0.5, 1.5);
   overflow: hidden;
   padding: 0;
 
   &::backdrop {
-    background: var(--modal-backdrop-background);
+    background: var(--dialog-backdrop-background);
     animation: jenkins-dialog-backdrop-animate-in 0.15s;
   }
 
