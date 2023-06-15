@@ -54,8 +54,7 @@ public class JavaUtils {
      * @return {@code true} if it is Java 9 or above
      */
     public static boolean isRunningWithPostJava8() {
-        String javaVersion = getCurrentRuntimeJavaVersion();
-        return !javaVersion.startsWith("1.");
+        return !isRunningWithJava8OrBelow();
     }
 
     /**
