@@ -24,8 +24,6 @@
 
 package hudson;
 
-import static org.apache.commons.io.output.NullOutputStream.NULL_OUTPUT_STREAM;
-
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -191,7 +189,7 @@ public abstract class Launcher {
         @CheckForNull
         protected FilePath pwd;
         @CheckForNull
-        protected OutputStream stdout = NULL_OUTPUT_STREAM, stderr;
+        protected OutputStream stdout = OutputStream.nullOutputStream(), stderr;
         @CheckForNull
         private TaskListener stdoutListener;
         @CheckForNull
