@@ -44,6 +44,7 @@ import jenkins.widgets.HasWidgetHelper;
 import org.htmlunit.Page;
 import org.htmlunit.html.HtmlForm;
 import org.htmlunit.html.HtmlPage;
+import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -58,6 +59,11 @@ public class ComputerSetTest {
 
     @Rule
     public JenkinsRule j = new JenkinsRule();
+
+    @After
+    public void stopRunningBuilds() throws InterruptedException {
+        ExecutorTest.stopRunningBuilds(j);
+    }
 
     @Test
     @Issue("JENKINS-2821")

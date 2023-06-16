@@ -37,6 +37,10 @@ public class ExecutorTest {
 
     @After
     public void stopRunningBuilds() throws InterruptedException {
+        stopRunningBuilds(j);
+    }
+
+    public static void stopRunningBuilds(JenkinsRule j) throws InterruptedException {
         for (Job<?, ?> job : j.jenkins.allItems(Job.class)) {
             for (Run<?, ?> build : job.getBuilds()) {
                 Executor executor = build.getExecutor();
@@ -187,8 +191,8 @@ public class ExecutorTest {
     }
 
     /**
-     * Start a project with an infinite build step
-     *
+     * Start a project with an infinite build step.
+     * You must clean up, for example with {@link #stopRunningBuilds(JenkinsRule)}.
      * @param project {@link FreeStyleProject} to start
      * @return A {@link Future} object represents the started build
      * @throws Exception if somethink wrong happened

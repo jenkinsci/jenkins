@@ -60,6 +60,7 @@ import org.htmlunit.Page;
 import org.htmlunit.WebRequest;
 import org.htmlunit.html.HtmlForm;
 import org.htmlunit.xml.XmlPage;
+import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -77,6 +78,11 @@ public class ComputerTest {
 
     @Rule public JenkinsRule j = new JenkinsRule();
     @Rule public LoggerRule logging = new LoggerRule();
+
+    @After
+    public void stopRunningBuilds() throws InterruptedException {
+        ExecutorTest.stopRunningBuilds(j);
+    }
 
     @Test
     public void discardLogsAfterDeletion() throws Exception {
