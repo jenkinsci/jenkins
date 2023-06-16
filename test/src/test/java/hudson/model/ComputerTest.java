@@ -48,7 +48,6 @@ import java.io.File;
 import java.net.HttpURLConnection;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import jenkins.model.Jenkins;
@@ -228,10 +227,10 @@ public class ComputerTest {
         FreeStyleProject p = j.createFreeStyleProject();
         p.setAssignedNode(agent);
 
-        Future<FreeStyleBuild> r = ExecutorTest.startBlockingBuild(p);
+        FreeStyleBuild b = ExecutorTest.startBlockingBuild(p);
 
         String message = "It went away";
-        p.getLastBuild().getBuiltOn().toComputer().disconnect(
+        b.getBuiltOn().toComputer().disconnect(
                 new OfflineCause.ChannelTermination(new RuntimeException(message))
         );
 
@@ -239,6 +238,8 @@ public class ComputerTest {
         Page page = wc.getPage(wc.createCrumbedUrl(agent.toComputer().getUrl()));
         String content = page.getWebResponse().getContentAsString();
         assertThat(content, not(containsString(message)));
+
+        j.assertBuildStatus(Result.FAILURE, j.waitForCompletion(b));
     }
 
     @Test
@@ -247,10 +248,10 @@ public class ComputerTest {
         FreeStyleProject p = j.createFreeStyleProject();
         p.setAssignedNode(agent);
 
-        Future<FreeStyleBuild> r = ExecutorTest.startBlockingBuild(p);
+        FreeStyleBuild b = ExecutorTest.startBlockingBuild(p);
 
         String message = "It went away";
-        p.getLastBuild().getBuiltOn().toComputer().disconnect(
+        b.getBuiltOn().toComputer().disconnect(
                 new OfflineCause.ChannelTermination(new RuntimeException(message))
         );
 
@@ -258,6 +259,8 @@ public class ComputerTest {
         Page page = wc.getPage(wc.createCrumbedUrl(HasWidgetHelper.getWidget(agent.toComputer(), ExecutorsWidget.class).orElseThrow().getUrl() + "ajax"));
         String content = page.getWebResponse().getContentAsString();
         assertThat(content, not(containsString(message)));
+
+        j.assertBuildStatus(Result.FAILURE, j.waitForCompletion(b));
     }
 
 }

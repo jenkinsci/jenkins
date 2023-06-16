@@ -37,7 +37,6 @@ import hudson.cli.CLICommandInvoker;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.OfflineCause;
 import java.net.HttpURLConnection;
-import java.util.concurrent.Future;
 import jenkins.model.Jenkins;
 import jenkins.widgets.ExecutorsWidget;
 import jenkins.widgets.HasWidgetHelper;
@@ -146,10 +145,10 @@ public class ComputerSetTest {
         FreeStyleProject p = j.createFreeStyleProject();
         p.setAssignedNode(agent);
 
-        Future<FreeStyleBuild> r = ExecutorTest.startBlockingBuild(p);
+        FreeStyleBuild b = ExecutorTest.startBlockingBuild(p);
 
         String message = "It went away";
-        p.getLastBuild().getBuiltOn().toComputer().disconnect(
+        b.getBuiltOn().toComputer().disconnect(
                 new OfflineCause.ChannelTermination(new RuntimeException(message))
         );
 
@@ -157,6 +156,8 @@ public class ComputerSetTest {
         Page page = wc.getPage(wc.createCrumbedUrl(agent.toComputer().getUrl()));
         String content = page.getWebResponse().getContentAsString();
         assertThat(content, not(containsString(message)));
+
+        j.assertBuildStatus(Result.FAILURE, j.waitForCompletion(b));
     }
 
     @Test
@@ -166,10 +167,10 @@ public class ComputerSetTest {
         FreeStyleProject p = j.createFreeStyleProject();
         p.setAssignedNode(agent);
 
-        Future<FreeStyleBuild> r = ExecutorTest.startBlockingBuild(p);
+        FreeStyleBuild b = ExecutorTest.startBlockingBuild(p);
 
         String message = "It went away";
-        p.getLastBuild().getBuiltOn().toComputer().disconnect(
+        b.getBuiltOn().toComputer().disconnect(
                 new OfflineCause.ChannelTermination(new RuntimeException(message))
         );
 
@@ -177,5 +178,7 @@ public class ComputerSetTest {
         Page page = wc.getPage(wc.createCrumbedUrl(HasWidgetHelper.getWidget(j.jenkins.getComputer(), ExecutorsWidget.class).orElseThrow().getUrl() + "ajax"));
         String content = page.getWebResponse().getContentAsString();
         assertThat(content, not(containsString(message)));
+
+        j.assertBuildStatus(Result.FAILURE, j.waitForCompletion(b));
     }
 }
