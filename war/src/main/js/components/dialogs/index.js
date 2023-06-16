@@ -139,12 +139,10 @@ Dialog.prototype.appendButtons = function () {
       }</button>
     </div>`);
 
-  if (this.dialogType !== "form" && this.dialogType !== "prompt") {
-    if (navigator.appVersion.indexOf("Win") != -1) {
-      buttons.classList.add("jenkins-dialog__buttons--right-windows");
-    } else {
-      buttons.classList.add("jenkins-dialog__buttons--right-unix");
-    }
+  if (navigator.appVersion.indexOf("Win") != -1) {
+    buttons.classList.add("jenkins-dialog__buttons--right-windows");
+  } else {
+    buttons.classList.add("jenkins-dialog__buttons--right-unix");
   }
 
   this.dialog.appendChild(buttons);
