@@ -29,7 +29,7 @@ $jenkins-dialog-padding: 1rem;
 
   &__buttons {
     padding: $jenkins-dialog-padding;
-    border-top: 1px solid var(--black);
+    border-top: 1px solid var(--medium-grey);
 
     &--right-windows {
       justify-content: right;
@@ -45,7 +45,7 @@ $jenkins-dialog-padding: 1rem;
     font-size: 1.1rem;
     font-weight: 600;
     padding: $jenkins-dialog-padding;
-    border-bottom: 1px solid var(--black);
+    border-bottom: 1px solid var(--medium-grey);
   }
 
   &__subtitle {
