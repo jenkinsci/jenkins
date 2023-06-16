@@ -69,7 +69,7 @@ interface Provider {
 
         Future<Void> sendText(String text) throws IOException;
 
-        void sendPing(ByteBuffer applicationData) throws IOException;
+        Future<Void> sendPing(ByteBuffer applicationData) throws IOException;
 
         void close() throws IOException;
 

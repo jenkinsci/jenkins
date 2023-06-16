@@ -34,6 +34,7 @@ import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.Job;
 import hudson.model.Queue;
+import hudson.model.Result;
 import hudson.model.Run;
 import hudson.model.RunMap;
 import hudson.model.listeners.ItemListener;
@@ -44,6 +45,8 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -263,6 +266,29 @@ public abstract class LazyBuildMixIn<JobT extends Job<JobT, RunT> & Queue.Task &
      */
     public final RunT getNearestOldBuild(int n) {
         return builds.search(n, AbstractLazyLoadRunMap.Direction.DESC);
+    }
+
+    /**
+     * Suitable for {@link Job#getEstimatedDurationCandidates}.
+     * @since TODO
+     */
+    public List<RunT> getEstimatedDurationCandidates() {
+        var loadedBuilds = builds.getLoadedBuilds().values(); // reverse chronological order
+        List<RunT> candidates = new ArrayList<>(3);
+        for (Result threshold : List.of(Result.UNSTABLE, Result.FAILURE)) {
+            for (RunT build : loadedBuilds) {
+                if (!build.isBuilding()) {
+                    Result result = build.getResult();
+                    if (result != null && result.isBetterOrEqualTo(threshold)) {
+                        candidates.add(build);
+                        if (candidates.size() == 3) {
+                            return candidates;
+                        }
+                    }
+                }
+            }
+        }
+        return candidates;
     }
 
     /**

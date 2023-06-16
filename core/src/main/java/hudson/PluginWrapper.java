@@ -72,7 +72,6 @@ import jenkins.YesNoMaybe;
 import jenkins.model.Jenkins;
 import jenkins.plugins.DetachedPluginsUtil;
 import jenkins.security.UpdateSiteWarningsMonitor;
-import jenkins.util.AntClassLoader;
 import jenkins.util.URLClassLoader2;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.LogFactory;
@@ -414,12 +413,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      */
     @Restricted(Beta.class)
     public void injectJarsToClasspath(File... jars) throws Exception {
-        if (classLoader instanceof AntClassLoader) {
-            for (File f : jars) {
-                LOGGER.log(Level.CONFIG, () -> "Inserting " + f + " into " + shortName + " plugin's classpath");
-                ((AntClassLoader) classLoader).addPathComponent(f);
-            }
-        } else if (classLoader instanceof URLClassLoader2) {
+        if (classLoader instanceof URLClassLoader2) {
             for (File f : jars) {
                 LOGGER.log(Level.CONFIG, () -> "Inserting " + f + " into " + shortName + " plugin's classpath");
                 ((URLClassLoader2) classLoader).addURL(f.toURI().toURL());

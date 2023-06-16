@@ -1,7 +1,7 @@
 package org.jenkins.ui.symbol;
 
-import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -13,6 +13,7 @@ import java.nio.charset.StandardCharsets;
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.jvnet.hudson.test.Issue;
 
 public class SymbolTest {
     public static final String SCIENCE_PATH;
@@ -189,5 +190,16 @@ public class SymbolTest {
         symbol = Symbol.get(builder.build());
         assertThat(symbol, containsString(SCIENCE_PATH));
         assertThat(symbol, not(containsString("tooltip")));
+    }
+
+    @Test
+    @DisplayName("IDs in symbol should not be removed")
+    @Issue("JENKINS-70730")
+    void getSymbol_idInSymbolIsPresent() {
+        String symbol = Symbol.get(new SymbolRequest.Builder()
+                .withId("some-random-id")
+                .withName("with-id").build());
+
+        assertThat(symbol, containsString("id=\"a\""));
     }
 }

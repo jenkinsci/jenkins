@@ -15,7 +15,7 @@ const TOOLTIP_BASE = {
  * @param {HTMLElement} element - Registers the tooltips for the given element
  */
 function registerTooltip(element) {
-  if (element._tippy) {
+  if (element._tippy && element._tippy.props.theme === "tooltip") {
     element._tippy.destroy();
   }
 

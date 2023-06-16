@@ -47,6 +47,7 @@ public abstract class WebSocketSession {
     /**
      * Number of seconds between server-sent pings.
      * Zero to disable.
+     * This value must be lower than the <code>jenkins.websocket.idleTimeout</code>.
      * <p><a href="https://nginx.org/en/docs/http/websocket.html">nginx docs</a> claim 60s timeout and this seems to match experiments.
      * <a href="https://cloud.google.com/kubernetes-engine/docs/concepts/ingress#support_for_websocket">GKE docs</a> says 30s
      * but this is a total timeout, not inactivity, so you need to set {@code BackendConfigSpec.timeoutSec} anyway.
@@ -68,7 +69,8 @@ public abstract class WebSocketSession {
         if (PING_INTERVAL_SECONDS != 0) {
             pings = Timer.get().scheduleAtFixedRate(() -> {
                 try {
-                    handler.sendPing(ByteBuffer.wrap(new byte[0]));
+                    Future<Void> f = handler.sendPing(ByteBuffer.wrap(new byte[0]));
+                    // TODO do something interesting with the future
                 } catch (Exception x) {
                     error(x);
                     pings.cancel(true);
