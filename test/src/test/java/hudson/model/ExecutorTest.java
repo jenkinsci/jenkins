@@ -21,6 +21,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import jenkins.model.CauseOfInterruption.UserInterruption;
 import jenkins.model.InterruptedBuildAction;
 import jenkins.model.Jenkins;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -33,6 +34,20 @@ public class ExecutorTest {
 
     @Rule
     public JenkinsRule j = new JenkinsRule();
+
+    @After
+    public void stopRunningBuilds() throws InterruptedException {
+        for (Job<?, ?> job : j.jenkins.allItems(Job.class)) {
+            for (Run<?, ?> build : job.getBuilds()) {
+                Executor executor = build.getExecutor();
+                if (executor != null) {
+                    System.out.println("Stopping " + build);
+                    executor.interrupt();
+                    j.waitForCompletion(build);
+                }
+            }
+        }
+    }
 
     @Test
     @Issue("JENKINS-4756")
