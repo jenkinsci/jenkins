@@ -43,7 +43,6 @@ import hudson.model.TaskListener;
 import hudson.os.WindowsUtil;
 import hudson.remoting.VirtualChannel;
 import hudson.slaves.WorkspaceList;
-import hudson.util.NullStream;
 import hudson.util.StreamTaskListener;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -78,7 +77,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.output.NullOutputStream;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Chmod;
 import org.junit.Ignore;
@@ -99,7 +97,9 @@ public class FilePathTest {
     @Test public void copyTo() throws Exception {
         File tmp = temp.newFile();
         FilePath f = new FilePath(channels.french, tmp.getPath());
-        f.copyTo(new NullStream());
+        try (OutputStream out = OutputStream.nullOutputStream()) {
+            f.copyTo(out);
+        }
         assertTrue("target does not exist", tmp.exists());
         assertTrue("could not delete target " + tmp.getPath(), tmp.delete());
     }
@@ -260,8 +260,12 @@ public class FilePathTest {
     @Test public void archiveBug() throws Exception {
             FilePath d = new FilePath(channels.french, temp.getRoot().getPath());
             d.child("test").touch(0);
-            d.zip(NullOutputStream.NULL_OUTPUT_STREAM);
-            d.zip(NullOutputStream.NULL_OUTPUT_STREAM, "**/*");
+            try (OutputStream out = OutputStream.nullOutputStream()) {
+                d.zip(out);
+            }
+            try (OutputStream out = OutputStream.nullOutputStream()) {
+                d.zip(out, "**/*");
+            }
     }
 
     @Test public void normalization() {

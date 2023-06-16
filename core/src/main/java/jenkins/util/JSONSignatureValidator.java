@@ -6,6 +6,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -34,7 +35,6 @@ import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
-import org.apache.commons.io.output.NullOutputStream;
 import org.apache.commons.io.output.TeeOutputStream;
 import org.jvnet.hudson.crypto.CertificateUtil;
 import org.jvnet.hudson.crypto.SignatureOutputStream;
@@ -159,7 +159,8 @@ public class JSONSignatureValidator {
      */
     private FormValidation checkSpecificSignature(JSONObject json, JSONObject signatureJson, MessageDigest digest, String digestEntry, Signature signature, String signatureEntry, String digestName) throws IOException {
         // this is for computing a digest to check sanity
-        DigestOutputStream dos = new DigestOutputStream(NullOutputStream.NULL_OUTPUT_STREAM, digest);
+        OutputStream nos = OutputStream.nullOutputStream();
+        DigestOutputStream dos = new DigestOutputStream(nos, digest);
         SignatureOutputStream sos = new SignatureOutputStream(signature);
 
         String providedDigest = signatureJson.optString(digestEntry, null);
