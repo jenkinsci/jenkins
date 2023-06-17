@@ -262,6 +262,8 @@ public class FilePathTest {
             d.child("test").touch(0);
             try (OutputStream out = OutputStream.nullOutputStream()) {
                 d.zip(out);
+            }
+            try (OutputStream out = OutputStream.nullOutputStream()) {
                 d.zip(out, "**/*");
             }
     }
