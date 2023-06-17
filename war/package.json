@@ -30,7 +30,7 @@
     "babel-loader": "9.1.2",
     "clean-webpack-plugin": "4.0.0",
     "css-loader": "6.8.1",
-    "css-minimizer-webpack-plugin": "5.0.0",
+    "css-minimizer-webpack-plugin": "5.0.1",
     "eslint": "8.42.0",
     "eslint-config-prettier": "8.8.0",
     "handlebars-loader": "1.7.3",
