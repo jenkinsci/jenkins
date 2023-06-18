@@ -35,8 +35,9 @@ public class IOUtils {
      * Drains the input stream and closes it.
      */
     public static void drain(InputStream in) throws IOException {
-        org.apache.commons.io.IOUtils.copy(in, new NullStream());
-        in.close();
+        try (in; OutputStream out = OutputStream.nullOutputStream()) {
+            org.apache.commons.io.IOUtils.copy(in, out);
+        }
     }
 
     public static void copy(File src, OutputStream out) throws IOException {
@@ -81,7 +82,9 @@ public class IOUtils {
      * So to reliably skip just the N bytes, we'll actually read all those bytes.
      *
      * @since 1.349
+     * @deprecated use {@link org.apache.commons.io.IOUtils#skipFully(InputStream, long)}
      */
+    @Deprecated
     public static InputStream skip(InputStream in, long size) throws IOException {
         DataInputStream di = new DataInputStream(in);
 

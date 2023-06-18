@@ -116,7 +116,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>2024.vcb_b_ede610d76</version>
+      <version>2028.vb_6e9c2a_8668a_</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -173,7 +173,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
       <artifactId>instance-identity</artifactId>
-      <version>142.v04572ca_5b_265</version>
+      <version>173.va_37c494ec4e5</version>
       <scope>test</scope>
     </dependency>
     <dependency>
