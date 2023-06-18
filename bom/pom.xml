@@ -56,7 +56,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.springframework</groupId>
         <artifactId>spring-framework-bom</artifactId>
-        <version>5.3.27</version>
+        <version>5.3.28</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -225,7 +225,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jenkins-ci</groupId>
         <artifactId>crypto-util</artifactId>
-        <version>1.8</version>
+        <version>1.9</version>
       </dependency>
       <dependency>
         <groupId>org.jenkins-ci</groupId>

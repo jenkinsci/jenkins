@@ -51,7 +51,6 @@ import hudson.tools.ToolInstaller;
 import hudson.tools.ToolProperty;
 import hudson.util.ArgumentListBuilder;
 import hudson.util.FormValidation;
-import hudson.util.NullStream;
 import hudson.util.StreamTaskListener;
 import hudson.util.VariableResolver;
 import hudson.util.VariableResolver.ByMap;
@@ -59,6 +58,7 @@ import hudson.util.VariableResolver.Union;
 import hudson.util.XStream2;
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -665,7 +665,7 @@ public class Maven extends Builder {
          */
         public boolean getExists() {
             try {
-                return getExecutable(new LocalLauncher(new StreamTaskListener(new NullStream()))) != null;
+                return getExecutable(new LocalLauncher(new StreamTaskListener(OutputStream.nullOutputStream()))) != null;
             } catch (IOException | InterruptedException e) {
                 return false;
             }
