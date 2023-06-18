@@ -32,13 +32,14 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.model.TaskListener;
 import hudson.util.QuotedStringTokenizer;
 import hudson.util.VariableResolver;
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintStream;
@@ -55,7 +56,9 @@ import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
+import java.nio.charset.CodingErrorAction;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.CopyOption;
 import java.nio.file.FileAlreadyExistsException;
@@ -64,6 +67,7 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.LinkOption;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
@@ -108,9 +112,7 @@ import jenkins.util.MemoryReductionUtil;
 import jenkins.util.SystemProperties;
 import jenkins.util.io.PathRemover;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.io.output.NullOutputStream;
 import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
@@ -247,15 +249,22 @@ public class Util {
         // contain unmappable and/or malformed byte sequences. We need to make
         // sure that in such cases, no CharacterCodingException is thrown.
         //
-        // One approach that cannot be used is to call Files.newBufferedReader()
-        // because there is a difference in how an InputStreamReader constructed
-        // from a Charset and the reader returned by Files.newBufferedReader()
-        // handle malformed and unmappable byte sequences for the specified
-        // encoding; the latter is more picky and will throw an exception.
+        // One approach that cannot be used is Files.newBufferedReader, which
+        // creates its CharsetDecoder with the default behavior of reporting
+        // malformed input and unmappable character errors. The implementation
+        // of InputStreamReader(InputStream, Charset) has the desired behavior
+        // of replacing malformed input and unmappable character errors, but
+        // this implementation is not specified in the API contract. Therefore,
+        // we explicitly use a decoder with the desired behavior.
         // See: https://issues.jenkins.io/browse/JENKINS-49060?focusedCommentId=325989&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-325989
-        try {
-            return FileUtils.readFileToString(logfile, charset);
-        } catch (FileNotFoundException e) {
+        CharsetDecoder decoder = charset.newDecoder()
+                .onMalformedInput(CodingErrorAction.REPLACE)
+                .onUnmappableCharacter(CodingErrorAction.REPLACE);
+        try (InputStream is = Files.newInputStream(Util.fileToPath(logfile));
+                Reader isr = new InputStreamReader(is, decoder);
+                Reader br = new BufferedReader(isr)) {
+            return IOUtils.toString(br);
+        } catch (NoSuchFileException e) {
             return "";
         } catch (Exception e) {
             throw new IOException("Failed to fully read " + logfile, e);
@@ -627,10 +636,11 @@ public class Util {
     public static String getDigestOf(@NonNull InputStream source) throws IOException {
         try (source) {
             MessageDigest md5 = getMd5();
-            DigestInputStream in = new DigestInputStream(source, md5);
-            // Note: IOUtils.copy() buffers the input internally, so there is no
-            // need to use a BufferedInputStream.
-            IOUtils.copy(in, NullOutputStream.NULL_OUTPUT_STREAM);
+            try (InputStream in = new DigestInputStream(source, md5); OutputStream out = OutputStream.nullOutputStream()) {
+                // Note: IOUtils.copy() buffers the input internally, so there is no
+                // need to use a BufferedInputStream.
+                IOUtils.copy(in, out);
+            }
             return toHexString(md5.digest());
         } catch (NoSuchAlgorithmException e) {
             throw new IOException("MD5 not installed", e);    // impossible

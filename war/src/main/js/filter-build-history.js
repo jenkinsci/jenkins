@@ -16,9 +16,9 @@ const noBuildsBanner = document.getElementById("no-builds");
 const sidePanel = document.getElementById("side-panel");
 const buildHistoryPageNav = document.getElementById("buildHistoryPageNav");
 
-const pageOne = buildHistoryPageNav.querySelectorAll(".pageOne")[0];
-const pageUp = buildHistoryPageNav.querySelectorAll(".pageUp")[0];
-const pageDown = buildHistoryPageNav.querySelectorAll(".pageDown")[0];
+const pageOne = buildHistoryPageNav.querySelector(".pageOne");
+const pageUp = buildHistoryPageNav.querySelector(".pageUp");
+const pageDown = buildHistoryPageNav.querySelector(".pageDown");
 
 const leftRightPadding = 4;
 const updateBuildsRefreshInterval = 5000;
@@ -137,7 +137,7 @@ function getOldestEntryId() {
 }
 
 function getDataTable(buildHistoryDiv) {
-  return $(buildHistoryDiv).getElementsBySelector("table.pane")[0];
+  return buildHistoryDiv.querySelector("table.pane");
 }
 
 function updatePageParams(dataTable) {
@@ -208,39 +208,31 @@ function checkRowCellOverflows(row) {
     return div;
   }
   function blockUnwrap(element) {
-    var wrapped = $(element).getElementsBySelector(".wrapped");
-    for (var i = 0; i < wrapped.length; i++) {
-      var wrappedEl = wrapped[i];
+    element.querySelectorAll(".wrapped").forEach(function (wrappedEl) {
       wrappedEl.parentNode.removeChild(wrappedEl);
       element.parentNode.insertBefore(wrappedEl, element);
       wrappedEl.classList.remove("wrapped");
-    }
+    });
     element.parentNode.removeChild(element);
   }
 
-  var buildName = $(row).getElementsBySelector(".build-name")[0];
-  var buildDetails = $(row).getElementsBySelector(".build-details")[0];
+  var buildName = row.querySelector(".build-name");
+  var buildDetails = row.querySelector(".build-details");
 
   if (!buildName || !buildDetails) {
     return;
   }
 
-  var buildControls = $(row).getElementsBySelector(".build-controls")[0];
-  var desc;
-
-  var descElements = $(row).getElementsBySelector(".desc");
-  if (descElements.length > 0) {
-    desc = descElements[0];
-  }
+  var buildControls = row.querySelector(".build-controls");
+  var desc = row.querySelector(".desc");
 
   function resetCellOverflows() {
     markSingleline();
 
     // undo block wraps
-    var blockWraps = $(row).getElementsBySelector(".block.wrap");
-    for (var i = 0; i < blockWraps.length; i++) {
-      blockUnwrap(blockWraps[i]);
-    }
+    row.querySelectorAll(".block.wrap").forEach(function (blockWrap) {
+      blockUnwrap(blockWrap);
+    });
 
     buildName.classList.remove("block");
     buildName.removeAttribute("style");
@@ -273,35 +265,31 @@ function checkRowCellOverflows(row) {
   function fitToControlsHeight(element) {
     if (buildControls) {
       if (element.clientHeight < buildControls.clientHeight) {
-        $(element).setStyle({
-          height: buildControls.clientHeight.toString() + "px",
-        });
+        element.style.height = buildControls.clientHeight.toString() + "px";
       }
     }
   }
 
   function setBuildControlWidths() {
     if (buildControls) {
-      var buildBadge =
-        $(buildControls).getElementsBySelector(".build-badge")[0];
+      var buildBadge = buildControls.querySelector(".build-badge");
 
       if (buildBadge) {
         var buildControlsWidth = buildControls.clientWidth;
         var buildBadgeWidth;
 
-        var buildStop =
-          $(buildControls).getElementsBySelector(".build-stop")[0];
+        var buildStop = buildControls.querySelector(".build-stop");
         if (buildStop) {
-          $(buildStop).setStyle({ width: "24px" });
+          buildStop.style.width = "24px";
           // Minus 24 for the buildStop width,
           // minus 4 for left+right padding in the controls container
           buildBadgeWidth = buildControlsWidth - 24 - leftRightPadding;
           if (buildControls.classList.contains("indent-multiline")) {
             buildBadgeWidth = buildBadgeWidth - 20;
           }
-          $(buildBadge).setStyle({ width: buildBadgeWidth + "px" });
+          buildBadge.style.width = buildBadgeWidth + "px";
         } else {
-          $(buildBadge).setStyle({ width: "100%" });
+          buildBadge.style.width = "100%";
         }
       }
       controlsOverflowParams = getElementOverflowParams(buildControls);
@@ -323,8 +311,7 @@ function checkRowCellOverflows(row) {
       var badgesOverflowing = false;
       var nameLessThanHalf = true;
       var detailsLessThanHalf = true;
-      var buildBadge =
-        $(buildControls).getElementsBySelector(".build-badge")[0];
+      var buildBadge = buildControls.querySelector(".build-badge");
       if (buildBadge) {
         var badgeOverflowParams = getElementOverflowParams(buildBadge);
 
@@ -346,8 +333,8 @@ function checkRowCellOverflows(row) {
         rightCellOverflowParams
       ) {
         // Float them left and right...
-        $(leftCellOverFlowParams.element).setStyle({ float: "left" });
-        $(rightCellOverflowParams.element).setStyle({ float: "right" });
+        leftCellOverFlowParams.element.style.float = "left";
+        rightCellOverflowParams.element.style.float = "right";
 
         if (
           !leftCellOverFlowParams.isOverflowed &&
@@ -360,18 +347,16 @@ function checkRowCellOverflows(row) {
           leftCellOverFlowParams.isOverflowed &&
           !rightCellOverflowParams.isOverflowed
         ) {
-          $(leftCellOverFlowParams.element).setStyle({
-            width: leftCellOverFlowParams.scrollWidth + "px",
-          });
+          leftCellOverFlowParams.element.style.width =
+            leftCellOverFlowParams.scrollWidth + "px";
           return;
         }
         if (
           !leftCellOverFlowParams.isOverflowed &&
           rightCellOverflowParams.isOverflowed
         ) {
-          $(rightCellOverflowParams.element).setStyle({
-            width: rightCellOverflowParams.scrollWidth + "px",
-          });
+          rightCellOverflowParams.element.style.width =
+            rightCellOverflowParams.scrollWidth + "px";
           return;
         }
       }
@@ -432,7 +417,7 @@ function checkRowCellOverflows(row) {
   }
 
   if (buildControls && !controlsRepositioned) {
-    buildBadge = $(buildControls).getElementsBySelector(".build-badge")[0];
+    buildBadge = buildControls.querySelector(".build-badge");
     if (buildBadge) {
       badgeOverflowParams = getElementOverflowParams(buildBadge);
 
@@ -563,7 +548,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // If the build history pane is collapsed, just return immediately and don't set up
   // the build history refresh.
-  if (buildHistoryContainer.hasClassName("collapsed")) {
+  if (buildHistoryContainer.classList.contains("collapsed")) {
     return;
   }
 
@@ -573,26 +558,26 @@ document.addEventListener("DOMContentLoaded", function () {
   checkAllRowCellOverflows();
 
   // Show/hide the nav as the mouse moves into the sidepanel and build history.
-  sidePanel.observe("mouseover", function () {
+  sidePanel.addEventListener("mouseover", function () {
     buildHistoryPageNav.classList.add("mouseOverSidePanel");
   });
-  sidePanel.observe("mouseout", function () {
+  sidePanel.addEventListener("mouseout", function () {
     buildHistoryPageNav.classList.remove("mouseOverSidePanel");
   });
-  buildHistoryContainer.observe("mouseover", function () {
+  buildHistoryContainer.addEventListener("mouseover", function () {
     buildHistoryPageNav.classList.add("mouseOverSidePanelBuildHistory");
   });
-  buildHistoryContainer.observe("mouseout", function () {
+  buildHistoryContainer.addEventListener("mouseout", function () {
     buildHistoryPageNav.classList.remove("mouseOverSidePanelBuildHistory");
   });
 
-  pageOne.observe("click", function () {
+  pageOne.addEventListener("click", function () {
     loadPage();
   });
-  pageUp.observe("click", function () {
+  pageUp.addEventListener("click", function () {
     loadPage({ "newer-than": getNewestEntryId() });
   });
-  pageDown.observe("click", function () {
+  pageDown.addEventListener("click", function () {
     if (hasPageDown()) {
       cancelRefreshTimeout();
       loadPage({ "older-than": getOldestEntryId() });

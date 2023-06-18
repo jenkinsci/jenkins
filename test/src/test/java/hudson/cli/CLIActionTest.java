@@ -38,7 +38,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.NullInputStream;
 import org.apache.commons.io.output.CountingOutputStream;
-import org.apache.commons.io.output.NullOutputStream;
 import org.apache.commons.io.output.TeeOutputStream;
 import org.junit.Rule;
 import org.junit.Test;
@@ -223,17 +222,18 @@ public class CLIActionTest {
         logging.record(CLIAction.class, Level.FINE);
         File jar = tmp.newFile("jenkins-cli.jar");
         FileUtils.copyURLToFile(j.jenkins.getJnlpJars("jenkins-cli.jar").getURL(), jar);
-        CountingOutputStream cos = new CountingOutputStream(NullOutputStream.NULL_OUTPUT_STREAM);
         long size = /*999_*/999_999;
-        // Download:
-        assertEquals(0, new Launcher.LocalLauncher(StreamTaskListener.fromStderr()).launch().cmds(
-            "java", "-jar", jar.getAbsolutePath(),
-                "-webSocket",
-                "-s", j.getURL().toString(),
-                "large-download",
-                "-size", Long.toString(size)).
-            stdout(cos).stderr(System.err).join());
-        assertEquals(size, cos.getByteCount());
+        try (OutputStream nos = OutputStream.nullOutputStream(); CountingOutputStream cos = new CountingOutputStream(nos)) {
+            // Download:
+            assertEquals(0, new Launcher.LocalLauncher(StreamTaskListener.fromStderr()).launch().cmds(
+                "java", "-jar", jar.getAbsolutePath(),
+                    "-webSocket",
+                    "-s", j.getURL().toString(),
+                    "large-download",
+                    "-size", Long.toString(size)).
+                stdout(cos).stderr(System.err).join());
+            assertEquals(size, cos.getByteCount());
+        }
         // Upload:
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         assertEquals(0, new Launcher.LocalLauncher(StreamTaskListener.fromStderr()).launch().cmds(
@@ -250,7 +250,7 @@ public class CLIActionTest {
     public static final class LargeUploadCommand extends CLICommand {
         @Override
         protected int run() throws Exception {
-            try (InputStream is = new BufferedInputStream(stdin); CountingOutputStream cos = new CountingOutputStream(NullOutputStream.NULL_OUTPUT_STREAM)) {
+            try (InputStream is = new BufferedInputStream(stdin); OutputStream nos = OutputStream.nullOutputStream(); CountingOutputStream cos = new CountingOutputStream(nos)) {
                 System.err.println("starting upload");
                 long start = System.nanoTime();
                 IOUtils.copyLarge(is, cos);

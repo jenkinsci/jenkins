@@ -64,7 +64,11 @@
   <Match>
     <And>
       <Bug pattern="DM_DEFAULT_ENCODING"/>
-      <Class name="hudson.util.TextFile"/>
+      <Or>
+        <Class name="hudson.console.ConsoleNote"/>
+        <Class name="hudson.lifecycle.WindowsServiceLifecycle"/>
+        <Class name="hudson.util.TextFile"/>
+      </Or>
     </And>
   </Match>
   <Match>
@@ -319,6 +323,7 @@
           <Class name="hudson.util.HudsonIsLoading"/>
           <Class name="hudson.util.HudsonIsRestarting"/>
           <Class name="hudson.widgets.HistoryWidget"/>
+          <Class name="jenkins.agents.CloudSet"/>
           <Class name="jenkins.management.AdministrativeMonitorsApi"/>
           <Class name="jenkins.model.Jenkins"/>
           <Class name="jenkins.model.ParameterizedJobMixIn"/>

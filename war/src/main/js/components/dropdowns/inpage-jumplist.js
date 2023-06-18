@@ -12,7 +12,7 @@ function init() {
     chevron.classList.add("children");
     chevron.items = Array.from(
       document.querySelectorAll(
-        "form > div > div > .jenkins-section > .jenkins-section__title"
+        "form > div > .jenkins-section > .jenkins-section__title"
       )
     ).map((section) => {
       section.id = toId(section.textContent);

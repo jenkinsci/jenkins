@@ -71,7 +71,6 @@ import java.util.TreeSet;
 import java.util.stream.Collectors;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.io.input.NullInputStream;
 import org.hamcrest.Description;
 import org.hamcrest.TypeSafeMatcher;
 import org.junit.Ignore;
@@ -213,7 +212,7 @@ public class VirtualFileTest {
 
         @Override
         public InputStream open() {
-            return new NullInputStream(0);
+            return InputStream.nullInputStream();
         }
     }
 

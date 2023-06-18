@@ -1,7 +1,6 @@
 @use "../abstracts/mixins";
 
 .page-footer {
-  background-color: var(--footer-background);
   width: 100%;
   clear: both;
   font-size: var(--font-size-sm);
@@ -12,16 +11,17 @@
 }
 
 .page-footer__flex-row {
-  min-height: 3.5rem;
   display: flex;
   align-items: stretch;
   flex-wrap: wrap;
 }
 
 .page-footer__flex-row > *:not(script) {
-  padding: 0.5rem 1.25rem;
   display: flex;
   align-items: center;
+  padding: calc(var(--section-padding) / 2)
+    calc(var(--section-padding) - 0.85rem);
+  gap: calc(var(--section-padding) / 2);
 }
 
 .page-footer__footer-id-placeholder {
@@ -33,14 +33,15 @@
   display: inline-block;
 }
 
-.page-footer__links {
-  &:not(:last-child) {
-    border-right: 1px solid var(--breadcrumbs-bg);
+.page-footer .jenkins-button {
+  transition: var(--standard-transition);
+
+  &:hover {
+    color: var(--text-color) !important;
   }
-}
 
-.page-footer a {
-  @include mixins.link-dark;
-
-  font-weight: 600;
+  svg,
+  .jenkins-overflow-button__ellipsis {
+    display: none;
+  }
 }

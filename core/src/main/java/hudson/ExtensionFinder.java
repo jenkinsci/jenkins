@@ -507,6 +507,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
                         boolean foundInjectableConstructor = false;
                         for (Constructor constructor : cc.getDeclaredConstructors()) {
                             if (constructor.isAnnotationPresent(javax.inject.Inject.class)
+                                    || constructor.isAnnotationPresent(jakarta.inject.Inject.class)
                                     || constructor.isAnnotationPresent(com.google.inject.Inject.class)) {
                                 constructor.getAnnotatedParameterTypes();
                                 constructor.getParameterAnnotations();
@@ -529,6 +530,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
                         // See com.google.inject.spi.InjectionPoint(TypeLiteral, Method, boolean)
                         for (Method method : cc.getDeclaredMethods()) {
                             if (method.isAnnotationPresent(javax.inject.Inject.class)
+                                    || method.isAnnotationPresent(jakarta.inject.Inject.class)
                                     || method.isAnnotationPresent(com.google.inject.Inject.class)) {
                                 method.getAnnotatedParameterTypes();
                                 method.getParameterAnnotations();
@@ -538,6 +540,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
                         // See com.google.inject.spi.InjectionPoint(TypeLiteral, Field, boolean)
                         for (Field f : cc.getDeclaredFields()) {
                             if (f.isAnnotationPresent(javax.inject.Inject.class)
+                                    || f.isAnnotationPresent(jakarta.inject.Inject.class)
                                     || f.isAnnotationPresent(com.google.inject.Inject.class)) {
                                 f.getAnnotations();
                                 f.getAnnotatedType().getAnnotations();

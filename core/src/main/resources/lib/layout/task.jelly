@@ -158,9 +158,12 @@ THE SOFTWARE.
             <j:if test="${attrs.onclick == null and post and not requiresConfirmation}">
                 <script>
                     function postRequest_${id}(a) {
-                        new Ajax.Request(a.href);
-                        hoverNotification('${%Done.}', a.parentNode);
-                        return false;
+                      fetch(a.href, {
+                        method: 'post',
+                        headers: crumb.wrap({}),
+                      })
+                      hoverNotification('${%Done.}', a.parentNode);
+                      return false;
                     }
                 </script>
             </j:if>

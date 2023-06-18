@@ -79,9 +79,6 @@ THE SOFTWARE.
           </tr>
           </thead>
 
-          <j:forEach var="v" items="${attrs.views}">
-            <t:projectViewNested />
-          </j:forEach>
           <j:forEach var="job" items="${jobs}">
             <j:set var="relativeLinkToJob" value="${h.getRelativeLinkTo(job)}"/>
             <t:projectViewRow jobBaseUrl="${relativeLinkToJob.substring(0, relativeLinkToJob.length() - job.shortUrl.length())}"/>

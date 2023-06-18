@@ -42,6 +42,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import jenkins.model.queue.QueueItem;
 
 /**
  * History page filter.
@@ -55,9 +56,9 @@ public class HistoryPageFilter<T> {
     private Long olderThan;
     private String searchString;
 
-    // Need to use different Lists for Queue.Items and Runs because
+    // Need to use different Lists for QueueItem and Runs because
     // we need access to them separately in the jelly files for rendering.
-    public final List<HistoryPageEntry<Queue.Item>> queueItems = new ArrayList<>();
+    public final List<HistoryPageEntry<QueueItem>> queueItems = new ArrayList<>();
     public final List<HistoryPageEntry<Run>> runs = new ArrayList<>();
 
     @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD", justification = "read by Stapler")
@@ -128,7 +129,7 @@ public class HistoryPageFilter<T> {
      * @param queueItems The queue items to be added. Queue items do not need to be sorted.
      * @since 2.17
      */
-    public void add(@NonNull Iterable<T> runItems, @NonNull List<Queue.Item> queueItems) {
+    public void add(@NonNull Iterable<T> runItems, @NonNull List<QueueItem> queueItems) {
         sort(queueItems);
         addInternal(Iterables.concat(queueItems, runItems));
     }
@@ -136,7 +137,7 @@ public class HistoryPageFilter<T> {
     /**
      * Add items to the History page, internal implementation.
      * @param items The items to be added.
-     * @param <ItemT> The type of items should either be T or Queue.Item.
+     * @param <ItemT> The type of items should either be T or {@link QueueItem}.
      */
     private <ItemT> void addInternal(@NonNull Iterable<ItemT> items) {
         // Note that items can be a large lazily evaluated collection,
@@ -240,8 +241,8 @@ public class HistoryPageFilter<T> {
     }
 
     private long getNextBuildNumber(@NonNull Object entry) {
-        if (entry instanceof Queue.Item) {
-            Queue.Task task = ((Queue.Item) entry).task;
+        if (entry instanceof QueueItem) {
+            Queue.Task task = ((QueueItem) entry).getTask();
             if (task instanceof Job) {
                 return ((Job) task).getNextBuildNumber();
             }
@@ -253,8 +254,8 @@ public class HistoryPageFilter<T> {
         return HistoryPageEntry.getEntryId(entry) + 1;
     }
 
-    private void addQueueItem(Queue.Item item) {
-        HistoryPageEntry<Queue.Item> entry = new HistoryPageEntry<>(item);
+    private void addQueueItem(QueueItem item) {
+        HistoryPageEntry<QueueItem> entry = new HistoryPageEntry<>(item);
         queueItems.add(entry);
         updateNewestOldest(entry.getEntryId());
     }
@@ -279,8 +280,8 @@ public class HistoryPageFilter<T> {
     private boolean add(Object entry) {
         // Purposely not calling isFull(). May need to add a greater number of entries
         // to the page initially, newerThan then cutting it back down to size using cutLeading()
-        if (entry instanceof Queue.Item) {
-            Queue.Item item = (Queue.Item) entry;
+        if (entry instanceof QueueItem) {
+            QueueItem item = (QueueItem) entry;
             if (searchString != null && !fitsSearchParams(item)) {
                 return false;
             }
@@ -310,7 +311,7 @@ public class HistoryPageFilter<T> {
         return Math.max(0, maxEntries - size());
     }
 
-    private boolean fitsSearchParams(@NonNull Queue.Item item) {
+    private boolean fitsSearchParams(@NonNull QueueItem item) {
         if (fitsSearchString(item.getDisplayName())) {
             return true;
         } else if (fitsSearchString(item.getId())) {

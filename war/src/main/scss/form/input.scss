@@ -7,7 +7,7 @@
   width: 100%;
   box-shadow: var(--form-input-glow);
   // Set height transition to 0s as vertical resizing has a delay/lag otherwise
-  transition: all var(--standard-transition), height 0s;
+  transition: all var(--standard-transition), height 0s, padding 0s;
 
   &:hover {
     border-color: var(--input-border-hover);

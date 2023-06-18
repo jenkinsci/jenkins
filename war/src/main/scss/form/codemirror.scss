@@ -9,6 +9,13 @@
   cursor: text;
   margin-bottom: var(--section-padding);
 
+  // Override the defaults of codemirror.css
+  pre {
+    font-family: var(--font-family-mono) !important;
+    font-weight: 500 !important;
+    line-height: 1.66 !important;
+  }
+
   &:hover {
     border-color: var(--input-border-hover);
   }

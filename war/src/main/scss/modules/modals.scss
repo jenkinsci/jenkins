@@ -1,7 +1,7 @@
 $jenkins-modal-padding: 1.5rem;
 
 .jenkins-modal {
-  border-radius: 1.5rem;
+  border-radius: 0.4rem;
   border: none;
   background: transparent;
   box-shadow: var(--modal-box-shadow);
@@ -17,15 +17,15 @@ $jenkins-modal-padding: 1.5rem;
 
   &__contents {
     overflow: auto;
-    padding: $jenkins-modal-padding;
-    max-height: 80vh;
+    padding: 0.5rem 1.5rem 1.5rem;
+    max-height: 75vh;
   }
 
   &__title {
     font-size: 1.1rem;
     font-weight: 600;
-    padding: 0;
-    margin: 0 0 1.5rem;
+    padding: $jenkins-modal-padding;
+    margin: 0;
   }
 
   &__subtitle {

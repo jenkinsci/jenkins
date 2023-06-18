@@ -21,23 +21,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
-@use "./abstracts/mixins";
-@use "./abstracts/theme";
-@use "./base/typography";
-@use "./base/spacing";
-@use "./form/checkbox";
-@use "./form/input";
-@use "./form/layout";
-@use "./modules/buttons";
-
-body {
-  background: var(--background);
-}
-
-a {
-  @include mixins.link;
-}
+@use "./base/core";
+@use "./pages/sign-in-register";
 
 .simple-page h1 {
   font-size: 24px;
@@ -68,10 +53,6 @@ a {
   align-items: center;
   justify-content: center;
   min-height: 90vh;
-}
-
-html {
-  color: var(--text-color);
 }
 
 .simple-page .jenkins-button {

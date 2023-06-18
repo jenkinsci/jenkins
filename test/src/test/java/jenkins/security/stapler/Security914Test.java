@@ -29,11 +29,11 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assume.assumeTrue;
 
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.WebRequest;
 import hudson.Functions;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import org.htmlunit.Page;
+import org.htmlunit.WebRequest;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;

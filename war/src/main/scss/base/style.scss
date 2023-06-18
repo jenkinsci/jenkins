@@ -49,10 +49,6 @@ dt {
   font-weight: bold;
 }
 
-::selection {
-  background: var(--selection-color);
-}
-
 .fixed-width {
   font-family: monospace;
 }
@@ -79,11 +75,6 @@ td.no-wrap {
 #main-table {
   padding: 0;
   border-collapse: collapse;
-}
-
-.skiplink {
-  position: absolute;
-  left: -20000px;
 }
 
 #shutdown-msg {
@@ -230,10 +221,10 @@ pre {
   padding: 0.8rem 1rem;
   border-radius: 10px;
   background-color: var(--pre-background);
-  color: var(--pre-color) !important;
-  font-family: var(--font-family-mono) !important;
-  font-weight: 500 !important;
-  line-height: 1.66 !important;
+  color: var(--pre-color);
+  font-family: var(--font-family-mono);
+  font-weight: 500;
+  line-height: 1.66;
 
   a {
     font-weight: inherit;
@@ -448,9 +439,9 @@ pre.console {
   // &--stuck class when the element is stuck to the bottom of the screen
   // https://css-tricks.com/how-to-detect-when-a-sticky-element-gets-pinned/
   bottom: -1px;
-  margin-left: -2rem;
+  margin-left: calc(var(--section-padding) * -1);
   width: calc(
-    100% + 4rem
+    100% + calc(var(--section-padding) * 2)
   ); /* it needs to occupy the entire width or else the underlying content will see through */
 
   z-index: 998; /* behind top-sticker */
@@ -458,7 +449,7 @@ pre.console {
 
 .bottom-sticker-inner {
   position: relative;
-  padding: 1em 2rem;
+  padding: 1em var(--section-padding);
   z-index: 0;
 
   &::before {
@@ -484,8 +475,8 @@ pre.console {
     mask-image: linear-gradient(
       to right,
       transparent,
-      white 2rem,
-      white calc(100% - 2rem),
+      white var(--section-padding),
+      white calc(100% - var(--section-padding)),
       transparent
     );
     pointer-events: none;
@@ -733,7 +724,8 @@ table.parameters > tbody:hover {
 }
 
 #buildHistory .build-rss-links {
-  float: right;
+  display: flex;
+  justify-content: end;
 }
 
 #buildHistory .build-rss-links a {
@@ -1228,18 +1220,6 @@ table.progress-bar.red td.progress-bar-done {
   font-size: 1.9em;
 }
 
-/* ========================= textarea.jelly ================== */
-
-.textarea-preview-container {
-  text-align: left;
-}
-
-.textarea-preview {
-  background-color: var(--very-light-grey);
-  padding: 0.5em;
-  border-radius: 10px;
-}
-
 /* ========================= logRecords.jelly ================== */
 
 .logrecord-container {
@@ -1472,7 +1452,7 @@ svg.icon-xlg {
 /* -------------- Unclassified ---------- */
 
 .spacer {
-  height: 2rem;
+  height: var(--section-padding);
 }
 
 /* used by elements that are hidden by default but revealed throught JavaScript */
