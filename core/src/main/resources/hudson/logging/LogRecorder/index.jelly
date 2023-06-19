@@ -59,6 +59,12 @@ THE SOFTWARE.
       </l:overflowButton>
     </l:app-bar>
 
+    <j:if test="${it.logRecords.isEmpty() and it.slaveLogRecords.isEmpty()}">
+      <div>
+        Hello world we empty
+      </div>
+    </j:if>
+
     <t:logRecords logRecords="${it.logRecords}"/>
     <j:forEach var="entry" items="${it.slaveLogRecords.entrySet()}">
       <h2><a href="${rootURL}/${entry.key.url}" class="model-link">${entry.key.displayName}</a></h2>
