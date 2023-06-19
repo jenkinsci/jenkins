@@ -27,24 +27,43 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-<l:layout title="Log" permission="${app.SYSTEM_READ}">
-  <st:include page="sidepanel.jelly" />
+<l:layout title="Log" permission="${app.SYSTEM_READ}" type="one-column">
   <!-- no need for additional breadcrumb here as we're on an index page already including breadcrumb -->
   <l:main-panel>
-    <h1>${it.displayName}</h1>
+    <l:app-bar title="${it.displayName}">
+      <l:isAdmin>
+        <form method="post" id='clear-logrecorder' action="clear">
+          <f:submit icon="symbol-close-circle"
+                    value="${%Clear This Log}"
+                    primary="false" />
+        </form>
+        <a class="jenkins-button" href="configure">
+          Configure
+        </a>
+      </l:isAdmin>
+      <l:overflowButton>
+        <span class="jenkins-dropdown__heading">${%Atom feed}</span>
+        <st:include it="${it.parent}" page="feeds.jelly" />
+        <l:isAdmin>
+          <div class="jenkins-dropdown__separator"></div>
+          <l:confirmationLink class="jenkins-dropdown__item jenkins-!-destructive-color"
+                              href="doDelete"
+                              message="${%delete.logrecorder(it.displayName)}"
+                              post="true">
+            <div class="jenkins-dropdown__item__icon">
+              <l:icon src="symbol-trash" />
+            </div>
+            ${%Delete log recorder}
+          </l:confirmationLink>
+        </l:isAdmin>
+      </l:overflowButton>
+    </l:app-bar>
+
     <t:logRecords logRecords="${it.logRecords}"/>
     <j:forEach var="entry" items="${it.slaveLogRecords.entrySet()}">
       <h2><a href="${rootURL}/${entry.key.url}" class="model-link">${entry.key.displayName}</a></h2>
       <t:logRecords logRecords="${entry.value}"/>
     </j:forEach>
-
-    <l:isAdmin>
-      <form method="post" id='clear-logrecorder' action="clear">
-        <f:submit value="${%Clear This Log}" />
-      </form>
-    </l:isAdmin>
-
-    <st:include it="${it.parent}" page="feeds.jelly" />
   </l:main-panel>
 </l:layout>
 </j:jelly>
