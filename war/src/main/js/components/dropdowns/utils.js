@@ -28,6 +28,9 @@ function generateDropdown(element, callback) {
           callback(instance);
         });
       },
+      onShown(instance) {
+        behaviorShim.applySubtree(instance.popper);
+      },
     })
   );
 }
