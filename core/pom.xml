@@ -468,7 +468,7 @@ THE SOFTWARE.
       <!-- working around MCOMPILER-97 -->
       <groupId>org.jenkins-ci</groupId>
       <artifactId>core-annotation-processors</artifactId>
-      <version>9.v8d1b_e5888539</version>
+      <version>13.v2dcfc22a_a_b_29</version>
       <scope>provided</scope>
       <optional>true</optional>
     </dependency>
