@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.99</version>
+    <version>1.100</version>
     <relativePath />
   </parent>
 
@@ -73,7 +73,7 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.410</revision>
+    <revision>2.412</revision>
     <changelist>-SNAPSHOT</changelist>
 
     <!-- configuration for patch tracker plugin  -->
@@ -86,7 +86,7 @@ THE SOFTWARE.
     <changelog.url>https://www.jenkins.io/changelog</changelog.url>
 
     <!-- Bundled Remoting version -->
-    <remoting.version>3107.v665000b_51092</remoting.version>
+    <remoting.version>3131.vf2b_b_798b_ce99</remoting.version>
     <!-- Minimum Remoting version, which is tested for API compatibility -->
     <remoting.minimum.supported.version>4.7</remoting.minimum.supported.version>
 
@@ -372,13 +372,6 @@ THE SOFTWARE.
             <trimTrailingWhitespace />
           </java>
         </configuration>
-        <dependencies>
-          <dependency>
-            <groupId>io.jenkins.lib</groupId>
-            <artifactId>shared-resources</artifactId>
-            <version>1.0</version>
-          </dependency>
-        </dependencies>
       </plugin>
       <plugin>
         <artifactId>maven-release-plugin</artifactId>
