@@ -3994,7 +3994,7 @@ __metadata:
     postcss-loader: 7.3.3
     postcss-scss: 4.0.6
     prettier: 2.8.8
-    sass: 1.63.5
+    sass: 1.63.6
     sass-loader: 13.3.2
     sortablejs: 1.15.0
     style-loader: 3.3.3
@@ -5666,16 +5666,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sass@npm:1.63.5":
-  version: 1.63.5
-  resolution: "sass@npm:1.63.5"
+"sass@npm:1.63.6":
+  version: 1.63.6
+  resolution: "sass@npm:1.63.6"
   dependencies:
     chokidar: ">=3.0.0 <4.0.0"
     immutable: ^4.0.0
     source-map-js: ">=0.6.2 <2.0.0"
   bin:
     sass: sass.js
-  checksum: eee6a1b5f2bd85c464daa51aca11bd5d8086592099ff3a3a8286f92fafc0ab02edf5aaf781d8e53e446353beff15eff8cdf52052c232ece18efd7945d59172af
+  checksum: 3372319904658eeafaf78a09a6fcb3368a68e6d76fe3c43c2d009f4f72e475ab22b82ef483ef5c00fcda3ab00066846c0bd88c36b42771b855f6ab80c7eda541
   languageName: node
   linkType: hard
 
