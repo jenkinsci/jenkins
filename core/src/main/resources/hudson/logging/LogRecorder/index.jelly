@@ -64,10 +64,7 @@ THE SOFTWARE.
     </l:app-bar>
 
     <j:if test="${noLogs}">
-      <div class="longhorn">
-        <l:icon src="symbol-journal" />
-        <div>${%No logs available}</div>
-      </div>
+      <l:notice text="${%No logs available}" icon="symbol-journal" />
     </j:if>
 
     <t:logRecords logRecords="${it.logRecords}"/>

@@ -29,6 +29,7 @@
 @use "./modules/dropdowns";
 @use "./modules/icons";
 @use "./modules/modals";
+@use "./modules/notice";
 @use "./modules/notifications";
 @use "./modules/page-footer";
 @use "./modules/page-header";
@@ -50,27 +51,3 @@
 @use "./pages/plugin-manager";
 @use "./pages/setupWizardFirstUser";
 @use "./pages/setupWizardConfigureInstance";
-
-.longhorn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-  gap: 0.1rem;
-  min-height: 15rem;
-  background: var(--button-background);
-  border-radius: 0.66rem;
-  font-size: var(--font-size-base);
-  margin-bottom: 30px;
-  font-weight: 500;
-
-  svg {
-    width: 2.5rem;
-    height: 2.5rem;
-    margin-bottom: 1rem;
-  }
-
-  & > div:last-of-type:not(:first-of-type) {
-    color: var(--text-color-secondary);
-  }
-}
