@@ -136,7 +136,7 @@ public class ProcessTreeTest {
         if (File.pathSeparatorChar == ';') {
             pb.command("cmd");
         } else {
-            pb.command("sleep", "5m");
+            pb.command("sleep", "300");
         }
 
         process = pb.start();
@@ -160,7 +160,7 @@ public class ProcessTreeTest {
         if (File.pathSeparatorChar == ';') {
             pb.command("cmd");
         } else {
-            pb.command("sleep", "5m");
+            pb.command("sleep", "300");
         }
 
         // Create an agent so we can tell it to kill the process

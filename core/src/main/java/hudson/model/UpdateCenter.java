@@ -106,6 +106,7 @@ import javax.servlet.ServletException;
 import jenkins.MissingDependencyException;
 import jenkins.RestartRequiredException;
 import jenkins.install.InstallUtil;
+import jenkins.management.Badge;
 import jenkins.model.Jenkins;
 import jenkins.security.stapler.StaplerDispatchable;
 import jenkins.util.SystemProperties;
@@ -375,6 +376,52 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                     return ij;
             }
         return null;
+    }
+
+    @Restricted(NoExternalUse.class)
+    public Badge getBadge() {
+        if (!isSiteDataReady()) {
+            // Do not display message during this page load, but possibly later.
+            return null;
+        }
+        List<Plugin> plugins = getUpdates();
+        int size = plugins.size();
+        if (size > 0) {
+            StringBuilder tooltip = new StringBuilder();
+            Badge.Severity severity = Badge.Severity.WARNING;
+            int securityFixSize = (int) plugins.stream().filter(plugin -> plugin.fixesSecurityVulnerabilities()).count();
+            int incompatibleSize = (int) plugins.stream().filter(plugin -> !plugin.isCompatibleWithInstalledVersion()).count();
+            if (size > 1) {
+                tooltip.append(jenkins.management.Messages.PluginsLink_updatesAvailable(size));
+            } else {
+                tooltip.append(jenkins.management.Messages.PluginsLink_updateAvailable());
+            }
+            switch (incompatibleSize) {
+                case 0:
+                    break;
+                case 1:
+                    tooltip.append("\n").append(jenkins.management.Messages.PluginsLink_incompatibleUpdateAvailable());
+                    break;
+                default:
+                    tooltip.append("\n").append(jenkins.management.Messages.PluginsLink_incompatibleUpdatesAvailable(incompatibleSize));
+                    break;
+            }
+            switch (securityFixSize) {
+                case 0:
+                    break;
+                case 1:
+                    tooltip.append("\n").append(jenkins.management.Messages.PluginsLink_securityUpdateAvailable());
+                    severity = Badge.Severity.DANGER;
+                    break;
+                default:
+                    tooltip.append("\n").append(jenkins.management.Messages.PluginsLink_securityUpdatesAvailable(securityFixSize));
+                    severity = Badge.Severity.DANGER;
+                    break;
+            }
+            return new Badge(Integer.toString(size), tooltip.toString(), severity);
+        }
+        return null;
+
     }
 
     /**
@@ -1618,7 +1665,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                                 if (e.getMessage().contains("Connection timed out")) {
                                     // Google can't be down, so this is probably a proxy issue
                                     connectionStates.put(ConnectionStatus.INTERNET, ConnectionStatus.FAILED);
-                                    statuses.add(Messages.UpdateCenter_Status_ConnectionFailed(Functions.xmlEscape(connectionCheckUrl)));
+                                    statuses.add(Messages.UpdateCenter_Status_ConnectionFailed(Functions.xmlEscape(connectionCheckUrl), Jenkins.get().getRootUrl()));
                                     return;
                                 }
                             }
@@ -1640,7 +1687,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                 statuses.add(Messages.UpdateCenter_Status_Success());
             } catch (UnknownHostException e) {
                 connectionStates.put(ConnectionStatus.UPDATE_SITE, ConnectionStatus.FAILED);
-                statuses.add(Messages.UpdateCenter_Status_UnknownHostException(Functions.xmlEscape(e.getMessage())));
+                statuses.add(Messages.UpdateCenter_Status_UnknownHostException(Functions.xmlEscape(e.getMessage()), Jenkins.get().getRootUrl()));
                 addStatus(e);
                 error = e;
             } catch (Exception e) {

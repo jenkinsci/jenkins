@@ -27,20 +27,27 @@ function progressivelyRender(handler, callback, statusId) {
     var r = response.responseObject();
     if (r.status == "done") {
       callback(r.data);
-      $(statusId).style.display = "none";
+      document.getElementById(statusId).style.display = "none";
     } else if (r.status == "canceled") {
       // TODO ugly; replace with single tr of class=unknown?
-      $$("#" + statusId + " .progress-bar-done")[0].innerHTML = "Aborted.";
+      document.querySelector("#" + statusId + " .progress-bar-done").innerHTML =
+        "Aborted.";
     } else if (r.status == "error") {
-      $$("#" + statusId + " .progress-bar-done")[0].style.width = "100%";
-      $$("#" + statusId + " .progress-bar-left")[0].style.width = "0%";
-      $(statusId).className = "progress-bar red";
+      document.querySelector(
+        "#" + statusId + " .progress-bar-done"
+      ).style.width = "100%";
+      document.querySelector(
+        "#" + statusId + " .progress-bar-left"
+      ).style.width = "0%";
+      document.getElementById(statusId).className = "progress-bar red";
     } else {
       callback(r.data);
-      $$("#" + statusId + " .progress-bar-done")[0].style.width =
-        100 * r.status + "%";
-      $$("#" + statusId + " .progress-bar-left")[0].style.width =
-        100 - 100 * r.status + "%";
+      document.querySelector(
+        "#" + statusId + " .progress-bar-done"
+      ).style.width = 100 * r.status + "%";
+      document.querySelector(
+        "#" + statusId + " .progress-bar-left"
+      ).style.width = 100 - 100 * r.status + "%";
       checkNewsLater(500);
     }
   }

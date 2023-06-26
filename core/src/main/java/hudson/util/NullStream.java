@@ -28,7 +28,9 @@ import java.io.OutputStream;
 
 /**
  * @author Kohsuke Kawaguchi
+ * @deprecated use {@link OutputStream#nullOutputStream}
  */
+@Deprecated
 public final class NullStream extends OutputStream {
     public NullStream() {}
 

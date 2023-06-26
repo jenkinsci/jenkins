@@ -2,7 +2,6 @@ package jenkins.model;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Functions;
-import hudson.Util;
 import hudson.model.Action;
 import hudson.model.Actionable;
 import hudson.model.BallColor;
@@ -10,6 +9,7 @@ import hudson.model.Computer;
 import hudson.model.Job;
 import hudson.model.ModelObject;
 import hudson.model.Node;
+import hudson.slaves.Cloud;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import javax.servlet.ServletException;
+import jenkins.management.Badge;
 import org.apache.commons.jelly.JellyContext;
 import org.apache.commons.jelly.JellyException;
 import org.apache.commons.jelly.JellyTagException;
@@ -149,6 +150,19 @@ public interface ModelObjectWithContextMenu extends ModelObject {
             return this;
         }
 
+        /** @since TODO */
+        public ContextMenu add(String url, String icon, String iconXml, String text, boolean post, boolean requiresConfirmation, Badge badge) {
+            if (text != null && icon != null && url != null) {
+                MenuItem item = new MenuItem(url, icon, text);
+                item.iconXml = iconXml;
+                item.post = post;
+                item.requiresConfirmation = requiresConfirmation;
+                item.badge = badge;
+                items.add(item);
+            }
+            return this;
+        }
+
         /**
          * Add a header row (no icon, no URL, rendered in header style).
          *
@@ -205,6 +219,13 @@ public interface ModelObjectWithContextMenu extends ModelObject {
                 .withDisplayName(c.getDisplayName())
                 .withIconClass(c.getIconClassName())
                 .withContextRelativeUrl(c.getUrl()));
+        }
+
+        public ContextMenu add(Cloud c) {
+            return add(new MenuItem()
+                    .withDisplayName(c.getDisplayName())
+                    .withIconClass(c.getIconClassName())
+                    .withContextRelativeUrl(c.getUrl()));
         }
 
         /**
@@ -317,6 +338,8 @@ public interface ModelObjectWithContextMenu extends ModelObject {
         public boolean requiresConfirmation;
 
 
+        private Badge badge;
+
         /**
          * The type of menu item
          * @since 2.340
@@ -335,6 +358,15 @@ public interface ModelObjectWithContextMenu extends ModelObject {
         @Exported
         public String getIconXml() {
             return iconXml;
+        }
+
+        /**
+         * The badge to display for the context menu item
+         * @since TODO
+         */
+        @Exported
+        public Badge getBadge() {
+            return badge;
         }
 
         public MenuItem(String url, String icon, String displayName) {
@@ -389,7 +421,7 @@ public interface ModelObjectWithContextMenu extends ModelObject {
         }
 
         public MenuItem withDisplayName(String displayName) {
-            this.displayName = Util.escape(displayName);
+            this.displayName = displayName;
             return this;
         }
 

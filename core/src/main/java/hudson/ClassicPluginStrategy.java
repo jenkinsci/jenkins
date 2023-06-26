@@ -40,6 +40,7 @@ import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.nio.file.Files;
@@ -59,10 +60,7 @@ import java.util.logging.Logger;
 import jenkins.ClassLoaderReflectionToolkit;
 import jenkins.ExtensionFilter;
 import jenkins.plugins.DetachedPluginsUtil;
-import jenkins.util.AntClassLoader;
-import jenkins.util.SystemProperties;
 import jenkins.util.URLClassLoader2;
-import org.apache.commons.io.output.NullOutputStream;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Expand;
@@ -290,30 +288,17 @@ public class ClassicPluginStrategy implements PluginStrategy {
         boolean usePluginFirstClassLoader =
                 atts != null && Boolean.parseBoolean(atts.getValue("PluginFirstClassLoader"));
 
-        if (useAntClassLoader) {
-            AntClassLoader classLoader;
-            if (usePluginFirstClassLoader) {
-                classLoader = new PluginFirstClassLoader();
-                classLoader.setParentFirst(false);
-                classLoader.setParent(parent);
-            } else {
-                classLoader = new AntClassLoader(parent, true);
-            }
-            classLoader.addPathFiles(paths);
-            return classLoader;
-        } else {
-            List<URL> urls = new ArrayList<>();
-            for (File path : paths) {
-                urls.add(path.toURI().toURL());
-            }
-            URLClassLoader2 classLoader;
-            if (usePluginFirstClassLoader) {
-                classLoader = new PluginFirstClassLoader2(urls.toArray(new URL[0]), parent);
-            } else {
-                classLoader = new URLClassLoader2(urls.toArray(new URL[0]), parent);
-            }
-            return classLoader;
+        List<URL> urls = new ArrayList<>();
+        for (File path : paths) {
+            urls.add(path.toURI().toURL());
         }
+        URLClassLoader2 classLoader;
+        if (usePluginFirstClassLoader) {
+            classLoader = new PluginFirstClassLoader2(urls.toArray(new URL[0]), parent);
+        } else {
+            classLoader = new URLClassLoader2(urls.toArray(new URL[0]), parent);
+        }
+        return classLoader;
     }
 
     /**
@@ -432,17 +417,6 @@ public class ClassicPluginStrategy implements PluginStrategy {
             if (classLoader instanceof DependencyClassLoader) {
                 return (DependencyClassLoader) classLoader;
             }
-
-            if (classLoader instanceof AntClassLoader) {
-                // AntClassLoaders hold parents not only as AntClassLoader#getParent()
-                // but also as AntClassLoader#getConfiguredParent()
-                DependencyClassLoader ret = findAncestorDependencyClassLoader(
-                        ((AntClassLoader) classLoader).getConfiguredParent()
-                );
-                if (ret != null) {
-                    return ret;
-                }
-            }
         }
         return null;
     }
@@ -529,7 +503,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
 
         final long dirTime = archive.lastModified();
         // this ZipOutputStream is reused and not created for each directory
-        try (ZipOutputStream wrappedZOut = new ZipOutputStream(NullOutputStream.NULL_OUTPUT_STREAM) {
+        try (OutputStream nos = OutputStream.nullOutputStream(); ZipOutputStream wrappedZOut = new ZipOutputStream(nos) {
             @Override
             public void putNextEntry(ZipEntry ze) throws IOException {
                 ze.setTime(dirTime + 1999);   // roundup
@@ -716,7 +690,4 @@ public class ClassicPluginStrategy implements PluginStrategy {
             return null;
         }
     }
-
-    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
-    public static /* not final */ boolean useAntClassLoader = SystemProperties.getBoolean(ClassicPluginStrategy.class.getName() + ".useAntClassLoader");
 }
