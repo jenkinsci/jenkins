@@ -65,6 +65,7 @@ THE SOFTWARE.
       <f:textarea name='${attrs.name}' value="${value}" field="${attrs.field}"/>
     </j:when>
     <j:otherwise>
+      <st:adjunct includes="lib.form.expandableTextbox.expandableTextbox"/>
       <!-- single line textbox with expand button -->
       <f:possibleReadOnlyField>
         <div class="expanding-input">
@@ -78,8 +79,7 @@ THE SOFTWARE.
             </j:if>
           </div>
           <div class="expanding-input__button">
-            <input type="button" value="&#x25BC;" onclick="expandTextArea(this,'textarea.${h.jsStringEscape(name)}')"
-                   tooltip="${%tooltip}"/>
+            <input type="button" value="&#x25BC;" tooltip="${%tooltip}"/>
           </div>
         </div>
       </f:possibleReadOnlyField>
