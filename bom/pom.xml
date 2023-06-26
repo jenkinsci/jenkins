@@ -64,7 +64,7 @@ THE SOFTWARE.
         <!-- https://docs.spring.io/spring-security/site/docs/5.5.4/reference/html5/#getting-maven-no-boot -->
         <groupId>org.springframework.security</groupId>
         <artifactId>spring-security-bom</artifactId>
-        <version>5.8.3</version>
+        <version>5.8.4</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -113,7 +113,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>commons-codec</groupId>
         <artifactId>commons-codec</artifactId>
-        <version>1.15</version>
+        <version>1.16.0</version>
       </dependency>
       <dependency>
         <groupId>commons-collections</groupId>

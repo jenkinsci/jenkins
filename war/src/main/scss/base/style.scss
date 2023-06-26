@@ -1248,11 +1248,11 @@ table.progress-bar.red td.progress-bar-done {
 }
 
 .logrecord-metadata-new {
-  color: #8a8;
+  color: var(--green);
 }
 
 .logrecord-metadata-old {
-  color: #aaa;
+  color: var(--text-color-secondary);
 }
 
 /* ========================= matrix configuration table ================== */
