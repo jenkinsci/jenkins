@@ -65,6 +65,7 @@ THE SOFTWARE.
       <f:textarea name='${attrs.name}' value="${value}" field="${attrs.field}"/>
     </j:when>
     <j:otherwise>
+      <st:adjunct includes="lib.form.expandableTextbox.expandableTextbox"/>
       <!-- single line textbox with expand button -->
       <f:possibleReadOnlyField>
         <div class="expanding-input">
@@ -78,7 +79,7 @@ THE SOFTWARE.
             </j:if>
           </div>
           <div class="expanding-input__button">
-            <button type="button" class="jenkins-button expandable-textbox-button jenkins-!-margin-left-1" onclick="expandTextArea(this,'textarea.${h.jsStringEscape(name)}')"
+            <button type="button" class="jenkins-button jenkins-!-margin-left-1"
                     tooltip="${%tooltip}"><l:icon src="symbol-chevron-down"/></button>
           </div>
         </div>

@@ -3994,7 +3994,7 @@ __metadata:
     postcss-loader: 7.3.3
     postcss-scss: 4.0.6
     prettier: 2.8.8
-    sass: 1.63.4
+    sass: 1.63.6
     sass-loader: 13.3.2
     sortablejs: 1.15.0
     style-loader: 3.3.3
@@ -4002,7 +4002,7 @@ __metadata:
     stylelint-checkstyle-reporter: 0.2.0
     stylelint-config-standard: 33.0.0
     tippy.js: 6.3.7
-    webpack: 5.87.0
+    webpack: 5.88.0
     webpack-cli: 5.1.4
     webpack-remove-empty-scripts: 1.0.3
     window-handle: 1.0.1
@@ -5666,16 +5666,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sass@npm:1.63.4":
-  version: 1.63.4
-  resolution: "sass@npm:1.63.4"
+"sass@npm:1.63.6":
+  version: 1.63.6
+  resolution: "sass@npm:1.63.6"
   dependencies:
     chokidar: ">=3.0.0 <4.0.0"
     immutable: ^4.0.0
     source-map-js: ">=0.6.2 <2.0.0"
   bin:
     sass: sass.js
-  checksum: 12bde5beff85a7018157d90c8b9d5aec8b56832f89fcfeca146f10936eecf97e669d22fd41f812b3407ed259bbb114d69c9ecbfc7ee9b15308211fb910cdf5eb
+  checksum: 3372319904658eeafaf78a09a6fcb3368a68e6d76fe3c43c2d009f4f72e475ab22b82ef483ef5c00fcda3ab00066846c0bd88c36b42771b855f6ab80c7eda541
   languageName: node
   linkType: hard
 
@@ -6454,9 +6454,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"webpack@npm:5.87.0":
-  version: 5.87.0
-  resolution: "webpack@npm:5.87.0"
+"webpack@npm:5.88.0":
+  version: 5.88.0
+  resolution: "webpack@npm:5.88.0"
   dependencies:
     "@types/eslint-scope": ^3.7.3
     "@types/estree": ^1.0.0
@@ -6487,7 +6487,7 @@ __metadata:
       optional: true
   bin:
     webpack: bin/webpack.js
-  checksum: b7d0e390f9d30627e303d54b17cb87b62f49ecffe2d35481f830679904993bae208e23748ffe0e6091b6dd4810562b2f2e88bb0f23b96515d74fb1e3c2898210
+  checksum: 9fd1568b34ec2e99ba97c8509a15ab2576ec80c396e7015551ec814b24cfc11de173acba3e114dafe95f1a6d460781b09d6201e6a1fb15110e1d01a09f61a283
   languageName: node
   linkType: hard
 
