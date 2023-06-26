@@ -3,7 +3,7 @@ Behaviour.specify("TEXTAREA.codemirror", "textarea", 0, function (e) {
   if (!config) {
     config = "";
   }
-  config = eval("({" + config + "})");
+  config = JSON.parse(`{${config}}`);
   if (!config.onBlur) {
     config.onBlur = function (editor) {
       editor.save();
