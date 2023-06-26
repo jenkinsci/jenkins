@@ -3998,7 +3998,7 @@ __metadata:
     sass-loader: 13.3.2
     sortablejs: 1.15.0
     style-loader: 3.3.3
-    stylelint: 15.8.0
+    stylelint: 15.9.0
     stylelint-checkstyle-reporter: 0.2.0
     stylelint-config-standard: 33.0.0
     tippy.js: 6.3.7
@@ -6022,9 +6022,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"stylelint@npm:15.8.0":
-  version: 15.8.0
-  resolution: "stylelint@npm:15.8.0"
+"stylelint@npm:15.9.0":
+  version: 15.9.0
+  resolution: "stylelint@npm:15.9.0"
   dependencies:
     "@csstools/css-parser-algorithms": ^2.2.0
     "@csstools/css-tokenizer": ^2.1.1
@@ -6069,7 +6069,7 @@ __metadata:
     write-file-atomic: ^5.0.1
   bin:
     stylelint: bin/stylelint.js
-  checksum: 3598f604393162c63f79f5696e24af871818f1422b4a0184deea054450a90434273d27bf8bf3f3e27d45c6850d29cbd0ed810f1092700b98c7fe4135fda6266c
+  checksum: 554165854bad5db90f5e325546940cae8f47f324a2d8ce27d809e1f5ad2d3de8fa4b1eaded97b0c456e2a7f1d714779876b021c432cc39dc40473aea1a05e8b2
   languageName: node
   linkType: hard
 
