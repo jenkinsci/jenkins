@@ -217,6 +217,7 @@
   }
 
   &:has(:disabled) {
+    color: var(--text-color-secondary);
     opacity: 0.5;
 
     .jenkins-search__shortcut {
