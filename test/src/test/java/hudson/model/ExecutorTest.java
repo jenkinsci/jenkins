@@ -179,7 +179,7 @@ public class ExecutorTest {
      * Start a project with an infinite build step
      *
      * @param project {@link FreeStyleProject} to start
-     * @return A {@link Future} object represents the started build
+     * @return the started build (the caller should wait for its completion)
      * @throws Exception if somethink wrong happened
      */
     public static FreeStyleBuild startBlockingBuild(FreeStyleProject project) throws Exception {
