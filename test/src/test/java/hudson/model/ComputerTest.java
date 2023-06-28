@@ -60,7 +60,6 @@ import org.htmlunit.Page;
 import org.htmlunit.WebRequest;
 import org.htmlunit.html.HtmlForm;
 import org.htmlunit.xml.XmlPage;
-import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -78,11 +77,6 @@ public class ComputerTest {
 
     @Rule public JenkinsRule j = new JenkinsRule();
     @Rule public LoggerRule logging = new LoggerRule();
-
-    @After
-    public void stopRunningBuilds() throws InterruptedException {
-        ExecutorTest.stopRunningBuilds(j);
-    }
 
     @Test
     public void discardLogsAfterDeletion() throws Exception {
@@ -235,16 +229,19 @@ public class ComputerTest {
         p.setAssignedNode(agent);
 
         Future<FreeStyleBuild> r = ExecutorTest.startBlockingBuild(p);
+        try {
+            String message = "It went away";
+            p.getLastBuild().getBuiltOn().toComputer().disconnect(
+                    new OfflineCause.ChannelTermination(new RuntimeException(message))
+            );
 
-        String message = "It went away";
-        p.getLastBuild().getBuiltOn().toComputer().disconnect(
-                new OfflineCause.ChannelTermination(new RuntimeException(message))
-        );
-
-        WebClient wc = j.createWebClient();
-        Page page = wc.getPage(wc.createCrumbedUrl(agent.toComputer().getUrl()));
-        String content = page.getWebResponse().getContentAsString();
-        assertThat(content, not(containsString(message)));
+            WebClient wc = j.createWebClient();
+            Page page = wc.getPage(wc.createCrumbedUrl(agent.toComputer().getUrl()));
+            String content = page.getWebResponse().getContentAsString();
+            assertThat(content, not(containsString(message)));
+        } finally {
+            ExecutorTest.stopRunningBuilds(j);
+        }
     }
 
     @Test
@@ -254,16 +251,19 @@ public class ComputerTest {
         p.setAssignedNode(agent);
 
         Future<FreeStyleBuild> r = ExecutorTest.startBlockingBuild(p);
+        try {
+            String message = "It went away";
+            p.getLastBuild().getBuiltOn().toComputer().disconnect(
+                    new OfflineCause.ChannelTermination(new RuntimeException(message))
+            );
 
-        String message = "It went away";
-        p.getLastBuild().getBuiltOn().toComputer().disconnect(
-                new OfflineCause.ChannelTermination(new RuntimeException(message))
-        );
-
-        WebClient wc = j.createWebClient();
-        Page page = wc.getPage(wc.createCrumbedUrl(HasWidgetHelper.getWidget(agent.toComputer(), ExecutorsWidget.class).orElseThrow().getUrl() + "ajax"));
-        String content = page.getWebResponse().getContentAsString();
-        assertThat(content, not(containsString(message)));
+            WebClient wc = j.createWebClient();
+            Page page = wc.getPage(wc.createCrumbedUrl(HasWidgetHelper.getWidget(agent.toComputer(), ExecutorsWidget.class).orElseThrow().getUrl() + "ajax"));
+            String content = page.getWebResponse().getContentAsString();
+            assertThat(content, not(containsString(message)));
+        } finally {
+            ExecutorTest.stopRunningBuilds(j);
+        }
     }
 
 }

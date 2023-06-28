@@ -44,7 +44,6 @@ import jenkins.widgets.HasWidgetHelper;
 import org.htmlunit.Page;
 import org.htmlunit.html.HtmlForm;
 import org.htmlunit.html.HtmlPage;
-import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -59,11 +58,6 @@ public class ComputerSetTest {
 
     @Rule
     public JenkinsRule j = new JenkinsRule();
-
-    @After
-    public void stopRunningBuilds() throws InterruptedException {
-        ExecutorTest.stopRunningBuilds(j);
-    }
 
     @Test
     @Issue("JENKINS-2821")
@@ -153,16 +147,19 @@ public class ComputerSetTest {
         p.setAssignedNode(agent);
 
         Future<FreeStyleBuild> r = ExecutorTest.startBlockingBuild(p);
+        try {
+            String message = "It went away";
+            p.getLastBuild().getBuiltOn().toComputer().disconnect(
+                    new OfflineCause.ChannelTermination(new RuntimeException(message))
+            );
 
-        String message = "It went away";
-        p.getLastBuild().getBuiltOn().toComputer().disconnect(
-                new OfflineCause.ChannelTermination(new RuntimeException(message))
-        );
-
-        WebClient wc = j.createWebClient();
-        Page page = wc.getPage(wc.createCrumbedUrl(agent.toComputer().getUrl()));
-        String content = page.getWebResponse().getContentAsString();
-        assertThat(content, not(containsString(message)));
+            WebClient wc = j.createWebClient();
+            Page page = wc.getPage(wc.createCrumbedUrl(agent.toComputer().getUrl()));
+            String content = page.getWebResponse().getContentAsString();
+            assertThat(content, not(containsString(message)));
+        } finally {
+            ExecutorTest.stopRunningBuilds(j);
+        }
     }
 
     @Test
@@ -173,15 +170,18 @@ public class ComputerSetTest {
         p.setAssignedNode(agent);
 
         Future<FreeStyleBuild> r = ExecutorTest.startBlockingBuild(p);
+        try {
+            String message = "It went away";
+            p.getLastBuild().getBuiltOn().toComputer().disconnect(
+                    new OfflineCause.ChannelTermination(new RuntimeException(message))
+            );
 
-        String message = "It went away";
-        p.getLastBuild().getBuiltOn().toComputer().disconnect(
-                new OfflineCause.ChannelTermination(new RuntimeException(message))
-        );
-
-        WebClient wc = j.createWebClient();
-        Page page = wc.getPage(wc.createCrumbedUrl(HasWidgetHelper.getWidget(j.jenkins.getComputer(), ExecutorsWidget.class).orElseThrow().getUrl() + "ajax"));
-        String content = page.getWebResponse().getContentAsString();
-        assertThat(content, not(containsString(message)));
+            WebClient wc = j.createWebClient();
+            Page page = wc.getPage(wc.createCrumbedUrl(HasWidgetHelper.getWidget(j.jenkins.getComputer(), ExecutorsWidget.class).orElseThrow().getUrl() + "ajax"));
+            String content = page.getWebResponse().getContentAsString();
+            assertThat(content, not(containsString(message)));
+        } finally {
+            ExecutorTest.stopRunningBuilds(j);
+        }
     }
 }

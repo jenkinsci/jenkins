@@ -21,7 +21,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import jenkins.model.CauseOfInterruption.UserInterruption;
 import jenkins.model.InterruptedBuildAction;
 import jenkins.model.Jenkins;
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -34,11 +33,6 @@ public class ExecutorTest {
 
     @Rule
     public JenkinsRule j = new JenkinsRule();
-
-    @After
-    public void stopRunningBuilds() throws InterruptedException {
-        stopRunningBuilds(j);
-    }
 
     public static void stopRunningBuilds(JenkinsRule j) throws InterruptedException {
         for (Job<?, ?> job : j.jenkins.allItems(Job.class)) {
@@ -101,22 +95,25 @@ public class ExecutorTest {
         FreeStyleProject p = j.createFreeStyleProject();
 
         Future<FreeStyleBuild> r = startBlockingBuild(p);
+        try {
+            User johnny = User.getOrCreateByIdOrFullName("Johnny");
+            p.getLastBuild().getExecutor().interrupt(Result.FAILURE,
+                    new UserInterruption(johnny),   // test the merge semantics
+                    new UserInterruption(johnny));
 
-        User johnny = User.getOrCreateByIdOrFullName("Johnny");
-        p.getLastBuild().getExecutor().interrupt(Result.FAILURE,
-                new UserInterruption(johnny),   // test the merge semantics
-                new UserInterruption(johnny));
+            FreeStyleBuild b = r.get();
 
-        FreeStyleBuild b = r.get();
+            // make sure this information is recorded
+            j.assertBuildStatus(Result.FAILURE, j.waitForCompletion(b));
+            InterruptedBuildAction iba = b.getAction(InterruptedBuildAction.class);
+            assertEquals(1, iba.getCauses().size());
+            assertEquals(((UserInterruption) iba.getCauses().get(0)).getUser(), johnny);
 
-        // make sure this information is recorded
-        j.assertBuildStatus(Result.FAILURE, j.waitForCompletion(b));
-        InterruptedBuildAction iba = b.getAction(InterruptedBuildAction.class);
-        assertEquals(1, iba.getCauses().size());
-        assertEquals(((UserInterruption) iba.getCauses().get(0)).getUser(), johnny);
-
-        // make sure it shows up in the log
-        j.assertLogContains(johnny.getId(), b);
+            // make sure it shows up in the log
+            j.assertLogContains(johnny.getId(), b);
+        } finally {
+            ExecutorTest.stopRunningBuilds(j);
+        }
     }
 
     @Test
@@ -126,19 +123,23 @@ public class ExecutorTest {
         p.setAssignedNode(slave);
 
         Future<FreeStyleBuild> r = startBlockingBuild(p);
-        User johnny = User.getOrCreateByIdOrFullName("Johnny");
+        try {
+            User johnny = User.getOrCreateByIdOrFullName("Johnny");
 
-        p.getLastBuild().getBuiltOn().toComputer().disconnect(
-                new OfflineCause.UserCause(johnny, "Taking offline to break your build")
-        );
+            p.getLastBuild().getBuiltOn().toComputer().disconnect(
+                    new OfflineCause.UserCause(johnny, "Taking offline to break your build")
+            );
 
-        FreeStyleBuild b = r.get();
+            FreeStyleBuild b = r.get();
 
-        j.assertBuildStatus(Result.FAILURE, j.waitForCompletion(b));
-        j.assertLogContains("Finished: FAILURE", b);
-        j.assertLogContains("Build step 'BlockingBuilder' marked build as failure", b);
-        j.assertLogContains("Agent went offline during the build", b);
-        j.assertLogContains("Disconnected by Johnny : Taking offline to break your build", b);
+            j.assertBuildStatus(Result.FAILURE, j.waitForCompletion(b));
+            j.assertLogContains("Finished: FAILURE", b);
+            j.assertLogContains("Build step 'BlockingBuilder' marked build as failure", b);
+            j.assertLogContains("Agent went offline during the build", b);
+            j.assertLogContains("Disconnected by Johnny : Taking offline to break your build", b);
+        } finally {
+            ExecutorTest.stopRunningBuilds(j);
+        }
     }
 
     @Issue("SECURITY-611")
@@ -150,26 +151,30 @@ public class ExecutorTest {
         FreeStyleProject publicProject = j.createFreeStyleProject("public-project");
         publicProject.setAssignedNode(slave);
         startBlockingBuild(publicProject);
-        FreeStyleProject secretProject = j.createFreeStyleProject("secret-project");
-        secretProject.setAssignedNode(slave);
-        startBlockingBuild(secretProject);
-        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
-        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().
-            grant(Jenkins.READ).everywhere().toEveryone().
-            grant(Item.READ).onItems(publicProject).toEveryone().
-            grant(Item.READ).onItems(secretProject).to("has-security-clearance"));
+        try {
+            FreeStyleProject secretProject = j.createFreeStyleProject("secret-project");
+            secretProject.setAssignedNode(slave);
+            startBlockingBuild(secretProject);
+            j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+            j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().
+                    grant(Jenkins.READ).everywhere().toEveryone().
+                    grant(Item.READ).onItems(publicProject).toEveryone().
+                    grant(Item.READ).onItems(secretProject).to("has-security-clearance"));
 
-        JenkinsRule.WebClient wc = j.createWebClient();
-        wc.withBasicCredentials("has-security-clearance");
-        String api = wc.goTo(slave.toComputer().getUrl() + "api/json?pretty&depth=1", null).getWebResponse().getContentAsString();
-        System.out.println(api);
-        assertThat(api, allOf(containsString("public-project"), containsString("secret-project")));
+            JenkinsRule.WebClient wc = j.createWebClient();
+            wc.withBasicCredentials("has-security-clearance");
+            String api = wc.goTo(slave.toComputer().getUrl() + "api/json?pretty&depth=1", null).getWebResponse().getContentAsString();
+            System.out.println(api);
+            assertThat(api, allOf(containsString("public-project"), containsString("secret-project")));
 
-        wc = j.createWebClient();
-        wc.withBasicCredentials("regular-joe");
-        api = wc.goTo(slave.toComputer().getUrl() + "api/json?pretty&depth=1", null).getWebResponse().getContentAsString();
-        System.out.println(api);
-        assertThat(api, allOf(containsString("public-project"), not(containsString("secret-project"))));
+            wc = j.createWebClient();
+            wc.withBasicCredentials("regular-joe");
+            api = wc.goTo(slave.toComputer().getUrl() + "api/json?pretty&depth=1", null).getWebResponse().getContentAsString();
+            System.out.println(api);
+            assertThat(api, allOf(containsString("public-project"), not(containsString("secret-project"))));
+        } finally {
+            ExecutorTest.stopRunningBuilds(j);
+        }
     }
 
     @Test
@@ -180,14 +185,17 @@ public class ExecutorTest {
         p.setAssignedNode(slave);
 
         Future<FreeStyleBuild> r = startBlockingBuild(p);
+        try {
+            String message = "It went away";
+            p.getLastBuild().getBuiltOn().toComputer().disconnect(
+                    new OfflineCause.ChannelTermination(new RuntimeException(message))
+            );
 
-        String message = "It went away";
-        p.getLastBuild().getBuiltOn().toComputer().disconnect(
-                new OfflineCause.ChannelTermination(new RuntimeException(message))
-        );
-
-        OfflineCause offlineCause = p.getLastBuild().getBuiltOn().toComputer().getOfflineCause();
-        Assert.assertThat(offlineCause.toString(), not(containsString(message)));
+            OfflineCause offlineCause = p.getLastBuild().getBuiltOn().toComputer().getOfflineCause();
+            Assert.assertThat(offlineCause.toString(), not(containsString(message)));
+        } finally {
+            ExecutorTest.stopRunningBuilds(j);
+        }
     }
 
     /**
