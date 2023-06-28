@@ -219,6 +219,7 @@ athAxes.values().combinations {
         // Just to be safe
         deleteDir()
         checkout scm
+        sh "javac -version"
         infra.withArtifactCachingProxy {
           sh "bash ath.sh ${jdk} ${browser}"
         }
