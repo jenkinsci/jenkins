@@ -120,7 +120,7 @@
       z-index: 9;
       box-shadow: rgba(0, 0, 0, 0.5) 0 1px 5px;
 
-      @media screen and (max-width: 992px) {
+      @media screen and (width <= 992px) {
         padding: 5%;
         height: 20%;
         max-height: 20%;
@@ -130,7 +130,7 @@
         }
       }
 
-      @media screen and (max-width: 768px) {
+      @media screen and (width <= 768px) {
         padding: 5%;
         height: auto;
 
@@ -180,7 +180,7 @@
   .plugin-selector {
     overflow-y: hidden;
 
-    @media screen and (min-width: 768px) {
+    @media screen and (width >= 768px) {
       height: 100%;
     }
 
@@ -189,7 +189,7 @@
       position: relative;
       border-left: 1px solid rgba(0, 0, 0, 0.2);
 
-      @media screen and (min-width: 768px) {
+      @media screen and (width >= 768px) {
         height: 100%;
       }
 
@@ -224,7 +224,7 @@
         display: block;
         margin: 0 -17px;
 
-        @media screen and (min-width: 768px) {
+        @media screen and (width >= 768px) {
           width: 100%;
           max-width: 32em;
           margin: 0;
@@ -255,7 +255,7 @@
       }
 
       .plugin-select-controls {
-        @media screen and (min-width: 768px) {
+        @media screen and (width >= 768px) {
           position: absolute;
           padding: 0 9em 0 14em;
         }
@@ -290,7 +290,7 @@
         padding: 10px;
         clear: both;
 
-        @media screen and (min-width: 768px) {
+        @media screen and (width >= 768px) {
           max-height: 100%;
         }
 
@@ -560,7 +560,7 @@
       display: none;
       overflow-y: auto;
 
-      @media screen and (min-width: 768px) {
+      @media screen and (width >= 768px) {
         display: block;
         max-height: 100%;
       }
@@ -634,7 +634,7 @@
       font: 12px monospace;
     }
 
-    @media screen and (max-width: 992px) {
+    @media screen and (width <= 992px) {
       width: 100%;
       position: relative;
       max-height: 40%;
@@ -690,7 +690,7 @@
     border-bottom: 1px solid #ccc;
     border-top: 1px solid rgba(0, 0, 0, 0.1);
 
-    @media screen and (max-width: 992px) {
+    @media screen and (width <= 992px) {
       width: 100%;
       position: relative;
       height: 40%;
@@ -784,7 +784,7 @@
       margin-top: 5px;
     }
 
-    @media screen and (min-width: 768px) {
+    @media screen and (width >= 768px) {
       padding-top: 5%;
     }
 
@@ -814,7 +814,7 @@
       position: relative;
       background: rgba(255, 255, 255, 0.75);
 
-      @media screen and (min-width: 768px) {
+      @media screen and (width >= 768px) {
         max-width: 41%;
         min-width: 14em;
         margin-top: 0;

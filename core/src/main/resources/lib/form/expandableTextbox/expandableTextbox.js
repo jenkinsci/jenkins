@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2019 CloudBees, Inc.
+ * Copyright (c) 2023, CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,35 +21,32 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+function expandTextArea(button) {
+  button.style.display = "none";
+  var field = button.parentNode.previousSibling.children[0];
+  var value = field.value.replace(/ +/g, "\n");
 
-Behaviour.specify(
-  ".hidden-password",
-  "hidden-password-button",
-  0,
-  function (e) {
-    var secretUpdateBtn = e.querySelector(".hidden-password-update-btn");
-    if (secretUpdateBtn === null) {
-      return;
-    }
-
-    secretUpdateBtn.onclick = function () {
-      e.querySelector(".hidden-password-field").setAttribute(
-        "type",
-        "password"
-      );
-      e.querySelector(".hidden-password-placeholder").remove();
-      secretUpdateBtn.remove();
-    };
+  var n = button;
+  while (!n.classList.contains("expanding-input") && n.tagName !== "TABLE") {
+    n = n.parentNode;
   }
-);
+
+  var parent = n.parentNode;
+  parent.innerHTML = "<textarea rows=8 class='jenkins-input'></textarea>";
+  var textArea = parent.childNodes[0];
+  textArea.name = field.name;
+  textArea.value = value;
+
+  layoutUpdateCallback.call();
+}
 
 Behaviour.specify(
-  "input[type='text'].complex-password-field",
-  "empty-password-text-input",
+  ".expanding-input__button > input[type='button']",
+  "expandable-textbox-expand-button",
   0,
   function (element) {
-    element.addEventListener("input", function () {
-      element.setAttribute("type", "password");
+    element.addEventListener("click", function () {
+      expandTextArea(element);
     });
   }
 );
