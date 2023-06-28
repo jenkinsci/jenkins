@@ -627,7 +627,6 @@ THE SOFTWARE.
                 def a = mojo.artifactFactory.createProjectArtifact(d.groupId,d.artifactId,d.version);
                 def buildingRequest = new org.apache.maven.project.DefaultProjectBuildingRequest(mojo.session.projectBuildingRequest)
                 buildingRequest.remoteRepositories = project.remoteArtifactRepositories
-                buildingRequest.localRepository = mojo.localRepository
                 buildingRequest.processPlugins = false // improve performance
                 def p = mojo.projectBuilder.build(a, buildingRequest).project
                 models.put(a,p);
