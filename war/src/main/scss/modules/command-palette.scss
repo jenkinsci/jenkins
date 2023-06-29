@@ -1,32 +1,10 @@
 @use "../abstracts/mixins";
 
-@media (prefers-color-scheme: light) {
-  :root {
-    --command-palette-results-backdrop-filter: contrast(0.7) brightness(1.5)
-      saturate(1.4) blur(20px);
-    --command-palette-drop-shadow: 0 5px 60px rgba(5, 5, 30, 0.5);
-    --command-palette-inset-shadow: inset 0 0 2px 2px rgba(white, 0.1);
-  }
-
-  .jenkins-command-palette__dialog {
-    &::backdrop {
-      backdrop-filter: contrast(0.7) brightness(0.95) saturate(1.25) blur(3px);
-    }
-  }
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --command-palette-results-backdrop-filter: contrast(0.95) brightness(1.2)
-      saturate(2) blur(30px);
-    --command-palette-drop-shadow: 0 0 60px rgba(10, 10, 15, 0.65);
-    --command-palette-inset-shadow: inset 0 0 0 1px hsla(250, 10%, 90%, 0.035);
-  }
-
-  .jenkins-command-palette__dialog {
-    &::backdrop {
-      backdrop-filter: contrast(0.5) brightness(0.25) saturate(2) blur(5px);
-    }
+.jenkins-command-palette__dialog {
+  &::backdrop {
+    background: radial-gradient(farthest-corner at 50% 30vh, rgba(black, 0.2), transparent);
+    backdrop-filter: contrast(0.7) brightness(0.95) saturate(1.25) blur(3px);
+    animation: jenkins-modal-backdrop-animate-in 0.3s;
   }
 }
 
@@ -46,7 +24,6 @@
   height: 100%;
   max-height: 100vh;
   overflow: scroll;
-  filter: drop-shadow(var(--command-palette-drop-shadow));
   padding-top: 20vh;
 }
 

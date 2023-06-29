@@ -1,4 +1,5 @@
 import * as Symbols from "./symbols";
+import { xmlEscape } from "@/util/security";
 
 export class LinkResult {
   constructor(icon, label, url, isExternal) {
@@ -9,12 +10,12 @@ export class LinkResult {
   }
   render() {
     return `<a class="jenkins-command-palette__results__item" href="${
-      this.url
+      xmlEscape(this.url)
     }">
         <div class="jenkins-command-palette__results__item__icon">${
           this.icon
         }</div>
-        ${this.label}
+        ${xmlEscape(this.label)}
         ${this.isExternal ? Symbols.EXTERNAL_LINK : ""}
     </a>`;
   }
