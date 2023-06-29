@@ -29,7 +29,7 @@
   justify-content: center;
   overflow: hidden;
 
-  @media (max-width: 992px) {
+  @media (width <= 992px) {
     display: none;
   }
 
@@ -98,11 +98,11 @@
   justify-content: center;
   min-height: 100vh;
 
-  @media (min-width: 992px) {
+  @media (width >= 992px) {
     margin-left: 40vw;
   }
 
-  @media (max-height: 600px) {
+  @media (height <= 600px) {
     align-items: stretch;
   }
 }
@@ -115,7 +115,7 @@
   margin: calc(var(--section-padding) * 3) var(--section-padding);
   width: 100%;
 
-  @media (min-width: 430px) {
+  @media (width >= 430px) {
     width: 430px;
   }
 
@@ -129,7 +129,7 @@
     text-align: left;
     margin-bottom: 0;
 
-    @media (max-width: 600px) {
+    @media (width <= 600px) {
       font-size: 1.6rem;
     }
   }
@@ -139,7 +139,7 @@
     border-radius: 0.66rem;
     font-size: 0.95rem;
 
-    @media (max-width: 600px) {
+    @media (width <= 600px) {
       font-size: 1rem;
     }
   }

@@ -30,13 +30,17 @@ THE SOFTWARE.
 <l:layout title="Log" permission="${app.SYSTEM_READ}" type="one-column">
   <!-- no need for additional breadcrumb here as we're on an index page already including breadcrumb -->
   <l:main-panel>
+    <j:set var="noLogs" value="${it.logRecords.isEmpty() and it.slaveLogRecords.isEmpty()}" />
+
     <l:app-bar title="${it.displayName}">
       <l:isAdmin>
-        <form method="post" id='clear-logrecorder' action="clear">
-          <f:submit icon="symbol-close-circle"
-                    value="${%Clear This Log}"
-                    primary="false" />
-        </form>
+        <j:if test="${!noLogs}">
+          <form method="post" id='clear-logrecorder' action="clear">
+            <f:submit icon="symbol-close-circle"
+                      value="${%Clear This Log}"
+                      primary="false" />
+          </form>
+        </j:if>
         <a class="jenkins-button" href="configure">
           Configure
         </a>
@@ -58,6 +62,10 @@ THE SOFTWARE.
         </l:isAdmin>
       </l:overflowButton>
     </l:app-bar>
+
+    <j:if test="${noLogs}">
+      <l:notice text="${%No logs available}" icon="symbol-journal" />
+    </j:if>
 
     <t:logRecords logRecords="${it.logRecords}"/>
     <j:forEach var="entry" items="${it.slaveLogRecords.entrySet()}">
