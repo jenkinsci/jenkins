@@ -205,10 +205,10 @@ axes.values().combinations {
     }
   }
 }
-
+/* Temporarily disable selective ATH builds due to https://github.com/jenkins-infra/helpdesk/issues/3641
 def athAxes = [
   platforms: ['linux'],
-  jdks: [11],
+  jdks: [17],
   browsers: ['firefox'],
 ]
 athAxes.values().combinations {
@@ -232,12 +232,12 @@ athAxes.values().combinations {
          withCredentials([string(credentialsId: 'launchable-jenkins-acceptance-test-harness', variable: 'LAUNCHABLE_TOKEN')]) {
          sh "launchable verify && launchable record tests --no-build --flavor platform=${platform} --flavor jdk=${jdk} --flavor browser=${browser} maven './target/ath-reports'"
          }
-         */
+
       }
     }
   }
 }
-
+*/
 builds.failFast = failFast
 parallel builds
 infra.maybePublishIncrementals()

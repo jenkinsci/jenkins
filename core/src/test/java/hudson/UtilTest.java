@@ -58,6 +58,7 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
+import org.apache.commons.io.FileUtils;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.junit.Assert;
@@ -431,6 +432,39 @@ public class UtilTest {
         assertTrue(Util.isSafeToRedirectTo("../.."));
         assertTrue(Util.isSafeToRedirectTo("/#foo"));
         assertTrue(Util.isSafeToRedirectTo("/?foo"));
+    }
+
+    @Test
+    public void loadFile() throws IOException {
+        // Standard character sets
+        assertEquals(
+                "Iñtërnâtiônàlizætiøn",
+                Util.loadFile(FileUtils.toFile(getClass().getResource("internationalization-utf-8.txt")), StandardCharsets.UTF_8));
+        assertEquals(
+                "Iñtërnâtiônàlizætiøn",
+                Util.loadFile(FileUtils.toFile(getClass().getResource("internationalization-iso-8859-1.txt")), StandardCharsets.ISO_8859_1));
+        assertEquals(
+                "Iñtërnâtiônàlizætiøn",
+                Util.loadFile(FileUtils.toFile(getClass().getResource("internationalization-windows-1252.txt")), Charset.forName("windows-1252")));
+
+        // Malformed input is replaced without throwing an exception
+        assertEquals(
+                "Itrntinliztin",
+                Util.loadFile(FileUtils.toFile(getClass().getResource("internationalization-utf-8.txt")), StandardCharsets.US_ASCII).replaceAll("�", ""));
+        assertEquals(
+                "Itrntinliztin",
+                Util.loadFile(FileUtils.toFile(getClass().getResource("internationalization-iso-8859-1.txt")), StandardCharsets.US_ASCII).replaceAll("�", ""));
+        assertEquals(
+                "Itrntinliztin",
+                Util.loadFile(FileUtils.toFile(getClass().getResource("internationalization-windows-1252.txt")), StandardCharsets.US_ASCII).replaceAll("�", ""));
+
+        // Unmappable character is replaced without throwing an exception
+        assertEquals(
+                "foobar",
+                Util.loadFile(FileUtils.toFile(getClass().getResource("foo-0x81-bar.txt")), Charset.forName("windows-1252")).replaceAll("�", ""));
+
+        // Nonexistent file is returned as an empty string without throwing an exception
+        assertEquals("", Util.loadFile(new File("i-do-not-exist"), StandardCharsets.UTF_8));
     }
 
     @Test

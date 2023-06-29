@@ -1,24 +1,5 @@
 @use "../base/breakpoints";
 
-html {
-  height: 100%;
-  box-sizing: border-box;
-}
-
-body {
-  margin: 0;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  background-color: var(--background);
-}
-
-*,
-*::before,
-*::after {
-  box-sizing: inherit;
-}
-
 /* --------------- header --------------- */
 
 #page-header .logo {
@@ -80,7 +61,7 @@ body {
 .app-page-body--one-column {
   --form-item-max-width: calc(85vw - 4rem);
 
-  @media screen and (max-width: 1200px) {
+  @media screen and (width <= 1200px) {
     --form-item-max-width: 100%;
   }
 
@@ -94,7 +75,7 @@ body {
     max-width: unset;
   }
 
-  @media (max-width: 1200px) {
+  @media (width <= 1200px) {
     max-width: unset;
   }
 
@@ -131,7 +112,7 @@ body.full-screen #main-panel {
   }
 }
 
-@media (min-width: 1170px) {
+@media (width >= 1170px) {
   body.two-column #side-panel {
     width: 340px;
   }

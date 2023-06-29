@@ -24,7 +24,7 @@
 
 package hudson.widgets;
 
-import hudson.ExtensionPoint;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.model.View;
 
 /**
@@ -47,14 +47,14 @@ import hudson.model.View;
  * @since 1.146
  * @see jenkins.model.Jenkins#getWidgets()
  */
-public abstract class Widget implements ExtensionPoint {
+public abstract class Widget {
     /**
      * Gets the URL path name.
      *
      * <p>
      * For example, if this method returns "xyz", and if the parent object
      * (that this widget is associated with) is bound to /foo/bar/zot,
-     * then this widget object will be exposed to /foo/bar/zot/xyz.
+     * then this widget object will be exposed to /foo/bar/zot/widget/xyz.
      *
      * <p>
      * This method is useful when the widget needs to expose additional URLs,
@@ -66,5 +66,22 @@ public abstract class Widget implements ExtensionPoint {
      */
     public String getUrlName() {
         return getClass().getSimpleName();
+    }
+
+    /**
+     * @return The URL of the owner of this widget relative to context path. Always ends with a trailing slash.
+     * Can be <code>null</code> for backward compatibility with widgets annotated with @Extension.
+     */
+    @CheckForNull
+    protected String getOwnerUrl() {
+        return null;
+    }
+
+    /**
+     * @return the URL relative to the context path. Always ends with a trailing '/'.
+     */
+    public String getUrl() {
+        String ownerUrl = getOwnerUrl();
+        return (ownerUrl == null ? "" : ownerUrl) + "widget/" + getUrlName() + '/';
     }
 }

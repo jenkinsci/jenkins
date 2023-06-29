@@ -25,13 +25,13 @@
  */
 
 /* Panel */
-@media (min-width: 1600px) {
+@media (width >= 1600px) {
   body#jenkins.j-hide-left #main-panel {
     max-width: 75%;
   }
 }
 
-@media (min-width: 2000px) {
+@media (width >= 2000px) {
   body#jenkins.j-hide-left #main-panel {
     max-width: 85%;
   }
@@ -47,10 +47,6 @@ td {
 
 dt {
   font-weight: bold;
-}
-
-::selection {
-  background: var(--selection-color);
 }
 
 .fixed-width {
@@ -728,7 +724,8 @@ table.parameters > tbody:hover {
 }
 
 #buildHistory .build-rss-links {
-  float: right;
+  display: flex;
+  justify-content: end;
 }
 
 #buildHistory .build-rss-links a {
@@ -1251,11 +1248,11 @@ table.progress-bar.red td.progress-bar-done {
 }
 
 .logrecord-metadata-new {
-  color: #8a8;
+  color: var(--green);
 }
 
 .logrecord-metadata-old {
-  color: #aaa;
+  color: var(--text-color-secondary);
 }
 
 /* ========================= matrix configuration table ================== */
