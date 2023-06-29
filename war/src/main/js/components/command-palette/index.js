@@ -62,7 +62,7 @@ function init() {
           true,
           document
             .getElementById("page-header")
-            .dataset.searchHelpUrl.escapeHTML(),
+            .dataset.searchHelpUrl,
           true
         ),
       ];
@@ -94,7 +94,7 @@ function init() {
       label.className = "jenkins-command-palette__info";
       label.innerHTML =
         "<span>" +
-        i18n.dataset.noResultsFor.escapeHTML() +
+        i18n.dataset.noResultsFor +
         "</span> " +
         commandPaletteInput.value.escapeHTML();
       searchResults.append(label);

@@ -4,7 +4,7 @@
 async function search(searchTerm) {
   const address = document
     .getElementById("page-header")
-    .dataset.searchUrl.escapeHTML();
+    .dataset.searchUrl;
   return fetch(`${address}?query=${encodeURIComponent(searchTerm)}`);
 }
 

@@ -7,7 +7,7 @@
       rgba(black, 0.2),
       transparent
     );
-    backdrop-filter: contrast(0.7) brightness(0.95) saturate(1.25) blur(3px);
+    backdrop-filter: contrast(0.7) brightness(0.9) saturate(1.25) blur(3px);
     animation: jenkins-modal-backdrop-animate-in 0.3s;
   }
 }

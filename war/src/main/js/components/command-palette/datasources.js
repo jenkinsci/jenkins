@@ -6,7 +6,7 @@ export const JenkinsSearchSource = {
   async execute(query) {
     const rootUrl = document
       .getElementById("page-header")
-      .dataset.rootUrl.escapeHTML();
+      .dataset.rootUrl;
     const response = await Search.search(query);
 
     function correctAddress(url) {
