@@ -47,6 +47,13 @@ THE SOFTWARE.
         <st:include page="downgrade.jelly" it="${app}" />
       </section>
 
+      <div style="background: var(--layer); width: 200px; height: 200px;">
+
+      </div>
+      <div style="background: var(--button-background); width: 200px; height: 200px;">
+
+      </div>
+
       <j:forEach var="category" items="${app.categorizedManagementLinks.entrySet()}">
         <section class="jenkins-section jenkins-section--bottom-padding">
           <h2 class="jenkins-section__title">${category.key.label}</h2>

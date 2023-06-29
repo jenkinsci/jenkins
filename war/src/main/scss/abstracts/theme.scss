@@ -2,7 +2,7 @@
 @use "../base/breakpoints";
 
 $colors: (
-  "blue": #007aff,
+  "blue": hsl(211, 100%, 45%),
   "brown": #a2845e,
   "cyan": #32ade6,
   "green": #1ea64b,
@@ -47,8 +47,11 @@ $semantics: (
   --dark-grey: #4d545d;
   --black: hsl(240, 20%, 10%);
 
+
+  --layer: color-mix(in srgb, var(--primary) 2%, hsla(240, 0%, 76%, 0.1));
+
   // branding
-  --primary: hsl(212, 100%, 41%);
+  --primary: var(--blue);
   --secondary: hsl(240, 10%, 50%);
   --success: var(--green);
   --danger: var(--red);
@@ -57,12 +60,12 @@ $semantics: (
   --focus-btn-primary: #{color.change(#0b6aa2, $alpha: 0.5)};
   --focus-btn-secondary: #{color.change(#0b6aa2, $alpha: 0.5)};
   --focus-btn-danger: #{color.change(#cc0003, $alpha: 0.5)};
-  --focus-input-border: #063f61;
-  --focus-input-glow: #{color.change(#0b6aa2, $alpha: 0.25)};
+  --focus-input-border: var(--primary);
+  --focus-input-glow: color-mix(in srgb, var(--primary) 25%, transparent);
 
   // State colors
-  --primary-hover: #0587d4;
-  --primary-active: #095683;
+  --primary-hover: color-mix(in srgb, var(--primary) 75%, black);
+  --primary-active: color-mix(in srgb, var(--primary) 50%, black);
   --danger-hover: #eb383b;
   --danger-active: #b50003;
 
@@ -181,8 +184,8 @@ $semantics: (
   // Link
   --link-color: var(--primary);
   --link-visited-color: var(--link-color);
-  --link-color--hover: var(--link-color);
-  --link-color--active: var(--link-color);
+  --link-color--hover: var(--primary-hover);
+  --link-color--active: var(--primary-active);
   --link-text-decoration: none;
   --link-text-decoration--hover: underline;
   --link-text-decoration--active: underline;
@@ -287,7 +290,7 @@ $semantics: (
   --section-padding: 1.75rem;
   --input-color: var(--white);
   --input-border: #c3ccd1;
-  --input-border-hover: #5c7889;
+  --input-border-hover: color-mix(in srgb, var(--primary) 25%, transparent);
   --input-hidden-password-bg-color: #f9f9f9;
   --form-item-max-width: min(65vw, 1600px);
   --form-item-max-width--medium: min(50vw, 1400px);
