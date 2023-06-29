@@ -189,7 +189,8 @@ $semantics: (
   --link-font-weight: 600;
 
   // Command Palette
-  --command-palette-results-backdrop-filter: contrast(0.7) brightness(1.5) saturate(1.4) blur(20px);
+  --command-palette-results-backdrop-filter: contrast(0.7) brightness(1.5)
+    saturate(1.4) blur(20px);
   --command-palette-inset-shadow: inset 0 0 2px 2px rgba(white, 0.1);
 
   // Tooltips

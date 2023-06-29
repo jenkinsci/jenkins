@@ -9,9 +9,9 @@ export class LinkResult {
     this.isExternal = isExternal;
   }
   render() {
-    return `<a class="jenkins-command-palette__results__item" href="${
-      xmlEscape(this.url)
-    }">
+    return `<a class="jenkins-command-palette__results__item" href="${xmlEscape(
+      this.url
+    )}">
         <div class="jenkins-command-palette__results__item__icon">${
           this.icon
         }</div>
