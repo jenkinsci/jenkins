@@ -11,7 +11,7 @@ import org.kohsuke.accmod.restrictions.Beta;
 
 /**
  * Interface used by Jelly views to render a queue item through {@code <t:queue>}.
- * @since TODO
+ * @since 2.405
  */
 @Restricted(Beta.class)
 public interface QueueItem extends ModelObject {
