@@ -482,15 +482,15 @@ window.addEventListener("load", function () {
   );
   uninstallButtons.forEach((uninstallButton) => {
     uninstallButton.addEventListener("click", () => {
-      const message = uninstallButton.dataset.message;
+      const title = uninstallButton.dataset.message;
       const href = uninstallButton.dataset.href;
 
       const options = {
-        title: message,
+        message: i18n("uninstall-description"),
         type: "destructive",
       };
 
-      dialog.confirm(i18n("uninstall-description"), options).then(
+      dialog.confirm(title, options).then(
         () => {
           var form = document.createElement("form");
           form.setAttribute("method", "POST");

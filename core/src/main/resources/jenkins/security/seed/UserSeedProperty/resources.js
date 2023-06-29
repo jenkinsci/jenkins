@@ -24,6 +24,7 @@
 function resetSeed(button) {
   var userSeedPanel = button.closest(".user-seed-panel");
   var confirmMessage = button.getAttribute("data-confirm");
+  var confirmTitle = button.getAttribute("data-confirm-title");
   var targetUrl = button.getAttribute("data-target-url");
   var redirectAfterClick = button.getAttribute("data-redirect-url");
 
@@ -32,7 +33,7 @@ function resetSeed(button) {
     warningMessage.classList.remove("visible");
   }
 
-  dialog.confirm(confirmMessage).then(() => {
+  dialog.confirm(confirmTitle, {message: confirmMessage, type: "destructive"}).then(() => {
     fetch(targetUrl, {
       method: "post",
       headers: crumb.wrap({}),

@@ -90,7 +90,7 @@ function mapChildrenItemsToDropdownItems(items) {
         if (item.post || item.requiresConfirmation) {
           if (item.requiresConfirmation) {
             dialog
-              .confirm(item.message, { title: item.displayName })
+              .confirm(item.displayName, { message: item.message })
               .then(() => {
                 const form = document.createElement("form");
                 form.setAttribute("method", item.post ? "POST" : "GET");

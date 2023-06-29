@@ -48,7 +48,7 @@ Dialog.prototype.init = function () {
   if (this.dialogType === "modal") {
     if (this.options.content != null) {
       const content = createElementFromHtml(
-        `<div class='jenkins-dialog__contents'/>`
+        `<div class='jenkins-dialog__contents jenkins-dialog__contents--modal'/>`
       );
       content.appendChild(this.options.content);
       this.dialog.appendChild(content);
@@ -139,12 +139,6 @@ Dialog.prototype.appendButtons = function () {
       }</button>
     </div>`);
 
-  if (navigator.appVersion.indexOf("Win") != -1) {
-    buttons.classList.add("jenkins-dialog__buttons--right-windows");
-  } else {
-    buttons.classList.add("jenkins-dialog__buttons--right-unix");
-  }
-
   this.dialog.appendChild(buttons);
 
   this.ok = buttons.querySelector("[data-id=ok]");
@@ -218,9 +212,9 @@ function init() {
         .catch(() => {});
     },
 
-    alert: function (message, options) {
+    alert: function (title, options) {
       const defaults = {
-        message: message,
+        title: title,
         cancel: false,
       };
       options = Object.assign({}, defaults, options);
@@ -231,9 +225,9 @@ function init() {
         .catch(() => {});
     },
 
-    confirm: function (message, options) {
+    confirm: function (title, options) {
       const defaults = {
-        message: message,
+        title: title,
         okText: window.dialog.translations.yes,
       };
       options = Object.assign({}, defaults, options);
@@ -241,9 +235,9 @@ function init() {
       return dialog.show();
     },
 
-    prompt: function (message, options) {
+    prompt: function (title, options) {
       const defaults = {
-        message: message,
+        title: title,
         minWidth: "400px",
       };
       options = Object.assign({}, defaults, options);

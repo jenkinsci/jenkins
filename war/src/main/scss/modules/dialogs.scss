@@ -1,4 +1,4 @@
-$jenkins-dialog-padding: 1rem;
+$jenkins-dialog-padding: 1.3rem;
 
 .jenkins-dialog {
   border-radius: 0.6rem;
@@ -8,18 +8,35 @@ $jenkins-dialog-padding: 1rem;
   backdrop-filter: var(--dialog-backdrop-filter);
   animation: jenkins-dialog-animate-in 0.25s cubic-bezier(0, 0.68, 0.5, 1.5);
   overflow: hidden;
-  padding: 0;
+  padding: $jenkins-dialog-padding 0 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: $jenkins-dialog-padding;
 
   &::backdrop {
     background: var(--dialog-backdrop-background);
     animation: jenkins-dialog-backdrop-animate-in 0.15s;
   }
 
+  &__title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    padding: 0 $jenkins-dialog-padding;
+    color: var(--text-color);
+  }
+
   &__contents {
     overflow-y: auto;
     overflow-wrap: break-word;
-    padding: $jenkins-dialog-padding;
+    padding: 0 $jenkins-dialog-padding;
     max-height: 75vh;
+    font-size: 1rem;
+    color: var(--text-color-secondary);
+
+    &--modal {
+      padding-bottom: $jenkins-dialog-padding;
+      color: var(--text-color);
+    }
   }
 
   &__input {
@@ -28,24 +45,15 @@ $jenkins-dialog-padding: 1rem;
   }
 
   &__buttons {
-    padding: $jenkins-dialog-padding;
-    border-top: 1px solid var(--medium-grey);
+    padding: 0 $jenkins-dialog-padding $jenkins-dialog-padding;
+    justify-content: right;
+    flex-direction: row-reverse;
 
-    &--right-windows {
-      justify-content: right;
+    .jenkins-button {
+      font-size: 0.9rem;
+      padding: 0.7rem 0.6rem;
+      min-width: 100px;
     }
-
-    &--right-unix {
-      justify-content: right;
-      flex-direction: row-reverse;
-    }
-  }
-
-  &__title {
-    font-size: 1.1rem;
-    font-weight: 600;
-    padding: $jenkins-dialog-padding;
-    border-bottom: 1px solid var(--medium-grey);
   }
 
   &__subtitle {

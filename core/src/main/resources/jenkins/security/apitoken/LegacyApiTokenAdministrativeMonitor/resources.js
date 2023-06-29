@@ -89,12 +89,13 @@ function confirmAndRevokeAllSelected(button) {
     var nothingSelected = button.getAttribute("data-nothing-selected");
     dialog.alert(nothingSelected);
   } else {
+    var confirmTitle = button.getAttribute("data-confirm-title");
     var confirmMessageTemplate = button.getAttribute("data-confirm-template");
     var confirmMessage = confirmMessageTemplate.replace(
       "%num%",
       allCheckedCheckBoxes.length
     );
-    dialog.confirm(confirmMessage).then(
+    dialog.confirm(confirmTitle, {message: confirmMessage, type: "destructive"}).then(
       () => {
         var url = button.getAttribute("data-url");
         var selectedValues = [];

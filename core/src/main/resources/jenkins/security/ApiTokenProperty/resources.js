@@ -48,12 +48,13 @@ function revokeToken(anchorRevoke) {
   var repeatedChunk = anchorRevoke.closest(".repeated-chunk");
   var tokenList = repeatedChunk.closest(".token-list");
   var confirmMessage = anchorRevoke.getAttribute("data-confirm");
+  var confirmTitle = anchorRevoke.getAttribute("data-confirm-title");
   var targetUrl = anchorRevoke.getAttribute("data-target-url");
 
   var inputUuid = repeatedChunk.querySelector("input.token-uuid-input");
   var tokenUuid = inputUuid.value;
 
-  dialog.confirm(confirmMessage).then(
+  dialog.confirm(confirmTitle, {message: confirmMessage, type: "destructive"}).then(
     () => {
       fetch(targetUrl, {
         body: new URLSearchParams({ tokenUuid: tokenUuid }),

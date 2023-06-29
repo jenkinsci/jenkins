@@ -13,7 +13,7 @@ function registerConfirmationLink(element) {
 
   element.addEventListener("click", function (e) {
     e.preventDefault();
-    dialog.confirm(message, { title: title, type: type }).then(
+    dialog.confirm(title, { message: message, type: type }).then(
       () => {
         var form = document.createElement("form");
         form.setAttribute("method", post ? "POST" : "GET");
