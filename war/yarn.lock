@@ -1410,13 +1410,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@csstools/media-query-list-parser@npm:^2.1.0":
-  version: 2.1.0
-  resolution: "@csstools/media-query-list-parser@npm:2.1.0"
+"@csstools/media-query-list-parser@npm:^2.1.0, @csstools/media-query-list-parser@npm:^2.1.1":
+  version: 2.1.1
+  resolution: "@csstools/media-query-list-parser@npm:2.1.1"
   peerDependencies:
-    "@csstools/css-parser-algorithms": ^2.1.1
+    "@csstools/css-parser-algorithms": ^2.2.0
     "@csstools/css-tokenizer": ^2.1.1
-  checksum: 854379ad108673eb3a2031a9ca1d3b5976d3234f715b3fc2a0a67b057a80fb4b34ec4888cfa7675fbd31418e4b939128cdbbe7c75b635f639ddbbb0a22847b6d
+  checksum: bd97737fe92669fa6e26aab0b28a1b82e0bb3992e548bfeb1a45d56007f2a2dfee70c2bb9c2092703680fed505ae1a71254bc0e103f7486bb7724d6c7193fa71
   languageName: node
   linkType: hard
 
@@ -1553,30 +1553,30 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@csstools/postcss-media-minmax@npm:^1.0.3":
-  version: 1.0.3
-  resolution: "@csstools/postcss-media-minmax@npm:1.0.3"
+"@csstools/postcss-media-minmax@npm:^1.0.4":
+  version: 1.0.4
+  resolution: "@csstools/postcss-media-minmax@npm:1.0.4"
   dependencies:
     "@csstools/css-calc": ^1.1.1
-    "@csstools/css-parser-algorithms": ^2.1.1
+    "@csstools/css-parser-algorithms": ^2.2.0
     "@csstools/css-tokenizer": ^2.1.1
-    "@csstools/media-query-list-parser": ^2.1.0
+    "@csstools/media-query-list-parser": ^2.1.1
   peerDependencies:
     postcss: ^8.4
-  checksum: b6ac6c85d3542b4e7dbd86666f8314fbc755a8b5371d134e1f719bb44d6c70dc8b6fde452d5fa7119f6e468c6c897541d1cf9fa5d0945015410451e9bc3151d3
+  checksum: c278cd4ca774a89069186c59eddc63676b56e184484b2d785727ade8236086856fb1573c7ddb386c3bd78629e20be70a410ac1f11e5d35512e81e29ffabacf38
   languageName: node
   linkType: hard
 
-"@csstools/postcss-media-queries-aspect-ratio-number-values@npm:^1.0.3":
-  version: 1.0.3
-  resolution: "@csstools/postcss-media-queries-aspect-ratio-number-values@npm:1.0.3"
+"@csstools/postcss-media-queries-aspect-ratio-number-values@npm:^1.0.4":
+  version: 1.0.4
+  resolution: "@csstools/postcss-media-queries-aspect-ratio-number-values@npm:1.0.4"
   dependencies:
-    "@csstools/css-parser-algorithms": ^2.1.1
+    "@csstools/css-parser-algorithms": ^2.2.0
     "@csstools/css-tokenizer": ^2.1.1
-    "@csstools/media-query-list-parser": ^2.1.0
+    "@csstools/media-query-list-parser": ^2.1.1
   peerDependencies:
     postcss: ^8.4
-  checksum: f1157c6c679a6097e52a03153be22137c5de3ceb4075ee35f26eb65ad2d53c9aeeb8c7308c663ed8c3fd0d5cf368422ac4709159e90a62016cb8c6c0d9481add
+  checksum: 99125a673066ee6119dc25d8aecf7b9ed14a56eba7ae1e18a7aaee596860a35629f45b87d39bfa4f2fafbe505aa29213d7bde9150928d97e628b351b71f3fd00
   languageName: node
   linkType: hard
 
@@ -2675,17 +2675,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"browserslist@npm:^4.0.0, browserslist@npm:^4.14.5, browserslist@npm:^4.21.3, browserslist@npm:^4.21.4, browserslist@npm:^4.21.5":
-  version: 4.21.5
-  resolution: "browserslist@npm:4.21.5"
+"browserslist@npm:^4.0.0, browserslist@npm:^4.14.5, browserslist@npm:^4.21.3, browserslist@npm:^4.21.4, browserslist@npm:^4.21.5, browserslist@npm:^4.21.9":
+  version: 4.21.9
+  resolution: "browserslist@npm:4.21.9"
   dependencies:
-    caniuse-lite: ^1.0.30001449
-    electron-to-chromium: ^1.4.284
-    node-releases: ^2.0.8
-    update-browserslist-db: ^1.0.10
+    caniuse-lite: ^1.0.30001503
+    electron-to-chromium: ^1.4.431
+    node-releases: ^2.0.12
+    update-browserslist-db: ^1.0.11
   bin:
     browserslist: cli.js
-  checksum: 9755986b22e73a6a1497fd8797aedd88e04270be33ce66ed5d85a1c8a798292a65e222b0f251bafa1c2522261e237d73b08b58689d4920a607e5a53d56dc4706
+  checksum: 80d3820584e211484ad1b1a5cfdeca1dd00442f47be87e117e1dda34b628c87e18b81ae7986fa5977b3e6a03154f6d13cd763baa6b8bf5dd9dd19f4926603698
   languageName: node
   linkType: hard
 
@@ -2759,10 +2759,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"caniuse-lite@npm:^1.0.0, caniuse-lite@npm:^1.0.30001449, caniuse-lite@npm:^1.0.30001464":
-  version: 1.0.30001464
-  resolution: "caniuse-lite@npm:1.0.30001464"
-  checksum: 67cdee102c1660d62d7b9dbd4740bb7af096236618f2509fd2e0039d50db5f02fb87c21d90b6d573fdcf50deaf3c84503d009e871502b5c221d0ba1dec18ba11
+"caniuse-lite@npm:^1.0.0, caniuse-lite@npm:^1.0.30001464, caniuse-lite@npm:^1.0.30001503":
+  version: 1.0.30001509
+  resolution: "caniuse-lite@npm:1.0.30001509"
+  checksum: b08a98bf884182741d015569173162e5dfb804da22a14cb18c052be6b5f04e32312ff849b31f787b85091d1b1dfd58b128d9878c96e3bb632a1a0a8761548407
   languageName: node
   linkType: hard
 
@@ -3343,10 +3343,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"electron-to-chromium@npm:^1.4.284":
-  version: 1.4.328
-  resolution: "electron-to-chromium@npm:1.4.328"
-  checksum: 82c1617a77e40ac4ca5011749318a2fee8f8c75f8b517fcff7602219c85fd97a9fab2d5a1353ea10fb7f9c7d18acb90c9ed58c2292256f81e2ffa42ee66c4b0b
+"electron-to-chromium@npm:^1.4.431":
+  version: 1.4.445
+  resolution: "electron-to-chromium@npm:1.4.445"
+  checksum: 6f42497e5a7d466fd3a4cf716f7c0c0c71b85d5bdc32cb8988ab969ae46aad1bad6fe267d6ab09877aa5769bf8db7b158a18b9bb67dd8a8a98565fc54cd45a3a
   languageName: node
   linkType: hard
 
@@ -4027,10 +4027,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"hotkeys-js@npm:3.10.2":
-  version: 3.10.2
-  resolution: "hotkeys-js@npm:3.10.2"
-  checksum: c8f75a4113d2b37e7044b068422122308c971e10980ab90fc7b84ebc352307e18aaea5719d39575e15a3599b4c8d1991f35b623548250477f0096b08f34fc1be
+"hotkeys-js@npm:3.10.3":
+  version: 3.10.3
+  resolution: "hotkeys-js@npm:3.10.3"
+  checksum: c88bbb1178e61a0e52129a22ef4083c2f40de6d57041df1b18baa376424726073d122423ee125dfb92fdc5811ef1c0cd5e0bb394fc9f5a012a84653fd17dc76f
   languageName: node
   linkType: hard
 
@@ -4344,13 +4344,13 @@ __metadata:
     eslint-config-prettier: 8.8.0
     handlebars: 4.7.7
     handlebars-loader: 1.7.3
-    hotkeys-js: 3.10.2
+    hotkeys-js: 3.10.3
     jquery: 3.7.0
     lodash: 4.17.21
     mini-css-extract-plugin: 2.7.6
     postcss: 8.4.24
     postcss-loader: 7.3.3
-    postcss-preset-env: 8.5.0
+    postcss-preset-env: 8.5.1
     postcss-scss: 4.0.6
     prettier: 2.8.8
     sass: 1.63.6
@@ -4993,10 +4993,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"node-releases@npm:^2.0.8":
-  version: 2.0.10
-  resolution: "node-releases@npm:2.0.10"
-  checksum: d784ecde25696a15d449c4433077f5cce620ed30a1656c4abf31282bfc691a70d9618bae6868d247a67914d1be5cc4fde22f65a05f4398cdfb92e0fc83cadfbc
+"node-releases@npm:^2.0.12":
+  version: 2.0.12
+  resolution: "node-releases@npm:2.0.12"
+  checksum: b8c56db82c4642a0f443332b331a4396dae452a2ac5a65c8dbd93ef89ecb2fbb0da9d42ac5366d4764973febadca816cf7587dad492dce18d2a6b2af59cda260
   languageName: node
   linkType: hard
 
@@ -5369,17 +5369,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"postcss-custom-media@npm:^9.1.4":
-  version: 9.1.4
-  resolution: "postcss-custom-media@npm:9.1.4"
+"postcss-custom-media@npm:^9.1.5":
+  version: 9.1.5
+  resolution: "postcss-custom-media@npm:9.1.5"
   dependencies:
     "@csstools/cascade-layer-name-parser": ^1.0.2
-    "@csstools/css-parser-algorithms": ^2.1.1
+    "@csstools/css-parser-algorithms": ^2.2.0
     "@csstools/css-tokenizer": ^2.1.1
-    "@csstools/media-query-list-parser": ^2.1.0
+    "@csstools/media-query-list-parser": ^2.1.1
   peerDependencies:
     postcss: ^8.4
-  checksum: 8924e3f05a7972489768eaef0be6a2126f2decee50c055f343e2841d3d046304aee96a4bc794b2c36dae114e43214bbf0fac187f980705711e1ee0cc825bffb1
+  checksum: 1c838c2c0ce0c5511902a4e2391d8db7afc82091d1ba213190a7ea9af341285600dd0ff3ffce549cad73fed5ccebf90ddda8bfe58d191c3c611bcc150da6b49c
   languageName: node
   linkType: hard
 
@@ -5856,9 +5856,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"postcss-preset-env@npm:8.5.0":
-  version: 8.5.0
-  resolution: "postcss-preset-env@npm:8.5.0"
+"postcss-preset-env@npm:8.5.1":
+  version: 8.5.1
+  resolution: "postcss-preset-env@npm:8.5.1"
   dependencies:
     "@csstools/postcss-cascade-layers": ^3.0.1
     "@csstools/postcss-color-function": ^2.2.3
@@ -5871,8 +5871,8 @@ __metadata:
     "@csstools/postcss-logical-float-and-clear": ^1.0.1
     "@csstools/postcss-logical-resize": ^1.0.1
     "@csstools/postcss-logical-viewport-units": ^1.0.3
-    "@csstools/postcss-media-minmax": ^1.0.3
-    "@csstools/postcss-media-queries-aspect-ratio-number-values": ^1.0.3
+    "@csstools/postcss-media-minmax": ^1.0.4
+    "@csstools/postcss-media-queries-aspect-ratio-number-values": ^1.0.4
     "@csstools/postcss-nested-calc": ^2.0.2
     "@csstools/postcss-normalize-display-values": ^2.0.1
     "@csstools/postcss-oklab-function": ^2.2.3
@@ -5884,7 +5884,7 @@ __metadata:
     "@csstools/postcss-trigonometric-functions": ^2.1.1
     "@csstools/postcss-unset-value": ^2.0.1
     autoprefixer: ^10.4.14
-    browserslist: ^4.21.5
+    browserslist: ^4.21.9
     css-blank-pseudo: ^5.0.2
     css-has-pseudo: ^5.0.2
     css-prefers-color-scheme: ^8.0.2
@@ -5894,7 +5894,7 @@ __metadata:
     postcss-color-functional-notation: ^5.1.0
     postcss-color-hex-alpha: ^9.0.2
     postcss-color-rebeccapurple: ^8.0.2
-    postcss-custom-media: ^9.1.4
+    postcss-custom-media: ^9.1.5
     postcss-custom-properties: ^13.2.0
     postcss-custom-selectors: ^7.1.3
     postcss-dir-pseudo-class: ^7.0.2
@@ -5918,7 +5918,7 @@ __metadata:
     postcss-value-parser: ^4.2.0
   peerDependencies:
     postcss: ^8.4
-  checksum: 29e285c16580aecc5b584f82e3990b6161d3984e0b7eeb134107e80b59cad4282359c67aef02099a30496b21c10fa0be2c92e396ac0b9ff05fc4774ee86a10e9
+  checksum: b7c8285149784e8a7a74dc3ca71250bba7cb9a23f46fb9031092cb717d99a61c05b6543fbcc7212e17bf03ce6790b8cce99c7d31f12a5846efa1dbc57add3c90
   languageName: node
   linkType: hard
 
@@ -7058,17 +7058,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"update-browserslist-db@npm:^1.0.10":
-  version: 1.0.10
-  resolution: "update-browserslist-db@npm:1.0.10"
+"update-browserslist-db@npm:^1.0.11":
+  version: 1.0.11
+  resolution: "update-browserslist-db@npm:1.0.11"
   dependencies:
     escalade: ^3.1.1
     picocolors: ^1.0.0
   peerDependencies:
     browserslist: ">= 4.21.0"
   bin:
-    browserslist-lint: cli.js
-  checksum: 12db73b4f63029ac407b153732e7cd69a1ea8206c9100b482b7d12859cd3cd0bc59c602d7ae31e652706189f1acb90d42c53ab24a5ba563ed13aebdddc5561a0
+    update-browserslist-db: cli.js
+  checksum: b98327518f9a345c7cad5437afae4d2ae7d865f9779554baf2a200fdf4bac4969076b679b1115434bd6557376bdd37ca7583d0f9b8f8e302d7d4cc1e91b5f231
   languageName: node
   linkType: hard
 
