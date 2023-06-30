@@ -33,22 +33,24 @@ function resetSeed(button) {
     warningMessage.classList.remove("visible");
   }
 
-  dialog.confirm(confirmTitle, {message: confirmMessage, type: "destructive"}).then(() => {
-    fetch(targetUrl, {
-      method: "post",
-      headers: crumb.wrap({}),
-    }).then((rsp) => {
-      if (rsp.ok) {
-        if (redirectAfterClick) {
-          window.location.href = redirectAfterClick;
-        } else {
-          if (!warningMessage.classList.contains("visible")) {
-            warningMessage.classList.add("visible");
+  dialog
+    .confirm(confirmTitle, { message: confirmMessage, type: "destructive" })
+    .then(() => {
+      fetch(targetUrl, {
+        method: "post",
+        headers: crumb.wrap({}),
+      }).then((rsp) => {
+        if (rsp.ok) {
+          if (redirectAfterClick) {
+            window.location.href = redirectAfterClick;
+          } else {
+            if (!warningMessage.classList.contains("visible")) {
+              warningMessage.classList.add("visible");
+            }
           }
         }
-      }
+      });
     });
-  });
 }
 
 (function () {

@@ -95,30 +95,32 @@ function confirmAndRevokeAllSelected(button) {
       "%num%",
       allCheckedCheckBoxes.length
     );
-    dialog.confirm(confirmTitle, {message: confirmMessage, type: "destructive"}).then(
-      () => {
-        var url = button.getAttribute("data-url");
-        var selectedValues = [];
+    dialog
+      .confirm(confirmTitle, { message: confirmMessage, type: "destructive" })
+      .then(
+        () => {
+          var url = button.getAttribute("data-url");
+          var selectedValues = [];
 
-        for (var i = 0; i < allCheckedCheckBoxes.length; i++) {
-          var checkBox = allCheckedCheckBoxes[i];
-          var userId = checkBox.getAttribute("data-user-id");
-          var uuid = checkBox.getAttribute("data-uuid");
-          selectedValues.push({ userId: userId, uuid: uuid });
-        }
+          for (var i = 0; i < allCheckedCheckBoxes.length; i++) {
+            var checkBox = allCheckedCheckBoxes[i];
+            var userId = checkBox.getAttribute("data-user-id");
+            var uuid = checkBox.getAttribute("data-uuid");
+            selectedValues.push({ userId: userId, uuid: uuid });
+          }
 
-        // TODO simplify when Prototype.js is removed
+          // TODO simplify when Prototype.js is removed
 
-        fetch(url, {
-          method: "post",
-          body: Object.toJSON
-            ? Object.toJSON({ values: selectedValues })
-            : JSON.stringify({ values: selectedValues }),
-          headers: crumb.wrap({ "Content-Type": "application/json" }),
-        }).then(() => window.location.reload());
-      },
-      () => {}
-    );
+          fetch(url, {
+            method: "post",
+            body: Object.toJSON
+              ? Object.toJSON({ values: selectedValues })
+              : JSON.stringify({ values: selectedValues }),
+            headers: crumb.wrap({ "Content-Type": "application/json" }),
+          }).then(() => window.location.reload());
+        },
+        () => {}
+      );
   }
 }
 
