@@ -225,7 +225,7 @@ THE SOFTWARE.
             </table>
           </j:when>
           <j:otherwise>
-            <l:notice icon="symbol-up-to-date" text="${%No updates}" />
+            <l:notice icon="symbol-up-to-date" text="${%No updates available}" />
           </j:otherwise>
         </j:choose>
 
