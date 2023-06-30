@@ -182,7 +182,7 @@
   margin: 0 0 0 2px !important;
 }
 
-@media (min-width: 1170px) {
+@media (width >= 1170px) {
   .build-row-cell .build-badge > span {
     max-width: 296px;
   }
