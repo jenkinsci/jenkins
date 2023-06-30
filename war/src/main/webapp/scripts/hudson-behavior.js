@@ -2129,27 +2129,6 @@ function AutoScroller(scrollContainer) {
   };
 }
 
-// used in expandableTextbox.jelly to change a input field into a text area
-// eslint-disable-next-line no-unused-vars
-function expandTextArea(button, id) {
-  button.style.display = "none";
-  var field = button.parentNode.previousSibling.children[0];
-  var value = field.value.replace(/ +/g, "\n");
-
-  var n = button;
-  while (!n.classList.contains("expanding-input") && n.tagName != "TABLE") {
-    n = n.parentNode;
-  }
-
-  var parent = n.parentNode;
-  parent.innerHTML = "<textarea rows=8 class='jenkins-input'></textarea>";
-  var textArea = parent.childNodes[0];
-  textArea.name = field.name;
-  textArea.value = value;
-
-  layoutUpdateCallback.call();
-}
-
 // refresh a part of the HTML specified by the given ID,
 // by using the contents fetched from the given URL.
 // eslint-disable-next-line no-unused-vars

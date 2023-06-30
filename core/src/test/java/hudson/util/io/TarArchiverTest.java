@@ -33,7 +33,6 @@ import hudson.Functions;
 import hudson.Launcher.LocalLauncher;
 import hudson.Util;
 import hudson.model.TaskListener;
-import hudson.util.NullStream;
 import hudson.util.StreamTaskListener;
 import java.io.File;
 import java.io.IOException;
@@ -117,7 +116,9 @@ public class TarArchiverTest {
         assumeFalse(Functions.isWindows());
         File dir = tmp.getRoot();
         Util.createSymlink(dir, "nonexistent", "link", TaskListener.NULL);
-        new FilePath(dir).tar(new NullStream(), "**");
+        try (OutputStream out = OutputStream.nullOutputStream()) {
+            new FilePath(dir).tar(out, "**");
+        }
     }
 
 
@@ -132,7 +133,9 @@ public class TarArchiverTest {
         Thread t1 = new Thread(runnable1);
         t1.start();
 
-        new FilePath(tmp.getRoot()).tar(new NullStream(), "**");
+        try (OutputStream out = OutputStream.nullOutputStream()) {
+            new FilePath(tmp.getRoot()).tar(out, "**");
+        }
 
         runnable1.doFinish();
         t1.join();
