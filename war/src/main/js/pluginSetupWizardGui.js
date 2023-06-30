@@ -1282,22 +1282,6 @@ var createPluginSetupWizard = function (appendTarget) {
   // do this so the page isn't blank while doing connectivity checks and other downloads
   setPanel(loadingPanel);
 
-  // Expose the function defaultUpdateSiteId to the window objects
-  // so it can be used globally.
-  window.defaultUpdateSiteId = (function () {
-    var defaultSiteId = document
-      .querySelector("#default-site-id")
-      .getAttribute("data-default-update-site-id");
-    return defaultSiteId ? defaultSiteId.replace("'", "") : "default";
-  })();
-
-  var setupWizardExtensions = [];
-  // Expose the function onSetupWizardInitialized to the window objects
-  // so it can be used globally.
-  window.onSetupWizardInitialized = function (extension) {
-    setupWizardExtensions.push(extension);
-  };
-
   // Process extensions
   var extensionTranslationOverrides = [];
   if ("undefined" !== typeof setupWizardExtensions) {

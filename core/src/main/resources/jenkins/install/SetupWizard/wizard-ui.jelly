@@ -1,6 +1,7 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form" xmlns:st="jelly:stapler">
-  <div id="default-site-id" data-default-update-site-id="${hudson.model.UpdateCenter.ID_DEFAULT}"></div>
+  <div id="default-site-id" data-default-update-site-id="${hudson.model.UpdateCenter.ID_DEFAULT}"/>
+  <st:adjunct includes="jenkins.install.SetupWizard._wizard-ui"/>
   <j:forEach var="setupExtension" items="${app.setupWizard.installStates}">
     <st:include it="${setupExtension}" page="client-scripts" optional="true" />
   </j:forEach>
