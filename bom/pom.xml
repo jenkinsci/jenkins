@@ -113,7 +113,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>commons-codec</groupId>
         <artifactId>commons-codec</artifactId>
-        <version>1.15</version>
+        <version>1.16.0</version>
       </dependency>
       <dependency>
         <groupId>commons-collections</groupId>
@@ -295,7 +295,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.kohsuke.metainf-services</groupId>
         <artifactId>metainf-services</artifactId>
-        <version>1.9</version>
+        <version>1.11</version>
       </dependency>
       <dependency>
         <groupId>org.kohsuke.stapler</groupId>

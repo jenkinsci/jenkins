@@ -9,7 +9,7 @@ cd "$(dirname "$0")"
 export ATH_VERSION=5631.v2dcb_f66e58f7
 
 if [[ $# -eq 0 ]]; then
-	export JDK=11
+	export JDK=17
 	export BROWSER=firefox
 else
 	export JDK=$1
