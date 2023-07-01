@@ -52,8 +52,8 @@ $semantics: (
   --focus-btn-primary: #{color.change(#0b6aa2, $alpha: 0.5)};
   --focus-btn-secondary: #{color.change(#0b6aa2, $alpha: 0.5)};
   --focus-btn-danger: #{color.change(#cc0003, $alpha: 0.5)};
-  --focus-input-border: var(--accent-color);
-  --focus-input-glow: color-mix(in srgb, var(--accent-color) 25%, transparent);
+  --focus-input-border: #063f61;
+  --focus-input-glow: #{color.change(#0b6aa2, $alpha: 0.25)};
 
   // State colors
   --primary-hover: color-mix(in srgb, var(--accent-color) 75%, black);
@@ -281,7 +281,7 @@ $semantics: (
   --section-padding: 1.75rem;
   --input-color: var(--white);
   --input-border: #c3ccd1;
-  --input-border-hover: color-mix(in srgb, var(--accent-color) 25%, transparent);
+  --input-border-hover: #5c7889;
   --input-hidden-password-bg-color: #f9f9f9;
   --form-item-max-width: min(65vw, 1600px);
   --form-item-max-width--medium: min(50vw, 1400px);
