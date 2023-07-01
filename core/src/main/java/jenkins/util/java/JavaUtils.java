@@ -44,17 +44,18 @@ public class JavaUtils {
      * Check whether the current JVM is running with Java 8 or below
      * @return {@code true} if it is Java 8 or older version
      */
+    @Deprecated(since = "2023-06-16", forRemoval = true)
     public static boolean isRunningWithJava8OrBelow() {
-        String javaVersion = getCurrentRuntimeJavaVersion();
-        return javaVersion.startsWith("1.");
+        return false;
     }
 
     /**
      * Check whether the current JVM is running with Java 9 or above.
      * @return {@code true} if it is Java 9 or above
      */
+    @Deprecated(since = "2023-06-16", forRemoval = true)
     public static boolean isRunningWithPostJava8() {
-        return !isRunningWithJava8OrBelow();
+        return true;
     }
 
     /**
