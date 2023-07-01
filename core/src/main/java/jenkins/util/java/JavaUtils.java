@@ -46,7 +46,7 @@ public class JavaUtils {
      * @deprecated because the current version is at least Java 11,
      * this method is redundant.
      */
-    @Deprecated(since = "2023-06-16", forRemoval = true)
+    @Deprecated(since = "TODO", forRemoval = true)
     public static boolean isRunningWithJava8OrBelow() {
         return false;
     }
@@ -57,7 +57,7 @@ public class JavaUtils {
      * @deprecated because the current version is at least Java 11,
      * this method is redundant.
      */
-    @Deprecated(since = "2023-06-16", forRemoval = true)
+    @Deprecated(since = "TODO", forRemoval = true)
     public static boolean isRunningWithPostJava8() {
         return true;
     }
