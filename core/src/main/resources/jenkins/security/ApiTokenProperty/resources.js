@@ -21,7 +21,30 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-window.revokeToken = function (anchorRevoke) {
+Behaviour.specify(
+  ".api-token-property-token-revoke",
+  "api-token-property-token-revoke",
+  0,
+  function (element) {
+    element.addEventListener("click", function (event) {
+      event.preventDefault();
+      revokeToken(element);
+    });
+  }
+);
+
+Behaviour.specify(
+  "#api-token-property-token-save",
+  "api-token-property-token-save",
+  0,
+  function (element) {
+    element.addEventListener("click", function () {
+      saveApiToken(element);
+    });
+  }
+);
+
+function revokeToken(anchorRevoke) {
   var repeatedChunk = anchorRevoke.closest(".repeated-chunk");
   var tokenList = repeatedChunk.closest(".token-list");
   var confirmMessage = anchorRevoke.getAttribute("data-confirm");
@@ -51,11 +74,9 @@ window.revokeToken = function (anchorRevoke) {
       }
     });
   }
+}
 
-  return false;
-};
-
-window.saveApiToken = function (button) {
+function saveApiToken(button) {
   if (button.classList.contains("request-pending")) {
     // avoid multiple requests to be sent if user is clicking multiple times
     return;
@@ -111,7 +132,9 @@ window.saveApiToken = function (button) {
           // we do not want to allow user to create twice a token using same name by mistake
           button.remove();
 
-          var revokeButton = repeatedChunk.querySelector(".token-revoke");
+          var revokeButton = repeatedChunk.querySelector(
+            ".api-token-property-token-revoke"
+          );
           revokeButton.classList.remove("hidden-button");
 
           var cancelButton = repeatedChunk.querySelector(".token-cancel");
@@ -124,7 +147,7 @@ window.saveApiToken = function (button) {
       });
     }
   });
-};
+}
 
 function adjustTokenEmptyListMessage(tokenList) {
   var emptyListMessage = tokenList.querySelector(".token-list-empty-item");
