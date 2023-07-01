@@ -34,7 +34,12 @@ import static org.junit.Assert.assertThrows;
 import java.io.File;
 import java.io.IOException;
 import java.util.Random;
+import java.util.stream.Stream;
+
 import org.junit.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 public class OperatingSystemEndOfLifeAdminMonitorTest {
 
@@ -105,7 +110,7 @@ public class OperatingSystemEndOfLifeAdminMonitorTest {
         return "https://www.jenkins.io/redirect/operating-system-end-of-life?q=" + component;
     }
 
-    private Stream<String> testReadDocumentationUrls(){
+    private Stream<Arguments> testReadDocumentationUrls(){
         return Stream.of(
             Arguments.of("os-release-alma-8", "AlmaLinux.* 8", "AlmaLinux-8.7-Stone-Smilodon"),
             Arguments.of("os-release-alpine-3.14", "Alpine Linux v3.14", "Alpine-Linux-v3.14"),
@@ -123,13 +128,13 @@ public class OperatingSystemEndOfLifeAdminMonitorTest {
             Arguments.of("os-release-redhat-8", "Red Hat Enterprise Linux.* 8", "Red-Hat-Enterprise-Linux-8.8-Ootpa"),
             Arguments.of("os-release-rocky-8", "Rocky Linux.* 8", "Rocky-Linux-8.7-Green-Obsidian"),
             Arguments.of("os-release-scientific-7", "Scientific Linux.* 7", "Scientific-Linux-7.9-Nitrogen"),
-            Arguments.of("os-release-ubuntu-18.04", "Ubuntu.* 18", "Ubuntu-18.04.6-LTS"),
+            Arguments.of("os-release-ubuntu-18.04", "Ubuntu.* 18", "Ubuntu-18.04.6-LTS")
         );
     }
 
     @ParameterizedTest
     @MethodSource
-    public void testReadDocumentationUrls(String fileName, String pattern, String component){
+    public void testReadDocumentationUrls(String fileName, String pattern, String component) throws Exception{
         File releaseFile = new File(this.getClass().getResource(fileName).toURI());
         assertThat(monitor.readDocumentationUrl(releaseFile, pattern), is(docsUrl(component)));
     }
@@ -152,7 +157,7 @@ public class OperatingSystemEndOfLifeAdminMonitorTest {
         assertThat(e.getMessage(), is("Missing pattern in definition file"));
     }
 
-    private Stream<String> testReadOperatingSystemNames(){
+    private Stream<Arguments> testReadOperatingSystemNames(){
         return Stream.of(
             Arguments.of("os-release-alma-8", "AlmaLinux.* 8", "AlmaLinux 8.7 (Stone Smilodon)"),
             Arguments.of("os-release-alpine-3.14", "Alpine Linux v3.14", "Alpine Linux v3.14"),
@@ -170,13 +175,13 @@ public class OperatingSystemEndOfLifeAdminMonitorTest {
             Arguments.of("os-release-redhat-8", "Red Hat Enterprise Linux.* 8", "Red Hat Enterprise Linux 8.8 (Ootpa)"),
             Arguments.of("os-release-rocky-8", "Rocky Linux.* 8", "Rocky Linux 8.7 (Green Obsidian)"),
             Arguments.of("os-release-scientific-7", "Scientific Linux.* 7", "Scientific Linux 7.9 (Nitrogen)"),
-            Arguments.of("os-release-ubuntu-18.04", "Ubuntu.* 18", "Ubuntu 18.04.6 LTS"),
+            Arguments.of("os-release-ubuntu-18.04", "Ubuntu.* 18", "Ubuntu 18.04.6 LTS")
         );
     }
 
     @ParameterizedTest
     @MethodSource
-    public void testReadOperatingSystemNames(String fileName, String pattern, String job){
+    public void testReadOperatingSystemNames(String fileName, String pattern, String job) throws Exception{
         File releaseFile = new File(this.getClass().getResource(fileName).toURI());
         assertThat(monitor.readOperatingSystemName(releaseFile, pattern), is(job));
     }
