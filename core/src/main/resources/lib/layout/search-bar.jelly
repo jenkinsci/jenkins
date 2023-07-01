@@ -56,7 +56,7 @@ THE SOFTWARE.
              autocorrect="off"
              autocapitalize="off"
              spellcheck="false"
-             disabled="${attrs.enabled == false}" />
+             disabled="${attrs.enabled == false ? true : null}" />
       <j:if test="${attrs.hasKeyboardShortcut != 'false'}">
         <div class="jenkins-search__shortcut" tooltip="${%Press / on your keyboard to focus}">
           <l:icon src="symbol-search-shortcut" />
