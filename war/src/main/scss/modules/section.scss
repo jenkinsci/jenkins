@@ -39,15 +39,15 @@
   grid-template-columns: 1fr;
   grid-gap: var(--section-padding);
 
-  @media screen and (min-width: 800px) {
+  @media screen and (width >= 800px) {
     grid-template-columns: 1fr 1fr;
   }
 
-  @media screen and (min-width: 1300px) {
+  @media screen and (width >= 1300px) {
     grid-template-columns: 1fr 1fr 1fr;
   }
 
-  @media screen and (min-width: 1800px) {
+  @media screen and (width >= 1800px) {
     grid-template-columns: 1fr 1fr 1fr 1fr;
   }
 }

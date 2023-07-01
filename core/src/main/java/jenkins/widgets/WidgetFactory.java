@@ -39,7 +39,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  * Allows you to add new widgets to various kind of objects whose class implements {@link HasWidgets}.
  * @param <T> The type of object to add widgets to.
  * @param <W> The subtype of {@link Widget} the factory contributes.
- * @since TODO
+ * @since 2.410
  */
 public abstract class WidgetFactory<T extends HasWidgets, W extends Widget> implements ExtensionPoint {
     /**

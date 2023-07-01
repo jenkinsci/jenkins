@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2019 CloudBees, Inc.
+ * Copyright (c) 2023, CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,47 +21,32 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+function expandTextArea(button) {
+  button.style.display = "none";
+  var field = button.parentNode.previousSibling.children[0];
+  var value = field.value.replace(/ +/g, "\n");
 
-.secret-header {
-  border: 1px solid #ccc;
-  border: 1px solid var(--input-border);
-  border-radius: 3px;
-  background: #f9f9f9;
-  background: var(--input-hidden-password-bg-color);
-  display: flex;
-  justify-content: space-around;
+  var n = button;
+  while (!n.classList.contains("expanding-input") && n.tagName !== "TABLE") {
+    n = n.parentNode;
+  }
+
+  var parent = n.parentNode;
+  parent.innerHTML = "<textarea rows=8 class='jenkins-input'></textarea>";
+  var textArea = parent.childNodes[0];
+  textArea.name = field.name;
+  textArea.value = value;
+
+  layoutUpdateCallback.call();
 }
 
-.secret-header:not(:only-child) {
-  border-bottom-left-radius: 0;
-  border-bottom-right-radius: 0;
-}
-
-.secret-header > div {
-  flex-grow: 1;
-  display: inline-flex;
-  align-items: center;
-  padding: 1.5em 1.75em;
-}
-
-.secret-legend > svg {
-  margin-right: 1em;
-}
-
-.secret-update {
-  justify-content: flex-end;
-}
-
-.secret-input {
-  border: solid 1px #ccc;
-  border: solid 1px var(--input-border);
-  border-top: none;
-  border-radius: 0 0 3px 3px;
-}
-
-.secret-input textarea {
-  width: 100%;
-  font-family: monospace;
-  border: none;
-  padding: 1em;
-}
+Behaviour.specify(
+  ".expanding-input__button > input[type='button']",
+  "expandable-textbox-expand-button",
+  0,
+  function (element) {
+    element.addEventListener("click", function () {
+      expandTextArea(element);
+    });
+  }
+);

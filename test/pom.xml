@@ -89,7 +89,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>ant</artifactId>
-        <version>487.vd79d090d4ea_e</version>
+        <version>497.v94e7d9fffa_b_9</version>
       </dependency>
       <dependency>
         <!-- RequireUpperBoundDeps via mailer and junit -->
@@ -116,7 +116,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>2028.vb_6e9c2a_8668a_</version>
+      <version>2034.v41c9cb_349299</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -197,7 +197,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>junit</artifactId>
-      <version>1207.va_09d5100410f</version>
+      <version>1214.va_2f9db_3e6de0</version>
       <scope>test</scope>
     </dependency>
     <dependency>
