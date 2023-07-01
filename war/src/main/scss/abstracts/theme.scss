@@ -2,7 +2,7 @@
 @use "../base/breakpoints";
 
 $colors: (
-  "blue": hsl(211, 100%, 45%),
+  "blue": #006fe6,
   "brown": #a2845e,
   "cyan": #32ade6,
   "green": #1ea64b,
@@ -12,9 +12,13 @@ $colors: (
   "purple": #af52de,
   "red": #e6001f,
   "yellow": #ffb31a,
+  "white": #ffffff,
+  "black": #14141f
 );
 
 $semantics: (
+  "accent": var(--blue),
+  "text": var(--black),
   "error": var(--red),
   "warning": var(--orange),
   "success": var(--green),
@@ -39,19 +43,7 @@ $semantics: (
   --line-height-base: 1.5;
   --line-height-heading: 1.2;
 
-  // Color palette
-  --white: #fff;
-  --very-light-grey: #f8f8f8;
-  --light-grey: hsl(240, 20%, 96.5%);
-  --medium-grey: #9ba7af;
-  --dark-grey: #4d545d;
-  --black: hsl(240, 20%, 10%);
-
-
-  --layer: color-mix(in srgb, var(--primary) 2%, hsla(240, 0%, 76%, 0.1));
-
   // branding
-  --primary: var(--blue);
   --secondary: hsl(240, 10%, 50%);
   --success: var(--green);
   --danger: var(--red);
@@ -60,17 +52,17 @@ $semantics: (
   --focus-btn-primary: #{color.change(#0b6aa2, $alpha: 0.5)};
   --focus-btn-secondary: #{color.change(#0b6aa2, $alpha: 0.5)};
   --focus-btn-danger: #{color.change(#cc0003, $alpha: 0.5)};
-  --focus-input-border: var(--primary);
-  --focus-input-glow: color-mix(in srgb, var(--primary) 25%, transparent);
+  --focus-input-border: var(--accent-color);
+  --focus-input-glow: color-mix(in srgb, var(--accent-color) 25%, transparent);
 
   // State colors
-  --primary-hover: color-mix(in srgb, var(--primary) 75%, black);
-  --primary-active: color-mix(in srgb, var(--primary) 50%, black);
+  --primary-hover: color-mix(in srgb, var(--accent-color) 75%, black);
+  --primary-active: color-mix(in srgb, var(--accent-color) 50%, black);
   --danger-hover: #eb383b;
   --danger-active: #b50003;
 
   // Status icon colors
-  --weather-icon-color: var(--primary);
+  --weather-icon-color: var(--accent-color);
   --unstable-build-icon-color: var(--orange);
 
   // Background colors
@@ -121,7 +113,6 @@ $semantics: (
   --alert-danger-border-color: #ebccd1;
 
   // Typography
-  --text-color: var(--black);
   --text-color-secondary: var(--secondary);
 
   // Button generic
@@ -140,17 +131,17 @@ $semantics: (
   --btn-secondary-color: var(--secondary);
   --btn-secondary-bg: var(--btn-text-color);
   --btn-secondary-border: var(--medium-grey);
-  --btn-secondary-color--hover: var(--primary);
+  --btn-secondary-color--hover: var(--accent-color);
   --btn-secondary-bg--hover: var(--btn-secondary-bg);
-  --btn-secondary-border--hover: var(--primary);
-  --btn-secondary-color--focus: var(--primary);
+  --btn-secondary-border--hover: var(--accent-color);
+  --btn-secondary-color--focus: var(--accent-color);
   --btn-secondary-bg--focus: var(--btn-secondary-bg);
-  --btn-secondary-border--focus: var(--primary);
+  --btn-secondary-border--focus: var(--accent-color);
   --btn-secondary-color--active: var(--primary-active);
   --btn-secondary-bg--active: var(--btn-secondary-bg);
   --btn-secondary-border--active: var(--primary-active);
   // Button link
-  --btn-link-color: var(--primary);
+  --btn-link-color: var(--accent-color);
   --btn-link-font-weight: var(--link-font-weight);
   --btn-link-color--hover: var(--primary-hover);
   --btn-link-bg--hover: var(--very-light-grey);
@@ -163,9 +154,9 @@ $semantics: (
 
   // Table
   --table-background: var(--panel-header-bg-color);
-  --table-header-foreground: black;
-  --table-body-background: white;
-  --table-body-foreground: black;
+  --table-header-foreground: var(--text-color);
+  --table-body-background: var(--background);
+  --table-body-foreground: var(--text-color);
   --table-border-radius: 10px;
   --table-row-border-radius: 4px;
 
@@ -182,7 +173,7 @@ $semantics: (
   --table-striped-bg--hover: var(--light-grey);
 
   // Link
-  --link-color: var(--primary);
+  --link-color: var(--accent-color);
   --link-visited-color: var(--link-color);
   --link-color--hover: var(--primary-hover);
   --link-color--active: var(--primary-active);
@@ -290,7 +281,7 @@ $semantics: (
   --section-padding: 1.75rem;
   --input-color: var(--white);
   --input-border: #c3ccd1;
-  --input-border-hover: color-mix(in srgb, var(--primary) 25%, transparent);
+  --input-border-hover: color-mix(in srgb, var(--accent-color) 25%, transparent);
   --input-hidden-password-bg-color: #f9f9f9;
   --form-item-max-width: min(65vw, 1600px);
   --form-item-max-width--medium: min(50vw, 1400px);
@@ -361,6 +352,13 @@ $semantics: (
   --item-background--hover: hsla(240, 25%, 75%, 0.15);
   --item-background--active: hsla(240, 25%, 75%, 0.225);
   --item-box-shadow--focus: hsla(240, 25%, 75%, 0.105);
+
+  // Deprecated
+  --primary: var(--accent-color); // Use var(--accent-color) instead
+  --very-light-grey: #f8f8f8;
+  --light-grey: hsl(240, 20%, 96.5%);
+  --medium-grey: #9ba7af;
+  --dark-grey: #4d545d;
 
   // Colors
   @each $key, $value in $colors {
