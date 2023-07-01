@@ -110,7 +110,7 @@ public class OperatingSystemEndOfLifeAdminMonitorTest {
         return "https://www.jenkins.io/redirect/operating-system-end-of-life?q=" + component;
     }
 
-    private Stream<Arguments> testReadDocumentationUrls(){
+    private static Stream<Arguments> testReadDocumentationUrls() {
         return Stream.of(
             Arguments.of("os-release-alma-8", "AlmaLinux.* 8", "AlmaLinux-8.7-Stone-Smilodon"),
             Arguments.of("os-release-alpine-3.14", "Alpine Linux v3.14", "Alpine-Linux-v3.14"),
@@ -134,7 +134,7 @@ public class OperatingSystemEndOfLifeAdminMonitorTest {
 
     @ParameterizedTest
     @MethodSource
-    public void testReadDocumentationUrls(String fileName, String pattern, String component) throws Exception{
+    public void testReadDocumentationUrls(String fileName, String pattern, String component) throws Exception {
         File releaseFile = new File(this.getClass().getResource(fileName).toURI());
         assertThat(monitor.readDocumentationUrl(releaseFile, pattern), is(docsUrl(component)));
     }
@@ -157,7 +157,7 @@ public class OperatingSystemEndOfLifeAdminMonitorTest {
         assertThat(e.getMessage(), is("Missing pattern in definition file"));
     }
 
-    private Stream<Arguments> testReadOperatingSystemNames(){
+    private static Stream<Arguments> testReadOperatingSystemNames() {
         return Stream.of(
             Arguments.of("os-release-alma-8", "AlmaLinux.* 8", "AlmaLinux 8.7 (Stone Smilodon)"),
             Arguments.of("os-release-alpine-3.14", "Alpine Linux v3.14", "Alpine Linux v3.14"),
@@ -181,7 +181,7 @@ public class OperatingSystemEndOfLifeAdminMonitorTest {
 
     @ParameterizedTest
     @MethodSource
-    public void testReadOperatingSystemNames(String fileName, String pattern, String job) throws Exception{
+    public void testReadOperatingSystemNames(String fileName, String pattern, String job) throws Exception {
         File releaseFile = new File(this.getClass().getResource(fileName).toURI());
         assertThat(monitor.readOperatingSystemName(releaseFile, pattern), is(job));
     }
