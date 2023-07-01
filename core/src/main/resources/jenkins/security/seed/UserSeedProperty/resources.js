@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-window.resetSeed = function (button) {
+function resetSeed(button) {
   var userSeedPanel = button.closest(".user-seed-panel");
   var confirmMessage = button.getAttribute("data-confirm");
   var targetUrl = button.getAttribute("data-target-url");
@@ -48,4 +48,14 @@ window.resetSeed = function (button) {
       }
     });
   }
-};
+}
+
+(function () {
+  document.addEventListener("DOMContentLoaded", function () {
+    document
+      .getElementById("user-seed-property-reset-seed")
+      .addEventListener("click", function (event) {
+        resetSeed(event.target);
+      });
+  });
+})();
