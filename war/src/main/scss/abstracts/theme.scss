@@ -56,8 +56,8 @@ $semantics: (
   --focus-input-glow: #{color.change(#0b6aa2, $alpha: 0.25)};
 
   // State colors
-  --primary-hover: color-mix(in srgb, var(--accent-color) 75%, black);
-  --primary-active: color-mix(in srgb, var(--accent-color) 50%, black);
+  --primary-hover: #0587d4;
+  --primary-active: #095683;
   --danger-hover: #eb383b;
   --danger-active: #b50003;
 
