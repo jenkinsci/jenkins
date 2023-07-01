@@ -113,7 +113,6 @@ import jenkins.util.SystemProperties;
 import jenkins.util.io.PathRemover;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.io.output.NullOutputStream;
 import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
@@ -637,10 +636,11 @@ public class Util {
     public static String getDigestOf(@NonNull InputStream source) throws IOException {
         try (source) {
             MessageDigest md5 = getMd5();
-            DigestInputStream in = new DigestInputStream(source, md5);
-            // Note: IOUtils.copy() buffers the input internally, so there is no
-            // need to use a BufferedInputStream.
-            IOUtils.copy(in, NullOutputStream.NULL_OUTPUT_STREAM);
+            try (InputStream in = new DigestInputStream(source, md5); OutputStream out = OutputStream.nullOutputStream()) {
+                // Note: IOUtils.copy() buffers the input internally, so there is no
+                // need to use a BufferedInputStream.
+                IOUtils.copy(in, out);
+            }
             return toHexString(md5.digest());
         } catch (NoSuchAlgorithmException e) {
             throw new IOException("MD5 not installed", e);    // impossible
