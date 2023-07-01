@@ -175,8 +175,8 @@ $semantics: (
   // Link
   --link-color: var(--accent-color);
   --link-visited-color: var(--link-color);
-  --link-color--hover: var(--primary-hover);
-  --link-color--active: var(--primary-active);
+  --link-color--hover: var(--link-color);
+  --link-color--active: var(--link-color);
   --link-text-decoration: none;
   --link-text-decoration--hover: underline;
   --link-text-decoration--active: underline;
