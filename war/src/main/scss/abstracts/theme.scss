@@ -43,11 +43,14 @@ $semantics: (
   --line-height-base: 1.5;
   --line-height-heading: 1.2;
 
+  // Color palette
+  --very-light-grey: #f8f8f8;
+  --light-grey: hsl(240, 20%, 96.5%);
+  --medium-grey: #9ba7af;
+  --dark-grey: #4d545d;
+
   // branding
   --secondary: hsl(240, 10%, 50%);
-  --success: var(--green);
-  --danger: var(--red);
-  --warning: var(--orange);
   --focus: #3fb3f7;
   --focus-btn-primary: #{color.change(#0b6aa2, $alpha: 0.5)};
   --focus-btn-secondary: #{color.change(#0b6aa2, $alpha: 0.5)};
@@ -355,10 +358,9 @@ $semantics: (
 
   // Deprecated
   --primary: var(--accent-color); // Use var(--accent-color) instead
-  --very-light-grey: #f8f8f8;
-  --light-grey: hsl(240, 20%, 96.5%);
-  --medium-grey: #9ba7af;
-  --dark-grey: #4d545d;
+  --success: var(--green); // Use var(--success-color) instead
+  --danger: var(--red); // Use var(--destructive-color) instead
+  --warning: var(--orange); // Use var(--warning-color) instead
 
   // Colors
   @each $key, $value in $colors {
