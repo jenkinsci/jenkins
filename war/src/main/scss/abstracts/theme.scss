@@ -12,8 +12,8 @@ $colors: (
   "purple": #af52de,
   "red": #e6001f,
   "yellow": #ffb31a,
-  "white": #ffffff,
-  "black": #14141f
+  "white": #fff,
+  "black": #14141f,
 );
 
 $semantics: (
@@ -364,9 +364,12 @@ $semantics: (
 
   // Colors
   @each $key, $value in $colors {
-    --light-#{$key}: #{lighten($value, 20%)};
     --#{$key}: #{$value};
-    --dark-#{$key}: #{darken($value, 20%)};
+
+    @if $key != "black" and $key != "white" {
+      --light-#{$key}: #{lighten($value, 20%)};
+      --dark-#{$key}: #{darken($value, 20%)};
+    }
   }
 
   @each $key, $value in $semantics {
