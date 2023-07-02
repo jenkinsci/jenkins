@@ -35,6 +35,7 @@ import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import hudson.util.Secret;
 import java.io.IOException;
+import org.htmlunit.html.HtmlElement;
 import org.htmlunit.html.HtmlForm;
 import org.htmlunit.html.HtmlHiddenInput;
 import org.htmlunit.html.HtmlTextInput;
@@ -115,7 +116,7 @@ public class SecretTextareaTest {
     }
 
     private static void clickSecretUpdateButton(HtmlForm configForm) throws IOException {
-        configForm.getOneHtmlElementByAttribute("input", "class", "secret-update-btn").click();
+        ((HtmlElement) configForm.querySelector("button.secret-update-btn")).click();
     }
 
     private static String getHiddenSecretValue(HtmlForm configForm) {

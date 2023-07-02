@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+Copyright (c) 2023 Jenkins contributors
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,16 +22,19 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<!--
-  Side panel
--->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout">
-  <l:header />
-  <l:side-panel>
-    <l:tasks>
-      <l:task href="." icon="icon-clipboard icon-md" title="${%Log Recorders}"/>
-      <l:task href="levels" icon="symbol-settings" title="${%Log Levels}"/>
-    </l:tasks>
-  </l:side-panel>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
+  <st:documentation>
+    <st:attribute name="text" use="required">
+      Sets the text for the notice. HTML isn't supported.
+    </st:attribute>
+    <st:attribute name="icon" use="required">
+      Sets the icon for the notice. Supports Jenkins Symbols and regular images.
+    </st:attribute>
+  </st:documentation>
+
+  <div class="jenkins-notice">
+    <l:icon src="${attrs.icon}" />
+    <div>${attrs.text}</div>
+  </div>
 </j:jelly>
