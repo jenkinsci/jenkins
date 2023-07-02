@@ -38,8 +38,8 @@ THE SOFTWARE.
       The icon class specification e.g. 'icon-help icon-sm', 'icon-blue icon-md', 'icon-blue-anime icon-xlg'.
     </st:attribute>
 
-    <st:attribute name="id" since="2.360">
-      ID of the icon element.
+    <st:attribute name="id">
+      ID of the icon element. Since 2.360.
     </st:attribute>
 
     <st:attribute name="onclick" deprecated="true">onclick handler. Deprecated; assign an ID and look up the element that way to attach event handlers.</st:attribute>
