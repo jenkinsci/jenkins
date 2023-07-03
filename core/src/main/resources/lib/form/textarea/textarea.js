@@ -76,9 +76,7 @@ Behaviour.specify(
           if (rsp.ok) {
             render(responseText);
           } else {
-            render(
-              rsp.status + " " + rsp.statusText + "<HR/>" + responseText
-            );
+            render(rsp.status + " " + rsp.statusText + "<HR/>" + responseText);
           }
           return false;
         });
