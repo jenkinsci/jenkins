@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2012- CloudBees, Inc.
+Copyright (c) 2023 Jenkins contributors
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -21,40 +21,20 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
+
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
-  <st:documentation> <![CDATA[
-    Used inside <l:layout> to render additional breadcrumb items.
-    ]]>
-    <st:attribute name="title" use="required">
-      Display name of the breadcrumb.
+  <st:documentation>
+    <st:attribute name="text" use="required">
+      Sets the text for the notice. HTML isn't supported.
     </st:attribute>
-    <st:attribute name="href">
-      URL that the breadcrumb item links to. Can be omitted.
-    </st:attribute>
-    <st:attribute name="id">
-      If specified, this ID will be assigned to the LI element.
-      This is useful for programmatically adding the context menu
-    </st:attribute>
-    <st:attribute name="hasMenu">
-      If true, this breadcrumb item will include a '⌄' symbol to display a dropdown menu with items
-      from the '{breadcrumb.href}/contextMenu' path. Since 2.361.
+    <st:attribute name="icon" use="required">
+      Sets the icon for the notice. Supports Jenkins Symbols and regular images.
     </st:attribute>
   </st:documentation>
 
-  <j:if test="${mode=='breadcrumbs'}">
-    <j:set var="hasLink" value="${attrs.href != null}" />
-    <li id="${attrs.id}" class="jenkins-breadcrumbs__list-item" aria-current="${hasLink ? null : 'page'}">
-      <j:choose>
-        <j:when test="${!hasLink}">
-          ${attrs.title}
-        </j:when>
-        <j:otherwise>
-          <a href="${attrs.href}" class="${attrs.hasMenu ? 'model-link' : ''}">
-            ${attrs.title}
-          </a>
-        </j:otherwise>
-      </j:choose>
-    </li>
-  </j:if>
+  <div class="jenkins-notice">
+    <l:icon src="${attrs.icon}" />
+    <div>${attrs.text}</div>
+  </div>
 </j:jelly>
