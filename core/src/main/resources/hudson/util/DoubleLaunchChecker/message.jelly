@@ -22,19 +22,26 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<!--
-  Side panel for the log recorder
--->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <l:header />
-  <l:side-panel>
-    <l:tasks>
-      <l:task href="." icon="symbol-journal" title="${%Log records}"/>
-      <l:isAdmin>
-        <l:task href="configure" icon="symbol-settings" title="${%Configure}"/>
-        <l:task confirmationMessage="${%delete.logrecorder(it.displayName)}"  href="doDelete" icon="icon-edit-delete icon-md" title="${%Delete}" post="true" requiresConfirmation="true"/>
-      </l:isAdmin>
-    </l:tasks>
-  </l:side-panel>
+  <div class="alert alert-warning">
+      <p>
+        ${%message(it.home)}
+      </p>
+      <table>
+        <tr>
+          <td>${%This Jenkins}:</td>
+          <td>${it.id}</td>
+        </tr>
+        <tr>
+          <td>${%Other Jenkins}:</td>
+          <td>${it.collidingId}</td>
+        </tr>
+      </table>
+      <div>
+        <form method="post" action="${rootURL}/${it.url}/disable">
+          <f:submit value="${%label}" />
+        </form>
+      </div>
+  </div>
 </j:jelly>

@@ -24,6 +24,7 @@
 
 package jenkins.widgets;
 
+import hudson.model.Action;
 import hudson.model.Build;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
@@ -446,6 +447,18 @@ public class HistoryPageFilterTest {
         public int getNumber() {
             return (int) queueId;
         }
+
+        @SuppressWarnings("deprecation") // avoid TransientActionFactory
+        @Override
+        public <T extends Action> T getAction(Class<T> type) {
+            for (Action a : getActions()) {
+                if (type.isInstance(a)) {
+                    return type.cast(a);
+                }
+            }
+            return null;
+        }
+
     }
 
     // A version of MockRun that will throw an exception if getQueueId or getNumber is called
@@ -508,6 +521,17 @@ public class HistoryPageFilterTest {
             addAction(new ParametersAction(List.of(createSensitiveStringParameterValue(paramName, paramValue)),
                     List.of(paramName)));
             return this;
+        }
+
+        @SuppressWarnings("deprecation") // avoid TransientActionFactory
+        @Override
+        public <T extends Action> T getAction(Class<T> type) {
+            for (Action a : getActions()) {
+                if (type.isInstance(a)) {
+                    return type.cast(a);
+                }
+            }
+            return null;
         }
 
         private StringParameterValue createSensitiveStringParameterValue(final String paramName, final String paramValue) {
