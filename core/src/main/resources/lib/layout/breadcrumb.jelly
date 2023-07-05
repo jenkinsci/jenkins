@@ -36,9 +36,9 @@ THE SOFTWARE.
       If specified, this ID will be assigned to the LI element.
       This is useful for programmatically adding the context menu
     </st:attribute>
-    <st:attribute name="hasMenu" since="2.361">
+    <st:attribute name="hasMenu">
       If true, this breadcrumb item will include a '⌄' symbol to display a dropdown menu with items
-      from the '{breadcrumb.href}/contextMenu' path.
+      from the '{breadcrumb.href}/contextMenu' path. Since 2.361.
     </st:attribute>
   </st:documentation>
 

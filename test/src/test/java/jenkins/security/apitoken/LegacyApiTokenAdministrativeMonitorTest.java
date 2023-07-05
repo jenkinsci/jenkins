@@ -336,7 +336,8 @@ public class LegacyApiTokenAdministrativeMonitorTest {
 
     private HtmlButton getRevokeSelected(HtmlPage page) {
         HtmlElement document = page.getDocumentElement();
-        HtmlButton revokeSelected = document.getOneHtmlElementByAttribute("button", "class", "action-revoke-selected");
+
+        HtmlButton revokeSelected = document.querySelector("button.action-revoke-selected");
         assertNotNull(revokeSelected);
         return revokeSelected;
     }
