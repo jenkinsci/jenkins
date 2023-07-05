@@ -59,7 +59,7 @@
   .uninstall-state-info {
     padding: 5px 20px;
     max-width: 70%;
-    border: solid 1px var(--warning);
+    border: solid 1px var(--warning-color);
     border-radius: 3px;
     text-align: center;
   }
@@ -85,7 +85,7 @@
 
   .plugin-dependency-info span {
     margin: 5px 5px 0 0;
-    background-color: var(--primary);
+    background-color: var(--accent-color);
     display: inline-block;
     padding: 0.2em 0.6em 0.3em;
     font-size: var(--font-size-xs);

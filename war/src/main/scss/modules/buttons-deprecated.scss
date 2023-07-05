@@ -2,8 +2,8 @@
 
 @mixin button-danger {
   color: var(--btn-text-color);
-  background-color: var(--danger);
-  border-color: var(--danger);
+  background-color: var(--destructive-color);
+  border-color: var(--destructive-color);
 
   &:hover,
   &:focus {
@@ -74,7 +74,7 @@
 }
 
 @mixin button-link {
-  color: var(--primary);
+  color: var(--accent-color);
   background-color: transparent;
   border-color: transparent;
   font-weight: var(--btn-link-font-weight);
