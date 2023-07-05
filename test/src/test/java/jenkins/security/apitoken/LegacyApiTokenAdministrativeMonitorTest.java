@@ -338,7 +338,8 @@ public class LegacyApiTokenAdministrativeMonitorTest {
 
     private HtmlButton getRevokeSelected(HtmlPage page) throws IOException {
         HtmlElement document = page.getDocumentElement();
-        HtmlButton revokeSelected = document.getOneHtmlElementByAttribute("button", "class", "action-revoke-selected");
+
+        HtmlButton revokeSelected = document.querySelector("button.action-revoke-selected");
         assertNotNull(revokeSelected);
         HtmlElementUtil.click(revokeSelected);
         HtmlButton revokeButtonSelected = document.getOneHtmlElementByAttribute("button", "data-id", "ok");
