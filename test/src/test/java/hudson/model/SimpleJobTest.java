@@ -1,7 +1,6 @@
 package hudson.model;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 import java.util.logging.Level;
 import jenkins.model.lazy.LazyBuildMixIn;
@@ -34,12 +33,9 @@ public class SimpleJobTest {
         b2.duration = 15;
 
         var b3 = r.buildAndAssertSuccess(project);
-        b3.duration = 42;
+        b3.duration = 40;
 
-        // without assuming to know too much about the internal calculation
-        // we can only assume that the result is between the maximum and the minimum
-        assertTrue("Expected < 42, but was " + project.getEstimatedDuration(), project.getEstimatedDuration() < 42);
-        assertTrue("Expected > 15, but was " + project.getEstimatedDuration(), project.getEstimatedDuration() > 15);
+        assertEquals(25, project.getEstimatedDuration());
     }
 
     @Test
@@ -76,13 +72,13 @@ public class SimpleJobTest {
 
         var b1 = r.buildAndAssertSuccess(project);
         b1.result = Result.UNSTABLE;
-        b1.duration = 1;
+        b1.duration = 10;
 
         var b2 = r.buildAndAssertSuccess(project);
-        b2.duration = 1;
+        b2.duration = 20;
 
         var b3 = r.buildAndAssertSuccess(project);
-        b3.duration = 1;
+        b3.duration = 30;
 
         var b4 = r.buildAndAssertSuccess(project);
         b4.result = Result.FAILURE;
@@ -97,7 +93,7 @@ public class SimpleJobTest {
         b6.duration = 50;
 
         // failed builds must not be used, if there are successfulBuilds available.
-        assertEquals(1, project.getEstimatedDuration());
+        assertEquals(20, project.getEstimatedDuration());
     }
 
     @Test
