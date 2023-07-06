@@ -3,9 +3,13 @@ package hudson.model;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.util.logging.Level;
+import jenkins.model.lazy.LazyBuildMixIn;
 import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.LoggerRule;
 
 /**
  * Unit test for {@link Job}.
@@ -15,6 +19,9 @@ public class SimpleJobTest {
 
     @ClassRule
     public static JenkinsRule r = new JenkinsRule();
+
+    @Rule
+    public LoggerRule logging = new LoggerRule().record(LazyBuildMixIn.class, Level.FINE);
 
     @Test
     public void testGetEstimatedDuration() throws Exception {
