@@ -27,16 +27,16 @@ public class SimpleJobTest {
         var project = r.createFreeStyleProject("testGetEstimatedDuration");
 
         var b1 = r.buildAndAssertSuccess(project);
-        b1.duration = 20;
-        assertEquals(20, project.getEstimatedDuration());
+        b1.duration = 200;
+        assertEquals(200, project.getEstimatedDuration());
 
         var b2 = r.buildAndAssertSuccess(project);
-        b2.duration = 15;
-        assertEquals(18, project.getEstimatedDuration());
+        b2.duration = 150;
+        assertEquals(175, project.getEstimatedDuration());
 
         var b3 = r.buildAndAssertSuccess(project);
-        b3.duration = 40;
-        assertEquals(25, project.getEstimatedDuration());
+        b3.duration = 400;
+        assertEquals(250, project.getEstimatedDuration());
     }
 
     @Test
@@ -44,8 +44,8 @@ public class SimpleJobTest {
         var project = r.createFreeStyleProject("testGetEstimatedDurationWithOneRun");
 
         var b1 = r.buildAndAssertSuccess(project);
-        b1.duration = 42;
-        assertEquals(42, project.getEstimatedDuration());
+        b1.duration = 420;
+        assertEquals(420, project.getEstimatedDuration());
     }
 
     @Test
@@ -54,8 +54,8 @@ public class SimpleJobTest {
 
         var b1 = r.buildAndAssertSuccess(project);
         b1.result = Result.FAILURE;
-        b1.duration = 42;
-        assertEquals(42, project.getEstimatedDuration());
+        b1.duration = 420;
+        assertEquals(420, project.getEstimatedDuration());
     }
 
     @Test
@@ -71,31 +71,31 @@ public class SimpleJobTest {
 
         var b1 = r.buildAndAssertSuccess(project);
         b1.result = Result.UNSTABLE;
-        b1.duration = 10;
-        assertEquals(10, project.getEstimatedDuration());
+        b1.duration = 100;
+        assertEquals(100, project.getEstimatedDuration());
 
         var b2 = r.buildAndAssertSuccess(project);
-        b2.duration = 20;
-        assertEquals(15, project.getEstimatedDuration());
+        b2.duration = 200;
+        assertEquals(150, project.getEstimatedDuration());
 
         var b3 = r.buildAndAssertSuccess(project);
-        b3.duration = 30;
-        assertEquals(20, project.getEstimatedDuration());
+        b3.duration = 300;
+        assertEquals(200, project.getEstimatedDuration());
 
         var b4 = r.buildAndAssertSuccess(project);
         b4.result = Result.FAILURE;
-        b4.duration = 50;
-        assertEquals(20, project.getEstimatedDuration());
+        b4.duration = 500;
+        assertEquals(200, project.getEstimatedDuration());
 
         var b5 = r.buildAndAssertSuccess(project);
         b5.result = Result.FAILURE;
-        b5.duration = 50;
-        assertEquals(20, project.getEstimatedDuration());
+        b5.duration = 500;
+        assertEquals(200, project.getEstimatedDuration());
 
         var b6 = r.buildAndAssertSuccess(project);
         b6.result = Result.FAILURE;
-        b6.duration = 50;
-        assertEquals(20, project.getEstimatedDuration());
+        b6.duration = 500;
+        assertEquals(200, project.getEstimatedDuration());
     }
 
     @Test
@@ -104,8 +104,8 @@ public class SimpleJobTest {
 
         var b1 = r.buildAndAssertSuccess(project);
         b1.result = Result.FAILURE;
-        b1.duration = 50;
-        assertEquals(50, project.getEstimatedDuration());
+        b1.duration = 500;
+        assertEquals(500, project.getEstimatedDuration());
     }
 
 }
