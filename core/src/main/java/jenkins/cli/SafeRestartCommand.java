@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2019 CloudBees, Inc.
+ * Copyright (c) 2023, Jan Meiswinkel
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,46 +22,38 @@
  * THE SOFTWARE.
  */
 
-.secret-header {
-  border: 1px solid #ccc;
-  border: 1px solid var(--input-border);
-  border-radius: 3px;
-  background: #f9f9f9;
-  background: var(--input-hidden-password-bg-color);
-  display: flex;
-  justify-content: space-around;
-}
+package jenkins.cli;
 
-.secret-header:not(:only-child) {
-  border-bottom-left-radius: 0;
-  border-bottom-right-radius: 0;
-}
+import hudson.Extension;
+import hudson.cli.CLICommand;
+import hudson.cli.Messages;
+import java.util.logging.Logger;
+import jenkins.model.Jenkins;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.args4j.Option;
 
-.secret-header > div {
-  flex-grow: 1;
-  display: inline-flex;
-  align-items: center;
-  padding: 1.5em 1.75em;
-}
+/**
+ * Safe Restart Jenkins - do not accept any new jobs and try to pause existing.
+ *
+ * @since TODO
+ */
+@Extension
+@Restricted(NoExternalUse.class)
+public class SafeRestartCommand extends CLICommand {
+    private static final Logger LOGGER = Logger.getLogger(SafeRestartCommand.class.getName());
 
-.secret-legend > svg {
-  margin-right: 1em;
-}
+    @Option(name = "-message", usage = "Message for safe restart that will be visible to users")
+    public String message = null;
 
-.secret-update {
-  justify-content: flex-end;
-}
+    @Override
+    public String getShortDescription() {
+        return Messages.SafeRestartCommand_ShortDescription();
+    }
 
-.secret-input {
-  border: solid 1px #ccc;
-  border: solid 1px var(--input-border);
-  border-top: none;
-  border-radius: 0 0 3px 3px;
-}
-
-.secret-input textarea {
-  width: 100%;
-  font-family: monospace;
-  border: none;
-  padding: 1em;
+    @Override
+    protected int run() throws Exception {
+        Jenkins.get().doSafeRestart(null, message);
+        return 0;
+    }
 }

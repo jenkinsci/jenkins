@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.101</version>
+    <version>1.102</version>
     <relativePath />
   </parent>
 
@@ -73,7 +73,7 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.413</revision>
+    <revision>2.414</revision>
     <changelist>-SNAPSHOT</changelist>
 
     <!-- configuration for patch tracker plugin  -->
@@ -93,9 +93,9 @@ THE SOFTWARE.
     <spotbugs.effort>Max</spotbugs.effort>
     <spotbugs.threshold>Medium</spotbugs.threshold>
 
-    <access-modifier.version>1.31</access-modifier.version>
+    <access-modifier.version>1.32</access-modifier.version>
     <antlr.version>4.13.0</antlr.version>
-    <bridge-method-injector.version>1.26</bridge-method-injector.version>
+    <bridge-method-injector.version>1.27</bridge-method-injector.version>
     <spotless.check.skip>false</spotless.check.skip>
     <!-- Make sure to keep the jetty-maven-plugin version in war/pom.xml in sync with the Jetty release in Winstone: -->
     <winstone.version>6.12</winstone.version>
@@ -229,8 +229,8 @@ THE SOFTWARE.
           <version>${access-modifier.version}</version>
         </plugin>
         <plugin>
-          <groupId>com.cloudbees</groupId>
-          <artifactId>maven-license-plugin</artifactId>
+          <groupId>io.jenkins.tools.maven</groupId>
+          <artifactId>license-maven-plugin</artifactId>
           <!-- Version specified in parent POM -->
           <executions>
             <execution>
