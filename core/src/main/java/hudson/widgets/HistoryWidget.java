@@ -25,11 +25,16 @@
 package hudson.widgets;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.Extension;
 import hudson.Functions;
+import hudson.model.Job;
 import hudson.model.ModelObject;
+import hudson.model.Queue;
 import hudson.model.Run;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -37,6 +42,10 @@ import javax.servlet.ServletException;
 import jenkins.util.SystemProperties;
 import jenkins.widgets.HistoryPageEntry;
 import jenkins.widgets.HistoryPageFilter;
+import jenkins.widgets.WidgetFactory;
+import org.jenkinsci.Symbol;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.Header;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
@@ -295,6 +304,31 @@ public class HistoryWidget<O extends ModelObject, T> extends Widget {
             return Long.valueOf(paramVal);
         } catch (NumberFormatException nfe) {
             return null;
+        }
+    }
+
+    @Extension
+    @Restricted(DoNotUse.class)
+    @Symbol("history")
+    public static final class FactoryImpl extends WidgetFactory<Job, HistoryWidget> {
+        @Override
+        public Class<Job> type() {
+            return Job.class;
+        }
+
+        @Override
+        public Class<HistoryWidget> widgetType() {
+            return HistoryWidget.class;
+        }
+
+        @NonNull
+        @Override
+        public Collection<HistoryWidget> createFor(@NonNull Job target) {
+            // e.g. hudson.model.ExternalJob
+            if (!(target instanceof Queue.Task)) {
+                return List.of(new HistoryWidget<>(target, target.getBuilds(), Job.HISTORY_ADAPTER));
+            }
+            return Collections.emptySet();
         }
     }
 }
