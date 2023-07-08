@@ -38,7 +38,7 @@
     "postcss-loader": "7.3.3",
     "postcss-preset-env": "9.0.0",
     "postcss-scss": "4.0.6",
-    "prettier": "2.8.8",
+    "prettier": "3.0.0",
     "sass": "1.63.6",
     "sass-loader": "13.3.2",
     "style-loader": "3.3.3",
