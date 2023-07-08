@@ -42,7 +42,7 @@ THE SOFTWARE.
   </st:documentation>
 
   <div class="jenkins-search-container">
-    <div class="jenkins-search ${attrs.clazz}">
+    <div class="jenkins-search ${attrs.enabled == false ? 'jenkins-search--disabled' : ''} ${attrs.clazz}">
       <div class="jenkins-search__icon">
         <l:icon src="symbol-search" />
       </div>

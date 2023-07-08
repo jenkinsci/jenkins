@@ -216,7 +216,7 @@
     }
   }
 
-  &:has(:disabled) {
+  &--disabled {
     color: var(--text-color-secondary);
     opacity: 0.5;
 
