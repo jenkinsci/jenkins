@@ -371,7 +371,7 @@ Behaviour.specify("#filter-box", "_table", 0, function (e) {
       pluginTR.jenkinsPluginMetadata = {
         enableInput: enableInput,
         dependenciesDiv: dependenciesDiv,
-        dependentsDiv: dependentsDiv,
+        dependentsDiv: dependentsDiv
       };
 
       if (dependenciesDiv) {

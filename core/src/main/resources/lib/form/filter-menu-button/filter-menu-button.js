@@ -9,7 +9,7 @@ window.createFilterMenuButton = function (
     type: "menu",
     menu: menu,
     menualignment: menuAlignment,
-    menuminscrollheight: menuMinScrollHeight,
+    menuminscrollheight: menuMinScrollHeight
   });
 
   var filter = _createFilterMenuButton(menuButton._menu);

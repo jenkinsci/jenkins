@@ -156,7 +156,7 @@ var crumb = {
         form.action = form.action + "?" + this.fieldName + "=" + this.value;
       }
     }
-  },
+  }
 };
 
 (function initializeCrumb() {
@@ -253,9 +253,9 @@ var FormChecker = {
     fetch(url, {
       method: params.method,
       headers: crumb.wrap({
-        "Content-Type": "application/x-www-form-urlencoded",
+        "Content-Type": "application/x-www-form-urlencoded"
       }),
-      body: method !== "get" ? params.parameters : null,
+      body: method !== "get" ? params.parameters : null
     }).then((response) => {
       params.onComplete(response);
     });
@@ -279,10 +279,10 @@ var FormChecker = {
           FormChecker.schedule();
           layoutUpdateCallback.call();
         });
-      },
+      }
     });
     this.inProgress++;
-  },
+  }
 };
 
 /**
@@ -434,7 +434,7 @@ function qs(owner) {
 
     toString: function () {
       return this.params;
-    },
+    }
   };
 }
 
@@ -735,7 +735,7 @@ function registerValidator(e) {
             response.status === 200 ? responseText : errorMessage
           );
         });
-      },
+      }
     });
   };
   var oldOnchange = e.onchange;
@@ -1337,7 +1337,7 @@ function rowvgStartEachRow(recursive, f) {
       ds.responseType = YAHOO.util.XHRDataSource.TYPE_JSON;
       ds.responseSchema = {
         resultsList: "suggestions",
-        fields: ["name"],
+        fields: ["name"]
       };
 
       // Instantiate the AutoComplete
@@ -1358,7 +1358,7 @@ function rowvgStartEachRow(recursive, f) {
         var Dom = YAHOO.util.Dom;
         Dom.setXY(container, [
           Dom.getX(textbox),
-          Dom.getY(textbox) + textbox.offsetHeight,
+          Dom.getY(textbox) + textbox.offsetHeight
         ]);
         return true;
       };
@@ -1423,7 +1423,7 @@ function rowvgStartEachRow(recursive, f) {
               return true;
             }
           }
-        },
+        }
       }).getWrapperElement();
     })();
   });
@@ -1580,7 +1580,7 @@ function rowvgStartEachRow(recursive, f) {
          * @param {boolean} recursive
          *      If true, this visits all the rows from nested visibility groups.
          */
-        eachRow: rowvgStartEachRow,
+        eachRow: rowvgStartEachRow
       };
     }
   );
@@ -1899,7 +1899,7 @@ function rowvgStartEachRow(recursive, f) {
         }
         fetch(url, {
           method: "post",
-          headers: crumb.wrap({}),
+          headers: crumb.wrap({})
         });
       });
     }
@@ -1917,7 +1917,7 @@ var Path = {
       return p;
     }
     return p.substring(idx + 1);
-  },
+  }
 };
 
 /**
@@ -1976,13 +1976,13 @@ function replaceDescription(initialDescription, submissionUrl) {
   if (initialDescription !== undefined && submissionUrl !== undefined) {
     parameters = {
       description: initialDescription,
-      submissionUrl: submissionUrl,
+      submissionUrl: submissionUrl
     };
   }
   fetch("./descriptionForm", {
     method: "post",
     headers: crumb.wrap({}),
-    body: objectToUrlFormEncoded(parameters),
+    body: objectToUrlFormEncoded(parameters)
   }).then((rsp) => {
     rsp.text().then((responseText) => {
       d.innerHTML = responseText;
@@ -2125,7 +2125,7 @@ function AutoScroller(scrollContainer) {
         document.documentElement.scrollTop = currentHeight;
       }
       scrollDiv.scrollTop = currentHeight;
-    },
+    }
   };
 }
 
@@ -2138,7 +2138,7 @@ function refreshPart(id, url) {
     if (isPageVisible()) {
       fetch(url, {
         headers: crumb.wrap({}),
-        method: "post",
+        method: "post"
       }).then((rsp) => {
         if (rsp.ok) {
           rsp.text().then((responseText) => {
@@ -2325,7 +2325,7 @@ function getElementOverflowParams(element) {
       element: element,
       clientWidth: wrappedClientWidth,
       scrollWidth: element.scrollWidth,
-      isOverflowed: wrappedClientHeight > nowrapClientHeight,
+      isOverflowed: wrappedClientHeight > nowrapClientHeight
     };
     return overflowParams;
   } finally {
@@ -2401,7 +2401,7 @@ function createSearchBox(searchURL) {
   ds.responseType = YAHOO.util.XHRDataSource.TYPE_JSON;
   ds.responseSchema = {
     resultsList: "suggestions",
-    fields: ["name"],
+    fields: ["name"]
   };
   var ac = new YAHOO.widget.AutoComplete(
     "search-box",
@@ -2787,8 +2787,8 @@ function validateButton(checkUrl, paramList, button) {
     method: "post",
     body: objectToUrlFormEncoded(parameters),
     headers: crumb.wrap({
-      "Content-Type": "application/x-www-form-urlencoded",
-    }),
+      "Content-Type": "application/x-www-form-urlencoded"
+    })
   }).then((rsp) => {
     rsp.text().then((responseText) => {
       spinner.style.display = "none";
@@ -2865,5 +2865,5 @@ var layoutUpdateCallback = {
     for (var i = 0, length = this.callbacks.length; i < length; i++) {
       this.callbacks[i]();
     }
-  },
+  }
 };

@@ -23,14 +23,14 @@ function dropdown() {
     onHide: (instance) => {
       const referenceParent = instance.reference.parentNode;
       referenceParent.classList.remove("model-link--open");
-    },
+    }
   };
 }
 
 function menuItem(options) {
   const itemOptions = Object.assign(
     {
-      type: "link",
+      type: "link"
     },
     options
   );
@@ -99,5 +99,5 @@ export default {
   menuItem,
   heading,
   separator,
-  placeholder,
+  placeholder
 };

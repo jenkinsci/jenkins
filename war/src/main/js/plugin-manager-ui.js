@@ -42,7 +42,7 @@ function applyFilter(searchQuery) {
         plugins: plugins.filter(
           (plugin) => selectedPlugins.indexOf(plugin.name) === -1
         ),
-        admin,
+        admin
       });
 
       tbody.insertAdjacentHTML("beforeend", rows);

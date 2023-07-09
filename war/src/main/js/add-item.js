@@ -252,7 +252,7 @@ $.when(getItems()).done(function (data) {
           "c-335061",
           "c-D33833",
           "c-6D6B6D",
-          "c-6699CC",
+          "c-6699CC"
         ];
         var desc = elem.description || "";
         var name = elem.displayName;

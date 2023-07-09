@@ -12,7 +12,7 @@ Behaviour.specify(
       draggable: true,
       zindex: 4,
       modal: true,
-      visible: false,
+      visible: false
     });
 
     responseDialog.setHeader("Error");

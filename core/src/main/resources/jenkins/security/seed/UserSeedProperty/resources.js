@@ -35,7 +35,7 @@ function resetSeed(button) {
   if (confirm(confirmMessage)) {
     fetch(targetUrl, {
       method: "post",
-      headers: crumb.wrap({}),
+      headers: crumb.wrap({})
     }).then((rsp) => {
       if (rsp.ok) {
         if (redirectAfterClick) {

@@ -54,7 +54,7 @@ function passwordScore(password) {
     digits: /\d/.test(password),
     lower: /[a-z]/.test(password),
     upper: /[A-Z]/.test(password),
-    nonWords: /\W/.test(password),
+    nonWords: /\W/.test(password)
   };
 
   let variationCount = 0;

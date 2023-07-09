@@ -15,11 +15,11 @@ function getData(eventSource1, current, min, max) {
       "timeline/data/?" +
         new URLSearchParams({
           min: current * interval,
-          max: (current + 1) * interval,
+          max: (current + 1) * interval
         }),
       {
         method: "POST",
-        headers: crumb.wrap({}),
+        headers: crumb.wrap({})
       }
     ).then((t) => {
       if (t.ok) {
@@ -62,7 +62,7 @@ function doLoad() {
       eventSource: eventSource1,
       timeZone: tz,
       theme: theme1,
-      layout: "overview", // original, overview, detailed
+      layout: "overview" // original, overview, detailed
     }),
     // the main area
     Timeline.createBandInfo({
@@ -71,8 +71,8 @@ function doLoad() {
       timeZone: tz,
       theme: theme1,
       intervalUnit: Timeline.DateTime.HOUR,
-      intervalPixels: 200,
-    }),
+      intervalPixels: 200
+    })
   ];
   bandInfos[0].highlight = true;
   bandInfos[0].syncWith = 1;
@@ -118,7 +118,7 @@ if (window.addEventListener) {
 (function () {
   var resize = new YAHOO.util.Resize("resizeContainer", {
     handles: "b",
-    minHeight: 300, // this should be the same as the height of the container div,
+    minHeight: 300 // this should be the same as the height of the container div,
     // to fix an issue when it's resized to be smaller than the original height
   });
 

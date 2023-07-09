@@ -3,7 +3,7 @@ import { CLOSE } from "@/util/symbols";
 
 const defaults = {
   maxWidth: undefined,
-  hideCloseButton: false,
+  hideCloseButton: false
 };
 
 export function showModal(contents, options = {}) {

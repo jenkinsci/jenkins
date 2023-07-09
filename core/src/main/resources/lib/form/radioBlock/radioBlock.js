@@ -28,7 +28,7 @@ var radioBlockSupport = {
       }
     }
     layoutUpdateCallback.call();
-  },
+  }
 };
 
 // this needs to happen before TR.row-set-end rule kicks in.

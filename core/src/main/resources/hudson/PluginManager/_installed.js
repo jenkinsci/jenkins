@@ -21,7 +21,7 @@
         (btn.checked ? "Enabled" : "Disabled"),
       {
         method: "post",
-        headers: crumb.wrap({}),
+        headers: crumb.wrap({})
       }
     ).then((rsp) => {
       if (!rsp.ok) {

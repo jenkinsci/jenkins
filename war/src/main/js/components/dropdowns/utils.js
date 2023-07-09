@@ -30,7 +30,7 @@ function generateDropdown(element, callback) {
       },
       onShown(instance) {
         behaviorShim.applySubtree(instance.popper);
-      },
+      }
     })
   );
 }
@@ -61,7 +61,7 @@ function generateDropdownItems(items) {
             content: generateDropdownItems(item.subMenu()),
             trigger: "mouseenter",
             placement: "right-start",
-            offset: [-8, 0],
+            offset: [-8, 0]
           })
         );
       }
@@ -134,5 +134,5 @@ function generateDropdownItems(items) {
 
 export default {
   generateDropdown,
-  generateDropdownItems,
+  generateDropdownItems
 };

@@ -23,7 +23,7 @@ pluginManager.initialPluginList = function (handler) {
       timeout: pluginManagerErrorTimeoutMillis,
       error: function (xhr, textStatus, errorThrown) {
         handler.call({ isError: true, errorMessage: errorThrown });
-      },
+      }
     }
   );
 };
@@ -111,7 +111,7 @@ pluginManager.installPlugins = function (plugins, handler) {
       timeout: pluginManagerErrorTimeoutMillis,
       error: function (xhr, textStatus, errorThrown) {
         handler.call({ isError: true, errorMessage: errorThrown });
-      },
+      }
     }
   );
 };
@@ -140,7 +140,7 @@ pluginManager.installStatus = function (handler, correlationId) {
       timeout: pluginManagerErrorTimeoutMillis,
       error: function (xhr, textStatus, errorThrown) {
         handler.call({ isError: true, errorMessage: errorThrown });
-      },
+      }
     }
   );
 };
@@ -167,7 +167,7 @@ pluginManager.availablePlugins = function (handler) {
       timeout: pluginManagerErrorTimeoutMillis,
       error: function (xhr, textStatus, errorThrown) {
         handler.call({ isError: true, errorMessage: errorThrown });
-      },
+      }
     }
   );
 };
@@ -187,7 +187,7 @@ pluginManager.availablePluginsSearch = function (query, limit, handler) {
       timeout: pluginManagerErrorTimeoutMillis,
       error: function (xhr, textStatus, errorThrown) {
         handler.call({ isError: true, errorMessage: errorThrown });
-      },
+      }
     }
   );
 };
@@ -216,7 +216,7 @@ pluginManager.incompleteInstallStatus = function (handler, correlationId) {
       timeout: pluginManagerErrorTimeoutMillis,
       error: function (xhr, textStatus, errorThrown) {
         handler.call({ isError: true, errorMessage: errorThrown });
-      },
+      }
     }
   );
 };
@@ -235,7 +235,7 @@ pluginManager.completeInstall = function (handler) {
       timeout: pluginManagerErrorTimeoutMillis,
       error: function (xhr, textStatus, errorThrown) {
         handler.call({ isError: true, message: errorThrown });
-      },
+      }
     }
   );
 };
@@ -253,7 +253,7 @@ pluginManager.getRestartStatus = function (handler) {
       timeout: pluginManagerErrorTimeoutMillis,
       error: function (xhr, textStatus, errorThrown) {
         handler.call({ isError: true, message: errorThrown });
-      },
+      }
     }
   );
 };
@@ -272,7 +272,7 @@ pluginManager.installPluginsDone = function (handler) {
       timeout: pluginManagerErrorTimeoutMillis,
       error: function (xhr, textStatus, errorThrown) {
         handler.call({ isError: true, message: errorThrown });
-      },
+      }
     }
   );
 };
@@ -291,7 +291,7 @@ pluginManager.restartJenkins = function (handler) {
       timeout: pluginManagerErrorTimeoutMillis,
       error: function (xhr, textStatus, errorThrown) {
         handler.call({ isError: true, message: errorThrown });
-      },
+      }
     }
   );
 };

@@ -42,7 +42,7 @@ window.addEventListener("load", function () {
         headerToScrollTo.getBoundingClientRect().top + window.scrollY - 70;
       window.scrollTo({
         top: i === 0 ? 0 : sectionTopPosition,
-        behavior: "smooth",
+        behavior: "smooth"
       });
     });
 

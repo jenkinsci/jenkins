@@ -63,7 +63,7 @@ var repeatableSupport = {
     new YAHOO.util.Anim(
       nc,
       {
-        opacity: { to: 1 },
+        opacity: { to: 1 }
       },
       0.2,
       YAHOO.util.Easing.easeIn
@@ -130,7 +130,7 @@ var repeatableSupport = {
       n,
       {
         opacity: { to: 0 },
-        height: { to: 0 },
+        height: { to: 0 }
       },
       0.2,
       YAHOO.util.Easing.easeIn
@@ -165,7 +165,7 @@ var repeatableSupport = {
       }
     }
     layoutUpdateCallback.call();
-  },
+  }
 };
 
 // do the ones that extract innerHTML so that they can get their original HTML before

@@ -69,13 +69,13 @@ function mapChildrenItemsToDropdownItems(items) {
     if (item.type === "HEADER") {
       return {
         type: "HEADER",
-        label: item.displayName,
+        label: item.displayName
       };
     }
 
     if (item.type === "SEPARATOR") {
       return {
-        type: "SEPARATOR",
+        type: "SEPARATOR"
       };
     }
 
@@ -103,7 +103,7 @@ function mapChildrenItemsToDropdownItems(items) {
           } else {
             fetch(item.url, {
               method: "post",
-              headers: crumb.wrap({}),
+              headers: crumb.wrap({})
             });
             if (event.length === 1 && event[0].target != null) {
               hoverNotification("Done.", event[0].target);
@@ -115,7 +115,7 @@ function mapChildrenItemsToDropdownItems(items) {
         ? () => {
             return mapChildrenItemsToDropdownItems(item.subMenu.items);
           }
-        : null,
+        : null
     };
   });
 }

@@ -25,7 +25,7 @@ jenkins.stringify = function (o) {
       a: Array.prototype.toJSON,
       o: Object.prototype.toJSON,
       h: Hash.prototype.toJSON,
-      s: String.prototype.toJSON,
+      s: String.prototype.toJSON
     };
     try {
       delete Array.prototype.toJSON;
@@ -73,7 +73,7 @@ jenkins.get = function (url, success, options) {
     type: "GET",
     cache: false,
     dataType: "json",
-    success: success,
+    success: success
   };
   if (options instanceof Object) {
     $.extend(args, options);
@@ -121,7 +121,7 @@ jenkins.post = function (url, data, success, options) {
     data: formBody,
     contentType: "application/json",
     success: success,
-    headers: headers,
+    headers: headers
   };
   if (options instanceof Object) {
     $.extend(args, options);
@@ -161,7 +161,7 @@ jenkins.loadTranslations = function (bundleName, handler, onError) {
             console.log('"' + property + '" not found in translation bundle.');
           }
           return property;
-        },
+        }
       });
     }
 
@@ -213,7 +213,7 @@ jenkins.testConnectivity = function (siteId, handler) {
           } else {
             handler.call({ isError: true, errorMessage: errorThrown });
           }
-        },
+        }
       }
     );
   };
@@ -254,7 +254,7 @@ jenkins.buildFormPost = function ($form) {
       $.param({
         "core:apply": "",
         Submit: "Save",
-        json: $form.find("input[name=json]").val(),
+        json: $form.find("input[name=json]").val()
       })
     );
   }
@@ -286,7 +286,7 @@ jenkins.staplerPost = function (url, $form, success, options) {
       {
         processData: false,
         contentType: "application/x-www-form-urlencoded",
-        crumb: crumb,
+        crumb: crumb
       },
       options
     )

@@ -10,6 +10,6 @@ document.querySelector("#button-icon-legend").addEventListener("click", () => {
 
   showModal(content, {
     maxWidth: "550px",
-    title: title,
+    title: title
   });
 });

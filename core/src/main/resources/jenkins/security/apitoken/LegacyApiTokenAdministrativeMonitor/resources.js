@@ -111,7 +111,7 @@ function confirmAndRevokeAllSelected(button) {
         body: Object.toJSON
           ? Object.toJSON({ values: selectedValues })
           : JSON.stringify({ values: selectedValues }),
-        headers: crumb.wrap({ "Content-Type": "application/json" }),
+        headers: crumb.wrap({ "Content-Type": "application/json" })
       }).then(() => window.location.reload());
     }
   }

@@ -27,8 +27,8 @@ function updateBuilds(params) {
   if (isPageVisible()) {
     fetch(ajaxUrl + toQueryString(params), {
       headers: {
-        n: buildHistoryContainer.headers[1],
-      },
+        n: buildHistoryContainer.headers[1]
+      }
     }).then((rsp) => {
       if (rsp.ok) {
         rsp.text().then((responseText) => {

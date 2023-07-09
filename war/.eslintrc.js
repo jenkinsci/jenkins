@@ -2,16 +2,16 @@
 module.exports = {
   env: {
     browser: true,
-    es2022: true,
+    es2022: true
   },
   // Uses eslint default ruleset
   extends: ["eslint:recommended", "prettier"],
   parserOptions: {
     sourceType: "module",
-    ecmaVersion: 2022,
+    ecmaVersion: 2022
   },
   rules: {
-    curly: "error",
+    curly: "error"
   },
   globals: {
     $: "readonly",
@@ -71,6 +71,6 @@ module.exports = {
     Utilities: "readonly",
     UTILITIES_VERSION: "writeable",
     YAHOO: "readonly",
-    YUI: "readonly",
-  },
+    YUI: "readonly"
+  }
 };

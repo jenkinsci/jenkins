@@ -176,7 +176,7 @@ var createPluginSetupWizard = function (appendTarget) {
     $tip
       .tooltip({
         html: true,
-        title: text,
+        title: text
       })
       .tooltip("show");
   });
@@ -200,7 +200,7 @@ var createPluginSetupWizard = function (appendTarget) {
   var decorations = [
     function () {
       // any decorations after DOM replacement go here
-    },
+    }
   ];
 
   var getJenkinsVersionFull = function () {
@@ -249,7 +249,7 @@ var createPluginSetupWizard = function (appendTarget) {
         {
           translations: translations,
           baseUrl: jenkins.baseUrl,
-          jenkinsVersion: getJenkinsVersion(),
+          jenkinsVersion: getJenkinsVersion()
         },
         data
       )
@@ -400,7 +400,7 @@ var createPluginSetupWizard = function (appendTarget) {
       if (p) {
         var plug = $.extend(
           {
-            installStatus: "pending",
+            installStatus: "pending"
           },
           p
         );
@@ -519,7 +519,7 @@ var createPluginSetupWizard = function (appendTarget) {
     },
     INITIAL_PLUGINS_INSTALLING: function () {
       showInstallProgress();
-    },
+    }
   };
   var showStatePanel = function (state) {
     if (!state) {
@@ -543,7 +543,7 @@ var createPluginSetupWizard = function (appendTarget) {
     if (failedPluginNames.length > 0) {
       setPanel(pluginSuccessPanel, {
         installingPlugins: installingPlugins,
-        failedPlugins: true,
+        failedPlugins: true
       });
       return;
     }
@@ -731,7 +731,7 @@ var createPluginSetupWizard = function (appendTarget) {
           if (!plug) {
             plug = {
               name: plugInfo.name,
-              title: plugInfo.name,
+              title: plugInfo.name
             };
           }
           plugs.push({
@@ -740,8 +740,8 @@ var createPluginSetupWizard = function (appendTarget) {
               usage: plugInfo.usage,
               title: plugInfo.title ? plugInfo.title : plug.title,
               excerpt: plugInfo.excerpt ? plugInfo.excerpt : plug.excerpt,
-              updated: new Date(plug.buildDate),
-            }),
+              updated: new Date(plug.buildDate)
+            })
           });
         }
       }
@@ -754,7 +754,7 @@ var createPluginSetupWizard = function (appendTarget) {
     loadPluginCategories(function () {
       setPanel(pluginSelectionPanel, pluginSelectionPanelData(), function () {
         $bs(".plugin-selector .plugin-list").scrollspy({
-          target: ".plugin-selector .categories",
+          target: ".plugin-selector .categories"
         });
       });
     });
@@ -765,7 +765,7 @@ var createPluginSetupWizard = function (appendTarget) {
     return {
       categories: categories,
       categorizedPlugins: categorizedPlugins,
-      selectedPlugins: selectedPluginNames,
+      selectedPlugins: selectedPluginNames
     };
   };
 
@@ -857,7 +857,7 @@ var createPluginSetupWizard = function (appendTarget) {
         var pos = $pl.scrollTop() + $el.position().top;
         $pl.stop(true).animate(
           {
-            scrollTop: pos,
+            scrollTop: pos
           },
           100
         );
@@ -866,7 +866,7 @@ var createPluginSetupWizard = function (appendTarget) {
           var pos = $pl.scrollTop() + $el.position().top;
           $pl.stop(true).animate(
             {
-              scrollTop: pos,
+              scrollTop: pos
             },
             50
           );
@@ -983,7 +983,7 @@ var createPluginSetupWizard = function (appendTarget) {
     var top = $pl.scrollTop() + $el.position().top;
     $pl.stop(true).animate(
       {
-        scrollTop: top,
+        scrollTop: top
       },
       250,
       function () {
@@ -1008,7 +1008,7 @@ var createPluginSetupWizard = function (appendTarget) {
       showStatePanel();
     } else {
       setPanel(errorPanel, {
-        errorMessage: "Error trying to create first user: " + data.statusText,
+        errorMessage: "Error trying to create first user: " + data.statusText
       });
     }
   };
@@ -1056,7 +1056,7 @@ var createPluginSetupWizard = function (appendTarget) {
         if (data.url) {
           // as in InstallState.ConfigureInstance.initializeState
           showSetupCompletePanel({
-            message: translations.installWizard_firstUserSkippedMessage,
+            message: translations.installWizard_firstUserSkippedMessage
           });
         } else {
           showConfigureInstance();
@@ -1066,7 +1066,7 @@ var createPluginSetupWizard = function (appendTarget) {
         error: function () {
           // give up
           showConfigureInstance();
-        },
+        }
       }
     );
   };
@@ -1276,7 +1276,7 @@ var createPluginSetupWizard = function (appendTarget) {
     },
     ".retry-failed-plugins": retryFailedPlugins,
     ".continue-with-failed-plugins": continueWithFailedPlugins,
-    ".start-over": startOver,
+    ".start-over": startOver
   };
 
   // do this so the page isn't blank while doing connectivity checks and other downloads
@@ -1307,7 +1307,7 @@ var createPluginSetupWizard = function (appendTarget) {
         showStatePanel: showStatePanel,
         installPlugins: installPlugins,
         pluginSelectionPanelData: pluginSelectionPanelData,
-        loadPluginCategories: loadPluginCategories,
+        loadPluginCategories: loadPluginCategories
       });
     });
   }
@@ -1413,7 +1413,7 @@ var createPluginSetupWizard = function (appendTarget) {
                             }
                           }
                           setPanel(incompleteInstallationPanel, {
-                            installingPlugins: installingPlugins,
+                            installingPlugins: installingPlugins
                           });
                         })
                       );

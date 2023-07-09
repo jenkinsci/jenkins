@@ -11,48 +11,48 @@ module.exports = (env, argv) => ({
   entry: {
     pluginSetupWizard: [
       path.join(__dirname, "src/main/js/pluginSetupWizard.js"),
-      path.join(__dirname, "src/main/scss/pluginSetupWizard.scss"),
+      path.join(__dirname, "src/main/scss/pluginSetupWizard.scss")
     ],
     "plugin-manager-ui": [
-      path.join(__dirname, "src/main/js/plugin-manager-ui.js"),
+      path.join(__dirname, "src/main/js/plugin-manager-ui.js")
     ],
     "add-item": [
       path.join(__dirname, "src/main/js/add-item.js"),
-      path.join(__dirname, "src/main/js/add-item.scss"),
+      path.join(__dirname, "src/main/js/add-item.scss")
     ],
     "pages/dashboard": [path.join(__dirname, "src/main/js/pages/dashboard")],
     "pages/manage-jenkins/system-information": [
       path.join(
         __dirname,
         "src/main/js/pages/manage-jenkins/system-information"
-      ),
+      )
     ],
     app: [path.join(__dirname, "src/main/js/app.js")],
     "pages/manage-jenkins": [
-      path.join(__dirname, "src/main/js/pages/manage-jenkins"),
+      path.join(__dirname, "src/main/js/pages/manage-jenkins")
     ],
     "pages/register": [path.join(__dirname, "src/main/js/pages/register")],
     "keyboard-shortcuts": [
-      path.join(__dirname, "src/main/js/keyboard-shortcuts.js"),
+      path.join(__dirname, "src/main/js/keyboard-shortcuts.js")
     ],
     "sortable-drag-drop": [
-      path.join(__dirname, "src/main/js/sortable-drag-drop.js"),
+      path.join(__dirname, "src/main/js/sortable-drag-drop.js")
     ],
     "section-to-sidebar-items": [
-      path.join(__dirname, "src/main/js/section-to-sidebar-items.js"),
+      path.join(__dirname, "src/main/js/section-to-sidebar-items.js")
     ],
     "section-to-tabs": [path.join(__dirname, "src/main/js/section-to-tabs.js")],
     "components/row-selection-controller": [
-      path.join(__dirname, "src/main/js/components/row-selection-controller"),
+      path.join(__dirname, "src/main/js/components/row-selection-controller")
     ],
     "filter-build-history": [
-      path.join(__dirname, "src/main/js/filter-build-history.js"),
+      path.join(__dirname, "src/main/js/filter-build-history.js")
     ],
     "simple-page": [path.join(__dirname, "src/main/scss/simple-page.scss")],
-    styles: [path.join(__dirname, "src/main/scss/styles.scss")],
+    styles: [path.join(__dirname, "src/main/scss/styles.scss")]
   },
   output: {
-    path: path.join(__dirname, "src/main/webapp/jsbundles"),
+    path: path.join(__dirname, "src/main/webapp/jsbundles")
   },
   devtool:
     argv.mode === "production"
@@ -61,11 +61,11 @@ module.exports = (env, argv) => ({
   plugins: [
     new RemoveEmptyScriptsPlugin({}),
     new MiniCSSExtractPlugin({
-      filename: "[name].css",
+      filename: "[name].css"
     }),
     // Clean all assets within the specified output.
     // It will not clean copied fonts
-    new CleanPlugin(),
+    new CleanPlugin()
   ],
   module: {
     rules: [
@@ -76,8 +76,8 @@ module.exports = (env, argv) => ({
           {
             loader: MiniCSSExtractPlugin.loader,
             options: {
-              esModule: false,
-            },
+              esModule: false
+            }
           },
           {
             loader: "css-loader",
@@ -88,30 +88,30 @@ module.exports = (env, argv) => ({
               url: {
                 filter: (url, resourcePath) => {
                   return !resourcePath.includes("styles.scss");
-                },
-              },
-            },
+                }
+              }
+            }
           },
           {
             loader: "postcss-loader",
             options: {
-              sourceMap: true,
-            },
+              sourceMap: true
+            }
           },
           {
             loader: "sass-loader",
             options: {
-              sourceMap: true,
-            },
-          },
-        ],
+              sourceMap: true
+            }
+          }
+        ]
       },
       {
         test: /\.(woff(2)?|ttf|eot|svg)(\?v=\d+\.\d+\.\d+)?$/,
         type: "asset/resource",
         generator: {
-          filename: "fonts/[name].[ext]",
-        },
+          filename: "fonts/[name].[ext]"
+        }
       },
       {
         test: /\.hbs$/,
@@ -131,17 +131,17 @@ module.exports = (env, argv) => ({
               "inSelectedPlugins",
               "dependencyCount",
               "eachDependency",
-              "ifVisibleDependency",
-            ],
-          },
-        },
+              "ifVisibleDependency"
+            ]
+          }
+        }
       },
       {
         test: /\.js$/,
         exclude: /node_modules/,
-        loader: "babel-loader",
-      },
-    ],
+        loader: "babel-loader"
+      }
+    ]
   },
   optimization: {
     splitChunks: {
@@ -150,9 +150,9 @@ module.exports = (env, argv) => ({
         commons: {
           test: /[\\/]node_modules[\\/]/,
           name: "vendors",
-          chunks: "all",
-        },
-      },
+          chunks: "all"
+        }
+      }
     },
     minimizer: [
       new CssMinimizerPlugin({
@@ -160,18 +160,18 @@ module.exports = (env, argv) => ({
           preset: [
             "default",
             {
-              svgo: { exclude: true },
-            },
-          ],
-        },
-      }),
-    ],
+              svgo: { exclude: true }
+            }
+          ]
+        }
+      })
+    ]
   },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "src/main/js"),
       // Needed to be able to register helpers at runtime
-      handlebars: "handlebars/runtime",
-    },
-  },
+      handlebars: "handlebars/runtime"
+    }
+  }
 });

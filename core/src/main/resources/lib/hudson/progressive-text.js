@@ -27,8 +27,8 @@ Behaviour.specify(
         method: "post",
         headers,
         body: new URLSearchParams({
-          start: e.fetchedBytes,
-        }),
+          start: e.fetchedBytes
+        })
       }).then((rsp) => {
         if (rsp.status >= 500 || rsp.status === 0) {
           setTimeout(function () {

@@ -22,7 +22,7 @@ Behaviour.specify("INPUT.combobox2", "combobox", 100, function (e) {
     var urlSearchParams = new URLSearchParams(params);
     fetch(e.getAttribute("fillUrl") + "?" + urlSearchParams, {
       headers: crumb.wrap({}),
-      method: "post",
+      method: "post"
     }).then((rsp) => {
       if (rsp.ok) {
         rsp.json().then((json) => {

@@ -31,7 +31,8 @@
     &:focus {
       & + label {
         &::before {
-          box-shadow: 0 0 0 5px var(--focus-input-glow),
+          box-shadow:
+            0 0 0 5px var(--focus-input-glow),
             inset 0 0 0 5px var(--focus-input-border);
         }
       }
@@ -42,7 +43,8 @@
       &:focus {
         & + label {
           &::before {
-            box-shadow: 0 0 0 5px var(--focus-input-glow),
+            box-shadow:
+              0 0 0 5px var(--focus-input-glow),
               inset 0 0 0 12px var(--focus-input-border);
           }
         }
@@ -55,7 +57,8 @@
     &:focus {
       & + label {
         &::before {
-          box-shadow: 0 0 0 5px var(--focus-input-glow),
+          box-shadow:
+            0 0 0 5px var(--focus-input-glow),
             inset 0 0 0 12px var(--focus-input-border);
         }
       }
@@ -67,7 +70,8 @@
       &:active,
       &:focus {
         &::before {
-          box-shadow: 0 0 0 5px var(--focus-input-glow),
+          box-shadow:
+            0 0 0 5px var(--focus-input-glow),
             inset 0 0 0 12px var(--focus-input-border);
         }
       }
@@ -75,7 +79,8 @@
 
     & + label {
       &::before {
-        box-shadow: 0 0 0 10px transparent,
+        box-shadow:
+          0 0 0 10px transparent,
           inset 0 0 0 12px var(--focus-input-border);
       }
 
@@ -91,14 +96,17 @@
 
       &::before {
         opacity: 0.35 !important;
-        box-shadow: 0 0 0 10px transparent, inset 0 0 0 2px var(--input-border) !important;
+        box-shadow:
+          0 0 0 10px transparent,
+          inset 0 0 0 2px var(--input-border) !important;
       }
     }
 
     &:checked {
       & + label {
         &::before {
-          box-shadow: 0 0 0 10px transparent,
+          box-shadow:
+            0 0 0 10px transparent,
             inset 0 0 0 12px var(--focus-input-border) !important;
         }
 
@@ -129,7 +137,9 @@
     border-radius: 6px;
     transition: var(--standard-transition);
     margin-right: 11px;
-    box-shadow: 0 0 0 10px transparent, inset 0 0 0 2px var(--input-border);
+    box-shadow:
+      0 0 0 10px transparent,
+      inset 0 0 0 2px var(--input-border);
   }
 
   &::after {
@@ -159,7 +169,8 @@
 
   &:hover {
     &::before {
-      box-shadow: 0 0 0 10px transparent,
+      box-shadow:
+        0 0 0 10px transparent,
         inset 0 0 0 5px var(--input-border-hover);
     }
   }
@@ -167,7 +178,8 @@
   &:active,
   &:focus {
     &::before {
-      box-shadow: 0 0 0 5px var(--focus-input-glow),
+      box-shadow:
+        0 0 0 5px var(--focus-input-glow),
         inset 0 0 0 5px var(--focus-input-border);
     }
   }

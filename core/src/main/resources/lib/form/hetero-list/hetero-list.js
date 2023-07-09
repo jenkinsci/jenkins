@@ -44,7 +44,7 @@ Behaviour.specify(
         html: n.innerHTML,
         name: name,
         tooltip: tooltip,
-        descriptorId: descriptorId,
+        descriptorId: descriptorId
       });
     }
     prototypes.remove();
@@ -148,7 +148,7 @@ Behaviour.specify(
           new YAHOO.util.Anim(
             nc,
             {
-              opacity: { to: 1 },
+              opacity: { to: 1 }
             },
             0.2,
             YAHOO.util.Easing.easeIn

@@ -1,4 +1,5 @@
 {
   "endOfLine": "auto",
-  "htmlWhitespaceSensitivity": "ignore"
+  "htmlWhitespaceSensitivity": "ignore",
+  "trailingComma": "none"
 }

@@ -10,8 +10,8 @@ module.exports = {
     "value-keyword-case": [
       "lower",
       {
-        camelCaseSvgKeywords: true,
-      },
+        camelCaseSvgKeywords: true
+      }
     ],
     "property-no-vendor-prefix": null,
     "at-rule-no-unknown": [
@@ -24,15 +24,15 @@ module.exports = {
           "include",
           "mixin",
           "for",
-          "use",
-        ],
-      },
+          "use"
+        ]
+      }
     ],
     "color-function-notation": "legacy",
     "alpha-value-notation": "number",
     "number-max-precision": 5,
     "function-no-unknown": null,
     "no-duplicate-selectors": null,
-    "hue-degree-notation": "number",
-  },
+    "hue-degree-notation": "number"
+  }
 };

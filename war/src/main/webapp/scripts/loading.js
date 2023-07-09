@@ -39,7 +39,7 @@ const Fetch = {
       }
     };
     xhr.send();
-  },
+  }
 };
 
 function safeRedirector(preferredUrl, fallbackUrl) {

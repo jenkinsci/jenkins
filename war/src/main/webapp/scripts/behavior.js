@@ -54,7 +54,7 @@ var Behaviour = (function () {
         selector: selector,
         id: id,
         priority: priority,
-        behavior: behavior,
+        behavior: behavior
       });
       storage.sort(function (a, b) {
         var location = a.priority - b.priority;
@@ -153,7 +153,7 @@ var Behaviour = (function () {
           func(e);
         };
       }
-    },
+    }
   };
 })();
 
