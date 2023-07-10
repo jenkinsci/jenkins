@@ -8,7 +8,7 @@ let _defaults = {
   message: null,
   cancel: true,
   maxWidth: "475px",
-  minWidth: "300px",
+  minWidth: "450px",
   type: "default",
   hideCloseButton: false,
   allowEmpty: false,
@@ -238,7 +238,6 @@ function init() {
     prompt: function (title, options) {
       const defaults = {
         title: title,
-        minWidth: "400px",
       };
       options = Object.assign({}, defaults, options);
       let dialog = new Dialog("prompt", options);
