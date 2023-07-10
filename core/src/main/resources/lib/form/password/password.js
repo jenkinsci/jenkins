@@ -42,3 +42,14 @@ Behaviour.specify(
     };
   }
 );
+
+Behaviour.specify(
+  "input[type='text'].complex-password-field",
+  "empty-password-text-input",
+  0,
+  function (element) {
+    element.addEventListener("input", function () {
+      element.setAttribute("type", "password");
+    });
+  }
+);

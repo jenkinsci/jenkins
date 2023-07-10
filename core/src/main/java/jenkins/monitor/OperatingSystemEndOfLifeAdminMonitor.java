@@ -38,6 +38,7 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -74,6 +75,11 @@ public class OperatingSystemEndOfLifeAdminMonitor extends AdministrativeMonitor 
     private String operatingSystemName = System.getProperty("os.name", "Unknown");
     private String endOfLifeDate = "2099-12-31";
     private String documentationUrl = "https://www.jenkins.io/redirect/operating-system-end-of-life";
+
+    /* Remember the last dataFile to avoid reading it again */
+    private File lastDataFile = null;
+    /* Remember the lines of the last dataFile */
+    private List<String> lastLines = null;
 
     public OperatingSystemEndOfLifeAdminMonitor(String id) throws IOException {
         super(id);
@@ -153,6 +159,10 @@ public class OperatingSystemEndOfLifeAdminMonitor extends AdministrativeMonitor 
                 }
             }
         }
+        if (lastLines != null) {
+            // Discard the cached contents of the last read file
+            lastLines.clear();
+        }
     }
 
     @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN",
@@ -177,12 +187,16 @@ public class OperatingSystemEndOfLifeAdminMonitor extends AdministrativeMonitor 
         Pattern pattern = Pattern.compile("^PRETTY_NAME=[\"](" + patternStr + ".*)[\"]");
         String name = "";
         try {
-            List<String> lines = Files.readAllLines(dataFile.toPath());
+            List<String> lines = dataFile.equals(lastDataFile) ? lastLines : Files.readAllLines(dataFile.toPath());
             for (String line : lines) {
                 Matcher matcher = pattern.matcher(line);
                 if (matcher.matches()) {
                     name = matcher.group(1);
                 }
+            }
+            if (!dataFile.equals(lastDataFile)) {
+                lastDataFile = dataFile;
+                lastLines = new ArrayList<>(lines);
             }
         } catch (IOException ioe) {
             LOGGER.log(Level.SEVERE, "File read exception", ioe);
