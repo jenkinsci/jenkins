@@ -35,5 +35,5 @@ export default {
   setGlobalItem,
   getGlobalItem,
   setPageItem,
-  getPageItem
+  getPageItem,
 };

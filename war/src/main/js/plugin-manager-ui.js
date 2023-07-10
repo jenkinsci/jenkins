@@ -40,13 +40,13 @@ function applyFilter(searchQuery) {
       clearOldResults();
       var rows = pluginManagerAvailable({
         plugins: plugins.filter(
-          (plugin) => selectedPlugins.indexOf(plugin.name) === -1
+          (plugin) => selectedPlugins.indexOf(plugin.name) === -1,
         ),
-        admin
+        admin,
       });
 
       tbody.insertAdjacentHTML("beforeend", rows);
-    }
+    },
   );
 }
 
@@ -74,7 +74,7 @@ document.addEventListener("DOMContentLoaded", function () {
   if (updateCenterError) {
     notificationBar.show(
       updateCenterError.content.textContent,
-      notificationBar.ERROR
+      notificationBar.ERROR,
     );
   }
 });

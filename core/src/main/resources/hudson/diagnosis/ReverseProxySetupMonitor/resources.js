@@ -2,7 +2,7 @@
   var redirectForm = document.getElementById("redirect-error");
   if (!redirectForm) {
     console.warn(
-      'This script expects to have an element with id="redirect-error" to be working.'
+      'This script expects to have an element with id="redirect-error" to be working.',
     );
     return;
   }
@@ -16,7 +16,7 @@
     fetch(urlToTest, {
       cache: "no-cache",
       headers: crumb.wrap({}),
-      body
+      body,
     })
       .then((rsp) => callback(rsp))
       // normally you don't need a catch function with fetch because HTTP errors doesn't reject a promise,

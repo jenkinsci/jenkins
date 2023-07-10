@@ -3,7 +3,7 @@ import { CLOSE } from "@/util/symbols";
 
 const defaults = {
   maxWidth: undefined,
-  hideCloseButton: false
+  hideCloseButton: false,
 };
 
 export function showModal(contents, options = {}) {
@@ -11,13 +11,13 @@ export function showModal(contents, options = {}) {
   const modal = createElementFromHtml(
     `<dialog class='jenkins-modal'>
       <div class='jenkins-modal__contents'></div>
-    </dialog>`
+    </dialog>`,
   );
   modal.style.maxWidth = options.maxWidth;
 
   if ("title" in options) {
     const titleElement = createElementFromHtml(
-      `<h1 class="jenkins-modal__title"></h1>`
+      `<h1 class="jenkins-modal__title"></h1>`,
     );
     titleElement.append(options.title);
     modal.prepend(titleElement);

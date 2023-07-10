@@ -20,8 +20,8 @@ function saveFirstUser($form, success, error) {
       success(response);
     },
     {
-      error: error
-    }
+      error: error,
+    },
   );
 }
 
@@ -37,8 +37,8 @@ function saveConfigureInstance($form, success, error) {
       success(response);
     },
     {
-      error: error
-    }
+      error: error,
+    },
   );
 }
 
@@ -48,12 +48,12 @@ function saveConfigureInstance($form, success, error) {
 function saveProxy($form, success, error) {
   jenkins.staplerPost("/pluginManager/proxyConfigure", $form, success, {
     dataType: "html",
-    error: error
+    error: error,
   });
 }
 
 export default {
   saveFirstUser: saveFirstUser,
   saveConfigureInstance: saveConfigureInstance,
-  saveProxy: saveProxy
+  saveProxy: saveProxy,
 };

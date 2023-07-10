@@ -5,7 +5,7 @@ const TOOLTIP_BASE = {
   arrow: false,
   theme: "tooltip",
   animation: "tooltip",
-  appendTo: document.body
+  appendTo: document.body,
 };
 
 /**
@@ -37,10 +37,10 @@ function registerTooltip(element) {
           },
           onHidden(instance) {
             instance.reference.setAttribute("title", instance.props.content);
-          }
+          },
         },
-        TOOLTIP_BASE
-      )
+        TOOLTIP_BASE,
+      ),
     );
   }
 
@@ -55,10 +55,10 @@ function registerTooltip(element) {
             instance.props.interactive =
               instance.reference.getAttribute("data-tooltip-interactive") ===
               "true";
-          }
+          },
         },
-        TOOLTIP_BASE
-      )
+        TOOLTIP_BASE,
+      ),
     );
   }
 }
@@ -80,10 +80,10 @@ function hoverNotification(text, element) {
           setTimeout(() => {
             instance.hide();
           }, 3000);
-        }
+        },
       },
-      TOOLTIP_BASE
-    )
+      TOOLTIP_BASE,
+    ),
   );
   tooltip.show();
 }
@@ -95,7 +95,7 @@ function init() {
     1000,
     (element) => {
       registerTooltip(element);
-    }
+    },
   );
 
   window.hoverNotification = hoverNotification;

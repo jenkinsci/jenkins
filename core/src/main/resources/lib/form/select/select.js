@@ -18,7 +18,7 @@ function updateListBox(listBox, url, config) {
       if (!settingMain) {
         console.warn(
           "Couldn't find the expected validation element (.validation-error-area) for element",
-          listBox.parentNode
+          listBox.parentNode,
         );
         return;
       }
@@ -100,9 +100,9 @@ function updateListBox(listBox, url, config) {
   fetch(url, {
     method: "post",
     headers: crumb.wrap({
-      "Content-Type": "application/x-www-form-urlencoded"
+      "Content-Type": "application/x-www-form-urlencoded",
     }),
-    body: objectToUrlFormEncoded(config.parameters)
+    body: objectToUrlFormEncoded(config.parameters),
   }).then((response) => {
     if (response.ok) {
       config.onSuccess(response);
@@ -154,7 +154,7 @@ Behaviour.specify("SELECT.select", "select", 1000, function (e) {
         if (hasChanged(e, value)) {
           fireEvent(e, "change");
         }
-      }
+      },
     });
   });
 });

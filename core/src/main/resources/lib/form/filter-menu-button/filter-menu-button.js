@@ -2,14 +2,14 @@ window.createFilterMenuButton = function (
   button,
   menu,
   menuAlignment,
-  menuMinScrollHeight
+  menuMinScrollHeight,
 ) {
   var MIN_NUM_OPTIONS = 5;
   var menuButton = new YAHOO.widget.Button(button, {
     type: "menu",
     menu: menu,
     menualignment: menuAlignment,
-    menuminscrollheight: menuMinScrollHeight
+    menuminscrollheight: menuMinScrollHeight,
   });
 
   var filter = _createFilterMenuButton(menuButton._menu);
@@ -39,7 +39,7 @@ function _createFilterMenuButton(menu) {
   filterInput.setAttribute("type", "search");
 
   filterInput.addEventListener("input", (event) =>
-    _applyFilterKeyword(menu, event.currentTarget)
+    _applyFilterKeyword(menu, event.currentTarget),
   );
   filterInput.addEventListener("keypress", (event) => {
     if (event.key === "Enter") {

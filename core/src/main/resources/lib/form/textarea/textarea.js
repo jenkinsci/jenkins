@@ -69,8 +69,8 @@ Behaviour.specify(
         method: "post",
         headers: crumb.wrap({}),
         body: new URLSearchParams({
-          text: text
-        })
+          text: text,
+        }),
       }).then((rsp) => {
         rsp.text().then((responseText) => {
           if (rsp.ok) {
@@ -87,5 +87,5 @@ Behaviour.specify(
       hidePreview.style.display = "none";
       previewDiv.style.display = "none";
     };
-  }
+  },
 );

@@ -34,19 +34,19 @@ function progressivelyRender(handler, callback, statusId) {
         "Aborted.";
     } else if (r.status == "error") {
       document.querySelector(
-        "#" + statusId + " .progress-bar-done"
+        "#" + statusId + " .progress-bar-done",
       ).style.width = "100%";
       document.querySelector(
-        "#" + statusId + " .progress-bar-left"
+        "#" + statusId + " .progress-bar-left",
       ).style.width = "0%";
       document.getElementById(statusId).className = "progress-bar red";
     } else {
       callback(r.data);
       document.querySelector(
-        "#" + statusId + " .progress-bar-done"
+        "#" + statusId + " .progress-bar-done",
       ).style.width = 100 * r.status + "%";
       document.querySelector(
-        "#" + statusId + " .progress-bar-left"
+        "#" + statusId + " .progress-bar-left",
       ).style.width = 100 - 100 * r.status + "%";
       checkNewsLater(500);
     }
@@ -68,7 +68,7 @@ document.addEventListener("DOMContentLoaded", function () {
       progressivelyRender(
         window.proxy,
         window[holder.getAttribute("data-callback")],
-        holder.getAttribute("data-id")
+        holder.getAttribute("data-id"),
       );
     });
 });

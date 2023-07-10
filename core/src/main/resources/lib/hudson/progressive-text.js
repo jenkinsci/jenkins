@@ -27,8 +27,8 @@ Behaviour.specify(
         method: "post",
         headers,
         body: new URLSearchParams({
-          start: e.fetchedBytes
-        })
+          start: e.fetchedBytes,
+        }),
       }).then((rsp) => {
         if (rsp.status >= 500 || rsp.status === 0) {
           setTimeout(function () {
@@ -75,5 +75,5 @@ Behaviour.specify(
     document.getElementById(idref).fetchedBytes =
       startOffset !== "" ? Number(startOffset) : 0;
     fetchNext(document.getElementById(idref), href, onFinishEvent);
-  }
+  },
 );

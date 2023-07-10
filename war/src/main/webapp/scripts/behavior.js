@@ -54,7 +54,7 @@ var Behaviour = (function () {
         selector: selector,
         id: id,
         priority: priority,
-        behavior: behavior
+        behavior: behavior,
       });
       storage.sort(function (a, b) {
         var location = a.priority - b.priority;
@@ -128,7 +128,7 @@ var Behaviour = (function () {
               var list = findElementsBySelector(
                 node,
                 registration.selector,
-                includeSelf
+                includeSelf,
               );
               if (list.length > 0) {
                 //console.log(registration.id + ":" + registration.selector + " @" + registration.priority + " on " + list.length + " elements");
@@ -153,7 +153,7 @@ var Behaviour = (function () {
           func(e);
         };
       }
-    }
+    },
   };
 })();
 
@@ -196,7 +196,7 @@ function findElementsBySelector(startNode, selector, includeSelf) {
       }
     };
     return Array.from(startNode.parentNode.querySelectorAll(selector)).filter(
-      isSelfOrChild
+      isSelfOrChild,
     );
   } else {
     return Array.from(startNode.querySelectorAll(selector));

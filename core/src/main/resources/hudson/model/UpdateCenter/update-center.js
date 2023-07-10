@@ -9,14 +9,14 @@ Behaviour.specify(
       crumb.appendToForm(form);
       form.submit();
     });
-  }
+  },
 );
 
 function refresh() {
   window.setTimeout(function () {
     fetch("./body", {
       method: "post",
-      headers: crumb.wrap({})
+      headers: crumb.wrap({}),
     }).then((rsp) => {
       if (rsp.ok) {
         rsp.text().then((responseText) => {

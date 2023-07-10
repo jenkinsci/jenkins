@@ -32,7 +32,7 @@ function registerSortableDragDrop(e) {
     },
     onUnchoose: function (event) {
       event.item.style.removeProperty("height");
-    }
+    },
   });
 }
 

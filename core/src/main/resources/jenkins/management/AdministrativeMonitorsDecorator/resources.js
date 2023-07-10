@@ -70,7 +70,7 @@
 
     return {
       close: close,
-      startListeners: startListeners
+      startListeners: startListeners,
     };
   }
 
@@ -86,19 +86,19 @@
     var normalMonitors = initializeAmMonitor(
       document.getElementById("visible-am-container"),
       {
-        closeAll: closeAll
-      }
+        closeAll: closeAll,
+      },
     );
     var securityMonitors = initializeAmMonitor(
       document.getElementById("visible-sec-am-container"),
       {
-        closeAll: closeAll
-      }
+        closeAll: closeAll,
+      },
     );
     monitorWidgets = [normalMonitors, securityMonitors].filter(
       function (widget) {
         return widget !== null;
-      }
+      },
     );
 
     monitorWidgets.forEach(function (widget) {

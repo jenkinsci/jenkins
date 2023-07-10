@@ -64,5 +64,5 @@ export default {
   onWinScroll,
   pageHeaderHeight,
   breadcrumbBarHeight,
-  removeTextHighlighting
+  removeTextHighlighting,
 };

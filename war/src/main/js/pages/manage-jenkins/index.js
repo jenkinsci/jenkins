@@ -5,9 +5,9 @@ searchBarInput.suggestions = function () {
     .map((item) => ({
       url: item.querySelector("a").href,
       icon: item.querySelector(
-        ".jenkins-section__item__icon svg, .jenkins-section__item__icon img"
+        ".jenkins-section__item__icon svg, .jenkins-section__item__icon img",
       ).outerHTML,
-      label: item.querySelector("dt").textContent
+      label: item.querySelector("dt").textContent,
     }))
     .filter((item) => !item.url.endsWith("#"));
 };

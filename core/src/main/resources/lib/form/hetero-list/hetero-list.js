@@ -44,7 +44,7 @@ Behaviour.specify(
         html: n.innerHTML,
         name: name,
         tooltip: tooltip,
-        descriptorId: descriptorId
+        descriptorId: descriptorId,
       });
     }
     prototypes.remove();
@@ -58,7 +58,7 @@ Behaviour.specify(
       btn,
       menu,
       menuAlign.split("-"),
-      250
+      250,
     );
     // copy class names
     for (i = 0; i < btn.classList.length; i++) {
@@ -148,17 +148,17 @@ Behaviour.specify(
           new YAHOO.util.Anim(
             nc,
             {
-              opacity: { to: 1 }
+              opacity: { to: 1 },
             },
             0.2,
-            YAHOO.util.Easing.easeIn
+            YAHOO.util.Easing.easeIn,
           ).animate();
 
           Behaviour.applySubtree(nc, true);
           ensureVisible(nc);
           layoutUpdateCallback.call();
         },
-        true
+        true,
       );
     });
 
@@ -188,7 +188,7 @@ Behaviour.specify(
         }
       });
     }
-  }
+  },
 );
 
 Behaviour.specify("DIV.dd-handle", "hetero-list", -100, function (e) {

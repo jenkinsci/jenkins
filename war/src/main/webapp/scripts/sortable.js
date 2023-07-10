@@ -82,7 +82,7 @@ var Sortable = (function () {
           self.onClicked(this);
           return false;
         };
-      }.bind(this)
+      }.bind(this),
     );
 
     // figure out the initial sort preference
@@ -94,7 +94,7 @@ var Sortable = (function () {
           if (initialSortDir != null) {
             this.pref = { column: i, direction: arrowTable[initialSortDir] };
           }
-        }.bind(this)
+        }.bind(this),
       );
     }
 
@@ -140,7 +140,7 @@ var Sortable = (function () {
           if (vals.length == 2) {
             return {
               column: parseInt(vals[0]),
-              direction: arrowTable[vals[1]]
+              direction: arrowTable[vals[1]],
             };
           }
         }
@@ -186,7 +186,7 @@ var Sortable = (function () {
       } else {
         this.pref = {
           column: column,
-          direction: arrow.sortdir || arrowTable.up
+          direction: arrow.sortdir || arrowTable.up,
         };
       }
 
@@ -237,15 +237,15 @@ var Sortable = (function () {
 
           return s(
             this.extractData(a.cells[column]),
-            this.extractData(b.cells[column])
+            this.extractData(b.cells[column]),
           );
-        }.bind(this)
+        }.bind(this),
       );
 
       rows.forEach(
         function (e) {
           this.table.tBodies[0].appendChild(e);
-        }.bind(this)
+        }.bind(this),
       );
 
       // update arrow rendering
@@ -259,7 +259,7 @@ var Sortable = (function () {
 
     getIndexOfSortableTable: function () {
       return Array.from(document.querySelectorAll("TABLE.sortable")).indexOf(
-        this.table
+        this.table,
       );
     },
 
@@ -301,23 +301,23 @@ var Sortable = (function () {
         return data;
       }
       return this.getInnerText(x);
-    }
+    },
   };
 
   var arrowTable = {
     up: {
       id: "up",
-      text: "&nbsp;&nbsp;&uarr;"
+      text: "&nbsp;&nbsp;&uarr;",
     },
     down: {
       id: "down",
-      text: "&nbsp;&nbsp;&darr;"
+      text: "&nbsp;&nbsp;&darr;",
     },
     none: {
       id: "none",
-      text: ""
+      text: "",
     },
-    lnkRef: null
+    lnkRef: null,
   };
 
   arrowTable.up.next = arrowTable.down;
@@ -439,7 +439,7 @@ var Sortable = (function () {
       return function (a, b) {
         return -f(a, b);
       };
-    }
+    },
   };
 
   var storage;
@@ -448,8 +448,8 @@ var Sortable = (function () {
       YAHOO.util.StorageEngineHTML5.ENGINE_NAME,
       YAHOO.util.StorageManager.LOCATION_SESSION,
       {
-        order: [YAHOO.util.StorageEngineGears]
-      }
+        order: [YAHOO.util.StorageEngineGears],
+      },
     );
   } catch (e) {
     // no storage available
@@ -460,13 +460,13 @@ var Sortable = (function () {
       },
       hasKey: function () {
         return false;
-      }
+      },
     };
   }
 
   return {
     Sortable: Sortable,
-    sorter: sorter
+    sorter: sorter,
   };
 })();
 

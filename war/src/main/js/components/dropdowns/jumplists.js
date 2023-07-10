@@ -15,7 +15,7 @@ function generateJumplistAccessors() {
     const isFirefox = navigator.userAgent.indexOf("Firefox") !== -1;
     // Firefox adds unwanted lines when copying buttons in text, so use a span instead
     const dropdownChevron = document.createElement(
-      isFirefox ? "span" : "button"
+      isFirefox ? "span" : "button",
     );
     dropdownChevron.className = "jenkins-menu-dropdown-chevron";
     dropdownChevron.dataset.href = link.href;
@@ -51,13 +51,13 @@ function generateDropdowns() {
           .then((json) =>
             instance.setContent(
               Utils.generateDropdownItems(
-                mapChildrenItemsToDropdownItems(json.items)
-              )
-            )
+                mapChildrenItemsToDropdownItems(json.items),
+              ),
+            ),
           )
           .catch((error) => console.log(`Jumplist request failed: ${error}`))
           .finally(() => (instance.loaded = true));
-      })
+      }),
   );
 }
 
@@ -69,13 +69,13 @@ function mapChildrenItemsToDropdownItems(items) {
     if (item.type === "HEADER") {
       return {
         type: "HEADER",
-        label: item.displayName
+        label: item.displayName,
       };
     }
 
     if (item.type === "SEPARATOR") {
       return {
-        type: "SEPARATOR"
+        type: "SEPARATOR",
       };
     }
 
@@ -103,7 +103,7 @@ function mapChildrenItemsToDropdownItems(items) {
           } else {
             fetch(item.url, {
               method: "post",
-              headers: crumb.wrap({})
+              headers: crumb.wrap({}),
             });
             if (event.length === 1 && event[0].target != null) {
               hoverNotification("Done.", event[0].target);
@@ -115,7 +115,7 @@ function mapChildrenItemsToDropdownItems(items) {
         ? () => {
             return mapChildrenItemsToDropdownItems(item.subMenu.items);
           }
-        : null
+        : null,
     };
   });
 }

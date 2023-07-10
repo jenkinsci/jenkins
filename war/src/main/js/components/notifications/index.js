@@ -12,16 +12,16 @@ function init() {
 
     SUCCESS: {
       alertClass: "jenkins-notification jenkins-notification--success",
-      icon: Symbols.SUCCESS
+      icon: Symbols.SUCCESS,
     },
     WARNING: {
       alertClass: "jenkins-notification jenkins-notification--warning",
-      icon: Symbols.WARNING
+      icon: Symbols.WARNING,
     },
     ERROR: {
       alertClass: "jenkins-notification jenkins-notification--error",
       icon: Symbols.ERROR,
-      sticky: true
+      sticky: true,
     },
 
     init: function () {
@@ -56,7 +56,7 @@ function init() {
       this.init();
 
       this.div.appendChild(
-        createElementFromHtml(options.icon || this.defaultIcon)
+        createElementFromHtml(options.icon || this.defaultIcon),
       );
       const message = this.div.appendChild(document.createElement("span"));
       message.appendChild(document.createTextNode(text));
@@ -71,7 +71,7 @@ function init() {
           self.hide();
         }, this.DELAY);
       }
-    }
+    },
   };
 }
 

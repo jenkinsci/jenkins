@@ -11,10 +11,10 @@ Behaviour.specify(
     icon.onclick = function () {
       fetch(url, {
         method: "post",
-        headers: crumb.wrap({})
+        headers: crumb.wrap({}),
       });
       hoverNotification(message, this, -100);
       return false;
     };
-  }
+  },
 );

@@ -122,7 +122,7 @@ var createPluginSetupWizard = function (appendTarget) {
       if (visibleDependencies[plugName]) {
         return options.fn();
       }
-    }
+    },
   );
 
   // wrap calls with this method to handle generic errors returned by the plugin manager
@@ -176,7 +176,7 @@ var createPluginSetupWizard = function (appendTarget) {
     $tip
       .tooltip({
         html: true,
-        title: text
+        title: text,
       })
       .tooltip("show");
   });
@@ -200,7 +200,7 @@ var createPluginSetupWizard = function (appendTarget) {
   var decorations = [
     function () {
       // any decorations after DOM replacement go here
-    }
+    },
   ];
 
   var getJenkinsVersionFull = function () {
@@ -235,7 +235,7 @@ var createPluginSetupWizard = function (appendTarget) {
                 onComplete();
               }
             },
-            { dataType: "html" }
+            { dataType: "html" },
           );
         });
       } else {
@@ -249,10 +249,10 @@ var createPluginSetupWizard = function (appendTarget) {
         {
           translations: translations,
           baseUrl: jenkins.baseUrl,
-          jenkinsVersion: getJenkinsVersion()
+          jenkinsVersion: getJenkinsVersion(),
         },
-        data
-      )
+        data,
+      ),
     );
     if (panel === currentPanel) {
       // just replace id-marked elements
@@ -300,7 +300,7 @@ var createPluginSetupWizard = function (appendTarget) {
         var $modalHeader = $container.find(".modal-header");
         if ($modalHeader.length > 0 && $modalHeader.is(".closeable")) {
           $modalHeader.prepend(
-            '<button type="button" class="close" aria-label="Close"><span aria-hidden="true">&times;</span></button>'
+            '<button type="button" class="close" aria-label="Close"><span aria-hidden="true">&times;</span></button>',
           );
         }
 
@@ -310,7 +310,7 @@ var createPluginSetupWizard = function (appendTarget) {
           var $modalFooter = $container.find(".modal-footer");
           if ($modalFooter.length === 0) {
             $modalFooter = $('<div class="modal-footer"></div>').appendTo(
-              $container
+              $container,
             );
           }
           $modalFooter.prepend(
@@ -318,7 +318,7 @@ var createPluginSetupWizard = function (appendTarget) {
               translations.installWizard_jenkinsVersionTitle +
               " " +
               getJenkinsVersionFull() +
-              "</div>"
+              "</div>",
           );
         }
 
@@ -400,9 +400,9 @@ var createPluginSetupWizard = function (appendTarget) {
       if (p) {
         var plug = $.extend(
           {
-            installStatus: "pending"
+            installStatus: "pending",
           },
-          p
+          p,
         );
         installingPlugins.push(plug);
       }
@@ -418,14 +418,14 @@ var createPluginSetupWizard = function (appendTarget) {
       function () {
         return progressPanel(arguments);
       },
-      { installingPlugins: [] }
+      { installingPlugins: [] },
     );
 
     pluginManager.installPlugins(
       pluginNames,
       handleGenericError(function () {
         showStatePanel();
-      })
+      }),
     );
   };
 
@@ -519,14 +519,14 @@ var createPluginSetupWizard = function (appendTarget) {
     },
     INITIAL_PLUGINS_INSTALLING: function () {
       showInstallProgress();
-    }
+    },
   };
   var showStatePanel = function (state) {
     if (!state) {
       pluginManager.installStatus(
         handleGenericError(function (data) {
           showStatePanel(data.state);
-        })
+        }),
       );
       return;
     }
@@ -543,7 +543,7 @@ var createPluginSetupWizard = function (appendTarget) {
     if (failedPluginNames.length > 0) {
       setPanel(pluginSuccessPanel, {
         installingPlugins: installingPlugins,
-        failedPlugins: true
+        failedPlugins: true,
       });
       return;
     }
@@ -577,7 +577,7 @@ var createPluginSetupWizard = function (appendTarget) {
     setPanel(
       progressPanel,
       { installingPlugins: installingPlugins },
-      attachScrollEvent
+      attachScrollEvent,
     );
 
     // call to the installStatus, update progress bar & plugin details; transition on complete
@@ -663,7 +663,7 @@ var createPluginSetupWizard = function (appendTarget) {
               $txt.append($div);
 
               var $itemProgress = $(
-                '.selected-plugin[id="installing-' + idIfy(j.name) + '"]'
+                '.selected-plugin[id="installing-' + idIfy(j.name) + '"]',
               );
               if ($itemProgress.length > 0 && !$itemProgress.is("." + state)) {
                 $itemProgress.addClass(state);
@@ -687,7 +687,7 @@ var createPluginSetupWizard = function (appendTarget) {
             $(".progress-bar").css({ width: "100%" });
             showStatePanel(data.state);
           }
-        })
+        }),
       );
     };
 
@@ -714,7 +714,7 @@ var createPluginSetupWizard = function (appendTarget) {
           plug.allDependencies = getAllDependencies(plug.name);
         }
         oncomplete();
-      })
+      }),
     );
   };
 
@@ -731,7 +731,7 @@ var createPluginSetupWizard = function (appendTarget) {
           if (!plug) {
             plug = {
               name: plugInfo.name,
-              title: plugInfo.name
+              title: plugInfo.name,
             };
           }
           plugs.push({
@@ -740,8 +740,8 @@ var createPluginSetupWizard = function (appendTarget) {
               usage: plugInfo.usage,
               title: plugInfo.title ? plugInfo.title : plug.title,
               excerpt: plugInfo.excerpt ? plugInfo.excerpt : plug.excerpt,
-              updated: new Date(plug.buildDate)
-            })
+              updated: new Date(plug.buildDate),
+            }),
           });
         }
       }
@@ -754,7 +754,7 @@ var createPluginSetupWizard = function (appendTarget) {
     loadPluginCategories(function () {
       setPanel(pluginSelectionPanel, pluginSelectionPanelData(), function () {
         $bs(".plugin-selector .plugin-list").scrollspy({
-          target: ".plugin-selector .categories"
+          target: ".plugin-selector .categories",
         });
       });
     });
@@ -765,7 +765,7 @@ var createPluginSetupWizard = function (appendTarget) {
     return {
       categories: categories,
       categorizedPlugins: categorizedPlugins,
-      selectedPlugins: selectedPluginNames
+      selectedPlugins: selectedPluginNames,
     };
   };
 
@@ -834,7 +834,7 @@ var createPluginSetupWizard = function (appendTarget) {
         ? xform
         : function (d) {
             return d;
-          }
+          },
     );
     return elements;
   };
@@ -857,18 +857,18 @@ var createPluginSetupWizard = function (appendTarget) {
         var pos = $pl.scrollTop() + $el.position().top;
         $pl.stop(true).animate(
           {
-            scrollTop: pos
+            scrollTop: pos,
           },
-          100
+          100,
         );
         setTimeout(function () {
           // wait for css transitions to finish
           var pos = $pl.scrollTop() + $el.position().top;
           $pl.stop(true).animate(
             {
-              scrollTop: pos
+              scrollTop: pos,
             },
-            50
+            50,
           );
         }, 50);
       }
@@ -895,7 +895,7 @@ var createPluginSetupWizard = function (appendTarget) {
             text.toLowerCase(),
             function (d) {
               return d.toLowerCase();
-            }
+            },
           );
           if (localMatches.length > 0) {
             matches = matches.concat(localMatches);
@@ -922,7 +922,7 @@ var createPluginSetupWizard = function (appendTarget) {
     function () {
       var val = $(this).val();
       searchForPlugins(val, true);
-    }
+    },
   );
 
   // handle keyboard up/down navigation between items in
@@ -983,13 +983,13 @@ var createPluginSetupWizard = function (appendTarget) {
     var top = $pl.scrollTop() + $el.position().top;
     $pl.stop(true).animate(
       {
-        scrollTop: top
+        scrollTop: top,
       },
       250,
       function () {
         var top = $pl.scrollTop() + $el.position().top;
         $pl.stop(true).scrollTop(top);
-      }
+      },
     );
   };
 
@@ -1008,7 +1008,7 @@ var createPluginSetupWizard = function (appendTarget) {
       showStatePanel();
     } else {
       setPanel(errorPanel, {
-        errorMessage: "Error trying to create first user: " + data.statusText
+        errorMessage: "Error trying to create first user: " + data.statusText,
       });
     }
   };
@@ -1023,7 +1023,7 @@ var createPluginSetupWizard = function (appendTarget) {
     if ($main.length > 0) {
       responseText = responseText.replace(
         /body([^>]*)[>](.|[\r\n])+[<][/]body/,
-        "body$1>" + $main.html() + "</body"
+        "body$1>" + $main.html() + "</body",
       );
     }
     var doc = $("iframe#setup-first-user").contents()[0];
@@ -1042,7 +1042,7 @@ var createPluginSetupWizard = function (appendTarget) {
     securityConfig.saveFirstUser(
       $form,
       handleFirstUserResponseSuccess,
-      handleFirstUserResponseError
+      handleFirstUserResponseError,
     );
   };
 
@@ -1056,7 +1056,7 @@ var createPluginSetupWizard = function (appendTarget) {
         if (data.url) {
           // as in InstallState.ConfigureInstance.initializeState
           showSetupCompletePanel({
-            message: translations.installWizard_firstUserSkippedMessage
+            message: translations.installWizard_firstUserSkippedMessage,
           });
         } else {
           showConfigureInstance();
@@ -1066,8 +1066,8 @@ var createPluginSetupWizard = function (appendTarget) {
         error: function () {
           // give up
           showConfigureInstance();
-        }
-      }
+        },
+      },
     );
   };
 
@@ -1098,7 +1098,7 @@ var createPluginSetupWizard = function (appendTarget) {
     if ($main.length > 0) {
       responseText = responseText.replace(
         /body([^>]*)[>](.|[\r\n])+[<][/]body/,
-        "body$1>" + $main.html() + "</body"
+        "body$1>" + $main.html() + "</body",
       );
     }
     var doc = $("iframe#setup-configure-instance").contents()[0];
@@ -1116,7 +1116,7 @@ var createPluginSetupWizard = function (appendTarget) {
     securityConfig.saveConfigureInstance(
       $form,
       handleConfigureInstanceResponseSuccess,
-      handleConfigureInstanceResponseError
+      handleConfigureInstanceResponseError,
     );
   };
 
@@ -1148,7 +1148,7 @@ var createPluginSetupWizard = function (appendTarget) {
       $("iframe[src]").contents().find("form:not(.no-json)"),
       function () {
         jenkins.goTo("/"); // this will re-run connectivity test
-      }
+      },
     );
   };
 
@@ -1166,7 +1166,7 @@ var createPluginSetupWizard = function (appendTarget) {
         handleGenericError(function (data) {
           failedPluginNames = [];
           showStatePanel(data.state);
-        })
+        }),
       );
     });
   };
@@ -1201,7 +1201,7 @@ var createPluginSetupWizard = function (appendTarget) {
               setTimeout(pingUntilRestarted, 1000);
             } else if (!restartStatus.restartSupported) {
               throw new Error(
-                translations.installWizard_error_restartNotSupported
+                translations.installWizard_error_restartNotSupported,
               );
             }
           } else {
@@ -1219,7 +1219,7 @@ var createPluginSetupWizard = function (appendTarget) {
     pluginManager.completeInstall(
       handleGenericError(function () {
         jenkins.goTo("/");
-      })
+      }),
     );
   };
 
@@ -1276,7 +1276,7 @@ var createPluginSetupWizard = function (appendTarget) {
     },
     ".retry-failed-plugins": retryFailedPlugins,
     ".continue-with-failed-plugins": continueWithFailedPlugins,
-    ".start-over": startOver
+    ".start-over": startOver,
   };
 
   // do this so the page isn't blank while doing connectivity checks and other downloads
@@ -1307,7 +1307,7 @@ var createPluginSetupWizard = function (appendTarget) {
         showStatePanel: showStatePanel,
         installPlugins: installPlugins,
         pluginSelectionPanelData: pluginSelectionPanelData,
-        loadPluginCategories: loadPluginCategories
+        loadPluginCategories: loadPluginCategories,
       });
     });
   }
@@ -1326,7 +1326,7 @@ var createPluginSetupWizard = function (appendTarget) {
           if (isFatal) {
             console.log(
               "Default update site connectivity check failed with fatal error: " +
-                errorMessage
+                errorMessage,
             );
           }
           setPanel(offlinePanel);
@@ -1363,7 +1363,7 @@ var createPluginSetupWizard = function (appendTarget) {
                           setFailureStatus(j);
                         }
                         showStatePanel(data.state);
-                      })
+                      }),
                     );
                   } else {
                     showStatePanel(data.state);
@@ -1392,7 +1392,7 @@ var createPluginSetupWizard = function (appendTarget) {
                               console.warn(
                                 'Plugin "' +
                                   plugName +
-                                  '" not found in the list of installing plugins.'
+                                  '" not found in the list of installing plugins.',
                               );
                               continue;
                             }
@@ -1413,9 +1413,9 @@ var createPluginSetupWizard = function (appendTarget) {
                             }
                           }
                           setPanel(incompleteInstallationPanel, {
-                            installingPlugins: installingPlugins
+                            installingPlugins: installingPlugins,
                           });
-                        })
+                        }),
                       );
                       return;
                     }
@@ -1423,13 +1423,13 @@ var createPluginSetupWizard = function (appendTarget) {
                     // finally,  show the installer
                     // If no active install, by default, we'll show the welcome screen
                     showStatePanel();
-                  })
+                  }),
                 );
-              })
+              }),
             );
-          })
+          }),
         );
-      })
+      }),
     );
   };
 
@@ -1445,7 +1445,7 @@ var createPluginSetupWizard = function (appendTarget) {
       });
 
       showInitialSetupWizard();
-    })
+    }),
   );
 };
 

@@ -19,5 +19,5 @@ Behaviour.specify(
       }
       return false;
     };
-  }
+  },
 );

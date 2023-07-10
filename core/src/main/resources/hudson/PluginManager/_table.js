@@ -41,7 +41,7 @@ Behaviour.specify("#filter-box", "_table", 0, function (e) {
       }
     }
     var instructions = document.getElementById(
-      "hidden-by-default-instructions"
+      "hidden-by-default-instructions",
     );
     if (instructions) {
       instructions.style.display = anyVisible ? "none" : "";
@@ -53,7 +53,7 @@ Behaviour.specify("#filter-box", "_table", 0, function (e) {
 
   (function () {
     var instructionsTd = document.getElementById(
-      "hidden-by-default-instructions-td"
+      "hidden-by-default-instructions-td",
     );
     if (instructionsTd) {
       // only on Available tab
@@ -371,25 +371,25 @@ Behaviour.specify("#filter-box", "_table", 0, function (e) {
       pluginTR.jenkinsPluginMetadata = {
         enableInput: enableInput,
         dependenciesDiv: dependenciesDiv,
-        dependentsDiv: dependentsDiv
+        dependentsDiv: dependentsDiv,
       };
 
       if (dependenciesDiv) {
         pluginTR.jenkinsPluginMetadata.dependencies = selectAll(
           "span",
-          dependenciesDiv
+          dependenciesDiv,
         );
         pluginTR.jenkinsPluginMetadata.dependencyIds = processSpanSet(
-          pluginTR.jenkinsPluginMetadata.dependencies
+          pluginTR.jenkinsPluginMetadata.dependencies,
         );
       }
       if (dependentsDiv) {
         pluginTR.jenkinsPluginMetadata.dependents = selectAll(
           "span",
-          dependentsDiv
+          dependentsDiv,
         );
         pluginTR.jenkinsPluginMetadata.dependentIds = processSpanSet(
-          pluginTR.jenkinsPluginMetadata.dependents
+          pluginTR.jenkinsPluginMetadata.dependents,
         );
       }
 
@@ -467,7 +467,7 @@ Behaviour.specify("#filter-box", "_table", 0, function (e) {
 
 window.addEventListener("load", function () {
   const compatibleCheckbox = document.querySelector(
-    "[data-select='compatible']"
+    "[data-select='compatible']",
   );
   if (compatibleCheckbox) {
     compatibleCheckbox.addEventListener("click", () => {
@@ -487,7 +487,7 @@ window.addEventListener("load", function () {
   if (updateCenterError) {
     notificationBar.show(
       updateCenterError.content.textContent,
-      notificationBar.ERROR
+      notificationBar.ERROR,
     );
   }
 });

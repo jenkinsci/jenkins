@@ -13,7 +13,7 @@ function setMock() {
     },
     removeItem: function (name) {
       delete this.storage[name];
-    }
+    },
   };
 }
 
@@ -43,5 +43,5 @@ export default {
   setMock,
   setItem,
   getItem,
-  removeItem
+  removeItem,
 };

@@ -4,7 +4,7 @@ const passwordField = document.querySelector("#password1");
 const password2Field = document.querySelector("#password2");
 const showPasswordField = document.querySelector("#showPassword");
 const passwordStrengthWrapper = document.querySelector(
-  "#passwordStrengthWrapper"
+  "#passwordStrengthWrapper",
 );
 const passwordStrengthIndicator = document.querySelector("#passwordStrength");
 
@@ -54,7 +54,7 @@ function passwordScore(password) {
     digits: /\d/.test(password),
     lower: /[a-z]/.test(password),
     upper: /[A-Z]/.test(password),
-    nonWords: /\W/.test(password)
+    nonWords: /\W/.test(password),
   };
 
   let variationCount = 0;

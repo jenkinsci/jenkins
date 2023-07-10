@@ -83,7 +83,7 @@ document.addEventListener("DOMContentLoaded", function () {
             "hetero-list-add",
             "advanced-button",
             "apply-button",
-            "validate-button"
+            "validate-button",
           ].forEach(function (clazz) {
             if (element.classList.contains(clazz)) {
               name = clazz;

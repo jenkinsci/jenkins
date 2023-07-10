@@ -33,7 +33,7 @@ function selectFresh(anchor) {
   var parent = anchor.closest(".legacy-token-usage");
   var allCheckBoxes = parent.querySelectorAll(".token-to-revoke");
   var concernedCheckBoxes = parent.querySelectorAll(
-    ".token-to-revoke.fresh-token"
+    ".token-to-revoke.fresh-token",
   );
 
   checkTheDesiredOne(allCheckBoxes, concernedCheckBoxes);
@@ -43,7 +43,7 @@ function selectRecent(anchor) {
   var parent = anchor.closest(".legacy-token-usage");
   var allCheckBoxes = parent.querySelectorAll(".token-to-revoke");
   var concernedCheckBoxes = parent.querySelectorAll(
-    ".token-to-revoke.recent-token"
+    ".token-to-revoke.recent-token",
   );
 
   checkTheDesiredOne(allCheckBoxes, concernedCheckBoxes);
@@ -92,7 +92,7 @@ function confirmAndRevokeAllSelected(button) {
     var confirmMessageTemplate = button.getAttribute("data-confirm-template");
     var confirmMessage = confirmMessageTemplate.replace(
       "%num%",
-      allCheckedCheckBoxes.length
+      allCheckedCheckBoxes.length,
     );
     if (confirm(confirmMessage)) {
       var url = button.getAttribute("data-url");
@@ -111,7 +111,7 @@ function confirmAndRevokeAllSelected(button) {
         body: Object.toJSON
           ? Object.toJSON({ values: selectedValues })
           : JSON.stringify({ values: selectedValues }),
-        headers: crumb.wrap({ "Content-Type": "application/json" })
+        headers: crumb.wrap({ "Content-Type": "application/json" }),
       }).then(() => window.location.reload());
     }
   }
