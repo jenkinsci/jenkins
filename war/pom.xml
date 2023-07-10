@@ -614,8 +614,8 @@ THE SOFTWARE.
       </plugin>
       <plugin>
         <!-- generate licenses.xml -->
-        <groupId>com.cloudbees</groupId>
-        <artifactId>maven-license-plugin</artifactId>
+        <groupId>io.jenkins.tools.maven</groupId>
+        <artifactId>license-maven-plugin</artifactId>
         <!-- version specified in grandparent pom -->
         <configuration>
           <generateLicenseXml>${project.build.outputDirectory}/META-INF/licenses.xml</generateLicenseXml>
