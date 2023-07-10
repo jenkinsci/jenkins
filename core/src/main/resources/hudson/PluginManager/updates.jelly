@@ -47,13 +47,21 @@ THE SOFTWARE.
                         enabled="${!empty(list)}" />
         </div>
         <div class="jenkins-app-bar__controls">
-          <st:include page="check.jelly"/>
+          <l:isAdmin>
+            <j:if test="${!empty(list)}">
+              <button id="button-update" form="form" type="submit" class="jenkins-button jenkins-button--primary" disabled="true">
+                <l:icon src="symbol-download" />
+                ${%Update}
+              </button>
+            </j:if>
+          </l:isAdmin>
+          <st:include page="check.jelly" />
         </div>
       </div>
 
       <st:adjunct includes="hudson.PluginManager._table"/>
 
-      <form method="post" action="install">
+      <form id="form" method="post" action="install">
         <j:set var="cache" value="${it.createCache()}"/>
 
         <j:choose>
@@ -221,23 +229,12 @@ THE SOFTWARE.
                       </td>
                     </tr>
                   </j:forEach>
-
             </table>
           </j:when>
           <j:otherwise>
             <l:notice icon="symbol-up-to-date" text="${%No updates available}" />
           </j:otherwise>
         </j:choose>
-
-        <div id="bottom-sticker">
-          <div class="bottom-sticker-inner">
-            <l:isAdmin>
-              <j:if test="${!empty(list)}">
-                <f:submit value="${%Download now and install after restart}"/>
-              </j:if>
-            </l:isAdmin>
-          </div>
-        </div>
         <d:invokeBody/>
       </form>
     </l:main-panel>
