@@ -35,7 +35,7 @@ THE SOFTWARE.
             </div>
         </j:if>
         <j:if test="${!empty(flagConfigs)}">
-            <f:rowSet name="flags" isFormItem="false">
+            <f:rowSet name="flags">
                 <table class="jenkins-table sortable">
                     <thead>
                         <tr>

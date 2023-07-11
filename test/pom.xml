@@ -68,18 +68,28 @@ THE SOFTWARE.
         <!-- RequireUpperBoundDeps between bootstrap5-api and echarts-api -->
         <groupId>io.jenkins.plugins</groupId>
         <artifactId>font-awesome-api</artifactId>
-        <version>6.3.0-2</version>
+        <version>6.4.0-1</version>
+      </dependency>
+      <dependency>
+        <groupId>io.jenkins.plugins</groupId>
+        <artifactId>ionicons-api</artifactId>
+        <version>56.v1b_1c8c49374e</version>
+      </dependency>
+      <dependency>
+        <groupId>io.jenkins.plugins</groupId>
+        <artifactId>javax-activation-api</artifactId>
+        <version>1.2.0-6</version>
       </dependency>
       <dependency>
         <!-- RequireUpperBoundDeps between checks-api, echarts-api, font-awesome-api, and junit -->
         <groupId>io.jenkins.plugins</groupId>
         <artifactId>plugin-util-api</artifactId>
-        <version>3.2.0</version>
+        <version>3.3.0</version>
       </dependency>
       <dependency>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>ant</artifactId>
-        <version>481.v7b_09e538fcca</version>
+        <version>497.v94e7d9fffa_b_9</version>
       </dependency>
       <dependency>
         <!-- RequireUpperBoundDeps via mailer and junit -->
@@ -91,7 +101,7 @@ THE SOFTWARE.
         <!-- requireUpperBoundDeps via matrix-project and junit -->
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>script-security</artifactId>
-        <version>1229.v4880b_b_e905a_6</version>
+        <version>1251.vfe552ed55f8d</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -106,12 +116,16 @@ THE SOFTWARE.
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>1952.v3a_b_0cd3f5a_03</version>
+      <version>2034.v41c9cb_349299</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
           <groupId>${project.groupId}</groupId>
           <artifactId>jenkins-war</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.hamcrest</groupId>
+          <artifactId>hamcrest-core</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -148,7 +162,7 @@ THE SOFTWARE.
     </dependency>
     <dependency>
       <groupId>org.hamcrest</groupId>
-      <artifactId>hamcrest-core</artifactId>
+      <artifactId>hamcrest</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -159,7 +173,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
       <artifactId>instance-identity</artifactId>
-      <version>142.v04572ca_5b_265</version>
+      <version>173.va_37c494ec4e5</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -177,31 +191,31 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>credentials</artifactId>
-      <version>1224.vc23ca_a_9a_2cb_0</version>
+      <version>1254.vb_96f366e7b_a_d</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>junit</artifactId>
-      <version>1189.v1b_e593637fa_e</version>
+      <version>1217.v4297208a_a_b_ce</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>mailer</artifactId>
-      <version>448.v5b_97805e3767</version>
+      <version>457.v3f72cb_e015e5</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>matrix-auth</artifactId>
-      <version>3.1.6</version>
+      <version>3.1.9</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>matrix-project</artifactId>
-      <version>785.v06b_7f47b_c631</version>
+      <version>789.v57a_725b_63c79</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -219,10 +233,16 @@ THE SOFTWARE.
       <groupId>org.junit.vintage</groupId>
       <artifactId>junit-vintage-engine</artifactId>
       <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>org.hamcrest</groupId>
+          <artifactId>hamcrest-core</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.mockito</groupId>
-      <artifactId>mockito-inline</artifactId>
+      <artifactId>mockito-core</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>

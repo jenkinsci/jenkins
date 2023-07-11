@@ -2,7 +2,6 @@ package jenkins.model;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Functions;
-import hudson.Util;
 import hudson.model.Action;
 import hudson.model.Actionable;
 import hudson.model.BallColor;
@@ -10,6 +9,7 @@ import hudson.model.Computer;
 import hudson.model.Job;
 import hudson.model.ModelObject;
 import hudson.model.Node;
+import hudson.slaves.Cloud;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -150,7 +150,7 @@ public interface ModelObjectWithContextMenu extends ModelObject {
             return this;
         }
 
-        /** @since TODO */
+        /** @since 2.401 */
         public ContextMenu add(String url, String icon, String iconXml, String text, boolean post, boolean requiresConfirmation, Badge badge) {
             if (text != null && icon != null && url != null) {
                 MenuItem item = new MenuItem(url, icon, text);
@@ -219,6 +219,13 @@ public interface ModelObjectWithContextMenu extends ModelObject {
                 .withDisplayName(c.getDisplayName())
                 .withIconClass(c.getIconClassName())
                 .withContextRelativeUrl(c.getUrl()));
+        }
+
+        public ContextMenu add(Cloud c) {
+            return add(new MenuItem()
+                    .withDisplayName(c.getDisplayName())
+                    .withIconClass(c.getIconClassName())
+                    .withContextRelativeUrl(c.getUrl()));
         }
 
         /**
@@ -355,7 +362,7 @@ public interface ModelObjectWithContextMenu extends ModelObject {
 
         /**
          * The badge to display for the context menu item
-         * @since TODO
+         * @since 2.401
          */
         @Exported
         public Badge getBadge() {
@@ -414,7 +421,7 @@ public interface ModelObjectWithContextMenu extends ModelObject {
         }
 
         public MenuItem withDisplayName(String displayName) {
-            this.displayName = Util.escape(displayName);
+            this.displayName = displayName;
             return this;
         }
 
