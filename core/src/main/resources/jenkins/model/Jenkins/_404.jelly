@@ -30,25 +30,26 @@ THE SOFTWARE.
     -->
     <st:statusCode value="${response.getStatus()}" />
     ${request.session.setAttribute('from', request.getAttribute('javax.servlet.error.request_uri'))}
-    <l:layout title="${%Page not found}" type="one-column">
+    <l:layout title="${%title(javax.servlet.error.message?:'Not Found')}" type="one-column">
         <l:header />
         <l:main-panel>
             <h1 style="text-align: center">
-                <img src="${imagesURL}/rage.svg" height="179" width="154"/> <span style="font-size:50px"><st:nbsp/>${%Oops!}</span>
+                <img src="${imagesURL}/rage.svg" height="179" width="154"/>
+                <span style="font-size:50px"><st:nbsp/>${%Oops!}</span>
             </h1>
             <div id="error-description" style="text-align: center">
-                <h2>${%title(javax.servlet.error.message)}</h2>
+                <h2>${%title(javax.servlet.error.message?:'Not Found')}</h2>
                 <j:if test="${!request.getAttribute('jenkins.security.ResourceDomainRootAction.error')}">
-	                  <p>
-	                      <j:choose>
-	                            <j:when test="${app.useSecurity}">
-                                    ${%noAccess}
-		                        </j:when>
-		                        <j:otherwise>
-		                            ${%notFound}
-                                </j:otherwise>
-                          </j:choose>
-                      </p>
+	                <p>
+	                    <j:choose>
+	                        <j:when test="${app.useSecurity}">
+                                ${%noAccess}
+		                    </j:when>
+		                    <j:otherwise>
+		                        ${%notFound}
+                            </j:otherwise>
+                        </j:choose>
+                    </p>
                 </j:if>
             </div>
         </l:main-panel>
