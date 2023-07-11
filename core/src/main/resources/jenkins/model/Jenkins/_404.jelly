@@ -41,14 +41,14 @@ THE SOFTWARE.
                 <j:if test="${!request.getAttribute('jenkins.security.ResourceDomainRootAction.error')}">
 	                  <p>
 	                      <j:choose>
-	                          <j:when test="${app.useSecurity}">
-		                            ${%noAccess}
+	                            <j:when test="${app.useSecurity}">
+                                    ${%noAccess}
 		                        </j:when>
 		                        <j:otherwise>
 		                            ${%notFound}
-		                        </j:otherwise>
-		                    </j:choose>
-                    </p>
+                                </j:otherwise>
+                          </j:choose>
+                      </p>
                 </j:if>
             </div>
         </l:main-panel>

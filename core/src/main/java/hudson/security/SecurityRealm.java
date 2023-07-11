@@ -648,14 +648,16 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
         }
 
         // If entry point was not found, try to deduce it from the request URI
-        // except pages related to login process
+        // except pages related to login process and the 404 error page
         if (from == null
                 && request != null
                 && request.getRequestURI() != null
-                && !request.getRequestURI().equals("/loginError")
-                && !request.getRequestURI().equals("/login")) {
-
-                from = request.getRequestURI();
+                // The custom login page makes the next two lines obsolete, but safer to have them.
+                && !request.getRequestURI().equals(request.getContextPath() + "/loginError")
+                && !request.getRequestURI().equals(request.getContextPath() + "/login")
+                && !request.getRequestURI().equals(request.getContextPath() + "/404")) {
+            // TODO Consider using session attribute for 404
+            from = request.getRequestURI();
         }
 
         // If deduced entry point isn't deduced yet or the content is a blank value
