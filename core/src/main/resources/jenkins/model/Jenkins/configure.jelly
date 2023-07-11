@@ -56,7 +56,7 @@ THE SOFTWARE.
       <j:forEach var="descriptor" items="${h.getSortedDescriptorsForGlobalConfigUnclassifiedReadable()}">
         <j:set var="readOnlyMode" value="${!editable.contains(descriptor)}" />
         <j:set var="instance" value="${descriptor}" /><!-- this makes the <f:textbox field=.../> work -->
-        <f:rowSet name="${descriptor.jsonSafeClassName}" isFormItem="false">
+        <f:rowSet name="${descriptor.jsonSafeClassName}">
           <st:include page="${descriptor.globalConfigPage}" from="${descriptor}" />
         </f:rowSet>
       </j:forEach>

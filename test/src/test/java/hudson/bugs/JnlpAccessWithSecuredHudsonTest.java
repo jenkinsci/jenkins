@@ -27,9 +27,6 @@ package hudson.bugs;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.xml.XmlPage;
 import hudson.model.Slave;
 import hudson.model.User;
 import hudson.remoting.Channel;
@@ -41,6 +38,9 @@ import jenkins.security.s2m.AdminWhitelistRule;
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.dom4j.io.DOMReader;
+import org.htmlunit.Page;
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.xml.XmlPage;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Email;
@@ -98,7 +98,6 @@ public class JnlpAccessWithSecuredHudsonTest {
     @Test
     public void serviceUsingDirectSecret() throws Exception {
         Slave slave = inboundAgents.createAgent(r, InboundAgentRule.Options.newBuilder().name("test").secret().build());
-        r.waitOnline(slave);
         try {
             r.createWebClient().goTo("computer/test/jenkins-agent.jnlp?encrypt=true", "application/octet-stream");
             Channel channel = slave.getComputer().getChannel();

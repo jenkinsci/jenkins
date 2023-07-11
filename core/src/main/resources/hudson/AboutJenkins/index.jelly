@@ -81,34 +81,6 @@ THE SOFTWARE.
           <tbody>
             <tr>
               <td>
-                <a class="jenkins-table__link" href="https://fontawesome.com">Font Awesome</a>
-              </td>
-              <td>
-                <a class="jenkins-table__link" href="https://twitter.com/davegandy">Dave Gandy</a>
-              </td>
-              <td>
-                <a class="jenkins-table__link" href="https://scripts.sil.org/OFL">SIL OFL 1.1 License</a>
-                and
-                <a class="jenkins-table__link" href="https://opensource.org/licenses/MIT">MIT License</a>
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <a class="jenkins-table__link" href="https://www.google.com/fonts/specimen/Roboto">Google Fonts:
-                  Roboto
-                </a>
-              </td>
-              <td>
-                <a class="jenkins-table__link" href="https://twitter.com/cr64">Christian Robertson</a>
-              </td>
-              <td>
-                <a class="jenkins-table__link" href="https://www.apache.org/licenses/LICENSE-2.0.html">Apache
-                  License, version 2.0
-                </a>
-              </td>
-            </tr>
-            <tr>
-              <td>
                 <a class="jenkins-table__link" href="https://github.com/jenkins-contrib-themes/jenkins-core-theme">
                   Jenkins Contrib Themes
                 </a>

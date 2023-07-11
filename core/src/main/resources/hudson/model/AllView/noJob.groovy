@@ -57,7 +57,7 @@ div {
 
                             if (hasAdministerJenkinsPermission) {
                                 li(class: "content-block") {
-                                    a(href: "configureClouds", class: "content-block__link") {
+                                    a(href: "cloud/", class: "content-block__link") {
                                         span(_("setUpCloud"))
                                         span(class: "trailing-icon") {
                                             l.icon(

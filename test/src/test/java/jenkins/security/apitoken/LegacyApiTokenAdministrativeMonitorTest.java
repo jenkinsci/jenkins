@@ -30,19 +30,19 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.html.DomNodeList;
-import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
-import com.gargoylesoftware.htmlunit.html.HtmlButton;
-import com.gargoylesoftware.htmlunit.html.HtmlDivision;
-import com.gargoylesoftware.htmlunit.html.HtmlElement;
-import com.gargoylesoftware.htmlunit.html.HtmlElementUtil;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.model.AdministrativeMonitor;
 import hudson.model.User;
 import jenkins.security.ApiTokenProperty;
 import org.apache.commons.lang.StringUtils;
 import org.hamcrest.Matchers;
+import org.htmlunit.Page;
+import org.htmlunit.html.DomNodeList;
+import org.htmlunit.html.HtmlAnchor;
+import org.htmlunit.html.HtmlButton;
+import org.htmlunit.html.HtmlDivision;
+import org.htmlunit.html.HtmlElement;
+import org.htmlunit.html.HtmlElementUtil;
+import org.htmlunit.html.HtmlPage;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -336,7 +336,8 @@ public class LegacyApiTokenAdministrativeMonitorTest {
 
     private HtmlButton getRevokeSelected(HtmlPage page) {
         HtmlElement document = page.getDocumentElement();
-        HtmlButton revokeSelected = document.getOneHtmlElementByAttribute("button", "class", "action-revoke-selected");
+
+        HtmlButton revokeSelected = document.querySelector("button.action-revoke-selected");
         assertNotNull(revokeSelected);
         return revokeSelected;
     }
