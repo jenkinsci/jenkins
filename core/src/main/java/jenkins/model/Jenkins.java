@@ -4555,6 +4555,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         }
     }
 
+    /**
+     * Serve a custom 404 error page, configured in web.xml.
+     */
     @WebMethod(name = "404")
     @Restricted(NoExternalUse.class)
     public void generateNotFoundResponse(StaplerRequest req, StaplerResponse rsp) throws ServletException, IOException {

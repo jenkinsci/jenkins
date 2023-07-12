@@ -11,6 +11,11 @@ import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.springframework.security.core.Authentication;
 
+/**
+ * Record the current user authentication for later impersonation if the response is 404 Not Found.
+ *
+ * @see Jenkins#generateNotFoundResponse(org.kohsuke.stapler.StaplerRequest, org.kohsuke.stapler.StaplerResponse)
+ */
 @Restricted(NoExternalUse.class)
 public class ErrorAttributeFilter implements Filter {
 
