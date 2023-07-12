@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, id:cactusman
+Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -23,30 +23,18 @@ THE SOFTWARE.
 -->
 
 <!--
-  Side panel for a slave.
+  Side panel for the log recorder
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <l:header />
   <l:side-panel>
     <l:tasks>
-      <l:task contextMenu="false" href="${rootURL}/${it.url}" icon="${it.iconClassName}" title="${%Status}"/>
-      <l:delete permission="${it.DELETE}" title="${%Delete Agent}" message="${%delete.confirm(it.name)}"/>
-      <l:task href="${rootURL}/${it.url}configure" icon="symbol-settings" permission="${it.EXTENDED_READ}"
-              title="${it.hasPermission(it.CONFIGURE) ? '%Configure' : '%View Configuration'}"/>
-      <l:task href="${rootURL}/${it.url}builds" icon="symbol-build-history" title="${%Build History}"/>
-      <l:task href="${rootURL}/${it.url}load-statistics" icon="symbol-analytics" title="${%Load Statistics}"/>
-      <j:if test="${it.channel!=null}">
-        <l:task href="${rootURL}/${it.url}script" icon="symbol-terminal" permission="${app.ADMINISTER}" title="${%Script Console}"/>
-      </j:if>
-      <st:include page="sidepanel2.jelly" optional="true" /><!-- hook for derived class to add more items -->
-      <t:actions />
+      <l:task href="." icon="symbol-journal" title="${%Log records}"/>
+      <l:isAdmin>
+        <l:task href="configure" icon="symbol-settings" title="${%Configure}"/>
+        <l:delete title="${%Delete}" message="${%delete.logrecorder(it.displayName)}" />
+      </l:isAdmin>
     </l:tasks>
-     <j:forEach var="box" items="${it.computerPanelBoxs}">
-        <st:include it="${box}" page="box.jelly" />
-    </j:forEach>
-    <j:forEach var="w" items="${it.widgets}">
-      <st:include it="${w}" page="index" />
-    </j:forEach>
   </l:side-panel>
 </j:jelly>

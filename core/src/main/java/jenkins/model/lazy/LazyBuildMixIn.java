@@ -277,17 +277,22 @@ public abstract class LazyBuildMixIn<JobT extends Job<JobT, RunT> & Queue.Task &
         List<RunT> candidates = new ArrayList<>(3);
         for (Result threshold : List.of(Result.UNSTABLE, Result.FAILURE)) {
             for (RunT build : loadedBuilds) {
+                if (candidates.contains(build)) {
+                    continue;
+                }
                 if (!build.isBuilding()) {
                     Result result = build.getResult();
                     if (result != null && result.isBetterOrEqualTo(threshold)) {
                         candidates.add(build);
                         if (candidates.size() == 3) {
+                            LOGGER.fine(() -> "Candidates: " + candidates);
                             return candidates;
                         }
                     }
                 }
             }
         }
+        LOGGER.fine(() -> "Candidates: " + candidates);
         return candidates;
     }
 
