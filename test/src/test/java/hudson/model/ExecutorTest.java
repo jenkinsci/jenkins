@@ -210,6 +210,7 @@ public class ExecutorTest {
         public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
             VirtualChannel channel = launcher.getChannel();
             Node node = build.getBuiltOn();
+            channel.call(node.getClockDifferenceCallable()); // warm up class loading
 
             e.signal(); // we are safe to be interrupted
             for (;;) {
