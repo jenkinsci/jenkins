@@ -23,7 +23,7 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:local="local">
   <st:documentation> <![CDATA[
     This tag inside <l:tasks> tag renders the left navigation bar of Jenkins.
     Each <task> tag gets an icon and link.
@@ -79,6 +79,8 @@ THE SOFTWARE.
     </st:attribute>
     <st:attribute name="badge">
       If set, displays the value as a small badge on the right side of the sidepanel item.
+      You can pass either an instance of <code>jenkins.management.Badge</code> which allows to display a tooltip,
+      or some plain String or Number.
       @since TODO
     </st:attribute>
     <st:attribute name="confirmationMessage">
@@ -90,6 +92,24 @@ THE SOFTWARE.
     </st:attribute>
   </st:documentation>
 
+  <d:taglib uri="local">
+    <d:tag name="badge">
+      <j:if test="${attrs.badge != null}">
+        <j:choose>
+          <j:when test="${attrs.badge.getClass().getName() == 'jenkins.management.Badge'}">
+            <span class="task-icon-badge" tooltip="${attrs.badge.tooltip}">
+              ${attrs.badge.text}
+            </span>
+          </j:when>
+          <j:otherwise>
+            <span class="task-icon-badge">
+              ${attrs.badge}
+            </span>
+          </j:otherwise>
+        </j:choose>
+      </j:if>
+    </d:tag>
+  </d:taglib>
   <!--
     Much of the following horrible code is to implement hierarchy support in <task> tag.
     The semantics is that when one of the nested <task> matches, the parent is also considered as a match
@@ -143,11 +163,7 @@ THE SOFTWARE.
                 <l:icon src="${icon}" />
               </span>
               <span class="task-link-text">${title}</span>
-              <j:if test="${attrs.badge != null}">
-                <span class="task-icon-badge" tooltip="${attrs.badge.tooltip}">
-                  ${attrs.badge.text}
-                </span>
-              </j:if>
+              <local:badge badge="${attrs.badge}"/>
             </span>
           </span>
         </div>
@@ -182,11 +198,7 @@ THE SOFTWARE.
                     <l:icon src="${icon}" />
                   </span>
                   <span>${title}</span>
-                  <j:if test="${attrs.badge != null}">
-                    <span class="task-icon-badge" tooltip="${attrs.badge.tooltip}">
-                      ${attrs.badge.text}
-                    </span>
-                  </j:if>
+                  <local:badge badge="${attrs.badge}"/>
                 </l:confirmationLink>
               </j:when>
 
@@ -196,11 +208,7 @@ THE SOFTWARE.
                     <l:icon src="${icon}" />
                   </span>
                   <span class="task-link-text">${title}</span>
-                  <j:if test="${attrs.badge != null}">
-                    <span class="task-icon-badge" tooltip="${attrs.badge.tooltip}">
-                      ${attrs.badge.text}
-                    </span>
-                  </j:if>
+                  <local:badge badge="${attrs.badge}"/>
                 </a>
               </j:otherwise>
             </j:choose>
