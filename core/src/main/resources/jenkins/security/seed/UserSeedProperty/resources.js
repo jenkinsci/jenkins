@@ -24,6 +24,7 @@
 function resetSeed(button) {
   var userSeedPanel = button.closest(".user-seed-panel");
   var confirmMessage = button.getAttribute("data-confirm");
+  var confirmTitle = button.getAttribute("data-confirm-title");
   var targetUrl = button.getAttribute("data-target-url");
   var redirectAfterClick = button.getAttribute("data-redirect-url");
 
@@ -32,22 +33,24 @@ function resetSeed(button) {
     warningMessage.classList.remove("visible");
   }
 
-  if (confirm(confirmMessage)) {
-    fetch(targetUrl, {
-      method: "post",
-      headers: crumb.wrap({}),
-    }).then((rsp) => {
-      if (rsp.ok) {
-        if (redirectAfterClick) {
-          window.location.href = redirectAfterClick;
-        } else {
-          if (!warningMessage.classList.contains("visible")) {
-            warningMessage.classList.add("visible");
+  dialog
+    .confirm(confirmTitle, { message: confirmMessage, type: "destructive" })
+    .then(() => {
+      fetch(targetUrl, {
+        method: "post",
+        headers: crumb.wrap({}),
+      }).then((rsp) => {
+        if (rsp.ok) {
+          if (redirectAfterClick) {
+            window.location.href = redirectAfterClick;
+          } else {
+            if (!warningMessage.classList.contains("visible")) {
+              warningMessage.classList.add("visible");
+            }
           }
         }
-      }
+      });
     });
-  }
 }
 
 (function () {
