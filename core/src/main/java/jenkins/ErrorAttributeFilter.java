@@ -18,7 +18,6 @@ public class ErrorAttributeFilter implements Filter {
 
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
-        //final User currentUser = User.current();
         final Authentication authentication = Jenkins.getAuthentication2();
         servletRequest.setAttribute(USER_ATTRIBUTE, authentication);
         filterChain.doFilter(servletRequest, servletResponse);
