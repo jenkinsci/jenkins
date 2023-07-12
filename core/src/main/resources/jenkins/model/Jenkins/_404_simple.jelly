@@ -37,7 +37,6 @@ THE SOFTWARE.
         <st:setHeader name="Cross-Origin-Opener-Policy" value="same-origin" />
         <x:doctype name="html" />
         <st:statusCode value="${response.getStatus()}" />
-        ${request.session.setAttribute('from', request.getAttribute('javax.servlet.error.request_uri'))}
         <html>
             <head>
                 <title>${%title(javax.servlet.error.message?:'Not Found')}</title>

@@ -81,8 +81,8 @@ public class ErrorPageTest {
                 final FailingHttpStatusCodeException ex = assertThrows(FailingHttpStatusCodeException.class, () -> wc.goTo("foo"));
                 assertEquals(404, ex.getStatusCode());
                 final String content = ex.getResponse().getContentAsString(StandardCharsets.UTF_8);
-                assertThat(content, containsString(j.contextPath + "/login?from=%2F"));
-                assertThat(content, not(containsString(j.contextPath + "/login?from=%2Ffoo")));
+                assertThat(content, containsString(j.contextPath + "/login?from=" + j.contextPath.replace("/", "%2F") + "%2Ffoo"));
+                assertThat(content, not(containsString(j.contextPath + "/login?from=" + j.contextPath.replace("/", "%2F") + "%2F404")));
                 assertThat(content, containsString("This page may not exist, or you may not have permission to see it."));
             }
 
@@ -90,8 +90,8 @@ public class ErrorPageTest {
                 final FailingHttpStatusCodeException ex = assertThrows(FailingHttpStatusCodeException.class, () -> wc.goTo("foo/bar/baz/"));
                 assertEquals(404, ex.getStatusCode());
                 final String content = ex.getResponse().getContentAsString(StandardCharsets.UTF_8);
-                assertThat(content, containsString(j.contextPath + "/login?from=%2F"));
-                assertThat(content, not(containsString(j.contextPath + "/login?from=%2Ffoo")));
+                assertThat(content, containsString(j.contextPath + "/login?from=" + j.contextPath.replace("/", "%2F") + "%2Ffoo%2Fbar%2Fbaz%2F"));
+                assertThat(content, not(containsString(j.contextPath + "/login?from=" + j.contextPath.replace("/", "%2F") + "%2F404")));
                 assertThat(content, containsString("This page may not exist, or you may not have permission to see it."));
             }
 
@@ -99,8 +99,8 @@ public class ErrorPageTest {
                 final FailingHttpStatusCodeException ex = assertThrows(FailingHttpStatusCodeException.class, () -> wc.goTo("static-files/foo"));
                 assertEquals(404, ex.getStatusCode());
                 final String content = ex.getResponse().getContentAsString(StandardCharsets.UTF_8);
-                assertThat(content, containsString(j.contextPath + "/login?from=%2F"));
-                assertThat(content, not(containsString(j.contextPath + "/login?from=%2Ffoo")));
+                assertThat(content, containsString(j.contextPath + "/login?from=" + j.contextPath.replace("/", "%2F") + "%2Fstatic-files%2Ffoo"));
+                assertThat(content, not(containsString(j.contextPath + "/login?from=" + j.contextPath.replace("/", "%2F") + "%2F404")));
                 assertThat(content, not(containsString("This page does not exist.")));
                 assertThat(content, not(containsString("This page may not exist, or you may not have permission to see it.")));
             }

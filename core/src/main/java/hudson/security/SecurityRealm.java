@@ -647,6 +647,17 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
             from = request.getParameter("from");
         }
 
+        // On the 404 error page, use the session attribute it sets
+        if (request != null && request.getRequestURI().equals(request.getContextPath() + "/404")) {
+            final HttpSession session = request.getSession(false);
+            if (session != null) {
+                final Object attribute = session.getAttribute("from");
+                if (attribute != null) {
+                    from = attribute.toString();
+                }
+            }
+        }
+
         // If entry point was not found, try to deduce it from the request URI
         // except pages related to login process and the 404 error page
         if (from == null
@@ -656,7 +667,6 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
                 && !request.getRequestURI().equals(request.getContextPath() + "/loginError")
                 && !request.getRequestURI().equals(request.getContextPath() + "/login")
                 && !request.getRequestURI().equals(request.getContextPath() + "/404")) {
-            // TODO Consider using session attribute for 404
             from = request.getRequestURI();
         }
 
