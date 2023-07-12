@@ -38,6 +38,24 @@
       "matchStrings": ["ARG MAVEN_VERSION=(?<currentValue>.*?)\n"],
       "depNameTemplate": "org.apache.maven:maven-core",
       "datasourceTemplate": "maven"
+    },
+    {
+      "fileMatch": ["core/src/site/site.xml"],
+      "matchStrings": ["lit@(?<currentValue>.*?)/"],
+      "depNameTemplate": "lit",
+      "datasourceTemplate": "npm"
+    },
+    {
+      "fileMatch": ["core/src/site/site.xml"],
+      "matchStrings": ["webcomponentsjs@(?<currentValue>.*?)/"],
+      "depNameTemplate": "@webcomponents/webcomponentsjs",
+      "datasourceTemplate": "npm"
+    },
+    {
+      "fileMatch": ["core/src/site/site.xml"],
+      "matchStrings": ["<version>(?<currentValue>.*?)<\/version>"],
+      "depNameTemplate": "org.apache.maven.skins:maven-fluido-skin",
+      "datasourceTemplate": "maven"
     }
   ],
   "labels": ["dependencies", "skip-changelog"],

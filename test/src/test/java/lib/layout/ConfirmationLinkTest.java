@@ -32,10 +32,12 @@ import static org.junit.Assert.assertTrue;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.model.UnprotectedRootAction;
 import hudson.util.HttpResponses;
+import java.io.IOException;
 import java.net.HttpURLConnection;
 import org.htmlunit.Page;
 import org.htmlunit.html.DomNodeList;
 import org.htmlunit.html.HtmlAnchor;
+import org.htmlunit.html.HtmlButton;
 import org.htmlunit.html.HtmlElement;
 import org.htmlunit.html.HtmlElementUtil;
 import org.htmlunit.html.HtmlPage;
@@ -166,10 +168,14 @@ public class ConfirmationLinkTest {
         assertEquals(HttpURLConnection.HTTP_OK, pageAfterClick.getWebResponse().getStatusCode());
     }
 
-    private HtmlAnchor getClickableLink(HtmlPage page) {
+    private HtmlButton getClickableLink(HtmlPage page) throws IOException {
+        HtmlElement document = page.getDocumentElement();
         DomNodeList<HtmlElement> anchors = page.getElementById("test-panel").getElementsByTagName("a");
         assertEquals(1, anchors.size());
-        return (HtmlAnchor) anchors.get(0);
+        HtmlAnchor anchor = (HtmlAnchor) anchors.get(0);
+        HtmlElementUtil.click(anchor);
+        HtmlButton revokeButtonSelected = document.getOneHtmlElementByAttribute("button", "data-id", "ok");
+        return revokeButtonSelected;
     }
 
     @TestExtension("noInjectionArePossible")

@@ -113,6 +113,7 @@ THE SOFTWARE.
                                    class="jenkins-button jenkins-button--tertiary jenkins-!-destructive-color api-token-property-token-revoke"
                                    data-message-if-legacy-revoked="${%RevokedToken}"
                                    data-confirm="${%ConfirmRevokeSingle}"
+                                   data-confirm-title="${%ConfirmRevokeSingleTitle}"
                                    data-target-url="${descriptor.descriptorFullUrl}/revoke">
                                     <local:revokeIcon title="${%RevokeToken}" />
                                 </a>
@@ -140,6 +141,7 @@ THE SOFTWARE.
                               <a href="#"
                                  class="jenkins-button jenkins-button--tertiary jenkins-!-destructive-color api-token-property-token-revoke hidden-button"
                                  data-confirm="${%ConfirmRevokeSingle}"
+                                 data-confirm-title="${%ConfirmRevokeSingleTitle}"
                                  data-target-url="${descriptor.descriptorFullUrl}/revoke">
                                 <local:revokeIcon title="${%RevokeToken}" />
                               </a>
