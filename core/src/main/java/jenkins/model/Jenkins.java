@@ -1469,6 +1469,14 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     public Api getApi() {
+        /* Do not show "REST API" link in footer when on 404 error page */
+        final StaplerRequest req = Stapler.getCurrentRequest();
+        if (req != null) {
+            final Object attribute = req.getAttribute("javax.servlet.error.message");
+            if (attribute != null) {
+                return null;
+            }
+        }
         return new Api(this);
     }
 

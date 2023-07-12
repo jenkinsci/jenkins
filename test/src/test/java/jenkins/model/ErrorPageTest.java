@@ -54,6 +54,7 @@ public class ErrorPageTest {
                 final String content = ex.getResponse().getContentAsString(StandardCharsets.UTF_8);
                 assertThat(content, not(containsString(j.contextPath + "/login?from=")));
                 assertThat(content, containsString("This page does not exist."));
+                assertThat(content, not(containsString("REST API")));
             }
 
             { // paths are fine on error page even when nested
@@ -62,6 +63,7 @@ public class ErrorPageTest {
                 final String content = ex.getResponse().getContentAsString(StandardCharsets.UTF_8);
                 assertThat(content, not(containsString(j.contextPath + "/login?from=")));
                 assertThat(content, containsString("This page does not exist."));
+                assertThat(content, not(containsString("REST API")));
             }
 
             { // resource root action have custom (less) error message content
@@ -71,6 +73,7 @@ public class ErrorPageTest {
                 assertThat(content, not(containsString(j.contextPath + "/login?from=")));
                 assertThat(content, not(containsString("This page does not exist.")));
                 assertThat(content, not(containsString("This page may not exist, or you may not have permission to see it.")));
+                assertThat(content, not(containsString("REST API")));
             }
 
             /* Set up security realm and request as anonymous, we expect login link and hedged response */
@@ -84,6 +87,7 @@ public class ErrorPageTest {
                 assertThat(content, containsString(j.contextPath + "/login?from=" + j.contextPath.replace("/", "%2F") + "%2Ffoo"));
                 assertThat(content, not(containsString(j.contextPath + "/login?from=" + j.contextPath.replace("/", "%2F") + "%2F404")));
                 assertThat(content, containsString("This page may not exist, or you may not have permission to see it."));
+                assertThat(content, not(containsString("REST API")));
             }
 
             { // paths are fine on error page even when nested
@@ -93,6 +97,7 @@ public class ErrorPageTest {
                 assertThat(content, containsString(j.contextPath + "/login?from=" + j.contextPath.replace("/", "%2F") + "%2Ffoo%2Fbar%2Fbaz%2F"));
                 assertThat(content, not(containsString(j.contextPath + "/login?from=" + j.contextPath.replace("/", "%2F") + "%2F404")));
                 assertThat(content, containsString("This page may not exist, or you may not have permission to see it."));
+                assertThat(content, not(containsString("REST API")));
             }
 
             { // resource root action have custom (less) error message content
@@ -103,6 +108,7 @@ public class ErrorPageTest {
                 assertThat(content, not(containsString(j.contextPath + "/login?from=" + j.contextPath.replace("/", "%2F") + "%2F404")));
                 assertThat(content, not(containsString("This page does not exist.")));
                 assertThat(content, not(containsString("This page may not exist, or you may not have permission to see it.")));
+                assertThat(content, not(containsString("REST API")));
             }
 
             /* With the security realm still set up, log in and expect the profile link to show */
@@ -115,6 +121,7 @@ public class ErrorPageTest {
                 assertThat(content, not(containsString(j.contextPath + "/login?from=")));
                 assertThat(content, containsString("user/alice"));
                 assertThat(content, containsString("This page may not exist, or you may not have permission to see it."));
+                assertThat(content, not(containsString("REST API")));
             }
 
             { // paths are fine on error page even when nested
@@ -124,6 +131,7 @@ public class ErrorPageTest {
                 assertThat(content, not(containsString(j.contextPath + "/login?from=")));
                 assertThat(content, containsString("user/alice"));
                 assertThat(content, containsString("This page may not exist, or you may not have permission to see it."));
+                assertThat(content, not(containsString("REST API")));
             }
 
             { // resource root action have custom (less) error message content
@@ -134,6 +142,7 @@ public class ErrorPageTest {
                 assertThat(content, containsString("user/alice"));
                 assertThat(content, not(containsString("This page does not exist.")));
                 assertThat(content, not(containsString("This page may not exist, or you may not have permission to see it.")));
+                assertThat(content, not(containsString("REST API")));
             }
         } finally {
             Dispatcher.TRACE = true;
@@ -155,17 +164,21 @@ public class ErrorPageTest {
 
         try (JenkinsRule.WebClient wc = j.createWebClient()) {
             wc.setThrowExceptionOnFailingStatusCode(false);
+
             @SuppressWarnings("deprecation") // we need to not access the usual Jenkins URLs
             final Page page = wc.getPage(resourceRoot + "foo");
             wc.setThrowExceptionOnFailingStatusCode(true);
+
             assertEquals(404, page.getWebResponse().getStatusCode());
             final String content = page.getWebResponse().getContentAsString(StandardCharsets.UTF_8);
             assertThat(content, containsString("Back to Jenkins"));
+            assertThat(content, not(containsString("REST API")));
             if (page.isHtmlPage()) {
                 final HtmlPage htmlPage = (HtmlPage) page;
                 final Page nextPage = htmlPage.getAnchorByText("Back to Jenkins").click();
                 final String nextContent = nextPage.getWebResponse().getContentAsString(StandardCharsets.UTF_8);
                 assertThat(nextContent, containsString("Welcome to Jenkins"));
+                assertThat(nextContent, containsString("REST API")); // Rest API exists for Jenkins main page
             }
         }
     }
