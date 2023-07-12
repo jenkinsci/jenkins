@@ -172,6 +172,7 @@ public class ErrorPageTest {
             assertEquals(404, page.getWebResponse().getStatusCode());
             final String content = page.getWebResponse().getContentAsString(StandardCharsets.UTF_8);
             assertThat(content, containsString("Back to Jenkins"));
+            assertThat(content, containsString("Jenkins serves only static files on this domain."));
             assertThat(content, not(containsString("REST API")));
             if (page.isHtmlPage()) {
                 final HtmlPage htmlPage = (HtmlPage) page;
