@@ -47,5 +47,5 @@ THE SOFTWARE.
             <l:task href="${url}/configure" icon="symbol-settings" title="${%View Configuration}"/>
         </j:when>
     </j:choose>
-    <l:task confirmationMessage="${%delete.confirm(it.pronoun, it.displayName)}" href="${url}/doDelete" icon="icon-edit-delete icon-md" permission="${it.DELETE}" post="true" requiresConfirmation="true" title="${%delete(it.pronoun)}"/>
+    <l:delete message="${%delete.confirm(it.pronoun, it.displayName)}" urlPrefix="${url}" permission="${it.DELETE}" title="${%delete(it.pronoun)}"/>
 </j:jelly>
