@@ -51,7 +51,7 @@
   },
   "dependencies": {
     "handlebars": "4.7.7",
-    "hotkeys-js": "3.10.4",
+    "hotkeys-js": "3.11.1",
     "jquery": "3.7.0",
     "lodash": "4.17.21",
     "sortablejs": "1.15.0",
