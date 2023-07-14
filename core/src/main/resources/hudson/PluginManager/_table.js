@@ -96,11 +96,6 @@ Behaviour.specify("#filter-box", "_table", 0, function (e) {
       return;
     }
 
-    var pluginI18n = select(".plugins.i18n");
-    function i18n(messageId) {
-      return pluginI18n.getAttribute("data-" + messageId);
-    }
-
     // Create a map of the plugin rows, making it easy to index them.
     var plugins = {};
     for (var i = 0; i < pluginTRs.length; i++) {
@@ -482,6 +477,33 @@ window.addEventListener("load", function () {
     });
   }
 
+  const uninstallButtons = document.querySelectorAll(
+    "[data-action='uninstall']"
+  );
+  uninstallButtons.forEach((uninstallButton) => {
+    uninstallButton.addEventListener("click", () => {
+      const title = uninstallButton.dataset.message;
+      const href = uninstallButton.dataset.href;
+
+      const options = {
+        message: i18n("uninstall-description"),
+        type: "destructive",
+      };
+
+      dialog.confirm(title, options).then(
+        () => {
+          var form = document.createElement("form");
+          form.setAttribute("method", "POST");
+          form.setAttribute("action", href);
+          crumb.appendToForm(form);
+          document.body.appendChild(form);
+          form.submit();
+        },
+        () => {}
+      );
+    });
+  });
+
   // Enable/disable the 'Update' button depending on if any updates are checked
   const anyCheckboxesSelected = () => {
     return (
@@ -510,3 +532,7 @@ window.addEventListener("load", function () {
     );
   }
 });
+
+function i18n(messageId) {
+  return document.querySelector("#i18n").getAttribute("data-" + messageId);
+}

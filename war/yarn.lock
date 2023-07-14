@@ -4063,10 +4063,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"hotkeys-js@npm:3.10.4":
-  version: 3.10.4
-  resolution: "hotkeys-js@npm:3.10.4"
-  checksum: da3b8ba5a3d0a82e6652e186a887abd65218584980cbe4b5cb5ac7fc277163194a1fdeb2cc28acc1f29680d062f6ef8f2076f0ffbd10350227736f85f299e615
+"hotkeys-js@npm:3.11.2":
+  version: 3.11.2
+  resolution: "hotkeys-js@npm:3.11.2"
+  checksum: 8e3d984628d2dcf75519017cfdb2c936e7bd0598cf87e3b11e90a5a0b104105042f9979de0118061e819fca95be9c26f27f76447ceeff726678737aaedcd9707
   languageName: node
   linkType: hard
 
@@ -4387,7 +4387,7 @@ __metadata:
     eslint-config-prettier: 8.8.0
     handlebars: 4.7.7
     handlebars-loader: 1.7.3
-    hotkeys-js: 3.10.4
+    hotkeys-js: 3.11.2
     jquery: 3.7.0
     lodash: 4.17.21
     mini-css-extract-plugin: 2.7.6
@@ -6475,11 +6475,11 @@ __metadata:
   linkType: hard
 
 "semver@npm:^5.6.0":
-  version: 5.7.1
-  resolution: "semver@npm:5.7.1"
+  version: 5.7.2
+  resolution: "semver@npm:5.7.2"
   bin:
-    semver: ./bin/semver
-  checksum: 57fd0acfd0bac382ee87cd52cd0aaa5af086a7dc8d60379dfe65fea491fb2489b6016400813930ecd61fd0952dae75c115287a1b16c234b1550887117744dfaf
+    semver: bin/semver
+  checksum: fb4ab5e0dd1c22ce0c937ea390b4a822147a9c53dbd2a9a0132f12fe382902beef4fbf12cf51bb955248d8d15874ce8cd89532569756384f994309825f10b686
   languageName: node
   linkType: hard
 

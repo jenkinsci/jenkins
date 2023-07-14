@@ -89,17 +89,18 @@ function mapChildrenItemsToDropdownItems(items) {
       onClick: () => {
         if (item.post || item.requiresConfirmation) {
           if (item.requiresConfirmation) {
-            if (confirm((item.text || item.displayName) + ": are you sure?")) {
-              // TODO I18N
-              const form = document.createElement("form");
-              form.setAttribute("method", item.post ? "POST" : "GET");
-              form.setAttribute("action", item.url);
-              if (item.post) {
-                crumb.appendToForm(form);
-              }
-              document.body.appendChild(form);
-              form.submit();
-            }
+            dialog
+              .confirm(item.displayName, { message: item.message })
+              .then(() => {
+                const form = document.createElement("form");
+                form.setAttribute("method", item.post ? "POST" : "GET");
+                form.setAttribute("action", item.url);
+                if (item.post) {
+                  crumb.appendToForm(form);
+                }
+                document.body.appendChild(form);
+                form.submit();
+              });
           } else {
             fetch(item.url, {
               method: "post",

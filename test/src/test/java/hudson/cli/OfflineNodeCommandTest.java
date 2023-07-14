@@ -30,7 +30,6 @@ import static hudson.cli.CLICommandInvoker.Matcher.succeededSilently;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.not;
 
@@ -42,11 +41,12 @@ import hudson.model.Slave;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.OfflineCause;
 import hudson.util.OneShotEvent;
-import java.util.concurrent.Future;
 import jenkins.model.Jenkins;
 import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.BuildWatcher;
 import org.jvnet.hudson.test.InboundAgentRule;
 import org.jvnet.hudson.test.JenkinsRule;
 
@@ -56,6 +56,9 @@ import org.jvnet.hudson.test.JenkinsRule;
 public class OfflineNodeCommandTest {
 
     private CLICommandInvoker command;
+
+    @ClassRule
+    public static final BuildWatcher buildWatcher = new BuildWatcher();
 
     @Rule
     public final JenkinsRule j = new JenkinsRule();
@@ -223,8 +226,7 @@ public class OfflineNodeCommandTest {
         slave.toComputer().waitUntilOnline();
         FreeStyleProject project = j.createFreeStyleProject("aProject");
         project.setAssignedNode(slave);
-        final Future<FreeStyleBuild> build = OnlineNodeCommandTest.startBlockingAndFinishingBuild(project, finish);
-        assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(1));
+        final FreeStyleBuild build = OnlineNodeCommandTest.startBlockingAndFinishingBuild(project, finish);
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Computer.DISCONNECT, Jenkins.READ)
@@ -232,13 +234,12 @@ public class OfflineNodeCommandTest {
         assertThat(result, succeededSilently());
         slave.toComputer().waitUntilOffline();
         assertOfflineComputerState(null, slave);
-        assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(1));
-        assertThat(project.isBuilding(), equalTo(true));
+        assertThat(((OfflineCause.ByCLI) slave.toComputer().getOfflineCause()).message, equalTo(null));
+        assertThat(build.isBuilding(), equalTo(true));
 
         finish.signal();
-        build.get();
-        assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(1));
-        assertThat(project.isBuilding(), equalTo(false));
+        j.waitForCompletion(build);
+        assertThat(build.isBuilding(), equalTo(false));
         j.assertBuildStatusSuccess(build);
     }
 
@@ -249,8 +250,7 @@ public class OfflineNodeCommandTest {
         slave.toComputer().waitUntilOnline();
         FreeStyleProject project = j.createFreeStyleProject("aProject");
         project.setAssignedNode(slave);
-        final Future<FreeStyleBuild> build = OnlineNodeCommandTest.startBlockingAndFinishingBuild(project, finish);
-        assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(1));
+        final FreeStyleBuild build = OnlineNodeCommandTest.startBlockingAndFinishingBuild(project, finish);
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Computer.DISCONNECT, Jenkins.READ)
@@ -258,13 +258,12 @@ public class OfflineNodeCommandTest {
         assertThat(result, succeededSilently());
         slave.toComputer().waitUntilOffline();
         assertOfflineComputerState("aCause", slave);
-        assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(1));
-        assertThat(project.isBuilding(), equalTo(true));
+        assertThat(((OfflineCause.ByCLI) slave.toComputer().getOfflineCause()).message, equalTo("aCause"));
+        assertThat(build.isBuilding(), equalTo(true));
 
         finish.signal();
-        build.get();
-        assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(1));
-        assertThat(project.isBuilding(), equalTo(false));
+        j.waitForCompletion(build);
+        assertThat(build.isBuilding(), equalTo(false));
         j.assertBuildStatusSuccess(build);
     }
 

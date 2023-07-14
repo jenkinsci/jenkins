@@ -1881,29 +1881,6 @@ function rowvgStartEachRow(recursive, f) {
       label.appendChild(spanTag);
     }
   );
-
-  // stop button JS cannot be done as adjunct, as it can be inside an Ajax response
-  Behaviour.specify(
-    ".stop-button-link",
-    "stop-button-link",
-    0,
-    function (link) {
-      let question = link.getAttribute("data-confirm");
-      let url = link.getAttribute("href");
-      link.addEventListener("click", function (e) {
-        e.preventDefault();
-        if (question !== null) {
-          if (!confirm(question)) {
-            return;
-          }
-        }
-        fetch(url, {
-          method: "post",
-          headers: crumb.wrap({}),
-        });
-      });
-    }
-  );
 })();
 
 var hudsonRules = {}; // legacy name
