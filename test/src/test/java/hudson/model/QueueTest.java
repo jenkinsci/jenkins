@@ -101,6 +101,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -882,8 +883,8 @@ public class QueueTest {
     }
 
     @Test public void pendingsConsistenceAfterErrorDuringMaintain() throws IOException, InterruptedException {
-        FreeStyleProject project1 = r.createFreeStyleProject();
-        FreeStyleProject project2 = r.createFreeStyleProject();
+        FreeStyleProject project1 = r.createFreeStyleProject("project1");
+        FreeStyleProject project2 = r.createFreeStyleProject("project2");
         TopLevelItemDescriptor descriptor = new TopLevelItemDescriptor(FreeStyleProject.class) {
          @Override
             public FreeStyleProject newInstance(ItemGroup parent, String name) {
@@ -932,7 +933,11 @@ public class QueueTest {
         for (var p : r.jenkins.allItems(FreeStyleProject.class)) {
             for (var b : p.getBuilds()) {
                 r.waitForCompletion(b);
+                b.delete();
+                Logger.getLogger(QueueTest.class.getName()).info(() -> "Waited for " + b);
             }
+            p.delete();
+            Logger.getLogger(QueueTest.class.getName()).info(() -> "Cleaned up " + p);
         }
     }
 

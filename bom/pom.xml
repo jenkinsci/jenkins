@@ -260,7 +260,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jvnet.hudson</groupId>
         <artifactId>commons-jelly-tags-define</artifactId>
-        <version>1.1-jenkins-20230124</version>
+        <version>1.1-jenkins-20230713</version>
       </dependency>
       <dependency>
         <groupId>org.jvnet.localizer</groupId>
