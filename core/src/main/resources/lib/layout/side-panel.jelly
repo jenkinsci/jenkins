@@ -27,7 +27,8 @@ THE SOFTWARE.
   <st:documentation>
     Generates a left side content as part of a Jenkins page. Typically known as two-column or left-side +  main-content layouts
     <st:attribute name="sticky">
-      Make the side panel sticky.
+      Make the side panel sticky. Should not be used on pages that include widgets in the sidepanel and when plugins can
+      add their own tasks, so the number of tasks is not fixed.
     </st:attribute>
 
   </st:documentation>
