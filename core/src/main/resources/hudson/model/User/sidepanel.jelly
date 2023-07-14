@@ -29,7 +29,7 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <l:header />
-  <l:side-panel>
+  <l:side-panel sticky="true">
     <l:tasks>
       <l:task contextMenu="false" href="${rootURL}/asynchPeople/" icon="symbol-people" title="${%People}"/>
       <l:task contextMenu="false" href="${rootURL}/${it.url}/" icon="symbol-person" title="${%Status}"/>

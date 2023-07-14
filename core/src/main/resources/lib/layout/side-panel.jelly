@@ -26,9 +26,16 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define">
   <st:documentation>
     Generates a left side content as part of a Jenkins page. Typically known as two-column or left-side +  main-content layouts
+    <st:attribute name="sticky">
+      Make the side panel sticky.
+    </st:attribute>
+
   </st:documentation>
 
   <j:if test="${mode=='side-panel'}">
+    <j:if test="${attrs.sticky == 'true'}">
+      <script src="${resURL}/jsbundles/sticky-sidepanel.js" type="text/javascript" defer="true" />
+    </j:if>
     <d:invokeBody />
   </j:if>
 

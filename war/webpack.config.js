@@ -50,6 +50,9 @@ module.exports = (env, argv) => ({
     ],
     "simple-page": [path.join(__dirname, "src/main/scss/simple-page.scss")],
     styles: [path.join(__dirname, "src/main/scss/styles.scss")],
+    "sticky-sidepanel": [
+      path.join(__dirname, "src/main/js/sticky-sidepanel.js"),
+    ],
   },
   output: {
     path: path.join(__dirname, "src/main/webapp/jsbundles"),
