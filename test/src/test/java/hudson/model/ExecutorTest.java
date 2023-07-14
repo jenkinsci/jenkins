@@ -1,6 +1,5 @@
 package hudson.model;
 
-import hudson.Functions;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsString;
@@ -10,6 +9,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import hudson.Functions;
 import hudson.Launcher;
 import hudson.remoting.VirtualChannel;
 import hudson.slaves.DumbSlave;
