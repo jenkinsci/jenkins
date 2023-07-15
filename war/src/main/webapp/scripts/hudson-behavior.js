@@ -1881,29 +1881,6 @@ function rowvgStartEachRow(recursive, f) {
       label.appendChild(spanTag);
     }
   );
-
-  // stop button JS cannot be done as adjunct, as it can be inside an Ajax response
-  Behaviour.specify(
-    ".stop-button-link",
-    "stop-button-link",
-    0,
-    function (link) {
-      let question = link.getAttribute("data-confirm");
-      let url = link.getAttribute("href");
-      link.addEventListener("click", function (e) {
-        e.preventDefault();
-        if (question !== null) {
-          if (!confirm(question)) {
-            return;
-          }
-        }
-        fetch(url, {
-          method: "post",
-          headers: crumb.wrap({}),
-        });
-      });
-    }
-  );
 })();
 
 var hudsonRules = {}; // legacy name
@@ -2127,27 +2104,6 @@ function AutoScroller(scrollContainer) {
       scrollDiv.scrollTop = currentHeight;
     },
   };
-}
-
-// used in expandableTextbox.jelly to change a input field into a text area
-// eslint-disable-next-line no-unused-vars
-function expandTextArea(button, id) {
-  button.style.display = "none";
-  var field = button.parentNode.previousSibling.children[0];
-  var value = field.value.replace(/ +/g, "\n");
-
-  var n = button;
-  while (!n.classList.contains("expanding-input") && n.tagName != "TABLE") {
-    n = n.parentNode;
-  }
-
-  var parent = n.parentNode;
-  parent.innerHTML = "<textarea rows=8 class='jenkins-input'></textarea>";
-  var textArea = parent.childNodes[0];
-  textArea.name = field.name;
-  textArea.value = value;
-
-  layoutUpdateCallback.call();
 }
 
 // refresh a part of the HTML specified by the given ID,

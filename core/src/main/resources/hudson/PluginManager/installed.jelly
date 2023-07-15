@@ -48,21 +48,24 @@ THE SOFTWARE.
 
       <st:adjunct includes="hudson.PluginManager._table"/>
 
+      <span style="display:none" id="is-restart-required-for-completion"
+            data-is-restart-required="${app.updateCenter.isRestartRequiredForCompletion()}" />
+
       <j:if test="${app.updateCenter.isRestartRequiredForCompletion()}">
         <div class="alert alert-warning"><strong>${%Warning}</strong>: ${%requires.restart}</div>
       </j:if>
 
-      <div class="plugins i18n"
-           data-cannot-enable="${%This plugin cannot be enabled}"
-           data-cannot-disable="${%This plugin cannot be disabled}"
-           data-cannot-uninstall="${%This plugin cannot be uninstalled}"
-           data-disabled-dependencies="${%It has one or more unsatisfied dependencies}"
-           data-enabled-dependents="${%It has one or more enabled dependents}"
-           data-installed-dependents="${%It has one or more installed dependents}"
-           data-detached-disable="${%detached-disable}"
-           data-detached-uninstall="${%detached-uninstall}"
-           data-detached-possible-dependents="${%detached-possible-dependents}"
-      />
+      <template id="i18n"
+                data-cannot-enable="${%This plugin cannot be enabled}"
+                data-cannot-disable="${%This plugin cannot be disabled}"
+                data-cannot-uninstall="${%This plugin cannot be uninstalled}"
+                data-disabled-dependencies="${%It has one or more unsatisfied dependencies}"
+                data-enabled-dependents="${%It has one or more enabled dependents}"
+                data-installed-dependents="${%It has one or more installed dependents}"
+                data-detached-disable="${%detached-disable}"
+                data-detached-uninstall="${%detached-uninstall}"
+                data-detached-possible-dependents="${%detached-possible-dependents}"
+                data-uninstall-description="${%uninstall-description}" />
 
       <table id="plugins" class="jenkins-table sortable">
         <j:choose>
@@ -162,7 +165,8 @@ THE SOFTWARE.
                   <td class="jenkins-table__cell--tight enable" data="${state}">
                     <div class="jenkins-table__cell__button-wrapper">
                       <span class="jenkins-toggle-switch">
-                        <input type="checkbox" checked="${state}" onclick="flip(event)"
+                        <input type="checkbox" checked="${state}"
+                               class="plugin-manager-toggle-switch"
                                url="plugin/${p.shortName}"
                                disabled="${readOnlyMode ? 'true' : null}"
                                original="${p.active?'true':'false'}"/>
@@ -221,11 +225,14 @@ THE SOFTWARE.
                                 </j:forEach>
                               </div>
                             </j:if>
-                            <form class="jenkins-buttons-row" method="post" action="plugin/${p.shortName}/uninstall">
-                              <button class="jenkins-table__button jenkins-!-destructive-color uninstall" tooltip="${%Uninstall} ${p.updateInfo.displayName?:p.displayName}">
-                                <l:icon src="symbol-close-circle"/>
-                              </button>
-                            </form>
+                            <button data-action="uninstall"
+                                    type="button"
+                                    class="jenkins-table__button jenkins-!-destructive-color"
+                                    tooltip="${%Uninstall} ${p.updateInfo.displayName ?: p.displayName}"
+                                    data-href="plugin/${p.shortName}/doUninstall"
+                                    data-message="${%uninstall-title(p.updateInfo.displayName ?: p.displayName)}">
+                              <l:icon src="symbol-close-circle"/>
+                            </button>
                           </j:otherwise>
                         </j:choose>
                       </div>
@@ -280,40 +287,7 @@ THE SOFTWARE.
         </form>
       </div>
 
-
-      <script>
-        <!-- function to toggle the enable/disable state -->
-        function flip(o) {
-          btn = o.target;
-
-          <!-- trigger -->
-          fetch(btn.getAttribute('url')+"/make"+(btn.checked?"Enabled":"Disabled"), {
-            method: 'post',
-            headers: crumb.wrap({}),
-          }).then(rsp => {
-            if (!rsp.ok) {
-              rsp.text().then((responseText) => {
-                document.getElementById('needRestart').innerHTML = responseText;
-              });
-            }
-            updateMsg();
-          })
-        }
-
-        function updateMsg() {
-          <!-- is anything changed since its original state? -->
-          var e = Array.from(document.getElementById('plugins').querySelectorAll('input[type="checkbox"]')).find(function(e) {
-            return String(e.checked)!=e.getAttribute('original');
-          });
-
-          <j:if test="${app.updateCenter.isRestartRequiredForCompletion()}">
-            e = true;
-          </j:if>
-          document.getElementById('needRestart').style.display = (e!=null?"block":"none");
-        }
-
-        updateMsg(); // set the initial state
-      </script>
+      <st:adjunct includes="hudson.PluginManager._installed"/>
     </l:main-panel>
   </l:layout>
 </j:jelly>

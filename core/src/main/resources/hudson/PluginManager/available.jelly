@@ -43,13 +43,34 @@ THE SOFTWARE.
                         value="${request.getParameter('filter')}" />
         </div>
         <div class="jenkins-app-bar__controls">
+          <l:isAdmin>
+            <div class="jenkins-split-button">
+              <button id="button-install" form="form" type="submit" name="dynamicLoad" class="jenkins-button jenkins-button--primary">
+                <div class="jenkins-dropdown__item__icon">
+                  <l:icon src="symbol-download" />
+                </div>
+                ${%Install}
+              </button>
+              <l:overflowButton id="button-install-after-restart"
+                                icon="symbol-chevron-down"
+                                tooltip="${null}"
+                                clazz="jenkins-button--primary">
+                <button form="form" type="submit" class="jenkins-dropdown__item">
+                  <div class="jenkins-dropdown__item__icon">
+                    <l:icon src="symbol-download" />
+                  </div>
+                  ${%Install after restart}
+                </button>
+              </l:overflowButton>
+            </div>
+          </l:isAdmin>
           <st:include page="check.jelly"/>
         </div>
       </div>
 
       <script src="${resURL}/jsbundles/plugin-manager-ui.js" type="text/javascript"/>
 
-      <form method="post" action="install">
+      <form id="form" method="post" action="install">
         <table id="plugins" class="jenkins-table sortable"
                data-hasAdmin="${h.hasPermission(app.ADMINISTER)}">
           <thead>
@@ -65,16 +86,6 @@ THE SOFTWARE.
           </thead>
           <tbody/>
         </table>
-
-        <div id="bottom-sticker">
-          <div class="bottom-sticker-inner">
-            <l:isAdmin>
-              <f:submit value="${%Install without restart}" name="dynamicLoad"/>
-              <span style="margin-left:2em;"></span>
-              <f:submit value="${%Download now and install after restart}"/>
-            </l:isAdmin>
-          </div>
-        </div>
       </form>
     </l:main-panel>
   </l:layout>

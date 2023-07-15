@@ -21,41 +21,68 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-window.revokeToken = function (anchorRevoke) {
+Behaviour.specify(
+  ".api-token-property-token-revoke",
+  "api-token-property-token-revoke",
+  0,
+  function (element) {
+    element.addEventListener("click", function (event) {
+      event.preventDefault();
+      revokeToken(element);
+    });
+  }
+);
+
+Behaviour.specify(
+  "#api-token-property-token-save",
+  "api-token-property-token-save",
+  0,
+  function (element) {
+    element.addEventListener("click", function () {
+      saveApiToken(element);
+    });
+  }
+);
+
+function revokeToken(anchorRevoke) {
   var repeatedChunk = anchorRevoke.closest(".repeated-chunk");
   var tokenList = repeatedChunk.closest(".token-list");
   var confirmMessage = anchorRevoke.getAttribute("data-confirm");
+  var confirmTitle = anchorRevoke.getAttribute("data-confirm-title");
   var targetUrl = anchorRevoke.getAttribute("data-target-url");
 
   var inputUuid = repeatedChunk.querySelector("input.token-uuid-input");
   var tokenUuid = inputUuid.value;
 
-  if (confirm(confirmMessage)) {
-    fetch(targetUrl, {
-      body: new URLSearchParams({ tokenUuid: tokenUuid }),
-      method: "post",
-      headers: crumb.wrap({}),
-    }).then((rsp) => {
-      if (rsp.ok) {
-        if (repeatedChunk.querySelectorAll(".legacy-token").length > 0) {
-          // we are revoking the legacy token
-          var messageIfLegacyRevoked = anchorRevoke.getAttribute(
-            "data-message-if-legacy-revoked"
-          );
+  dialog
+    .confirm(confirmTitle, { message: confirmMessage, type: "destructive" })
+    .then(
+      () => {
+        fetch(targetUrl, {
+          body: new URLSearchParams({ tokenUuid: tokenUuid }),
+          method: "post",
+          headers: crumb.wrap({}),
+        }).then((rsp) => {
+          if (rsp.ok) {
+            if (repeatedChunk.querySelectorAll(".legacy-token").length > 0) {
+              // we are revoking the legacy token
+              var messageIfLegacyRevoked = anchorRevoke.getAttribute(
+                "data-message-if-legacy-revoked"
+              );
 
-          var legacyInput = document.getElementById("apiToken");
-          legacyInput.value = messageIfLegacyRevoked;
-        }
-        repeatedChunk.remove();
-        adjustTokenEmptyListMessage(tokenList);
-      }
-    });
-  }
+              var legacyInput = document.getElementById("apiToken");
+              legacyInput.value = messageIfLegacyRevoked;
+            }
+            repeatedChunk.remove();
+            adjustTokenEmptyListMessage(tokenList);
+          }
+        });
+      },
+      () => {}
+    );
+}
 
-  return false;
-};
-
-window.saveApiToken = function (button) {
+function saveApiToken(button) {
   if (button.classList.contains("request-pending")) {
     // avoid multiple requests to be sent if user is clicking multiple times
     return;
@@ -111,7 +138,9 @@ window.saveApiToken = function (button) {
           // we do not want to allow user to create twice a token using same name by mistake
           button.remove();
 
-          var revokeButton = repeatedChunk.querySelector(".token-revoke");
+          var revokeButton = repeatedChunk.querySelector(
+            ".api-token-property-token-revoke"
+          );
           revokeButton.classList.remove("hidden-button");
 
           var cancelButton = repeatedChunk.querySelector(".token-cancel");
@@ -124,7 +153,7 @@ window.saveApiToken = function (button) {
       });
     }
   });
-};
+}
 
 function adjustTokenEmptyListMessage(tokenList) {
   var emptyListMessage = tokenList.querySelector(".token-list-empty-item");
