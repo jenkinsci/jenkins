@@ -48,32 +48,38 @@ function revokeToken(anchorRevoke) {
   var repeatedChunk = anchorRevoke.closest(".repeated-chunk");
   var tokenList = repeatedChunk.closest(".token-list");
   var confirmMessage = anchorRevoke.getAttribute("data-confirm");
+  var confirmTitle = anchorRevoke.getAttribute("data-confirm-title");
   var targetUrl = anchorRevoke.getAttribute("data-target-url");
 
   var inputUuid = repeatedChunk.querySelector("input.token-uuid-input");
   var tokenUuid = inputUuid.value;
 
-  if (confirm(confirmMessage)) {
-    fetch(targetUrl, {
-      body: new URLSearchParams({ tokenUuid: tokenUuid }),
-      method: "post",
-      headers: crumb.wrap({}),
-    }).then((rsp) => {
-      if (rsp.ok) {
-        if (repeatedChunk.querySelectorAll(".legacy-token").length > 0) {
-          // we are revoking the legacy token
-          var messageIfLegacyRevoked = anchorRevoke.getAttribute(
-            "data-message-if-legacy-revoked"
-          );
+  dialog
+    .confirm(confirmTitle, { message: confirmMessage, type: "destructive" })
+    .then(
+      () => {
+        fetch(targetUrl, {
+          body: new URLSearchParams({ tokenUuid: tokenUuid }),
+          method: "post",
+          headers: crumb.wrap({}),
+        }).then((rsp) => {
+          if (rsp.ok) {
+            if (repeatedChunk.querySelectorAll(".legacy-token").length > 0) {
+              // we are revoking the legacy token
+              var messageIfLegacyRevoked = anchorRevoke.getAttribute(
+                "data-message-if-legacy-revoked"
+              );
 
-          var legacyInput = document.getElementById("apiToken");
-          legacyInput.value = messageIfLegacyRevoked;
-        }
-        repeatedChunk.remove();
-        adjustTokenEmptyListMessage(tokenList);
-      }
-    });
-  }
+              var legacyInput = document.getElementById("apiToken");
+              legacyInput.value = messageIfLegacyRevoked;
+            }
+            repeatedChunk.remove();
+            adjustTokenEmptyListMessage(tokenList);
+          }
+        });
+      },
+      () => {}
+    );
 }
 
 function saveApiToken(button) {

@@ -35,6 +35,21 @@
   text-align: center;
 }
 
+.simple-page .safe-restarting {
+  text-align: center;
+  border-color: var(--alert-success-border-color);
+  background-color: var(--alert-success-bg-color);
+  border-width: 2px;
+  border-radius: 2px;
+  border-style: solid;
+  margin: 5% auto auto;
+  padding: 5px;
+}
+
+.simple-page .safe-restarting > p {
+  margin: 0;
+}
+
 .simple-page--description {
   margin-top: 0;
   margin-bottom: var(--section-padding);

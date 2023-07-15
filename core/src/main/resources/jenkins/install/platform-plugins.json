@@ -17,7 +17,6 @@
       { "name": "config-file-provider" },
       { "name": "credentials-binding", "suggested": true },
       { "name": "embeddable-build-status" },
-      { "name": "rebuild" },
       { "name": "ssh-agent" },
       { "name": "throttle-concurrents" },
       { "name": "timestamper", "suggested": true },
