@@ -2,7 +2,7 @@
 @use "../base/breakpoints";
 
 $colors: (
-  "blue": #007aff,
+  "blue": #006fe6,
   "brown": #a2845e,
   "cyan": #32ade6,
   "green": #1ea64b,
@@ -12,9 +12,13 @@ $colors: (
   "purple": #af52de,
   "red": #e6001f,
   "yellow": #ffb31a,
+  "white": #fff,
+  "black": #14141f,
 );
 
 $semantics: (
+  "accent": var(--blue),
+  "text": var(--black),
   "error": var(--red),
   "warning": var(--orange),
   "success": var(--green),
@@ -40,19 +44,13 @@ $semantics: (
   --line-height-heading: 1.2;
 
   // Color palette
-  --white: #fff;
   --very-light-grey: #f8f8f8;
   --light-grey: hsl(240, 20%, 96.5%);
   --medium-grey: #9ba7af;
   --dark-grey: #4d545d;
-  --black: hsl(240, 20%, 10%);
 
   // branding
-  --primary: hsl(212, 100%, 41%);
   --secondary: hsl(240, 10%, 50%);
-  --success: var(--green);
-  --danger: var(--red);
-  --warning: var(--orange);
   --focus: #3fb3f7;
   --focus-btn-primary: #{color.change(#0b6aa2, $alpha: 0.5)};
   --focus-btn-secondary: #{color.change(#0b6aa2, $alpha: 0.5)};
@@ -67,7 +65,7 @@ $semantics: (
   --danger-active: #b50003;
 
   // Status icon colors
-  --weather-icon-color: var(--primary);
+  --weather-icon-color: var(--accent-color);
   --unstable-build-icon-color: var(--orange);
 
   // Background colors
@@ -118,7 +116,6 @@ $semantics: (
   --alert-danger-border-color: #ebccd1;
 
   // Typography
-  --text-color: var(--black);
   --text-color-secondary: var(--secondary);
 
   // Button generic
@@ -137,17 +134,17 @@ $semantics: (
   --btn-secondary-color: var(--secondary);
   --btn-secondary-bg: var(--btn-text-color);
   --btn-secondary-border: var(--medium-grey);
-  --btn-secondary-color--hover: var(--primary);
+  --btn-secondary-color--hover: var(--accent-color);
   --btn-secondary-bg--hover: var(--btn-secondary-bg);
-  --btn-secondary-border--hover: var(--primary);
-  --btn-secondary-color--focus: var(--primary);
+  --btn-secondary-border--hover: var(--accent-color);
+  --btn-secondary-color--focus: var(--accent-color);
   --btn-secondary-bg--focus: var(--btn-secondary-bg);
-  --btn-secondary-border--focus: var(--primary);
+  --btn-secondary-border--focus: var(--accent-color);
   --btn-secondary-color--active: var(--primary-active);
   --btn-secondary-bg--active: var(--btn-secondary-bg);
   --btn-secondary-border--active: var(--primary-active);
   // Button link
-  --btn-link-color: var(--primary);
+  --btn-link-color: var(--accent-color);
   --btn-link-font-weight: var(--link-font-weight);
   --btn-link-color--hover: var(--primary-hover);
   --btn-link-bg--hover: var(--very-light-grey);
@@ -160,9 +157,9 @@ $semantics: (
 
   // Table
   --table-background: var(--panel-header-bg-color);
-  --table-header-foreground: black;
-  --table-body-background: white;
-  --table-body-foreground: black;
+  --table-header-foreground: var(--text-color);
+  --table-body-background: var(--background);
+  --table-body-foreground: var(--text-color);
   --table-border-radius: 10px;
   --table-row-border-radius: 4px;
 
@@ -179,7 +176,7 @@ $semantics: (
   --table-striped-bg--hover: var(--light-grey);
 
   // Link
-  --link-color: var(--primary);
+  --link-color: var(--accent-color);
   --link-visited-color: var(--link-color);
   --link-color--hover: var(--link-color);
   --link-color--active: var(--link-color);
@@ -359,11 +356,20 @@ $semantics: (
   --item-background--active: hsla(240, 25%, 75%, 0.225);
   --item-box-shadow--focus: hsla(240, 25%, 75%, 0.105);
 
+  // Deprecated
+  --primary: var(--accent-color); // Use var(--accent-color) instead
+  --success: var(--green); // Use var(--success-color) instead
+  --danger: var(--red); // Use var(--destructive-color) instead
+  --warning: var(--orange); // Use var(--warning-color) instead
+
   // Colors
   @each $key, $value in $colors {
-    --light-#{$key}: #{lighten($value, 20%)};
     --#{$key}: #{$value};
-    --dark-#{$key}: #{darken($value, 20%)};
+
+    @if $key != "black" and $key != "white" {
+      --light-#{$key}: #{lighten($value, 20%)};
+      --dark-#{$key}: #{darken($value, 20%)};
+    }
   }
 
   @each $key, $value in $semantics {
