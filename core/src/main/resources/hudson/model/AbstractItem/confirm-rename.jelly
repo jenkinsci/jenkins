@@ -26,6 +26,7 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <l:layout title="${%Rename}">
     <st:include page="sidepanel.jelly" />
+    <l:breadcrumb title="${%Rename}" />
     <l:main-panel>
       <h1>${%DescribeRename(it.pronoun, it.name)}</h1>
       <f:form method="post" action="confirmRename" name="config" tableClass="config-table scrollspy">

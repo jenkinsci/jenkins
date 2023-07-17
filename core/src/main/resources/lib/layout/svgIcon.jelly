@@ -16,7 +16,7 @@
         </st:attribute>
 
         <st:attribute name="id">
-            ID of the icon element. Since TODO.
+            ID of the icon element. Since 2.289.
         </st:attribute>
 
         <st:attribute name="href">
@@ -42,7 +42,7 @@
          style="${attrs.style}"
          onclick="${attrs.onclick}"
          id="${attrs.id}"
-         tooltip="${attrs.tooltip != null ? h.xmlEscape(attrs.tooltip) : null}">
+         tooltip="${attrs.tooltip != null ? attrs.tooltip : null}">
 
         <j:choose>
             <j:when test="${attrs.href != null}">

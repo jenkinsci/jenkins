@@ -683,7 +683,7 @@ public abstract class AbstractProject<P extends AbstractProject<P, R>, R extends
      */
     public FormValidation doCheckRetryCount(@QueryParameter String value)throws IOException, ServletException {
         // retry count is optional so this is ok
-        if (value == null || value.trim().equals(""))
+        if (value == null || value.trim().isEmpty())
             return FormValidation.ok();
         if (!value.matches("[0-9]*")) {
             return FormValidation.error("Invalid retry count");
@@ -951,6 +951,11 @@ public abstract class AbstractProject<P extends AbstractProject<P, R>, R extends
     @Override
     public R getNearestOldBuild(int n) {
         return buildMixIn.getNearestOldBuild(n);
+    }
+
+    @Override
+    protected List<R> getEstimatedDurationCandidates() {
+        return buildMixIn.getEstimatedDurationCandidates();
     }
 
     /**

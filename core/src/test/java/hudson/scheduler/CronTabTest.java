@@ -25,8 +25,8 @@
 package hudson.scheduler;
 
 import static java.util.Calendar.MONDAY;
-import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
@@ -268,11 +268,20 @@ public class CronTabTest {
         compare(new GregorianCalendar(2013, Calendar.MARCH, 21, 0, 2), new CronTab("H(0-3)/4 * * * *", Hash.from("junk")).ceil(new GregorianCalendar(2013, Calendar.MARCH, 21, 0, 0)));
         compare(new GregorianCalendar(2013, Calendar.MARCH, 21, 1, 2), new CronTab("H(0-3)/4 * * * *", Hash.from("junk")).ceil(new GregorianCalendar(2013, Calendar.MARCH, 21, 0, 5)));
 
-        ANTLRException e = assertThrows(ANTLRException.class, () ->
-                compare(new GregorianCalendar(2013, Calendar.MARCH, 21, 0, 0), new CronTab("H(0-3)/15 * * * *", Hash.from("junk")).ceil(new GregorianCalendar(2013, Calendar.MARCH, 21, 0, 0))));
-        assertThat(e, instanceOf(IllegalArgumentException.class));
-        assertEquals("line 1:9: 15 is an invalid value. Must be within 1 and 4", e.getMessage());
+        Locale saveLocale = Locale.getDefault();
+        Locale.setDefault(Locale.ENGLISH);
+
+        try {
+            ANTLRException e = assertThrows(ANTLRException.class, () ->
+                    compare(new GregorianCalendar(2013, Calendar.MARCH, 21, 0, 0), new CronTab("H(0-3)/15 * * * *", Hash.from("junk")).ceil(new GregorianCalendar(2013, Calendar.MARCH, 21, 0, 0))));
+            assertThat(e, instanceOf(IllegalArgumentException.class));
+            assertEquals("line 1:9: 15 is an invalid value. Must be within 1 and 4", e.getMessage());
+        }
+        finally {
+            Locale.setDefault(saveLocale);
+        }
     }
+
 
     @Test public void repeatedHash() throws Exception {
         CronTabList tabs = CronTabList.create("H * * * *\nH * * * *", Hash.from("seed"));
@@ -290,15 +299,31 @@ public class CronTabTest {
     }
 
     @Test public void rangeBoundsCheckFailHour() {
-        ANTLRException e = assertThrows(ANTLRException.class, () -> new CronTab("H H(12-24) * * *"));
-        assertThat(e, instanceOf(IllegalArgumentException.class));
-        assertEquals("line 1:10: 24 is an invalid value. Must be within 0 and 23", e.getMessage());
+        Locale saveLocale = Locale.getDefault();
+        Locale.setDefault(Locale.ENGLISH);
+
+        try {
+            ANTLRException e = assertThrows(ANTLRException.class, () -> new CronTab("H H(12-24) * * *"));
+            assertThat(e, instanceOf(IllegalArgumentException.class));
+            assertEquals("line 1:10: 24 is an invalid value. Must be within 0 and 23", e.getMessage());
+        }
+        finally {
+            Locale.setDefault(saveLocale);
+        }
     }
 
     @Test public void rangeBoundsCheckFailMinute() {
-        ANTLRException e = assertThrows(ANTLRException.class, () -> new CronTab("H(33-66) * * * *"));
-        assertThat(e, instanceOf(IllegalArgumentException.class));
-        assertEquals("line 1:8: 66 is an invalid value. Must be within 0 and 59", e.getMessage());
+        Locale saveLocale = Locale.getDefault();
+        Locale.setDefault(Locale.ENGLISH);
+
+        try {
+            ANTLRException e = assertThrows(ANTLRException.class, () -> new CronTab("H(33-66) * * * *"));
+            assertThat(e, instanceOf(IllegalArgumentException.class));
+            assertEquals("line 1:8: 66 is an invalid value. Must be within 0 and 59", e.getMessage());
+        }
+        finally {
+            Locale.setDefault(saveLocale);
+        }
     }
 
     @Issue("JENKINS-9283")

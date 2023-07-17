@@ -30,6 +30,7 @@ THE SOFTWARE.
 	</st:documentation>
   <l:layout>
 		<st:include page="sidepanel.jelly" />
+		<l:breadcrumb title="${%Delete}" />
 		<l:main-panel>
 		  <form method="post" action="doDelete">
 		    ${%blurb(it.pronoun, it.displayName)}

@@ -40,12 +40,6 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
-import com.gargoylesoftware.htmlunit.WebAssert;
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.WebResponse;
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.util.WebConnectionWrapper;
 import hudson.ExtensionList;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
@@ -70,6 +64,12 @@ import java.util.Set;
 import jenkins.model.IdStrategy;
 import jenkins.model.Jenkins;
 import jenkins.security.ApiTokenProperty;
+import org.htmlunit.WebAssert;
+import org.htmlunit.WebRequest;
+import org.htmlunit.WebResponse;
+import org.htmlunit.html.HtmlForm;
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.util.WebConnectionWrapper;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -407,14 +407,14 @@ public class UserTest {
         auth.add(Jenkins.READ, user2.getId());
         SecurityContextHolder.getContext().setAuthentication(user.impersonate2());
         HtmlForm form = j.createWebClient().withBasicCredentials(user.getId(), "password").goTo(user2.getUrl() + "/configure").getFormByName("config");
-        form.getInputByName("_.fullName").setValueAttribute("Alice Smith");
+        form.getInputByName("_.fullName").setValue("Alice Smith");
         j.submit(form);
         assertEquals("User should have full name Alice Smith.", "Alice Smith", user2.getFullName());
         SecurityContextHolder.getContext().setAuthentication(user2.impersonate2());
         assertThrows("User should not have permission to configure another user.", AccessDeniedException3.class, () -> user.doConfigSubmit(null, null));
         form = j.createWebClient().withBasicCredentials(user2.getId(), "password").goTo(user2.getUrl() + "/configure").getFormByName("config");
 
-        form.getInputByName("_.fullName").setValueAttribute("John");
+        form.getInputByName("_.fullName").setValue("John");
         j.submit(form);
         assertEquals("User should be albe to configure himself.", "John", user2.getFullName());
 

@@ -29,10 +29,10 @@ import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 
-import com.gargoylesoftware.htmlunit.html.DomNodeUtil;
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlLabel;
 import net.sf.json.JSONObject;
+import org.htmlunit.html.DomNodeUtil;
+import org.htmlunit.html.HtmlForm;
+import org.htmlunit.html.HtmlLabel;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;

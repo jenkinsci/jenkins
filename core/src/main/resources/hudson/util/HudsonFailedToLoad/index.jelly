@@ -29,7 +29,7 @@ THE SOFTWARE.
     <l:header title="Jenkins" />
     <l:side-panel />
     <l:main-panel>
-      <h1><l:icon class="icon-error icon-xlg"/><st:nbsp/>${%Error}</h1>
+      <h1>${%Error}</h1>
       <pre>${it.stackTraceString}</pre>
     </l:main-panel>
   </l:layout>

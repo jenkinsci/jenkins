@@ -1,7 +1,7 @@
 package org.jenkins.ui.icon;
 
-import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
 
 import org.junit.jupiter.api.Test;
@@ -19,12 +19,12 @@ public class IconSetJenkins68805Test {
     @Issue("JENKINS-68805")
     void getSymbol_notSettingTooltipDoesntAddTooltipAttribute_evenWithAmpersand() {
         // cache a symbol with tooltip containing ampersand:
-        String symbolWithTooltip = IconSet.getSymbol("download", "Title", "With&Ampersand", "class1 class2", "", "id");
+        String symbolWithTooltip = IconSet.getSymbol("download", "Title", "With&Ampersand", "", "class1 class2", "", "id");
         assertThat(symbolWithTooltip, containsString("tooltip"));
         assertThat(symbolWithTooltip, containsString("With&"));
 
         // Same symbol, no tooltip
-        String symbolWithoutTooltip = IconSet.getSymbol("download", "Title", "", "class1 class2", "", "id");
+        String symbolWithoutTooltip = IconSet.getSymbol("download", "Title", "", "", "class1 class2", "", "id");
 
         assertThat(symbolWithoutTooltip, not(containsString("tooltip")));
     }

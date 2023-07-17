@@ -28,10 +28,11 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
          xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-    <l:layout title="${%Advanced settings} - ${%Plugin Manager}" permission="${app.SYSTEM_READ}">
+    <l:layout title="${%Advanced settings} - ${%Plugins}" permission="${app.SYSTEM_READ}">
         <j:set var="readOnlyMode" value="${!app.hasPermission(app.ADMINISTER)}"/>
 
         <st:include page="sidepanel.jelly"/>
+        <!-- no need for additional breadcrumb here as the side panel offers enough functionality to browse between different pages -->
 
         <l:main-panel>
           <l:app-bar title="${%Advanced settings}"/>
@@ -60,8 +61,8 @@ THE SOFTWARE.
                         <div style="margin-bottom: 1em;">
                             ${%deploytext}
                         </div>
-                        <f:entry title="${%File}">
-                            <input type="file" name="name" class="jenkins-input" accept=".hpi,.jpi"/>
+                        <f:entry title="${%File}" field="name">
+                            <f:file accept=".hpi,.jpi" />
                         </f:entry>
                         <p>${%Or}</p>
                         <f:entry title="${%URL}">

@@ -44,7 +44,6 @@ import jenkins.security.ImpersonatingExecutorService;
  * @author Kohsuke Kawaguchi
  * @see AtmostOneThreadExecutor
  */
-@SuppressFBWarnings(value = "THROWS_METHOD_THROWS_CLAUSE_BASIC_EXCEPTION", justification = "TODO needs triage")
 public class AtmostOneTaskExecutor<V> {
 
     private static final Logger LOGGER = Logger.getLogger(AtmostOneTaskExecutor.class.getName());

@@ -56,7 +56,6 @@ import hudson.security.ACL;
 import hudson.security.ACLContext;
 import hudson.slaves.OfflineCause.ChannelTermination;
 import hudson.util.Futures;
-import hudson.util.NullStream;
 import hudson.util.RingBufferLogHandler;
 import hudson.util.StreamTaskListener;
 import hudson.util.VersionNumber;
@@ -386,7 +385,7 @@ public class SlaveComputer extends Computer {
             return log;
         } catch (IOException e) {
             logger.log(Level.SEVERE, "Failed to create log file " + getLogFile(), e);
-            return new NullStream();
+            return OutputStream.nullOutputStream();
         }
     }
 
@@ -778,6 +777,23 @@ public class SlaveComputer extends Computer {
             return Collections.emptyList();
         else
             return channel.call(new SlaveLogFetcher());
+    }
+
+    /**
+     * Inline editing of description
+     */
+    @RequirePOST
+    @Restricted(NoExternalUse.class)
+    public synchronized void doSubmitDescription(StaplerResponse rsp, @QueryParameter String description) throws IOException {
+        checkPermission(CONFIGURE);
+
+        final Slave node = this.getNode();
+        if (node != null) {
+            node.setNodeDescription(description);
+        } else { // Node has been disabled/removed during other session tries to change the description.
+            throw new IOException("Description will be not set. The node " + nodeName + " does not exist (anymore).");
+        }
+        rsp.sendRedirect(".");
     }
 
     @RequirePOST

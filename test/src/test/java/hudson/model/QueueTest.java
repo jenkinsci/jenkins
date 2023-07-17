@@ -44,19 +44,6 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
-import com.gargoylesoftware.htmlunit.HttpMethod;
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.html.DomElement;
-import com.gargoylesoftware.htmlunit.html.DomNode;
-import com.gargoylesoftware.htmlunit.html.DomNodeList;
-import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
-import com.gargoylesoftware.htmlunit.html.HtmlElement;
-import com.gargoylesoftware.htmlunit.html.HtmlFileInput;
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlFormUtil;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.xml.XmlPage;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionList;
 import hudson.Functions;
@@ -114,6 +101,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -129,6 +117,17 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.servlet.ServletHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
+import org.htmlunit.HttpMethod;
+import org.htmlunit.Page;
+import org.htmlunit.ScriptResult;
+import org.htmlunit.WebRequest;
+import org.htmlunit.html.DomElement;
+import org.htmlunit.html.DomNode;
+import org.htmlunit.html.HtmlFileInput;
+import org.htmlunit.html.HtmlForm;
+import org.htmlunit.html.HtmlFormUtil;
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.xml.XmlPage;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -268,7 +267,7 @@ public class QueueTest {
             }
         });
 
-        Future<FreeStyleBuild> b1 = p.scheduleBuild2(0);
+        FreeStyleBuild b1 = p.scheduleBuild2(0).waitForStart();
         assertNotNull(b1);
         seq.phase(1);   // and make sure we have one build under way
 
@@ -282,6 +281,10 @@ public class QueueTest {
         assertThat(items[0], instanceOf(BlockedItem.class));
 
         q.save();
+
+        assertTrue(q.cancel(items[0]));
+        seq.done();
+        r.assertBuildStatusSuccess(r.waitForCompletion(b1));
     }
 
     public static final class FileItemPersistenceTestServlet extends HttpServlet {
@@ -880,8 +883,8 @@ public class QueueTest {
     }
 
     @Test public void pendingsConsistenceAfterErrorDuringMaintain() throws IOException, InterruptedException {
-        FreeStyleProject project1 = r.createFreeStyleProject();
-        FreeStyleProject project2 = r.createFreeStyleProject();
+        FreeStyleProject project1 = r.createFreeStyleProject("project1");
+        FreeStyleProject project2 = r.createFreeStyleProject("project2");
         TopLevelItemDescriptor descriptor = new TopLevelItemDescriptor(FreeStyleProject.class) {
          @Override
             public FreeStyleProject newInstance(ItemGroup parent, String name) {
@@ -914,18 +917,27 @@ public class QueueTest {
              if (e.isIdle()) {
                  assertTrue("Node went to idle before project had" + project2.getDisplayName() + " been started", v.isDone());
              }
+             Thread.sleep(1000);
+        }
+        if (project2.getLastBuild() == null) {
+            Queue.getInstance().cancel(projectError); // cancel job which cause dead of executor
+            while (!e.isIdle()) { //executor should take project2 from queue
                 Thread.sleep(1000);
+            }
+            //project2 should not be in pendings
+            List<Queue.BuildableItem> items = Queue.getInstance().getPendingItems();
+            for (Queue.BuildableItem item : items) {
+                assertNotEquals("Project " + project2.getDisplayName() + " stuck in pendings", item.task.getName(), project2.getName());
+            }
         }
-        if (project2.getLastBuild() != null)
-            return;
-        Queue.getInstance().cancel(projectError); // cancel job which cause dead of executor
-        while (!e.isIdle()) { //executor should take project2 from queue
-            Thread.sleep(1000);
-        }
-        //project2 should not be in pendings
-        List<Queue.BuildableItem> items = Queue.getInstance().getPendingItems();
-        for (Queue.BuildableItem item : items) {
-            assertNotEquals("Project " + project2.getDisplayName() + " stuck in pendings", item.task.getName(), project2.getName());
+        for (var p : r.jenkins.allItems(FreeStyleProject.class)) {
+            for (var b : p.getBuilds()) {
+                r.waitForCompletion(b);
+                b.delete();
+                Logger.getLogger(QueueTest.class.getName()).info(() -> "Waited for " + b);
+            }
+            p.delete();
+            Logger.getLogger(QueueTest.class.getName()).info(() -> "Cleaned up " + p);
         }
     }
 
@@ -959,18 +971,15 @@ public class QueueTest {
         assertNotNull(item);
 
         final ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1);
-        executor.schedule(new Runnable() {
-            @Override
-            public void run() {
-                   try {
-                       Queue.getInstance().doCancelItem(item.getId());
-                   } catch (IOException e) {
-                       throw new UncheckedIOException(e);
-                   } catch (ServletException e) {
-                       throw new RuntimeException(e);
-                   }
-            }
-            }, 2, TimeUnit.SECONDS);
+        executor.schedule(() -> {
+               try {
+                   Queue.getInstance().doCancelItem(item.getId());
+               } catch (IOException e) {
+                   throw new UncheckedIOException(e);
+               } catch (ServletException e) {
+                   throw new RuntimeException(e);
+               }
+        }, 2, TimeUnit.SECONDS);
 
         assertThrows(CancellationException.class, f::waitForStart);
     }
@@ -1093,7 +1102,7 @@ public class QueueTest {
         t1.getBuildersList().add(new SleepBuilder(TimeUnit.SECONDS.toMillis(30)));
         t1.setConcurrentBuild(false);
 
-        t1.scheduleBuild2(0).waitForStart();
+        FreeStyleBuild build = t1.scheduleBuild2(0).waitForStart();
         t1.scheduleBuild2(0);
 
         queue.maintain();
@@ -1103,6 +1112,8 @@ public class QueueTest {
         CauseOfBlockage expected = new BlockedBecauseOfBuildInProgress(t1.getFirstBuild());
 
         assertEquals(expected.getShortDescription(), actual.getShortDescription());
+        Queue.getInstance().doCancelItem(r.jenkins.getQueue().getBlockedItems().get(0).getId());
+        r.assertBuildStatusSuccess(r.waitForCompletion(build));
     }
 
     @Test @LocalData
@@ -1270,14 +1281,11 @@ public class QueueTest {
 
         HtmlPage page = wc.goTo("");
 
-        DomElement buildQueue = page.getElementById("buildQueue");
-        DomNodeList<HtmlElement> anchors = buildQueue.getElementsByTagName("a");
-        HtmlAnchor anchorWithTooltip = (HtmlAnchor) anchors.stream()
-                .filter(a -> a.getAttribute("tooltip") != null && !a.getAttribute("tooltip").isEmpty())
-                .findFirst().orElseThrow(IllegalStateException::new);
+        page.executeJavaScript("document.querySelector('#buildQueue a[tooltip]:not([tooltip=\"\"])')._tippy.show()");
+        wc.waitForBackgroundJavaScript(1000);
+        ScriptResult result = page.executeJavaScript("document.querySelector('.tippy-content').innerHTML;");
 
-        String tooltip = anchorWithTooltip.getAttribute("tooltip");
-        return tooltip;
+        return result.getJavaScriptResult().toString();
     }
 
     public static class BrokenAffinityKeyProject extends Project<BrokenAffinityKeyProject, BrokenAffinityKeyBuild> implements TopLevelItem {

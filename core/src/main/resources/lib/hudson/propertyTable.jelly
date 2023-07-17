@@ -30,12 +30,31 @@ THE SOFTWARE.
     <st:attribute name="items" use="required">
       A Map object that gets rendered as a table.
     </st:attribute>
+    <st:attribute name="sensitive" use="optional">
+      Set to true if the information shown in the table is sensitive and should be hidden by default. Since 2.385.
+    </st:attribute>
   </st:documentation>
-  <table class="jenkins-table sortable">
+  <j:if test="${attrs.sensitive}">
+    <st:adjunct includes="lib.hudson.property-table"/>
+  </j:if>
+  <j:set var="tableId" value="${h.generateId()}"/>
+  <j:if test="${attrs.sensitive}">
+    <div class="jenkins-!-margin-bottom-2">
+      <button class="app-all-hidden-reveal-all jenkins-button jenkins-button--transparent jenkins-!-color-blue" data-table-id="${tableId}">
+        <l:icon src="symbol-view"/>
+        ${%revealAll}
+      </button>
+      <button class="app-all-hidden-hide-all jenkins-hidden jenkins-button jenkins-button--transparent jenkins-!-color-blue" data-table-id="${tableId}">
+        <l:icon src="symbol-view"/>
+        ${%hideAll}
+      </button>
+    </div>
+  </j:if>
+  <table class="jenkins-table sortable" id="${tableId}">
     <thead>
       <tr>
         <th initialSortDir="down">${%Name}</th>
-        <th>${%Value}</th>
+        <th class="app-table-full-width-column">${%Value}</th>
       </tr>
     </thead>
     <tbody>
@@ -44,8 +63,28 @@ THE SOFTWARE.
           <td>
             <st:out value="${e.key}"/>
           </td>
-          <td style="white-space: normal">
-            <l:breakable value="${e.value}"/>
+          <td style="white-space: normal" class="property-table__value">
+            <j:choose>
+              <j:when test="${attrs.sensitive}">
+                <div class="app-hidden-info-reveal">
+                  <button class="jenkins-button jenkins-button--transparent jenkins-!-color-blue">
+                    <l:icon src="symbol-view"/> ${%reveal}
+                  </button>
+                </div>
+                <div class="app-hidden-info-hide jenkins-hidden">
+                  <button class="jenkins-button jenkins-button--transparent">
+                    <span class="jenkins-!-color-blue">
+                      <l:icon src="symbol-eye-off-outline"/><j:out value=" "/><l:breakable value="${e.value}"/>
+                    </span>
+                  </button>
+                </div>
+              </j:when>
+              <j:otherwise>
+                <div>
+                  <l:breakable value="${e.value}"/>
+                </div>
+              </j:otherwise>
+            </j:choose>
           </td>
         </tr>
       </j:forEach>

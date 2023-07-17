@@ -1,10 +1,4 @@
 <!description="PRs #1135, #1138: use IOUtils from Apache commons">
-hudson.util.IOUtils.DIR_SEPARATOR_UNIX => org.apache.commons.io.IOUtils.DIR_SEPARATOR_UNIX;;
-hudson.util.IOUtils.DIR_SEPARATOR_WINDOWS => org.apache.commons.io.IOUtils.DIR_SEPARATOR_WINDOWS;;
-hudson.util.IOUtils.DIR_SEPARATOR => org.apache.commons.io.IOUtils.DIR_SEPARATOR;;
-hudson.util.IOUtils.LINE_SEPARATOR_UNIX => org.apache.commons.io.IOUtils.LINE_SEPARATOR_UNIX;;
-hudson.util.IOUtils.LINE_SEPARATOR_WINDOWS => org.apache.commons.io.IOUtils.LINE_SEPARATOR_WINDOWS;;
-hudson.util.IOUtils.LINE_SEPARATOR => org.apache.commons.io.IOUtils.LINE_SEPARATOR;;
 hudson.util.IOUtils.closeQuietly($args$) => org.apache.commons.io.IOUtils.closeQuietly($args$);;
 hudson.util.IOUtils.toByteArray($args$) => org.apache.commons.io.IOUtils.toByteArray($args$);;
 hudson.util.IOUtils.toCharArray($args$) => org.apache.commons.io.IOUtils.toCharArray($args$);;

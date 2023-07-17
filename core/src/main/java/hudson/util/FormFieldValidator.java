@@ -617,7 +617,7 @@ public abstract class FormFieldValidator {
                     }
                 }
                 v = v.trim();
-                if (!allowEmpty && v.length() == 0) {
+                if (!allowEmpty && v.isEmpty()) {
                     fail();
                     return;
                 }
