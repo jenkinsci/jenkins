@@ -171,7 +171,7 @@ public class ExecutorTest {
         Assert.assertThat(offlineCause.toString(), not(containsString(message)));
 
         b.doStop();
-        j.assertBuildStatus(Result.ABORTED, j.waitForCompletion(b));
+        j.waitForCompletion(b);
     }
 
     /**

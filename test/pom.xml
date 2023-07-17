@@ -68,7 +68,7 @@ THE SOFTWARE.
         <!-- RequireUpperBoundDeps between bootstrap5-api and echarts-api -->
         <groupId>io.jenkins.plugins</groupId>
         <artifactId>font-awesome-api</artifactId>
-        <version>6.4.0-1</version>
+        <version>6.4.0-2</version>
       </dependency>
       <dependency>
         <groupId>io.jenkins.plugins</groupId>
@@ -116,7 +116,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>2034.v41c9cb_349299</version>
+      <version>2042.v787a_641a_9b_26</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -209,7 +209,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>matrix-auth</artifactId>
-      <version>3.1.9</version>
+      <version>3.1.10</version>
       <scope>test</scope>
     </dependency>
     <dependency>
