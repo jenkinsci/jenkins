@@ -1,8 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Matthew R. Harrah,
-Tom Huybrechts, id:cactusman, Romain Seguy
+Copyright (c) 2023 Jenkins contributors
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -24,6 +23,13 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
-  <st:include page="changesets.jelly" class="jenkins.scm.RunWithSCM" />
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:t="/lib/hudson">
+  <j:set var="changeSets" value="${it.changeSets}"/>
+  <j:if test="${!changeSets.isEmpty()}">
+    <t:summary icon="symbol-changes">
+      <j:forEach var="changeSet" items="${changeSets}">
+        <st:include it="${changeSet}" page="digest.jelly"/>
+      </j:forEach>
+    </t:summary>
+  </j:if>
 </j:jelly>
