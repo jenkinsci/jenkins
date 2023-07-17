@@ -1,8 +1,9 @@
+// prettier-ignore
 window.createFilterMenuButton = function (
   button,
   menu,
   menuAlignment,
-  menuMinScrollHeight,
+  menuMinScrollHeight
 ) {
   var MIN_NUM_OPTIONS = 5;
   var menuButton = new YAHOO.widget.Button(button, {
