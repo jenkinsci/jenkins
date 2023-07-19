@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Post on Discourse
-        uses: roots/discourse-topic-github-release-action@main
+        uses: roots/discourse-topic-github-release-action@fc9e50fa1a1ce6255ba4d03f104382845b79ad5f # v1.0.0
         with:
           discourse-api-key: ${{ secrets.DISCOURSE_RELEASES_API_KEY }}
           discourse-base-url: https://community.jenkins.io/
