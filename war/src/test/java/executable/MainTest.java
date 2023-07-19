@@ -37,6 +37,7 @@ class MainTest {
         assertJavaCheckPasses(18, true);
         assertJavaCheckPasses(19, true);
         assertJavaCheckPasses(20, true);
+        assertJavaCheckPasses(21, true);
     }
 
     private static void assertJavaCheckFails(int releaseVersion, boolean enableFutureJava) {
