@@ -1,0 +1,16 @@
+name: Announce LTS RCs
+
+on:
+  release:
+    types: [prereleased]
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: roots/discourse-topic-github-release-action@main
+        with:
+          discourse-api-key: ${{ secrets.DISCOURSE_RELEASES_API_KEY }}
+          discourse-base-url: https://community.jenkins.io/
+          discourse-author-username: jenkins-release-bot
+          discourse-category: 23
