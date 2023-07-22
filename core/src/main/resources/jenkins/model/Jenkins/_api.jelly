@@ -49,4 +49,10 @@ THE SOFTWARE.
     <a href="../safeRestart">this URL</a> to restart once no jobs are running. (Pipeline builds may prevent Jenkins from restarting for a short period of time in some cases, but if so, they will be paused at the next available opportunity and then resumed after Jenkins restarts.)
     All these URLs need Overall/Manage permission (typically granted via Overall/Administer).
   </p>
+
+  <h2>Posting a config.xml file</h2>
+  <p>
+    If you're trying to POST a config.xml, you should add a Content-Type header to achieve this goal.
+    (Something like: `Content-Type: text/xml`)
+  </p>
 </j:jelly>
