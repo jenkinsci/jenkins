@@ -95,6 +95,7 @@ public class Search implements StaplerProxy {
         }
 
         // no exact match. show the suggestions
+        rsp.setStatus(404);
         req.getView(this, "search-failed.jelly").forward(req, rsp);
     }
 
