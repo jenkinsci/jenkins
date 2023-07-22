@@ -25,8 +25,6 @@
 
 package hudson.search;
 
-import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
-
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Util;
@@ -97,7 +95,6 @@ public class Search implements StaplerProxy {
         }
 
         // no exact match. show the suggestions
-        rsp.setStatus(SC_NOT_FOUND);
         req.getView(this, "search-failed.jelly").forward(req, rsp);
     }
 
