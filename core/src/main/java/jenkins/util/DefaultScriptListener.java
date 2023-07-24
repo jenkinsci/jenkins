@@ -51,12 +51,6 @@ public class DefaultScriptListener implements ScriptListener {
     }
 
     @Override
-    public void onScriptDefinition(@NonNull String script, @NonNull Object feature, Object context, @NonNull String correlationId, User user) {
-        LOGGER.log(Level.CONFIG, LOGGER.isLoggable(Level.FINEST) ? new Exception() : null,
-                () -> "Definition of script: '" + script + "' in feature: '" + feature + "' and context: '" + context + "' with correlation: '" + correlationId + "' by user: '" + user + "'");
-    }
-
-    @Override
     public void onScriptOutput(String output, @NonNull Object feature, Object context, @NonNull String correlationId, User user) {
         LOGGER.log(Level.FINER, LOGGER.isLoggable(Level.FINEST) ? new Exception() : null,
                 () -> "Script output: '" + output + "' in feature: '" + feature + "' and context: '" + context + "' with correlation: '" + correlationId + "' for user: '" + user + "'");

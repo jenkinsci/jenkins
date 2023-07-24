@@ -52,28 +52,6 @@ import org.kohsuke.stapler.StaplerRequest;
 public interface ScriptListener extends ExtensionPoint {
 
     /**
-     * Script definition events are everything related to script creation that's not directly executing them.
-     * Both configuring a script-based job or build step, and approving previously defined scripts would call this method.
-     * This allows listeners to record every user who is involved in a script.
-     * If there is no script definition separate from execution (e.g., Script Console), this is not expected to be called.
-     * If both script definition and execution happen around the same time (e.g., a Script Console like feature that
-     * integrates with Script Security and would call #using before execution), it is up to callers whether they call just
-     * {@link #onScriptExecution(String, groovy.lang.Binding, Object, Object, String, hudson.model.User)}
-     * or also this.
-     *
-     * @param script The script.
-     * @param feature The feature that triggered this event. Usually a fixed string or even a {@link java.lang.Class}
-     *                if that's unambiguously describing the feature (e.g., {@link hudson.cli.GroovyshCommand#getClass()}).
-     * @param context Object representing the script definition context (e.g. {@link hudson.model.Job}).
-     *                Can be {@code null} if not applicable (e.g., CLI commands not acting on jobs/builds).
-     * @param correlationId This value is used to correlate this script event to other, related script events.
-     *                   Callers are expected to provide values that allow receivers to associate script definition (if applicable), execution and output.
-     * @param user If available, the user who caused this event. Can be {@code null}.
-     */
-    default void onScriptDefinition(@NonNull String script, @NonNull Object feature, @CheckForNull Object context, @NonNull String correlationId, @CheckForNull User user) {
-    }
-
-    /**
      * Called just before scripts are executed.
      *
      * Examples include:
@@ -91,8 +69,8 @@ public interface ScriptListener extends ExtensionPoint {
      * @param context Object representing the script definition context (e.g. {@link hudson.model.Run}).
      *                Can be {@code null} if not applicable (e.g., CLI commands not acting on jobs/builds).
      * @param correlationId This value is used to correlate this script event to other, related script events.
-     *                      Callers are expected to provide values that allow receivers to associate script definition
-     *                      (if applicable), execution and output. Related events should have identical values.
+     *                      Callers are expected to provide values that allow receivers to associate script execution
+     *                      and output. Related events should have identical values.
      * @param user If available, the user who executed the script. Can be {@code null}.
      */
     default void onScriptExecution(@CheckForNull String script, @CheckForNull Binding binding, @NonNull Object feature, @CheckForNull Object context, @NonNull String correlationId, @CheckForNull User user) {
@@ -107,28 +85,11 @@ public interface ScriptListener extends ExtensionPoint {
      * @param context Object representing the script definition context (e.g. {@link hudson.model.Run}).
      *                Can be {@code null} if not applicable (e.g., CLI commands not acting on jobs/builds).
      * @param correlationId This value is used to correlate this script event to other, related script events.
-     *                      Callers are expected to provide values that allow receivers to associate script definition
-     *                      (if applicable), execution and output. Related events should have identical values.
+     *                      Callers are expected to provide values that allow receivers to associate script execution
+     *                      and output. Related events should have identical values.
      * @param user If available, the user for which the output was created. Can be {@code null}.
      */
     default void onScriptOutput(@CheckForNull String output, @NonNull Object feature, @CheckForNull Object context, @NonNull String correlationId, @CheckForNull User user) {
-    }
-
-    /**
-     * Fires the {@link #onScriptDefinition(String, Object, Object, String, hudson.model.User)} event.
-     *
-     * @param script The script.
-     * @param feature The feature that triggered this event. Usually a fixed string or even a {@link java.lang.Class}
-     *                if that's unambiguously describing the feature (e.g., {@link hudson.cli.GroovyshCommand#getClass()}).
-     * @param context Object representing the script definition context (e.g. {@link hudson.model.Job}).
-     *                Can be {@code null} if not applicable (e.g., CLI commands not acting on jobs/builds).
-     * @param correlationId This value is used to correlate this script event to other, related script events.
-     *                      Callers are expected to provide values that allow receivers to associate script definition
-     *                      (if applicable), execution and output. Related events should have identical values.
-     * @param user If available, the user who caused this event. Can be {@code null}.
-     */
-    static void fireScriptDefinition(@NonNull String script, @NonNull Object feature, @CheckForNull Object context, @NonNull String correlationId, @CheckForNull User user) {
-        Listeners.notify(ScriptListener.class, true, listener -> listener.onScriptDefinition(script, feature, context, correlationId, user));
     }
 
     /**
@@ -141,8 +102,8 @@ public interface ScriptListener extends ExtensionPoint {
      * @param context Object representing the script definition context (e.g. {@link hudson.model.Run}).
      *                Can be {@code null} if not applicable (e.g., CLI commands not acting on jobs/builds).
      * @param correlationId This value is used to correlate this script event to other, related script events.
-     *                      Callers are expected to provide values that allow receivers to associate script definition
-     *                      (if applicable), execution and output. Related events should have identical values.
+     *                      Callers are expected to provide values that allow receivers to associate script execution
+     *                      and output. Related events should have identical values.
      * @param user If available, the user who caused this event. Can be {@code null}.
      */
     // TODO Should null script be allowed? Do we care about e.g. someone starting groovysh but not actually executing a command (yet)?
@@ -157,8 +118,8 @@ public interface ScriptListener extends ExtensionPoint {
      * @param context Object representing the script definition context (e.g. {@link hudson.model.Run}).
      *                Can be {@code null} if not applicable (e.g., CLI commands not acting on jobs/builds).
      * @param correlationId This value is used to correlate this script event to other, related script events.
-     *                      Callers are expected to provide values that allow receivers to associate script definition
-     *                      (if applicable), execution and output. Related events should have identical values.
+     *                      Callers are expected to provide values that allow receivers to associate script execution
+     *                      and output. Related events should have identical values.
      * @param user If available, the user for which the output was created. Can be {@code null}.
      */
     static void fireScriptOutput(@CheckForNull String output, @NonNull Object feature, @CheckForNull Object context, @NonNull String correlationId, @CheckForNull User user) {
