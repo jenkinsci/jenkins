@@ -1,6 +1,7 @@
 package jenkins.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -15,12 +16,15 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.logging.Level;
+import jenkins.util.DefaultScriptListener;
 import jenkins.util.ScriptListener;
 import org.htmlunit.HttpMethod;
 import org.htmlunit.WebRequest;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.LoggerRule;
 import org.jvnet.hudson.test.TestExtension;
 
 public class ScriptListenerTest {
@@ -28,14 +32,22 @@ public class ScriptListenerTest {
     @Rule
     public JenkinsRule j = new JenkinsRule();
 
+    @Rule
+    public LoggerRule logging = new LoggerRule();
+
     @Test
     public void consoleUsageIsLogged() throws IOException {
         final String output = "hello from script console";
         final String script = "println '" + output + "'";
 
+        logging.record(DefaultScriptListener.class.getName(), Level.FINER);
+
         final JenkinsRule.WebClient wc = j.createWebClient();
         final WebRequest request = new WebRequest(new URL(wc.getContextPath() + "scriptText?script=" + script), HttpMethod.POST);
         wc.getPage(wc.addCrumb(request));
+
+//        Assert.assertTrue(logging.getMessages().stream().anyMatch(m -> m.contains("Execution of script: '" + script + "' with binding")));
+        assertThat(logging.getMessages(), containsInAnyOrder("foo"));
 
         final DummyScriptUsageListener listener = ExtensionList.lookupSingleton(DummyScriptUsageListener.class);
         String execution = listener.getExecutionString();
