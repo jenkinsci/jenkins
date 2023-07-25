@@ -108,7 +108,6 @@ public class ScriptListenerTest {
 
     @Test
     public void groovyShCliUsageIsLogged() {
-        // TODO more comprehensive test of this
         final String output = "hello from groovysh CLI";
         final String script = "println '" + output + "'";
 
