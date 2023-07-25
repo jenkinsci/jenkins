@@ -35,6 +35,7 @@ import hudson.Util;
 import hudson.node_monitors.ArchitectureMonitor;
 import hudson.security.Permission;
 import hudson.util.Secret;
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.FilterInputStream;
 import java.io.FilterOutputStream;
@@ -65,7 +66,6 @@ import javax.crypto.spec.SecretKeySpec;
 import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
 import net.sf.json.JSONObject;
-import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.kohsuke.stapler.StaplerRequest;
 
 /**

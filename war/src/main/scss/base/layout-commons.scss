@@ -1,21 +1,4 @@
-html {
-  height: 100%;
-  box-sizing: border-box;
-}
-
-body {
-  margin: 0;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  background-color: var(--background);
-}
-
-*,
-*::before,
-*::after {
-  box-sizing: inherit;
-}
+@use "../base/breakpoints";
 
 /* --------------- header --------------- */
 
@@ -50,7 +33,7 @@ body {
 }
 
 .app-page-body__sidebar {
-  @media (min-width: 970px) {
+  @media (min-width: breakpoints.$tablet-breakpoint) {
     &--sticky {
       position: sticky;
       top: 44px;
@@ -70,7 +53,7 @@ body {
 }
 
 #main-panel {
-  padding: 2rem;
+  padding: var(--section-padding);
   display: inline-block;
   width: 100%;
 }
@@ -78,7 +61,7 @@ body {
 .app-page-body--one-column {
   --form-item-max-width: calc(85vw - 4rem);
 
-  @media screen and (max-width: 1200px) {
+  @media screen and (width <= 1200px) {
     --form-item-max-width: 100%;
   }
 
@@ -92,7 +75,7 @@ body {
     max-width: unset;
   }
 
-  @media (max-width: 1200px) {
+  @media (width <= 1200px) {
     max-width: unset;
   }
 
@@ -113,19 +96,14 @@ body.full-screen #main-panel {
   padding: 0;
 }
 
-@media (max-width: 970px) {
+@media (max-width: breakpoints.$tablet-breakpoint) {
   body.two-column #page-body {
     flex-wrap: wrap;
   }
 
   body.two-column #side-panel {
     width: 100%;
-    padding-bottom: 20px;
     border-right: none;
-  }
-
-  body.two-column #tasks {
-    margin-right: 20px;
   }
 
   body.two-column #main-panel {
@@ -134,7 +112,7 @@ body.full-screen #main-panel {
   }
 }
 
-@media (min-width: 1170px) {
+@media (width >= 1170px) {
   body.two-column #side-panel {
     width: 340px;
   }
@@ -142,20 +120,6 @@ body.full-screen #main-panel {
   body.two-column #main-panel {
     width: calc(100% - 370px);
   }
-}
-
-/* -------------------------------------- */
-
-h1.build-caption.page-headline {
-  display: flex;
-  align-items: center;
-}
-
-h1.build-caption.page-headline > span {
-  max-width: 1200px;
-  overflow: hidden;
-  line-height: 2.4rem;
-  text-overflow: ellipsis;
 }
 
 // Clearfixes extracted from responsive-grid.css as they essential

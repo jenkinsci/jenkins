@@ -1,8 +1,8 @@
 package hudson;
 
-import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThrows;
 
 import com.thoughtworks.xstream.converters.ConversionException;

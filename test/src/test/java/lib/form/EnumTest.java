@@ -2,9 +2,6 @@ package lib.form;
 
 import static org.junit.Assert.assertEquals;
 
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.html.HtmlSelect;
 import hudson.Extension;
 import hudson.model.BallColor;
 import hudson.model.Describable;
@@ -13,6 +10,9 @@ import hudson.model.InvisibleAction;
 import hudson.model.RootAction;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
+import org.htmlunit.html.HtmlForm;
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.html.HtmlSelect;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;

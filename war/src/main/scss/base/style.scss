@@ -25,13 +25,13 @@
  */
 
 /* Panel */
-@media (min-width: 1600px) {
+@media (width >= 1600px) {
   body#jenkins.j-hide-left #main-panel {
     max-width: 75%;
   }
 }
 
-@media (min-width: 2000px) {
+@media (width >= 2000px) {
   body#jenkins.j-hide-left #main-panel {
     max-width: 85%;
   }
@@ -47,10 +47,6 @@ td {
 
 dt {
   font-weight: bold;
-}
-
-::selection {
-  background: var(--selection-color);
 }
 
 .fixed-width {
@@ -79,6 +75,17 @@ td.no-wrap {
 #main-table {
   padding: 0;
   border-collapse: collapse;
+}
+
+#safe-restart-msg {
+  font-weight: bold;
+  color: white;
+  background-color: var(--warning);
+  text-align: center;
+  margin-bottom: var(--section-padding);
+  padding: 0.5em;
+  -moz-border-radius: 0.5em;
+  border-radius: var(--form-input-border-radius);
 }
 
 #shutdown-msg {
@@ -443,9 +450,9 @@ pre.console {
   // &--stuck class when the element is stuck to the bottom of the screen
   // https://css-tricks.com/how-to-detect-when-a-sticky-element-gets-pinned/
   bottom: -1px;
-  margin-left: -2rem;
+  margin-left: calc(var(--section-padding) * -1);
   width: calc(
-    100% + 4rem
+    100% + calc(var(--section-padding) * 2)
   ); /* it needs to occupy the entire width or else the underlying content will see through */
 
   z-index: 998; /* behind top-sticker */
@@ -453,7 +460,7 @@ pre.console {
 
 .bottom-sticker-inner {
   position: relative;
-  padding: 1em 2rem;
+  padding: 1em var(--section-padding);
   z-index: 0;
 
   &::before {
@@ -479,8 +486,8 @@ pre.console {
     mask-image: linear-gradient(
       to right,
       transparent,
-      white 2rem,
-      white calc(100% - 2rem),
+      white var(--section-padding),
+      white calc(100% - var(--section-padding)),
       transparent
     );
     pointer-events: none;
@@ -728,7 +735,8 @@ table.parameters > tbody:hover {
 }
 
 #buildHistory .build-rss-links {
-  float: right;
+  display: flex;
+  justify-content: end;
 }
 
 #buildHistory .build-rss-links a {
@@ -1251,11 +1259,11 @@ table.progress-bar.red td.progress-bar-done {
 }
 
 .logrecord-metadata-new {
-  color: #8a8;
+  color: var(--green);
 }
 
 .logrecord-metadata-old {
-  color: #aaa;
+  color: var(--text-color-secondary);
 }
 
 /* ========================= matrix configuration table ================== */
@@ -1455,7 +1463,7 @@ svg.icon-xlg {
 /* -------------- Unclassified ---------- */
 
 .spacer {
-  height: 2rem;
+  height: var(--section-padding);
 }
 
 /* used by elements that are hidden by default but revealed throught JavaScript */

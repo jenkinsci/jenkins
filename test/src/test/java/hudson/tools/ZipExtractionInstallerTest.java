@@ -26,14 +26,14 @@ package hudson.tools;
 
 import static org.junit.Assert.assertEquals;
 
-import com.gargoylesoftware.htmlunit.HttpMethod;
-import com.gargoylesoftware.htmlunit.WebRequest;
 import hudson.model.User;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import jenkins.model.Jenkins;
+import org.htmlunit.HttpMethod;
+import org.htmlunit.WebRequest;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;

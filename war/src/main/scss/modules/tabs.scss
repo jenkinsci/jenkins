@@ -9,7 +9,7 @@
   background: var(--tabs-background);
   border-radius: var(--tabs-border-radius);
   padding: 2.5px;
-  margin-bottom: 2rem;
+  margin-bottom: var(--section-padding);
 
   .tab {
     float: left;

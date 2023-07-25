@@ -56,7 +56,6 @@ import jenkins.security.stapler.StaplerAccessibleType;
 import jenkins.slaves.RemotingVersionInfo;
 import jenkins.util.SystemProperties;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.io.output.NullOutputStream;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -330,7 +329,9 @@ public final class TcpSlaveAgentListener extends Thread {
                 s.shutdownOutput();
 
                 InputStream i = s.getInputStream();
-                IOUtils.copy(i, NullOutputStream.NULL_OUTPUT_STREAM);
+                try (OutputStream o = OutputStream.nullOutputStream()) {
+                    IOUtils.copy(i, o);
+                }
                 s.shutdownInput();
             }
         }
