@@ -52,11 +52,11 @@ public class ScriptListenerTest {
 
         assertThat(messages.get(0), containsString("Execution of script: '" + script + "' with binding: '[:]' in feature: 'class hudson.util.RemotingDiagnostics' and context: 'hudson.remoting.LocalChannel@"));
         assertThat(messages.get(0), containsString("' with correlation: '"));
-        assertThat(messages.get(0), containsString("' by user: 'null'"));
+        assertThat(messages.get(0), containsString("' (no user)"));
 
         assertThat(messages.get(1), containsString("Script output: 'hello from script console\n' in feature: 'class hudson.util.RemotingDiagnostics' and context: 'hudson.remoting.LocalChannel@"));
         assertThat(messages.get(1), containsString("' with correlation: '"));
-        assertThat(messages.get(1), containsString("' for user: 'null'"));
+        assertThat(messages.get(1), containsString("' (no user)"));
 
         final DummyScriptUsageListener listener = ExtensionList.lookupSingleton(DummyScriptUsageListener.class);
         String execution = listener.getExecutionString();
