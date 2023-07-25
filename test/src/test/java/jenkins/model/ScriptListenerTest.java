@@ -43,27 +43,32 @@ public class ScriptListenerTest {
 
         logging.record(DefaultScriptListener.class.getName(), Level.FINEST).capture(100);
 
-        final JenkinsRule.WebClient wc = j.createWebClient();
-        final WebRequest request = new WebRequest(new URL(wc.getContextPath() + "scriptText?script=" + script), HttpMethod.POST);
-        wc.getPage(wc.addCrumb(request));
+        try (JenkinsRule.WebClient wc = j.createWebClient()) {
+            final WebRequest request = new WebRequest(new URL(wc.getContextPath() + "scriptText?script=" + script), HttpMethod.POST);
+            wc.getPage(wc.addCrumb(request));
+        }
 
-        final List<String> messages = logging.getMessages();
-        assertThat(messages, hasSize(2));
+        { // DefaultScriptListener
+            final List<String> messages = logging.getMessages();
+            assertThat(messages, hasSize(2));
 
-        assertThat(messages.get(0), containsString("Execution of script: '" + script + "' with binding: '[:]' in feature: 'class hudson.util.RemotingDiagnostics' and context: 'hudson.remoting.LocalChannel@"));
-        assertThat(messages.get(0), containsString("' with correlation: '"));
-        assertThat(messages.get(0), containsString("' (no user)"));
+            assertThat(messages.get(0), containsString("Execution of script: '" + script + "' with binding: '[:]' in feature: 'class hudson.util.RemotingDiagnostics' and context: 'hudson.remoting.LocalChannel@"));
+            assertThat(messages.get(0), containsString("' with correlation: '"));
+            assertThat(messages.get(0), containsString("' (no user)"));
 
-        assertThat(messages.get(1), containsString("Script output: 'hello from script console\n' in feature: 'class hudson.util.RemotingDiagnostics' and context: 'hudson.remoting.LocalChannel@"));
-        assertThat(messages.get(1), containsString("' with correlation: '"));
-        assertThat(messages.get(1), containsString("' (no user)"));
+            assertThat(messages.get(1), containsString("Script output: 'hello from script console\n' in feature: 'class hudson.util.RemotingDiagnostics' and context: 'hudson.remoting.LocalChannel@"));
+            assertThat(messages.get(1), containsString("' with correlation: '"));
+            assertThat(messages.get(1), containsString("' (no user)"));
+        }
 
-        final DummyScriptUsageListener listener = ExtensionList.lookupSingleton(DummyScriptUsageListener.class);
-        String execution = listener.getExecutionString();
+        { // DummyScriptUsageListener
+            final DummyScriptUsageListener listener = ExtensionList.lookupSingleton(DummyScriptUsageListener.class);
+            String execution = listener.getExecutionString();
 
-        assertThat(execution, containsString(RemotingDiagnostics.class.getName()));
-        assertThat(execution, containsString(script));
-        assertThat(listener.getOutput(), containsString(output));
+            assertThat(execution, containsString(RemotingDiagnostics.class.getName()));
+            assertThat(execution, containsString(script));
+            assertThat(listener.getOutput(), containsString(output));
+        }
     }
 
     @Test
@@ -71,15 +76,34 @@ public class ScriptListenerTest {
         final String output = "hello from groovy CLI";
         final String script = "println '" + output + "'";
 
+        logging.record(DefaultScriptListener.class.getName(), Level.FINEST).capture(100);
+
         InputStream scriptStream = new ByteArrayInputStream(script.getBytes());
         new CLICommandInvoker(j, "groovy").withArgs("=").withStdin(scriptStream).invoke();
 
-        final DummyScriptUsageListener listener = ExtensionList.lookupSingleton(DummyScriptUsageListener.class);
-        String execution = listener.getExecutionString();
+        { // DefaultScriptListener
+            final List<String> messages = logging.getMessages();
+            assertThat(messages, hasSize(3));
 
-        assertThat(execution, containsString(GroovyCommand.class.getName()));
-        assertThat(execution, containsString(script));
-        assertThat(listener.getOutput(), containsString(output));
+            assertThat(messages.get(0), containsString("Execution of script: '" + script + "' with binding: '["));
+            assertThat(messages.get(0), containsString("]' in feature: 'class hudson.cli.GroovyCommand' and context: 'null' with correlation: '"));
+            assertThat(messages.get(0), containsString("' (no user)"));
+
+            assertThat(messages.get(1), containsString("Script output: 'hello from groovy CLI' in feature: 'class hudson.cli.GroovyCommand' and context: 'null' with correlation: '"));
+            assertThat(messages.get(1), containsString("' (no user)"));
+
+            assertThat(messages.get(2), containsString("Script output: '\n' in feature: 'class hudson.cli.GroovyCommand' and context: 'null' with correlation: '"));
+            assertThat(messages.get(2), containsString("' (no user)"));
+        }
+
+        { // DummyScriptUsageListener
+            final DummyScriptUsageListener listener = ExtensionList.lookupSingleton(DummyScriptUsageListener.class);
+            String execution = listener.getExecutionString();
+
+            assertThat(execution, containsString(GroovyCommand.class.getName()));
+            assertThat(execution, containsString(script));
+            assertThat(listener.getOutput(), containsString(output));
+        }
     }
 
     @Test
@@ -88,15 +112,44 @@ public class ScriptListenerTest {
         final String output = "hello from groovysh CLI";
         final String script = "println '" + output + "'";
 
+        logging.record(DefaultScriptListener.class.getName(), Level.FINEST).capture(100);
+
         InputStream scriptStream = new ByteArrayInputStream(script.getBytes());
         new CLICommandInvoker(j, "groovysh").withStdin(scriptStream).invoke();
 
-        final DummyScriptUsageListener listener = ExtensionList.lookupSingleton(DummyScriptUsageListener.class);
-        String execution = listener.getExecutionString();
+        { // DefaultScriptListener
+            final List<String> messages = logging.getMessages();
+            assertThat(messages, hasSize(9));
 
-        assertThat(execution, containsString(GroovyshCommand.class.getName()));
-        assertThat(execution, containsString(script));
-        assertThat(listener.getOutput(), containsString(output));
+            assertThat(messages.get(0), containsString("Execution of script: 'null' with binding: 'null' in feature: 'class hudson.cli.GroovyshCommand' and context: 'null' with correlation: '"));
+            assertThat(messages.get(0), containsString("' (no user)"));
+
+            // Only match short substrings to not have to deal with color escape codes in the output
+            assertThat(messages.get(1), containsString("Groovy Shell")); // Groovy Shell (2.4.21, JVM: 11.0.15)
+            assertThat(messages.get(2), containsString(":help")); // Type ':help' or ':h' for help.
+            assertThat(messages.get(3), containsString("Script output: '-------------------"));
+            assertThat(messages.get(4), containsString("000")); // groovy:000>
+
+            assertThat(messages.get(5), containsString("Execution of script: '" + script + "' with binding: '["));
+            assertThat(messages.get(5), containsString("]' in feature: 'class hudson.cli.GroovyshCommand' and context: 'null' with correlation: '"));
+            assertThat(messages.get(5), containsString("' (no user)"));
+
+            assertThat(messages.get(6), containsString("Script output: 'hello from groovysh CLI\n' in feature: 'class hudson.cli.GroovyshCommand' and context: 'null' with correlation: '"));
+            assertThat(messages.get(6), containsString("' (no user)"));
+
+            // Only match short substrings to not have to deal with color escape codes in the output
+            assertThat(messages.get(7), containsString("===>")); // ===> null
+            assertThat(messages.get(8), containsString("000")); // groovy:000>
+        }
+
+        { // DummyScriptUsageListener
+            final DummyScriptUsageListener listener = ExtensionList.lookupSingleton(DummyScriptUsageListener.class);
+            String execution = listener.getExecutionString();
+
+            assertThat(execution, containsString(GroovyshCommand.class.getName()));
+            assertThat(execution, containsString(script));
+            assertThat(listener.getOutput(), containsString(output));
+        }
     }
 
     @TestExtension
