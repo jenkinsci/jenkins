@@ -1,8 +1,8 @@
 package jenkins.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.hasSize;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import groovy.lang.Binding;
@@ -16,6 +16,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.List;
 import java.util.logging.Level;
 import jenkins.util.DefaultScriptListener;
 import jenkins.util.ScriptListener;
@@ -40,14 +41,22 @@ public class ScriptListenerTest {
         final String output = "hello from script console";
         final String script = "println '" + output + "'";
 
-        logging.record(DefaultScriptListener.class.getName(), Level.FINER);
+        logging.record(DefaultScriptListener.class.getName(), Level.FINEST).capture(100);
 
         final JenkinsRule.WebClient wc = j.createWebClient();
         final WebRequest request = new WebRequest(new URL(wc.getContextPath() + "scriptText?script=" + script), HttpMethod.POST);
         wc.getPage(wc.addCrumb(request));
 
-//        Assert.assertTrue(logging.getMessages().stream().anyMatch(m -> m.contains("Execution of script: '" + script + "' with binding")));
-        assertThat(logging.getMessages(), containsInAnyOrder("foo"));
+        final List<String> messages = logging.getMessages();
+        assertThat(messages, hasSize(2));
+
+        assertThat(messages.get(0), containsString("Execution of script: '" + script + "' with binding: '[:]' in feature: 'class hudson.util.RemotingDiagnostics' and context: 'hudson.remoting.LocalChannel@"));
+        assertThat(messages.get(0), containsString("' with correlation: '"));
+        assertThat(messages.get(0), containsString("' by user: 'null'"));
+
+        assertThat(messages.get(1), containsString("Script output: 'hello from script console\n' in feature: 'class hudson.util.RemotingDiagnostics' and context: 'hudson.remoting.LocalChannel@"));
+        assertThat(messages.get(1), containsString("' with correlation: '"));
+        assertThat(messages.get(1), containsString("' for user: 'null'"));
 
         final DummyScriptUsageListener listener = ExtensionList.lookupSingleton(DummyScriptUsageListener.class);
         String execution = listener.getExecutionString();
