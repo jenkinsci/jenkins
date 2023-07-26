@@ -92,8 +92,10 @@ function updateInstallButtonState() {
   const installAfterRestartButton = document.querySelector(
     "#button-install-after-restart"
   );
-  installButton.disabled = true;
-  installAfterRestartButton.disabled = true;
+  if (!anyCheckboxesSelected()) {
+    installButton.disabled = true;
+    installAfterRestartButton.disabled = true;
+  }
   const checkboxes = document.querySelectorAll("input[type='checkbox']");
   checkboxes.forEach((checkbox) => {
     checkbox.addEventListener("click", () => {
