@@ -51,6 +51,7 @@ import hudson.model.Node;
 import hudson.model.RestartListener;
 import hudson.model.RootAction;
 import hudson.model.Saveable;
+import hudson.model.Slave;
 import hudson.model.TaskListener;
 import hudson.model.UnprotectedRootAction;
 import hudson.model.User;
@@ -68,8 +69,10 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.Socket;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 import jenkins.AgentProtocol;
@@ -705,9 +708,13 @@ public class JenkinsTest {
 
     @Test
     public void getComputers() throws Exception {
-        j.waitOnline(j.createSlave("zestful", null, null));
-        j.waitOnline(j.createSlave("bilking", null, null));
-        j.waitOnline(j.createSlave("grouchiest", null, null));
+        List<Slave> agents = new ArrayList<>();
+        for (String n : List.of("zestful", "bilking", "grouchiest")) {
+            agents.add(j.createSlave(n, null, null));
+        }
+        for (Slave agent : agents) {
+            j.waitOnline(agent);
+        }
         assertThat(Stream.of(j.jenkins.getComputers()).map(Computer::getName).toArray(String[]::new),
             arrayContaining("", "bilking", "grouchiest", "zestful"));
     }
