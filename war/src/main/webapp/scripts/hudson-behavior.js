@@ -1958,7 +1958,9 @@ function replaceDescription(initialDescription, submissionUrl) {
   }
   fetch("./descriptionForm", {
     method: "post",
-    headers: crumb.wrap({}),
+    headers: crumb.wrap({
+      "Content-Type": "application/x-www-form-urlencoded",
+    }),
     body: objectToUrlFormEncoded(parameters),
   }).then((rsp) => {
     rsp.text().then((responseText) => {

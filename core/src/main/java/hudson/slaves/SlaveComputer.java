@@ -329,10 +329,11 @@ public class SlaveComputer extends Computer {
 
     @Override
     public void taskAccepted(Executor executor, Queue.Task task) {
+        LOGGER.log(Level.FINER, "Accepted {0} on {1}", new Object[] {task.toString(), executor.getOwner().getDisplayName()});
+
         if (launcher instanceof ExecutorListener) {
             ((ExecutorListener) launcher).taskAccepted(executor, task);
         }
-
         //getNode() can return null at indeterminate times when nodes go offline
         Slave node = getNode();
         if (node != null && node.getRetentionStrategy() instanceof ExecutorListener) {
@@ -342,6 +343,7 @@ public class SlaveComputer extends Computer {
 
     @Override
     public void taskStarted(Executor executor, Queue.Task task) {
+        LOGGER.log(Level.FINER, "Started {0} on {1}", new Object[] {task.toString(), executor.getOwner().getDisplayName()});
         if (launcher instanceof ExecutorListener) {
             ((ExecutorListener) launcher).taskStarted(executor, task);
         }
@@ -353,6 +355,7 @@ public class SlaveComputer extends Computer {
 
     @Override
     public void taskCompleted(Executor executor, Queue.Task task, long durationMS) {
+        LOGGER.log(Level.FINE, "Completed {0} on {1}", new Object[] {task.toString(), executor.getOwner().getDisplayName()});
         if (launcher instanceof ExecutorListener) {
             ((ExecutorListener) launcher).taskCompleted(executor, task, durationMS);
         }
@@ -364,6 +367,7 @@ public class SlaveComputer extends Computer {
 
     @Override
     public void taskCompletedWithProblems(Executor executor, Queue.Task task, long durationMS, Throwable problems) {
+        LOGGER.log(Level.FINE, "Completed with problems {0} on {1}", new Object[] {task.toString(), executor.getOwner().getDisplayName()});
         if (launcher instanceof ExecutorListener) {
             ((ExecutorListener) launcher).taskCompletedWithProblems(executor, task, durationMS, problems);
         }

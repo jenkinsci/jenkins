@@ -61,7 +61,9 @@ function revokeToken(anchorRevoke) {
         fetch(targetUrl, {
           body: new URLSearchParams({ tokenUuid: tokenUuid }),
           method: "post",
-          headers: crumb.wrap({}),
+          headers: crumb.wrap({
+            "Content-Type": "application/x-www-form-urlencoded",
+          }),
         }).then((rsp) => {
           if (rsp.ok) {
             if (repeatedChunk.querySelectorAll(".legacy-token").length > 0) {
@@ -97,7 +99,9 @@ function saveApiToken(button) {
   fetch(targetUrl, {
     body: new URLSearchParams({ newTokenName: tokenName }),
     method: "post",
-    headers: crumb.wrap({}),
+    headers: crumb.wrap({
+      "Content-Type": "application/x-www-form-urlencoded",
+    }),
   }).then((rsp) => {
     if (rsp.ok) {
       rsp.json().then((json) => {
