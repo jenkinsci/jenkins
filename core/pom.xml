@@ -679,8 +679,8 @@ THE SOFTWARE.
     <plugins>
       <plugin>
         <!-- generate Jelly tag lib documentation -->
-        <groupId>org.kohsuke.stapler</groupId>
-        <artifactId>maven-stapler-plugin</artifactId>
+        <groupId>io.jenkins.tools.maven</groupId>
+        <artifactId>stapler-maven-plugin</artifactId>
         <!-- Version specified in grandparent POM -->
         <configuration>
           <patterns>

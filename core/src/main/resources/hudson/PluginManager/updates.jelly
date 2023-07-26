@@ -46,13 +46,21 @@ THE SOFTWARE.
                         value="${request.getParameter('filter')}" />
         </div>
         <div class="jenkins-app-bar__controls">
-          <st:include page="check.jelly"/>
+          <l:isAdmin>
+            <j:if test="${!empty(list)}">
+              <button id="button-update" form="form" type="submit" class="jenkins-button jenkins-button--primary" disabled="true">
+                <l:icon src="symbol-download" />
+                ${%Update}
+              </button>
+            </j:if>
+          </l:isAdmin>
+          <st:include page="check.jelly" />
         </div>
       </div>
 
       <st:adjunct includes="hudson.PluginManager._table"/>
 
-      <form method="post" action="install">
+      <form id="form" method="post" action="install">
         <j:set var="cache" value="${it.createCache()}"/>
 
         <table id="plugins" class="jenkins-table sortable">
@@ -232,16 +240,6 @@ THE SOFTWARE.
             </j:otherwise>
           </j:choose>
         </table>
-
-        <div id="bottom-sticker">
-          <div class="bottom-sticker-inner">
-            <l:isAdmin>
-              <j:if test="${!empty(list)}">
-                <f:submit value="${%Download now and install after restart}"/>
-              </j:if>
-            </l:isAdmin>
-          </div>
-        </div>
         <d:invokeBody/>
       </form>
     </l:main-panel>
