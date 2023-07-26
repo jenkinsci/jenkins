@@ -3047,10 +3047,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"css-functions-list@npm:^3.1.0":
-  version: 3.1.0
-  resolution: "css-functions-list@npm:3.1.0"
-  checksum: 8a7c9d4ae57cb2f01500263e65a21372048d359ca7aa6430a32a736fe2a421decfebe45e579124b9a158ec68aba2eadcd733e568495a7698240d9607d31f681b
+"css-functions-list@npm:^3.2.0":
+  version: 3.2.0
+  resolution: "css-functions-list@npm:3.2.0"
+  checksum: fe912ea852fad500aef9a4f04db9a0371c7b0eb1ac1a45fbd8df0156ae0538cee7492ebd620b9bb502fe5bf2b5ed3bf3c16b6659cf67c7144eff0b597bcc3891
   languageName: node
   linkType: hard
 
@@ -4397,7 +4397,7 @@ __metadata:
     sass-loader: 13.3.2
     sortablejs: 1.15.0
     style-loader: 3.3.3
-    stylelint: 15.10.1
+    stylelint: 15.10.2
     stylelint-checkstyle-reporter: 0.2.0
     stylelint-config-standard: 33.0.0
     tippy.js: 6.3.7
@@ -6096,7 +6096,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"postcss@npm:8.4.27, postcss@npm:^8.4.21, postcss@npm:^8.4.24":
+"postcss@npm:8.4.27, postcss@npm:^8.4.21, postcss@npm:^8.4.24, postcss@npm:^8.4.25":
   version: 8.4.27
   resolution: "postcss@npm:8.4.27"
   dependencies:
@@ -6791,9 +6791,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"stylelint@npm:15.10.1":
-  version: 15.10.1
-  resolution: "stylelint@npm:15.10.1"
+"stylelint@npm:15.10.2":
+  version: 15.10.2
+  resolution: "stylelint@npm:15.10.2"
   dependencies:
     "@csstools/css-parser-algorithms": ^2.3.0
     "@csstools/css-tokenizer": ^2.1.1
@@ -6802,7 +6802,7 @@ __metadata:
     balanced-match: ^2.0.0
     colord: ^2.9.3
     cosmiconfig: ^8.2.0
-    css-functions-list: ^3.1.0
+    css-functions-list: ^3.2.0
     css-tree: ^2.3.1
     debug: ^4.3.4
     fast-glob: ^3.3.0
@@ -6822,7 +6822,7 @@ __metadata:
     micromatch: ^4.0.5
     normalize-path: ^3.0.0
     picocolors: ^1.0.0
-    postcss: ^8.4.24
+    postcss: ^8.4.25
     postcss-resolve-nested-selector: ^0.1.1
     postcss-safe-parser: ^6.0.0
     postcss-selector-parser: ^6.0.13
@@ -6837,7 +6837,7 @@ __metadata:
     write-file-atomic: ^5.0.1
   bin:
     stylelint: bin/stylelint.mjs
-  checksum: 8eeae81fe4ed2dfc580d7c401806dbb058c14631abfafd0821db32f1e649aee62e3d39dda3462c6122826df91bd9799409be926e91b55b007622f51e44eb94c1
+  checksum: 1a7dc0385bddc604f6633340dd3eb58dfc8860e677576d7ad688a94064140d73fd70ea21038994a9f8884457098ee297ce625bbddd9477cde35faa4bf7aff848
   languageName: node
   linkType: hard
 
