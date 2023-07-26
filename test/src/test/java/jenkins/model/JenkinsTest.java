@@ -25,6 +25,7 @@
 package jenkins.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.arrayContaining;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
@@ -70,6 +71,7 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Stream;
 import jenkins.AgentProtocol;
 import org.htmlunit.FailingHttpStatusCodeException;
 import org.htmlunit.HttpMethod;
@@ -699,6 +701,15 @@ public class JenkinsTest {
         public void handle(Socket socket) throws IOException, InterruptedException {
             throw new IOException("This is a mock agent protocol. It cannot be used for connection");
         }
+    }
+
+    @Test
+    public void getComputers() throws Exception {
+        j.waitOnline(j.createSlave("zestful", null, null));
+        j.waitOnline(j.createSlave("bilking", null, null));
+        j.waitOnline(j.createSlave("grouchiest", null, null));
+        assertThat(Stream.of(j.jenkins.getComputers()).map(Computer::getName).toArray(String[]::new),
+            arrayContaining("", "bilking", "grouchiest", "zestful"));
     }
 
     @Issue("JENKINS-42577")
