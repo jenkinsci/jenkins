@@ -24,12 +24,13 @@ THE SOFTWARE.
 
 <!-- display permalinks of the page -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
-  <h2 class="permalinks-header">${%Permalinks}</h2>
-  <ul class="permalinks-list">
-    <j:set var="job" value="${it}" />
-    <j:forEach var="p" items="${it.permalinks}">
-      <st:include page="link.jelly" it="${p}"/>
-    </j:forEach>
-  </ul>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
+  <l:card title="${%Permalinks}">
+    <ul class="app-job-card__list">
+      <j:set var="job" value="${it}" />
+      <j:forEach var="p" items="${it.permalinks}">
+        <st:include page="link.jelly" it="${p}"/>
+      </j:forEach>
+    </ul>
+  </l:card>
 </j:jelly>

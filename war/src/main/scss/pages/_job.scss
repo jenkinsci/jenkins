@@ -1,0 +1,18 @@
+.app-job-card__list {
+  padding: 0;
+  list-style-type: none;
+  margin: 0;
+
+  li {
+    display: inline-flex;
+    justify-content: center;
+  }
+
+  a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 500 !important;
+    line-height: 1.6;
+  }
+}

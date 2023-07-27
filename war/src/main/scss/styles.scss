@@ -20,6 +20,7 @@
 @use "./form/textarea";
 @use "./form/toggle-switch";
 @use "./form/validation";
+@use "./modules/cards";
 @use "./modules/app-bar";
 @use "./modules/badges";
 @use "./modules/breadcrumbs";
@@ -44,6 +45,7 @@
 @use "./modules/table";
 @use "./modules/tabs";
 @use "./modules/tooltips";
+@use "./pages/job";
 @use "./pages/about";
 @use "./pages/dashboard";
 @use "./pages/icon-legend";

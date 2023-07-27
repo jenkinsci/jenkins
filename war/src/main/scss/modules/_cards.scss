@@ -1,0 +1,42 @@
+$card-padding: 1rem;
+
+.jenkins-card {
+  position: relative;
+  border-radius: 1rem;
+  margin-bottom: calc(var(--section-padding) / 2);
+  width: 390px;
+  background: var(--card-background);
+
+  &__title {
+    display: flex;
+    align-items: center;
+    justify-content: start;
+    padding: $card-padding;
+    font-size: var(--font-size-sm) !important;
+    font-weight: 500;
+    width: 100%;
+    z-index: 1;
+  }
+
+  &__content {
+    padding: 0 $card-padding $card-padding $card-padding;
+    color: var(--text-color-secondary);
+    max-height: 40vh;
+    overflow-x: hidden;
+    overflow-y: auto;
+
+    &:empty {
+      display: none;
+    }
+  }
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    border: var(--card-border-width) solid var(--card-border-color);
+    z-index: 1;
+    pointer-events: none;
+  }
+}
