@@ -18,7 +18,7 @@ function updateListBox(listBox, url, config) {
       if (!settingMain) {
         console.warn(
           "Couldn't find the expected validation element (.validation-error-area) for element",
-          listBox.parentNode
+          listBox.parentNode,
         );
         return;
       }

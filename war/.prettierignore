@@ -24,3 +24,6 @@ src/main/scss/_bootstrap.scss
 *.hbs
 
 .yarn
+
+# Incorrectly flagging forwarding slashes in regex
+../.github/renovate.json

@@ -8,10 +8,10 @@ Behaviour.specify(
     fetch(url + "?" + params).then((rsp) => {
       rsp.text().then((responseText) => {
         var message = document.getElementById(
-          "URICheckEncodingMonitor-message"
+          "URICheckEncodingMonitor-message",
         );
         message.innerHTML = responseText;
       });
     });
-  }
+  },
 );

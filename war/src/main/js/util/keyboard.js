@@ -11,7 +11,7 @@ export default function makeKeyboardNavigable(
   selectedClass,
   additionalBehaviours = () => {},
   hasKeyboardPriority = () =>
-    window.getComputedStyle(container).visibility === "visible"
+    window.getComputedStyle(container).visibility === "visible",
 ) {
   window.addEventListener("keydown", (e) => {
     let items = Array.from(itemsFunc());
