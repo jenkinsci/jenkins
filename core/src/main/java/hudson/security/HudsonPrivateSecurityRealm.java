@@ -48,8 +48,12 @@ import hudson.util.Scrambler;
 import hudson.util.XStream2;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
+import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -60,6 +64,8 @@ import java.util.Set;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.PBEKeySpec;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
@@ -883,11 +889,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         }
     }
 
-    // TODO can we instead use BCryptPasswordEncoder from Spring Security, which has its own copy of BCrypt so we could drop the special library?
-    /**
-     * {@link PasswordEncoder} that uses jBCrypt.
-     */
-    private static class JBCryptEncoder implements PasswordEncoder {
+    private static class JBCryptEncoder implements PasswordHashEncoder {
         // in jBCrypt the maximum is 30, which takes ~22h with laptop late-2017
         // and for 18, it's "only" 20s
         @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
@@ -911,6 +913,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
          * implementation defined in jBCrypt and <a href="https://en.wikipedia.org/wiki/Bcrypt">the Wikipedia page</a>.
          *
          */
+        @Override
         public boolean isHashValid(String hash) {
             Matcher matcher = BCRYPT_PATTERN.matcher(hash);
             if (matcher.matches()) {
@@ -925,18 +928,139 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         }
     }
 
-    /* package */ static final JBCryptEncoder JBCRYPT_ENCODER = new JBCryptEncoder();
+    private static class PBKDF2PasswordEncoder implements PasswordHashEncoder {
+
+        public static final int HASH_LENGTH = 8;
+        public static final int ZERO = 0;
+        public static final int HEX_TWO = 2;
+        public static final int RADIX = 16;
+        public static final String STRING_SEPARATION = ":";
+
+        @Override
+        public String encode(CharSequence rawPassword) {
+            try {
+                return generatePasswordHashWithPBKDF2(rawPassword);
+            } catch (NoSuchAlgorithmException e) {
+                //log exception message
+                throw new RuntimeException(e);
+            } catch (InvalidKeySpecException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        @Override
+        public boolean matches(CharSequence rawPassword, String encodedPassword) {
+            try {
+                return validatePassword(rawPassword.toString(), encodedPassword);
+            } catch (NoSuchAlgorithmException e) {
+                throw new RuntimeException(e);
+            } catch (InvalidKeySpecException e) {
+                throw new RuntimeException(e);
+            }
+        }
+//private and inside the impl class
+        private static String generatePasswordHashWithPBKDF2(CharSequence password) throws NoSuchAlgorithmException, InvalidKeySpecException {
+
+           /* KeySpec spec = new PBEKeySpec(password.toString().toCharArray(), generateSalt(), Util.ITERATION_COUNT, Util.KEY_LENGTH);
+            SecretKeyFactory f = SecretKeyFactory.getInstance(Util.PBKDF2_ALGORITHM);
+            byte[] hash = f.generateSecret(spec).getEncoded();
+            Base64.Encoder enc = Base64.getEncoder();
+          *//* System.out.printf("salt: %s%n", enc.encodeToString(generateSalt()));
+            System.out.printf("hash: %s%n", enc.encodeToString(hash));
+            System.out.println(toHex(hash));*//*
+            System.out.println(enc.encodeToString(hash));
+            return enc.encodeToString(hash);*/
+            int iterations = Util.ITERATION_COUNT;
+            byte[] salt = generateSalt();
+
+            PBEKeySpec spec = new PBEKeySpec(password.toString().toCharArray(), salt, iterations, Util.KEY_LENGTH);
+            byte[] hash = generateSecretKey(spec);
+            return iterations + STRING_SEPARATION + toHex(salt) + STRING_SEPARATION + toHex(hash);
+        }
+
+        private static byte[] generateSecretKey(PBEKeySpec spec) throws NoSuchAlgorithmException, InvalidKeySpecException {
+            SecretKeyFactory secretKeyFactory = SecretKeyFactory.getInstance(Util.PBKDF2_ALGORITHM);
+
+            byte[] hash = secretKeyFactory.generateSecret(spec).getEncoded();
+            return hash;
+        }
+
+        private static String toHex(byte[] array)  {
+
+            BigInteger bi = new BigInteger(1, array);
+            String hex = bi.toString(RADIX);
+
+            int paddingLength = (array.length * HEX_TWO) - hex.length();
+            if (paddingLength > ZERO) {
+                return String.format("%0" + paddingLength + "d", ZERO) + hex;
+            } else {
+                return hex;
+            }
+        }
+
+        @SuppressFBWarnings(value = {"DMI_RANDOM_USED_ONLY_ONCE", "PREDICTABLE_RANDOM"}, justification = "https://github.com/spotbugs/spotbugs/issues/1539 and doesn't need to be secure, we're just not hardcoding a 'wrong' password")
+        private static byte[] generateSalt() {
+            SecureRandom random = new SecureRandom();
+            byte[] salt = new byte[16];
+            random.nextBytes(salt);
+            return salt;
+        }
+
+        @Override
+        public boolean isHashValid(String hash)    {
+
+             return true;
+        }
+
+        private static boolean validatePassword(String originalPassword, String storedPassword)
+                throws NoSuchAlgorithmException, InvalidKeySpecException
+        {
+            String[] parts = storedPassword.split(STRING_SEPARATION);
+            int iterations = Integer.parseInt(parts[0]);
+
+            byte[] salt = fromHex(parts[1]);
+            byte[] hash = fromHex(parts[2]);
+
+            PBEKeySpec spec = new PBEKeySpec(originalPassword.toCharArray(),
+                    salt, iterations, hash.length * HASH_LENGTH);
+
+            byte[] testHash = generateSecretKey(spec);
+
+            int diff = hash.length ^ testHash.length;
+            for (int i = ZERO; i < hash.length && i < testHash.length; i++)
+            {
+                diff |= hash[i] ^ testHash[i];
+            }
+            return diff == 0;
+        }
+
+        private static byte[] fromHex(String hex)  {
+            byte[] bytes = new byte[hex.length() / HEX_TWO];
+            for (int i = ZERO; i < bytes.length; i++)
+            {
+                bytes[i] = (byte) Integer.parseInt(hex.substring(HEX_TWO * i, HEX_TWO * i + HEX_TWO), RADIX);
+            }
+            return bytes;
+        }
+
+    }
+
+    /* package */ static final PasswordHashEncoder PASSWORD_HASH_ENCODER = Util.FIPS_MODE ? new PBKDF2PasswordEncoder() : new JBCryptEncoder();
+
+
+    /**
+     * Magic header used to detect if a password is hashed.
+     */
+    private static final String PASSWORD_HASH_HEADER = Util.FIPS_MODE ? Util.PBKDF_2 : Util.JBCRYPT;
+
+    /* package */
 
     // TODO check if DelegatingPasswordEncoder can be used
     /**
-     * Wraps {@link #JBCRYPT_ENCODER}.
+     * Wraps {@link #PASSWORD_HASH_ENCODER}.
      * There used to be a SHA-256-based encoder but this is long deprecated, and insecure anyway.
      */
     /* package */ static class MultiPasswordEncoder implements PasswordEncoder {
-        /**
-         * Magic header used to detect if a password is bcrypt hashed.
-         */
-        private static final String JBCRYPT_HEADER = "#jbcrypt:";
 
         /*
             CLASSIC encoder outputs "salt:hash" where salt is [a-z]+, so we use unique prefix '#jbcyrpt"
@@ -944,28 +1068,37 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
 
             '#' is neither in base64 nor hex, which makes it a good choice.
          */
+
         @Override
         public String encode(CharSequence rawPassword) {
-            return JBCRYPT_HEADER + JBCRYPT_ENCODER.encode(rawPassword);
+             LOGGER.info(String.valueOf(Util.FIPS_MODE));
+            return PASSWORD_HASH_HEADER + PASSWORD_HASH_ENCODER.encode(rawPassword);
+
         }
 
         @Override
         public boolean matches(CharSequence rawPassword, String encPass) {
             if (isPasswordHashed(encPass)) {
-                return JBCRYPT_ENCODER.matches(rawPassword, encPass.substring(JBCRYPT_HEADER.length()));
+                return PASSWORD_HASH_ENCODER.matches(rawPassword, encPass.substring(PASSWORD_HASH_HEADER.length()));
             } else {
                 return false;
             }
         }
 
         /**
-         * Returns true if the supplied password starts with a prefix indicating it is already hashed.
+         * Returns true if the supplied password starts with a prefix indicating i
+         * t is already hashed.
          */
         public boolean isPasswordHashed(String password) {
             if (password == null) {
                 return false;
             }
-            return password.startsWith(JBCRYPT_HEADER) && JBCRYPT_ENCODER.isHashValid(password.substring(JBCRYPT_HEADER.length()));
+            if (Util.FIPS_MODE) {
+                 return password.startsWith(PASSWORD_HASH_HEADER);
+            }
+            else {
+                return password.startsWith(PASSWORD_HASH_HEADER) && PASSWORD_HASH_ENCODER.isHashValid(password.substring(PASSWORD_HASH_HEADER.length()));
+            }
         }
 
     }

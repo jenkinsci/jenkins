@@ -1927,4 +1927,15 @@ public class Util {
     private static PathRemover newPathRemover(@NonNull PathRemover.PathChecker pathChecker) {
         return PathRemover.newFilteredRobustRemover(pathChecker, DELETION_RETRIES, GC_AFTER_FAILED_DELETE, WAIT_BETWEEN_DELETION_RETRIES);
     }
+
+    private static final String GET_FIPS_MODE = ".FIPS_MODE";
+
+    @Restricted(NoExternalUse.class)
+    public static final boolean FIPS_MODE = SystemProperties.getBoolean(Util.class.getName() + GET_FIPS_MODE);
+
+    public static final int ITERATION_COUNT = 1000;
+    public static final int KEY_LENGTH = 512;
+    public static final String PBKDF2_ALGORITHM = "PBKDF2WithHmacSHA512";
+    public static final String PBKDF_2 = "#pbkdf2:";
+    public static final String JBCRYPT = "#jbcrypt:";
 }
