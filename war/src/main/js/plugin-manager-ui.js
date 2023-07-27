@@ -40,7 +40,7 @@ function applyFilter(searchQuery) {
       clearOldResults();
       var rows = pluginManagerAvailable({
         plugins: plugins.filter(
-          (plugin) => selectedPlugins.indexOf(plugin.name) === -1
+          (plugin) => selectedPlugins.indexOf(plugin.name) === -1,
         ),
         admin,
       });
@@ -48,7 +48,7 @@ function applyFilter(searchQuery) {
       tbody.insertAdjacentHTML("beforeend", rows);
 
       updateInstallButtonState();
-    }
+    },
   );
 }
 
@@ -76,7 +76,7 @@ document.addEventListener("DOMContentLoaded", function () {
   if (updateCenterError) {
     notificationBar.show(
       updateCenterError.content.textContent,
-      notificationBar.ERROR
+      notificationBar.ERROR,
     );
   }
 });
@@ -90,7 +90,7 @@ function updateInstallButtonState() {
   };
   const installButton = document.querySelector("#button-install");
   const installAfterRestartButton = document.querySelector(
-    "#button-install-after-restart"
+    "#button-install-after-restart",
   );
   if (!anyCheckboxesSelected()) {
     installButton.disabled = true;

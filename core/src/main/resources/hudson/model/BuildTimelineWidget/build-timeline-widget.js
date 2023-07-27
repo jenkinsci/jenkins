@@ -128,6 +128,6 @@ if (window.addEventListener) {
       tl.layout();
     },
     null,
-    true
+    true,
   );
 })();

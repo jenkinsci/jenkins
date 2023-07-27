@@ -15,7 +15,7 @@ Behaviour.specify("INPUT.combobox2", "combobox", 100, function (e) {
       }
       return candidates;
     },
-    {}
+    {},
   );
 
   refillOnChange(e, function (params) {

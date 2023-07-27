@@ -48,7 +48,7 @@ Dialog.prototype.init = function () {
   if (this.dialogType === "modal") {
     if (this.options.content != null) {
       const content = createElementFromHtml(
-        `<div class='jenkins-dialog__contents jenkins-dialog__contents--modal'/>`
+        `<div class='jenkins-dialog__contents jenkins-dialog__contents--modal'/>`,
       );
       content.appendChild(this.options.content);
       this.dialog.appendChild(content);
@@ -62,7 +62,7 @@ Dialog.prototype.init = function () {
         `);
       this.dialog.appendChild(closeButton);
       closeButton.addEventListener("click", () =>
-        this.dialog.dispatchEvent(new Event("cancel"))
+        this.dialog.dispatchEvent(new Event("cancel")),
       );
     }
     this.dialog.addEventListener("click", function (e) {
@@ -76,7 +76,7 @@ Dialog.prototype.init = function () {
     this.form = null;
     if (this.options.form != null && this.dialogType === "form") {
       const contents = createElementFromHtml(
-        `<div class='jenkins-dialog__contents'/>`
+        `<div class='jenkins-dialog__contents'/>`,
       );
       this.form = this.options.form;
       contents.appendChild(this.options.form);
@@ -85,7 +85,7 @@ Dialog.prototype.init = function () {
     }
     if (this.options.message != null && this.dialogType !== "form") {
       const message = createElementFromHtml(
-        `<div class='jenkins-dialog__contents'/>`
+        `<div class='jenkins-dialog__contents'/>`,
       );
       this.dialog.appendChild(message);
       message.innerText = this.options.message;
@@ -132,8 +132,8 @@ Dialog.prototype.appendButtons = function () {
       <button data-id="ok" type="${
         this.options.submitButton ? "submit" : "button"
       }" class="jenkins-button jenkins-button--primary ${
-    _typeClassMap[this.options.type]
-  }">${this.options.okText}</button>
+        _typeClassMap[this.options.type]
+      }">${this.options.okText}</button>
       <button data-id="cancel" class="jenkins-button">${
         this.options.cancelText
       }</button>
@@ -166,7 +166,7 @@ Dialog.prototype.show = function () {
         this.dialog.remove();
         cancel();
       },
-      { once: true }
+      { once: true },
     );
     this.dialog.focus();
     if (this.input != null) {
@@ -192,7 +192,7 @@ Dialog.prototype.show = function () {
             resolve(value);
           }
         },
-        { once: true }
+        { once: true },
       );
     }
   });

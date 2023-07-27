@@ -82,7 +82,7 @@ var Sortable = (function () {
           self.onClicked(this);
           return false;
         };
-      }.bind(this)
+      }.bind(this),
     );
 
     // figure out the initial sort preference
@@ -94,7 +94,7 @@ var Sortable = (function () {
           if (initialSortDir != null) {
             this.pref = { column: i, direction: arrowTable[initialSortDir] };
           }
-        }.bind(this)
+        }.bind(this),
       );
     }
 
@@ -237,15 +237,15 @@ var Sortable = (function () {
 
           return s(
             this.extractData(a.cells[column]),
-            this.extractData(b.cells[column])
+            this.extractData(b.cells[column]),
           );
-        }.bind(this)
+        }.bind(this),
       );
 
       rows.forEach(
         function (e) {
           this.table.tBodies[0].appendChild(e);
-        }.bind(this)
+        }.bind(this),
       );
 
       // update arrow rendering
@@ -259,7 +259,7 @@ var Sortable = (function () {
 
     getIndexOfSortableTable: function () {
       return Array.from(document.querySelectorAll("TABLE.sortable")).indexOf(
-        this.table
+        this.table,
       );
     },
 
@@ -449,7 +449,7 @@ var Sortable = (function () {
       YAHOO.util.StorageManager.LOCATION_SESSION,
       {
         order: [YAHOO.util.StorageEngineGears],
-      }
+      },
     );
   } catch (e) {
     // no storage available

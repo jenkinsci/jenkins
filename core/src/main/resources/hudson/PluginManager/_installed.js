@@ -22,7 +22,7 @@
       {
         method: "post",
         headers: crumb.wrap({}),
-      }
+      },
     ).then((rsp) => {
       if (!rsp.ok) {
         rsp.text().then((responseText) => {
@@ -38,7 +38,7 @@
     let e = Array.from(
       document
         .getElementById("plugins")
-        .querySelectorAll("input[type='checkbox']")
+        .querySelectorAll("input[type='checkbox']"),
     ).find(function (e) {
       return String(e.checked) !== e.getAttribute("original");
     });
