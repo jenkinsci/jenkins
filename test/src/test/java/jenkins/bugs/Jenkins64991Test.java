@@ -149,7 +149,7 @@ public class Jenkins64991Test {
         assertNotNull(freeStyleProject);
         final JenkinsRule.WebClient webClient = j.createWebClient();
         final HtmlPage projectPage = webClient.getPage(freeStyleProject);
-        assertThat(projectPage.getWebResponse().getContentAsString(), containsStringIgnoringCase("Project " + freeStyleProject.getDisplayName()));
+        assertThat(projectPage.getWebResponse().getContentAsString(), containsStringIgnoringCase(freeStyleProject.getDisplayName()));
 
         final Page loginPage = projectPage.getElementsByTagName("a").stream().filter(
                 e -> e.hasAttribute("href") && e.getAttribute("href").contains(j.jenkins.getSecurityRealm().getLoginUrl())

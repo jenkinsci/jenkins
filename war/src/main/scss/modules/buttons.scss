@@ -48,11 +48,11 @@
   font-weight: 600;
 
   &::before {
-    background: var(--primary) !important;
+    background: var(--accent-color) !important;
   }
 
   &::after {
-    box-shadow: 0 0 0 0.66rem var(--primary);
+    box-shadow: 0 0 0 0.66rem var(--accent-color);
     opacity: 0;
   }
 
@@ -70,7 +70,7 @@
       }
 
       &::after {
-        box-shadow: 0 0 0 0.33rem var(--primary);
+        box-shadow: 0 0 0 0.33rem var(--accent-color);
         opacity: 0.2;
       }
     }

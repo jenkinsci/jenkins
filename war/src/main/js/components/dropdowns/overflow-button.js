@@ -13,7 +13,7 @@ function init() {
       Utils.generateDropdown(element, (instance) => {
         instance.setContent(element.nextElementSibling.content);
       });
-    }
+    },
   );
 }
 
