@@ -87,5 +87,5 @@ Behaviour.specify(
     r.onclick = r.onchange = function () {
       g.updateButtons();
     };
-  }
+  },
 );

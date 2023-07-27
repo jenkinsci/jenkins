@@ -1,5 +1,13 @@
 /* eslint-env node */
 module.exports = {
   parser: "postcss-scss",
-  plugins: [require("autoprefixer")],
+  plugins: {
+    "postcss-preset-env": {
+      stage: false,
+      features: {
+        "media-query-ranges": true,
+      },
+      preserve: false,
+    },
+  },
 };

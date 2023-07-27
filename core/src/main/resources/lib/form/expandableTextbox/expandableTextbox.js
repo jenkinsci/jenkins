@@ -48,5 +48,5 @@ Behaviour.specify(
     element.addEventListener("click", function () {
       expandTextArea(element);
     });
-  }
+  },
 );

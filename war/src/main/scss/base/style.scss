@@ -25,13 +25,13 @@
  */
 
 /* Panel */
-@media (min-width: 1600px) {
+@media (width >= 1600px) {
   body#jenkins.j-hide-left #main-panel {
     max-width: 75%;
   }
 }
 
-@media (min-width: 2000px) {
+@media (width >= 2000px) {
   body#jenkins.j-hide-left #main-panel {
     max-width: 85%;
   }
@@ -75,6 +75,17 @@ td.no-wrap {
 #main-table {
   padding: 0;
   border-collapse: collapse;
+}
+
+#safe-restart-msg {
+  font-weight: bold;
+  color: white;
+  background-color: var(--warning);
+  text-align: center;
+  margin-bottom: var(--section-padding);
+  padding: 0.5em;
+  -moz-border-radius: 0.5em;
+  border-radius: var(--form-input-border-radius);
 }
 
 #shutdown-msg {
@@ -353,7 +364,10 @@ pre.console {
   padding: 4px 0;
   margin-left: 0;
   border-bottom: 1px solid #090;
-  font: bold 12px Helvetica, Arial, sans-serif;
+  font:
+    bold 12px Helvetica,
+    Arial,
+    sans-serif;
 }
 
 #foldertab li {

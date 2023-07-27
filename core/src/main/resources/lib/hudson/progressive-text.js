@@ -18,7 +18,9 @@ Behaviour.specify(
       Where to retrieve additional text from
   */
     function fetchNext(e, href, onFinishEvent) {
-      var headers = crumb.wrap({});
+      var headers = crumb.wrap({
+        "Content-Type": "application/x-www-form-urlencoded",
+      });
       if (e.consoleAnnotator !== undefined) {
         headers["X-ConsoleAnnotator"] = e.consoleAnnotator;
       }
@@ -75,5 +77,5 @@ Behaviour.specify(
     document.getElementById(idref).fetchedBytes =
       startOffset !== "" ? Number(startOffset) : 0;
     fetchNext(document.getElementById(idref), href, onFinishEvent);
-  }
+  },
 );

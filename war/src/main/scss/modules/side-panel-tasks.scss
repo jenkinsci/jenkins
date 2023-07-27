@@ -45,12 +45,10 @@ $background-outset: 0.7rem;
       padding-left: 2.8rem;
     }
   }
+}
 
-  &:has(.jenkins-search__results-container--visible) {
-    .task-link {
-      opacity: 0.3;
-    }
-  }
+#side-panel .jenkins-search__results-container--visible .task-link {
+  opacity: 0.3;
 }
 
 #tasks .task {
