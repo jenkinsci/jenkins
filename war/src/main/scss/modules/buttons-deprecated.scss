@@ -144,7 +144,9 @@ a.yui-button:visited {
   text-decoration: none;
   border: 2px solid;
   border-radius: 4px;
-  transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out,
+  transition:
+    color 0.15s ease-in-out,
+    background-color 0.15s ease-in-out,
     border-color 0.15s ease-in-out;
 
   @include button-secondary;

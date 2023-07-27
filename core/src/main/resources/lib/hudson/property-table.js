@@ -17,7 +17,7 @@
           if (selection === null || window.getSelection().type !== "Range") {
             elem.parentElement.classList.add("jenkins-hidden");
             elem.parentElement.previousSibling.classList.remove(
-              "jenkins-hidden"
+              "jenkins-hidden",
             );
           }
         });

@@ -87,19 +87,19 @@
       document.getElementById("visible-am-container"),
       {
         closeAll: closeAll,
-      }
+      },
     );
     var securityMonitors = initializeAmMonitor(
       document.getElementById("visible-sec-am-container"),
       {
         closeAll: closeAll,
-      }
+      },
     );
-    monitorWidgets = [normalMonitors, securityMonitors].filter(function (
-      widget
-    ) {
-      return widget !== null;
-    });
+    monitorWidgets = [normalMonitors, securityMonitors].filter(
+      function (widget) {
+        return widget !== null;
+      },
+    );
 
     monitorWidgets.forEach(function (widget) {
       widget.startListeners();

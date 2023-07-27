@@ -9,6 +9,6 @@
         detail.style.display =
           detail.style.display == "block" ? "none" : "block";
       });
-    }
+    },
   );
 })();

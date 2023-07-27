@@ -67,7 +67,9 @@ Behaviour.specify(
 
       fetch(rootURL + showPreview.getAttribute("previewEndpoint"), {
         method: "post",
-        headers: crumb.wrap({}),
+        headers: crumb.wrap({
+          "Content-Type": "application/x-www-form-urlencoded",
+        }),
         body: new URLSearchParams({
           text: text,
         }),
@@ -87,5 +89,5 @@ Behaviour.specify(
       hidePreview.style.display = "none";
       previewDiv.style.display = "none";
     };
-  }
+  },
 );

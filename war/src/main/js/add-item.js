@@ -300,7 +300,7 @@ $.when(getItems()).done(function (data) {
             activateValidationMessage(
               "#itemname-invalid",
               ".add-item-name",
-              message
+              message,
             );
           } else {
             cleanValidationMessages(".add-item-name");
