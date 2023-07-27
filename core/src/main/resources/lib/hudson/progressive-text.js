@@ -77,5 +77,5 @@ Behaviour.specify(
     document.getElementById(idref).fetchedBytes =
       startOffset !== "" ? Number(startOffset) : 0;
     fetchNext(document.getElementById(idref), href, onFinishEvent);
-  }
+  },
 );

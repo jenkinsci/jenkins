@@ -2,7 +2,7 @@
   var redirectForm = document.getElementById("redirect-error");
   if (!redirectForm) {
     console.warn(
-      'This script expects to have an element with id="redirect-error" to be working.'
+      'This script expects to have an element with id="redirect-error" to be working.',
     );
     return;
   }

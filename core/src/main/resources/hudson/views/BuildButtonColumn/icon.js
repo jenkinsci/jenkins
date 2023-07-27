@@ -16,5 +16,5 @@ Behaviour.specify(
       hoverNotification(message, this, -100);
       return false;
     };
-  }
+  },
 );

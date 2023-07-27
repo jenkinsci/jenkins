@@ -89,5 +89,5 @@ Behaviour.specify(
       hidePreview.style.display = "none";
       previewDiv.style.display = "none";
     };
-  }
+  },
 );

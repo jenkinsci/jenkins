@@ -30,7 +30,7 @@ Behaviour.specify(
       event.preventDefault();
       revokeToken(element);
     });
-  }
+  },
 );
 
 Behaviour.specify(
@@ -41,7 +41,7 @@ Behaviour.specify(
     element.addEventListener("click", function () {
       saveApiToken(element);
     });
-  }
+  },
 );
 
 function revokeToken(anchorRevoke) {
@@ -69,7 +69,7 @@ function revokeToken(anchorRevoke) {
             if (repeatedChunk.querySelectorAll(".legacy-token").length > 0) {
               // we are revoking the legacy token
               var messageIfLegacyRevoked = anchorRevoke.getAttribute(
-                "data-message-if-legacy-revoked"
+                "data-message-if-legacy-revoked",
               );
 
               var legacyInput = document.getElementById("apiToken");
@@ -80,7 +80,7 @@ function revokeToken(anchorRevoke) {
           }
         });
       },
-      () => {}
+      () => {},
     );
 }
 
@@ -125,7 +125,7 @@ function saveApiToken(button) {
 
           // show the copy button
           var tokenCopyButton = repeatedChunk.querySelector(
-            ".jenkins-copy-button"
+            ".jenkins-copy-button",
           );
           tokenCopyButton.setAttribute("text", tokenValue);
           tokenCopyButton.classList.remove("jenkins-hidden");
@@ -135,7 +135,7 @@ function saveApiToken(button) {
           uuidInput.value = tokenUuid;
 
           var warningMessage = repeatedChunk.querySelector(
-            ".display-after-generation"
+            ".display-after-generation",
           );
           warningMessage.classList.add("visible");
 
@@ -143,7 +143,7 @@ function saveApiToken(button) {
           button.remove();
 
           var revokeButton = repeatedChunk.querySelector(
-            ".api-token-property-token-revoke"
+            ".api-token-property-token-revoke",
           );
           revokeButton.classList.remove("hidden-button");
 
@@ -164,7 +164,7 @@ function adjustTokenEmptyListMessage(tokenList) {
 
   // number of token that are already existing or freshly created
   var numOfToken = tokenList.querySelectorAll(
-    ".token-list-existing-item, .token-list-fresh-item"
+    ".token-list-existing-item, .token-list-fresh-item",
   ).length;
   if (numOfToken >= 1) {
     if (!emptyListMessage.classList.contains("hidden-message")) {

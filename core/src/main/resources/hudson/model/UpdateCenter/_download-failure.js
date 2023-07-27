@@ -12,5 +12,5 @@ Behaviour.specify(
       n.style.display = "block";
       this.style.display = "none";
     };
-  }
+  },
 );
