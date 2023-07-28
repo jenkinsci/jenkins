@@ -102,5 +102,5 @@ Behaviour.specify(
         f.target = "_self";
       }
     });
-  }
+  },
 );

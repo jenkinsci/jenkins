@@ -9,7 +9,7 @@ Behaviour.specify(
       crumb.appendToForm(form);
       form.submit();
     });
-  }
+  },
 );
 
 function refresh() {

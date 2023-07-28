@@ -32,7 +32,7 @@ function menuItem(options) {
     {
       type: "link",
     },
-    options
+    options,
   );
 
   const label = xmlEscape(itemOptions.label);
@@ -78,19 +78,19 @@ function menuItem(options) {
 
 function heading(label) {
   return createElementFromHtml(
-    `<p class="jenkins-dropdown__heading">${label}</p>`
+    `<p class="jenkins-dropdown__heading">${label}</p>`,
   );
 }
 
 function separator() {
   return createElementFromHtml(
-    `<div class="jenkins-dropdown__separator"></div>`
+    `<div class="jenkins-dropdown__separator"></div>`,
   );
 }
 
 function placeholder(label) {
   return createElementFromHtml(
-    `<p class="jenkins-dropdown__placeholder">${label}</p>`
+    `<p class="jenkins-dropdown__placeholder">${label}</p>`,
   );
 }
 

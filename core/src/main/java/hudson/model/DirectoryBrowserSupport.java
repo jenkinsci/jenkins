@@ -869,5 +869,5 @@ public final class DirectoryBrowserSupport implements HttpResponse {
     private static final Logger LOGGER = Logger.getLogger(DirectoryBrowserSupport.class.getName());
 
     @Restricted(NoExternalUse.class)
-    public static final String DEFAULT_CSP_VALUE = "sandbox; default-src 'none'; img-src 'self'; style-src 'self';";
+    public static final String DEFAULT_CSP_VALUE = "sandbox allow-same-origin; default-src 'none'; img-src 'self'; style-src 'self';";
 }

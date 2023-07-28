@@ -24,7 +24,7 @@ function registerConfirmationLink(element) {
         document.body.appendChild(form);
         form.submit();
       },
-      () => {}
+      () => {},
     );
     return false;
   });
@@ -37,7 +37,7 @@ function init() {
     0,
     (element) => {
       registerConfirmationLink(element);
-    }
+    },
   );
 }
 
