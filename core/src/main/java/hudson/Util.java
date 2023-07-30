@@ -1862,15 +1862,14 @@ public class Util {
     public static void printRedirect(String contextPath, String redirectUrl, String message, PrintWriter out) {
         out.printf(
                 "<html><head>" +
-                        "<meta http-equiv='refresh' content='1;url=%1$s'/>" +
-                        "<script data-redirect-url='%1$s' src='" +
-                        contextPath + Jenkins.RESOURCE_PATH +
-                        "/scripts/redirect.js'/>" +
-                        "</head>" +
-                        "<body style='background-color:white; color:white;'>%n" +
-                        "%n%n" +
-                        "%2$s%n" +
-                        "<!--%n", Functions.htmlAttributeEscape(redirectUrl), message);
+                "<meta http-equiv='refresh' content='1;url=%1$s'/>" +
+                "<script id='redirect' data-redirect-url='%1$s' src='" +
+                contextPath + Jenkins.RESOURCE_PATH +
+                "/scripts/redirect.js'/>" +
+                "</head>" +
+                "<body style='background-color:white; color:white;'>%n" +
+                "%2$s%n" +
+                "<!--%n", Functions.htmlAttributeEscape(redirectUrl), message);
     }
 
     public static final FastDateFormat XS_DATETIME_FORMATTER = FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ss'Z'", new SimpleTimeZone(0, "GMT"));
