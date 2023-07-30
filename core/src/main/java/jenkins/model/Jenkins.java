@@ -225,6 +225,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -2049,13 +2050,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Gets the read-only list of all {@link Computer}s.
      */
     public Computer[] getComputers() {
-        Computer[] r = computers.values().toArray(new Computer[0]);
-        Arrays.sort(r, (lhs, rhs) -> {
-            if (lhs.getNode() == Jenkins.this)  return -1;
-            if (rhs.getNode() == Jenkins.this)  return 1;
-            return lhs.getName().compareTo(rhs.getName());
-        });
-        return r;
+        return computers.values().stream().sorted(Comparator.comparing(Computer::getName)).toArray(Computer[]::new);
     }
 
     @CLIResolver

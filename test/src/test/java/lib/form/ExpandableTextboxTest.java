@@ -41,7 +41,7 @@ import org.htmlunit.Page;
 import org.htmlunit.WebRequest;
 import org.htmlunit.html.DomElement;
 import org.htmlunit.html.DomNodeList;
-import org.htmlunit.html.HtmlButtonInput;
+import org.htmlunit.html.HtmlButton;
 import org.htmlunit.html.HtmlElement;
 import org.htmlunit.html.HtmlElementUtil;
 import org.htmlunit.html.HtmlInput;
@@ -120,11 +120,10 @@ public class ExpandableTextboxTest {
         assertNotEquals("hacked", p.getTitleText());
     }
 
-    private HtmlButtonInput getExpandButton(HtmlPage page) {
-        DomNodeList<HtmlElement> buttons = page.getElementById("test-panel").getElementsByTagName("input");
-        // the first one is the text input
-        assertEquals(2, buttons.size());
-        return (HtmlButtonInput) buttons.get(1);
+    private HtmlButton getExpandButton(HtmlPage page) {
+        DomNodeList<HtmlElement> buttons = page.getElementById("test-panel").getElementsByTagName("button");
+        assertEquals(1, buttons.size());
+        return (HtmlButton) buttons.get(0);
     }
 
     @TestExtension("noInjectionArePossible")
@@ -166,7 +165,7 @@ public class ExpandableTextboxTest {
         int numberOfH1Before = configurePage.getElementsByTagName("h1").size();
 
         HtmlInput xssInput = configurePage.getElementByName("_.theField");
-        HtmlInput expandButton = (HtmlInput) xssInput.getParentNode().getNextSibling().getFirstChild();
+        HtmlButton expandButton = (HtmlButton) xssInput.getParentNode().getNextSibling().getFirstChild();
         HtmlElementUtil.click(expandButton);
 
         // no additional h1, meaning the "payload" is not interpreted
@@ -186,7 +185,7 @@ public class ExpandableTextboxTest {
         HtmlPage configurePage = wc.getPage(p, "configure");
 
         HtmlInput input = configurePage.getElementByName("_.theField");
-        HtmlInput expandButton = (HtmlInput) input.getParentNode().getNextSibling().getFirstChild();
+        HtmlButton expandButton = (HtmlButton) input.getParentNode().getNextSibling().getFirstChild();
         HtmlElementUtil.click(expandButton);
         final DomElement textArea = configurePage.getElementByName("_.theField");
         assertThat(textArea, instanceOf(HtmlTextArea.class));

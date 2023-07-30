@@ -41,7 +41,7 @@ function expandTextArea(button) {
 }
 
 Behaviour.specify(
-  ".expanding-input__button > input[type='button']",
+  ".expanding-input__button > button[type='button']",
   "expandable-textbox-expand-button",
   0,
   function (element) {
