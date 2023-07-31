@@ -122,14 +122,27 @@ public abstract class ConfidentialStore {
 
         @Override
         protected void store(ConfidentialKey key, byte[] payload) throws IOException {
-            LOGGER.fine(() -> "storing " + key.getId() + " " + Util.getDigestOf(Util.toHexString(payload)));
+            try {
+                String payloadDigest = Util.getHexStringOfSHA256DigestOf(payload);
+                LOGGER.fine("storing " + key.getId() + " " + payloadDigest);
+            } catch (NoSuchAlgorithmException e) {
+                throw new IOException(e);
+            }
             data.put(key.getId(), payload);
         }
 
         @Override
         protected byte[] load(ConfidentialKey key) throws IOException {
             byte[] payload = data.get(key.getId());
-            LOGGER.fine(() -> "loading " + key.getId() + " " + (payload != null ? Util.getDigestOf(Util.toHexString(payload)) : "null"));
+            String payloadDigest = null;
+             if (payload != null) {
+                try {
+                    payloadDigest = Util.getHexStringOfSHA256DigestOf(payload);
+                } catch (NoSuchAlgorithmException e) {
+                    throw new IOException(e);
+                }
+            }
+            LOGGER.fine("loading " + key.getId() + " " + payloadDigest);
             return payload;
         }
 

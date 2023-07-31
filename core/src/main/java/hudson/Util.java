@@ -1927,4 +1927,14 @@ public class Util {
     private static PathRemover newPathRemover(@NonNull PathRemover.PathChecker pathChecker) {
         return PathRemover.newFilteredRobustRemover(pathChecker, DELETION_RETRIES, GC_AFTER_FAILED_DELETE, WAIT_BETWEEN_DELETION_RETRIES);
     }
+
+    /**
+     * Returns Hex string of SHA-256 Digest of input bytes
+     */
+    public static String getHexStringOfSHA256DigestOf(@NonNull byte[] input) throws NoSuchAlgorithmException
+    {
+        MessageDigest sha256Digest = MessageDigest.getInstance("SHA-256");
+        sha256Digest.update(input);
+        return toHexString(sha256Digest.digest());
+    }
 }
