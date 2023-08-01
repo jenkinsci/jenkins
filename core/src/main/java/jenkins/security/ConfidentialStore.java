@@ -124,7 +124,7 @@ public abstract class ConfidentialStore {
         protected void store(ConfidentialKey key, byte[] payload) throws IOException {
             try {
                 String payloadDigest = Util.getHexStringOfSHA256DigestOf(payload);
-                //called from tests
+                //called only from tests
                 LOGGER.fine("storing " + key.getId() + " " + payloadDigest);
             } catch (NoSuchAlgorithmException e) {
                 throw new IOException(e);
