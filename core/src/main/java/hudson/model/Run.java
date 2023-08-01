@@ -53,6 +53,7 @@ import hudson.console.ConsoleLogFilter;
 import hudson.console.ConsoleNote;
 import hudson.console.ModelHyperlinkNote;
 import hudson.console.PlainTextConsoleOutputStream;
+import hudson.link.ConsoleURLProvider;
 import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.RunListener;
 import hudson.model.listeners.SaveableListener;
@@ -1073,6 +1074,14 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     @Override
     public final @NonNull String getSearchUrl() {
         return getNumber() + "/";
+    }
+
+    /**
+     * Obtains the redirect console URL to this build.
+     * @return String like "job/foo/32/console" by default, or a String declared by an Extension of {@link ConsoleURLProvider}
+     */
+    public final @NonNull String getConsoleDisplayRedirect() {
+        return ConsoleURLProvider.get().getConsoleURL(this);
     }
 
     /**
