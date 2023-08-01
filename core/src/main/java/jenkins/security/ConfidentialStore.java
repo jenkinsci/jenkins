@@ -121,22 +121,24 @@ public abstract class ConfidentialStore {
         }
 
         @Override
-        protected void store(ConfidentialKey key, byte[] payload) throws IllegalStateException {
-                byte[] payloadDigest = Util.getSHA256DigestOf(payload);
-                String payloadDigestHexString = (payloadDigest != null) ? Util.toHexString(payloadDigest) : null;
-                //called only from tests
-                LOGGER.fine("storing " + key.getId() + " " + payloadDigestHexString);
-                data.put(key.getId(), payload);
+        protected void store(ConfidentialKey key, byte[] payload) throws IOException {
+            //called only from tests, get hex string of sha 256 for logging payload
+            LOGGER.log(Level.FINER, "storing {0} {1}",  new Object[]{key.getId(), getDigestOfPayload(payload)});
+            data.put(key.getId(), payload);
         }
 
         @Override
-        protected byte[] load(ConfidentialKey key) throws IllegalStateException {
+        protected byte[] load(ConfidentialKey key) throws IOException {
             byte[] payload = data.get(key.getId());
             //called only from tests, get hex string of sha 256 for logging payload
-            byte[] payloadDigest = Util.getSHA256DigestOf(payload);
-            String payloadDigestHexString = (payloadDigest != null) ? Util.toHexString(payloadDigest) : null;
-            LOGGER.fine("loading " + key.getId() + " " + payloadDigestHexString);
+            LOGGER.log(Level.FINER, "loading {0} {1}",  new Object[]{key.getId(), getDigestOfPayload(payload)});
             return payload;
+        }
+
+        private String getDigestOfPayload(byte[] payload) throws IOException {
+            //get hex string of sha 256 of payload
+            byte[] payloadDigest = Util.getSHA256DigestOf(payload);
+            return (payloadDigest != null) ? Util.toHexString(payloadDigest) : null;
         }
 
         @Override
