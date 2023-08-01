@@ -1929,12 +1929,21 @@ public class Util {
     }
 
     /**
-     * Returns Hex string of SHA-256 Digest of input bytes
+     * Returns SHA-256 Digest of input bytes
      */
-    public static String getHexStringOfSHA256DigestOf(@NonNull byte[] input) throws NoSuchAlgorithmException
+    @Restricted(NoExternalUse.class)
+    public static byte[] getSHA256DigestOf(@NonNull byte[] input)
     {
-        MessageDigest sha256Digest = MessageDigest.getInstance("SHA-256");
-        sha256Digest.update(input);
-        return toHexString(sha256Digest.digest());
+        try {
+            if (input != null) {
+                MessageDigest sha256Digest = MessageDigest.getInstance("SHA-256");
+                sha256Digest.update(input);
+                return sha256Digest.digest();
+            }
+        } catch (NoSuchAlgorithmException noSuchAlgorithmException) {
+            LOGGER.log(Level.WARNING, "Failed to instantiate SHA-256 message digest algorithm", noSuchAlgorithmException);
+            throw new IllegalStateException("Failed to instantiate SHA-256 message digest algorithm");
+        }
+            return null;
     }
 }
