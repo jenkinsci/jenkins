@@ -1,5 +1,6 @@
 package hudson.link;
 
+import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.Util;
@@ -8,14 +9,14 @@ import jenkins.model.Jenkins;
 
 /**
  * Extension point for providing console urls
- * @since 2.417
+ * @since TODO
  */
 public abstract class ConsoleURLProvider implements ExtensionPoint {
 
     /**
      * Provide the console url of the highest registered ordinal implementation.
      * Defaults to {@link ConsoleURLProviderImpl} otherwise.
-     * @since 2.417
+     * @since TODO
      */
     public String getConsoleURL(Run<?, ?> run) {
         return get().getConsoleURL(run);
@@ -23,7 +24,7 @@ public abstract class ConsoleURLProvider implements ExtensionPoint {
 
     /**
      * Retrieve all implementations of ConsoleURLProvider.
-     * @since 2.417
+     * @since TODO
      */
     public static ExtensionList<ConsoleURLProvider> all() {
         return ExtensionList.lookup(ConsoleURLProvider.class);
@@ -37,6 +38,7 @@ public abstract class ConsoleURLProvider implements ExtensionPoint {
         return all().stream().findFirst().orElse(ConsoleURLProviderImpl.INSTANCE);
     }
 
+    @Extension(ordinal = -100)
     static class ConsoleURLProviderImpl extends ConsoleURLProvider {
 
         static final ConsoleURLProvider INSTANCE = new ConsoleURLProviderImpl();
