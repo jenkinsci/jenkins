@@ -1941,7 +1941,8 @@ public class Util {
                 sha256Digest.update(input);
                 return sha256Digest.digest();
         } catch (NoSuchAlgorithmException noSuchAlgorithmException) {
-            throw new IllegalStateException("SHA-256 could not be instantiated, but is required to be implemented by the language specification", noSuchAlgorithmException);
+            throw new IllegalStateException("SHA-256 could not be instantiated, but is required to" +
+                    " be implemented by the language specification", noSuchAlgorithmException);
         }
     }
 }
