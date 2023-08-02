@@ -39,7 +39,7 @@ public abstract class ConsoleURLProvider implements ExtensionPoint {
     }
 
     @Extension(ordinal = -100)
-    static class ConsoleURLProviderImpl extends ConsoleURLProvider {
+    public static class ConsoleURLProviderImpl extends ConsoleURLProvider {
 
         static final ConsoleURLProvider INSTANCE = new ConsoleURLProviderImpl();
 
