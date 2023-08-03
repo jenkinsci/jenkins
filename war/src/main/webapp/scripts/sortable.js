@@ -82,7 +82,7 @@ var Sortable = (function () {
           self.onClicked(this);
           return false;
         };
-      }.bind(this)
+      }.bind(this),
     );
 
     // figure out the initial sort preference
@@ -94,7 +94,7 @@ var Sortable = (function () {
           if (initialSortDir != null) {
             this.pref = { column: i, direction: arrowTable[initialSortDir] };
           }
-        }.bind(this)
+        }.bind(this),
       );
     }
 
@@ -237,15 +237,15 @@ var Sortable = (function () {
 
           return s(
             this.extractData(a.cells[column]),
-            this.extractData(b.cells[column])
+            this.extractData(b.cells[column]),
           );
-        }.bind(this)
+        }.bind(this),
       );
 
       rows.forEach(
         function (e) {
           this.table.tBodies[0].appendChild(e);
-        }.bind(this)
+        }.bind(this),
       );
 
       // update arrow rendering
@@ -259,7 +259,7 @@ var Sortable = (function () {
 
     getIndexOfSortableTable: function () {
       return Array.from(document.querySelectorAll("TABLE.sortable")).indexOf(
-        this.table
+        this.table,
       );
     },
 
@@ -330,7 +330,7 @@ var Sortable = (function () {
    *   "12-25/1979 13:45:22 always with the ignored content!"
    */
   var date_pattern =
-    /^(\d{1,2})[\/-](\d{1,2})[\/-](\d\d|\d\d\d\d)(?:(?:\s*(\d{1,2})?:(\d\d)?(?::(\d\d)?)?)?(?:\s*([aA][mM]|[pP][mM])?))\b/;
+    /^(\d{1,2})[/-](\d{1,2})[/-](\d\d|\d\d\d\d)(?:(?:\s*(\d{1,2})?:(\d\d)?(?::(\d\d)?)?)?(?:\s*([aA][mM]|[pP][mM])?))\b/;
 
   // available sort functions
   var sorter = {
@@ -342,18 +342,18 @@ var Sortable = (function () {
        * please make sure you use 4-digit year values.
        */
       function toDate(x) {
-        dmatches = x.match(date_pattern);
-        month = dmatches[1];
-        day = dmatches[2];
-        year = parseInt(dmatches[3]);
+        var dmatches = x.match(date_pattern);
+        var month = dmatches[1];
+        var day = dmatches[2];
+        var year = parseInt(dmatches[3]);
         if (year < 50) {
           year += 2000;
         } else if (year < 100) {
           year += 1900;
         }
-        hours = dmatches[4] || 0;
-        minutes = dmatches[5] || 0;
-        seconds = dmatches[6] || 0;
+        var hours = dmatches[4] || 0;
+        var minutes = dmatches[5] || 0;
+        var seconds = dmatches[6] || 0;
         hours = parseInt(hours);
         if (dmatches[7] && dmatches[7].match(/pm/i) && hours < 12) {
           hours += 12;
@@ -426,7 +426,7 @@ var Sortable = (function () {
       if (itm.match(/^[£$]/)) {
         sortfn = this.currency;
       }
-      if (itm.match(/\%$/)) {
+      if (itm.match(/%$/)) {
         sortfn = this.percent;
       }
       if (itm.match(/^-?[\d]+(\.[\d]+)?$/)) {
@@ -449,7 +449,7 @@ var Sortable = (function () {
       YAHOO.util.StorageManager.LOCATION_SESSION,
       {
         order: [YAHOO.util.StorageEngineGears],
-      }
+      },
     );
   } catch (e) {
     // no storage available
@@ -470,12 +470,14 @@ var Sortable = (function () {
   };
 })();
 
+// eslint-disable-next-line no-unused-vars
 function ts_makeSortable(table) {
   // backward compatibility
   return new Sortable.Sortable(table);
 }
 
 /** Calls table.sortable.refresh() in case the sortable has been initialized; otherwise does nothing. */
+// eslint-disable-next-line no-unused-vars
 function ts_refresh(table) {
   var s = table.sortable;
   if (s != null) {

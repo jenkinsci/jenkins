@@ -41,15 +41,16 @@ import hudson.model.QueueTest;
 import hudson.util.OneShotEvent;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import jenkins.model.Jenkins;
 import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.BuildWatcher;
 import org.jvnet.hudson.test.JenkinsRule;
 
 /**
@@ -61,6 +62,9 @@ public class QuietDownCommandTest {
     private static final QueueTest.TestFlyweightTask task
             = new QueueTest.TestFlyweightTask(new AtomicInteger(), null);
     private static final String TEST_REASON = "test reason";
+
+    @ClassRule
+    public static final BuildWatcher buildWatcher = new BuildWatcher();
 
     @Rule
     public final JenkinsRule j = new JenkinsRule();
@@ -189,8 +193,7 @@ public class QuietDownCommandTest {
     public void quietDownShouldSuccessAndRunningExecutor() throws Exception {
         final FreeStyleProject project = j.createFreeStyleProject("aProject");
         final OneShotEvent finish = new OneShotEvent();
-        final Future<FreeStyleBuild> build = OnlineNodeCommandTest.startBlockingAndFinishingBuild(project, finish);
-        assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(1));
+        final FreeStyleBuild build = OnlineNodeCommandTest.startBlockingAndFinishingBuild(project, finish);
 
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ, Jenkins.ADMINISTER)
@@ -198,9 +201,8 @@ public class QuietDownCommandTest {
         assertThat(result, succeededSilently());
         assertJenkinsInQuietMode();
         finish.signal();
-        build.get();
-        assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(1));
-        assertThat(project.isBuilding(), equalTo(false));
+        j.waitForCompletion(build);
+        assertThat(build.isBuilding(), equalTo(false));
         j.assertBuildStatusSuccess(build);
         assertJenkinsInQuietMode();
     }
@@ -215,8 +217,7 @@ public class QuietDownCommandTest {
         final ExecutorService threadPool = Executors.newSingleThreadExecutor();
         final OneShotEvent beforeCli = new OneShotEvent();
         final OneShotEvent finish = new OneShotEvent();
-        final Future<FreeStyleBuild> build = OnlineNodeCommandTest.startBlockingAndFinishingBuild(project, finish);
-        assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(1));
+        final FreeStyleBuild build = OnlineNodeCommandTest.startBlockingAndFinishingBuild(project, finish);
 
         boolean timeoutOccurred = false;
         final FutureTask exec_task = new FutureTask(() -> {
@@ -240,9 +241,8 @@ public class QuietDownCommandTest {
             fail("Missing timeout for CLI call");
 
         finish.signal();
-        build.get();
-        assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(1));
-        assertThat(project.isBuilding(), equalTo(false));
+        j.waitForCompletion(build);
+        assertThat(build.isBuilding(), equalTo(false));
         j.assertBuildStatusSuccess(build);
         exec_task.cancel(true);
         assertJenkinsInQuietMode();
@@ -258,8 +258,7 @@ public class QuietDownCommandTest {
         final ExecutorService threadPool = Executors.newSingleThreadExecutor();
         final OneShotEvent beforeCli = new OneShotEvent();
         final OneShotEvent finish = new OneShotEvent();
-        final Future<FreeStyleBuild> build = OnlineNodeCommandTest.startBlockingAndFinishingBuild(project, finish);
-        assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(1));
+        final FreeStyleBuild build = OnlineNodeCommandTest.startBlockingAndFinishingBuild(project, finish);
 
         boolean timeoutOccurred = false;
         final FutureTask exec_task = new FutureTask(() -> {
@@ -283,9 +282,8 @@ public class QuietDownCommandTest {
             fail("Missing timeout for CLI call");
 
         finish.signal();
-        build.get();
-        assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(1));
-        assertThat(project.isBuilding(), equalTo(false));
+        j.waitForCompletion(build);
+        assertThat(build.isBuilding(), equalTo(false));
         j.assertBuildStatusSuccess(build);
         exec_task.cancel(true);
         assertJenkinsInQuietMode();
@@ -302,8 +300,7 @@ public class QuietDownCommandTest {
         final ExecutorService threadPool = Executors.newSingleThreadExecutor();
         final OneShotEvent beforeCli = new OneShotEvent();
         final OneShotEvent finish = new OneShotEvent();
-        final Future<FreeStyleBuild> build = OnlineNodeCommandTest.startBlockingAndFinishingBuild(project, finish);
-        assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(1));
+        final FreeStyleBuild build = OnlineNodeCommandTest.startBlockingAndFinishingBuild(project, finish);
 
         final FutureTask exec_task = new FutureTask(() -> {
             assertJenkinsNotInQuietMode();
@@ -327,9 +324,8 @@ public class QuietDownCommandTest {
         }
         assertThat(exec_task.isDone(), equalTo(true));
         finish.signal();
-        build.get();
-        assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(1));
-        assertThat(project.isBuilding(), equalTo(false));
+        j.waitForCompletion(build);
+        assertThat(build.isBuilding(), equalTo(false));
         j.assertBuildStatusSuccess(build);
         assertJenkinsInQuietMode();
     }
@@ -345,8 +341,7 @@ public class QuietDownCommandTest {
         final ExecutorService threadPool = Executors.newSingleThreadExecutor();
         final OneShotEvent beforeCli = new OneShotEvent();
         final OneShotEvent finish = new OneShotEvent();
-        final Future<FreeStyleBuild> build = OnlineNodeCommandTest.startBlockingAndFinishingBuild(project, finish);
-        assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(1));
+        final FreeStyleBuild build = OnlineNodeCommandTest.startBlockingAndFinishingBuild(project, finish);
 
         boolean timeoutOccurred = false;
         final FutureTask exec_task = new FutureTask(() -> {
@@ -371,9 +366,8 @@ public class QuietDownCommandTest {
             fail("Missing timeout for CLI call");
 
         finish.signal();
-        build.get();
-        assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(1));
-        assertThat(project.isBuilding(), equalTo(false));
+        j.waitForCompletion(build);
+        assertThat(build.isBuilding(), equalTo(false));
         j.assertBuildStatusSuccess(build);
         assertJenkinsInQuietMode();
     }
@@ -388,7 +382,7 @@ public class QuietDownCommandTest {
         final ExecutorService threadPool = Executors.newSingleThreadExecutor();
         final OneShotEvent beforeCli = new OneShotEvent();
         final OneShotEvent finish = new OneShotEvent();
-        final Future<FreeStyleBuild> build = OnlineNodeCommandTest.startBlockingAndFinishingBuild(project, finish);
+        final FreeStyleBuild build = OnlineNodeCommandTest.startBlockingAndFinishingBuild(project, finish);
         assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(1));
 
         boolean timeoutOccurred = false;
@@ -409,9 +403,8 @@ public class QuietDownCommandTest {
         assertJenkinsInQuietMode();
 
         finish.signal();
-        build.get();
-        assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(1));
-        assertThat(project.isBuilding(), equalTo(false));
+        j.waitForCompletion(build);
+        assertThat(build.isBuilding(), equalTo(false));
         j.assertBuildStatusSuccess(build);
         assertJenkinsInQuietMode();
 
@@ -431,8 +424,7 @@ public class QuietDownCommandTest {
         final ExecutorService threadPool = Executors.newSingleThreadExecutor();
         final OneShotEvent beforeCli = new OneShotEvent();
         final OneShotEvent finish = new OneShotEvent();
-        final Future<FreeStyleBuild> build = OnlineNodeCommandTest.startBlockingAndFinishingBuild(project, finish);
-        assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(1));
+        final FreeStyleBuild build = OnlineNodeCommandTest.startBlockingAndFinishingBuild(project, finish);
 
         final FutureTask exec_task = new FutureTask(() -> {
             assertJenkinsNotInQuietMode();
@@ -452,9 +444,8 @@ public class QuietDownCommandTest {
         assertJenkinsInQuietMode();
 
         finish.signal();
-        build.get();
-        assertThat(((FreeStyleProject) j.jenkins.getItem("aProject")).getBuilds(), hasSize(1));
-        assertThat(project.isBuilding(), equalTo(false));
+        j.waitForCompletion(build);
+        assertThat(build.isBuilding(), equalTo(false));
         j.assertBuildStatusSuccess(build);
         assertJenkinsInQuietMode();
         get(exec_task);

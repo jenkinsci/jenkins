@@ -24,9 +24,9 @@
 
 package hudson.model;
 
-import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
@@ -34,8 +34,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.WebResponse;
 import hudson.EnvVars;
 import hudson.Functions;
 import hudson.Launcher;
@@ -54,8 +52,12 @@ import java.util.Arrays;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import org.htmlunit.Page;
+import org.htmlunit.WebResponse;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -65,6 +67,7 @@ import org.jvnet.hudson.test.FailureBuilder;
 import org.jvnet.hudson.test.FakeChangeLogSCM;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.LoggerRule;
 import org.jvnet.hudson.test.TestBuilder;
 import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.UnstableBuilder;
@@ -80,6 +83,9 @@ public class AbstractBuildTest {
 
     @Rule
     public JenkinsRule j = new JenkinsRule();
+
+    @Rule
+    public LoggerRule logging = new LoggerRule();
 
     @Test
     @Issue("JENKINS-30730")
@@ -287,6 +293,7 @@ public class AbstractBuildTest {
     @Test
     @Issue("JENKINS-10615")
     public void workspaceLock() throws Exception {
+        logging.record(Run.class, Level.FINER);
         FreeStyleProject p = j.createFreeStyleProject();
         p.setConcurrentBuild(true);
         OneShotEvent e1 = new OneShotEvent();
@@ -330,6 +337,10 @@ public class AbstractBuildTest {
         assertNotEquals(b1.getStartCondition().get().getWorkspace(), b2.getStartCondition().get().getWorkspace());
 
         done.signal();
+        Logger.getLogger(AbstractBuildTest.class.getName()).info("Test done, letting builds complete…");
+        j.waitForCompletion(b1.get());
+        j.waitForCompletion(b2.get());
+        Logger.getLogger(AbstractBuildTest.class.getName()).info("…done.");
     }
 
     @Test

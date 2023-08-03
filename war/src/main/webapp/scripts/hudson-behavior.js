@@ -35,6 +35,7 @@ if (window.isRunAsTest) {
 }
 
 // create a new object whose prototype is the given object
+// eslint-disable-next-line no-unused-vars
 function object(o) {
   function F() {}
   F.prototype = o;
@@ -160,7 +161,7 @@ var crumb = {
 
 (function initializeCrumb() {
   var extensionsAvailable = document.head.getAttribute(
-    "data-extensions-available"
+    "data-extensions-available",
   );
   if (extensionsAvailable === "true") {
     var crumbHeaderName = document.head.getAttribute("data-crumb-header");
@@ -175,8 +176,8 @@ var crumb = {
 var isRunAsTest = undefined;
 // Be careful, this variable does not include the absolute root URL as in Java part of Jenkins,
 // but the contextPath only, like /jenkins
-var rootURL = "not-defined-yet";
-var resURL = "not-defined-yet";
+var rootURL = "not-defined-yet"; // eslint-disable-line no-unused-vars
+var resURL = "not-defined-yet"; // eslint-disable-line no-unused-vars
 
 (function initializeUnitTestAndURLs() {
   var dataUnitTest = document.head.getAttribute("data-unit-test");
@@ -359,6 +360,7 @@ function findNearBy(e, name) {
 
   function locate(iterator, e) {
     // keep finding elements until we find the good match
+    // eslint-disable-next-line no-constant-condition
     while (true) {
       e = iterator(e, name);
       if (e == null) {
@@ -570,6 +572,7 @@ function findNextFormItem(src, name) {
 /**
  * Parse HTML into DOM.
  */
+// eslint-disable-next-line no-unused-vars
 function parseHtml(html) {
   var c = document.createElement("div");
   c.innerHTML = html;
@@ -597,15 +600,16 @@ function geval(script) {
  * @param {String} event
  *      like 'change', 'blur', etc.
  */
+// eslint-disable-next-line no-unused-vars
 function fireEvent(element, event) {
   if (document.createEvent) {
     // dispatch for firefox + others
-    var evt = document.createEvent("HTMLEvents");
+    let evt = document.createEvent("HTMLEvents");
     evt.initEvent(event, true, true); // event type,bubbling,cancelable
     return !element.dispatchEvent(evt);
   } else {
     // dispatch for IE
-    var evt = document.createEventObject();
+    let evt = document.createEventObject();
     return element.fireEvent("on" + event, evt);
   }
 }
@@ -659,7 +663,7 @@ function registerValidator(e) {
   if (!tr) {
     console.warn(
       "Couldn't find the expected validation element (.validation-error-area) for element",
-      e.closest(".jenkins-form-item")
+      e.closest(".jenkins-form-item"),
     );
     return;
   }
@@ -677,13 +681,13 @@ function registerValidator(e) {
       } catch (e) {
         if (window.console != null) {
           console.warn(
-            "Legacy checkUrl '" + url + "' is not valid JavaScript: " + e
+            "Legacy checkUrl '" + url + "' is not valid JavaScript: " + e,
           );
         }
         if (window.YUI != null) {
           YUI.log(
             "Legacy checkUrl '" + url + "' is not valid JavaScript: " + e,
-            "warn"
+            "warn",
           );
         }
         return url; // return plain url as fallback
@@ -694,7 +698,7 @@ function registerValidator(e) {
         depends.split(" ").forEach(
           TryEach(function (n) {
             q.nearBy(n);
-          })
+          }),
         );
       }
       return url + q.toString();
@@ -713,7 +717,7 @@ function registerValidator(e) {
       "Failed to register validation method: " +
         e.getAttribute("checkUrl") +
         " : " +
-        e
+        e,
     );
     return;
   }
@@ -728,7 +732,7 @@ function registerValidator(e) {
           const errorMessage = `<div class="error">An internal error occurred during form field validation (HTTP ${response.status}). Please reload the page and if the problem persists, ask the administrator for help.</div>`;
           updateValidationArea(
             validationArea,
-            response.status === 200 ? responseText : errorMessage
+            response.status === 200 ? responseText : errorMessage,
           );
         });
       },
@@ -756,13 +760,13 @@ function registerValidator(e) {
           if (window.YUI != null) {
             YUI.log(
               "Unable to find a nearby control of the name " + name,
-              "warn"
+              "warn",
             );
           }
           return;
         }
         c.addEventListener("change", checker.bind(e));
-      })
+      }),
     );
   }
 
@@ -776,7 +780,7 @@ function registerRegexpValidator(e, regexp, message) {
   if (!tr) {
     console.warn(
       "Couldn't find the expected parent element (.setting-main) for element",
-      e.closest(".jenkins-form-item")
+      e.closest(".jenkins-form-item"),
     );
     return;
   }
@@ -796,7 +800,7 @@ function registerRegexpValidator(e, regexp, message) {
     } else {
       updateValidationArea(
         this.targetElement,
-        `<div class="error">${message}</div>`
+        `<div class="error">${message}</div>`,
       );
       set = true;
     }
@@ -817,7 +821,7 @@ function registerMinMaxValidator(e) {
   if (!tr) {
     console.warn(
       "Couldn't find the expected parent element (.setting-main) for element",
-      e.closest(".jenkins-form-item")
+      e.closest(".jenkins-form-item"),
     );
     return;
   }
@@ -825,6 +829,7 @@ function registerMinMaxValidator(e) {
   e.targetElement = tr;
   var checkMessage = e.getAttribute("checkMessage");
   if (checkMessage) {
+    // eslint-disable-next-line no-undef
     message = checkMessage;
   }
   var oldOnchange = e.onchange;
@@ -852,7 +857,7 @@ function registerMinMaxValidator(e) {
             // The value is out of range
             updateValidationArea(
               this.targetElement,
-              `<div class="error">This value should be between ${min} and ${max}</div>`
+              `<div class="error">This value should be between ${min} and ${max}</div>`,
             );
             set = true;
           } else {
@@ -871,7 +876,7 @@ function registerMinMaxValidator(e) {
         if (parseInt(min) > parseInt(this.value)) {
           updateValidationArea(
             this.targetElement,
-            `<div class="error">This value should be larger than ${min}</div>`
+            `<div class="error">This value should be larger than ${min}</div>`,
           );
           set = true;
         } else {
@@ -889,7 +894,7 @@ function registerMinMaxValidator(e) {
         if (parseInt(max) < parseInt(this.value)) {
           updateValidationArea(
             this.targetElement,
-            `<div class="error">This value should be less than ${max}</div>`
+            `<div class="error">This value should be less than ${max}</div>`,
           );
           set = true;
         } else {
@@ -953,7 +958,7 @@ function makeButton(e, onclick) {
   }
   var be = btn.get("element");
   var classesSeparatedByWhitespace = clsName.split(" ");
-  for (var i = 0; i < classesSeparatedByWhitespace.length; i++) {
+  for (let i = 0; i < classesSeparatedByWhitespace.length; i++) {
     var singleClass = classesSeparatedByWhitespace[i];
     if (singleClass) {
       be.classList.add(singleClass);
@@ -966,7 +971,7 @@ function makeButton(e, onclick) {
 
   // keep the data-* attributes from the source
   var length = e.attributes.length;
-  for (var i = 0; i < length; i++) {
+  for (let i = 0; i < length; i++) {
     var attribute = e.attributes[i];
     var attributeName = attribute.name;
     if (attributeName.startsWith("data-")) {
@@ -1227,7 +1232,7 @@ function rowvgStartEachRow(recursive, f) {
     function (e) {
       // progressBar.jelly
       e.onclick = progressBarOnClick;
-    }
+    },
   );
 
   // <label> that doesn't use ID, so that it can be copied in <repeatable>
@@ -1237,7 +1242,7 @@ function rowvgStartEachRow(recursive, f) {
     ++p,
     function (e) {
       e.onclick = labelAttachPreviousOnClick;
-    }
+    },
   );
 
   // form fields that are validated via AJAX call to the server
@@ -1246,19 +1251,19 @@ function rowvgStartEachRow(recursive, f) {
     "INPUT.validated",
     "input-validated",
     ++p,
-    registerValidator
+    registerValidator,
   );
   Behaviour.specify(
     "SELECT.validated",
     "select-validated",
     ++p,
-    registerValidator
+    registerValidator,
   );
   Behaviour.specify(
     "TEXTAREA.validated",
     "textarea-validated",
     ++p,
-    registerValidator
+    registerValidator,
   );
 
   // validate required form values
@@ -1270,7 +1275,7 @@ function rowvgStartEachRow(recursive, f) {
   Behaviour.specify("INPUT.number", "input-number", ++p, function (e) {
     e.addEventListener("keypress", preventInputEe);
     registerMinMaxValidator(e);
-    registerRegexpValidator(e, /^((\-?\d+)|)$/, "Not an integer");
+    registerRegexpValidator(e, /^((-?\d+)|)$/, "Not an integer");
   });
 
   Behaviour.specify(
@@ -1280,8 +1285,8 @@ function rowvgStartEachRow(recursive, f) {
     function (e) {
       e.addEventListener("keypress", preventInputEe);
       registerMinMaxValidator(e);
-      registerRegexpValidator(e, /^\-?(\d+)$/, "Not an integer");
-    }
+      registerRegexpValidator(e, /^-?(\d+)$/, "Not an integer");
+    },
   );
 
   Behaviour.specify(
@@ -1292,7 +1297,7 @@ function rowvgStartEachRow(recursive, f) {
       e.addEventListener("keypress", preventInputEe);
       registerMinMaxValidator(e);
       registerRegexpValidator(e, /^\d+$/, "Not a non-negative integer");
-    }
+    },
   );
 
   Behaviour.specify(
@@ -1303,7 +1308,7 @@ function rowvgStartEachRow(recursive, f) {
       e.addEventListener("keypress", preventInputEe);
       registerMinMaxValidator(e);
       registerRegexpValidator(e, /^(\d*[1-9]\d*|)$/, "Not a positive integer");
-    }
+    },
   );
 
   Behaviour.specify(
@@ -1314,7 +1319,7 @@ function rowvgStartEachRow(recursive, f) {
       e.addEventListener("keypress", preventInputEe);
       registerMinMaxValidator(e);
       registerRegexpValidator(e, /^[1-9]\d*$/, "Not a positive integer");
-    }
+    },
   );
 
   Behaviour.specify(
@@ -1357,7 +1362,7 @@ function rowvgStartEachRow(recursive, f) {
         ]);
         return true;
       };
-    }
+    },
   );
 
   Behaviour.specify(
@@ -1368,7 +1373,7 @@ function rowvgStartEachRow(recursive, f) {
       e.onclick = helpButtonOnClick;
       e.tabIndex = 9999; // make help link unnavigable from keyboard
       e.parentNode.parentNode.classList.add("has-help");
-    }
+    },
   );
 
   // legacy class name
@@ -1385,6 +1390,7 @@ function rowvgStartEachRow(recursive, f) {
       var mode = e.getAttribute("script-mode") || "text/x-groovy";
       var readOnly = eval(e.getAttribute("script-readOnly")) || false;
 
+      // eslint-disable-next-line no-unused-vars
       var w = CodeMirror.fromTextArea(e, {
         mode: mode,
         lineNumbers: true,
@@ -1446,7 +1452,7 @@ function rowvgStartEachRow(recursive, f) {
     const resizer = document.createElement("div");
     resizer.className = "jenkins-codemirror-resizer";
 
-    let start_x;
+    let start_x; // eslint-disable-line no-unused-vars
     let start_y;
     let start_h;
 
@@ -1457,7 +1463,7 @@ function rowvgStartEachRow(recursive, f) {
     function on_drag(e) {
       codemirror.CodeMirror.setSize(
         null,
-        Math.max(MIN_HEIGHT, start_h + e.y - start_y) + "px"
+        Math.max(MIN_HEIGHT, start_h + e.y - start_y) + "px",
       );
     }
 
@@ -1510,7 +1516,7 @@ function rowvgStartEachRow(recursive, f) {
     ++p,
     function (e) {
       makeButton(e);
-    }
+    },
   );
 
   Behaviour.specify("INPUT.yui-button", "input-yui-button", ++p, function (e) {
@@ -1528,7 +1534,7 @@ function rowvgStartEachRow(recursive, f) {
 
       // Set start.ref to checkbox in preparation of row-set-end processing
       e.setAttribute("ref", (checkbox.id = "cb" + iota++));
-    }
+    },
   );
 
   // see RowVisibilityGroupTest
@@ -1576,7 +1582,7 @@ function rowvgStartEachRow(recursive, f) {
          */
         eachRow: rowvgStartEachRow,
       };
-    }
+    },
   );
 
   Behaviour.specify(
@@ -1587,7 +1593,7 @@ function rowvgStartEachRow(recursive, f) {
       e.addEventListener("click", function () {
         updateOptionalBlock(e);
       });
-    }
+    },
   );
 
   Behaviour.specify(
@@ -1621,7 +1627,7 @@ function rowvgStartEachRow(recursive, f) {
       }
 
       applyNameRef(start, end, ref);
-    }
+    },
   );
 
   Behaviour.specify(
@@ -1636,7 +1642,7 @@ function rowvgStartEachRow(recursive, f) {
       // Get the `input` from the checkbox container
       var checkbox = e.querySelector("input[type='checkbox']");
       updateOptionalBlock(checkbox);
-    }
+    },
   );
 
   // image that shows [+] or [-], with hover effect.
@@ -1701,8 +1707,7 @@ function rowvgStartEachRow(recursive, f) {
       }
 
       var subForms = [];
-      var start = findInFollowingTR(e, "dropdownList-container"),
-        end;
+      var start = findInFollowingTR(e, "dropdownList-container");
 
       do {
         start = start.firstElementChild;
@@ -1737,7 +1742,7 @@ function rowvgStartEachRow(recursive, f) {
                 }
               : function (e) {
                   e.setAttribute("field-disabled", "true");
-                }
+                },
           );
         }
       }
@@ -1745,7 +1750,7 @@ function rowvgStartEachRow(recursive, f) {
       e.onchange = updateDropDownList;
 
       updateDropDownList();
-    }
+    },
   );
 
   Behaviour.specify("A.showDetails", "a-showdetails", ++p, function (e) {
@@ -1764,7 +1769,7 @@ function rowvgStartEachRow(recursive, f) {
     ++p,
     function (e) {
       e.classList.add("behavior-loading--hidden");
-    }
+    },
   );
 
   Behaviour.specify(
@@ -1773,7 +1778,7 @@ function rowvgStartEachRow(recursive, f) {
     ++p,
     function (e) {
       new YAHOO.widget.Button(e, { type: "menu", menu: e.nextElementSibling });
-    }
+    },
   );
 
   Behaviour.specify(".track-mouse", "-track-mouse", ++p, function (element) {
@@ -1806,9 +1811,9 @@ function rowvgStartEachRow(recursive, f) {
         ([e]) =>
           e.target.classList.toggle(
             "bottom-sticker-inner--stuck",
-            e.intersectionRatio < 1
+            e.intersectionRatio < 1,
           ),
-        { threshold: [1] }
+        { threshold: [1] },
       );
 
       observer.observe(el);
@@ -1874,30 +1879,7 @@ function rowvgStartEachRow(recursive, f) {
       var spanTag = document.createElement("span");
       spanTag.innerHTML = labelText;
       label.appendChild(spanTag);
-    }
-  );
-
-  // stop button JS cannot be done as adjunct, as it can be inside an Ajax response
-  Behaviour.specify(
-    ".stop-button-link",
-    "stop-button-link",
-    0,
-    function (link) {
-      let question = link.getAttribute("data-confirm");
-      let url = link.getAttribute("href");
-      link.addEventListener("click", function (e) {
-        e.preventDefault();
-        if (question !== null) {
-          if (!confirm(question)) {
-            return;
-          }
-        }
-        fetch(url, {
-          method: "post",
-          headers: crumb.wrap({}),
-        });
-      });
-    }
+    },
   );
 })();
 
@@ -1918,6 +1900,7 @@ var Path = {
 /**
  * Install change handlers based on the 'fillDependsOn' attribute.
  */
+// eslint-disable-next-line no-unused-vars
 function refillOnChange(e, onChange) {
   var deps = [];
 
@@ -1926,7 +1909,7 @@ function refillOnChange(e, onChange) {
     deps.forEach(
       TryEach(function (d) {
         params[d.name] = controlValue(d.control);
-      })
+      }),
     );
     onChange(params);
   }
@@ -1942,14 +1925,14 @@ function refillOnChange(e, onChange) {
           if (window.YUI != null) {
             YUI.log(
               "Unable to find a nearby control of the name " + name,
-              "warn"
+              "warn",
             );
           }
           return;
         }
         c.addEventListener("change", h);
         deps.push({ name: Path.tail(name), control: c });
-      })
+      }),
     );
   }
   h(); // initial fill
@@ -1961,20 +1944,23 @@ function xor(a, b) {
 }
 
 // used by editableDescription.jelly to replace the description field with a form
+// eslint-disable-next-line no-unused-vars
 function replaceDescription(initialDescription, submissionUrl) {
   var d = document.getElementById("description");
   d.firstElementChild.nextElementSibling.innerHTML =
     "<div class='jenkins-spinner'></div>";
   let parameters = {};
-  if (initialDescription !== undefined && submissionUrl !== undefined) {
-    parameters = {
-      description: initialDescription,
-      submissionUrl: submissionUrl,
-    };
+  if (initialDescription !== null && initialDescription !== "") {
+    parameters["description"] = initialDescription;
+  }
+  if (submissionUrl !== null && submissionUrl !== "") {
+    parameters["submissionUrl"] = submissionUrl;
   }
   fetch("./descriptionForm", {
     method: "post",
-    headers: crumb.wrap({}),
+    headers: crumb.wrap({
+      "Content-Type": "application/x-www-form-urlencoded",
+    }),
     body: objectToUrlFormEncoded(parameters),
   }).then((rsp) => {
     rsp.text().then((responseText) => {
@@ -2051,6 +2037,7 @@ function updateOptionalBlock(c) {
 // Auto-scroll support for progressive log output.
 //   See http://radio.javaranch.com/pascarello/2006/08/17/1155837038219.html
 //
+// eslint-disable-next-line no-unused-vars
 function AutoScroller(scrollContainer) {
   // get the height of the viewport.
   // See http://www.howtocreate.co.uk/tutorials/javascript/browserwindow
@@ -2102,7 +2089,7 @@ function AutoScroller(scrollContainer) {
       var height = getViewportHeight();
       var scrollPos = Math.max(
         scrollDiv.scrollTop,
-        document.documentElement.scrollTop
+        document.documentElement.scrollTop,
       );
       var diff = currentHeight - scrollPos - height;
       // window.alert("currentHeight=" + currentHeight + ",scrollTop=" + scrollDiv.scrollTop + ",height=" + height);
@@ -2121,28 +2108,9 @@ function AutoScroller(scrollContainer) {
   };
 }
 
-// used in expandableTextbox.jelly to change a input field into a text area
-function expandTextArea(button, id) {
-  button.style.display = "none";
-  var field = button.parentNode.previousSibling.children[0];
-  var value = field.value.replace(/ +/g, "\n");
-
-  var n = button;
-  while (!n.classList.contains("expanding-input") && n.tagName != "TABLE") {
-    n = n.parentNode;
-  }
-
-  var parent = n.parentNode;
-  parent.innerHTML = "<textarea rows=8 class='jenkins-input'></textarea>";
-  var textArea = parent.childNodes[0];
-  textArea.name = field.name;
-  textArea.value = value;
-
-  layoutUpdateCallback.call();
-}
-
 // refresh a part of the HTML specified by the given ID,
 // by using the contents fetched from the given URL.
+// eslint-disable-next-line no-unused-vars
 function refreshPart(id, url) {
   var intervalID = null;
   var f = function () {
@@ -2165,7 +2133,7 @@ function refreshPart(id, url) {
               console.log(
                 "Failed to retrieve response for ID " +
                   id +
-                  ", perhaps Jenkins is unavailable"
+                  ", perhaps Jenkins is unavailable",
               );
               return;
             }
@@ -2198,6 +2166,7 @@ function refreshPart(id, url) {
     Taken from http://www.cresc.co.jp/tech/java/URLencoding/JavaScript_URLEncoding.htm
     @deprecated Use standard javascript method "encodeURIComponent" instead
 */
+// eslint-disable-next-line no-unused-vars
 function encode(str) {
   var s, u;
   var s0 = ""; // encoded str
@@ -2253,33 +2222,55 @@ function encode(str) {
 // when there are multiple form elements of the same name,
 // this method returns the input field of the given name that pairs up
 // with the specified 'base' input element.
+function findMatchingFormInput(base, name) {
+  // find the FORM element that owns us
+  var f = base.closest("form");
+
+  var bases = f.querySelectorAll(
+    'input[name="' +
+      base.name +
+      '"], textarea[name="' +
+      base.name +
+      '"], select[name="' +
+      base.name +
+      '"]',
+  );
+  var targets = f.querySelectorAll(
+    'input[name="' +
+      name +
+      '"], textarea[name="' +
+      name +
+      '"], select[name="' +
+      name +
+      '"]',
+  );
+
+  for (var i = 0; i < bases.length; i++) {
+    if (bases[i] == base) {
+      return targets[i];
+    }
+  }
+
+  return null; // not found
+}
+
 // TODO remove when Prototype.js is removed
 if (typeof Form === "object") {
+  /** @deprecated For backward compatibility only; use {@link findMatchingFormInput} instead. */
   Form.findMatchingInput = function (base, name) {
-    // find the FORM element that owns us
-    var f = base;
-    while (f.tagName != "FORM") {
-      f = f.parentNode;
-    }
-
-    var bases = Form.getInputs(f, null, base.name);
-    var targets = Form.getInputs(f, null, name);
-
-    for (var i = 0; i < bases.length; i++) {
-      if (bases[i] == base) {
-        return targets[i];
-      }
-    }
-
-    return null; // not found
+    console.warn(
+      "Deprecated call to Form.findMatchingInput detected; use findMatchingFormInput instead.",
+    );
+    return findMatchingFormInput(base, name);
   };
 }
 
+// eslint-disable-next-line no-unused-vars
 function toQueryString(params) {
   var query = "";
   if (params) {
     for (var paramName in params) {
-      if (params.hasOwnProperty(paramName)) {
+      if (Object.prototype.hasOwnProperty.call(params, paramName)) {
         if (query === "") {
           query = "?";
         } else {
@@ -2292,6 +2283,7 @@ function toQueryString(params) {
   return query;
 }
 
+// eslint-disable-next-line no-unused-vars
 function getElementOverflowParams(element) {
   // First we force it to wrap so we can get those dimension.
   // Then we force it to "nowrap", so we can get those dimension.
@@ -2339,6 +2331,7 @@ function getStyle(e, a) {
  * @param {HTMLElement} e
  *      The element to bring into the viewport.
  */
+// eslint-disable-next-line no-unused-vars
 function ensureVisible(e) {
   var viewport = YAHOO.util.Dom.getClientRegion();
   var pos = YAHOO.util.Dom.getRegion(e);
@@ -2373,7 +2366,7 @@ function ensureVisible(e) {
   if (d > 0) {
     document.body.scrollTop += d;
   } else {
-    var d = Y - y;
+    d = Y - y;
     if (d > 0) {
       document.body.scrollTop -= d;
     }
@@ -2381,6 +2374,7 @@ function ensureVisible(e) {
 }
 
 // set up logic behind the search box
+// eslint-disable-next-line no-unused-vars
 function createSearchBox(searchURL) {
   var ds = new YAHOO.util.XHRDataSource(searchURL + "suggest");
   ds.responseType = YAHOO.util.XHRDataSource.TYPE_JSON;
@@ -2391,7 +2385,7 @@ function createSearchBox(searchURL) {
   var ac = new YAHOO.widget.AutoComplete(
     "search-box",
     "search-box-completion",
-    ds
+    ds,
   );
   ac.typeAhead = false;
   ac.autoHighlight = false;
@@ -2513,7 +2507,7 @@ function buildFormTree(form) {
     var doms = []; // DOMs that we added 'formDom' for.
     doms.push(form);
 
-    function addProperty(parent, name, value) {
+    let addProperty = function (parent, name, value) {
       name = shortenName(name);
       if (parent[name] != null) {
         if (parent[name].push == null) {
@@ -2524,11 +2518,11 @@ function buildFormTree(form) {
       } else {
         parent[name] = value;
       }
-    }
+    };
 
     // find the grouping parent node, which will have @name.
     // then return the corresponding object in the map
-    function findParent(e) {
+    let findParent = function (e) {
       var p = findFormParent(e, form);
       if (p == null) {
         return {};
@@ -2542,7 +2536,7 @@ function buildFormTree(form) {
         addProperty(findParent(p), p.getAttribute("name"), m);
       }
       return m;
-    }
+    };
 
     var jsonElement = null;
 
@@ -2581,7 +2575,7 @@ function buildFormTree(form) {
           p = findParent(e);
           var checked = xor(e.checked, e.classList.contains("negative"));
           if (!e.groupingNode) {
-            v = e.getAttribute("json");
+            let v = e.getAttribute("json");
             if (v) {
               // if the special attribute is present, we'll either set the value or not. useful for an array of checkboxes
               // we can't use @value because IE6 sets the value to be "on" if it's left unspecified.
@@ -2633,7 +2627,7 @@ function buildFormTree(form) {
             addProperty(
               p,
               e.name.substring(r),
-              (e.formDom = { value: e.value })
+              (e.formDom = { value: e.value }),
             );
           } else {
             addProperty(p, e.name.substring(r), e.value);
@@ -2681,7 +2675,7 @@ window.addEventListener("load", function () {
   document.querySelectorAll(".jenkins-form-item").forEach(function (element) {
     if (
       element.querySelector(
-        ".optionalBlock-container > .row-group-start input[type='checkbox'], .optional-block-start input[type='checkbox'], div > .jenkins-checkbox"
+        ".optionalBlock-container > .row-group-start input[type='checkbox'], .optional-block-start input[type='checkbox'], div > .jenkins-checkbox",
       ) != null
     ) {
       element.classList.add("jenkins-form-item--tight");
@@ -2734,9 +2728,10 @@ function loadScript(href, callback) {
 }
 
 // logic behind <f:validateButton />
+// eslint-disable-next-line no-unused-vars
 function safeValidateButton(button) {
   var descriptorUrl = button.getAttribute(
-    "data-validate-button-descriptor-url"
+    "data-validate-button-descriptor-url",
   );
   var method = button.getAttribute("data-validate-button-method");
   var checkUrl = descriptorUrl + "/" + method;

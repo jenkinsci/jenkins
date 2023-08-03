@@ -34,14 +34,14 @@ import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
-import com.gargoylesoftware.htmlunit.ElementNotFoundException;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.cli.CLICommandInvoker.Result;
 import hudson.model.Computer;
 import hudson.model.Slave;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.OfflineCause;
 import jenkins.model.Jenkins;
+import org.htmlunit.ElementNotFoundException;
+import org.htmlunit.html.HtmlPage;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;

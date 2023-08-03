@@ -150,7 +150,7 @@ public interface ModelObjectWithContextMenu extends ModelObject {
             return this;
         }
 
-        /** @since TODO */
+        /** @since 2.401 */
         public ContextMenu add(String url, String icon, String iconXml, String text, boolean post, boolean requiresConfirmation, Badge badge) {
             if (text != null && icon != null && url != null) {
                 MenuItem item = new MenuItem(url, icon, text);
@@ -158,6 +158,20 @@ public interface ModelObjectWithContextMenu extends ModelObject {
                 item.post = post;
                 item.requiresConfirmation = requiresConfirmation;
                 item.badge = badge;
+                items.add(item);
+            }
+            return this;
+        }
+
+        /** @since TODO */
+        public ContextMenu add(String url, String icon, String iconXml, String text, boolean post, boolean requiresConfirmation, Badge badge, String message) {
+            if (text != null && icon != null && url != null) {
+                MenuItem item = new MenuItem(url, icon, text);
+                item.iconXml = iconXml;
+                item.post = post;
+                item.requiresConfirmation = requiresConfirmation;
+                item.badge = badge;
+                item.message = message;
                 items.add(item);
             }
             return this;
@@ -340,6 +354,8 @@ public interface ModelObjectWithContextMenu extends ModelObject {
 
         private Badge badge;
 
+        private String message;
+
         /**
          * The type of menu item
          * @since 2.340
@@ -362,11 +378,16 @@ public interface ModelObjectWithContextMenu extends ModelObject {
 
         /**
          * The badge to display for the context menu item
-         * @since TODO
+         * @since 2.401
          */
         @Exported
         public Badge getBadge() {
             return badge;
+        }
+
+        @Exported
+        public String getMessage() {
+            return message;
         }
 
         public MenuItem(String url, String icon, String displayName) {

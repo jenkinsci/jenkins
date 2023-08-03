@@ -32,9 +32,9 @@ Behaviour.specify(
       } else {
         hoverNotification(
           "Copy is only supported with a secure (HTTPS) connection",
-          copyButton
+          copyButton,
         );
       }
     });
-  }
+  },
 );

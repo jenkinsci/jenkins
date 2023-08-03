@@ -21,11 +21,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+@use "./base/core";
 @use "./pages/sign-in-register";
-
-body {
-  background: var(--background);
-}
 
 .simple-page h1 {
   font-size: 24px;
@@ -36,6 +33,21 @@ body {
 .simple-page .signupTag,
 .simple-page .restarting {
   text-align: center;
+}
+
+.simple-page .safe-restarting {
+  text-align: center;
+  border-color: var(--alert-success-border-color);
+  background-color: var(--alert-success-bg-color);
+  border-width: 2px;
+  border-radius: 2px;
+  border-style: solid;
+  margin: 5% auto auto;
+  padding: 5px;
+}
+
+.simple-page .safe-restarting > p {
+  margin: 0;
 }
 
 .simple-page--description {
@@ -56,10 +68,6 @@ body {
   align-items: center;
   justify-content: center;
   min-height: 90vh;
-}
-
-html {
-  color: var(--text-color);
 }
 
 .simple-page .jenkins-button {

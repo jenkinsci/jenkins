@@ -34,15 +34,16 @@
   &--sticky {
     position: sticky;
     top: 40px;
-    padding-top: 2rem;
-    margin-top: -2rem;
+    padding-top: var(--section-padding);
+    margin-top: calc(var(--section-padding) * -1);
     z-index: 2;
 
     &::before,
     &::after {
       content: "";
       position: absolute;
-      inset: 0 -2rem -2rem;
+      inset: 0 calc(var(--section-padding) * -1)
+        calc(var(--section-padding) * -1);
       z-index: -1;
       pointer-events: none;
     }
@@ -66,6 +67,23 @@
   h1,
   h2 {
     margin: 0;
-    font-size: 1.6rem;
+    font-size: 1.5rem;
+  }
+}
+
+.jenkins-build-caption {
+  display: flex;
+  flex-direction: row !important;
+  align-items: center;
+  justify-content: start !important;
+  gap: 1rem;
+  max-width: 1200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  .build-status-icon__wrapper,
+  .build-status-icon__wrapper svg {
+    width: 2rem !important;
+    height: 2rem !important;
   }
 }

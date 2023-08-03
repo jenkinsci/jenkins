@@ -100,7 +100,6 @@ public class JNLPLauncherRealTest {
             }
             assertThat(ExtensionList.lookupSingleton(JNLPLauncher.DescriptorImpl.class).doCheckWebSocket(webSocket, null).kind, is(FormValidation.Kind.OK));
             Slave agent = (Slave) r.jenkins.getNode(agentName);
-            r.waitOnline(agent);
             FreeStyleProject p = r.createFreeStyleProject();
             p.setAssignedNode(agent);
             FreeStyleBuild b = r.buildAndAssertSuccess(p);

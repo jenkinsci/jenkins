@@ -28,7 +28,10 @@ function generateDropdown(element, callback) {
           callback(instance);
         });
       },
-    })
+      onShown(instance) {
+        behaviorShim.applySubtree(instance.popper);
+      },
+    }),
   );
 }
 
@@ -59,7 +62,7 @@ function generateDropdownItems(items) {
             trigger: "mouseenter",
             placement: "right-start",
             offset: [-8, 0],
-          })
+          }),
         );
       }
 
@@ -105,23 +108,23 @@ function generateDropdownItems(items) {
       const isVisible =
         window.getComputedStyle(container).visibility === "visible";
       const isLastDropdown = Array.from(
-        document.querySelectorAll(".jenkins-dropdown")
+        document.querySelectorAll(".jenkins-dropdown"),
       )
         .filter((dropdown) => container !== dropdown)
         .filter(
           (dropdown) =>
-            window.getComputedStyle(dropdown).visibility === "visible"
+            window.getComputedStyle(dropdown).visibility === "visible",
         )
         .every(
           (dropdown) =>
             !(
               container.compareDocumentPosition(dropdown) &
               Node.DOCUMENT_POSITION_FOLLOWING
-            )
+            ),
         );
 
       return isVisible && isLastDropdown;
-    }
+    },
   );
 
   behaviorShim.applySubtree(menuItems);

@@ -1,10 +1,8 @@
 package hudson;
 
-import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.model.DownloadService;
 import hudson.model.RootAction;
 import hudson.model.UpdateSite;
@@ -16,6 +14,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
+import org.htmlunit.Page;
+import org.htmlunit.html.HtmlPage;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;

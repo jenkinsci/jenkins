@@ -6,14 +6,14 @@
         setTimeout(updateBuildCaptionIcon, 5000);
       } else {
         var progressBar = document.querySelector(
-          ".build-caption-progress-container"
+          ".build-caption-progress-container",
         );
         if (progressBar) {
           progressBar.style.display = "none";
         }
       }
       rsp.text().then((responseText) => {
-        document.querySelector(".build-caption .icon-xlg").outerHTML =
+        document.querySelector(".jenkins-build-caption .icon-xlg").outerHTML =
           responseText;
       });
     });

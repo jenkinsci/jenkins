@@ -128,7 +128,7 @@ var Behaviour = (function () {
               var list = findElementsBySelector(
                 node,
                 registration.selector,
-                includeSelf
+                includeSelf,
               );
               if (list.length > 0) {
                 //console.log(registration.id + ":" + registration.selector + " @" + registration.priority + " on " + list.length + " elements");
@@ -183,7 +183,8 @@ Behaviour.start();
 
 function findElementsBySelector(startNode, selector, includeSelf) {
   if (includeSelf) {
-    function isSelfOrChild(c) {
+    var isSelfOrChild = function (c) {
+      // eslint-disable-next-line no-constant-condition
       while (true) {
         if (startNode == c) {
           return true;
@@ -193,9 +194,9 @@ function findElementsBySelector(startNode, selector, includeSelf) {
         }
         c = c.parentNode;
       }
-    }
+    };
     return Array.from(startNode.parentNode.querySelectorAll(selector)).filter(
-      isSelfOrChild
+      isSelfOrChild,
     );
   } else {
     return Array.from(startNode.querySelectorAll(selector));
