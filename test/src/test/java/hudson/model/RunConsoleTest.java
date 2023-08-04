@@ -28,7 +28,7 @@ public class RunConsoleTest {
         Assert.assertEquals("job/something/1/custom", b.getConsoleDisplayRedirect());
     }
 
-    public static final class CustomConsoleURLProvider extends ConsoleURLProvider {
+    public static final class CustomConsoleURLProvider implements ConsoleURLProvider {
         @Override
         public String getConsoleURL(Run<?, ?> run) {
             return run.getUrl() + "custom";

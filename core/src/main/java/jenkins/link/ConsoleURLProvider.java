@@ -27,48 +27,40 @@ package jenkins.link;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
-import hudson.Util;
+import hudson.Functions;
 import hudson.model.Run;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.stapler.Stapler;
 
 /**
  * Extension point for providing console urls
  * @since TODO
  */
-public abstract class ConsoleURLProvider implements ExtensionPoint {
+public interface ConsoleURLProvider extends ExtensionPoint {
 
-    /**
-     * Provide the console url of the highest registered ordinal implementation.
-     * Defaults to {@link DefaultConsoleURLProviderImpl} otherwise.
-     */
-    public String getConsoleURL(Run<?, ?> run) {
-        return get().getConsoleURL(run);
-    }
+    String getConsoleURL(Run<?, ?> run);
 
     /**
      * Retrieve all implementations of ConsoleURLProvider.
      */
-    public static ExtensionList<ConsoleURLProvider> all() {
+    static ExtensionList<ConsoleURLProvider> all() {
         return ExtensionList.lookup(ConsoleURLProvider.class);
     }
 
     /**
      * Retrieve the highest registered ordinal implementation.
-     * @since TODO
      */
-    public static ConsoleURLProvider get() {
+    static ConsoleURLProvider get() {
         return all().stream().findFirst().orElseThrow(() -> new RuntimeException("The DefaultConsoleURLProviderImpl should be instanciated"));
     }
 
     @Extension(ordinal = -100)
     @Restricted(NoExternalUse.class)
-    public static class DefaultConsoleURLProviderImpl extends ConsoleURLProvider {
+    class DefaultConsoleURLProviderImpl implements ConsoleURLProvider {
 
         @Override
         public String getConsoleURL(Run<?, ?> run) {
-            return Stapler.getCurrentRequest().getContextPath() + "/" + Util.encode(run.getUrl()) + "console";
+            return Functions.getContextRelativeUrl(run.getUrl() + "console");
         }
     }
 }

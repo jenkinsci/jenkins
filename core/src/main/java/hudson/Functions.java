@@ -1904,6 +1904,17 @@ public class Functions {
     }
 
     /**
+     * Computes the link with context
+     */
+    public static String getContextRelativeUrl(String url) {
+        if (!url.startsWith("/"))   url = '/' + url;
+        if (Stapler.getCurrentRequest() == null) {
+            return Util.encode(url);
+        }
+        return Stapler.getCurrentRequest().getContextPath() + Util.encode(url);
+    }
+
+    /**
      * Escapes the character unsafe for e-mail address.
      * See <a href="https://en.wikipedia.org/wiki/Email_address">the Wikipedia page</a> for the details,
      * but here the vocabulary is even more restricted.
