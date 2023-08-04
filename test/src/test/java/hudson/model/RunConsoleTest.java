@@ -1,6 +1,6 @@
 package hudson.model;
 
-import hudson.link.ConsoleURLProvider;
+import jenkins.link.ConsoleURLProvider;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
