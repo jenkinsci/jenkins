@@ -107,7 +107,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
-import jenkins.link.ConsoleURLProvider;
 import jenkins.model.ArtifactManager;
 import jenkins.model.ArtifactManagerConfiguration;
 import jenkins.model.ArtifactManagerFactory;
@@ -1074,15 +1073,6 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     @Override
     public final @NonNull String getSearchUrl() {
         return getNumber() + "/";
-    }
-
-    /**
-     * Obtains the redirect console URL to this build.
-     * @return String like "job/foo/32/console" by default, or a String declared by an Extension of {@link ConsoleURLProvider}
-     * @since TODO
-     */
-    public final @NonNull String getConsoleDisplayRedirect() {
-        return ConsoleURLProvider.get().getConsoleURL(this);
     }
 
     /**

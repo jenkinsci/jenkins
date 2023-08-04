@@ -148,6 +148,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import jenkins.console.ConsoleUrlProvider;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.GlobalConfigurationCategory;
 import jenkins.model.Jenkins;
@@ -1904,14 +1905,13 @@ public class Functions {
     }
 
     /**
-     * Computes the link with context
+     * Computes the link to the console for the specified build, taking {@link ConsoleUrlProvider} into account.
+     * @param run the build
+     * @return the absolute URL for accessing the specified build's console
+     * @since TODO
      */
-    public static String getContextRelativeUrl(String url) {
-        if (!url.startsWith("/"))   url = '/' + url;
-        if (Stapler.getCurrentRequest() == null) {
-            return Util.encode(url);
-        }
-        return Stapler.getCurrentRequest().getContextPath() + Util.encode(url);
+    public static @CheckForNull String getConsoleUrl(Run<?, ?> run) {
+        return ConsoleUrlProvider.getRedirectUrl(run);
     }
 
     /**
