@@ -1079,6 +1079,7 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     /**
      * Obtains the redirect console URL to this build.
      * @return String like "job/foo/32/console" by default, or a String declared by an Extension of {@link ConsoleURLProvider}
+     * @since TODO
      */
     public final @NonNull String getConsoleDisplayRedirect() {
         return ConsoleURLProvider.get().getConsoleURL(this);
