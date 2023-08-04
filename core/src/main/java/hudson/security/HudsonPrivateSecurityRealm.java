@@ -890,6 +890,10 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         }
     }
 
+    // TODO can we instead use BCryptPasswordEncoder from Spring Security, which has its own copy of BCrypt so we could drop the special library?
+    /**
+     * {@link PasswordHashEncoder} that uses jBCrypt.
+     */
     private static class JBCryptEncoder implements PasswordHashEncoder {
         // in jBCrypt the maximum is 30, which takes ~22h with laptop late-2017
         // and for 18, it's "only" 20s
