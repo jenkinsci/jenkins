@@ -24,6 +24,7 @@
 
 package hudson.security;
 
+import static java.util.logging.Level.WARNING;
 import static javax.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
 
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
@@ -933,68 +934,55 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         public static final int HASH_LENGTH = 8;
         public static final int ZERO = 0;
         public static final int HEX_TWO = 2;
-        public static final int RADIX = 16;
+
+        public static final int RADIX_LENGTH = 16;
         public static final String STRING_SEPARATION = ":";
+        public static final int ITERATION_COUNT = 1000;
+        public static final int KEY_LENGTH = 512;
+        public static final String PBKDF2_ALGORITHM = "PBKDF2WithHmacSHA512";
 
         @Override
         public String encode(CharSequence rawPassword) {
-            try {
-                return generatePasswordHashWithPBKDF2(rawPassword);
-            } catch (NoSuchAlgorithmException e) {
-                //log exception message
-                throw new RuntimeException(e);
-            } catch (InvalidKeySpecException e) {
-                throw new RuntimeException(e);
-            }
+            return generatePasswordHashWithPBKDF2(rawPassword);
         }
 
         @Override
         public boolean matches(CharSequence rawPassword, String encodedPassword) {
-            try {
                 return validatePassword(rawPassword.toString(), encodedPassword);
-            } catch (NoSuchAlgorithmException e) {
-                throw new RuntimeException(e);
-            } catch (InvalidKeySpecException e) {
-                throw new RuntimeException(e);
-            }
         }
-//private and inside the impl class
-        private static String generatePasswordHashWithPBKDF2(CharSequence password) throws NoSuchAlgorithmException, InvalidKeySpecException {
 
-           /* KeySpec spec = new PBEKeySpec(password.toString().toCharArray(), generateSalt(), Util.ITERATION_COUNT, Util.KEY_LENGTH);
-            SecretKeyFactory f = SecretKeyFactory.getInstance(Util.PBKDF2_ALGORITHM);
-            byte[] hash = f.generateSecret(spec).getEncoded();
-            Base64.Encoder enc = Base64.getEncoder();
-          *//* System.out.printf("salt: %s%n", enc.encodeToString(generateSalt()));
-            System.out.printf("hash: %s%n", enc.encodeToString(hash));
-            System.out.println(toHex(hash));*//*
-            System.out.println(enc.encodeToString(hash));
-            return enc.encodeToString(hash);*/
-            int iterations = Util.ITERATION_COUNT;
+        private static String generatePasswordHashWithPBKDF2(CharSequence password)  {
+            int iterations = ITERATION_COUNT;
             byte[] salt = generateSalt();
-
-            PBEKeySpec spec = new PBEKeySpec(password.toString().toCharArray(), salt, iterations, Util.KEY_LENGTH);
+            PBEKeySpec spec = new PBEKeySpec(password.toString().toCharArray(), salt, iterations, KEY_LENGTH);
             byte[] hash = generateSecretKey(spec);
             return iterations + STRING_SEPARATION + toHex(salt) + STRING_SEPARATION + toHex(hash);
         }
 
-        private static byte[] generateSecretKey(PBEKeySpec spec) throws NoSuchAlgorithmException, InvalidKeySpecException {
-            SecretKeyFactory secretKeyFactory = SecretKeyFactory.getInstance(Util.PBKDF2_ALGORITHM);
-
-            byte[] hash = secretKeyFactory.generateSecret(spec).getEncoded();
+        private static byte[] generateSecretKey(PBEKeySpec spec)  {
+            SecretKeyFactory secretKeyFactory = null;
+            byte[] hash = new byte[0];
+            try {
+                secretKeyFactory = SecretKeyFactory.getInstance(PBKDF2_ALGORITHM);
+                hash = secretKeyFactory.generateSecret(spec).getEncoded();
+            } catch (NoSuchAlgorithmException e) {
+                LOGGER.log(WARNING, "No such algorithm found for encode",  e);
+            } catch (InvalidKeySpecException e) {
+                LOGGER.log(WARNING, "Invalid key spec exception",  e);
+            }
             return hash;
         }
 
-        private static String toHex(byte[] array)  {
+        private static String toHex(byte[] secretKey)  {
 
-            BigInteger bi = new BigInteger(1, array);
-            String hex = bi.toString(RADIX);
+            BigInteger bi = new BigInteger(1, secretKey);
+            String saltHashValue = bi.toString(RADIX_LENGTH);
 
-            int paddingLength = (array.length * HEX_TWO) - hex.length();
+            int paddingLength = (secretKey.length * HEX_TWO) - saltHashValue.length();
             if (paddingLength > ZERO) {
-                return String.format("%0" + paddingLength + "d", ZERO) + hex;
+                return String.format("%0" + paddingLength + "d", ZERO) + saltHashValue;
             } else {
-                return hex;
+                return saltHashValue;
             }
         }
 
@@ -1008,13 +996,10 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
 
         @Override
         public boolean isHashValid(String hash)    {
-
              return true;
         }
 
-        private static boolean validatePassword(String originalPassword, String storedPassword)
-                throws NoSuchAlgorithmException, InvalidKeySpecException
-        {
+        private static boolean validatePassword(String originalPassword, String storedPassword) {
             String[] parts = storedPassword.split(STRING_SEPARATION);
             int iterations = Integer.parseInt(parts[0]);
 
@@ -1024,34 +1009,36 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
             PBEKeySpec spec = new PBEKeySpec(originalPassword.toCharArray(),
                     salt, iterations, hash.length * HASH_LENGTH);
 
-            byte[] testHash = generateSecretKey(spec);
+            byte[] generatedHashValue = generateSecretKey(spec);
 
-            int diff = hash.length ^ testHash.length;
-            for (int i = ZERO; i < hash.length && i < testHash.length; i++)
+            int diff = hash.length ^ generatedHashValue.length;
+            for (int i = ZERO; i < hash.length && i < generatedHashValue.length; i++)
             {
-                diff |= hash[i] ^ testHash[i];
+                diff |= hash[i] ^ generatedHashValue[i];
             }
             return diff == 0;
         }
 
-        private static byte[] fromHex(String hex)  {
-            byte[] bytes = new byte[hex.length() / HEX_TWO];
+        private static byte[] fromHex(String storedPassword)  {
+            byte[] bytes = new byte[storedPassword.length() / HEX_TWO];
             for (int i = ZERO; i < bytes.length; i++)
             {
-                bytes[i] = (byte) Integer.parseInt(hex.substring(HEX_TWO * i, HEX_TWO * i + HEX_TWO), RADIX);
+                bytes[i] = (byte) Integer.parseInt(storedPassword.substring(HEX_TWO * i, HEX_TWO * i + HEX_TWO), RADIX_LENGTH);
             }
             return bytes;
         }
 
     }
 
-    /* package */ static final PasswordHashEncoder PASSWORD_HASH_ENCODER = Util.FIPS_MODE ? new PBKDF2PasswordEncoder() : new JBCryptEncoder();
+    /* package */ static final PasswordHashEncoder PASSWORD_HASH_ENCODER =  Util.isFipsMode() ? new PBKDF2PasswordEncoder() : new JBCryptEncoder();
 
 
+    public static final String PBKDF2 = "#pbkdf2:";
+    public static final String JBCRYPT = "#jbcrypt:";
     /**
      * Magic header used to detect if a password is hashed.
      */
-    private static final String PASSWORD_HASH_HEADER = Util.FIPS_MODE ? Util.PBKDF_2 : Util.JBCRYPT;
+    private static final String PASSWORD_HASH_HEADER = Util.isFipsMode() ? PBKDF2 : JBCRYPT;
 
     /* package */
 
@@ -1071,9 +1058,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
 
         @Override
         public String encode(CharSequence rawPassword) {
-             LOGGER.info(String.valueOf(Util.FIPS_MODE));
             return PASSWORD_HASH_HEADER + PASSWORD_HASH_ENCODER.encode(rawPassword);
-
         }
 
         @Override
@@ -1093,12 +1078,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
             if (password == null) {
                 return false;
             }
-            if (Util.FIPS_MODE) {
-                 return password.startsWith(PASSWORD_HASH_HEADER);
-            }
-            else {
                 return password.startsWith(PASSWORD_HASH_HEADER) && PASSWORD_HASH_ENCODER.isHashValid(password.substring(PASSWORD_HASH_HEADER.length()));
-            }
         }
 
     }
@@ -1166,4 +1146,5 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     };
 
     private static final Logger LOGGER = Logger.getLogger(HudsonPrivateSecurityRealm.class.getName());
+
 }

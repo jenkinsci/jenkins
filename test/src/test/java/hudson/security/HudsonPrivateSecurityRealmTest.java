@@ -25,6 +25,7 @@
 package hudson.security;
 
 import static hudson.security.HudsonPrivateSecurityRealm.PASSWORD_ENCODER;
+import static hudson.security.HudsonPrivateSecurityRealm.PASSWORD_HASH_ENCODER;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
@@ -37,9 +38,12 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.when;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionList;
+import hudson.Util;
 import hudson.model.User;
 import hudson.security.pages.SignupPage;
 import java.lang.reflect.Field;
@@ -72,6 +76,7 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.TestExtension;
 import org.mindrot.jbcrypt.BCrypt;
+import org.mockito.Mock;
 
 @For({UserSeedProperty.class, HudsonPrivateSecurityRealm.class})
 public class HudsonPrivateSecurityRealmTest {
@@ -81,17 +86,14 @@ public class HudsonPrivateSecurityRealmTest {
 
     private SpySecurityListenerImpl spySecurityListener;
 
+    @Mock
+    private Util util;
+
     @Before
     public void linkExtension() {
         spySecurityListener = ExtensionList.lookup(SecurityListener.class).get(SpySecurityListenerImpl.class);
     }
 
-    @Before
-    public void setup() throws Exception {
-        Field field = HudsonPrivateSecurityRealm.class.getDeclaredField("ID_REGEX");
-        field.setAccessible(true);
-        field.set(null, null);
-    }
 
     @Issue("SECURITY-243")
     @Test
@@ -557,6 +559,24 @@ public class HudsonPrivateSecurityRealmTest {
     @Test
     public void ensureHashingVersion_2y_isNotSupported() {
         assertThrows(IllegalArgumentException.class, () -> BCrypt.checkpw("a", "$2y$08$cfcvVd2aQ8CMvoMpP2EBfeodLEkkFJ9umNEfPD18.hUF62qqlC/V."));
+    }
+
+    @Test
+    public void hashedPasswordTestPBKDF2() {
+        mockStatic(Util.class);
+        when(Util.isFipsMode()).thenReturn(true);
+        PASSWORD_ENCODER.isPasswordHashed("#pbkdf2:" + PASSWORD_HASH_ENCODER.encode("password"));
+        assertNotNull(PASSWORD_HASH_ENCODER.encode("password"));
+    }
+
+    @Test
+    public void hashedPasswordTestMatchesPBKDF2() {
+        PASSWORD_ENCODER.matches("password", "1000:137287e0ae3e24ae15df2f6caf068d5a:7bcdd7d6788bf20747812fd39b3ff5451235b12dfa62f6b");
+    }
+
+    @Test
+    public void hashedPasswordTestMatchesPBKDF2False() {
+        assertFalse(PASSWORD_ENCODER.matches(null, "1000:137287e0ae3e24ae15df2f6caf068d5a:7bcdd7d6788bf20747812fd39b3ff5451235b12dfa62f6b"));
     }
 
     private void checkUserCanBeCreatedWith(HudsonPrivateSecurityRealm securityRealm, String id, String password, String fullName, String email) throws Exception {
