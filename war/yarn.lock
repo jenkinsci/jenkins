@@ -4062,10 +4062,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"hotkeys-js@npm:3.11.2":
-  version: 3.11.2
-  resolution: "hotkeys-js@npm:3.11.2"
-  checksum: 8e3d984628d2dcf75519017cfdb2c936e7bd0598cf87e3b11e90a5a0b104105042f9979de0118061e819fca95be9c26f27f76447ceeff726678737aaedcd9707
+"hotkeys-js@npm:3.12.0":
+  version: 3.12.0
+  resolution: "hotkeys-js@npm:3.12.0"
+  checksum: b359d32cf926a3b4723ee4cd0978639dbad0b0b33e4d0ff75861906ea54d19c9ff2aa7cffde7fdb1bf2718a7eab2bfa326edb3974f5e4182feec5591cb23632d
   languageName: node
   linkType: hard
 
@@ -4386,7 +4386,7 @@ __metadata:
     eslint-config-prettier: 8.9.0
     handlebars: 4.7.7
     handlebars-loader: 1.7.3
-    hotkeys-js: 3.11.2
+    hotkeys-js: 3.12.0
     jquery: 3.7.0
     lodash: 4.17.21
     mini-css-extract-plugin: 2.7.6
