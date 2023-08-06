@@ -44,7 +44,7 @@ THE SOFTWARE.
       Filled in by maven-hpi-plugin from the MANIFEST.MF entry in jenkins.war, but we provide a default value for the benefit of IDEs.
       Make sure to keep the directives in core/pom.xml and war/pom.xml in sync with these.
     -->
-    <jenkins.addOpens>--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.desktop/com.sun.beans.introspect=ALL-UNNAMED</jenkins.addOpens>
+    <jenkins.addOpens>--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED</jenkins.addOpens>
     <!-- Filled in by maven-hpi-plugin with the path to org-netbeans-insane-hook.jar extracted from jenkins-test-harness -->
     <jenkins.insaneHook />
   </properties>
@@ -101,7 +101,7 @@ THE SOFTWARE.
         <!-- requireUpperBoundDeps via matrix-project and junit -->
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>script-security</artifactId>
-        <version>1251.vfe552ed55f8d</version>
+        <version>1264.vecf66020eb_7d</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -116,7 +116,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>2042.v787a_641a_9b_26</version>
+      <version>2044.v03c87927ff5c</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -179,7 +179,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>antisamy-markup-formatter</artifactId>
-      <version>159.v25b_c67cd35fb_</version>
+      <version>162.v0e6ec0fcfcf6</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -203,7 +203,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>mailer</artifactId>
-      <version>457.v3f72cb_e015e5</version>
+      <version>463.vedf8358e006b_</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -215,7 +215,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>matrix-project</artifactId>
-      <version>789.v57a_725b_63c79</version>
+      <version>802.v8013b_40c7edc</version>
       <scope>test</scope>
     </dependency>
     <dependency>

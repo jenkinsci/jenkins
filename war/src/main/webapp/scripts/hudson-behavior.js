@@ -1950,11 +1950,11 @@ function replaceDescription(initialDescription, submissionUrl) {
   d.firstElementChild.nextElementSibling.innerHTML =
     "<div class='jenkins-spinner'></div>";
   let parameters = {};
-  if (initialDescription !== undefined && submissionUrl !== undefined) {
-    parameters = {
-      description: initialDescription,
-      submissionUrl: submissionUrl,
-    };
+  if (initialDescription !== null && initialDescription !== "") {
+    parameters["description"] = initialDescription;
+  }
+  if (submissionUrl !== null && submissionUrl !== "") {
+    parameters["submissionUrl"] = submissionUrl;
   }
   fetch("./descriptionForm", {
     method: "post",
