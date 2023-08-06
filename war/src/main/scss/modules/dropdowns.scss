@@ -42,9 +42,10 @@ $dropdown-padding: 0.4rem;
   display: contents;
 
   &--compact {
-    > .jenkins-dropdown__item, > .jenkins-dropdown__disabled {
+    > .jenkins-dropdown__item,
+    > .jenkins-dropdown__disabled {
       padding: 0 0.6rem;
-      min-height: 24px!important;
+      min-height: 24px !important;
     }
   }
 
@@ -121,7 +122,7 @@ $dropdown-padding: 0.4rem;
     user-select: none;
 
     &--compact {
-      padding: 0!important;
+      padding: 0 !important;
     }
 
     &__icon {

@@ -196,9 +196,7 @@ function createFilter(menu) {
   filterInput.addEventListener("input", (event) =>
     applyFilterKeyword(menu, event.currentTarget),
   );
-  filterInput.addEventListener("click", (event) =>
-    event.stopPropagation(),
-  );
+  filterInput.addEventListener("click", (event) => event.stopPropagation());
   filterInput.addEventListener("keydown", (event) => {
     if (event.key === "Enter") {
       event.preventDefault();
@@ -212,7 +210,9 @@ function createFilter(menu) {
 
 function applyFilterKeyword(menu, filterInput) {
   const filterKeyword = (filterInput.value || "").toLowerCase();
-  let items = menu.querySelectorAll(".jenkins-dropdown__item, .jenkins-dropdown__disabled")
+  let items = menu.querySelectorAll(
+    ".jenkins-dropdown__item, .jenkins-dropdown__disabled",
+  );
   for (let item of items) {
     let match = item.innerText.toLowerCase().includes(filterKeyword);
     item.style.display = match ? "inline-flex" : "NONE";
