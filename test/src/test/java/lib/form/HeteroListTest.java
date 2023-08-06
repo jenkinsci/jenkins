@@ -75,7 +75,7 @@ public class HeteroListTest {
         HtmlPage page = wc.goTo("root");
 
         page.executeJavaScript("document.querySelector('.hetero-list-add').click();");
-        Object result = page.executeJavaScript("document.querySelector('button .jenkins-dropdown__item')").getJavaScriptResult();
+        Object result = page.executeJavaScript("document.querySelector('.jenkins-dropdown__item')").getJavaScriptResult();
         assertThat(result, instanceOf(HTMLButtonElement.class));
         HTMLButtonElement menuItem = (HTMLButtonElement) result;
         String menuItemContent = menuItem.getInnerHTML();
