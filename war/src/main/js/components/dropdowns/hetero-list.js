@@ -5,7 +5,7 @@ import tippy from "tippy.js";
 
 function init() {
   generateButtons();
-  //generateHandles();
+  generateHandles();
 }
 
 function generateHandles() {
@@ -242,7 +242,7 @@ function generateDropDown(button, callback) {
         callback(instance);
         button.dataset.expanded = "true";
       },
-      onHide(instance) {
+      onHide() {
         button.dataset.expanded = "false";
       },
     }),
