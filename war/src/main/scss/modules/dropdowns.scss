@@ -41,6 +41,13 @@ $dropdown-padding: 0.4rem;
 .jenkins-dropdown {
   display: contents;
 
+  &--compact {
+    > .jenkins-dropdown__item, > .jenkins-dropdown__disabled {
+      padding: 0 0.6rem;
+      min-height: 24px!important;
+    }
+  }
+
   &__separator {
     position: relative;
     height: 0.125rem;
@@ -75,6 +82,16 @@ $dropdown-padding: 0.4rem;
     opacity: 0.8;
   }
 
+  &__disabled {
+    color: var(--text-color-secondary) !important;
+    font-size: 0.8125rem;
+    opacity: 0.8;
+    display: inline-flex;
+    align-items: center;
+    margin: 0;
+    cursor: default;
+  }
+
   &__item {
     --item-background--hover: var(--button-background--hover);
     --item-background--active: var(--button-background--active);
@@ -102,6 +119,10 @@ $dropdown-padding: 0.4rem;
     gap: 1.2ch;
     min-width: 180px;
     user-select: none;
+
+    &--compact {
+      padding: 0!important;
+    }
 
     &__icon {
       display: inline-flex;
