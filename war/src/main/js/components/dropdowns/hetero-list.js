@@ -1,6 +1,8 @@
 import behaviorShim from "@/util/behavior-shim";
 import Templates from "@/components/dropdowns/templates";
 import Utils from "@/components/dropdowns/utils";
+import * as Symbols from "@/util/symbols";
+import { createElementFromHtml } from "@/util/dom";
 import tippy from "tippy.js";
 
 function init() {
@@ -31,8 +33,23 @@ function generateButtons() {
 
       let btn = Array.from(e.querySelectorAll("BUTTON.hetero-list-add")).pop();
       if (!btn) {
-        return;
+        let oldbtn = Array.from(e.querySelectorAll("INPUT.hetero-list-add")).pop();
+        if (!oldbtn) {
+          return;
+        }
+        btn = document.createElement("button");
+        btn.setAttribute("type", "button");
+        btn.classList.add("hetero-list-add", "jenkins-button");
+        btn.innerText = oldbtn.getAttribute("value")
+        if (oldbtn.hasAttribute("suffix")) {
+          btn.setAttribute("suffix", oldbtn.getAttribute("suffix"));
+        }
+        let chevron = createElementFromHtml(Symbols.CHEVRON_DOWN)
+        btn.appendChild(chevron);
+        oldbtn.parentNode.appendChild(btn);
+        oldbtn.remove();
       }
+
       let prototypes = e.lastElementChild;
       while (!prototypes.classList.contains("prototypes")) {
         prototypes = prototypes.previousElementSibling;
