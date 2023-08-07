@@ -43,7 +43,7 @@ import org.kohsuke.stapler.Stapler;
 
 /**
  * Extension point that allows implementations to redirect build console links to a specified URL.
- * <p>In order to produce links to console URLs in Jelly templates, use {@link Functions#getConsoleUrl()}.
+ * <p>In order to produce links to console URLs in Jelly templates, use {@link Functions#getConsoleUrl}.
  * @see Functions#getConsoleUrl
  * @since TODO
  */
