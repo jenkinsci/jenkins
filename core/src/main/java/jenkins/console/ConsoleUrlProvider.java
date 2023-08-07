@@ -24,15 +24,19 @@
 
 package jenkins.console;
 
-
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
-import hudson.ExtensionList;
-import hudson.ExtensionPoint;
+import hudson.Extension;
 import hudson.Functions;
+import hudson.model.Describable;
+import hudson.model.Descriptor;
 import hudson.model.Run;
+import hudson.model.User;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import jenkins.model.Jenkins;
+import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.Stapler;
@@ -43,7 +47,7 @@ import org.kohsuke.stapler.Stapler;
  * @see Functions#getConsoleUrl
  * @since TODO
  */
-public interface ConsoleUrlProvider extends ExtensionPoint {
+public interface ConsoleUrlProvider extends Describable<ConsoleUrlProvider> {
     @Restricted(NoExternalUse.class)
     Logger LOGGER = Logger.getLogger(ConsoleUrlProvider.class.getName());
 
@@ -56,6 +60,11 @@ public interface ConsoleUrlProvider extends ExtensionPoint {
      */
     @CheckForNull String getConsoleUrl(Run<?, ?> run);
 
+    @Override
+    default Descriptor<ConsoleUrlProvider> getDescriptor() {
+        return Jenkins.get().getDescriptorOrDie(getClass());
+    }
+
     /**
      * Get a URL relative to the web server root which should be used to link to the console for the specified build.
      * <p>Should only be used in the context of serving an HTTP request.
@@ -64,15 +73,31 @@ public interface ConsoleUrlProvider extends ExtensionPoint {
      * @return the URL for the console for the specified build, relative to the web server root
      */
     static @NonNull String getRedirectUrl(Run<?, ?> run) {
-        String url = null;
-        for (ConsoleUrlProvider provider : ExtensionList.lookup(ConsoleUrlProvider.class)) {
-            try {
-                url = provider.getConsoleUrl(run);
-                if (url != null) {
-                    break;
+        ConsoleUrlProviderGlobalConfiguration globalConfig = ConsoleUrlProviderGlobalConfiguration.get();
+        List<ConsoleUrlProvider> providers = globalConfig.getProviders();
+        User currentUser = User.current();
+        if (currentUser != null) { // TODO: Should we add a configuration option to allow admins to suppress this behavior?
+            ConsoleUrlProviderUserProperty userProperty = currentUser.getProperty(ConsoleUrlProviderUserProperty.class);
+            if (userProperty != null) {
+                List<ConsoleUrlProvider> userProviders = userProperty.getProviders();
+                if (userProviders != null) {
+                    // TODO: We need a default impl as an extension in addition the fallback below for users to
+                    // be able to force the default console view if their admin has selected a different default.
+                    providers = userProviders;
                 }
-            } catch (Exception e) { // Intentionally broad catch clause to guard against broken implementations.
-                LOGGER.log(Level.WARNING, e, () -> "Error looking up console URL for " + run + " from " + provider.getClass());
+            }
+        }
+        String url = null;
+        if (providers != null) {
+            for (ConsoleUrlProvider provider : providers) {
+                try {
+                    url = provider.getConsoleUrl(run);
+                    if (url != null) {
+                        break;
+                    }
+                } catch (Exception e) { // Intentionally broad catch clause to guard against broken implementations.
+                    LOGGER.log(Level.WARNING, e, () -> "Error looking up console URL for " + run + " from " + provider.getClass());
+                }
             }
         }
         if (url == null) {
@@ -85,6 +110,23 @@ public interface ConsoleUrlProvider extends ExtensionPoint {
             return Stapler.getCurrentRequest().getContextPath() + url;
         } else {
             return Stapler.getCurrentRequest().getContextPath() + '/' + url;
+        }
+    }
+
+    @Restricted(NoExternalUse.class)
+    class Default implements ConsoleUrlProvider {
+        @Override
+        public String getConsoleUrl(Run<?, ?> run) {
+            return run.getUrl() + "console";
+        }
+
+        @Extension
+        @Symbol("default")
+        public static class DescriptorImpl extends Descriptor<ConsoleUrlProvider> {
+            @Override
+            public String getDisplayName() {
+                return Messages.defaultProviderDisplayName();
+            }
         }
     }
 }
