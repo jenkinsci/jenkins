@@ -81,8 +81,6 @@ public interface ConsoleUrlProvider extends Describable<ConsoleUrlProvider> {
             if (userProperty != null) {
                 List<ConsoleUrlProvider> userProviders = userProperty.getProviders();
                 if (userProviders != null) {
-                    // TODO: We need a default impl as an extension in addition the fallback below for users to
-                    // be able to force the default console view if their admin has selected a different default.
                     providers = userProviders;
                 }
             }
