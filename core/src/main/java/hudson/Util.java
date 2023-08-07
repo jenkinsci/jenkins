@@ -136,7 +136,6 @@ public class Util {
     private static final long ONE_DAY_MS = 24 * ONE_HOUR_MS;
     private static final long ONE_MONTH_MS = 30 * ONE_DAY_MS;
     private static final long ONE_YEAR_MS = 365 * ONE_DAY_MS;
-    public static final String SHA_256_ALGORITHM = "SHA-256";
 
     /**
      * Creates a filtered sublist.
@@ -1930,19 +1929,19 @@ public class Util {
     }
 
     /**
-     * Returns Digest of input bytes using specified algorithm
+     * Returns SHA-256 Digest of input bytes
      */
     @Restricted(NoExternalUse.class)
-    public static byte[] getDigestOf(@NonNull byte[] input, @NonNull String algorithm) {
-        if (input == null || algorithm == null) {
+    public static byte[] getSHA256DigestOf(@NonNull byte[] input) {
+        if (input == null) {
             return null;
         }
         try {
-                MessageDigest messageDigest = MessageDigest.getInstance(algorithm);
+                MessageDigest messageDigest = MessageDigest.getInstance("SHA-256");
                 messageDigest.update(input);
                 return messageDigest.digest();
         } catch (NoSuchAlgorithmException noSuchAlgorithmException) {
-            throw new IllegalStateException(algorithm + " could not be instantiated, but is required to" +
+            throw new IllegalStateException("SHA-256 could not be instantiated, but is required to" +
                     " be implemented by the language specification", noSuchAlgorithmException);
         }
     }
@@ -1953,7 +1952,7 @@ public class Util {
     @Restricted(NoExternalUse.class)
     public static String getHexOfSHA256DigestOf(byte[] input) throws IOException {
         //get hex string of sha 256 of payload
-        byte[] payloadDigest = Util.getDigestOf(input, SHA_256_ALGORITHM);
+        byte[] payloadDigest = Util.getSHA256DigestOf(input);
         return (payloadDigest != null) ? Util.toHexString(payloadDigest) : null;
     }
 }
