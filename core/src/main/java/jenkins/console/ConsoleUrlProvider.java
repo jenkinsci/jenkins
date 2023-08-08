@@ -111,8 +111,8 @@ public interface ConsoleUrlProvider extends Describable<ConsoleUrlProvider> {
     }
 
     /**
-     * Check whether there are at least two {@ConsoleUrlProvider} implementations available.
-     * @return {@code true} if there are at least two {@ConsoleUrlProvider} implementations available, {@code false} otherwise.
+     * Check whether there are at least two {@link ConsoleUrlProvider} implementations available.
+     * @return {@code true} if there are at least two {@link ConsoleUrlProvider} implementations available, {@code false} otherwise.
      */
     static boolean isEnabled() {
         // No point showing related configuration pages if the only option is ConsoleUrlProvider.Default.
