@@ -726,6 +726,30 @@ public class UtilTest {
         assertEquals("The class " + DerivedClassFailure.class.getName() + " must override at least one of the BaseClass.method methods", error.getMessage());
     }
 
+    @Test
+    public void testGetHexOfSHA256DigestOf() throws IOException {
+        byte input[]=new byte[] {12,34,16};
+        String str = Util.getHexOfSHA256DigestOf(input);
+        assertNotNull(str);
+    }
+
+    @Test
+    public void testGetHexOfSHA256DigestOfNull() throws IOException {
+        assertNull( Util.getHexOfSHA256DigestOf(null));
+    }
+
+    @Test
+    public void testGetSHA256DigestOf() {
+        byte input[]=new byte[] {12,34,16};
+        assertNotNull(Util.getSHA256DigestOf(input));
+    }
+
+    @Test
+    public void testGetSHA256DigestOfNull() {
+        assertNull(Util.getSHA256DigestOf(null));
+    }
+
+
     public static class BaseClass {
         protected String method() {
             return "base";
