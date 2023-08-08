@@ -26,7 +26,6 @@ package jenkins.console;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
-import hudson.Extension;
 import hudson.Functions;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
@@ -36,7 +35,6 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
-import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.Stapler;
@@ -99,11 +97,12 @@ public interface ConsoleUrlProvider extends Describable<ConsoleUrlProvider> {
             }
         }
         if (url == null) {
+            // Reachable if DefaultConsoleUrlProvider is not one of the configured providers, including if no providers are configured at all.
             url = run.getUrl() + "console";
         }
         // TODO:
         // * Fail if absolute URL?
-        // * Fail if invalid URI (as above in getActionUrl?).
+        // * Fail if invalid URI (as in Functions.getActionUrl)?
         if (url.startsWith("/")) {
             return Stapler.getCurrentRequest().getContextPath() + url;
         } else {
@@ -111,20 +110,12 @@ public interface ConsoleUrlProvider extends Describable<ConsoleUrlProvider> {
         }
     }
 
-    @Restricted(NoExternalUse.class)
-    class Default implements ConsoleUrlProvider {
-        @Override
-        public String getConsoleUrl(Run<?, ?> run) {
-            return run.getUrl() + "console";
-        }
-
-        @Extension
-        @Symbol("default")
-        public static class DescriptorImpl extends Descriptor<ConsoleUrlProvider> {
-            @Override
-            public String getDisplayName() {
-                return Messages.defaultProviderDisplayName();
-            }
-        }
+    /**
+     * Check whether there are at least two {@ConsoleUrlProvider} implementations available.
+     * @return {@code true} if there are at least two {@ConsoleUrlProvider} implementations available, {@code false} otherwise.
+     */
+    static boolean isEnabled() {
+        // No point showing related configuration pages if the only option is ConsoleUrlProvider.Default.
+        return Jenkins.get().getDescriptorList(ConsoleUrlProvider.class).size() > 1;
     }
 }

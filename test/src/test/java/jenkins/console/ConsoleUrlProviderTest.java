@@ -33,6 +33,8 @@ import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Run;
 import hudson.model.User;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import org.htmlunit.html.DomElement;
 import org.htmlunit.html.HtmlPage;
@@ -52,24 +54,25 @@ public class ConsoleUrlProviderTest {
 
     @Test
     public void getConsoleUrl() throws Exception {
-        ConsoleUrlProviderGlobalConfiguration.get().setProviders(List.of(new CustomConsoleUrlProvider()));
+        ConsoleUrlProviderGlobalConfiguration.get().setProviders(list(new CustomConsoleUrlProvider()));
         FreeStyleProject p = r.createProject(FreeStyleProject.class);
         // Default URL
-        FreeStyleBuild b1 = r.buildAndAssertSuccess(p);
-        assertCustomConsoleUrl(r.contextPath + '/' + b1.getUrl() + "console", b1);
+        FreeStyleBuild b = r.buildAndAssertSuccess(p);
+        assertCustomConsoleUrl(r.contextPath + '/' + b.getUrl() + "console", b);
         // Custom URL without leading slash
-        FreeStyleBuild b2 = r.buildAndAssertSuccess(p);
-        b2.setDescription("custom my/build/console");
-        assertCustomConsoleUrl(r.contextPath + "/my/build/console", b2);
+        b.setDescription("custom my/build/console");
+        assertCustomConsoleUrl(r.contextPath + "/my/build/console", b);
         // Custom URL with leading slash
-        FreeStyleBuild b3 = r.buildAndAssertSuccess(p);
-        b3.setDescription("custom /my/build/console");
-        assertCustomConsoleUrl(r.contextPath + "/my/build/console", b3);
+        b.setDescription("custom /my/build/console");
+        assertCustomConsoleUrl(r.contextPath + "/my/build/console", b);
         // Default URL is used when extensions throw exceptions.
-        FreeStyleBuild b4 = r.buildAndAssertSuccess(p);
-        b4.setDescription("NullPointerException");
-        assertCustomConsoleUrl(r.contextPath + '/' + b4.getUrl() + "console", b4);
-        // TODO: Would be nice to add a test for precedence of items in the list.
+        b.setDescription("NullPointerException");
+        assertCustomConsoleUrl(r.contextPath + '/' + b.getUrl() + "console", b);
+        // Check precedence and fallthrough behavior with ConsoleUrlProviderGlobalConfiguration.providers.
+        ConsoleUrlProviderGlobalConfiguration.get().setProviders(
+                list(new IgnoreAllRunsConsoleUrlProvider(), new CustomConsoleUrlProvider("-a"), new CustomConsoleUrlProvider("-b")));
+        b.setDescription("custom my/build/console");
+        assertCustomConsoleUrl(r.contextPath + "/my/build/console-a", b);
     }
 
     @Test
@@ -77,8 +80,8 @@ public class ConsoleUrlProviderTest {
         r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
         User admin = User.getById("admin", true);
         // Admin choses custom, user overrides to default
-        ConsoleUrlProviderGlobalConfiguration.get().setProviders(List.of(new CustomConsoleUrlProvider()));
-        admin.getProperty(ConsoleUrlProviderUserProperty.class).setProviders(List.of(new ConsoleUrlProvider.Default()));
+        ConsoleUrlProviderGlobalConfiguration.get().setProviders(list(new CustomConsoleUrlProvider()));
+        admin.getProperty(ConsoleUrlProviderUserProperty.class).setProviders(list(new DefaultConsoleUrlProvider()));
         FreeStyleProject p = r.createProject(FreeStyleProject.class);
         FreeStyleBuild b = r.buildAndAssertSuccess(p);
         b.setDescription("custom my/build/console");
@@ -86,9 +89,13 @@ public class ConsoleUrlProviderTest {
         assertCustomConsoleUrl(r.contextPath + "/" + b.getUrl() + "console", admin, b);
         // Admin does not configure anything, user chooses custom
         ConsoleUrlProviderGlobalConfiguration.get().setProviders(null);
-        admin.getProperty(ConsoleUrlProviderUserProperty.class).setProviders(List.of(new CustomConsoleUrlProvider()));
+        admin.getProperty(ConsoleUrlProviderUserProperty.class).setProviders(list(new CustomConsoleUrlProvider()));
         assertCustomConsoleUrl(r.contextPath + "/" + b.getUrl() + "console", b);
         assertCustomConsoleUrl(r.contextPath + "/my/build/console", admin, b);
+        // Check precedence and fallthrough behavior with ConsoleUrlProviderUserProperty.providers.
+        admin.getProperty(ConsoleUrlProviderUserProperty.class).setProviders(
+                list(new IgnoreAllRunsConsoleUrlProvider(), new CustomConsoleUrlProvider("-a"), new CustomConsoleUrlProvider("-b")));
+        assertCustomConsoleUrl(r.contextPath + "/my/build/console-a", admin, b);
     }
 
     public void assertCustomConsoleUrl(String expectedUrl, Run<?, ?> run) throws Exception {
@@ -107,17 +114,43 @@ public class ConsoleUrlProviderTest {
                 buildHistoryDiv.getByXPath("//a[@href='" + expectedUrl + "']"), not(empty()));
     }
 
+    // Like List.of, but avoids JEP-210 class filter warnings.
+    private static <T> List<T> list(T... items) {
+        return new ArrayList<>(Arrays.asList(items));
+    }
+
     public static class CustomConsoleUrlProvider implements ConsoleUrlProvider {
+        private final String suffix;
+
+        public CustomConsoleUrlProvider() {
+            this.suffix = "";
+        }
+
+        public CustomConsoleUrlProvider(String suffix) {
+            this.suffix = suffix;
+        }
+
         @Override
         public String getConsoleUrl(Run<?, ?> run) {
             String description = run.getDescription();
             if (description == null) {
                 return null;
             } else if (description.startsWith("custom ")) {
-                return description.substring("custom ".length());
+                return description.substring("custom ".length()) + suffix;
             } else {
                 throw new NullPointerException("getConsoleUrl should be robust against runtime errors");
             }
+        }
+
+        @TestExtension
+        public static class DescriptorImpl extends Descriptor<ConsoleUrlProvider> { }
+    }
+
+    public static class IgnoreAllRunsConsoleUrlProvider implements ConsoleUrlProvider {
+
+        @Override
+        public String getConsoleUrl(Run<?, ?> run) {
+            return null;
         }
 
         @TestExtension

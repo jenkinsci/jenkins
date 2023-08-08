@@ -32,7 +32,6 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.GlobalConfiguration;
-import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
@@ -69,7 +68,6 @@ public class ConsoleUrlProviderGlobalConfiguration extends GlobalConfiguration {
 
     @Override
     public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
-        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         // We have to null out providers before data binding to allow all providers to be deleted in the config UI.
         // We use a BulkChange to avoid double saves in other cases.
         try (BulkChange bc = new BulkChange(this)) {
@@ -83,7 +81,7 @@ public class ConsoleUrlProviderGlobalConfiguration extends GlobalConfiguration {
     }
 
     public boolean isEnabled() {
-        return !Jenkins.get().getDescriptorList(ConsoleUrlProvider.class).isEmpty();
+        return ConsoleUrlProvider.isEnabled();
     }
 
     public static ConsoleUrlProviderGlobalConfiguration get() {

@@ -24,55 +24,34 @@
 
 package jenkins.console;
 
-import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.Extension;
-import hudson.model.User;
-import hudson.model.UserProperty;
-import hudson.model.UserPropertyDescriptor;
-import java.util.List;
+import hudson.model.Descriptor;
+import hudson.model.Run;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.DataBoundSetter;
 
 /**
- * Allows users to activate and sort {@link ConsoleUrlProvider} extensions based on their preferences.
- * @see ConsoleUrlProviderGlobalConfiguration
+ * Default implementation of {@link ConsoleUrlProvider} that uses the standard Jenkins console view.
+ * <p>Exists so that users have a way to override {@link ConsoleUrlProviderGlobalConfiguration} and specify the default
+ * console view if desired via {@link ConsoleUrlProviderUserProperty}.
  * @since TODO
  */
-@Restricted(NoExternalUse.class)
-public class ConsoleUrlProviderUserProperty extends UserProperty {
-    private List<ConsoleUrlProvider> providers;
+@Restricted(value = NoExternalUse.class)
+public class DefaultConsoleUrlProvider implements ConsoleUrlProvider {
 
-    @DataBoundConstructor
-    public ConsoleUrlProviderUserProperty() { }
-
-    public @CheckForNull List<ConsoleUrlProvider> getProviders() {
-        return providers;
-    }
-
-    @DataBoundSetter
-    public void setProviders(List<ConsoleUrlProvider> providers) {
-        this.providers = providers;
+    @Override
+    public String getConsoleUrl(Run<?, ?> run) {
+        return run.getUrl() + "console";
     }
 
     @Extension
-    @Symbol("consoleUrlProvider")
-    public static class DescriptorImpl extends UserPropertyDescriptor {
+    @Symbol(value = "default")
+    public static class DescriptorImpl extends Descriptor<ConsoleUrlProvider> {
+
         @Override
         public String getDisplayName() {
-            return Messages.consoleUrlProviderDisplayName();
-        }
-
-        @Override
-        public UserProperty newInstance(User user) {
-            return new ConsoleUrlProviderUserProperty();
-        }
-
-        @Override
-        public boolean isEnabled() {
-            return ConsoleUrlProvider.isEnabled();
+            return Messages.defaultProviderDisplayName();
         }
     }
 }

@@ -1,6 +1,6 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
-    <j:if test="${h.hasPermission(app.ADMINISTER) and descriptor.enabled}">
+    <j:if test="${descriptor.enabled}">
         <f:section title="${%Console URL Provider}">
             <f:block>
                 ${%description}
