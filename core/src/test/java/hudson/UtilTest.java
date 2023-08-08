@@ -53,6 +53,7 @@ import java.nio.file.Paths;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
@@ -728,27 +729,22 @@ public class UtilTest {
 
     @Test
     public void testGetHexOfSHA256DigestOf() throws IOException {
-        byte input[]=new byte[] {12,34,16};
+        byte[] input = new byte[] {12, 34, 16};
         String str = Util.getHexOfSHA256DigestOf(input);
-        assertNotNull(str);
-    }
-
-    @Test
-    public void testGetHexOfSHA256DigestOfNull() throws IOException {
-        assertNull( Util.getHexOfSHA256DigestOf(null));
+        assertEquals(str, "134fefbd329986726407a5208107ef07c9e33da779f5068bff191733268fe997");
     }
 
     @Test
     public void testGetSHA256DigestOf() {
-        byte input[]=new byte[] {12,34,16};
-        assertNotNull(Util.getSHA256DigestOf(input));
-    }
+        byte[] input = new byte[] {12, 34, 16};
+        byte[] sha256DigestActual = Util.getSHA256DigestOf(input);
 
-    @Test
-    public void testGetSHA256DigestOfNull() {
-        assertNull(Util.getSHA256DigestOf(null));
+        byte[] expected = new byte[]
+                { 19, 79, -17, -67, 50, -103, -122, 114, 100, 7, -91, 32, -127, 7, -17, 7, -55, -29, 61, -89, 121, -11,
+                6, -117, -1, 25, 23, 51, 38, -113, -23, -105};
+        boolean isSame = Arrays.equals(sha256DigestActual, expected);
+        assertEquals(isSame, true);
     }
-
 
     public static class BaseClass {
         protected String method() {

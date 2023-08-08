@@ -1933,9 +1933,6 @@ public class Util {
      */
     @Restricted(NoExternalUse.class)
     public static byte[] getSHA256DigestOf(@NonNull byte[] input) {
-        if (input == null) {
-            return null;
-        }
         try {
                 MessageDigest messageDigest = MessageDigest.getInstance("SHA-256");
                 messageDigest.update(input);
