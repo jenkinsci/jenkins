@@ -30,6 +30,7 @@ module.exports = {
     createFilterMenuButton: "readonly",
     createSearchBox: "readonly",
     crumb: "readonly",
+    dialog: "readonly",
     ensureVisible: "readonly",
     escapeHTML: "readonly",
     findAncestor: "readonly",

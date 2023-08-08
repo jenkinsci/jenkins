@@ -316,6 +316,7 @@ pre.console {
 
 .expanding-input {
   display: flex;
+  align-items: center;
 }
 
 .expanding-input__input {
@@ -324,13 +325,6 @@ pre.console {
 
 .expanding-input__button {
   flex-shrink: 1;
-}
-
-.expanding-input__button input {
-  border: 2px solid var(--input-border) !important;
-  border-radius: var(--form-input-border-radius) !important;
-  min-width: 0 !important;
-  height: 100%;
 }
 
 /* div that looks like a hyperlink */
@@ -370,7 +364,10 @@ pre.console {
   padding: 4px 0;
   margin-left: 0;
   border-bottom: 1px solid #090;
-  font: bold 12px Helvetica, Arial, sans-serif;
+  font:
+    bold 12px Helvetica,
+    Arial,
+    sans-serif;
 }
 
 #foldertab li {

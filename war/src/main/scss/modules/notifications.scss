@@ -12,8 +12,10 @@
   font-weight: 500;
   line-height: 1.66;
   color: var(--text-color);
-  box-shadow: 0 0 1px 1px rgba(darken(#024cb6, 50%), 0.075),
-    0 10px 30px rgba(darken(#024cb6, 50%), 0.25), 0 0 30px 5px var(--background);
+  box-shadow:
+    0 0 1px 1px rgba(darken(#024cb6, 50%), 0.075),
+    0 10px 30px rgba(darken(#024cb6, 50%), 0.25),
+    0 0 30px 5px var(--background);
   will-change: opacity, transform;
   z-index: 999;
   cursor: pointer;

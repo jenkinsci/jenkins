@@ -2,20 +2,23 @@
   var redirectForm = document.getElementById("redirect-error");
   if (!redirectForm) {
     console.warn(
-      'This script expects to have an element with id="redirect-error" to be working.'
+      'This script expects to have an element with id="redirect-error" to be working.',
     );
     return;
   }
 
   var urlToTest = redirectForm.getAttribute("data-url");
   var callUrlToTest = function (testWithContext, callback) {
+    var headers = {};
     var body = null;
     if (testWithContext === true) {
+      headers["Content-Type"] = "application/x-www-form-urlencoded";
       body = new URLSearchParams({ testWithContext: "true" });
     }
     fetch(urlToTest, {
+      method: "POST",
       cache: "no-cache",
-      headers: crumb.wrap({}),
+      headers: crumb.wrap(headers),
       body,
     })
       .then((rsp) => callback(rsp))

@@ -55,17 +55,17 @@ THE SOFTWARE.
         <div class="alert alert-warning"><strong>${%Warning}</strong>: ${%requires.restart}</div>
       </j:if>
 
-      <div class="plugins i18n"
-           data-cannot-enable="${%This plugin cannot be enabled}"
-           data-cannot-disable="${%This plugin cannot be disabled}"
-           data-cannot-uninstall="${%This plugin cannot be uninstalled}"
-           data-disabled-dependencies="${%It has one or more unsatisfied dependencies}"
-           data-enabled-dependents="${%It has one or more enabled dependents}"
-           data-installed-dependents="${%It has one or more installed dependents}"
-           data-detached-disable="${%detached-disable}"
-           data-detached-uninstall="${%detached-uninstall}"
-           data-detached-possible-dependents="${%detached-possible-dependents}"
-      />
+      <template id="i18n"
+                data-cannot-enable="${%This plugin cannot be enabled}"
+                data-cannot-disable="${%This plugin cannot be disabled}"
+                data-cannot-uninstall="${%This plugin cannot be uninstalled}"
+                data-disabled-dependencies="${%It has one or more unsatisfied dependencies}"
+                data-enabled-dependents="${%It has one or more enabled dependents}"
+                data-installed-dependents="${%It has one or more installed dependents}"
+                data-detached-disable="${%detached-disable}"
+                data-detached-uninstall="${%detached-uninstall}"
+                data-detached-possible-dependents="${%detached-possible-dependents}"
+                data-uninstall-description="${%uninstall-description}" />
 
       <table id="plugins" class="jenkins-table sortable">
         <j:choose>
@@ -225,11 +225,14 @@ THE SOFTWARE.
                                 </j:forEach>
                               </div>
                             </j:if>
-                            <form class="jenkins-buttons-row" method="post" action="plugin/${p.shortName}/uninstall">
-                              <button class="jenkins-table__button jenkins-!-destructive-color uninstall" tooltip="${%Uninstall} ${p.updateInfo.displayName?:p.displayName}">
-                                <l:icon src="symbol-close-circle"/>
-                              </button>
-                            </form>
+                            <button data-action="uninstall"
+                                    type="button"
+                                    class="jenkins-table__button jenkins-!-destructive-color"
+                                    tooltip="${%Uninstall} ${p.updateInfo.displayName ?: p.displayName}"
+                                    data-href="plugin/${p.shortName}/doUninstall"
+                                    data-message="${%uninstall-title(p.updateInfo.displayName ?: p.displayName)}">
+                              <l:icon src="symbol-close-circle"/>
+                            </button>
                           </j:otherwise>
                         </j:choose>
                       </div>
