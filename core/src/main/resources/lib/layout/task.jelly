@@ -78,7 +78,9 @@ THE SOFTWARE.
       (since 1.512)
     </st:attribute>
     <st:attribute name="onclick" deprecated="true">
-      Onclick inline JS handler. Deprecated, use callbackElementId instead.
+      Onclick inline JS handler. Deprecated, specify data-callback attribute with the name of a global function instead.
+      It will be called with the 'a' element as first argument, and event as second argument.
+      You can specify further data-* attributes to customize behavior.
     </st:attribute>
     <st:attribute name="badge">
       If set, displays the value as a small badge on the right side of the sidepanel item.
@@ -87,11 +89,6 @@ THE SOFTWARE.
     <st:attribute name="confirmationMessage">
       Message to use for confirmation, if requested; defaults to title.
       (since 1.512)
-    </st:attribute>
-    <st:attribute name="callbackElementId" since="TODO">
-      This is the ID attribute of an HTML element that will be looked up to invoke a callback when clicked.
-      The HTML element is expected to have the attribute data-callback (a global function).
-      The global function will be invoked with the HTML element and event as arguments.
     </st:attribute>
     <st:attribute name="destructive" type="boolean" since="TODO">
       Show red confirmation button.
@@ -186,7 +183,7 @@ THE SOFTWARE.
               </j:when>
 
               <j:otherwise>
-                <a href="${href}" class="task-link task-link-no-confirm ${isCurrent ? 'task-link--active' : ''}" data-success="${%Done.}" data-post="${attrs.post}" data-callback="${attrs.callbackElementId}" onclick="${attrs.onclick}">
+                <m:a xmlns:m="jelly:hudson.util.jelly.MorphTagLibrary" href="${href}" class="task-link task-link-no-confirm ${isCurrent ? 'task-link--active' : ''}" data-task-success="${%Done.}" data-task-post="${attrs.post}" ATTRIBUTES="${attrs}" EXCEPT="field items clazz post permission">
                   <span class="task-icon-link">
                     <l:icon src="${icon}" />
                   </span>
@@ -196,7 +193,7 @@ THE SOFTWARE.
                       ${attrs.badge.text}
                     </span>
                   </j:if>
-                </a>
+                </m:a>
                 <st:adjunct includes="lib.layout.task.task" />
               </j:otherwise>
             </j:choose>

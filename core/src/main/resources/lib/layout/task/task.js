@@ -3,23 +3,24 @@ Behaviour.specify("a.task-link-no-confirm", "task-link", 0, function (el) {
     return;
   }
 
-  let post = el.dataset.post;
-  let callbackElementId = el.dataset.callback;
-  let success = el.dataset.success;
+  let post = el.dataset.taskPost;
+  let callback = el.dataset.callback;
+  let success = el.dataset.taskSuccess;
   let href = el.href;
 
-  if (callbackElementId !== undefined) {
+  if (callback !== undefined) {
     el.onclick = function (ev) {
-      let callbackElement = document.getElementById(callbackElementId);
-      let callback = callbackElement.dataset.callback;
-      window[callback](callbackElement, ev);
+      window[callback](el, ev);
     };
     return;
   }
 
   if (post === "true") {
     el.onclick = function (ev) {
-      new Ajax.Request(href);
+      fetch(href, {
+        method: "post",
+        headers: crumb.wrap({}),
+      });
       hoverNotification(success, el.parentNode);
       ev.preventDefault();
     };

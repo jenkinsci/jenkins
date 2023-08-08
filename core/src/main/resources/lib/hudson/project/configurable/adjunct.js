@@ -3,7 +3,7 @@ window["lib_hudson_project_configurable_build_now_callback"] = function (
   ev,
 ) {
   let parameterized = el.dataset.parameterized;
-  let success = el.dataset.success;
+  let success = el.dataset.buildSuccess;
   if (parameterized === "false") {
     fetch(el.href, {
       method: "post",
