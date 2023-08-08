@@ -6,11 +6,7 @@
       e.preventDefault();
       let url = descriptionLink.getAttribute("data-url");
       let description = descriptionLink.getAttribute("data-description");
-      if (url == null && description == null) {
-        return replaceDescription();
-      } else {
-        return replaceDescription(description, url);
-      }
+      return replaceDescription(description, url);
     });
   });
 })();

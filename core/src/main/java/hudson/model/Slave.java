@@ -71,7 +71,6 @@ import jenkins.model.Jenkins;
 import jenkins.security.MasterToSlaveCallable;
 import jenkins.slaves.WorkspaceLocator;
 import jenkins.util.SystemProperties;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
@@ -201,7 +200,7 @@ public abstract class Slave extends Node implements Serializable {
 
         this.nodeProperties.replaceBy(nodeProperties);
 
-        if (name.equals(""))
+        if (name.isEmpty())
             throw new FormException(Messages.Slave_InvalidConfig_NoName(), null);
 
         if (this.numExecutors <= 0)
@@ -470,7 +469,7 @@ public abstract class Slave extends Node implements Serializable {
 
         public byte[] readFully() throws IOException {
             try (InputStream in = connect().getInputStream()) {
-                return IOUtils.toByteArray(in);
+                return in.readAllBytes();
             }
         }
 

@@ -1,0 +1,47 @@
+@use "../abstracts/mixins";
+
+.page-footer {
+  width: 100%;
+  clear: both;
+  font-size: var(--font-size-sm);
+}
+
+.page-footer .container-fluid {
+  padding: 0;
+}
+
+.page-footer__flex-row {
+  display: flex;
+  align-items: stretch;
+  flex-wrap: wrap;
+}
+
+.page-footer__flex-row > *:not(script) {
+  display: flex;
+  align-items: center;
+  padding: calc(var(--section-padding) / 2)
+    calc(var(--section-padding) - 0.85rem);
+  gap: calc(var(--section-padding) / 2);
+}
+
+.page-footer__footer-id-placeholder {
+  flex: 1;
+  flex-wrap: wrap;
+}
+
+.page-footer span {
+  display: inline-block;
+}
+
+.page-footer .jenkins-button {
+  transition: var(--standard-transition);
+
+  &:hover {
+    color: var(--text-color) !important;
+  }
+
+  svg,
+  .jenkins-overflow-button__ellipsis {
+    display: none;
+  }
+}

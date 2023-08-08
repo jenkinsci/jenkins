@@ -80,14 +80,21 @@ THE SOFTWARE.
     <st:attribute name="onclick" deprecated="true">
       Onclick inline JS handler. Deprecated, use callbackElementId instead.
     </st:attribute>
+    <st:attribute name="badge">
+      If set, displays the value as a small badge on the right side of the sidepanel item.
+      @since TODO
+    </st:attribute>
     <st:attribute name="confirmationMessage">
       Message to use for confirmation, if requested; defaults to title.
       (since 1.512)
     </st:attribute>
-    <st:attribute name="callbackElementId">
+    <st:attribute name="callbackElementId" since="TODO">
       This is the ID attribute of an HTML element that will be looked up to invoke a callback when clicked.
       The HTML element is expected to have the attribute data-callback (a global function).
       The global function will be invoked with the HTML element and event as arguments.
+    </st:attribute>
+    <st:attribute name="destructive" type="boolean" since="TODO">
+      Show red confirmation button.
     </st:attribute>
   </st:documentation>
 
@@ -144,6 +151,11 @@ THE SOFTWARE.
                 <l:icon src="${icon}" />
               </span>
               <span class="task-link-text">${title}</span>
+              <j:if test="${attrs.badge != null}">
+                <span class="task-icon-badge" tooltip="${attrs.badge.tooltip}">
+                  ${attrs.badge.text}
+                </span>
+              </j:if>
             </span>
           </span>
         </div>
@@ -156,15 +168,20 @@ THE SOFTWARE.
             <j:set var="iconXml">
               <l:icon src="${icon}" />
             </j:set>
-            ${taskTags!=null and attrs.contextMenu!='false' ? taskTags.add(href, iconSrc, iconXml, title, post == 'true', requiresConfirmation == 'true') : null}
+            ${taskTags!=null and attrs.contextMenu!='false' ? taskTags.add(href, iconSrc, iconXml, title, post == 'true', requiresConfirmation == 'true', null, confirmationMessage ?: null) : null}
 
             <j:choose>
               <j:when test="${requiresConfirmation and not attrs.onClick}">
-                <l:confirmationLink class="task-link ${isCurrent ? 'task-link--active' : ''}" href="${href}" post="${post}" message="${confirmationMessage ?: title}">
+                <l:confirmationLink class="task-link ${isCurrent ? 'task-link--active' : ''}" href="${href}" post="${post}" message="${confirmationMessage ?: ''}" title="${title}">
                   <span class="task-icon-link">
                     <l:icon src="${icon}" />
                   </span>
                   <span>${title}</span>
+                  <j:if test="${attrs.badge != null}">
+                    <span class="task-icon-badge" tooltip="${attrs.badge.tooltip}">
+                      ${attrs.badge.text}
+                    </span>
+                  </j:if>
                 </l:confirmationLink>
               </j:when>
 
@@ -174,6 +191,11 @@ THE SOFTWARE.
                     <l:icon src="${icon}" />
                   </span>
                   <span class="task-link-text">${title}</span>
+                  <j:if test="${attrs.badge != null}">
+                    <span class="task-icon-badge" tooltip="${attrs.badge.tooltip}">
+                      ${attrs.badge.text}
+                    </span>
+                  </j:if>
                 </a>
                 <st:adjunct includes="lib.layout.task.task" />
               </j:otherwise>

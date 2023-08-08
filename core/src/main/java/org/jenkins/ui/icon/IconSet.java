@@ -530,6 +530,7 @@ public class IconSet {
         translations.put("icon-user", "symbol-people");
         translations.put("icon-undo", "symbol-undo");
         translations.put("icon-redo", "symbol-redo");
+        translations.put("icon-hourglass", "symbol-hourglass");
         ICON_TO_SYMBOL_TRANSLATIONS = translations;
     }
 

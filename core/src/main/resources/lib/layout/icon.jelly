@@ -39,7 +39,7 @@ THE SOFTWARE.
     </st:attribute>
 
     <st:attribute name="id">
-      ID of the icon element. Since TODO.
+      ID of the icon element. Since 2.360.
     </st:attribute>
 
     <st:attribute name="onclick" deprecated="true">onclick handler. Deprecated; assign an ID and look up the element that way to attach event handlers.</st:attribute>

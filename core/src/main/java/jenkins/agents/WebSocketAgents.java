@@ -44,6 +44,7 @@ import java.security.MessageDigest;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.slaves.JnlpAgentReceiver;
@@ -166,11 +167,19 @@ public final class WebSocketAgents extends InvisibleAction implements Unprotecte
 
         class Transport extends AbstractByteBufferCommandTransport {
 
+            Transport() {
+                super(true);
+            }
+
             @Override
-            protected void write(ByteBuffer header, ByteBuffer data) throws IOException {
-                LOGGER.finest(() -> "sending message of length " + ChunkHeader.length(ChunkHeader.peek(header)));
-                sendBinary(header, false);
-                sendBinary(data, true);
+            protected void write(ByteBuffer headerAndData) throws IOException {
+                // As in Engine.runWebSocket:
+                LOGGER.finest(() -> "sending message of length " + (headerAndData.remaining() - ChunkHeader.SIZE));
+                try {
+                    sendBinary(headerAndData).get(5, TimeUnit.MINUTES);
+                } catch (Exception x) {
+                    throw new IOException(x);
+                }
             }
 
             @Override

@@ -25,7 +25,7 @@ public abstract class AbstractCloudImpl extends Cloud {
     }
 
     protected void setInstanceCapStr(String value) {
-        if (value == null || value.equals(""))
+        if (value == null || value.isEmpty())
             this.instanceCap = Integer.MAX_VALUE;
         else
             this.instanceCap = Integer.parseInt(value);

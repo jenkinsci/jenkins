@@ -56,6 +56,17 @@ THE SOFTWARE.
                         <p class="restarting">
                             ${%Your browser will reload automatically when Jenkins is ready.}
                         </p>
+                        <j:if test="${it.safeRestart}">
+                            <div class="safe-restarting">
+                                <p>
+                                    <strong>${%Safe Restart}</strong>
+                                </p>
+                                <p>
+                                    ${%Builds on agents can usually continue.}
+                                </p>
+                            </div>
+                        </j:if>
+
                     </div>
                 </div>
             </div>

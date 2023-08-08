@@ -5,7 +5,10 @@ window["lib_hudson_project_configurable_build_now_callback"] = function (
   let parameterized = el.dataset.parameterized;
   let success = el.dataset.success;
   if (parameterized === "false") {
-    new Ajax.Request(ev.target.href);
+    fetch(a.href, {
+      method: 'post',
+      headers: crumb.wrap({}),
+    });
     hoverNotification(success, ev.target.parentNode);
     ev.preventDefault();
   }

@@ -25,6 +25,7 @@
 package jenkins.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.arrayContaining;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
@@ -38,13 +39,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
-import com.gargoylesoftware.htmlunit.HttpMethod;
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.TextPage;
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.WebResponse;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.ExtensionList;
 import hudson.XmlFile;
@@ -57,6 +51,7 @@ import hudson.model.Node;
 import hudson.model.RestartListener;
 import hudson.model.RootAction;
 import hudson.model.Saveable;
+import hudson.model.Slave;
 import hudson.model.TaskListener;
 import hudson.model.UnprotectedRootAction;
 import hudson.model.User;
@@ -74,10 +69,20 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.Socket;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 import jenkins.AgentProtocol;
+import org.htmlunit.FailingHttpStatusCodeException;
+import org.htmlunit.HttpMethod;
+import org.htmlunit.Page;
+import org.htmlunit.TextPage;
+import org.htmlunit.WebRequest;
+import org.htmlunit.WebResponse;
+import org.htmlunit.html.HtmlPage;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -699,6 +704,19 @@ public class JenkinsTest {
         public void handle(Socket socket) throws IOException, InterruptedException {
             throw new IOException("This is a mock agent protocol. It cannot be used for connection");
         }
+    }
+
+    @Test
+    public void getComputers() throws Exception {
+        List<Slave> agents = new ArrayList<>();
+        for (String n : List.of("zestful", "bilking", "grouchiest")) {
+            agents.add(j.createSlave(n, null, null));
+        }
+        for (Slave agent : agents) {
+            j.waitOnline(agent);
+        }
+        assertThat(Stream.of(j.jenkins.getComputers()).map(Computer::getName).toArray(String[]::new),
+            arrayContaining("", "bilking", "grouchiest", "zestful"));
     }
 
     @Issue("JENKINS-42577")

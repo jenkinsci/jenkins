@@ -1986,12 +1986,6 @@ Element.Methods = {
     return element;
   },
 
-  remove: function(element) {
-    element = $(element);
-    element.parentNode.removeChild(element);
-    return element;
-  },
-
   update: (function(){
 
     var SELECT_ELEMENT_INNERHTML_BUGGY = (function(){

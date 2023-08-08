@@ -23,7 +23,7 @@ THE SOFTWARE.
 -->
 
 <!--
-  <%@ attribute name="job" required="true" type="hudson.model.Job" %>
+  <%@ attribute name="job" use="required" type="hudson.model.Job" %>
   <%@ attribute name="iconSizeClass" type="java.lang.String" %>
   <%@ attribute name="iconSize" type="java.lang.String" %>
   <%@ attribute name="td" required="false" type="java.lang.String" %>

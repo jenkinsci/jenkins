@@ -35,7 +35,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
-import com.gargoylesoftware.htmlunit.xml.XmlPage;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -45,6 +44,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import jenkins.model.Jenkins;
+import org.htmlunit.xml.XmlPage;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.FailureBuilder;
@@ -183,7 +183,7 @@ public class RSSTest {
     public void checkWithSingleBuild_Rss_All_Computer() throws Exception {
         runSuccessfulBuild();
 
-        String pathPrefix = "manage/computer/(built-in)/";
+        String pathPrefix = "computer/(built-in)/";
         String displayName = Messages.Hudson_Computer_DisplayName();
         String buildType = ALL_BUILD_TYPE;
         String buildTitle = STABLE_BUILD_TITLE;
@@ -195,7 +195,7 @@ public class RSSTest {
     public void checkWithSingleBuild_Rss_Failed_Computer() throws Exception {
         runFailingBuild();
 
-        String pathPrefix = "manage/computer/(built-in)/";
+        String pathPrefix = "computer/(built-in)/";
         String displayName = Messages.Hudson_Computer_DisplayName();
         String buildType = FAILED_BUILD_TYPE;
         String buildTitle = FAILED_BUILD_TITLE;
@@ -205,7 +205,7 @@ public class RSSTest {
 
     @Test
     public void latestBuilds_Computer() throws Exception {
-        String pathPrefix = "manage/computer/(built-in)/";
+        String pathPrefix = "computer/(built-in)/";
         String displayName = Messages.Hudson_Computer_DisplayName();
         String buildType = LATEST_BUILD_TYPE;
         int expectedLinks = 3;

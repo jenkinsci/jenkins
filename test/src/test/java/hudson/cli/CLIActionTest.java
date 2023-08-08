@@ -38,7 +38,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.NullInputStream;
 import org.apache.commons.io.output.CountingOutputStream;
-import org.apache.commons.io.output.NullOutputStream;
 import org.apache.commons.io.output.TeeOutputStream;
 import org.junit.Rule;
 import org.junit.Test;
@@ -104,7 +103,7 @@ public class CLIActionTest {
     private static final String ADMIN = "admin@mycorp.com";
 
     private void assertExitCode(int code, boolean useApiToken, File jar, String... args) throws IOException, InterruptedException {
-        List<String> commands = new ArrayList<>(Arrays.asList("java", "-jar", jar.getAbsolutePath(), "-s", j.getURL().toString(), /* TODO until it is the default */ "-webSocket"));
+        List<String> commands = new ArrayList<>(Arrays.asList("java", "-jar", jar.getAbsolutePath(), "-s", j.getURL().toString()));
         if (useApiToken) {
             commands.add("-auth");
             commands.add(ADMIN + ":" + User.getOrCreateByIdOrFullName(ADMIN).getProperty(ApiTokenProperty.class).getApiToken());
@@ -140,7 +139,6 @@ public class CLIActionTest {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         assertEquals(0, new Launcher.LocalLauncher(StreamTaskListener.fromStderr()).launch().cmds(
             "java", "-Dfile.encoding=ISO-8859-2", "-Duser.language=cs", "-Duser.country=CZ", "-jar", jar.getAbsolutePath(),
-                "-webSocket", // TODO as above
                 "-s", j.getURL().toString()./* just checking */replaceFirst("/$", ""), "test-diagnostic").
             stdout(baos).stderr(System.err).join());
         assertEquals("encoding=ISO-8859-2 locale=cs_CZ", baos.toString(Charset.forName("ISO-8859-2")).trim());
@@ -160,7 +158,6 @@ public class CLIActionTest {
         PrintWriter pw = new PrintWriter(new OutputStreamWriter(new TeeOutputStream(pos, System.err), Charset.defaultCharset()), true);
         Proc proc = new Launcher.LocalLauncher(StreamTaskListener.fromStderr()).launch().cmds(
             "java", "-jar", jar.getAbsolutePath(), "-s", j.getURL().toString(),
-                "-webSocket", // TODO as above
                 "groovysh").
             stdout(new TeeOutputStream(baos, System.out)).stderr(System.err).stdin(pis).start();
         while (!baos.toString(Charset.defaultCharset()).contains("000")) { // cannot just search for, say, "groovy:000> " since there are ANSI escapes there (cf. StringEscapeUtils.escapeJava)
@@ -225,17 +222,18 @@ public class CLIActionTest {
         logging.record(CLIAction.class, Level.FINE);
         File jar = tmp.newFile("jenkins-cli.jar");
         FileUtils.copyURLToFile(j.jenkins.getJnlpJars("jenkins-cli.jar").getURL(), jar);
-        CountingOutputStream cos = new CountingOutputStream(NullOutputStream.NULL_OUTPUT_STREAM);
         long size = /*999_*/999_999;
-        // Download:
-        assertEquals(0, new Launcher.LocalLauncher(StreamTaskListener.fromStderr()).launch().cmds(
-            "java", "-jar", jar.getAbsolutePath(),
-                "-webSocket",
-                "-s", j.getURL().toString(),
-                "large-download",
-                "-size", Long.toString(size)).
-            stdout(cos).stderr(System.err).join());
-        assertEquals(size, cos.getByteCount());
+        try (OutputStream nos = OutputStream.nullOutputStream(); CountingOutputStream cos = new CountingOutputStream(nos)) {
+            // Download:
+            assertEquals(0, new Launcher.LocalLauncher(StreamTaskListener.fromStderr()).launch().cmds(
+                "java", "-jar", jar.getAbsolutePath(),
+                    "-webSocket",
+                    "-s", j.getURL().toString(),
+                    "large-download",
+                    "-size", Long.toString(size)).
+                stdout(cos).stderr(System.err).join());
+            assertEquals(size, cos.getByteCount());
+        }
         // Upload:
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         assertEquals(0, new Launcher.LocalLauncher(StreamTaskListener.fromStderr()).launch().cmds(
@@ -252,7 +250,7 @@ public class CLIActionTest {
     public static final class LargeUploadCommand extends CLICommand {
         @Override
         protected int run() throws Exception {
-            try (InputStream is = new BufferedInputStream(stdin); CountingOutputStream cos = new CountingOutputStream(NullOutputStream.NULL_OUTPUT_STREAM)) {
+            try (InputStream is = new BufferedInputStream(stdin); OutputStream nos = OutputStream.nullOutputStream(); CountingOutputStream cos = new CountingOutputStream(nos)) {
                 System.err.println("starting upload");
                 long start = System.nanoTime();
                 IOUtils.copyLarge(is, cos);
