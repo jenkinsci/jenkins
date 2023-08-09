@@ -1,6 +1,7 @@
+// prettier-ignore
 window["lib_hudson_project_configurable_build_now_callback"] = function (
   el,
-  ev,
+  ev
 ) {
   let parameterized = el.dataset.parameterized;
   let success = el.dataset.buildSuccess;
