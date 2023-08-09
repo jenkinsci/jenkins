@@ -78,9 +78,15 @@ THE SOFTWARE.
       (since 1.512)
     </st:attribute>
     <st:attribute name="onclick" deprecated="true">
-      Onclick inline JS handler. Deprecated, specify data-callback attribute with the name of a global function instead.
-      It will be called with the 'a' element as first argument, and event as second argument.
-      You can specify further data-* attributes to customize behavior.
+      Onclick inline JS handler. Deprecated, specify data-callback attribute instead.
+    </st:attribute>
+    <st:attribute name="data-callback" since="TODO">
+      Name of a global function to call when clicked.
+      It will be called with an element (currently 'a') as first argument, and the event as second argument.
+      You can specify further data-* attributes to customize behavior, those will be defined on the element passed as first argument.
+      Has no effect if you specify the 'requiresConfirmation' attribute.
+      Has no effect on menu items showing in context menus, only 'href', 'post', and 'requiresConfirmation' attributes substantially change behavior there.
+      Set 'contextMenu' to 'false' to remove this task from those menus.
     </st:attribute>
     <st:attribute name="badge">
       If set, displays the value as a small badge on the right side of the sidepanel item.
