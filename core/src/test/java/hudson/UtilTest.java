@@ -28,6 +28,7 @@ package hudson;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.startsWith;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -53,7 +54,6 @@ import java.nio.file.Paths;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
@@ -742,8 +742,7 @@ public class UtilTest {
         byte[] expected = new byte[]
                 { 19, 79, -17, -67, 50, -103, -122, 114, 100, 7, -91, 32, -127, 7, -17, 7, -55, -29, 61, -89, 121, -11,
                 6, -117, -1, 25, 23, 51, 38, -113, -23, -105};
-        boolean isSame = Arrays.equals(sha256DigestActual, expected);
-        assertEquals(isSame, true);
+        assertArrayEquals(expected, sha256DigestActual);
     }
 
     public static class BaseClass {
