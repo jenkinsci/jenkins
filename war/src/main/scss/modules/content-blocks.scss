@@ -44,7 +44,7 @@
   @include mixins.link-dark;
 
   &:focus {
-    outline-color: var(--focus);
+    outline-color: var(--focus-input-border);
   }
 
   .trailing-icon .svg-icon {
