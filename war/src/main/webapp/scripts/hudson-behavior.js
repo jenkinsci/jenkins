@@ -441,12 +441,18 @@ function qs(owner) {
 // @deprecated Use standard javascript method `e.closest(tagName)` instead
 // eslint-disable-next-line no-unused-vars
 function findAncestor(e, tagName) {
+  console.warn(
+    "Deprecated call to findAncestor - use standard javascript method `e.closest(tagName)` instead",
+  );
   return e.closest(tagName);
 }
 
 // @deprecated Use standard javascript method `e.closest(className)` instead
 // eslint-disable-next-line no-unused-vars
 function findAncestorClass(e, cssClass) {
+  console.warn(
+    "Deprecated call to findAncestorClass - use standard javascript method `e.closest(className)` instead",
+  );
   return e.closest("." + cssClass);
 }
 
