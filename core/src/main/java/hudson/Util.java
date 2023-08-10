@@ -1928,9 +1928,7 @@ public class Util {
         return PathRemover.newFilteredRobustRemover(pathChecker, DELETION_RETRIES, GC_AFTER_FAILED_DELETE, WAIT_BETWEEN_DELETION_RETRIES);
     }
 
-    private static final String GET_FIPS_MODE = ".FIPS_MODE";
-
-    public static boolean isFipsMode() {
-      return SystemProperties.getBoolean(Util.class.getName() + GET_FIPS_MODE);
-    }
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL")
+    @Restricted(NoExternalUse.class)
+    public static boolean FIPS_MODE = SystemProperties.getBoolean(Util.class.getName() + ".FIPS_MODE");
 }

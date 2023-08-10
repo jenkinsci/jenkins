@@ -894,7 +894,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     /**
      * {@link PasswordHashEncoder} that uses jBCrypt.
      */
-    private static class JBCryptEncoder implements PasswordHashEncoder {
+    public static class JBCryptEncoder implements PasswordHashEncoder {
         // in jBCrypt the maximum is 30, which takes ~22h with laptop late-2017
         // and for 18, it's "only" 20s
         @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
@@ -933,7 +933,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         }
     }
 
-    private static class PBKDF2PasswordEncoder implements PasswordHashEncoder {
+    public static class PBKDF2PasswordEncoder implements PasswordHashEncoder {
 
         public static final int HASH_LENGTH = 8;
         public static final int ZERO = 0;
@@ -941,7 +941,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
 
         public static final int RADIX_LENGTH = 16;
         public static final String STRING_SEPARATION = ":";
-        public static final int ITERATION_COUNT = 1000;
+
         public static final int KEY_LENGTH = 512;
         public static final String PBKDF2_ALGORITHM = "PBKDF2WithHmacSHA512";
 
@@ -955,12 +955,16 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
                 return validatePassword(rawPassword.toString(), encodedPassword);
         }
 
+        @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
+        @Restricted(NoExternalUse.class)
+        private static int ITERATION_COUNT = SystemProperties.getInteger(HudsonPrivateSecurityRealm.class.getName() + ".ITERATION_COUNT", 10);
+
         private static String generatePasswordHashWithPBKDF2(CharSequence password)  {
-            int iterations = ITERATION_COUNT;
+            int iterations = (int) Math.pow(2, ITERATION_COUNT);
             byte[] salt = generateSalt();
             PBEKeySpec spec = new PBEKeySpec(password.toString().toCharArray(), salt, iterations, KEY_LENGTH);
             byte[] hash = generateSecretKey(spec);
-            return iterations + STRING_SEPARATION + toHex(salt) + STRING_SEPARATION + toHex(hash);
+            return "$PBKDF2$HMACSHA512:" + iterations + STRING_SEPARATION + toHex(salt) + "$" + toHex(hash);
         }
 
         private static byte[] generateSecretKey(PBEKeySpec spec)  {
@@ -998,17 +1002,33 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
             return salt;
         }
 
+        @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
+        @Restricted(NoExternalUse.class)
+        private static int MAXIMUM_PBKDF2_LOG_ROUND = SystemProperties.getInteger(HudsonPrivateSecurityRealm.class.getName() + ".maximumPBKDF2LogRound", (int) Math.pow(2, 10));
+
+        private static final Pattern PBKDF2_PATTERN = Pattern.compile("^\\$PBKDF2\\$HMACSHA512\\:([0-9]{4})\\:[a-zA-Z0-9=]+\\$[a-zA-Z0-9=]+");
+
         @Override
         public boolean isHashValid(String hash)    {
-             return true;
+            Matcher matcher = PBKDF2_PATTERN.matcher(hash);
+            if (matcher.matches()) {
+                String logNumOfRound = matcher.group(1);
+                // no number format exception due to the expression
+                int logNumOfRoundInt = Integer.parseInt(logNumOfRound);
+                if (logNumOfRoundInt > 0 && logNumOfRoundInt <= MAXIMUM_PBKDF2_LOG_ROUND) {
+                    return true;
+                }
+            }
+            return false;
         }
 
-        private static boolean validatePassword(String originalPassword, String storedPassword) {
-            String[] parts = storedPassword.split(STRING_SEPARATION);
-            int iterations = Integer.parseInt(parts[0]);
 
-            byte[] salt = fromHex(parts[1]);
-            byte[] hash = fromHex(parts[2]);
+        private static boolean validatePassword(String originalPassword, String storedPassword) {
+            String[] parts = storedPassword.split("[:$]");
+            int iterations = Integer.parseInt(parts[3]);
+
+            byte[] salt = fromHex(parts[4]);
+            byte[] hash = fromHex(parts[5]);
 
             PBEKeySpec spec = new PBEKeySpec(originalPassword.toCharArray(),
                     salt, iterations, hash.length * HASH_LENGTH);
@@ -1034,7 +1054,13 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
 
     }
 
-    /* package */ static final PasswordHashEncoder PASSWORD_HASH_ENCODER =  Util.isFipsMode() ? new PBKDF2PasswordEncoder() : new JBCryptEncoder();
+
+
+    /* package */ static final PasswordHashEncoder PASSWORD_HASH_ENCODER = getPasswordHashEncoder();
+
+    public static PasswordHashEncoder getPasswordHashEncoder() {
+        return Util.FIPS_MODE ? new PBKDF2PasswordEncoder() : new JBCryptEncoder();
+    }
 
 
     public static final String PBKDF2 = "#pbkdf2:";
@@ -1042,7 +1068,13 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     /**
      * Magic header used to detect if a password is hashed.
      */
-    private static final String PASSWORD_HASH_HEADER = Util.isFipsMode() ? PBKDF2 : JBCRYPT;
+
+    // private static String PASSWORD_HASH_HEADER = getPasswordHeader();
+
+
+    public static String getPasswordHeader() {
+        return Util.FIPS_MODE ? PBKDF2 : JBCRYPT;
+    }
 
     /* package */
 
@@ -1062,13 +1094,15 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
 
         @Override
         public String encode(CharSequence rawPassword) {
-            return PASSWORD_HASH_HEADER + PASSWORD_HASH_ENCODER.encode(rawPassword);
+            //LOGGER.info("FIPS MODE ENABLED :");
+           // LOGGER.info("Implementation :" + PASSWORD_HASH_ENCODER);
+            return getPasswordHeader() + PASSWORD_HASH_ENCODER.encode(rawPassword);
         }
 
         @Override
         public boolean matches(CharSequence rawPassword, String encPass) {
             if (isPasswordHashed(encPass)) {
-                return PASSWORD_HASH_ENCODER.matches(rawPassword, encPass.substring(PASSWORD_HASH_HEADER.length()));
+                return PASSWORD_HASH_ENCODER.matches(rawPassword, encPass.substring(getPasswordHeader().length()));
             } else {
                 return false;
             }
@@ -1082,10 +1116,11 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
             if (password == null) {
                 return false;
             }
-                return password.startsWith(PASSWORD_HASH_HEADER) && PASSWORD_HASH_ENCODER.isHashValid(password.substring(PASSWORD_HASH_HEADER.length()));
+                return password.startsWith(getPasswordHeader()) && PASSWORD_HASH_ENCODER.isHashValid(password.substring(getPasswordHeader().length()));
         }
 
     }
+
 
     public static final MultiPasswordEncoder PASSWORD_ENCODER = new MultiPasswordEncoder();
 
