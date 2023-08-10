@@ -2025,7 +2025,6 @@ function updateOptionalBlock(c) {
   if (c.name == "hudson-tools-InstallSourceProperty") {
     // Hack to hide tool home when "Install automatically" is checked.
     var homeField = findPreviousFormItem(c, "home");
-
     if (homeField != null && homeField.value == "") {
       const formItem = homeField.closest(".jenkins-form-item");
       if (formItem != null) {
