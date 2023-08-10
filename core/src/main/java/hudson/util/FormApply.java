@@ -24,8 +24,10 @@
 
 package hudson.util;
 
+import hudson.Functions;
 import java.io.IOException;
 import javax.servlet.ServletException;
+import jenkins.model.Jenkins;
 import org.kohsuke.stapler.HttpResponses.HttpResponseException;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -50,7 +52,7 @@ public class FormApply {
             public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
                 if (isApply(req)) {
                     // if the submission is via 'apply', show a response in the notification bar
-                    applyResponse("notificationBar.show('" + Messages.HttpResponses_Saved() + "',notificationBar.SUCCESS)")
+                    applyResponse(Messages.HttpResponses_Saved(), "SUCCESS")
                             .generateResponse(req, rsp, node);
                 } else {
                     rsp.sendRedirect(destination);
@@ -67,23 +69,19 @@ public class FormApply {
     }
 
     /**
-     * Generates the response for the asynchronous background form submission (AKA the Apply button.)
-     * <p>
-     * When the response HTML includes a JavaScript function in a pre-determined name, that function gets executed.
-     * This method generates such a response from JavaScript text.
+     * Generates the response for the asynchronous background form submission (AKA the Apply button),
+     * that will show a notification of certain type and with provided message. Supported notification types
+     * are {@code SUCCESS}, {@code WARNING} and {@code ERROR}.
      */
-    public static HttpResponseException applyResponse(final String script) {
+    public static HttpResponseException applyResponse(final String message, final String notificationType) {
         return new HttpResponseException() {
             @Override
-            public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
+            public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException {
                 rsp.setContentType("text/html;charset=UTF-8");
-                rsp.getWriter().println("<html><body><script>" +
-                        "window.applyCompletionHandler = function (w) {" +
-                        "  with(w) {" +
-                        script +
-                        "  }" +
-                        "};" +
-                        "</script></body></html>");
+                rsp.getWriter().println("<html><body>" +
+                        "<script id='form-apply-callback' data-message='" + Functions.htmlAttributeEscape(message) + "' " +
+                        "data-notification-type='" + Functions.htmlAttributeEscape(notificationType) + "' " +
+                        "src='" + req.getContextPath() + Jenkins.RESOURCE_PATH + "/scripts/apply.js" + "'></script></body></html>");
             }
         };
     }
