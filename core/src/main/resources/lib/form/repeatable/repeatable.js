@@ -125,7 +125,7 @@ var repeatableSupport = {
 
   // called when 'delete' button is clicked
   onDelete: function (n) {
-    n = findAncestorClass(n, "repeated-chunk");
+    n = n.closest(".repeated-chunk");
     var a = new YAHOO.util.Anim(
       n,
       {
