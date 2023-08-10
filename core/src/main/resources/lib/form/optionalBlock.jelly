@@ -85,7 +85,7 @@ THE SOFTWARE.
           <d:invokeBody />
         </div>
         <!-- end marker -->
-        <div class="tr ${attrs.inline?'':'row-set-end'} rowvg-end optional-block-end row-group-end"></div>
+        <div class="tr ${attrs.inline?'':'row-set-end'} rowvg-end optional-block-end"></div>
       </div>
     </j:when>
 

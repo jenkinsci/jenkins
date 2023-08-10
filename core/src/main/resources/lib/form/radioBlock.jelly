@@ -82,6 +82,6 @@ THE SOFTWARE.
       <d:invokeBody />
     </div>
     <!-- end marker -->
-    <div class="tr ${attrs.inline?'':'row-set-end'} radio-block-end row-group-end" style="display:none"></div>
+    <div class="tr ${attrs.inline?'':'row-set-end'} radio-block-end" style="display:none"></div>
   </div>
 </j:jelly>
