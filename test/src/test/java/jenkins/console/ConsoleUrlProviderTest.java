@@ -24,9 +24,7 @@
 
 package jenkins.console;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.empty;
-import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertEquals;
 
 import hudson.model.Descriptor;
 import hudson.model.FreeStyleBuild;
@@ -36,8 +34,6 @@ import hudson.model.User;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import org.htmlunit.html.DomElement;
-import org.htmlunit.html.HtmlPage;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -102,19 +98,16 @@ public class ConsoleUrlProviderTest {
         assertCustomConsoleUrl(expectedUrl, null, run);
     }
 
-    // Awkward, but we can only call Functions.getConsoleUrl in the context of an HTTP request.
     public void assertCustomConsoleUrl(String expectedUrl, User user, Run<?, ?> run) throws Exception {
         JenkinsRule.WebClient wc = r.createWebClient();
         if (user != null) {
             wc.login(user.getId(), user.getId());
         }
-        HtmlPage page = wc.getPage(run.getParent());
-        DomElement buildHistoryDiv = page.getElementById("buildHistory");
-        assertThat("Console link for " + run + " should be " + expectedUrl,
-                buildHistoryDiv.getByXPath("//a[@href='" + expectedUrl + "']"), not(empty()));
+        String actualUrl = wc.executeOnServer(() -> ConsoleUrlProvider.getRedirectUrl(run));
+        assertEquals(expectedUrl, actualUrl);
     }
 
-    // Like List.of, but avoids JEP-210 class filter warnings.
+    // Like List.of, but avoids JEP-200 class filter warnings.
     private static <T> List<T> list(T... items) {
         return new ArrayList<>(Arrays.asList(items));
     }
