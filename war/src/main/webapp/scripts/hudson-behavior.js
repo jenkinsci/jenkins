@@ -998,7 +998,7 @@ function isInsideRemovable(e) {
  *      if specified, skip the application of behaviour rule.
  */
 function renderOnDemand(e, callback, noBehaviour) {
-  if (!e || !Element.hasClassName(e, "render-on-demand")) {
+  if (!e || !e.classList.contains("render-on-demand")) {
     return;
   }
 
