@@ -28,6 +28,7 @@ package hudson;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.startsWith;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -724,6 +725,24 @@ public class UtilTest {
     public void ifOverriddenFailure() {
         AbstractMethodError error = Assert.assertThrows(AbstractMethodError.class, () -> Util.ifOverridden(() -> true, BaseClass.class, DerivedClassFailure.class, "method"));
         assertEquals("The class " + DerivedClassFailure.class.getName() + " must override at least one of the BaseClass.method methods", error.getMessage());
+    }
+
+    @Test
+    public void testGetHexOfSHA256DigestOf() throws IOException {
+        byte[] input = new byte[] {12, 34, 16};
+        String str = Util.getHexOfSHA256DigestOf(input);
+        assertEquals(str, "134fefbd329986726407a5208107ef07c9e33da779f5068bff191733268fe997");
+    }
+
+    @Test
+    public void testGetSHA256DigestOf() {
+        byte[] input = new byte[] {12, 34, 16};
+        byte[] sha256DigestActual = Util.getSHA256DigestOf(input);
+
+        byte[] expected = new byte[]
+                { 19, 79, -17, -67, 50, -103, -122, 114, 100, 7, -91, 32, -127, 7, -17, 7, -55, -29, 61, -89, 121, -11,
+                6, -117, -1, 25, 23, 51, 38, -113, -23, -105};
+        assertArrayEquals(expected, sha256DigestActual);
     }
 
     public static class BaseClass {
