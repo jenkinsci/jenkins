@@ -26,21 +26,14 @@ package jenkins.slaves.restarter;
 
 import static org.junit.Assert.assertEquals;
 
-import hudson.Proc;
 import hudson.model.Slave;
 import hudson.slaves.DumbSlave;
-import hudson.slaves.JNLPLauncher;
-import hudson.slaves.SlaveComputer;
-import java.io.File;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import jenkins.security.MasterToSlaveCallable;
-import org.apache.commons.io.FileUtils;
-import org.apache.tools.ant.util.JavaEnvUtils;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.jvnet.hudson.test.InboundAgentRule;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsSessionRule;
 import org.jvnet.hudson.test.LoggerRule;
@@ -51,7 +44,7 @@ public class JnlpSlaveRestarterInstallerTest {
     public JenkinsSessionRule rr = new JenkinsSessionRule();
 
     @Rule
-    public TemporaryFolder tmp = new TemporaryFolder();
+    public InboundAgentRule inboundAgents = new InboundAgentRule();
 
     @Rule
     public LoggerRule logging = new LoggerRule().record(JnlpSlaveRestarterInstaller.class, Level.FINE).capture(10);
@@ -69,23 +62,13 @@ public class JnlpSlaveRestarterInstallerTest {
     }
 
     private void reconnection(boolean webSocket) throws Throwable {
-        AtomicReference<Proc> proc = new AtomicReference<>();
         AtomicBoolean canWork = new AtomicBoolean();
-        try {
             rr.then(r -> {
-                JNLPLauncher launcher = new JNLPLauncher(true);
-                launcher.setWebSocket(webSocket);
-                DumbSlave s = new DumbSlave("remote", tmp.newFolder("agent").getAbsolutePath(), launcher);
-                r.jenkins.addNode(s);
-                String secret = ((SlaveComputer) s.toComputer()).getJnlpMac();
-                File slaveJar = tmp.newFile();
-                FileUtils.copyURLToFile(new Slave.JnlpJar("agent.jar").getURL(), slaveJar);
-                proc.set(r.createLocalLauncher().launch().cmds(
-                    JavaEnvUtils.getJreExecutable("java"), "-jar", slaveJar.getAbsolutePath(),
-                    "-jnlpUrl", r.getURL() + "computer/remote/jenkins-agent.jnlp",
-                    "-secret", secret
-                ).stdout(System.out).start());
-                r.waitOnline(s);
+                InboundAgentRule.Options.Builder builder = InboundAgentRule.Options.newBuilder().name("remote").secret();
+                if (webSocket) {
+                    builder.webSocket();
+                }
+                Slave s = inboundAgents.createAgent(r, builder.build());
                 assertEquals(1, s.getChannel().call(new JVMCount()).intValue());
                 while (logging.getMessages().stream().noneMatch(msg -> msg.contains("Effective SlaveRestarter on remote:"))) {
                     Thread.sleep(100);
@@ -96,13 +79,12 @@ public class JnlpSlaveRestarterInstallerTest {
             rr.then(r -> {
                 DumbSlave s = (DumbSlave) r.jenkins.getNode("remote");
                 r.waitOnline(s);
-                assertEquals(canWork.get() ? 1 : 2, s.getChannel().call(new JVMCount()).intValue());
+                try {
+                    assertEquals(canWork.get() ? 1 : 2, s.getChannel().call(new JVMCount()).intValue());
+                } finally {
+                    inboundAgents.stop(r, s.getNodeName());
+                }
             });
-        } finally {
-            if (proc.get() != null) {
-                proc.get().kill();
-            }
-        }
     }
 
     private static final class JVMCount extends MasterToSlaveCallable<Integer, RuntimeException> {

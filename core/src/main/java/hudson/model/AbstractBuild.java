@@ -210,7 +210,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P, R>, R extends A
      *      null, for example if the agent that this build run no longer exists.
      */
     public @CheckForNull Node getBuiltOn() {
-        if (builtOn == null || builtOn.equals(""))
+        if (builtOn == null || builtOn.isEmpty())
             return Jenkins.get();
         else
             return Jenkins.get().getNode(builtOn);
@@ -273,7 +273,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P, R>, R extends A
      * {@link #getDisplayName()}.
      * @deprecated navigation through a hierarchy should be done through breadcrumbs, do not add a link using this method
      */
-    @Deprecated(since = "TODO")
+    @Deprecated(since = "2.364")
     public String getUpUrl() {
         return Functions.getNearestAncestorUrl(Stapler.getCurrentRequest(), getParent()) + '/';
     }

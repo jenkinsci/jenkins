@@ -26,7 +26,7 @@ THE SOFTWARE.
   TODO: support @checkUrl
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:d="jelly:define" xmlns:f="/lib/form" xmlns:st="jelly:stapler">
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
   <st:documentation>
     A single-line textbox that can be expanded into a multi-line textarea.
 
@@ -44,15 +44,17 @@ THE SOFTWARE.
     <st:attribute name="field">
       Used for databinding. TBD.
     </st:attribute>
-    <st:attribute name="name">
-      This becomes @name of the &lt;input> tag.
+    <st:attribute name="name"> <![CDATA[
+      This becomes @name of the <input> tag.
       If @field is specified, this value is inferred from it.
+    ]]>
     </st:attribute>
-    <st:attribute name="value">
-      The initial value of the field. This becomes the @value of the &lt;input> tag.
+    <st:attribute name="value"> <![CDATA[
+      The initial value of the field. This becomes the @value of the <input> tag.
       If @field is specified, the current property from the "instance" object
       will be set as the initial value automatically,
       which is the recommended approach.
+    ]]>
     </st:attribute>
   </st:documentation>
   <f:prepareDatabinding />
@@ -63,6 +65,7 @@ THE SOFTWARE.
       <f:textarea name='${attrs.name}' value="${value}" field="${attrs.field}"/>
     </j:when>
     <j:otherwise>
+      <st:adjunct includes="lib.form.expandableTextbox.expandableTextbox"/>
       <!-- single line textbox with expand button -->
       <f:possibleReadOnlyField>
         <div class="expanding-input">
@@ -76,8 +79,8 @@ THE SOFTWARE.
             </j:if>
           </div>
           <div class="expanding-input__button">
-            <input type="button" value="&#x25BC;" onclick="expandTextArea(this,'textarea.${h.jsStringEscape(name)}')"
-                   tooltip="${%tooltip}"/>
+            <button type="button" class="jenkins-button jenkins-!-margin-left-1"
+                    tooltip="${%tooltip}"><l:icon src="symbol-chevron-down"/></button>
           </div>
         </div>
       </f:possibleReadOnlyField>

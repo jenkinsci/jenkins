@@ -27,16 +27,17 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <l:layout permission="${app.ADMINISTER}" title="${%Thread dump}">
-    <st:include page="sidepanel.jelly" />
-
+  <l:layout permission="${app.ADMINISTER}" title="${%threadDump}" type="one-column">
+    <f:breadcrumb-config-outline title="${%threadDump}" />
     <l:main-panel>
-      <h1>${%Thread Dump}</h1>
+      <h1>${%threadDumpTitle}</h1>
       <j:set var="tdumps" value="${it.getAllThreadDumps()}"/>
 
       <j:forEach var="e" items="${tdumps.entrySet()}">
         <j:if test="${e.key != null and e.key.length() > 0}">
-          <a href="#id${e.key.hashCode()}"><l:icon class="icon-computer icon-sm" style="margin-left:10px;"/> ${e.key}</a>
+          <a href="#id${e.key.hashCode()}" class="jenkins-link--with-icon" style="margin-left:10px;"><l:icon class="icon-sm" src="symbol-computer" />
+            <span style="margin-left: 4px;">${e.key}</span>
+          </a>
         </j:if>
       </j:forEach>
 
@@ -46,11 +47,14 @@ THE SOFTWARE.
         </j:if>
         <j:if test="${e.key != null and e.key.length() > 0}">
           <h1 id="id${e.key.hashCode()}">
-            <l:icon class="icon-computer icon-lg"/> <a class="model-link inside" href="/computer/${e.key}">${e.key}</a>
+            <l:icon class="symbol-computer icon-lg"/> <a class="model-link inside" href="${rootURL}/computer/${e.key}">${e.key}</a>
           </h1>
         </j:if>
         <j:forEach var="t" items="${e.value.entrySet()}">
-          <h2>${t.key}</h2>
+          <h2>
+            ${t.key}
+            <l:copyButton message="${%successfullyCopied}" tooltip="${%clickToCopy}" text="${t.value}"/>
+          </h2>
           <pre>${t.value}</pre>
         </j:forEach>
       </j:forEach>

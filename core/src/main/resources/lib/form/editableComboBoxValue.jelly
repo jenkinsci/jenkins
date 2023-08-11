@@ -24,9 +24,10 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
-  <st:documentation>
-    Used inside &lt;f:editableComboBox/> to specify one value of a combobox.
+  <st:documentation> <![CDATA[
+    Used inside <f:editableComboBox/> to specify one value of a combobox.
     Normally one would use multiple values.
+    ]]>
     <st:attribute name="value" use="required" />
   </st:documentation>
   <div value="${value}"/>

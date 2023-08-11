@@ -24,48 +24,45 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:i="jelly:fmt" xmlns:x="jelly:xml">
-  <st:documentation>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout">
+  <st:documentation> <![CDATA[
     Generates the bar that shows breadcrumbs, along with its associated dynamic behaviours.
     This tag is used by l:layout and not expected to be used by anyone else,
     but it's written as separate tag for better readability of code.
 
     To render additional breadcrumb items (for example to provide in-page navigations),
-    use the &lt;l:breadcrumb> tag.
+    use the <l:breadcrumb> tag.
+    ]]>
   </st:documentation>
 
-  <st:adjunct includes="lib.layout.breadcrumbs" />
+  <j:set var="contents" trim="true">
+    <d:invokeBody />
+  </j:set>
 
-  <div class="top-sticker noedge">
-    <div class="top-sticker-inner">
-      <div class="jenkins-breadcrumbs">
-        <ul id="breadcrumbs">
-          <j:forEach var="anc" items="${request.ancestors}">
-            <j:if test="${h.isModel(anc.object) and anc.prev.url!=anc.url}">
-              <j:set var="mode" value="breadcrumbs" />
-              <l:breadcrumb title="${anc.object == app ? '%Dashboard' : anc.object.displayName}"
-                            href="${anc.url}/"
-                            hasMenu="${h.isModelWithContextMenu(anc.object)}" />
-              <j:choose>
-                <j:when test="${h.isModelWithChildren(anc.object)}">
-                  <li class="children" href="${anc.url}/">
-                    <!-- shows '>' for rendering children -->
-                  </li>
-                </j:when>
-                <j:otherwise>
-                  <li class="separator">
-                  </li>
-                </j:otherwise>
-              </j:choose>
-            </j:if>
-          </j:forEach>
+  <div id="breadcrumbBar" class="jenkins-breadcrumbs" aria-label="breadcrumb">
+    <ol class="jenkins-breadcrumbs__list" id="breadcrumbs">
+      <j:forEach var="anc" items="${request.ancestors}" indexVar="index">
+        <j:if test="${h.isModel(anc.object) and anc.prev.url!=anc.url}">
+          <j:set var="mode" value="breadcrumbs" />
+          <l:breadcrumb title="${anc.object == app ? '%Dashboard' : anc.object.displayName}"
+                        href="${anc.url}/"
+                        hasMenu="${h.isModelWithContextMenu(anc.object)}" />
+          <j:choose>
+            <j:when test="${h.isModelWithChildren(anc.object)}">
+              <li class="children" data-href="${anc.url}/">
+                <!-- shows '>' for rendering children -->
+              </li>
+            </j:when>
+            <j:otherwise>
+              <li class="separator">
+              </li>
+            </j:otherwise>
+          </j:choose>
+        </j:if>
+      </j:forEach>
 
-          <!-- render additional breadcrumb items -->
-          <d:invokeBody />
-        </ul>
-
-        <div id="breadcrumb-menu-target"/><!-- this is where the menu gets rendered -->
-      </div>
-    </div>
+      <!-- render additional breadcrumb items -->
+      <j:out value="${contents}" />
+    </ol>
   </div>
 </j:jelly>

@@ -24,10 +24,12 @@
 
 package hudson.util;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import com.thoughtworks.xstream.security.InputManipulationException;
 import java.time.Instant;
@@ -82,16 +84,12 @@ public class RobustCollectionConverterTest {
 
         xstream2.setCollectionUpdateLimit(3);
         final String xml = xstream2.toXML(set);
-        try {
-            xstream2.fromXML(xml);
-            fail("Thrown " + CriticalXStreamException.class.getName() + " expected");
-        } catch (final CriticalXStreamException e) {
-            Throwable cause = e.getCause();
-            assertNotNull("A non-null cause of CriticalXStreamException is expected", cause);
-            assertTrue("Cause of CriticalXStreamException is expected to be InputManipulationException", cause instanceof InputManipulationException);
-            InputManipulationException ime = (InputManipulationException) cause;
-            assertTrue("Limit expected in message", ime.getMessage().contains("exceeds 3 seconds"));
-        }
+        CriticalXStreamException e = assertThrows(CriticalXStreamException.class, () -> xstream2.fromXML(xml));
+        Throwable cause = e.getCause();
+        assertNotNull(cause);
+        assertThat(cause, instanceOf(InputManipulationException.class));
+        InputManipulationException ime = (InputManipulationException) cause;
+        assertTrue("Limit expected in message", ime.getMessage().contains("exceeds 3 seconds"));
     }
 
     @Test(timeout = 30 * 1000)
@@ -106,16 +104,12 @@ public class RobustCollectionConverterTest {
             Set<Object> set = preparePayload();
 
             final String xml = xstream2.toXML(set);
-            try {
-                xstream2.fromXML(xml);
-                fail("Thrown " + CriticalXStreamException.class.getName() + " expected");
-            } catch (final CriticalXStreamException e) {
-                Throwable cause = e.getCause();
-                assertNotNull("A non-null cause of CriticalXStreamException is expected", cause);
-                assertTrue("Cause of CriticalXStreamException is expected to be InputManipulationException", cause instanceof InputManipulationException);
-                InputManipulationException ime = (InputManipulationException) cause;
-                assertTrue("Limit expected in message", ime.getMessage().contains("exceeds 4 seconds"));
-            }
+            CriticalXStreamException e = assertThrows(CriticalXStreamException.class, () -> xstream2.fromXML(xml));
+            Throwable cause = e.getCause();
+            assertNotNull(cause);
+            assertThat(cause, instanceOf(InputManipulationException.class));
+            InputManipulationException ime = (InputManipulationException) cause;
+            assertTrue("Limit expected in message", ime.getMessage().contains("exceeds 4 seconds"));
         } finally {
             if (currentValue == null) {
                 System.clearProperty(XStream2.COLLECTION_UPDATE_LIMIT_PROPERTY_NAME);
@@ -134,16 +128,12 @@ public class RobustCollectionConverterTest {
         Set<Object> set = preparePayload();
 
         final String xml = xstream2.toXML(set);
-        try {
-            xstream2.fromXML(xml);
-            fail("Thrown " + CriticalXStreamException.class.getName() + " expected");
-        } catch (final CriticalXStreamException e) {
-            Throwable cause = e.getCause();
-            assertNotNull("A non-null cause of CriticalXStreamException is expected", cause);
-            assertTrue("Cause of CriticalXStreamException is expected to be InputManipulationException", cause instanceof InputManipulationException);
-            InputManipulationException ime = (InputManipulationException) cause;
-            assertTrue("Limit expected in message", ime.getMessage().contains("exceeds 5 seconds"));
-        }
+        CriticalXStreamException e = assertThrows(CriticalXStreamException.class, () -> xstream2.fromXML(xml));
+        Throwable cause = e.getCause();
+        assertNotNull(cause);
+        assertThat(cause, instanceOf(InputManipulationException.class));
+        InputManipulationException ime = (InputManipulationException) cause;
+        assertTrue("Limit expected in message", ime.getMessage().contains("exceeds 5 seconds"));
     }
 
     // Inspired by https://github.com/x-stream/xstream/commit/e8e88621ba1c85ac3b8620337dd672e0c0c3a846#diff-9fde4ecf1bb4dc9850c031cb161960d2e61e069b386fa0b3db0d57e0e9f5baa

@@ -26,12 +26,12 @@ THE SOFTWARE.
   Create a new LogRecorder
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:f="/lib/form">
-  <l:layout title="${%New log recorder}">
-    <st:include page="sidepanel.jelly" />
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:f="/lib/form">
+  <l:layout title="${%New log recorder}" type="one-column">
+    <l:breadcrumb title="${%New log recorder}" />
 
-    <l:app-bar title="${%New log recorder}"/>
     <l:main-panel>
+      <l:app-bar title="${%New log recorder}"/>
       <f:form name="configSubmit" method="post" action="newLogRecorder">
         <f:entry title="${%Name}">
           <f:textbox name="name" checkDependsOn="name" checkUrl="checkNewName" />

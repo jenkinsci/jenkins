@@ -22,10 +22,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:i="jelly:fmt" xmlns:x="jelly:xml">
-  <st:documentation>
-    Used inside &lt;l:layout> to render additional breadcrumb items.
-
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
+  <st:documentation> <![CDATA[
+    Used inside <l:layout> to render additional breadcrumb items.
+    ]]>
     <st:attribute name="title" use="required">
       Display name of the breadcrumb.
     </st:attribute>
@@ -38,14 +38,15 @@ THE SOFTWARE.
     </st:attribute>
     <st:attribute name="hasMenu">
       If true, this breadcrumb item will include a '⌄' symbol to display a dropdown menu with items
-      from the '{breadcrumb.href}/contextMenu' path. Since TODO
+      from the '{breadcrumb.href}/contextMenu' path. Since 2.361.
     </st:attribute>
   </st:documentation>
 
   <j:if test="${mode=='breadcrumbs'}">
-    <li id="${attrs.id}" class="item">
+    <j:set var="hasLink" value="${attrs.href != null}" />
+    <li id="${attrs.id}" class="jenkins-breadcrumbs__list-item" aria-current="${hasLink ? null : 'page'}">
       <j:choose>
-        <j:when test="${attrs.href == null}">
+        <j:when test="${!hasLink}">
           ${attrs.title}
         </j:when>
         <j:otherwise>

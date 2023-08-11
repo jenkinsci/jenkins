@@ -44,7 +44,7 @@ THE SOFTWARE.
           <j:set var="spanStyle" value="${it.recurse?'':'display:none'}"/>
         </j:if>
         <span class="${spanClass}" style="${spanStyle}">
-          <f:checkbox name="${job.getRelativeNameFromGroup(it.ownerItemGroup)}" checked="${it.jobNamesContains(job)}" title="${h.getRelativeDisplayNameFrom(job,it.ownerItemGroup)}" tooltip="${job.fullName}" json="true"/>
+          <f:checkbox name="item_${job.getRelativeNameFromGroup(it.ownerItemGroup)}" checked="${it.jobNamesContains(job)}" title="${h.getRelativeDisplayNameFrom(job,it.ownerItemGroup)}" tooltip="${job.fullName}" json="true"/>
           <br/>
         </span>
       </j:forEach>

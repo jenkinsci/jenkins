@@ -24,17 +24,13 @@
 
 package jenkins.security.stapler;
 
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import com.cloudbees.hudson.plugins.folder.computed.FolderCron;
-import com.gargoylesoftware.htmlunit.HttpMethod;
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.WebRequest;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.AsyncPeriodicWork;
@@ -49,6 +45,7 @@ import hudson.model.queue.QueueTaskFuture;
 import hudson.security.FullControlOnceLoggedInAuthorizationStrategy;
 import hudson.security.HudsonPrivateSecurityRealm;
 import hudson.tasks.Builder;
+import hudson.triggers.Trigger;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -58,6 +55,9 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import jenkins.model.Jenkins;
+import org.htmlunit.HttpMethod;
+import org.htmlunit.Page;
+import org.htmlunit.WebRequest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -136,12 +136,11 @@ public class Security400Test {
         }
     }
 
-    // require a dependency on cloudbees-folder-plugin
     @Test
     @Issue("SECURITY-397")
     // particular case of SECURITY-391
-    public void folderCronDoRun() throws Exception {
-        j.createWebClient().assertFails("extensionList/" + PeriodicWork.class.getName() + "/" + FolderCron.class.getName() + "/run", HttpURLConnection.HTTP_NOT_FOUND);
+    public void triggerCronDoRun() throws Exception {
+        j.createWebClient().assertFails("extensionList/" + PeriodicWork.class.getName() + "/" + Trigger.Cron.class.getName() + "/run", HttpURLConnection.HTTP_NOT_FOUND);
         assertRequestWasBlockedAndResetFlag();
     }
 

@@ -7,7 +7,6 @@ import java.io.RandomAccessFile;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 import org.junit.Assume;
 import org.junit.Rule;
@@ -71,13 +70,6 @@ public class ZipArchiverTest {
             ZipEntry zipEntry = zipFileVerify.entries().nextElement();
             assertEquals("huge64bitFileTest.txt", zipEntry.getName());
             assertEquals(length, zipEntry.getSize());
-        } catch (ZipException e) {
-            if (e.getMessage().contains("invalid CEN header (bad signature)")) {
-                // Probably running on OpenJDK 8 and hitting JDK-8186464
-                Assume.assumeNoException(e);
-            } else {
-                throw e;
-            }
         }
     }
 }

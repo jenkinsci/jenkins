@@ -38,14 +38,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
-import com.gargoylesoftware.htmlunit.HttpMethod;
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.html.HtmlPasswordInput;
-import com.gargoylesoftware.htmlunit.util.Cookie;
-import com.gargoylesoftware.htmlunit.util.NameValuePair;
-import com.gargoylesoftware.htmlunit.xml.XmlPage;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionList;
 import hudson.model.User;
@@ -60,9 +52,17 @@ import java.util.Collections;
 import java.util.List;
 import jenkins.security.ApiTokenProperty;
 import jenkins.security.SecurityListener;
-import jenkins.security.apitoken.ApiTokenTestHelper;
+import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
 import jenkins.security.seed.UserSeedProperty;
 import org.apache.commons.lang.StringUtils;
+import org.htmlunit.HttpMethod;
+import org.htmlunit.WebRequest;
+import org.htmlunit.html.HtmlForm;
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.html.HtmlPasswordInput;
+import org.htmlunit.util.Cookie;
+import org.htmlunit.util.NameValuePair;
+import org.htmlunit.xml.XmlPage;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -143,7 +143,8 @@ public class HudsonPrivateSecurityRealmTest {
     @Issue("SECURITY-243")
     @Test
     public void fullNameCollisionToken() throws Exception {
-        ApiTokenTestHelper.enableLegacyBehavior();
+        ApiTokenPropertyConfiguration config = ApiTokenPropertyConfiguration.get();
+        config.setTokenGenerationOnCreationEnabled(true);
 
         HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
         j.jenkins.setSecurityRealm(securityRealm);
@@ -374,11 +375,11 @@ public class HudsonPrivateSecurityRealmTest {
                 .findFirst()
                 .orElseThrow(() -> new AssertionError("Form must be present"));
 
-        form.getInputByName("username").setValueAttribute(login);
-        form.getInputByName("password1").setValueAttribute(login);
-        form.getInputByName("password2").setValueAttribute(login);
-        form.getInputByName("fullname").setValueAttribute(StringUtils.capitalize(login));
-        form.getInputByName("email").setValueAttribute(login + "@" + login + ".com");
+        form.getInputByName("username").setValue(login);
+        form.getInputByName("password1").setValue(login);
+        form.getInputByName("password2").setValue(login);
+        form.getInputByName("fullname").setValue(StringUtils.capitalize(login));
+        form.getInputByName("email").setValue(login + "@" + login + ".com");
 
         HtmlPage p = j.submit(form);
         assertEquals(200, p.getWebResponse().getStatusCode());

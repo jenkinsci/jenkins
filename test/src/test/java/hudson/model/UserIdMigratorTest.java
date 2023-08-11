@@ -24,8 +24,8 @@
 
 package hudson.model;
 
-import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -52,7 +52,7 @@ public class UserIdMigratorTest {
         assertThat(fred.getFullName(), is("Fred Smith"));
         User legacyUser = User.getById("foo/bar", false);
         assertThat(legacyUser.getFullName(), is("Foo Bar"));
-        User oldLegacyUser = User.getById("zzz\u1000", false);
+        User oldLegacyUser = User.getById("zzzက", false);
         assertThat(oldLegacyUser.getFullName(), is("Old Legacy"));
     }
 

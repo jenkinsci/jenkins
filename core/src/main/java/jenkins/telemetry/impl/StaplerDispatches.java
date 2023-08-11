@@ -66,7 +66,7 @@ public class StaplerDispatches extends Telemetry {
 
     @Override
     public JSONObject createContent() {
-        if (traces.size() == 0) {
+        if (traces.isEmpty()) {
             return null;
         }
         Map<String, Object> info = new TreeMap<>();

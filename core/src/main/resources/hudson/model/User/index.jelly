@@ -25,10 +25,11 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <l:layout title="${it.displayName}">
     <st:include page="sidepanel.jelly" />
+    <!-- no need for additional breadcrumb here as we're on an index page already including breadcrumb -->
     <l:main-panel>
       <h1>
         <span class="icon-lg">
-          <l:icon src="${h.getUserAvatar(user,'48x48')}" />
+          <l:icon src="${h.getUserAvatar(it, '48x48')}" />
         </span>
         ${it.fullName}
       </h1>
