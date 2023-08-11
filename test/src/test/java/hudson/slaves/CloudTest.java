@@ -11,6 +11,7 @@ import static org.junit.Assert.assertTrue;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.Action;
 import hudson.model.Computer;
+import hudson.model.Descriptor;
 import hudson.model.Label;
 import hudson.security.Permission;
 import hudson.security.SidACL;
@@ -21,13 +22,16 @@ import java.util.Collections;
 import jenkins.model.Jenkins;
 import jenkins.model.TransientActionFactory;
 import org.acegisecurity.acls.sid.Sid;
+import org.htmlunit.html.HtmlForm;
 import org.htmlunit.html.HtmlPage;
+import org.htmlunit.html.HtmlTextInput;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.WithoutJenkins;
+import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerResponse;
 
 public class CloudTest {
@@ -85,9 +89,22 @@ public class CloudTest {
         assertEquals("Cloud name is encoded in Cloud#getUrl", "cloud/..%2F..%2Fgibberish/", aCloud.getUrl());
     }
 
+    @Test
+    public void changeCloudName() throws Exception {
+        ACloud aCloud = new ACloud("a", "0");
+        j.jenkins.clouds.add(aCloud);
+        HtmlForm form = j.createWebClient().goTo(aCloud.getUrl() + "configure").getFormByName("config");
+        HtmlTextInput input = form.getInputByName("_.name");
+        input.setText("b");
+        j.submit(form);
+        ACloud actual = j.jenkins.clouds.get(ACloud.class);
+        assertEquals("b", actual.getDisplayName());
+    }
+
     public static final class ACloud extends AbstractCloudImpl {
 
-        protected ACloud(String name, String instanceCapStr) {
+        @DataBoundConstructor
+        public ACloud(String name, String instanceCapStr) {
             super(name, instanceCapStr);
         }
 
@@ -97,6 +114,10 @@ public class CloudTest {
 
         @Override public boolean canProvision(Label label) {
             return false;
+        }
+
+        @TestExtension
+        public static class DescriptorImpl extends Descriptor<Cloud> {
         }
     }
 
