@@ -23,18 +23,23 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:x="jelly:xml">
   <st:documentation>
     <st:attribute name="title" use="required">
       The title for the application bar
     </st:attribute>
+    <st:attribute name="headingLevel">
+      Defaults to h1
+    </st:attribute>
     Generates a row containing the page title and an optional set of controls
   </st:documentation>
 
-  <j:if test="${mode=='app-bar'}">
+  <j:if test="${mode=='main-panel' or mode=='side-panel'}">
     <div class="jenkins-app-bar">
       <div class="jenkins-app-bar__content">
-        <h1>${title}</h1>
+        <x:element name="${headingLevel ?: 'h1'}">
+          ${title}
+        </x:element>
       </div>
       <div class="jenkins-app-bar__controls">
         <d:invokeBody/>

@@ -53,7 +53,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.ObjectStreamException;
 import java.io.RandomAccessFile;
 import java.io.Serializable;
@@ -75,7 +74,6 @@ import java.util.logging.Logger;
 import jenkins.agents.AgentComputerUtil;
 import jenkins.security.SlaveToMasterCallable;
 import jenkins.util.SystemProperties;
-import org.apache.commons.io.FileUtils;
 import org.jenkinsci.remoting.SerializableOnlyOverRemoting;
 import org.jvnet.winp.WinProcess;
 import org.jvnet.winp.WinpException;
@@ -453,7 +451,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                 Thread.interrupted(); // Clear the interrupt flag and just accept that no known vetoers exist.
             }
             catch (Exception e) {
-                LOGGER.log(Level.WARNING, "Error while determining if vetoers exist", e);
+                LOGGER.log(Level.FINE, "Error while determining if vetoers exist", e);
             }
         }
 
@@ -476,7 +474,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
             if (os.equals("FreeBSD"))
                 return new FreeBSD(vetoes);
         } catch (LinkageError e) {
-            LOGGER.log(Level.WARNING, "Failed to load winp. Reverting to the default", e);
+            LOGGER.log(Level.FINE, "Failed to load OS-specific implementation; reverting to the default", e);
             enabled = false;
         }
 
@@ -914,7 +912,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                     return arguments;
                 arguments = new ArrayList<>();
                 try {
-                    byte[] cmdline = readFileToByteArray(getFile("cmdline"));
+                    byte[] cmdline = Files.readAllBytes(Util.fileToPath(getFile("cmdline")));
                     int pos = 0;
                     for (int i = 0; i < cmdline.length; i++) {
                         byte b = cmdline[i];
@@ -938,7 +936,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                     return envVars;
                 envVars = new EnvVars();
                 try {
-                    byte[] environ = readFileToByteArray(getFile("environ"));
+                    byte[] environ = Files.readAllBytes(Util.fileToPath(getFile("environ")));
                     int pos = 0;
                     for (int i = 0; i < environ.length; i++) {
                         byte b = environ[i];
@@ -952,12 +950,6 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
                     // so don't report this as an error.
                 }
                 return envVars;
-            }
-        }
-
-        public byte[] readFileToByteArray(File file) throws IOException {
-            try (InputStream in = FileUtils.openInputStream(file)) {
-                return org.apache.commons.io.IOUtils.toByteArray(in);
             }
         }
     }

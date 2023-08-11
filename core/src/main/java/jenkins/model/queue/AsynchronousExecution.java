@@ -45,7 +45,8 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  * Special means of indicating that an executable will proceed in the background without consuming a native thread ({@link Executor}).
  * May be thrown from {@link Executable#run} after doing any preparatory work synchronously.
  * <p>{@link Executor#isActive} will remain true (even though {@link Executor#isAlive} is not) until {@link #completed} is called.
- * The thrower will need to hold on to a reference to this instance as a handle to call {@link #completed}.
+ * The thrower could hold on to a reference to this instance as a handle to call {@link #completed},
+ * or look it up later via {@link Executor#getAsynchronousExecution}.
  * <p>The execution may not extend into another Jenkins session; if you wish to model a long-running execution, you must schedule a new task after restart.
  * This class is not serializable anyway.
  * <p>Mainly intended for use with {@link OneOffExecutor} (from a {@link FlyweightTask}), of which there could be many,

@@ -39,12 +39,6 @@ import jenkins.security.NotReallyRoleSensitiveCallable;
  * Controls mutual exclusion of {@link ResourceList}.
  * @author Kohsuke Kawaguchi
  */
-@SuppressFBWarnings(
-        value = {
-            "THROWS_METHOD_THROWS_CLAUSE_BASIC_EXCEPTION",
-            "THROWS_METHOD_THROWS_CLAUSE_THROWABLE"
-        },
-        justification = "TODO needs triage")
 public class ResourceController {
     /**
      * {@link ResourceList}s that are used by activities that are in progress.

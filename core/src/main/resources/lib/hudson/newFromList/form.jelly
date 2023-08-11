@@ -23,11 +23,11 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
-  <st:documentation>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:s="/lib/form">
+  <st:documentation> <![CDATA[
     Generates a form for creating something out of descriptors by (1) selecting a descriptor and specifying a name.
-    This also presents a copy option. This should be placed inside &lt;l:main-panel>.
-
+    This also presents a copy option. This should be placed inside <l:main-panel>.
+    ]]>
     <st:attribute name="action">
       Specify where the form will be submitted to. Defaults to 'createItem'.
     </st:attribute>
@@ -85,7 +85,7 @@ THE SOFTWARE.
 
         <j:if test="${!empty(attrs.copyNames) or attrs.showCopyOption}">
           <div class="jenkins-radio">
-            <input class="jenkins-radio__input mode-selection" type="radio" id="copy" name="mode" value="copy"  />
+            <input class="jenkins-radio__input mode-selection" type="radio" id="copy" name="mode" value="copy" />
             <label class="jenkins-radio__label" for="copy">${attrs.copyTitle}</label>
             <div class="jenkins-radio__children">
               <j:set var="descriptor" value="${it.descriptor}" />
@@ -101,15 +101,15 @@ THE SOFTWARE.
       </fieldset>
     </div>
 
-    <div class="jenkins-form-item">
+    <s:bottomButtonBar>
       <!--
         when there's only one radio above, form.elements['mode]' won't return an array, which makes the script complex.
         So always force non-empty array
        -->
       <input type="radio" name="mode" value="dummy1" style="display:none" />
       <input type="radio" name="mode" value="dummy2" style="display:none" />
-      <input type="submit" name="Submit" value="${%Create}" id="ok" />
-    </div>
+      <s:submit value="${%Create}" id="ok"  />
+    </s:bottomButtonBar>
 
     <st:adjunct includes="lib.hudson.newFromList.validation" />
   </s:form>

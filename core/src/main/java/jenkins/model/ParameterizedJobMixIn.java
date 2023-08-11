@@ -49,7 +49,6 @@ import hudson.model.listeners.ItemListener;
 import hudson.model.queue.QueueTaskFuture;
 import hudson.search.SearchIndexBuilder;
 import hudson.triggers.Trigger;
-import hudson.triggers.TriggerDescriptor;
 import hudson.util.AlternativeUiTextProvider;
 import hudson.views.BuildButtonColumn;
 import java.io.IOException;
@@ -57,11 +56,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import javax.servlet.ServletException;
 import jenkins.model.lazy.LazyBuildMixIn;
 import jenkins.triggers.SCMTriggerItem;
+import jenkins.triggers.TriggeredItem;
 import jenkins.util.TimeDuration;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
@@ -321,7 +320,7 @@ public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & Param
     /**
      * Marker for job using this mixin, and default implementations of many methods.
      */
-    public interface ParameterizedJob<JobT extends Job<JobT, RunT> & ParameterizedJobMixIn.ParameterizedJob<JobT, RunT> & Queue.Task, RunT extends Run<JobT, RunT> & Queue.Executable> extends BuildableItem {
+    public interface ParameterizedJob<JobT extends Job<JobT, RunT> & ParameterizedJobMixIn.ParameterizedJob<JobT, RunT> & Queue.Task, RunT extends Run<JobT, RunT> & Queue.Executable> extends BuildableItem, TriggeredItem {
 
         /**
          * Used for CLI binding.
@@ -372,14 +371,6 @@ public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & Param
         default String getBuildNowText() {
             return getParameterizedJobMixIn().getBuildNowText();
         }
-
-        /**
-         * Gets currently configured triggers.
-         * You may use {@code <p:config-trigger/>} to configure them.
-         * @return a map from trigger kind to instance
-         * @see #getTrigger
-         */
-        Map<TriggerDescriptor, Trigger<?>> getTriggers();
 
         @Override
         default boolean scheduleBuild(Cause c) {

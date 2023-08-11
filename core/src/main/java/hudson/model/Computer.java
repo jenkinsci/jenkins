@@ -60,6 +60,7 @@ import hudson.slaves.OfflineCause;
 import hudson.slaves.OfflineCause.ByCLI;
 import hudson.slaves.RetentionStrategy;
 import hudson.slaves.WorkspaceList;
+import hudson.triggers.SafeTimerTask;
 import hudson.util.DaemonThreadFactory;
 import hudson.util.EditDistance;
 import hudson.util.ExceptionCatchingThreadFactory;
@@ -106,8 +107,10 @@ import jenkins.security.ImpersonatingExecutorService;
 import jenkins.security.MasterToSlaveCallable;
 import jenkins.security.stapler.StaplerDispatchable;
 import jenkins.util.ContextResettingExecutorService;
+import jenkins.util.ErrorLoggingExecutorService;
 import jenkins.util.Listeners;
 import jenkins.util.SystemProperties;
+import jenkins.widgets.HasWidgets;
 import net.jcip.annotations.GuardedBy;
 import org.apache.commons.lang.StringUtils;
 import org.jenkins.ui.icon.Icon;
@@ -158,7 +161,7 @@ import org.kohsuke.stapler.verb.POST;
  * @author Kohsuke Kawaguchi
  */
 @ExportedBean
-public /*transient*/ abstract class Computer extends Actionable implements AccessControlled, ExecutorListener, DescriptorByNameOwner, StaplerProxy {
+public /*transient*/ abstract class Computer extends Actionable implements AccessControlled, ExecutorListener, DescriptorByNameOwner, StaplerProxy, HasWidgets {
 
     private final CopyOnWriteArrayList<Executor> executors = new CopyOnWriteArrayList<>();
     // TODO:
@@ -312,7 +315,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * @since 1.613
      */
     protected @NonNull File getLogDir() {
-        File dir = new File(Jenkins.get().getRootDir(), "logs/slaves/" + nodeName);
+        File dir = new File(SafeTimerTask.getLogsRoot(), "slaves/" + nodeName);
         synchronized (logDirLock) {
             try {
                 IOUtils.mkdirs(dir);
@@ -773,10 +776,6 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     }
 
     public String getUrl() {
-        if (Jenkins.get().hasAnyPermission(Jenkins.MANAGE, Jenkins.SYSTEM_READ)) {
-            return "manage/computer/" + Util.fullEncode(getName()) + "/";
-        }
-
         return "computer/" + Util.fullEncode(getName()) + "/";
     }
 
@@ -1362,10 +1361,11 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
 
     public static final ExecutorService threadPoolForRemoting = new ContextResettingExecutorService(
         new ImpersonatingExecutorService(
-            Executors.newCachedThreadPool(
-                new ExceptionCatchingThreadFactory(
-                    new NamingThreadFactory(
-                        new DaemonThreadFactory(), "Computer.threadPoolForRemoting"))), ACL.SYSTEM2));
+            new ErrorLoggingExecutorService(
+                Executors.newCachedThreadPool(
+                    new ExceptionCatchingThreadFactory(
+                        new NamingThreadFactory(
+                            new DaemonThreadFactory(), "Computer.threadPoolForRemoting")))), ACL.SYSTEM2));
 
 //
 //

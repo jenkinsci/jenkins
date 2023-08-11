@@ -27,7 +27,6 @@ package hudson.triggers;
 
 import static java.util.logging.Level.WARNING;
 
-import antlr.ANTLRException;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -110,7 +109,7 @@ public class SCMTrigger extends Trigger<Item> {
     private boolean ignorePostCommitHooks;
 
     @DataBoundConstructor
-    public SCMTrigger(String scmpoll_spec) throws ANTLRException {
+    public SCMTrigger(String scmpoll_spec) {
         super(scmpoll_spec);
     }
 
@@ -125,7 +124,7 @@ public class SCMTrigger extends Trigger<Item> {
      * @deprecated since 2.21
      */
     @Deprecated
-    public SCMTrigger(String scmpoll_spec, boolean ignorePostCommitHooks) throws ANTLRException {
+    public SCMTrigger(String scmpoll_spec, boolean ignorePostCommitHooks) {
         super(scmpoll_spec);
         this.ignorePostCommitHooks = ignorePostCommitHooks;
     }

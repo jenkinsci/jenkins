@@ -22,66 +22,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:st="jelly:stapler">
 
   <l:layout norefresh="true" type="full-screen" title="${it.displayName}">
     <l:main-panel>
-      <style type="text/css">
-        #configure-instance {
-          padding: 20px 100px 20px 100px;
-          margin: 8px;
-        }
-
-        #configure-instance form > div {
-          margin: 0 !important;
-        }
-
-        #configure-instance h1 {
-          font-size: 48px;
-          margin-top: 30px;
-          font-weight: 500;
-        }
-
-        #configure-instance tr td {
-          padding-bottom: 2px;
-        }
-
-        #configure-instance tr td, #configure-instance input {
-          line-height: 25px;
-          margin-bottom: 6px;
-        }
-
-        #configure-instance input[type=text], #configure-instance input[type=password] {
-          border: 1px solid #ddd;
-          border-radius: 2px;
-          padding: 1px 8px;
-        }
-
-        #configure-instance tr.has-error label{
-          color: #CC0000;
-        }
-        
-        #configure-instance tr.has-error td input[type=text], 
-        #configure-instance tr.has-error td input[type=password],
-        #configure-instance tr.has-error td textarea {
-          border-color: #CC0000;
-          background-color: #fdeaea;
-        }
-        
-        #configure-instance tr td .help-text{
-          color: #999;
-          font-size: 12px;
-        }
-  
-        #configure-instance tr td .error-panel{
-          display: none;
-        }
-        #configure-instance tr.has-error td .error-panel{
-          display: block;
-        }
-      </style>
-
-     <div id="configure-instance">
+     <div class="configure-instance setup-wizard-heading">
        <form action="${rootURL}/setupWizard/configureInstance" method="post">
           <h1>${%Instance Configuration}</h1>
           <div style="margin: 2em;">
@@ -89,7 +34,7 @@ THE SOFTWARE.
             <tr>
               <td><label for="root-url">${%Jenkins URL}:</label></td>
               <td>
-                <input type="text" name="rootUrl" id="root-url" class="root-url" value="" />
+                <input type="text" name="rootUrl" id="root-url" class="jenkins-input" value="" />
                 <div class="error-panel error" />
               </td>
             </tr>
@@ -100,27 +45,7 @@ THE SOFTWARE.
             </tr>
             </table>
           </div>
-         <script>
-            var rootUrlField = $('root-url');
-            
-            rootUrlField.focus();
-            rootUrlField.onkeydown = function(event) {
-                if (event.keyCode == 13){
-                    event.preventDefault();
-                }
-            };
-
-            (function setInitialRootUrlFieldValue(){
-              var iframeUrl = window.location.href;
-              // will let the trailing slash in the rootUrl 
-              var iframeRelativeUrl = 'setupWizard/setupWizardConfigureInstance';
-              var rootUrl = iframeUrl.substr(0, iframeUrl.length - iframeRelativeUrl.length);
-              // to keep only the root url
-              rootUrlField.value = rootUrl
-              // to adjust the width of the input,
-              rootUrlField.size = Math.min(50, rootUrl.length);
-            })();
-          </script>
+         <st:adjunct includes="jenkins.install.SetupWizard.setInitialRootUrlFieldValue"/>
         </form>
      </div>
     </l:main-panel>

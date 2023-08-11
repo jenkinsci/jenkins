@@ -38,7 +38,7 @@ THE SOFTWARE.
   <div>
     <j:choose>
       <j:when test="${it.totalCount==0}">
-        ${%No tests}
+        ${%noTests}
       </j:when>
       <j:otherwise>
         <div>

@@ -48,7 +48,7 @@ import java.io.ObjectInputStream;
  * href="https://www.jenkins.io/doc/developer/plugin-development/dependencies-and-class-loading/#context-class-loaders">the
  * developer documentation</a> for more information.
  *
- * @since TODO
+ * @since 2.362
  */
 public final class SetContextClassLoader implements AutoCloseable {
 
@@ -59,7 +59,7 @@ public final class SetContextClassLoader implements AutoCloseable {
      * Change the {@link Thread#getContextClassLoader} associated with the current thread to that of
      * the calling class.
      *
-     * @since TODO
+     * @since 2.362
      */
     public SetContextClassLoader() {
         this(StackWalker.getInstance().getCallerClass());
@@ -70,7 +70,7 @@ public final class SetContextClassLoader implements AutoCloseable {
      * the specified class.
      *
      * @param clazz The {@link Class} whose {@link ClassLoader} to use.
-     * @since TODO
+     * @since 2.362
      */
     public SetContextClassLoader(Class<?> clazz) {
         this(clazz.getClassLoader());
@@ -81,7 +81,7 @@ public final class SetContextClassLoader implements AutoCloseable {
      * specified {@link ClassLoader}.
      *
      * @param cl The {@link ClassLoader} to use.
-     * @since TODO
+     * @since 2.362
      */
     public SetContextClassLoader(ClassLoader cl) {
         t = Thread.currentThread();

@@ -26,6 +26,7 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <l:layout permission="${app.READ}">
     <st:include page="sidepanel.jelly" it="${app}"/>
+    <l:breadcrumb title="${command.name}" />
     <l:main-panel>
       <h1>
         Command ${command.name}

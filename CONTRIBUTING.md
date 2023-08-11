@@ -14,7 +14,7 @@ This page provides information about contributing code to the Jenkins core codeb
    - Apache Maven 3.8.1 or above. You can [download Maven here](https://maven.apache.org/download.cgi).
      In the Jenkins project we usually use the most recent Maven release.
    - Any IDE which supports importing Maven projects.
-   - Install [NodeJS 16.x](https://nodejs.org/en/). **Note:** only needed to work on the frontend assets found in the `war` module.
+   - Install [Node.js 18.x](https://nodejs.org/en/). **Note:** only needed to work on the frontend assets found in the `war` module.
      - Frontend tasks are run using [yarn](https://yarnpkg.com/). Run `npm install -g yarn` to install it.
 4. Set up your development environment as described in [Preparing for Plugin Development](https://www.jenkins.io/doc/developer/tutorial/prepare/)
 
@@ -73,6 +73,25 @@ You can use IntelliJ IDEA (preferred) or VS Code (alternate) in the browser.
 
 If you prefer using IntelliJ IDEA, you can setup Gitpod integration with JetBrains Gateway using the instructions on [gitpod.io](https://www.gitpod.io/docs/ides-and-editors/intellij),
 which will open the workspace in IntelliJ IDEA using JetBrains Gateway.
+
+### Linting
+
+For linting we use a number of tools:
+
+- [checkstyle](https://checkstyle.sourceforge.io/)
+- [eslint](https://eslint.org/)
+- [prettier](https://prettier.io/)
+- [spotless](https://github.com/diffplug/spotless)
+- [stylelint](https://stylelint.io/)
+
+These are all configured to run as part of the Maven build, although they will be skipped if you are building with the `quick-build` profile.
+
+To automatically fix most issues run:
+
+```bash
+mvn spotless:apply
+mvn -pl war frontend:yarn -Dfrontend.yarn.arguments=lint:fix
+```
 
 ## Testing changes
 
@@ -185,6 +204,11 @@ Pending the merge and release of this patch, IntelliJ IDEA users should work aro
 2. Under "Pass to JUnit process [the] following `maven-surefire-plugin` and `maven-failsafe-plugin` settings", uncheck `argLine`.
 
 Failure to work around the problem as described above will result in a `could not open '{jenkins.addOpens}'` failure when running tests in IntelliJ IDEA.
+
+### Code formatting for frontend files
+
+Install the [Prettier plugin](https://www.jetbrains.com/help/idea/prettier.html).
+Follow the instructions on the above JetBrains page to configure it how you wish. 'On code reformatting' is a good option.
 
 ## Copyright
 

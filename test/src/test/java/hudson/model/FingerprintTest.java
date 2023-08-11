@@ -27,20 +27,17 @@ package hudson.model;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
-import static org.hamcrest.core.Is.is;
-import static org.hamcrest.core.IsNot.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.WebRequest;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Util;
@@ -69,7 +66,9 @@ import java.util.logging.Level;
 import jenkins.fingerprints.FileFingerprintStorage;
 import jenkins.model.FingerprintFacet;
 import jenkins.model.Jenkins;
-import org.hamcrest.Matchers;
+import org.htmlunit.FailingHttpStatusCodeException;
+import org.htmlunit.Page;
+import org.htmlunit.WebRequest;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -193,13 +192,8 @@ public class FingerprintTest {
     public void shouldThrowIOExceptionWhenFileIsInvalid() throws Exception {
         XmlFile f = new XmlFile(new File(rule.jenkins.getRootDir(), "foo.xml"));
         f.write("Hello, world!");
-        try {
-            FileFingerprintStorage.load(f.getFile());
-        } catch (IOException ex) {
-            assertThat(ex.getMessage(), containsString("Unexpected Fingerprint type"));
-            return;
-        }
-        fail("Expected IOException");
+        IOException e = assertThrows(IOException.class, () -> FileFingerprintStorage.load(f.getFile()));
+        assertThat(e.getMessage(), containsString("Unexpected Fingerprint type"));
     }
 
     @Test
@@ -591,7 +585,7 @@ public class FingerprintTest {
         if (page != null) {
             // content retrieval occurred before the correction, we have to check the content to ensure non-regression
             String pageContent = page.getWebResponse().getContentAsString();
-            assertThat(pageContent, Matchers.not(containsString(TEST_FINGERPRINT_ID)));
+            assertThat(pageContent, not(containsString(TEST_FINGERPRINT_ID)));
         }
         assertTrue(targetFile.exists());
     }

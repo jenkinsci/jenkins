@@ -31,21 +31,21 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.xml.HasXPath.hasXPath;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertThrows;
 
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
-import com.gargoylesoftware.htmlunit.HttpMethod;
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.html.HtmlSpan;
-import com.gargoylesoftware.htmlunit.util.NameValuePair;
-import com.gargoylesoftware.htmlunit.xml.XmlPage;
 import hudson.model.User;
 import java.net.URL;
 import java.util.List;
 import jenkins.security.ApiTokenProperty;
 import net.sf.json.JSONObject;
+import org.htmlunit.FailingHttpStatusCodeException;
+import org.htmlunit.HttpMethod;
+import org.htmlunit.Page;
+import org.htmlunit.WebRequest;
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.html.HtmlSpan;
+import org.htmlunit.util.NameValuePair;
+import org.htmlunit.xml.XmlPage;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -126,12 +126,8 @@ public class ApiTokenStatsTest {
     }
 
     private void checkUserIsNotConnected(WebClient wc) throws Exception {
-        try {
-            wc.goToXml("whoAmI/api/xml");
-            fail();
-        } catch (FailingHttpStatusCodeException e) {
-            assertEquals(401, e.getStatusCode());
-        }
+        FailingHttpStatusCodeException e = assertThrows(FailingHttpStatusCodeException.class, () -> wc.goToXml("whoAmI/api/xml"));
+        assertEquals(401, e.getStatusCode());
     }
 
     private void revokeToken(WebClient wc, String login, String tokenUuid) throws Exception {

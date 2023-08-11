@@ -26,10 +26,11 @@ THE SOFTWARE.
   Publisher config pane
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:p="/lib/hudson/project">
-  <st:documentation>
-    Deprecated as of 1.463. Use &lt;config-publishers2> and update your code to do
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:f="/lib/form">
+  <st:documentation> <![CDATA[
+    Deprecated as of 1.463. Use <config-publishers2> and update your code to do
     publishers.rebuildHetero(req, json, Publisher.all(), "publisher");
+    ]]>
   </st:documentation>
   <f:descriptorList title="${%Post-build Actions}"
                     descriptors="${h.getPublisherDescriptors(it)}"

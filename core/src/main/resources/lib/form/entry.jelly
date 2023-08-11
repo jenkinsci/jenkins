@@ -23,13 +23,13 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <st:documentation>
-    An entry of the &lt;f:form>, which is one logical row (that consists of
-    several &lt;TR> tags.
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:f="/lib/form">
+  <st:documentation> <![CDATA[
+    An entry of the <f:form>, which is one logical row (that consists of
+    several <TR> tags.
 
     One entry normally host one control.
-
+    ]]>
     <st:attribute name="title">
       Name of the entry. Think of this like a label for the control.
 
@@ -54,14 +54,15 @@ THE SOFTWARE.
     <st:attribute name="class">
       Classes to apply to the form item
     </st:attribute>
-    <st:attribute name="help">
+    <st:attribute name="help"> <![CDATA[
       URL to the HTML page. When this attribute is specified, the entry gets
       a (?) icon on the right, and if the user clicks it, the contents of the
       given URL is rendered as a box below the entry.
 
-      The URL should return an HTML document wrapped in a &lt;div> tag.
+      The URL should return an HTML document wrapped in a <div> tag.
       The URL is interpreted to be rooted at the context path of Hudson,
       so it's normally something like "/plugin/foobar/help/abc.html".
+        ]]>
     </st:attribute>
   </st:documentation>
   <j:if test="${attrs.help==null and attrs.field!=null}">

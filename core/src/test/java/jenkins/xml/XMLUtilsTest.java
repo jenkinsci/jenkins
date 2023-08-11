@@ -25,7 +25,7 @@
 package jenkins.xml;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.StringContains.containsString;
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertThrows;
 
 import java.io.File;

@@ -26,8 +26,9 @@
 package hudson.util;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.IsNot.not;
-import static org.hamcrest.core.StringContains.containsString;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
@@ -87,7 +88,7 @@ public class SecretCompatTest {
         assertThat(oldxml, containsString("<defaultValue>z/Dd3qrHdQ6/C5lR7uEafM/jD3nQDrGprw3XsfZ/0vo=</defaultValue>"));
         ParametersDefinitionProperty property = project.getProperty(ParametersDefinitionProperty.class);
         ParameterDefinition definition = property.getParameterDefinitions().get(0);
-        assertTrue(definition instanceof PasswordParameterDefinition);
+        assertThat(definition, instanceOf(PasswordParameterDefinition.class));
         Secret secret = ((PasswordParameterDefinition) definition).getDefaultValueAsSecret();
         assertEquals("theSecret", secret.getPlainText());
 

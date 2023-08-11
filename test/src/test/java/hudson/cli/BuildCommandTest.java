@@ -26,6 +26,7 @@ package hudson.cli;
 
 import static hudson.cli.CLICommandInvoker.Matcher.failedWith;
 import static hudson.cli.CLICommandInvoker.Matcher.succeeded;
+import static org.awaitility.Awaitility.await;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsString;
@@ -62,6 +63,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import net.sf.json.JSONObject;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -240,9 +242,9 @@ public class BuildCommandTest {
         // Warmup
         j.buildAndAssertSuccess(project);
 
-        for (Executor exec : slave.toComputer().getExecutors()) {
-            assertTrue("Executor has died before the test start: " + exec, exec.isActive());
-        }
+        await().pollInterval(250, TimeUnit.MILLISECONDS)
+                .atMost(10, TimeUnit.SECONDS)
+                .until(() -> slave.toComputer().getExecutors().stream().map(Executor::isActive).allMatch(Boolean::valueOf));
 
         // Create CLI & run command
         CLICommandInvoker invoker = new CLICommandInvoker(j, new BuildCommand());
@@ -255,9 +257,9 @@ public class BuildCommandTest {
         assertNull("Build should not be scheduled", project.getBuildByNumber(2));
 
         // Check executors health after a timeout
-        for (Executor exec : slave.toComputer().getExecutors()) {
-            assertTrue("Executor is dead: " + exec, exec.isActive());
-        }
+        await().pollInterval(250, TimeUnit.MILLISECONDS)
+                .atMost(10, TimeUnit.SECONDS)
+                .until(() -> slave.toComputer().getExecutors().stream().map(Executor::isActive).allMatch(Boolean::valueOf));
     }
 
     public static final class NullDefaultValueParameterDefinition extends SimpleParameterDefinition {

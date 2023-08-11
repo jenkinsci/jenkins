@@ -30,6 +30,7 @@ import hudson.FilePath.TarCompression;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Serializable;
+import java.nio.file.OpenOption;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -65,13 +66,14 @@ public abstract class ArchiverFactory implements Serializable {
     public static ArchiverFactory ZIP = new ZipArchiverFactory();
 
     /**
-     * Zip format, without following symlinks.
+     * Zip format, with prefix and optional OpenOptions.
      * @param prefix The portion of file path that will be added at the beginning of the relative path inside the archive.
      *               If non-empty, a trailing forward slash will be enforced.
+     * @param openOptions the options to apply when opening files.
      */
     @Restricted(NoExternalUse.class)
-    public static ArchiverFactory createZipWithoutSymlink(String prefix) {
-        return new ZipWithoutSymLinksArchiverFactory(prefix);
+    public static ArchiverFactory createZipWithPrefix(String prefix, OpenOption... openOptions) {
+        return new ZipArchiverFactory(prefix, openOptions);
     }
 
     private static final class TarArchiverFactory extends ArchiverFactory {
@@ -91,26 +93,23 @@ public abstract class ArchiverFactory implements Serializable {
     }
 
     private static final class ZipArchiverFactory extends ArchiverFactory {
-        @NonNull
-        @Override
-        public Archiver create(OutputStream out) {
-            return new ZipArchiver(out);
-        }
 
-        private static final long serialVersionUID = 1L;
-    }
-
-    private static final class ZipWithoutSymLinksArchiverFactory extends ArchiverFactory {
         private final String prefix;
+        private final OpenOption[] openOptions;
 
-        ZipWithoutSymLinksArchiverFactory(String prefix) {
+        ZipArchiverFactory() {
+            this(null);
+        }
+
+        ZipArchiverFactory(String prefix, OpenOption... openOptions) {
             this.prefix = prefix;
+            this.openOptions = openOptions;
         }
 
         @NonNull
         @Override
         public Archiver create(OutputStream out) {
-            return new ZipArchiver(out, true, prefix);
+            return new ZipArchiver(out, prefix, openOptions);
         }
 
         private static final long serialVersionUID = 1L;

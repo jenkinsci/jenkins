@@ -29,16 +29,15 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assume.assumeTrue;
 
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.WebRequest;
 import hudson.Functions;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import org.htmlunit.Page;
+import org.htmlunit.WebRequest;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.recipes.WithPlugin;
 
 @Issue("SECURITY-914")
 public class Security914Test {
@@ -47,12 +46,11 @@ public class Security914Test {
     public JenkinsRule j = new JenkinsRule();
 
     @Test
-    @WithPlugin("credentials.hpi")
     public void cannotUseInvalidLocale_toTraverseFolder() throws Exception {
         assumeTrue(Functions.isWindows());
 
         assertNotNull(j.getPluginManager().getPlugin("credentials"));
-        j.createWebClient().goTo("plugin/credentials/images/24x24/credentials.png", "image/png");
+        j.createWebClient().goTo("plugin/credentials/images/credentials.svg", "image/svg+xml");
 
         JenkinsRule.WebClient wc = j.createWebClient()
                 .withThrowExceptionOnFailingStatusCode(false);
@@ -68,12 +66,11 @@ public class Security914Test {
     }
 
     @Test
-    @WithPlugin("credentials.hpi")
     public void cannotUseInvalidLocale_toAnyFileInSystem() throws Exception {
         assumeTrue(Functions.isWindows());
 
         assertNotNull(j.getPluginManager().getPlugin("credentials"));
-        j.createWebClient().goTo("plugin/credentials/images/24x24/credentials.png", "image/png");
+        j.createWebClient().goTo("plugin/credentials/images/credentials.svg", "image/svg+xml");
 
         JenkinsRule.WebClient wc = j.createWebClient()
                 .withThrowExceptionOnFailingStatusCode(false);

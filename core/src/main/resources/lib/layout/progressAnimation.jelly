@@ -1,14 +1,15 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
-  <st:documentation>
+  <st:documentation> <![CDATA[
     Display a CSS animation for progressive logging. This tag supersedes spinner.gif and is a drop in replacement:
 
     From
-    {noformat}&lt;img src="${imagesURL}/spinner.gif" alt=""/>{noformat}
+    {noformat}<img src="${imagesURL}/spinner.gif" alt=""/>{noformat}
     to
-    {noformat}&lt;l:progressAnimation/>{noformat}
+    {noformat}<l:progressAnimation/>{noformat}
 
     @since 2.320
+    ]]>
   </st:documentation>
 
 <style>

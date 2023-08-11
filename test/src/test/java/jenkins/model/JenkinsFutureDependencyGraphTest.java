@@ -13,7 +13,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 public class JenkinsFutureDependencyGraphTest {
@@ -94,19 +93,16 @@ public class JenkinsFutureDependencyGraphTest {
 
     private Jenkins mockJenkinsWithControllableDependencyGraph(RebuildDependencyGraphController rebuildDependencyGraphController) {
         Jenkins mockedJenkins = spy(j.jenkins);
-        doAnswer(new Answer<Void>() {
-            @Override
-            public Void answer(InvocationOnMock invocation) throws Throwable {
+        doAnswer((Answer<Void>) invocation -> {
 
-                rebuildDependencyGraphController.increaseNumberOfStartedBuilds();
-                if (!rebuildDependencyGraphController.isLetBuildFinish()) {
-                    // NOOP
-                }
-                invocation.callRealMethod();
-
-                rebuildDependencyGraphController.increaseNumberOfFinishedBuilds();
-                return null;
+            rebuildDependencyGraphController.increaseNumberOfStartedBuilds();
+            if (!rebuildDependencyGraphController.isLetBuildFinish()) {
+                // NOOP
             }
+            invocation.callRealMethod();
+
+            rebuildDependencyGraphController.increaseNumberOfFinishedBuilds();
+            return null;
         }).when(mockedJenkins).rebuildDependencyGraph();
 
         return mockedJenkins;

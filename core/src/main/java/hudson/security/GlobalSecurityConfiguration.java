@@ -92,6 +92,7 @@ public class GlobalSecurityConfiguration extends ManagementLink implements Descr
         return Jenkins.get().isSlaveAgentPortEnforced();
     }
 
+    @NonNull
     public Set<String> getAgentProtocols() {
         return Jenkins.get().getAgentProtocols();
     }

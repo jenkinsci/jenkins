@@ -22,17 +22,19 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<!--
-@deprecated Use a l:confirmationLink directly to /job/*/doDelete.
--->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:f="/lib/form">
+	<st:documentation> <![CDATA[
+		Deprecated. Instead use a <l:confirmationLink/> directly to /job/*/doDelete.
+	]]>
+	</st:documentation>
   <l:layout>
 		<st:include page="sidepanel.jelly" />
+		<l:breadcrumb title="${%Delete}" />
 		<l:main-panel>
 		  <form method="post" action="doDelete">
 		    ${%blurb(it.pronoun, it.displayName)}
-        <f:submit value="${%Yes}" />
+        <f:submit value="${%Yes}" clazz="jenkins-!-destructive-color" />
 		  </form>
 		</l:main-panel>
 	</l:layout>
