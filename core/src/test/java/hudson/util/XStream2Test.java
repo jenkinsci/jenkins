@@ -24,23 +24,29 @@
 
 package hudson.util;
 
-import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.thoughtworks.xstream.XStreamException;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.thoughtworks.xstream.mapper.CannotResolveClassException;
+import hudson.Functions;
 import hudson.model.Result;
 import hudson.model.Run;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.io.StringReader;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -569,5 +575,66 @@ public class XStream2Test {
 
     @XStreamAlias("C-5")
     public static final class C5 {}
+
+    @Issue("JENKINS-69129")
+    @Test
+    public void testEmoji() throws Exception {
+        Bar bar;
+        try (InputStream is = getClass().getResource("XStream2Emoji.xml").openStream()) {
+            bar = (Bar) new XStream2().fromXML(is);
+        }
+        assertEquals("Fox 🦊", bar.s);
+    }
+
+    @Issue("JENKINS-69129")
+    @Test
+    public void testEmojiEscaped() throws Exception {
+        Bar bar;
+        try (InputStream is = getClass().getResource("XStream2EmojiEscaped.xml").openStream()) {
+            bar = (Bar) new XStream2().fromXML(is);
+        }
+        assertEquals("Fox 🦊", bar.s);
+    }
+
+    @Issue("JENKINS-71182")
+    @Test
+    public void writeEmoji() throws Exception {
+        Bar b = new Bar();
+        String text = "Fox 🦊";
+        b.s = text;
+        StringWriter w = new StringWriter();
+        XStream2 xs = new XStream2();
+        xs.toXML(b, w);
+        String xml = w.toString();
+        assertThat(xml, is("<hudson.util.XStream2Test_-Bar>\n  <s>Fox 🦊</s>\n</hudson.util.XStream2Test_-Bar>"));
+        b = (Bar) xs.fromXML(xml);
+        assertEquals(text, b.s);
+    }
+
+    @Issue("JENKINS-71139")
+    @Test
+    public void nullsWithoutEncodingDeclaration() throws Exception {
+        Bar b = new Bar();
+        b.s = "x\u0000y";
+        try {
+            new XStream2().toXML(b, new StringWriter());
+            fail("expected to fail fast; not supported to read either");
+        } catch (RuntimeException x) {
+            assertThat("cause is com.thoughtworks.xstream.io.StreamException: Invalid character 0x0 in XML stream", Functions.printThrowable(x), containsString("0x0"));
+        }
+    }
+
+    @Issue("JENKINS-71139")
+    @Test
+    public void nullsWithEncodingDeclaration() throws Exception {
+        Bar b = new Bar();
+        b.s = "x\u0000y";
+        try {
+            new XStream2().toXMLUTF8(b, new ByteArrayOutputStream());
+            fail("expected to fail fast; not supported to read either");
+        } catch (RuntimeException x) {
+            assertThat("cause is com.thoughtworks.xstream.io.StreamException: Invalid character 0x0 in XML stream", Functions.printThrowable(x), containsString("0x0"));
+        }
+    }
 
 }

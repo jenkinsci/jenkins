@@ -28,8 +28,9 @@ THE SOFTWARE.
   <st:statusCode value="404"/>
   <l:layout>
     <st:include page="sidepanel.jelly" />
+    <l:breadcrumb title="${%Error}" />
     <l:main-panel>
-      <h1><l:icon class="icon-error icon-xlg"/>${%Error: no workspace}</h1>
+      <h1>${%Error: no workspace}</h1>
       <j:choose>
         <j:when test="${it.lastBuild==null}">
           <p>

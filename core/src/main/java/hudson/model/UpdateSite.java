@@ -105,7 +105,6 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
  * @since 1.333
  */
 @ExportedBean
-@SuppressFBWarnings(value = "THROWS_METHOD_THROWS_CLAUSE_BASIC_EXCEPTION", justification = "TODO needs triage")
 public class UpdateSite {
     /**
      * What's the time stamp of data file?
@@ -894,6 +893,13 @@ public class UpdateSite {
         }
     }
 
+    @Restricted(NoExternalUse.class)
+    public enum WarningType {
+        CORE,
+        PLUGIN,
+        UNKNOWN
+    }
+
     /**
      * Represents a warning about a certain component, mostly related to known security issues.
      *
@@ -903,19 +909,13 @@ public class UpdateSite {
      * @since 2.40
      */
     @Restricted(NoExternalUse.class)
-    public static final class Warning {
-
-        public enum Type {
-            CORE,
-            PLUGIN,
-            UNKNOWN
-        }
+    public final class Warning {
 
         /**
          * The type classifier for this warning.
          */
         @NonNull
-        public /* final */ Type type;
+        public /* final */ WarningType type;
 
         /**
          * The globally unique ID of this warning.
@@ -970,9 +970,9 @@ public class UpdateSite {
         @Restricted(NoExternalUse.class)
         public Warning(JSONObject o) {
             try {
-                this.type = Type.valueOf(o.getString("type").toUpperCase(Locale.US));
+                this.type = WarningType.valueOf(o.getString("type").toUpperCase(Locale.US));
             } catch (IllegalArgumentException ex) {
-                this.type = Type.UNKNOWN;
+                this.type = WarningType.UNKNOWN;
             }
             this.id = o.getString("id");
             this.component = Util.intern(o.getString("name"));
@@ -1014,7 +1014,7 @@ public class UpdateSite {
         }
 
         public boolean isPluginWarning(@NonNull String pluginName) {
-            return type == Type.PLUGIN && pluginName.equals(this.component);
+            return type == WarningType.PLUGIN && pluginName.equals(this.component);
         }
 
         /**
@@ -1043,6 +1043,40 @@ public class UpdateSite {
                 case UNKNOWN:
                 default:
                     return false;
+            }
+        }
+
+        /**
+         * Returns whether this warning is fixable by updating the affected component.
+         * @return {@code true} if the warning does not apply to the latest offered version of core or the affected plugin;
+         * {@code false} if it does; and {@code null} when the affected component isn't being offered, or it's a warning
+         * for something other than core or a plugin.
+         */
+        @SuppressFBWarnings(value = "NP_BOOLEAN_RETURN_NULL")
+        public Boolean isFixable() {
+            final Data data = UpdateSite.this.data;
+            if (data == null) {
+                return null;
+            }
+            switch (this.type) {
+                case CORE: {
+                    final Entry core = data.core;
+                    if (core == null) {
+                        return null;
+                    }
+                    final VersionNumber latestCoreVersion = new VersionNumber(core.version);
+                    return !isRelevantToVersion(latestCoreVersion);
+                }
+                case PLUGIN: {
+                    final Entry plugin = data.plugins.get(component);
+                    if (plugin == null) {
+                        return null;
+                    }
+                    final VersionNumber latestCoreVersion = new VersionNumber(plugin.version);
+                    return !isRelevantToVersion(latestCoreVersion);
+                }
+                default:
+                    return null;
             }
         }
 
@@ -1178,13 +1212,6 @@ public class UpdateSite {
         public final Double popularity;
 
         /**
-         * The latest existing version of this plugin. May be different from the version being offered by the
-         * update site, which will result in a notice on the UI.
-         */
-        @Restricted(NoExternalUse.class)
-        public String latest;
-
-        /**
          * Issue trackers associated with this plugin.
          * This list is sorted by preference in descending order, meaning a UI
          * supporting only one issue tracker should reference the first one
@@ -1200,7 +1227,6 @@ public class UpdateSite {
             this.title = get(o, "title");
             this.excerpt = get(o, "excerpt");
             this.compatibleSinceVersion = Util.intern(get(o, "compatibleSinceVersion"));
-            this.latest = get(o, "latest");
             this.requiredCore = Util.intern(get(o, "requiredCore"));
             final String releaseTimestamp = get(o, "releaseTimestamp");
             Date date = null;
@@ -1564,7 +1590,7 @@ public class UpdateSite {
          *      See {@link UpdateCenter#isRestartRequiredForCompletion()}
          */
         public Future<UpdateCenterJob> deploy(boolean dynamicLoad) {
-            return deploy(dynamicLoad, null, null);
+            return deploy(dynamicLoad, null, null, false);
         }
 
         /**
@@ -1580,24 +1606,31 @@ public class UpdateSite {
          *      See {@link UpdateCenter#isRestartRequiredForCompletion()}
          * @param correlationId A correlation ID to be set on the job.
          * @param batch if defined, a list of plugins to add to, which will be started later
+         * @param hasEnabledDependents
+         *      If true, this plugin will be enabled if this plugin is disabled.
+         *      If false, this plugin will remain the current status.
          */
         @Restricted(NoExternalUse.class)
-        public Future<UpdateCenterJob> deploy(boolean dynamicLoad, @CheckForNull UUID correlationId, @CheckForNull List<PluginWrapper> batch) {
+        public Future<UpdateCenterJob> deploy(boolean dynamicLoad, @CheckForNull UUID correlationId, @CheckForNull List<PluginWrapper> batch, boolean hasEnabledDependents) {
             Jenkins.get().checkPermission(Jenkins.ADMINISTER);
             UpdateCenter uc = Jenkins.get().getUpdateCenter();
+            PluginWrapper pw = getInstalled();
             for (Plugin dep : getNeededDependencies()) {
                 UpdateCenter.InstallationJob job = uc.getJob(dep);
                 if (job == null || job.status instanceof UpdateCenter.DownloadJob.Failure) {
                     LOGGER.log(Level.INFO, "Adding dependent install of " + dep.name + " for plugin " + name);
-                    dep.deploy(dynamicLoad, /* UpdateCenterPluginInstallTest.test_installKnownPlugins specifically asks that these not be correlated */ null, batch);
+                    if (pw == null) {
+                        dep.deploy(dynamicLoad, /* UpdateCenterPluginInstallTest.test_installKnownPlugins specifically asks that these not be correlated */ null, batch, true);
+                    } else {
+                        dep.deploy(dynamicLoad, null, batch, pw.isEnabled());
+                    }
                 } else {
                     LOGGER.log(Level.FINE, "Dependent install of {0} for plugin {1} already added, skipping", new Object[] {dep.name, name});
                 }
             }
-            PluginWrapper pw = getInstalled();
             if (pw != null) { // JENKINS-34494 - check for this plugin being disabled
                 Future<UpdateCenterJob> enableJob = null;
-                if (!pw.isEnabled()) {
+                if (!pw.isEnabled() && hasEnabledDependents) {
                     UpdateCenter.EnableJob job = uc.new EnableJob(UpdateSite.this, null, this, dynamicLoad);
                     job.setCorrelationId(correlationId);
                     enableJob = uc.addJob(job);

@@ -87,10 +87,11 @@ function ComboBox(idOrField, callback, config) {
     typeof idOrField == "string"
       ? document.getElementById(idOrField)
       : idOrField;
-  if (typeof this.field == "undefined")
+  if (typeof this.field == "undefined") {
     alert(
-      "You have specified an invalid id for the field you want to turn into a combo box"
+      "You have specified an invalid id for the field you want to turn into a combo box",
     );
+  }
   this.dropdown = document.createElement("div");
   this.isDropdownShowing = false;
   this.oldonsubmit = null;
@@ -120,8 +121,12 @@ function ComboBox(idOrField, callback, config) {
   this.field.onfocus = function () {
     this.comboBox.oldonsubmit = this.form.onsubmit;
     this.form.onsubmit = function () {
-      if (self.isDropdownShowing) return false;
-      if (self.oldonsubmit) self.oldonsubmit.call(this);
+      if (self.isDropdownShowing) {
+        return false;
+      }
+      if (self.oldonsubmit) {
+        self.oldonsubmit.call(this);
+      }
       return true;
     };
     // repopulate and display the dropdown
@@ -148,10 +153,14 @@ function ComboBox(idOrField, callback, config) {
  * @param e The event object on Mozilla browsers, null on IE
  */
 ComboBox.onKeyDown = function (e) {
-  if (!e) e = window.event;
+  if (!e) {
+    e = window.event;
+  }
   var capture = function () {
     e.cancelBubble = true;
-    if (e.stopPropagation) e.stopPropagation();
+    if (e.stopPropagation) {
+      e.stopPropagation();
+    }
   };
   switch (e.keyCode) {
     case 13: // enter
@@ -181,10 +190,14 @@ ComboBox.onKeyDown = function (e) {
  * @param e The event object on Mozilla browsers, null on IE
  */
 ComboBox.onKeyUp = function (e) {
-  if (!e) e = window.event;
+  if (!e) {
+    e = window.event;
+  }
   var capture = function () {
     e.cancelBubble = true;
-    if (e.stopPropagation) e.stopPropagation();
+    if (e.stopPropagation) {
+      e.stopPropagation();
+    }
   };
   switch (e.keyCode) {
     case 38: // up arrow
@@ -213,9 +226,10 @@ ComboBox.prototype.valueChanged = function () {
     value = value[value.length - 1].replace(/^ +/, "").replace(/ +$/, "");
   }
   var a = this.callback(value, this);
-  if (typeof a == "undefined")
+  if (typeof a == "undefined") {
     // to catch null returns
     return;
+  }
   this.setItems(a);
 };
 
@@ -273,7 +287,9 @@ ComboBox.prototype.populateDropdown = function () {
  * @param index The index of the item to choose
  */
 ComboBox.prototype.choose = function (index) {
-  if (this.select(index)) this.chooseSelection();
+  if (this.select(index)) {
+    this.chooseSelection();
+  }
 };
 
 /**
@@ -312,7 +328,9 @@ ComboBox.prototype.chooseSelection = function () {
  * @return whether the selection happened (the index was valid)
  */
 ComboBox.prototype.select = function (index) {
-  if (index < 0 || index >= this.availableItems.length) return false;
+  if (index < 0 || index >= this.availableItems.length) {
+    return false;
+  }
   this.selectedItemIndex = index;
   this.updateSelection();
   return true;
@@ -323,7 +341,9 @@ ComboBox.prototype.select = function (index) {
  * to select the next option in the dropdown.
  */
 ComboBox.prototype.selectNext = function () {
-  if (this.selectedItemIndex >= this.availableItems.length - 1) return false;
+  if (this.selectedItemIndex >= this.availableItems.length - 1) {
+    return false;
+  }
   this.selectedItemIndex++;
   this.updateSelection();
   return true;
@@ -334,7 +354,9 @@ ComboBox.prototype.selectNext = function () {
  * to select the previous option in the dropdown.
  */
 ComboBox.prototype.selectPrevious = function () {
-  if (this.selectedItemIndex <= 0) return false;
+  if (this.selectedItemIndex <= 0) {
+    return false;
+  }
   this.selectedItemIndex--;
   this.updateSelection();
 };

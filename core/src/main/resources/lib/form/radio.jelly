@@ -23,16 +23,17 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
- <st:documentation>
-    &lt;input type="radio"> tag that takes true/false for @checked, which is more Jelly friendly.
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define">
+ <st:documentation> <![CDATA[
+    <input type="radio"> tag that takes true/false for @checked, which is more Jelly friendly.
 
-    Note that safari doesn't support onchange.
+    Note that Safari doesn't support onchange.
 
     Beware that the name attribute should be uniquified among all radio blocks on the page, such as by prefixing it with "G0025." or whatever gensym.
 
-    For a read only radio input set &lt;j:set var="readOnlyMode" value="true"/&gt; inside your entry tag
+    For a read only radio input set <j:set var="readOnlyMode" value="true"/> inside your entry tag
     See https://www.jenkins.io/doc/developer/views/read-only/#enabling-read-only-view-support
+    ]]>
     <st:attribute name="name" />
     <st:attribute name="checked" />
     <st:attribute name="value" />

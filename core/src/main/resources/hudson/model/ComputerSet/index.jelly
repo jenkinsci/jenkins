@@ -29,22 +29,27 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
 <l:layout title="${%Nodes}">
   <st:include page="sidepanel.jelly" />
+  <!-- no need for additional breadcrumb here as we're on an index page already including breadcrumb -->
   <l:main-panel>
+    <l:app-bar title="${%Nodes}">
+        <j:getStatic var="createPermission" className="hudson.model.Computer" field="CREATE"/>
+        <j:if test="${h.hasPermission(createPermission)}">
+          <a class="jenkins-button jenkins-button--primary" href="new">
+            <l:icon src="symbol-add" />
+            ${%New Node}
+          </a>
+        </j:if>
+      <l:hasAdministerOrManage>
+        <form method="post" action="updateNow" class="jenkins-!-display-contents">
+          <button tooltip="${%Refresh status}" class="jenkins-button">
+            <l:icon src="symbol-refresh" />
+          </button>
+        </form>
+      </l:hasAdministerOrManage>
+    </l:app-bar>
+
     <j:set var="monitors" value="${it._monitors}"/>
     <j:set var="tableWidth" value="${3}"/>
-
-    <div class="jenkins-app-bar">
-      <div class="jenkins-app-bar__content">
-        <h1>${%Manage nodes and clouds}</h1>
-      </div>
-      <l:hasAdministerOrManage>
-        <div class="jenkins-app-bar__controls">
-          <form method="post" action="updateNow">
-            <s:submit value="${%Refresh status}"/>
-          </form>
-        </div>
-      </l:hasAdministerOrManage>
-    </div>
 
     <table id="computers" class="jenkins-table sortable">
       <thead>
@@ -71,7 +76,7 @@ THE SOFTWARE.
           </td>
 
           <td>
-            <a href="${rootURL}/${c.url}" class="jenkins-table__link model-link inside">${c.displayName}</a>
+            <a href="../${c.url}" class="jenkins-table__link model-link inside">${c.displayName}</a>
           </td>
 
           <j:forEach var="m" items="${monitors}">
@@ -84,7 +89,7 @@ THE SOFTWARE.
           <td class="jenkins-table__cell--tight">
             <j:if test="${c.hasPermission(c.EXTENDED_READ)}">
               <div class="jenkins-table__cell__button-wrapper">
-                <a href="${rootURL}/${c.url}configure" class="jenkins-table__button">
+                <a href="../${c.url}configure" class="jenkins-table__button">
                   <l:icon src="symbol-settings" />
                 </a>
               </div>

@@ -25,7 +25,8 @@
 package hudson.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.StringEndsWith.endsWith;
+import static org.hamcrest.Matchers.endsWith;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -34,9 +35,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import com.gargoylesoftware.htmlunit.HttpMethod;
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.WebRequest;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.EnvVars;
 import hudson.FilePath;
@@ -63,6 +61,9 @@ import java.util.List;
 import java.util.Map;
 import jenkins.model.Jenkins;
 import jenkins.security.QueueItemAuthenticatorConfiguration;
+import org.htmlunit.HttpMethod;
+import org.htmlunit.Page;
+import org.htmlunit.WebRequest;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -112,23 +113,22 @@ public class NodeTest {
         OfflineCause.UserCause cause;
 
         final User someone = User.getOrCreateByIdOrFullName("someone@somewhere.com");
-        ACL.impersonate2(someone.impersonate2());
-
-        computer.doToggleOffline("original message");
-        cause = (OfflineCause.UserCause) computer.getOfflineCause();
-        assertTrue(cause.toString(), cause.toString().matches("^.*?Disconnected by someone@somewhere.com : original message"));
-        assertEquals(someone, cause.getUser());
-
+        try (ACLContext ignored = ACL.as2(someone.impersonate2())) {
+            computer.doToggleOffline("original message");
+            cause = (OfflineCause.UserCause) computer.getOfflineCause();
+            assertTrue(cause.toString(), cause.toString().matches("^.*?Disconnected by someone@somewhere.com : original message"));
+            assertEquals(someone, cause.getUser());
+        }
         final User root = User.getOrCreateByIdOrFullName("root@localhost");
-        ACL.impersonate2(root.impersonate2());
+        try (ACLContext ignored = ACL.as2(root.impersonate2())) {
+            computer.doChangeOfflineCause("new message");
+            cause = (OfflineCause.UserCause) computer.getOfflineCause();
+            assertTrue(cause.toString(), cause.toString().matches("^.*?Disconnected by root@localhost : new message"));
+            assertEquals(root, cause.getUser());
 
-        computer.doChangeOfflineCause("new message");
-        cause = (OfflineCause.UserCause) computer.getOfflineCause();
-        assertTrue(cause.toString(), cause.toString().matches("^.*?Disconnected by root@localhost : new message"));
-        assertEquals(root, cause.getUser());
-
-        computer.doToggleOffline(null);
-        assertNull(computer.getOfflineCause());
+            computer.doToggleOffline(null);
+            assertNull(computer.getOfflineCause());
+        }
     }
 
     @Test
@@ -213,7 +213,7 @@ public class NodeTest {
         node.getNodeProperties().add(new NodePropertyImpl());
         notTake = true;
         assertNotNull("Node should not take project because node property does not allow it.", node.canTake(item));
-        assertTrue("Cause of blockage should be busy label.", node.canTake(item) instanceof CauseOfBlockage.BecauseLabelIsBusy);
+        assertThat("Cause of blockage should be busy label.", node.canTake(item), instanceOf(CauseOfBlockage.BecauseLabelIsBusy.class));
         User user = User.get("John");
         GlobalMatrixAuthorizationStrategy auth = new GlobalMatrixAuthorizationStrategy();
         j.jenkins.setAuthorizationStrategy(auth);

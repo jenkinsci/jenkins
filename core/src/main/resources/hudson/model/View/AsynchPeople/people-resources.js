@@ -1,6 +1,6 @@
 window.display = function (data) {
   var p = document.getElementById("people");
-  p.show();
+  p.style.display = "";
   var rootURL = document.head.getAttribute("data-rooturl");
   for (var x = 0; data.length > x; x++) {
     var e = data[x];

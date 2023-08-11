@@ -23,10 +23,10 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <st:documentation>
-    Outer-most tag of the entire form taglib, that generates &lt;form> element.
-
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define">
+  <st:documentation> <![CDATA[
+    Outer-most tag of the entire form taglib, that generates <form> element.
+    ]]>
     <st:attribute name="action" use="required">
       @action of the form field. The URL where the submission is sent.
     </st:attribute>
@@ -41,18 +41,21 @@ THE SOFTWARE.
     <st:attribute name="class">
       Classes to apply to the form
     </st:attribute>
-    <st:attribute name="enctype">
-      @enctype of the &lt;form> HTML element.
+    <st:attribute name="enctype"> <![CDATA[
+      @enctype of the <form> HTML element.
+      ]]>
     </st:attribute>
     <st:attribute name="id">
       ID of the form.
     </st:attribute>
-    <st:attribute name="target">
-      @target of the &lt;form> HTML element. Works like &lt;a target="...">
+    <st:attribute name="target"> <![CDATA[
+      @target of the <form> HTML element. Works like <a target="...">
       and controls which window the result of the submission goes to.
+      ]]>
     </st:attribute>
-    <st:attribute name="tableClass">
-      Optional class attribute for &lt;table> that is created in the form.
+    <st:attribute name="tableClass"> <![CDATA[
+      Optional class attribute for <table> that is created in the form.
+        ]]>
     </st:attribute>
     <st:attribute name="autocomplete">
       Optional attribute for allowing browsers to perform auto complete or pre-fill the form from history.

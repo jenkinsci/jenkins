@@ -8,9 +8,10 @@ def l=namespace(lib.LayoutTagLib)
 def st=namespace("jelly:stapler")
 
 l.layout(permission:app.SYSTEM_READ, title:my.displayName, type:"one-column") {
-    l.app_bar(title: my.displayName)
     set("readOnlyMode", !app.hasPermission(app.ADMINISTER))
     l.main_panel {
+        l.app_bar(title: my.displayName)
+
         div(class:"behavior-loading") {
             l.spinner(text: _("LOADING"))
         }
@@ -19,7 +20,7 @@ l.layout(permission:app.SYSTEM_READ, title:my.displayName, type:"one-column") {
             Functions.getSortedDescriptorsForGlobalConfigByDescriptor(my.FILTER).each { Descriptor descriptor ->
                 set("descriptor",descriptor)
                 set("instance",descriptor)
-                f.rowSet(name:descriptor.jsonSafeClassName, class: "jenkins-!-margin-bottom-0") {
+                f.rowSet(name:descriptor.jsonSafeClassName) {
                     st.include(from:descriptor, page:descriptor.globalConfigPage)
                 }
             }

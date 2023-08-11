@@ -24,14 +24,18 @@
 
 package hudson;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.IsInstanceOf.instanceOf;
-import static org.hamcrest.core.StringContains.containsString;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasProperty;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import hudson.util.FormValidation;
+import hudson.util.FormValidation.Kind;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -44,6 +48,8 @@ import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+import org.hamcrest.Description;
+import org.hamcrest.TypeSafeDiagnosingMatcher;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.jvnet.hudson.test.Issue;
@@ -114,6 +120,40 @@ public class PluginManagerTest {
                 equalTo(jar.lastModified()));
     }
 
+
+    @Test
+    @Issue("JENKINS-70420")
+    public void updateSiteURLCheckValidation() throws Exception {
+        LocalPluginManager pm = new LocalPluginManager(tmp.toFile());
+
+        assertThat("ftp urls are not acceptable", pm.checkUpdateSiteURL("ftp://foo/bar"),
+                allOf(FormValidationMatcher.validationWithMessage(Kind.ERROR), hasProperty("message", containsString("invalid URL"))));
+        assertThat("file urls to non files are not acceptable", pm.checkUpdateSiteURL(tmp.toUri().toURL().toString()),
+                allOf(FormValidationMatcher.validationWithMessage(Kind.ERROR), hasProperty("message", containsString("Unable to connect to the URL"))));
+
+        assertThat("invalid URLs do not cause a stack tracek", pm.checkUpdateSiteURL("sufslef3,r3;r99 3 l4i34"),
+                allOf(FormValidationMatcher.validationWithMessage(Kind.ERROR), hasProperty("message", containsString("invalid URL"))));
+
+        assertThat("empty url message", pm.checkUpdateSiteURL(""),
+                allOf(FormValidationMatcher.validationWithMessage(Kind.ERROR), hasProperty("message", containsString("cannot be empty"))));
+        assertThat("null url message", pm.checkUpdateSiteURL(""),
+                allOf(FormValidationMatcher.validationWithMessage(Kind.ERROR), hasProperty("message", containsString("cannot be empty"))));
+
+        // create a tempoary local file
+        Path p = tmp.resolve("some.json");
+        Files.writeString(tmp.resolve("some.json"), "{}");
+        assertThat("file urls pointing to existing files work", pm.checkUpdateSiteURL(p.toUri().toURL().toString()),
+                FormValidationMatcher.validationWithMessage(Kind.OK));
+
+        assertThat("http urls with non existing servers", pm.checkUpdateSiteURL("https://bogus.example.com"),
+                allOf(FormValidationMatcher.validationWithMessage(Kind.ERROR), hasProperty("message", containsString("Unable to connect to the URL"))));
+
+        // starting a http server here is likely to be overkill and given this is the predominant use case is not so likely to regress.
+        assertThat("main UC validates correctly", pm.checkUpdateSiteURL("https://updates.jenkins.io/update-center.json"),
+                FormValidationMatcher.validationWithMessage(Kind.OK));
+
+    }
+
     private static void assertAttribute(Manifest manifest, String attributeName, String value) {
         Attributes attributes = manifest.getMainAttributes();
         assertThat("Main attributes must not be empty", attributes, notNullValue());
@@ -167,5 +207,30 @@ public class PluginManagerTest {
     private URL toManifestUrl(File jarFile) throws MalformedURLException {
         final String manifestPath = "META-INF/MANIFEST.MF";
         return new URL("jar:" + jarFile.toURI().toURL() + "!/" + manifestPath);
+    }
+
+    private static class FormValidationMatcher extends TypeSafeDiagnosingMatcher<FormValidation> {
+
+        private final Kind kind;
+
+        private FormValidationMatcher(Kind kind) {
+            this.kind = kind;
+        }
+
+        @Override
+        public void describeTo(Description description) {
+            description.appendText("FormValidation of type ").appendValue(kind);
+        }
+
+        @Override
+        protected boolean matchesSafely(FormValidation item, Description mismatchDescription) {
+            mismatchDescription.appendText("FormValidation of type ").appendValue(item.kind);
+            return item.kind == kind;
+        }
+
+        static FormValidationMatcher validationWithMessage(Kind kind) {
+            return new FormValidationMatcher(kind);
+        }
+
     }
 }

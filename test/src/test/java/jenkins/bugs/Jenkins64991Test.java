@@ -24,18 +24,13 @@
 
 package jenkins.bugs;
 
-import static org.hamcrest.CoreMatchers.containsStringIgnoringCase;
-import static org.hamcrest.CoreMatchers.endsWithIgnoringCase;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsStringIgnoringCase;
+import static org.hamcrest.Matchers.endsWithIgnoringCase;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.html.HtmlFormUtil;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.html.HtmlPasswordInput;
-import com.gargoylesoftware.htmlunit.html.HtmlTextInput;
 import hudson.model.FreeStyleProject;
 import hudson.security.Messages;
 import hudson.security.Permission;
@@ -43,6 +38,11 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import jenkins.model.Jenkins;
+import org.htmlunit.Page;
+import org.htmlunit.html.HtmlFormUtil;
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.html.HtmlPasswordInput;
+import org.htmlunit.html.HtmlTextInput;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -149,7 +149,7 @@ public class Jenkins64991Test {
         assertNotNull(freeStyleProject);
         final JenkinsRule.WebClient webClient = j.createWebClient();
         final HtmlPage projectPage = webClient.getPage(freeStyleProject);
-        assertThat(projectPage.getWebResponse().getContentAsString(), containsStringIgnoringCase("Project " + freeStyleProject.getDisplayName()));
+        assertThat(projectPage.getWebResponse().getContentAsString(), containsStringIgnoringCase(freeStyleProject.getDisplayName()));
 
         final Page loginPage = projectPage.getElementsByTagName("a").stream().filter(
                 e -> e.hasAttribute("href") && e.getAttribute("href").contains(j.jenkins.getSecurityRealm().getLoginUrl())

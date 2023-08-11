@@ -24,52 +24,24 @@ THE SOFTWARE.
 
 <!-- renders an HTML fragment that shows trend graph -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:f="/lib/form">
   <st:adjunct includes="hudson.model.LoadStatistics.resources"/>
   <h1>
     ${%title(it.displayName)}
   </h1>
-  <j:set var="type" value="${request.getParameter('type')}" />
-  <j:choose>
-    <j:when test="${type == 'sec10'}" />
-    <j:when test="${type == 'min'}" />
-    <j:when test="${type == 'hour'}" />
-    <j:otherwise>
-      <j:set var="type" value="min" />
-    </j:otherwise>
-  </j:choose>
 
-  <div>
-    ${%Timespan}:
-    <j:choose>
-      <j:when test="${type != 'sec10'}">
-        <a href="?type=sec10" tooltip="${%timeScale10sec}">${%Short}</a>
-      </j:when>
-      <j:otherwise>
-        <span tooltip="${%timeScale10sec}">${%Short}</span>
-      </j:otherwise>
-    </j:choose>
-    <st:nbsp />
-    <j:choose>
-      <j:when test="${type != 'min'}">
-        <a href="?type=min" tooltip="${%timeScaleMinute}">${%Medium}</a>
-      </j:when>
-      <j:otherwise>
-        <span tooltip="${%timeScaleMinute}">${%Medium}</span>
-      </j:otherwise>
-    </j:choose>
-    <st:nbsp />
-    <j:choose>
-      <j:when test="${type != 'hour'}">
-        <a href="?type=hour" tooltip="${%timeScaleHour}">${%Long}</a>
-      </j:when>
-      <j:otherwise>
-        <span tooltip="${%timeScaleHour}">${%Long}</span>
-      </j:otherwise>
-    </j:choose>
-  </div>
-  <div class="js-load-graph" 
-       data-graph-type="${type}" data-graph-parent-selector="#main-panel" 
+  <f:entry title="${%Timespan}" class="jenkins-form-item--small">
+    <div class="jenkins-select">
+      <select id="timespan-select" class="jenkins-select__input">
+        <option value="sec10">${%Short}</option>
+        <option value="min" selected="true">${%Medium}</option>
+        <option value="hour">${%Long}</option>
+      </select>
+    </div>
+  </f:entry>
+
+  <div class="js-load-graph"
+       data-graph-type="${type}" data-graph-parent-selector="#main-panel"
        data-graph-base-url="${prefix?:'loadStatistics'}" data-graph-alt="${%Load statistics graph}">
     <!-- The graph will be loaded dynamically by JS -->
   </div>

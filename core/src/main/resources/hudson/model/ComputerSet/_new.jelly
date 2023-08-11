@@ -28,8 +28,7 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
          xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <l:layout permission="${it.CREATE}">
-    <st:include page="sidepanel.jelly"/>
+  <l:layout permission="${it.CREATE}" type="one-column">
     <l:main-panel>
       <f:form method="post" action="doCreateItem" name="config" class="jenkins-form">
         <f:entry title="${%Name}" help="${requestScope.descriptor.getHelpFile('name')}">
@@ -40,11 +39,11 @@ THE SOFTWARE.
         <j:set var="it" value="${null}" />
         <st:include class="${requestScope.descriptor.clazz}" page="configure-entries.jelly" />
         
-        <f:block>
+        <f:bottomButtonBar>
           <input type="hidden" name="type" value="${request.getParameter('mode')}"/>
 
           <f:submit value="${%Save}"/>
-        </f:block>
+        </f:bottomButtonBar>
       </f:form>
       <st:adjunct includes="lib.form.confirm" />
     </l:main-panel>

@@ -76,7 +76,7 @@ public class UpdateSiteWarningsConfiguration extends GlobalConfiguration impleme
 
     @CheckForNull
     public PluginWrapper getPlugin(@NonNull UpdateSite.Warning warning) {
-        if (warning.type != UpdateSite.Warning.Type.PLUGIN) {
+        if (warning.type != UpdateSite.WarningType.PLUGIN) {
             return null;
         }
         return Jenkins.get().getPluginManager().getPlugin(warning.component);

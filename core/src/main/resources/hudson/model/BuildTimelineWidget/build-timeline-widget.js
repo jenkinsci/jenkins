@@ -11,19 +11,26 @@ function getData(eventSource1, current, min, max) {
   }
   if (!eventSource1.loaded[current]) {
     eventSource1.loaded[current] = true;
-    new Ajax.Request("timeline/data/", {
+    fetch("timeline/data", {
       method: "POST",
-      parameters: { min: current * interval, max: (current + 1) * interval },
-      onSuccess: function (t) {
-        if (t.status != 0) {
-          try {
-            eventSource1.loadJSON(JSON.parse(t.responseText), ".");
+      headers: crumb.wrap({
+        "Content-Type": "application/x-www-form-urlencoded",
+      }),
+      body: new URLSearchParams({
+        min: current * interval,
+        max: (current + 1) * interval,
+      }),
+    }).then((t) => {
+      if (t.ok) {
+        t.json()
+          .then((json) => {
+            eventSource1.loadJSON(json, ".");
             getData(eventSource1, current - 1, min, max);
-          } catch (e) {
-            alert(e);
-          }
-        }
-      },
+          })
+          .catch((err) => {
+            alert(err);
+          });
+      }
     });
   }
 }
@@ -121,6 +128,6 @@ if (window.addEventListener) {
       tl.layout();
     },
     null,
-    true
+    true,
   );
 })();

@@ -2,20 +2,29 @@
   var redirectForm = document.getElementById("redirect-error");
   if (!redirectForm) {
     console.warn(
-      'This script expects to have an element with id="redirect-error" to be working.'
+      'This script expects to have an element with id="redirect-error" to be working.',
     );
     return;
   }
 
   var urlToTest = redirectForm.getAttribute("data-url");
   var callUrlToTest = function (testWithContext, callback) {
-    var options = {
-      onComplete: callback,
-    };
+    var headers = {};
+    var body = null;
     if (testWithContext === true) {
-      options.parameters = { testWithContext: true };
+      headers["Content-Type"] = "application/x-www-form-urlencoded";
+      body = new URLSearchParams({ testWithContext: "true" });
     }
-    new Ajax.Request(urlToTest, options);
+    fetch(urlToTest, {
+      method: "POST",
+      cache: "no-cache",
+      headers: crumb.wrap(headers),
+      body,
+    })
+      .then((rsp) => callback(rsp))
+      // normally you don't need a catch function with fetch because HTTP errors doesn't reject a promise,
+      // but it does reject on network errors which is exactly what this is testing for.
+      .catch((rsp) => callback(rsp));
   };
 
   var displayWarningMessage = function (withContextMessage) {

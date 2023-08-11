@@ -1,0 +1,17 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core">
+    This trial collects basic information about how distributed builds are set up on this Jenkins instance:
+    <ul>
+        <li>The number of executors configured on the controller</li>
+        <li>The number and kind of agents</li>
+        <li>The number and kind of clouds</li>
+        <li>Whether any of the administrative monitors related to distributed builds have been disabled</li>
+    </ul>
+    Additionally, the following general information is collected:
+    <ul>
+        <li>The total number of items (folders and jobs) on the instance</li>
+        <li>Jenkins version</li>
+        <li>Installed plugins and their versions</li>
+    </ul>
+    This data will be used to understand how common various distributed builds setups (all local, static agents only, clouds only, mixed, with or without executors on the controller) are, and how they correlate to the number of jobs.
+</j:jelly>

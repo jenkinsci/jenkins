@@ -38,6 +38,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
@@ -132,7 +134,7 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
 
     public abstract Queue getQueue();
 
-    protected abstract Map<Node, Computer> getComputerMap();
+    protected abstract ConcurrentMap<Node, Computer> getComputerMap();
 
     /* =================================================================================================================
      * Computer API uses package protection heavily
@@ -158,13 +160,24 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
     @CheckForNull
     private Computer createNewComputerForNode(Node n, boolean automaticAgentLaunch) {
         Computer c = null;
-        Map<Node, Computer> computers = getComputerMap();
+        ConcurrentMap<Node, Computer> computers = getComputerMap();
         // we always need Computer for the built-in node as a fallback in case there's no other Computer.
         if (n.getNumExecutors() > 0 || n == Jenkins.get()) {
+            // The start/connect of a new computer is potentially costly, so we don't want to perform it inside
+            // computeIfAbsent. Instead, we use this creationWasAttempted flag to signal if start/connect is needed or
+            // not.
+            final AtomicBoolean creationWasAttempted = new AtomicBoolean(false);
             try {
-                c = n.createComputer();
+                c = computers.computeIfAbsent(n, node -> {
+                    creationWasAttempted.set(true);
+                    return node.createComputer();
+                });
             } catch (RuntimeException ex) { // Just in case there is a bogus extension
                 LOGGER.log(Level.WARNING, "Error retrieving computer for node " + n.getNodeName() + ", continuing", ex);
+            }
+            if (!creationWasAttempted.get()) {
+                LOGGER.log(Level.FINE, "Node {0} is not a new node skipping", n.getNodeName());
+                return null;
             }
             if (c == null) {
                 LOGGER.log(Level.WARNING, "Cannot create computer for node {0}, the {1}#createComputer() method returned null. Skipping this node",
@@ -172,7 +185,6 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
                 return null;
             }
 
-            computers.put(n, c);
             if (!n.isHoldOffLaunchUntilSave() && automaticAgentLaunch) {
                 RetentionStrategy retentionStrategy = c.getRetentionStrategy();
                 if (retentionStrategy != null) {
@@ -192,34 +204,23 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
     }
 
     /*package*/ void removeComputer(final Computer computer) {
-        Queue.withLock(new Runnable() {
-            @Override
-            public void run() {
-                Map<Node, Computer> computers = getComputerMap();
-                for (Map.Entry<Node, Computer> e : computers.entrySet()) {
-                    if (e.getValue() == computer) {
-                        computers.remove(e.getKey());
-                        computer.onRemoved();
-                        return;
-                    }
-                }
+        ConcurrentMap<Node, Computer> computers = getComputerMap();
+        Queue.withLock(() -> {
+            if (computers.values().remove(computer)) {
+                computer.onRemoved();
             }
         });
     }
 
     /*package*/ @CheckForNull Computer getComputer(Node n) {
-        Map<Node, Computer> computers = getComputerMap();
+        ConcurrentMap<Node, Computer> computers = getComputerMap();
         return computers.get(n);
     }
 
     protected void updateNewComputer(final Node n, boolean automaticAgentLaunch) {
-        final String nodeName = n.getNodeName();
-        final Map<Node, Computer> computers = getComputerMap();
-        if (computers.containsKey(n)) {
-            LOGGER.warning("Node " + nodeName + " is not a new node skipping");
+        if (createNewComputerForNode(n, automaticAgentLaunch) == null) {
             return;
         }
-        createNewComputerForNode(n, automaticAgentLaunch);
         getQueue().scheduleMaintenance();
         Listeners.notify(ComputerListener.class, false, ComputerListener::onConfigurationChange);
     }
@@ -232,7 +233,7 @@ public abstract class AbstractCIBase extends Node implements ItemGroup<TopLevelI
      * so that we won't upset {@link Executor}s running in it.
      */
     protected void updateComputerList(final boolean automaticAgentLaunch) {
-        final Map<Node, Computer> computers = getComputerMap();
+        final ConcurrentMap<Node, Computer> computers = getComputerMap();
         final Set<Computer> old = new HashSet<>(computers.size());
         Queue.withLock(new Runnable() {
             @Override

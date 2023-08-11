@@ -9,7 +9,7 @@ version: 2.9.0
  * @namespace YAHOO.util
  * @class Attribute
  * @constructor
- * @param hash {Object} The intial Attribute.
+ * @param hash {Object} The initial Attribute.
  * @param {YAHOO.util.AttributeProvider} The owner of the Attribute instance.
  */
 
@@ -420,7 +420,7 @@ YAHOO.util.Attribute.prototype = {
          * @method setAttributeConfig
          * @param {String} key The attribute's name.
          * @param {Object} map A key-value map of attribute properties
-         * @param {Boolean} init Whether or not this should become the intial config.
+         * @param {Boolean} init Whether or not this should become the initial config.
          */
         setAttributeConfig: function(key, map, init) {
             this._configs = this._configs || {};
@@ -438,7 +438,7 @@ YAHOO.util.Attribute.prototype = {
          * @method configureAttribute
          * @param {String} key The attribute's name.
          * @param {Object} map A key-value map of attribute properties
-         * @param {Boolean} init Whether or not this should become the intial config.
+         * @param {Boolean} init Whether or not this should become the initial config.
          * @deprecated Use setAttributeConfig
          */
         configureAttribute: function(key, map, init) {
@@ -446,7 +446,7 @@ YAHOO.util.Attribute.prototype = {
         },
         
         /**
-         * Resets an attribute to its intial configuration. 
+         * Resets an attribute to its initial configuration. 
          * @method resetAttributeConfig
          * @param {String} key The attribute's name.
          * @private

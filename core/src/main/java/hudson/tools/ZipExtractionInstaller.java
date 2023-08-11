@@ -37,9 +37,12 @@ import hudson.util.FormValidation;
 import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
-import java.net.URLConnection;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import jenkins.MasterToSlaveFileCallable;
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
@@ -100,22 +103,37 @@ public class ZipExtractionInstaller extends ToolInstaller {
         }
 
         @RequirePOST
-        public FormValidation doCheckUrl(@QueryParameter String value) {
+        public FormValidation doCheckUrl(@QueryParameter String value) throws InterruptedException {
             Jenkins.get().checkPermission(Jenkins.ADMINISTER);
 
-            try {
-                URLConnection conn = ProxyConfiguration.open(new URL(value));
-                conn.connect();
-                if (conn instanceof HttpURLConnection) {
-                    if (((HttpURLConnection) conn).getResponseCode() != HttpURLConnection.HTTP_OK) {
-                        return FormValidation.error(Messages.ZipExtractionInstaller_bad_connection());
-                    }
-                }
+            value = Util.fixEmptyAndTrim(value);
+            if (value == null) {
                 return FormValidation.ok();
-            } catch (MalformedURLException x) {
-                return FormValidation.error(Messages.ZipExtractionInstaller_malformed_url());
-            } catch (IOException x) {
-                return FormValidation.error(x, Messages.ZipExtractionInstaller_could_not_connect());
+            }
+
+            URI uri;
+            try {
+                uri = new URI(value);
+            } catch (URISyntaxException e) {
+                return FormValidation.error(e, Messages.ZipExtractionInstaller_malformed_url());
+            }
+            HttpClient httpClient = ProxyConfiguration.newHttpClient();
+            HttpRequest httpRequest;
+            try {
+                httpRequest = ProxyConfiguration.newHttpRequestBuilder(uri)
+                        .method("HEAD", HttpRequest.BodyPublishers.noBody())
+                        .build();
+            } catch (IllegalArgumentException e) {
+                return FormValidation.error(e, Messages.ZipExtractionInstaller_malformed_url());
+            }
+            try {
+                HttpResponse<Void> httpResponse = httpClient.send(httpRequest, HttpResponse.BodyHandlers.discarding());
+                if (httpResponse.statusCode() == HttpURLConnection.HTTP_OK) {
+                    return FormValidation.ok();
+                }
+                return FormValidation.error(Messages.ZipExtractionInstaller_bad_connection());
+            } catch (IOException e) {
+                return FormValidation.error(e, Messages.ZipExtractionInstaller_could_not_connect());
             }
         }
 

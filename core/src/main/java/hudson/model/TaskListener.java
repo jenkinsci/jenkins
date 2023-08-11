@@ -38,7 +38,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Formatter;
 import org.jenkinsci.remoting.SerializableOnlyOverRemoting;
 import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.accmod.restrictions.ProtectedExternally;
 
 /**
@@ -83,8 +82,7 @@ public interface TaskListener extends SerializableOnlyOverRemoting {
         return StandardCharsets.UTF_8;
     }
 
-    @Restricted(NoExternalUse.class) // TODO Java 9 make private
-    default PrintWriter _error(String prefix, String msg) {
+    private PrintWriter _error(String prefix, String msg) {
         PrintStream out = getLogger();
         out.print(prefix);
         out.println(msg);

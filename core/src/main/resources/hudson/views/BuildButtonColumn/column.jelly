@@ -39,7 +39,7 @@ THE SOFTWARE.
                 </j:otherwise>
               </j:choose>
               <j:set var="isQueued" value="${app.queue.contains(job)}"/>
-              <a id="${id}" tooltip="${h.htmlAttributeEscape(title)}" class="jenkins-table__button jenkins-!-build-color" href="${href}">
+              <a id="${id}" tooltip="${title}" class="jenkins-table__button jenkins-!-build-color" href="${href}">
                 <span class="${isQueued ? 'pulse-animation': ''}">
                   <l:icon src="symbol-play" />
                 </span>

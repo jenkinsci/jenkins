@@ -212,6 +212,7 @@ public class SetupWizard extends PageDecorator {
         }
     }
 
+    @SuppressFBWarnings(value = "UNSAFE_HASH_EQUALS", justification = "only checked against true")
     private void createInitialApiToken(User user) throws IOException, InterruptedException {
         ApiTokenProperty apiTokenProperty = user.getProperty(ApiTokenProperty.class);
 

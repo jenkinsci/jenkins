@@ -59,7 +59,6 @@ import hudson.util.FormValidation;
 import hudson.util.RunList;
 import hudson.util.XStream2;
 import hudson.views.ListViewColumn;
-import hudson.widgets.Widget;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -103,6 +102,7 @@ import jenkins.scm.RunWithSCM;
 import jenkins.security.stapler.StaplerAccessibleType;
 import jenkins.util.ProgressiveRendering;
 import jenkins.util.xml.XMLUtils;
+import jenkins.widgets.HasWidgets;
 import net.sf.json.JSON;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -147,7 +147,7 @@ import org.xml.sax.SAXException;
  * @see ViewGroup
  */
 @ExportedBean
-public abstract class View extends AbstractModelObject implements AccessControlled, Describable<View>, ExtensionPoint, Saveable, ModelObjectWithChildren, DescriptorByNameOwner {
+public abstract class View extends AbstractModelObject implements AccessControlled, Describable<View>, ExtensionPoint, Saveable, ModelObjectWithChildren, DescriptorByNameOwner, HasWidgets {
 
     /**
      * Container of this view. Set right after the construction
@@ -410,16 +410,6 @@ public abstract class View extends AbstractModelObject implements AccessControll
      */
     public boolean isFilterQueue() {
         return filterQueue;
-    }
-
-    /**
-     * Gets the {@link Widget}s registered on this object.
-     *
-     * <p>
-     * For now, this just returns the widgets registered to Hudson.
-     */
-    public List<Widget> getWidgets() {
-        return Collections.unmodifiableList(Jenkins.get().getWidgets());
     }
 
     /**
@@ -1085,7 +1075,8 @@ public abstract class View extends AbstractModelObject implements AccessControll
         try {
             Jenkins.checkGoodName(value);
             value = value.trim(); // why trim *after* checkGoodName? not sure, but ItemGroupMixIn.createTopLevelItem does the same
-            Jenkins.get().getProjectNamingStrategy().checkName(value);
+            ItemGroup<?> parent = getOwner().getItemGroup();
+            Jenkins.get().getProjectNamingStrategy().checkName(parent.getFullName(), value);
         } catch (Failure e) {
             return FormValidation.error(e.getMessage());
         }
@@ -1358,7 +1349,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
         if (owner.getView(name) != null)
             throw new Failure(Messages.Hudson_ViewAlreadyExists(name));
 
-        if (mode == null || mode.length() == 0) {
+        if (mode == null || mode.isEmpty()) {
             if (isXmlSubmission) {
                 View v = createViewFromXML(name, req.getInputStream());
                 owner.getACL().checkCreatePermission(owner, v.getDescriptor());

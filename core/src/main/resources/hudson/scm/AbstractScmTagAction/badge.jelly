@@ -25,6 +25,6 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:if xmlns:j="jelly:core" xmlns:l="/lib/layout" test="${it.isTagged()}">
   <a href="${rootURL}/${it.run.url}tagBuild/">
-    <l:icon class="icon-save icon-sm" tooltip="${h.escape(it.tooltip)}"/>
+    <l:icon class="icon-save icon-sm" tooltip="${it.tooltip}"/>
   </a>
 </j:if>

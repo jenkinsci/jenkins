@@ -1,12 +1,11 @@
 package org.jenkins.ui.icon;
 
-import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.not;
 
 import java.util.Map;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 public class IconSetTest {
@@ -22,7 +21,7 @@ public class IconSetTest {
 
     @Test
     void getSymbol() {
-        String symbol = IconSet.getSymbol("download", "Title", "Tooltip", "class1 class2", "", "id");
+        String symbol = IconSet.getSymbol("download", "Title", "Tooltip", "", "class1 class2", "", "id");
 
         assertThat(symbol, containsString("<span class=\"jenkins-visually-hidden\">Title</span>"));
         assertThat(symbol, containsString("tooltip=\"Tooltip\""));
@@ -32,8 +31,8 @@ public class IconSetTest {
 
     @Test
     void getSymbol_cachedSymbolDoesntReturnAttributes() {
-        IconSet.getSymbol("download", "Title", "Tooltip", "class1 class2", "", "id");
-        String symbol = IconSet.getSymbol("download", "", "", "", "", "");
+        IconSet.getSymbol("download", "Title", "Tooltip", "", "class1 class2", "", "id");
+        String symbol = IconSet.getSymbol("download", "", "", "", "", "", "");
 
         assertThat(symbol, not(containsString("<span class=\"jenkins-visually-hidden\">Title</span>")));
         assertThat(symbol, not(containsString("tooltip=\"Tooltip\"")));
@@ -44,8 +43,8 @@ public class IconSetTest {
 
     @Test
     void getSymbol_cachedSymbolAllowsSettingAllAttributes() {
-        IconSet.getSymbol("download", "Title", "Tooltip", "class1 class2", "", "id");
-        String symbol = IconSet.getSymbol("download", "Title2", "Tooltip2", "class3 class4", "", "id2");
+        IconSet.getSymbol("download", "Title", "Tooltip", "", "class1 class2", "", "id");
+        String symbol = IconSet.getSymbol("download", "Title2", "Tooltip2", "", "class3 class4", "", "id2");
 
         assertThat(symbol, not(containsString("<span class=\"jenkins-visually-hidden\">Title</span>")));
         assertThat(symbol, not(containsString("tooltip=\"Tooltip\"")));
@@ -63,20 +62,9 @@ public class IconSetTest {
      */
     @Test
     void getSymbol_notSettingTooltipDoesntAddTooltipAttribute() {
-        String symbol = IconSet.getSymbol("download", "Title", "", "class1 class2", "", "id");
+        String symbol = IconSet.getSymbol("download", "Title", "", "", "class1 class2", "", "id");
 
         assertThat(symbol, not(containsString("tooltip")));
     }
 
-    /**
-     * Culprit: https://github.com/jenkinsci/jenkins/blob/ab0bb8495819bd807a9211ac0df3f08e420226f1/core/src/main/java/org/jenkins/ui/icon/IconSet.java#L97=
-     * If the tooltip contains an ampersand symbol (&amp;), it won't be removed.
-     */
-    @Disabled("TODO see JENKINS-68805")
-    @Test
-    void getSymbol_notSettingTooltipDoesntAddTooltipAttribute_evenWithAmpersand() {
-        String symbol = IconSet.getSymbol("download", "Title", "With&Ampersand", "class1 class2", "", "id");
-
-        assertThat(symbol, not(containsString("tooltip")));
-    }
 }

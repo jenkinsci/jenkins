@@ -1,7 +1,7 @@
 <svg width="0" height="0" class="hidden">
 	<symbol xmlns="http://www.w3.org/2000/svg" viewBox="0 0 38 38" stroke="currentColor" id="build-status-static">
 		<g fill="none" fill-rule="evenodd">
-			<g transform="translate(1 1)" stroke-width="4">
+			<g transform="translate(1 1)" stroke-width="3">
 				<circle stroke-opacity="1" cx="18" cy="18" r="16"/>
 			</g>
 		</g>
@@ -9,30 +9,25 @@
 
 	<symbol xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" stroke="currentColor" id="build-status-in-progress">
 		<g fill="none" fill-rule="evenodd">
-			<g transform="translate(1 1)" stroke-width="4">
+			<g transform="translate(1 1)" stroke-width="3">
 				<circle stroke-opacity=".4" cx="19" cy="19" r="18"/>
 				<path d="M37 19c0-9.94-8.06-18-18-18" />
 			</g>
 		</g>
 	</symbol>
 
-	<symbol xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" id="last-failed">
-		<g id="Group" transform="translate(8.000000, 8.000000)" stroke-width="3" stroke="currentColor">
-			<path d="M8,0 L0,8 L8,0 Z"></path>
-			<path d="M8,0 L0,8 L8,0 Z" transform="translate(4.000000, 4.000000) scale(-1, 1) translate(-4.000000, -4.000000) "></path>
-		</g>
+	<symbol xmlns="http://www.w3.org/2000/svg" viewBox="-6 -6 36 36" id="last-failed">
+		<path d="M7.09376 5.34704L7.10878 5.36181L12 10.253L16.8912 5.36181C17.3736 4.8794 18.1558 4.8794 18.6382 5.36181C19.1156 5.83925 19.1206 6.61027 18.653 7.09376L18.6382 7.10878L13.747 12L18.6382 16.8912C19.1206 17.3736 19.1206 18.1558 18.6382 18.6382C18.1608 19.1156 17.3897 19.1206 16.9062 18.653L16.8912 18.6382L12 13.747L7.10878 18.6382C6.62637 19.1206 5.84422 19.1206 5.36181 18.6382C4.88437 18.1608 4.87945 17.3897 5.34704 16.9062L5.36181 16.8912L10.253 12L5.36181 7.10878C4.8794 6.62637 4.8794 5.84422 5.36181 5.36181C5.83428 4.88934 6.59424 4.8796 7.07856 5.33258L7.09376 5.34704Z" fill="currentColor" />
 	</symbol>
 
-	<symbol xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" id="last-successful">
+	<symbol xmlns="http://www.w3.org/2000/svg" viewBox="-9 -9 42 42" id="last-successful">
 		<title>last-build-successful</title>
-		<path d="M10.843 16.894L6.6 12.65l2.121-2.121 2.121 2.121 4.951-4.95 2.122 2.121-7.072 7.073z"></path>
+		<path d="M19.5 6L9 18L4.5 13.5" fill="transparent" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
 	</symbol>
 
-	<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" id="last-unstable">
-		<g stroke="currentColor" stroke-width="1">
-			<circle cx="12" cy="16.5" r="1"/>
-			<path d="M11 6.5h2v6h-2z"/>
-		</g>
+	<svg xmlns="http://www.w3.org/2000/svg" viewBox="-6 -6 36 36" id="last-unstable">
+		<path d="M12 3.75C11.5941 3.75 11.2228 4.095 11.25 4.5L11.625 14.625C11.625 14.7245 11.6645 14.8198 11.7348 14.8902C11.8052 14.9605 11.9005 15 12 15C12.0995 15 12.1948 14.9605 12.2652 14.8902C12.3355 14.8198 12.375 14.7245 12.375 14.625L12.75 4.5C12.7772 4.095 12.4059 3.75 12 3.75Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+		<path d="M12 20.25C12.4142 20.25 12.75 19.9142 12.75 19.5C12.75 19.0858 12.4142 18.75 12 18.75C11.5858 18.75 11.25 19.0858 11.25 19.5C11.25 19.9142 11.5858 20.25 12 20.25Z" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
 	</svg>
 
 	<symbol xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" id="last-aborted">
@@ -43,17 +38,16 @@
 	</symbol>
 
 	<symbol xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 28" id="last-disabled">
-		<g stroke="currentColor" stroke-width="3" fill="none" fill-rule="evenodd">
+		<g stroke="currentColor" stroke-width="2" fill="none" fill-rule="evenodd">
 			<path d="M18.4085057,9.72715652 L9.75138867,18.3842736 L18.4085057,9.72715652 Z" transform="translate(14.079947, 14.055715) rotate(-5.000000) translate(-14.079947, -14.055715) "></path>
 		</g>
 	</symbol>
 
 	<symbol xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" id="never-built">
 		<g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-			<!-- <circle id="Oval" stroke="currentColor" stroke-width="3" fill-rule="nonzero" cx="12" cy="12" r="10.5"></circle> -->
-			<circle id="Oval-Copy-10" fill="currentColor" cx="7.35714286" cy="12.0371429" r="1.85714286"></circle>
-			<circle id="Oval-Copy-11" fill="currentColor" cx="16.6428571" cy="12.0371429" r="1.85714286"></circle>
-			<circle id="Oval-Copy-12" fill="currentColor" cx="12" cy="12.0371429" r="1.85714286"></circle>
+			<circle id="Oval-Copy-10" fill="currentColor" cx="7.35714286" cy="12.0371429" r="1.5"></circle>
+			<circle id="Oval-Copy-11" fill="currentColor" cx="16.6428571" cy="12.0371429" r="1.5"></circle>
+			<circle id="Oval-Copy-12" fill="currentColor" cx="12" cy="12.0371429" r="1.5"></circle>
 		</g>
 	</symbol>
 </svg>
