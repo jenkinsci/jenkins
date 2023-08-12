@@ -128,6 +128,7 @@ a {
   svg {
     width: 16px;
     height: 16px;
+    flex: 0 0 auto;
     color: var(--text-color) !important;
   }
 }
@@ -316,6 +317,7 @@ pre.console {
 
 .expanding-input {
   display: flex;
+  align-items: center;
 }
 
 .expanding-input__input {
@@ -324,13 +326,6 @@ pre.console {
 
 .expanding-input__button {
   flex-shrink: 1;
-}
-
-.expanding-input__button input {
-  border: 2px solid var(--input-border) !important;
-  border-radius: var(--form-input-border-radius) !important;
-  min-width: 0 !important;
-  height: 100%;
 }
 
 /* div that looks like a hyperlink */
