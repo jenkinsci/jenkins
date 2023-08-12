@@ -88,9 +88,7 @@ div {
                         a(href: "newJob", class: "content-block__link") {
                             span(_("createJob"))
                             span(class: "trailing-icon") {
-                                l.icon(
-                                        class: "icon-md",
-                                        src: "symbol-arrow-right")
+                                l.icon(src: "symbol-add")
                             }
                         }
                     }
