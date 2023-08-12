@@ -90,7 +90,7 @@ THE SOFTWARE.
                        class="content-block__link">
                       <span>${%newCloud}</span>
                       <span class="trailing-icon">
-                        <l:icon src="symbol-arrow-right"/>
+                        <l:icon src="symbol-add"/>
                       </span>
                     </a>
                   </li>
