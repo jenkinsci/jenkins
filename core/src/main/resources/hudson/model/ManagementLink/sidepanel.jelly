@@ -41,7 +41,8 @@ THE SOFTWARE.
               icon="${item.iconFileName}"
               badge="${item.badge}"
               requiresConfirmation="${item.requiresConfirmation}"
-              post="${item.requiresPOST}" confirmationMessage="${%sure}" />
+              post="${item.requiresPOST}"
+              confirmationMessage="${%sure}" />
         </j:forEach>
       </j:forEach>
     </l:tasks>
