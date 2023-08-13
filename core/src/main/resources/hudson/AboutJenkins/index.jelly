@@ -24,8 +24,10 @@ THE SOFTWARE.
 
 <!-- About Jenkins page -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:t="/lib/hudson">
-  <l:layout type="one-column" permissions="${app.MANAGE_AND_SYSTEM_READ}" title="${%about(app.VERSION)}">
+<j:jelly xmlns:st="jelly:stapler" xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:t="/lib/hudson">
+  <l:layout permissions="${app.MANAGE_AND_SYSTEM_READ}" title="${%about(app.VERSION)}">
+    <st:include page="sidepanel.jelly" />
+
     <l:header>
       <script src="${resURL}/jsbundles/section-to-tabs.js" type="text/javascript" defer="true" />
     </l:header>

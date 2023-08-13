@@ -114,7 +114,6 @@ import hudson.model.Label;
 import hudson.model.ListView;
 import hudson.model.LoadBalancer;
 import hudson.model.LoadStatistics;
-import hudson.model.ManageJenkinsAction;
 import hudson.model.ManagementLink;
 import hudson.model.Messages;
 import hudson.model.ModifiableViewGroup;
@@ -4469,14 +4468,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     @Override
     public ContextMenu doContextMenu(StaplerRequest request, StaplerResponse response) throws IOException, JellyException {
-        ContextMenu menu = new ContextMenu().from(this, request, response);
-        for (MenuItem i : menu.items) {
-            if (i.url.equals(request.getContextPath() + "/manage")) {
-                // add "Manage Jenkins" subitems
-                i.subMenu = new ContextMenu().from(ExtensionList.lookupSingleton(ManageJenkinsAction.class), request, response, "index");
-            }
-        }
-        return menu;
+        return new ContextMenu().from(this, request, response);
     }
 
     @Override

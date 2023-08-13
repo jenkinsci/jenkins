@@ -24,7 +24,9 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
-  <l:layout permission="${app.ADMINISTER}" title="${%Users}" type="one-column">
+  <l:layout permission="${app.ADMINISTER}" title="${%Users}">
+    <st:include page="sidepanel.jelly" class="hudson.model.ManagementLink" />
+
     <l:main-panel>
       <l:app-bar title="${%Users}">
         <l:isAdmin>

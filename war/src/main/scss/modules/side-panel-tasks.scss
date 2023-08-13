@@ -24,11 +24,22 @@ $background-outset: 0.7rem;
   }
 }
 
+.jenkins-side-nav__heading {
+  margin: var(--section-padding) var(--section-padding) calc(var(--section-padding) / 3) 0;
+  color: var(--text-color-secondary);
+  font-size: 0.9375rem;
+  font-weight: 550;
+}
+
 #side-panel {
   .jenkins-app-bar {
     margin-top: var(--section-padding);
     margin-left: var(--section-padding);
     margin-right: var(--section-padding);
+
+    & + #tasks > .jenkins-search-container {
+      margin-block: -0.5rem;
+    }
   }
 
   & > #tasks > .jenkins-search-container {
@@ -83,10 +94,6 @@ $background-outset: 0.7rem;
       width: 1.375rem !important;
       height: 1.375rem !important;
       color: var(--text-color);
-
-      * {
-        transition: stroke-width var(--standard-transition);
-      }
     }
   }
 
@@ -121,10 +128,6 @@ $background-outset: 0.7rem;
     font-weight: 600 !important;
     cursor: default;
 
-    svg * {
-      stroke-width: 38px;
-    }
-
     &::before {
       background-color: var(--item-background--active) !important;
     }
@@ -132,5 +135,16 @@ $background-outset: 0.7rem;
     &::after {
       box-shadow: none !important;
     }
+  }
+}
+
+.nodeswidgetview {
+  display: flex;
+  gap: var(--section-padding);
+  overflow: hidden;
+
+  .sidebars {
+    min-width: 300px;
+    flex-shrink: 0;
   }
 }
