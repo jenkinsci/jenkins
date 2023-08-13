@@ -37,9 +37,7 @@ THE SOFTWARE.
       <j:set var="instance" value="${it}" />
       <j:set var="descriptor" value="${it.descriptor}" />
 
-      <div class="jenkins-description">
-        Identify potential issues with nodes before they impact the overall Jenkins environment. Nodes are checked for their status and connectivity and alerts are sent when a node is unreachable or experiencing problems.
-      </div>
+      <div class="jenkins-description">${%description}</div>
 
       <f:form method="post" action="configSubmit" name="config">
         <f:descriptorList title="${%Preventive Node Monitoring}"
