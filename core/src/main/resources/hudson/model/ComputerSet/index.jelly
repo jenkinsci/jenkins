@@ -57,6 +57,15 @@ THE SOFTWARE.
     <j:set var="monitors" value="${it._monitors}"/>
     <j:set var="tableWidth" value="${3}"/>
 
+    <table id="computers" class="jenkins-table sortable">
+      <thead>
+        <tr>
+          <th class="jenkins-table__cell--tight">S</th>
+          <th initialSortDir="down">${%Name}</th>
+          <j:forEach var="m" items="${monitors}">
+            <j:if test="${m.columnCaption!=null}">
+              <j:set var="tableWidth" value="${tableWidth+1}"/>
+              <th align="right" tooltip="${m.descriptor.timestampString}">${m.columnCaption}</th>
             </j:if>
           </j:forEach>
           <th class="jenkins-table__cell--tight" data-sort-disable="true" />
@@ -64,53 +73,54 @@ THE SOFTWARE.
       </thead>
       <tbody>
 
-      <j:forEach var="c" items="${it._all}">
-        <tr id="node_${c.name}">
-          <td data="${c.icon}" class="jenkins-table__cell--tight jenkins-table__icon">
-            <div class="jenkins-table__cell__button-wrapper">
-              <l:icon src="${c.iconClassName}" alt="${c.iconAltText}"/>
-            </div>
-          </td>
-            <tr id="node_${c.name}">
-
-          <td>
-            <a href="../${c.url}" class="jenkins-table__link model-link inside">${c.displayName}</a>
-          </td>
-
-          <j:forEach var="m" items="${monitors}">
-              <j:set var="data" value="${m.data(c)}"/>
-              <st:include page="column.jelly" from="${m}" />
-            </j:if>
-                  <st:include page="column.jelly" from="${m}" />
-          </j:forEach>
-
-          <td class="jenkins-table__cell--tight">
-            <j:if test="${c.hasPermission(c.EXTENDED_READ)}">
+        <j:forEach var="c" items="${it._all}">
+          <tr id="node_${c.name}">
+            <td data="${c.icon}" class="jenkins-table__cell--tight jenkins-table__icon">
               <div class="jenkins-table__cell__button-wrapper">
-                <a href="../${c.url}configure" class="jenkins-table__button">
-                  <l:icon src="symbol-settings" />
-                </a>
+                <l:icon src="${c.iconClassName}" alt="${c.iconAltText}"/>
               </div>
-        </tr>
-      </j:forEach>
+            </td>
 
-      <!-- let clouds contribute fragments here -->
-      <j:forEach var="cloud" items="${app.clouds}">
-        <st:include it="${cloud}" page="computerSet.jelly" optional="true" />
-      </j:forEach>
+            <td>
+              <a href="../${c.url}" class="jenkins-table__link model-link inside">${c.displayName}</a>
+            </td>
+
+            <j:forEach var="m" items="${monitors}">
               <j:if test="${m.columnCaption!=null}">
+                <j:set var="data" value="${m.data(c)}"/>
+                <st:include page="column.jelly" from="${m}" />
+              </j:if>
+            </j:forEach>
 
-      <tr class="sortbottom">
-        <th />
-        <th>${%Data obtained}</th>
-        <j:forEach var="m" items="${monitors}">
-          <j:if test="${m.columnCaption!=null}">
-            <th align="right">
-              ${m.descriptor.timestampString}
-            </th>
+            <td class="jenkins-table__cell--tight">
+              <j:if test="${c.hasPermission(c.EXTENDED_READ)}">
+                <div class="jenkins-table__cell__button-wrapper">
+                  <a href="../${c.url}configure" class="jenkins-table__button">
+                    <l:icon src="symbol-settings" />
+                  </a>
+                </div>
+              </j:if>
+            </td>
+          </tr>
         </j:forEach>
-        <th />
-      </tr>
+
+        <!-- let clouds contribute fragments here -->
+        <j:forEach var="cloud" items="${app.clouds}">
+          <st:include it="${cloud}" page="computerSet.jelly" optional="true" />
+        </j:forEach>
+
+        <tr class="sortbottom">
+          <th />
+          <th>${%Data obtained}</th>
+          <j:forEach var="m" items="${monitors}">
+            <j:if test="${m.columnCaption!=null}">
+              <th align="right">
+                ${m.descriptor.timestampString}
+              </th>
+            </j:if>
+          </j:forEach>
+          <th />
+        </tr>
       </tbody>
     </table>
   </l:main-panel>
