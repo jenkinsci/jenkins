@@ -73,7 +73,7 @@ import java.util.jar.Manifest;
 public class Main {
 
     private static final NavigableSet<Integer> SUPPORTED_JAVA_VERSIONS =
-            new TreeSet<>(Arrays.asList(11, 17));
+            new TreeSet<>(Arrays.asList(11, 17, 21));
 
     /**
      * Sets custom session cookie name.
