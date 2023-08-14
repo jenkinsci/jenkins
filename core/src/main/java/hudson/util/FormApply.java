@@ -68,6 +68,32 @@ public class FormApply {
         return Boolean.parseBoolean(req.getParameter("core:apply"));
     }
 
+
+    /**
+     * Generates the response for the asynchronous background form submission (AKA the Apply button.)
+     * <p>
+     * When the response HTML includes a JavaScript function in a pre-determined name, that function gets executed.
+     * This method generates such a response from JavaScript text.
+     *
+     * @deprecated use {#{@link #applyResponse(String, String)}} instead, which is CSP compatible version
+     */
+    @Deprecated
+    public static HttpResponseException applyResponse(final String script) {
+        return new HttpResponseException() {
+            @Override
+            public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
+                rsp.setContentType("text/html;charset=UTF-8");
+                rsp.getWriter().println("<html><body><script>" +
+                        "window.applyCompletionHandler = function (w) {" +
+                        "  with(w) {" +
+                        script +
+                        "  }" +
+                        "};" +
+                        "</script></body></html>");
+            }
+        };
+    }
+
     /**
      * Generates the response for the asynchronous background form submission (AKA the Apply button),
      * that will show a notification of certain type and with provided message. Supported notification types
