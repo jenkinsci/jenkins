@@ -947,6 +947,50 @@ table.progress-bar.red td.progress-bar-done {
   margin: 0 !important;
 }
 
+/* ========================= tags/labels ================== */
+// Used in core/src/main/java/hudson/util/TagCloud.java#getClassName
+
+/* tag0 is the least important tag in a tag cloud */
+.tag0 {
+  font-size: 1em;
+}
+
+.tag1 {
+  font-size: 1.1em;
+}
+
+.tag2 {
+  font-size: 1.2em;
+}
+
+.tag3 {
+  font-size: 1.3em;
+}
+
+.tag4 {
+  font-size: 1.4em;
+}
+
+.tag5 {
+  font-size: 1.5em;
+}
+
+.tag6 {
+  font-size: 1.6em;
+}
+
+.tag7 {
+  font-size: 1.7em;
+}
+
+.tag8 {
+  font-size: 1.8em;
+}
+
+.tag9 {
+  font-size: 1.9em;
+}
+
 /* ========================= logRecords.jelly ================== */
 
 .logrecord-container {
