@@ -905,6 +905,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
 
         @Override
         public String encode(CharSequence rawPassword) {
+            LOGGER.info("BCRYPT Implementation");
             return BCrypt.hashpw(rawPassword.toString(), BCrypt.gensalt());
         }
 
@@ -938,15 +939,20 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         public static final int HASH_LENGTH = 8;
         public static final int ZERO = 0;
         public static final int HEX_TWO = 2;
-
         public static final int RADIX_LENGTH = 16;
         public static final String STRING_SEPARATION = ":";
-
         public static final int KEY_LENGTH = 512;
         public static final String PBKDF2_ALGORITHM = "PBKDF2WithHmacSHA512";
 
+        @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
+        @Restricted(NoExternalUse.class)
+        private static int MAXIMUM_PBKDF2_LOG_ROUND = SystemProperties.getInteger(HudsonPrivateSecurityRealm.class.getName() + ".maximumPBKDF2LogRound", (int) Math.pow(2, 10));
+
+        private static final Pattern PBKDF2_PATTERN = Pattern.compile("^\\$PBKDF2\\$HMACSHA512\\:([0-9]{4})\\:[a-zA-Z0-9=]+\\$[a-zA-Z0-9=]+");
+
         @Override
         public String encode(CharSequence rawPassword) {
+            LOGGER.info("PBKDF2 Implementation");
             return generatePasswordHashWithPBKDF2(rawPassword);
         }
 
@@ -955,16 +961,11 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
                 return validatePassword(rawPassword.toString(), encodedPassword);
         }
 
-        @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
-        @Restricted(NoExternalUse.class)
-        private static int ITERATION_COUNT = SystemProperties.getInteger(HudsonPrivateSecurityRealm.class.getName() + ".ITERATION_COUNT", 10);
-
         private static String generatePasswordHashWithPBKDF2(CharSequence password)  {
-            int iterations = (int) Math.pow(2, ITERATION_COUNT);
             byte[] salt = generateSalt();
-            PBEKeySpec spec = new PBEKeySpec(password.toString().toCharArray(), salt, iterations, KEY_LENGTH);
+            PBEKeySpec spec = new PBEKeySpec(password.toString().toCharArray(), salt, 1000, KEY_LENGTH);
             byte[] hash = generateSecretKey(spec);
-            return "$PBKDF2$HMACSHA512:" + iterations + STRING_SEPARATION + toHex(salt) + "$" + toHex(hash);
+            return PBKDF2 + "$HMACSHA512:" + 1000 + STRING_SEPARATION + toHex(salt) + "$" + toHex(hash);
         }
 
         private static byte[] generateSecretKey(PBEKeySpec spec)  {
@@ -1002,12 +1003,6 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
             return salt;
         }
 
-        @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
-        @Restricted(NoExternalUse.class)
-        private static int MAXIMUM_PBKDF2_LOG_ROUND = SystemProperties.getInteger(HudsonPrivateSecurityRealm.class.getName() + ".maximumPBKDF2LogRound", (int) Math.pow(2, 10));
-
-        private static final Pattern PBKDF2_PATTERN = Pattern.compile("^\\$PBKDF2\\$HMACSHA512\\:([0-9]{4})\\:[a-zA-Z0-9=]+\\$[a-zA-Z0-9=]+");
-
         @Override
         public boolean isHashValid(String hash)    {
             Matcher matcher = PBKDF2_PATTERN.matcher(hash);
@@ -1021,7 +1016,6 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
             }
             return false;
         }
-
 
         private static boolean validatePassword(String originalPassword, String storedPassword) {
             String[] parts = storedPassword.split("[:$]");
@@ -1054,29 +1048,19 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
 
     }
 
+    /* package */ static final PasswordHashEncoder PASSWORD_HASH_ENCODER =  Util.FIPS_MODE ? new PBKDF2PasswordEncoder() : new JBCryptEncoder();
 
 
-    /* package */ static final PasswordHashEncoder PASSWORD_HASH_ENCODER = getPasswordHashEncoder();
-
-    public static PasswordHashEncoder getPasswordHashEncoder() {
-        return Util.FIPS_MODE ? new PBKDF2PasswordEncoder() : new JBCryptEncoder();
-    }
-
-
-    public static final String PBKDF2 = "#pbkdf2:";
+    public static final String PBKDF2 = "$PBKDF2";
     public static final String JBCRYPT = "#jbcrypt:";
     /**
      * Magic header used to detect if a password is hashed.
      */
 
-    // private static String PASSWORD_HASH_HEADER = getPasswordHeader();
-
-
     public static String getPasswordHeader() {
         return Util.FIPS_MODE ? PBKDF2 : JBCRYPT;
     }
 
-    /* package */
 
     // TODO check if DelegatingPasswordEncoder can be used
     /**
@@ -1087,15 +1071,14 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
 
         /*
             CLASSIC encoder outputs "salt:hash" where salt is [a-z]+, so we use unique prefix '#jbcyrpt"
-            to designate JBCRYPT-format hash.
+            to designate JBCRYPT-format hash and $PBKDF2 to designate PBKDF2 format hash.
 
             '#' is neither in base64 nor hex, which makes it a good choice.
          */
 
         @Override
         public String encode(CharSequence rawPassword) {
-            //LOGGER.info("FIPS MODE ENABLED :");
-           // LOGGER.info("Implementation :" + PASSWORD_HASH_ENCODER);
+            LOGGER.info("FIPS MODE ENABLED :"+ Util.FIPS_MODE);
             return getPasswordHeader() + PASSWORD_HASH_ENCODER.encode(rawPassword);
         }
 
@@ -1118,9 +1101,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
             }
                 return password.startsWith(getPasswordHeader()) && PASSWORD_HASH_ENCODER.isHashValid(password.substring(getPasswordHeader().length()));
         }
-
     }
-
 
     public static final MultiPasswordEncoder PASSWORD_ENCODER = new MultiPasswordEncoder();
 

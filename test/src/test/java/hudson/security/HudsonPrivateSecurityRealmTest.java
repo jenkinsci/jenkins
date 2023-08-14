@@ -26,6 +26,7 @@ package hudson.security;
 
 import static hudson.security.HudsonPrivateSecurityRealm.PASSWORD_ENCODER;
 import static hudson.security.HudsonPrivateSecurityRealm.PASSWORD_HASH_ENCODER;
+import static hudson.security.HudsonPrivateSecurityRealm.getPasswordHeader;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
@@ -76,7 +77,7 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.TestExtension;
 import org.mindrot.jbcrypt.BCrypt;
-import org.mockito.Mock;
+
 
 @For({UserSeedProperty.class, HudsonPrivateSecurityRealm.class})
 public class HudsonPrivateSecurityRealmTest {
@@ -86,14 +87,10 @@ public class HudsonPrivateSecurityRealmTest {
 
     private SpySecurityListenerImpl spySecurityListener;
 
-    @Mock
-    private Util util;
-
     @Before
     public void linkExtension() {
         spySecurityListener = ExtensionList.lookup(SecurityListener.class).get(SpySecurityListenerImpl.class);
     }
-
 
     @Issue("SECURITY-243")
     @Test
@@ -271,6 +268,10 @@ public class HudsonPrivateSecurityRealmTest {
         j.jenkins.setSecurityRealm(securityRealm);
         j.jenkins.setCrumbIssuer(null);
 
+        Field field = HudsonPrivateSecurityRealm.class.getDeclaredField("ID_REGEX");
+        field.setAccessible(true);
+        field.set(null, null);
+
         assertTrue(spySecurityListener.loggedInUsernames.isEmpty());
 
         createFirstAccount("admin");
@@ -326,7 +327,9 @@ public class HudsonPrivateSecurityRealmTest {
     public void userCreationWithHashedPasswords() throws Exception {
         HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
         j.jenkins.setSecurityRealm(securityRealm);
-
+        Field field1 = Util.class.getDeclaredField("FIPS_MODE");
+        field1.setAccessible(false);
+        field1.set(System.setProperty("hudson.security.Util.FIPS_MODE", "false"), false);
         spySecurityListener.createdUsers.clear();
         assertTrue(spySecurityListener.createdUsers.isEmpty());
 
@@ -428,6 +431,10 @@ public class HudsonPrivateSecurityRealmTest {
         HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(true, false, null);
         j.jenkins.setSecurityRealm(securityRealm);
 
+        Field field = HudsonPrivateSecurityRealm.class.getDeclaredField("ID_REGEX");
+        field.setAccessible(true);
+        field.set(null, null);
+
         String password = "testPwd";
         String email = "test@test.com";
         int i = 0;
@@ -501,9 +508,45 @@ public class HudsonPrivateSecurityRealmTest {
     }
 
     @Test
+    public void passwordHashWithPBKDF2() throws IllegalAccessException, NoSuchFieldException {
+        HudsonPrivateSecurityRealm.PBKDF2PasswordEncoder pbkdf2PasswordEncoder = new HudsonPrivateSecurityRealm.PBKDF2PasswordEncoder();
+        Field field1 = Util.class.getDeclaredField("FIPS_MODE");
+        field1.setAccessible(true);
+        field1.set(System.setProperty("hudson.security.Util.FIPS_MODE", "true"), true);
+
+        mockStatic(HudsonPrivateSecurityRealm.class);
+        when(getPasswordHeader()).thenReturn("$PBKDF2");
+        assertNotNull(pbkdf2PasswordEncoder.encode("password"));
+        assertTrue(PASSWORD_ENCODER.isPasswordHashed("$PBKDF2" + PASSWORD_HASH_ENCODER.encode("password")));
+    }
+
+    @Test
+    public void passwordHashMatchesPBKDF2() throws IllegalAccessException, NoSuchFieldException {
+        HudsonPrivateSecurityRealm.PBKDF2PasswordEncoder pbkdf2PasswordEncoder = new HudsonPrivateSecurityRealm.PBKDF2PasswordEncoder();
+        Field field = Util.class.getDeclaredField("FIPS_MODE");
+        field.setAccessible(true);
+        field.setBoolean(System.setProperty("hudson.security.Util.FIPS_MODE", "true"), true);
+
+        mockStatic(HudsonPrivateSecurityRealm.class);
+        when(getPasswordHeader()).thenReturn("$PBKDF2");
+
+      assertTrue(pbkdf2PasswordEncoder.matches("3a6f9ee5a3af41ef844cb291c63b40f4",
+              "$PBKDF2$HMACSHA512:1024:f6865c02cc759fd061db0f3121a093e0$079bd3a0c2851248343584a9a4625360e9ebb13c36be49542268d2ebdbd1fb71f004db9ce7335a61885985e32e08cb20215ff7bf64b2af5792581039faa62b52"));
+    }
+
+    @Test
+    public void passwordHashNotMatches() {
+        assertFalse(PASSWORD_ENCODER.matches(null, "1000:137287e0ae3e24ae15df2f6caf068d5a:7bcdd7d6788bf20747812fd39b3ff5451235b12dfa62f6b"));
+    }
+
+    @Test
     public void createAccountSupportsHashedPasswords() throws Exception {
         HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
         j.jenkins.setSecurityRealm(securityRealm);
+
+        Field field1 = Util.class.getDeclaredField("FIPS_MODE");
+        field1.setAccessible(false);
+        field1.set(System.setProperty("hudson.security.Util.FIPS_MODE", "false"), false);
 
         securityRealm.createAccountWithHashedPassword("user_hashed", "#jbcrypt:" + BCrypt.hashpw("password", BCrypt.gensalt()));
 
@@ -561,24 +604,6 @@ public class HudsonPrivateSecurityRealmTest {
         assertThrows(IllegalArgumentException.class, () -> BCrypt.checkpw("a", "$2y$08$cfcvVd2aQ8CMvoMpP2EBfeodLEkkFJ9umNEfPD18.hUF62qqlC/V."));
     }
 
-    @Test
-    public void hashedPasswordTestPBKDF2() {
-        mockStatic(Util.class);
-        when(Util.isFipsMode()).thenReturn(true);
-        PASSWORD_ENCODER.isPasswordHashed("#pbkdf2:" + PASSWORD_HASH_ENCODER.encode("password"));
-        assertNotNull(PASSWORD_HASH_ENCODER.encode("password"));
-    }
-
-    @Test
-    public void hashedPasswordTestMatchesPBKDF2() {
-        PASSWORD_ENCODER.matches("password", "1000:137287e0ae3e24ae15df2f6caf068d5a:7bcdd7d6788bf20747812fd39b3ff5451235b12dfa62f6b");
-    }
-
-    @Test
-    public void hashedPasswordTestMatchesPBKDF2False() {
-        assertFalse(PASSWORD_ENCODER.matches(null, "1000:137287e0ae3e24ae15df2f6caf068d5a:7bcdd7d6788bf20747812fd39b3ff5451235b12dfa62f6b"));
-    }
-
     private void checkUserCanBeCreatedWith(HudsonPrivateSecurityRealm securityRealm, String id, String password, String fullName, String email) throws Exception {
         JenkinsRule.WebClient wc = j.createWebClient();
         SignupPage signup = new SignupPage(wc.goTo("signup"));
@@ -617,10 +642,14 @@ public class HudsonPrivateSecurityRealmTest {
     @Test
     @Issue("SECURITY-1158")
     public void singupNoLongerVulnerableToSessionFixation() throws Exception {
+
         HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(true, false, null);
         j.jenkins.setSecurityRealm(securityRealm);
         JenkinsRule.WebClient wc = j.createWebClient();
 
+        Field field = HudsonPrivateSecurityRealm.class.getDeclaredField("ID_REGEX");
+        field.setAccessible(true);
+        field.set(null, null);
         // to trigger the creation of a session
         wc.goTo("");
         Cookie sessionBefore = wc.getCookieManager().getCookie("JSESSIONID");
