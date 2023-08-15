@@ -338,7 +338,7 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
         String reqPath = req.getOriginalRequestURI();
         String[] uriTokens = reqPath.replaceFirst("^/", "").split("/");
         if (uriTokens.length < 3 || !"rename".equals(uriTokens[uriTokens.length - 1])) {
-            // We should never be here, expecting URI format jenkins/cloud/name/configSubmit
+            // We should never be here, expecting URI format jenkins/cloud/name/rename
             throw new ServletException("Expected cloud rename URI: " + reqPath);
         }
         String cloudId = uriTokens[uriTokens.length - 2];
