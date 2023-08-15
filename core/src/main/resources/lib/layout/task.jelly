@@ -66,20 +66,27 @@ THE SOFTWARE.
 
       If both permission and permissions is set, then permissions will be used
     </st:attribute>
-    <st:attribute name="post" type="boolean" since="1.504">
+    <st:attribute name="post" type="boolean">
       If true, send a POST rather than a GET request.
       (onclick supersedes this except in the context menu.)
+      (since 1.504)
     </st:attribute>
-    <st:attribute name="requiresConfirmation" type="boolean" since="1.512">
+    <st:attribute name="requiresConfirmation" type="boolean">
       If true, require confirmation before clicking.
       Generally used with post="true".
       (onclick supersedes this except in the context menu.)
+      (since 1.512)
     </st:attribute>
-    <st:attribute name="badge" since="TODO">
+    <st:attribute name="badge">
       If set, displays the value as a small badge on the right side of the sidepanel item.
+      @since TODO
     </st:attribute>
-    <st:attribute name="confirmationMessage" since="1.512">
+    <st:attribute name="confirmationMessage">
       Message to use for confirmation, if requested; defaults to title.
+      (since 1.512)
+    </st:attribute>
+    <st:attribute name="destructive" type="boolean" since="TODO">
+      Show red confirmation button.
     </st:attribute>
   </st:documentation>
 
@@ -153,7 +160,7 @@ THE SOFTWARE.
             <j:set var="iconXml">
               <l:icon src="${icon}" />
             </j:set>
-            ${taskTags!=null and attrs.contextMenu!='false' ? taskTags.add(href, iconSrc, iconXml, title, post == 'true', requiresConfirmation == 'true') : null}
+            ${taskTags!=null and attrs.contextMenu!='false' ? taskTags.add(href, iconSrc, iconXml, title, post == 'true', requiresConfirmation == 'true', null, confirmationMessage ?: null) : null}
             <j:set var="id" value="${h.generateId()}"/>
             <j:if test="${attrs.onclick == null and post and not requiresConfirmation}">
                 <script>
@@ -170,7 +177,7 @@ THE SOFTWARE.
 
             <j:choose>
               <j:when test="${requiresConfirmation and not attrs.onClick}">
-                <l:confirmationLink class="task-link ${isCurrent ? 'task-link--active' : ''}" href="${href}" post="${post}" message="${confirmationMessage ?: title}">
+                <l:confirmationLink class="task-link ${isCurrent ? 'task-link--active' : ''}" href="${href}" post="${post}" message="${confirmationMessage ?: ''}" title="${title}">
                   <span class="task-icon-link">
                     <l:icon src="${icon}" />
                   </span>

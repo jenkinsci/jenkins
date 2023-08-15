@@ -66,7 +66,7 @@ var repeatableSupport = {
         opacity: { to: 1 },
       },
       0.2,
-      YAHOO.util.Easing.easeIn
+      YAHOO.util.Easing.easeIn,
     ).animate();
 
     Behaviour.applySubtree(nc, true);
@@ -83,7 +83,7 @@ var repeatableSupport = {
       var addButtonElements = Array.from(this.container.children).filter(
         function (b) {
           return b.classList.contains("repeatable-add");
-        }
+        },
       );
 
       if (addButtonElements.length == 2) {
@@ -96,7 +96,7 @@ var repeatableSupport = {
         addButtonElements = Array.from(this.container.children).filter(
           function (b) {
             return b.classList.contains("repeatable-add");
-          }
+          },
         );
 
         if (addButtonElements.length == 1 && this.enableTopButton) {
@@ -125,7 +125,7 @@ var repeatableSupport = {
 
   // called when 'delete' button is clicked
   onDelete: function (n) {
-    n = findAncestorClass(n, "repeated-chunk");
+    n = n.closest(".repeated-chunk");
     var a = new YAHOO.util.Anim(
       n,
       {
@@ -133,7 +133,7 @@ var repeatableSupport = {
         height: { to: 0 },
       },
       0.2,
-      YAHOO.util.Easing.easeIn
+      YAHOO.util.Easing.easeIn,
     );
     a.onComplete.subscribe(function () {
       var p = n.parentNode;
@@ -194,7 +194,7 @@ Behaviour.specify(
       repeatableSupport.onAdd(button);
     });
     button = null; // avoid memory leak
-  }
+  },
 );
 
 /**
@@ -221,9 +221,9 @@ Behaviour.specify(
     input.parentNode.replaceChild(button, input);
     console.warn(
       "Adapted element to new markup, it should be changed to use f:repeatableDeleteButton instead in the plugin",
-      button
+      button,
     );
-  }
+  },
 );
 
 Behaviour.specify(
@@ -234,7 +234,7 @@ Behaviour.specify(
     e.addEventListener("click", function () {
       repeatableSupport.onDelete(e);
     });
-  }
+  },
 );
 
 // radio buttons in repeatable content

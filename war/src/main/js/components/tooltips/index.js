@@ -39,8 +39,8 @@ function registerTooltip(element) {
             instance.reference.setAttribute("title", instance.props.content);
           },
         },
-        TOOLTIP_BASE
-      )
+        TOOLTIP_BASE,
+      ),
     );
   }
 
@@ -57,8 +57,8 @@ function registerTooltip(element) {
               "true";
           },
         },
-        TOOLTIP_BASE
-      )
+        TOOLTIP_BASE,
+      ),
     );
   }
 }
@@ -82,8 +82,8 @@ function hoverNotification(text, element) {
           }, 3000);
         },
       },
-      TOOLTIP_BASE
-    )
+      TOOLTIP_BASE,
+    ),
   );
   tooltip.show();
 }
@@ -95,7 +95,7 @@ function init() {
     1000,
     (element) => {
       registerTooltip(element);
-    }
+    },
   );
 
   window.hoverNotification = hoverNotification;

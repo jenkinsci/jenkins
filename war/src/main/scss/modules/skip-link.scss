@@ -8,13 +8,16 @@ $skip-link-box-shadow: 0 0 50px -15px var(--yellow);
   left: calc(var(--section-padding) - $skip-link-inline-padding);
   z-index: 2000;
   background: var(--background);
-  box-shadow: 0 0 0 1rem transparent, $skip-link-box-shadow;
+  box-shadow:
+    0 0 0 1rem transparent,
+    $skip-link-box-shadow;
   color: var(--text-color) !important;
   padding: $skip-link-block-padding $skip-link-inline-padding;
   border-radius: 0.66rem;
   outline: none;
   text-decoration: none !important;
-  transition: var(--elastic-transition),
+  transition:
+    var(--elastic-transition),
     box-shadow var(--standard-transition) 0.1s;
   opacity: 0;
   scale: 80%;
@@ -43,7 +46,9 @@ $skip-link-box-shadow: 0 0 50px -15px var(--yellow);
   }
 
   &:focus-visible {
-    box-shadow: 0 0 0 0.2rem var(--yellow), $skip-link-box-shadow;
+    box-shadow:
+      0 0 0 0.2rem var(--yellow),
+      $skip-link-box-shadow;
     opacity: 1;
     scale: 100%;
     text-decoration: none !important;

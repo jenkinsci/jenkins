@@ -654,7 +654,7 @@ THE SOFTWARE.
         <!-- Version specified in grandparent POM -->
         <configuration>
           <!-- Make sure to keep the directives in test/pom.xml and war/pom.xml in sync with these. -->
-          <argLine>@{jacocoSurefireArgs} --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.desktop/com.sun.beans.introspect=ALL-UNNAMED</argLine>
+          <argLine>@{jacocoSurefireArgs} --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED</argLine>
           <reuseForks>false</reuseForks>
         </configuration>
       </plugin>
@@ -679,8 +679,8 @@ THE SOFTWARE.
     <plugins>
       <plugin>
         <!-- generate Jelly tag lib documentation -->
-        <groupId>org.kohsuke.stapler</groupId>
-        <artifactId>maven-stapler-plugin</artifactId>
+        <groupId>io.jenkins.tools.maven</groupId>
+        <artifactId>stapler-maven-plugin</artifactId>
         <!-- Version specified in grandparent POM -->
         <configuration>
           <patterns>

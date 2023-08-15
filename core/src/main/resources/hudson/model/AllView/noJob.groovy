@@ -31,9 +31,7 @@ div {
                             a(href: "newJob", class: "content-block__link") {
                                 span(_("createJob"))
                                 span(class: "trailing-icon") {
-                                    l.icon(
-                                            class: "icon-md",
-                                            src: "symbol-arrow-right")
+                                    l.icon(src: "symbol-add")
                                 }
                             }
                         }
@@ -48,9 +46,7 @@ div {
                                 a(href: "computer/new", class: "content-block__link") {
                                     span(_("setUpAgent"))
                                     span(class: "trailing-icon") {
-                                        l.icon(
-                                                class: "icon-md",
-                                                src: "symbol-arrow-right")
+                                        l.icon(src: "symbol-computer")
                                     }
                                 }
                             }
@@ -60,9 +56,7 @@ div {
                                     a(href: "cloud/", class: "content-block__link") {
                                         span(_("setUpCloud"))
                                         span(class: "trailing-icon") {
-                                            l.icon(
-                                                    class: "icon-md",
-                                                    src: "symbol-arrow-right")
+                                            l.icon(src: "symbol-cloud")
                                         }
                                     }
                                 }
@@ -71,12 +65,10 @@ div {
                             li(class: "content-block") {
                                 a(href: "https://www.jenkins.io/redirect/distributed-builds",
                                         target: "_blank",
-                                        class: "content-block__link content-block__help-link") {
+                                        class: "content-block__link") {
                                     span(_("learnMoreDistributedBuilds"))
                                     span(class: "trailing-icon") {
-                                        l.icon(
-                                                class: "icon-md",
-                                                src: "symbol-link")
+                                        l.icon(src: "symbol-help-circle")
                                     }
                                 }
                             }
@@ -96,9 +88,7 @@ div {
                         a(href: "newJob", class: "content-block__link") {
                             span(_("createJob"))
                             span(class: "trailing-icon") {
-                                l.icon(
-                                        class: "icon-md",
-                                        src: "symbol-arrow-right")
+                                l.icon(src: "symbol-add")
                             }
                         }
                     }

@@ -36,13 +36,17 @@ THE SOFTWARE.
     <l:main-panel>
       <l:app-bar title="${%Plugins}" />
 
+      <j:set var="noPlugins"
+             value="${empty(app.pluginManager.plugins) and empty(app.pluginManager.failedPlugins)}" />
+
       <div class="jenkins-app-bar jenkins-app-bar--sticky">
         <div class="jenkins-app-bar__content">
           <l:search-bar clazz="jenkins-search--app-bar"
                         placeholder="${%Search installed plugins}"
                         id="filter-box"
                         autofocus="true"
-                        value="${request.getParameter('filter')}" />
+                        value="${request.getParameter('filter')}"
+                        enabled="${!noPlugins}" />
         </div>
       </div>
 
@@ -55,41 +59,32 @@ THE SOFTWARE.
         <div class="alert alert-warning"><strong>${%Warning}</strong>: ${%requires.restart}</div>
       </j:if>
 
-      <div class="plugins i18n"
-           data-cannot-enable="${%This plugin cannot be enabled}"
-           data-cannot-disable="${%This plugin cannot be disabled}"
-           data-cannot-uninstall="${%This plugin cannot be uninstalled}"
-           data-disabled-dependencies="${%It has one or more unsatisfied dependencies}"
-           data-enabled-dependents="${%It has one or more enabled dependents}"
-           data-installed-dependents="${%It has one or more installed dependents}"
-           data-detached-disable="${%detached-disable}"
-           data-detached-uninstall="${%detached-uninstall}"
-           data-detached-possible-dependents="${%detached-possible-dependents}"
-      />
+      <template id="i18n"
+                data-cannot-enable="${%This plugin cannot be enabled}"
+                data-cannot-disable="${%This plugin cannot be disabled}"
+                data-cannot-uninstall="${%This plugin cannot be uninstalled}"
+                data-disabled-dependencies="${%It has one or more unsatisfied dependencies}"
+                data-enabled-dependents="${%It has one or more enabled dependents}"
+                data-installed-dependents="${%It has one or more installed dependents}"
+                data-detached-disable="${%detached-disable}"
+                data-detached-uninstall="${%detached-uninstall}"
+                data-detached-possible-dependents="${%detached-possible-dependents}"
+                data-uninstall-description="${%uninstall-description}" />
 
-      <table id="plugins" class="jenkins-table sortable">
-        <j:choose>
-          <j:when test="${empty(app.pluginManager.plugins) and empty(app.pluginManager.failedPlugins)}">
+      <j:choose>
+        <j:when test="${noPlugins}">
+          <l:notice icon="symbol-plugins" text="${%No plugins installed}" />
+        </j:when>
+        <j:otherwise>
+          <table id="plugins" class="jenkins-table sortable">
             <thead>
-              <tr>
-                <th>${%Installed plugins}</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td align="center">${%No plugins installed.}</td>
-              </tr>
-            </tbody>
-          </j:when>
-          <j:otherwise>
-            <thead>
-              <tr>
-                <th initialSortDir="down">${%Name}</th>
-                <th class="jenkins-table__cell--tight">${%Enabled}</th>
-                <l:isAdmin>
-                  <th data-sort-disable="true"/>
-                </l:isAdmin>
-              </tr>
+            <tr>
+              <th initialSortDir="down">${%Name}</th>
+              <th class="jenkins-table__cell--tight">${%Enabled}</th>
+              <l:isAdmin>
+                <th data-sort-disable="true"/>
+              </l:isAdmin>
+            </tr>
             </thead>
             <tbody>
               <j:forEach var="p" items="${app.pluginManager.plugins}">
@@ -225,11 +220,14 @@ THE SOFTWARE.
                                 </j:forEach>
                               </div>
                             </j:if>
-                            <form class="jenkins-buttons-row" method="post" action="plugin/${p.shortName}/uninstall">
-                              <button class="jenkins-table__button jenkins-!-destructive-color uninstall" tooltip="${%Uninstall} ${p.updateInfo.displayName?:p.displayName}">
-                                <l:icon src="symbol-close-circle"/>
-                              </button>
-                            </form>
+                            <button data-action="uninstall"
+                                    type="button"
+                                    class="jenkins-table__button jenkins-!-destructive-color"
+                                    tooltip="${%Uninstall} ${p.updateInfo.displayName ?: p.displayName}"
+                                    data-href="plugin/${p.shortName}/doUninstall"
+                                    data-message="${%uninstall-title(p.updateInfo.displayName ?: p.displayName)}">
+                              <l:icon src="symbol-close-circle"/>
+                            </button>
                           </j:otherwise>
                         </j:choose>
                       </div>
@@ -271,9 +269,9 @@ THE SOFTWARE.
                 </tr>
               </j:forEach>
             </tbody>
-          </j:otherwise>
-        </j:choose>
-      </table>
+          </table>
+        </j:otherwise>
+      </j:choose>
 
       <div class="warning" id="needRestart" style="display:none; margin: 1em; height: 1em">
         <form method="post" action="${rootURL}/safeRestart">
