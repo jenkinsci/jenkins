@@ -4,9 +4,7 @@ import * as Symbols from "./symbols";
 
 export const JenkinsSearchSource = {
   async execute(query) {
-    const rootUrl = document
-      .getElementById("page-header")
-      .dataset.rootUrl;
+    const rootUrl = document.getElementById("page-header").dataset.rootUrl;
     const response = await Search.search(query);
 
     function correctAddress(url) {
@@ -23,7 +21,7 @@ export const JenkinsSearchSource = {
 
     return await response.json().then((data) => {
       return [...data["suggestions"]].map(
-        (e) => new LinkResult(Symbols.SEARCH, e.name, correctAddress(e.url))
+        (e) => new LinkResult(Symbols.SEARCH, e.name, correctAddress(e.url)),
       );
     });
   },

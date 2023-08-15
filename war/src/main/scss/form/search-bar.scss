@@ -83,8 +83,9 @@
     &:focus {
       outline: none;
       background: var(--item-background--active);
-      box-shadow: 0 0 0 2px var(--focus-input-border),
-      0 0 0 7px var(--focus-input-glow);
+      box-shadow:
+        0 0 0 2px var(--focus-input-border),
+        0 0 0 7px var(--focus-input-glow);
 
       &::-webkit-search-cancel-button {
         opacity: 1;

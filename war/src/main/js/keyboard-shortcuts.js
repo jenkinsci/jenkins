@@ -2,7 +2,7 @@ import hotkeys from "hotkeys-js";
 
 window.addEventListener("load", () => {
   const openCommandPaletteButton = document.querySelector(
-    "#button-open-command-palette"
+    "#button-open-command-palette",
   );
   if (openCommandPaletteButton) {
     hotkeys(translateModifierKeysForUsersPlatform("CMD+K"), () => {
@@ -14,7 +14,7 @@ window.addEventListener("load", () => {
   }
 
   const pageSearchBar = document.querySelectorAll(
-    "#page-body .jenkins-search__input"
+    "#page-body .jenkins-search__input",
   );
   if (pageSearchBar.length === 1) {
     hotkeys("/", () => {

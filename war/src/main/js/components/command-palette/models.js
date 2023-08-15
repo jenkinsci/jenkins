@@ -10,7 +10,7 @@ export class LinkResult {
   }
   render() {
     return `<a class="jenkins-command-palette__results__item" href="${xmlEscape(
-      this.url
+      this.url,
     )}">
         <div class="jenkins-command-palette__results__item__icon">${
           this.icon

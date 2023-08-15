@@ -9,19 +9,19 @@ const datasources = [JenkinsSearchSource];
 function init() {
   const i18n = document.getElementById("command-palette-i18n");
   const headerCommandPaletteButton = document.getElementById(
-    "button-open-command-palette"
+    "button-open-command-palette",
   );
   const commandPalette = document.getElementById("command-palette");
   const commandPaletteWrapper = commandPalette.querySelector(
-    ".jenkins-command-palette__wrapper"
+    ".jenkins-command-palette__wrapper",
   );
   const commandPaletteInput = document.getElementById("command-bar");
   const commandPaletteSearchBarContainer = commandPalette.querySelector(
-    ".jenkins-command-palette__search"
+    ".jenkins-command-palette__search",
   );
   const searchResults = document.getElementById("search-results");
   const searchResultsContainer = document.getElementById(
-    "search-results-container"
+    "search-results-container",
   );
 
   const hoverClass = "jenkins-command-palette__results__item--hover";
@@ -29,7 +29,7 @@ function init() {
   makeKeyboardNavigable(
     searchResultsContainer,
     () => searchResults.querySelectorAll("a"),
-    hoverClass
+    hoverClass,
   );
 
   // Events
@@ -60,17 +60,15 @@ function init() {
           i18n.dataset.getHelp,
           "https://www.jenkins.io/redirect/search-box",
           true,
-          document
-            .getElementById("page-header")
-            .dataset.searchHelpUrl,
-          true
+          document.getElementById("page-header").dataset.searchHelpUrl,
+          true,
         ),
       ];
     } else {
       await Promise.all(datasources.map((ds) => ds.execute(query))).then(
         (response) => {
           results = response.flat();
-        }
+        },
       );
     }
 
@@ -102,7 +100,7 @@ function init() {
 
     searchResultsContainer.style.height = searchResults.offsetHeight + "px";
     commandPaletteSearchBarContainer.classList.remove(
-      "jenkins-search--loading"
+      "jenkins-search--loading",
     );
   }
 
@@ -117,7 +115,7 @@ function init() {
     commandPaletteInput.focus();
     commandPaletteInput.setSelectionRange(
       commandPaletteInput.value.length,
-      commandPaletteInput.value.length
+      commandPaletteInput.value.length,
     );
 
     await renderResults();
