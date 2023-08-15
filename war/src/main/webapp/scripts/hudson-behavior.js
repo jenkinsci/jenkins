@@ -1381,7 +1381,6 @@ function rowvgStartEachRow(recursive, f) {
     function (e) {
       e.onclick = helpButtonOnClick;
       e.tabIndex = 9999; // make help link unnavigable from keyboard
-      e.parentNode.parentNode.classList.add("has-help");
     },
   );
 
@@ -1389,7 +1388,6 @@ function rowvgStartEachRow(recursive, f) {
   Behaviour.specify("A.help-button", "a-help-button", ++p, function (e) {
     e.onclick = helpButtonOnClick;
     e.tabIndex = 9999; // make help link unnavigable from keyboard
-    e.parentNode.parentNode.classList.add("has-help");
   });
 
   // Script Console : settings and shortcut key
