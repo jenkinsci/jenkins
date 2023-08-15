@@ -6,6 +6,10 @@
   } else {
     resetButton.style.display = "";
   }
+
+  document
+    .querySelector("#side-panel")
+    .classList.add("app-page-body__sidebar--sticky");
 })();
 
 document.getElementById("reset-to-default").onclick = function (event) {
