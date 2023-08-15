@@ -52,10 +52,15 @@ THE SOFTWARE.
         <script src="${resURL}/jsbundles/pages/register.js" type="text/javascript" defer="true" />
       </head>
       <body class="app-sign-in-register">
-        <st:include it="${simpleDecorator}" page="simple-header.jelly" optional="true" />
+        <section class="app-sign-in-register__branding">
+          <div class="app-sign-in-register__branding__starburst"></div>
+          <img src="${imagesURL}/svgs/logo.svg" alt="${%logo}"/>
+        </section>
         <main id="main-panel" class="app-sign-in-register__content">
           <div class="app-sign-in-register__content-inner">
             <h1>${%Register}</h1>
+
+            <st:include it="${simpleDecorator}" page="simple-header.jelly" optional="true" />
 
             <template id="i18n" data-strength-strong="${%Strong}"
                                 data-strength-moderate="${%Moderate}"

@@ -70,6 +70,10 @@
     box-shadow: 0 0 0 0.66rem transparent;
   }
 
+  &:focus-visible {
+    outline: none;
+  }
+
   &:not(:disabled) {
     &:hover,
     &:focus-visible {
