@@ -317,6 +317,10 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
     public HttpResponse doRename(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, Descriptor.FormException {
         checkPermission(Jenkins.ADMINISTER);
 
+        if (FormApply.isApply(req)) {
+            throw new Descriptor.FormException(jenkins.agents.Messages.Cloud_CannotApplyRename(), "name");
+        }
+
         Jenkins j = Jenkins.get();
         Cloud cloud = j.getCloud(this.name);
         if (cloud == null) {
@@ -367,7 +371,7 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
         Cloud result = cloud.reconfigure(req, req.getSubmittedForm());
         String proposedName = result.name;
         if (!proposedName.equals(this.name)) {
-            throw new Descriptor.FormException(jenkins.agents.Messages.CloudSet_DoNotRename(), "name");
+            throw new Descriptor.FormException(jenkins.agents.Messages.Cloud_DoNotRename(), "name");
         }
         j.clouds.replace(this, result);
         j.save();
