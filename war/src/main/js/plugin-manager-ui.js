@@ -59,6 +59,10 @@ var handleFilter = function (e) {
 var debouncedFilter = debounce(handleFilter, 150);
 
 document.addEventListener("DOMContentLoaded", function () {
+  document
+    .querySelector("#side-panel")
+    .classList.add("app-page-body__sidebar--sticky");
+
   var filterInput = document.getElementById("filter-box");
   filterInput.addEventListener("input", function (e) {
     debouncedFilter(e);

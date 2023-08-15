@@ -69,6 +69,10 @@ Behaviour.specify("#filter-box", "_table", 0, function (e) {
  * dependencies and dependents.
  */
 (function () {
+  document
+    .querySelector("#side-panel")
+    .classList.add("app-page-body__sidebar--sticky");
+
   function selectAll(selector, element) {
     if (element) {
       return element.querySelectorAll(selector);
