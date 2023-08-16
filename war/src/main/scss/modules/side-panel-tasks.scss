@@ -25,7 +25,8 @@ $background-outset: 0.7rem;
 }
 
 .jenkins-side-nav__heading {
-  margin: var(--section-padding) var(--section-padding) calc(var(--section-padding) / 3) 0;
+  margin: var(--section-padding) var(--section-padding)
+    calc(var(--section-padding) / 3) 0;
   color: var(--text-color-secondary);
   font-size: 0.9375rem;
   font-weight: 550;
