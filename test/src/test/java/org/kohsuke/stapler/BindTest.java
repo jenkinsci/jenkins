@@ -59,7 +59,6 @@ public class BindTest {
             final String scriptUrl = htmlPage.getElementsByTagName("script").stream().filter(it -> it.getAttribute("src").startsWith(j.contextPath + "/$stapler/bound/script" + j.contextPath + "/theWellKnownRoot?")).findFirst().orElseThrow().getAttribute("src");
 
             final Page script = wc.goTo(StringUtils.removeStart(scriptUrl, j.contextPath + "/"), "application/javascript");
-            //?var=varname&amp;methods='annotatedJsMethod1','byName1'
             assertThat(script.getWebResponse().getContentAsString(), is("varname = makeStaplerProxy('" + j.contextPath + "/theWellKnownRoot','test',['annotatedJsMethod2','byName2']);"));
         }
         assertThat(root.invocations, is(1));

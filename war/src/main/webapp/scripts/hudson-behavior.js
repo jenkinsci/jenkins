@@ -1005,9 +1005,9 @@ function renderOnDemand(e, callback, noBehaviour) {
   let proxyMethod = e.getAttribute("data-proxy-method");
   let proxyUrl = e.getAttribute("data-proxy-url");
   let proxyCrumb = e.getAttribute("data-proxy-crumb");
-  let proxyMethods = e.getAttribute("data-proxy-args").split(",");
+  let proxyUrlNames = e.getAttribute("data-proxy-url-names").split(",");
 
-  var proxy = window[proxyMethod](proxyUrl, proxyCrumb, proxyMethods);
+  var proxy = window[proxyMethod](proxyUrl, proxyCrumb, proxyUrlNames);
   proxy.render(function (t) {
     var contextTagName = e.parentNode.tagName;
     var c;
