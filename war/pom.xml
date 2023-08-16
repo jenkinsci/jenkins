@@ -576,9 +576,9 @@ THE SOFTWARE.
         </configuration>
       </plugin>
       <plugin>
-        <groupId>org.eclipse.jetty</groupId>
-        <artifactId>jetty-maven-plugin</artifactId>
-        <version>10.0.20</version>
+        <groupId>org.eclipse.jetty.ee8</groupId>
+        <artifactId>jetty-ee8-maven-plugin</artifactId>
+        <version>12.0.8</version>
         <configuration>
           <!--
             Reload webapp when you hit ENTER. (See JETTY-282 for more)
