@@ -6,5 +6,5 @@ Behaviour.specify(
     element.onclick = function () {
       safeValidateButton(this);
     };
-  }
+  },
 );

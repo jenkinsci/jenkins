@@ -6,7 +6,7 @@
         setTimeout(updateBuildCaptionIcon, 5000);
       } else {
         var progressBar = document.querySelector(
-          ".build-caption-progress-container"
+          ".build-caption-progress-container",
         );
         if (progressBar) {
           progressBar.style.display = "none";

@@ -5,7 +5,9 @@
   border-radius: var(--form-input-border-radius);
   width: 100%;
   box-shadow: var(--form-input-glow);
-  transition: var(--standard-transition), height 0s;
+  transition:
+    var(--standard-transition),
+    height 0s;
   cursor: text;
   margin-bottom: var(--section-padding);
 

@@ -37,7 +37,7 @@ Behaviour.specify(
         }
 
         const oneOrMoreFieldsEditedNotice = parentContainer.querySelector(
-          ".jenkins-edited-section-label"
+          ".jenkins-edited-section-label",
         );
 
         if (oneOrMoreFieldsEditedNotice.classList.contains("jenkins-hidden")) {
@@ -63,7 +63,7 @@ Behaviour.specify(
                 JSON.stringify(Object.fromEntries(formData));
               oneOrMoreFieldsEditedNotice.classList.toggle(
                 "jenkins-hidden",
-                result
+                result,
               );
             });
           });
@@ -83,7 +83,7 @@ Behaviour.specify(
       layoutUpdateCallback.call();
     });
     e = null; // avoid memory leak
-  }
+  },
 );
 
 Behaviour.specify(
@@ -99,5 +99,5 @@ Behaviour.specify(
       const customizedFields = element.getAttribute("data-customized-fields");
       console.log("no element " + id + " for " + customizedFields);
     }
-  }
+  },
 );

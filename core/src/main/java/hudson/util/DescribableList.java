@@ -100,7 +100,11 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
      * Removes all instances of the same type, then add the new one.
      */
     public void replace(T item) throws IOException {
-        removeAll((Class) item.getClass());
+        for (T t : data) {
+            if (t.getClass() == item.getClass()) {
+                data.remove(t);
+            }
+        }
         data.add(item);
         onModified();
     }
