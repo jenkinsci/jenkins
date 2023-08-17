@@ -905,7 +905,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
 
         @Override
         public String encode(CharSequence rawPassword) {
-            LOGGER.info("BCRYPT Implementation");
+           // LOGGER.info("BCRYPT Implementation");
             return BCrypt.hashpw(rawPassword.toString(), BCrypt.gensalt());
         }
 
@@ -952,7 +952,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
 
         @Override
         public String encode(CharSequence rawPassword) {
-            LOGGER.info("PBKDF2 Implementation");
+            //LOGGER.info("PBKDF2 Implementation");
             return generatePasswordHashWithPBKDF2(rawPassword);
         }
 
@@ -1078,7 +1078,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
 
         @Override
         public String encode(CharSequence rawPassword) {
-            LOGGER.info("FIPS MODE ENABLED :"+ Util.FIPS_MODE);
+          //  LOGGER.info("FIPS MODE ENABLED :" + Util.FIPS_MODE);
             return getPasswordHeader() + PASSWORD_HASH_ENCODER.encode(rawPassword);
         }
 
