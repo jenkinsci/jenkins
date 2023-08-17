@@ -39,8 +39,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionList;
@@ -50,6 +49,8 @@ import hudson.security.pages.SignupPage;
 import java.lang.reflect.Field;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
@@ -60,6 +61,7 @@ import jenkins.security.SecurityListener;
 import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
 import jenkins.security.seed.UserSeedProperty;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.builder.ToStringExclude;
 import org.htmlunit.HttpMethod;
 import org.htmlunit.WebRequest;
 import org.htmlunit.html.HtmlForm;
@@ -77,6 +79,9 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.TestExtension;
 import org.mindrot.jbcrypt.BCrypt;
+
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.PBEKeySpec;
 
 
 @For({UserSeedProperty.class, HudsonPrivateSecurityRealm.class})
@@ -521,6 +526,23 @@ public class HudsonPrivateSecurityRealmTest {
     }
 
     @Test
+    public void passwordHashWithPBKDF2InvalidKey() throws IllegalAccessException, NoSuchFieldException, NoSuchAlgorithmException, InvalidKeySpecException {
+        HudsonPrivateSecurityRealm.PBKDF2PasswordEncoder pbkdf2PasswordEncoder = new HudsonPrivateSecurityRealm.PBKDF2PasswordEncoder();
+        Field field1 = Util.class.getDeclaredField("FIPS_MODE");
+        field1.setAccessible(true);
+        field1.set(System.setProperty("hudson.security.Util.FIPS_MODE", "true"), true);
+
+        mockStatic(HudsonPrivateSecurityRealm.class);
+        PBEKeySpec spec = mock(PBEKeySpec.class);
+        SecretKeyFactory secretKeyFactory  = mock(SecretKeyFactory.class);
+        assertThrows(NoSuchAlgorithmException.class,()->when(SecretKeyFactory.getInstance("")).thenThrow(NoSuchAlgorithmException.class));
+        when(secretKeyFactory.generateSecret(any())).thenThrow(InvalidKeySpecException.class);
+        when(spec.getPassword()).thenReturn("".toCharArray());
+
+        when(getPasswordHeader()).thenReturn("$PBKDF2");
+        assertNotNull(pbkdf2PasswordEncoder.encode("password"));
+    }
+    @Test
     public void passwordHashMatchesPBKDF2() throws IllegalAccessException, NoSuchFieldException {
         HudsonPrivateSecurityRealm.PBKDF2PasswordEncoder pbkdf2PasswordEncoder = new HudsonPrivateSecurityRealm.PBKDF2PasswordEncoder();
         Field field = Util.class.getDeclaredField("FIPS_MODE");
@@ -532,6 +554,18 @@ public class HudsonPrivateSecurityRealmTest {
 
       assertTrue(pbkdf2PasswordEncoder.matches("3a6f9ee5a3af41ef844cb291c63b40f4",
               "$PBKDF2$HMACSHA512:1024:f6865c02cc759fd061db0f3121a093e0$079bd3a0c2851248343584a9a4625360e9ebb13c36be49542268d2ebdbd1fb71f004db9ce7335a61885985e32e08cb20215ff7bf64b2af5792581039faa62b52"));
+    }
+
+    @Test
+    public void hashPatternMatches(){
+        HudsonPrivateSecurityRealm.PBKDF2PasswordEncoder pbkdf2PasswordEncoder = new HudsonPrivateSecurityRealm.PBKDF2PasswordEncoder();
+        assertTrue(pbkdf2PasswordEncoder.isHashValid("$PBKDF2$HMACSHA512:1024:f6865c02cc759fd061db0f3121a093e0$079bd3a0c2851"));
+    }
+
+    @Test
+    public void hashPatternNotMatches(){
+        HudsonPrivateSecurityRealm.PBKDF2PasswordEncoder pbkdf2PasswordEncoder = new HudsonPrivateSecurityRealm.PBKDF2PasswordEncoder();
+        assertFalse(pbkdf2PasswordEncoder.isHashValid("1024:f6865c02cc759fd061db0f3121a093e0$079bd3a0c2851"));
     }
 
     @Test
