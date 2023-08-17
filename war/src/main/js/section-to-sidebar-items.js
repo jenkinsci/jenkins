@@ -31,7 +31,7 @@ window.addEventListener("load", function () {
     `);
     item.addEventListener("click", () => {
       const headerToScrollTo = document.getElementById(
-        item.querySelector(".task-link").dataset.sectionId
+        item.querySelector(".task-link").dataset.sectionId,
       );
 
       const sectionTopPosition =

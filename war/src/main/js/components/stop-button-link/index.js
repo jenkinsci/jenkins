@@ -28,7 +28,7 @@ function init() {
     0,
     (element) => {
       registerStopButton(element);
-    }
+    },
   );
 }
 

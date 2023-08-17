@@ -214,7 +214,7 @@ jenkins.testConnectivity = function (siteId, handler) {
             handler.call({ isError: true, errorMessage: errorThrown });
           }
         },
-      }
+      },
     );
   };
   testConnectivity();
@@ -288,8 +288,8 @@ jenkins.staplerPost = function (url, $form, success, options) {
         contentType: "application/x-www-form-urlencoded",
         crumb: crumb,
       },
-      options
-    )
+      options,
+    ),
   );
 };
 

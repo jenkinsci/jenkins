@@ -1,5 +1,5 @@
 .icon-help {
-  color: var(--primary);
+  color: var(--accent-color);
 
   &:hover,
   &:focus {
@@ -53,12 +53,12 @@
 
 .icon-blue,
 .icon-blue-anime {
-  @include status-icon-color(var(--success));
+  @include status-icon-color(var(--success-color));
 }
 
 .icon-red,
 .icon-red-anime {
-  @include status-icon-color(var(--danger));
+  @include status-icon-color(var(--destructive-color));
 }
 
 .icon-yellow,
@@ -80,7 +80,7 @@
 .icon-grey-anime,
 .icon-nobuilt,
 .icon-nobuilt-anime {
-  @include status-icon-color(var(--primary));
+  @include status-icon-color(var(--accent-color));
 }
 
 .build-status-icon__wrapper {

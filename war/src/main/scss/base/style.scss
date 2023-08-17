@@ -1,5 +1,3 @@
-@use "../abstracts/mixins";
-
 /*
  * The MIT License
  *
@@ -116,26 +114,6 @@ td.no-wrap {
     color: #ccc;
 } */
 
-a {
-  @include mixins.link;
-}
-
-.jenkins-link--with-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: flex-start;
-
-  svg {
-    width: 16px;
-    height: 16px;
-    color: var(--text-color) !important;
-  }
-}
-
-p a {
-  text-decoration: underline;
-}
-
 a.lowkey:link {
   text-decoration: none;
   color: inherit;
@@ -238,7 +216,6 @@ pre {
   line-height: 1.66;
 
   a {
-    font-weight: inherit;
     word-wrap: break-word;
   }
 }
@@ -316,6 +293,7 @@ pre.console {
 
 .expanding-input {
   display: flex;
+  align-items: center;
 }
 
 .expanding-input__input {
@@ -324,13 +302,6 @@ pre.console {
 
 .expanding-input__button {
   flex-shrink: 1;
-}
-
-.expanding-input__button input {
-  border: 2px solid var(--input-border) !important;
-  border-radius: var(--form-input-border-radius) !important;
-  min-width: 0 !important;
-  height: 100%;
 }
 
 /* div that looks like a hyperlink */
@@ -370,7 +341,10 @@ pre.console {
   padding: 4px 0;
   margin-left: 0;
   border-bottom: 1px solid #090;
-  font: bold 12px Helvetica, Arial, sans-serif;
+  font:
+    bold 12px Helvetica,
+    Arial,
+    sans-serif;
 }
 
 #foldertab li {
@@ -560,10 +534,6 @@ pre.console {
   p:last-of-type {
     margin-bottom: 0;
   }
-}
-
-.help a {
-  text-decoration: underline;
 }
 
 .help .from-plugin {

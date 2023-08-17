@@ -2,10 +2,10 @@ import debounce from "lodash/debounce";
 
 const buildHistoryContainer = document.getElementById("buildHistory");
 const pageSearchInputContainer = buildHistoryContainer.querySelector(
-  ".build-search-row .jenkins-search"
+  ".build-search-row .jenkins-search",
 );
 const pageSearchInput = buildHistoryContainer.querySelector(
-  ".build-search-row input"
+  ".build-search-row input",
 );
 const buildHistoryPage = document.getElementById("buildHistoryPage");
 const properties = document.getElementById("properties");
@@ -91,7 +91,7 @@ function updateBuilds(params) {
           if (newDataTable.classList.contains("hasPageData")) {
             buildHistoryPage.setAttribute(
               "page-entry-newest",
-              newDataTable.getAttribute("page-entry-newest")
+              newDataTable.getAttribute("page-entry-newest"),
             );
           }
 
@@ -112,7 +112,7 @@ function createRefreshTimeout(params) {
   cancelRefreshTimeout();
   buildRefreshTimeout = window.setTimeout(
     () => updateBuilds(params),
-    updateBuildsRefreshInterval
+    updateBuildsRefreshInterval,
   );
 }
 
@@ -143,19 +143,19 @@ function getDataTable(buildHistoryDiv) {
 function updatePageParams(dataTable) {
   buildHistoryPage.setAttribute(
     "page-has-up",
-    dataTable.getAttribute("page-has-up")
+    dataTable.getAttribute("page-has-up"),
   );
   buildHistoryPage.setAttribute(
     "page-has-down",
-    dataTable.getAttribute("page-has-down")
+    dataTable.getAttribute("page-has-down"),
   );
   buildHistoryPage.setAttribute(
     "page-entry-newest",
-    dataTable.getAttribute("page-entry-newest")
+    dataTable.getAttribute("page-entry-newest"),
   );
   buildHistoryPage.setAttribute(
     "page-entry-oldest",
-    dataTable.getAttribute("page-entry-oldest")
+    dataTable.getAttribute("page-entry-oldest"),
   );
 }
 function togglePageUpDown() {
@@ -330,7 +330,7 @@ function checkRowCellOverflows(row) {
       // eslint-disable-next-line no-inner-declarations
       function expandLeftWithRight(
         leftCellOverFlowParams,
-        rightCellOverflowParams
+        rightCellOverflowParams,
       ) {
         // Float them left and right...
         leftCellOverFlowParams.element.style.float = "left";
