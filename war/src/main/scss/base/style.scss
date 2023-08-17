@@ -1,5 +1,3 @@
-@use "../abstracts/mixins";
-
 /*
  * The MIT License
  *
@@ -84,27 +82,6 @@ td.no-wrap {
   padding: 0.5em;
   -moz-border-radius: 0.5em;
   border-radius: var(--form-input-border-radius);
-}
-
-a {
-  @include mixins.link;
-}
-
-.jenkins-link--with-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: flex-start;
-
-  svg {
-    width: 16px;
-    height: 16px;
-    flex: 0 0 auto;
-    color: var(--text-color) !important;
-  }
-}
-
-p a {
-  text-decoration: underline;
 }
 
 a.lowkey:link {
@@ -198,7 +175,6 @@ pre {
   line-height: 1.66;
 
   a {
-    font-weight: inherit;
     word-wrap: break-word;
   }
 }
@@ -425,10 +401,6 @@ pre.console {
   p:last-of-type {
     margin-bottom: 0;
   }
-}
-
-.help a {
-  text-decoration: underline;
 }
 
 .help .from-plugin {
