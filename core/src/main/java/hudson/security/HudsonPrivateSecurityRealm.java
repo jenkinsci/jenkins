@@ -905,7 +905,6 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
 
         @Override
         public String encode(CharSequence rawPassword) {
-           // LOGGER.info("BCRYPT Implementation");
             return BCrypt.hashpw(rawPassword.toString(), BCrypt.gensalt());
         }
 
@@ -946,13 +945,12 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
 
         @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
         @Restricted(NoExternalUse.class)
-        private static int MAXIMUM_PBKDF2_LOG_ROUND = SystemProperties.getInteger(HudsonPrivateSecurityRealm.class.getName() + ".maximumPBKDF2LogRound", (int) Math.pow(2, 10));
+        private static int MAXIMUM_PBKDF2_LOG_ROUND = SystemProperties.getInteger(HudsonPrivateSecurityRealm.class.getName() + ".maximumPBKDF2LogRound", 1000);
 
         private static final Pattern PBKDF2_PATTERN = Pattern.compile("^\\$PBKDF2\\$HMACSHA512\\:([0-9]{4})\\:[a-zA-Z0-9=]+\\$[a-zA-Z0-9=]+");
 
         @Override
         public String encode(CharSequence rawPassword) {
-            //LOGGER.info("PBKDF2 Implementation");
             return generatePasswordHashWithPBKDF2(rawPassword);
         }
 
@@ -1048,17 +1046,18 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
 
     }
 
-    /* package */ static final PasswordHashEncoder PASSWORD_HASH_ENCODER =  Util.FIPS_MODE ? new PBKDF2PasswordEncoder() : new JBCryptEncoder();
+    /* package */ static final PasswordHashEncoder PASSWORD_HASH_ENCODER =  Util.isFipsMode() ? new PBKDF2PasswordEncoder() : new JBCryptEncoder();
 
 
     public static final String PBKDF2 = "$PBKDF2";
     public static final String JBCRYPT = "#jbcrypt:";
+
     /**
      * Magic header used to detect if a password is hashed.
      */
 
     public static String getPasswordHeader() {
-        return Util.FIPS_MODE ? PBKDF2 : JBCRYPT;
+        return Util.isFipsMode() ? PBKDF2 : JBCRYPT;
     }
 
 
@@ -1078,7 +1077,6 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
 
         @Override
         public String encode(CharSequence rawPassword) {
-          //  LOGGER.info("FIPS MODE ENABLED :" + Util.FIPS_MODE);
             return getPasswordHeader() + PASSWORD_HASH_ENCODER.encode(rawPassword);
         }
 
@@ -1165,6 +1163,6 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         }
     };
 
-    private static final Logger LOGGER = Logger.getLogger(HudsonPrivateSecurityRealm.class.getName());
+     static final Logger LOGGER = Logger.getLogger(HudsonPrivateSecurityRealm.class.getName());
 
 }

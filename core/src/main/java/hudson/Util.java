@@ -1931,4 +1931,9 @@ public class Util {
     @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL")
     @Restricted(NoExternalUse.class)
     public static boolean FIPS_MODE = SystemProperties.getBoolean(Util.class.getName() + ".FIPS_MODE");
+
+    public static boolean isFipsMode() {
+        LOGGER.info("FIPS mode : " + FIPS_MODE);
+        return FIPS_MODE;
+    }
 }
