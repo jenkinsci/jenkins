@@ -311,7 +311,53 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
     }
 
     /**
-     * Accepts the update to the node configuration.
+     * Accepts the update to the node name.
+     */
+    @POST
+    public HttpResponse doRename(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, Descriptor.FormException {
+        checkPermission(Jenkins.ADMINISTER);
+
+        if (FormApply.isApply(req)) {
+            throw new Descriptor.FormException(jenkins.agents.Messages.Cloud_CannotApplyRename(), "name");
+        }
+
+        Jenkins j = Jenkins.get();
+        Cloud cloud = j.getCloud(this.name);
+        if (cloud == null) {
+            throw new ServletException("No such cloud " + this.name);
+        }
+        Cloud result = cloud.reconfigure(req, req.getSubmittedForm());
+        String proposedName = result.name;
+        if (!proposedName.equals(this.name)
+                && j.getCloud(proposedName) != null) {
+            throw new Descriptor.FormException(jenkins.agents.Messages.CloudSet_CloudAlreadyExists(proposedName), "name");
+        }
+        j.clouds.replace(this, result);
+        j.save();
+
+        String reqPath = req.getOriginalRequestURI();
+        String[] uriTokens = reqPath.replaceFirst("^/", "").split("/");
+        if (uriTokens.length < 3 || !"rename".equals(uriTokens[uriTokens.length - 1])) {
+            // We should never be here, expecting URI format jenkins/cloud/name/rename
+            throw new ServletException("Expected cloud rename URI: " + reqPath);
+        }
+        String cloudId = uriTokens[uriTokens.length - 2];
+        if (this.name.equals(cloudId)) {
+            // cloud name being used in URI
+            if (!proposedName.equals(this.name)) {
+                // name changed
+                cloudId = proposedName;
+            } else {
+                cloudId = this.name;
+            }
+        }
+
+        // take the user to the renamed cloud top page.
+        return FormApply.success("../" + cloudId);
+    }
+
+    /**
+     * Accepts the update to the node configuration. Node name is not allowed to be changed.
      */
     @POST
     public HttpResponse doConfigSubmit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, Descriptor.FormException {
@@ -325,30 +371,12 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
         Cloud result = cloud.reconfigure(req, req.getSubmittedForm());
         String proposedName = result.name;
         if (!proposedName.equals(this.name)) {
-            if (FormApply.isApply(req)) {
-                throw new Descriptor.FormException(jenkins.agents.Messages.Cloud_CannotApplyRename(), "name");
-            } else if (j.getCloud(proposedName) != null) {
-                throw new Descriptor.FormException(jenkins.agents.Messages.CloudSet_CloudAlreadyExists(proposedName), "name");
-            }
+            throw new Descriptor.FormException(jenkins.agents.Messages.Cloud_DoNotRename(), "name");
         }
         j.clouds.replace(this, result);
         j.save();
-        String reqPath = req.getOriginalRequestURI();
-        String[] uriTokens = reqPath.replaceFirst("^/", "").split("/");
-        if (uriTokens.length < 3 || !"configSubmit".equals(uriTokens[uriTokens.length - 1])) {
-            // We should never be here, expecting URI format jenkins/cloud/name/config
-            throw new ServletException("Expected cloud rename URI: " + reqPath);
-        }
-        String cloudId = uriTokens[uriTokens.length - 2];
-        if (this.name.equals(cloudId)) {
-            // cloud name being used in URI
-            if (!proposedName.equals(this.name)) {
-                // name changed
-                cloudId = proposedName;
-            }
-        }
         // take the user back to the cloud top page.
-        return FormApply.success("../" + cloudId + '/');
+        return FormApply.success(".");
     }
 
     public Cloud reconfigure(@NonNull final StaplerRequest req, JSONObject form) throws Descriptor.FormException {
