@@ -22,7 +22,7 @@ Behaviour.specify(
           while (hiddenContent && !hiddenContent.matches("div.advancedBody")) {
             hiddenContent = hiddenContent.nextElementSibling;
           }
-          tr = parentContainer.closest(".tr");
+          tr = parentContainer.closest("[data-type='advanced-button-group']");
         }
 
         // move the contents of the advanced portion into the main table
