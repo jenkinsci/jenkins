@@ -197,20 +197,20 @@ function generateButtons() {
           };
           menuItems.push(item);
         }
-        let menu = Utils.generateDropdownItems(menuItems, true);
-        createFilter(menu);
-        instance.setContent(menu);
+        const menuContainer = document.createElement("div");
+        const menu = Utils.generateDropdownItems(menuItems, true);
+        menuContainer.appendChild(createFilter(menu));
+        menuContainer.appendChild(menu);
+        instance.setContent(menuContainer);
       });
     },
   );
 }
 
 function createFilter(menu) {
-  const filterInput = document.createElement("input");
-  filterInput.classList.add("jenkins-input");
-  filterInput.setAttribute("placeholder", "Filter");
-  filterInput.setAttribute("spellcheck", "false");
-  filterInput.setAttribute("type", "search");
+  const filterInput = createElementFromHtml(`
+    <input class="jenkins-dropdown__filter-input" placeholder="Filter" spellcheck="false" type="search"/>
+  `);
 
   filterInput.addEventListener("input", (event) =>
     applyFilterKeyword(menu, event.currentTarget),
@@ -222,9 +222,15 @@ function createFilter(menu) {
     }
   });
 
-  const filterContainer = document.createElement("div");
+  const filterContainer = createElementFromHtml(`
+    <div class="jenkins-dropdown__filter">
+      <div class="jenkins-dropdown__item__icon">
+        ${Symbols.FUNNEL}
+      </div>
+    </div>
+  `);
   filterContainer.appendChild(filterInput);
-  menu.insertBefore(filterContainer, menu.firstChild);
+  return filterContainer;
 }
 
 function applyFilterKeyword(menu, filterInput) {
@@ -234,7 +240,7 @@ function applyFilterKeyword(menu, filterInput) {
   );
   for (let item of items) {
     let match = item.innerText.toLowerCase().includes(filterKeyword);
-    item.style.display = match ? "inline-flex" : "NONE";
+    item.style.display = match ? "inline-flex" : "none";
   }
 }
 
@@ -243,7 +249,6 @@ function generateDropDown(button, callback) {
     button,
     Object.assign({}, Templates.dropdown(), {
       appendTo: undefined,
-      offset: [0, 5],
       onCreate(instance) {
         if (instance.loaded) {
           return;
