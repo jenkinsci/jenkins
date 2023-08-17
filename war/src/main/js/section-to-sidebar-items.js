@@ -9,9 +9,6 @@ window.addEventListener("load", function () {
   const sidebarItems = document.querySelector("#tasks");
   const sectionHeaders = document.querySelectorAll(HEADER_SELECTOR);
 
-  // Ensure sidebar is sticky
-  sidebar.classList.add("app-page-body__sidebar--sticky");
-
   // Create the sidebar items
   sectionHeaders.forEach(function (header, i) {
     const headerId = toId(header.textContent);
