@@ -156,22 +156,6 @@ a.tip:hover span {
   text-align: left;
 }
 
-.call-to-action {
-  display: table;
-  margin-bottom: 5px;
-  padding: 10px;
-  background-color: var(--alert-info-bg-color);
-  border-left: 4px solid #577baa;
-  color: var(--call-to-action-text-color);
-}
-
-.call-to-action a,
-.call-to-action a:visited {
-  color: var(--call-to-action-link-color);
-  font-weight: bold;
-  font-size: larger;
-}
-
 img {
   vertical-align: middle;
   border: 0;
