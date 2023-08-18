@@ -46,11 +46,9 @@ THE SOFTWARE.
           </p>
 
           <form action="script" method="post">
-            <textarea name="script"
-                      data-type="jenkins-code-editor"
-                      data-code-language="groovy">
-              ${request.getParameter('script')}
-            </textarea>
+            <f:textarea name="script"
+                        codemirror-mode="groovy"
+                        default="${request.getParameter('script')}" />
             <div align="right">
               <f:submit  value="${%Run}"/>
             </div>
