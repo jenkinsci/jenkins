@@ -894,7 +894,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     /**
      * {@link PasswordHashEncoder} that uses jBCrypt.
      */
-    public static class JBCryptEncoder implements PasswordHashEncoder {
+     static class JBCryptEncoder implements PasswordHashEncoder {
         // in jBCrypt the maximum is 30, which takes ~22h with laptop late-2017
         // and for 18, it's "only" 20s
         @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
@@ -933,7 +933,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         }
     }
 
-    public static class PBKDF2PasswordEncoder implements PasswordHashEncoder {
+     static class PBKDF2PasswordEncoder implements PasswordHashEncoder {
 
         public static final int HASH_LENGTH = 8;
         public static final int ZERO = 0;

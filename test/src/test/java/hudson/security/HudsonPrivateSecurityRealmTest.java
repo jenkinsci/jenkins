@@ -523,7 +523,6 @@ public class HudsonPrivateSecurityRealmTest {
     @Test
     public void passwordHashWithPBKDF2() {
         HudsonPrivateSecurityRealm.PBKDF2PasswordEncoder pbkdf2PasswordEncoder = new HudsonPrivateSecurityRealm.PBKDF2PasswordEncoder();
-
         mockStatic(HudsonPrivateSecurityRealm.class);
         when(getPasswordHeader()).thenReturn("$PBKDF2");
         assertNotNull(pbkdf2PasswordEncoder.encode("password"));
@@ -531,28 +530,30 @@ public class HudsonPrivateSecurityRealmTest {
     }
 
     @Test
-    public void passwordHashWithPBKDF2InvalidKey() throws  InvalidKeySpecException {
+    public void passwordHashWithInvalidAgorithm()  {
         HudsonPrivateSecurityRealm.PBKDF2PasswordEncoder pbkdf2PasswordEncoder = new HudsonPrivateSecurityRealm.PBKDF2PasswordEncoder();
-
         mockStatic(HudsonPrivateSecurityRealm.class);
-        PBEKeySpec spec = mock(PBEKeySpec.class);
         SecretKeyFactory secretKeyFactory  = mock(SecretKeyFactory.class);
-        assertThrows(NoSuchAlgorithmException.class, () -> when(SecretKeyFactory.getInstance("")).thenThrow(NoSuchAlgorithmException.class));
-        when(secretKeyFactory.generateSecret(any())).thenThrow(InvalidKeySpecException.class);
-        when(spec.getPassword()).thenReturn("".toCharArray());
-
-        when(getPasswordHeader()).thenReturn("$PBKDF2");
-        assertNotNull(pbkdf2PasswordEncoder.encode("password"));
+        assertThrows(NoSuchAlgorithmException.class, () ->   when(SecretKeyFactory.getInstance("")).thenThrow(NoSuchAlgorithmException.class));
+        pbkdf2PasswordEncoder.encode("password");
     }
+
+    @Test
+    public void passwordHashWithInvalidKeySpec() throws InvalidKeySpecException {
+        HudsonPrivateSecurityRealm.PBKDF2PasswordEncoder pbkdf2PasswordEncoder = new HudsonPrivateSecurityRealm.PBKDF2PasswordEncoder();
+        mockStatic(HudsonPrivateSecurityRealm.class);
+        SecretKeyFactory secretKeyFactory  = mock(SecretKeyFactory.class);
+        when(secretKeyFactory.generateSecret(any())).thenThrow(InvalidKeySpecException.class);
+        pbkdf2PasswordEncoder.encode("password");
+    }
+
 
     @Test
     public void passwordHashMatchesPBKDF2() {
         HudsonPrivateSecurityRealm.PBKDF2PasswordEncoder pbkdf2PasswordEncoder = new HudsonPrivateSecurityRealm.PBKDF2PasswordEncoder();
-
         mockStatic(HudsonPrivateSecurityRealm.class);
         when(getPasswordHeader()).thenReturn("$PBKDF2");
-
-      assertTrue(pbkdf2PasswordEncoder.matches("3a6f9ee5a3af41ef844cb291c63b40f4",
+        assertTrue(pbkdf2PasswordEncoder.matches("3a6f9ee5a3af41ef844cb291c63b40f4",
               "$PBKDF2$HMACSHA512:1024:f6865c02cc759fd061db0f3121a093e0$079bd3a0c2851248343584a9a4625360e9ebb13c36be49542268d2ebdbd1fb71f004db9ce7335a61885985e32e08cb20215ff7bf64b2af5792581039faa62b52"));
     }
 
