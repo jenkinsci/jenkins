@@ -28,7 +28,10 @@ Behaviour.specify(
       }
 
       target.addEventListener("load", () => {
-        if (target.contentWindow?.applyCompletionHandler) {
+        if (
+          target.contentWindow &&
+          target.contentWindow.applyCompletionHandler
+        ) {
           // apply-aware server is expected to set this handler
           target.contentWindow.applyCompletionHandler(window);
           // Remove the iframe from the DOM
@@ -45,9 +48,9 @@ Behaviour.specify(
           const errorMessage = error.querySelector("p").textContent;
 
           notificationBar.show(
-            title + ' - ' + errorMessage,
+            title + " - " + errorMessage,
             notificationBar.ERROR,
-          )
+          );
         } else {
           // Fallback if it's not a regular error dialog from oops.jelly: use the entire body
           error = document.createElement("div");
