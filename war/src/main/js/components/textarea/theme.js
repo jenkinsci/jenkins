@@ -19,7 +19,6 @@ const chalky = "#e5c07b",
   selection = "var(--selection-color)",
   cursor = "var(--text-color)";
 
-/// The editor theme styles for One Dark.
 export const theme = EditorView.theme({
   "&": {
     color: ivory,

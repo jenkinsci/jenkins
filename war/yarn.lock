@@ -1626,7 +1626,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@codemirror/legacy-modes@npm:^6.1.0, @codemirror/legacy-modes@npm:^6.3.3":
+"@codemirror/legacy-modes@npm:^6.1.0":
   version: 6.3.3
   resolution: "@codemirror/legacy-modes@npm:6.3.3"
   dependencies:
@@ -4855,7 +4855,6 @@ __metadata:
     "@babel/preset-env": 7.22.10
     "@codemirror/language": ^6.9.0
     "@codemirror/language-data": ^6.3.1
-    "@codemirror/legacy-modes": ^6.3.3
     "@codemirror/state": ^6.2.1
     "@codemirror/view": ^6.16.0
     "@lezer/common": ^1.0.4
