@@ -8,7 +8,6 @@ import java.nio.file.Paths;
 import java.util.concurrent.TimeUnit;
 import jenkins.benchmark.jmh.JmhBenchmark;
 import jenkins.benchmark.jmh.JmhBenchmarkState;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.Mode;
@@ -20,7 +19,6 @@ import org.openjdk.jmh.runner.options.OptionsBuilder;
 
 public class LabelBenchmarkTest {
     @Test
-    @Ignore(value = "This is a benchmark, not a test")
     public void runBenchmark() throws Exception {
         // run the minimum possible number of iterations
         ChainedOptionsBuilder options = new OptionsBuilder()
@@ -54,6 +52,11 @@ public class LabelBenchmarkTest {
         @Benchmark
         public void complexLabel(MyState state, Blackhole blackhole) {
             blackhole.consume(Label.parse("label1 && label2"));
+        }
+
+        @Benchmark
+        public void jenkinsGetAssignedLabels(MyState state, Blackhole blackhole) {
+            blackhole.consume(state.getJenkins().getAssignedLabels());
         }
     }
 }

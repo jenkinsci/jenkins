@@ -930,6 +930,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
             Trigger.timer = new java.util.Timer("Jenkins cron thread");
             queue = new Queue(LoadBalancer.CONSISTENT_HASH);
+            _setLabelString(label);
 
             try {
                 dependencyGraph = DependencyGraph.EMPTY;
@@ -1088,6 +1089,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             /* deserializing without a value set means we need to migrate */
             nodeRenameMigrationNeeded = true;
         }
+        _setLabelString(label);
 
         return this;
     }
@@ -2138,6 +2140,14 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 r.add(l);
         }
         return r;
+    }
+
+    @NonNull
+    private transient Set<LabelAtom> labelAtomSet;
+
+    @Override
+    protected Set<LabelAtom> getLabelAtomSet() {
+        return labelAtomSet;
     }
 
     public Set<LabelAtom> getLabelAtoms() {
@@ -3305,8 +3315,13 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     @Override
     public void setLabelString(String label) throws IOException {
-        this.label = label;
+        _setLabelString(label);
         save();
+    }
+
+    private void _setLabelString(String label) {
+        this.label = label;
+        this.labelAtomSet = Collections.unmodifiableSet(Label.parse(label));
     }
 
     @NonNull
