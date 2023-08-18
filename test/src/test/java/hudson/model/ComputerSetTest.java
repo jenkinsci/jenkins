@@ -133,9 +133,9 @@ public class ComputerSetTest {
         assertThat(responseContent, containsString("Node Monitoring"));
         page = wc.goTo("computer/configure");
         assertEquals(HttpURLConnection.HTTP_OK, page.getWebResponse().getStatusCode());
-        // and the OK (save) button is visible
+        // and the save button is visible
         responseContent = page.getWebResponse().getContentAsString();
-        assertThat(responseContent, containsString("OK"));
+        assertThat(responseContent, containsString("Save"));
     }
 
     @Test
