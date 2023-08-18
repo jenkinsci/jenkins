@@ -51,9 +51,10 @@
   },
   "dependencies": {
     "@codemirror/language": "^6.9.0",
-    "@codemirror/legacy-modes": "^6.3.3",
+    "@codemirror/language-data": "^6.3.1",
     "@codemirror/state": "^6.2.1",
     "@codemirror/view": "^6.16.0",
+    "@lezer/common": "^1.0.4",
     "@lezer/highlight": "^1.1.6",
     "codemirror": "^6.0.1",
     "handlebars": "4.7.8",
