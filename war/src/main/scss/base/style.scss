@@ -1,5 +1,3 @@
-@use "../abstracts/mixins";
-
 /*
  * The MIT License
  *
@@ -116,26 +114,6 @@ td.no-wrap {
     color: #ccc;
 } */
 
-a {
-  @include mixins.link;
-}
-
-.jenkins-link--with-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: flex-start;
-
-  svg {
-    width: 16px;
-    height: 16px;
-    color: var(--text-color) !important;
-  }
-}
-
-p a {
-  text-decoration: underline;
-}
-
 a.lowkey:link {
   text-decoration: none;
   color: inherit;
@@ -176,22 +154,6 @@ a.tip:hover span {
   background-color: #fffff0;
   color: #000;
   text-align: left;
-}
-
-.call-to-action {
-  display: table;
-  margin-bottom: 5px;
-  padding: 10px;
-  background-color: var(--alert-info-bg-color);
-  border-left: 4px solid #577baa;
-  color: var(--call-to-action-text-color);
-}
-
-.call-to-action a,
-.call-to-action a:visited {
-  color: var(--call-to-action-link-color);
-  font-weight: bold;
-  font-size: larger;
 }
 
 img {
@@ -238,7 +200,6 @@ pre {
   line-height: 1.66;
 
   a {
-    font-weight: inherit;
     word-wrap: break-word;
   }
 }
@@ -557,10 +518,6 @@ pre.console {
   p:last-of-type {
     margin-bottom: 0;
   }
-}
-
-.help a {
-  text-decoration: underline;
 }
 
 .help .from-plugin {
