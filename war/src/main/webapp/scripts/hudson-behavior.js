@@ -1390,49 +1390,6 @@ function rowvgStartEachRow(recursive, f) {
     e.tabIndex = 9999; // make help link unnavigable from keyboard
   });
 
-  // Script Console : settings and shortcut key
-  Behaviour.specify("TEXTAREA.script", "textarea-script", ++p, function (e) {
-    (function () {
-      var cmdKeyDown = false;
-      var mode = e.getAttribute("script-mode") || "text/x-groovy";
-
-      // eslint-disable-next-line no-unused-vars
-      var w = CodeMirror.fromTextArea(e, {
-        mode: mode,
-        lineNumbers: true,
-        matchBrackets: true,
-        onKeyEvent: function (editor, event) {
-          function saveAndSubmit() {
-            editor.save();
-            getParentForm(e).submit();
-            event.stop();
-          }
-
-          // Mac (Command + Enter)
-          if (navigator.userAgent.indexOf("Mac") > -1) {
-            if (event.type == "keydown" && isCommandKey(event)) {
-              cmdKeyDown = true;
-            }
-            if (event.type == "keyup" && isCommandKey(event)) {
-              cmdKeyDown = false;
-            }
-            if (cmdKeyDown && isReturnKeyDown()) {
-              saveAndSubmit();
-              return true;
-            }
-
-            // Windows, Linux (Ctrl + Enter)
-          } else {
-            if (event.ctrlKey && isReturnKeyDown()) {
-              saveAndSubmit();
-              return true;
-            }
-          }
-        },
-      }).getWrapperElement();
-    })();
-  });
-
   // deferred client-side clickable map.
   // this is useful where the generation of <map> element is time consuming
   Behaviour.specify("IMG[lazymap]", "img-lazymap-", ++p, function (e) {
