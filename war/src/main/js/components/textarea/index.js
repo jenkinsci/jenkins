@@ -17,6 +17,7 @@ function init() {
 
 async function generateEditorFromTextarea(textarea) {
   const textareaLanguage = textarea.dataset.codeLanguage;
+  // const textareaOptions = textarea.dataset.codeOptions;
   const language = languages.find((e) => e.alias.includes(textareaLanguage));
   const loadedLanguage = await language.load();
 
@@ -26,6 +27,7 @@ async function generateEditorFromTextarea(textarea) {
       extensions: [basicSetup, loadedLanguage.language, codeEditorTheme],
     }),
   });
+
   textarea.parentNode.insertBefore(view.dom, textarea);
   textarea.style.display = "none";
   if (textarea.form) {
@@ -33,6 +35,13 @@ async function generateEditorFromTextarea(textarea) {
       textarea.value = view.state.doc.toString();
     });
   }
+
+  // create an Observer instance
+  const resizeObserver = new ResizeObserver((entries) => {
+    view.requestMeasure();
+  });
+  resizeObserver.observe(view.dom);
+
   return view;
 }
 
