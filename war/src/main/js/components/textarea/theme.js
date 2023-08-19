@@ -37,6 +37,7 @@ export const theme = EditorView.theme({
   },
   ".cm-content": {
     caretColor: cursor,
+    minHeight: "100px"
   },
   ".cm-cursor, .cm-dropCursor": { borderLeftColor: cursor },
   "&.cm-focused > .cm-scroller > .cm-selectionLayer .cm-selectionBackground, .cm-selectionBackground, .cm-content ::selection":
