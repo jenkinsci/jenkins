@@ -1,12 +1,12 @@
-Behaviour.specify("TEXTAREA.codemirror", "textarea", 0, function (e) {
-  // the form needs to be populated before the "Apply" button
-  if (e.closest("form")) {
-    // Protect against undefined element
-    e.closest("form").addEventListener("jenkins:apply", function () {
-      e.value = codemirror.getValue();
-    });
-  }
-});
+// Behaviour.specify("TEXTAREA.codemirror", "textarea", 0, function (e) {
+//   // the form needs to be populated before the "Apply" button
+//   if (e.closest("form")) {
+//     // Protect against undefined element
+//     e.closest("form").addEventListener("jenkins:apply", function () {
+//       e.value = codemirror.getValue();
+//     });
+//   }
+// });
 
 Behaviour.specify(
   "DIV.textarea-preview-container",

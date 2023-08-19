@@ -1155,22 +1155,22 @@ function helpButtonOnClick() {
   return false;
 }
 
-function isCommandKey(event) {
-  return event.key === "Meta";
-}
-function isReturnKeyDown() {
-  return event.type == "keydown" && event.key === "Enter";
-}
-function getParentForm(element) {
-  if (element == null) {
-    throw "not found a parent form";
-  }
-  if (element instanceof HTMLFormElement) {
-    return element;
-  }
-
-  return getParentForm(element.parentNode);
-}
+// function isCommandKey(event) {
+//   return event.key === "Meta";
+// }
+// function isReturnKeyDown() {
+//   return event.type == "keydown" && event.key === "Enter";
+// }
+// function getParentForm(element) {
+//   if (element == null) {
+//     throw "not found a parent form";
+//   }
+//   if (element instanceof HTMLFormElement) {
+//     return element;
+//   }
+//
+//   return getParentForm(element.parentNode);
+// }
 
 // figure out the corresponding end marker
 function findEnd(e) {
