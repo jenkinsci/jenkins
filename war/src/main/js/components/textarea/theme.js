@@ -24,7 +24,9 @@ export const theme = EditorView.theme({
     border: "2px solid var(--input-border)",
     padding: "6px",
     boxShadow: "var(--form-input-glow)",
-    transition: "var(--standard-transition)",
+    transition: "var(--standard-transition), height 0s",
+    resize: "vertical",
+    overflow: "hidden",
   },
   "&:hover": {
     borderColor: "var(--input-border-hover)",
@@ -87,7 +89,7 @@ export const theme = EditorView.theme({
       },
       "&[aria-selected]": {
         backgroundColor: "var(--item-background--active)",
-        color: "var(--text-color)"
+        color: "var(--text-color)",
       },
     },
   },
@@ -139,7 +141,4 @@ export const syntaxHighlight = HighlightStyle.define([
   { tag: t.invalid, color: invalid },
 ]);
 
-export const codeEditorTheme = [
-  theme,
-  syntaxHighlighting(syntaxHighlight),
-];
+export const codeEditorTheme = [theme, syntaxHighlighting(syntaxHighlight)];
