@@ -2,12 +2,17 @@ import { EditorView, basicSetup } from "codemirror";
 import { EditorState } from "@codemirror/state";
 import { codeEditorTheme } from "@/components/textarea/theme";
 import { languages } from "@codemirror/language-data";
+import behaviorShim from "@/util/behavior-shim";
 
 function init() {
-  const inputs = document.querySelectorAll("[data-type='jenkins-code-editor']");
-  inputs.forEach((textarea) => {
-    void generateEditorFromTextarea(textarea);
-  });
+  behaviorShim.specify(
+    "[data-type='jenkins-code-editor']",
+    "jenkins-code-editor",
+    0,
+    (textarea) => {
+      void generateEditorFromTextarea(textarea);
+    },
+  );
 }
 
 async function generateEditorFromTextarea(textarea) {

@@ -93,7 +93,8 @@ THE SOFTWARE.
                 rows="${h.determineRows(value)}"
                 readonly="${attrs.readonly}"
                 data-type="${attrs['codemirror-mode'] != null ? 'jenkins-code-editor' : null}"
-                data-code-language="${attrs['codemirror-mode']}">
+                data-code-language="${attrs['codemirror-mode']}"
+                data-code-options="${attrs['codemirror-config']}">
         <j:if test="${value != null &amp;&amp; !empty(value.toString()) &amp;&amp; (value.toString().codePointAt(0) == 10 || value.toString().codePointAt(0) == 13)}"><j:whitespace>&#10;</j:whitespace></j:if>
         <st:out value="${value}" />
       </textarea>
