@@ -15,7 +15,7 @@ async function generateEditorFromTextarea(textarea) {
   const language = languages.find((e) => e.alias.includes(textareaLanguage));
   const loadedLanguage = await language.load();
 
-  let view = new EditorView({
+  const view = new EditorView({
     state: EditorState.create({
       doc: textarea.value,
       extensions: [basicSetup, loadedLanguage.language, codeEditorTheme],
