@@ -36,8 +36,8 @@ async function generateEditorFromTextarea(textarea) {
     });
   }
 
-  // create an Observer instance
-  const resizeObserver = new ResizeObserver((entries) => {
+  // Make sure CodeMirror is synced with any manual height changes
+  const resizeObserver = new ResizeObserver(() => {
     view.requestMeasure();
   });
   resizeObserver.observe(view.dom);
