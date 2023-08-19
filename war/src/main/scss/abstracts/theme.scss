@@ -51,12 +51,13 @@ $semantics: (
 
   // branding
   --secondary: hsl(240, 10%, 50%);
-  --focus: #3fb3f7;
+  --focus-input-border: #063f61;
+  --focus-input-glow: #{color.change(#0b6aa2, $alpha: 0.25)};
+
+  // Deprecated
   --focus-btn-primary: #{color.change(#0b6aa2, $alpha: 0.5)};
   --focus-btn-secondary: #{color.change(#0b6aa2, $alpha: 0.5)};
   --focus-btn-danger: #{color.change(#cc0003, $alpha: 0.5)};
-  --focus-input-border: #063f61;
-  --focus-input-glow: #{color.change(#0b6aa2, $alpha: 0.25)};
 
   // State colors
   --primary-hover: #0587d4;
@@ -71,35 +72,22 @@ $semantics: (
   // Background colors
   --background: var(--white);
 
-  // Borders
-  --line-green: #acb;
-  --medium-translucent: rgba(255, 255, 255, 0.75);
-
-  // Page header colors
-  --logo-bg: var(--white);
+  // Header
   --brand-link-color: var(--secondary);
   --header-link-color: var(--white);
   --header-link-color-active: #f5f5f5;
-  --header-link-outline: var(--focus);
   --header-search-border: var(--white);
   --search-input-color: var(--brand-link-color);
   --search-bg: var(--white);
   --search-box-completion-bg: var(--primary-hover);
   --search-box-shadow: 0 1px 7px 0 rgba(0, 0, 0, 0.3);
-
-  // Header classic colors
   --header-bg-classic: #000;
   --header-link-bg-classic-hover: #404040;
   --header-link-bg-classic-active: #404040;
-
-  // Header dimensions
   --header-item-border-radius: 4px;
 
   // Breadcrumbs bar
   --breadcrumbs-bar-background: hsla(240, 20%, 96.5%, 0.8);
-
-  // Footer
-  --footer-background: hsla(240, 20%, 96.5%, 0.8);
 
   // Alert call outs
   --alert-success-text-color: #155724;
@@ -118,19 +106,19 @@ $semantics: (
   // Typography
   --text-color-secondary: var(--secondary);
 
-  // Button generic
+  // Deprecated - Button generic
   --btn-font-weight: bold;
   --btn-text-color: var(--white);
   --btn-font-size: var(--font-size-xs);
   --btn-line-height: 1rem;
   --btn-large-font-size: var(--font-size-sm);
   --btn-large-line-height: 1.25rem;
-  // Button primary
+  // Deprecated - Button primary
   --button-color--primary: var(--background);
   --btn-primary-bg: #063f61;
   --btn-primary-bg-hover: lighten(#063f61, 7.5%);
   --btn-primary-bg-active: lighten(#063f61, 12%);
-  // Button primary
+  // Deprecated - Button primary
   --btn-secondary-color: var(--secondary);
   --btn-secondary-bg: var(--btn-text-color);
   --btn-secondary-border: var(--medium-grey);
@@ -143,17 +131,13 @@ $semantics: (
   --btn-secondary-color--active: var(--primary-active);
   --btn-secondary-bg--active: var(--btn-secondary-bg);
   --btn-secondary-border--active: var(--primary-active);
-  // Button link
+  // Deprecated - Button link
   --btn-link-color: var(--accent-color);
   --btn-link-font-weight: var(--link-font-weight);
   --btn-link-color--hover: var(--primary-hover);
   --btn-link-bg--hover: var(--very-light-grey);
   --btn-link-color--active: var(--primary-active);
   --btn-link-bg--active: var(--light-grey);
-
-  // Help area
-  --help-area-bg-color: var(--very-light-grey);
-  --configure-job-help-area-bg-color: var(--medium-translucent);
 
   // Table
   --table-background: var(--panel-header-bg-color);
@@ -250,25 +234,7 @@ $semantics: (
   --tabs-item-foreground--selected: var(--link-color);
   --tabs-border-radius: calc((10px + 34px) / 2);
 
-  // Deprecated
-  --tab-link-border-radius: 10px;
-  --tab-link-border-width: 2px;
-  --tab-link-padding-x: 0.75rem;
-  --tab-link-padding-y: 0.375rem;
-  --tab-link-font-weight: bold;
-  --tab-link-text-color: var(--text-color-secondary);
-  --tab-link-bg: transparent;
-  --tab-link-border-color: var(--light-grey);
-  --tab-link-text-color--hover: var(--tab-link-text-color); // Redundant?
-  --tab-link-bg--hover: var(--light-grey);
-  --tab-link-border-color--hover: var(--tab-link-bg--hover); // Redundant?
-  --tab-link-text-color--active: var(--tab-link-text-color); // Redundant?
-  --tab-link-bg--active: var(--light-grey);
-  --tab-link-border-color--active: var(--tab-link-checked-bg); // Redundant?
-  --tab-link-checked-text-color: var(--white);
-  --tab-link-checked-bg: var(--dark-grey);
-  --tab-link-checked-border-color: var(--tab-link-checked-bg);
-  // Tabbar baseline
+  // Deprecated - Tabbar baseline
   --tab-baseline-width: 2px;
   --tab-baseline-color: var(--light-grey);
   --tab-baseline-default-display: none;
@@ -310,21 +276,14 @@ $semantics: (
   --standard-transition: 0.3s ease;
   --elastic-transition: 0.3s cubic-bezier(0, 0.68, 0.5, 1.5);
 
-  // Pop out menus
+  // Deprecated - Pop out menus
   --menu-text-color: black;
   --menu-bg-color: var(--white);
   --menu-selected-color: #b3d4ff;
   --menu-box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
 
-  // Manage component
-  --manage-option-bg-color--hover: var(--very-light-grey);
-  --manage-option-bg-color--active: var(--light-grey);
-  --manage-option-border-color: var(--medium-grey);
-
-  // Add form widget / configure job
+  // Deprecated - Add form widget / configure job
   --light-bg-color: #eee;
-  --bright-bg-color: #f9f9f9;
-  --brightest-bg-color: var(--white);
   --light-bg-color--hover: rgba(255, 255, 255, 0.65);
   --add-item-btn-decorator-border-color: #acb;
   --add-item-btn-decorator-bg-color: rgba(245, 249, 239, 0.75);
@@ -340,10 +299,6 @@ $semantics: (
 
   // Auto complete
   --auto-complete-bg-color--prehighlight: #b3d4ff;
-
-  // Call to action
-  --call-to-action-link-color: #000;
-  --call-to-action-text-color: var(--alert-info-text-color);
 
   // Default button
   --button-background: hsla(240, 25%, 75%, 0.1);
