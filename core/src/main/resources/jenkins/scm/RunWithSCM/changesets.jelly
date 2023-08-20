@@ -26,10 +26,12 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:t="/lib/hudson">
   <j:set var="changeSets" value="${it.changeSets}"/>
   <j:if test="${!changeSets.isEmpty()}">
-    <t:summary icon="symbol-changes">
-      <j:forEach var="changeSet" items="${changeSets}">
-        <st:include it="${changeSet}" page="digest.jelly"/>
-      </j:forEach>
-    </t:summary>
+    <table>
+      <t:summary icon="symbol-changes">
+        <j:forEach var="changeSet" items="${changeSets}">
+          <st:include it="${changeSet}" page="digest.jelly"/>
+        </j:forEach>
+      </t:summary>
+    </table>
   </j:if>
 </j:jelly>
