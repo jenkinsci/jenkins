@@ -438,12 +438,21 @@ function qs(owner) {
   };
 }
 
-// find the nearest ancestor node that has the given tag name
+// @deprecated Use standard javascript method `e.closest(tagName)` instead
+// eslint-disable-next-line no-unused-vars
 function findAncestor(e, tagName) {
+  console.warn(
+    "Deprecated call to findAncestor - use standard javascript method `e.closest(tagName)` instead",
+  );
   return e.closest(tagName);
 }
 
+// @deprecated Use standard javascript method `e.closest(className)` instead
+// eslint-disable-next-line no-unused-vars
 function findAncestorClass(e, cssClass) {
+  console.warn(
+    "Deprecated call to findAncestorClass - use standard javascript method `e.closest(className)` instead",
+  );
   return e.closest("." + cssClass);
 }
 
@@ -1378,7 +1387,6 @@ function rowvgStartEachRow(recursive, f) {
     function (e) {
       e.onclick = helpButtonOnClick;
       e.tabIndex = 9999; // make help link unnavigable from keyboard
-      e.parentNode.parentNode.classList.add("has-help");
     },
   );
 
@@ -1386,7 +1394,6 @@ function rowvgStartEachRow(recursive, f) {
   Behaviour.specify("A.help-button", "a-help-button", ++p, function (e) {
     e.onclick = helpButtonOnClick;
     e.tabIndex = 9999; // make help link unnavigable from keyboard
-    e.parentNode.parentNode.classList.add("has-help");
   });
 
   // Script Console : settings and shortcut key
@@ -1394,14 +1401,12 @@ function rowvgStartEachRow(recursive, f) {
     (function () {
       var cmdKeyDown = false;
       var mode = e.getAttribute("script-mode") || "text/x-groovy";
-      var readOnly = eval(e.getAttribute("script-readOnly")) || false;
 
       // eslint-disable-next-line no-unused-vars
       var w = CodeMirror.fromTextArea(e, {
         mode: mode,
         lineNumbers: true,
         matchBrackets: true,
-        readOnly: readOnly,
         onKeyEvent: function (editor, event) {
           function saveAndSubmit() {
             editor.save();
@@ -1787,28 +1792,6 @@ function rowvgStartEachRow(recursive, f) {
     },
   );
 
-  Behaviour.specify(".track-mouse", "-track-mouse", ++p, function (element) {
-    var DOM = YAHOO.util.Dom;
-
-    element.addEventListener("mouseenter", function () {
-      element.classList.add("mouseover");
-
-      var mousemoveTracker = function (event) {
-        var elementRegion = DOM.getRegion(element);
-        if (
-          event.x < elementRegion.left ||
-          event.x > elementRegion.right ||
-          event.y < elementRegion.top ||
-          event.y > elementRegion.bottom
-        ) {
-          element.classList.remove("mouseover");
-          document.removeEventListener("mousemove", mousemoveTracker);
-        }
-      };
-      document.addEventListener("mousemove", mousemoveTracker);
-    });
-  });
-
   window.addEventListener("load", function () {
     // Add a class to the bottom bar when it's stuck to the bottom of the screen
     const el = document.querySelector("#bottom-sticker");
@@ -2029,10 +2012,9 @@ function updateOptionalBlock(c) {
     // Hack to hide tool home when "Install automatically" is checked.
     var homeField = findPreviousFormItem(c, "home");
     if (homeField != null && homeField.value == "") {
-      var tr =
-        findAncestor(homeField, "TR") || findAncestorClass(homeField, "tr");
-      if (tr != null) {
-        tr.style.display = c.checked ? "none" : "";
+      const formItem = homeField.closest(".jenkins-form-item");
+      if (formItem != null) {
+        formItem.style.display = c.checked ? "none" : "";
         layoutUpdateCallback.call();
       }
     }
@@ -2449,7 +2431,7 @@ function findFormParent(e, form, isStatic) {
 
   if (form == null) {
     // caller can pass in null to have this method compute the owning form
-    form = findAncestor(e, "FORM");
+    form = e.closest("FORM");
   }
 
   while (e != form) {

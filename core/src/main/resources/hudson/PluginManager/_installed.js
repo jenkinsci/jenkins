@@ -36,9 +36,7 @@
   function updateMsg() {
     // has anything changed since its original state?
     let e = Array.from(
-      document
-        .getElementById("plugins")
-        .querySelectorAll("input[type='checkbox']"),
+      document.querySelectorAll("#plugins input[type='checkbox']"),
     ).find(function (e) {
       return String(e.checked) !== e.getAttribute("original");
     });
