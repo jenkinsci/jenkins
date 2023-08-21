@@ -44,7 +44,13 @@ public class BindTest {
         final RootActionImpl root = ExtensionList.lookupSingleton(RootActionImpl.class);
         try (JenkinsRule.WebClient wc = j.createWebClient()) {
             final HtmlPage htmlPage = wc.goTo(root.getUrlName());
-            final String scriptUrl = htmlPage.getElementsByTagName("script").stream().filter(it -> it.getAttribute("src").startsWith(j.contextPath + "/$stapler/bound/script" + j.contextPath + "/$stapler/bound/")).findFirst().orElseThrow().getAttribute("src");
+            final String scriptUrl = htmlPage
+                    .getElementsByTagName("script")
+                    .stream()
+                    .filter(it -> it.getAttribute("src").startsWith(j.contextPath + "/$stapler/bound/script" + j.contextPath + "/$stapler/bound/"))
+                    .findFirst()
+                    .orElseThrow()
+                    .getAttribute("src");
 
             final Page script = wc.goTo(StringUtils.removeStart(scriptUrl, j.contextPath + "/"), "application/javascript");
             final String content = script.getWebResponse().getContentAsString();
@@ -59,7 +65,13 @@ public class BindTest {
         final RootActionWithWellKnownURL root = ExtensionList.lookupSingleton(RootActionWithWellKnownURL.class);
         try (JenkinsRule.WebClient wc = j.createWebClient()) {
             final HtmlPage htmlPage = wc.goTo(root.getUrlName());
-            final String scriptUrl = htmlPage.getElementsByTagName("script").stream().filter(it -> it.getAttribute("src").startsWith(j.contextPath + "/$stapler/bound/script" + j.contextPath + "/theWellKnownRoot?")).findFirst().orElseThrow().getAttribute("src");
+            final String scriptUrl = htmlPage
+                    .getElementsByTagName("script")
+                    .stream()
+                    .filter(it -> it.getAttribute("src").startsWith(j.contextPath + "/$stapler/bound/script" + j.contextPath + "/theWellKnownRoot?"))
+                    .findFirst()
+                    .orElseThrow()
+                    .getAttribute("src");
 
             final Page script = wc.goTo(StringUtils.removeStart(scriptUrl, j.contextPath + "/"), "application/javascript");
             assertThat(script.getWebResponse().getContentAsString(), is("varname = makeStaplerProxy('" + j.contextPath + "/theWellKnownRoot','test',['annotatedJsMethod2','byName2']);"));
