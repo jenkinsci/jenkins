@@ -58,23 +58,29 @@
       }
     }
 
-    &:hover {
-      background: var(--item-background--active);
+    &:not(:disabled) {
+      &:hover {
+        background: var(--item-background--active);
+      }
+
+      &:active,
+      &:focus {
+        outline: none;
+        background: var(--item-background--active);
+        box-shadow:
+          0 0 0 2px var(--focus-input-border),
+          0 0 0 7px var(--focus-input-glow);
+
+        &::-webkit-search-cancel-button {
+          opacity: 0.5;
+          pointer-events: all;
+          transform: scale(1);
+        }
+      }
     }
 
-    &:active,
-    &:focus {
-      outline: none;
-      background: var(--item-background--active);
-      box-shadow:
-        0 0 0 2px var(--focus-input-border),
-        0 0 0 7px var(--focus-input-glow);
-
-      &::-webkit-search-cancel-button {
-        opacity: 0.5;
-        pointer-events: all;
-        transform: scale(1);
-      }
+    &:disabled {
+      cursor: not-allowed;
     }
   }
 
@@ -210,6 +216,15 @@
       opacity: 0;
       transform: scale(0.9);
       pointer-events: none;
+    }
+  }
+
+  &--disabled {
+    color: var(--text-color-secondary);
+    opacity: 0.5;
+
+    .jenkins-search__shortcut {
+      display: none;
     }
   }
 }
