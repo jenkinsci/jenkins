@@ -181,7 +181,7 @@ public abstract class Slave extends Node implements Serializable {
         this.name = name;
         this.remoteFS = remoteFS;
         this.launcher = launcher;
-        _setLabelString(label);
+        this.labelAtomSet = Collections.unmodifiableSet(Label.parse(label));
     }
 
     /**
@@ -196,7 +196,7 @@ public abstract class Slave extends Node implements Serializable {
         this.numExecutors = numExecutors;
         this.mode = mode;
         this.remoteFS = Util.fixNull(remoteFS).trim();
-        _setLabelString(labelString);
+        this.labelAtomSet = Collections.unmodifiableSet(Label.parse(labelString));
         this.launcher = launcher;
         this.retentionStrategy = retentionStrategy;
         getAssignedLabels();    // compute labels now

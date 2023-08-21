@@ -3,6 +3,8 @@ package hudson.model.labels;
 import static org.junit.Assert.assertTrue;
 
 import hudson.model.Label;
+import hudson.slaves.DumbSlave;
+import hudson.slaves.JNLPLauncher;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.concurrent.TimeUnit;
@@ -34,10 +36,28 @@ public class LabelBenchmarkTest {
                 .measurementIterations(1)
                 .timeUnit(TimeUnit.NANOSECONDS)
                 .shouldFailOnError(true)
-                .include(LabelBenchmark.class.getName().replace("$", ".") + ".*");
+                .include(LabelBenchmarkTest.class.getName() + ".*");
         new Runner(options.build()).run();
         assertTrue(Files.exists(Paths.get("jmh-report.json")));
     }
+
+    @JmhBenchmark
+    public static class NodeLabelBenchmark {
+        public static class StateImpl extends JmhBenchmarkState {
+            @Override
+            public void setup() throws Exception {
+                DumbSlave test = new DumbSlave("test", "/tmp/slave", new JNLPLauncher());
+                test.setLabelString("a b c");
+                getJenkins().addNode(test);
+            }
+        }
+
+        @Benchmark
+        public void nodeGetAssignedLabels(StateImpl state, Blackhole blackhole) {
+            blackhole.consume(state.getJenkins().getNode("test").getAssignedLabels());
+        }
+    }
+
 
     @JmhBenchmark
     public static class LabelBenchmark {

@@ -930,8 +930,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
             Trigger.timer = new java.util.Timer("Jenkins cron thread");
             queue = new Queue(LoadBalancer.CONSISTENT_HASH);
-            _setLabelString(label);
-
+            labelAtomSet = Collections.unmodifiableSet(Label.parse(label));
             try {
                 dependencyGraph = DependencyGraph.EMPTY;
             } catch (InternalError e) {
@@ -3321,7 +3320,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     private void _setLabelString(String label) {
         this.label = label;
-        this.labelAtomSet = Collections.unmodifiableSet(Label.parse(label));
+        if (Jenkins.getInstanceOrNull() != null) { // avoid on unit tests
+            this.labelAtomSet = Collections.unmodifiableSet(Label.parse(label));
+        }
     }
 
     @NonNull
