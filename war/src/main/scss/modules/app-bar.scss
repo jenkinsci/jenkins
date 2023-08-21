@@ -67,6 +67,23 @@
   h1,
   h2 {
     margin: 0;
-    font-size: 1.6rem;
+    font-size: 1.5rem;
+  }
+}
+
+.jenkins-build-caption {
+  display: flex;
+  flex-direction: row !important;
+  align-items: center;
+  justify-content: start !important;
+  gap: 1rem;
+  max-width: 1200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  .build-status-icon__wrapper,
+  .build-status-icon__wrapper svg {
+    width: 2rem !important;
+    height: 2rem !important;
   }
 }

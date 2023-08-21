@@ -122,14 +122,16 @@ public abstract class ConfidentialStore {
 
         @Override
         protected void store(ConfidentialKey key, byte[] payload) throws IOException {
-            LOGGER.fine(() -> "storing " + key.getId() + " " + Util.getDigestOf(Util.toHexString(payload)));
+            //called only from tests, get hex string of sha 256 for logging payload
+            LOGGER.fine("storing " + key.getId() + " " + Util.getHexOfSHA256DigestOf(payload));
             data.put(key.getId(), payload);
         }
 
         @Override
         protected byte[] load(ConfidentialKey key) throws IOException {
             byte[] payload = data.get(key.getId());
-            LOGGER.fine(() -> "loading " + key.getId() + " " + (payload != null ? Util.getDigestOf(Util.toHexString(payload)) : "null"));
+            //called only from tests, get hex string of sha 256 for logging payload
+            LOGGER.fine("loading " + key.getId() + " " + (payload != null ? Util.getHexOfSHA256DigestOf(payload) : "null"));
             return payload;
         }
 

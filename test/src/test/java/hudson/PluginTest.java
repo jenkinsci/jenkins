@@ -41,8 +41,8 @@ public class PluginTest {
 
     @Issue({"SECURITY-131", "SECURITY-155", "SECURITY-705"})
     @Test public void doDynamic() throws Exception {
-        r.createWebClient().goTo("plugin/matrix-auth/images/select-all.svg", "image/svg+xml");
-        r.createWebClient().goTo("plugin/matrix-auth/images/../images/select-all.svg", "image/svg+xml"); // collapsed somewhere before it winds up in restOfPath
+        r.createWebClient().goTo("plugin/cloudbees-folder/images/svgs/folder.svg", "image/svg+xml");
+        r.createWebClient().goTo("plugin/cloudbees-folder/images/../images/svgs/folder.svg", "image/svg+xml"); // collapsed somewhere before it winds up in restOfPath
         /* TODO https://github.com/apache/httpcomponents-client/commit/8c04c6ae5e5ba1432e40684428338ce68431766b#r32873542
         r.createWebClient().assertFails("plugin/matrix-auth/images/%2E%2E/images/user-disabled.png", HttpServletResponse.SC_INTERNAL_SERVER_ERROR); // IAE from TokenList.<init>
         r.createWebClient().assertFails("plugin/matrix-auth/images/%252E%252E/images/user-disabled.png", HttpServletResponse.SC_BAD_REQUEST); // SECURITY-131

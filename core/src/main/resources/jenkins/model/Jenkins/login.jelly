@@ -67,10 +67,15 @@ THE SOFTWARE.
             <st:include it="${it.setupWizard}" page="authenticate-security-token"/>
           </j:when>
           <j:otherwise>
-            <st:include it="${simpleDecorator}" page="simple-header.jelly" optional="true" />
+            <section class="app-sign-in-register__branding">
+              <div class="app-sign-in-register__branding__starburst"></div>
+              <img src="${imagesURL}/svgs/logo.svg" alt="${%logo}"/>
+            </section>
             <main id="main-panel" class="app-sign-in-register__content">
               <div class="app-sign-in-register__content-inner">
                 <h1>Sign in to Jenkins</h1>
+
+                <st:include it="${simpleDecorator}" page="simple-header.jelly" optional="true" />
 
                 <form name="login" action="${it.securityRealm.authenticationGatewayUrl}"
                     method="post">

@@ -1,3 +1,5 @@
+@use "../abstracts/mixins";
+
 body,
 p {
   font-family: var(--font-family-sans);
@@ -47,7 +49,7 @@ h5,
 h6,
 .h6 {
   line-height: var(--line-height-heading);
-  font-weight: bold;
+  font-weight: 650;
   display: block;
   margin-top: 0;
   margin-bottom: var(--section-padding);
@@ -55,12 +57,12 @@ h6,
 
 h1,
 .h1 {
-  font-size: 1.6rem;
+  font-size: 1.5rem;
 }
 
 h2,
 .h2 {
-  font-size: 1.4rem;
+  font-size: 1.35rem;
 }
 
 h3,
@@ -94,5 +96,21 @@ h6,
   &--tertiary {
     color: var(--text-color-secondary);
     opacity: 0.7;
+  }
+}
+
+a {
+  @include mixins.link;
+}
+
+.jenkins-link--with-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+
+  svg {
+    width: 16px;
+    height: 16px;
+    color: var(--text-color) !important;
   }
 }
