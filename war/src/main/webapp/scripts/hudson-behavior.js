@@ -1786,28 +1786,6 @@ function rowvgStartEachRow(recursive, f) {
     },
   );
 
-  Behaviour.specify(".track-mouse", "-track-mouse", ++p, function (element) {
-    var DOM = YAHOO.util.Dom;
-
-    element.addEventListener("mouseenter", function () {
-      element.classList.add("mouseover");
-
-      var mousemoveTracker = function (event) {
-        var elementRegion = DOM.getRegion(element);
-        if (
-          event.x < elementRegion.left ||
-          event.x > elementRegion.right ||
-          event.y < elementRegion.top ||
-          event.y > elementRegion.bottom
-        ) {
-          element.classList.remove("mouseover");
-          document.removeEventListener("mousemove", mousemoveTracker);
-        }
-      };
-      document.addEventListener("mousemove", mousemoveTracker);
-    });
-  });
-
   window.addEventListener("load", function () {
     // Add a class to the bottom bar when it's stuck to the bottom of the screen
     const el = document.querySelector("#bottom-sticker");
