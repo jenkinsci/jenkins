@@ -36,7 +36,7 @@ public class LabelBenchmarkTest {
                 .measurementIterations(1)
                 .timeUnit(TimeUnit.NANOSECONDS)
                 .shouldFailOnError(true)
-                .include(LabelBenchmark.class.getName() + ".*");
+                .include(LabelBenchmark.class.getName().replace("$", ".") + ".*");
         new Runner(options.build()).run();
         assertTrue(Files.exists(Paths.get("jmh-report.json")));
     }
