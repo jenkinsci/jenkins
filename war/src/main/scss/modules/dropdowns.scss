@@ -3,7 +3,6 @@
 $dropdown-padding: 0.4rem;
 
 .tippy-box[data-theme~="dropdown"] {
-  padding: $dropdown-padding;
   border-radius: 15px;
   box-shadow: var(--dropdown-box-shadow);
   outline: none !important;
@@ -39,7 +38,40 @@ $dropdown-padding: 0.4rem;
 }
 
 .jenkins-dropdown {
-  display: contents;
+  display: flex;
+  flex-direction: column;
+  padding: $dropdown-padding;
+
+  &--compact {
+    > .jenkins-dropdown__item,
+    > .jenkins-dropdown__disabled {
+      padding: 0 0.6rem;
+      min-height: 30px !important;
+    }
+  }
+
+  &__filter {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 0.6rem 1rem;
+    border-bottom: 1px solid var(--input-border);
+
+    &-input {
+      &:focus {
+        outline: none;
+      }
+
+      width: 100%;
+      border: none;
+      color: var(--text-color-secondary);
+      background-color: unset;
+    }
+
+    svg {
+      margin-top: 2px;
+    }
+  }
 
   &__separator {
     position: relative;
@@ -73,6 +105,16 @@ $dropdown-padding: 0.4rem;
     margin: $dropdown-padding 0.55rem;
     font-size: 0.8125rem;
     opacity: 0.8;
+  }
+
+  &__disabled {
+    color: var(--text-color-secondary) !important;
+    font-size: 0.8125rem;
+    opacity: 0.8;
+    display: inline-flex;
+    align-items: center;
+    margin: 0;
+    cursor: default;
   }
 
   &__item {
