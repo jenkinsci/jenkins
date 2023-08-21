@@ -1,9 +1,11 @@
 package org.kohsuke.stapler;
 
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.endsWith;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertThrows;
 
 import hudson.ExtensionList;
 import hudson.model.InvisibleAction;
@@ -12,6 +14,7 @@ import java.util.Arrays;
 import java.util.List;
 import org.apache.commons.lang.StringUtils;
 import org.htmlunit.Page;
+import org.htmlunit.ScriptException;
 import org.htmlunit.html.HtmlPage;
 import org.junit.Rule;
 import org.junit.Test;
@@ -62,6 +65,25 @@ public class BindTest {
             assertThat(script.getWebResponse().getContentAsString(), is("varname = makeStaplerProxy('" + j.contextPath + "/theWellKnownRoot','test',['annotatedJsMethod2','byName2']);"));
         }
         assertThat(root.invocations, is(1));
+    }
+
+    @Test
+    public void bindNull() throws Exception {
+        final RootActionImpl root = ExtensionList.lookupSingleton(RootActionImpl.class);
+        try (JenkinsRule.WebClient wc = j.createWebClient()) {
+            final ScriptException exception = assertThrows(ScriptException.class, () -> wc.goTo(root.getUrlName() + "/null"));
+            assertThat(exception.getFailingLineNumber(), is(2));
+            assertThat(exception.getFailingColumnNumber(), is(0));
+            assertThat(exception.getMessage(), containsString("TypeError: Cannot call method \"byName1\" of null"));
+
+            final HtmlPage htmlPage = exception.getPage();
+            final String scriptUrl = htmlPage.getElementsByTagName("script").stream().filter(it -> it.getAttribute("src").equals(j.contextPath + "/$stapler/bound/script/null?var=varname")).findFirst().orElseThrow().getAttribute("src");
+
+            final Page script = wc.goTo(StringUtils.removeStart(scriptUrl, j.contextPath + "/"), "application/javascript");
+            final String content = script.getWebResponse().getContentAsString();
+            assertThat(content, is("varname = null;"));
+        }
+        assertThat(root.invocations, is(0));
     }
 
     @TestExtension
