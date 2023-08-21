@@ -2,12 +2,17 @@ package hudson.model.labels;
 
 import static org.junit.Assert.assertTrue;
 
+import hudson.model.Label;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.concurrent.TimeUnit;
+import jenkins.benchmark.jmh.JmhBenchmark;
+import jenkins.benchmark.jmh.JmhBenchmarkState;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.Mode;
+import org.openjdk.jmh.infra.Blackhole;
 import org.openjdk.jmh.results.format.ResultFormatType;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.options.ChainedOptionsBuilder;
@@ -15,7 +20,7 @@ import org.openjdk.jmh.runner.options.OptionsBuilder;
 
 public class LabelBenchmarkTest {
     @Test
-    @Ignore(value="This is a benchmark, not a test")
+    @Ignore(value = "This is a benchmark, not a test")
     public void runBenchmark() throws Exception {
         // run the minimum possible number of iterations
         ChainedOptionsBuilder options = new OptionsBuilder()
@@ -34,5 +39,21 @@ public class LabelBenchmarkTest {
                 .include(LabelBenchmark.class.getName() + ".*");
         new Runner(options.build()).run();
         assertTrue(Files.exists(Paths.get("jmh-report.json")));
+    }
+
+    @JmhBenchmark
+    public static class LabelBenchmark {
+        public static class MyState extends JmhBenchmarkState {
+        }
+
+        @Benchmark
+        public void simpleLabel(MyState state, Blackhole blackhole) {
+            blackhole.consume(Label.parse("some-label"));
+        }
+
+        @Benchmark
+        public void complexLabel(MyState state, Blackhole blackhole) {
+            blackhole.consume(Label.parse("label1 && label2"));
+        }
     }
 }

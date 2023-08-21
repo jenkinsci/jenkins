@@ -2118,9 +2118,13 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Returns the label atom of the given name, only if it already exists.
      * @return non-null if the label atom already exists.
      */
-    public @Nullable LabelAtom tryGetLabelAtom(@CheckForNull String name) {
-        if (name == null)  return null;
-        return (LabelAtom) labels.get(name);
+    @Restricted(NoExternalUse.class)
+    public @Nullable LabelAtom tryGetLabelAtom(@NonNull String name) {
+        Label label = labels.get(name);
+        if (label instanceof LabelAtom) {
+            return (LabelAtom) label;
+        }
+        return null;
     }
 
 
