@@ -1395,14 +1395,12 @@ function rowvgStartEachRow(recursive, f) {
     (function () {
       var cmdKeyDown = false;
       var mode = e.getAttribute("script-mode") || "text/x-groovy";
-      var readOnly = eval(e.getAttribute("script-readOnly")) || false;
 
       // eslint-disable-next-line no-unused-vars
       var w = CodeMirror.fromTextArea(e, {
         mode: mode,
         lineNumbers: true,
         matchBrackets: true,
-        readOnly: readOnly,
         onKeyEvent: function (editor, event) {
           function saveAndSubmit() {
             editor.save();
