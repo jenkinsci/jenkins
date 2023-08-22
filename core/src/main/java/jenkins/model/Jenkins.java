@@ -3337,6 +3337,15 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
             // load from disk
             cfg.unmarshal(Jenkins.this);
+            // initialize views by inserting the default view if necessary
+            // this is both for clean Jenkins and for backward compatibility.
+            if (views.size() == 0 || primaryView == null) {
+                View v = new AllView(AllView.DEFAULT_VIEW_NAME);
+                setViewOwner(v);
+                views.add(0, v);
+                primaryView = v.getViewName();
+            }
+            primaryView = AllView.migrateLegacyPrimaryAllViewLocalizedName(views, primaryView);
         }
         configLoaded = true;
         try {
@@ -3495,16 +3504,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                         slave.getAssignedLabels();
                     getAssignedLabels();
                 }
-
-                // initialize views by inserting the default view if necessary
-                // this is both for clean Jenkins and for backward compatibility.
-                if (views.size() == 0 || primaryView == null) {
-                    View v = new AllView(AllView.DEFAULT_VIEW_NAME);
-                    setViewOwner(v);
-                    views.add(0, v);
-                    primaryView = v.getViewName();
-                }
-                primaryView = AllView.migrateLegacyPrimaryAllViewLocalizedName(views, primaryView);
 
                 if (useSecurity != null && !useSecurity) {
                     // forced reset to the unsecure mode.
