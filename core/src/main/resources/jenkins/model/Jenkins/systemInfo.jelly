@@ -50,24 +50,21 @@ THE SOFTWARE.
       </l:hasPermission>
 
       <l:tabPane title="${%Plugins}">
-        <table class="jenkins-table sortable">
-          <thead>
-            <tr>
-              <th initialSortDir="down">${%Name}</th>
-              <th>${%Version}</th>
-              <th>${%Enabled}</th>
-            </tr>
-          </thead>
-          <tbody>
-            <j:choose>
-              <j:when test="${empty(app.pluginManager.plugins) and empty(app.pluginManager.failedPlugins)}">
+
+        <j:choose>
+          <j:when test="${empty(app.pluginManager.plugins) and empty(app.pluginManager.failedPlugins)}">
+            <l:notice icon="symbol-plugins" text="${%No plugins installed}" />
+          </j:when>
+          <j:otherwise>
+            <table class="jenkins-table sortable">
+              <thead>
                 <tr>
-                  <td colspan="3">
-                    ${%No plugins installed.}
-                  </td>
+                  <th initialSortDir="down">${%Name}</th>
+                  <th>${%Version}</th>
+                  <th>${%Enabled}</th>
                 </tr>
-              </j:when>
-              <j:otherwise>
+              </thead>
+              <tbody>
                 <j:forEach var="p" items="${app.pluginManager.plugins}">
                   <j:set var="state" value="${p.enabled?'true':'false'}"/>
                   <tr>
@@ -84,10 +81,10 @@ THE SOFTWARE.
                     </td>
                   </tr>
                 </j:forEach>
-              </j:otherwise>
-            </j:choose>
-          </tbody>
-        </table>
+              </tbody>
+            </table>
+          </j:otherwise>
+        </j:choose>
       </l:tabPane>
 
       <l:tabPane title="${%Memory Usage}">

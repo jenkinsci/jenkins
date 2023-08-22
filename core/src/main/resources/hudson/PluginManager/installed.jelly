@@ -34,7 +34,8 @@ THE SOFTWARE.
     <!-- no need for additional breadcrumb here as the side panel offers enough functionality to browse between different pages -->
 
     <l:main-panel>
-      <l:app-bar title="${%Plugins}" />
+      <j:set var="noPlugins"
+             value="${empty(app.pluginManager.plugins) and empty(app.pluginManager.failedPlugins)}" />
 
       <div class="jenkins-app-bar jenkins-app-bar--sticky">
         <div class="jenkins-app-bar__content">
@@ -42,7 +43,8 @@ THE SOFTWARE.
                         placeholder="${%Search installed plugins}"
                         id="filter-box"
                         autofocus="true"
-                        value="${request.getParameter('filter')}" />
+                        value="${request.getParameter('filter')}"
+                        enabled="${!noPlugins}" />
         </div>
       </div>
 
@@ -67,29 +69,20 @@ THE SOFTWARE.
                 data-detached-possible-dependents="${%detached-possible-dependents}"
                 data-uninstall-description="${%uninstall-description}" />
 
-      <table id="plugins" class="jenkins-table sortable">
-        <j:choose>
-          <j:when test="${empty(app.pluginManager.plugins) and empty(app.pluginManager.failedPlugins)}">
+      <j:choose>
+        <j:when test="${noPlugins}">
+          <l:notice icon="symbol-plugins" text="${%No plugins installed}" />
+        </j:when>
+        <j:otherwise>
+          <table id="plugins" class="jenkins-table sortable">
             <thead>
-              <tr>
-                <th>${%Installed plugins}</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td align="center">${%No plugins installed.}</td>
-              </tr>
-            </tbody>
-          </j:when>
-          <j:otherwise>
-            <thead>
-              <tr>
-                <th initialSortDir="down">${%Name}</th>
-                <th class="jenkins-table__cell--tight">${%Enabled}</th>
-                <l:isAdmin>
-                  <th data-sort-disable="true"/>
-                </l:isAdmin>
-              </tr>
+            <tr>
+              <th initialSortDir="down">${%Name}</th>
+              <th class="jenkins-table__cell--tight">${%Enabled}</th>
+              <l:isAdmin>
+                <th data-sort-disable="true"/>
+              </l:isAdmin>
+            </tr>
             </thead>
             <tbody>
               <j:forEach var="p" items="${app.pluginManager.plugins}">
@@ -274,9 +267,9 @@ THE SOFTWARE.
                 </tr>
               </j:forEach>
             </tbody>
-          </j:otherwise>
-        </j:choose>
-      </table>
+          </table>
+        </j:otherwise>
+      </j:choose>
 
       <div class="warning" id="needRestart" style="display:none; margin: 1em; height: 1em">
         <form method="post" action="${rootURL}/safeRestart">
