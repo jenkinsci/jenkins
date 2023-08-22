@@ -161,7 +161,7 @@ public class Util {
 
     /**
      * Pattern for capturing variables. Either $xyz, ${xyz} or ${a.b} but not $a.b, while ignoring "$$"
-      */
+     */
     private static final Pattern VARIABLE = Pattern.compile("\\$([A-Za-z0-9_]+|\\{[A-Za-z0-9_.]+\\}|\\$)");
 
     /**
@@ -198,10 +198,10 @@ public class Util {
             // escape the dollar sign or get the key to resolve
             String value;
             if (key.charAt(0) == '$') {
-               value = "$";
+                value = "$";
             } else {
-               if (key.charAt(0) == '{')  key = key.substring(1, key.length() - 1);
-               value = resolver.resolve(key);
+                if (key.charAt(0) == '{')  key = key.substring(1, key.length() - 1);
+                value = resolver.resolve(key);
             }
 
             if (value == null)
@@ -261,8 +261,8 @@ public class Util {
                 .onMalformedInput(CodingErrorAction.REPLACE)
                 .onUnmappableCharacter(CodingErrorAction.REPLACE);
         try (InputStream is = Files.newInputStream(Util.fileToPath(logfile));
-                Reader isr = new InputStreamReader(is, decoder);
-                Reader br = new BufferedReader(isr)) {
+             Reader isr = new InputStreamReader(is, decoder);
+             Reader br = new BufferedReader(isr)) {
             return IOUtils.toString(br);
         } catch (NoSuchFileException e) {
             return "";
@@ -886,9 +886,9 @@ public class Util {
 
     static {
         String raw =
-    "!  $ &'()*+,-. 0123456789   =  @ABCDEFGHIJKLMNOPQRSTUVWXYZ    _ abcdefghijklmnopqrstuvwxyz";
-  //  "# %         /          :;< >?                           [\]^ `                          {|}~
-  //  ^--so these are encoded
+                "!  $ &'()*+,-. 0123456789   =  @ABCDEFGHIJKLMNOPQRSTUVWXYZ    _ abcdefghijklmnopqrstuvwxyz";
+        //  "# %         /          :;< >?                           [\]^ `                          {|}~
+        //  ^--so these are encoded
         int i;
         // Encode control chars and space
         for (i = 0; i < 33; i++) uriMap[i] = true;
@@ -1321,19 +1321,19 @@ public class Util {
                 Files.move(tempSymlinkPath, pathForSymlink, StandardCopyOption.ATOMIC_MOVE);
                 return true;
             } catch (
-                UnsupportedOperationException |
-                SecurityException |
-                IOException ex) {
+                    UnsupportedOperationException |
+                    SecurityException |
+                    IOException ex) {
                 // If we couldn't perform an atomic move or the setup, we fall through to another approach
                 reportAtomicFailure(pathForSymlink, ex);
             }
             // If we didn't return after our atomic move, then we want to clean up our symlink
             tryToDeleteSymlink(symlink);
         } catch (
-            SecurityException |
-            InvalidPathException |
-            UnsupportedOperationException |
-            IOException ex) {
+                SecurityException |
+                InvalidPathException |
+                UnsupportedOperationException |
+                IOException ex) {
             // We couldn't perform an atomic move or the setup.
             reportAtomicFailure(pathForSymlink, ex);
         }
@@ -1353,7 +1353,7 @@ public class Util {
      *      Where to create a symlink in (relative to {@code baseDir})
      */
     public static void createSymlink(@NonNull File baseDir, @NonNull String targetPath,
-            @NonNull String symlinkPath, @NonNull TaskListener listener) throws InterruptedException {
+                                     @NonNull String symlinkPath, @NonNull TaskListener listener) throws InterruptedException {
         File fileForSymlink = new File(baseDir, symlinkPath);
         try {
             Path pathForSymlink = fileToPath(fileForSymlink);
@@ -1689,7 +1689,7 @@ public class Util {
      */
     @Restricted(NoExternalUse.class)
     public static void closeAndLogFailures(@CheckForNull Closeable toClose, @NonNull Logger logger,
-            @NonNull String closeableName, @NonNull String closeableOwner) {
+                                           @NonNull String closeableName, @NonNull String closeableOwner) {
         if (toClose == null) {
             return;
         }
@@ -1716,7 +1716,7 @@ public class Util {
 
     @Restricted(NoExternalUse.class)
     public static Set<PosixFilePermission> modeToPermissions(int mode) throws IOException {
-         // Anything larger is a file type, not a permission.
+        // Anything larger is a file type, not a permission.
         int PERMISSIONS_MASK = 07777;
         // setgid/setuid/sticky are not supported.
         int MAX_SUPPORTED_MODE = 0777;
@@ -1927,19 +1927,6 @@ public class Util {
     private static PathRemover newPathRemover(@NonNull PathRemover.PathChecker pathChecker) {
         return PathRemover.newFilteredRobustRemover(pathChecker, DELETION_RETRIES, GC_AFTER_FAILED_DELETE, WAIT_BETWEEN_DELETION_RETRIES);
     }
-  
-    /**
-     * Setting this flag to true enables FIPS mode
-     */
-
-    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL")
-    @Restricted(NoExternalUse.class)
-    public static boolean FIPS_MODE = SystemProperties.getBoolean(Util.class.getName() + ".FIPS_MODE");
-
-    public static boolean isFipsMode() {
-        LOGGER.info("FIPS mode : " + FIPS_MODE);
-        return FIPS_MODE;
-    }
 
     /**
      * Returns SHA-256 Digest of input bytes
@@ -1947,9 +1934,9 @@ public class Util {
     @Restricted(NoExternalUse.class)
     public static byte[] getSHA256DigestOf(@NonNull byte[] input) {
         try {
-                MessageDigest messageDigest = MessageDigest.getInstance("SHA-256");
-                messageDigest.update(input);
-                return messageDigest.digest();
+            MessageDigest messageDigest = MessageDigest.getInstance("SHA-256");
+            messageDigest.update(input);
+            return messageDigest.digest();
         } catch (NoSuchAlgorithmException noSuchAlgorithmException) {
             throw new IllegalStateException("SHA-256 could not be instantiated, but is required to" +
                     " be implemented by the language specification", noSuchAlgorithmException);
@@ -1965,5 +1952,17 @@ public class Util {
         byte[] payloadDigest = Util.getSHA256DigestOf(input);
         return (payloadDigest != null) ? Util.toHexString(payloadDigest) : null;
     }
-}
 
+    /**
+     * Setting this flag to true enables FIPS mode
+     */
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL")
+    @Restricted(NoExternalUse.class)
+    public static boolean FIPS_MODE = SystemProperties.getBoolean(Util.class.getName() + ".FIPS_MODE");
+
+    public static boolean isFipsMode() {
+        LOGGER.info("FIPS mode : " + FIPS_MODE);
+        return FIPS_MODE;
+    }
+
+}
