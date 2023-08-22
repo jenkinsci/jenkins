@@ -30,6 +30,7 @@ import hudson.model.Run;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
  * Default implementation of {@link ConsoleUrlProvider} that uses the standard Jenkins console view.
@@ -39,6 +40,10 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  */
 @Restricted(value = NoExternalUse.class)
 public class DefaultConsoleUrlProvider implements ConsoleUrlProvider {
+
+    @DataBoundConstructor
+    public DefaultConsoleUrlProvider() {
+    }
 
     @Override
     public String getConsoleUrl(Run<?, ?> run) {
