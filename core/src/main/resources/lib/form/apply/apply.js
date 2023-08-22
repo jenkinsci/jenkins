@@ -29,7 +29,7 @@ Behaviour.specify(
     }
 
     e.addEventListener("click", function (e) {
-      var f = findAncestor(e.target, "FORM");
+      var f = e.target.closest("FORM");
 
       // create a throw-away IFRAME to avoid back button from loading the POST result back
       id = "iframe" + iota++;
@@ -102,5 +102,5 @@ Behaviour.specify(
         f.target = "_self";
       }
     });
-  }
+  },
 );
