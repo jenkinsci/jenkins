@@ -38,12 +38,9 @@ function generateDropdown(element, callback) {
 /*
  * Generates the contents for the dropdown
  */
-function generateDropdownItems(items, compact) {
+function generateDropdownItems(items) {
   const menuItems = document.createElement("div");
   menuItems.classList.add("jenkins-dropdown");
-  if (compact === true) {
-    menuItems.classList.add("jenkins-dropdown--compact");
-  }
 
   items
     .map((item) => {
@@ -53,10 +50,6 @@ function generateDropdownItems(items, compact) {
 
       if (item.type === "SEPARATOR") {
         return Templates.separator();
-      }
-
-      if (item.type === "DISABLED") {
-        return Templates.disabled(item.label);
       }
 
       const menuItem = Templates.menuItem(item);
