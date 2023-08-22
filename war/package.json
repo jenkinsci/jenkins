@@ -37,9 +37,9 @@
     "postcss": "8.4.28",
     "postcss-loader": "7.3.3",
     "postcss-preset-env": "9.1.1",
-    "postcss-scss": "4.0.6",
+    "postcss-scss": "4.0.7",
     "prettier": "3.0.2",
-    "sass": "1.65.1",
+    "sass": "1.66.1",
     "sass-loader": "13.3.2",
     "style-loader": "3.3.3",
     "stylelint": "15.10.2",
@@ -62,5 +62,5 @@
     "defaults",
     "not IE 11"
   ],
-  "packageManager": "yarn@3.6.1"
+  "packageManager": "yarn@3.6.2"
 }
