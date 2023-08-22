@@ -546,7 +546,6 @@ public class HudsonPrivateSecurityRealmTest {
         pbkdf2PasswordEncoder.encode("password");
     }
 
-
     @Test
     public void passwordHashMatchesPBKDF2() {
         HudsonPrivateSecurityRealm.PBKDF2PasswordEncoder pbkdf2PasswordEncoder = new HudsonPrivateSecurityRealm.PBKDF2PasswordEncoder();
@@ -570,7 +569,6 @@ public class HudsonPrivateSecurityRealmTest {
 
     @Test
     public void passwordHashNotMatches() {
-
         assertFalse(PASSWORD_ENCODER.matches(null, "1000:137287e0ae3e24ae15df2f6caf068d5a:7bcdd7d6788bf20747812fd39b3ff5451235b12dfa62f6b"));
     }
 
