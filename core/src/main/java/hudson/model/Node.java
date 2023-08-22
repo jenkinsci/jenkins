@@ -68,6 +68,7 @@ import jenkins.util.io.OnMaster;
 import net.sf.json.JSONObject;
 import org.jvnet.localizer.Localizable;
 import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.accmod.restrictions.ProtectedExternally;
 import org.kohsuke.stapler.BindInterceptor;
 import org.kohsuke.stapler.Stapler;
@@ -303,6 +304,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
      * @return An immutable set of LabelAtom associated with the current node label.
      */
     @NonNull
+    @Restricted(NoExternalUse.class)
     protected Set<LabelAtom> getLabelAtomSet() {
         // Default implementation doesn't cache, since we can't hook on label updates.
         return Collections.unmodifiableSet(Label.parse(getLabelString()));
