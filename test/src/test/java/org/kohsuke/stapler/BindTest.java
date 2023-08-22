@@ -98,6 +98,43 @@ public class BindTest {
         assertThat(root.invocations, is(0));
     }
 
+    @Test
+    public void bindUnsafe() throws Exception {
+        final RootActionImpl root = ExtensionList.lookupSingleton(RootActionImpl.class);
+        try (JenkinsRule.WebClient wc = j.createWebClient()) {
+            final HtmlPage htmlPage = wc.goTo(root.getUrlName() + "/unsafe-var");
+            final String content = htmlPage
+                    .getElementsByTagName("script")
+                    .stream()
+                    .filter(it -> it.getTextContent().contains("makeStaplerProxy"))
+                    .findFirst()
+                    .orElseThrow()
+                    .getTextContent();
+
+            assertThat(content, startsWith("window['varname']=makeStaplerProxy('" + j.contextPath + "/$stapler/bound/"));
+            assertThat(content, endsWith("','test',['annotatedJsMethod1','byName1']);"));
+        }
+        assertThat(root.invocations, is(1));
+    }
+
+    @Test
+    public void bindInlineNull() throws Exception {
+        final RootActionImpl root = ExtensionList.lookupSingleton(RootActionImpl.class);
+        try (JenkinsRule.WebClient wc = j.createWebClient()) {
+            final HtmlPage htmlPage = wc.goTo(root.getUrlName() + "/inline-null");
+            final String content = htmlPage
+                    .getElementsByTagName("script")
+                    .stream()
+                    .filter(it -> it.getTextContent().contains("var inline"))
+                    .findFirst()
+                    .orElseThrow()
+                    .getTextContent();
+
+            assertThat(content, containsString("var inline = null"));
+        }
+        assertThat(root.invocations, is(0));
+    }
+
     @TestExtension
     public static class RootActionImpl extends InvisibleAction implements RootAction {
         private int invocations;

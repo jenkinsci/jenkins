@@ -41,7 +41,7 @@ THE SOFTWARE.
     <asm.version>9.5</asm.version>
     <slf4jVersion>2.0.7</slf4jVersion>
     <!-- TODO https://github.com/jenkinsci/stapler/pull/385 -->
-    <stapler.version>1828.v34d7e67885ea_</stapler.version>
+    <stapler.version>1829.v16f23e39438b_</stapler.version>
     <groovy.version>2.4.21</groovy.version>
   </properties>
 
