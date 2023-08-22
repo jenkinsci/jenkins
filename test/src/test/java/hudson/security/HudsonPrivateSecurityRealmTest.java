@@ -521,6 +521,7 @@ public class HudsonPrivateSecurityRealmTest {
 
     @Test
     public void passwordHashWithPBKDF2() {
+
         HudsonPrivateSecurityRealm.PBKDF2PasswordEncoder pbkdf2PasswordEncoder = new HudsonPrivateSecurityRealm.PBKDF2PasswordEncoder();
         mockStatic(HudsonPrivateSecurityRealm.class);
         when(getPasswordHeader()).thenReturn("$PBKDF2");
