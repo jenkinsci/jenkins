@@ -189,7 +189,14 @@ THE SOFTWARE.
               </j:when>
 
               <j:otherwise>
-                <m:a xmlns:m="jelly:hudson.util.jelly.MorphTagLibrary" href="${href}" class="task-link task-link-no-confirm ${isCurrent ? 'task-link--active' : ''}" data-task-success="${%Done.}" data-task-post="${attrs.post}" ATTRIBUTES="${attrs}" EXCEPT="field items clazz post permission">
+                <m:a xmlns:m="jelly:hudson.util.jelly.MorphTagLibrary"
+                     href="${href}"
+                     class="task-link task-link-no-confirm ${isCurrent ? 'task-link--active' : ''}"
+                     data-task-success="${%Done.}"
+                     data-task-post="${attrs.post}"
+                     ATTRIBUTES="${attrs}"
+                     EXCEPT="badge confirmationMessage contextMenu destructive enabled href icon onclick permission permissions post requiresConfirmation title">
+                  <!-- all documented attributes except data-* are in EXCEPT -->
                   <span class="task-icon-link">
                     <l:icon src="${icon}" />
                   </span>
