@@ -636,15 +636,6 @@ function updateValidationArea(validationArea, content) {
       validationArea.innerHTML = content;
       validationArea.style.height = "auto";
 
-      // Only include the notice in the validation-error-area, move all other elements out
-      if (validationArea.children.length > 1) {
-        Array.from(validationArea.children)
-          .slice(1)
-          .forEach((element) => {
-            validationArea.after(element);
-          });
-      }
-
       Behaviour.applySubtree(validationArea);
       // For errors with additional details, apply the subtree to the expandable details pane
       if (validationArea.nextElementSibling) {
