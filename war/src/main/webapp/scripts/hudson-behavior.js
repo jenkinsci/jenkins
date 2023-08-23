@@ -634,8 +634,7 @@ function updateValidationArea(validationArea, content) {
     // Only change content if different, causes an unnecessary animation otherwise
     if (validationArea.innerHTML !== content) {
       validationArea.innerHTML = content;
-      validationArea.style.height =
-        validationArea.children[0].offsetHeight + "px";
+      validationArea.style.height = "auto";
 
       // Only include the notice in the validation-error-area, move all other elements out
       if (validationArea.children.length > 1) {
