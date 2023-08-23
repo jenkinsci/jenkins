@@ -3339,7 +3339,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             cfg.unmarshal(Jenkins.this);
             // initialize views by inserting the default view if necessary
             // this is both for clean Jenkins and for backward compatibility.
-            if (views.size() == 0 || primaryView == null) {
+            if (views.isEmpty() || primaryView == null) {
                 View v = new AllView(AllView.DEFAULT_VIEW_NAME);
                 setViewOwner(v);
                 views.add(0, v);
