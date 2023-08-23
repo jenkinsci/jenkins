@@ -90,7 +90,7 @@ THE SOFTWARE.
                        class="content-block__link">
                       <span>${%newCloud}</span>
                       <span class="trailing-icon">
-                        <l:icon class="icon-md" src="symbol-arrow-right"/>
+                        <l:icon src="symbol-add"/>
                       </span>
                     </a>
                   </li>
@@ -100,17 +100,17 @@ THE SOFTWARE.
                      class="content-block__link">
                     <span>${%installCloudPlugin}</span>
                     <span class="trailing-icon">
-                      <l:icon class="icon-md" src="symbol-arrow-right"/>
+                      <l:icon src="symbol-plugins" />
                     </span>
                   </a>
                 </li>
                 <li class="content-block">
                   <a href="https://www.jenkins.io/redirect/distributed-builds"
-                     class="content-block__link content-block__help-link"
+                     class="content-block__link"
                      target="_blank" rel="noopener noreferrer">
                     <span>${%learnMoreDistributedBuilds}</span>
                     <span class="trailing-icon">
-                      <l:icon class="icon-md" src="symbol-link"/>
+                      <l:icon src="symbol-help-circle" />
                     </span>
                   </a>
                 </li>
