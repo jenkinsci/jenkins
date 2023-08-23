@@ -195,8 +195,8 @@ THE SOFTWARE.
                      data-task-success="${%Done.}"
                      data-task-post="${attrs.post}"
                      ATTRIBUTES="${attrs}"
-                     EXCEPT="badge confirmationMessage contextMenu destructive enabled href icon onclick permission permissions post requiresConfirmation title">
-                  <!-- all documented attributes except data-* are in EXCEPT -->
+                     EXCEPT="badge confirmationMessage contextMenu destructive enabled href icon permission permissions post requiresConfirmation title">
+                  <!-- all documented attributes except onclick and data-* are in EXCEPT -->
                   <span class="task-icon-link">
                     <l:icon src="${icon}" />
                   </span>
