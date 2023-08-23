@@ -41,6 +41,8 @@
   margin: 0 auto 20vh;
 
   &__search {
+    --search-bar-height: 3rem !important;
+
     background: transparent;
     box-shadow:
       0 0 0 20px transparent,

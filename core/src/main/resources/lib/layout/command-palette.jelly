@@ -37,7 +37,7 @@ THE SOFTWARE.
   <dialog id="command-palette" class="jenkins-command-palette__dialog">
     <div class="jenkins-command-palette__wrapper">
       <div class="jenkins-command-palette">
-        <l:search-bar id="command-bar" clazz="jenkins-search--app-bar jenkins-command-palette__search" hasKeyboardShortcut="false" />
+        <l:search-bar id="command-bar" clazz="jenkins-command-palette__search" hasKeyboardShortcut="false" />
         <div id="search-results-container" class="jenkins-command-palette__results-container">
           <div id="search-results" class="jenkins-command-palette__results" />
         </div>
