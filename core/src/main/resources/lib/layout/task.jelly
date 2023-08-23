@@ -84,6 +84,7 @@ THE SOFTWARE.
       Name of a global function to call when clicked.
       It will be called with an element (currently 'a') as first argument, and the event as second argument.
       You can specify further data-* attributes to customize behavior, those will be defined on the element passed as first argument.
+      See https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/dataset for more information about these attributes.
       Has no effect if you specify the 'requiresConfirmation' attribute.
       Has no effect on menu items showing in context menus, only 'href', 'post', and 'requiresConfirmation' attributes substantially change behavior there.
       Set 'contextMenu' to 'false' to remove this task from those menus.
