@@ -1,11 +1,30 @@
 (function () {
   function updateBuildCaptionIcon() {
     fetch("statusIcon").then((rsp) => {
-      var isBuilding = rsp.headers.get("X-Building");
+      let isBuilding = rsp.headers.get("X-Building");
       if (isBuilding === "true") {
         setTimeout(updateBuildCaptionIcon, 5000);
+        let progress = rsp.headers.get("X-Progress");
+        let runtime = rsp.headers.get("X-Executor-Runtime");
+        let remaining = rsp.headers.get("X-Executor-Remaining");
+        let progressBar = document.querySelector(
+          ".app-progress-bar",
+        );
+        let progressBarDone = document.querySelector(
+          ".app-progress-bar span",
+        );
+        if (progressBar) {
+          let tooltip = progressBar.dataset.tooltipTemplate;
+          tooltip = tooltip.replace("%0", runtime).replace("%1", remaining);
+          progressBar.setAttribute("tooltip", tooltip);
+          progressBar.setAttribute("title", tooltip);
+          Behaviour.applySubtree(progressBar, true);
+        }
+        if (progressBarDone) {
+          progressBarDone.style.width = `${progress}%`
+        }
       } else {
-        var progressBar = document.querySelector(
+        let progressBar = document.querySelector(
           ".build-caption-progress-container",
         );
         if (progressBar) {
@@ -13,13 +32,11 @@
         }
       }
       rsp.text().then((responseText) => {
-        document.querySelector(".jenkins-build-caption .icon-xlg").outerHTML =
+        document.querySelector(".jenkins-build-caption svg").outerHTML =
           responseText;
       });
     });
   }
 
-  window.addEventListener("load", function () {
-    window.addEventListener("jenkins:consoleFinished", updateBuildCaptionIcon);
-  });
+  setTimeout(updateBuildCaptionIcon, 5000);
 })();

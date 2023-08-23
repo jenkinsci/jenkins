@@ -46,7 +46,7 @@ THE SOFTWARE.
               <td class="build-caption-progress-bar">
                 <t:buildProgressBar build="${it}"/>
               </td>
-              <td>
+              <td class="jenkins-table__link">
                 <j:if test="${it.parent.hasAbortPermission()}">
                   <l:stopButton href="stop" confirm="${%confirm(it.fullDisplayName)}"
                           alt="${%cancel}"/>
