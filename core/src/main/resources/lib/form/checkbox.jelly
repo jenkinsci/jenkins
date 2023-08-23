@@ -54,8 +54,8 @@ THE SOFTWARE.
     <st:attribute name="readonly" deprecated="true"> <![CDATA[
       If set to true, this will take precedence over the onclick attribute and prevent the state of the checkbox from being changed.
 
-      Note: if you want an actual read only checkbox then add:
-      <j:set var="readOnlyMode" value="true"/> inside your entry tag
+      Note: To make (parts of forms) appear read only, set:
+      <j:set var="readOnlyMode" value="true"/>
       See https://www.jenkins.io/doc/developer/views/read-only/#enabling-read-only-view-support
       ]]>
     </st:attribute>
@@ -80,9 +80,9 @@ THE SOFTWARE.
            name="${name}"
            value="${attrs.value}"
            title="${attrs.tooltip}"
-           onclick="${attrs.readonly=='true' ? 'return false;' : attrs.onclick}" id="${attrs.id}" class="${attrs.class} ${attrs.negative!=null ? 'negative' : null} ${attrs.checkUrl!=null?'validated':''}"
+           onclick="${attrs.readonly=='true' ? null : attrs.onclick}" id="${attrs.id}" class="${attrs.class} ${attrs.negative!=null ? 'negative' : null} ${attrs.checkUrl!=null?'validated':''}"
            checkUrl="${attrs.checkUrl}" checkDependsOn="${attrs.checkDependsOn}" json="${attrs.json}"
-           disabled="${readOnlyMode ? 'true' : null}"
+           disabled="${readOnlyMode || attrs.readonly ? 'true' : null}"
            checked="${value ? 'true' : null}"/>
     <label class="attach-previous ${attrs.title == null ? 'js-checkbox-label-empty' : ''}"
            title="${attrs.tooltip}">${attrs.title}</label>
