@@ -18,7 +18,10 @@
         </div>
 
         <div class="login page-header__hyperlinks">
-          <button id="button-open-command-palette" tooltip="${%Search}" data-keyboard-shortcut="CMD+K">
+          <j:set var="tooltip">
+            <l:keyboard-shortcut prefix="${%Search}">CMD+K</l:keyboard-shortcut>
+          </j:set>
+          <button id="button-open-command-palette" data-html-tooltip="${tooltip}" data-keyboard-shortcut="CMD+K">
             <l:icon src="symbol-search" />
           </button>
 
