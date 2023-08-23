@@ -930,7 +930,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
             Trigger.timer = new java.util.Timer("Jenkins cron thread");
             queue = new Queue(LoadBalancer.CONSISTENT_HASH);
-
+            labelAtomSet = Collections.unmodifiableSet(Label.parse(label));
             try {
                 dependencyGraph = DependencyGraph.EMPTY;
             } catch (InternalError e) {
@@ -1088,6 +1088,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             /* deserializing without a value set means we need to migrate */
             nodeRenameMigrationNeeded = true;
         }
+        _setLabelString(label);
 
         return this;
     }
@@ -2115,6 +2116,20 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     /**
+     * Returns the label atom of the given name, only if it already exists.
+     * @return non-null if the label atom already exists.
+     */
+    @Restricted(NoExternalUse.class)
+    public @Nullable LabelAtom tryGetLabelAtom(@NonNull String name) {
+        Label label = labels.get(name);
+        if (label instanceof LabelAtom) {
+            return (LabelAtom) label;
+        }
+        return null;
+    }
+
+
+    /**
      * Gets all the active labels in the current system.
      */
     public Set<Label> getLabels() {
@@ -2124,6 +2139,14 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 r.add(l);
         }
         return r;
+    }
+
+    @NonNull
+    private transient Set<LabelAtom> labelAtomSet;
+
+    @Override
+    protected Set<LabelAtom> getLabelAtomSet() {
+        return labelAtomSet;
     }
 
     public Set<LabelAtom> getLabelAtoms() {
@@ -3291,8 +3314,15 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     @Override
     public void setLabelString(String label) throws IOException {
-        this.label = label;
+        _setLabelString(label);
         save();
+    }
+
+    private void _setLabelString(String label) {
+        this.label = label;
+        if (Jenkins.getInstanceOrNull() != null) { // avoid on unit tests
+            this.labelAtomSet = Collections.unmodifiableSet(Label.parse(label));
+        }
     }
 
     @NonNull
