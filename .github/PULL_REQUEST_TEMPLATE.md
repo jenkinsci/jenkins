@@ -16,6 +16,8 @@ If the issue is not fully described in Jira, add more information here (justific
 
 ### Testing done
 
+**Last tested commit:** (Insert commit ID here, e.g. `1245abcdef`)
+
 <!-- Comment:
 Provide a clear description of how this change was tested.
 At minimum this should include proof that a computer has executed the changed lines.
