@@ -2455,4 +2455,16 @@ public class Functions {
     public static String generateItemId() {
         return String.valueOf(Math.floor(Math.random() * 3000));
     }
+
+    @Restricted(NoExternalUse.class)
+    public static String translateModifierKeysForUsersPlatform(String keyboardShortcut) {
+        StaplerRequest currentRequest = Stapler.getCurrentRequest();
+        currentRequest.getWebApp().getDispatchValidator().allowDispatch(currentRequest, Stapler.getCurrentResponse());
+        String userAgent = currentRequest.getHeader("User-Agent");
+
+        List<String> platformsThatUseCommand = List.of("MAC", "IPHONE", "IPAD");
+        boolean useCmdKey = platformsThatUseCommand.stream().anyMatch(e -> userAgent.toUpperCase().contains(e));
+
+        return keyboardShortcut.replace("CMD", useCmdKey ? "⌘" : "CTRL");
+    }
 }
