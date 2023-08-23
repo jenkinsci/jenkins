@@ -3337,16 +3337,16 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
             // load from disk
             cfg.unmarshal(Jenkins.this);
-            // initialize views by inserting the default view if necessary
-            // this is both for clean Jenkins and for backward compatibility.
-            if (views.isEmpty() || primaryView == null) {
-                View v = new AllView(AllView.DEFAULT_VIEW_NAME);
-                setViewOwner(v);
-                views.add(0, v);
-                primaryView = v.getViewName();
-            }
-            primaryView = AllView.migrateLegacyPrimaryAllViewLocalizedName(views, primaryView);
         }
+        // initialize views by inserting the default view if necessary
+        // this is both for clean Jenkins and for backward compatibility.
+        if (views.isEmpty() || primaryView == null) {
+            View v = new AllView(AllView.DEFAULT_VIEW_NAME);
+            setViewOwner(v);
+            views.add(0, v);
+            primaryView = v.getViewName();
+        }
+        primaryView = AllView.migrateLegacyPrimaryAllViewLocalizedName(views, primaryView);
         configLoaded = true;
         try {
             checkRawBuildsDir(buildsDir);
