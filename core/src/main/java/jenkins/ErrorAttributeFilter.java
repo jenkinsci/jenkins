@@ -27,4 +27,9 @@ public class ErrorAttributeFilter implements Filter {
         servletRequest.setAttribute(USER_ATTRIBUTE, authentication);
         filterChain.doFilter(servletRequest, servletResponse);
     }
+
+    @Override
+    public void destroy() {
+        // Otherwise the PCT fails
+    }
 }
