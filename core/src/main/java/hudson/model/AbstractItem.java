@@ -585,7 +585,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
 
     @Override
     public String getSearchUrl() {
-        return getShortUrl();
+        return getAbsoluteUrl();
     }
 
     @Override
