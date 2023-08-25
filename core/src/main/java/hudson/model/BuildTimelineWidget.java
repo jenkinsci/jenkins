@@ -24,17 +24,22 @@
 
 package hudson.model;
 
+import hudson.Functions;
 import hudson.Util;
 import hudson.util.RunList;
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
-import org.koshuke.stapler.simile.timeline.Event;
-import org.koshuke.stapler.simile.timeline.TimelineEventList;
 
 /**
- * UI widget for showing the SIMILE timeline control.
+ * UI widget for showing the timeline control.
  *
  * <p>
  * Return this from your "getTimeline" method.
@@ -59,22 +64,31 @@ public class BuildTimelineWidget {
         return builds.getLastBuild();
     }
 
-    public TimelineEventList doData(StaplerRequest req, @QueryParameter long min, @QueryParameter long max) throws IOException {
-        TimelineEventList result = new TimelineEventList();
+    @Restricted(NoExternalUse.class)
+    public JSONObject doData(StaplerRequest req, @QueryParameter long min, @QueryParameter long max, @QueryParameter long utcOffset) throws IOException {
+        JSONObject data = new JSONObject();
+        JSONArray events = new JSONArray();
+        DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'");
+        int id = 1;
         for (Run<?, ?> r : builds.byTimestamp(min, max)) {
-            Event e = new Event();
-            e.start = new Date(r.getStartTimeInMillis());
-            e.end   = new Date(r.getStartTimeInMillis() + r.getDuration());
-            // due to SimileAjax.HTML.deEntify (in simile-ajax-bundle.js), "&lt;" are transformed back to "<", but not the "&#60";
-            // to protect against XSS
-            e.title = Util.escape(r.getFullDisplayName()).replace("&lt;", "&#60;");
-            e.link = req.getContextPath() + '/' + r.getUrl();
+            JSONObject event = new JSONObject();
+            event.accumulate("id", id++);
+            event.accumulate("start", formatter.format(new Date(r.getStartTimeInMillis() + utcOffset*60*1000)));
+            event.accumulate("end", formatter.format(new Date(r.getStartTimeInMillis() + utcOffset*60*1000 + r.getDuration())));
+            event.accumulate("content", generateContent(r, req));
+
             BallColor c = r.getIconColor();
-            e.color = String.format("#%06X", c.getBaseColor().darker().getRGB() & 0xFFFFFF);
-            e.classname = "event-" + c.noAnime().toString() + " " + (c.isAnimated() ? "animated" : "");
-            result.add(e);
+            String color = c.getIconClassName();
+            String classes = "color-" + color + " event-" + c.noAnime().toString() + " " + (c.isAnimated() ? "animated" : "");
+            event.accumulate("class", classes);
+            events.add(event);
         }
-        return result;
+        data.accumulate("events", events);
+        return data;
+    }
+
+    private static String generateContent(Run run, StaplerRequest req) {
+        return "<a href='" + req.getContextPath() + '/' + Functions.htmlAttributeEscape(run.getUrl()) + "'>" + Util.xmlEscape(run.getFullDisplayName()) + "</a>";
     }
 
 }

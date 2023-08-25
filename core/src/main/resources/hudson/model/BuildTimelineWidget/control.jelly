@@ -27,17 +27,9 @@ THE SOFTWARE.
     Show timeline trend image. It takes two builds
   </st:documentation>
  
-  <st:adjunct includes="org.kohsuke.stapler.simile.timeline" />
-
-  <div id="resizeContainer" style="height: 300px; border-radius: 10px; padding-bottom: 5px; margin-bottom: 2rem; overflow: hidden;">
-    <div id="tl" style="height:100%;"/>
-  </div>
-  <div id="status" />
-   
-  <link rel="stylesheet" type="text/css" href="${resURL}/scripts/yui/assets/skins/sam/resize.css"/>
-  <script type="text/javascript" src="${resURL}/scripts/yui/resize/resize-min.js"></script>
+  <st:adjunct includes="hudson.model.BuildTimelineWidget.vis-timeline-graph2d"/>
 
   <j:invokeStatic var="hourLocalTimezone" className="hudson.Functions" method="getHourLocalTimezone"/>
-  <div id="build-timeline-div" data-hour-local-timezone="${hourLocalTimezone}"></div>
+  <div id="build-timeline-div" data-hour-local-timezone="${hourLocalTimezone}" class="jenkins-!-margin-bottom-3" />
   <st:adjunct includes="hudson.model.BuildTimelineWidget.build-timeline-widget" />
 </j:jelly>
