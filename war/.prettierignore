@@ -27,3 +27,6 @@ src/main/scss/_bootstrap.scss
 
 # Incorrectly flagging forwarding slashes in regex
 ../.github/renovate.json
+
+# Imported from upstream
+../core/src/main/resources/hudson/model/BuildTimelineWidget/vis-timeline-graph2d.*
