@@ -63,13 +63,12 @@ function generateButtons() {
       for (let i = 0; i < children.length; i++) {
         let n = children[i];
         let name = n.getAttribute("name");
-        let tooltip = n.getAttribute("tooltip");
         let descriptorId = n.getAttribute("descriptorId");
         let title = n.getAttribute("title");
+
         templates.push({
           html: n.innerHTML,
           name: name,
-          tooltip: tooltip,
           descriptorId: descriptorId,
           title: title,
         });
@@ -77,13 +76,12 @@ function generateButtons() {
       prototypes.remove();
       let withDragDrop = registerSortableDragDrop(e);
 
-      function insert(instance, index) {
-        var t = templates[parseInt(index)];
-        var nc = document.createElement("div");
+      function insert(instance, template) {
+        let nc = document.createElement("div");
         nc.className = "repeated-chunk";
-        nc.setAttribute("name", t.name);
-        nc.setAttribute("descriptorId", t.descriptorId);
-        nc.innerHTML = t.html;
+        nc.setAttribute("name", template.name);
+        nc.setAttribute("descriptorId", template.descriptorId);
+        nc.innerHTML = template.html;
         nc.style.opacity = "0";
 
         instance.hide();
@@ -99,8 +97,8 @@ function generateButtons() {
               // (for example 0 if it should be the first item)
               function findBestPosition(prospect, current, order) {
                 function desirability(pos) {
-                  var count = 0;
-                  for (var i = 0; i < current.length; i++) {
+                  let count = 0;
+                  for (let i = 0; i < current.length; i++) {
                     if (i < pos == order(current[i]) <= order(prospect)) {
                       count++;
                     }
@@ -108,10 +106,10 @@ function generateButtons() {
                   return count;
                 }
 
-                var bestScore = -1;
-                var bestPos = 0;
-                for (var i = 0; i <= current.length; i++) {
-                  var d = desirability(i);
+                let bestScore = -1;
+                let bestPos = 0;
+                for (let i = 0; i <= current.length; i++) {
+                  let d = desirability(i);
                   if (bestScore <= d) {
                     // prefer to insert them toward the end
                     bestScore = d;
@@ -121,7 +119,7 @@ function generateButtons() {
                 return bestPos;
               }
 
-              var current = Array.from(e.children).filter(function (e) {
+              let current = Array.from(e.children).filter(function (e) {
                 return e.matches("DIV.repeated-chunk");
               });
 
@@ -129,7 +127,7 @@ function generateButtons() {
                 if (did instanceof Element) {
                   did = did.getAttribute("descriptorId");
                 }
-                for (var i = 0; i < templates.length; i++) {
+                for (let i = 0; i < templates.length; i++) {
                   if (templates[i].descriptorId == did) {
                     return i;
                   }
@@ -137,14 +135,14 @@ function generateButtons() {
                 return 0; // can't happen
               }
 
-              var bestPos = findBestPosition(t.descriptorId, current, o);
+              let bestPos = findBestPosition(template.descriptorId, current, o);
               if (bestPos < current.length) {
                 return current[bestPos];
               } else {
                 return insertionPoint;
               }
             }
-            var referenceNode = e.classList.contains("honor-order")
+            let referenceNode = e.classList.contains("honor-order")
               ? findInsertionPoint()
               : insertionPoint;
             referenceNode.parentNode.insertBefore(nc, referenceNode);
@@ -191,7 +189,7 @@ function generateButtons() {
             onClick: (event) => {
               event.preventDefault();
               event.stopPropagation();
-              insert(instance, i);
+              insert(instance, n);
             },
             type: type,
           };
