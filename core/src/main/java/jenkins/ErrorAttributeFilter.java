@@ -3,6 +3,7 @@ package jenkins;
 import java.io.IOException;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
@@ -26,5 +27,15 @@ public class ErrorAttributeFilter implements Filter {
         final Authentication authentication = Jenkins.getAuthentication2();
         servletRequest.setAttribute(USER_ATTRIBUTE, authentication);
         filterChain.doFilter(servletRequest, servletResponse);
+    }
+
+    @Override
+    public void destroy() {
+        // Otherwise the PCT fails
+    }
+
+    @Override
+    public void init(FilterConfig filterConfig) throws ServletException {
+        // Otherwise the PCT fails
     }
 }
