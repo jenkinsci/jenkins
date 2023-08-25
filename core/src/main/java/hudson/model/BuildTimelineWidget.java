@@ -73,8 +73,8 @@ public class BuildTimelineWidget {
         for (Run<?, ?> r : builds.byTimestamp(min, max)) {
             JSONObject event = new JSONObject();
             event.accumulate("id", id++);
-            event.accumulate("start", formatter.format(new Date(r.getStartTimeInMillis() + utcOffset*60*1000)));
-            event.accumulate("end", formatter.format(new Date(r.getStartTimeInMillis() + utcOffset*60*1000 + r.getDuration())));
+            event.accumulate("start", formatter.format(new Date(r.getStartTimeInMillis() + utcOffset * 60 * 1000)));
+            event.accumulate("end", formatter.format(new Date(r.getStartTimeInMillis() + utcOffset * 60 * 1000 + r.getDuration())));
             event.accumulate("content", generateContent(r, req));
 
             BallColor c = r.getIconColor();
