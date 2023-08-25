@@ -5,13 +5,13 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.junit.Assert.assertTrue;
 
+import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Label;
 import hudson.model.Node;
 import hudson.model.Queue;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.NodeProperty;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import org.junit.Rule;
 import org.junit.Test;
@@ -27,7 +27,7 @@ public class MaintainCanTakeStrengtheningTest {
     @Rule
     public LoggerRule logging = new LoggerRule().record(Node.class.getName(), Level.ALL).capture(100);
 
-    private QueueTaskFuture scheduleBuild(String name, String label) throws Exception {
+    private QueueTaskFuture<FreeStyleBuild> scheduleBuild(String name, String label) throws Exception {
         FreeStyleProject project = r.createFreeStyleProject(name);
 
         project.setAssignedLabel(Label.get(label));
@@ -45,15 +45,9 @@ public class MaintainCanTakeStrengtheningTest {
         r.createOnlineSlave(Label.get("good"));
 
         // Only the good ones will be run and the latest doesn't get hung because of the second
-        QueueTaskFuture[] taskFuture = new QueueTaskFuture[3];
-        taskFuture[0] = scheduleBuild("good1", "good");
-        taskFuture[1] = scheduleBuild("theFaultyOne", "faulty");
-        taskFuture[2] = scheduleBuild("good2", "good");
-
-        // Wait for a while until the good ones start, no need to wait for their completion to guarantee
-        // the fix works
-        taskFuture[0].getStartCondition().get(15, TimeUnit.SECONDS);
-        taskFuture[2].getStartCondition().get(15, TimeUnit.SECONDS);
+        FreeStyleBuild good1 = scheduleBuild("good1", "good").waitForStart();
+        scheduleBuild("theFaultyOne", "faulty");
+        FreeStyleBuild good2 = scheduleBuild("good2", "good").waitForStart();
 
         // The faulty one is the only one in the queue
         assertThat(r.getInstance().getQueue().getBuildableItems().size(), equalTo(1));
@@ -64,6 +58,10 @@ public class MaintainCanTakeStrengtheningTest {
 
         // Clear the queue
         assertTrue(r.jenkins.getQueue().cancel(r.jenkins.getItemByFullName("theFaultyOne", FreeStyleProject.class)));
+
+        // Tear down
+        r.assertBuildStatusSuccess(r.waitForCompletion(good1));
+        r.assertBuildStatusSuccess(r.waitForCompletion(good2));
     }
 
     /**
