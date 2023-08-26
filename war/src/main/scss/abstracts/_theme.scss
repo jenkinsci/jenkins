@@ -116,8 +116,8 @@ $semantics: (
   // Deprecated - Button primary
   --button-color--primary: var(--background);
   --btn-primary-bg: #063f61;
-  --btn-primary-bg-hover: lighten(#063f61, 7.5%);
-  --btn-primary-bg-active: lighten(#063f61, 12%);
+  --btn-primary-bg-hover: #{lighten(#063f61, 7.5%)};
+  --btn-primary-bg-active: #{lighten(#063f61, 12%)};
   // Deprecated - Button primary
   --btn-secondary-color: var(--secondary);
   --btn-secondary-bg: var(--btn-text-color);
