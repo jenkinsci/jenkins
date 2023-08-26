@@ -273,7 +273,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
 
     @Override
     public @NonNull String getSearchUrl() {
-        return "/user/" + Util.rawEncode(idStrategy().keyFor(id));
+        return getAbsoluteUrl();
     }
 
     /**
