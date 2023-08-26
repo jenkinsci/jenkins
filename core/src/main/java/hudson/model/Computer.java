@@ -1132,7 +1132,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
 
     @Override
     public String getSearchUrl() {
-        return getUrl();
+        return Jenkins.get().getRootUrl() + getUrl();
     }
 
     /**
