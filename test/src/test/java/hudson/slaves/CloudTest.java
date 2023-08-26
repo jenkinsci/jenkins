@@ -6,7 +6,6 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -21,9 +20,9 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import jenkins.model.Jenkins;
+import jenkins.model.RenameAction;
 import jenkins.model.TransientActionFactory;
 import org.acegisecurity.acls.sid.Sid;
-import org.htmlunit.FailingHttpStatusCodeException;
 import org.htmlunit.html.HtmlForm;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.html.HtmlTextInput;
@@ -67,7 +66,8 @@ public class CloudTest {
 
         assertThat(aCloud.getAllActions(), containsInAnyOrder(
                 instanceOf(TaskCloudAction.class),
-                instanceOf(ReportingCloudAction.class)
+                instanceOf(ReportingCloudAction.class),
+                instanceOf(RenameAction.class)
         ));
 
         HtmlPage page = j.createWebClient().goTo(aCloud.getUrl());
@@ -78,6 +78,7 @@ public class CloudTest {
         assertThat(out, containsString("Task Action")); // TaskCloudAction
         assertThat(out, containsString("Sidepanel action box.")); // TaskCloudAction/box.jelly
         assertThat(out, containsString("Report Here")); // ReportingCloudAction/summary.jelly
+        assertThat(out, containsString("Rename")); // confirm-rename.jelly
 
         HtmlPage actionPage = page.getAnchorByText("Task Action").click();
         out = actionPage.getWebResponse().getContentAsString();
@@ -96,24 +97,14 @@ public class CloudTest {
     public void changeCloudName() throws Exception {
         ACloud aCloud = new ACloud("a", "0");
         j.jenkins.clouds.add(aCloud);
-        HtmlForm form = j.createWebClient().goTo(aCloud.getUrl() + "rename").getFormByName("config");
-        HtmlTextInput input = form.getInputByName("_.name");
+        JenkinsRule.WebClient webClient = j.createWebClient();
+        HtmlPage page = webClient.goTo(aCloud.getUrl() + "confirm-rename");
+        HtmlForm form = page.getFormByName("config");
+        HtmlTextInput input = form.getInputByName("newName");
         input.setText("b");
         j.submit(form);
         ACloud actual = j.jenkins.clouds.get(ACloud.class);
         assertEquals("b", actual.getDisplayName());
-    }
-
-    @Test
-    @Issue("JENKINS-71737")
-    public void changeCloudNameinConfig() throws Exception {
-        ACloud aCloud = new ACloud("a", "0");
-        j.jenkins.clouds.add(aCloud);
-        HtmlForm form = j.createWebClient().goTo(aCloud.getUrl() + "configure").getFormByName("config");
-        HtmlTextInput input = form.getInputByName("_.name");
-        input.setText("b");
-        Exception ex = assertThrows(FailingHttpStatusCodeException.class, () -> j.submit(form));
-        assertTrue(ex.getMessage().contains("Bad Request"));
     }
 
     public static final class ACloud extends AbstractCloudImpl {
@@ -129,6 +120,11 @@ public class CloudTest {
 
         @Override public boolean canProvision(Label label) {
             return false;
+        }
+
+        @Override
+        public boolean isNameEditable() {
+            return true;
         }
 
         @TestExtension

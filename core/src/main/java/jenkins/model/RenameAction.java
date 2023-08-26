@@ -25,8 +25,8 @@
 package jenkins.model;
 
 import hudson.Extension;
-import hudson.model.AbstractItem;
 import hudson.model.Action;
+import hudson.model.Renamable;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
@@ -52,15 +52,15 @@ public class RenameAction implements Action {
     }
 
     @Extension
-    public static class TransientActionFactoryImpl extends TransientActionFactory<AbstractItem> {
+    public static class TransientActionFactoryImpl extends TransientActionFactory<Renamable> {
 
         @Override
-        public Class<AbstractItem> type() {
-            return AbstractItem.class;
+        public Class<Renamable> type() {
+            return Renamable.class;
         }
 
         @Override
-        public Collection<? extends Action> createFor(AbstractItem target) {
+        public Collection<? extends Action> createFor(Renamable target) {
             if (target.isNameEditable()) {
                 return Set.of(new RenameAction());
             } else {

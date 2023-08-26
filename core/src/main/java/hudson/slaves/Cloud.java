@@ -30,6 +30,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.ExtensionPoint;
+import hudson.Functions;
 import hudson.Util;
 import hudson.init.InitMilestone;
 import hudson.init.Initializer;
@@ -37,8 +38,10 @@ import hudson.model.Actionable;
 import hudson.model.Computer;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
+import hudson.model.Failure;
 import hudson.model.Label;
 import hudson.model.Node;
+import hudson.model.Renamable;
 import hudson.model.Slave;
 import hudson.security.ACL;
 import hudson.security.AccessControlled;
@@ -47,6 +50,7 @@ import hudson.security.PermissionScope;
 import hudson.slaves.NodeProvisioner.PlannedNode;
 import hudson.util.DescriptorList;
 import hudson.util.FormApply;
+import hudson.util.FormValidation;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Objects;
@@ -57,9 +61,12 @@ import net.sf.json.JSONObject;
 import org.apache.commons.lang.Validate;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.HttpResponses;
+import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.interceptor.RequirePOST;
@@ -107,7 +114,7 @@ import org.kohsuke.stapler.verb.POST;
  * @see NodeProvisioner
  * @see AbstractCloudImpl
  */
-public abstract class Cloud extends Actionable implements ExtensionPoint, Describable<Cloud>, AccessControlled {
+public abstract class Cloud extends Actionable implements ExtensionPoint, Describable<Cloud>, AccessControlled, Renamable {
 
     /**
      * Uniquely identifies this {@link Cloud} instance among other instances in {@link jenkins.model.Jenkins#clouds}.
@@ -310,54 +317,68 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
         return new HttpRedirect("..");
     }
 
-    /**
-     * Accepts the update to the node name.
-     */
-    @POST
-    public HttpResponse doRename(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, Descriptor.FormException {
-        checkPermission(Jenkins.ADMINISTER);
 
-        if (FormApply.isApply(req)) {
-            throw new Descriptor.FormException(jenkins.agents.Messages.Cloud_CannotApplyRename(), "name");
-        }
+    @Override
+    public boolean isNameEditable() {
+        return false;
+    }
 
-        Jenkins j = Jenkins.get();
-        Cloud cloud = j.getCloud(this.name);
-        if (cloud == null) {
-            throw new ServletException("No such cloud " + this.name);
+    @RequirePOST
+    @Restricted(NoExternalUse.class)
+    @Override
+    public HttpResponse doConfirmRename(@QueryParameter String newName) throws IOException, ServletException, Descriptor.FormException {
+        newName = newName == null ? null : newName.trim();
+        FormValidation validationError = doCheckNewName(newName);
+        if (validationError.kind != FormValidation.Kind.OK) {
+            throw new Failure(validationError.getMessage());
         }
-        Cloud result = cloud.reconfigure(req, req.getSubmittedForm());
-        String proposedName = result.name;
-        if (!proposedName.equals(this.name)
-                && j.getCloud(proposedName) != null) {
-            throw new Descriptor.FormException(jenkins.agents.Messages.CloudSet_CloudAlreadyExists(proposedName), "name");
-        }
-        j.clouds.replace(this, result);
-        j.save();
-
-        String reqPath = req.getOriginalRequestURI();
-        String[] uriTokens = reqPath.replaceFirst("^/", "").split("/");
-        if (uriTokens.length < 3 || !"rename".equals(uriTokens[uriTokens.length - 1])) {
-            // We should never be here, expecting URI format jenkins/cloud/name/rename
-            throw new ServletException("Expected cloud rename URI: " + reqPath);
-        }
-        String cloudId = uriTokens[uriTokens.length - 2];
-        if (this.name.equals(cloudId)) {
-            // cloud name being used in URI
-            if (!proposedName.equals(this.name)) {
-                // name changed
-                cloudId = proposedName;
-            } else {
-                cloudId = this.name;
-            }
-        }
+        this.name = newName;
 
         // take the user to the renamed cloud top page.
-        return FormApply.success("../" + cloudId);
+        return HttpResponses.redirectTo("../" + Functions.encode(newName));
+    }
+
+    @NonNull
+    @Restricted(NoExternalUse.class)
+    @Override
+    public FormValidation doCheckNewName(String newName) {
+        if (!isNameEditable()) {
+            return FormValidation.error("Trying to rename an item that does not support this operation.");
+        }
+        checkPermission(Jenkins.ADMINISTER);
+
+        newName = newName == null ? null : newName.trim();
+
+        try {
+            Jenkins.checkGoodName(newName);
+            assert newName != null; // Would have thrown Failure
+            if (newName.equals(name)) {
+                return FormValidation.warning(hudson.model.Messages.AbstractItem_NewNameUnchanged());
+            }
+            if (Jenkins.get().getCloud(newName) != null) {
+                return FormValidation.warning(jenkins.agents.Messages.CloudSet_CloudAlreadyExists(newName));
+            }
+            checkRename(newName);
+        } catch (Failure e) {
+            return FormValidation.error(e.getMessage());
+        }
+        return FormValidation.ok();
     }
 
     /**
-     * Accepts the update to the node configuration. Node name is not allowed to be changed.
+     * Allows subclasses to block renames for domain-specific reasons. Generic validation of the new name
+     * (e.g., null checking, checking for illegal characters, and checking that the name is not in use)
+     * always happens prior to calling this method.
+     *
+     * @param newName the new name for the item
+     * @throws Failure if the rename should be blocked
+     */
+    protected void checkRename(@NonNull String newName) throws Failure {
+
+    }
+
+    /**
+     * Accepts the update to the node configuration. To change node name see {@link #doConfirmRename(String)}.
      */
     @POST
     public HttpResponse doConfigSubmit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, Descriptor.FormException {
@@ -369,10 +390,6 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
             throw new ServletException("No such cloud " + this.name);
         }
         Cloud result = cloud.reconfigure(req, req.getSubmittedForm());
-        String proposedName = result.name;
-        if (!proposedName.equals(this.name)) {
-            throw new Descriptor.FormException(jenkins.agents.Messages.Cloud_DoNotRename(), "name");
-        }
         j.clouds.replace(this, result);
         j.save();
         // take the user back to the cloud top page.

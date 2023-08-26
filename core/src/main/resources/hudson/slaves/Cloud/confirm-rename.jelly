@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2023, CloudBees Inc.
+Copyright 2018 CloudBees, Inc.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -23,24 +23,21 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:f="/lib/form">
-  <l:layout permission="${app.ADMINISTER}" title="${%title(it.name)}">
-    <st:include page="sidepanel.jelly"/>
-    <l:breadcrumb title="${%Rename Cloud}"/>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+  <l:layout title="${%Rename}">
+    <st:include page="sidepanel.jelly" />
+    <l:breadcrumb title="${%Rename}" />
     <l:main-panel>
-      <f:form method="post" action="rename" name="config" class="jenkins-form">
-        <j:set var="instance" value="${it}"/>
-        <j:set var="descriptor" value="${instance.descriptor}"/>
-
-        <f:entry title="${%Name}" field="name">
-            <f:textbox />
+      <h1>${%DescribeRename(it.pronoun, it.name)}</h1>
+      <f:form method="post" action="confirmRename" name="config" tableClass="config-table scrollspy">
+        <f:entry title="${%NewName}">
+          <f:textbox name="newName" value="${it.name}" autocomplete="on" checkUrl="checkNewName" checkDependsOn="newName"/>
         </f:entry>
-
         <f:bottomButtonBar>
-          <f:submit value="${%Save}"/>
+          <f:submit value="${%Rename}" />
         </f:bottomButtonBar>
       </f:form>
-      <st:adjunct includes="lib.form.confirm"/>
+      <st:adjunct includes="lib.form.confirm" />
     </l:main-panel>
   </l:layout>
 </j:jelly>

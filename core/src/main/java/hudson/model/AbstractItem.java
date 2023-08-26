@@ -111,7 +111,7 @@ import org.xml.sax.SAXException;
 // Item doesn't necessarily have to be Actionable, but
 // Java doesn't let multiple inheritance.
 @ExportedBean
-public abstract class AbstractItem extends Actionable implements Item, HttpDeletable, AccessControlled, DescriptorByNameOwner, StaplerProxy {
+public abstract class AbstractItem extends Actionable implements Item, HttpDeletable, AccessControlled, DescriptorByNameOwner, StaplerProxy, Renamable {
 
     private static final Logger LOGGER = Logger.getLogger(AbstractItem.class.getName());
 
@@ -245,6 +245,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      * @see #renameTo
      * @since 2.110
      */
+    @Override
     public boolean isNameEditable() {
         return false;
     }
@@ -254,6 +255,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      */
     @RequirePOST
     @Restricted(NoExternalUse.class)
+    @Override
     public HttpResponse doConfirmRename(@QueryParameter String newName) throws IOException {
         newName = newName == null ? null : newName.trim();
         FormValidation validationError = doCheckNewName(newName);
@@ -274,6 +276,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      * {@link FormValidation#error} with a message explaining the problem.
      */
     @Restricted(NoExternalUse.class)
+    @Override
     public @NonNull FormValidation doCheckNewName(@QueryParameter String newName) {
 
         if (!isNameEditable()) {
