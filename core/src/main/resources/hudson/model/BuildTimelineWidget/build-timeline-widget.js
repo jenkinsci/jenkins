@@ -11,17 +11,16 @@ function getData(eventSource1, current, min, max) {
   }
   if (!eventSource1.loaded[current]) {
     eventSource1.loaded[current] = true;
-    fetch(
-      "timeline/data/?" +
-        new URLSearchParams({
-          min: current * interval,
-          max: (current + 1) * interval,
-        }),
-      {
-        method: "POST",
-        headers: crumb.wrap({}),
-      }
-    ).then((t) => {
+    fetch("timeline/data", {
+      method: "POST",
+      headers: crumb.wrap({
+        "Content-Type": "application/x-www-form-urlencoded",
+      }),
+      body: new URLSearchParams({
+        min: current * interval,
+        max: (current + 1) * interval,
+      }),
+    }).then((t) => {
       if (t.ok) {
         t.json()
           .then((json) => {
@@ -129,6 +128,6 @@ if (window.addEventListener) {
       tl.layout();
     },
     null,
-    true
+    true,
   );
 })();

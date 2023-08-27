@@ -225,6 +225,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -261,6 +262,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 import jenkins.AgentProtocol;
+import jenkins.ErrorAttributeFilter;
 import jenkins.ExtensionComponentSet;
 import jenkins.ExtensionRefreshException;
 import jenkins.InitReactorRunner;
@@ -274,6 +276,7 @@ import jenkins.security.ConfidentialKey;
 import jenkins.security.ConfidentialStore;
 import jenkins.security.MasterToSlaveCallable;
 import jenkins.security.RedactSecretJsonInErrorMessageSanitizer;
+import jenkins.security.ResourceDomainConfiguration;
 import jenkins.security.SecurityListener;
 import jenkins.security.stapler.DoActionFilter;
 import jenkins.security.stapler.StaplerDispatchValidator;
@@ -929,7 +932,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
             Trigger.timer = new java.util.Timer("Jenkins cron thread");
             queue = new Queue(LoadBalancer.CONSISTENT_HASH);
-
+            labelAtomSet = Collections.unmodifiableSet(Label.parse(label));
             try {
                 dependencyGraph = DependencyGraph.EMPTY;
             } catch (InternalError e) {
@@ -1087,6 +1090,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             /* deserializing without a value set means we need to migrate */
             nodeRenameMigrationNeeded = true;
         }
+        _setLabelString(label);
 
         return this;
     }
@@ -1467,6 +1471,14 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     public Api getApi() {
+        /* Do not show "REST API" link in footer when on 404 error page */
+        final StaplerRequest req = Stapler.getCurrentRequest();
+        if (req != null) {
+            final Object attribute = req.getAttribute("javax.servlet.error.message");
+            if (attribute != null) {
+                return null;
+            }
+        }
         return new Api(this);
     }
 
@@ -2049,13 +2061,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Gets the read-only list of all {@link Computer}s.
      */
     public Computer[] getComputers() {
-        Computer[] r = computers.values().toArray(new Computer[0]);
-        Arrays.sort(r, (lhs, rhs) -> {
-            if (lhs.getNode() == Jenkins.this)  return -1;
-            if (rhs.getNode() == Jenkins.this)  return 1;
-            return lhs.getName().compareTo(rhs.getName());
-        });
-        return r;
+        return computers.values().stream().sorted(Comparator.comparing(Computer::getName)).toArray(Computer[]::new);
     }
 
     @CLIResolver
@@ -2120,6 +2126,20 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     /**
+     * Returns the label atom of the given name, only if it already exists.
+     * @return non-null if the label atom already exists.
+     */
+    @Restricted(NoExternalUse.class)
+    public @Nullable LabelAtom tryGetLabelAtom(@NonNull String name) {
+        Label label = labels.get(name);
+        if (label instanceof LabelAtom) {
+            return (LabelAtom) label;
+        }
+        return null;
+    }
+
+
+    /**
      * Gets all the active labels in the current system.
      */
     public Set<Label> getLabels() {
@@ -2129,6 +2149,14 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 r.add(l);
         }
         return r;
+    }
+
+    @NonNull
+    private transient Set<LabelAtom> labelAtomSet;
+
+    @Override
+    protected Set<LabelAtom> getLabelAtomSet() {
+        return labelAtomSet;
     }
 
     public Set<LabelAtom> getLabelAtoms() {
@@ -3296,8 +3324,15 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     @Override
     public void setLabelString(String label) throws IOException {
-        this.label = label;
+        _setLabelString(label);
         save();
+    }
+
+    private void _setLabelString(String label) {
+        this.label = label;
+        if (Jenkins.getInstanceOrNull() != null) { // avoid on unit tests
+            this.labelAtomSet = Collections.unmodifiableSet(Label.parse(label));
+        }
     }
 
     @NonNull
@@ -4546,6 +4581,26 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     /**
+     * Serve a custom 404 error page, configured in web.xml.
+     */
+    @WebMethod(name = "404")
+    @Restricted(NoExternalUse.class)
+    public void generateNotFoundResponse(StaplerRequest req, StaplerResponse rsp) throws ServletException, IOException {
+        if (ResourceDomainConfiguration.isResourceRequest(req)) {
+            rsp.forward(this, "_404_simple", req);
+        } else {
+            final Object attribute = req.getAttribute(ErrorAttributeFilter.USER_ATTRIBUTE);
+            if (attribute instanceof Authentication) {
+                try (ACLContext unused = ACL.as2((Authentication) attribute)) {
+                    rsp.forward(this, "_404", req);
+                }
+            } else {
+                rsp.forward(this, "_404", req);
+            }
+        }
+    }
+
+    /**
      * Queues up a safe restart of Jenkins.
      * Builds that cannot continue while the controller is not running have to finish or pause before it can proceed.
      * No new builds will be started. No new jobs are accepted.
@@ -5734,6 +5789,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * <p>See also:{@link #getUnprotectedRootActions}.
      */
     private static final Set<String> ALWAYS_READABLE_PATHS = new HashSet<>(Arrays.asList(
+        "404", // Web method
+        "_404", // .jelly
+        "_404_simple", // .jelly
         "login", // .jelly
         "loginError", // .jelly
         "logout", // #doLogout
