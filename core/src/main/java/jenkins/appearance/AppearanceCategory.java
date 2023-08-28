@@ -28,7 +28,15 @@ import hudson.Extension;
 import jenkins.model.GlobalConfigurationCategory;
 
 /**
- * Global configuration of appearance configuration
+ * <p>Global configuration of appearance configuration.</p>
+ *
+ * <p>This should be used for Plugins that contribute to the look and feel of Jenkins.
+ * Theming, header and footer changes, information density are all good examples.
+ * API plugins for UI components that are used by other plugins also fit into that, e.g. source code display.</p>
+ *
+ * <p>Configuration specific to a single plugin that is not related to the overall look and feel of Jenkins may not belong here.</p>
+ *
+ * <p>If a plugin has a single global configuration it should separate appearance and general configuration to different classes.</p>
  *
  */
 @Extension
