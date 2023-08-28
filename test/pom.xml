@@ -95,13 +95,13 @@ THE SOFTWARE.
         <!-- RequireUpperBoundDeps via mailer and junit -->
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>display-url-api</artifactId>
-        <version>2.3.8</version>
+        <version>2.3.9</version>
       </dependency>
       <dependency>
         <!-- requireUpperBoundDeps via matrix-project and junit -->
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>script-security</artifactId>
-        <version>1264.vecf66020eb_7d</version>
+        <version>1273.v66c1964f0dfd</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -116,7 +116,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>2053.v0ea_6fc5d99b_f</version>
+      <version>2058.va_7b_41a_286207</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -185,7 +185,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>cloudbees-folder</artifactId>
-      <version>6.846.v23698686f0f6</version>
+      <version>6.848.ve3b_fd7839a_81</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -209,7 +209,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>matrix-auth</artifactId>
-      <version>3.1.10</version>
+      <version>3.2</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -221,7 +221,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>structs</artifactId>
-      <version>324.va_f5d6774f3a_d</version>
+      <version>325.vcb_307d2a_2782</version>
       <scope>test</scope>
     </dependency>
     <dependency>
