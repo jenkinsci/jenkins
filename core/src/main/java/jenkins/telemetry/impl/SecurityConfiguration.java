@@ -57,6 +57,8 @@ public class SecurityConfiguration extends Telemetry {
     public JSONObject createContent() {
         final Jenkins j = Jenkins.get();
         final JSONObject o = new JSONObject();
+        o.put("components", buildComponentInformation());
+
         o.put("authorizationStrategy", j.getAuthorizationStrategy().getClass().getName());
         o.put("securityRealm", j.getSecurityRealm().getClass().getName());
         o.put("crumbIssuer", j.getCrumbIssuer().getClass().getName());
@@ -67,6 +69,7 @@ public class SecurityConfiguration extends Telemetry {
         o.put("apiTokenCreationOfLegacyTokenEnabled", apiTokenPropertyConfiguration.isCreationOfLegacyTokenEnabled());
         o.put("apiTokenTokenGenerationOnCreationEnabled", apiTokenPropertyConfiguration.isTokenGenerationOnCreationEnabled());
         o.put("apiTokenUsageStatisticsEnabled", apiTokenPropertyConfiguration.isUsageStatisticsEnabled());
+
         return o;
     }
 }

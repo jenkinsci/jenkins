@@ -12,6 +12,6 @@
         <li>Whether the API token option labeled <em>Enable API Token usage statistics</em> is enabled or disabled</li>
     </ul>
 
-    Additionally this trial collects the list of installed plugins.
+    Additionally this trial collects the list of installed plugins, their version, and the version of Jenkins.
     This data will be used to understand the popularity of the various implementations for each of these features.
 </j:jelly>
