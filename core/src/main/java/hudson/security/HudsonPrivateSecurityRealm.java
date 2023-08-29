@@ -963,7 +963,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
             byte[] salt = generateSalt();
             PBEKeySpec spec = new PBEKeySpec(password.toString().toCharArray(), salt, 1000, KEY_LENGTH);
             byte[] hash = generateSecretKey(spec);
-            return PBKDF2 + "$HMACSHA512:" + 1000 + STRING_SEPARATION + toHex(salt) + "$" + toHex(hash);
+            return PBKDF2 + "$HMACSHA512:" + 1000 + STRING_SEPARATION + Util.toHexString(salt) + "$" + Util.toHexString(hash);
         }
 
         private static byte[] generateSecretKey(PBEKeySpec spec)  {
@@ -1019,8 +1019,8 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
             String[] parts = storedPassword.split("[:$]");
             int iterations = Integer.parseInt(parts[3]);
 
-            byte[] salt = fromHex(parts[4]);
-            byte[] hash = fromHex(parts[5]);
+            byte[] salt = Util.fromHexString(parts[4]);
+            byte[] hash = Util.fromHexString(parts[5]);
 
             PBEKeySpec spec = new PBEKeySpec(originalPassword.toCharArray(),
                     salt, iterations, hash.length * HASH_LENGTH);
@@ -1090,8 +1090,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         }
 
         /**
-         * Returns true if the supplied password starts with a prefix indicating i
-         * t is already hashed.
+         * Returns true if the supplied password starts with a prefix indicating it is already hashed.
          */
         public boolean isPasswordHashed(String password) {
             if (password == null) {
@@ -1163,6 +1162,5 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         }
     };
 
-     static final Logger LOGGER = Logger.getLogger(HudsonPrivateSecurityRealm.class.getName());
-
+    private static final Logger LOGGER = Logger.getLogger(HudsonPrivateSecurityRealm.class.getName());
 }

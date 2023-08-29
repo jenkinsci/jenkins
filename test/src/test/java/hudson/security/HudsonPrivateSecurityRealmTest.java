@@ -80,6 +80,7 @@ import org.jvnet.hudson.test.For;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
+import org.jvnet.hudson.test.WithoutJenkins;
 import org.jvnet.hudson.test.TestExtension;
 import org.mindrot.jbcrypt.BCrypt;
 
@@ -520,6 +521,7 @@ public class HudsonPrivateSecurityRealmTest {
     }
 
     @Test
+    @WithoutJenkins
     public void passwordHashWithPBKDF2() {
 
         HudsonPrivateSecurityRealm.PBKDF2PasswordEncoder pbkdf2PasswordEncoder = new HudsonPrivateSecurityRealm.PBKDF2PasswordEncoder();
