@@ -27,6 +27,7 @@ package hudson.slaves;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
@@ -73,6 +74,9 @@ public class NodeCanTakeTaskTest {
         assertEquals(project, item.task);
         assertNotNull(item.getCauseOfBlockage());
         assertEquals("rejecting everything", item.getCauseOfBlockage().getShortDescription());
+
+        // Clear the queue
+        assertTrue(r.jenkins.getQueue().cancel(project));
     }
 
     private static class RejectAllTasksProperty extends NodeProperty<Node> {
