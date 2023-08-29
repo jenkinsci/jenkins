@@ -27,6 +27,8 @@ package jenkins.telemetry.impl;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.ExtensionList;
+import hudson.TcpSlaveAgentListener;
+import hudson.security.csrf.CrumbIssuer;
 import java.time.LocalDate;
 import jenkins.model.Jenkins;
 import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
@@ -61,9 +63,11 @@ public class SecurityConfiguration extends Telemetry {
 
         o.put("authorizationStrategy", j.getAuthorizationStrategy().getClass().getName());
         o.put("securityRealm", j.getSecurityRealm().getClass().getName());
-        o.put("crumbIssuer", j.getCrumbIssuer().getClass().getName());
+        final CrumbIssuer crumbIssuer = j.getCrumbIssuer();
+        o.put("crumbIssuer", crumbIssuer == null ? null : crumbIssuer.getClass().getName());
         o.put("markupFormatter", j.getMarkupFormatter().getClass().getName());
-        o.put("inboundAgentListener", j.getTcpSlaveAgentListener().configuredPort != -1);
+        final TcpSlaveAgentListener tcpSlaveAgentListener = j.getTcpSlaveAgentListener();
+        o.put("inboundAgentListener", tcpSlaveAgentListener == null ? null : tcpSlaveAgentListener.configuredPort != -1);
 
         final ApiTokenPropertyConfiguration apiTokenPropertyConfiguration = ExtensionList.lookupSingleton(ApiTokenPropertyConfiguration.class);
         o.put("apiTokenCreationOfLegacyTokenEnabled", apiTokenPropertyConfiguration.isCreationOfLegacyTokenEnabled());
