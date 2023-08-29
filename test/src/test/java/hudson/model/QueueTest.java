@@ -440,7 +440,7 @@ public class QueueTest {
 
     @Issue("JENKINS-10944")
     @Test public void flyweightTasksBlockedByShutdown() throws Exception {
-        r.jenkins.doQuietDown(true, 0, null);
+        r.jenkins.doQuietDown(true, 0, null, false);
         AtomicInteger cnt = new AtomicInteger();
         TestFlyweightTask task = new TestFlyweightTask(cnt, null);
         assertTrue(Queue.isBlockedByShutdown(task));
