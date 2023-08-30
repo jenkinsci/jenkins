@@ -320,7 +320,7 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
 
     @Override
     public boolean isNameEditable() {
-        return false;
+        return true;
     }
 
     @RequirePOST

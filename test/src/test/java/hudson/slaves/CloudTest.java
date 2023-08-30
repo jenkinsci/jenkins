@@ -122,11 +122,6 @@ public class CloudTest {
             return false;
         }
 
-        @Override
-        public boolean isNameEditable() {
-            return true;
-        }
-
         @TestExtension
         public static class DescriptorImpl extends Descriptor<Cloud> {
         }
