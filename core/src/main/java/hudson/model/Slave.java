@@ -359,7 +359,7 @@ public abstract class Slave extends Node implements Serializable {
 
     private void warnPlugin() {
         LOGGER.log(Level.WARNING, () -> getClass().getName() + " or one of its superclass overrides readResolve() without calling super implementation." +
-                "Please file an issue against the plugin owning it : " + Jenkins.get().getPluginManager().whichPlugin(getClass()));
+                "Please file an issue against the plugin implementing it: " + Jenkins.get().getPluginManager().whichPlugin(getClass()));
     }
 
     @Override
