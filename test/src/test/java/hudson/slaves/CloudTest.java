@@ -4,6 +4,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
@@ -121,7 +122,33 @@ public class CloudTest {
         assertTrue(ex.getMessage().contains("Bad Request"));
     }
 
-    public static final class ACloud extends AbstractCloudImpl {
+    @Test
+    @Issue("JENKINS-71737")
+    public void uiNoNameChange() throws Exception {
+        CloudNameImmutable cloudFixedName = new CloudNameImmutable("Name Fixed", "0");
+        j.jenkins.clouds.add(cloudFixedName);
+
+        assertThat(cloudFixedName.getAllActions(), containsInAnyOrder(
+                instanceOf(TaskCloudAction.class),
+                instanceOf(ReportingCloudAction.class)
+        ));
+
+        HtmlPage page = j.createWebClient().goTo(cloudFixedName.getUrl());
+        String out = page.getWebResponse().getContentAsString();
+        assertThat(out, containsString("Cloud Name Fixed")); // index.jelly
+        assertThat(out, containsString("Top cloud view.")); // top.jelly
+        assertThat(out, containsString("custom cloud main groovy")); // main.jelly
+        assertThat(out, containsString("Task Action")); // TaskCloudAction
+        assertThat(out, containsString("Sidepanel action box.")); // TaskCloudAction/box.jelly
+        assertThat(out, containsString("Report Here")); // ReportingCloudAction/summary.jelly
+        assertThat(out, not(containsString("Rename"))); // confirm-rename.jelly
+
+        HtmlPage actionPage = page.getAnchorByText("Task Action").click();
+        out = actionPage.getWebResponse().getContentAsString();
+        assertThat(out, containsString("doIndex called")); // doIndex
+    }
+
+    public static class ACloud extends AbstractCloudImpl {
 
         @DataBoundConstructor
         public ACloud(String name, String instanceCapStr) {
@@ -133,6 +160,23 @@ public class CloudTest {
         }
 
         @Override public boolean canProvision(Label label) {
+            return false;
+        }
+
+        @TestExtension
+        public static class DescriptorImpl extends Descriptor<Cloud> {
+        }
+    }
+
+    public static final class CloudNameImmutable extends ACloud {
+
+        @DataBoundConstructor
+        public CloudNameImmutable(String name, String instanceCapStr) {
+            super(name, instanceCapStr);
+        }
+
+        @Override
+        public boolean isNameEditable() {
             return false;
         }
 
