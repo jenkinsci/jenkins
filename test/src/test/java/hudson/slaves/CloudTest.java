@@ -6,6 +6,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -23,6 +24,7 @@ import jenkins.model.Jenkins;
 import jenkins.model.RenameAction;
 import jenkins.model.TransientActionFactory;
 import org.acegisecurity.acls.sid.Sid;
+import org.htmlunit.FailingHttpStatusCodeException;
 import org.htmlunit.html.HtmlForm;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.html.HtmlTextInput;
@@ -105,6 +107,18 @@ public class CloudTest {
         j.submit(form);
         ACloud actual = j.jenkins.clouds.get(ACloud.class);
         assertEquals("b", actual.getDisplayName());
+    }
+
+    @Test
+    @Issue("JENKINS-71737")
+    public void changeCloudNameinConfig() throws Exception {
+        ACloud aCloud = new ACloud("a", "0");
+        j.jenkins.clouds.add(aCloud);
+        HtmlForm form = j.createWebClient().goTo(aCloud.getUrl() + "configure").getFormByName("config");
+        HtmlTextInput input = form.getInputByName("_.name");
+        input.setText("b");
+        Exception ex = assertThrows(FailingHttpStatusCodeException.class, () -> j.submit(form));
+        assertTrue(ex.getMessage().contains("Bad Request"));
     }
 
     public static final class ACloud extends AbstractCloudImpl {

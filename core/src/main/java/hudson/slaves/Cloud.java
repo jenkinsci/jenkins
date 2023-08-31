@@ -390,6 +390,9 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
             throw new ServletException("No such cloud " + this.name);
         }
         Cloud result = cloud.reconfigure(req, req.getSubmittedForm());
+        if (!(result.name).equals(this.name)) {
+            throw new Descriptor.FormException(jenkins.agents.Messages.Cloud_DoNotRename(), "name");
+        }
         j.clouds.replace(this, result);
         j.save();
         // take the user back to the cloud top page.
