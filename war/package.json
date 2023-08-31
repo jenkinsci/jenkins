@@ -52,7 +52,7 @@
   "dependencies": {
     "handlebars": "4.7.8",
     "hotkeys-js": "3.12.0",
-    "jquery": "3.7.0",
+    "jquery": "3.7.1",
     "lodash": "4.17.21",
     "sortablejs": "1.15.0",
     "tippy.js": "6.3.7",
