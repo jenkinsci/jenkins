@@ -345,7 +345,7 @@ public abstract class Slave extends Node implements Serializable {
         this.labelAtomSet = Collections.unmodifiableSet(Label.parse(label));
     }
 
-    @NonNull
+    @CheckForNull // should be @NonNull, but we've seen plugins overriding readResolve() without calling super.
     private transient Set<LabelAtom> labelAtomSet;
 
     @Override
@@ -358,7 +358,8 @@ public abstract class Slave extends Node implements Serializable {
     }
 
     private void warnPlugin() {
-        LOGGER.log(Level.WARNING, () -> getClass().getName() + " or one of its superclass overrides readResolve() without calling super implementation. Please file an issue against the plugin owning it : " + Jenkins.get().getPluginManager().whichPlugin(getClass()));
+        LOGGER.log(Level.WARNING, () -> getClass().getName() + " or one of its superclass overrides readResolve() without calling super implementation." +
+                "Please file an issue against the plugin owning it : " + Jenkins.get().getPluginManager().whichPlugin(getClass()));
     }
 
     @Override
