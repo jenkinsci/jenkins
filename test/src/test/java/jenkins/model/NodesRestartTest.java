@@ -18,8 +18,8 @@ public class NodesRestartTest {
     public JenkinsSessionRule s = new JenkinsSessionRule();
 
     // The point of this implementation is to override readResolve so that Slave#readResolve doesn't get called.
-    public static class DummyDumbSlave extends Slave {
-        public DummyDumbSlave(@NonNull String name, String remoteFS, ComputerLauncher launcher) throws Descriptor.FormException, IOException {
+    public static class DummyAgent extends Slave {
+        public DummyAgent(@NonNull String name, String remoteFS, ComputerLauncher launcher) throws Descriptor.FormException, IOException {
             super(name, remoteFS, launcher);
         }
 
@@ -33,7 +33,7 @@ public class NodesRestartTest {
     public void checkNodeRestart() throws Throwable {
         s.then(r -> {
             assertThat(r.jenkins.getNodes(), hasSize(0));
-            var node = new DummyDumbSlave("my-node", "temp", r.createComputerLauncher(null));
+            var node = new DummyAgent("my-node", "temp", r.createComputerLauncher(null));
             r.jenkins.addNode(node);
             assertThat(r.jenkins.getNodes(), hasSize(1));
         });
