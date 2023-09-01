@@ -124,16 +124,16 @@ public class CloudTest {
 
     @Test
     @Issue("JENKINS-71737")
-    public void uiNoNameChange() throws Exception {
-        CloudNameImmutable cloudFixedName = new CloudNameImmutable("Name Fixed", "0");
-        j.jenkins.clouds.add(cloudFixedName);
+    public void uneditableNameUI() throws Exception {
+        CloudNameImmutable fixedName = new CloudNameImmutable("Name Fixed", "0");
+        j.jenkins.clouds.add(fixedName);
 
-        assertThat(cloudFixedName.getAllActions(), containsInAnyOrder(
+        assertThat(fixedName.getAllActions(), containsInAnyOrder(
                 instanceOf(TaskCloudAction.class),
                 instanceOf(ReportingCloudAction.class)
         ));
 
-        HtmlPage page = j.createWebClient().goTo(cloudFixedName.getUrl());
+        HtmlPage page = j.createWebClient().goTo(fixedName.getUrl());
         String out = page.getWebResponse().getContentAsString();
         assertThat(out, containsString("Cloud Name Fixed")); // index.jelly
         assertThat(out, containsString("Top cloud view.")); // top.jelly

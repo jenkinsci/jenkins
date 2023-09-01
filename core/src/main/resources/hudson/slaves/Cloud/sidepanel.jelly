@@ -30,11 +30,6 @@ THE SOFTWARE.
             <l:task contextMenu="false" href="." icon="symbol-computer" title="${%Status}"/>
             <l:task href="configure" icon="symbol-settings"
                     title="${app.hasPermission(app.ADMINISTER) ? '%Configure' : '%View Configuration'}"/>
-            <j:if test="${it.nameEditable}">
-                <l:task href="confirm-rename" icon="symbol-changes"
-                        permission="${app.CONFIGURE}"
-                        title="${%Rename}"/>
-            </j:if>
             <l:delete permission="${app.ADMINISTER}" title="${%Delete Cloud}" message="${%delete.cloud(it.displayName)}"/>
             <t:actions />
         </l:tasks>
