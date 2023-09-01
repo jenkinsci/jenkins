@@ -11,11 +11,11 @@ import hudson.slaves.ComputerLauncher;
 import java.io.IOException;
 import org.junit.Rule;
 import org.junit.Test;
-import org.jvnet.hudson.test.RestartableJenkinsRule;
+import org.jvnet.hudson.test.JenkinsSessionRule;
 
 public class NodesRestartTest {
     @Rule
-    public RestartableJenkinsRule s = new RestartableJenkinsRule();
+    public JenkinsSessionRule s = new JenkinsSessionRule();
 
     // The point of this implementation is to override readResolve so that Slave#readResolve doesn't get called.
     public static class DummyDumbSlave extends Slave {
@@ -30,7 +30,7 @@ public class NodesRestartTest {
     }
 
     @Test
-    public void checkNodeRestart() throws Exception {
+    public void checkNodeRestart() throws Throwable {
         s.then(r -> {
             assertThat(r.jenkins.getNodes(), hasSize(0));
             var node = new DummyDumbSlave("my-node", "temp", r.createComputerLauncher(null));
