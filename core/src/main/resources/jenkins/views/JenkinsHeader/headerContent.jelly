@@ -43,7 +43,7 @@
             <div id="visible-am-insertion" class="page-header__am-wrapper" />
             <div id="visible-sec-am-insertion" class="page-header__am-wrapper" />
 
-            <!-- login field -->
+            <!-- user icon and login/logout links; only show if authentication is enabled and we're not handling a servlet error -->
             <j:if test="${app.useSecurity}">
                 <j:choose>
                     <j:when test="${!h.isAnonymous()}">
