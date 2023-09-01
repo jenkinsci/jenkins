@@ -4379,7 +4379,7 @@ __metadata:
     tippy.js: 6.3.7
     webpack: 5.88.2
     webpack-cli: 5.1.4
-    webpack-remove-empty-scripts: 1.0.3
+    webpack-remove-empty-scripts: 1.0.4
     window-handle: 1.0.1
   languageName: unknown
   linkType: soft
@@ -7167,14 +7167,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"webpack-remove-empty-scripts@npm:1.0.3":
-  version: 1.0.3
-  resolution: "webpack-remove-empty-scripts@npm:1.0.3"
+"webpack-remove-empty-scripts@npm:1.0.4":
+  version: 1.0.4
+  resolution: "webpack-remove-empty-scripts@npm:1.0.4"
   dependencies:
     ansis: 1.5.2
   peerDependencies:
     webpack: ">=5.32.0"
-  checksum: af7e2626608304037b8723f05b81690f280b50766fccc28e4a0bdbe29eb58b5aa95808449f26b67a92ba26f1d707a118820f5c2571cc340f3588a33751853b54
+  checksum: 82032989a15daad9e2850789572435ff3fd77f85e855e2a9397a84e54d71138bb94cb28c778b3a5881a721c91f5471507cac6f1519067041877c32e1870e44c6
   languageName: node
   linkType: hard
 

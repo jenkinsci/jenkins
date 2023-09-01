@@ -47,7 +47,7 @@
     "stylelint-config-standard": "33.0.0",
     "webpack": "5.88.2",
     "webpack-cli": "5.1.4",
-    "webpack-remove-empty-scripts": "1.0.3"
+    "webpack-remove-empty-scripts": "1.0.4"
   },
   "dependencies": {
     "handlebars": "4.7.8",
