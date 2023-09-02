@@ -37,7 +37,7 @@ export const theme = EditorView.theme({
   },
   ".cm-content": {
     caretColor: cursor,
-    minHeight: "100px"
+    minHeight: "200px"
   },
   ".cm-cursor, .cm-dropCursor": { borderLeftColor: cursor },
   "&.cm-focused > .cm-scroller > .cm-selectionLayer .cm-selectionBackground, .cm-selectionBackground, .cm-content ::selection":
@@ -100,7 +100,7 @@ export const theme = EditorView.theme({
 export const syntaxHighlight = HighlightStyle.define([
   { tag: t.keyword, color: violet },
   {
-    tag: [t.name, t.deleted, t.character, t.propertyName, t.macroName],
+    tag: [t.deleted, t.character, t.propertyName, t.macroName],
     color: coral,
   },
   { tag: [t.function(t.variableName), t.labelName], color: malibu },
