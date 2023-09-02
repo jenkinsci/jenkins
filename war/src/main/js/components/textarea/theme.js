@@ -27,6 +27,7 @@ export const theme = EditorView.theme({
     transition: "var(--standard-transition), height 0s",
     resize: "vertical",
     overflow: "hidden",
+    marginBottom: "var(--section-padding)",
   },
   "&:hover": {
     borderColor: "var(--input-border-hover)",
@@ -37,7 +38,7 @@ export const theme = EditorView.theme({
   },
   ".cm-content": {
     caretColor: cursor,
-    minHeight: "200px"
+    minHeight: "200px",
   },
   ".cm-cursor, .cm-dropCursor": { borderLeftColor: cursor },
   "&.cm-focused > .cm-scroller > .cm-selectionLayer .cm-selectionBackground, .cm-selectionBackground, .cm-content ::selection":
