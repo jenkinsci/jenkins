@@ -28,6 +28,7 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.diagnosis.ReverseProxySetupMonitor;
 import hudson.model.AdministrativeMonitor;
+import hudson.model.ManageJenkinsAction;
 import hudson.model.PageDecorator;
 import hudson.util.HudsonIsLoading;
 import hudson.util.HudsonIsRestarting;
@@ -53,9 +54,6 @@ public class AdministrativeMonitorsDecorator extends PageDecorator {
     private final Collection<String> ignoredJenkinsRestOfUrls = new ArrayList<>();
 
     public AdministrativeMonitorsDecorator() {
-        // redundant
-        ignoredJenkinsRestOfUrls.add("manage");
-
         // otherwise this would be added to every internal context menu building request
         ignoredJenkinsRestOfUrls.add("contextMenu");
 
@@ -162,6 +160,11 @@ public class AdministrativeMonitorsDecorator extends PageDecorator {
 
         // don't show while Jenkins is loading
         if (o instanceof HudsonIsLoading || o instanceof HudsonIsRestarting) {
+            return null;
+        }
+
+        // Don't show on Manage Jenkins
+        if (o instanceof ManageJenkinsAction) {
             return null;
         }
 

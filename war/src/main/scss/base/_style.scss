@@ -22,19 +22,6 @@
  * THE SOFTWARE.
  */
 
-/* Panel */
-@media (width >= 1600px) {
-  body#jenkins.j-hide-left #main-panel {
-    max-width: 75%;
-  }
-}
-
-@media (width >= 2000px) {
-  body#jenkins.j-hide-left #main-panel {
-    max-width: 85%;
-  }
-}
-
 form {
   margin: 0;
 }
@@ -97,23 +84,6 @@ td.no-wrap {
   border-radius: var(--form-input-border-radius);
 }
 
-/* #header .login {
-  position: relative;
-  top: 6px;
-  color: white;
-  margin-right: 10px;
-}
-
-#header .login a, #header .login a:visited {
-  color: white;
-  text-decoration: none;
-}
-
-#header .login a:hover {
-    text-decoration: underline;
-    color: #ccc;
-} */
-
 a.lowkey:link {
   text-decoration: none;
   color: inherit;
@@ -170,17 +140,6 @@ table.tab {
   border-collapse: collapse;
 }
 
-td.selected_tab {
-  vertical-align: middle;
-  border: 1px #090 solid;
-  background: #fff;
-}
-
-td.tab_filler {
-  background: #fff;
-  border-bottom: 1px #090 solid;
-}
-
 td.tab {
   vertical-align: middle;
   border: 1px #090 solid;
@@ -228,10 +187,6 @@ pre.console {
   font-weight: 500;
   margin-bottom: 0.5rem;
   white-space: nowrap;
-}
-
-.setting-checkbox {
-  font-weight: 500;
 }
 
 .setting-help {
@@ -288,82 +243,13 @@ pre.console {
   flex-shrink: 1;
 }
 
-/* div that looks like a hyperlink */
-.pseudoLink {
-  cursor: pointer;
-}
-
 .advancedBody {
   display: none;
-}
-
-.scm_info {
-  width: 480px;
-}
-
-.build-keep {
-  font-weight: bold;
-}
-
-.task-header {
-  display: block;
-  border-bottom: 1px #090 solid;
-  font-weight: bold;
-  font-size: var(--font-size-xs);
 }
 
 .jenkins-not-applicable {
   color: darkgrey;
   font-style: italic;
-}
-
-.smallfont {
-  font-size: 9px;
-}
-
-#foldertab {
-  padding: 4px 0;
-  margin-left: 0;
-  border-bottom: 1px solid #090;
-  font:
-    bold 12px Helvetica,
-    Arial,
-    sans-serif;
-}
-
-#foldertab li {
-  list-style: none;
-  margin: 0;
-  display: inline;
-}
-
-#foldertab li a {
-  padding: 4px 0.5em;
-  margin-left: 3px;
-  border: 1px solid #090;
-  border-bottom: none;
-  background: #090;
-  text-decoration: none;
-}
-
-#foldertab li a:link {
-  color: white;
-}
-
-#foldertab li a:visited {
-  color: white;
-}
-
-#foldertab li a:hover {
-  color: white;
-  background: #6c0;
-  border-color: #6c0;
-}
-
-#foldertab li a#current {
-  background: white;
-  border-bottom: 1px solid white;
-  color: black;
 }
 
 .changeset-message {
@@ -380,25 +266,6 @@ pre.console {
 
 .disabledJob {
   color: gray;
-}
-
-#login-field {
-  vertical-align: middle;
-  padding-right: 1em;
-  width: 1px;
-}
-
-#login-field span {
-  white-space: nowrap;
-  color: white;
-}
-
-#login-field a {
-  /*
-      link inside login field should be always white.
-      If I set this to inherit, it won't work in IE7
-     */
-  color: white;
 }
 
 .bottom-sticker,
@@ -535,100 +402,12 @@ img.icon-help {
   vertical-align: text-top;
 }
 
-/* ====================== project view tab bar ===================================== */
-#viewList {
-  border: none;
-  margin-bottom: 0;
-  width: 100%;
-  white-space: nowrap;
-}
-
-#viewList td {
-  padding: 0;
-}
-
-#viewList td.inactive {
-  border: solid 1px #ccc;
-  border-bottom-color: #bbb;
-}
-
-#viewList td.inactive:hover {
-  background-color: #777;
-}
-
-#viewList td.inactive a {
-  text-decoration: none;
-  color: #444;
-}
-
-#viewList td.inactive a:hover {
-  color: #f1f1f1;
-}
-
-#viewList td.noleft {
-  border-left: none;
-}
-
-#viewList td.noright {
-  border-right: none;
-}
-
-#viewList td.active {
-  border: solid 1px #bbb;
-  padding: 0.5em;
-  border-bottom: none;
-  vertical-align: middle;
-  background-color: rgb(240, 240, 240);
-  font-weight: bold;
-  white-space: nowrap;
-}
-
-#viewList td.filler {
-  border: none;
-  border-bottom: solid 1px #bbb;
-  width: 100%;
-  text-align: right;
-}
-
-#viewList a {
-  display: block;
-  padding: 0.5em;
-  white-space: nowrap;
-}
-
-#projectstatus .header {
-  border-bottom: 1px solid var(--bigtable-header-border-color);
-}
-
-#projectstatus > thead > th {
-  text-align: left;
-  // padding: 7px 0px;
-}
-
 /* ============================ list view entries ======================== */
 div.listview-jobs {
   max-height: 300px;
   overflow: auto;
   margin-left: -15px;
   padding-left: 15px;
-}
-
-/* ============================ parameters form ========================== */
-
-table.parameters {
-  border-collapse: collapse;
-}
-
-table.parameters > tbody > tr:first-child > td {
-  padding-top: 4px;
-}
-
-table.parameters .setting-description {
-  padding-bottom: 4px;
-}
-
-table.parameters > tbody:hover {
-  background-color: var(--table-parameters-bg--hover);
 }
 
 /* ============================ health report hover ========================== */
@@ -1051,24 +830,6 @@ textarea {
   resize: vertical;
 }
 
-/*
- * TODO(andipabst): Not used after https://github.com/jenkinsci/jenkins/pull/4299,
- *                  remove once there are no more dependencies
- */
-#plugins .compatWarning {
-  white-space: normal;
-  margin-top: 0.5em;
-  padding-left: 2em;
-  color: #f00;
-}
-
-#plugins .securityWarning {
-  white-space: normal;
-  margin-top: 0.5em;
-  padding-left: 2em;
-  color: #f00;
-}
-
 /* ========================= progress bar ========================= */
 
 table.progress-bar {
@@ -1143,6 +904,7 @@ table.progress-bar.red td.progress-bar-done {
 }
 
 /* ========================= tags/labels ================== */
+// Used in core/src/main/java/hudson/util/TagCloud.java#getClassName
 
 /* tag0 is the least important tag in a tag cloud */
 .tag0 {
@@ -1265,11 +1027,6 @@ select.select-ajax-pending {
 }
 
 /* ========================= Button styles ================= */
-.btn-box {
-  display: block;
-  margin-top: 2em;
-}
-
 #disable-project {
   margin-top: 6px;
 }
