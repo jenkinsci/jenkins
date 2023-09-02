@@ -2,6 +2,6 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
     <j:if test="${it.checkEnabled}">
         <div id="URICheckEncodingMonitor-message" data-url="${rootURL}/${it.url}/checkURIEncoding"/>
-        <st:adjunct includes="jenkins.diagnostics.URICheckEncodingMonitor.adjunct"/>
+        <st:adjunct includes="jenkins.diagnostics.URICheckEncodingMonitor.uri-check-encoding-monitor"/>
     </j:if>
 </j:jelly>

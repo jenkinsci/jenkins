@@ -35,7 +35,7 @@ dl {
                         td(val.fullJobName)
                     } else {
                         td {
-                            a(job.getFullDisplayName(), href: job.getUrl(), class: 'model-link')
+                            a(job.getFullDisplayName(), href: rootURL + '/' + job.getUrl(), class: 'model-link')
                         }
                     }
                     td(Util.getTimeSpanString(val.duration))

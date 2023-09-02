@@ -32,6 +32,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import hudson.Functions;
 import hudson.model.FreeStyleBuild;
@@ -300,6 +301,7 @@ public class ConsoleCommandTest {
         assertThat(result, failedWith(3));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("ERROR: No such build #1"));
+        assertTrue(j.jenkins.getQueue().cancel(project));
     }
 
 }

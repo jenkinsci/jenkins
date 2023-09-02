@@ -20,7 +20,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import jenkins.model.CauseOfInterruption.UserInterruption;
 import jenkins.model.InterruptedBuildAction;
 import jenkins.model.Jenkins;
-import org.junit.Assert;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -174,7 +173,7 @@ public class ExecutorTest {
         );
 
         OfflineCause offlineCause = p.getLastBuild().getBuiltOn().toComputer().getOfflineCause();
-        Assert.assertThat(offlineCause.toString(), not(containsString(message)));
+        assertThat(offlineCause.toString(), not(containsString(message)));
 
         b.doStop();
         j.waitForCompletion(b);

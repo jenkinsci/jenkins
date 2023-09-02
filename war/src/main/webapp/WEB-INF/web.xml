@@ -81,6 +81,11 @@ THE SOFTWARE.
     <async-supported>true</async-supported>
   </filter>
   <filter>
+    <filter-name>error-attribute-filter</filter-name>
+    <filter-class>jenkins.ErrorAttributeFilter</filter-class>
+    <async-supported>true</async-supported>
+  </filter>
+  <filter>
     <filter-name>plugins-filter</filter-name>
     <filter-class>hudson.util.PluginServletFilter</filter-class>
     <async-supported>true</async-supported>
@@ -153,6 +158,10 @@ THE SOFTWARE.
   </filter-mapping>
   <filter-mapping>
     <filter-name>csrf-filter</filter-name>
+    <url-pattern>/*</url-pattern>
+  </filter-mapping>
+  <filter-mapping>
+    <filter-name>error-attribute-filter</filter-name>
     <url-pattern>/*</url-pattern>
   </filter-mapping>
   <filter-mapping>
@@ -256,6 +265,10 @@ THE SOFTWARE.
   <error-page>
     <exception-type>java.lang.Throwable</exception-type>
     <location>/oops</location>
+  </error-page>
+  <error-page>
+    <error-code>404</error-code>
+    <location>/404</location>
   </error-page>
 
   <session-config>

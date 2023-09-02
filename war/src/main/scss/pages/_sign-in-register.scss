@@ -3,7 +3,7 @@
 @use "../base/typography";
 @use "../form/checkbox";
 @use "../form/input";
-@use "../modules/buttons";
+@use "../components/buttons";
 
 @property --opacity {
   syntax: "<angle>";

@@ -42,6 +42,8 @@ import static org.junit.Assert.assertTrue;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.ExtensionList;
 import hudson.XmlFile;
+import hudson.init.InitMilestone;
+import hudson.init.Initializer;
 import hudson.model.Computer;
 import hudson.model.Failure;
 import hudson.model.FreeStyleProject;
@@ -836,6 +838,37 @@ public class JenkinsTest {
         @Override
         public String getUrlName() {
             return "login123";
+        }
+    }
+
+    @Test
+    public void checkInitialView() {
+        assertTrue(CheckInitialViewExtension.hasPrimaryView);
+    }
+
+    @TestExtension(value = "checkInitialView")
+    public static class CheckInitialViewExtension implements RootAction {
+        private static boolean hasPrimaryView;
+
+        @Initializer(after = InitMilestone.SYSTEM_CONFIG_LOADED, before = InitMilestone.JOB_CONFIG_ADAPTED)
+        public static void checkViews() {
+            hasPrimaryView = Jenkins.get().getPrimaryView() != null;
+        }
+
+
+        @Override
+        public String getIconFileName() {
+            return null;
+        }
+
+        @Override
+        public String getDisplayName() {
+            return null;
+        }
+
+        @Override
+        public String getUrlName() {
+            return null;
         }
     }
 }

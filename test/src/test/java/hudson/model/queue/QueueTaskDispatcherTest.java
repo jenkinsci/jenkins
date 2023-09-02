@@ -40,6 +40,9 @@ public class QueueTaskDispatcherTest {
 
         assertTrue("Not blocked", item.isBlocked());
         assertEquals("Expected CauseOfBlockage to be returned", "blocked by canRun", item.getWhy());
+
+        // Clear the queue
+        assertTrue(r.jenkins.getQueue().cancel(project));
     }
 
     @TestExtension("canRunBlockageIsDisplayed")
@@ -75,6 +78,9 @@ public class QueueTaskDispatcherTest {
         cob.print(l);
         l.getLogger().flush();
         assertThat(w.toString(), containsString("blocked by canTake"));
+
+        // Clear the queue
+        assertTrue(r.jenkins.getQueue().cancel(project));
     }
 
     @TestExtension("canTakeBlockageIsDisplayed")

@@ -3,7 +3,7 @@ Behaviour.specify(
   "scheduleRestartCheckbox",
   0,
   function (el) {
-    el.addEventListener("click", function () {
+    el.addEventListener("change", function () {
       var form = document.getElementById("scheduleRestart");
       form.action = el.checked ? "safeRestart" : "cancelRestart";
       crumb.appendToForm(form);

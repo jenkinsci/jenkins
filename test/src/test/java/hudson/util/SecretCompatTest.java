@@ -56,7 +56,7 @@ public class SecretCompatTest {
     @Issue("SECURITY-304")
     public void encryptedValueStaysTheSameAfterRoundtrip() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject();
-        project.addProperty(new ParametersDefinitionProperty(new PasswordParameterDefinition("p", "s3cr37", "Keep this a secret")));
+        project.addProperty(new ParametersDefinitionProperty(new PasswordParameterDefinition("p", Secret.fromString("s3cr37"), "Keep this a secret")));
         project.getAllActions(); // initialize Actionable.actions; otherwise first made nonnull while rendering sidepanel after redirect after round #1 has been saved, so only round #2 has <actions/>
         project = j.configRoundtrip(project);
         String round1 = project.getConfigFile().asString();
@@ -68,7 +68,7 @@ public class SecretCompatTest {
         //But reconfiguring will make it a new value
         project = j.jenkins.getItemByFullName(project.getFullName(), FreeStyleProject.class);
         project.removeProperty(ParametersDefinitionProperty.class);
-        project.addProperty(new ParametersDefinitionProperty(new PasswordParameterDefinition("p", "s3cr37", "Keep this a secret")));
+        project.addProperty(new ParametersDefinitionProperty(new PasswordParameterDefinition("p", Secret.fromString("s3cr37"), "Keep this a secret")));
         project = j.configRoundtrip(project);
         String round3 = project.getConfigFile().asString();
         assertNotEquals(round2, round3);

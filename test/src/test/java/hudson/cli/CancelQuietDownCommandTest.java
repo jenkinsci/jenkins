@@ -94,7 +94,7 @@ public class CancelQuietDownCommandTest {
     @Test
     public void cancelQuietDownShouldResetQuietReason() throws Exception {
         final String testReason = "reason";
-        Jenkins.get().doQuietDown(false, 0, testReason);
+        Jenkins.get().doQuietDown(false, 0, testReason, false);
         QuietDownCommandTest.assertJenkinsInQuietMode(j);
         assertThat(j.jenkins.getQuietDownReason(), equalTo(testReason));
         final CLICommandInvoker.Result result = command

@@ -68,6 +68,7 @@ import jenkins.util.io.OnMaster;
 import net.sf.json.JSONObject;
 import org.jvnet.localizer.Localizable;
 import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.accmod.restrictions.ProtectedExternally;
 import org.kohsuke.stapler.BindInterceptor;
 import org.kohsuke.stapler.Stapler;
@@ -298,6 +299,17 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
     public TagCloud<LabelAtom> getLabelCloud() {
         return new TagCloud<>(getAssignedLabels(), Label::getTiedJobCount);
     }
+
+    /**
+     * @return An immutable set of LabelAtom associated with the current node label.
+     */
+    @NonNull
+    @Restricted(NoExternalUse.class)
+    protected Set<LabelAtom> getLabelAtomSet() {
+        // Default implementation doesn't cache, since we can't hook on label updates.
+        return Collections.unmodifiableSet(Label.parse(getLabelString()));
+    }
+
     /**
      * Returns the possibly empty set of labels that are assigned to this node,
      * including the automatic {@link #getSelfLabel() self label}, manually
@@ -305,13 +317,13 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
      * {@link LabelFinder} extension point.
      *
      * This method has a side effect of updating the hudson-wide set of labels
-     * and should be called after events that will change that - e.g. a agent
+     * and should be called after events that will change that - e.g. an agent
      * connecting.
      */
 
     @Exported
     public Set<LabelAtom> getAssignedLabels() {
-        Set<LabelAtom> r = Label.parse(getLabelString());
+        Set<LabelAtom> r = new HashSet<>(getLabelAtomSet());
         r.add(getSelfLabel());
         r.addAll(getDynamicLabels());
         return Collections.unmodifiableSet(r);

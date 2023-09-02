@@ -163,7 +163,7 @@ public class QuietDownCommandTest {
 
     @Test
     public void quietDownShouldSuccessWithBlockOnAlreadyQuietDownedJenkins() throws Exception {
-        j.jenkins.doQuietDown(true, 0, null);
+        j.jenkins.doQuietDown(true, 0, null, false);
         assertJenkinsInQuietMode();
         final CLICommandInvoker.Result result = command
                 .authorizedTo(Jenkins.READ, Jenkins.ADMINISTER)
@@ -174,7 +174,7 @@ public class QuietDownCommandTest {
 
     @Test
     public void quietDownShouldSuccessWithBlockAndTimeoutOnAlreadyQuietDownedJenkins() throws Exception {
-        j.jenkins.doQuietDown(true, 0, null);
+        j.jenkins.doQuietDown(true, 0, null, false);
         assertJenkinsInQuietMode();
         final long time_before = System.currentTimeMillis();
         final CLICommandInvoker.Result result = command

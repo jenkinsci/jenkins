@@ -592,10 +592,16 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
         final Set<LabelAtom> r = new TreeSet<>();
         labels = fixNull(labels);
         if (labels.length() > 0) {
-            final QuotedStringTokenizer tokenizer = new QuotedStringTokenizer(labels);
-            while (tokenizer.hasMoreTokens())
-                r.add(Jenkins.get().getLabelAtom(tokenizer.nextToken()));
+            Jenkins j = Jenkins.get();
+            LabelAtom labelAtom = j.tryGetLabelAtom(labels);
+            if (labelAtom == null) {
+                final QuotedStringTokenizer tokenizer = new QuotedStringTokenizer(labels);
+                while (tokenizer.hasMoreTokens())
+                    r.add(j.getLabelAtom(tokenizer.nextToken()));
+            } else {
+                r.add(labelAtom);
             }
+        }
         return r;
     }
 

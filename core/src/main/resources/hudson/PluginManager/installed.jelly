@@ -34,8 +34,6 @@ THE SOFTWARE.
     <!-- no need for additional breadcrumb here as the side panel offers enough functionality to browse between different pages -->
 
     <l:main-panel>
-      <l:app-bar title="${%Plugins}" />
-
       <j:set var="noPlugins"
              value="${empty(app.pluginManager.plugins) and empty(app.pluginManager.failedPlugins)}" />
 

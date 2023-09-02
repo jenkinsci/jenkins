@@ -51,12 +51,7 @@ THE SOFTWARE.
           </div>
           <j:if test="${app.lifecycle.canRestart()}">
             <p class="info">
-              <j:if test="${app.isQuietingDown() or it.isRestartScheduled()}">
-                <f:checkbox checked="true" id="scheduleRestartCheckbox" name="scheduleRestart" title="${%warning}" />
-              </j:if>
-              <j:if test="${!app.isQuietingDown() and !it.isRestartScheduled()}">
-                <f:checkbox readonly="true" id="scheduleRestartCheckbox" name="scheduleRestart" title="${%warning}" />
-              </j:if>
+              <f:checkbox checked="${app.isQuietingDown() or it.isRestartScheduled()}" id="scheduleRestartCheckbox" name="scheduleRestart" title="${%warning}" />
             </p>
           </j:if>
         </l:isAdmin>

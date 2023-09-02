@@ -402,6 +402,7 @@ public class ProjectTest {
         QueueTaskFuture<FreeStyleBuild> b3 = waitForStart(p);
         assertThat("Build can not start because build of upstream project has not finished.", downstream.getCauseOfBlockage(), instanceOf(BecauseOfUpstreamBuildInProgress.class));
         b3.get();
+        assertTrue(j.jenkins.getQueue().cancel(downstream));
     }
 
     private static final Logger LOGGER = Logger.getLogger(ProjectTest.class.getName());
@@ -713,6 +714,7 @@ public class ProjectTest {
         Thread.sleep(1000);
         //Assert that the job IS submitted to Queue.
         assertEquals(1, j.jenkins.getQueue().getItems().length);
+        assertTrue(j.jenkins.getQueue().cancel(proj));
     }
 
     /**
@@ -785,6 +787,7 @@ public class ProjectTest {
         Thread.sleep(1000);
         //The job should be in queue
         assertEquals(1, j.jenkins.getQueue().getItems().length);
+        assertTrue(j.jenkins.getQueue().cancel(proj));
     }
 
     @Issue("JENKINS-22750")
@@ -806,7 +809,8 @@ public class ProjectTest {
         t.new Runner().run();
 
 
-        assertFalse(j.jenkins.getQueue().isEmpty());
+        assertEquals(1, j.jenkins.getQueue().getItems().length);
+        assertTrue(j.jenkins.getQueue().cancel(proj));
     }
 
     public static class TransientAction extends InvisibleAction{

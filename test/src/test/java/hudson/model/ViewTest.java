@@ -322,6 +322,12 @@ public class ViewTest {
         assertNotContainsItems(view1, notInView, inView2);
         assertContainsItems(view2, inView2, inBothViews);
         assertNotContainsItems(view2, notInView, inView1);
+
+        // Clear the queue
+        assertTrue(j.jenkins.getQueue().cancel(notInView));
+        assertTrue(j.jenkins.getQueue().cancel(inView1));
+        assertTrue(j.jenkins.getQueue().cancel(inView2));
+        assertTrue(j.jenkins.getQueue().cancel(inBothViews));
     }
 
     private void assertContainsItems(View view, Task... items) {
