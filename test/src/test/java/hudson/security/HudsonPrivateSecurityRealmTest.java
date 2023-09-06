@@ -39,8 +39,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockConstruction;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
@@ -60,6 +60,7 @@ import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
 import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.PBEKeySpec;
 import jenkins.security.ApiTokenProperty;
 import jenkins.security.SecurityListener;
 import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
@@ -83,7 +84,7 @@ import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.WithoutJenkins;
 import org.mindrot.jbcrypt.BCrypt;
-
+import org.mockito.MockedConstruction;
 
 
 @For({UserSeedProperty.class, HudsonPrivateSecurityRealm.class})
@@ -544,9 +545,15 @@ public class HudsonPrivateSecurityRealmTest {
     public void passwordHashWithInvalidKeySpec() throws InvalidKeySpecException {
         HudsonPrivateSecurityRealm.PBKDF2PasswordEncoder pbkdf2PasswordEncoder = new HudsonPrivateSecurityRealm.PBKDF2PasswordEncoder();
         mockStatic(HudsonPrivateSecurityRealm.class);
-        SecretKeyFactory secretKeyFactory  = mock(SecretKeyFactory.class);
-        when(secretKeyFactory.generateSecret(any())).thenThrow(InvalidKeySpecException.class);
-        pbkdf2PasswordEncoder.encode("password");
+        SecretKeyFactory secretKeyFactory = mock(SecretKeyFactory.class);
+        PBEKeySpec spec = mock(PBEKeySpec.class);
+
+        try (MockedConstruction mocked = mockConstruction(PBEKeySpec.class)) {
+            PBEKeySpec pbeKeySpec = new PBEKeySpec("".toCharArray());
+            when(pbeKeySpec.getSalt()).thenReturn(null);
+            when(secretKeyFactory.generateSecret(pbeKeySpec)).thenThrow(InvalidKeySpecException.class);
+            assertThrows(RuntimeException.class, () -> pbkdf2PasswordEncoder.encode("password"));
+        }
     }
 
     @Test

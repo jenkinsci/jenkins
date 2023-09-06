@@ -1961,7 +1961,7 @@ public class Util {
     public static boolean FIPS_MODE = SystemProperties.getBoolean(Util.class.getName() + ".FIPS_MODE");
 
     public static boolean isFipsMode() {
-        LOGGER.info("FIPS mode : " + FIPS_MODE);
+        LOGGER.fine("FIPS mode : " + FIPS_MODE);
         return FIPS_MODE;
     }
 
