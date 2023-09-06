@@ -749,12 +749,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
         @CheckForNull
         @Override
         public OSProcess get(@NonNull Process proc) {
-            long longPid = proc.pid();
-            int intPid = (int) longPid;
-            if (intPid != longPid) {
-              throw new IllegalArgumentException("Out of range: " + longPid);
-            }
-            return get(intPid);
+            return get(Math.toIntExact(proc.pid()));
         }
 
         @Override
