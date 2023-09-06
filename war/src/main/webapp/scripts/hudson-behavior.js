@@ -611,16 +611,12 @@ function geval(script) {
  */
 // eslint-disable-next-line no-unused-vars
 function fireEvent(element, event) {
-  if (document.createEvent) {
-    // dispatch for firefox + others
-    let evt = document.createEvent("HTMLEvents");
-    evt.initEvent(event, true, true); // event type,bubbling,cancelable
-    return !element.dispatchEvent(evt);
-  } else {
-    // dispatch for IE
-    let evt = document.createEventObject();
-    return element.fireEvent("on" + event, evt);
-  }
+  return !element.dispatchEvent(
+    new Event(event, {
+      bubbles: true,
+      cancelable: true,
+    }),
+  );
 }
 
 // Behavior rules
@@ -1395,14 +1391,12 @@ function rowvgStartEachRow(recursive, f) {
     (function () {
       var cmdKeyDown = false;
       var mode = e.getAttribute("script-mode") || "text/x-groovy";
-      var readOnly = eval(e.getAttribute("script-readOnly")) || false;
 
       // eslint-disable-next-line no-unused-vars
       var w = CodeMirror.fromTextArea(e, {
         mode: mode,
         lineNumbers: true,
         matchBrackets: true,
-        readOnly: readOnly,
         onKeyEvent: function (editor, event) {
           function saveAndSubmit() {
             editor.save();
@@ -1787,28 +1781,6 @@ function rowvgStartEachRow(recursive, f) {
       new YAHOO.widget.Button(e, { type: "menu", menu: e.nextElementSibling });
     },
   );
-
-  Behaviour.specify(".track-mouse", "-track-mouse", ++p, function (element) {
-    var DOM = YAHOO.util.Dom;
-
-    element.addEventListener("mouseenter", function () {
-      element.classList.add("mouseover");
-
-      var mousemoveTracker = function (event) {
-        var elementRegion = DOM.getRegion(element);
-        if (
-          event.x < elementRegion.left ||
-          event.x > elementRegion.right ||
-          event.y < elementRegion.top ||
-          event.y > elementRegion.bottom
-        ) {
-          element.classList.remove("mouseover");
-          document.removeEventListener("mousemove", mousemoveTracker);
-        }
-      };
-      document.addEventListener("mousemove", mousemoveTracker);
-    });
-  });
 
   window.addEventListener("load", function () {
     // Add a class to the bottom bar when it's stuck to the bottom of the screen
