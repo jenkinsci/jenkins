@@ -24,6 +24,7 @@
 
 package hudson;
 
+import static java.nio.file.attribute.PosixFilePermission.OWNER_EXECUTE;
 import static java.nio.file.attribute.PosixFilePermission.OWNER_READ;
 import static java.nio.file.attribute.PosixFilePermission.OWNER_WRITE;
 import static org.awaitility.Awaitility.await;
@@ -173,7 +174,7 @@ public class PluginManagerTest {
         }
 
         public void doDynamic(StaplerRequest staplerRequest, StaplerResponse staplerResponse) throws ServletException, IOException {
-            staplerResponse.setContentType("application/octet");
+            staplerResponse.setContentType("application/octet-stream");
             staplerResponse.setStatus(200);
             staplerResponse.serveFile(staplerRequest,  PluginManagerTest.class.getClassLoader().getResource("plugins/htmlpublisher.jpi"));
         }
@@ -743,24 +744,34 @@ public class PluginManagerTest {
         File dir = tmp.newFolder();
         File plugin = new File(dir, "htmlpublisher.jpi");
         FileUtils.copyURLToFile(Objects.requireNonNull(getClass().getClassLoader().getResource("plugins/htmlpublisher.jpi")), plugin);
-        f.getInputByName("name").setValue(plugin.getAbsolutePath());
+        f.getInputByName("name").setValueAttribute(plugin.getAbsolutePath());
         r.submit(f);
 
-        File tmpDir = new File(File.createTempFile("tmp", ".tmp").getParent());
-        tmpDir.deleteOnExit();
+        File filesRef = Files.createTempFile("tmp", ".tmp").toFile();
+        File filesTmpDir = filesRef.getParentFile();
+        filesRef.deleteOnExit();
+
         final Set<PosixFilePermission>[] filesPermission = new Set[]{new HashSet<>()};
         await().pollInterval(250, TimeUnit.MILLISECONDS)
                 .atMost(10, TimeUnit.SECONDS)
                 .until(() -> {
-                    Optional<File> lastUploadedPlugin = Arrays.stream(Objects.requireNonNull(tmpDir.listFiles((file, fileName) -> fileName.startsWith("uploaded")))).max(Comparator.comparingLong(File::lastModified));
-                    if (lastUploadedPlugin.isPresent()) {
-                        filesPermission[0] = Files.getPosixFilePermissions(lastUploadedPlugin.get().toPath(), LinkOption.NOFOLLOW_LINKS);
+                    Optional<File> lastUploadedPluginDir = Arrays.stream(Objects.requireNonNull(
+                                    filesTmpDir.listFiles((file, fileName) ->
+                                            fileName.startsWith("uploadDir")))).
+                            max(Comparator.comparingLong(File::lastModified));
+                    if (lastUploadedPluginDir.isPresent()) {
+                        filesPermission[0] = Files.getPosixFilePermissions(lastUploadedPluginDir.get().toPath(), LinkOption.NOFOLLOW_LINKS);
+                        Optional<File> pluginFile = Arrays.stream(Objects.requireNonNull(
+                                        lastUploadedPluginDir.get().listFiles((file, fileName) ->
+                                                fileName.startsWith("uploaded")))).
+                                max(Comparator.comparingLong(File::lastModified));
+                        assertTrue(pluginFile.isPresent());
                         return true;
                     } else {
                         return false;
                     }
                 });
-        assertEquals(EnumSet.of(OWNER_READ, OWNER_WRITE), filesPermission[0]);
+        assertEquals(EnumSet.of(OWNER_EXECUTE, OWNER_READ, OWNER_WRITE), filesPermission[0]);
     }
 
     @Test
