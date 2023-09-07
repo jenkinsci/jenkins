@@ -94,8 +94,6 @@ public class HudsonPrivateSecurityRealmTest {
     public JenkinsRule j = new JenkinsRule();
 
     private SpySecurityListenerImpl spySecurityListener;
-    private Field field;
-
 
     @Before
     public void linkExtension() {

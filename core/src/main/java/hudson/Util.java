@@ -1958,8 +1958,14 @@ public class Util {
      */
     @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL")
     @Restricted(NoExternalUse.class)
-    public static boolean FIPS_MODE = SystemProperties.getBoolean(Util.class.getName() + ".FIPS_MODE");
+    static boolean FIPS_MODE = SystemProperties.getBoolean(Util.class.getName() + ".FIPS_MODE");
 
+    /**
+     * Provide a hint to plugins that the system should be FIPS-140-2 compliant if a plugin or code needs to make some choices as to if some optional behaviour that is not compliant with FIPS-140 should not be allowed.
+     * If this is  {@code true} it does not mean that the instance is compliant, it merely acts as a hint.
+     * @return {@code true} iff the system should prefer compliance with FIPS-140-2 over compatibility.
+     * @since TODO
+     */
     public static boolean isFipsMode() {
         LOGGER.fine("FIPS mode : " + FIPS_MODE);
         return FIPS_MODE;

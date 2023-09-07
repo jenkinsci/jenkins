@@ -893,7 +893,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     /**
      * {@link PasswordHashEncoder} that uses jBCrypt.
      */
-     static class JBCryptEncoder implements PasswordHashEncoder {
+    static class JBCryptEncoder implements PasswordHashEncoder {
         // in jBCrypt the maximum is 30, which takes ~22h with laptop late-2017
         // and for 18, it's "only" 20s
         @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
@@ -959,7 +959,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
             try {
                 return validatePassword(rawPassword.toString(), encodedPassword);
             } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
-                throw new RuntimeException(e);
+                throw new RuntimeException("Unable to check password for PBKDF2WithHmacSHA512", e);
             }
         }
 
@@ -973,17 +973,8 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         private static byte[] generateSecretKey(PBEKeySpec spec) throws NoSuchAlgorithmException, InvalidKeySpecException {
             SecretKeyFactory secretKeyFactory = null;
             byte[] hash;
-            try {
-                secretKeyFactory = SecretKeyFactory.getInstance(PBKDF2_ALGORITHM);
-                hash = secretKeyFactory.generateSecret(spec).getEncoded();
-            } catch (NoSuchAlgorithmException e) {
-                LOGGER.log(SEVERE, "No such algorithm found for encode",  e);
-                throw new NoSuchAlgorithmException("No such algorithm found for encode",  e);
-            } catch (InvalidKeySpecException e) {
-                LOGGER.log(SEVERE, "Invalid key spec exception",  e);
-                throw new InvalidKeySpecException("Invalid key spec exception",  e);
-            }
-            return hash;
+            secretKeyFactory = SecretKeyFactory.getInstance(PBKDF2_ALGORITHM);
+            return secretKeyFactory.generateSecret(spec).getEncoded();
         }
 
         @SuppressFBWarnings(value = {"DMI_RANDOM_USED_ONLY_ONCE", "PREDICTABLE_RANDOM"}, justification = "https://github.com/spotbugs/spotbugs/issues/1539 and doesn't need to be secure, we're just not hardcoding a 'wrong' password")
