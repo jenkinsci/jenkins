@@ -49,7 +49,7 @@ import org.kohsuke.stapler.export.ExportedBean;
  *  can be disabled, a badge will always be shown. E.g. the badge of {@link OldDataMonitor.ManagementLinkImpl} always shows the number of old data entries.
  *
  *  <p>
- *  A badge can also be used in a <l:task .../> to show information on the right of the link in the sidepanel,
+ *  A badge can also be used in a {@code <l:task .../>} to show information on the right of the link in the sidepanel,
  *  e.g. to show number of available plugin updates.
  *
  *  @since 2.385
