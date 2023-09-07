@@ -75,6 +75,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import jenkins.model.Jenkins;
+import jenkins.security.FIPS140;
 import jenkins.security.SecurityListener;
 import jenkins.security.seed.UserSeedProperty;
 import jenkins.util.SystemProperties;
@@ -1015,7 +1016,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
 
     }
 
-    /* package */ static final PasswordHashEncoder PASSWORD_HASH_ENCODER =  Util.isFipsMode() ? new PBKDF2PasswordEncoder() : new JBCryptEncoder();
+    /* package */ static final PasswordHashEncoder PASSWORD_HASH_ENCODER =  FIPS140.useCompliantAlgorithms() ? new PBKDF2PasswordEncoder() : new JBCryptEncoder();
 
 
     public static final String PBKDF2 = "$PBKDF2";
@@ -1026,7 +1027,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      */
 
     public static String getPasswordHeader() {
-        return Util.isFipsMode() ? PBKDF2 : JBCRYPT;
+        return FIPS140.useCompliantAlgorithms() ? PBKDF2 : JBCRYPT;
     }
 
 
