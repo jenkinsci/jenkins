@@ -26,23 +26,30 @@ package hudson.model;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.util.FormValidation;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.ProtectedExternally;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
 
+/**
+ * Interface used to create a dedicated page that changes the name property of an Object.
+ * See also {@link jenkins.model.RenameAction}.
+ *
+ * @since TODO
+ */
+@Restricted(ProtectedExternally.class)
 public interface Renamable {
 
     /**
      * Controls whether the default rename action is available for this object.
      *
      * @return whether the name can be modified by a user
-     * @since TODO
      */
     boolean isNameEditable();
 
     /**
      * Renames the object
      *
-     * @since TODO
      */
     HttpResponse doConfirmRename(@QueryParameter String newName) throws Exception;
 
@@ -50,7 +57,6 @@ public interface Renamable {
      * Controls whether the default rename action is available.
      *
      * @return whether object name can be modified by a user
-     * @since TODO
      */
     @NonNull
     FormValidation doCheckNewName(@QueryParameter String newName);
