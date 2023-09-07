@@ -25,8 +25,6 @@
 package hudson.security;
 
 import static hudson.security.HudsonPrivateSecurityRealm.PASSWORD_ENCODER;
-import static hudson.security.HudsonPrivateSecurityRealm.PASSWORD_HASH_ENCODER;
-import static hudson.security.HudsonPrivateSecurityRealm.getPasswordHeader;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
@@ -39,28 +37,19 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockConstruction;
-import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.when;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionList;
-import hudson.Util;
 import hudson.model.User;
 import hudson.security.pages.SignupPage;
 import java.lang.reflect.Field;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.security.NoSuchAlgorithmException;
-import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
-import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.PBEKeySpec;
 import jenkins.security.ApiTokenProperty;
 import jenkins.security.SecurityListener;
 import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
@@ -82,10 +71,7 @@ import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.TestExtension;
-import org.jvnet.hudson.test.WithoutJenkins;
 import org.mindrot.jbcrypt.BCrypt;
-import org.mockito.MockedConstruction;
-
 
 @For({UserSeedProperty.class, HudsonPrivateSecurityRealm.class})
 public class HudsonPrivateSecurityRealmTest {
@@ -102,14 +88,9 @@ public class HudsonPrivateSecurityRealmTest {
 
     @Before
     public void setup() throws Exception {
-
         Field field = HudsonPrivateSecurityRealm.class.getDeclaredField("ID_REGEX");
         field.setAccessible(true);
         field.set(null, null);
-
-        Field field1 = Util.class.getDeclaredField("FIPS_MODE");
-        field1.setAccessible(true);
-        field1.set(System.setProperty("hudson.security.Util.FIPS_MODE", "true"), true);
     }
 
     @Issue("SECURITY-243")
@@ -343,9 +324,7 @@ public class HudsonPrivateSecurityRealmTest {
     public void userCreationWithHashedPasswords() throws Exception {
         HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
         j.jenkins.setSecurityRealm(securityRealm);
-        Field field = Util.class.getDeclaredField("FIPS_MODE");
-        field.setAccessible(false);
-        field.set(System.setProperty("hudson.security.Util.FIPS_MODE", "false"), false);
+
         spySecurityListener.createdUsers.clear();
         assertTrue(spySecurityListener.createdUsers.isEmpty());
 
@@ -520,75 +499,9 @@ public class HudsonPrivateSecurityRealmTest {
     }
 
     @Test
-    @WithoutJenkins
-    public void passwordHashWithPBKDF2() {
-
-        HudsonPrivateSecurityRealm.PBKDF2PasswordEncoder pbkdf2PasswordEncoder = new HudsonPrivateSecurityRealm.PBKDF2PasswordEncoder();
-        mockStatic(HudsonPrivateSecurityRealm.class);
-        when(getPasswordHeader()).thenReturn("$PBKDF2");
-        assertNotNull(pbkdf2PasswordEncoder.encode("password"));
-        assertTrue(PASSWORD_ENCODER.isPasswordHashed("$PBKDF2" + PASSWORD_HASH_ENCODER.encode("password")));
-    }
-
-    @Test
-    public void passwordHashWithInvalidAgorithm()  {
-        HudsonPrivateSecurityRealm.PBKDF2PasswordEncoder pbkdf2PasswordEncoder = new HudsonPrivateSecurityRealm.PBKDF2PasswordEncoder();
-        mockStatic(HudsonPrivateSecurityRealm.class);
-        SecretKeyFactory secretKeyFactory  = mock(SecretKeyFactory.class);
-        assertThrows(NoSuchAlgorithmException.class, () ->   when(SecretKeyFactory.getInstance("")).thenThrow(NoSuchAlgorithmException.class));
-        pbkdf2PasswordEncoder.encode("password");
-    }
-
-    @Test
-    public void passwordHashWithInvalidKeySpec() throws InvalidKeySpecException {
-        HudsonPrivateSecurityRealm.PBKDF2PasswordEncoder pbkdf2PasswordEncoder = new HudsonPrivateSecurityRealm.PBKDF2PasswordEncoder();
-        mockStatic(HudsonPrivateSecurityRealm.class);
-        SecretKeyFactory secretKeyFactory = mock(SecretKeyFactory.class);
-        PBEKeySpec spec = mock(PBEKeySpec.class);
-
-        try (MockedConstruction mocked = mockConstruction(PBEKeySpec.class)) {
-            PBEKeySpec pbeKeySpec = new PBEKeySpec("".toCharArray());
-            when(pbeKeySpec.getSalt()).thenReturn(null);
-            when(secretKeyFactory.generateSecret(pbeKeySpec)).thenThrow(InvalidKeySpecException.class);
-            assertThrows(RuntimeException.class, () -> pbkdf2PasswordEncoder.encode("password"));
-        }
-    }
-
-    @Test
-    public void passwordHashMatchesPBKDF2() {
-
-        HudsonPrivateSecurityRealm.PBKDF2PasswordEncoder pbkdf2PasswordEncoder = new HudsonPrivateSecurityRealm.PBKDF2PasswordEncoder();
-        mockStatic(HudsonPrivateSecurityRealm.class);
-        when(getPasswordHeader()).thenReturn("$PBKDF2");
-        assertTrue(pbkdf2PasswordEncoder.matches("3a6f9ee5a3af41ef844cb291c63b40f4",
-              "$PBKDF2$HMACSHA512:1024:f6865c02cc759fd061db0f3121a093e0$079bd3a0c2851248343584a9a4625360e9ebb13c36be49542268d2ebdbd1fb71f004db9ce7335a61885985e32e08cb20215ff7bf64b2af5792581039faa62b52"));
-    }
-
-    @Test
-    public void hashPatternMatches() {
-        HudsonPrivateSecurityRealm.PBKDF2PasswordEncoder pbkdf2PasswordEncoder = new HudsonPrivateSecurityRealm.PBKDF2PasswordEncoder();
-        assertTrue(pbkdf2PasswordEncoder.isHashValid("$PBKDF2$HMACSHA512:1000:f6865c02cc759fd061db0f3121a093e0$079bd3a0c2851"));
-    }
-
-    @Test
-    public void hashPatternNotMatches() {
-        HudsonPrivateSecurityRealm.PBKDF2PasswordEncoder pbkdf2PasswordEncoder = new HudsonPrivateSecurityRealm.PBKDF2PasswordEncoder();
-        assertFalse(pbkdf2PasswordEncoder.isHashValid("1020:f6865c02cc759fd061db0f3121a093e0$079bd3a0c2851"));
-    }
-
-    @Test
-    public void passwordHashNotMatches() {
-        assertFalse(PASSWORD_ENCODER.matches(null, "1000:137287e0ae3e24ae15df2f6caf068d5a:7bcdd7d6788bf20747812fd39b3ff5451235b12dfa62f6b"));
-    }
-
-    @Test
     public void createAccountSupportsHashedPasswords() throws Exception {
         HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
         j.jenkins.setSecurityRealm(securityRealm);
-
-        Field field = Util.class.getDeclaredField("FIPS_MODE");
-        field.setAccessible(false);
-        field.set(System.setProperty("hudson.security.Util.FIPS_MODE", "false"), false);
 
         securityRealm.createAccountWithHashedPassword("user_hashed", "#jbcrypt:" + BCrypt.hashpw("password", BCrypt.gensalt()));
 
@@ -608,12 +521,7 @@ public class HudsonPrivateSecurityRealmTest {
     }
 
     @Test
-    public void hashedPasswordTest() throws NoSuchFieldException, IllegalAccessException {
-
-        Field field = Util.class.getDeclaredField("FIPS_MODE");
-        field.setAccessible(false);
-        field.set(System.setProperty("hudson.security.Util.FIPS_MODE", "false"), false);
-
+    public void hashedPasswordTest() {
         assertTrue("password is hashed", PASSWORD_ENCODER.isPasswordHashed("#jbcrypt:" + BCrypt.hashpw("password", BCrypt.gensalt())));
         assertFalse("password is not hashed", PASSWORD_ENCODER.isPasswordHashed("password"));
         assertFalse("only valid hashed passwords allowed", PASSWORD_ENCODER.isPasswordHashed("#jbcrypt:$2a$blah"));
@@ -689,7 +597,6 @@ public class HudsonPrivateSecurityRealmTest {
     @Test
     @Issue("SECURITY-1158")
     public void singupNoLongerVulnerableToSessionFixation() throws Exception {
-
         HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(true, false, null);
         j.jenkins.setSecurityRealm(securityRealm);
         JenkinsRule.WebClient wc = j.createWebClient();
