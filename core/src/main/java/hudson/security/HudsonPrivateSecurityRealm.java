@@ -934,16 +934,17 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
 
      static class PBKDF2PasswordEncoder implements PasswordHashEncoder {
 
-        public static final int HASH_LENGTH = 8;
-        public static final String STRING_SEPARATION = ":";
-        public static final int KEY_LENGTH = 512;
-        public static final String PBKDF2_ALGORITHM = "PBKDF2WithHmacSHA512";
+        private static final String STRING_SEPARATION = ":";
+        private static final int KEY_LENGTH_BITS = 512;
+        private static final int SALT_LENGTH_BYTES = 16;
+        private static final int ITTERATIONS = 1000;
+        private static final String PBKDF2_ALGORITHM = "PBKDF2WithHmacSHA512";
 
-        @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
-        @Restricted(NoExternalUse.class)
-        private static int MAXIMUM_PBKDF2_LOG_ROUND = SystemProperties.getInteger(HudsonPrivateSecurityRealm.class.getName() + ".maximumPBKDF2LogRound", 1000);
+        private SecureRandom random; // defer construction until we need to use it to not delay startup in the case of lack of entropy.
 
-        private static final Pattern PBKDF2_PATTERN = Pattern.compile("^\\$PBKDF2\\$HMACSHA512\\:([0-9]{4})\\:[a-zA-Z0-9=]+\\$[a-zA-Z0-9=]+");
+        // Identifier($PBKDF2) $ algorithm(HMACSHA512) : rounds : salt_in_hex $ mac_in_hex
+        private static final Pattern PBKDF2_PATTERN =
+                Pattern.compile("^\\$PBKDF2\\$HMACSHA512\\:1000\\:[A-F0-9]{" + (SALT_LENGTH_BYTES * 2) + "}\\$[A-F0-9]{" + ((KEY_LENGTH_BITS / 8) * 2) + "}$");
 
         @Override
         public String encode(CharSequence rawPassword) {
@@ -963,9 +964,9 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
             }
         }
 
-        private static String generatePasswordHashWithPBKDF2(CharSequence password) throws NoSuchAlgorithmException, InvalidKeySpecException {
+        private String generatePasswordHashWithPBKDF2(CharSequence password) throws NoSuchAlgorithmException, InvalidKeySpecException {
             byte[] salt = generateSalt();
-            PBEKeySpec spec = new PBEKeySpec(password.toString().toCharArray(), salt, 1000, KEY_LENGTH);
+            PBEKeySpec spec = new PBEKeySpec(password.toString().toCharArray(), salt, ITTERATIONS, KEY_LENGTH_BITS);
             byte[] hash = generateSecretKey(spec);
             return PBKDF2 + "$HMACSHA512:" + 1000 + STRING_SEPARATION + Util.toHexString(salt) + "$" + Util.toHexString(hash);
         }
@@ -977,26 +978,21 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
             return secretKeyFactory.generateSecret(spec).getEncoded();
         }
 
-        @SuppressFBWarnings(value = {"DMI_RANDOM_USED_ONLY_ONCE", "PREDICTABLE_RANDOM"}, justification = "https://github.com/spotbugs/spotbugs/issues/1539 and doesn't need to be secure, we're just not hardcoding a 'wrong' password")
-        private static byte[] generateSalt() {
-            SecureRandom random = new SecureRandom();
-            byte[] salt = new byte[16];
+        @SuppressFBWarnings(value = "DMI_RANDOM_USED_ONLY_ONCE", justification = "SpotBugs you are drunk! https://github.com/spotbugs/spotbugs/issues/2128")
+        private synchronized byte[] generateSalt() {
+            // synchronized for lazy initialization but also not all SecureRandom s are thread safe.
+            if (random == null) {
+                random = new SecureRandom();
+            }
+            byte[] salt = new byte[SALT_LENGTH_BYTES];
             random.nextBytes(salt);
             return salt;
         }
 
         @Override
-        public boolean isHashValid(String hash)    {
+        public boolean isHashValid(String hash) {
             Matcher matcher = PBKDF2_PATTERN.matcher(hash);
-            if (matcher.matches()) {
-                String logNumOfRound = matcher.group(1);
-                // no number format exception due to the expression
-                int logNumOfRoundInt = Integer.parseInt(logNumOfRound);
-                if (logNumOfRoundInt > 0 && logNumOfRoundInt <= MAXIMUM_PBKDF2_LOG_ROUND) {
-                    return true;
-                }
-            }
-            return false;
+            return matcher.matches();
         }
 
         private static boolean validatePassword(String originalPassword, String storedPassword) throws NoSuchAlgorithmException, InvalidKeySpecException {
@@ -1007,7 +1003,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
             byte[] hash = Util.fromHexString(parts[5]);
 
             PBEKeySpec spec = new PBEKeySpec(originalPassword.toCharArray(),
-                    salt, iterations, hash.length * HASH_LENGTH);
+                    salt, iterations, hash.length * 8 /* bits in a byte */);
 
             byte[] generatedHashValue = generateSecretKey(spec);
 

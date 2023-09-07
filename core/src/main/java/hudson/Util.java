@@ -1952,5 +1952,4 @@ public class Util {
         byte[] payloadDigest = Util.getSHA256DigestOf(input);
         return (payloadDigest != null) ? Util.toHexString(payloadDigest) : null;
     }
-
 }

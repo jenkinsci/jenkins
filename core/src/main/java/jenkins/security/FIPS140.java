@@ -20,6 +20,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.security;
 
 import java.util.logging.Level;
@@ -35,9 +36,9 @@ import jenkins.util.SystemProperties;
  */
 public class FIPS140 {
 
-    private final static Logger LOGGER = Logger.getLogger(FIPS140.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(FIPS140.class.getName());
 
-    private /* almost final */ static boolean FIPS_MODE = SystemProperties.getBoolean(FIPS140.class.getName() + ".COMPLIANCE");
+    private static /* almost final */ boolean FIPS_COMPLIANCE_MODE = SystemProperties.getBoolean(FIPS140.class.getName() + ".COMPLIANCE");
 
     static {
         if (useCompliantAlgorithms()) {
@@ -53,7 +54,7 @@ public class FIPS140 {
      * @return {@code true} iff the system should prefer compliance with FIPS-140-2 over compatibility with existing data or alternative non approved algorithms.
      */
     public static boolean useCompliantAlgorithms() {
-        return FIPS_MODE;
+        return FIPS_COMPLIANCE_MODE;
     }
 
 }
