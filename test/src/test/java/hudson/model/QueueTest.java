@@ -180,6 +180,9 @@ public class QueueTest {
 
         // did it bind back to the same object?
         assertSame(q.getItems()[0].task, testProject);
+
+        // Clear the queue
+        assertTrue(q.cancel(testProject));
     }
 
     /**
@@ -198,6 +201,9 @@ public class QueueTest {
         // The current counter should be the id from the item brought back
         // from the persisted queue.xml.
         assertEquals(3, Queue.WaitingItem.getCurrentCounterValue());
+
+        // Clear the queue
+        assertTrue(r.jenkins.getQueue().cancel(r.jenkins.getItemByFullName("test", FreeStyleProject.class)));
     }
 
     /**
@@ -434,7 +440,7 @@ public class QueueTest {
 
     @Issue("JENKINS-10944")
     @Test public void flyweightTasksBlockedByShutdown() throws Exception {
-        r.jenkins.doQuietDown(true, 0, null);
+        r.jenkins.doQuietDown(true, 0, null, false);
         AtomicInteger cnt = new AtomicInteger();
         TestFlyweightTask task = new TestFlyweightTask(cnt, null);
         assertTrue(Queue.isBlockedByShutdown(task));
@@ -506,6 +512,9 @@ public class QueueTest {
         assertNotNull(queueItem);
         String tagName = queueItem.getDocumentElement().getTagName();
         assertTrue(tagName.equals("blockedItem") || tagName.equals("buildableItem"));
+
+        // Clear the queue
+        assertTrue(r.jenkins.getQueue().cancel(p));
     }
 
     @Issue("JENKINS-28926")
@@ -963,10 +972,9 @@ public class QueueTest {
     }
 
     @Test public void waitForStartAndCancelBeforeStart() throws Exception {
-        final OneShotEvent ev = new OneShotEvent();
         FreeStyleProject p = r.createFreeStyleProject();
 
-        QueueTaskFuture<FreeStyleBuild> f = p.scheduleBuild2(10);
+        QueueTaskFuture<FreeStyleBuild> f = p.scheduleBuild2(30);
         final Queue.Item item = Queue.getInstance().getItem(p);
         assertNotNull(item);
 
@@ -1079,6 +1087,9 @@ public class QueueTest {
         r.createWebClient().withBasicApiToken(bob).goToXml(url); // OK, 200
         r.createWebClient().withBasicApiToken(james).assertFails(url, HttpURLConnection.HTTP_FORBIDDEN); // only DISCOVER → AccessDeniedException
         r.createWebClient().withBasicApiToken(alice).assertFails(url, HttpURLConnection.HTTP_NOT_FOUND); // not even DISCOVER
+
+        // Clear the queue
+        assertTrue(r.jenkins.getQueue().cancel(project));
     }
 
     //we force the project not to be executed so that it stays in the queue
@@ -1122,6 +1133,19 @@ public class QueueTest {
         Queue.Item[] items = q.getItems();
         assertEquals(Arrays.asList(items).toString(), 11, items.length);
         assertEquals("Loading the queue should not generate saves", 0, QueueSaveSniffer.count);
+
+        // Clear the queue
+        assertTrue(r.jenkins.getQueue().cancel(r.jenkins.getItemByFullName("a", FreeStyleProject.class)));
+        assertTrue(r.jenkins.getQueue().cancel(r.jenkins.getItemByFullName("b", FreeStyleProject.class)));
+        assertTrue(r.jenkins.getQueue().cancel(r.jenkins.getItemByFullName("c", FreeStyleProject.class)));
+        assertTrue(r.jenkins.getQueue().cancel(r.jenkins.getItemByFullName("d", FreeStyleProject.class)));
+        assertTrue(r.jenkins.getQueue().cancel(r.jenkins.getItemByFullName("e", FreeStyleProject.class)));
+        assertTrue(r.jenkins.getQueue().cancel(r.jenkins.getItemByFullName("f", FreeStyleProject.class)));
+        assertTrue(r.jenkins.getQueue().cancel(r.jenkins.getItemByFullName("g", FreeStyleProject.class)));
+        assertTrue(r.jenkins.getQueue().cancel(r.jenkins.getItemByFullName("h", FreeStyleProject.class)));
+        assertTrue(r.jenkins.getQueue().cancel(r.jenkins.getItemByFullName("i", FreeStyleProject.class)));
+        assertTrue(r.jenkins.getQueue().cancel(r.jenkins.getItemByFullName("j", FreeStyleProject.class)));
+        assertTrue(r.jenkins.getQueue().cancel(r.jenkins.getItemByFullName("k", FreeStyleProject.class)));
     }
 
     @TestExtension("load_queue_xml")
@@ -1261,6 +1285,9 @@ public class QueueTest {
 
         String tooltip = buildAndExtractTooltipAttribute();
         assertThat(tooltip, containsString(expectedLabel.substring(1, expectedLabel.length() - 1)));
+
+        // Clear the queue
+        assertTrue(r.jenkins.getQueue().cancel(p));
     }
 
     @Test
@@ -1274,6 +1301,9 @@ public class QueueTest {
         String tooltip = buildAndExtractTooltipAttribute();
         assertThat(tooltip, not(containsString("<img")));
         assertThat(tooltip, containsString("&lt;"));
+
+        // Clear the queue
+        assertTrue(r.jenkins.getQueue().cancel(p));
     }
 
     private String buildAndExtractTooltipAttribute() throws Exception {
