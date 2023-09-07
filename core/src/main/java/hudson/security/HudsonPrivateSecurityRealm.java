@@ -24,7 +24,6 @@
 
 package hudson.security;
 
-import static java.util.logging.Level.SEVERE;
 import static javax.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
 
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
