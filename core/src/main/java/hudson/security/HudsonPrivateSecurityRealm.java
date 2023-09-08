@@ -894,7 +894,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     /**
      * {@link PasswordHashEncoder} that uses jBCrypt.
      */
-    private static class JBCryptEncoder implements PasswordHashEncoder {
+    static class JBCryptEncoder implements PasswordHashEncoder {
         // in jBCrypt the maximum is 30, which takes ~22h with laptop late-2017
         // and for 18, it's "only" 20s
         @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
@@ -938,7 +938,9 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         private static final String STRING_SEPARATION = ":";
         private static final int KEY_LENGTH_BITS = 512;
         private static final int SALT_LENGTH_BYTES = 16;
-        private static final int ITTERATIONS = 1000;
+        // https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html#pbkdf2
+        // ~230ms on an Intel i7-10875H CPU (JBCryptEncoder is ~57ms)
+        private static final int ITTERATIONS = 210_000;
         private static final String PBKDF2_ALGORITHM = "PBKDF2WithHmacSHA512";
 
         private SecureRandom random; // defer construction until we need to use it to not delay startup in the case of lack of entropy.
@@ -946,7 +948,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         // $PBDKF2 is already checked before we get here.
         // $algorithm(HMACSHA512) : rounds : salt_in_hex $ mac_in_hex
         private static final Pattern PBKDF2_PATTERN =
-                Pattern.compile("^\\$HMACSHA512\\:1000\\:[a-f0-9]{" + (SALT_LENGTH_BYTES * 2) + "}\\$[a-f0-9]{" + ((KEY_LENGTH_BITS / 8) * 2) + "}$");
+                Pattern.compile("^\\$HMACSHA512\\:" + ITTERATIONS + "\\:[a-f0-9]{" + (SALT_LENGTH_BYTES * 2) + "}\\$[a-f0-9]{" + ((KEY_LENGTH_BITS / 8) * 2) + "}$");
 
         @Override
         public String encode(CharSequence rawPassword) {
@@ -970,13 +972,11 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
             byte[] salt = generateSalt();
             PBEKeySpec spec = new PBEKeySpec(password.toString().toCharArray(), salt, ITTERATIONS, KEY_LENGTH_BITS);
             byte[] hash = generateSecretKey(spec);
-            return "$HMACSHA512:" + 1000 + STRING_SEPARATION + Util.toHexString(salt) + "$" + Util.toHexString(hash);
+            return "$HMACSHA512:" + ITTERATIONS + STRING_SEPARATION + Util.toHexString(salt) + "$" + Util.toHexString(hash);
         }
 
         private static byte[] generateSecretKey(PBEKeySpec spec) throws NoSuchAlgorithmException, InvalidKeySpecException {
-            SecretKeyFactory secretKeyFactory = null;
-            byte[] hash;
-            secretKeyFactory = SecretKeyFactory.getInstance(PBKDF2_ALGORITHM);
+            SecretKeyFactory secretKeyFactory = SecretKeyFactory.getInstance(PBKDF2_ALGORITHM);
             return secretKeyFactory.generateSecret(spec).getEncoded();
         }
 
@@ -997,14 +997,14 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
             return matcher.matches();
         }
 
-        private static boolean validatePassword(String originalPassword, String storedPassword) throws NoSuchAlgorithmException, InvalidKeySpecException {
+        private static boolean validatePassword(String password, String storedPassword) throws NoSuchAlgorithmException, InvalidKeySpecException {
             String[] parts = storedPassword.split("[:$]");
             int iterations = Integer.parseInt(parts[2]);
 
             byte[] salt = Util.fromHexString(parts[3]);
             byte[] hash = Util.fromHexString(parts[4]);
 
-            PBEKeySpec spec = new PBEKeySpec(originalPassword.toCharArray(),
+            PBEKeySpec spec = new PBEKeySpec(password.toCharArray(),
                     salt, iterations, hash.length * 8 /* bits in a byte */);
 
             byte[] generatedHashValue = generateSecretKey(spec);

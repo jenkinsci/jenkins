@@ -62,7 +62,7 @@ public class HudsonPrivateSecurityRealmFIPSTest {
 
         // we should be using PBKDF2 hasher
         String hashedPassword = u1.getProperty(Details.class).getPassword();
-        assertThat(hashedPassword, startsWith("$PBKDF2$HMACSHA512:1000:"));
+        assertThat(hashedPassword, startsWith("$PBKDF2$HMACSHA512:210000:"));
 
         WebClient wc = j.createWebClient();
         wc.login("user", "password");
