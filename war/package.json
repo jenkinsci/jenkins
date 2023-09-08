@@ -23,9 +23,9 @@
     "lint": "yarn lint:js && yarn lint:css"
   },
   "devDependencies": {
-    "@babel/cli": "7.22.10",
-    "@babel/core": "7.22.11",
-    "@babel/preset-env": "7.22.14",
+    "@babel/cli": "7.22.15",
+    "@babel/core": "7.22.15",
+    "@babel/preset-env": "7.22.15",
     "babel-loader": "9.1.3",
     "clean-webpack-plugin": "4.0.0",
     "css-loader": "6.8.1",
@@ -36,7 +36,7 @@
     "mini-css-extract-plugin": "2.7.6",
     "postcss": "8.4.29",
     "postcss-loader": "7.3.3",
-    "postcss-preset-env": "9.1.2",
+    "postcss-preset-env": "9.1.3",
     "postcss-scss": "4.0.7",
     "prettier": "3.0.3",
     "sass": "1.66.1",
