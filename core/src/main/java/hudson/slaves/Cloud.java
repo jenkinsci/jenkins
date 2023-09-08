@@ -391,7 +391,8 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
         }
         Cloud result = cloud.reconfigure(req, req.getSubmittedForm());
         if (!(result.name).equals(this.name)) {
-            throw new Descriptor.FormException(jenkins.agents.Messages.Cloud_DoNotRename(), "name");
+            // Do not rename the cloud in the config page. Use doConfirmRename()
+            result.name = this.name;
         }
         j.clouds.replace(this, result);
         j.save();
