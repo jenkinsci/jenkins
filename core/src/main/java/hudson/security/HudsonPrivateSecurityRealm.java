@@ -955,7 +955,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
             try {
                 return generatePasswordHashWithPBKDF2(rawPassword);
             } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
-                throw new RuntimeException(e);
+                throw new RuntimeException("Unable to generate password with PBKDF2WithHmacSHA512", e);
             }
         }
 
@@ -964,7 +964,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
             try {
                 return validatePassword(rawPassword.toString(), encodedPassword);
             } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
-                throw new RuntimeException("Unable to check password for PBKDF2WithHmacSHA512", e);
+                throw new RuntimeException("Unable to check password with PBKDF2WithHmacSHA512", e);
             }
         }
 
@@ -1017,14 +1017,13 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     /* package */ static final PasswordHashEncoder PASSWORD_HASH_ENCODER =  FIPS140.useCompliantAlgorithms() ? new PBKDF2PasswordEncoder() : new JBCryptEncoder();
 
 
-    public static final String PBKDF2 = "$PBKDF2";
-    public static final String JBCRYPT = "#jbcrypt:";
+    private static final String PBKDF2 = "$PBKDF2";
+    private static final String JBCRYPT = "#jbcrypt:";
 
     /**
      * Magic header used to detect if a password is hashed.
      */
-
-    public static String getPasswordHeader() {
+    private static String getPasswordHeader() {
         return FIPS140.useCompliantAlgorithms() ? PBKDF2 : JBCRYPT;
     }
 
