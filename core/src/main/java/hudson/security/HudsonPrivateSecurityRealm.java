@@ -982,7 +982,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
 
         @SuppressFBWarnings(value = "DMI_RANDOM_USED_ONLY_ONCE", justification = "SpotBugs you are drunk! https://github.com/spotbugs/spotbugs/issues/2128")
         private synchronized byte[] generateSalt() {
-            // synchronized for lazy initialization but also not all SecureRandom s are thread safe.
+            // synchronized for lazy initialization but also not all SecureRandoms are thread safe.
             if (random == null) {
                 random = new SecureRandom();
             }
