@@ -76,7 +76,7 @@ public class HudsonPrivateSecurityRealmFIPSTest {
         j.jenkins.setSecurityRealm(securityRealm);
         // "password" after it has gone through the KDF
         securityRealm.createAccountWithHashedPassword("user_hashed",
-                "$PBKDF2$HMACSHA512:1000:89901f42cb107a8dcb2e1ab5e6891aaa$2983a219a5f35115b35d2eb8d752498414628ea8428d97f707bdf5aaa9e485d16e4a3b9e36e55115735924f4be4cb48f560b3da333e11fd250fd15362bef315d");
+                "$PBKDF2$HMACSHA512:210000:ffbb207b847010af98cdd2b09c79392c$f67c3b985daf60db83a9088bc2439f7b77016d26c1439a9877c4f863c377272283ce346edda4578a5607ea620a4beb662d853b800f373297e6f596af797743a6");
         WebClient wc = j.createWebClient();
 
         // login should succeed
