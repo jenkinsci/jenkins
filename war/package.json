@@ -23,23 +23,23 @@
     "lint": "yarn lint:js && yarn lint:css"
   },
   "devDependencies": {
-    "@babel/cli": "7.22.10",
-    "@babel/core": "7.22.10",
-    "@babel/preset-env": "7.22.10",
+    "@babel/cli": "7.22.15",
+    "@babel/core": "7.22.15",
+    "@babel/preset-env": "7.22.15",
     "babel-loader": "9.1.3",
     "clean-webpack-plugin": "4.0.0",
     "css-loader": "6.8.1",
     "css-minimizer-webpack-plugin": "5.0.1",
-    "eslint": "8.46.0",
+    "eslint": "8.48.0",
     "eslint-config-prettier": "9.0.0",
     "handlebars-loader": "1.7.3",
     "mini-css-extract-plugin": "2.7.6",
-    "postcss": "8.4.27",
+    "postcss": "8.4.29",
     "postcss-loader": "7.3.3",
-    "postcss-preset-env": "9.1.1",
-    "postcss-scss": "4.0.6",
-    "prettier": "3.0.1",
-    "sass": "1.65.1",
+    "postcss-preset-env": "9.1.3",
+    "postcss-scss": "4.0.7",
+    "prettier": "3.0.3",
+    "sass": "1.66.1",
     "sass-loader": "13.3.2",
     "style-loader": "3.3.3",
     "stylelint": "15.10.2",
@@ -47,12 +47,12 @@
     "stylelint-config-standard": "33.0.0",
     "webpack": "5.88.2",
     "webpack-cli": "5.1.4",
-    "webpack-remove-empty-scripts": "1.0.3"
+    "webpack-remove-empty-scripts": "1.0.4"
   },
   "dependencies": {
     "handlebars": "4.7.8",
     "hotkeys-js": "3.12.0",
-    "jquery": "3.7.0",
+    "jquery": "3.7.1",
     "lodash": "4.17.21",
     "sortablejs": "1.15.0",
     "tippy.js": "6.3.7",
@@ -62,5 +62,5 @@
     "defaults",
     "not IE 11"
   ],
-  "packageManager": "yarn@3.6.1"
+  "packageManager": "yarn@3.6.3"
 }

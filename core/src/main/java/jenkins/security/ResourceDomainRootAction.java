@@ -74,6 +74,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 @Restricted(NoExternalUse.class)
 public class ResourceDomainRootAction implements UnprotectedRootAction {
 
+    private static final String RESOURCE_DOMAIN_ROOT_ACTION_ERROR = "jenkins.security.ResourceDomainRootAction.error";
+
     private static final Logger LOGGER = Logger.getLogger(ResourceDomainRootAction.class.getName());
 
     public static final String URL = "static-files";
@@ -104,12 +106,14 @@ public class ResourceDomainRootAction implements UnprotectedRootAction {
         if (ResourceDomainConfiguration.isResourceRequest(req)) {
             rsp.sendError(404, ResourceDomainFilter.ERROR_RESPONSE);
         } else {
+            req.setAttribute(RESOURCE_DOMAIN_ROOT_ACTION_ERROR, true);
             rsp.sendError(404, "Cannot handle requests to this URL unless on Jenkins resource URL.");
         }
     }
 
     public Object getDynamic(String id, StaplerRequest req, StaplerResponse rsp) throws Exception {
         if (!ResourceDomainConfiguration.isResourceRequest(req)) {
+            req.setAttribute(RESOURCE_DOMAIN_ROOT_ACTION_ERROR, true);
             rsp.sendError(404, "Cannot handle requests to this URL unless on Jenkins resource URL.");
             return null;
         }
