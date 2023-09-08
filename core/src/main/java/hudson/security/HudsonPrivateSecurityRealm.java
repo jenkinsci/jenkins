@@ -530,10 +530,11 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     }
 
     /**
-     * Creates a new user account by registering a JBCrypt Hashed password with the user.
+     * Creates a new user account by registering a Hashed password with the user.
      *
      * @param userName The user's name
-     * @param hashedPassword A hashed password, must begin with {@code #jbcrypt:}
+     * @param hashedPassword A hashed password, must begin with {@code getPasswordHeader()}
+     * @see #getPasswordHeader()
      */
     public User createAccountWithHashedPassword(String userName, String hashedPassword) throws IOException {
         if (!PASSWORD_ENCODER.isPasswordHashed(hashedPassword)) {
@@ -893,7 +894,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
     /**
      * {@link PasswordHashEncoder} that uses jBCrypt.
      */
-    static class JBCryptEncoder implements PasswordHashEncoder {
+    private static class JBCryptEncoder implements PasswordHashEncoder {
         // in jBCrypt the maximum is 30, which takes ~22h with laptop late-2017
         // and for 18, it's "only" 20s
         @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
@@ -942,9 +943,10 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
 
         private SecureRandom random; // defer construction until we need to use it to not delay startup in the case of lack of entropy.
 
-        // Identifier($PBKDF2) $ algorithm(HMACSHA512) : rounds : salt_in_hex $ mac_in_hex
+        // $PBDKF2 is already checked before we get here.
+        // $algorithm(HMACSHA512) : rounds : salt_in_hex $ mac_in_hex
         private static final Pattern PBKDF2_PATTERN =
-                Pattern.compile("^\\$PBKDF2\\$HMACSHA512\\:1000\\:[A-F0-9]{" + (SALT_LENGTH_BYTES * 2) + "}\\$[A-F0-9]{" + ((KEY_LENGTH_BITS / 8) * 2) + "}$");
+                Pattern.compile("^\\$HMACSHA512\\:1000\\:[a-f0-9]{" + (SALT_LENGTH_BYTES * 2) + "}\\$[a-f0-9]{" + ((KEY_LENGTH_BITS / 8) * 2) + "}$");
 
         @Override
         public String encode(CharSequence rawPassword) {
@@ -968,7 +970,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
             byte[] salt = generateSalt();
             PBEKeySpec spec = new PBEKeySpec(password.toString().toCharArray(), salt, ITTERATIONS, KEY_LENGTH_BITS);
             byte[] hash = generateSecretKey(spec);
-            return PBKDF2 + "$HMACSHA512:" + 1000 + STRING_SEPARATION + Util.toHexString(salt) + "$" + Util.toHexString(hash);
+            return "$HMACSHA512:" + 1000 + STRING_SEPARATION + Util.toHexString(salt) + "$" + Util.toHexString(hash);
         }
 
         private static byte[] generateSecretKey(PBEKeySpec spec) throws NoSuchAlgorithmException, InvalidKeySpecException {
@@ -997,10 +999,10 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
 
         private static boolean validatePassword(String originalPassword, String storedPassword) throws NoSuchAlgorithmException, InvalidKeySpecException {
             String[] parts = storedPassword.split("[:$]");
-            int iterations = Integer.parseInt(parts[3]);
+            int iterations = Integer.parseInt(parts[2]);
 
-            byte[] salt = Util.fromHexString(parts[4]);
-            byte[] hash = Util.fromHexString(parts[5]);
+            byte[] salt = Util.fromHexString(parts[3]);
+            byte[] hash = Util.fromHexString(parts[4]);
 
             PBEKeySpec spec = new PBEKeySpec(originalPassword.toCharArray(),
                     salt, iterations, hash.length * 8 /* bits in a byte */);
