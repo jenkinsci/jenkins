@@ -111,13 +111,13 @@ public class CloudTest {
     @Test
     @Issue("JENKINS-71737")
     public void changeCloudNameinConfig() throws Exception {
-        ACloud aCloud = new ACloud("a", "0");
-        j.jenkins.clouds.add(aCloud);
-        HtmlForm form = j.createWebClient().goTo(aCloud.getUrl() + "configure").getFormByName("config");
+        NameInConfigCloud nameCloud = new NameInConfigCloud("a", "0");
+        j.jenkins.clouds.add(nameCloud);
+        HtmlForm form = j.createWebClient().goTo(nameCloud.getUrl() + "configure").getFormByName("config");
         HtmlTextInput input = form.getInputByName("_.name");
         input.setText("b");
         j.submit(form);
-        ACloud actual = j.jenkins.clouds.get(ACloud.class);
+        NameInConfigCloud actual = j.jenkins.clouds.get(NameInConfigCloud.class);
         assertEquals("a", actual.getDisplayName());
     }
 
@@ -167,7 +167,27 @@ public class CloudTest {
         }
     }
 
-    public static final class CloudNameImmutable extends ACloud {
+    public static final class NameInConfigCloud extends AbstractCloudImpl {
+
+        @DataBoundConstructor
+        public NameInConfigCloud(String name, String instanceCapStr) {
+            super(name, instanceCapStr);
+        }
+
+        @Override public Collection<NodeProvisioner.PlannedNode> provision(Label label, int excessWorkload) {
+            return Collections.emptyList();
+        }
+
+        @Override public boolean canProvision(Label label) {
+            return false;
+        }
+
+        @TestExtension
+        public static class DescriptorImpl extends Descriptor<Cloud> {
+        }
+    }
+
+    public static final class CloudNameImmutable extends AbstractCloudImpl {
 
         @DataBoundConstructor
         public CloudNameImmutable(String name, String instanceCapStr) {
@@ -176,6 +196,14 @@ public class CloudTest {
 
         @Override
         public boolean isNameEditable() {
+            return false;
+        }
+
+        @Override public Collection<NodeProvisioner.PlannedNode> provision(Label label, int excessWorkload) {
+            return Collections.emptyList();
+        }
+
+        @Override public boolean canProvision(Label label) {
             return false;
         }
 
