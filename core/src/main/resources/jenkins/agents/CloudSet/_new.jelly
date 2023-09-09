@@ -33,7 +33,7 @@ THE SOFTWARE.
     <l:main-panel>
       <f:form method="post" action="doCreate" name="config" class="jenkins-form">
         <h1>${%New cloud}</h1>
-        <f:entry title="${%Name}" field="cloudName">
+        <f:entry title="${%Name}" field="name">
           <f:readOnlyTextbox/>
         </f:entry>
         <!-- main body of the configuration -->
