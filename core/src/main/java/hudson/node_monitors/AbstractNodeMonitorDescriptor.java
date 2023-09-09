@@ -213,8 +213,19 @@ public abstract class AbstractNodeMonitorDescriptor<T> extends Descriptor<NodeMo
      *      or the computer was already online.)
      */
     protected boolean markOnline(Computer c) {
-        if (isIgnored() || c.isOnline()) return false; // noop
+        if (isIgnored() || c.isOnline())
+            return false; // noop
+
         c.setTemporarilyOffline(false, null);
+
+        // execute groovy callback monitor.onOnline
+        if (NodeMonitor.onOnlineGroovyCommand.getExecutorNodeName() != null && !NodeMonitor.onOnlineGroovyCommand.getExecutorNodeName().isEmpty()) {
+            String preScript = "String nodeName = \'" + c.getName() + "\'; " +
+                               "String monitorName = \'" + getDisplayName().replace("\\", "\\\\").replace("\'", "\\\'") + "\'; " +
+                               "String monitorClass = \'" + this.getClass().getName().replace("\\", "\\\\").replace("\'", "\\\'") + "\';";
+            NodeMonitor.onOnlineGroovyCommand.execute(preScript, "");
+        }
+
         return true;
     }
 
@@ -226,9 +237,24 @@ public abstract class AbstractNodeMonitorDescriptor<T> extends Descriptor<NodeMo
      *      or the computer already marked offline.)
      */
     protected boolean markOffline(Computer c, OfflineCause oc) {
-        if (isIgnored() || c.isTemporarilyOffline()) return false; // noop
+        if (isIgnored() || c.isTemporarilyOffline())
+            return false; // noop
 
         c.setTemporarilyOffline(true, oc);
+
+        // execute groovy callback monitor.onOffline
+        if (NodeMonitor.onOfflineGroovyCommand.getExecutorNodeName() != null && !NodeMonitor.onOfflineGroovyCommand.getExecutorNodeName().isEmpty()) {
+            String preScript = "String nodeName = \'" + c.getName() + "\'; " +
+                               "String monitorName = \'" + getDisplayName() + "\'; " +
+                               "String monitorClass = \'" + this.getClass().getName().replace("\\", "\\\\").replace("\'", "\\\'") + "\'; " +
+                               "String offlineCauseText = \'" + oc.toString().replace("\\", "\\\\").replace("\'", "\\\'") + "\'; ";
+
+            NodeMonitor.onOfflineGroovyCommand.execute(preScript, "");
+        }
+
+        if (c.getOfflineCause() == null) {
+            return false; // the "groovy" has changed the state back to online.
+        }
 
         // notify the admin
         MonitorMarkedNodeOffline no = AdministrativeMonitor.all().get(MonitorMarkedNodeOffline.class);
@@ -243,6 +269,8 @@ public abstract class AbstractNodeMonitorDescriptor<T> extends Descriptor<NodeMo
      */
     @Deprecated
     protected boolean markOffline(Computer c) {
+        LOGGER.log(Level.WARNING, "deprecated function call {0}", new Throwable().getStackTrace());
+        /// @todo this is wrong, because offline-cause == null means mark online
         return markOffline(c, null);
     }
 

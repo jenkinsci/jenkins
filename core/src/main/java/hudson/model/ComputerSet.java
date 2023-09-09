@@ -83,6 +83,10 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
     private static final Saveable MONITORS_OWNER = new Saveable() {
         @Override
         public void save() throws IOException {
+            // save groovy callbacks
+            NodeMonitor.onOnlineGroovyCommand.save();
+            NodeMonitor.onOfflineGroovyCommand.save();
+            // save node_monitors settings
             getConfigFile().write(monitors);
             SaveableListener.fireOnChange(this, getConfigFile());
         }
@@ -352,6 +356,15 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
         BulkChange bc = new BulkChange(MONITORS_OWNER);
         try {
             Jenkins.get().checkPermission(Jenkins.MANAGE);
+
+            // groovy callbacks
+            NodeMonitor.onOnlineGroovyCommand.setGroovyScript(req.getParameter(NodeMonitor.onOnlineGroovyCommand.getName() + ".script"));
+            NodeMonitor.onOnlineGroovyCommand.setExecutorNodeName(req.getParameter(NodeMonitor.onOnlineGroovyCommand.getName() + ".executorNodeName"));
+
+            NodeMonitor.onOfflineGroovyCommand.setGroovyScript(req.getParameter(NodeMonitor.onOfflineGroovyCommand.getName() + ".script"));
+            NodeMonitor.onOfflineGroovyCommand.setExecutorNodeName(req.getParameter(NodeMonitor.onOfflineGroovyCommand.getName() + ".executorNodeName"));
+
+            // node_monitors
             monitors.rebuild(req, req.getSubmittedForm(), getNodeMonitorDescriptors());
 
             // add in the rest of instances are ignored instances
@@ -441,6 +454,12 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
 
     static {
         try {
+
+            // load groovy callbacks
+            NodeMonitor.onOnlineGroovyCommand = ComputerGroovyCommands.load(NodeMonitor.onOnlineGroovyCommand.getName());
+            NodeMonitor.onOfflineGroovyCommand = ComputerGroovyCommands.load(NodeMonitor.onOfflineGroovyCommand.getName());
+
+            // load node_monitors
             DescribableList<NodeMonitor, Descriptor<NodeMonitor>> r
                     = new DescribableList<>(Saveable.NOOP);
 
@@ -455,6 +474,7 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
                         nm.getDescriptor();
                         sanitized.add(nm);
                     } catch (Throwable e) {
+                        LOGGER.log(Level.WARNING, "NodeMonitors descriptor didn't load? see JENKINS-15869", e);
                         // the descriptor didn't load? see JENKINS-15869
                     }
                 }
