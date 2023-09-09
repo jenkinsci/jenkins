@@ -107,7 +107,7 @@ THE SOFTWARE.
                       </j:invokeStatic>
                       <j:choose>
                         <j:when test="${h.hasPermission(exeparent,exeparent.READ)}">
-                          <a href="${rootURL}/${exeparent.url}"><l:breakable value="${exeparent.fullDisplayName}"/></a>                         
+                          <a href="${rootURL}/${exeparent.url}"><l:breakable value="${exeparent.fullDisplayName}"/></a>
                         </j:when>
                         <j:otherwise>
                           <span>${%Unknown Task}</span>
