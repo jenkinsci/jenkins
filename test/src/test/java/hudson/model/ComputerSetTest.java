@@ -119,7 +119,7 @@ public class ComputerSetTest {
         HtmlPage page = wc.goTo("computer/");
         assertEquals(HttpURLConnection.HTTP_OK, page.getWebResponse().getStatusCode());
         String responseContent = page.getWebResponse().getContentAsString();
-        // the "Node Monitoring" link in the sidepanel is not visible
+        // the "Node Monitoring" link in the app bar is not visible
         assertThat(responseContent, not(containsString("Node Monitoring")));
         page = wc.goTo("computer/configure");
         assertEquals(HttpURLConnection.HTTP_FORBIDDEN, page.getWebResponse().getStatusCode());
@@ -129,13 +129,13 @@ public class ComputerSetTest {
         page = wc.goTo("computer/");
         assertEquals(HttpURLConnection.HTTP_OK, page.getWebResponse().getStatusCode());
         responseContent = page.getWebResponse().getContentAsString();
-        // the "Node Monitoring" link in the sidepanel is visible
+        // the "Node Monitoring" link in the app bar is visible
         assertThat(responseContent, containsString("Node Monitoring"));
         page = wc.goTo("computer/configure");
         assertEquals(HttpURLConnection.HTTP_OK, page.getWebResponse().getStatusCode());
-        // and the OK (save) button is visible
+        // and the save button is visible
         responseContent = page.getWebResponse().getContentAsString();
-        assertThat(responseContent, containsString("OK"));
+        assertThat(responseContent, containsString("Save"));
     }
 
     @Test

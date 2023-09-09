@@ -27,14 +27,17 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <l:layout permissions="${app.MANAGE_AND_SYSTEM_READ}" title="${%Node Monitoring Configuration}">
+  <l:layout permissions="${app.MANAGE_AND_SYSTEM_READ}" title="${%Node Monitoring Configuration}" type="one-column">
     <j:set var="readOnlyMode" value="${!app.hasPermission(app.MANAGE)}" />
-    <st:include page="sidepanel.jelly" />
     <l:breadcrumb title="${%Node Monitoring}" />
     <l:main-panel>
+      <l:app-bar title="${%Node Monitoring}" />
+
       <!-- to make the form field binding work -->
       <j:set var="instance" value="${it}" />
       <j:set var="descriptor" value="${it.descriptor}" />
+
+      <div class="jenkins-description">${%description}</div>
 
       <f:form method="post" action="configSubmit" name="config">
         <f:descriptorList title="${%Preventive Node Monitoring}"
@@ -43,7 +46,7 @@ THE SOFTWARE.
 
         <l:hasAdministerOrManage>
           <f:bottomButtonBar>
-            <f:submit value="${%OK}" />
+            <f:submit value="${%Save}" />
             <f:apply />
           </f:bottomButtonBar>
         </l:hasAdministerOrManage>
