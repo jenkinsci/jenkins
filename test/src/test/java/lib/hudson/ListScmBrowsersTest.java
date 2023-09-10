@@ -1,5 +1,6 @@
 package lib.hudson;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import hudson.matrix.MatrixProject;
@@ -38,7 +39,7 @@ public class ListScmBrowsersTest {
     private void check(Item p) throws IOException, SAXException {
         HtmlPage page = j.createWebClient().getPage(p, "configure");
         List<HtmlSelect> selects = DomNodeUtil.selectNodes(page, "//select");
-        assertTrue(selects.size() > 0);
+        assertFalse(selects.isEmpty());
         for (HtmlSelect select : selects) {
             Set<String> title = new HashSet<>();
             for (HtmlOption o : select.getOptions()) {

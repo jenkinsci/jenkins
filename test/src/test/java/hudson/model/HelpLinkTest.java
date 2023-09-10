@@ -1,6 +1,6 @@
 package hudson.model;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 
 import hudson.matrix.MatrixProject;
 import hudson.tasks.BuildStepDescriptor;
@@ -94,7 +94,7 @@ public class HelpLinkTest {
 
     private void clickAllHelpLinks(HtmlPage p) throws Exception {
         List<?> helpLinks = DomNodeUtil.selectNodes(p, "//a[@class='jenkins-help-button']");
-        assertTrue(helpLinks.size() > 0);
+        assertFalse(helpLinks.isEmpty());
         System.out.println("Clicking " + helpLinks.size() + " help links");
 
         for (HtmlAnchor helpLink : (List<HtmlAnchor>) helpLinks) {

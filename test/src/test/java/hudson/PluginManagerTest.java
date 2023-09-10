@@ -487,7 +487,7 @@ public class PluginManagerTest {
         // Check that the basic API endpoint invocation works.
         assertEquals("ok", response.getString("status"));
         JSONArray data = response.getJSONArray("data");
-        assertTrue(data.size() > 0);
+        assertFalse(data.isEmpty());
 
         // Check that there was some data in the response and that the first entry
         // at least had some of the expected fields.
@@ -563,7 +563,7 @@ public class PluginManagerTest {
         f.getInputByName("name").setValue(plugin.getAbsolutePath());
         r.submit(f);
 
-        assertTrue(r.jenkins.getUpdateCenter().getJobs().size() > 0);
+        assertFalse(r.jenkins.getUpdateCenter().getJobs().isEmpty());
 
         // wait for all the download jobs to complete
         boolean done = true;
