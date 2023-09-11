@@ -33,9 +33,9 @@ THE SOFTWARE.
     <l:main-panel>
       <f:form method="post" action="doCreate" name="config" class="jenkins-form">
         <h1>${%New cloud}</h1>
-        <f:entry title="${%Name}" field="name">
-          <f:readOnlyTextbox/>
-        </f:entry>
+        <f:invisibleEntry>
+          <f:textbox field="name"/>
+        </f:invisibleEntry>
         <!-- main body of the configuration -->
         <st:include it="${requestScope.instance}" class="${requestScope.descriptor.clazz}" page="config.jelly" optional="true" />
         
