@@ -943,7 +943,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         private static final int ITTERATIONS = 210_000;
         private static final String PBKDF2_ALGORITHM = "PBKDF2WithHmacSHA512";
 
-        private SecureRandom random; // defer construction until we need to use it to not delay startup in the case of lack of entropy.
+        private volatile SecureRandom random; // defer construction until we need to use it to not delay startup in the case of lack of entropy.
 
         // $PBDKF2 is already checked before we get here.
         // $algorithm(HMACSHA512) : rounds : salt_in_hex $ mac_in_hex
@@ -980,14 +980,21 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
             return secretKeyFactory.generateSecret(spec).getEncoded();
         }
 
-        @SuppressFBWarnings(value = "DMI_RANDOM_USED_ONLY_ONCE", justification = "SpotBugs you are drunk! https://github.com/spotbugs/spotbugs/issues/2128")
-        private synchronized byte[] generateSalt() {
-            // synchronized for lazy initialization but also not all SecureRandoms are thread safe.
+        private SecureRandom secureRandom() {
+            // lazy initialisation so that we do not block startup due to entropy
             if (random == null) {
-                random = new SecureRandom();
+                synchronized (this) {
+                    if (random == null) {
+                        random = new SecureRandom();
+                    }
+                }
             }
+            return random;
+        }
+
+        private byte[] generateSalt() {
             byte[] salt = new byte[SALT_LENGTH_BYTES];
-            random.nextBytes(salt);
+            secureRandom().nextBytes(salt);
             return salt;
         }
 
