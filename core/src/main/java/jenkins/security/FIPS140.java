@@ -38,7 +38,7 @@ public class FIPS140 {
 
     private static final Logger LOGGER = Logger.getLogger(FIPS140.class.getName());
 
-    private static /* almost final */ boolean FIPS_COMPLIANCE_MODE = SystemProperties.getBoolean(FIPS140.class.getName() + ".COMPLIANCE");
+    private static final boolean FIPS_COMPLIANCE_MODE = SystemProperties.getBoolean(FIPS140.class.getName() + ".COMPLIANCE");
 
     static {
         if (useCompliantAlgorithms()) {
