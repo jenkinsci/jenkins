@@ -147,7 +147,7 @@ public class CloudTest {
         assertThat(out, containsString("doIndex called")); // doIndex
     }
 
-    public static class ACloud extends AbstractCloudImpl {
+    public static final class ACloud extends AbstractCloudImpl {
 
         @DataBoundConstructor
         public ACloud(String name, String instanceCapStr) {
