@@ -226,6 +226,9 @@ public class CloudSet extends AbstractModelObject implements Describable<CloudSe
         checkName(name);
         JSONObject formData = req.getSubmittedForm();
         formData.put("name", name);
+        // multiple cloud implementations use cloudName instead of name. It is simpler to retain this field rather than
+        // refactor all the downstream plugins and the related tests.
+        formData.put("cloudName", name);
         formData.remove("mode"); // Cloud descriptors won't have this field.
         req.setAttribute("instance", formData);
         req.setAttribute("descriptor", descriptor);
