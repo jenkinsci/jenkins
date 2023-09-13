@@ -77,9 +77,9 @@ THE SOFTWARE.
       (onclick supersedes this except in the context menu.)
       (since 1.512)
     </st:attribute>
-    <st:attribute name="badge">
+    <st:attribute name="badge" type="jenkins.management.Badge">
       If set, displays the value as a small badge on the right side of the sidepanel item.
-      @since TODO
+      (since 2.401)
     </st:attribute>
     <st:attribute name="confirmationMessage">
       Message to use for confirmation, if requested; defaults to title.
