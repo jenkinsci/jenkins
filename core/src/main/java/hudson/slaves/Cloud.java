@@ -392,8 +392,6 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
         JSONObject formData = req.getSubmittedForm();
         // add the cloud name to the submitted form data
         formData.put("name", name);
-        // multiple cloud implementations use cloudName instead of name.
-        formData.put("cloudName", name);
         Cloud result = cloud.reconfigure(req, formData);
         if (!(result.name).equals(this.name)) {
             // Do not rename the cloud in the config page. Use doConfirmRename()

@@ -33,12 +33,9 @@ THE SOFTWARE.
     <l:main-panel>
       <f:form method="post" action="doCreate" name="config" class="jenkins-form">
         <h1>${%New cloud}</h1>
-        <!-- We need to carry over name and cloudName to create the cloud instance -->
+        <!-- We need to carry over name to create the cloud instance -->
         <f:invisibleEntry>
           <f:textbox field="name"/>
-        </f:invisibleEntry>
-        <f:invisibleEntry>
-          <f:textbox field="cloudName"/>
         </f:invisibleEntry>
         <!-- main body of the configuration -->
         <st:include it="${requestScope.instance}" class="${requestScope.descriptor.clazz}" page="config.jelly" optional="true" />
