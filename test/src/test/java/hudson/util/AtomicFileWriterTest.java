@@ -53,7 +53,7 @@ public class AtomicFileWriterTest {
         Path tmpPath = ref.get().getTemporaryPath();
         assertTrue(Files.exists(tmpPath));
         assertFalse(Files.exists(destPath));
-        MemoryAssert.assertGC(ref);
+        MemoryAssert.assertGC(ref, false);
         await().atMost(30, TimeUnit.SECONDS).until(() -> !Files.exists(tmpPath));
         assertFalse(Files.exists(destPath));
         assertThat(
