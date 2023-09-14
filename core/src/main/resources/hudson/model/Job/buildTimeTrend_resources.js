@@ -168,17 +168,6 @@ window.displayBuilds = function (data) {
     // TODO port Functions#breakableString to JavaScript and use .textContent rather than .innerHTML
     span1.innerHTML = e.parentFullDisplayName;
     a1.appendChild(span1);
-
-    const isFirefox = navigator.userAgent.indexOf("Firefox") !== -1;
-    const dropdownChevron1 = document.createElement(
-      isFirefox ? "span" : "button",
-    );
-    dropdownChevron1.classList.add("jenkins-menu-dropdown-chevron");
-    dropdownChevron1.setAttribute("data-href", rootUrl + "/" + e.parentUrl);
-    dropdownChevron1.addEventListener("click", (event) => {
-      event.preventDefault();
-    });
-    a1.appendChild(dropdownChevron1);
     td2.appendChild(a1);
     var a2 = document.createElement("a");
     a2.classList.add(
@@ -189,15 +178,6 @@ window.displayBuilds = function (data) {
     );
     a2.href = rootUrl + "/" + e.url;
     a2.textContent = e.displayName;
-    const dropdownChevron2 = document.createElement(
-      isFirefox ? "span" : "button",
-    );
-    dropdownChevron2.classList.add("jenkins-menu-dropdown-chevron");
-    dropdownChevron2.setAttribute("data-href", rootUrl + "/" + e.url);
-    dropdownChevron2.addEventListener("click", (event) => {
-      event.preventDefault();
-    });
-    a2.appendChild(dropdownChevron2);
     td2.appendChild(a2);
     tr.appendChild(td2);
 
