@@ -59,10 +59,15 @@ THE SOFTWARE.
         <scope>import</scope>
       </dependency>
       <dependency>
+        <groupId>io.jenkins.plugins</groupId>
+        <artifactId>commons-lang3-api</artifactId>
+        <version>3.13.0-62.v7d18e55f51e2</version>
+      </dependency>
+      <dependency>
         <!-- RequireUpperBoundDeps between checks-api, plugin-util-api, and font-awesome-api -->
         <groupId>io.jenkins.plugins</groupId>
         <artifactId>commons-text-api</artifactId>
-        <version>1.10.0-68.v0d0b_c439292b_</version>
+        <version>1.10.0-78.v3e7b_ea_d5a_fe1</version>
       </dependency>
       <dependency>
         <!-- RequireUpperBoundDeps between bootstrap5-api and echarts-api -->
@@ -101,7 +106,7 @@ THE SOFTWARE.
         <!-- requireUpperBoundDeps via matrix-project and junit -->
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>script-security</artifactId>
-        <version>1273.v66c1964f0dfd</version>
+        <version>1275.v23895f409fb_d</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -116,7 +121,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>2058.va_7b_41a_286207</version>
+      <version>2064.vcd3b_b_8f3f2b_a_</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
