@@ -36,9 +36,12 @@ import hudson.model.RootAction;
 import hudson.model.UpdateCenter;
 import hudson.slaves.Cloud;
 import hudson.util.FormValidation;
+import hudson.util.HttpResponses;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletException;
@@ -49,6 +52,7 @@ import net.sf.json.JSONObject;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.StaplerRequest;
@@ -176,6 +180,46 @@ public class CloudSet extends AbstractModelObject implements Describable<CloudSe
         } catch (Failure e) {
             return FormValidation.error(e.getMessage());
         }
+    }
+
+    @RequirePOST
+    public HttpResponse doMove(StaplerRequest req, StaplerResponse rsp,
+                               @QueryParameter String name, @QueryParameter String up,
+                               @QueryParameter String down) throws IOException {
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+        var cloud = Jenkins.get().getCloud(name);
+        if (cloud == null) {
+            return HttpResponses.error(404, "No such cloud: " + name);
+        }
+        var clouds = Jenkins.get().clouds;
+        var index = clouds.indexOf(cloud);
+        var desiredIndex = index;
+        if (up != null) {
+            if (index == 0) {
+                return HttpResponses.error(400, "Cannot move first cloud up");
+            }
+            if (down != null) {
+                return HttpResponses.error(400, "Cannot specify both up and down");
+            }
+            desiredIndex = index - 1;
+        } else if (down != null) {
+            if (index == clouds.size() - 1) {
+                return HttpResponses.error(400, "Cannot move last cloud down");
+            }
+            desiredIndex = index + 1;
+        } else {
+            return HttpResponses.error(400, "No direction specified");
+        }
+        var newClouds = moveTo(clouds, desiredIndex, cloud);
+        Jenkins.get().clouds.replaceBy(newClouds);
+        return HttpResponses.redirectToDot();
+    }
+
+    static <T> List<T> moveTo(List<T> list, int desiredIndex, T t) {
+        var newList = new ArrayList<>(list);
+        newList.remove(t);
+        newList.add(desiredIndex, t);
+        return newList;
     }
 
     /**

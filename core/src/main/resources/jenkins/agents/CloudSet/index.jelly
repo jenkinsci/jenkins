@@ -26,7 +26,7 @@ THE SOFTWARE.
   Entrance to the configuration page
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:f="/lib/form">
   <l:layout title="${it.displayName}" type="one-column">
     <l:main-panel>
       <j:choose>
@@ -39,20 +39,45 @@ THE SOFTWARE.
               </a>
             </l:isAdmin>
           </l:app-bar>
-          <table id="clouds" class="jenkins-table sortable">
+          <table id="clouds" class="jenkins-table">
             <thead>
               <tr>
-                <th class="jenkins-table__cell--tight"/>
-                <th initialSortDir="down">${%Name}</th>
-                <th class="jenkins-table__cell--tight"/>
+                <th/>
+                <th colspan="2">${%Order}</th>
+                <th>${%Name}</th>
+                <th>${%Configure}</th>
               </tr>
             </thead>
             <tbody>
-              <j:forEach var="cloud" items="${it.clouds}">
+              <j:forEach var="cloud" items="${it.clouds}" varStatus="status">
                 <tr id="cloud_${cloud.name}">
                   <td data="${cloud.icon}" class="jenkins-table__cell--tight jenkins-table__icon">
                     <div class="jenkins-table__cell__button-wrapper">
                       <l:icon src="${cloud.iconClassName}" tooltip="${cloud.iconAltText}"/>
+                    </div>
+                  </td>
+                  <td class="jenkins-table__cell--tight">
+                    <div class="jenkins-table__cell__button-wrapper">
+                      <f:form method="post" action="move" name="config" class="jenkins-form">
+                        <a href="move" class="jenkins-table__button">
+                          <input type="hidden" name="name" value="${cloud.name}"/>
+                          <j:if test="${not status.first}">
+                            <f:submit name="up" value="" icon="symbol-chevron-up"/>
+                          </j:if>
+                        </a>
+                      </f:form>
+                    </div>
+                  </td>
+                  <td class="jenkins-table__cell--tight">
+                    <div class="jenkins-table__cell__button-wrapper">
+                      <f:form method="post" action="move" name="config" class="jenkins-form">
+                        <a href="move" class="jenkins-table__button">
+                          <input type="hidden" name="name" value="${cloud.name}"/>
+                          <j:if test="${not status.last}">
+                            <f:submit name="down" value="" icon="symbol-chevron-down"/>
+                          </j:if>
+                        </a>
+                      </f:form>
                     </div>
                   </td>
                   <td>
