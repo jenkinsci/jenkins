@@ -106,7 +106,10 @@ function mapChildrenItemsToDropdownItems(items) {
               method: "post",
               headers: crumb.wrap({}),
             });
-            notificationBar.show(item.displayName + ": Done.", notificationBar.SUCCESS);
+            notificationBar.show(
+              item.displayName + ": Done.",
+              notificationBar.SUCCESS,
+            );
           }
         }
       },
