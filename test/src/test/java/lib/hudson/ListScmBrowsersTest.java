@@ -1,5 +1,7 @@
 package lib.hudson;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.empty;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -39,7 +41,7 @@ public class ListScmBrowsersTest {
     private void check(Item p) throws IOException, SAXException {
         HtmlPage page = j.createWebClient().getPage(p, "configure");
         List<HtmlSelect> selects = DomNodeUtil.selectNodes(page, "//select");
-        assertFalse(selects.isEmpty());
+        assertThat(selects, empty());
         for (HtmlSelect select : selects) {
             Set<String> title = new HashSet<>();
             for (HtmlOption o : select.getOptions()) {

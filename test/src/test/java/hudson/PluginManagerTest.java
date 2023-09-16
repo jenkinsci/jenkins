@@ -27,6 +27,8 @@ package hudson;
 import static java.nio.file.attribute.PosixFilePermission.OWNER_READ;
 import static java.nio.file.attribute.PosixFilePermission.OWNER_WRITE;
 import static org.awaitility.Awaitility.await;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.empty;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -487,7 +489,7 @@ public class PluginManagerTest {
         // Check that the basic API endpoint invocation works.
         assertEquals("ok", response.getString("status"));
         JSONArray data = response.getJSONArray("data");
-        assertFalse(data.isEmpty());
+        assertThat(data, empty());
 
         // Check that there was some data in the response and that the first entry
         // at least had some of the expected fields.
@@ -563,7 +565,7 @@ public class PluginManagerTest {
         f.getInputByName("name").setValue(plugin.getAbsolutePath());
         r.submit(f);
 
-        assertFalse(r.jenkins.getUpdateCenter().getJobs().isEmpty());
+        assertThat(r.jenkins.getUpdateCenter().getJobs(), empty());
 
         // wait for all the download jobs to complete
         boolean done = true;
