@@ -59,7 +59,7 @@ THE SOFTWARE.
         <!-- mobile friendly layout -->
         <meta name="viewport" content="width=device-width, initial-scale=1"/>
         <!-- css styling, will fallback to default implementation -->
-        <st:include it="${simpleDecorator}" page="simple-head.jelly" optional="true"/>
+        <st:include it="${simpleDecorator}" page="simple-head.jelly" />
       </head>
       <body class="app-sign-in-register">
         <j:choose>
@@ -67,10 +67,12 @@ THE SOFTWARE.
             <st:include it="${it.setupWizard}" page="authenticate-security-token"/>
           </j:when>
           <j:otherwise>
-            <st:include it="${simpleDecorator}" page="simple-header.jelly" optional="true" />
+            <st:include it="${simpleDecorator}" page="simple-branding.jelly" />
             <main id="main-panel" class="app-sign-in-register__content">
               <div class="app-sign-in-register__content-inner">
                 <h1>Sign in to Jenkins</h1>
+
+                <st:include it="${simpleDecorator}" page="simple-header.jelly" />
 
                 <form name="login" action="${it.securityRealm.authenticationGatewayUrl}"
                     method="post">

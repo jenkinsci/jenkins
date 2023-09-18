@@ -1927,4 +1927,29 @@ public class Util {
     private static PathRemover newPathRemover(@NonNull PathRemover.PathChecker pathChecker) {
         return PathRemover.newFilteredRobustRemover(pathChecker, DELETION_RETRIES, GC_AFTER_FAILED_DELETE, WAIT_BETWEEN_DELETION_RETRIES);
     }
+
+    /**
+     * Returns SHA-256 Digest of input bytes
+     */
+    @Restricted(NoExternalUse.class)
+    public static byte[] getSHA256DigestOf(@NonNull byte[] input) {
+        try {
+                MessageDigest messageDigest = MessageDigest.getInstance("SHA-256");
+                messageDigest.update(input);
+                return messageDigest.digest();
+        } catch (NoSuchAlgorithmException noSuchAlgorithmException) {
+            throw new IllegalStateException("SHA-256 could not be instantiated, but is required to" +
+                    " be implemented by the language specification", noSuchAlgorithmException);
+        }
+    }
+
+    /**
+     * Returns Hex string of SHA-256 Digest of passed input
+     */
+    @Restricted(NoExternalUse.class)
+    public static String getHexOfSHA256DigestOf(byte[] input) throws IOException {
+        //get hex string of sha 256 of payload
+        byte[] payloadDigest = Util.getSHA256DigestOf(input);
+        return (payloadDigest != null) ? Util.toHexString(payloadDigest) : null;
+    }
 }
