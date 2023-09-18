@@ -151,7 +151,7 @@ public class ApiTokenPropertyTest {
                 requirePOST.getWebResponse().getStatusCode());
 
         wc.setThrowExceptionOnFailingStatusCode(true);
-        WebRequest request = new WebRequest(new URL(j.getURL().toString() + foo.getUrl() + "/" + descriptor.getDescriptorUrl() + "/changeToken"), HttpMethod.POST);
+        WebRequest request = new WebRequest(new URI(j.getURL().toString() + foo.getUrl() + "/" + descriptor.getDescriptorUrl() + "/changeToken"), HttpMethod.POST);
         HtmlPage res = wc.getPage(request);
 
         // TODO This nicer alternative requires https://github.com/jenkinsci/jenkins/pull/2268 or similar to work
@@ -167,7 +167,7 @@ public class ApiTokenPropertyTest {
         User.getById("foo", true);
 
         WebClient wc = createClientForUser("foo");
-        WebRequest wr = new WebRequest(new URL(j.getURL(), "job/bar/build"), HttpMethod.POST);
+        WebRequest wr = new WebRequest(new URI(j.getURL(), "job/bar/build"), HttpMethod.POST);
 
         assertEquals(HttpURLConnection.HTTP_CREATED, wc.getPage(wr).getWebResponse().getStatusCode());
 
@@ -417,7 +417,7 @@ public class ApiTokenPropertyTest {
 
     private void revokeToken(WebClient wc, String login, String tokenUuid) throws Exception {
         WebRequest request = new WebRequest(
-                new URL(j.getURL(), "user/" + login + "/descriptorByName/" + ApiTokenProperty.class.getName() + "/revoke/?tokenUuid=" + tokenUuid),
+                new URI(j.getURL(), "user/" + login + "/descriptorByName/" + ApiTokenProperty.class.getName() + "/revoke/?tokenUuid=" + tokenUuid),
                 HttpMethod.POST
         );
         Page p = wc.getPage(request);
@@ -426,7 +426,7 @@ public class ApiTokenPropertyTest {
 
     private void changeLegacyToken(WebClient wc, String login, boolean success) throws Exception {
         WebRequest request = new WebRequest(
-                new URL(j.getURL(), "user/" + login + "/descriptorByName/" + ApiTokenProperty.class.getName() + "/changeToken/"),
+                new URI(j.getURL(), "user/" + login + "/descriptorByName/" + ApiTokenProperty.class.getName() + "/changeToken/"),
                 HttpMethod.POST
         );
         Page p = wc.getPage(request);
@@ -446,7 +446,7 @@ public class ApiTokenPropertyTest {
 
     private GenerateNewTokenResponse generateNewToken(WebClient wc, String login, String tokenName) throws Exception {
         WebRequest request = new WebRequest(
-                new URL(j.getURL(), "user/" + login + "/descriptorByName/" + ApiTokenProperty.class.getName() + "/generateNewToken/?newTokenName=" + tokenName),
+                new URI(j.getURL(), "user/" + login + "/descriptorByName/" + ApiTokenProperty.class.getName() + "/generateNewToken/?newTokenName=" + tokenName),
                 HttpMethod.POST
         );
         Page p = wc.getPage(request);

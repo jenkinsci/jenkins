@@ -326,11 +326,11 @@ public class JenkinsTest {
         wc.goTo("script");
         wc.assertFails("script?script=System.setProperty('hack','me')", HttpURLConnection.HTTP_BAD_METHOD);
         assertNull(System.getProperty("hack"));
-        WebRequest req = new WebRequest(new URL(wc.getContextPath() + "script?script=System.setProperty('hack','me')"), HttpMethod.POST);
+        WebRequest req = new WebRequest(new URI(wc.getContextPath() + "script?script=System.setProperty('hack','me')"), HttpMethod.POST);
         wc.getPage(req);
         assertEquals("me", System.getProperty("hack"));
         wc.assertFails("scriptText?script=System.setProperty('hack','me')", HttpURLConnection.HTTP_BAD_METHOD);
-        req = new WebRequest(new URL(wc.getContextPath() + "scriptText?script=System.setProperty('huck','you')"), HttpMethod.POST);
+        req = new WebRequest(new URI(wc.getContextPath() + "scriptText?script=System.setProperty('huck','you')"), HttpMethod.POST);
         wc.getPage(req);
         assertEquals("you", System.getProperty("huck"));
 
@@ -380,7 +380,7 @@ public class JenkinsTest {
     }
 
     private Page eval(WebClient wc) throws Exception {
-        WebRequest req = new WebRequest(new URL(wc.getContextPath() + "eval"), HttpMethod.POST);
+        WebRequest req = new WebRequest(new URI(wc.getContextPath() + "eval"), HttpMethod.POST);
         req.setEncodingType(null);
         req.setRequestBody("<j:jelly xmlns:j='jelly:core'>${1+2}</j:jelly>");
         return wc.getPage(req);
@@ -486,7 +486,7 @@ public class JenkinsTest {
         DumbSlave slave = j.createSlave(true);
         j.disconnectSlave(slave);
 
-        URL url = new URL(j.getURL(), "computer/" + slave.getNodeName() + "/scriptText?script=println(42)");
+        URL url = new URI(j.getURL(), "computer/" + slave.getNodeName() + "/scriptText?script=println(42)");
 
         WebClient wc = j.createWebClient()
                 .withThrowExceptionOnFailingStatusCode(false);

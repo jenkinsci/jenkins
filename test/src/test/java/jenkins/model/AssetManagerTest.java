@@ -41,7 +41,7 @@ public class AssetManagerTest {
     @Test
     @Issue("JENKINS-58736")
     public void emptyAssetDoesNotThrowError() throws Exception {
-        URL url = new URL(j.getURL() + "assets");
+        URL url = new URI(j.getURL() + "assets");
         HttpURLConnection httpCon = (HttpURLConnection) url.openConnection();
         assertEquals(HttpURLConnection.HTTP_NOT_FOUND, httpCon.getResponseCode());
     }

@@ -50,7 +50,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  *   Construct a UrlValidator with valid schemes of "http", and "https".
  *
  *    String[] schemes = {"http","https"}.
- *    UrlValidator urlValidator = new UrlValidator(schemes);
+ *    UrlValidator urlValidator = new URIValidator(schemes);
  *    if (urlValidator.isValid("ftp://foo.bar.com/")) {
  *       System.out.println("url is valid");
  *    } else {
@@ -60,7 +60,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  *    prints "url is invalid"
  *   If instead the default constructor is used.
  *
- *    UrlValidator urlValidator = new UrlValidator();
+ *    UrlValidator urlValidator = new URIValidator();
  *    if (urlValidator.isValid("ftp://foo.bar.com/")) {
  *       System.out.println("url is valid");
  *    } else {
@@ -179,7 +179,7 @@ public class UrlValidator implements Serializable {
     /**
      * Singleton instance of this class with default schemes and options.
      */
-    private static final UrlValidator DEFAULT_URL_VALIDATOR = new UrlValidator();
+    private static final UrlValidator DEFAULT_URL_VALIDATOR = new URIValidator();
 
     /**
      * Returns the singleton instance of this class with default schemes and options.

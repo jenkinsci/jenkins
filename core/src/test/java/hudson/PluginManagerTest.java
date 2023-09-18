@@ -206,7 +206,7 @@ public class PluginManagerTest {
 
     private URL toManifestUrl(File jarFile) throws MalformedURLException {
         final String manifestPath = "META-INF/MANIFEST.MF";
-        return new URL("jar:" + jarFile.toURI().toURL() + "!/" + manifestPath);
+        return new URI("jar:" + jarFile.toURI().toURL() + "!/" + manifestPath);
     }
 
     private static class FormValidationMatcher extends TypeSafeDiagnosingMatcher<FormValidation> {

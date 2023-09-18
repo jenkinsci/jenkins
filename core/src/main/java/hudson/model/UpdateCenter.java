@@ -1207,7 +1207,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
          * @throws IOException if a connection can't be established
          */
         public void checkConnection(ConnectionCheckJob job, String connectionCheckUrl) throws IOException {
-            testConnection(new URL(connectionCheckUrl));
+            testConnection(new URI(connectionCheckUrl));
         }
 
         /**
@@ -1230,9 +1230,9 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         static URL toUpdateCenterCheckUrl(String updateCenterUrl) throws MalformedURLException {
             URL url;
             if (updateCenterUrl.startsWith("http://") || updateCenterUrl.startsWith("https://")) {
-                url = new URL(updateCenterUrl + (updateCenterUrl.indexOf('?') == -1 ? "?uctest" : "&uctest"));
+                url = new URI(updateCenterUrl + (updateCenterUrl.indexOf('?') == -1 ? "?uctest" : "&uctest"));
             } else {
-                url = new URL(updateCenterUrl);
+                url = new URI(updateCenterUrl);
             }
             return url;
         }
@@ -2193,7 +2193,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
 
         @Override
         protected URL getURL() throws MalformedURLException {
-            return new URL(plugin.url);
+            return new URI(plugin.url);
         }
 
         @Override
@@ -2422,7 +2422,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
 
         @Override
         protected URL getURL() throws MalformedURLException {
-            return new URL(plugin.url);
+            return new URI(plugin.url);
         }
 
         @Override
@@ -2517,7 +2517,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
             if (site == null) {
                 throw new MalformedURLException("no update site defined");
             }
-            return new URL(site.getData().core.url);
+            return new URI(site.getData().core.url);
         }
 
         @Override
@@ -2564,7 +2564,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
             if (site == null) {
                 throw new MalformedURLException("no update site defined");
             }
-            return new URL(site.getData().core.url);
+            return new URI(site.getData().core.url);
         }
 
         @Override

@@ -30,7 +30,7 @@ public class SuspiciousRequestFilterTest {
     private WebResponse get(String path) throws Exception {
         return j.createWebClient()
                 .withThrowExceptionOnFailingStatusCode(false)
-                .getPage(new WebRequest(new URL(j.getURL(), path)))
+                .getPage(new WebRequest(new URI(j.getURL(), path)))
                 .getWebResponse();
     }
 

@@ -71,7 +71,7 @@ public class HudsonHomeDiskUsageMonitorTest {
         User bob = User.getById("bob", true);
         User administrator = User.getById("administrator", true);
 
-        WebRequest request = new WebRequest(new URL(wc.getContextPath() + "administrativeMonitor/hudsonHomeIsFull/act"), HttpMethod.POST);
+        WebRequest request = new WebRequest(new URI(wc.getContextPath() + "administrativeMonitor/hudsonHomeIsFull/act"), HttpMethod.POST);
         NameValuePair param = new NameValuePair("no", "true");
         request.setRequestParameters(List.of(param));
 
@@ -83,12 +83,12 @@ public class HudsonHomeDiskUsageMonitorTest {
 
         assertTrue(mon.isEnabled());
 
-        WebRequest requestReadOnly = new WebRequest(new URL(wc.getContextPath() + "administrativeMonitor/hudsonHomeIsFull"), HttpMethod.GET);
+        WebRequest requestReadOnly = new WebRequest(new URI(wc.getContextPath() + "administrativeMonitor/hudsonHomeIsFull"), HttpMethod.GET);
         p = wc.getPage(requestReadOnly);
         assertEquals(HttpURLConnection.HTTP_FORBIDDEN, p.getWebResponse().getStatusCode());
 
         wc.withBasicApiToken(administrator);
-        request = new WebRequest(new URL(wc.getContextPath() + "administrativeMonitor/hudsonHomeIsFull/act"), HttpMethod.POST);
+        request = new WebRequest(new URI(wc.getContextPath() + "administrativeMonitor/hudsonHomeIsFull/act"), HttpMethod.POST);
         request.setRequestParameters(List.of(param));
         p = wc.getPage(request);
         assertEquals(HttpURLConnection.HTTP_OK, p.getWebResponse().getStatusCode());

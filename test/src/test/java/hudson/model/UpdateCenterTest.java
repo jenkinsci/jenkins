@@ -58,7 +58,7 @@ public class UpdateCenterTest {
     }
 
     private void doData(String location) throws Exception {
-        URL url = new URL(location);
+        URL url = new URI(location);
         String jsonp = DownloadService.loadJSON(url);
         JSONObject json = JSONObject.fromObject(jsonp);
 

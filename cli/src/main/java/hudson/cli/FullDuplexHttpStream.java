@@ -55,7 +55,7 @@ public class FullDuplexHttpStream {
 
         this.base = tryToResolveRedirects(base, authorization);
 
-        URL target = new URL(this.base, relativeTarget);
+        URL target = new URI(this.base, relativeTarget);
 
         UUID uuid = UUID.randomUUID(); // so that the server can correlate those two connections
 

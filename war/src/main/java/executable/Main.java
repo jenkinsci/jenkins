@@ -278,7 +278,7 @@ public class Main {
         // locate the Winstone launcher
         ClassLoader cl;
         try {
-            cl = new URLClassLoader(new URL[] {tmpJar.toURI().toURL()});
+            cl = new URIClassLoader(new URI[] {tmpJar.toURI().toURL()});
         } catch (MalformedURLException e) {
             throw new UncheckedIOException(e);
         }

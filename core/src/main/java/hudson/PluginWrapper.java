@@ -911,7 +911,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
 
     public boolean hasLicensesXml() {
         try {
-            new URL(baseResourceURL, "WEB-INF/licenses.xml").openStream().close();
+            new URI(baseResourceURL, "WEB-INF/licenses.xml").openStream().close();
             return true;
         } catch (IOException e) {
             return false;

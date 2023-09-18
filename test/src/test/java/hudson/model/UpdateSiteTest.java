@@ -130,7 +130,7 @@ public class UpdateSiteTest {
             }
         });
         server.start();
-        baseUrl = new URL("http", "localhost", connector.getLocalPort(), RELATIVE_BASE);
+        baseUrl = new URI("http", "localhost", connector.getLocalPort(), RELATIVE_BASE);
     }
 
     @After
@@ -139,15 +139,15 @@ public class UpdateSiteTest {
     }
 
     @Test public void relativeURLs() throws Exception {
-        URL url = new URL(baseUrl, "/plugins/htmlpublisher-update-center.json");
+        URL url = new URI(baseUrl, "/plugins/htmlpublisher-update-center.json");
         UpdateSite site = new UpdateSite(UpdateCenter.ID_DEFAULT, url.toString());
         overrideUpdateSite(site);
         assertEquals(FormValidation.ok(), site.updateDirectly(false).get());
         Data data = site.getData();
         assertNotNull(data);
-        assertEquals(new URL(url, "jenkins.war").toString(), data.core.url);
+        assertEquals(new URI(url, "jenkins.war").toString(), data.core.url);
         assertEquals(new HashSet<>(Arrays.asList("htmlpublisher", "dummy")), data.plugins.keySet());
-        assertEquals(new URL(url, "htmlpublisher.jpi").toString(), data.plugins.get("htmlpublisher").url);
+        assertEquals(new URI(url, "htmlpublisher.jpi").toString(), data.plugins.get("htmlpublisher").url);
         assertEquals("http://nowhere.net/dummy.hpi", data.plugins.get("dummy").url);
 
         UpdateSite.Plugin htmlPublisherPlugin = data.plugins.get("htmlpublisher");
@@ -177,7 +177,7 @@ public class UpdateSiteTest {
     }
 
     @Test public void updateDirectlyWithJson() throws Exception {
-        UpdateSite us = new UpdateSite("default", new URL(baseUrl, "update-center.json").toExternalForm());
+        UpdateSite us = new UpdateSite("default", new URI(baseUrl, "update-center.json").toExternalForm());
         assertNull(us.getPlugin("AdaptivePlugin"));
         assertEquals(FormValidation.ok(), us.updateDirectly(/* TODO the certificate is now expired, and downloading a fresh copy did not seem to help */false).get());
         assertNotNull(us.getPlugin("AdaptivePlugin"));
@@ -241,7 +241,7 @@ public class UpdateSiteTest {
     }
 
     private UpdateSite getUpdateSite(String path, String id) throws Exception {
-        URL url = new URL(baseUrl, path);
+        URL url = new URI(baseUrl, path);
         UpdateSite site = new UpdateSite(id, url.toString());
         assertEquals(FormValidation.ok(), site.updateDirectly(false).get());
         return site;

@@ -74,7 +74,7 @@ public class ParameterizedJobMixInTest {
         FailingHttpStatusCodeException fex = assertThrows(
                 "should fail when invoking disabled project",
                 FailingHttpStatusCodeException.class,
-                () -> webClient.getPage(webClient.addCrumb(new WebRequest(new URL(j.getURL(), project.getUrl() + "build?delay=0"), HttpMethod.POST))));
+                () -> webClient.getPage(webClient.addCrumb(new WebRequest(new URI(j.getURL(), project.getUrl() + "build?delay=0"), HttpMethod.POST))));
         assertThat("Should fail with conflict", fex.getStatusCode(), is(409));
     }
 
@@ -87,7 +87,7 @@ public class ParameterizedJobMixInTest {
         project.setQuietPeriod(projectQuietPeriodInSeconds);
 
         final JenkinsRule.WebClient webClient = j.createWebClient();
-        webClient.getPage(webClient.addCrumb(new WebRequest(new URL(j.getURL(), project.getUrl() + "build"), HttpMethod.POST)));
+        webClient.getPage(webClient.addCrumb(new WebRequest(new URI(j.getURL(), project.getUrl() + "build"), HttpMethod.POST)));
         long triggerTime = System.currentTimeMillis();
 
         Queue.Item item = Jenkins.get().getQueue().getItem(1);

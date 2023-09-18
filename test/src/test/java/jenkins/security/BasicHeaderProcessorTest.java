@@ -154,7 +154,7 @@ public class BasicHeaderProcessorTest {
     }
 
     private void makeRequestWithAuthCodeAndVerify(String authCode, String expectedLogin) throws IOException {
-        WebRequest req = new WebRequest(new URL(j.getURL(), "test"));
+        WebRequest req = new WebRequest(new URI(j.getURL(), "test"));
         req.setEncodingType(null);
         if (authCode != null)
             req.setAdditionalHeader("Authorization", authCode);

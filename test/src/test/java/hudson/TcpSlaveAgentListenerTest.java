@@ -40,12 +40,12 @@ public class TcpSlaveAgentListenerTest {
         int p = r.jenkins.getTcpSlaveAgentListener().getPort();
         WebClient wc = r.createWebClient();
 
-        TextPage text = wc.getPage(new URL("http://localhost:" + p + "/"));
+        TextPage text = wc.getPage(new URI("http://localhost:" + p + "/"));
         String c = text.getContent();
         assertThat(c, containsString(Jenkins.VERSION));
 
         wc.setThrowExceptionOnFailingStatusCode(false);
-        Page page = wc.getPage(new URL("http://localhost:" + p + "/xxx"));
+        Page page = wc.getPage(new URI("http://localhost:" + p + "/xxx"));
         assertEquals(HttpURLConnection.HTTP_NOT_FOUND, page.getWebResponse().getStatusCode());
     }
 }

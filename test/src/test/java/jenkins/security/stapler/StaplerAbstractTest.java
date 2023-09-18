@@ -177,7 +177,7 @@ public abstract class StaplerAbstractTest {
 
     protected void assertReachable(String url, HttpMethod method) throws IOException {
         try {
-            Page page = wc.getPage(new WebRequest(new URL(j.getURL(), url), method));
+            Page page = wc.getPage(new WebRequest(new URI(j.getURL(), url), method));
             assertEquals(200, page.getWebResponse().getStatusCode());
             assertThat(page.getWebResponse().getContentAsString(), startsWith("ok"));
 
@@ -202,7 +202,7 @@ public abstract class StaplerAbstractTest {
 
     protected void assertReachableWithoutOk(String url) throws IOException {
         try {
-            Page page = wc.getPage(new URL(j.getURL(), url));
+            Page page = wc.getPage(new URI(j.getURL(), url));
             assertEquals(200, page.getWebResponse().getStatusCode());
         } catch (FailingHttpStatusCodeException e) {
             throw new AssertionError("Url " + url + " should be reachable, received " + e.getMessage() + " (" + e.getStatusCode() + ") instead.", e);
@@ -210,7 +210,7 @@ public abstract class StaplerAbstractTest {
     }
 
     protected void assertNotReachable(String url) throws IOException {
-        FailingHttpStatusCodeException e = assertThrows("Url " + url + " is reachable but should not be, a not-found error is expected", FailingHttpStatusCodeException.class, () -> wc.getPage(new URL(j.getURL(), url)));
+        FailingHttpStatusCodeException e = assertThrows("Url " + url + " is reachable but should not be, a not-found error is expected", FailingHttpStatusCodeException.class, () -> wc.getPage(new URI(j.getURL(), url)));
         assertEquals("Url " + url + " returns an error different from 404", 404, e.getResponse().getStatusCode());
     }
 }

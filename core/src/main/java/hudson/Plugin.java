@@ -251,7 +251,7 @@ public abstract class Plugin implements Saveable, StaplerProxy {
         long expires = staticLink ? TimeUnit.DAYS.toMillis(365) : -1;
 
         // use serveLocalizedFile to support automatic locale selection
-        rsp.serveLocalizedFile(req, new URL(wrapper.baseResourceURL, '.' + path), expires);
+        rsp.serveLocalizedFile(req, new URI(wrapper.baseResourceURL, '.' + path), expires);
     }
 
 //

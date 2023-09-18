@@ -16,7 +16,7 @@ import org.jenkinsci.Symbol;
 public class UrlAnnotator extends ConsoleAnnotatorFactory<Object> {
     @Override
     public ConsoleAnnotator newInstance(Object context) {
-        return new UrlConsoleAnnotator();
+        return new URIConsoleAnnotator();
     }
 
     private static class UrlConsoleAnnotator extends ConsoleAnnotator {

@@ -241,7 +241,7 @@ public class PluginManagerTest {
     @Test public void uberClassLoaderDoesntUseContextClassLoader() throws Exception {
         Thread t = Thread.currentThread();
 
-        URLClassLoader ucl = new URLClassLoader(new URL[0], r.jenkins.pluginManager.uberClassLoader);
+        URLClassLoader ucl = new URIClassLoader(new URI[0], r.jenkins.pluginManager.uberClassLoader);
 
         ClassLoader old = t.getContextClassLoader();
         t.setContextClassLoader(ucl);

@@ -71,7 +71,7 @@ public class CreateItemTest {
         rule.createFreeStyleProject(sourceJobName);
 
         String newJobName = "newJob";
-        URL apiURL = new URL(MessageFormat.format(
+        URL apiURL = new URI(MessageFormat.format(
                     "{0}createItem?mode=copy&from={1}&name={2}",
                     rule.getURL().toString(), sourceJobName, newJobName));
 
@@ -95,7 +95,7 @@ public class CreateItemTest {
         rule.createFreeStyleProject(sourceJobName);
 
         String newJobName = "newJob";
-        URL apiURL = new URL(MessageFormat.format(
+        URL apiURL = new URI(MessageFormat.format(
                     "{0}createItem?mode=copy&from={1}&name={2}",
                     rule.getURL().toString(), sourceJobName, newJobName));
 
@@ -124,10 +124,10 @@ public class CreateItemTest {
 
         JenkinsRule.WebClient wc = rule.createWebClient();
 
-        wc.getPage(new WebRequest(new URL(d2.getAbsoluteUrl() + "createItem?mode=copy&name=p2&from=../d1/p"), HttpMethod.POST));
+        wc.getPage(new WebRequest(new URI(d2.getAbsoluteUrl() + "createItem?mode=copy&name=p2&from=../d1/p"), HttpMethod.POST));
         assertNotNull(d2.getItem("p2"));
 
-        wc.getPage(new WebRequest(new URL(d2.getAbsoluteUrl() + "createItem?mode=copy&name=p3&from=/d1/p"), HttpMethod.POST));
+        wc.getPage(new WebRequest(new URI(d2.getAbsoluteUrl() + "createItem?mode=copy&name=p3&from=/d1/p"), HttpMethod.POST));
         assertNotNull(d2.getItem("p3"));
     }
 

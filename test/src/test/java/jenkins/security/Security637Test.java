@@ -64,10 +64,10 @@ public class Security637Test {
     public void urlSafeDeserialization_handler_inSameJVMRemotingContext() throws Throwable {
         sessions.then(j -> {
                 DumbSlave slave = j.createOnlineSlave(null, new EnvVars("JAVA_TOOL_OPTIONS", "--add-opens=java.base/java.net=ALL-UNNAMED"));
-                String unsafeHandlerClassName = slave.getChannel().call(new URLHandlerCallable(new URL("https://www.google.com/")));
+                String unsafeHandlerClassName = slave.getChannel().call(new URIHandlerCallable(new URI("https://www.google.com/")));
                 assertThat(unsafeHandlerClassName, containsString("SafeURLStreamHandler"));
 
-                String safeHandlerClassName = slave.getChannel().call(new URLHandlerCallable(new URL("file", null, -1, "", null)));
+                String safeHandlerClassName = slave.getChannel().call(new URIHandlerCallable(new URI("file", null, -1, "", null)));
                 assertThat(safeHandlerClassName, not(containsString("SafeURLStreamHandler")));
         });
     }
@@ -95,8 +95,8 @@ public class Security637Test {
         sessions.then(j -> {
                 // due to the DNS resolution they are equal
                 assertEquals(
-                        new URL("https://jenkins.io"),
-                        new URL("https://www.jenkins.io")
+                        new URI("https://jenkins.io"),
+                        new URI("https://www.jenkins.io")
                 );
         });
     }
@@ -110,9 +110,9 @@ public class Security637Test {
 
                 // we bypass the standard equals method that resolve the hostname
                 assertThat(
-                        slave.getChannel().call(new URLBuilderCallable("https://jenkins.io")),
+                        slave.getChannel().call(new URIBuilderCallable("https://jenkins.io")),
                         not(equalTo(
-                                slave.getChannel().call(new URLBuilderCallable("https://www.jenkins.io"))
+                                slave.getChannel().call(new URIBuilderCallable("https://www.jenkins.io"))
                         ))
                 );
         });
@@ -127,7 +127,7 @@ public class Security637Test {
 
         @Override
         public URL call() throws Exception {
-            return new URL(url);
+            return new URI(url);
         }
     }
 
@@ -140,16 +140,16 @@ public class Security637Test {
 
                 // we bypass the standard equals method that resolve the hostname
                 assertThat(
-                        slave.getChannel().call(new URLTransferCallable(new URL("https://jenkins.io"))),
+                        slave.getChannel().call(new URITransferCallable(new URI("https://jenkins.io"))),
                         not(equalTo(
-                                slave.getChannel().call(new URLTransferCallable(new URL("https://www.jenkins.io")))
+                                slave.getChannel().call(new URITransferCallable(new URI("https://www.jenkins.io")))
                         ))
                 );
 
                 // due to the DNS resolution they are equal
                 assertEquals(
-                        new URL("https://jenkins.io"),
-                        new URL("https://www.jenkins.io")
+                        new URI("https://jenkins.io"),
+                        new URI("https://www.jenkins.io")
                 );
         });
     }
@@ -173,11 +173,11 @@ public class Security637Test {
     public void urlSafeDeserialization_inXStreamContext() throws Throwable {
         sessions.then(j -> {
                 FreeStyleProject project = j.createFreeStyleProject("project-with-url");
-                URLJobProperty URLJobProperty = new URLJobProperty(
+                URLJobProperty URLJobProperty = new URIJobProperty(
                         // url to be wrapped
-                        new URL("https://www.google.com/"),
+                        new URI("https://www.google.com/"),
                         // safe url, not required to be wrapped
-                        new URL("https", null, -1, "", null)
+                        new URI("https", null, -1, "", null)
                 );
                 project.addProperty(URLJobProperty);
 

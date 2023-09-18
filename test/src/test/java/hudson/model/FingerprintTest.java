@@ -400,11 +400,11 @@ public class FingerprintTest {
 
         Fingerprint fp = getFingerprint(build, "test.txt");
 
-        Page page = rule.createWebClient().getPage(new WebRequest(new URL(rule.getURL(), "fingerprint/" + fp.getHashString() + "/")));
+        Page page = rule.createWebClient().getPage(new WebRequest(new URI(rule.getURL(), "fingerprint/" + fp.getHashString() + "/")));
         assertEquals(200, page.getWebResponse().getStatusCode());
 
         // could also be reached using static/<anything>/
-        Page page2 = rule.createWebClient().getPage(new WebRequest(new URL(rule.getURL(), "static/abc/fingerprint/" + fp.getHashString() + "/")));
+        Page page2 = rule.createWebClient().getPage(new WebRequest(new URI(rule.getURL(), "static/abc/fingerprint/" + fp.getHashString() + "/")));
         assertEquals(200, page2.getWebResponse().getStatusCode());
     }
 
@@ -468,7 +468,7 @@ public class FingerprintTest {
         targetFile.deleteOnExit();
         String first = fp.getHashString().substring(0, 2);
         String second = fp.getHashString().substring(2, 4);
-        rule.createWebClient().getPage(new WebRequest(new URL(rule.getURL(), "static/abc/fingerprint/" + first + second + "%2f..%2f..%2f" + first + "%2f" + second + "%2f..%2f..%2f..%2f..%2fcf2/")));
+        rule.createWebClient().getPage(new WebRequest(new URI(rule.getURL(), "static/abc/fingerprint/" + first + second + "%2f..%2f..%2f" + first + "%2f" + second + "%2f..%2f..%2f..%2f..%2fcf2/")));
         assertTrue(targetFile.exists());
     }
 
@@ -517,7 +517,7 @@ public class FingerprintTest {
         String first = fp.getHashString().substring(0, 2);
         String second = fp.getHashString().substring(2, 4);
 
-        rule.createWebClient().getPage(new WebRequest(new URL(rule.getURL(), "static/abc/fingerprint/" + first + second + "%2f..%2f..%2f" + first + "%2f" + second + "%2f..%2f..%2f..%2f..%2fcf4/")));
+        rule.createWebClient().getPage(new WebRequest(new URI(rule.getURL(), "static/abc/fingerprint/" + first + second + "%2f..%2f..%2f" + first + "%2f" + second + "%2f..%2f..%2f..%2f..%2fcf4/")));
         assertTrue(targetFile.exists());
     }
 
@@ -552,7 +552,7 @@ public class FingerprintTest {
         Fingerprint fp = getFingerprint(build, "test.txt");
         String first = fp.getHashString().substring(0, 2);
         String second = fp.getHashString().substring(2, 4);
-        rule.createWebClient().getPage(new WebRequest(new URL(rule.getURL(), "static/abc/fingerprint/" + first + second + "%2f..%2f..%2f" + first + "%2f" + second + "%2f..%2f..%2f..%2f..%2fcf6/")));
+        rule.createWebClient().getPage(new WebRequest(new URI(rule.getURL(), "static/abc/fingerprint/" + first + second + "%2f..%2f..%2f" + first + "%2f" + second + "%2f..%2f..%2f..%2f..%2fcf6/")));
     }
 
     @Test
@@ -577,7 +577,7 @@ public class FingerprintTest {
         try {
             // that file exists, so we need to ensure if it's returned, the content is not the expected one from the test data.
             String partialUrl = "static/abc/fingerprint/" + first + second + "%2f..%2f..%2f" + first + "%2f" + second + "%2f..%2f..%2f..%2f..%2fcf7/";
-            page = rule.createWebClient().getPage(new WebRequest(new URL(rule.getURL(), partialUrl)));
+            page = rule.createWebClient().getPage(new WebRequest(new URI(rule.getURL(), partialUrl)));
         } catch (FailingHttpStatusCodeException e) {
             // expected refusal after the correction
             assertEquals(500, e.getStatusCode());

@@ -295,7 +295,7 @@ public class DoActionFilterTest extends StaplerAbstractTest {
 
     @Test
     public void testAnnotatedMethodOk_annotatedPost() throws Exception {
-        WebRequest settings = new WebRequest(new URL(j.getURL(), "testNewRulesOk/annotatedPost/"));
+        WebRequest settings = new WebRequest(new URI(j.getURL(), "testNewRulesOk/annotatedPost/"));
         settings.setHttpMethod(HttpMethod.POST);
         settings.setRequestBody("");
         assertReachableWithSettings(settings);
@@ -303,7 +303,7 @@ public class DoActionFilterTest extends StaplerAbstractTest {
 
     @Test
     public void testAnnotatedMethodOk_annotatedPut() throws Exception {
-        WebRequest settings = new WebRequest(new URL(j.getURL(), "testNewRulesOk/annotatedPut/"));
+        WebRequest settings = new WebRequest(new URI(j.getURL(), "testNewRulesOk/annotatedPut/"));
         settings.setHttpMethod(HttpMethod.PUT);
         settings.setRequestBody("");
         assertReachableWithSettings(settings);
@@ -316,7 +316,7 @@ public class DoActionFilterTest extends StaplerAbstractTest {
 
     @Test
     public void testAnnotatedMethodOk_annotatedRequirePost() throws Exception {
-        WebRequest settings = new WebRequest(new URL(j.getURL(), "testNewRulesOk/annotatedRequirePost/"));
+        WebRequest settings = new WebRequest(new URI(j.getURL(), "testNewRulesOk/annotatedRequirePost/"));
         settings.setHttpMethod(HttpMethod.POST);
         settings.setRequestBody("");
         assertReachableWithSettings(settings);
@@ -337,7 +337,7 @@ public class DoActionFilterTest extends StaplerAbstractTest {
         });
 
 
-        WebRequest settings = new WebRequest(new URL(j.getURL(), "testNewRulesOk/annotatedJavaScriptScriptMethod/"));
+        WebRequest settings = new WebRequest(new URI(j.getURL(), "testNewRulesOk/annotatedJavaScriptScriptMethod/"));
         settings.setAdditionalHeader("Content-Type", "application/x-stapler-method-invocation");
         settings.setHttpMethod(HttpMethod.POST);
         settings.setRequestBody(JSONArray.fromObject(Collections.emptyList()).toString());
@@ -351,7 +351,7 @@ public class DoActionFilterTest extends StaplerAbstractTest {
 
     @Test
     public void testAnnotatedMethodOk_annotatedJsonResponse() throws Exception {
-        WebRequest settings = new WebRequest(new URL(j.getURL(), "testNewRulesOk/annotatedJsonResponse/"));
+        WebRequest settings = new WebRequest(new URI(j.getURL(), "testNewRulesOk/annotatedJsonResponse/"));
         settings.setHttpMethod(HttpMethod.POST);
         settings.setRequestBody(JSONObject.fromObject(Collections.emptyMap()).toString());
         Page page = wc.getPage(settings);
@@ -360,7 +360,7 @@ public class DoActionFilterTest extends StaplerAbstractTest {
 
     @Test
     public void testAnnotatedMethodOk_annotatedLimitedTo() {
-        FailingHttpStatusCodeException e = assertThrows(FailingHttpStatusCodeException.class, () -> wc.getPage(new URL(j.getURL(), "testNewRulesOk/annotatedLimitedTo/")));
+        FailingHttpStatusCodeException e = assertThrows(FailingHttpStatusCodeException.class, () -> wc.getPage(new URI(j.getURL(), "testNewRulesOk/annotatedLimitedTo/")));
         assertEquals(500, e.getStatusCode());
         assertTrue(e.getResponse().getContentAsString().contains("Needs to be in role"));
     }
@@ -379,14 +379,14 @@ public class DoActionFilterTest extends StaplerAbstractTest {
 
     @Test
     public void testAnnotatedParameterOk_annotatedParamHeader() throws Exception {
-        WebRequest settings = new WebRequest(new URL(j.getURL(), "testNewRulesOk/annotatedParamHeader/"));
+        WebRequest settings = new WebRequest(new URI(j.getURL(), "testNewRulesOk/annotatedParamHeader/"));
         settings.setAdditionalHeader("test-header", "TestBrowser");
         assertReachableWithSettings(settings);
     }
 
     @Test
     public void testAnnotatedParameterOk_annotatedParamJsonBody() throws Exception {
-        WebRequest settings = new WebRequest(new URL(j.getURL(), "testNewRulesOk/annotatedParamJsonBody/"));
+        WebRequest settings = new WebRequest(new URI(j.getURL(), "testNewRulesOk/annotatedParamJsonBody/"));
         // WebClient forces us to use POST to have the possibility to send requestBody
         settings.setHttpMethod(HttpMethod.POST);
         settings.setAdditionalHeader("Content-Type", "application/json");
@@ -396,7 +396,7 @@ public class DoActionFilterTest extends StaplerAbstractTest {
 
     @Test
     public void testAnnotatedParameterOk_annotatedParamSubmittedForm() throws Exception {
-        WebRequest settings = new WebRequest(new URL(j.getURL(), "testNewRulesOk/annotatedParamSubmittedForm/"));
+        WebRequest settings = new WebRequest(new URI(j.getURL(), "testNewRulesOk/annotatedParamSubmittedForm/"));
         settings.setHttpMethod(HttpMethod.POST);
 
         settings.setRequestParameters(List.of(

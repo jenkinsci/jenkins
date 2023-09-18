@@ -42,7 +42,7 @@ public class BuildAuthorizationTokenTest {
         jr.jenkins.setAuthorizationStrategy(null);
         FreeStyleProject project = createFreestyleProjectWithToken();
         JenkinsRule.WebClient wc = jr.createWebClient();
-        wc.getPage(wc.addCrumb(new WebRequest(new URL(jr.getURL(), project.getUrl() +
+        wc.getPage(wc.addCrumb(new WebRequest(new URI(jr.getURL(), project.getUrl() +
                 "build?delay=0"),
                 HttpMethod.POST)));
         jr.waitUntilNoActivity();
@@ -59,7 +59,7 @@ public class BuildAuthorizationTokenTest {
         FailingHttpStatusCodeException fex = assertThrows(
                 "should not reach here since only POST request can",
                 FailingHttpStatusCodeException.class,
-                () -> wc.getPage(new WebRequest(new URL(jr.getURL(), project.getUrl() + "build?delay=0"), HttpMethod.GET)));
+                () -> wc.getPage(new WebRequest(new URI(jr.getURL(), project.getUrl() + "build?delay=0"), HttpMethod.GET)));
         assertThat("Should fail with method not allowed", fex.getStatusCode(), is(405));
     }
 
@@ -70,7 +70,7 @@ public class BuildAuthorizationTokenTest {
         jr.jenkins.setAuthorizationStrategy(null);
         FreeStyleProject project = createFreestyleProjectWithToken();
         JenkinsRule.WebClient wc = jr.createWebClient();
-        wc.getPage(new WebRequest(new URL(jr.getURL(), project.getUrl() + "build?delay=0&token=" + token),
+        wc.getPage(new WebRequest(new URI(jr.getURL(), project.getUrl() + "build?delay=0&token=" + token),
                 HttpMethod.GET));
         jr.waitUntilNoActivity();
         assertThat("the project should have been built", project.getBuilds(), hasSize(1));
@@ -81,7 +81,7 @@ public class BuildAuthorizationTokenTest {
         FreeStyleProject project = createFreestyleProjectWithToken();
         JenkinsRule.WebClient wc = jr.createWebClient();
         HtmlPage page = wc.getPage(wc.addCrumb(new WebRequest(
-                new URL(jr.getURL(), project.getUrl() + "build?delay=0&token=" + token),
+                new URI(jr.getURL(), project.getUrl() + "build?delay=0&token=" + token),
                 HttpMethod.POST)));
         jr.waitUntilNoActivity();
         assertThat("the project should have been built", project.getBuilds(), hasSize(1));
@@ -92,7 +92,7 @@ public class BuildAuthorizationTokenTest {
         FreeStyleProject project = createFreestyleProjectWithToken();
         JenkinsRule.WebClient wc = jr.createWebClient();
         HtmlPage page = wc.getPage(new WebRequest(
-                new URL(jr.getURL(), project.getUrl() + "build?delay=0&token=" + token),
+                new URI(jr.getURL(), project.getUrl() + "build?delay=0&token=" + token),
                 HttpMethod.GET));
         jr.waitUntilNoActivity();
         assertThat("the project should have been built", project.getBuilds(), hasSize(1));
@@ -106,7 +106,7 @@ public class BuildAuthorizationTokenTest {
         FailingHttpStatusCodeException fex = assertThrows(
                 "should not reach here as anonymous does not have Item.BUILD and token is not set",
                 FailingHttpStatusCodeException.class,
-                () -> wc.getPage(wc.addCrumb(new WebRequest(new URL(jr.getURL(), project.getUrl() + "build?delay=0"), HttpMethod.POST))));
+                () -> wc.getPage(wc.addCrumb(new WebRequest(new URI(jr.getURL(), project.getUrl() + "build?delay=0"), HttpMethod.POST))));
         assertThat("Should fail with access denied", fex.getStatusCode(), is(403));
     }
 

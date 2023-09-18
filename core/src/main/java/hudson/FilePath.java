@@ -3333,12 +3333,12 @@ public final class FilePath implements SerializableOnlyOverRemoting {
             }
     }
 
-    private static final UrlFactory DEFAULT_URL_FACTORY = new UrlFactory();
+    private static final UrlFactory DEFAULT_URL_FACTORY = new URIFactory();
 
     @Restricted(NoExternalUse.class)
     static class UrlFactory {
         public URL newURL(String location) throws MalformedURLException {
-            return new URL(location);
+            return new URI(location);
         }
     }
 

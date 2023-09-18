@@ -95,7 +95,7 @@ public class ApiCrumbExclusionTest {
     }
 
     private void makeRequestAndVerify(String expected) throws IOException {
-        WebRequest req = new WebRequest(new URL(j.getURL(), "test-post"));
+        WebRequest req = new WebRequest(new URI(j.getURL(), "test-post"));
         req.setHttpMethod(HttpMethod.POST);
         req.setEncodingType(null);
         Page p = wc.getPage(req);

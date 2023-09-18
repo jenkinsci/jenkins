@@ -221,7 +221,7 @@ public class SetupWizardTest {
         server.setHandler(new RemoteUpdateSiteHandler(serverContext, true));
         try {
             server.start();
-            baseUrl = new URL("http", "localhost", connector.getLocalPort(), serverContext);
+            baseUrl = new URI("http", "localhost", connector.getLocalPort(), serverContext);
 
             // Init the update site
             CustomRemoteUpdateSite us = new CustomRemoteUpdateSite(baseUrl.toString(), false);
@@ -255,7 +255,7 @@ public class SetupWizardTest {
         try {
             server.start();
             DownloadService.signatureCheck = false;
-            baseUrl = new URL("http", "localhost", connector.getLocalPort(), serverContext);
+            baseUrl = new URI("http", "localhost", connector.getLocalPort(), serverContext);
 
             // Init the update site
             CustomRemoteUpdateSite us = new CustomRemoteUpdateSite(baseUrl.toString(), false);
@@ -292,7 +292,7 @@ public class SetupWizardTest {
         server.setHandler(new RemoteUpdateSiteHandler(serverContext, true));
         try {
             server.start();
-            baseUrl = new URL("http", "localhost", connector.getLocalPort(), serverContext);
+            baseUrl = new URI("http", "localhost", connector.getLocalPort(), serverContext);
 
             // Init the update site
             CustomRemoteUpdateSite us = new CustomRemoteUpdateSite(baseUrl.toString(), true);

@@ -107,7 +107,7 @@ public class SlaveTest {
     }
 
     private void post(String url, String xml) throws Exception {
-        HttpURLConnection con = (HttpURLConnection) new URL(j.getURL(), url).openConnection();
+        HttpURLConnection con = (HttpURLConnection) new URI(j.getURL(), url).openConnection();
         con.setRequestMethod("POST");
         con.setRequestProperty("Content-Type", "application/xml;charset=UTF-8");
         con.setRequestProperty(CrumbIssuer.DEFAULT_CRUMB_NAME, "test");
