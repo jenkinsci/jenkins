@@ -352,13 +352,13 @@ public class ResourceDomainTest {
         URL url = page.getUrl();
         Assert.assertTrue("page is served by resource domain", url.toString().contains("/static-files/"));
 
-        URL dirUrl = new URI(url.toString().replace("%20100%25%20evil%20content%20.html", ""));
+        URL dirUrl = new URL(url.toString().replace("%20100%25%20evil%20content%20.html", ""));
         Page dirPage = webClient.getPage(dirUrl);
         Assert.assertEquals("page is found", 200, dirPage.getWebResponse().getStatusCode());
         Assert.assertTrue("page content is HTML", dirPage.getWebResponse().getContentAsString().contains("href"));
         Assert.assertTrue("page content references file", dirPage.getWebResponse().getContentAsString().contains("evil content"));
 
-        URL topDirUrl = new URI(url.toString().replace("%20100%25%20evil%20dir%20name%20%20%20/%20100%25%20evil%20content%20.html", ""));
+        URL topDirUrl = new URL(url.toString().replace("%20100%25%20evil%20dir%20name%20%20%20/%20100%25%20evil%20content%20.html", ""));
         Page topDirPage = webClient.getPage(topDirUrl);
         Assert.assertEquals("page is found", 200, topDirPage.getWebResponse().getStatusCode());
         Assert.assertTrue("page content is HTML", topDirPage.getWebResponse().getContentAsString().contains("href"));

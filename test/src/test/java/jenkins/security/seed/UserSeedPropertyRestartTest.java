@@ -95,7 +95,7 @@ public class UserSeedPropertyRestartTest {
 
     private static void requestRenewSeedForUser(User user, JenkinsRule j) throws Exception {
         JenkinsRule.WebClient wc = j.createWebClient();
-        WebRequest request = new WebRequest(new URI(j.jenkins.getRootUrl() + user.getUrl() + "/descriptorByName/" + UserSeedProperty.class.getName() + "/renewSessionSeed/"), HttpMethod.POST);
+        WebRequest request = new WebRequest(new URL(j.jenkins.getRootUrl() + user.getUrl() + "/descriptorByName/" + UserSeedProperty.class.getName() + "/renewSessionSeed/"), HttpMethod.POST);
         wc.getPage(request);
     }
 }

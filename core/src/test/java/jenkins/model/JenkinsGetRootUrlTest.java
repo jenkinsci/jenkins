@@ -247,7 +247,7 @@ public class JenkinsGetRootUrlTest {
 
         try {
 
-            return new URI(realUrl);
+            return new URL(realUrl);
         } catch (Exception ex) {
 
             throw new RuntimeException(ex);

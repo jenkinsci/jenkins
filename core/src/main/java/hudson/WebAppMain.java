@@ -170,7 +170,7 @@ public class WebAppMain implements ServletContextListener {
             JVM jvm;
             try {
                 jvm = new JVM();
-                new URIClassLoader(new URI[0], getClass().getClassLoader());
+                new URLClassLoader(new URL[0], getClass().getClassLoader());
             } catch (SecurityException e) {
                 throw new InsufficientPermissionDetected(e);
             }

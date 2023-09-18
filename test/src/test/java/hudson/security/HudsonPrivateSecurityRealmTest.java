@@ -344,7 +344,7 @@ public class HudsonPrivateSecurityRealmTest {
         info.password2 = login;
         info.fullname = StringUtils.capitalize(login);
 
-        WebRequest request = new WebRequest(new URI(wc.getContextPath() + "securityRealm/createFirstAccount"), HttpMethod.POST);
+        WebRequest request = new WebRequest(new URL(wc.getContextPath() + "securityRealm/createFirstAccount"), HttpMethod.POST);
         request.setRequestParameters(Arrays.asList(
                 new NameValuePair("username", login),
                 new NameValuePair("password1", login),

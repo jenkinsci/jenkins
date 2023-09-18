@@ -24,9 +24,9 @@ public class Security177Test {
                 .withThrowExceptionOnFailingStatusCode(false);
 
         URL u = jenkins.getURL();
-        verifyNoSniff(wc.getPage(new URI(u, "adjuncts/507db12b/nosuch/adjunct.js")));
-        verifyNoSniff(wc.getPage(new URI(u, "no-such-page")));
-        verifyNoSniff(wc.getPage(new URI(u, "images/title.svg")));
+        verifyNoSniff(wc.getPage(new URL(u, "adjuncts/507db12b/nosuch/adjunct.js")));
+        verifyNoSniff(wc.getPage(new URL(u, "no-such-page")));
+        verifyNoSniff(wc.getPage(new URL(u, "images/title.svg")));
         verifyNoSniff(wc.getPage(u));
     }
 

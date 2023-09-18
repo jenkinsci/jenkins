@@ -62,7 +62,7 @@ public class CrumbExclusionTest {
         r.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.ADMINISTER).everywhere().to("admin"));
         for (String path : new String[] {/* control */ "scriptText", /* test */ "scriptText/..;/cli"}) {
             try {
-                fail(path + " should have been rejected: " + r.createWebClient().login("admin").getPage(new WebRequest(new URI(r.getURL(), path + "?script=11*11"), HttpMethod.POST)).getWebResponse().getContentAsString());
+                fail(path + " should have been rejected: " + r.createWebClient().login("admin").getPage(new WebRequest(new URL(r.getURL(), path + "?script=11*11"), HttpMethod.POST)).getWebResponse().getContentAsString());
             } catch (FailingHttpStatusCodeException x) {
                 switch (x.getStatusCode()) {
                 case 403:
@@ -80,7 +80,7 @@ public class CrumbExclusionTest {
 
     @Test
     public void regular() throws Exception {
-        r.createWebClient().getPage(new WebRequest(new URI(r.getURL(), "root/"), HttpMethod.POST));
+        r.createWebClient().getPage(new WebRequest(new URL(r.getURL(), "root/"), HttpMethod.POST));
         Assert.assertTrue(ExtensionList.lookupSingleton(RootActionImpl.class).posted);
     }
 

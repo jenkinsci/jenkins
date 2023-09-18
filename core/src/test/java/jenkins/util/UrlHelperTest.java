@@ -43,7 +43,7 @@ public class UrlHelperTest {
         // spaces are forbidden
         assertFalse(UrlHelper.isValidRootUrl("http:// "));
 
-        // examples not passing with a simple `new URI(url).toURI()` check
+        // examples not passing with a simple `new URL(url).toURI()` check
         assertFalse(UrlHelper.isValidRootUrl("http://jenkins//context"));
         assertFalse(UrlHelper.isValidRootUrl("http:/jenkins"));
         assertFalse(UrlHelper.isValidRootUrl("http://.com"));

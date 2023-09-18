@@ -561,7 +561,7 @@ public class SetupWizard extends PageDecorator {
                 suggestedPluginUrl = suggestedPluginUrl + (suggestedPluginUrl.contains("?") ? "&" : "?") + "version=" + version;
             }
             try {
-                URLConnection connection = ProxyConfiguration.open(new URI(suggestedPluginUrl));
+                URLConnection connection = ProxyConfiguration.open(new URL(suggestedPluginUrl));
 
                 try {
                     String initialPluginJson = IOUtils.toString(connection.getInputStream(), StandardCharsets.UTF_8);

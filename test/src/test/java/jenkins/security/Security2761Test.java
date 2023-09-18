@@ -29,7 +29,7 @@ public class Security2761Test {
 
         JenkinsRule.WebClient wc = j.createWebClient();
         wc.setAlertHandler((page, s) -> alerted.set(true));
-        HtmlPage page = wc.getPage(new URI(wc.getContextPath() + ACTION_URL));
+        HtmlPage page = wc.getPage(new URL(wc.getContextPath() + ACTION_URL));
         String responseContent = page.getWebResponse().getContentAsString();
         wc.waitForBackgroundJavaScript(5000);
 

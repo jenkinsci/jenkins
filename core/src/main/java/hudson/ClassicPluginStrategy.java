@@ -294,9 +294,9 @@ public class ClassicPluginStrategy implements PluginStrategy {
         }
         URLClassLoader2 classLoader;
         if (usePluginFirstClassLoader) {
-            classLoader = new PluginFirstClassLoader2(urls.toArray(new URI[0]), parent);
+            classLoader = new PluginFirstClassLoader2(urls.toArray(new URL[0]), parent);
         } else {
-            classLoader = new URIClassLoader2(urls.toArray(new URI[0]), parent);
+            classLoader = new URLClassLoader2(urls.toArray(new URL[0]), parent);
         }
         return classLoader;
     }

@@ -335,7 +335,7 @@ public abstract class FormFieldValidator {
             if (!value.endsWith("/")) value += '/';
 
             try {
-                URL url = new URI(value);
+                URL url = new URL(value);
                 HttpURLConnection con = openConnection(url);
                 con.connect();
                 if (con.getResponseCode() != 200

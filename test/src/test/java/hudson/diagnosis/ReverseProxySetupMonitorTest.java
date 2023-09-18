@@ -66,7 +66,7 @@ public class ReverseProxySetupMonitorTest {
             public void evaluate() throws Throwable {
                 JenkinsRule j = rr.j;
                 JenkinsRule.WebClient wc = rr.j.createWebClient();
-                WebRequest request = new WebRequest(new URI(j.getURL(), getAdminMonitorTestUrl(j)));
+                WebRequest request = new WebRequest(new URL(j.getURL(), getAdminMonitorTestUrl(j)));
                 request.setAdditionalHeader("Referer", j.getURL() + "manage");
                 wc.getPage(request);
             }
@@ -80,7 +80,7 @@ public class ReverseProxySetupMonitorTest {
             public void evaluate() throws Throwable {
                 JenkinsRule j = rr.j;
                 JenkinsRule.WebClient wc = rr.j.createWebClient();
-                WebRequest request = new WebRequest(new URI(j.getURL(), getAdminMonitorTestUrl(j)));
+                WebRequest request = new WebRequest(new URL(j.getURL(), getAdminMonitorTestUrl(j)));
                 request.setAdditionalHeader("Referer", j.getURL() + "manage");
 
                 // As the context was already set inside the referer, adding another one will fail
@@ -97,7 +97,7 @@ public class ReverseProxySetupMonitorTest {
             public void evaluate() throws Throwable {
                 JenkinsRule j = rr.j;
                 JenkinsRule.WebClient wc = rr.j.createWebClient();
-                WebRequest request = new WebRequest(new URI(j.getURL(), getAdminMonitorTestUrl(j)));
+                WebRequest request = new WebRequest(new URL(j.getURL(), getAdminMonitorTestUrl(j)));
                 // no referer
                 assertThrows(FailingHttpStatusCodeException.class, () -> wc.getPage(request));
             }
@@ -111,7 +111,7 @@ public class ReverseProxySetupMonitorTest {
             public void evaluate() throws Throwable {
                 JenkinsRule j = rr.j;
                 JenkinsRule.WebClient wc = rr.j.createWebClient();
-                WebRequest request = new WebRequest(new URI(j.getURL(), getAdminMonitorTestUrl(j)));
+                WebRequest request = new WebRequest(new URL(j.getURL(), getAdminMonitorTestUrl(j)));
                 // wrong referer
                 request.setAdditionalHeader("Referer", j.getURL() + "configure");
                 assertThrows(FailingHttpStatusCodeException.class, () -> wc.getPage(request));
@@ -131,7 +131,7 @@ public class ReverseProxySetupMonitorTest {
                 JenkinsLocationConfiguration.get().setUrl(rootUrlWithoutContext);
 
                 JenkinsRule.WebClient wc = rr.j.createWebClient();
-                WebRequest request = new WebRequest(new URI(j.getURL(), getAdminMonitorTestUrl(j)));
+                WebRequest request = new WebRequest(new URL(j.getURL(), getAdminMonitorTestUrl(j)));
                 request.setAdditionalHeader("Referer", j.getURL() + "manage");
 
                 // As the rootURL is missing the context, a regular test will fail
@@ -156,7 +156,7 @@ public class ReverseProxySetupMonitorTest {
                 JenkinsLocationConfiguration.get().setUrl(rootUrlWithoutContext);
 
                 JenkinsRule.WebClient wc = rr.j.createWebClient();
-                WebRequest request = new WebRequest(new URI(j.getURL(), getAdminMonitorTestUrl(j)));
+                WebRequest request = new WebRequest(new URL(j.getURL(), getAdminMonitorTestUrl(j)));
                 request.setAdditionalHeader("Referer", j.getURL() + "manage");
 
                 assertThrows(FailingHttpStatusCodeException.class, () -> wc.getPage(request));
@@ -176,7 +176,7 @@ public class ReverseProxySetupMonitorTest {
                 JenkinsRule j = rr.j;
 
                 JenkinsRule.WebClient wc = rr.j.createWebClient();
-                WebRequest request = new WebRequest(new URI(j.getURL(), getAdminMonitorTestUrl(j)));
+                WebRequest request = new WebRequest(new URL(j.getURL(), getAdminMonitorTestUrl(j)));
                 request.setAdditionalHeader("Referer", j.getURL() + "manage");
 
                 wc.getPage(request);
@@ -195,7 +195,7 @@ public class ReverseProxySetupMonitorTest {
             public void evaluate() throws Throwable {
                 JenkinsRule j = rr.j;
                 JenkinsRule.WebClient wc = rr.j.createWebClient();
-                WebRequest request = new WebRequest(new URI(getRootUrlWithIp(j), getAdminMonitorTestUrl(j)));
+                WebRequest request = new WebRequest(new URL(getRootUrlWithIp(j), getAdminMonitorTestUrl(j)));
                 request.setAdditionalHeader("Referer", j.getURL() + "manage");
                 wc.getPage(request);
             }
@@ -209,7 +209,7 @@ public class ReverseProxySetupMonitorTest {
             public void evaluate() throws Throwable {
                 JenkinsRule j = rr.j;
                 JenkinsRule.WebClient wc = rr.j.createWebClient();
-                WebRequest request = new WebRequest(new URI(getRootUrlWithIp(j), getAdminMonitorTestUrl(j)));
+                WebRequest request = new WebRequest(new URL(getRootUrlWithIp(j), getAdminMonitorTestUrl(j)));
                 // no referer
                 assertThrows(FailingHttpStatusCodeException.class, () -> wc.getPage(request));
             }
@@ -223,7 +223,7 @@ public class ReverseProxySetupMonitorTest {
             public void evaluate() throws Throwable {
                 JenkinsRule j = rr.j;
                 JenkinsRule.WebClient wc = rr.j.createWebClient();
-                WebRequest request = new WebRequest(new URI(getRootUrlWithIp(j), getAdminMonitorTestUrl(j)));
+                WebRequest request = new WebRequest(new URL(getRootUrlWithIp(j), getAdminMonitorTestUrl(j)));
                 // referer using IP
                 request.setAdditionalHeader("Referer", getRootUrlWithIp(j) + "manage");
 
@@ -243,7 +243,7 @@ public class ReverseProxySetupMonitorTest {
                 JenkinsLocationConfiguration.get().setUrl(getRootUrlWithIp(j).toString());
 
                 JenkinsRule.WebClient wc = rr.j.createWebClient();
-                WebRequest request = new WebRequest(new URI(getRootUrlWithIp(j), getAdminMonitorTestUrl(j)));
+                WebRequest request = new WebRequest(new URL(getRootUrlWithIp(j), getAdminMonitorTestUrl(j)));
                 // referer using IP
                 request.setAdditionalHeader("Referer", getRootUrlWithIp(j) + "manage");
 
@@ -264,7 +264,7 @@ public class ReverseProxySetupMonitorTest {
                 JenkinsLocationConfiguration.get().setUrl(rootUrlWithoutContext);
 
                 JenkinsRule.WebClient wc = rr.j.createWebClient();
-                WebRequest request = new WebRequest(new URI(getRootUrlWithIp(j), getAdminMonitorTestUrl(j)));
+                WebRequest request = new WebRequest(new URL(getRootUrlWithIp(j), getAdminMonitorTestUrl(j)));
                 // referer using IP
                 request.setAdditionalHeader("Referer", getRootUrlWithIp(j) + "manage");
 
@@ -283,6 +283,6 @@ public class ReverseProxySetupMonitorTest {
     }
 
     private URL getRootUrlWithIp(JenkinsRule j) throws Exception {
-        return new URI(j.getURL().toString().replace("localhost", "127.0.0.1"));
+        return new URL(j.getURL().toString().replace("localhost", "127.0.0.1"));
     }
 }

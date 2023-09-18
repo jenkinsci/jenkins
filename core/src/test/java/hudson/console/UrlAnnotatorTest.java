@@ -35,7 +35,7 @@ import org.jvnet.hudson.test.Issue;
  */
 public class UrlAnnotatorTest {
 
-    private ConsoleAnnotator<?> ca = new URIAnnotator().newInstance(null);
+    private ConsoleAnnotator<?> ca = new UrlAnnotator().newInstance(null);
 
     @Test
     public void testAnnotate() {

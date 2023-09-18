@@ -672,13 +672,13 @@ public class FilePathTest {
 
     private URL someUrlToZipFile(final URLConnection con) throws IOException {
 
-        final URLStreamHandler urlHandler = new URIStreamHandler() {
+        final URLStreamHandler urlHandler = new URLStreamHandler() {
             @Override protected URLConnection openConnection(URL u) {
                 return con;
             }
         };
 
-        return new URI("http", "some-host", 0, "/some-path.zip", urlHandler);
+        return new URL("http", "some-host", 0, "/some-path.zip", urlHandler);
     }
 
     private InputStream someZippedContent() throws IOException {

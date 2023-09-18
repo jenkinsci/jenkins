@@ -62,7 +62,7 @@ class SSHCLI {
 
     static int sshConnection(String jenkinsUrl, String user, List<String> args, PrivateKeyProvider provider, final boolean strictHostKey) throws IOException {
         Logger.getLogger(SecurityUtils.class.getName()).setLevel(Level.WARNING); // suppress: BouncyCastle not registered, using the default JCE provider
-        URL url = new URI(jenkinsUrl + "login");
+        URL url = new URL(jenkinsUrl + "login");
         URLConnection conn = openConnection(url);
         CLI.verifyJenkinsConnection(conn);
         String endpointDescription = conn.getHeaderField("X-SSH-Endpoint");

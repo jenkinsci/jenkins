@@ -94,7 +94,7 @@ public class Security2278Test {
         webClient.setThrowExceptionOnFailingStatusCode(false);
         webClient.setRedirectEnabled(false);
 
-        final Page stopResponse = webClient.getPage(addReferer(webClient.addCrumb(new WebRequest(new URI(j.jenkins.getRootUrl() + "/queue/cancelItem?id=" + id), HttpMethod.POST)), j.jenkins.getRootUrl()));
+        final Page stopResponse = webClient.getPage(addReferer(webClient.addCrumb(new WebRequest(new URL(j.jenkins.getRootUrl() + "/queue/cancelItem?id=" + id), HttpMethod.POST)), j.jenkins.getRootUrl()));
         assertEquals(404, stopResponse.getWebResponse().getStatusCode());
         Assert.assertEquals(1, j.jenkins.getQueue().getItems().length);
     }
@@ -119,7 +119,7 @@ public class Security2278Test {
         if (found < 0) {
             throw new IllegalStateException("didn't find executor");
         }
-        final Page stopResponse = webClient.getPage(addReferer(webClient.addCrumb(new WebRequest(new URI(j.jenkins.getRootUrl() + "/computer/(master)/executors/" + found + "/stop/"), HttpMethod.POST)), j.jenkins.getRootUrl()));
+        final Page stopResponse = webClient.getPage(addReferer(webClient.addCrumb(new WebRequest(new URL(j.jenkins.getRootUrl() + "/computer/(master)/executors/" + found + "/stop/"), HttpMethod.POST)), j.jenkins.getRootUrl()));
         assertEquals(302, stopResponse.getWebResponse().getStatusCode());
 
         final FreeStyleBuild build = project.getBuildByNumber(1);

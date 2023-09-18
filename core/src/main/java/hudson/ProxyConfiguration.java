@@ -458,7 +458,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
             HttpURLConnection preAuth = null;
             try {
                 // We do not care if there is anything at this URL, all we care is that it is using the proxy
-                preAuth = (HttpURLConnection) new URI("http", url.getHost(), -1, "/").openConnection(proxy);
+                preAuth = (HttpURLConnection) new URL("http", url.getHost(), -1, "/").openConnection(proxy);
                 preAuth.setRequestMethod("HEAD");
                 preAuth.connect();
             } catch (IOException e) {

@@ -482,7 +482,7 @@ public class DirectoryBrowserSupportTest {
 
                 @Override
                 public URL toExternalURL() throws IOException {
-                    return new URI(Jenkins.get().getRootUrl() + "files/" + hash);
+                    return new URL(Jenkins.get().getRootUrl() + "files/" + hash);
                 }
             };
             return new VirtualFile() { // the root
@@ -1454,7 +1454,7 @@ public class DirectoryBrowserSupportTest {
 
                 @Override
                 public URL toExternalURL() throws IOException {
-                    return new URI(Jenkins.get().getRootUrl() + "files/" + hash);
+                    return new URL(Jenkins.get().getRootUrl() + "files/" + hash);
                 }
             };
             return new VirtualFile() { // the root

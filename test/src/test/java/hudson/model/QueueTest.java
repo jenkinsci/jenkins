@@ -1199,7 +1199,7 @@ public class QueueTest {
         Queue.Item currentOne = items[0];
         assertFalse(currentOne.getFuture().isCancelled());
 
-        WebRequest request = new WebRequest(new URI(r.getURL() + urlProvider.apply(currentOne)), HttpMethod.POST);
+        WebRequest request = new WebRequest(new URL(r.getURL() + urlProvider.apply(currentOne)), HttpMethod.POST);
 
         { // user without right cannot cancel
             JenkinsRule.WebClient wc = r.createWebClient()

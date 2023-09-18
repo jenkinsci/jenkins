@@ -112,14 +112,14 @@ public final class ResourceDomainConfiguration extends GlobalConfiguration {
 
         URL resourceRootUrl;
         try {
-            resourceRootUrl = new URI(resourceRootUrlString);
+            resourceRootUrl = new URL(resourceRootUrlString);
         } catch (MalformedURLException ex) {
             return FormValidation.error(Messages.ResourceDomainConfiguration_Invalid());
         }
 
         String resourceRootUrlHost = resourceRootUrl.getHost();
         try {
-            String jenkinsRootUrlHost = new URI(jenkinsRootUrlString).getHost();
+            String jenkinsRootUrlHost = new URL(jenkinsRootUrlString).getHost();
             if (jenkinsRootUrlHost.equals(resourceRootUrlHost)) {
                 // We do not allow the same host for Jenkins and resource root URLs even if there's some other difference.
                 // This is a conservative choice and prohibits same host/different proto/different port/different path:
@@ -147,7 +147,7 @@ public final class ResourceDomainConfiguration extends GlobalConfiguration {
 
         // Send a request to /instance-identity/ at the resource root URL and check whether it is this Jenkins
         try {
-            URLConnection urlConnection = new URI(resourceRootUrlString + "instance-identity/").openConnection();
+            URLConnection urlConnection = new URL(resourceRootUrlString + "instance-identity/").openConnection();
             if (urlConnection instanceof HttpURLConnection) {
                 HttpURLConnection httpURLConnection = (HttpURLConnection) urlConnection;
                 int responseCode = httpURLConnection.getResponseCode();
@@ -222,7 +222,7 @@ public final class ResourceDomainConfiguration extends GlobalConfiguration {
         }
         String resourceRootUrl = get().getUrl();
         try {
-            URL url = new URI(resourceRootUrl);
+            URL url = new URL(resourceRootUrl);
 
             String resourceRootHost = url.getHost();
             if (!resourceRootHost.equalsIgnoreCase(req.getServerName())) {
@@ -241,7 +241,7 @@ public final class ResourceDomainConfiguration extends GlobalConfiguration {
                 return false;
             }
         } catch (MalformedURLException ex) {
-            // the URL here cannot be so broken that we cannot call `new URI(String)` on it...
+            // the URL here cannot be so broken that we cannot call `new URL(String)` on it...
             return false;
         }
         return true;

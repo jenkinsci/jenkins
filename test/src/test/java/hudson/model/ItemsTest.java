@@ -228,7 +228,7 @@ public class ItemsTest {
                         // redirect perversely counts as a failure
                         .withRedirectEnabled(false)
                         .withThrowExceptionOnFailingStatusCode(false);
-                WebResponse webResponse = wc.getPage(new WebRequest(new URI(wc.getContextPath() + "createItem?name=" + target + "&mode=hudson.model.FreeStyleProject"), HttpMethod.POST)).getWebResponse();
+                WebResponse webResponse = wc.getPage(new WebRequest(new URL(wc.getContextPath() + "createItem?name=" + target + "&mode=hudson.model.FreeStyleProject"), HttpMethod.POST)).getWebResponse();
                 if (webResponse.getStatusCode() != HttpURLConnection.HTTP_MOVED_TEMP) {
                     throw new FailingHttpStatusCodeException(webResponse);
                 }
@@ -241,7 +241,7 @@ public class ItemsTest {
                 JenkinsRule.WebClient wc = wc(r)
                         .withRedirectEnabled(false)
                         .withThrowExceptionOnFailingStatusCode(false);
-                WebResponse webResponse = wc.getPage(new WebRequest(new URI(wc.getContextPath() + "createItem?name=" + target + "&mode=copy&from=dupe"), HttpMethod.POST)).getWebResponse();
+                WebResponse webResponse = wc.getPage(new WebRequest(new URL(wc.getContextPath() + "createItem?name=" + target + "&mode=copy&from=dupe"), HttpMethod.POST)).getWebResponse();
                 r.jenkins.getItem("dupe").delete();
                 if (webResponse.getStatusCode() != HttpURLConnection.HTTP_MOVED_TEMP) {
                     throw new FailingHttpStatusCodeException(webResponse);
@@ -252,7 +252,7 @@ public class ItemsTest {
         REST_CREATE {
             @Override void run(JenkinsRule r, String target) throws Exception {
                 JenkinsRule.WebClient wc = wc(r);
-                WebRequest req = new WebRequest(new URI(wc.getContextPath() + "createItem?name=" + target), HttpMethod.POST);
+                WebRequest req = new WebRequest(new URL(wc.getContextPath() + "createItem?name=" + target), HttpMethod.POST);
                 req.setAdditionalHeader("Content-Type", "application/xml");
                 req.setRequestBody("<project/>");
                 wc.getPage(req);
@@ -265,7 +265,7 @@ public class ItemsTest {
                 JenkinsRule.WebClient wc = wc(r)
                         .withRedirectEnabled(false)
                         .withThrowExceptionOnFailingStatusCode(false);
-                WebResponse webResponse = wc.getPage(new WebRequest(new URI(wc.getContextPath() + "job/dupe/doRename?newName=" + target), HttpMethod.POST)).getWebResponse();
+                WebResponse webResponse = wc.getPage(new WebRequest(new URL(wc.getContextPath() + "job/dupe/doRename?newName=" + target), HttpMethod.POST)).getWebResponse();
                 if (webResponse.getStatusCode() != HttpURLConnection.HTTP_MOVED_TEMP) {
                     r.jenkins.getItem("dupe").delete();
                     throw new FailingHttpStatusCodeException(webResponse);

@@ -502,7 +502,7 @@ public class DomainValidatorTest extends TestCase {
         } else {
             modTime = 0;
         }
-        HttpURLConnection hc = (HttpURLConnection) new URI(tldurl).openConnection();
+        HttpURLConnection hc = (HttpURLConnection) new URL(tldurl).openConnection();
         if (modTime > 0) {
             SimpleDateFormat sdf = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z"); //Sun, 06 Nov 1994 08:49:37 GMT
             String since = sdf.format(new Date(modTime));

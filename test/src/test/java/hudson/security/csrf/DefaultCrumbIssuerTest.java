@@ -303,7 +303,7 @@ public class DefaultCrumbIssuerTest {
     }
 
     private WebRequest createRequestForJobCreation(String jobName) throws Exception {
-        WebRequest req = new WebRequest(new URI(r.getURL() + "createItem?name=" + jobName), HttpMethod.POST);
+        WebRequest req = new WebRequest(new URL(r.getURL() + "createItem?name=" + jobName), HttpMethod.POST);
         req.setAdditionalHeader("Content-Type", "application/xml");
         req.setRequestBody("<project/>");
         return req;

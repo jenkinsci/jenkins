@@ -135,7 +135,7 @@ public final class TcpSlaveAgentListener extends Thread {
           return CLI_HOST_NAME;
         }
         try {
-            return new URI(Jenkins.get().getRootUrl()).getHost();
+            return new URL(Jenkins.get().getRootUrl()).getHost();
         } catch (MalformedURLException e) {
             throw new IllegalStateException("Could not get TcpSlaveAgentListener host name", e);
         }

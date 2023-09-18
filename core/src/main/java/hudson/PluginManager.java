@@ -1097,7 +1097,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     }
 
     /*package*/ static @CheckForNull Manifest parsePluginManifest(URL bundledJpi) {
-        try (URLClassLoader cl = new URIClassLoader(new URI[]{bundledJpi})) {
+        try (URLClassLoader cl = new URLClassLoader(new URL[]{bundledJpi})) {
             InputStream in = null;
             try {
                 URL res = cl.findResource(PluginWrapper.MANIFEST_FILENAME);
@@ -1848,7 +1848,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
         @Override
         public void copy(File target) throws Exception {
-            try (InputStream input =  ProxyConfiguration.getInputStream(new URI(url))) {
+            try (InputStream input =  ProxyConfiguration.getInputStream(new URL(url))) {
                 Files.copy(input, target.toPath());
             }
         }
@@ -1875,7 +1875,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             if (StringUtils.isNotBlank(items.get(1).getString())) {
                 // this is a URL deployment
                 fileName = items.get(1).getString();
-                copier = new URIPluginCopier(fileName);
+                copier = new UrlPluginCopier(fileName);
             } else {
                 // this is a file upload
                 FileItem fileItem = items.get(0);
@@ -1962,7 +1962,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     @RequirePOST public FormValidation doCheckPluginUrl(StaplerRequest request, @QueryParameter String value) throws IOException {
         if (StringUtils.isNotBlank(value)) {
             try {
-                URL url = new URI(value);
+                URL url = new URL(value);
                 if (!url.getProtocol().startsWith("http")) {
                     return FormValidation.error(Messages.PluginManager_invalidUrl());
                 }

@@ -65,7 +65,7 @@ public class ZipExtractionInstallerTest {
         User.getById(ADMIN, true);
         User.getById(USER, true);
 
-        WebRequest request = new WebRequest(new URI(j.getURL() + "descriptorByName/hudson.tools.ZipExtractionInstaller/checkUrl"), HttpMethod.POST);
+        WebRequest request = new WebRequest(new URL(j.getURL() + "descriptorByName/hudson.tools.ZipExtractionInstaller/checkUrl"), HttpMethod.POST);
         request.setRequestBody(URLEncoder.encode("value=https://www.google.com", StandardCharsets.UTF_8));
 
         JenkinsRule.WebClient adminWc = j.createWebClient();

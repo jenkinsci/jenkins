@@ -104,7 +104,7 @@ public class InstallPluginCommand extends CLICommand {
 
             // is this an URL?
             try {
-                URL u = new URI(source);
+                URL u = new URL(source);
                 stdout.println(Messages.InstallPluginCommand_InstallingPluginFromUrl(u));
                 File f = getTmpFile();
                 FileUtils.copyURLToFile(u, f); // TODO JENKINS-58248 proxy

@@ -78,7 +78,7 @@ public class JnlpAccessWithSecuredHudsonTest {
         URL baseUrl = jnlp.getUrl();
         Document dom = new DOMReader().read(jnlp.getXmlDocument());
         for (Object jar : dom.selectNodes("//jar")) {
-            URL url = new URI(baseUrl, ((Element) jar).attributeValue("href"));
+            URL url = new URL(baseUrl, ((Element) jar).attributeValue("href"));
             System.out.println(url);
 
             // now make sure that these URLs are unprotected

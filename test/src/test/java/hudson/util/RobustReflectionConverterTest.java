@@ -206,7 +206,7 @@ public class RobustReflectionConverterTest {
             r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
             WebClient wc = r.createWebClient();
             wc.withBasicApiToken("test");
-            WebRequest req = new WebRequest(new URI(wc.getContextPath() + String.format("%s/config.xml", p.getUrl())), HttpMethod.POST);
+            WebRequest req = new WebRequest(new URL(wc.getContextPath() + String.format("%s/config.xml", p.getUrl())), HttpMethod.POST);
             req.setEncodingType(null);
             req.setRequestBody(String.format(CONFIGURATION_TEMPLATE, "badvalue", AcceptOnlySpecificKeyword.ACCEPT_KEYWORD));
             wc.getPage(req);
@@ -237,7 +237,7 @@ public class RobustReflectionConverterTest {
             WebClient wc = r.createWebClient()
                     .withThrowExceptionOnFailingStatusCode(false);
             wc.withBasicApiToken("test");
-            WebRequest req = new WebRequest(new URI(wc.getContextPath() + String.format("%s/config.xml", p.getUrl())), HttpMethod.POST);
+            WebRequest req = new WebRequest(new URL(wc.getContextPath() + String.format("%s/config.xml", p.getUrl())), HttpMethod.POST);
             req.setEncodingType(null);
             req.setRequestBody(String.format(CONFIGURATION_TEMPLATE, AcceptOnlySpecificKeyword.ACCEPT_KEYWORD, "badvalue"));
 

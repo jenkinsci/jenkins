@@ -1939,7 +1939,7 @@ public class Functions {
         String url = Jenkins.get().getRootUrl();
         try {
             if (url != null) {
-                String host = new URI(url).getHost();
+                String host = new URL(url).getHost();
                 if (host != null)
                     return host;
             }

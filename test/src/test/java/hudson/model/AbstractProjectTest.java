@@ -140,7 +140,7 @@ public class AbstractProjectTest {
         // make sure that the action link is protected
         JenkinsRule.WebClient wc = j.createWebClient()
                 .withThrowExceptionOnFailingStatusCode(false);
-        Page page = wc.getPage(new WebRequest(new URI(wc.getContextPath() + project.getUrl() + "doWipeOutWorkspace"), HttpMethod.POST));
+        Page page = wc.getPage(new WebRequest(new URL(wc.getContextPath() + project.getUrl() + "doWipeOutWorkspace"), HttpMethod.POST));
         assertEquals(HttpURLConnection.HTTP_FORBIDDEN, page.getWebResponse().getStatusCode());
     }
 
@@ -323,7 +323,7 @@ public class AbstractProjectTest {
     private String deleteRedirectTarget(String job) throws Exception {
         JenkinsRule.WebClient wc = j.createWebClient();
         String base = wc.getContextPath();
-        String loc = wc.getPage(wc.addCrumb(new WebRequest(new URI(base + job + "/doDelete"), HttpMethod.POST))).getUrl().toString();
+        String loc = wc.getPage(wc.addCrumb(new WebRequest(new URL(base + job + "/doDelete"), HttpMethod.POST))).getUrl().toString();
         assert loc.startsWith(base) : loc;
         return loc.substring(base.length());
     }
@@ -357,13 +357,13 @@ public class AbstractProjectTest {
         JenkinsRule.WebClient wc = j.createWebClient()
                 .withThrowExceptionOnFailingStatusCode(false);
 
-        WebResponse rsp = wc.getPage(wc.addCrumb(new WebRequest(new URI(j.getURL(), p.getUrl() +
+        WebResponse rsp = wc.getPage(wc.addCrumb(new WebRequest(new URL(j.getURL(), p.getUrl() +
                 "build?delay=0"),
                 HttpMethod.POST))).getWebResponse();
         assertEquals(HttpURLConnection.HTTP_CREATED, rsp.getStatusCode());
         assertNotNull(rsp.getResponseHeaderValue("Location"));
 
-        WebResponse rsp2 = wc.getPage(wc.addCrumb(new WebRequest(new URI(j.getURL(), p.getUrl() +
+        WebResponse rsp2 = wc.getPage(wc.addCrumb(new WebRequest(new URL(j.getURL(), p.getUrl() +
                 "build?delay=0"),
                 HttpMethod.POST))).getWebResponse();
         assertEquals(HttpURLConnection.HTTP_CREATED, rsp2.getStatusCode());
@@ -371,7 +371,7 @@ public class AbstractProjectTest {
 
         p.makeDisabled(true);
 
-        WebResponse rsp3 = wc.getPage(wc.addCrumb(new WebRequest(new URI(j.getURL(), p.getUrl() +
+        WebResponse rsp3 = wc.getPage(wc.addCrumb(new WebRequest(new URL(j.getURL(), p.getUrl() +
                 "build?delay=0"),
                 HttpMethod.POST))).getWebResponse();
         assertEquals(HttpURLConnection.HTTP_CONFLICT, rsp3.getStatusCode());
@@ -450,7 +450,7 @@ public class AbstractProjectTest {
     }
 
     private HttpURLConnection postConfigDotXml(FreeStyleProject p, String xml) throws Exception {
-        HttpURLConnection con = (HttpURLConnection) new URI(j.getURL(), "job/" + p.getName() + "/config.xml").openConnection();
+        HttpURLConnection con = (HttpURLConnection) new URL(j.getURL(), "job/" + p.getName() + "/config.xml").openConnection();
         con.setRequestMethod("POST");
         con.setRequestProperty("Content-Type", "application/xml; charset=utf-8");
         con.setDoOutput(true);

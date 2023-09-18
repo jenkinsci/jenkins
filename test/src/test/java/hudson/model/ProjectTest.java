@@ -618,7 +618,7 @@ public class ProjectTest {
 
         JenkinsRule.WebClient wc = j.createWebClient();
         wc.withBasicCredentials(user.getId(), "password");
-        WebRequest request = new WebRequest(new URI(wc.getContextPath() + project.getUrl() + "doWipeOutWorkspace"), HttpMethod.POST);
+        WebRequest request = new WebRequest(new URL(wc.getContextPath() + project.getUrl() + "doWipeOutWorkspace"), HttpMethod.POST);
         HtmlPage p = wc.getPage(request);
         assertEquals(200, p.getWebResponse().getStatusCode());
 

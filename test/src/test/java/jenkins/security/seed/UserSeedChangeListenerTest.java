@@ -71,7 +71,7 @@ public class UserSeedChangeListenerTest {
 
         JenkinsRule.WebClient wc = j.createWebClient();
         WebRequest webRequest = new WebRequest(
-                new URI(j.getURL() + alice.getUrl() + "/" + userSeed.getDescriptor().getDescriptorUrl() + "/renewSessionSeed"),
+                new URL(j.getURL() + alice.getUrl() + "/" + userSeed.getDescriptor().getDescriptorUrl() + "/renewSessionSeed"),
                 HttpMethod.POST
         );
 

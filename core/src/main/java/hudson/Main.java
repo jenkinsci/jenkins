@@ -99,11 +99,11 @@ public class Main {
         if (!home.endsWith("/"))     home = home + '/';  // make sure it ends with '/'
 
         // check for authentication info
-        String auth = new URI(home).getUserInfo();
+        String auth = new URL(home).getUserInfo();
         if (auth != null) auth = "Basic " + new Base64Encoder().encode(auth.getBytes(StandardCharsets.UTF_8));
 
         { // check if the home is set correctly
-            HttpURLConnection con = open(new URI(home));
+            HttpURLConnection con = open(new URL(home));
             if (auth != null) con.setRequestProperty("Authorization", auth);
             con.connect();
             if (con.getResponseCode() != 200
@@ -113,10 +113,10 @@ public class Main {
             }
         }
 
-        URL jobURL = new URI(home + "job/" + Util.encode(projectName).replace("/", "/job/") + "/");
+        URL jobURL = new URL(home + "job/" + Util.encode(projectName).replace("/", "/job/") + "/");
 
         { // check if the job name is correct
-            HttpURLConnection con = open(new URI(jobURL, "acceptBuildResult"));
+            HttpURLConnection con = open(new URL(jobURL, "acceptBuildResult"));
             if (auth != null) con.setRequestProperty("Authorization", auth);
             con.connect();
             if (con.getResponseCode() != 200) {
@@ -128,7 +128,7 @@ public class Main {
         // get a crumb to pass the csrf check
         String crumbField = null, crumbValue = null;
         try {
-            HttpURLConnection con = open(new URI(home +
+            HttpURLConnection con = open(new URL(home +
                     "crumbIssuer/api/xml?xpath=concat(//crumbRequestField,\":\",//crumb)'"));
             if (auth != null) con.setRequestProperty("Authorization", auth);
             String line = IOUtils.readFirstLine(con.getInputStream(), "UTF-8");
@@ -165,7 +165,7 @@ public class Main {
                 throw new IOException(e);
             }
 
-            URL location = new URI(jobURL, "postBuildResult");
+            URL location = new URL(jobURL, "postBuildResult");
             while (true) {
                 try {
                     // start a remote connection
@@ -193,7 +193,7 @@ public class Main {
                 } catch (HttpRetryException e) {
                     if (e.getLocation() != null) {
                         // retry with the new location
-                        location = new URI(e.getLocation());
+                        location = new URL(e.getLocation());
                         continue;
                     }
                     // otherwise failed for reasons beyond us.
