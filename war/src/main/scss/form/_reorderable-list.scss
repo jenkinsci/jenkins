@@ -29,7 +29,7 @@
   visibility: visible;
 }
 
-.repeated-chunk.only .show-if-not-only {
+.repeated-chunk.first.last .show-if-not-only {
   visibility: hidden;
 }
 
