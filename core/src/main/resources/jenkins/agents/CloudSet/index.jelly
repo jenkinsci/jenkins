@@ -62,7 +62,9 @@ THE SOFTWARE.
                         <a href="move" class="jenkins-table__button">
                           <input type="hidden" name="name" value="${cloud.name}"/>
                           <j:if test="${not status.first}">
-                            <f:submit name="up" value="" icon="symbol-chevron-up"/>
+                            <button type="submit" name="up" class="jenkins-button jenkins-button--tertiary">
+                              <l:icon src="symbol-chevron-up"/>
+                            </button>
                           </j:if>
                         </a>
                       </f:form>
@@ -74,7 +76,9 @@ THE SOFTWARE.
                         <a href="move" class="jenkins-table__button">
                           <input type="hidden" name="name" value="${cloud.name}"/>
                           <j:if test="${not status.last}">
-                            <f:submit name="down" value="" icon="symbol-chevron-down"/>
+                            <button type="submit" name="down" class="jenkins-button jenkins-button--tertiary">
+                              <l:icon src="symbol-chevron-down"/>
+                            </button>
                           </j:if>
                         </a>
                       </f:form>
