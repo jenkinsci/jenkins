@@ -89,9 +89,9 @@ THE SOFTWARE.
       Has no effect on menu items showing in context menus, only 'href', 'post', and 'requiresConfirmation' attributes substantially change behavior there.
       Set 'contextMenu' to 'false' to remove this task from those menus.
     </st:attribute>
-    <st:attribute name="badge">
+    <st:attribute name="badge" type="jenkins.management.Badge">
       If set, displays the value as a small badge on the right side of the sidepanel item.
-      @since TODO
+      (since 2.401)
     </st:attribute>
     <st:attribute name="confirmationMessage">
       Message to use for confirmation, if requested; defaults to title.
