@@ -333,6 +333,7 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
             throw new Failure(validationError.getMessage());
         }
         this.name = newName;
+        Jenkins.get().save();
 
         // take the user to the renamed cloud top page.
         return HttpResponses.redirectTo("../" + Functions.encode(newName));
