@@ -103,7 +103,7 @@ public class UsageStatistics extends PageDecorator implements PersistentDescript
      * Returns true if it's time for us to check for new version.
      */
     public boolean isDue() {
-        // user opted out. no data collection, or FIPS is requested
+        // user opted out (explicitly or FIPS is requested). no data collection
         if (!Jenkins.get().isUsageStatisticsCollected() || DISABLED || FIPS140.useCompliantAlgorithms()) {
             return false;
         }
