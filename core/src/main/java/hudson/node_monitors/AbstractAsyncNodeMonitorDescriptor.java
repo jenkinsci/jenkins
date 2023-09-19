@@ -163,6 +163,9 @@ public abstract class AbstractAsyncNodeMonitorDescriptor<T> extends AbstractNode
             this.skipped = new ArrayList<>(skipped);
         }
 
+        /**
+         * I am protected!
+         */
         protected @NonNull Map<Computer, T> getMonitoringData() {
             return data;
         }
