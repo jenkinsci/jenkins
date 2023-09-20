@@ -73,7 +73,7 @@ THE SOFTWARE.
                   ${data.errors.containsKey('username') ? data.errors.get('username') : ''}
                 </div>
                 <input class="jenkins-input ${data.errors.containsKey('username') ? 'jenkins-input--error' : ''}"
-                       autofocus="${(data.errors.containsKey('username') || !data) ? true : null}"
+                       autofocus="${(data == null || data.errors.containsKey('username')) ? true : null}"
                        value="${data.username}"
                        type="text"
                        name="username"

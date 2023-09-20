@@ -51,6 +51,7 @@ import java.util.TreeMap;
 import java.util.function.IntConsumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import jenkins.util.MemoryReductionUtil;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -332,6 +333,8 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer, R> 
         loadNumberOnDisk();
     }
 
+    private static final Pattern BUILD_NUMBER = Pattern.compile("[0-9]+");
+
     private void loadNumberOnDisk() {
         String[] kids = dir.list();
         if (kids == null) {
@@ -340,10 +343,14 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer, R> 
         }
         SortedIntList list = new SortedIntList(kids.length / 2);
         for (String s : kids) {
+            if (!BUILD_NUMBER.matcher(s).matches()) {
+                // not a build directory
+                continue;
+            }
             try {
                 list.add(Integer.parseInt(s));
             } catch (NumberFormatException e) {
-                // this isn't a build dir
+                // matched BUILD_NUMBER but not an int?
             }
         }
         list.sort();
