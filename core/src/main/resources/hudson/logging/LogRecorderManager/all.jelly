@@ -37,7 +37,7 @@ THE SOFTWARE.
     </l:app-bar>
 
     <div class="alert alert-info">
-      Log messages at a level lower than INFO (i.e., CONFIG, FINE, FINER, FINEST) are never recorded in the Jenkins log. Use <a href=".">log recorders</a> to record these log messages.
+      Log messages at a level more verbose than INFO (i.e., CONFIG, FINE, FINER, FINEST) are never recorded in the Jenkins log. Use <a href=".">log recorders</a> to record these log messages.
     </div>
     <t:logRecords logRecords="${h.logRecords}"/>
   </l:main-panel>
