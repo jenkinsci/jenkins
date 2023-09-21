@@ -406,10 +406,26 @@ public abstract class View extends AbstractModelObject implements AccessControll
     }
 
     /**
+     * @since TODO
+     */
+    @DataBoundSetter
+    public void setFilterExecutors(boolean filterExecutors) {
+        this.filterExecutors = filterExecutors;
+    }
+
+    /**
      * If true, only show relevant queue items
      */
     public boolean isFilterQueue() {
         return filterQueue;
+    }
+
+    /**
+     * @since TODO
+     */
+    @DataBoundSetter
+    public void setFilterQueue(boolean filterQueue) {
+        this.filterQueue = filterQueue;
     }
 
     /**
