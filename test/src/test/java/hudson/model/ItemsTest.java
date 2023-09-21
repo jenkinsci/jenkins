@@ -42,7 +42,6 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.net.HttpURLConnection;
 import java.net.URI;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import jenkins.model.Jenkins;

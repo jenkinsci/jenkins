@@ -30,7 +30,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.net.URI;
-import java.net.URL;
 import org.hamcrest.Matchers;
 import org.htmlunit.HttpMethod;
 import org.htmlunit.Page;

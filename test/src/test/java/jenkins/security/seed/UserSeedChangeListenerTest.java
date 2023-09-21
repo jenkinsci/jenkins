@@ -30,9 +30,7 @@ import static org.junit.Assert.assertNull;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.User;
-
 import java.net.URI;
-import java.net.URL;
 import org.htmlunit.HttpMethod;
 import org.htmlunit.WebRequest;
 import org.junit.Rule;

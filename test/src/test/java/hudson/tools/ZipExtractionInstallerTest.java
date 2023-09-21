@@ -29,7 +29,6 @@ import static org.junit.Assert.assertEquals;
 import hudson.model.User;
 import java.net.HttpURLConnection;
 import java.net.URI;
-import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import jenkins.model.Jenkins;

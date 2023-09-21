@@ -34,7 +34,6 @@ import hudson.security.HudsonPrivateSecurityRealm;
 import java.io.IOException;
 import java.io.Writer;
 import java.net.URI;
-import java.net.URL;
 import org.htmlunit.HttpMethod;
 import org.htmlunit.Page;
 import org.htmlunit.WebRequest;

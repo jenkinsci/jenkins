@@ -34,7 +34,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
 
 import hudson.model.User;
-
 import java.net.URI;
 import java.net.URL;
 import java.util.List;

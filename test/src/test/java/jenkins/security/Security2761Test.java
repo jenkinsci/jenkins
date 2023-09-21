@@ -7,9 +7,7 @@ import static org.junit.Assert.assertFalse;
 
 import hudson.model.InvisibleAction;
 import hudson.model.UnprotectedRootAction;
-
 import java.net.URI;
-import java.net.URL;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.htmlunit.html.HtmlPage;
 import org.junit.Rule;
