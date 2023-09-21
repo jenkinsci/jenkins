@@ -4363,7 +4363,7 @@ __metadata:
     jquery: 3.7.1
     lodash: 4.17.21
     mini-css-extract-plugin: 2.7.6
-    postcss: 8.4.29
+    postcss: 8.4.30
     postcss-loader: 7.3.3
     postcss-preset-env: 9.1.3
     postcss-scss: 4.0.8
@@ -6072,14 +6072,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"postcss@npm:8.4.29, postcss@npm:^8.4.21, postcss@npm:^8.4.24, postcss@npm:^8.4.25":
-  version: 8.4.29
-  resolution: "postcss@npm:8.4.29"
+"postcss@npm:8.4.30, postcss@npm:^8.4.21, postcss@npm:^8.4.24, postcss@npm:^8.4.25":
+  version: 8.4.30
+  resolution: "postcss@npm:8.4.30"
   dependencies:
     nanoid: ^3.3.6
     picocolors: ^1.0.0
     source-map-js: ^1.0.2
-  checksum: dd6daa25e781db9ae5b651d9b7bfde0ec6e60e86a37da69a18eb4773d5ddd51e28fc4ff054fbdc04636a31462e6bf09a1e50986f69ac52b10d46b7457cd36d12
+  checksum: 6c810c10c9bd3e03ca016e0b6b6756261e640aba1a9a7b1200b55502bc34b9165e38f590aef3493afc2f30ab55cdfcd43fd0f8408d69a77318ddbcf2a8ad164b
   languageName: node
   linkType: hard
 
