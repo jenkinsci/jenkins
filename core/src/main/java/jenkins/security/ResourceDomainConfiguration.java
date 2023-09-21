@@ -34,6 +34,8 @@ import hudson.util.FormValidation;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
@@ -112,9 +114,11 @@ public final class ResourceDomainConfiguration extends GlobalConfiguration {
 
         URL resourceRootUrl;
         try {
-            resourceRootUrl = new URL(resourceRootUrlString);
+            resourceRootUrl = new URI(resourceRootUrlString).toURL();
         } catch (MalformedURLException ex) {
             return FormValidation.error(Messages.ResourceDomainConfiguration_Invalid());
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
         }
 
         String resourceRootUrlHost = resourceRootUrl.getHost();
@@ -222,7 +226,7 @@ public final class ResourceDomainConfiguration extends GlobalConfiguration {
         }
         String resourceRootUrl = get().getUrl();
         try {
-            URL url = new URL(resourceRootUrl);
+            URL url = new URI(resourceRootUrl).toURL();
 
             String resourceRootHost = url.getHost();
             if (!resourceRootHost.equalsIgnoreCase(req.getServerName())) {
@@ -243,6 +247,8 @@ public final class ResourceDomainConfiguration extends GlobalConfiguration {
         } catch (MalformedURLException ex) {
             // the URL here cannot be so broken that we cannot call `new URL(String)` on it...
             return false;
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
         }
         return true;
     }

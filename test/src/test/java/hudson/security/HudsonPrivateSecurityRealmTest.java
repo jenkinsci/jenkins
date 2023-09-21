@@ -43,6 +43,7 @@ import hudson.ExtensionList;
 import hudson.model.User;
 import hudson.security.pages.SignupPage;
 import java.lang.reflect.Field;
+import java.net.URI;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -344,7 +345,7 @@ public class HudsonPrivateSecurityRealmTest {
         info.password2 = login;
         info.fullname = StringUtils.capitalize(login);
 
-        WebRequest request = new WebRequest(new URL(wc.getContextPath() + "securityRealm/createFirstAccount"), HttpMethod.POST);
+        WebRequest request = new WebRequest(new URI(wc.getContextPath() + "securityRealm/createFirstAccount").toURL(), HttpMethod.POST);
         request.setRequestParameters(Arrays.asList(
                 new NameValuePair("username", login),
                 new NameValuePair("password1", login),

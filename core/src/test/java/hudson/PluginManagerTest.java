@@ -40,6 +40,8 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -206,7 +208,11 @@ public class PluginManagerTest {
 
     private URL toManifestUrl(File jarFile) throws MalformedURLException {
         final String manifestPath = "META-INF/MANIFEST.MF";
-        return new URL("jar:" + jarFile.toURI().toURL() + "!/" + manifestPath);
+        try {
+            return new URI("jar:" + jarFile.toURI().toURL() + "!/" + manifestPath).toURL();
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private static class FormValidationMatcher extends TypeSafeDiagnosingMatcher<FormValidation> {

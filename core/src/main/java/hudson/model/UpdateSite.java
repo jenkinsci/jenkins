@@ -47,6 +47,7 @@ import hudson.util.VersionNumber;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -215,7 +216,11 @@ public class UpdateSite {
 
     @Restricted(NoExternalUse.class)
     public @NonNull FormValidation updateDirectlyNow(boolean signatureCheck) throws IOException {
-        return updateData(DownloadService.loadJSON(new URL(getUrl() + "?id=" + URLEncoder.encode(getId(), StandardCharsets.UTF_8) + "&version=" + URLEncoder.encode(Jenkins.VERSION, StandardCharsets.UTF_8))), signatureCheck);
+        try {
+            return updateData(DownloadService.loadJSON(new URI(getUrl() + "?id=" + URLEncoder.encode(getId(), StandardCharsets.UTF_8) + "&version=" + URLEncoder.encode(Jenkins.VERSION, StandardCharsets.UTF_8)).toURL()), signatureCheck);
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private FormValidation updateData(String json, boolean signatureCheck)

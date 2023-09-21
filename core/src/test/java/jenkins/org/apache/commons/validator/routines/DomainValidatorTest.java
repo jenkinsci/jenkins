@@ -25,9 +25,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.net.HttpURLConnection;
-import java.net.IDN;
-import java.net.URL;
+import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.text.SimpleDateFormat;
@@ -502,7 +500,12 @@ public class DomainValidatorTest extends TestCase {
         } else {
             modTime = 0;
         }
-        HttpURLConnection hc = (HttpURLConnection) new URL(tldurl).openConnection();
+        HttpURLConnection hc = null;
+        try {
+            hc = (HttpURLConnection) new URI(tldurl).toURL().openConnection();
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
         if (modTime > 0) {
             SimpleDateFormat sdf = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z"); //Sun, 06 Nov 1994 08:49:37 GMT
             String since = sdf.format(new Date(modTime));

@@ -28,6 +28,7 @@ import static org.junit.Assert.assertEquals;
 
 import hudson.model.User;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -65,7 +66,7 @@ public class ZipExtractionInstallerTest {
         User.getById(ADMIN, true);
         User.getById(USER, true);
 
-        WebRequest request = new WebRequest(new URL(j.getURL() + "descriptorByName/hudson.tools.ZipExtractionInstaller/checkUrl"), HttpMethod.POST);
+        WebRequest request = new WebRequest(new URI(j.getURL() + "descriptorByName/hudson.tools.ZipExtractionInstaller/checkUrl").toURL(), HttpMethod.POST);
         request.setRequestBody(URLEncoder.encode("value=https://www.google.com", StandardCharsets.UTF_8));
 
         JenkinsRule.WebClient adminWc = j.createWebClient();

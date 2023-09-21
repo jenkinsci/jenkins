@@ -24,6 +24,8 @@ import hudson.scm.SCMRevisionState;
 import hudson.triggers.SCMTrigger;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -149,7 +151,12 @@ public class ConsoleAnnotatorTest {
         }
 
         String next() throws IOException {
-            WebRequest req = new WebRequest(new URL(r.getURL() + run.getUrl() + "/logText/progressiveHtml" + (start != null ? "?start=" + start : "")));
+            WebRequest req = null;
+            try {
+                req = new WebRequest(new URI(r.getURL() + run.getUrl() + "/logText/progressiveHtml" + (start != null ? "?start=" + start : "")).toURL());
+            } catch (URISyntaxException e) {
+                throw new RuntimeException(e);
+            }
             req.setEncodingType(null);
             Map headers = new HashMap();
             if (consoleAnnotator != null)

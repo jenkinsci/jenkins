@@ -31,6 +31,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
+import java.net.URI;
 import java.net.URL;
 import org.junit.Before;
 import org.junit.Test;
@@ -247,7 +248,7 @@ public class JenkinsGetRootUrlTest {
 
         try {
 
-            return new URL(realUrl);
+            return new URI(realUrl).toURL();
         } catch (Exception ex) {
 
             throw new RuntimeException(ex);

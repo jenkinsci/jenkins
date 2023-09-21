@@ -66,6 +66,8 @@ import java.lang.reflect.Constructor;
 import java.net.HttpRetryException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.UnknownHostException;
@@ -1206,8 +1208,8 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
          *          that is assumed to be always available.
          * @throws IOException if a connection can't be established
          */
-        public void checkConnection(ConnectionCheckJob job, String connectionCheckUrl) throws IOException {
-            testConnection(new URL(connectionCheckUrl));
+        public void checkConnection(ConnectionCheckJob job, String connectionCheckUrl) throws IOException, URISyntaxException {
+            testConnection(new URI(connectionCheckUrl).toURL());
         }
 
         /**
@@ -1217,7 +1219,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
          * @param updateCenterUrl A sting containing the URL of the update center host.
          * @throws IOException if a connection to the update center server can't be established.
          */
-        public void checkUpdateCenter(ConnectionCheckJob job, String updateCenterUrl) throws IOException {
+        public void checkUpdateCenter(ConnectionCheckJob job, String updateCenterUrl) throws IOException, URISyntaxException {
             testConnection(toUpdateCenterCheckUrl(updateCenterUrl));
         }
 
@@ -1227,12 +1229,12 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
          * @return the converted URL.
          * @throws MalformedURLException if the supplied URL is malformed.
          */
-        static URL toUpdateCenterCheckUrl(String updateCenterUrl) throws MalformedURLException {
+        static URL toUpdateCenterCheckUrl(String updateCenterUrl) throws MalformedURLException, URISyntaxException {
             URL url;
             if (updateCenterUrl.startsWith("http://") || updateCenterUrl.startsWith("https://")) {
-                url = new URL(updateCenterUrl + (updateCenterUrl.indexOf('?') == -1 ? "?uctest" : "&uctest"));
+                url = new URI(updateCenterUrl + (updateCenterUrl.indexOf('?') == -1 ? "?uctest" : "&uctest")).toURL();
             } else {
-                url = new URL(updateCenterUrl);
+                url = new URI(updateCenterUrl).toURL();
             }
             return url;
         }
@@ -2193,7 +2195,11 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
 
         @Override
         protected URL getURL() throws MalformedURLException {
-            return new URL(plugin.url);
+            try {
+                return new URI(plugin.url).toURL();
+            } catch (URISyntaxException e) {
+                throw new RuntimeException(e);
+            }
         }
 
         @Override
@@ -2422,7 +2428,11 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
 
         @Override
         protected URL getURL() throws MalformedURLException {
-            return new URL(plugin.url);
+            try {
+                return new URI(plugin.url).toURL();
+            } catch (URISyntaxException e) {
+                throw new RuntimeException(e);
+            }
         }
 
         @Override
@@ -2517,7 +2527,11 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
             if (site == null) {
                 throw new MalformedURLException("no update site defined");
             }
-            return new URL(site.getData().core.url);
+            try {
+                return new URI(site.getData().core.url).toURL();
+            } catch (URISyntaxException e) {
+                throw new RuntimeException(e);
+            }
         }
 
         @Override
@@ -2564,7 +2578,11 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
             if (site == null) {
                 throw new MalformedURLException("no update site defined");
             }
-            return new URL(site.getData().core.url);
+            try {
+                return new URI(site.getData().core.url).toURL();
+            } catch (URISyntaxException e) {
+                throw new RuntimeException(e);
+            }
         }
 
         @Override

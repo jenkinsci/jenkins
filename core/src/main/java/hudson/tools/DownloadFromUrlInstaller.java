@@ -6,6 +6,8 @@ import hudson.model.Node;
 import hudson.model.TaskListener;
 import hudson.slaves.NodeSpecific;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -74,14 +76,18 @@ public abstract class DownloadFromUrlInstaller extends ToolInstaller {
         if (isUpToDate(expected, inst))
             return expected;
 
-        if (expected.installIfNecessaryFrom(new URL(inst.url), log, "Unpacking " + inst.url + " to " + expected + " on " + node.getDisplayName())) {
-            expected.child(".timestamp").delete(); // we don't use the timestamp
-            FilePath base = findPullUpDirectory(expected);
-            if (base != null && base != expected)
-                base.moveAllChildrenTo(expected);
-            // leave a record for the next up-to-date check
-            expected.child(".installedFrom").write(inst.url, "UTF-8");
-            expected.act(new ZipExtractionInstaller.ChmodRecAPlusX());
+        try {
+            if (expected.installIfNecessaryFrom(new URI(inst.url).toURL(), log, "Unpacking " + inst.url + " to " + expected + " on " + node.getDisplayName())) {
+                expected.child(".timestamp").delete(); // we don't use the timestamp
+                FilePath base = findPullUpDirectory(expected);
+                if (base != null && base != expected)
+                    base.moveAllChildrenTo(expected);
+                // leave a record for the next up-to-date check
+                expected.child(".installedFrom").write(inst.url, "UTF-8");
+                expected.act(new ZipExtractionInstaller.ChmodRecAPlusX());
+            }
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
         }
 
         return expected;

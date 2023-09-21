@@ -40,6 +40,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Locale;
@@ -335,7 +337,7 @@ public abstract class FormFieldValidator {
             if (!value.endsWith("/")) value += '/';
 
             try {
-                URL url = new URL(value);
+                URL url = new URI(value).toURL();
                 HttpURLConnection con = openConnection(url);
                 con.connect();
                 if (con.getResponseCode() != 200
@@ -347,6 +349,8 @@ public abstract class FormFieldValidator {
                 ok();
             } catch (IOException e) {
                 handleIOException(value, e);
+            } catch (URISyntaxException e) {
+                throw new RuntimeException(e);
             }
         }
 

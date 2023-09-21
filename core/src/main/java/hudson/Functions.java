@@ -1939,12 +1939,14 @@ public class Functions {
         String url = Jenkins.get().getRootUrl();
         try {
             if (url != null) {
-                String host = new URL(url).getHost();
+                String host = new URI(url).toURL().getHost();
                 if (host != null)
                     return host;
             }
         } catch (MalformedURLException e) {
             // fall back to HTTP request
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
         }
         return Stapler.getCurrentRequest().getServerName();
     }

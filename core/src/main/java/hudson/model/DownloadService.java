@@ -44,6 +44,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
@@ -388,7 +389,7 @@ public class DownloadService {
                 }
                 String jsonString;
                 try {
-                    jsonString = loadJSONHTML(new URL(site + ".html?id=" + URLEncoder.encode(getId(), StandardCharsets.UTF_8) + "&version=" + URLEncoder.encode(Jenkins.VERSION, StandardCharsets.UTF_8)));
+                    jsonString = loadJSONHTML(new URI(site + ".html?id=" + URLEncoder.encode(getId(), StandardCharsets.UTF_8) + "&version=" + URLEncoder.encode(Jenkins.VERSION, StandardCharsets.UTF_8)).toURL());
                     toolInstallerMetadataExists = true;
                 } catch (Exception e) {
                     LOGGER.log(Level.FINE, "Could not load json from " + site, e);

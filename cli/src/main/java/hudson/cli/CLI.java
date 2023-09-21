@@ -39,6 +39,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.ByteBuffer;
@@ -306,7 +307,7 @@ public class CLI {
         }
 
         CLIConnectionFactory factory = new CLIConnectionFactory();
-        String userInfo = new URL(url).getUserInfo();
+        String userInfo = new URI(url).getUserInfo();
         if (userInfo != null) {
             factory = factory.basicAuth(userInfo);
         } else if (auth != null) {
@@ -386,9 +387,9 @@ public class CLI {
         }
     }
 
-    private static int plainHttpConnection(String url, List<String> args, CLIConnectionFactory factory) throws IOException, InterruptedException {
+    private static int plainHttpConnection(String url, List<String> args, CLIConnectionFactory factory) throws IOException, InterruptedException, URISyntaxException {
         LOGGER.log(FINE, "Trying to connect to {0} via plain protocol over HTTP", url);
-        FullDuplexHttpStream streams = new FullDuplexHttpStream(new URL(url), "cli?remoting=false", factory.authorization);
+        FullDuplexHttpStream streams = new FullDuplexHttpStream(new URI(url).toURL(), "cli?remoting=false", factory.authorization);
         try (ClientSideImpl connection = new ClientSideImpl(new PlainCLIProtocol.FramedOutput(streams.getOutputStream()))) {
             connection.start(args);
             InputStream is = streams.getInputStream();

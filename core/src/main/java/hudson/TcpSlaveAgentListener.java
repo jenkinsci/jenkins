@@ -41,7 +41,8 @@ import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.Socket;
 import java.net.SocketAddress;
-import java.net.URL;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.charset.StandardCharsets;
 import java.security.interfaces.RSAPublicKey;
@@ -135,9 +136,11 @@ public final class TcpSlaveAgentListener extends Thread {
           return CLI_HOST_NAME;
         }
         try {
-            return new URL(Jenkins.get().getRootUrl()).getHost();
+            return new URI(Jenkins.get().getRootUrl()).toURL().getHost();
         } catch (MalformedURLException e) {
             throw new IllegalStateException("Could not get TcpSlaveAgentListener host name", e);
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
         }
     }
 

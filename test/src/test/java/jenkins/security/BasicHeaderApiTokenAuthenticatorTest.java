@@ -33,6 +33,8 @@ import static org.junit.Assert.assertNull;
 
 import hudson.ExtensionComponent;
 import hudson.model.User;
+
+import java.net.URI;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
@@ -83,12 +85,12 @@ public class BasicHeaderApiTokenAuthenticatorTest {
                 wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
 
                 { // for invalid token, no effect
-                    WebRequest request = new WebRequest(new URL(j.jenkins.getRootUrl() + "whoAmI/api/xml"));
+                    WebRequest request = new WebRequest(new URI(j.jenkins.getRootUrl() + "whoAmI/api/xml").toURL());
                     request.setAdditionalHeader("Authorization", base64("user1", "invalid-token"));
                     assertThat(wc.getPage(request).getWebResponse().getStatusCode(), equalTo(401));
                 }
                 { // for invalid user, no effect
-                    WebRequest request = new WebRequest(new URL(j.jenkins.getRootUrl() + "whoAmI/api/xml"));
+                    WebRequest request = new WebRequest(new URI(j.jenkins.getRootUrl() + "whoAmI/api/xml").toURL());
                     request.setAdditionalHeader("Authorization", base64("user-not-valid", token.get()));
                     assertThat(wc.getPage(request).getWebResponse().getStatusCode(), equalTo(401));
                 }
@@ -96,7 +98,7 @@ public class BasicHeaderApiTokenAuthenticatorTest {
                 assertNull(User.getById("user-not-valid", false));
 
                 { // valid user with valid token, ok
-                    WebRequest request = new WebRequest(new URL(j.jenkins.getRootUrl() + "whoAmI/api/xml"));
+                    WebRequest request = new WebRequest(new URI(j.jenkins.getRootUrl() + "whoAmI/api/xml").toURL());
                     request.setAdditionalHeader("Authorization", base64("user1", token.get()));
                     XmlPage xmlPage = wc.getPage(request);
                     assertThat(xmlPage, hasXPath("//name", is("user1")));
@@ -131,12 +133,12 @@ public class BasicHeaderApiTokenAuthenticatorTest {
                 wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
 
                 { // for invalid token, no effect
-                    WebRequest request = new WebRequest(new URL(j.jenkins.getRootUrl() + "whoAmI/api/xml"));
+                    WebRequest request = new WebRequest(new URI(j.jenkins.getRootUrl() + "whoAmI/api/xml").toURL());
                     request.setAdditionalHeader("Authorization", base64("user1", "invalid-token"));
                     assertThat(wc.getPage(request).getWebResponse().getStatusCode(), equalTo(401));
                 }
                 { // for invalid user, no effect
-                    WebRequest request = new WebRequest(new URL(j.jenkins.getRootUrl() + "whoAmI/api/xml"));
+                    WebRequest request = new WebRequest(new URI(j.jenkins.getRootUrl() + "whoAmI/api/xml").toURL());
                     request.setAdditionalHeader("Authorization", base64("user-not-valid", token.get()));
                     assertThat(wc.getPage(request).getWebResponse().getStatusCode(), equalTo(401));
                 }
@@ -145,7 +147,7 @@ public class BasicHeaderApiTokenAuthenticatorTest {
                 assertNull(User.getById("user-not-valid", false));
 
                 { // valid user with valid token, ok
-                    WebRequest request = new WebRequest(new URL(j.jenkins.getRootUrl() + "whoAmI/api/xml"));
+                    WebRequest request = new WebRequest(new URI(j.jenkins.getRootUrl() + "whoAmI/api/xml").toURL());
                     request.setAdditionalHeader("Authorization", base64("user1", token.get()));
                     XmlPage xmlPage = wc.getPage(request);
                     assertThat(xmlPage, hasXPath("//name", is("user1")));

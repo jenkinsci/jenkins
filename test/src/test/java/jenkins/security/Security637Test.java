@@ -42,6 +42,7 @@ import hudson.model.JobPropertyDescriptor;
 import hudson.slaves.DumbSlave;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLStreamHandler;
 import java.util.Collections;
@@ -127,7 +128,7 @@ public class Security637Test {
 
         @Override
         public URL call() throws Exception {
-            return new URL(url);
+            return new URI(url).toURL();
         }
     }
 
@@ -140,7 +141,7 @@ public class Security637Test {
 
                 // we bypass the standard equals method that resolve the hostname
                 assertThat(
-                        slave.getChannel().call(new URLTransferCallable(new URL("https://jenkins.io"))),
+                        slave.getChannel().call(new URLTransferCallable(new URI("https://jenkins.io").toURL())),
                         not(equalTo(
                                 slave.getChannel().call(new URLTransferCallable(new URL("https://www.jenkins.io")))
                         ))

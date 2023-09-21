@@ -30,6 +30,8 @@ import static org.junit.Assert.assertNull;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.User;
+
+import java.net.URI;
 import java.net.URL;
 import org.htmlunit.HttpMethod;
 import org.htmlunit.WebRequest;
@@ -71,7 +73,7 @@ public class UserSeedChangeListenerTest {
 
         JenkinsRule.WebClient wc = j.createWebClient();
         WebRequest webRequest = new WebRequest(
-                new URL(j.getURL() + alice.getUrl() + "/" + userSeed.getDescriptor().getDescriptorUrl() + "/renewSessionSeed"),
+                new URI(j.getURL() + alice.getUrl() + "/" + userSeed.getDescriptor().getDescriptorUrl() + "/renewSessionSeed").toURL(),
                 HttpMethod.POST
         );
 

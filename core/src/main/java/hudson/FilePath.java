@@ -83,6 +83,7 @@ import java.io.Writer;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.Charset;
@@ -1065,6 +1066,8 @@ public final class FilePath implements SerializableOnlyOverRemoting {
             return true;
         } catch (IOException e) {
             throw new IOException("Failed to install " + archive + " to " + remote, e);
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -3337,8 +3340,8 @@ public final class FilePath implements SerializableOnlyOverRemoting {
 
     @Restricted(NoExternalUse.class)
     static class UrlFactory {
-        public URL newURL(String location) throws MalformedURLException {
-            return new URL(location);
+        public URL newURL(String location) throws MalformedURLException, URISyntaxException {
+            return new URI(location).toURL();
         }
     }
 
