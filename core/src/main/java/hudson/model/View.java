@@ -297,7 +297,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
 
     @DataBoundSetter
     public synchronized void setDescription(String description) {
-        this.description = description;
+        this.description = Util.nullify(description);
     }
 
     /**
@@ -1029,13 +1029,13 @@ public abstract class View extends AbstractModelObject implements AccessControll
 
         submit(req);
 
-        description = Util.nullify(req.getParameter("description"));
-        filterExecutors = req.getParameter("filterExecutors") != null;
-        filterQueue = req.getParameter("filterQueue") != null;
-
+        var json = req.getSubmittedForm();
+        setDescription(json.optString("description"));
+        setFilterExecutors(json.optBoolean("filterExecutors"));
+        setFilterQueue(json.optBoolean("filterQueue"));
         rename(req.getParameter("name"));
 
-        getProperties().rebuild(req, req.getSubmittedForm(), getApplicablePropertyDescriptors());
+        getProperties().rebuild(req, json, getApplicablePropertyDescriptors());
 
         save();
 
