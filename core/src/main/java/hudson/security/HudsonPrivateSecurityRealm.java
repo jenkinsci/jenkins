@@ -538,7 +538,15 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
      */
     public User createAccountWithHashedPassword(String userName, String hashedPassword) throws IOException {
         if (!PASSWORD_ENCODER.isPasswordHashed(hashedPassword)) {
-            throw new IllegalArgumentException("this method should only be called with a pre-hashed password");
+            final String message;
+            if (hashedPassword == null) {
+                message = "The hashed password cannot be null";
+            } else if (hashedPassword.startsWith(getPasswordHeader())) {
+                message = "The hashed password was hashed with the correct algorithm, but the format was not correct";
+            } else {
+                message = "The hashed password was hashed with an incorrect algorithm. Jenkins is expecting " + getPasswordHeader();
+            }
+            throw new IllegalArgumentException(message);
         }
         User user = User.getById(userName, true);
         user.addProperty(Details.fromHashedPassword(hashedPassword));
