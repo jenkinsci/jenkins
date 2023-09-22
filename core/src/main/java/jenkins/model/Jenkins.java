@@ -274,7 +274,6 @@ import jenkins.model.ProjectNamingStrategy.DefaultProjectNamingStrategy;
 import jenkins.security.ClassFilterImpl;
 import jenkins.security.ConfidentialKey;
 import jenkins.security.ConfidentialStore;
-import jenkins.security.FIPS140;
 import jenkins.security.MasterToSlaveCallable;
 import jenkins.security.RedactSecretJsonInErrorMessageSanitizer;
 import jenkins.security.ResourceDomainConfiguration;
@@ -1429,20 +1428,16 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     @CheckForNull
     public Boolean isNoUsageStatistics() {
-        return FIPS140.useCompliantAlgorithms() ? Boolean.FALSE : noUsageStatistics;
+        return noUsageStatistics;
     }
 
     /**
      * If usage statistics are being collected
      *
      * @return {@code true} if usage statistics should be collected.
-     *                Defaults to {@code true} when {@link #noUsageStatistics} is not set and
-     *                FIPS-140 compliance is not enabled.
+     *                Defaults to {@code true} when {@link #noUsageStatistics} is not set.
      */
     public boolean isUsageStatisticsCollected() {
-        if (FIPS140.useCompliantAlgorithms()) {
-            return false;
-        }
         return noUsageStatistics == null || !noUsageStatistics;
     }
 
@@ -1451,10 +1446,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      *
      */
     public void setNoUsageStatistics(Boolean noUsageStatistics) throws IOException {
-        if (FIPS140.useCompliantAlgorithms() && Boolean.FALSE.equals(noUsageStatistics)) {
-            LOGGER.log(Level.WARNING, "ignoring request to enable usage Statistics in FIPS mode");
-            return;
-        }
         this.noUsageStatistics = noUsageStatistics;
         save();
     }
