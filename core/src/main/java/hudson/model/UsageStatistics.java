@@ -215,7 +215,11 @@ public class UsageStatistics extends PageDecorator implements PersistentDescript
     public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
         try {
             // for backward compatibility reasons, this configuration is stored in Jenkins
-            Jenkins.get().setNoUsageStatistics(json.has("usageStatisticsCollected") ? null : Boolean.TRUE);
+            if (DISABLED) {
+                Jenkins.get().setNoUsageStatistics(Boolean.TRUE);
+            } else {
+                Jenkins.get().setNoUsageStatistics(json.has("usageStatisticsCollected") ? null : Boolean.TRUE);
+            }
             return true;
         } catch (IOException e) {
             throw new FormException(e, "usageStatisticsCollected");
