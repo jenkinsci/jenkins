@@ -40,7 +40,7 @@ public class ListScmBrowsersTest {
     private void check(Item p) throws IOException, SAXException {
         HtmlPage page = j.createWebClient().getPage(p, "configure");
         List<HtmlSelect> selects = DomNodeUtil.selectNodes(page, "//select");
-        assertThat(selects, empty());
+        assertThat(selects, not(empty()));
         for (HtmlSelect select : selects) {
             Set<String> title = new HashSet<>();
             for (HtmlOption o : select.getOptions()) {
