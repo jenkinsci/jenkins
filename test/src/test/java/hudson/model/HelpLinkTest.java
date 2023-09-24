@@ -2,6 +2,8 @@ package hudson.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.not;
+
 
 import hudson.matrix.MatrixProject;
 import hudson.tasks.BuildStepDescriptor;
