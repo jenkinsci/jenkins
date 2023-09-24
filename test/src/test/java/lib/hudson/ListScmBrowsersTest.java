@@ -2,6 +2,7 @@ package lib.hudson;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertTrue;
 
 import hudson.matrix.MatrixProject;
