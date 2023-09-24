@@ -566,7 +566,7 @@ public class PluginManagerTest {
         f.getInputByName("name").setValue(plugin.getAbsolutePath());
         r.submit(f);
 
-        assertThat(r.jenkins.getUpdateCenter().getJobs(), empty());
+        assertThat(r.jenkins.getUpdateCenter().getJobs(), not(empty()));
 
         // wait for all the download jobs to complete
         boolean done = true;
