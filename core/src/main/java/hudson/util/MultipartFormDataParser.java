@@ -25,6 +25,9 @@
 package hudson.util;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
 import javax.servlet.ServletException;
@@ -46,7 +49,6 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  * @author Kohsuke Kawaguchi
  */
 public class MultipartFormDataParser implements AutoCloseable {
-    private final ServletFileUpload upload = new ServletFileUpload(new DiskFileItemFactory());
     private final Map<String, FileItem> byName = new HashMap<>();
 
     /**
@@ -74,6 +76,14 @@ public class MultipartFormDataParser implements AutoCloseable {
 
     @Restricted(NoExternalUse.class)
     public MultipartFormDataParser(HttpServletRequest request, int maxParts, long maxPartSize, long maxSize) throws ServletException {
+        File tmpDir;
+        try {
+            tmpDir = Files.createTempDirectory("jenkins-multipart-uploads").toFile();
+        } catch (IOException e) {
+            throw new ServletException("Error creating temporary directory", e);
+        }
+        tmpDir.deleteOnExit();
+        ServletFileUpload upload = new ServletFileUpload(new DiskFileItemFactory(DiskFileItemFactory.DEFAULT_SIZE_THRESHOLD, tmpDir));
         upload.setFileCountMax(maxParts);
         upload.setFileSizeMax(maxPartSize);
         upload.setSizeMax(maxSize);
