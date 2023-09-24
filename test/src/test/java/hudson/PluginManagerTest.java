@@ -490,7 +490,7 @@ public class PluginManagerTest {
         // Check that the basic API endpoint invocation works.
         assertEquals("ok", response.getString("status"));
         JSONArray data = response.getJSONArray("data");
-        assertThat(data, empty());
+        assertThat(data, not(empty()));
 
         // Check that there was some data in the response and that the first entry
         // at least had some of the expected fields.
