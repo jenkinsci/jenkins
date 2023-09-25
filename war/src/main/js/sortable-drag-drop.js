@@ -36,7 +36,7 @@ function registerSortableDragDrop(e) {
   });
 }
 
-function registerSortableTableDragDrop(e) {
+function registerSortableTableDragDrop(e, onChangeFunction) {
   if (!e || !e.classList.contains("with-drag-drop")) {
     return false;
   }
@@ -45,7 +45,9 @@ function registerSortableTableDragDrop(e) {
     handle: ".dd-handle",
     items: "tr",
     onChange: function (event) {
-      console.log("change", event);
+      if (onChangeFunction) {
+        onChangeFunction(event);
+      }
     },
   });
 }

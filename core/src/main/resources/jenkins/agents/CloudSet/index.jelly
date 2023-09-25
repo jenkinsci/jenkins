@@ -76,7 +76,7 @@ THE SOFTWARE.
               </tbody>
             </table>
             <f:bottomButtonBar>
-              <f:submit value="${%Save}" />
+              <f:submit id="saveButton" value="${%Save}" clazz="jenkins-hidden" />
             </f:bottomButtonBar>
           </f:form>
           <st:adjunct includes="lib.form.confirm" />
@@ -134,7 +134,9 @@ THE SOFTWARE.
     <script>
 
       document.querySelectorAll('tbody')
-          .forEach(table => registerSortableTableDragDrop(table))
+          .forEach(table => registerSortableTableDragDrop(table, function(event) {
+        YAHOO.util.Dom.removeClass(document.getElementById('saveButton'), "jenkins-hidden");
+      }))
     </script>
   </l:layout>
 </j:jelly>
