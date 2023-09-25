@@ -25,6 +25,8 @@ import org.apache.commons.jelly.Script;
 import org.apache.commons.jelly.XMLOutput;
 import org.jenkins.ui.icon.Icon;
 import org.jenkins.ui.icon.IconSet;
+import org.jenkins.ui.symbol.Symbol;
+import org.jenkins.ui.symbol.SymbolRequest;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.HttpResponse;
@@ -436,8 +438,18 @@ public interface ModelObjectWithContextMenu extends ModelObject {
         }
 
         public MenuItem withIconClass(String iconClass) {
-            Icon iconByClass = IconSet.icons.getIconByClassSpec(iconClass + " icon-md");
-            this.icon = iconByClass == null ? null : iconByClass.getQualifiedUrl(getResourceUrl());
+            if (iconClass != null && iconClass.startsWith("symbol-")) {
+                this.icon = iconClass;
+                this.iconXml = Symbol.get(new SymbolRequest.Builder()
+                        .withName(iconClass.split(" ")[0].substring(7))
+                        .withPluginName(Functions.extractPluginNameFromIconSrc(iconClass))
+                        .withClasses("icon-md")
+                        .build()
+                );
+            } else {
+                Icon iconByClass = IconSet.icons.getIconByClassSpec(iconClass + " icon-md");
+                this.icon = iconByClass == null ? null : iconByClass.getQualifiedUrl(getResourceUrl());
+            }
             return this;
         }
 

@@ -106,9 +106,10 @@ function mapChildrenItemsToDropdownItems(items) {
               method: "post",
               headers: crumb.wrap({}),
             });
-            if (event.length === 1 && event[0].target != null) {
-              hoverNotification("Done.", event[0].target);
-            }
+            notificationBar.show(
+              item.displayName + ": Done.",
+              notificationBar.SUCCESS,
+            );
           }
         }
       },

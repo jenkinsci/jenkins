@@ -611,16 +611,12 @@ function geval(script) {
  */
 // eslint-disable-next-line no-unused-vars
 function fireEvent(element, event) {
-  if (document.createEvent) {
-    // dispatch for firefox + others
-    let evt = document.createEvent("HTMLEvents");
-    evt.initEvent(event, true, true); // event type,bubbling,cancelable
-    return !element.dispatchEvent(evt);
-  } else {
-    // dispatch for IE
-    let evt = document.createEventObject();
-    return element.fireEvent("on" + event, evt);
-  }
+  return !element.dispatchEvent(
+    new Event(event, {
+      bubbles: true,
+      cancelable: true,
+    }),
+  );
 }
 
 // Behavior rules

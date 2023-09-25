@@ -42,6 +42,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import jenkins.model.queue.QueueItem;
 
 /**
@@ -371,8 +372,9 @@ public class HistoryPageFilter<T> {
 
     private boolean fitsSearchBuildVariables(AbstractBuild<?, ?> runAsBuild) {
         Map<String, String> buildVariables = runAsBuild.getBuildVariables();
-        for (String paramsValues : buildVariables.values()) {
-            if (fitsSearchString(paramsValues)) {
+        Set<String> sensitiveBuildVariables = runAsBuild.getSensitiveBuildVariables();
+        for (Map.Entry<String, String> param : buildVariables.entrySet()) {
+            if (!sensitiveBuildVariables.contains(param.getKey()) && fitsSearchString(param.getValue())) {
                 return true;
             }
         }
