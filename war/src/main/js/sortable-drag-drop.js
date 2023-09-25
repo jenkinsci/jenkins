@@ -36,7 +36,7 @@ function registerSortableDragDrop(e) {
   });
 }
 
-function registerSortableTableDragDrop(e, onChangeFunction) {
+export function registerSortableTableDragDrop(e, onChangeFunction) {
   if (!e || !e.classList.contains("with-drag-drop")) {
     return false;
   }
@@ -57,4 +57,3 @@ function registerSortableTableDragDrop(e, onChangeFunction) {
  * so that other widgets can use it (repeatable, hetero-list)
  */
 window.registerSortableDragDrop = registerSortableDragDrop;
-window.registerSortableTableDragDrop = registerSortableTableDragDrop;
