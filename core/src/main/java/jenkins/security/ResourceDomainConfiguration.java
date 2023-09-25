@@ -85,13 +85,13 @@ public final class ResourceDomainConfiguration extends GlobalConfiguration {
 
     @Restricted(NoExternalUse.class)
     @POST
-    public FormValidation doCheckUrl(@QueryParameter("url") String resourceRootUrlString) {
+    public FormValidation doCheckUrl(@QueryParameter("url") String resourceRootUrlString) throws URISyntaxException {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
 
         return checkUrl(resourceRootUrlString, true);
     }
 
-    private FormValidation checkUrl(String resourceRootUrlString, boolean allowOnlineIdentityCheck) {
+    private FormValidation checkUrl(String resourceRootUrlString, boolean allowOnlineIdentityCheck) throws URISyntaxException {
         String jenkinsRootUrlString = JenkinsLocationConfiguration.get().getUrl();
         if (ExtensionList.lookupSingleton(RootUrlNotSetMonitor.class).isActivated() || jenkinsRootUrlString == null) {
             // This is needed to round-trip expired resource URLs through regular URLs to refresh them,
@@ -118,7 +118,7 @@ public final class ResourceDomainConfiguration extends GlobalConfiguration {
         } catch (MalformedURLException ex) {
             return FormValidation.error(Messages.ResourceDomainConfiguration_Invalid());
         } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
+            throw new URISyntaxException(e.getReason(), e.getInput());
         }
 
         String resourceRootUrlHost = resourceRootUrl.getHost();
@@ -198,7 +198,7 @@ public final class ResourceDomainConfiguration extends GlobalConfiguration {
         return url;
     }
 
-    public void setUrl(@CheckForNull String url) {
+    public void setUrl(@CheckForNull String url) throws URISyntaxException {
         if (checkUrl(url, false).kind == FormValidation.Kind.OK) {
             // only accept valid configurations, both with and without URL, but allow for networking issues
             url = Util.fixEmpty(url);

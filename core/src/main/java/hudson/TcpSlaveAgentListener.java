@@ -131,7 +131,7 @@ public final class TcpSlaveAgentListener extends Thread {
      * Gets the host name that we advertise protocol clients to connect to.
      * @since 2.198
      */
-    public String getAdvertisedHost() {
+    public String getAdvertisedHost() throws URISyntaxException {
         if (CLI_HOST_NAME != null) {
           return CLI_HOST_NAME;
         }
@@ -140,7 +140,7 @@ public final class TcpSlaveAgentListener extends Thread {
         } catch (MalformedURLException e) {
             throw new IllegalStateException("Could not get TcpSlaveAgentListener host name", e);
         } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
+            throw new URISyntaxException(e.getReason(), e.getInput());
         }
     }
 

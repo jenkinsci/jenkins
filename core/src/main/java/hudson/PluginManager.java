@@ -1942,7 +1942,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     }
 
     @Restricted(NoExternalUse.class)
-    @RequirePOST public FormValidation doCheckPluginUrl(StaplerRequest request, @QueryParameter String value) throws IOException {
+    @RequirePOST public FormValidation doCheckPluginUrl(StaplerRequest request, @QueryParameter String value) throws IOException, URISyntaxException {
         if (StringUtils.isNotBlank(value)) {
             try {
                 URL url = new URI(value).toURL();
@@ -1956,7 +1956,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             } catch (MalformedURLException e) {
                 return FormValidation.error(e.getMessage());
             } catch (URISyntaxException e) {
-                throw new RuntimeException(e);
+                throw new URISyntaxException(e.getReason(), e.getInput());
             }
         }
         return FormValidation.ok();

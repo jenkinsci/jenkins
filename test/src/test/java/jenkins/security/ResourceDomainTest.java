@@ -13,6 +13,7 @@ import hudson.model.FreeStyleProject;
 import hudson.model.Item;
 import hudson.model.UnprotectedRootAction;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.time.Instant;
 import java.util.UUID;
@@ -277,7 +278,7 @@ public class ResourceDomainTest {
     }
 
     @Test
-    public void adminMonitorShowsUpWithOverriddenCSP() {
+    public void adminMonitorShowsUpWithOverriddenCSP() throws URISyntaxException {
         ResourceDomainRecommendation monitor = ExtensionList.lookupSingleton(ResourceDomainRecommendation.class);
         Assert.assertFalse(monitor.isActivated());
         System.setProperty(DirectoryBrowserSupport.class.getName() + ".CSP", "");

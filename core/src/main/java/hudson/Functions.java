@@ -1932,7 +1932,7 @@ public class Functions {
      * @deprecated use {@link JNLPLauncher#getInboundAgentUrl}
      */
     @Deprecated
-    public String getServerName() {
+    public String getServerName() throws URISyntaxException, MalformedURLException {
         // Try to infer this from the configured root URL.
         // This makes it work correctly when Hudson runs behind a reverse proxy.
         String url = Jenkins.get().getRootUrl();
@@ -1944,8 +1944,9 @@ public class Functions {
             }
         } catch (MalformedURLException e) {
             // fall back to HTTP request
+            throw new MalformedURLException();
         } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
+            throw new URISyntaxException(e.getReason(), e.getInput());
         }
         return Stapler.getCurrentRequest().getServerName();
     }
