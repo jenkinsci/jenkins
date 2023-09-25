@@ -36,8 +36,23 @@ function registerSortableDragDrop(e) {
   });
 }
 
+function registerSortableTableDragDrop(e) {
+  if (!e || !e.classList.contains("with-drag-drop")) {
+    return false;
+  }
+
+  Sortable.create(e, {
+    handle: ".dd-handle",
+    items: "tr",
+    onChange: function (event) {
+      console.log("change", event);
+    },
+  });
+}
+
 /*
  * Expose the function to register drag & drop components to the window objects
  * so that other widgets can use it (repeatable, hetero-list)
  */
 window.registerSortableDragDrop = registerSortableDragDrop;
+window.registerSortableTableDragDrop = registerSortableTableDragDrop;
