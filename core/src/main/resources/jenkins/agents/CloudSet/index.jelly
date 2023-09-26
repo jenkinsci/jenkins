@@ -49,11 +49,11 @@ THE SOFTWARE.
               <thead>
                 <tr>
                   <l:isAdmin>
-                    <th class="jenkins-table__cell--tight">Order</th>
+                    <th tooltip="${%Drag and drop cells to reorder}">Order</th>
                   </l:isAdmin>
-                  <th class="jenkins-table__cell--tight"/>
+                  <th/>
                   <th>${%Name}</th>
-                  <th class="jenkins-table__cell--tight"/>
+                  <th/>
                 </tr>
               </thead>
               <tbody class="with-drag-drop">
