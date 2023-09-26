@@ -2430,7 +2430,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         protected URL getURL() throws MalformedURLException {
             try {
                 return new URI(plugin.url).toURL();
-            } catch (MalformedURLException| URISyntaxException e) {
+            } catch (MalformedURLException | URISyntaxException e) {
                 throw new RuntimeException(e);
             }
         }
