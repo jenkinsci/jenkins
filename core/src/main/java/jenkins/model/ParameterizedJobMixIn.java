@@ -288,12 +288,14 @@ public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & Param
      * @since 1.624
      */
     public static final AlternativeUiTextProvider.Message<ParameterizedJob> BUILD_NOW_TEXT = new AlternativeUiTextProvider.Message<>();
+    public static final AlternativeUiTextProvider.Message<ParameterizedJob> BUILD_WITH_PARAMETERS_TEXT = new AlternativeUiTextProvider.Message<>();
 
     /**
      * Suggested implementation of {@link ParameterizedJob#getBuildNowText}.
      */
     public final String getBuildNowText() {
-        return isParameterized() ? AlternativeUiTextProvider.get(BUILD_NOW_TEXT, asJob(), Messages.ParameterizedJobMixIn_build_with_parameters())
+        return isParameterized() ? AlternativeUiTextProvider.get(BUILD_WITH_PARAMETERS_TEXT, asJob(),
+                AlternativeUiTextProvider.get(BUILD_NOW_TEXT, asJob(), Messages.ParameterizedJobMixIn_build_with_parameters()))
                 : AlternativeUiTextProvider.get(BUILD_NOW_TEXT, asJob(), Messages.ParameterizedJobMixIn_build_now());
     }
 

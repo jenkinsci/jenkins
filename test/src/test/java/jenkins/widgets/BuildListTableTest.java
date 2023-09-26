@@ -26,21 +26,25 @@ package jenkins.widgets;
 
 import static org.junit.Assert.assertEquals;
 
+import hudson.model.AbstractItem;
 import hudson.model.FreeStyleProject;
 import hudson.model.ListView;
 import java.net.URI;
 import java.net.URL;
+import java.util.logging.Level;
 import org.htmlunit.html.HtmlAnchor;
 import org.htmlunit.html.HtmlPage;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.LoggerRule;
 import org.jvnet.hudson.test.MockFolder;
 
 public class BuildListTableTest {
 
     @Rule public JenkinsRule r = new JenkinsRule();
+    @Rule public LoggerRule logging = new LoggerRule().record(AbstractItem.class, Level.FINER);
 
     @Issue("JENKINS-19310")
     @Test public void linksFromFolders() throws Exception {
