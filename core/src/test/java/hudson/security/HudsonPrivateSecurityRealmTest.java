@@ -25,7 +25,7 @@ public class HudsonPrivateSecurityRealmTest {
     /* This exists so that we can easily  check the complexity of how long this takes (ie is the number of iterations we 
      * use correct for the state of CPUs).  
      * We do not want to assert that the range < x and  > y  as that would make the test flaky on overloaded
-     *  or slow hardware, so this is commented out but left for ease of running locally when desired.
+     * or slow hardware, so this is commented out but left for ease of running locally when desired.
      */
     //@Test
     public void timingPBKDF2() {
@@ -50,7 +50,7 @@ public class HudsonPrivateSecurityRealmTest {
     /* This exists so that we can easily  check the complexity of how long this takes (ie is the number of iterations we 
      * use correct for the state of CPUs).  
      * We do not want to assert that the range < x and  > y  as that would make the test flaky on overloaded
-     *  or slow hardware, so this is commented out but left for ease of running locally when desired.
+     * or slow hardware, so this is commented out but left for ease of running locally when desired.
      */
     //@Test
     public void timingBcrypt() {
