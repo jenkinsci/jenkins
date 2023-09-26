@@ -52,7 +52,7 @@ public class FormApply {
             public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
                 if (isApply(req)) {
                     // if the submission is via 'apply', show a response in the notification bar
-                    applyResponse(Messages.HttpResponses_Saved(), "SUCCESS")
+                    showNotification(Messages.HttpResponses_Saved(), "SUCCESS")
                             .generateResponse(req, rsp, node);
                 } else {
                     rsp.sendRedirect(destination);
@@ -75,7 +75,7 @@ public class FormApply {
      * When the response HTML includes a JavaScript function in a pre-determined name, that function gets executed.
      * This method generates such a response from JavaScript text.
      *
-     * @deprecated use {#{@link #applyResponse(String, String)}} instead, which is CSP compatible version
+     * @deprecated use {#{@link #showNotification(String, String)}} instead, which is CSP compatible version
      */
     @Deprecated
     public static HttpResponseException applyResponse(final String script) {
@@ -96,18 +96,16 @@ public class FormApply {
 
     /**
      * Generates the response for the asynchronous background form submission (AKA the Apply button),
-     * that will show a notification of certain type and with provided message. Supported notification types
-     * are {@code SUCCESS}, {@code WARNING} and {@code ERROR}.
+     * that will show a notification of certain type and with provided message. See <a href="https://github.com/jenkinsci/jenkins/blob/74610e024a6b8fd8feccdc51b8f7741aa6c30e3b/war/src/main/js/components/notifications/index.js#L13-L25">index.js</a> for supported notification types.
      */
-    public static HttpResponseException applyResponse(final String message, final String notificationType) {
+    public static HttpResponseException showNotification(final String message, final String notificationType) {
         return new HttpResponseException() {
             @Override
             public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException {
                 rsp.setContentType("text/html;charset=UTF-8");
-                rsp.getWriter().println("<html><body>" +
-                        "<script id='form-apply-callback' data-message='" + Functions.htmlAttributeEscape(message) + "' " +
+                rsp.getWriter().println("<script id='form-apply-data-holder' data-message='" + Functions.htmlAttributeEscape(message) + "' " +
                         "data-notification-type='" + Functions.htmlAttributeEscape(notificationType) + "' " +
-                        "src='" + req.getContextPath() + Jenkins.RESOURCE_PATH + "/scripts/apply.js" + "'></script></body></html>");
+                        "src='" + req.getContextPath() + Jenkins.RESOURCE_PATH + "/scripts/apply.js" + "'></script>");
             }
         };
     }
