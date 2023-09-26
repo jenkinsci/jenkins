@@ -1,0 +1,825 @@
+WARNING: An illegal reflective access operation has occurred
+WARNING: Illegal reflective access by com.google.inject.internal.cglib.core.$ReflectUtils$1 (file:/usr/share/maven/lib/guice.jar) to method java.lang.ClassLoader.defineClass(java.lang.String,byte[],int,int,java.security.ProtectionDomain)
+WARNING: Please consider reporting this to the maintainers of com.google.inject.internal.cglib.core.$ReflectUtils$1
+WARNING: Use --illegal-access=warn to enable warnings of further illegal reflective access operations
+WARNING: All illegal access operations will be denied in a future release
+[[1;34mINFO[m] Scanning for projects...
+[[1;34mINFO[m] [1m------------------------------------------------------------------------[m
+[[1;34mINFO[m] [1mReactor Build Order:[m
+[[1;34mINFO[m] 
+[[1;34mINFO[m] Jenkins main module                                                [pom]
+[[1;34mINFO[m] Jenkins BOM                                                        [pom]
+[[1;34mINFO[m] Jenkins cli                                                        [jar]
+[[1;34mINFO[m] Jenkins core                                                       [jar]
+[[1;34mINFO[m] Jenkins war                                                        [war]
+[[1;34mINFO[m] Tests for Jenkins core                                             [jar]
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m-----------------< [0;36morg.jenkins-ci.main:jenkins-parent[0;1m >-----------------[m
+[[1;34mINFO[m] [1mBuilding Jenkins main module 2.323-SNAPSHOT                        [1/6][m
+[[1;34mINFO[m] [1m--------------------------------[ pom ]---------------------------------[m
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m>>> [0;32mnondex-maven-plugin:2.1.1:nondex[m [1m(default-cli)[0;1m > [0;1mtest-compile[m @ [36mjenkins-parent[0;1m >>>[m
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-enforcer-plugin:3.0.0-M3:display-info[m [1m(display-info)[m @ [36mjenkins-parent[0;1m ---[m
+[[1;34mINFO[m] Maven Version: 3.6.3
+[[1;34mINFO[m] JDK Version: 11.0.20.1 normalized as: 11.0.20-1
+[[1;34mINFO[m] OS Info: Arch: amd64 Family: unix Name: linux Version: 5.4.0-162-generic
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-enforcer-plugin:3.0.0-M3:enforce[m [1m(display-info)[m @ [36mjenkins-parent[0;1m ---[m
+[[1;34mINFO[m] Adding ignore: module-info
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-enforcer-plugin:3.0.0-M3:enforce[m [1m(enforce-banned-dependencies)[m @ [36mjenkins-parent[0;1m ---[m
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-checkstyle-plugin:3.1.2:check[m [1m(validate)[m @ [36mjenkins-parent[0;1m ---[m
+[[1;34mINFO[m] Starting audit...
+Audit done.
+[[1;34mINFO[m] You have 0 Checkstyle violations.
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-remote-resources-plugin:1.7.0:process[m [1m(default)[m @ [36mjenkins-parent[0;1m ---[m
+[[1;34mINFO[m] Preparing remote bundle org.jvnet.hudson:license:1.0
+[[1;34mINFO[m] Copying 0 resource from 1 bundle.
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mflatten-maven-plugin:1.2.7:flatten[m [1m(flatten)[m @ [36mjenkins-parent[0;1m ---[m
+[[1;34mINFO[m] Generating flattened POM of project org.jenkins-ci.main:jenkins-parent:pom:2.323-SNAPSHOT...
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m<<< [0;32mnondex-maven-plugin:2.1.1:nondex[m [1m(default-cli)[0;1m < [0;1mtest-compile[m @ [36mjenkins-parent[0;1m <<<[m
+[[1;34mINFO[m] 
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mnondex-maven-plugin:2.1.1:nondex[m [1m(default-cli)[m @ [36mjenkins-parent[0;1m ---[m
+SEVERE: Surefire is not explicitly declared in your pom.xml; we will use version 2.20, but you may want to change that.
+INFO: The original argline is: 
+INFO: Creating new argline for Surefire
+CONFIG: nondexFilter=.*
+nondexMode=FULL
+nondexSeed=933178
+nondexStart=0
+nondexEnd=9223372036854775807
+nondexPrintstack=false
+nondexDir=/home/yuxuang6/project/jenkins/.nondex
+nondexJarDir=.nondex
+nondexExecid=clean_MimwaCMO3LoSvTzcFqIHB42droHWaAJ+lfFEZOKew=
+nondexLogging=CONFIG
+test=
+[[1;34mINFO[m] No tests to run.
+INFO: Adding excluded groups to newly created one
+INFO: Creating new argline for Surefire
+CONFIG: nondexFilter=.*
+nondexMode=FULL
+nondexSeed=933178
+nondexStart=0
+nondexEnd=9223372036854775807
+nondexPrintstack=false
+nondexDir=/home/yuxuang6/project/jenkins/.nondex
+nondexJarDir=/home/yuxuang6/project/jenkins/.nondex
+nondexExecid=ulKVVKeTXuntwTQSPSok8AF99lJROQHUPJxZHxU26A=
+nondexLogging=CONFIG
+test=
+[[1;34mINFO[m] No tests to run.
+INFO: Adding excluded groups to newly created one
+INFO: Creating new argline for Surefire
+CONFIG: nondexFilter=.*
+nondexMode=FULL
+nondexSeed=974622
+nondexStart=0
+nondexEnd=9223372036854775807
+nondexPrintstack=false
+nondexDir=/home/yuxuang6/project/jenkins/.nondex
+nondexJarDir=/home/yuxuang6/project/jenkins/.nondex
+nondexExecid=mAwbe6Th8aMl9FdnZ1r2nmCtdowmttJ3I3gVWGvvzw=
+nondexLogging=CONFIG
+test=
+[[1;34mINFO[m] No tests to run.
+INFO: Adding excluded groups to newly created one
+INFO: Creating new argline for Surefire
+CONFIG: nondexFilter=.*
+nondexMode=FULL
+nondexSeed=1016066
+nondexStart=0
+nondexEnd=9223372036854775807
+nondexPrintstack=false
+nondexDir=/home/yuxuang6/project/jenkins/.nondex
+nondexJarDir=/home/yuxuang6/project/jenkins/.nondex
+nondexExecid=la0TlWUQd7asPE7hoxe9Mutfoi6Kjhb1fdXlywY7DQU=
+nondexLogging=CONFIG
+test=
+[[1;34mINFO[m] No tests to run.
+[[1;34mINFO[m] NonDex SUMMARY:
+[[1;34mINFO[m] *********
+[[1;34mINFO[m] mvn nondex:nondex  -DnondexFilter='.*' -DnondexMode=FULL -DnondexSeed=933178 -DnondexStart=0 -DnondexEnd=9223372036854775807 -DnondexPrintstack=false -DnondexDir="/home/yuxuang6/project/jenkins/.nondex" -DnondexJarDir="/home/yuxuang6/project/jenkins/.nondex" -DnondexExecid=ulKVVKeTXuntwTQSPSok8AF99lJROQHUPJxZHxU26A= -DnondexLogging=CONFIG
+[[1;34mINFO[m] No Test Failed with this configuration.
+[[1;34mINFO[m] *********
+[[1;34mINFO[m] *********
+[[1;34mINFO[m] mvn nondex:nondex  -DnondexFilter='.*' -DnondexMode=FULL -DnondexSeed=974622 -DnondexStart=0 -DnondexEnd=9223372036854775807 -DnondexPrintstack=false -DnondexDir="/home/yuxuang6/project/jenkins/.nondex" -DnondexJarDir="/home/yuxuang6/project/jenkins/.nondex" -DnondexExecid=mAwbe6Th8aMl9FdnZ1r2nmCtdowmttJ3I3gVWGvvzw= -DnondexLogging=CONFIG
+[[1;34mINFO[m] No Test Failed with this configuration.
+[[1;34mINFO[m] *********
+[[1;34mINFO[m] *********
+[[1;34mINFO[m] mvn nondex:nondex  -DnondexFilter='.*' -DnondexMode=FULL -DnondexSeed=1016066 -DnondexStart=0 -DnondexEnd=9223372036854775807 -DnondexPrintstack=false -DnondexDir="/home/yuxuang6/project/jenkins/.nondex" -DnondexJarDir="/home/yuxuang6/project/jenkins/.nondex" -DnondexExecid=la0TlWUQd7asPE7hoxe9Mutfoi6Kjhb1fdXlywY7DQU= -DnondexLogging=CONFIG
+[[1;34mINFO[m] No Test Failed with this configuration.
+[[1;34mINFO[m] *********
+[[1;34mINFO[m] All tests pass without NonDex shuffling
+[[1;34mINFO[m] ####################
+[[1;34mINFO[m] Across all seeds:
+[[1;34mINFO[m] Test results can be found at: 
+[[1;34mINFO[m] file:///home/yuxuang6/project/jenkins/.nondex/ulKVVKeTXuntwTQSPSok8AF99lJROQHUPJxZHxU26A=/test_results.html
+[[1;34mINFO[m] [NonDex] The id of this run is: ulKVVKeTXuntwTQSPSok8AF99lJROQHUPJxZHxU26A=
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m------------------< [0;36morg.jenkins-ci.main:jenkins-bom[0;1m >-------------------[m
+[[1;34mINFO[m] [1mBuilding Jenkins BOM 2.323-SNAPSHOT                                [2/6][m
+[[1;34mINFO[m] [1m--------------------------------[ pom ]---------------------------------[m
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m>>> [0;32mnondex-maven-plugin:2.1.1:nondex[m [1m(default-cli)[0;1m > [0;1mtest-compile[m @ [36mjenkins-bom[0;1m >>>[m
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-enforcer-plugin:3.0.0-M3:display-info[m [1m(display-info)[m @ [36mjenkins-bom[0;1m ---[m
+[[1;34mINFO[m] Maven Version: 3.6.3
+[[1;34mINFO[m] JDK Version: 11.0.20.1 normalized as: 11.0.20-1
+[[1;34mINFO[m] OS Info: Arch: amd64 Family: unix Name: linux Version: 5.4.0-162-generic
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-enforcer-plugin:3.0.0-M3:enforce[m [1m(display-info)[m @ [36mjenkins-bom[0;1m ---[m
+[[1;34mINFO[m] Adding ignore: module-info
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-enforcer-plugin:3.0.0-M3:enforce[m [1m(enforce-banned-dependencies)[m @ [36mjenkins-bom[0;1m ---[m
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-checkstyle-plugin:3.1.2:check[m [1m(validate)[m @ [36mjenkins-bom[0;1m ---[m
+[[1;34mINFO[m] Starting audit...
+Audit done.
+[[1;34mINFO[m] You have 0 Checkstyle violations.
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-remote-resources-plugin:1.7.0:process[m [1m(default)[m @ [36mjenkins-bom[0;1m ---[m
+[[1;34mINFO[m] Preparing remote bundle org.jvnet.hudson:license:1.0
+[[1;34mINFO[m] Copying 0 resource from 1 bundle.
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mflatten-maven-plugin:1.2.7:flatten[m [1m(flatten)[m @ [36mjenkins-bom[0;1m ---[m
+[[1;34mINFO[m] Generating flattened POM of project org.jenkins-ci.main:jenkins-bom:pom:2.323-SNAPSHOT...
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m<<< [0;32mnondex-maven-plugin:2.1.1:nondex[m [1m(default-cli)[0;1m < [0;1mtest-compile[m @ [36mjenkins-bom[0;1m <<<[m
+[[1;34mINFO[m] 
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mnondex-maven-plugin:2.1.1:nondex[m [1m(default-cli)[m @ [36mjenkins-bom[0;1m ---[m
+SEVERE: Surefire is not explicitly declared in your pom.xml; we will use version 2.20, but you may want to change that.
+INFO: The original argline is: 
+INFO: Creating new argline for Surefire
+CONFIG: nondexFilter=.*
+nondexMode=FULL
+nondexSeed=933178
+nondexStart=0
+nondexEnd=9223372036854775807
+nondexPrintstack=false
+nondexDir=/home/yuxuang6/project/jenkins/bom/.nondex
+nondexJarDir=.nondex
+nondexExecid=clean_Acag85snwayOupKdTlil+RtaDCsqodbTaKDFGhgIHM=
+nondexLogging=CONFIG
+test=
+[[1;34mINFO[m] No tests to run.
+INFO: Adding excluded groups to newly created one
+INFO: Creating new argline for Surefire
+CONFIG: nondexFilter=.*
+nondexMode=FULL
+nondexSeed=933178
+nondexStart=0
+nondexEnd=9223372036854775807
+nondexPrintstack=false
+nondexDir=/home/yuxuang6/project/jenkins/bom/.nondex
+nondexJarDir=/home/yuxuang6/project/jenkins/bom/.nondex
+nondexExecid=2uIZttqoUT+mulTMV9i0yIyHUTJyiJ3FORa4mLtVQ=
+nondexLogging=CONFIG
+test=
+[[1;34mINFO[m] No tests to run.
+INFO: Adding excluded groups to newly created one
+INFO: Creating new argline for Surefire
+CONFIG: nondexFilter=.*
+nondexMode=FULL
+nondexSeed=974622
+nondexStart=0
+nondexEnd=9223372036854775807
+nondexPrintstack=false
+nondexDir=/home/yuxuang6/project/jenkins/bom/.nondex
+nondexJarDir=/home/yuxuang6/project/jenkins/bom/.nondex
+nondexExecid=HB4VsPUXGFDWdCumlHUbZVCnhMa9+xeR4bKQ1W7tAK8=
+nondexLogging=CONFIG
+test=
+[[1;34mINFO[m] No tests to run.
+INFO: Adding excluded groups to newly created one
+INFO: Creating new argline for Surefire
+CONFIG: nondexFilter=.*
+nondexMode=FULL
+nondexSeed=1016066
+nondexStart=0
+nondexEnd=9223372036854775807
+nondexPrintstack=false
+nondexDir=/home/yuxuang6/project/jenkins/bom/.nondex
+nondexJarDir=/home/yuxuang6/project/jenkins/bom/.nondex
+nondexExecid=wpo72W08bpBx+TF9ILcCbSSvaysnx0jiRC8oe1Ea4=
+nondexLogging=CONFIG
+test=
+[[1;34mINFO[m] No tests to run.
+[[1;34mINFO[m] NonDex SUMMARY:
+[[1;34mINFO[m] *********
+[[1;34mINFO[m] mvn nondex:nondex  -DnondexFilter='.*' -DnondexMode=FULL -DnondexSeed=933178 -DnondexStart=0 -DnondexEnd=9223372036854775807 -DnondexPrintstack=false -DnondexDir="/home/yuxuang6/project/jenkins/bom/.nondex" -DnondexJarDir="/home/yuxuang6/project/jenkins/bom/.nondex" -DnondexExecid=2uIZttqoUT+mulTMV9i0yIyHUTJyiJ3FORa4mLtVQ= -DnondexLogging=CONFIG
+[[1;34mINFO[m] No Test Failed with this configuration.
+[[1;34mINFO[m] *********
+[[1;34mINFO[m] *********
+[[1;34mINFO[m] mvn nondex:nondex  -DnondexFilter='.*' -DnondexMode=FULL -DnondexSeed=974622 -DnondexStart=0 -DnondexEnd=9223372036854775807 -DnondexPrintstack=false -DnondexDir="/home/yuxuang6/project/jenkins/bom/.nondex" -DnondexJarDir="/home/yuxuang6/project/jenkins/bom/.nondex" -DnondexExecid=HB4VsPUXGFDWdCumlHUbZVCnhMa9+xeR4bKQ1W7tAK8= -DnondexLogging=CONFIG
+[[1;34mINFO[m] No Test Failed with this configuration.
+[[1;34mINFO[m] *********
+[[1;34mINFO[m] *********
+[[1;34mINFO[m] mvn nondex:nondex  -DnondexFilter='.*' -DnondexMode=FULL -DnondexSeed=1016066 -DnondexStart=0 -DnondexEnd=9223372036854775807 -DnondexPrintstack=false -DnondexDir="/home/yuxuang6/project/jenkins/bom/.nondex" -DnondexJarDir="/home/yuxuang6/project/jenkins/bom/.nondex" -DnondexExecid=wpo72W08bpBx+TF9ILcCbSSvaysnx0jiRC8oe1Ea4= -DnondexLogging=CONFIG
+[[1;34mINFO[m] No Test Failed with this configuration.
+[[1;34mINFO[m] *********
+[[1;34mINFO[m] All tests pass without NonDex shuffling
+[[1;34mINFO[m] ####################
+[[1;34mINFO[m] Across all seeds:
+[[1;34mINFO[m] Test results can be found at: 
+[[1;34mINFO[m] file:///home/yuxuang6/project/jenkins/bom/.nondex/2uIZttqoUT+mulTMV9i0yIyHUTJyiJ3FORa4mLtVQ=/test_results.html
+[[1;34mINFO[m] [NonDex] The id of this run is: 2uIZttqoUT+mulTMV9i0yIyHUTJyiJ3FORa4mLtVQ=
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m----------------------< [0;36morg.jenkins-ci.main:cli[0;1m >-----------------------[m
+[[1;34mINFO[m] [1mBuilding Jenkins cli 2.323-SNAPSHOT                                [3/6][m
+[[1;34mINFO[m] [1m--------------------------------[ jar ]---------------------------------[m
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m>>> [0;32mnondex-maven-plugin:2.1.1:nondex[m [1m(default-cli)[0;1m > [0;1mtest-compile[m @ [36mcli[0;1m >>>[m
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-enforcer-plugin:3.0.0-M3:display-info[m [1m(display-info)[m @ [36mcli[0;1m ---[m
+[[1;34mINFO[m] Maven Version: 3.6.3
+[[1;34mINFO[m] JDK Version: 11.0.20.1 normalized as: 11.0.20-1
+[[1;34mINFO[m] OS Info: Arch: amd64 Family: unix Name: linux Version: 5.4.0-162-generic
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-enforcer-plugin:3.0.0-M3:enforce[m [1m(display-info)[m @ [36mcli[0;1m ---[m
+[[1;34mINFO[m] Adding ignore: module-info
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-enforcer-plugin:3.0.0-M3:enforce[m [1m(enforce-banned-dependencies)[m @ [36mcli[0;1m ---[m
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-checkstyle-plugin:3.1.2:check[m [1m(validate)[m @ [36mcli[0;1m ---[m
+[[1;34mINFO[m] Starting audit...
+Audit done.
+[[1;34mINFO[m] You have 0 Checkstyle violations.
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mlocalizer-maven-plugin:1.31:generate[m [1m(default)[m @ [36mcli[0;1m ---[m
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mbuild-helper-maven-plugin:3.2.0:add-source[m [1m(add-source)[m @ [36mcli[0;1m ---[m
+[[1;34mINFO[m] Source directory: /home/yuxuang6/project/jenkins/cli/target/generated-sources/localizer added.
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-remote-resources-plugin:1.7.0:process[m [1m(default)[m @ [36mcli[0;1m ---[m
+[[1;34mINFO[m] Preparing remote bundle org.jvnet.hudson:license:1.0
+[[1;34mINFO[m] Copying 0 resource from 1 bundle.
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-resources-plugin:3.2.0:resources[m [1m(default-resources)[m @ [36mcli[0;1m ---[m
+[[1;34mINFO[m] Using 'UTF-8' encoding to copy filtered resources.
+[[1;34mINFO[m] Using 'UTF-8' encoding to copy filtered properties files.
+[[1;34mINFO[m] Copying 10 resources
+[[1;34mINFO[m] Copying 1 resource
+[[1;34mINFO[m] The encoding used to copy filtered properties files have not been set. This means that the same encoding will be used to copy filtered properties files as when copying other filtered resources. This might not be what you want! Run your build with --debug to see which files might be affected. Read more at https://maven.apache.org/plugins/maven-resources-plugin/examples/filtering-properties-files.html
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mflatten-maven-plugin:1.2.7:flatten[m [1m(flatten)[m @ [36mcli[0;1m ---[m
+[[1;34mINFO[m] Generating flattened POM of project org.jenkins-ci.main:cli:jar:2.323-SNAPSHOT...
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-compiler-plugin:3.8.1:compile[m [1m(default-compile)[m @ [36mcli[0;1m ---[m
+[[1;34mINFO[m] Nothing to compile - all classes are up to date
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-resources-plugin:3.2.0:testResources[m [1m(default-testResources)[m @ [36mcli[0;1m ---[m
+[[1;34mINFO[m] Using 'UTF-8' encoding to copy filtered resources.
+[[1;34mINFO[m] Using 'UTF-8' encoding to copy filtered properties files.
+[[1;34mINFO[m] Copying 10 resources
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-compiler-plugin:3.8.1:testCompile[m [1m(default-testCompile)[m @ [36mcli[0;1m ---[m
+[[1;34mINFO[m] Nothing to compile - all classes are up to date
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m<<< [0;32mnondex-maven-plugin:2.1.1:nondex[m [1m(default-cli)[0;1m < [0;1mtest-compile[m @ [36mcli[0;1m <<<[m
+[[1;34mINFO[m] 
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mnondex-maven-plugin:2.1.1:nondex[m [1m(default-cli)[m @ [36mcli[0;1m ---[m
+INFO: The original argline is: 
+INFO: Adding NonDex argLine to existing argLine specified by the project
+CONFIG: nondexFilter=.*
+nondexMode=FULL
+nondexSeed=933178
+nondexStart=0
+nondexEnd=9223372036854775807
+nondexPrintstack=false
+nondexDir=/home/yuxuang6/project/jenkins/cli/.nondex
+nondexJarDir=.nondex
+nondexExecid=clean_idMYblETtzrmOpnUhTQ9EpQfFcPBCDvcQ16Gb6KoE8=
+nondexLogging=CONFIG
+test=
+INFO: Adding excluded groups to newly created one
+INFO: Adding NonDex argLine to existing argLine specified by the project
+CONFIG: nondexFilter=.*
+nondexMode=FULL
+nondexSeed=933178
+nondexStart=0
+nondexEnd=9223372036854775807
+nondexPrintstack=false
+nondexDir=/home/yuxuang6/project/jenkins/cli/.nondex
+nondexJarDir=/home/yuxuang6/project/jenkins/cli/.nondex
+nondexExecid=BRwb95EkWusqYz5jHmKxYJPedqhFBx3E53yZNX1eEko=
+nondexLogging=CONFIG
+test=
+INFO: Adding excluded groups to newly created one
+INFO: Adding NonDex argLine to existing argLine specified by the project
+CONFIG: nondexFilter=.*
+nondexMode=FULL
+nondexSeed=974622
+nondexStart=0
+nondexEnd=9223372036854775807
+nondexPrintstack=false
+nondexDir=/home/yuxuang6/project/jenkins/cli/.nondex
+nondexJarDir=/home/yuxuang6/project/jenkins/cli/.nondex
+nondexExecid=C8Sya34MbEVOS9yRiffPZFRxas4YMgX16exGz87Ne3A=
+nondexLogging=CONFIG
+test=
+INFO: Adding excluded groups to newly created one
+INFO: Adding NonDex argLine to existing argLine specified by the project
+CONFIG: nondexFilter=.*
+nondexMode=FULL
+nondexSeed=1016066
+nondexStart=0
+nondexEnd=9223372036854775807
+nondexPrintstack=false
+nondexDir=/home/yuxuang6/project/jenkins/cli/.nondex
+nondexJarDir=/home/yuxuang6/project/jenkins/cli/.nondex
+nondexExecid=UzyfZgYGk6eG1Bup7rydktE9dNpwmdUCQq8v54aUamA=
+nondexLogging=CONFIG
+test=
+[[1;34mINFO[m] NonDex SUMMARY:
+[[1;34mINFO[m] *********
+[[1;34mINFO[m] mvn nondex:nondex  -DnondexFilter='.*' -DnondexMode=FULL -DnondexSeed=933178 -DnondexStart=0 -DnondexEnd=9223372036854775807 -DnondexPrintstack=false -DnondexDir="/home/yuxuang6/project/jenkins/cli/.nondex" -DnondexJarDir="/home/yuxuang6/project/jenkins/cli/.nondex" -DnondexExecid=BRwb95EkWusqYz5jHmKxYJPedqhFBx3E53yZNX1eEko= -DnondexLogging=CONFIG
+[[1;34mINFO[m] No Test Failed with this configuration.
+[[1;34mINFO[m] *********
+[[1;34mINFO[m] *********
+[[1;34mINFO[m] mvn nondex:nondex  -DnondexFilter='.*' -DnondexMode=FULL -DnondexSeed=974622 -DnondexStart=0 -DnondexEnd=9223372036854775807 -DnondexPrintstack=false -DnondexDir="/home/yuxuang6/project/jenkins/cli/.nondex" -DnondexJarDir="/home/yuxuang6/project/jenkins/cli/.nondex" -DnondexExecid=C8Sya34MbEVOS9yRiffPZFRxas4YMgX16exGz87Ne3A= -DnondexLogging=CONFIG
+[[1;34mINFO[m] No Test Failed with this configuration.
+[[1;34mINFO[m] *********
+[[1;34mINFO[m] *********
+[[1;34mINFO[m] mvn nondex:nondex  -DnondexFilter='.*' -DnondexMode=FULL -DnondexSeed=1016066 -DnondexStart=0 -DnondexEnd=9223372036854775807 -DnondexPrintstack=false -DnondexDir="/home/yuxuang6/project/jenkins/cli/.nondex" -DnondexJarDir="/home/yuxuang6/project/jenkins/cli/.nondex" -DnondexExecid=UzyfZgYGk6eG1Bup7rydktE9dNpwmdUCQq8v54aUamA= -DnondexLogging=CONFIG
+[[1;34mINFO[m] No Test Failed with this configuration.
+[[1;34mINFO[m] *********
+[[1;34mINFO[m] All tests pass without NonDex shuffling
+[[1;34mINFO[m] ####################
+[[1;34mINFO[m] Across all seeds:
+[[1;34mINFO[m] Test results can be found at: 
+[[1;34mINFO[m] file:///home/yuxuang6/project/jenkins/cli/.nondex/BRwb95EkWusqYz5jHmKxYJPedqhFBx3E53yZNX1eEko=/test_results.html
+[[1;34mINFO[m] [NonDex] The id of this run is: BRwb95EkWusqYz5jHmKxYJPedqhFBx3E53yZNX1eEko=
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m------------------< [0;36morg.jenkins-ci.main:jenkins-core[0;1m >------------------[m
+[[1;34mINFO[m] [1mBuilding Jenkins core 2.323-SNAPSHOT                               [4/6][m
+[[1;34mINFO[m] [1m--------------------------------[ jar ]---------------------------------[m
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m>>> [0;32mnondex-maven-plugin:2.1.1:nondex[m [1m(default-cli)[0;1m > [0;1mtest-compile[m @ [36mjenkins-core[0;1m >>>[m
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-enforcer-plugin:3.0.0-M3:display-info[m [1m(display-info)[m @ [36mjenkins-core[0;1m ---[m
+[[1;34mINFO[m] Maven Version: 3.6.3
+[[1;34mINFO[m] JDK Version: 11.0.20.1 normalized as: 11.0.20-1
+[[1;34mINFO[m] OS Info: Arch: amd64 Family: unix Name: linux Version: 5.4.0-162-generic
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-enforcer-plugin:3.0.0-M3:enforce[m [1m(display-info)[m @ [36mjenkins-core[0;1m ---[m
+[[1;34mINFO[m] Adding ignore: module-info
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-enforcer-plugin:3.0.0-M3:enforce[m [1m(enforce-banned-dependencies)[m @ [36mjenkins-core[0;1m ---[m
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-checkstyle-plugin:3.1.2:check[m [1m(validate)[m @ [36mjenkins-core[0;1m ---[m
+[[1;34mINFO[m] Starting audit...
+Audit done.
+[[1;34mINFO[m] You have 0 Checkstyle violations.
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mbuild-helper-maven-plugin:3.2.0:add-source[m [1m(add-source)[m @ [36mjenkins-core[0;1m ---[m
+[[1;34mINFO[m] Source directory: /home/yuxuang6/project/jenkins/core/target/generated-sources/antlr added.
+[[1;34mINFO[m] Source directory: /home/yuxuang6/project/jenkins/core/target/generated-sources/localizer added.
+[[1;34mINFO[m] Source directory: /home/yuxuang6/project/jenkins/core/target/generated-sources/taglib-interface added.
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mlocalizer-maven-plugin:1.31:generate[m [1m(default)[m @ [36mjenkins-core[0;1m ---[m
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mantlr-maven-plugin:2.2:generate[m [1m(cron)[m @ [36mjenkins-core[0;1m ---[m
+[[1;34mINFO[m] grammar [crontab.g] was up-to-date; skipping
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mantlr-maven-plugin:2.2:generate[m [1m(labelExpr)[m @ [36mjenkins-core[0;1m ---[m
+[[1;34mINFO[m] grammar [labelExpr.g] was up-to-date; skipping
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-remote-resources-plugin:1.7.0:process[m [1m(default)[m @ [36mjenkins-core[0;1m ---[m
+[[1;34mINFO[m] Preparing remote bundle org.jvnet.hudson:license:1.0
+[[1;34mINFO[m] Copying 0 resource from 1 bundle.
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-hpi-plugin:3.18:generate-taglib-interface[m [1m(default)[m @ [36mjenkins-core[0;1m ---[m
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-dependency-plugin:3.2.0:copy[m [1m(winsw)[m @ [36mjenkins-core[0;1m ---[m
+[[1;34mINFO[m] Configured Artifact: com.sun.winsw:winsw:net4:2.9.0:exe
+[[1;34mINFO[m] com.sun.winsw:winsw:net4:2.9.0:exe already exists in /home/yuxuang6/project/jenkins/core/target/classes/windows-service
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-resources-plugin:3.2.0:resources[m [1m(default-resources)[m @ [36mjenkins-core[0;1m ---[m
+[[1;34mINFO[m] Using 'UTF-8' encoding to copy filtered resources.
+[[1;34mINFO[m] Using 'UTF-8' encoding to copy filtered properties files.
+[[1;34mINFO[m] Copying 8267 resources
+[[1;34mINFO[m] Copying 3 resources
+[[1;34mINFO[m] Copying 2 resources
+[[1;34mINFO[m] Copying 2 resources
+[[1;34mINFO[m] The encoding used to copy filtered properties files have not been set. This means that the same encoding will be used to copy filtered properties files as when copying other filtered resources. This might not be what you want! Run your build with --debug to see which files might be affected. Read more at https://maven.apache.org/plugins/maven-resources-plugin/examples/filtering-properties-files.html
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mflatten-maven-plugin:1.2.7:flatten[m [1m(flatten)[m @ [36mjenkins-core[0;1m ---[m
+[[1;34mINFO[m] Generating flattened POM of project org.jenkins-ci.main:jenkins-core:jar:2.323-SNAPSHOT...
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-compiler-plugin:3.8.1:compile[m [1m(default-compile)[m @ [36mjenkins-core[0;1m ---[m
+[[1;34mINFO[m] Changes detected - recompiling the module!
+[[1;34mINFO[m] Compiling 1183 source files to /home/yuxuang6/project/jenkins/core/target/classes
+[[1;33mWARNING[m] Unable to autodetect 'javac' path, using 'javac' from the environment.
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-encoding-plugin:1.1:check-encoding[m [1m(default)[m @ [36mjenkins-core[0;1m ---[m
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mbridge-method-injector:1.21:process[m [1m(default)[m @ [36mjenkins-core[0;1m ---[m
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32maccess-modifier-checker:1.25:enforce[m [1m(default)[m @ [36mjenkins-core[0;1m ---[m
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-resources-plugin:3.2.0:testResources[m [1m(default-testResources)[m @ [36mjenkins-core[0;1m ---[m
+[[1;34mINFO[m] Using 'UTF-8' encoding to copy filtered resources.
+[[1;34mINFO[m] Using 'UTF-8' encoding to copy filtered properties files.
+[[1;34mINFO[m] Copying 44 resources
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-compiler-plugin:3.8.1:testCompile[m [1m(default-testCompile)[m @ [36mjenkins-core[0;1m ---[m
+[[1;34mINFO[m] Changes detected - recompiling the module!
+[[1;34mINFO[m] Compiling 150 source files to /home/yuxuang6/project/jenkins/core/target/test-classes
+[[1;33mWARNING[m] Unable to autodetect 'javac' path, using 'javac' from the environment.
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m<<< [0;32mnondex-maven-plugin:2.1.1:nondex[m [1m(default-cli)[0;1m < [0;1mtest-compile[m @ [36mjenkins-core[0;1m <<<[m
+[[1;34mINFO[m] 
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mnondex-maven-plugin:2.1.1:nondex[m [1m(default-cli)[m @ [36mjenkins-core[0;1m ---[m
+INFO: The original argline is: 
+INFO: Adding NonDex argLine to existing argLine specified by the project
+CONFIG: nondexFilter=.*
+nondexMode=FULL
+nondexSeed=933178
+nondexStart=0
+nondexEnd=9223372036854775807
+nondexPrintstack=false
+nondexDir=/home/yuxuang6/project/jenkins/core/.nondex
+nondexJarDir=.nondex
+nondexExecid=clean_l+edAkrqhYyAZ87YujCCUKz9I8cVgk15EtSHFoSNk=
+nondexLogging=CONFIG
+test=
+[[1;34mINFO[m] 
+[[1;34mINFO[m] -------------------------------------------------------
+[[1;34mINFO[m]  T E S T S
+[[1;34mINFO[m] -------------------------------------------------------
+[[1;34mINFO[m] Running hudson.util.[1mRobustReflectionConverterTest[m
+Searchme wrapMapper
+Searchme RBeaforeAssert
+Searchme serializedClass
+Searchme canConvert
+Searchme AssociatedConverterImpl findConverter
+Searchme AssociatedConverterImpl findConverter ClassNotFoundException
+Searchme serializedClass
+Searchme canConvert
+Searchme AssociatedConverterImpl findConverter
+Searchme AssociatedConverterImpl findConverter ClassNotFoundException
+Searchme serializedClass
+Searchme canConvert
+Searchme AssociatedConverterImpl findConverter
+Searchme AssociatedConverterImpl findConverter ClassNotFoundException
+Searchme serializedClass
+Searchme canConvert
+Searchme AssociatedConverterImpl findConverter
+Searchme AssociatedConverterImpl findConverter ClassNotFoundException
+Searchme canConvert
+Searchme AssociatedConverterImpl findConverter
+Searchme AssociatedConverterImpl findConverter ClassNotFoundException
+Searchme serializedClass
+Searchme serializedClass
+Searchme canConvert
+Searchme AssociatedConverterImpl findConverter
+Searchme AssociatedConverterImpl findConverter ClassNotFoundException
+Searchme serializedClass
+Searchme canConvert
+Searchme AssociatedConverterImpl findConverter
+Searchme AssociatedConverterImpl findConverter ClassNotFoundException
+Searchme serializedClass
+Searchme serializedClass
+Searchme canConvert
+Searchme AssociatedConverterImpl findConverter
+Searchme AssociatedConverterImpl findConverter ClassNotFoundException
+Searchme wrapMapper
+Searchme CompatibilityMapper realClass
+Searchme CompatibilityMapper realClass
+[[1;34mINFO[m] [1;32mTests run: [0;1;32m1[m, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.285 s - in hudson.util.[1mRobustReflectionConverterTest[m
+[[1;34mINFO[m] 
+[[1;34mINFO[m] Results:
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1;32mTests run: 1, Failures: 0, Errors: 0, Skipped: 0[m
+[[1;34mINFO[m] 
+INFO: Adding excluded groups to newly created one
+INFO: Adding NonDex argLine to existing argLine specified by the project
+CONFIG: nondexFilter=.*
+nondexMode=FULL
+nondexSeed=933178
+nondexStart=0
+nondexEnd=9223372036854775807
+nondexPrintstack=false
+nondexDir=/home/yuxuang6/project/jenkins/core/.nondex
+nondexJarDir=/home/yuxuang6/project/jenkins/core/.nondex
+nondexExecid=yl+eRo+hKlqqjfKC4rTrHvgP12ETgBPXwhJvsX1yfs=
+nondexLogging=CONFIG
+test=
+[[1;34mINFO[m] 
+[[1;34mINFO[m] -------------------------------------------------------
+[[1;34mINFO[m]  T E S T S
+[[1;34mINFO[m] -------------------------------------------------------
+[[1;34mINFO[m] Running hudson.util.[1mRobustReflectionConverterTest[m
+Searchme wrapMapper
+Searchme RBeaforeAssert
+Searchme serializedClass
+Searchme canConvert
+Searchme AssociatedConverterImpl findConverter
+Searchme AssociatedConverterImpl findConverter ClassNotFoundException
+Searchme serializedClass
+Searchme canConvert
+Searchme AssociatedConverterImpl findConverter
+Searchme AssociatedConverterImpl findConverter ClassNotFoundException
+Searchme serializedClass
+Searchme canConvert
+Searchme AssociatedConverterImpl findConverter
+Searchme AssociatedConverterImpl findConverter ClassNotFoundException
+Searchme serializedClass
+Searchme canConvert
+Searchme AssociatedConverterImpl findConverter
+Searchme AssociatedConverterImpl findConverter ClassNotFoundException
+Searchme serializedClass
+Searchme serializedClass
+Searchme canConvert
+Searchme AssociatedConverterImpl findConverter
+Searchme AssociatedConverterImpl findConverter ClassNotFoundException
+Searchme canConvert
+Searchme AssociatedConverterImpl findConverter
+Searchme AssociatedConverterImpl findConverter ClassNotFoundException
+Searchme serializedClass
+Searchme serializedClass
+Searchme serializedClass
+Searchme canConvert
+Searchme AssociatedConverterImpl findConverter
+Searchme AssociatedConverterImpl findConverter ClassNotFoundException
+Searchme canConvert
+Searchme AssociatedConverterImpl findConverter
+Searchme AssociatedConverterImpl findConverter ClassNotFoundException
+[[1;31mERROR[m] [1;31mTests [0;1mrun: [0;1m1[m, [1;31mFailures: [0;1;31m1[m, Errors: 0, Skipped: 0, Time elapsed: 0.712 s[1;31m <<< FAILURE![m - in hudson.util.[1mRobustReflectionConverterTest[m
+[[1;31mERROR[m] classOwnership  Time elapsed: 0.697 s  <<< FAILURE!
+org.junit.ComparisonFailure: expected:<...><number>2</number><[boot/><lover class='Billy' plugin='p3'/></Moonwalk><Moonwalk plugin='p2'><number>3</number><boot/><jacket/><lover class='Jean' plugin='p4']/></Moonwalk></stepp...> but was:<...><number>2</number><[lover class='Billy' plugin='p3'/><boot/></Moonwalk><Moonwalk plugin='p2'><number>3</number><lover class='Jean' plugin='p4'/><jacket/><boot]/></Moonwalk></stepp...>
+	at org.junit.Assert.assertEquals(Assert.java:117)
+	at org.junit.Assert.assertEquals(Assert.java:146)
+	at hudson.util.RobustReflectionConverterTest.classOwnership(RobustReflectionConverterTest.java:95)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:566)
+	at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:59)
+	at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)
+	at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:56)
+	at org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)
+	at org.junit.runners.ParentRunner$3.evaluate(ParentRunner.java:306)
+	at org.junit.runners.BlockJUnit4ClassRunner$1.evaluate(BlockJUnit4ClassRunner.java:100)
+	at org.junit.runners.ParentRunner.runLeaf(ParentRunner.java:366)
+	at org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:103)
+	at org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:63)
+	at org.junit.runners.ParentRunner$4.run(ParentRunner.java:331)
+	at org.junit.runners.ParentRunner$1.schedule(ParentRunner.java:79)
+	at org.junit.runners.ParentRunner.runChildren(ParentRunner.java:329)
+	at org.junit.runners.ParentRunner.access$100(ParentRunner.java:66)
+	at org.junit.runners.ParentRunner$2.evaluate(ParentRunner.java:293)
+	at org.junit.runners.ParentRunner$3.evaluate(ParentRunner.java:306)
+	at org.junit.runners.ParentRunner.run(ParentRunner.java:413)
+	at org.junit.runner.JUnitCore.run(JUnitCore.java:137)
+	at org.junit.runner.JUnitCore.run(JUnitCore.java:115)
+	at org.junit.vintage.engine.execution.RunnerExecutor.execute(RunnerExecutor.java:42)
+	at org.junit.vintage.engine.VintageTestEngine.executeAllChildren(VintageTestEngine.java:80)
+	at org.junit.vintage.engine.VintageTestEngine.execute(VintageTestEngine.java:72)
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:220)
+	at org.junit.platform.launcher.core.DefaultLauncher.lambda$execute$6(DefaultLauncher.java:188)
+	at org.junit.platform.launcher.core.DefaultLauncher.withInterceptedStreams(DefaultLauncher.java:202)
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:181)
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:128)
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.invokeAllTests(JUnitPlatformProvider.java:150)
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.invoke(JUnitPlatformProvider.java:120)
+	at org.apache.maven.surefire.booter.ForkedBooter.invokeProviderInSameClassLoader(ForkedBooter.java:384)
+	at org.apache.maven.surefire.booter.ForkedBooter.runSuitesInProcess(ForkedBooter.java:345)
+	at org.apache.maven.surefire.booter.ForkedBooter.execute(ForkedBooter.java:126)
+	at org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:418)
+
+[[1;34mINFO[m] 
+[[1;34mINFO[m] Results:
+[[1;34mINFO[m] 
+[[1;31mERROR[m] [1;31mFailures: [m
+[[1;31mERROR[m] [1;31m  RobustReflectionConverterTest.classOwnership:95 expected:<...><number>2</number><[boot/><lover class='Billy' plugin='p3'/></Moonwalk><Moonwalk plugin='p2'><number>3</number><boot/><jacket/><lover class='Jean' plugin='p4']/></Moonwalk></stepp...> but was:<...><number>2</number><[lover class='Billy' plugin='p3'/><boot/></Moonwalk><Moonwalk plugin='p2'><number>3</number><lover class='Jean' plugin='p4'/><jacket/><boot]/></Moonwalk></stepp...>[m
+[[1;34mINFO[m] 
+[[1;31mERROR[m] [1;31mTests run: 1, Failures: 1, Errors: 0, Skipped: 0[m
+[[1;34mINFO[m] 
+INFO: Surefire failed when running tests for yl+eRo+hKlqqjfKC4rTrHvgP12ETgBPXwhJvsX1yfs=
+INFO: Adding excluded groups to newly created one
+INFO: Adding NonDex argLine to existing argLine specified by the project
+CONFIG: nondexFilter=.*
+nondexMode=FULL
+nondexSeed=974622
+nondexStart=0
+nondexEnd=9223372036854775807
+nondexPrintstack=false
+nondexDir=/home/yuxuang6/project/jenkins/core/.nondex
+nondexJarDir=/home/yuxuang6/project/jenkins/core/.nondex
+nondexExecid=kX+1cRXRbi4fG7SVjdidyONdSG90VkSwKKYhael88=
+nondexLogging=CONFIG
+test=
+[[1;34mINFO[m] 
+[[1;34mINFO[m] -------------------------------------------------------
+[[1;34mINFO[m]  T E S T S
+[[1;34mINFO[m] -------------------------------------------------------
+[[1;34mINFO[m] Running hudson.util.[1mRobustReflectionConverterTest[m
+Searchme wrapMapper
+Searchme RBeaforeAssert
+Searchme serializedClass
+Searchme canConvert
+Searchme AssociatedConverterImpl findConverter
+Searchme AssociatedConverterImpl findConverter ClassNotFoundException
+Searchme serializedClass
+Searchme canConvert
+Searchme AssociatedConverterImpl findConverter
+Searchme AssociatedConverterImpl findConverter ClassNotFoundException
+Searchme serializedClass
+Searchme canConvert
+Searchme AssociatedConverterImpl findConverter
+Searchme AssociatedConverterImpl findConverter ClassNotFoundException
+Searchme serializedClass
+Searchme canConvert
+Searchme AssociatedConverterImpl findConverter
+Searchme AssociatedConverterImpl findConverter ClassNotFoundException
+Searchme serializedClass
+Searchme serializedClass
+Searchme canConvert
+Searchme AssociatedConverterImpl findConverter
+Searchme AssociatedConverterImpl findConverter ClassNotFoundException
+Searchme canConvert
+Searchme AssociatedConverterImpl findConverter
+Searchme AssociatedConverterImpl findConverter ClassNotFoundException
+Searchme serializedClass
+Searchme serializedClass
+Searchme serializedClass
+Searchme canConvert
+Searchme AssociatedConverterImpl findConverter
+Searchme AssociatedConverterImpl findConverter ClassNotFoundException
+Searchme canConvert
+Searchme AssociatedConverterImpl findConverter
+Searchme AssociatedConverterImpl findConverter ClassNotFoundException
+[[1;31mERROR[m] [1;31mTests [0;1mrun: [0;1m1[m, [1;31mFailures: [0;1;31m1[m, Errors: 0, Skipped: 0, Time elapsed: 0.667 s[1;31m <<< FAILURE![m - in hudson.util.[1mRobustReflectionConverterTest[m
+[[1;31mERROR[m] classOwnership  Time elapsed: 0.657 s  <<< FAILURE!
+org.junit.ComparisonFailure: expected:<...><number>2</number><[boot/><lover class='Billy' plugin='p3'/></Moonwalk><Moonwalk plugin='p2'><number>3</number><boot/><jacket/><lover class='Jean' plugin='p4']/></Moonwalk></stepp...> but was:<...><number>2</number><[lover class='Billy' plugin='p3'/><boot/></Moonwalk><Moonwalk plugin='p2'><number>3</number><lover class='Jean' plugin='p4'/><jacket/><boot]/></Moonwalk></stepp...>
+	at org.junit.Assert.assertEquals(Assert.java:117)
+	at org.junit.Assert.assertEquals(Assert.java:146)
+	at hudson.util.RobustReflectionConverterTest.classOwnership(RobustReflectionConverterTest.java:95)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:566)
+	at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:59)
+	at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)
+	at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:56)
+	at org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)
+	at org.junit.runners.ParentRunner$3.evaluate(ParentRunner.java:306)
+	at org.junit.runners.BlockJUnit4ClassRunner$1.evaluate(BlockJUnit4ClassRunner.java:100)
+	at org.junit.runners.ParentRunner.runLeaf(ParentRunner.java:366)
+	at org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:103)
+	at org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:63)
+	at org.junit.runners.ParentRunner$4.run(ParentRunner.java:331)
+	at org.junit.runners.ParentRunner$1.schedule(ParentRunner.java:79)
+	at org.junit.runners.ParentRunner.runChildren(ParentRunner.java:329)
+	at org.junit.runners.ParentRunner.access$100(ParentRunner.java:66)
+	at org.junit.runners.ParentRunner$2.evaluate(ParentRunner.java:293)
+	at org.junit.runners.ParentRunner$3.evaluate(ParentRunner.java:306)
+	at org.junit.runners.ParentRunner.run(ParentRunner.java:413)
+	at org.junit.runner.JUnitCore.run(JUnitCore.java:137)
+	at org.junit.runner.JUnitCore.run(JUnitCore.java:115)
+	at org.junit.vintage.engine.execution.RunnerExecutor.execute(RunnerExecutor.java:42)
+	at org.junit.vintage.engine.VintageTestEngine.executeAllChildren(VintageTestEngine.java:80)
+	at org.junit.vintage.engine.VintageTestEngine.execute(VintageTestEngine.java:72)
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:220)
+	at org.junit.platform.launcher.core.DefaultLauncher.lambda$execute$6(DefaultLauncher.java:188)
+	at org.junit.platform.launcher.core.DefaultLauncher.withInterceptedStreams(DefaultLauncher.java:202)
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:181)
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:128)
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.invokeAllTests(JUnitPlatformProvider.java:150)
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.invoke(JUnitPlatformProvider.java:120)
+	at org.apache.maven.surefire.booter.ForkedBooter.invokeProviderInSameClassLoader(ForkedBooter.java:384)
+	at org.apache.maven.surefire.booter.ForkedBooter.runSuitesInProcess(ForkedBooter.java:345)
+	at org.apache.maven.surefire.booter.ForkedBooter.execute(ForkedBooter.java:126)
+	at org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:418)
+
+[[1;34mINFO[m] 
+[[1;34mINFO[m] Results:
+[[1;34mINFO[m] 
+[[1;31mERROR[m] [1;31mFailures: [m
+[[1;31mERROR[m] [1;31m  RobustReflectionConverterTest.classOwnership:95 expected:<...><number>2</number><[boot/><lover class='Billy' plugin='p3'/></Moonwalk><Moonwalk plugin='p2'><number>3</number><boot/><jacket/><lover class='Jean' plugin='p4']/></Moonwalk></stepp...> but was:<...><number>2</number><[lover class='Billy' plugin='p3'/><boot/></Moonwalk><Moonwalk plugin='p2'><number>3</number><lover class='Jean' plugin='p4'/><jacket/><boot]/></Moonwalk></stepp...>[m
+[[1;34mINFO[m] 
+[[1;31mERROR[m] [1;31mTests run: 1, Failures: 1, Errors: 0, Skipped: 0[m
+[[1;34mINFO[m] 
+INFO: Surefire failed when running tests for kX+1cRXRbi4fG7SVjdidyONdSG90VkSwKKYhael88=
+INFO: Adding excluded groups to newly created one
+INFO: Adding NonDex argLine to existing argLine specified by the project
+CONFIG: nondexFilter=.*
+nondexMode=FULL
+nondexSeed=1016066
+nondexStart=0
+nondexEnd=9223372036854775807
+nondexPrintstack=false
+nondexDir=/home/yuxuang6/project/jenkins/core/.nondex
+nondexJarDir=/home/yuxuang6/project/jenkins/core/.nondex
+nondexExecid=HuEmsUYaUFuwVXoxMhHOCaWU3yD+lfk0AD2HtY48kw=
+nondexLogging=CONFIG
+test=
+[[1;34mINFO[m] 
+[[1;34mINFO[m] -------------------------------------------------------
+[[1;34mINFO[m]  T E S T S
+[[1;34mINFO[m] -------------------------------------------------------
+[[1;34mINFO[m] Running hudson.util.[1mRobustReflectionConverterTest[m
+Searchme wrapMapper
+Searchme RBeaforeAssert
+Searchme serializedClass
+Searchme canConvert
+Searchme AssociatedConverterImpl findConverter
+Searchme AssociatedConverterImpl findConverter ClassNotFoundException
+Searchme serializedClass
+Searchme canConvert
+Searchme AssociatedConverterImpl findConverter
+Searchme AssociatedConverterImpl findConverter ClassNotFoundException
+Searchme serializedClass
+Searchme canConvert
+Searchme AssociatedConverterImpl findConverter
+Searchme AssociatedConverterImpl findConverter ClassNotFoundException
+Searchme serializedClass
+Searchme canConvert
+Searchme AssociatedConverterImpl findConverter
+Searchme AssociatedConverterImpl findConverter ClassNotFoundException
+Searchme canConvert
+Searchme AssociatedConverterImpl findConverter
+Searchme AssociatedConverterImpl findConverter ClassNotFoundException
+Searchme serializedClass
+Searchme serializedClass
+Searchme canConvert
+Searchme AssociatedConverterImpl findConverter
+Searchme AssociatedConverterImpl findConverter ClassNotFoundException
+Searchme serializedClass
+Searchme canConvert
+Searchme AssociatedConverterImpl findConverter
+Searchme AssociatedConverterImpl findConverter ClassNotFoundException
+Searchme serializedClass
+Searchme serializedClass
+Searchme canConvert
+Searchme AssociatedConverterImpl findConverter
+Searchme AssociatedConverterImpl findConverter ClassNotFoundException
+Searchme wrapMapper
+Searchme CompatibilityMapper realClass
+Searchme CompatibilityMapper realClass
+[[1;34mINFO[m] [1;32mTests run: [0;1;32m1[m, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.788 s - in hudson.util.[1mRobustReflectionConverterTest[m
+[[1;34mINFO[m] 
+[[1;34mINFO[m] Results:
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1;32mTests run: 1, Failures: 0, Errors: 0, Skipped: 0[m
+[[1;34mINFO[m] 
+[[1;34mINFO[m] NonDex SUMMARY:
+[[1;34mINFO[m] *********
+[[1;34mINFO[m] mvn nondex:nondex  -DnondexFilter='.*' -DnondexMode=FULL -DnondexSeed=933178 -DnondexStart=0 -DnondexEnd=9223372036854775807 -DnondexPrintstack=false -DnondexDir="/home/yuxuang6/project/jenkins/core/.nondex" -DnondexJarDir="/home/yuxuang6/project/jenkins/core/.nondex" -DnondexExecid=yl+eRo+hKlqqjfKC4rTrHvgP12ETgBPXwhJvsX1yfs= -DnondexLogging=CONFIG
+[[1;33mWARNING[m] hudson.util.RobustReflectionConverterTest#classOwnership
+[[1;34mINFO[m] *********
+[[1;34mINFO[m] *********
+[[1;34mINFO[m] mvn nondex:nondex  -DnondexFilter='.*' -DnondexMode=FULL -DnondexSeed=974622 -DnondexStart=0 -DnondexEnd=9223372036854775807 -DnondexPrintstack=false -DnondexDir="/home/yuxuang6/project/jenkins/core/.nondex" -DnondexJarDir="/home/yuxuang6/project/jenkins/core/.nondex" -DnondexExecid=kX+1cRXRbi4fG7SVjdidyONdSG90VkSwKKYhael88= -DnondexLogging=CONFIG
+[[1;33mWARNING[m] hudson.util.RobustReflectionConverterTest#classOwnership
+[[1;34mINFO[m] *********
+[[1;34mINFO[m] *********
+[[1;34mINFO[m] mvn nondex:nondex  -DnondexFilter='.*' -DnondexMode=FULL -DnondexSeed=1016066 -DnondexStart=0 -DnondexEnd=9223372036854775807 -DnondexPrintstack=false -DnondexDir="/home/yuxuang6/project/jenkins/core/.nondex" -DnondexJarDir="/home/yuxuang6/project/jenkins/core/.nondex" -DnondexExecid=HuEmsUYaUFuwVXoxMhHOCaWU3yD+lfk0AD2HtY48kw= -DnondexLogging=CONFIG
+[[1;34mINFO[m] No Test Failed with this configuration.
+[[1;34mINFO[m] *********
+[[1;34mINFO[m] All tests pass without NonDex shuffling
+[[1;34mINFO[m] ####################
+[[1;34mINFO[m] Across all seeds:
+[[1;34mINFO[m] hudson.util.RobustReflectionConverterTest#classOwnership
+[[1;34mINFO[m] Test results can be found at: 
+[[1;34mINFO[m] file:///home/yuxuang6/project/jenkins/core/.nondex/yl+eRo+hKlqqjfKC4rTrHvgP12ETgBPXwhJvsX1yfs=/test_results.html
+[[1;34mINFO[m] [NonDex] The id of this run is: yl+eRo+hKlqqjfKC4rTrHvgP12ETgBPXwhJvsX1yfs=
+[[1;34mINFO[m] [1m------------------------------------------------------------------------[m
+[[1;34mINFO[m] [1mReactor Summary for Jenkins main module 2.323-SNAPSHOT:[m
+[[1;34mINFO[m] 
+[[1;34mINFO[m] Jenkins main module ................................ [1;32mSUCCESS[m [  2.628 s]
+[[1;34mINFO[m] Jenkins BOM ........................................ [1;32mSUCCESS[m [  0.374 s]
+[[1;34mINFO[m] Jenkins cli ........................................ [1;32mSUCCESS[m [  1.445 s]
+[[1;34mINFO[m] Jenkins core ....................................... [1;31mFAILURE[m [ 50.169 s]
+[[1;34mINFO[m] Jenkins war ........................................ [1;33mSKIPPED[m
+[[1;34mINFO[m] Tests for Jenkins core ............................. [1;33mSKIPPED[m
+[[1;34mINFO[m] [1m------------------------------------------------------------------------[m
+[[1;34mINFO[m] [1;31mBUILD FAILURE[m
+[[1;34mINFO[m] [1m------------------------------------------------------------------------[m
+[[1;34mINFO[m] Total time:  57.234 s
+[[1;34mINFO[m] Finished at: 2023-09-25T18:11:40-05:00
+[[1;34mINFO[m] [1m------------------------------------------------------------------------[m
+[[1;31mERROR[m] Failed to execute goal [32medu.illinois:nondex-maven-plugin:2.1.1:nondex[m [1m(default-cli)[m on project [36mjenkins-core[m: [1;31mUnable to execute mojo[m: There are test failures.
+[[1;31mERROR[m] 
+[[1;31mERROR[m] Please refer to /home/yuxuang6/project/jenkins/core/.nondex/yl+eRo+hKlqqjfKC4rTrHvgP12ETgBPXwhJvsX1yfs= for the individual test results.
+[[1;31mERROR[m] Please refer to dump files (if any exist) [date].dump, [date]-jvmRun[N].dump and [date].dumpstream.
+[[1;31mERROR[m] -> [1m[Help 1][m
+[[1;31mERROR[m] 
+[[1;31mERROR[m] To see the full stack trace of the errors, re-run Maven with the [1m-e[m switch.
+[[1;31mERROR[m] Re-run Maven using the [1m-X[m switch to enable full debug logging.
+[[1;31mERROR[m] 
+[[1;31mERROR[m] For more information about the errors and possible solutions, please read the following articles:
+[[1;31mERROR[m] [1m[Help 1][m http://cwiki.apache.org/confluence/display/MAVEN/MojoExecutionException
+[[1;31mERROR[m] 
+[[1;31mERROR[m] After correcting the problems, you can resume the build with the command
+[[1;31mERROR[m]   [1mmvn <args> -rf :jenkins-core[m
