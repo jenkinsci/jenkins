@@ -22,6 +22,11 @@ public class HudsonPrivateSecurityRealmTest {
     private static final String PBKDF2_HMAC_SHA512_ENCODED_PASSWORD =
             "$HMACSHA512:210000:30f9e0a5470a8bc67f128ca1aae25dd4$88abaca4f442caeff0096ec0f75df2d77cc31a956c564133232f4d2532a72c8d4380a718d5b2a3dccab9e752027eeadd8f9f2c0c624505531bf3a57ec7d08aad";
 
+    /* This exists so that we can easily  check the complexity of how long this takes (ie is the number of iterations we 
+     * use correct for the state of CPUs).  
+     * We do not want to assert that the range < x and  > y  as that would make the test flaky on overloaded
+     *  or slow hardware, so this is commented out but left for ease of running locally when desired.
+     */
     //@Test
     public void timingPBKDF2() {
         // ignore the salt generation - check just matching....
@@ -42,6 +47,11 @@ public class HudsonPrivateSecurityRealmTest {
         System.out.println("PBKDF2 took " + d.toSeconds() + "s");
     }
 
+    /* This exists so that we can easily  check the complexity of how long this takes (ie is the number of iterations we 
+     * use correct for the state of CPUs).  
+     * We do not want to assert that the range < x and  > y  as that would make the test flaky on overloaded
+     *  or slow hardware, so this is commented out but left for ease of running locally when desired.
+     */
     //@Test
     public void timingBcrypt() {
         // ignore the salt generation - check just matching....
