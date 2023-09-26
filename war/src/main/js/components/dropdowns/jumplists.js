@@ -11,7 +11,7 @@ function init() {
  * Appends a ⌄ button at the end of links which support jump lists
  */
 function generateJumplistAccessors() {
-  document.querySelectorAll("A.model-link").forEach((link) => {
+  behaviorShim.specify("A.model-link", "-jumplist-", 999, (link) => {
     const isFirefox = navigator.userAgent.indexOf("Firefox") !== -1;
     // Firefox adds unwanted lines when copying buttons in text, so use a span instead
     const dropdownChevron = document.createElement(
