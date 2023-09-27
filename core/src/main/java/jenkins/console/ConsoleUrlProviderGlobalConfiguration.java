@@ -24,6 +24,7 @@
 
 package jenkins.console;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.BulkChange;
 import hudson.Extension;
 import hudson.ExtensionList;
@@ -31,7 +32,9 @@ import java.io.IOException;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import jenkins.appearance.AppearanceCategory;
 import jenkins.model.GlobalConfiguration;
+import jenkins.model.GlobalConfigurationCategory;
 import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
@@ -54,6 +57,12 @@ public class ConsoleUrlProviderGlobalConfiguration extends GlobalConfiguration {
 
     public ConsoleUrlProviderGlobalConfiguration() {
         load();
+    }
+
+    @NonNull
+    @Override
+    public GlobalConfigurationCategory getCategory() {
+        return GlobalConfigurationCategory.get(AppearanceCategory.class);
     }
 
     public List<ConsoleUrlProvider> getProviders() {
