@@ -32,13 +32,19 @@ THE SOFTWARE.
   <!-- no need for additional breadcrumb here as we're on an index page already including breadcrumb -->
   <l:main-panel>
     <l:app-bar title="${%Nodes}">
-        <j:getStatic var="createPermission" className="hudson.model.Computer" field="CREATE"/>
-        <j:if test="${h.hasPermission(createPermission)}">
-          <a class="jenkins-button jenkins-button--primary" href="new">
-            <l:icon src="symbol-add" />
-            ${%New Node}
-          </a>
-        </j:if>
+      <j:getStatic var="createPermission" className="hudson.model.Computer" field="CREATE"/>
+      <j:if test="${h.hasPermission(createPermission)}">
+        <a class="jenkins-button jenkins-button--primary" href="new">
+          <l:icon src="symbol-add" />
+          ${%New Node}
+        </a>
+      </j:if>
+      <j:set var="hasPermission" value="${h.hasAnyPermission(it, app.MANAGE_AND_SYSTEM_READ)}" />
+      <j:if test="${hasPermission}">
+        <a class="jenkins-button" href="configure">
+          ${%Node Monitoring}
+        </a>
+      </j:if>
       <l:hasAdministerOrManage>
         <form method="post" action="updateNow" class="jenkins-!-display-contents">
           <button tooltip="${%Refresh status}" class="jenkins-button">
