@@ -3,6 +3,7 @@ package hudson.model;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -203,9 +204,7 @@ public class LabelLoadStatisticsQueueLengthTest {
             Thread.sleep(10);
         }
 
-        assertTrue(
-                "After waiting there are buildable items in the build queue.",
-                queue.getBuildableItems().size() > 0);
+        assertFalse("After waiting there are buildable items in the build queue.", queue.getBuildableItems().isEmpty());
 
         // create a LoadStatisticsUpdater, and run it in order to update the
         // load stats for all the labels
