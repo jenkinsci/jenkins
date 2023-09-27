@@ -49,7 +49,7 @@ public class ConsoleUrlProviderTest {
     public JenkinsRule r = new JenkinsRule();
 
     @Test
-    public void getConsoleUrl() throws Exception {
+    public void getRedirectUrl() throws Exception {
         ConsoleUrlProviderGlobalConfiguration.get().setProviders(list(new CustomConsoleUrlProvider()));
         FreeStyleProject p = r.createProject(FreeStyleProject.class);
         // Default URL
@@ -72,7 +72,7 @@ public class ConsoleUrlProviderTest {
     }
 
     @Test
-    public void getUserSpecificConsoleUrl() throws Exception {
+    public void getUserSpecificRedirectUrl() throws Exception {
         r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
         User admin = User.getById("admin", true);
         // Admin choses custom, user overrides to default
@@ -92,6 +92,30 @@ public class ConsoleUrlProviderTest {
         admin.getProperty(ConsoleUrlProviderUserProperty.class).setProviders(
                 list(new IgnoreAllRunsConsoleUrlProvider(), new CustomConsoleUrlProvider("-a"), new CustomConsoleUrlProvider("-b")));
         assertCustomConsoleUrl(r.contextPath + "/my/build/console-a", admin, b);
+    }
+
+    @Test
+    public void useGlobalProvidersIfUserProvidersDontReturnValidUrl() throws Exception {
+        r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
+        User admin = User.getById("admin", true);
+        // Admin choses custom, user chooses a provider that ignores everything, so global choice still gets used.
+        ConsoleUrlProviderGlobalConfiguration.get().setProviders(list(new CustomConsoleUrlProvider()));
+        admin.getProperty(ConsoleUrlProviderUserProperty.class).setProviders(list(new IgnoreAllRunsConsoleUrlProvider()));
+        FreeStyleProject p = r.createProject(FreeStyleProject.class);
+        FreeStyleBuild b = r.buildAndAssertSuccess(p);
+        b.setDescription("custom my/build/console");
+        assertCustomConsoleUrl(r.contextPath + "/my/build/console", admin, b);
+    }
+
+    @Test
+    public void invalidRedirectUrls() throws Exception {
+        ConsoleUrlProviderGlobalConfiguration.get().setProviders(list(new CustomConsoleUrlProvider()));
+        FreeStyleProject p = r.createProject(FreeStyleProject.class);
+        FreeStyleBuild b = r.buildAndAssertSuccess(p);
+        b.setDescription("custom https://example.com");
+        assertCustomConsoleUrl(r.contextPath + "/" + b.getUrl() + "console", b);
+        b.setDescription("custom <!>invalid url<!>");
+        assertCustomConsoleUrl(r.contextPath + "/" + b.getUrl() + "console", b);
     }
 
     public void assertCustomConsoleUrl(String expectedUrl, Run<?, ?> run) throws Exception {

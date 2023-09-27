@@ -31,6 +31,8 @@ import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.model.Run;
 import hudson.model.User;
+import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -71,38 +73,44 @@ public interface ConsoleUrlProvider extends Describable<ConsoleUrlProvider> {
      * @return the URL for the console for the specified build, relative to the web server root
      */
     static @NonNull String getRedirectUrl(Run<?, ?> run) {
-        ConsoleUrlProviderGlobalConfiguration globalConfig = ConsoleUrlProviderGlobalConfiguration.get();
-        List<ConsoleUrlProvider> providers = globalConfig.getProviders();
+        final List<ConsoleUrlProvider> providers = new ArrayList<>();
         User currentUser = User.current();
-        if (currentUser != null) { // TODO: Should we add a configuration option to allow admins to suppress this behavior?
+        if (currentUser != null) {
             ConsoleUrlProviderUserProperty userProperty = currentUser.getProperty(ConsoleUrlProviderUserProperty.class);
             if (userProperty != null) {
                 List<ConsoleUrlProvider> userProviders = userProperty.getProviders();
                 if (userProviders != null) {
-                    providers = userProviders;
+                    providers.addAll(userProviders);
                 }
             }
         }
+        // Global providers are always considered in case the user-configured providers are non-exhaustive.
+        ConsoleUrlProviderGlobalConfiguration globalConfig = ConsoleUrlProviderGlobalConfiguration.get();
+        List<ConsoleUrlProvider> globalProviders = globalConfig.getProviders();
+        if (globalProviders != null) {
+            providers.addAll(globalProviders);
+        }
         String url = null;
-        if (providers != null) {
-            for (ConsoleUrlProvider provider : providers) {
-                try {
-                    url = provider.getConsoleUrl(run);
-                    if (url != null) {
+        for (ConsoleUrlProvider provider : providers) {
+            try {
+                String tempUrl = provider.getConsoleUrl(run);
+                if (tempUrl != null) {
+                    if (new URI(tempUrl).isAbsolute()) {
+                        LOGGER.warning(() -> "Ignoring absolute console URL " + tempUrl + " for " + run + " from " + provider.getClass());
+                    } else {
+                        // Found a valid non-null URL.
+                        url = tempUrl;
                         break;
                     }
-                } catch (Exception e) { // Intentionally broad catch clause to guard against broken implementations.
-                    LOGGER.log(Level.WARNING, e, () -> "Error looking up console URL for " + run + " from " + provider.getClass());
                 }
+            } catch (Exception e) { // Intentionally broad catch clause to guard against broken implementations.
+                LOGGER.log(Level.WARNING, e, () -> "Error looking up console URL for " + run + " from " + provider.getClass());
             }
         }
         if (url == null) {
             // Reachable if DefaultConsoleUrlProvider is not one of the configured providers, including if no providers are configured at all.
             url = run.getUrl() + "console";
         }
-        // TODO:
-        // * Fail if absolute URL?
-        // * Fail if invalid URI (as in Functions.getActionUrl)?
         if (url.startsWith("/")) {
             return Stapler.getCurrentRequest().getContextPath() + url;
         } else {
