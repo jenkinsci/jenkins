@@ -120,6 +120,9 @@ public abstract class CommandInterpreter extends Builder implements EnvVarsFilte
             if (node == null) {
                 throw new NullPointerException("no such build node: " + build.getBuiltOnStr());
             }
+            if (node == null) {
+                throw new NullPointerException("no such build node: " + build.getBuiltOnStr());
+            }
             throw new NullPointerException("no workspace from node " + node + " which is computer " + node.toComputer() + " and has channel " + node.getChannel());
         }
         FilePath script = null;
