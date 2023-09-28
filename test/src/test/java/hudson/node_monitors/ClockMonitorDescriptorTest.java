@@ -37,6 +37,6 @@ public class ClockMonitorDescriptorTest {
         assertTrue(cd.abs() >= 0);
         assertTrue(cd.abs() < TimeUnit.SECONDS.toMillis(5));
         assertFalse(cd.isDangerous());
-        assertTrue("html output too short", cd.toHtml().length() > 0);
+        assertFalse("html output too short", cd.toHtml().isEmpty());
     }
 }
