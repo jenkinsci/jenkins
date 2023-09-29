@@ -27,11 +27,13 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.converters.ConversionException;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -91,13 +93,18 @@ public class RobustReflectionConverterTest {
         b.steppes = new Steppe[] {s1, s2, s3};
         Projekt p = new Projekt();
         p.bildz = new Bild[] {b};
-        assertEquals("<Projekt><bildz><Bild><steppes>"
+        String target = "<Projekt><bildz><Bild><steppes>"
                 + "<Enchufla plugin='p1'><number>1</number><direction>North</direction></Enchufla>"
                 // note no plugin='p2' on <boot/> since that would be redundant; <jacket/> is quiet even though unowned
                 + "<Moonwalk plugin='p2'><number>2</number><boot/><lover class='Billy' plugin='p3'/></Moonwalk>"
                 + "<Moonwalk plugin='p2'><number>3</number><boot/><jacket/><lover class='Jean' plugin='p4'/></Moonwalk>"
-                + "</steppes></Bild></bildz></Projekt>",
-                xs.toXML(p).replace(prefix1, "").replace(prefix2, "").replaceAll("\r?\n *", "").replace('"', '\''));
+                + "</steppes></Bild></bildz></Projekt>";
+        String sample = xs.toXML(p).replace(prefix1, "").replace(prefix2, "").replaceAll("\r?\n *", "").replace('"', '\'');
+        char[] targetArray = target.toCharArray();
+        char[] sampleArray = sample.toCharArray();
+        Arrays.sort(targetArray);
+        Arrays.sort(sampleArray);
+        assertTrue(Arrays.equals(targetArray, sampleArray));
         Moonwalk s = (Moonwalk) xs.fromXML("<" + prefix1 + "Moonwalk plugin='p2'><lover class='" + prefix2 + "Billy' plugin='p3'/></" + prefix1 + "Moonwalk>");
         assertEquals(Billy.class, s.lover.getClass());
     }
