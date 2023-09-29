@@ -36,29 +36,29 @@ import org.jvnet.hudson.test.Issue;
  * @author Oleg Nenashev
  */
 public class FileParameterValueTest {
-    
+
     @Issue("JENKINS-19017")
     @Test public void compareParamsWithSameName() {
         final String paramName = "MY_FILE_PARAM"; // Same paramName (location) reproduces the bug
         final FileParameterValue param1 = new FileParameterValue(paramName, new File("ws_param1.txt"), "param1.txt");
         final FileParameterValue param2 = new FileParameterValue(paramName, new File("ws_param2.txt"), "param2.txt");
-        
+
         assertNotEquals("Files with same locations should be considered as different", param1, param2);
         assertNotEquals("Files with same locations should be considered as different", param2, param1);
     }
-    
+
     @Test public void compareNullParams() {
-        final String paramName = "MY_FILE_PARAM";     
+        final String paramName = "MY_FILE_PARAM";
         FileParameterValue nonNullParam = new FileParameterValue(paramName, new File("ws_param1.txt"), "param1.txt");
         FileParameterValue nullParam1 = new FileParameterValue(null, new File("null_param1.txt"), "null_param1.txt");
         FileParameterValue nullParam2 = new FileParameterValue(null, new File("null_param2.txt"), "null_param2.txt");
-        
+
         // Combine nulls
         assertEquals(nullParam1, nullParam1);
         assertEquals(nullParam1, nullParam2);
         assertEquals(nullParam2, nullParam1);
         assertEquals(nullParam2, nullParam2);
-        
+
         // Compare with non-null
         assertNotEquals(nullParam1, nonNullParam);
         assertNotEquals(nonNullParam, nullParam1);

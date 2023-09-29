@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model.queue;
 
 import static java.lang.Math.max;
@@ -44,7 +45,7 @@ final class Timeline {
      * Obtains q(t) for the given t.
      */
     private int at(long t) {
-        SortedMap<Long, int[]> head = data.subMap(t,Long.MAX_VALUE);
+        SortedMap<Long, int[]> head = data.subMap(t, Long.MAX_VALUE);
         if (head.isEmpty()) return 0;
         return data.get(head.firstKey())[0];
     }
@@ -105,15 +106,15 @@ final class Timeline {
             long t = start;
             // check if 'start' satisfies the two conditions by moving t across [start,start+duration)
             while (t - start < duration) {
-                if (at(t)>n) {
+                if (at(t) > n) {
                     // value too big. what's the next t that's worth trying?
                     Long nxt = next(t);
-                    if (nxt==null)  return null;
+                    if (nxt == null)  return null;
                     start = nxt;
                     continue OUTER;
                 } else {
                     Long nxt = next(t);
-                    if (nxt==null) t = Long.MAX_VALUE;
+                    if (nxt == null) t = Long.MAX_VALUE;
                     else           t = nxt;
                 }
             }

@@ -27,17 +27,17 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core">
     <h2>Create Job</h2>
     <p>
-        To create a new job, post <tt>config.xml</tt> to <a href="../createItem">this URL</a> with
-        query parameter <tt>name=<i>JOBNAME</i></tt>. You need to send a <tt>Content-Type: application/xml</tt>
+        To create a new job, post <code>config.xml</code> to <a href="../createItem">this URL</a> with
+        query parameter <code>name=<i>JOBNAME</i></code>. You need to send a <code>Content-Type: application/xml</code>
         header. You will get a 200 status code if the creation is successful,
-        or 4xx/5xx code if it fails. <tt>config.xml</tt> is the format Jenkins uses to store the project
+        or 4xx/5xx code if it fails. <code>config.xml</code> is the format Jenkins uses to store the project
         in the file system, so you can see examples of them in the Jenkins home directory, or by retrieving
-        the XML configuration of existing jobs from <tt>/job/<i>JOBNAME</i>/config.xml</tt>.
+        the XML configuration of existing jobs from <code>/job/<i>JOBNAME</i>/config.xml</code>.
     </p>
 
     <h2>Copy Job</h2>
     <p>
         To copy a job, send a POST request to <a href="../createItem">this URL</a> with
-        three query parameters <tt>name=<i>NEWJOBNAME</i>&amp;mode=copy&amp;from=<i>FROMJOBNAME</i></tt>
+        three query parameters <code>name=<i>NEWJOBNAME</i>&amp;mode=copy&amp;from=<i>FROMJOBNAME</i></code>
     </p>
 </j:jelly>

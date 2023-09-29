@@ -4452,7 +4452,7 @@ var Dom = YAHOO.util.Dom,
                     }
                     //After for loop
 
-                    //Reset Font Family and Size to the inital configs
+                    //Reset Font Family and Size to the initial configs
                     if (fn_button) {
                         var family = fn_button._configs.label._initialConfig.value;
                         fn_button.set('label', '<span class="yui-toolbar-fontname-' + this._cleanClassName(family) + '">' + family + '</span>');
@@ -4913,7 +4913,7 @@ var Dom = YAHOO.util.Dom,
             });
             /**
             * @config plainText
-            * @description Process the inital textarea data as if it was plain text. Accounting for spaces, tabs and line feeds.
+            * @description Process the initial textarea data as if it was plain text. Accounting for spaces, tabs and line feeds.
             * @default false
             * @type Boolean
             */

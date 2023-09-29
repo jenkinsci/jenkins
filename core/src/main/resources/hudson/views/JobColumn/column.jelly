@@ -26,6 +26,6 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
     <td style="${indenter.getCss(job)}">
         <!-- TODO consider using ${rootURL}/${job.url} instead (also in other column.jelly) -->
-        <a href="${jobBaseUrl}${job.shortUrl}" class='jenkins-table__link model-link inside'> <l:breakable value="${h.getRelativeDisplayNameFrom(job, itemGroup)}"/></a>
+        <a href="${jobBaseUrl}${job.shortUrl}" class='jenkins-table__link model-link inside'><span><l:breakable value="${h.getRelativeDisplayNameFrom(job, itemGroup)}"/></span></a>
     </td>
 </j:jelly>

@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model.labels;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -30,10 +31,10 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import hudson.XmlFile;
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import org.htmlunit.FailingHttpStatusCodeException;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -152,7 +153,7 @@ public class LabelAtomSecurity1986Test {
     @Issue("SECURITY-1986")
     public void programmaticCreationInvalidName() {
         LabelAtom label = new LabelAtom("foo/../goo");
-        assertThrows(IOException.class, () -> label.save());
+        assertThrows(IOException.class, label::save);
     }
 
     @Test

@@ -21,19 +21,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.scm;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.startsWith;
 import static org.junit.Assert.assertEquals;
 
-import com.gargoylesoftware.htmlunit.html.DomElement;
-import com.gargoylesoftware.htmlunit.html.DomNodeList;
-import com.gargoylesoftware.htmlunit.html.HtmlElement;
-import com.gargoylesoftware.htmlunit.html.HtmlImage;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.FilePath;
@@ -42,9 +34,13 @@ import hudson.model.FreeStyleProject;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import java.io.File;
+import org.htmlunit.html.DomElement;
+import org.htmlunit.html.DomNodeList;
+import org.htmlunit.html.HtmlElement;
+import org.htmlunit.html.HtmlImage;
+import org.htmlunit.html.HtmlPage;
 import org.junit.Rule;
 import org.junit.Test;
-import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 
 public class AbstractScmTagActionTest {
@@ -55,29 +51,16 @@ public class AbstractScmTagActionTest {
     @Test
     public void regularTextDisplayedCorrectly() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
-        
+
         String tagToKeep = "Nice tag with space";
         p.setScm(new FakeSCM(tagToKeep));
 
-        j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        j.buildAndAssertSuccess(p);
 
         String tooltip = buildAndExtractTooltipAttribute(p);
         assertEquals(tagToKeep, tooltip);
     }
-    
-    @Test
-    @Issue("SECURITY-1537")
-    public void preventXssInTagAction() throws Exception {
-        FreeStyleProject p = j.createFreeStyleProject();
-        p.setScm(new FakeSCM("<img src='x' onerror=alert(123)>XSS"));
 
-        j.assertBuildStatusSuccess(p.scheduleBuild2(0));
-
-        String tooltip = buildAndExtractTooltipAttribute(p);
-        assertThat(tooltip, not(containsString("<")));
-        assertThat(tooltip, startsWith("&lt;"));
-    }
-    
     private String buildAndExtractTooltipAttribute(FreeStyleProject p) throws Exception {
         JenkinsRule.WebClient wc = j.createWebClient();
 

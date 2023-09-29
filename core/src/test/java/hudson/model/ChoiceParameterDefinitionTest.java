@@ -14,7 +14,7 @@ import org.jvnet.hudson.test.Issue;
 
 public class ChoiceParameterDefinitionTest {
     @Test
-    public void shouldValidateChoices(){
+    public void shouldValidateChoices() {
         assertFalse(ChoiceParameterDefinition.areValidChoices(""));
         assertFalse(ChoiceParameterDefinition.areValidChoices("        "));
         assertTrue(ChoiceParameterDefinition.areValidChoices("abc"));

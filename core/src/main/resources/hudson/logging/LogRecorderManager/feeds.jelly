@@ -24,28 +24,23 @@ THE SOFTWARE.
 
 <!-- list of feed links -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
-    <div align="right">
-        <a href="rss" class="yui-button link-button">
-            <span class="leading-icon">
-                <l:svgIcon class="icon-small" tooltip="Atom feed" viewBox="0 0 16 16"
-                           href="${imagesURL}/material-icons/feed.svg#feed"/>
-            </span>
-            <span>${%All}</span>
-        </a>
-        <a href="rss?level=SEVERE" class="yui-button link-button">
-            <span class="leading-icon">
-                <l:svgIcon class="icon-small" tooltip="Atom feed" viewBox="0 0 16 16"
-                           href="${imagesURL}/material-icons/feed.svg#feed"/>
-            </span>
-            <span>${%SEVERE}</span>
-        </a>
-        <a href="rss?level=WARNING" class="yui-button link-button">
-            <span class="leading-icon">
-                <l:svgIcon class="icon-small" tooltip="Atom feed" viewBox="0 0 16 16"
-                           href="${imagesURL}/material-icons/feed.svg#feed"/>
-            </span>
-            <span>${%WARNING}</span>
-        </a>
-    </div>
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout">
+    <a class="jenkins-dropdown__item" href="rss">
+        <div class="jenkins-dropdown__item__icon">
+            <l:icon src="symbol-rss" />
+        </div>
+        ${%All}
+    </a>
+    <a class="jenkins-dropdown__item" href="rss?level=WARNING">
+        <div class="jenkins-dropdown__item__icon">
+            <l:icon src="symbol-rss" />
+        </div>
+        ${%WARNING}
+    </a>
+    <a class="jenkins-dropdown__item" href="rss?level=SEVERE">
+        <div class="jenkins-dropdown__item__icon">
+            <l:icon src="symbol-rss" />
+        </div>
+        ${%SEVERE}
+    </a>
 </j:jelly>

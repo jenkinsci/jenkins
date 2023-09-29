@@ -1,24 +1,33 @@
 <div>
-  Archives the build artifacts (for example, distribution zip files or jar files)
-  so that they can be downloaded later.
-  Archived files will be accessible from the Jenkins webpage.
+  Archives the build artifacts (for example, distribution zip files or jar
+  files) so that they can be downloaded later. Archived files will be accessible
+  from the Jenkins webpage.
   <br />
-  Normally, Jenkins keeps artifacts for a build as long as a build log itself is kept,
-  but if you don't need old artifacts and would rather save disk space, you can do so.
+  Normally, Jenkins keeps artifacts for a build as long as a build log itself is
+  kept, but if you don't need old artifacts and would rather save disk space,
+  you can do so.
 </div>
-<br/>
+<br />
 <div>
-Note that the Maven job type automatically archives any produced Maven artifacts.
-Any artifacts configured here will be archived on top of that.
-Automatic artifact archiving can be disabled under the advanced Maven options.
+  Note that the Maven job type automatically archives any produced Maven
+  artifacts. Any artifacts configured here will be archived on top of that.
+  Automatic artifact archiving can be disabled under the advanced Maven options.
 </div>
 
-<br/>
+<br />
 
 <div>
-  The <a href="https://www.jenkins.io/redirect/pipeline-snippet-generator" target="_blank" rel="noopener noreferrer">Pipeline Snippet Generator</a> generates this example
-  when all arguments are set to true (some arguments by default are true):
-<pre><code>archiveArtifacts artifacts: '**/*.txt',
+  The
+  <a
+    href="https://www.jenkins.io/redirect/pipeline-snippet-generator"
+    target="_blank"
+    rel="noopener noreferrer"
+  >
+    Pipeline Snippet Generator
+  </a>
+  generates this example when all arguments are set to true (some arguments by
+  default are true):
+  <pre><code>archiveArtifacts artifacts: '**/*.txt',
                    allowEmptyArchive: true,
                    fingerprint: true,
                    onlyIfSuccessful: true

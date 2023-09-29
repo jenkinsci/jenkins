@@ -24,9 +24,9 @@ public class HexDumpTest {
   static Stream<Arguments> testToHex1Sources() {
     return Stream.of(
             arguments("'fooBar'", new byte[] {'f', 'o', 'o', 'B', 'a', 'r'}),
-            arguments("0xc3", new byte[] {(byte)'Ã'}),
-            arguments("0xac '100'", new byte[] {(byte)'€', '1', '0', '0'}),
-            arguments("'1' 0xf7 '2'", new byte[] {'1', (byte)'÷', '2'}),
+            arguments("0xc3", new byte[] {(byte) 'Ã'}),
+            arguments("0xac '100'", new byte[] {(byte) '€', '1', '0', '0'}),
+            arguments("'1' 0xf7 '2'", new byte[] {'1', (byte) '÷', '2'}),
             arguments("'foo' 0x0a\n'Bar'", new byte[] {'f', 'o', 'o', '\n', 'B', 'a', 'r'})
     );
   }
@@ -41,9 +41,9 @@ public class HexDumpTest {
   static Stream<Arguments> testToHex2Sources() {
     return Stream.of(
             arguments("'ooBa'", new byte[] {'f', 'o', 'o', 'B', 'a', 'r'}, 1, 4),
-            arguments("0xc3", new byte[] {(byte)'Ã'}, 0, 1),
-            arguments("0xac '10'", new byte[] {(byte)'€', '1', '0', '0'}, 0, 3),
-            arguments("0xf7 '2'", new byte[] {'1', (byte)'÷', '2'}, 1, 2),
+            arguments("0xc3", new byte[] {(byte) 'Ã'}, 0, 1),
+            arguments("0xac '10'", new byte[] {(byte) '€', '1', '0', '0'}, 0, 3),
+            arguments("0xf7 '2'", new byte[] {'1', (byte) '÷', '2'}, 1, 2),
             arguments("'Bar'", new byte[] {'f', 'o', 'o', '\n', 'B', 'a', 'r'}, 4, 3),
             arguments("", new byte[] {'f', 'o', 'o', 'B', 'a', 'r'}, 0, 0)
     );

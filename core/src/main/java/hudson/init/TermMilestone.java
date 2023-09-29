@@ -44,8 +44,8 @@ public enum TermMilestone implements Milestone {
     public static TaskBuilder ordering() {
         TaskGraphBuilder b = new TaskGraphBuilder();
         TermMilestone[] v = values();
-        for (int i=0; i<v.length-1; i++)
-            b.add(null, Executable.NOOP).requires(v[i]).attains(v[i+1]);
+        for (int i = 0; i < v.length - 1; i++)
+            b.add(null, Executable.NOOP).requires(v[i]).attains(v[i + 1]);
         return b;
     }
 

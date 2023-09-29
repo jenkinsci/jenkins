@@ -55,7 +55,7 @@ public class Category implements Serializable {
     private List<Map<String, Serializable>> items;
 
     public Category(String id, String name, String description, int order, int minToShow, List<Map<String, Serializable>> items) {
-        this.id= id;
+        this.id = id;
         this.name = name;
         this.description = description;
         this.order = order;

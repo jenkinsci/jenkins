@@ -11,9 +11,6 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import com.gargoylesoftware.htmlunit.WebResponse;
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.PluginWrapper;
 import hudson.cli.CLICommandInvoker;
 import hudson.cli.DisablePluginCommand;
@@ -29,6 +26,9 @@ import java.net.HttpURLConnection;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
+import org.htmlunit.WebResponse;
+import org.htmlunit.html.HtmlForm;
+import org.htmlunit.html.HtmlPage;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Rule;
@@ -130,7 +130,7 @@ public class JenkinsManagePermissionTest {
 
         //WHEN the user goes to /configure page
         HtmlForm form = j.createWebClient().goTo("configure").getFormByName("config");
-        String formText = form.asText();
+        String formText = form.asNormalizedText();
         //THEN items restricted to ADMINISTER only should not be displayed.
         assertThat("Should be able to configure system message", formText, not(containsString("systemMessage")));
         assertThat("Should be able to configure project naming strategy", formText, not(containsString("useProjectNamingStrategy")));
@@ -154,8 +154,8 @@ public class JenkinsManagePermissionTest {
         String shell = getShell();
         View view = j.jenkins.getPrimaryView();
         HtmlForm form = j.createWebClient().goTo("configure").getFormByName("config");
-        form.getInputByName("_.numExecutors").setValueAttribute(""+(currentNumberExecutors+1));
-        form.getInputByName("_.shell").setValueAttribute("/fakeShell");
+        form.getInputByName("_.numExecutors").setValue("" + (currentNumberExecutors + 1));
+        form.getInputByName("_.shell").setValue("/fakeShell");
         form.getSelectByName("primaryView").setSelectedAttribute("testView", true);
 
         // WHEN a user with only Jenkins.MANAGE permission try to save those changes
@@ -203,7 +203,7 @@ public class JenkinsManagePermissionTest {
     }
 
     private static Matcher<WebResponse> hasResponseCode(final int httpStatus) {
-        return new BaseMatcher<WebResponse>() {
+        return new BaseMatcher<>() {
             @Override
             public boolean matches(final Object item) {
                 final WebResponse response = (WebResponse) item;
@@ -254,27 +254,27 @@ public class JenkinsManagePermissionTest {
         //WHEN Asking for restart or safe-restart
         //THEN MANAGE and ADMINISTER are allowed but not READ
         CLICommandInvoker.Result result = new CLICommandInvoker(j, "restart").asUser(readUser.getId()).invoke();
-        assertThat(result, allOf(failedWith(6),hasNoStandardOutput()));
+        assertThat(result, allOf(failedWith(6), hasNoStandardOutput()));
 
         result = new CLICommandInvoker(j, "safe-restart").asUser(readUser.getId()).invoke();
-        assertThat(result, allOf(failedWith(6),hasNoStandardOutput()));
+        assertThat(result, allOf(failedWith(6), hasNoStandardOutput()));
 
         // We should assert that cli result is 0
         // but as restart is not allowed in JenkinsRule, we assert that it has tried to restart.
         result = new CLICommandInvoker(j, "restart").asUser(manageUser.getId()).invoke();
         assertThat(result, failedWith(1));
-        assertThat(result.stderr(),containsString("RestartNotSupportedException"));
+        assertThat(result.stderr(), containsString("RestartNotSupportedException"));
 
         result = new CLICommandInvoker(j, "safe-restart").asUser(manageUser.getId()).invoke();
         assertThat(result, failedWith(1));
-        assertThat(result.stderr(),containsString("RestartNotSupportedException"));
+        assertThat(result.stderr(), containsString("RestartNotSupportedException"));
 
         result = new CLICommandInvoker(j, "restart").asUser(adminUser.getId()).invoke();
         assertThat(result, failedWith(1));
-        assertThat(result.stderr(),containsString("RestartNotSupportedException"));
+        assertThat(result.stderr(), containsString("RestartNotSupportedException"));
 
         result = new CLICommandInvoker(j, "safe-restart").asUser(adminUser.getId()).invoke();
         assertThat(result, failedWith(1));
-        assertThat(result.stderr(),containsString("RestartNotSupportedException"));
+        assertThat(result.stderr(), containsString("RestartNotSupportedException"));
     }
 }

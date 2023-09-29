@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.cli.declarative;
 
 import static java.util.logging.Level.SEVERE;
@@ -79,8 +80,8 @@ public class CLIRegisterer extends ExtensionFinder {
 
     @Override
     public <T> Collection<ExtensionComponent<T>> find(Class<T> type, Hudson jenkins) {
-        if (type==CLICommand.class)
-            return (List)discover(jenkins);
+        if (type == CLICommand.class)
+            return (List) discover(jenkins);
         else
             return Collections.emptyList();
     }
@@ -90,9 +91,9 @@ public class CLIRegisterer extends ExtensionFinder {
      */
     private Method findResolver(Class type) throws IOException {
         List<Method> resolvers = Util.filter(Index.list(CLIResolver.class, Jenkins.get().getPluginManager().uberClassLoader), Method.class);
-        for ( ; type!=null; type=type.getSuperclass())
+        for ( ; type != null; type = type.getSuperclass())
             for (Method m : resolvers)
-                if (m.getReturnType()==type)
+                if (m.getReturnType() == type)
                     return m;
         return null;
     }
@@ -102,13 +103,13 @@ public class CLIRegisterer extends ExtensionFinder {
         List<ExtensionComponent<CLICommand>> r = new ArrayList<>();
 
         try {
-            for ( final Method m : Util.filter(Index.list(CLIMethod.class, jenkins.getPluginManager().uberClassLoader),Method.class)) {
+            for (final Method m : Util.filter(Index.list(CLIMethod.class, jenkins.getPluginManager().uberClassLoader), Method.class)) {
                 try {
                     // command name
                     final String name = m.getAnnotation(CLIMethod.class).name();
 
                     final ResourceBundleHolder res = loadMessageBundle(m);
-                    res.format("CLI."+name+".shortDescription");   // make sure we have the resource, to fail early
+                    res.format("CLI." + name + ".shortDescription");   // make sure we have the resource, to fail early
 
                     r.add(new ExtensionComponent<>(new CloneableCLICommand() {
                         @Override
@@ -277,11 +278,11 @@ public class CLIRegisterer extends ExtensionFinder {
                         }
                     }));
                 } catch (ClassNotFoundException | MissingResourceException e) {
-                    LOGGER.log(SEVERE,"Failed to process @CLIMethod: "+m,e);
+                    LOGGER.log(SEVERE, "Failed to process @CLIMethod: " + m, e);
                 }
             }
         } catch (IOException e) {
-            LOGGER.log(SEVERE, "Failed to discover @CLIMethod",e);
+            LOGGER.log(SEVERE, "Failed to discover @CLIMethod", e);
         }
 
         return r;

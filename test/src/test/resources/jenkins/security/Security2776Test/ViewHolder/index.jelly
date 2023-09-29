@@ -1,0 +1,33 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout">
+  <l:layout>
+    <l:main-panel>
+      <div id="symbol-icons">
+        <div class="unsafe">
+          <l:icon src="symbol-play" tooltip="${it.unsafeTooltip}" />
+        </div>
+        <div class="safe">
+          <l:icon src="symbol-play" tooltip="${it.safeTooltip}" />
+        </div>
+      </div>
+
+      <div id="svgIcons">
+        <div class="unsafe">
+          <l:svgIcon href="TODO" tooltip="${it.unsafeTooltip}" />
+        </div>
+        <div class="safe">
+          <l:svgIcon href="TODO" tooltip="${it.safeTooltip}" />
+        </div>
+      </div>
+
+      <div id="png-icons">
+        <div class="unsafe">
+          <l:icon src="security2776-nonexistent.png" tooltip="${it.unsafeTooltip}" />
+        </div>
+        <div class="safe">
+          <l:icon src="security2776-nonexistent.png" tooltip="${it.safeTooltip}" />
+        </div>
+      </div>
+    </l:main-panel>
+  </l:layout>
+</j:jelly>

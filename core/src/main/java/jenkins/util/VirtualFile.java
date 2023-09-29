@@ -29,7 +29,6 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.FilePath;
 import hudson.Util;
 import hudson.model.DirectoryBrowserSupport;
-import hudson.os.PosixException;
 import hudson.remoting.Callable;
 import hudson.remoting.Channel;
 import hudson.remoting.RemoteInputStream;
@@ -49,6 +48,7 @@ import java.net.URI;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
+import java.nio.file.OpenOption;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -110,7 +110,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  * @since 1.532
  */
 public abstract class VirtualFile implements Comparable<VirtualFile>, Serializable {
-    
+
     /**
      * Gets the base name, meaning just the last portion of the path name without any
      * directories.
@@ -172,7 +172,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
 
     /**
      * Lists children of this directory. Only one level deep.
-     * 
+     *
      * @return a list of children (files and subdirectories); empty for a file or nonexistent directory
      * @throws IOException if this directory exists but listing was not possible for some other reason
      */
@@ -186,12 +186,12 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
      * Some VirtualFile subclasses may not be able to provide
      * an implementation in which NOFOLLOW_LINKS is used or makes sense. Implementations are free
      * to ignore openOptions. Some subclasses of VirtualFile may not have a concept of symlinks.
-     * @param noFollowLinks if true then do not follow links.
+     * @param openOptions the options to apply when opening.
      * @return a list of children (files and subdirectories); empty for a file or nonexistent directory
      * @throws IOException if it could not be opened
      */
     @Restricted(NoExternalUse.class)
-    public @NonNull VirtualFile[] list(boolean noFollowLinks) throws IOException {
+    public @NonNull VirtualFile[] list(OpenOption... openOptions) throws IOException {
         return list();
     }
 
@@ -207,20 +207,20 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
      * only the file itself is considered.
      *
      * This base implementation ignores the existence of symlinks.
-     * @param noFollowLinks if true, then do not follow links.
-     * @return True if the file is a symlink or is referenced within a containing symlink
+     * @param openOptions the various open options to apply to the operation.
+     * @return True if the file is a symlink or is referenced within a containing symlink.
      * directory before reaching the root directory.
      * @throws IOException If there is a problem accessing the file.
      */
     @Restricted(NoExternalUse.class)
-    public boolean hasSymlink(boolean noFollowLinks) throws IOException {
+    public boolean hasSymlink(OpenOption... openOptions) throws IOException {
         return false;
     }
-    
+
     /**
-     * Lists only the children that are descendant of the root directory (not necessarily the current VirtualFile). 
+     * Lists only the children that are descendant of the root directory (not necessarily the current VirtualFile).
      * Only one level deep.
-     * 
+     *
      * @return a list of descendant children (files and subdirectories); empty for a file or nonexistent directory
      * @throws IOException if this directory exists but listing was not possible for some other reason
      */
@@ -232,7 +232,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
             if (child.isDescendant("")) {
                 result.add(child);
             }
-        }        
+        }
         return result;
     }
 
@@ -257,7 +257,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
      * @since 2.118
      */
     public @NonNull Collection<String> list(@NonNull String includes, @CheckForNull String excludes, boolean useDefaultExcludes) throws IOException {
-        return list(includes, excludes, useDefaultExcludes, false);
+        return list(includes, excludes, useDefaultExcludes, new OpenOption[0]);
     }
 
     /**
@@ -267,20 +267,20 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
      * Implementations may wish to override this more efficiently.
 
      * This method allows the user to specify that symlinks should not be followed by passing
-     * noFollowLinks as true. However, some implementations may not be able to reliably
+     * LinkOption.NOFOLLOW_LINKS as true. However, some implementations may not be able to reliably
      * prevent link following. The base implementation here in VirtualFile ignores this parameter.
      * @param includes comma-separated Ant-style globs as per {@link Util#createFileSet(File, String, String)} using {@code /} as a path separator;
      *                 the empty string means <em>no matches</em> (use {@link SelectorUtils#DEEP_TREE_MATCH} if you want to match everything except some excludes)
      * @param excludes optional excludes in similar format to {@code includes}
      * @param useDefaultExcludes as per {@link AbstractFileSet#setDefaultexcludes}
-     * @param noFollowLinks if true then do not follow links.
+     * @param openOptions the options to apply when opening.
      * @return a list of {@code /}-separated relative names of children (files directly inside or in subdirectories)
      * @throws IOException if this is not a directory, or listing was not possible for some other reason
      * @since 2.275 and 2.263.2
      */
     @Restricted(NoExternalUse.class)
     public @NonNull Collection<String> list(@NonNull String includes, @CheckForNull String excludes, boolean useDefaultExcludes,
-                                            boolean noFollowLinks) throws IOException {
+                                            OpenOption... openOptions) throws IOException {
         Collection<String> r = run(new CollectFiles(this));
         List<TokenizedPattern> includePatterns = patterns(includes);
         List<TokenizedPattern> excludePatterns = patterns(excludes);
@@ -296,22 +296,35 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
     }
 
     @Restricted(NoExternalUse.class)
-    public boolean containsSymLinkChild(boolean noFollowLinks) throws IOException {
+    public boolean containsSymLinkChild(OpenOption... openOptions) throws IOException {
+        return false;
+    }
+
+    @Restricted(NoExternalUse.class)
+    public boolean containsTmpDirChild(OpenOption... openOptions) throws IOException {
+        for (VirtualFile child : list()) {
+            if (child.isDirectory() && FilePath.isTmpDir(child.getName(), openOptions)) {
+                return true;
+            }
+        }
         return false;
     }
 
     private static final class CollectFiles extends MasterToSlaveCallable<Collection<String>, IOException> {
         private static final long serialVersionUID = 1;
         private final VirtualFile root;
+
         CollectFiles(VirtualFile root) {
             this.root = root;
         }
+
         @Override
         public Collection<String> call() throws IOException {
             List<String> r = new ArrayList<>();
             collectFiles(root, r, "");
             return r;
         }
+
         private static void collectFiles(VirtualFile d, Collection<String> names, String prefix) throws IOException {
             for (VirtualFile child : d.list()) {
                 if (child.isFile()) {
@@ -322,6 +335,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
             }
         }
     }
+
     private List<TokenizedPattern> patterns(String patts) {
         List<TokenizedPattern> r = new ArrayList<>();
         if (patts != null) {
@@ -337,42 +351,42 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
 
     /**
      * Create a ZIP archive from the list of folders/files using the includes and excludes to filter them.
-     * 
+     *
      * <p>The default implementation calls other existing methods to list the folders/files, then retrieve them and zip them all.
-     * 
+     *
      * @param includes comma-separated Ant-style globs as per {@link Util#createFileSet(File, String, String)} using {@code /} as a path separator;
      *                 the empty string means <em>no matches</em> (use {@link SelectorUtils#DEEP_TREE_MATCH} if you want to match everything except some excludes)
      * @param excludes optional excludes in similar format to {@code includes}
      * @param useDefaultExcludes as per {@link AbstractFileSet#setDefaultexcludes}
-     * @param noFollowLinks if true then do not follow links.
      * @param prefix the partial path that will be added before each entry inside the archive.
      *               If non-empty, a trailing slash will be enforced.
+     * @param openOptions the options to apply when opening.
      * @return the number of files inside the archive (not the folders)
      * @throws IOException if this is not a directory, or listing was not possible for some other reason
      * @since 2.275 and 2.263.2
      */
     public int zip(OutputStream outputStream, String includes, String excludes, boolean useDefaultExcludes,
-                   boolean noFollowLinks, String prefix) throws IOException {
+                   String prefix, OpenOption... openOptions) throws IOException {
         String correctPrefix;
         if (StringUtils.isBlank(prefix)) {
             correctPrefix = "";
         } else {
             correctPrefix = Util.ensureEndsWith(prefix, "/");
         }
-        
-        Collection<String> files = list(includes, excludes, useDefaultExcludes, noFollowLinks);
+
+        Collection<String> files = list(includes, excludes, useDefaultExcludes, openOptions);
         try (ZipOutputStream zos = new ZipOutputStream(outputStream)) {
             zos.setEncoding(System.getProperty("file.encoding")); // TODO JENKINS-20663 make this overridable via query parameter
 
             for (String relativePath : files) {
                 VirtualFile virtualFile = this.child(relativePath);
-                sendOneZipEntry(zos, virtualFile, relativePath, noFollowLinks, correctPrefix);
+                sendOneZipEntry(zos, virtualFile, relativePath, correctPrefix, openOptions);
             }
         }
         return files.size();
     }
 
-    private void sendOneZipEntry(ZipOutputStream zos, VirtualFile vf, String relativePath, boolean noFollowLinks, String prefix) throws IOException {
+    private void sendOneZipEntry(ZipOutputStream zos, VirtualFile vf, String relativePath, String prefix, OpenOption... openOptions) throws IOException {
         // In ZIP archives "All slashes MUST be forward slashes" (http://pkware.com/documents/casestudies/APPNOTE.TXT)
         // TODO On Linux file names can contain backslashes which should not treated as file separators.
         //      Unfortunately, only the file separator char of the master is known (File.separatorChar)
@@ -383,7 +397,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
 
         e.setTime(vf.lastModified());
         zos.putNextEntry(e);
-        try (InputStream in = vf.open(noFollowLinks)) {
+        try (InputStream in = vf.open(openOptions)) {
             // hudson.util.IOUtils is already present
             org.apache.commons.io.IOUtils.copy(in, zos);
         }
@@ -441,12 +455,12 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
     /**
      * Opens an input stream on the file so its contents can be read.
      *
-     * @param noFollowLinks if true do not follow links.
+     * @param openOptions the options to apply when opening.
      * @return an open stream
      * @throws IOException if it could not be opened
      */
     @Restricted(NoExternalUse.class)
-    public InputStream open(boolean noFollowLinks) throws IOException {
+    public InputStream open(OpenOption... openOptions) throws IOException {
         return open();
     }
 
@@ -492,7 +506,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
      * @throws IOException if remote communication failed
      * @since 1.554
      */
-    public <V> V run(Callable<V,IOException> callable) throws IOException {
+    public <V> V run(Callable<V, IOException> callable) throws IOException {
         return callable.call();
     }
 
@@ -537,8 +551,8 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
     public boolean isDescendant(String childRelativePath) throws IOException {
         return false;
     }
-    
-    String joinWithForwardSlashes(Collection<String> relativePath){
+
+    String joinWithForwardSlashes(Collection<String> relativePath) {
         // instead of File.separator that is specific to the master, the / has the advantage to be supported
         // by either Windows AND Linux for the Path.toRealPath() used in isDescendant
         return String.join("/", relativePath) + "/";
@@ -552,47 +566,57 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
     public static VirtualFile forFile(final File f) {
         return new FileVF(f, f);
     }
+
     private static final class FileVF extends VirtualFile {
         private final File f;
         private final File root;
         private boolean cacheDescendant = false;
+
         FileVF(File f, File root) {
             this.f = f;
             this.root = root;
         }
+
             @Override public String getName() {
                 return f.getName();
             }
+
             @Override public URI toURI() {
                 return f.toURI();
             }
+
             @Override public VirtualFile getParent() {
                 return new FileVF(f.getParentFile(), root);
             }
+
             @Override public boolean isDirectory() throws IOException {
                 if (isIllegalSymlink()) {
                     return false;
                 }
                 return f.isDirectory();
             }
+
             @Override public boolean isFile() throws IOException {
                 if (isIllegalSymlink()) {
                     return false;
                 }
                 return f.isFile();
             }
+
             @Override public boolean exists() throws IOException {
                 if (isIllegalSymlink()) {
                     return false;
                 }
                 return f.exists();
             }
+
             @Override public String readLink() throws IOException {
                 if (isIllegalSymlink()) {
                     return null; // best to just ignore link -> ../whatever
                 }
                 return Util.resolveSymlink(f);
             }
+
             @Override public VirtualFile[] list() throws IOException {
                 if (isIllegalSymlink()) {
                     return new VirtualFile[0];
@@ -610,12 +634,12 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
 
             @NonNull
             @Override
-            public VirtualFile[] list(boolean noFollowLinks) throws IOException {
+            public VirtualFile[] list(OpenOption... openOptions) throws IOException {
                 String rootPath = determineRootPath();
                 File[] kids = f.listFiles();
                 List<VirtualFile> contents = new ArrayList<>(kids.length);
                 for (File child : kids) {
-                    if (!FilePath.isSymlink(child, rootPath, noFollowLinks)) {
+                    if (!FilePath.isSymlink(child, rootPath, openOptions) && !FilePath.isTmpDir(child, rootPath, openOptions)) {
                         contents.add(new FileVF(child, root));
                     }
                 }
@@ -644,6 +668,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
                 }
                 return legalChildren;
             }
+
             @Override
             public Collection<String> list(String includes, String excludes, boolean useDefaultExcludes) throws IOException {
                 if (isIllegalSymlink()) {
@@ -654,56 +679,61 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
 
             @Override
             public Collection<String> list(String includes, String excludes, boolean useDefaultExcludes,
-                                           boolean noFollowLinks) throws IOException {
+                                           OpenOption... openOptions) throws IOException {
                 String rootPath = determineRootPath();
-                return new Scanner(includes, excludes, useDefaultExcludes, rootPath, noFollowLinks).invoke(f, null);
+                return new Scanner(includes, excludes, useDefaultExcludes, rootPath, openOptions).invoke(f, null);
             }
 
             @Override
             public int zip(OutputStream outputStream, String includes, String excludes, boolean useDefaultExcludes,
-                           boolean noFollowLinks, String prefix) throws IOException {
+                String prefix, OpenOption... openOptions) throws IOException {
                 String rootPath = determineRootPath();
-                DirScanner.Glob globScanner = new DirScanner.Glob(includes, excludes, useDefaultExcludes, !noFollowLinks);
-                ArchiverFactory archiverFactory = noFollowLinks ? ArchiverFactory.createZipWithoutSymlink(prefix) : ArchiverFactory.ZIP;
+                DirScanner.Glob globScanner = new DirScanner.Glob(includes, excludes, useDefaultExcludes, openOptions);
+                ArchiverFactory archiverFactory = prefix == null ? ArchiverFactory.ZIP : ArchiverFactory.createZipWithPrefix(prefix, openOptions);
                 try (Archiver archiver = archiverFactory.create(outputStream)) {
-                    globScanner.scan(f, FilePath.ignoringSymlinks(archiver, rootPath, noFollowLinks));
+                    globScanner.scan(f, FilePath.ignoringTmpDirs(FilePath.ignoringSymlinks(archiver, rootPath, openOptions), rootPath, openOptions));
                     return archiver.countEntries();
                 }
             }
 
             @Override
-            public boolean hasSymlink(boolean noFollowLinks) throws IOException {
+            public boolean hasSymlink(OpenOption... openOptions) throws IOException {
                 String rootPath = determineRootPath();
-                return FilePath.isSymlink(f, rootPath, noFollowLinks);
+                return FilePath.isSymlink(f, rootPath, openOptions);
             }
 
             @Override public VirtualFile child(String name) {
                 return new FileVF(new File(f, name), root);
             }
+
             @Override public long length() throws IOException {
                 if (isIllegalSymlink()) {
                     return 0;
                 }
                 return f.length();
             }
+
             @Override public int mode() throws IOException {
                 if (isIllegalSymlink()) {
                     return -1;
                 }
                 return IOUtils.mode(f);
             }
+
             @Override public long lastModified() throws IOException {
                 if (isIllegalSymlink()) {
                     return 0;
                 }
                 return f.lastModified();
             }
+
             @Override public boolean canRead() throws IOException {
                 if (isIllegalSymlink()) {
                     return false;
                 }
                 return f.canRead();
             }
+
             @Override public InputStream open() throws IOException {
                 if (isIllegalSymlink()) {
                     throw new FileNotFoundException(f.getPath());
@@ -714,19 +744,20 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
                     throw new IOException(e);
                 }
             }
+
             @Override
-            public InputStream open(boolean noFollowLinks) throws IOException {
+            public InputStream open(OpenOption... openOptions) throws IOException {
                 String rootPath = determineRootPath();
-                InputStream inputStream = FilePath.newInputStreamDenyingSymlinkAsNeeded(f, rootPath, noFollowLinks);
+                InputStream inputStream = FilePath.newInputStreamDenyingSymlinkAsNeeded(f, rootPath, openOptions);
                 return inputStream;
             }
 
         @Override
-        public boolean containsSymLinkChild(boolean noFollowLinks) {
+        public boolean containsSymLinkChild(OpenOption... openOptions) {
             String rootPath = determineRootPath();
             File[] kids = f.listFiles();
             for (File child : kids) {
-                if (FilePath.isSymlink(child, rootPath, noFollowLinks)) {
+                if (FilePath.isSymlink(child, rootPath, openOptions)) {
                     return true;
                 }
             }
@@ -790,7 +821,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
 
             FilePath root = new FilePath(this.root);
             String relativePath = computeRelativePathToRoot();
-            
+
             try {
                 boolean isDescendant = root.isDescendant(relativePath + potentialChildRelativePath);
                 if (isDescendant && potentialChildRelativePath.isEmpty()) {
@@ -807,11 +838,11 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
         /**
          * To be kept in sync with {@link FilePathVF#computeRelativePathToRoot()}
          */
-        private String computeRelativePathToRoot(){
+        private String computeRelativePathToRoot() {
             if (this.root.equals(this.f)) {
                 return "";
             }
-            
+
             Deque<String> relativePath = new ArrayDeque<>();
             File current = this.f;
             while (current != null && !current.equals(this.root)) {
@@ -831,17 +862,21 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
     public static VirtualFile forFilePath(final FilePath f) {
         return new FilePathVF(f, f);
     }
+
     private static final class FilePathVF extends VirtualFile {
         private final FilePath f;
         private final FilePath root;
         private boolean cacheDescendant = false;
+
         FilePathVF(FilePath f, FilePath root) {
             this.f = f;
             this.root = root;
         }
+
             @Override public String getName() {
                 return f.getName();
             }
+
             @Override public URI toURI() {
                 try {
                     return f.toURI();
@@ -849,9 +884,11 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
                     return URI.create(f.getRemote());
                 }
             }
+
             @Override public VirtualFile getParent() {
                 return f.getParent().toVirtualFile();
             }
+
             @Override public boolean isDirectory() throws IOException {
                 try {
                     return f.isDirectory();
@@ -859,10 +896,12 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
                     throw new IOException(x);
                 }
             }
+
             @Override public boolean isFile() throws IOException {
                 // TODO should probably introduce a method for this purpose
                 return exists() && !isDirectory();
             }
+
             @Override public boolean exists() throws IOException {
                 try {
                     return f.exists();
@@ -870,6 +909,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
                     throw new IOException(x);
                 }
             }
+
             @Override public String readLink() throws IOException {
                 try {
                     return f.readLink();
@@ -877,6 +917,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
                     throw new IOException(x);
                 }
             }
+
             @Override public VirtualFile[] list() throws IOException {
                 try {
                     List<FilePath> kids = f.list();
@@ -896,9 +937,9 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
 
             @NonNull
             @Override
-            public VirtualFile[] list(boolean noFollowLinks) throws IOException {
+            public VirtualFile[] list(OpenOption... openOptions) throws IOException {
                 try {
-                    List<FilePath> kids = f.list(root, noFollowLinks);
+                    List<FilePath> kids = f.list(root, openOptions);
                     return convertChildrenToVirtualFile(kids);
                 } catch (InterruptedException x) {
                     throw new IOException(x);
@@ -906,24 +947,24 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
             }
 
         @Override
-        public boolean containsSymLinkChild(boolean noFollowLinks) throws IOException {
+        public boolean containsSymLinkChild(OpenOption... openOptions) throws IOException {
             try {
-                return f.containsSymlink(root, noFollowLinks);
+                return f.containsSymlink(root, openOptions);
             } catch (InterruptedException x) {
                 throw new IOException(x);
             }
         }
 
         @Override
-            public boolean hasSymlink(boolean noFollowLinks) throws IOException {
+            public boolean hasSymlink(OpenOption... openOptions) throws IOException {
                 try {
-                    return f.hasSymlink(root, noFollowLinks);
+                    return f.hasSymlink(root, openOptions);
                 } catch (InterruptedException x) {
                     throw new IOException(x);
                 }
             }
 
-            @Override public boolean supportsQuickRecursiveListing() {
+        @Override public boolean supportsQuickRecursiveListing() {
                 return this.f.getChannel() == FilePath.localChannel;
             }
 
@@ -935,7 +976,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
 
                     List<FilePath> children = f.list();
                     List<VirtualFile> legalChildren = new ArrayList<>(children.size());
-                    for (FilePath child : children){
+                    for (FilePath child : children) {
                         if (isDescendant(child.getName())) {
                             FilePathVF legalChild = new FilePathVF(child, this.root);
                             legalChild.cacheDescendant = true;
@@ -959,10 +1000,10 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
 
             @Override
             public Collection<String> list(String includes, String excludes, boolean useDefaultExcludes,
-                                           boolean noFollowLinks) throws IOException {
+                                           OpenOption... openOptions) throws IOException {
                 try {
                     String rootPath = root == null ? null : root.getRemote();
-                    return f.act(new Scanner(includes, excludes, useDefaultExcludes, rootPath, noFollowLinks));
+                    return f.act(new Scanner(includes, excludes, useDefaultExcludes, rootPath, openOptions));
                 } catch (InterruptedException x) {
                     throw new IOException(x);
                 }
@@ -970,11 +1011,11 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
 
             @Override
             public int zip(OutputStream outputStream, String includes, String excludes, boolean useDefaultExcludes,
-                                    boolean noFollowLinks, String prefix) throws IOException {
+                                    String prefix, OpenOption... openOptions) throws IOException {
                 try {
                     String rootPath = root == null ? null : root.getRemote();
-                    DirScanner.Glob globScanner = new DirScanner.Glob(includes, excludes, useDefaultExcludes, !noFollowLinks);
-                    return f.zip(outputStream, globScanner, rootPath, noFollowLinks, prefix);
+                    DirScanner.Glob globScanner = new DirScanner.Glob(includes, excludes, useDefaultExcludes, openOptions);
+                    return f.zip(outputStream, globScanner, rootPath, prefix, openOptions);
                 } catch (InterruptedException x) {
                     throw new IOException(x);
                 }
@@ -983,6 +1024,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
             @Override public VirtualFile child(String name) {
                 return new FilePathVF(f.child(name), this.root);
             }
+
             @Override public long length() throws IOException {
                 try {
                     return f.length();
@@ -990,13 +1032,15 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
                     throw new IOException(x);
                 }
             }
+
             @Override public int mode() throws IOException {
                 try {
                     return f.mode();
-                } catch (InterruptedException | PosixException x) {
+                } catch (InterruptedException x) {
                     throw new IOException(x);
                 }
             }
+
             @Override public long lastModified() throws IOException {
                 try {
                     return f.lastModified();
@@ -1004,6 +1048,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
                     throw new IOException(x);
                 }
             }
+
             @Override public boolean canRead() throws IOException {
                 try {
                     return f.act(new Readable());
@@ -1011,6 +1056,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
                     throw new IOException(x);
                 }
             }
+
             @Override public InputStream open() throws IOException {
                 try {
                     return f.read();
@@ -1018,14 +1064,16 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
                     throw new IOException(x);
                 }
             }
-            @Override public InputStream open(boolean noFollowLinks) throws IOException {
+
+            @Override public InputStream open(OpenOption... openOptions) throws IOException {
                 try {
-                    return f.read(root == null ? null : root, noFollowLinks);
+                    return f.read(root, openOptions);
                 } catch (InterruptedException x) {
                     throw new IOException(x);
                 }
             }
-            @Override public <V> V run(Callable<V,IOException> callable) throws IOException {
+
+            @Override public <V> V run(Callable<V, IOException> callable) throws IOException {
                 try {
                     return f.act(callable);
                 } catch (InterruptedException x) {
@@ -1048,7 +1096,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
         @Override
         @Restricted(NoExternalUse.class)
         public boolean isDescendant(String potentialChildRelativePath) throws IOException {
-            if (potentialChildRelativePath.equals("") && cacheDescendant) {
+            if (potentialChildRelativePath.isEmpty() && cacheDescendant) {
                 return true;
             }
 
@@ -1073,9 +1121,9 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
                     return false;
                 }
             }
-            
+
             String relativePath = computeRelativePathToRoot();
-            
+
             try {
                 return this.root.isDescendant(relativePath + potentialChildRelativePath);
             }
@@ -1087,7 +1135,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
         /**
          * To be kept in sync with {@link FileVF#computeRelativePathToRoot()}
          */
-        private String computeRelativePathToRoot(){
+        private String computeRelativePathToRoot() {
             if (this.root.equals(this.f)) {
                 return "";
             }
@@ -1102,22 +1150,23 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
             return joinWithForwardSlashes(relativePath);
         }
     }
+
     private static final class Scanner extends MasterToSlaveFileCallable<List<String>> {
         private final String includes, excludes;
         private final boolean useDefaultExcludes;
         private final String verificationRoot;
-        private final boolean noFollowLinks;
+        private OpenOption[] openOptions;
 
-        Scanner(String includes, String excludes, boolean useDefaultExcludes, String verificationRoot, boolean noFollowLinks) {
+        Scanner(String includes, String excludes, boolean useDefaultExcludes, String verificationRoot, OpenOption... openOptions) {
             this.includes = includes;
             this.excludes = excludes;
             this.useDefaultExcludes = useDefaultExcludes;
             this.verificationRoot = verificationRoot;
-            this.noFollowLinks = noFollowLinks;
+            this.openOptions = openOptions;
         }
 
         Scanner(String includes, String excludes, boolean useDefaultExcludes) {
-            this(includes, excludes, useDefaultExcludes, null, false);
+            this(includes, excludes, useDefaultExcludes, null, new OpenOption[0]);
         }
 
         @Override public List<String> invoke(File f, VirtualChannel channel) throws IOException {
@@ -1131,12 +1180,13 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
                     paths.add(relativePath.replace('\\', '/'));
                 }
             };
-            DirScanner.Glob globScanner = new DirScanner.Glob(includes, excludes, useDefaultExcludes, !noFollowLinks);
-            globScanner.scan(f, FilePath.ignoringSymlinks(listing, verificationRoot, noFollowLinks));
+            DirScanner.Glob globScanner = new DirScanner.Glob(includes, excludes, useDefaultExcludes, openOptions);
+            globScanner.scan(f, FilePath.ignoringTmpDirs(FilePath.ignoringSymlinks(listing, verificationRoot, openOptions), verificationRoot, openOptions));
             return paths;
         }
 
     }
+
     private static final class Readable extends MasterToSlaveFileCallable<Boolean> {
         @Override public Boolean invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
             return f.canRead();

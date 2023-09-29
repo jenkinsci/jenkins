@@ -1,0 +1,4 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<hudson.util.XStream2Test_-Bar>
+  <s>Fox &#129418;</s>
+</hudson.util.XStream2Test_-Bar>

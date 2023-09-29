@@ -31,6 +31,7 @@ THE SOFTWARE.
 <st:compress xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <l:layout title="${it.fullDisplayName} Console">
     <st:include page="sidepanel.jelly" />
+     <l:breadcrumb title="${%Console Output}" />
     <l:main-panel>
       <t:buildCaption>${%Console Output}</t:buildCaption>
       <j:set var="threshold" value="${h.getSystemProperty('hudson.consoleTailKB')?:'150'}" />

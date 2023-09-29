@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.util.io;
 
 import java.io.File;
@@ -54,12 +55,12 @@ import java.nio.file.StandardOpenOption;
     }
 
     private synchronized OutputStream current() throws IOException {
-        if (current==null)
+        if (current == null)
             try {
                 current = Files.newOutputStream(out.toPath(), StandardOpenOption.CREATE,
                         appendOnNextOpen ? StandardOpenOption.APPEND : StandardOpenOption.TRUNCATE_EXISTING);
             } catch (FileNotFoundException | NoSuchFileException | InvalidPathException e) {
-                throw new IOException("Failed to open "+out,e);
+                throw new IOException("Failed to open " + out, e);
             }
         return current;
     }
@@ -86,7 +87,7 @@ import java.nio.file.StandardOpenOption;
 
     @Override
     public synchronized void close() throws IOException {
-        if (current!=null) {
+        if (current != null) {
             current.close();
             appendOnNextOpen = true;
             current = null;

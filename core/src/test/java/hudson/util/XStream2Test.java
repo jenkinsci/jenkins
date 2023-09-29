@@ -21,25 +21,32 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.util;
 
-import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.thoughtworks.xstream.XStreamException;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.thoughtworks.xstream.mapper.CannotResolveClassException;
+import hudson.Functions;
 import hudson.model.Result;
 import hudson.model.Run;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.io.StringReader;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -58,7 +65,7 @@ import org.jvnet.hudson.test.Issue;
 public class XStream2Test {
 
     public static final class Foo {
-        Result r1,r2;
+        Result r1, r2;
     }
 
     @Test
@@ -79,7 +86,7 @@ public class XStream2Test {
      */
     @Test
     public void xStream11Compatibility() {
-        Bar b = (Bar)new XStream2().fromXML(
+        Bar b = (Bar) new XStream2().fromXML(
                 "<hudson.util.XStream2Test-Bar><s>foo</s></hudson.util.XStream2Test-Bar>");
         assertEquals("foo", b.s);
     }
@@ -100,7 +107,7 @@ public class XStream2Test {
         __Foo_Bar$Class b = new __Foo_Bar$Class();
 
         String xml = xs.toXML(b);
-        __Foo_Bar$Class b2 = (__Foo_Bar$Class)xs.fromXML(xml);
+        __Foo_Bar$Class b2 = (__Foo_Bar$Class) xs.fromXML(xml);
 
         assertEquals(xml, b.under_1, b2.under_1);
         assertEquals(xml, b.under__2, b2.under__2);
@@ -129,10 +136,10 @@ public class XStream2Test {
 
         XStream2 xs = new XStream2();
         String xml = xs.toXML(baz);
-        baz = (Baz)xs.fromXML(xml);
+        baz = (Baz) xs.fromXML(xml);
         assertEquals("foo", baz.myFailure.getMessage());
 
-        baz = (Baz)xs.fromXML("<hudson.util.XStream2Test_-Baz><myFailure>"
+        baz = (Baz) xs.fromXML("<hudson.util.XStream2Test_-Baz><myFailure>"
                 + "<missingField>true</missingField>"
                 + "<detailMessage>hoho</detailMessage>"
                 + "<stackTrace><trace>"
@@ -156,11 +163,11 @@ public class XStream2Test {
     }
 
     private static class ImmutableMapHolder {
-        ImmutableMap<?,?> m;
+        ImmutableMap<?, ?> m;
     }
 
     private static class MapHolder {
-        Map<?,?> m;
+        Map<?, ?> m;
     }
 
     @Test
@@ -169,39 +176,39 @@ public class XStream2Test {
 
         roundtripImmutableMap(xs, ImmutableMap.of());
         roundtripImmutableMap(xs, ImmutableMap.of("abc", "xyz"));
-        roundtripImmutableMap(xs, ImmutableMap.of("abc", "xyz", "def","ghi"));
+        roundtripImmutableMap(xs, ImmutableMap.of("abc", "xyz", "def", "ghi"));
 
         roundtripImmutableMapAsPlainMap(xs, ImmutableMap.of());
         roundtripImmutableMapAsPlainMap(xs, ImmutableMap.of("abc", "xyz"));
-        roundtripImmutableMapAsPlainMap(xs, ImmutableMap.of("abc", "xyz", "def","ghi"));
+        roundtripImmutableMapAsPlainMap(xs, ImmutableMap.of("abc", "xyz", "def", "ghi"));
     }
 
     /**
      * Since the field type is {@link ImmutableMap}, XML shouldn't contain a reference to the type name.
      */
-    private void roundtripImmutableMap(XStream2 xs, ImmutableMap<?,?> m) {
+    private void roundtripImmutableMap(XStream2 xs, ImmutableMap<?, ?> m) {
         ImmutableMapHolder a = new ImmutableMapHolder();
         a.m = m;
         String xml = xs.toXML(a);
         //System.out.println(xml);
-        assertFalse("shouldn't contain the class name",xml.contains("google"));
-        assertFalse("shouldn't contain the class name",xml.contains("class"));
-        a = (ImmutableMapHolder)xs.fromXML(xml);
+        assertFalse("shouldn't contain the class name", xml.contains("google"));
+        assertFalse("shouldn't contain the class name", xml.contains("class"));
+        a = (ImmutableMapHolder) xs.fromXML(xml);
 
-        assertSame(m.getClass(),a.m.getClass());    // should get back the exact same type, not just a random map
-        assertEquals(m,a.m);
+        assertSame(m.getClass(), a.m.getClass());    // should get back the exact same type, not just a random map
+        assertEquals(m, a.m);
     }
 
-    private void roundtripImmutableMapAsPlainMap(XStream2 xs, ImmutableMap<?,?> m) {
+    private void roundtripImmutableMapAsPlainMap(XStream2 xs, ImmutableMap<?, ?> m) {
         MapHolder a = new MapHolder();
         a.m = m;
         String xml = xs.toXML(a);
         //System.out.println(xml);
-        assertTrue("XML should mention the class name",xml.contains('\"'+ImmutableMap.class.getName()+'\"'));
-        a = (MapHolder)xs.fromXML(xml);
+        assertTrue("XML should mention the class name", xml.contains('\"' + ImmutableMap.class.getName() + '\"'));
+        a = (MapHolder) xs.fromXML(xml);
 
-        assertSame(m.getClass(),a.m.getClass());    // should get back the exact same type, not just a random map
-        assertEquals(m,a.m);
+        assertSame(m.getClass(), a.m.getClass());    // should get back the exact same type, not just a random map
+        assertEquals(m, a.m);
     }
 
     private static class ImmutableListHolder {
@@ -233,12 +240,12 @@ public class XStream2Test {
         a.l = l;
         String xml = xs.toXML(a);
         //System.out.println(xml);
-        assertFalse("shouldn't contain the class name",xml.contains("google"));
-        assertFalse("shouldn't contain the class name",xml.contains("class"));
-        a = (ImmutableListHolder)xs.fromXML(xml);
+        assertFalse("shouldn't contain the class name", xml.contains("google"));
+        assertFalse("shouldn't contain the class name", xml.contains("class"));
+        a = (ImmutableListHolder) xs.fromXML(xml);
 
-        assertSame(l.getClass(),a.l.getClass());    // should get back the exact same type, not just a random list
-        assertEquals(l,a.l);
+        assertSame(l.getClass(), a.l.getClass());    // should get back the exact same type, not just a random list
+        assertEquals(l, a.l);
     }
 
     private void roundtripImmutableListAsPlainList(XStream2 xs, ImmutableList<?> l) {
@@ -246,11 +253,11 @@ public class XStream2Test {
         a.l = l;
         String xml = xs.toXML(a);
         //System.out.println(xml);
-        assertTrue("XML should mention the class name",xml.contains('\"'+ImmutableList.class.getName()+'\"'));
-        a = (ListHolder)xs.fromXML(xml);
+        assertTrue("XML should mention the class name", xml.contains('\"' + ImmutableList.class.getName() + '\"'));
+        a = (ListHolder) xs.fromXML(xml);
 
-        assertSame(l.getClass(),a.l.getClass());    // should get back the exact same type, not just a random list
-        assertEquals(l,a.l);
+        assertSame(l.getClass(), a.l.getClass());    // should get back the exact same type, not just a random list
+        assertEquals(l, a.l);
     }
 
     @Issue("JENKINS-8006") // Previously a null entry in an array caused NPE
@@ -264,32 +271,39 @@ public class XStream2Test {
     @Test
     public void compatibilityAlias() {
         XStream2 xs = new XStream2();
-        xs.addCompatibilityAlias("legacy.Point",Point.class);
-        Point pt = (Point)xs.fromXML("<legacy.Point><x>1</x><y>2</y></legacy.Point>");
-        assertEquals(1,pt.x);
-        assertEquals(2,pt.y);
+        xs.addCompatibilityAlias("legacy.Point", Point.class);
+        Point pt = (Point) xs.fromXML("<legacy.Point><x>1</x><y>2</y></legacy.Point>");
+        assertEquals(1, pt.x);
+        assertEquals(2, pt.y);
         String xml = xs.toXML(pt);
         //System.out.println(xml);
-        assertFalse("Shouldn't use the alias when writing back",xml.contains("legacy"));
+        assertFalse("Shouldn't use the alias when writing back", xml.contains("legacy"));
     }
 
     public static class Point {
-        public int x,y;
+        public int x, y;
     }
 
     public static class Foo2 {
-        ConcurrentHashMap<String,String> m = new ConcurrentHashMap<>();
+        ConcurrentHashMap<String, String> m = new ConcurrentHashMap<>();
     }
 
     @Issue("SECURITY-105")
     @Test
     public void dynamicProxyBlocked() {
-        assertThrows(XStreamException.class, () -> ((Runnable) new XStream2().fromXML("<dynamic-proxy><interface>java.lang.Runnable</interface><handler class='java.beans.EventHandler'><target class='" + Hacked.class.getName() + "'/><action>oops</action></handler></dynamic-proxy>")).run());
+        assertThrows(
+                XStreamException.class,
+                () -> ((Runnable) new XStream2().fromXML(
+                                "<dynamic-proxy><interface>java.lang.Runnable</interface><handler class='java.beans.EventHandler'><target class='"
+                                        + Hacked.class.getName()
+                                        + "'/><action>oops</action></handler></dynamic-proxy>"))
+                        .run());
         assertFalse("should never have run that", Hacked.tripped);
     }
 
     public static final class Hacked {
         static boolean tripped;
+
         public void oops() {
             tripped = true;
         }
@@ -539,22 +553,88 @@ public class XStream2Test {
         Jenkins.XSTREAM2.processAnnotations(C5.class);
         assertThat("can deserialize from annotations so long as the processing happened at some point", Jenkins.XSTREAM2.fromXML("<C-5/>"), instanceOf(C5.class));
     }
+
     @XStreamAlias("C-1")
     public static final class C1 {}
+
     public static final class C2 {
         static {
             Jenkins.XSTREAM2.alias("C-2", C2.class);
         }
     }
+
     @XStreamAlias("C-3")
     public static final class C3 {
         static {
             Jenkins.XSTREAM2.processAnnotations(C3.class);
         }
     }
+
     @XStreamAlias("C-4")
     public static final class C4 {}
+
     @XStreamAlias("C-5")
     public static final class C5 {}
+
+    @Issue("JENKINS-69129")
+    @Test
+    public void testEmoji() throws Exception {
+        Bar bar;
+        try (InputStream is = getClass().getResource("XStream2Emoji.xml").openStream()) {
+            bar = (Bar) new XStream2().fromXML(is);
+        }
+        assertEquals("Fox 🦊", bar.s);
+    }
+
+    @Issue("JENKINS-69129")
+    @Test
+    public void testEmojiEscaped() throws Exception {
+        Bar bar;
+        try (InputStream is = getClass().getResource("XStream2EmojiEscaped.xml").openStream()) {
+            bar = (Bar) new XStream2().fromXML(is);
+        }
+        assertEquals("Fox 🦊", bar.s);
+    }
+
+    @Issue("JENKINS-71182")
+    @Test
+    public void writeEmoji() throws Exception {
+        Bar b = new Bar();
+        String text = "Fox 🦊";
+        b.s = text;
+        StringWriter w = new StringWriter();
+        XStream2 xs = new XStream2();
+        xs.toXML(b, w);
+        String xml = w.toString();
+        assertThat(xml, is("<hudson.util.XStream2Test_-Bar>\n  <s>Fox 🦊</s>\n</hudson.util.XStream2Test_-Bar>"));
+        b = (Bar) xs.fromXML(xml);
+        assertEquals(text, b.s);
+    }
+
+    @Issue("JENKINS-71139")
+    @Test
+    public void nullsWithoutEncodingDeclaration() throws Exception {
+        Bar b = new Bar();
+        b.s = "x\u0000y";
+        try {
+            new XStream2().toXML(b, new StringWriter());
+            fail("expected to fail fast; not supported to read either");
+        } catch (RuntimeException x) {
+            assertThat("cause is com.thoughtworks.xstream.io.StreamException: Invalid character 0x0 in XML stream", Functions.printThrowable(x), containsString("0x0"));
+        }
+    }
+
+    @Issue("JENKINS-71139")
+    @Test
+    public void nullsWithEncodingDeclaration() throws Exception {
+        Bar b = new Bar();
+        b.s = "x\u0000y";
+        try {
+            new XStream2().toXMLUTF8(b, new ByteArrayOutputStream());
+            fail("expected to fail fast; not supported to read either");
+        } catch (RuntimeException x) {
+            assertThat("cause is com.thoughtworks.xstream.io.StreamException: Invalid character 0x0 in XML stream", Functions.printThrowable(x), containsString("0x0"));
+        }
+    }
 
 }

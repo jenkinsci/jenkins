@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.Writer;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
+import java.nio.channels.Channel;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
 import java.nio.file.OpenOption;
@@ -26,7 +27,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  * @see <a href="https://github.com/jenkinsci/jenkins/pull/2548">PR-2548</a>
  */
 @Restricted(NoExternalUse.class)
-public class FileChannelWriter extends Writer {
+public class FileChannelWriter extends Writer implements Channel {
 
     private static final Logger LOGGER = Logger.getLogger(FileChannelWriter.class.getName());
 
@@ -83,8 +84,13 @@ public class FileChannelWriter extends Writer {
     }
 
     @Override
+    public boolean isOpen() {
+        return channel.isOpen();
+    }
+
+    @Override
     public void close() throws IOException {
-        if(channel.isOpen()) {
+        if (channel.isOpen()) {
             if (forceOnClose) {
                 channel.force(true);
             }

@@ -3,6 +3,7 @@
  * All rights reserved.
  * The copyrights to the contents of this file are licensed under the MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
+
 package hudson.security.csrf;
 
 import hudson.DescriptorExtensionList;
@@ -160,14 +161,14 @@ public abstract class CrumbIssuer implements Describable<CrumbIssuer>, Extension
             @Override
             public String issueCrumb(StaplerRequest request) {
                 CrumbIssuer ci = Jenkins.get().getCrumbIssuer();
-                return ci!=null ? ci.getCrumb(request) : DEFAULT.issueCrumb(request);
+                return ci != null ? ci.getCrumb(request) : DEFAULT.issueCrumb(request);
             }
 
             @Override
             public void validateCrumb(StaplerRequest request, String submittedCrumb) {
                 CrumbIssuer ci = Jenkins.get().getCrumbIssuer();
-                if (ci==null) {
-                    DEFAULT.validateCrumb(request,submittedCrumb);
+                if (ci == null) {
+                    DEFAULT.validateCrumb(request, submittedCrumb);
                 } else {
                     if (!ci.validateCrumb(request, ci.getDescriptor().getCrumbSalt(), submittedCrumb))
                         throw new SecurityException("Crumb didn't match");

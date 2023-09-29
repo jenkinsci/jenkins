@@ -1,11 +1,8 @@
 package jenkins.security;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertThrows;
 
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.WebRequest;
 import hudson.ExtensionList;
 import hudson.model.UnprotectedRootAction;
 import hudson.model.User;
@@ -14,7 +11,10 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
-import jenkins.security.apitoken.ApiTokenTestHelper;
+import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
+import org.htmlunit.FailingHttpStatusCodeException;
+import org.htmlunit.Page;
+import org.htmlunit.WebRequest;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -36,7 +36,7 @@ public class BasicHeaderProcessorTest {
     private SpySecurityListener spySecurityListener;
 
     @Before
-    public void prepareListeners(){
+    public void prepareListeners() {
         this.spySecurityListener = ExtensionList.lookupSingleton(SpySecurityListener.class);
     }
 
@@ -45,13 +45,11 @@ public class BasicHeaderProcessorTest {
      */
     @Test
     public void testVariousWaysToCall() throws Exception {
-        ApiTokenTestHelper.enableLegacyBehavior();
-
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
-        User foo = User.getById("foo", true);
-        User.getById("bar", true);
 
         wc = j.createWebClient();
+        User foo = User.getById("foo", true);
+        User.getById("bar", true);
 
         // call without authentication
         makeRequestAndVerify("anonymous");
@@ -61,7 +59,7 @@ public class BasicHeaderProcessorTest {
         // call with API token
         wc = j.createWebClient();
         wc.withBasicApiToken("foo");
-        makeRequestAndVerify("foo");        
+        makeRequestAndVerify("foo");
         spySecurityListener.authenticatedCalls.assertLastEventIsAndThenRemoveIt(u -> u.getUsername().equals("foo"));
 
         // call with invalid API token
@@ -108,14 +106,15 @@ public class BasicHeaderProcessorTest {
         makeRequestWithAuthCodeAndFail(null);
     }
 
-    private void makeRequestAndVerify(String expectedLogin) throws IOException, SAXException {
+    private void makeRequestAndVerify(String expectedLogin) throws IOException {
         makeRequestWithAuthCodeAndVerify(null, expectedLogin);
     }
 
     @Test
     public void testAuthHeaderCaseInSensitive() throws Exception {
-        ApiTokenTestHelper.enableLegacyBehavior();
-        
+        ApiTokenPropertyConfiguration tokenConfig = ApiTokenPropertyConfiguration.get();
+        tokenConfig.setTokenGenerationOnCreationEnabled(true);
+
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         User foo = User.getOrCreateByIdOrFullName("foo");
         wc = j.createWebClient();
@@ -126,50 +125,48 @@ public class BasicHeaderProcessorTest {
             // call with API token
             ApiTokenProperty t = foo.getProperty(ApiTokenProperty.class);
             final String token = t.getApiToken();
-            String authCode1 = encode(prefix,"foo:"+token);
+            String authCode1 = encode(prefix, "foo:" + token);
             makeRequestWithAuthCodeAndVerify(authCode1, "foo");
             spySecurityListener.authenticatedCalls.assertLastEventIsAndThenRemoveIt(u -> u.getUsername().equals("foo"));
 
             // call with invalid API token
-            String authCode2 = encode(prefix,"foo:abcd"+token);
+            String authCode2 = encode(prefix, "foo:abcd" + token);
             makeRequestWithAuthCodeAndFail(authCode2);
             spySecurityListener.failedToAuthenticateCalls.assertLastEventIsAndThenRemoveIt("foo");
 
             // call with password
-            String authCode3 = encode(prefix,"foo:foo");
+            String authCode3 = encode(prefix, "foo:foo");
             makeRequestWithAuthCodeAndVerify(authCode3, "foo");
             spySecurityListener.authenticatedCalls.assertLastEventIsAndThenRemoveIt(u -> u.getUsername().equals("foo"));
 
             // call with incorrect password
-            String authCode4 = encode(prefix,"foo:bar");
+            String authCode4 = encode(prefix, "foo:bar");
             makeRequestWithAuthCodeAndFail(authCode4);
             spySecurityListener.failedToAuthenticateCalls.assertLastEventIsAndThenRemoveIt("foo");
         }
     }
 
     private String encode(String prefix, String userAndPass) {
-        if (userAndPass==null) {
+        if (userAndPass == null) {
             return null;
         }
         return prefix + " " + Base64.getEncoder().encodeToString(userAndPass.getBytes(StandardCharsets.UTF_8));
     }
 
     private void makeRequestWithAuthCodeAndVerify(String authCode, String expectedLogin) throws IOException {
-        WebRequest req = new WebRequest(new URL(j.getURL(),"test"));
+        WebRequest req = new WebRequest(new URL(j.getURL(), "test"));
         req.setEncodingType(null);
-        if (authCode!=null)
+        if (authCode != null)
             req.setAdditionalHeader("Authorization", authCode);
         Page p = wc.getPage(req);
         assertEquals(expectedLogin, p.getWebResponse().getContentAsString());
     }
 
-    private void makeRequestWithAuthCodeAndFail(String authCode) throws IOException, SAXException {
-        try {
-            makeRequestWithAuthCodeAndVerify(authCode, "-");
-            fail();
-        } catch (FailingHttpStatusCodeException e) {
-            assertEquals(401, e.getStatusCode());
-        }
+    private void makeRequestWithAuthCodeAndFail(String authCode) throws IOException {
+        FailingHttpStatusCodeException e = assertThrows(
+                FailingHttpStatusCodeException.class,
+                () -> makeRequestWithAuthCodeAndVerify(authCode, "-"));
+        assertEquals(401, e.getStatusCode());
     }
 
     @TestExtension
@@ -191,7 +188,7 @@ public class BasicHeaderProcessorTest {
 
         public HttpResponse doIndex() {
             User u = User.current();
-            return HttpResponses.text(u!=null ? u.getId() : "anonymous");
+            return HttpResponses.text(u != null ? u.getId() : "anonymous");
         }
     }
 

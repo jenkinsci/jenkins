@@ -7,11 +7,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
-import com.gargoylesoftware.htmlunit.ElementNotFoundException;
-import com.gargoylesoftware.htmlunit.html.DomNodeUtil;
-import com.gargoylesoftware.htmlunit.html.HtmlButton;
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.ExtensionList;
 import hudson.FilePath;
 import hudson.Util;
@@ -22,13 +17,19 @@ import java.io.IOException;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Base64;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import javax.crypto.Cipher;
-import org.apache.commons.io.FileUtils;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
+import org.htmlunit.ElementNotFoundException;
+import org.htmlunit.html.DomNodeUtil;
+import org.htmlunit.html.HtmlButton;
+import org.htmlunit.html.HtmlForm;
+import org.htmlunit.html.HtmlPage;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -89,13 +90,13 @@ public class RekeySecretAdminMonitorTest {
 
     private static void putSomeOldData(File dir) throws Exception {
         File xml = new File(dir, "foo.xml");
-        FileUtils.writeStringToFile(xml,"<foo>" + encryptOld(TEST_KEY) + "</foo>");
+        Files.writeString(xml.toPath(), "<foo>" + encryptOld(TEST_KEY) + "</foo>", StandardCharsets.UTF_8);
     }
 
     private void verifyRewrite(File dir) throws Exception {
-        File xml = new File(dir, "foo.xml");
-        Pattern pattern = Pattern.compile("<foo>"+plain_regex_match+"</foo>");
-        MatcherAssert.assertThat(FileUtils.readFileToString(xml, StandardCharsets.UTF_8).trim(), Matchers.matchesRegex(pattern));
+        Path xml = dir.toPath().resolve("foo.xml");
+        Pattern pattern = Pattern.compile("<foo>" + plain_regex_match + "</foo>");
+        MatcherAssert.assertThat(Files.readString(xml, StandardCharsets.UTF_8).trim(), Matchers.matchesRegex(pattern));
     }
 
     @WithTestSecret
@@ -149,7 +150,7 @@ public class RekeySecretAdminMonitorTest {
         if (index > 0) {
             buttonStream = buttonStream.skip(index);
         }
-        
+
         return buttonStream
                 .findFirst()
                 .orElse(null);
@@ -177,7 +178,7 @@ public class RekeySecretAdminMonitorTest {
     private static String encryptOld(String str) throws Exception {
         Cipher cipher = Secret.getCipher("AES");
         cipher.init(Cipher.ENCRYPT_MODE, Util.toAes128Key(TEST_KEY));
-        return new String(Base64.getEncoder().encode(cipher.doFinal((str + "::::MAGIC::::").getBytes(StandardCharsets.UTF_8))));
+        return Base64.getEncoder().encodeToString(cipher.doFinal((str + "::::MAGIC::::").getBytes(StandardCharsets.UTF_8)));
     }
 
     private String encryptNew(String str) {

@@ -52,12 +52,19 @@ public class StaplerSignaturesTest {
                 "method java.lang.Object wait long",
                 "method java.lang.Object wait"
         ));
+
         public void getFoo() {}
+
         public void getFoo(String arg) {}
+
         public static void getFoo(int arg) {}
+
         public static void getFoo(long arg) {}
+
         public void getFoo(SomeClass arg) {}
+
         public void doFoo(StaplerRequest req, StaplerResponse rsp) {}
+
         @StaplerDispatchable @JsonResponse
         public void doWhatever(@QueryParameter String arg) {}
 
@@ -96,10 +103,14 @@ public class StaplerSignaturesTest {
                 "method java.lang.Object wait long",
                 "method java.lang.Object wait"
         ));
+
         @Override
         public void getFoo() {}
+
         public void subtypeExclusive(){}
+
         public void subtypeExclusive(String arg){}
+
         public void varargMethod(String... args){}
 
         static Set<String> FIELD_SIGNATURES = new HashSet<>(Arrays.asList(

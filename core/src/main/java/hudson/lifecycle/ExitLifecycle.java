@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.lifecycle;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -65,7 +66,7 @@ public class ExitLifecycle extends Lifecycle {
             if (jenkins != null) {
                 jenkins.cleanUp();
             }
-        } catch (Exception e) {
+        } catch (Throwable e) {
             LOGGER.log(Level.SEVERE, "Failed to clean up. Restart will continue.", e);
         }
 

@@ -21,13 +21,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
-import static org.hamcrest.core.Is.is;
-import static org.hamcrest.core.IsNot.not;
-import static org.hamcrest.core.StringContains.containsString;
 import static org.hamcrest.io.FileMatchers.aReadableFile;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -40,6 +41,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -70,7 +72,7 @@ public class FingerprintCleanupThreadTest {
         configureLocalTestStorage(new TestFingerprint(true));
         FingerprintCleanupThread cleanupThread = new FingerprintCleanupThread();
         cleanupThread.execute(testTaskListener);
-        String logOutput = testTaskListener.outputStream.toString();
+        String logOutput = testTaskListener.outputStream.toString(Charset.defaultCharset());
         assertFalse("Should not have logged unimportant, excessive message.", logOutput.contains("possibly trimming"));
     }
 
@@ -81,7 +83,7 @@ public class FingerprintCleanupThreadTest {
         configureLocalTestStorage(new TestFingerprint(false));
         FingerprintCleanupThread cleanupThread = new FingerprintCleanupThread();
         cleanupThread.execute(testTaskListener);
-        String logOutput = testTaskListener.outputStream.toString();
+        String logOutput = testTaskListener.outputStream.toString(Charset.defaultCharset());
         assertFalse("Should have deleted obsolete file.", fpFile.toFile().exists());
     }
 
@@ -98,7 +100,7 @@ public class FingerprintCleanupThreadTest {
         configureLocalTestStorage(new TestFingerprint());
         FingerprintCleanupThread cleanupThread = new FingerprintCleanupThread();
         cleanupThread.execute(testTaskListener);
-        String logOutput = testTaskListener.outputStream.toString();
+        String logOutput = testTaskListener.outputStream.toString(Charset.defaultCharset());
         assertTrue("Should have done nothing.", logOutput.startsWith("Cleaned up 0 records"));
     }
 
@@ -113,7 +115,7 @@ public class FingerprintCleanupThreadTest {
         configureLocalTestStorage(fp);
         FingerprintCleanupThread cleanupThread = new FingerprintCleanupThread();
         cleanupThread.execute(testTaskListener);
-        String logOutput = testTaskListener.outputStream.toString();
+        String logOutput = testTaskListener.outputStream.toString(Charset.defaultCharset());
         assertThat(logOutput, containsString("blocked deletion of"));
     }
 
@@ -218,8 +220,8 @@ public class FingerprintCleanupThreadTest {
 
     private static class TestTaskListener implements TaskListener {
 
-        private ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        private PrintStream logStream = new PrintStream(outputStream);
+        private final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        private final PrintStream logStream = new PrintStream(outputStream, false, Charset.defaultCharset());
 
         @NonNull
         @Override
@@ -260,6 +262,7 @@ public class FingerprintCleanupThreadTest {
         @Extension
         public static class DescriptorImpl extends FingerprintStorageDescriptor {
 
+            @NonNull
             @Override
             public String getDisplayName() {
                 return "TestFileFingerprintStorage";
@@ -342,6 +345,7 @@ public class FingerprintCleanupThreadTest {
         @Extension
         public static class DescriptorImpl extends FingerprintStorageDescriptor {
 
+            @NonNull
             @Override
             public String getDisplayName() {
                 return "TestExternalFingerprintStorage";

@@ -18,12 +18,12 @@ public class ImmutableSetConverter extends CollectionConverter {
     private final SerializableConverter sc;
 
     public ImmutableSetConverter(XStream xs) {
-        this(xs.getMapper(),xs.getReflectionProvider());
+        this(xs.getMapper(), xs.getReflectionProvider());
     }
 
     public ImmutableSetConverter(Mapper mapper, ReflectionProvider reflectionProvider) {
         super(mapper);
-        sc = new SerializableConverter(mapper,reflectionProvider);
+        sc = new SerializableConverter(mapper, reflectionProvider);
     }
 
     @Override

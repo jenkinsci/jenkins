@@ -7,7 +7,7 @@ import hudson.model.FreeStyleProject;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import hudson.util.FormValidation;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -43,13 +43,14 @@ public class TextAreaTest {
         public String getText1() {
             return "This is text1";
         }
+
         public String getText2() {
             return "This is text2";
         }
 
         @TestExtension
         public static class DescriptorImpl extends BuildStepDescriptor<Builder> {
-            
+
             String text1, text2;
 
             @Override

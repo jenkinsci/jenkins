@@ -1,16 +1,34 @@
 <div>
-  Enable this option if you would like to trigger new builds
-  by accessing a special predefined URL (convenient for scripts).
-  <p>One typical example
-  for this feature would be to trigger new build from the source
-  control system's hook script, when somebody has just committed
-  a change into the repository, or from a script that parses
-  your source control email notifications.</p>
-  <p>You'll need to provide an authorization token in the form of
-  a string so that only those who know it would be able to remotely
-  trigger this project's builds.</p>
-  <p>This is most useful when your Jenkins instance grants read access to this job to anonymous users.</p>
-  <p>When that's not the case, Jenkins will reject requests sent to the trigger URL even when the correct token is specified.</p>
-  <p>To solve this, the HTTP requests needs to be authenticated as a user with the necessary read permission for the job &mdash; but then you could probably just grant this user the permission to build this anyway.</p>
-  <p>Another option is to use the Build Token Root Plugin, that provides additional URL endpoints to trigger builds using this token, and doesn't require the otherwise necessary Overall/Read and Job/Read permissions to do so.</p>
+  Enable this option if you would like to trigger new builds by accessing a
+  special predefined URL (convenient for scripts).
+  <p>
+    One typical example for this feature would be to trigger new build from the
+    source control system's hook script, when somebody has just committed a
+    change into the repository, or from a script that parses your source control
+    email notifications.
+  </p>
+  <p>
+    You'll need to provide an authorization token in the form of a string so
+    that only those who know it would be able to remotely trigger this project's
+    builds.
+  </p>
+  <p>
+    This is most useful when your Jenkins instance grants read access to this
+    job to anonymous users.
+  </p>
+  <p>
+    When that's not the case, Jenkins will reject requests sent to the trigger
+    URL even when the correct token is specified.
+  </p>
+  <p>
+    To solve this, the HTTP requests needs to be authenticated as a user with
+    the necessary read permission for the job &mdash; but then you could
+    probably just grant this user the permission to build this anyway.
+  </p>
+  <p>
+    Another option is to use the Build Token Root Plugin, that provides
+    additional URL endpoints to trigger builds using this token, and doesn't
+    require the otherwise necessary Overall/Read and Job/Read permissions to do
+    so.
+  </p>
 </div>

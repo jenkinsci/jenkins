@@ -14,7 +14,7 @@
                 </ul>
 
                 <p style="text-align: center; margin: 10px 0 0 0;">
-                    <a href="${rootURL}/manage" onclick="document.location.href='${rootURL}/manage';">
+                    <a href="${rootURL}/manage">
                         ${%Manage Jenkins}
                     </a>
                 </p>

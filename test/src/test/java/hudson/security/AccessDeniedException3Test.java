@@ -28,13 +28,13 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
 
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.model.InvisibleAction;
 import hudson.model.Item;
 import hudson.model.RootAction;
 import java.net.HttpURLConnection;
 import jenkins.model.Jenkins;
+import org.htmlunit.FailingHttpStatusCodeException;
+import org.htmlunit.html.HtmlPage;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -97,15 +97,18 @@ public class AccessDeniedException3Test {
         assertEquals("should send a 403 from AccessDeniedException2", HttpURLConnection.HTTP_FORBIDDEN, x.getStatusCode());
         assertEquals("should report X-You-Are-Authenticated-As from AccessDeniedException2", "user", x.getResponse().getResponseHeaderValue("X-You-Are-Authenticated-As"));
     }
+
     @TestExtension("captureException")
     public static final class Fails extends InvisibleAction implements RootAction {
         @Override
         public String getUrlName() {
             return "fails";
         }
+
         public HttpResponse doAccessDeniedException3() {
             throw new AccessDeniedException3(Jenkins.getAuthentication2(), Item.READ);
         }
+
         @SuppressWarnings("deprecation")
         public HttpResponse doAccessDeniedException2() {
             throw new AccessDeniedException2(Jenkins.getAuthentication(), Item.READ);

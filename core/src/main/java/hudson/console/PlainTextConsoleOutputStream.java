@@ -28,6 +28,10 @@ import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.apache.commons.lang.StringEscapeUtils;
 
 /**
  * Filters out console notes.
@@ -35,6 +39,8 @@ import java.io.OutputStream;
  * @author Kohsuke Kawaguchi
  */
 public class PlainTextConsoleOutputStream extends LineTransformationOutputStream.Delegating {
+
+    private static final Logger LOGGER = Logger.getLogger(PlainTextConsoleOutputStream.class.getName());
 
     /**
      *
@@ -49,31 +55,35 @@ public class PlainTextConsoleOutputStream extends LineTransformationOutputStream
     @Override
     protected void eol(byte[] in, int sz) throws IOException {
 
-        int next = ConsoleNote.findPreamble(in,0,sz);
+        int next = ConsoleNote.findPreamble(in, 0, sz);
 
         // perform byte[]->char[] while figuring out the char positions of the BLOBs
         int written = 0;
-        while (next>=0) {
-            if (next>written) {
-                out.write(in,written,next-written);
+        while (next >= 0) {
+            if (next > written) {
+                out.write(in, written, next - written);
                 written = next;
             } else {
-                assert next==written;
+                assert next == written;
             }
 
             int rest = sz - next;
             ByteArrayInputStream b = new ByteArrayInputStream(in, next, rest);
 
-            ConsoleNote.skip(new DataInputStream(b));
+            try {
+                ConsoleNote.skip(new DataInputStream(b));
+            } catch (IOException x) {
+                LOGGER.log(Level.FINE, "Failed to skip annotation from \"" + StringEscapeUtils.escapeJava(new String(in, next, rest, Charset.defaultCharset())) + "\"", x);
+            }
 
             int bytesUsed = rest - b.available(); // bytes consumed by annotations
             written += bytesUsed;
 
 
-            next = ConsoleNote.findPreamble(in,written,sz-written);
+            next = ConsoleNote.findPreamble(in, written, sz - written);
         }
         // finish the remaining bytes->chars conversion
-        out.write(in,written,sz-written);
+        out.write(in, written, sz - written);
     }
 
 }

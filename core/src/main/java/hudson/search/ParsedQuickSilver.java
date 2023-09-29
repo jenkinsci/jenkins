@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.search;
 
 import java.beans.Introspector;
@@ -39,12 +40,12 @@ import java.util.Map;
  * @author Kohsuke Kawaguchi
  */
 final class ParsedQuickSilver {
-    private static final Map<Class,ParsedQuickSilver> TABLE = new HashMap<>();
+    private static final Map<Class, ParsedQuickSilver> TABLE = new HashMap<>();
 
     static synchronized ParsedQuickSilver get(Class<? extends SearchableModelObject> clazz) {
         ParsedQuickSilver pqs = TABLE.get(clazz);
-        if(pqs==null)
-            TABLE.put(clazz,pqs = new ParsedQuickSilver(clazz));
+        if (pqs == null)
+            TABLE.put(clazz, pqs = new ParsedQuickSilver(clazz));
         return pqs;
     }
 
@@ -55,24 +56,24 @@ final class ParsedQuickSilver {
 
         for (Method m : clazz.getMethods()) {
             qs = m.getAnnotation(QuickSilver.class);
-            if(qs!=null) {
+            if (qs != null) {
                 String url = stripGetPrefix(m);
-                if(qs.value().length==0)
-                    getters.add(new MethodGetter(url,splitName(url),m));
+                if (qs.value().length == 0)
+                    getters.add(new MethodGetter(url, splitName(url), m));
                 else {
                     for (String name : qs.value())
-                        getters.add(new MethodGetter(url,name,m));
+                        getters.add(new MethodGetter(url, name, m));
                 }
             }
         }
         for (Field f : clazz.getFields()) {
             qs = f.getAnnotation(QuickSilver.class);
-            if(qs!=null) {
-                if(qs.value().length==0)
-                    getters.add(new FieldGetter(f.getName(),splitName(f.getName()),f));
+            if (qs != null) {
+                if (qs.value().length == 0)
+                    getters.add(new FieldGetter(f.getName(), splitName(f.getName()), f));
                 else {
                     for (String name : qs.value())
-                        getters.add(new FieldGetter(f.getName(),name,f));
+                        getters.add(new FieldGetter(f.getName(), name, f));
                 }
             }
         }
@@ -82,9 +83,9 @@ final class ParsedQuickSilver {
      * Convert names like "abcDefGhi" to "abc def ghi".
      */
     private String splitName(String url) {
-        StringBuilder buf = new StringBuilder(url.length()+5);
-        for(String token : url.split("(?<=[a-z])(?=[A-Z])")) {
-            if(buf.length()>0)  buf.append(' ');
+        StringBuilder buf = new StringBuilder(url.length() + 5);
+        for (String token : url.split("(?<=[a-z])(?=[A-Z])")) {
+            if (buf.length() > 0)  buf.append(' ');
             buf.append(Introspector.decapitalize(token));
         }
         return buf.toString();
@@ -92,7 +93,7 @@ final class ParsedQuickSilver {
 
     private String stripGetPrefix(Method m) {
         String n = m.getName();
-        if(n.startsWith("get"))
+        if (n.startsWith("get"))
             n = Introspector.decapitalize(n.substring(3));
         return n;
     }
@@ -175,7 +176,7 @@ final class ParsedQuickSilver {
                 @Override
                 public SearchIndex getSearchIndex() {
                     Object child = getter.get(instance);
-                    if(child==null) return SearchIndex.EMPTY;
+                    if (child == null) return SearchIndex.EMPTY;
                     return ((SearchableModelObject) child).getSearchIndex();
                 }
             });

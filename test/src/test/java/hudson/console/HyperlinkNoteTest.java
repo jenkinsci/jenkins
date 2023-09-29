@@ -28,7 +28,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsString;
 
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Result;
@@ -38,6 +37,7 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import org.apache.commons.io.IOUtils;
+import org.htmlunit.html.HtmlPage;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -51,7 +51,7 @@ public class HyperlinkNoteTest {
     @Issue("JENKINS-53016")
     @Test
     public void textWithNewlines() throws Exception {
-        String url = r.getURL().toString()+"test";
+        String url = r.getURL().toString() + "test";
         String noteText = "\nthis string\nhas newline\r\ncharacters\n\r";
         String input = HyperlinkNote.encodeTo(url, noteText);
         String noteTextSanitized = input.substring(input.length() - noteText.length());
@@ -72,7 +72,7 @@ public class HyperlinkNoteTest {
         // Throws IndexOutOfBoundsException before https://github.com/jenkinsci/jenkins/pull/3580.
         String output = annotate(input);
         assertThat(output, allOf(
-                containsString("href='" + r.getURL().toString()+p.getUrl() + "'"),
+                containsString("href='" + r.getURL().toString() + p.getUrl() + "'"),
                 containsString(new ModelHyperlinkNote("", 0).extraAttributes()),
                 containsString(">" + noteTextSanitized + "</a>")));
     }
@@ -85,15 +85,15 @@ public class HyperlinkNoteTest {
         r.jenkins.rebuildDependencyGraph();
         FreeStyleBuild b = r.buildAndAssertSuccess(upstream);
         r.waitUntilNoActivity();
-        HtmlPage rsp = r.createWebClient().goTo(b.getUrl()+"console");
-        assertThat(rsp.querySelector(".console-output").asText(), containsString("Triggering a new build of"));
+        HtmlPage rsp = r.createWebClient().goTo(b.getUrl() + "console");
+        assertThat(rsp.querySelector(".console-output").asNormalizedText(), containsString("Triggering a new build of"));
         assertThat(String.valueOf(rsp.getAnchorByText("d0wnstr3'am").click().getWebResponse().getStatusCode()), containsString("200"));
     }
 
     private static String annotate(String text) throws IOException {
         StringWriter writer = new StringWriter();
         try (ConsoleAnnotationOutputStream out = new ConsoleAnnotationOutputStream(writer, null, null, StandardCharsets.UTF_8)) {
-            IOUtils.copy(new StringReader(text), out);
+            IOUtils.copy(new StringReader(text), out, StandardCharsets.UTF_8);
         }
         return writer.toString();
     }

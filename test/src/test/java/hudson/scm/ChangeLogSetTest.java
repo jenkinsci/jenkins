@@ -33,7 +33,7 @@ public class ChangeLogSetTest {
     @Extension
     public static final class ThrowExceptionChangeLogAnnotator extends ChangeLogAnnotator {
         @Override
-        public void annotate(AbstractBuild<?,?> build, ChangeLogSet.Entry change, MarkupText text ) {
+        public void annotate(AbstractBuild<?, ?> build, ChangeLogSet.Entry change, MarkupText text) {
             throw new RuntimeException();
         }
     }
@@ -41,7 +41,7 @@ public class ChangeLogSetTest {
     @Extension
     public static final class ThrowErrorChangeLogAnnotator extends ChangeLogAnnotator {
         @Override
-        public void annotate(AbstractBuild<?,?> build, ChangeLogSet.Entry change, MarkupText text ) {
+        public void annotate(AbstractBuild<?, ?> build, ChangeLogSet.Entry change, MarkupText text) {
             throw new Error();
         }
     }

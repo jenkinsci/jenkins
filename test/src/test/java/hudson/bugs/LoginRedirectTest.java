@@ -21,13 +21,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.bugs;
 
 import static org.junit.Assert.assertEquals;
 
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import java.net.HttpURLConnection;
+import org.htmlunit.html.HtmlForm;
+import org.htmlunit.html.HtmlPage;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -61,8 +62,8 @@ public class LoginRedirectTest {
         assertEquals(j.contextPath + "/login", loginPage.getUrl().getPath());
 
         HtmlForm form = loginPage.getFormByName("login");
-        form.getInputByName("j_username").setValueAttribute("alice");
-        form.getInputByName("j_password").setValueAttribute("alice");
+        form.getInputByName("j_username").setValue("alice");
+        form.getInputByName("j_password").setValue("alice");
         HtmlPage mainPage = j.submit(form);
         assertEquals(j.contextPath + "/", mainPage.getUrl().getPath());
     }

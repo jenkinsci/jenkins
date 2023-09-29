@@ -23,10 +23,11 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <st:documentation>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:f="/lib/form">
+  <st:documentation> <![CDATA[
     Binds a set of Enum to a list of checkboxes, each with the label taken from enum Enum.toString()
-    Should be used inside an &lt;f:entry field='...'> element.
+    Should be used inside an <f:entry field='...'> element.
+    ]]>
     <st:attribute name="field" implicit="true">
       Used for databinding.
     </st:attribute>

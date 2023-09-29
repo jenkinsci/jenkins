@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.markup;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -28,16 +29,16 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 
-import com.gargoylesoftware.htmlunit.HttpMethod;
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.WebResponse;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.security.AuthorizationStrategy.Unsecured;
 import hudson.security.HudsonPrivateSecurityRealm;
 import java.io.IOException;
 import java.io.Writer;
 import java.net.URL;
+import org.htmlunit.HttpMethod;
+import org.htmlunit.Page;
+import org.htmlunit.WebRequest;
+import org.htmlunit.WebResponse;
+import org.htmlunit.html.HtmlPage;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -65,6 +66,7 @@ public class MarkupFormatterTest {
 
     public static class DummyMarkupImpl extends MarkupFormatter {
         public final String prefix;
+
         @DataBoundConstructor
         public DummyMarkupImpl(String prefix) {
             this.prefix = prefix;
@@ -72,7 +74,7 @@ public class MarkupFormatterTest {
 
         @Override
         public void translate(String markup, Writer output) throws IOException {
-            output.write(prefix+"["+markup+"]");
+            output.write(prefix + "[" + markup + "]");
         }
 
         @TestExtension

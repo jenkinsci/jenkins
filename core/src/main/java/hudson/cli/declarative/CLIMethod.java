@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.cli.declarative;
 
 import static java.lang.annotation.ElementType.METHOD;
@@ -63,7 +64,7 @@ import org.kohsuke.args4j.Argument;
 @Documented
 public @interface CLIMethod {
     /**
-     * CLI command name. Used as {@link CLICommand#getName()} 
+     * CLI command name. Used as {@link CLICommand#getName()}
      */
     String name();
 

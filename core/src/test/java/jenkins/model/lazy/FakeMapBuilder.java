@@ -21,11 +21,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.model.lazy;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import org.apache.commons.io.FileUtils;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
@@ -48,8 +50,8 @@ public class FakeMapBuilder implements TestRule {
 
     public FakeMapBuilder add(int n) throws IOException {
         File build = new File(dir, Integer.toString(n));
-        FileUtils.writeStringToFile(new File(build, "n"), Integer.toString(n), StandardCharsets.US_ASCII);
-        build.mkdir();
+        Files.createDirectory(build.toPath());
+        Files.writeString(build.toPath().resolve("n"), Integer.toString(n), StandardCharsets.US_ASCII);
         return this;
     }
 
@@ -64,7 +66,7 @@ public class FakeMapBuilder implements TestRule {
     }
 
     public FakeMap make() {
-        assert dir!=null;
+        assert dir != null;
         return new FakeMap(dir);
     }
 
@@ -73,7 +75,7 @@ public class FakeMapBuilder implements TestRule {
         return new Statement() {
             @Override
             public void evaluate() throws Throwable {
-                dir = File.createTempFile("lazyload","test");
+                dir = File.createTempFile("lazyload", "test");
                 dir.delete();
                 dir.mkdirs();
                 try {

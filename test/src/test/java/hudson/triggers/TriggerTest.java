@@ -24,10 +24,10 @@
 
 package hudson.triggers;
 
-import antlr.ANTLRException;
 import hudson.Extension;
 import hudson.model.Item;
 import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import org.junit.Rule;
@@ -44,7 +44,7 @@ public class TriggerTest {
     @Issue("JENKINS-36748")
     @Test
     public void testNoNPE() throws Exception {
-        jenkinsRule.getInstance().createProjectFromXML("whatever", new ByteArrayInputStream(("<project>\n  <builders/>\n  <publishers/>\n  <buildWrappers/>\n" + triggersSection() + "</project>").getBytes()));
+        jenkinsRule.getInstance().createProjectFromXML("whatever", new ByteArrayInputStream(("<project>\n  <builders/>\n  <publishers/>\n  <buildWrappers/>\n" + triggersSection() + "</project>").getBytes(StandardCharsets.UTF_8)));
         final Calendar cal = new GregorianCalendar();
         Trigger.checkTriggers(cal);
     }
@@ -59,7 +59,7 @@ public class TriggerTest {
         public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
         @DataBoundConstructor
-        public MockTrigger(String cron) throws ANTLRException {
+        public MockTrigger(String cron) {
             super(cron);
         }
 

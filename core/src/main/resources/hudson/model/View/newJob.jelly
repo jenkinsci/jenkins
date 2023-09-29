@@ -27,19 +27,18 @@ THE SOFTWARE.
   <j:getStatic var="permission" className="hudson.model.Item" field="CREATE"/>
 
   <l:layout type="one-column" permission="${permission}" title="${%NewJob(it.newPronoun)}">
-
-    <l:js src="jsbundles/add-item.js" />
-    <l:css src="jsbundles/add-item.css" />
+    <l:header>
+      <link rel="stylesheet" href="${resURL}/jsbundles/add-item.css" type="text/css" />
+      <script src="${resURL}/jsbundles/add-item.js" type="text/javascript" defer="true" />
+    </l:header>
 
     <l:main-panel>
-    <div class="container" id="add-item-panel" style="display: none;">
-      <div class="row">
-        <div class="col-md-offset-2 col-md-20">
+    <div id="add-item-panel" style="display: none;">
           <form method="post" action="createItem" name="createItem" id="createItem">
             <div class="header">
               <div class="add-item-name">
                 <label for="name" class="h3">${%ItemName.label}</label>
-                <input name="name" id="name" data-valid="false" type="text" tabindex="0" />
+                <input name="name" class="jenkins-input" id="name" data-valid="false" type="text" tabindex="0" />
                 <div class="input-help">&#187; ${%ItemName.help}</div>
                 <div id="itemname-required" class="input-validation-message input-message-disabled">&#187; ${%ItemName.validation.required}</div>
                 <div id="itemname-invalid" class="input-validation-message input-message-disabled"></div>
@@ -70,9 +69,7 @@ THE SOFTWARE.
               </div>
             </div>
           </form>
-        </div>
       </div>
-    </div>
     </l:main-panel>
   </l:layout>
 </j:jelly>

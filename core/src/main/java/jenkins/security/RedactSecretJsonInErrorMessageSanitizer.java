@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.security;
 
 import java.util.HashSet;
@@ -36,20 +37,20 @@ import org.kohsuke.stapler.JsonInErrorMessageSanitizer;
 @Restricted(NoExternalUse.class)
 public class RedactSecretJsonInErrorMessageSanitizer implements JsonInErrorMessageSanitizer {
     private static final Logger LOGGER = Logger.getLogger(RedactSecretJsonInErrorMessageSanitizer.class.getName());
-    
+
     // must be kept in sync with hudson-behavior.js in function buildFormTree, password case
     public static final String REDACT_KEY = "$redact";
     public static final String REDACT_VALUE = "[value redacted]";
-    
+
     public static final RedactSecretJsonInErrorMessageSanitizer INSTANCE = new RedactSecretJsonInErrorMessageSanitizer();
-    
+
     private RedactSecretJsonInErrorMessageSanitizer() {}
-    
+
     @Override
     public JSONObject sanitize(JSONObject jsonObject) {
         return copyAndSanitizeObject(jsonObject);
     }
-    
+
     /**
      * Accept anything as value for the {@link #REDACT_KEY} but only process the first level of an array and the string value.
      */
@@ -75,7 +76,7 @@ public class RedactSecretJsonInErrorMessageSanitizer implements JsonInErrorMessa
         }
         return redactedKeySet;
     }
-    
+
     private Object copyAndSanitize(Object value) {
         if (value instanceof JSONObject) {
             return copyAndSanitizeObject((JSONObject) value);
@@ -86,12 +87,12 @@ public class RedactSecretJsonInErrorMessageSanitizer implements JsonInErrorMessa
             return value;
         }
     }
-    
+
     @SuppressWarnings("unchecked")
     private JSONObject copyAndSanitizeObject(JSONObject jsonObject) {
         Set<String> redactedKeySet = retrieveRedactedKeys(jsonObject);
         JSONObject result = new JSONObject();
-        
+
         jsonObject.keySet().forEach(keyObject -> {
             String key = keyObject.toString();
             if (redactedKeySet.contains(key)) {
@@ -101,17 +102,17 @@ public class RedactSecretJsonInErrorMessageSanitizer implements JsonInErrorMessa
                 result.accumulate(key, copyAndSanitize(value));
             }
         });
-        
+
         return result;
     }
-    
+
     private JSONArray copyAndSanitizeArray(JSONArray jsonArray) {
         JSONArray result = new JSONArray();
-        
+
         jsonArray.forEach(value ->
                 result.add(copyAndSanitize(value))
         );
-        
+
         return result;
     }
 }

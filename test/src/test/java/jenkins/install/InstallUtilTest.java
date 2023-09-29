@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.install;
 
 import hudson.Main;
@@ -86,7 +87,7 @@ public class InstallUtilTest {
     public void test_typeTransitions() throws IOException, ServletException {
         InstallUtil.getLastExecVersionFile().delete();
         InstallUtil.getConfigFile().delete();
-        
+
         // A new test instance sets up security first
         Assert.assertEquals(InstallState.INITIAL_SECURITY_SETUP, InstallUtil.getNextInstallState(InstallState.UNKNOWN));
 
@@ -148,62 +149,59 @@ public class InstallUtilTest {
     public void testSaveAndRestoreInstallingPlugins() throws Exception {
         final List<UpdateCenterJob> updates = new ArrayList<>();
 
-        final Map<String,String> nameMap = new HashMap<>();
+        final Map<String, String> nameMap = new HashMap<>();
 
         new UpdateCenter() { // inner classes...
-		{
-			new UpdateSite("foo", "http://omg.org") {
-				{
-					for(String name : Arrays.asList("pending-plug:Pending", "installing-plug:Installing", "failure-plug:Failure", "success-plug:Success")) {
-						String statusType = name.split(":")[1];
-						name = name.split(":")[0];
+            {
+                new UpdateSite("foo", "http://omg.org") {
+                    {
+                        for (String name : Arrays.asList("pending-plug:Pending", "installing-plug:Installing", "failure-plug:Failure", "success-plug:Success")) {
+                            String statusType = name.split(":")[1];
+                            name = name.split(":")[0];
 
-						InstallationStatus status;
-						if("Success".equals(statusType)) {
-							status = Mockito.mock(Success.class, Mockito.CALLS_REAL_METHODS);
-						}
-						else if("Failure".equals(statusType)) {
-							status = Mockito.mock(Failure.class, Mockito.CALLS_REAL_METHODS);
-						}
-						else if("Installing".equals(statusType)) {
-							status = Mockito.mock(Installing.class, Mockito.CALLS_REAL_METHODS);
-						}
-						else {
-							status = Mockito.mock(Pending.class, Mockito.CALLS_REAL_METHODS);
-						}
+                            InstallationStatus status;
+                            if ("Success".equals(statusType)) {
+                                status = Mockito.mock(Success.class, Mockito.CALLS_REAL_METHODS);
+                            } else if ("Failure".equals(statusType)) {
+                                status = Mockito.mock(Failure.class, Mockito.CALLS_REAL_METHODS);
+                            } else if ("Installing".equals(statusType)) {
+                                status = Mockito.mock(Installing.class, Mockito.CALLS_REAL_METHODS);
+                            } else {
+                                status = Mockito.mock(Pending.class, Mockito.CALLS_REAL_METHODS);
+                            }
 
-						nameMap.put(statusType, status.getClass().getSimpleName());
+                            nameMap.put(statusType, status.getClass().getSimpleName());
 
-					JSONObject json = new JSONObject();
-					json.put("name", name);
-					json.put("version", "1.1");
-					json.put("url", "http://google.com");
-					json.put("dependencies", new JSONArray());
-					Plugin p = new Plugin(getId(), json);
+                            JSONObject json = new JSONObject();
+                            json.put("name", name);
+                            json.put("version", "1.1");
+                            json.put("url", "http://google.com");
+                            json.put("dependencies", new JSONArray());
+                            Plugin p = new Plugin(getId(), json);
 
-					InstallationJob job = new InstallationJob(p, null, (Authentication) null, false);
-						job.status = status;
-						job.setCorrelationId(UUID.randomUUID()); // this indicates the plugin was 'directly selected'
-		                updates.add(job);
-			        }
-				}
-			};
-		}
+                            InstallationJob job = new InstallationJob(p, null, (Authentication) null, false);
+                            job.status = status;
+                            job.setCorrelationId(UUID.randomUUID()); // this indicates the plugin was 'directly selected'
+                            updates.add(job);
+                        }
+                    }
+                };
+            }
         };
 
         InstallUtil.persistInstallStatus(updates);
 
-	Map<String,String> persisted = InstallUtil.getPersistedInstallStatus();
+        Map<String, String> persisted = InstallUtil.getPersistedInstallStatus();
 
-	Assert.assertEquals(nameMap.get("Pending"), persisted.get("pending-plug"));
-	Assert.assertEquals("Pending", persisted.get("installing-plug")); // only marked as success/fail after successful install
-	Assert.assertEquals(nameMap.get("Failure"), persisted.get("failure-plug"));
-	Assert.assertEquals(nameMap.get("Success"), persisted.get("success-plug"));
+        Assert.assertEquals(nameMap.get("Pending"), persisted.get("pending-plug"));
+        Assert.assertEquals("Pending", persisted.get("installing-plug")); // only marked as success/fail after successful install
+        Assert.assertEquals(nameMap.get("Failure"), persisted.get("failure-plug"));
+        Assert.assertEquals(nameMap.get("Success"), persisted.get("success-plug"));
 
         InstallUtil.clearInstallStatus();
 
-	persisted = InstallUtil.getPersistedInstallStatus();
+        persisted = InstallUtil.getPersistedInstallStatus();
 
-	Assert.assertNull(persisted); // should be deleted
+        Assert.assertNull(persisted); // should be deleted
     }
 }

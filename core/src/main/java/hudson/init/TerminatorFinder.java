@@ -9,7 +9,7 @@ public class TerminatorFinder extends TaskMethodFinder<Terminator> {
     public TerminatorFinder(ClassLoader cl) {
         super(Terminator.class, TermMilestone.class, cl);
     }
-    
+
     @Override
     protected String displayNameOf(Terminator i) {
         return i.displayName();

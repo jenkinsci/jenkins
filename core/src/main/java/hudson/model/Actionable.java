@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Stephen Connolly
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,16 +21,17 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Util;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -91,7 +92,7 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      * @return an unmodifiable, possible empty list
      * @since 1.548
      */
-    @Exported(name="actions")
+    @Exported(name = "actions")
     @NonNull
     public final List<? extends Action> getAllActions() {
         List<Action> _actions = getActions();
@@ -119,7 +120,7 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
                 }
             }
             return result;
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             LOGGER.log(Level.WARNING, "Could not load actions from " + taf + " for " + this, e);
             return Collections.emptySet();
         }
@@ -147,9 +148,8 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      * <strong>Note: this method will always modify the actions</strong>
      */
     @SuppressWarnings("ConstantConditions")
-    @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
     public void addAction(@NonNull Action a) {
-        if(a==null) {
+        if (a == null) {
             throw new IllegalArgumentException("Action must be non-null");
         }
         getActions().add(a);
@@ -164,13 +164,14 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      * though technically consistent from the concurrency contract of {@link CopyOnWriteArrayList} (we would need
      * some form of transactions or a different backing type).
      *
+     * <p>See also {@link #addOrReplaceAction(Action)} if you want to know whether the backing
+     * {@link #actions} was modified, for example in cases where the caller would need to persist
+     * the {@link Actionable} in order to persist the change and there is a desire to elide
+     * unnecessary persistence of unmodified objects.
+     *
      * @param a an action to add/replace
      * @since 1.548
-     * @see #addOrReplaceAction(Action) if you want to know whether the backing {@link #actions} was modified, for
-     * example in cases where the caller would need to persist the {@link Actionable} in order to persist the change
-     * and there is a desire to elide unnecessary persistence of unmodified objects.
      */
-    @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
     public void replaceAction(@NonNull Action a) {
         addOrReplaceAction(a);
     }
@@ -189,7 +190,6 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      * @since 2.29
      */
     @SuppressWarnings("ConstantConditions")
-    @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
     public boolean addOrReplaceAction(@NonNull Action a) {
         if (a == null) {
             throw new IllegalArgumentException("Action must be non-null");
@@ -230,7 +230,7 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
             return false;
         }
         // CopyOnWriteArrayList does not support Iterator.remove, so need to do it this way:
-        return getActions().removeAll(Collections.singleton(a));
+        return getActions().removeAll(Set.of(a));
     }
 
     /**
@@ -247,7 +247,6 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      * @since 2.29
      */
     @SuppressWarnings("ConstantConditions")
-    @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
     public boolean removeActions(@NonNull Class<? extends Action> clazz) {
         if (clazz == null) {
             throw new IllegalArgumentException("Action type must be non-null");
@@ -279,7 +278,6 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
      * @since 2.29
      */
     @SuppressWarnings("ConstantConditions")
-    @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
     public boolean replaceActions(@NonNull Class<? extends Action> clazz, @NonNull Action a) {
         if (clazz == null) {
             throw new IllegalArgumentException("Action type must be non-null");
@@ -312,7 +310,7 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
     /** @deprecated No clear purpose, since subclasses may have overridden {@link #getActions}, and does not consider {@link TransientActionFactory}. */
     @Deprecated
     public Action getAction(int index) {
-        if(actions==null)   return null;
+        if (actions == null)   return null;
         return actions.get(index);
     }
 
@@ -342,19 +340,19 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
 
     public Object getDynamic(String token, StaplerRequest req, StaplerResponse rsp) {
         for (Action a : getAllActions()) {
-            if(a==null)
+            if (a == null)
                 continue;   // be defensive
             String urlName = a.getUrlName();
-            if(urlName==null)
+            if (urlName == null)
                 continue;
-            if(urlName.equals(token))
+            if (urlName.equals(token))
                 return a;
         }
         return null;
     }
 
     @Override public ContextMenu doContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
-        return new ContextMenu().from(this,request,response);
+        return new ContextMenu().from(this, request, response);
     }
 
     private static final Logger LOGGER = Logger.getLogger(Actionable.class.getName());

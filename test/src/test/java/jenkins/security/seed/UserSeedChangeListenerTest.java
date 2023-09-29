@@ -21,17 +21,18 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.security.seed;
 
-import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertNull;
 
-import com.gargoylesoftware.htmlunit.HttpMethod;
-import com.gargoylesoftware.htmlunit.WebRequest;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.User;
 import java.net.URL;
+import org.htmlunit.HttpMethod;
+import org.htmlunit.WebRequest;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -43,16 +44,16 @@ public class UserSeedChangeListenerTest {
     public JenkinsRule j = new JenkinsRule();
 
     @Test
-    public void onProgrammaticUserSeedChange_listenerTriggered() throws Exception {
+    public void onProgrammaticUserSeedChange_listenerTriggered() {
         TestUserSeedChangeListener testListener = j.jenkins.getExtensionList(UserSeedChangeListener.class).get(TestUserSeedChangeListener.class);
 
         String userId = "alice";
         User alice = User.getById(userId, true);
         assertNull(testListener.lastUserIdReceived);
-        
+
         UserSeedProperty userSeed = alice.getProperty(UserSeedProperty.class);
         assertNull(testListener.lastUserIdReceived);
-        
+
         userSeed.renewSeed();
         assertThat(testListener.lastUserIdReceived, is(userId));
         assertThat(testListener.userWasNull, is(false));
@@ -84,11 +85,11 @@ public class UserSeedChangeListenerTest {
     public static class TestUserSeedChangeListener extends UserSeedChangeListener {
         String lastUserIdReceived;
         boolean userWasNull;
-        
-        @Override 
+
+        @Override
         public void onUserSeedRenewed(@NonNull User user) {
             if (user == null) {
-                userWasNull = true; 
+                userWasNull = true;
             }
             lastUserIdReceived = user.getId();
         }

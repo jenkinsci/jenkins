@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import java.lang.reflect.ParameterizedType;
@@ -36,7 +37,7 @@ import org.kohsuke.stapler.StaplerRequest;
 
 /**
  * {@link Descriptor} for {@link JobProperty}.
- * 
+ *
  * @author Kohsuke Kawaguchi
  * @since 1.72
  */
@@ -62,8 +63,8 @@ public abstract class JobPropertyDescriptor extends Descriptor<JobProperty<?>> {
     @Override
     public JobProperty<?> newInstance(StaplerRequest req, JSONObject formData) throws FormException {
         // JobPropertyDescriptors are bit different in that we allow them even without any user-visible configuration parameter,
-        // so replace the lack of form data by an empty one. 
-        if(formData.isNullObject()) formData=new JSONObject();
+        // so replace the lack of form data by an empty one.
+        if (formData.isNullObject()) formData = new JSONObject();
 
         return super.newInstance(req, formData);
     }
@@ -71,7 +72,7 @@ public abstract class JobPropertyDescriptor extends Descriptor<JobProperty<?>> {
     /**
      * Returns true if this {@link JobProperty} type is applicable to the
      * given job type.
-     * 
+     *
      * <p>
      * The default implementation of this method checks if the given job type is assignable to {@code J} of
      * {@link JobProperty}{@code <J>}, but subtypes can extend this to change this behavior.
@@ -87,7 +88,7 @@ public abstract class JobPropertyDescriptor extends Descriptor<JobProperty<?>> {
             Class applicable = Types.erasure(Types.getTypeArgument(pt, 0));
             return applicable.isAssignableFrom(jobType);
         } else {
-            throw new AssertionError(clazz+" doesn't properly parameterize JobProperty. The isApplicable() method must be overridden.");
+            throw new AssertionError(clazz + " doesn't properly parameterize JobProperty. The isApplicable() method must be overridden.");
         }
     }
 
@@ -97,7 +98,7 @@ public abstract class JobPropertyDescriptor extends Descriptor<JobProperty<?>> {
     public static List<JobPropertyDescriptor> getPropertyDescriptors(Class<? extends Job> clazz) {
         List<JobPropertyDescriptor> r = new ArrayList<>();
         for (JobPropertyDescriptor p : all())
-            if(p.isApplicable(clazz))
+            if (p.isApplicable(clazz))
                 r.add(p);
         return r;
     }

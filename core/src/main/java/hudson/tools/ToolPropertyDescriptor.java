@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.tools;
 
 import hudson.Extension;
@@ -35,7 +36,7 @@ import hudson.Extension;
  * @see ToolProperty
  * @author Kohsuke Kawaguchi
  */
-public abstract class ToolPropertyDescriptor extends PropertyDescriptor<ToolProperty<?>,ToolInstallation> {
+public abstract class ToolPropertyDescriptor extends PropertyDescriptor<ToolProperty<?>, ToolInstallation> {
     protected ToolPropertyDescriptor(Class<? extends ToolProperty<?>> clazz) {
         super(clazz);
     }

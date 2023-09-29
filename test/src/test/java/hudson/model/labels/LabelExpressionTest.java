@@ -21,14 +21,15 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model.labels;
 
-import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
 
 import antlr.ANTLRException;
@@ -40,16 +41,15 @@ import hudson.model.BuildListener;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Label;
-import hudson.model.Node.Mode;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.RetentionStrategy;
 import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.Set;
-import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.SequenceLock;
@@ -62,6 +62,9 @@ public class LabelExpressionTest {
 
     @Rule
     public JenkinsRule j = new JenkinsRule();
+
+    @Rule
+    public TemporaryFolder tempFolder = new TemporaryFolder();
 
     /**
      * Verifies the queueing behavior in the presence of the expression.
@@ -100,18 +103,18 @@ public class LabelExpressionTest {
         Thread.sleep(1000); // time window to ensure queue has tried to assign f2 build
 
         // p3 is tied to 'win', so even though p1 is busy, this should still go ahead and complete
-        FreeStyleBuild b3 = j.assertBuildStatusSuccess(p3.scheduleBuild2(0));
-        assertSame(w64,b3.getBuiltOn());
+        FreeStyleBuild b3 = j.buildAndAssertSuccess(p3);
+        assertSame(w64, b3.getBuiltOn());
 
         seq.phase(3);   // once we confirm that p3 build is over, we let p1 proceed
 
         // p1 should have been built on w32
         FreeStyleBuild b1 = j.assertBuildStatusSuccess(f1);
-        assertSame(w32,b1.getBuiltOn());
+        assertSame(w32, b1.getBuiltOn());
 
         // and so is p2
         FreeStyleBuild b2 = j.assertBuildStatusSuccess(f2);
-        assertSame(w32,b2.getBuiltOn());
+        assertSame(w32, b2.getBuiltOn());
     }
 
     /**
@@ -125,16 +128,16 @@ public class LabelExpressionTest {
         FreeStyleProject p = j.createFreeStyleProject();
 
         p.setAssignedLabel(j.jenkins.getLabel("!win"));
-        FreeStyleBuild b = j.assertBuildStatusSuccess(p.scheduleBuild2(0));
-        assertSame(j.jenkins,b.getBuiltOn());
+        FreeStyleBuild b = j.buildAndAssertSuccess(p);
+        assertSame(j.jenkins, b.getBuiltOn());
 
         p.setAssignedLabel(j.jenkins.getLabel("win"));
-        b = j.assertBuildStatusSuccess(p.scheduleBuild2(0));
-        assertSame(s,b.getBuiltOn());
+        b = j.buildAndAssertSuccess(p);
+        assertSame(s, b.getBuiltOn());
 
         p.setAssignedLabel(j.jenkins.getLabel("!win"));
-        b = j.assertBuildStatusSuccess(p.scheduleBuild2(0));
-        assertSame(j.jenkins,b.getBuiltOn());
+        b = j.buildAndAssertSuccess(p);
+        assertSame(j.jenkins, b.getBuiltOn());
     }
 
     /**
@@ -175,24 +178,24 @@ public class LabelExpressionTest {
     @Issue("JENKINS-8537")
     @Test
     public void parser2() throws Exception {
-        parseAndVerify("aaa&&bbb&&ccc","aaa&&bbb&&ccc");
+        parseAndVerify("aaa&&bbb&&ccc", "aaa&&bbb&&ccc");
     }
 
-    private void parseAndVerify(String expected, String expr) throws ANTLRException {
+    private void parseAndVerify(String expected, String expr) {
         assertEquals(expected, Label.parseExpression(expr).getName());
     }
 
     @Test
     public void parserError() {
-        parseShouldFail("foo bar");
-        parseShouldFail("foo (bar)");
-        parseShouldFail("foo(bar)");
-        parseShouldFail("a <- b");
-        parseShouldFail("a -< b");
-        parseShouldFail("a - b");
-        parseShouldFail("->");
-        parseShouldFail("-<");
-        parseShouldFail("-!");
+        parseShouldFail("foo bar", "line 1:4: extraneous input 'bar' expecting <EOF>");
+        parseShouldFail("foo (bar)", "line 1:4: mismatched input '(' expecting {<EOF>, '&&', '||', '->', '<->'}");
+        parseShouldFail("foo(bar)", "line 1:3: mismatched input '(' expecting {<EOF>, '&&', '||', '->', '<->'}");
+        parseShouldFail("a <- b", "line 1:2: token recognition error at: '<- '");
+        parseShouldFail("a -< b", "line 1:3: token recognition error at: '< '");
+        parseShouldFail("a - b", "line 1:2: mismatched input '-' expecting {<EOF>, '&&', '||', '->', '<->'}");
+        parseShouldFail("->", "line 1:0: mismatched input '->' expecting {'!', '(', ATOM, STRINGLITERAL}");
+        parseShouldFail("-<", "line 1:1: token recognition error at: '<'");
+        parseShouldFail("-!", "line 1:1: extraneous input '!' expecting <EOF>");
     }
 
     @Test
@@ -206,34 +209,36 @@ public class LabelExpressionTest {
     @Test
     public void dataCompatibilityWithHostNameWithWhitespace() throws Exception {
         assumeFalse("Windows can't have paths with colons, skipping", Functions.isWindows());
-        DumbSlave slave = new DumbSlave("abc def (xyz) test", "dummy",
-                j.createTmpDir().getPath(), "1", Mode.NORMAL, "", j.createComputerLauncher(null), RetentionStrategy.NOOP, Collections.EMPTY_LIST);
+        DumbSlave slave = new DumbSlave("abc def (xyz) test", tempFolder.newFolder().getPath(), j.createComputerLauncher(null));
+        slave.setRetentionStrategy(RetentionStrategy.NOOP);
+        slave.setNodeDescription("dummy");
+        slave.setNodeProperties(Collections.emptyList());
         j.jenkins.addNode(slave);
 
 
         FreeStyleProject p = j.createFreeStyleProject();
         p.setAssignedLabel(j.jenkins.getLabel("abc def"));
-        assertEquals("abc def",p.getAssignedLabel().getName());
-        assertEquals("\"abc def\"",p.getAssignedLabel().getExpression());
+        assertEquals("abc def", p.getAssignedLabel().getName());
+        assertEquals("\"abc def\"", p.getAssignedLabel().getExpression());
 
         // expression should be persisted, not the name
         Field f = AbstractProject.class.getDeclaredField("assignedNode");
         f.setAccessible(true);
-        assertEquals("\"abc def\"",f.get(p));
+        assertEquals("\"abc def\"", f.get(p));
 
         // but if the name is set, we'd still like to parse it
-        f.set(p,"a:b c");
-        assertEquals("a:b c",p.getAssignedLabel().getName());
+        f.set(p, "a:b c");
+        assertEquals("a:b c", p.getAssignedLabel().getName());
     }
 
     @Test
     public void quote() {
         Label l = j.jenkins.getLabel("\"abc\\\\\\\"def\"");
-        assertEquals("abc\\\"def",l.getName());
+        assertEquals("abc\\\"def", l.getName());
 
         l = j.jenkins.getLabel("label1||label2"); // create label expression
         l = j.jenkins.getLabel("\"label1||label2\"");
-        assertEquals("label1||label2",l.getName());
+        assertEquals("label1||label2", l.getName());
     }
 
     /**
@@ -242,9 +247,9 @@ public class LabelExpressionTest {
     @Test
     public void composite() {
         LabelAtom x = j.jenkins.getLabelAtom("x");
-        assertEquals("!!x",x.not().not().getName());
-        assertEquals("(x||x)&&x",x.or(x).and(x).getName());
-        assertEquals("x&&x||x",x.and(x).or(x).getName());
+        assertEquals("!!x", x.not().not().getName());
+        assertEquals("(x||x)&&x", x.or(x).and(x).getName());
+        assertEquals("x&&x||x", x.and(x).or(x).getName());
     }
 
     @Test
@@ -338,31 +343,28 @@ public class LabelExpressionTest {
         assertThat(label, instanceOf(LabelExpression.And.class));
     }
 
-    private void parseShouldFail(String expr) {
-        try {
-            Label.parseExpression(expr);
-            fail(expr + " should fail to parse");
-        } catch (ANTLRException e) {
-            // expected
-        }
+    private void parseShouldFail(String expr, String message) {
+        ANTLRException e = assertThrows(
+                expr + " should fail to parse",
+                ANTLRException.class,
+                () -> Label.parseExpression(expr));
+        assertThat(e, instanceOf(IllegalArgumentException.class));
+        assertEquals(message, e.getMessage());
     }
 
     @Test
     public void formValidation() throws Exception {
-        j.executeOnServer(new Callable<Object>() {
-            @Override
-            public Object call() throws Exception {
-                Label l = j.jenkins.getLabel("foo");
-                DumbSlave s = j.createSlave(l);
-                String msg = LabelExpression.validate("goo").renderHtml();
-                assertTrue(msg.contains("foo"));
-                assertTrue(msg.contains("goo"));
+        j.executeOnServer(() -> {
+            Label l = j.jenkins.getLabel("foo");
+            DumbSlave s = j.createSlave(l);
+            String msg = LabelExpression.validate("goo").renderHtml();
+            assertTrue(msg.contains("foo"));
+            assertTrue(msg.contains("goo"));
 
-                msg = LabelExpression.validate("built-in && goo").renderHtml();
-                assertTrue(msg.contains("foo"));
-                assertTrue(msg.contains("goo"));
-                return null;
-            }
+            msg = LabelExpression.validate("built-in && goo").renderHtml();
+            assertTrue(msg.contains("foo"));
+            assertTrue(msg.contains("goo"));
+            return null;
         });
     }
 
@@ -371,7 +373,7 @@ public class LabelExpressionTest {
         Set<LabelAtom> result = Label.parse("one two three");
         String[] expected = {"one", "two", "three"};
 
-        for(String e : expected) {
+        for (String e : expected) {
             assertTrue(result.contains(new LabelAtom(e)));
         }
 

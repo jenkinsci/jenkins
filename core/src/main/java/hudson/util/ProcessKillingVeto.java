@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.util;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
@@ -37,11 +38,11 @@ import jenkins.util.JenkinsJVM;
  * the killing of a process, it will not be killed. This can be useful to keep
  * daemon processes alive. An example is mspdbsrv.exe used by Microsoft
  * compilers.
- * 
+ *
  * See JENKINS-9104
- * 
+ *
  * @since 1.619
- * 
+ *
  * @author <a href="mailto:daniel.weber.dev@gmail.com">Daniel Weber</a>
  */
 public abstract class ProcessKillingVeto implements ExtensionPoint {
@@ -90,7 +91,7 @@ public abstract class ProcessKillingVeto implements ExtensionPoint {
 
     /**
      * Ask the extension whether it vetoes killing of the given process
-     * 
+     *
      * @param p The process that is about to be killed
      * @return a {@link VetoCause} if the process should <em>not</em> be killed,
      *         null else.

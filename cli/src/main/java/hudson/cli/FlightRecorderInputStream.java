@@ -52,13 +52,13 @@ class FlightRecorderInputStream extends InputStream {
         final ByteArrayOutputStream readAhead = new ByteArrayOutputStream();
         final IOException[] error = new IOException[1];
 
-        Thread diagnosisThread = new Thread(diagnosisName+" stream corruption diagnosis thread") {
+        Thread diagnosisThread = new Thread(diagnosisName + " stream corruption diagnosis thread") {
             @Override
             public void run() {
                 int b;
                 try {
                     // not all InputStream will look for the thread interrupt flag, so check that explicitly to be defensive
-                    while (!Thread.interrupted() && (b=source.read())!=-1) {
+                    while (!Thread.interrupted() && (b = source.read()) != -1) {
                         readAhead.write(b);
                     }
                 } catch (IOException e) {
@@ -81,14 +81,14 @@ class FlightRecorderInputStream extends InputStream {
         if (diagnosisThread.isAlive())
             diagnosisThread.interrupt();    // if it's not dead, kill
 
-        return new DiagnosedStreamCorruptionException(problem,diagnosisProblem,getRecord(),readAhead.toByteArray());
+        return new DiagnosedStreamCorruptionException(problem, diagnosisProblem, getRecord(), readAhead.toByteArray());
 
     }
 
     @Override
     public int read() throws IOException {
         int i = source.read();
-        if (i>=0)
+        if (i >= 0)
             recorder.write(i);
         return i;
     }
@@ -96,8 +96,8 @@ class FlightRecorderInputStream extends InputStream {
     @Override
     public int read(@NonNull byte[] b, int off, int len) throws IOException {
         len = source.read(b, off, len);
-        if (len>0)
-            recorder.write(b,off,len);
+        if (len > 0)
+            recorder.write(b, off, len);
         return len;
     }
 
@@ -106,8 +106,8 @@ class FlightRecorderInputStream extends InputStream {
      */
     @Override
     public long skip(long n) throws IOException {
-        byte[] buf = new byte[(int)Math.min(n,64*1024)];
-        return read(buf,0,buf.length);
+        byte[] buf = new byte[(int) Math.min(n, 64 * 1024)];
+        return read(buf, 0, buf.length);
     }
 
     @Override
@@ -157,7 +157,7 @@ class FlightRecorderInputStream extends InputStream {
             System.arraycopy(data, 0, ret, capacity - pos, pos);
             return ret;
         }
-        
+
         /** @author @roadrunner2 */
         @Override public synchronized void write(@NonNull byte[] buf, int off, int len) {
             // no point in trying to copy more than capacity; this also simplifies logic below

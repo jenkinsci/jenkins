@@ -31,7 +31,7 @@ public abstract class AbstractQueueSorterImpl extends QueueSorter implements Com
      */
     @Override
     public int compare(BuildableItem lhs, BuildableItem rhs) {
-        return Long.compare(lhs.buildableStartMilliseconds,rhs.buildableStartMilliseconds);
+        return Long.compare(lhs.buildableStartMilliseconds, rhs.buildableStartMilliseconds);
     }
 
     /**

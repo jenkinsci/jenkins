@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2013 Software in the Public Interest
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,14 +21,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package lib.form;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
-import com.gargoylesoftware.htmlunit.html.HtmlElement;
-import com.gargoylesoftware.htmlunit.html.HtmlElementUtil;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.RelativePath;
 import hudson.model.AbstractDescribableImpl;
@@ -40,6 +39,9 @@ import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Publisher;
 import hudson.util.ComboBoxModel;
 import jenkins.model.OptionalJobProperty;
+import org.htmlunit.html.HtmlElement;
+import org.htmlunit.html.HtmlElementUtil;
+import org.htmlunit.html.HtmlPage;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -61,13 +63,13 @@ public class ComboBoxTest {
     public static class CompoundFieldComboBoxBuilder extends Publisher {
         private CompoundField compoundField;
         private String foo;
-        
+
         @DataBoundConstructor
         public CompoundFieldComboBoxBuilder(CompoundField compoundField, String foo) {
             this.compoundField = compoundField;
             this.foo = foo;
         }
-        
+
         @Extension
         public static final class DescriptorImpl extends BuildStepDescriptor<Publisher> {
             @Override
@@ -76,7 +78,7 @@ public class ComboBoxTest {
             }
 
             public ComboBoxModel doFillFooItems(
-                    @QueryParameter @RelativePath("compoundField") String abc, 
+                    @QueryParameter @RelativePath("compoundField") String abc,
                     @QueryParameter @RelativePath("compoundField") String xyz) {
                 if (abc == null || xyz == null) {
                     throw new Error("doFillFooItems is broken");
@@ -116,7 +118,7 @@ public class ComboBoxTest {
         public String getXyz() {
             return xyz;
         }
-        
+
         @Extension
         public static final class DescriptorImpl extends Descriptor<CompoundField> {}
     }
@@ -134,10 +136,10 @@ public class ComboBoxTest {
         FreeStyleProject p = j.createFreeStyleProject();
         p.getPublishersList().add(new CompoundFieldComboBoxBuilder(new CompoundField("AABBCC", "XXYYZZ"), null));
         try {
-            j.createWebClient().getPage(p,"configure");
-            
-        } catch(AssertionError e) {
-            if(e.getMessage().contains("doFillFooItems is broken")) {
+            j.createWebClient().getPage(p, "configure");
+
+        } catch (AssertionError e) {
+            if (e.getMessage().contains("doFillFooItems is broken")) {
                 fail("Nested field values required for prefill were null");
             } else {
                 throw e;
@@ -148,10 +150,11 @@ public class ComboBoxTest {
         }
     }
 
-    public static class XssProperty extends OptionalJobProperty<Job<?,?>> {
+    public static class XssProperty extends OptionalJobProperty<Job<?, ?>> {
         @TestExtension("testEnsureXssNotPossible")
         public static class DescriptorImpl extends OptionalJobProperty.OptionalJobPropertyDescriptor {
 
+            @NonNull
             @Override
             public String getDisplayName() {
                 return "XSS Property";

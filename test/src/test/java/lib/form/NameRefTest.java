@@ -21,12 +21,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package lib.form;
 
 import static org.junit.Assert.assertEquals;
 
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import net.sf.json.JSONObject;
+import org.htmlunit.html.HtmlPage;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -51,8 +52,9 @@ public class NameRefTest {
 
         public HttpResponse doSubmitTest1(StaplerRequest req) throws Exception {
             JSONObject f = req.getSubmittedForm();
+            f.remove("Submit");
             System.out.println(f);
-            assertEquals("{\"foo\":{\"bar\":{\"zot\":\"zot\"}}}",f.toString());
+            assertEquals("{\"foo\":{\"bar\":{\"zot\":\"zot\"}}}", f.toString());
             return HttpResponses.ok();
         }
 

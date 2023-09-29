@@ -2,8 +2,8 @@ package jenkins.security;
 
 import static org.junit.Assert.assertEquals;
 
-import com.gargoylesoftware.htmlunit.Page;
 import java.net.URL;
+import org.htmlunit.Page;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -17,7 +17,7 @@ import org.jvnet.hudson.test.JenkinsRule.WebClient;
 public class Security177Test {
     @Rule
     public JenkinsRule jenkins = new JenkinsRule();
-    
+
     @Test
     public void nosniff() throws Exception {
         WebClient wc = jenkins.createWebClient()

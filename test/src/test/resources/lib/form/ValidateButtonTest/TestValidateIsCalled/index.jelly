@@ -45,7 +45,7 @@ THE SOFTWARE.
         <f:textarea name="d" value="dvalue" />
       </f:entry>
       <f:entry title="e" field="e">
-        <select class="setting-input" name="_.e">
+        <select class="jenkins-input" name="_.e">
           <f:option value="e1">e1</f:option>
           <f:option value="e2" selected="true">e2</f:option>
         </select>

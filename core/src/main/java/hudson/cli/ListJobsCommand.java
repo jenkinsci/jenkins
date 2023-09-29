@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.cli;
 
 import hudson.Extension;
@@ -34,7 +35,7 @@ import org.kohsuke.args4j.Argument;
 
 /**
  * Lists all jobs (in a specific view).
- * 
+ *
  * @author Michael Koch
  */
 @Extension
@@ -44,7 +45,7 @@ public class ListJobsCommand extends CLICommand {
         return Messages.ListJobsCommand_ShortDescription();
     }
 
-    @Argument(metaVar="NAME",usage="Name of the view",required=false)
+    @Argument(metaVar = "NAME", usage = "Name of the view", required = false)
     public String name;
 
     @Override

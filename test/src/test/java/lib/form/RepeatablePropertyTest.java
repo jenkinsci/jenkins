@@ -24,14 +24,11 @@
 
 package lib.form;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
-import com.gargoylesoftware.htmlunit.html.HtmlElement;
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.html.HtmlTextInput;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.model.AbstractDescribableImpl;
@@ -46,6 +43,10 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import jenkins.model.Jenkins;
+import org.htmlunit.html.HtmlElement;
+import org.htmlunit.html.HtmlForm;
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.html.HtmlTextInput;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -60,9 +61,9 @@ public class RepeatablePropertyTest {
 
     private static final String VIEW_WITHOUT_DEFAULT = "noDefault";
     private static final String VIEW_WITH_DEFAULT = "withDefault";
-    
+
     private RootActionImpl rootAction;
-    
+
     @Before
     public void setUp() {
         rootAction = ExtensionList.lookupSingleton(RootActionImpl.class);
@@ -73,18 +74,18 @@ public class RepeatablePropertyTest {
         rootAction.testRepeatable = createRepeatable();
         assertFormContents(VIEW_WITHOUT_DEFAULT, rootAction.testRepeatable);
     }
-    
+
     @Test
     public void testNullFieldNoDefault() throws Exception {
         assertFormContents(VIEW_WITHOUT_DEFAULT, new ArrayList<>());
     }
-    
+
     @Test
     public void testNullFieldWithDefault() throws Exception {
         rootAction.defaults = createRepeatable();
         assertFormContents(VIEW_WITH_DEFAULT, rootAction.defaults);
     }
-    
+
     @Test
     public void testFieldNotNullWithDefaultIgnoresDefaults() throws Exception {
         rootAction.testRepeatable = createRepeatable();
@@ -117,25 +118,25 @@ public class RepeatablePropertyTest {
         assertEquals(1, containerNameInputs.size());
         assertEquals(0, greatPropertyInputs.size());
     }
-        
+
     private void assertFormContents(final String viewName, final ArrayList<ExcitingObject> expected) throws Exception {
         final HtmlForm form = getForm(viewName);
         final List<HtmlTextInput> inputs = toTextInputList(form.getElementsByAttribute("input", "type", "text"));
         assertEquals("size", expected.size(), inputs.size());
         for (int i = 0; i < expected.size(); i++)
-            assertEquals(expected.get(i).greatProperty, inputs.get(i).getValueAttribute());
+            assertEquals(expected.get(i).greatProperty, inputs.get(i).getValue());
     }
-    
+
     private List<HtmlTextInput> toTextInputList(final List<HtmlElement> inputs) {
         assertNotNull(inputs);
         final List<HtmlTextInput> textInputList = new ArrayList<>();
         for (HtmlElement input : inputs) {
-            assertTrue(input instanceof HtmlTextInput);
+            assertThat(input, instanceOf(HtmlTextInput.class));
             textInputList.add((HtmlTextInput) input);
         }
         return textInputList;
     }
-    
+
     private ArrayList<ExcitingObject> createRepeatable() {
         return new ArrayList<>(Arrays.asList(
            new ExcitingObject("A nice thing"),
@@ -152,17 +153,21 @@ public class RepeatablePropertyTest {
 
     public static final class ExcitingObject implements Describable<ExcitingObject> {
         private final String greatProperty;
+
         @DataBoundConstructor
         public ExcitingObject(final String greatProperty) {
             this.greatProperty = greatProperty;
         }
+
         public String getGreatProperty() {
             return greatProperty;
         }
+
         @Override
         public Descriptor<ExcitingObject> getDescriptor() {
             return Jenkins.get().getDescriptor(ExcitingObject.class);
         }
+
         @Override
         public boolean equals(Object o) {
             if (this == o) return true;
@@ -172,10 +177,12 @@ public class RepeatablePropertyTest {
                 return false;
             return true;
         }
+
         @Override
         public int hashCode() {
             return greatProperty != null ? greatProperty.hashCode() : 0;
         }
+
         @Override
         public String toString() {
             return "ExcitingObject[" + greatProperty + ']';
@@ -198,12 +205,15 @@ public class RepeatablePropertyTest {
             this.containerName = containerName;
             this.excitingObjectList = excitingObjectList;
         }
+
         public String getContainerName() {
             return containerName;
         }
+
         public List<ExcitingObject> getExcitingObjectList() {
             return excitingObjectList;
         }
+
         @Extension
         public static final class DescriptorImpl extends Descriptor<ExcitingObjectContainer> {
         }

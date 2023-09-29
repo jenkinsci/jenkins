@@ -73,6 +73,7 @@ class PlainCLIProtocol {
         STDERR(false);
         /** True if sent from the client to the server; false if sent from the server to the client. */
         final boolean clientSide;
+
         Op(boolean clientSide) {
             this.clientSide = clientSide;
         }
@@ -233,10 +234,12 @@ class PlainCLIProtocol {
                 public void write(int b) throws IOException {
                     send(op, new byte[] {(byte) b});
                 }
+
                 @Override
                 public void write(@NonNull byte[] b, int off, int len) throws IOException {
                     send(op, b, off, len);
                 }
+
                 @Override
                 public void write(@NonNull byte[] b) throws IOException {
                     send(op, b);
@@ -274,7 +277,7 @@ class PlainCLIProtocol {
                 onStart();
                 return true;
             case STDIN:
-                onStdin(IOUtils.toByteArray(dis));
+                onStdin(dis.readAllBytes());
                 return true;
             case END_STDIN:
                 onEndStdin();
@@ -324,10 +327,10 @@ class PlainCLIProtocol {
                 onExit(dis.readInt());
                 return true;
             case STDOUT:
-                onStdout(IOUtils.toByteArray(dis));
+                onStdout(dis.readAllBytes());
                 return true;
             case STDERR:
-                onStderr(IOUtils.toByteArray(dis));
+                onStderr(dis.readAllBytes());
                 return true;
             default:
                 return false;

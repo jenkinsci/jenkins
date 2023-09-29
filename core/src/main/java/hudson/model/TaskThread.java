@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Red Hat, Inc.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import hudson.Functions;
@@ -40,7 +41,7 @@ import org.kohsuke.stapler.framework.io.LargeText;
  * <p>
  * Designed to be used inside {@link TaskAction}.
  *
- * 
+ *
  *
  * @author Kohsuke Kawaguchi
  * @since 1.191
@@ -75,7 +76,7 @@ public abstract class TaskThread extends Thread {
      */
     protected TaskThread(TaskAction owner, ListenerAndText output) {
         //FIXME this failed to compile super(owner.getBuild().toString()+' '+owner.getDisplayName());
-        //Please implement more general way how to get information about action owner, 
+        //Please implement more general way how to get information about action owner,
         //if you want it in the thread's name.
         super(owner.getDisplayName());
         this.owner = owner;
@@ -127,14 +128,14 @@ public abstract class TaskThread extends Thread {
         try {
             perform(listener);
             listener.getLogger().println("Completed");
-            owner.workerThread = null;            
+            owner.workerThread = null;
         } catch (InterruptedException e) {
             listener.getLogger().println("Aborted");
         } catch (Exception e) {
             Functions.printStackTrace(e, listener.getLogger());
         } finally {
             listener = null;
-            isRunning =false;
+            isRunning = false;
         }
         log.markAsComplete();
     }
@@ -175,7 +176,7 @@ public abstract class TaskThread extends Thread {
          */
         @Deprecated
         public static ListenerAndText forFile(File f) throws IOException {
-            return forFile(f,null);
+            return forFile(f, null);
         }
 
         /**
@@ -192,7 +193,7 @@ public abstract class TaskThread extends Thread {
         }
 
         /**
-         * Creates one that's backed by a file. 
+         * Creates one that's backed by a file.
          */
         public static ListenerAndText forFile(File f, TaskAction context) throws IOException {
             return new ListenerAndText(

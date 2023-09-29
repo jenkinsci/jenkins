@@ -21,15 +21,16 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.security;
 
 import static org.junit.Assert.assertThrows;
 
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
-import com.gargoylesoftware.htmlunit.util.Cookie;
 import java.util.Arrays;
 import java.util.List;
 import jenkins.model.Jenkins;
+import org.htmlunit.FailingHttpStatusCodeException;
+import org.htmlunit.util.Cookie;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;

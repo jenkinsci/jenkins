@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.util;
 
 import static java.util.logging.Level.WARNING;
@@ -49,14 +50,14 @@ public class Service {
     public static <T> List<T> loadInstances(ClassLoader classLoader, Class<T> type) throws IOException {
         List<T> result = new ArrayList<>();
 
-        final Enumeration<URL> e = classLoader.getResources("META-INF/services/"+type.getName());
+        final Enumeration<URL> e = classLoader.getResources("META-INF/services/" + type.getName());
         while (e.hasMoreElements()) {
             URL url = e.nextElement();
             try (BufferedReader configFile = new BufferedReader(new InputStreamReader(url.openStream(), StandardCharsets.UTF_8))) {
                 String line;
                 while ((line = configFile.readLine()) != null) {
                     line = line.trim();
-                    if (line.startsWith("#") || line.length() == 0) continue;
+                    if (line.startsWith("#") || line.isEmpty()) continue;
 
                     try {
                         Class<?> t = classLoader.loadClass(line);
@@ -80,7 +81,7 @@ public class Service {
     public static <T> void load(Class<T> spi, ClassLoader cl, Collection<Class<? extends T>> result) {
         try {
             Enumeration<URL> e = cl.getResources("META-INF/services/" + spi.getName());
-            while(e.hasMoreElements()) {
+            while (e.hasMoreElements()) {
                 final URL url = e.nextElement();
                 try (BufferedReader r = new BufferedReader(new InputStreamReader(url.openStream(), StandardCharsets.UTF_8))) {
                     String line;
@@ -88,7 +89,7 @@ public class Service {
                         if (line.startsWith("#"))
                             continue;   // comment line
                         line = line.trim();
-                        if (line.length() == 0)
+                        if (line.isEmpty())
                             continue;   // empty line. ignore.
 
                         try {
@@ -102,7 +103,7 @@ public class Service {
                 }
             }
         } catch (IOException x) {
-            LOGGER.log(Level.WARNING, "Failed to look up service providers for "+spi, x);
+            LOGGER.log(Level.WARNING, "Failed to look up service providers for " + spi, x);
         }
     }
 

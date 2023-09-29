@@ -47,7 +47,7 @@ public abstract class ConfidentialKey {
     }
 
     protected void store(byte[] payload) throws IOException {
-        ConfidentialStore.get().store(this,payload);
+        ConfidentialStore.get().store(this, payload);
     }
 
     public String getId() {

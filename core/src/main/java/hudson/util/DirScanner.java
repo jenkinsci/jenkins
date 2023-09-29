@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.io.Serializable;
+import java.nio.file.OpenOption;
 import java.util.HashSet;
 import java.util.Set;
 import org.apache.tools.ant.BuildException;
@@ -61,16 +62,16 @@ public abstract class DirScanner implements Serializable {
         private void scan(File f, String path, FileVisitor visitor) throws IOException {
             if (f.canRead()) {
                 scanSingle(f, path + f.getName(), visitor);
-                if(f.isDirectory()) {
-                    for( File child : f.listFiles() )
-                        scan(child,path+f.getName()+'/',visitor);
+                if (f.isDirectory()) {
+                    for (File child : f.listFiles())
+                        scan(child, path + f.getName() + '/', visitor);
                 }
             }
         }
 
         @Override
         public void scan(File dir, FileVisitor visitor) throws IOException {
-            scan(dir,"",visitor);
+            scan(dir, "", visitor);
         }
 
         private static final long serialVersionUID = 1L;
@@ -89,7 +90,7 @@ public abstract class DirScanner implements Serializable {
 
         @Override
         public void scan(File dir, FileVisitor visitor) throws IOException {
-            super.scan(dir,visitor.with(filter));
+            super.scan(dir, visitor.with(filter));
         }
 
         private static final long serialVersionUID = 1L;
@@ -106,42 +107,42 @@ public abstract class DirScanner implements Serializable {
         private final String includes, excludes;
 
         private boolean useDefaultExcludes = true;
-        private final boolean followSymlinks;
+        private OpenOption[] openOptions;
 
         public Glob(String includes, String excludes) {
-            this(includes, excludes, true, true);
+            this(includes, excludes, true, new OpenOption[0]);
         }
 
         public Glob(String includes, String excludes, boolean useDefaultExcludes) {
-            this(includes, excludes, useDefaultExcludes, true);
+            this(includes, excludes, useDefaultExcludes, new OpenOption[0]);
         }
 
         /**
          * @since 2.275 and 2.263.2
          */
         @Restricted(NoExternalUse.class)
-        public Glob(String includes, String excludes, boolean useDefaultExcludes, boolean followSymlinks) {
+        public Glob(String includes, String excludes, boolean useDefaultExcludes, OpenOption... openOptions) {
             this.includes = includes;
             this.excludes = excludes;
             this.useDefaultExcludes = useDefaultExcludes;
-            this.followSymlinks = followSymlinks;
+            this.openOptions = openOptions;
         }
 
         @Override
         public void scan(File dir, FileVisitor visitor) throws IOException {
-            if(fixEmpty(includes)==null && excludes==null) {
+            if (fixEmpty(includes) == null && excludes == null) {
                 // optimization
-                new Full().scan(dir,visitor);
+                new Full().scan(dir, visitor);
                 return;
             }
 
-            FileSet fs = Util.createFileSet(dir,includes,excludes);
-            fs.setFollowSymlinks(followSymlinks);
+            FileSet fs = Util.createFileSet(dir, includes, excludes);
+            fs.setFollowSymlinks(!FilePath.isNoFollowLink(openOptions));
             fs.setDefaultexcludes(useDefaultExcludes);
 
-            if(dir.exists()) {
+            if (dir.exists()) {
                 DirectoryScanner ds = fs.getDirectoryScanner(new Project());
-                for( String f : ds.getIncludedFiles()) {
+                for (String f : ds.getIncludedFiles()) {
                     File file = new File(dir, f);
                     scanSingle(file, f, visitor);
                 }
@@ -150,18 +151,18 @@ public abstract class DirScanner implements Serializable {
 
         private static final long serialVersionUID = 1L;
     }
-    
-    private static class DescendantFileSelector implements FileSelector{
+
+    private static class DescendantFileSelector implements FileSelector {
         private final Set<String> alreadyDeselected;
         private final FilePath baseDirFP;
         private final int baseDirPathLength;
 
-        private DescendantFileSelector(File basedir){
+        private DescendantFileSelector(File basedir) {
             this.baseDirFP = new FilePath(basedir);
             this.baseDirPathLength = basedir.getPath().length();
             this.alreadyDeselected = new HashSet<>();
         }
-        
+
         @Override
         public boolean isSelected(File basedir, String filename, File file) throws BuildException {
             String parentName = file.getParent();

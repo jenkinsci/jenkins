@@ -21,8 +21,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.model.lazy;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.arrayWithSize;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -72,7 +76,7 @@ public class AbstractLazyLoadRunMapTest {
     public FakeMapBuilder localExpiredBuilder = new FakeMapBuilder() {
         @Override
         public FakeMap make() {
-            assert getDir()!=null;
+            assert getDir() != null;
             return new FakeMap(getDir()) {
                 @Override
                 protected BuildReference<Build> createReference(Build r) {
@@ -81,10 +85,10 @@ public class AbstractLazyLoadRunMapTest {
             };
         }
     };
- 
-    private final Map<Integer,Semaphore> slowBuilderStartSemaphores = new HashMap<>();
-    private final Map<Integer,Semaphore> slowBuilderEndSemaphores = new HashMap<>();
-    private final Map<Integer,AtomicInteger> slowBuilderLoadCount = new HashMap<>();
+
+    private final Map<Integer, Semaphore> slowBuilderStartSemaphores = new HashMap<>();
+    private final Map<Integer, Semaphore> slowBuilderEndSemaphores = new HashMap<>();
+    private final Map<Integer, AtomicInteger> slowBuilderLoadCount = new HashMap<>();
     @Rule
     public FakeMapBuilder slowBuilder = new FakeMapBuilder() {
         @Override
@@ -105,7 +109,7 @@ public class AbstractLazyLoadRunMapTest {
             };
         }
     };
-    
+
     @BeforeClass
     public static void setUpClass() {
         AbstractLazyLoadRunMap.LOGGER.setLevel(Level.OFF);
@@ -140,17 +144,20 @@ public class AbstractLazyLoadRunMapTest {
 
     @Test
     public void idempotentLookup() {
-        for (int i=0; i<5; i++) {
+        for (int i = 0; i < 5; i++) {
             a.get(1).asserts(1);
-            a.get((Object)1).asserts(1);
+            a.get((Object) 1).asserts(1);
         }
     }
 
     @Test
     public void lookupWithBogusKeyType() {
         assertNull(a.get(null));
-        assertNull(a.get("foo"));
-        assertNull(a.get(this));
+        // don't inline, otherwise some IDEs will immediately complain about the wrong key type
+        Object badKey = "foo";
+        assertNull(a.get(badKey));
+        badKey = this;
+        assertNull(a.get(badKey));
     }
 
     @Test
@@ -226,21 +233,21 @@ public class AbstractLazyLoadRunMapTest {
         FakeMap m = localBuilder.add(1).addUnloadable(3).add(5).make();
 
         assertNull(m.search(3, Direction.EXACT));
-        m.search(3,Direction.DESC).asserts(1);
-        m.search(3, Direction.ASC ).asserts(5);
+        m.search(3, Direction.DESC).asserts(1);
+        m.search(3, Direction.ASC).asserts(5);
     }
 
     @Test
     public void eagerLoading() {
         Map.Entry[] b = a.entrySet().toArray(new Map.Entry[3]);
-        ((Build)b[0].getValue()).asserts(5);
-        ((Build)b[1].getValue()).asserts(3);
-        ((Build)b[2].getValue()).asserts(1);
+        ((Build) b[0].getValue()).asserts(5);
+        ((Build) b[1].getValue()).asserts(3);
+        ((Build) b[2].getValue()).asserts(1);
     }
 
     @Test
     public void fastSubMap() {
-        SortedMap<Integer,Build> m = a.subMap(99, 2);
+        SortedMap<Integer, Build> m = a.subMap(99, 2);
         assertEquals(2, m.size());
 
         Build[] b = m.values().toArray(new Build[2]);
@@ -278,7 +285,7 @@ public class AbstractLazyLoadRunMapTest {
     @Issue("JENKINS-18065")
     @Test public void all() {
         assertEquals("[]", a.getLoadedBuilds().keySet().toString());
-        Set<Map.Entry<Integer,Build>> entries = a.entrySet();
+        Set<Map.Entry<Integer, Build>> entries = a.entrySet();
         assertEquals("[]", a.getLoadedBuilds().keySet().toString());
         assertFalse(entries.isEmpty());
         assertEquals("5 since it is the latest", "[5]", a.getLoadedBuilds().keySet().toString());
@@ -288,11 +295,11 @@ public class AbstractLazyLoadRunMapTest {
         assertEquals("[5, 1]", a.getLoadedBuilds().keySet().toString());
         a.purgeCache();
         assertEquals("[]", a.getLoadedBuilds().keySet().toString());
-        Iterator<Map.Entry<Integer,Build>> iterator = entries.iterator();
+        Iterator<Map.Entry<Integer, Build>> iterator = entries.iterator();
         assertEquals("[5]", a.getLoadedBuilds().keySet().toString());
         assertTrue(iterator.hasNext());
         assertEquals("[5]", a.getLoadedBuilds().keySet().toString());
-        Map.Entry<Integer,Build> entry = iterator.next();
+        Map.Entry<Integer, Build> entry = iterator.next();
         assertEquals("[5, 3]", a.getLoadedBuilds().keySet().toString());
         assertEquals(5, entry.getKey().intValue());
         assertEquals("[5, 3]", a.getLoadedBuilds().keySet().toString());
@@ -325,7 +332,7 @@ public class AbstractLazyLoadRunMapTest {
         // check if the first entry is legit
         assertTrue(itr.hasNext());
         Map.Entry<Integer, Build> e = itr.next();
-        assertEquals((Integer)5,e.getKey());
+        assertEquals((Integer) 5, e.getKey());
         e.getValue().asserts(5);
 
         // now that the first entry is returned, we expect there to be two loaded
@@ -334,7 +341,7 @@ public class AbstractLazyLoadRunMapTest {
         // check if the second entry is legit
         assertTrue(itr.hasNext());
         e = itr.next();
-        assertEquals((Integer)3, e.getKey());
+        assertEquals((Integer) 3, e.getKey());
         e.getValue().asserts(3);
 
         // repeat the process for the third one
@@ -378,6 +385,19 @@ public class AbstractLazyLoadRunMapTest {
         for (Map.Entry<Integer, Build> e : a.entrySet()) {
             assertTrue(a.entrySet().contains(e));
         }
+    }
+
+    @Test
+    public void toArray() {
+        var es = a.entrySet();
+        assertThat(es.size(), is(3));
+        assertThat(es.toArray(), arrayWithSize(3));
+        assertThat(es.toArray(Object[]::new), arrayWithSize(3));
+        var c = a.getLoadedBuilds().values();
+        assertThat(c.size(), is(3));
+        assertThat(c.toArray(), arrayWithSize(3));
+        assertThat(c.toArray(Object[]::new), arrayWithSize(3));
+        // TODO check behavior of subMap
     }
 
     @Issue("JENKINS-22767")

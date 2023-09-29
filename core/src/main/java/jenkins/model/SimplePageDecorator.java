@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.model;
 
 import hudson.ExtensionPoint;
@@ -33,6 +34,25 @@ import java.util.List;
  *
  * <p>
  * This class provides a few hooks to augment the HTML of the login page.
+ *
+ * <dl>
+ *  <dt>simple-branding.jelly</dt>
+ *  <dd>
+ *    This view contributes to the branding section, usually located on the left side of the login/register pages.
+ *  </dd>
+ *  <dt>simple-footer.jelly</dt>
+ *  <dd>
+ *    This view contributes to the footer section, located below the login/register form.
+ *  </dd>
+ *  <dt>simple-head.jelly</dt>
+ *  <dd>
+ *    This view contributes to the head section.
+ *  </dd>
+ *  <dt>simple-header.jelly</dt>
+ *  <dd>
+ *    This view contributes to the header section just above the login/register form.
+ *  </dd>
+ * </dl>
  *
  * @since 2.128
  */
@@ -53,8 +73,9 @@ public class SimplePageDecorator extends Descriptor<SimplePageDecorator> impleme
      * Every {@link SimplePageDecorator} is bound to URL via {@link Jenkins#getDescriptor()}.
      * This method returns such an URL.
      */
+
     public final String getUrl() {
-        return "descriptor/"+clazz.getName();
+        return "descriptor/" + clazz.getName();
     }
 
     /**
@@ -69,7 +90,7 @@ public class SimplePageDecorator extends Descriptor<SimplePageDecorator> impleme
      * The first found LoginDecorator, there can only be one.
      * @return the first found {@link SimplePageDecorator}
      */
-    public static SimplePageDecorator first(){
+    public static SimplePageDecorator first() {
         List<SimplePageDecorator> decorators = all();
         return decorators.isEmpty() ? null : decorators.get(0);
     }

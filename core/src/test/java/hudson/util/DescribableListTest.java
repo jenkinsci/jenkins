@@ -24,11 +24,16 @@
 
 package hudson.util;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.arrayContaining;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 
 import com.thoughtworks.xstream.converters.basic.AbstractSingleValueConverter;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
+import hudson.model.Saveable;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 
@@ -48,9 +53,21 @@ public class DescribableListTest {
         assertEquals("[1, 3]", data.toString());
     }
 
+    @Test
+    public void replace() throws Exception {
+        AtomicInteger count = new AtomicInteger();
+        DescribableList<Datum, Descriptor<Datum>> list = new DescribableList<>((Saveable) count::incrementAndGet);
+        list.add(new Datum(1));
+        list.add(new Datum(2));
+        assertThat(count.get(), is(2));
+        list.replace(new Datum(3));
+        assertThat(list.stream().map(d -> d.val).toArray(Integer[]::new), arrayContaining(3));
+        assertThat(count.get(), is(3));
+    }
+
     private static final class Data {
 
-        final DescribableList<Datum,Descriptor<Datum>> list = new DescribableList<>();
+        final DescribableList<Datum, Descriptor<Datum>> list = new DescribableList<>();
 
         @Override
         public String toString() {
@@ -69,7 +86,7 @@ public class DescribableListTest {
 
         @Override
         public Descriptor<Datum> getDescriptor() {
-            return new Descriptor<Datum>(Datum.class) {};
+            return new Descriptor<>(Datum.class) {};
         }
 
         @Override

@@ -52,30 +52,27 @@ public class ShellTest {
         Assume.assumeFalse("If we're on Windows, don't bother doing this", Functions.isWindows());
 
         // TODO: define a FakeLauncher implementation with easymock so that this kind of assertions can be simplified.
-        PretendSlave s = rule.createPretendSlave(new FakeLauncher() {
-            @Override
-            public Proc onLaunch(ProcStarter p) {
-                // test the command line argument.
-                List<String> cmds = p.cmds();
-                rule.assertStringContains("/bin/sh",cmds.get(0));
-                rule.assertStringContains("-xe",cmds.get(1));
-                assertTrue(new File(cmds.get(2)).exists());
+        PretendSlave s = rule.createPretendSlave(p -> {
+            // test the command line argument.
+            List<String> cmds = p.cmds();
+            rule.assertStringContains("/bin/sh", cmds.get(0));
+            rule.assertStringContains("-xe", cmds.get(1));
+            assertTrue(new File(cmds.get(2)).exists());
 
-                // fake the execution
-                PrintStream ps = new PrintStream(p.stdout());
-                ps.println("Hudson was here");
-                ps.close();
+            // fake the execution
+            PrintStream ps = new PrintStream(p.stdout());
+            ps.println("Hudson was here");
+            ps.close();
 
-                return new FinishedProc(0);
-            }
+            return new FakeLauncher.FinishedProc(0);
         });
         FreeStyleProject p = rule.createFreeStyleProject();
         p.getBuildersList().add(new Shell("echo abc"));
         p.setAssignedNode(s);
 
-        FreeStyleBuild b = rule.assertBuildStatusSuccess(p.scheduleBuild2(0).get());
+        FreeStyleBuild b = rule.buildAndAssertSuccess(p);
 
-        assertEquals(1,s.numLaunch);
+        assertEquals(1, s.numLaunch);
         assertTrue(IOUtils.toString(b.getLogInputStream(), StandardCharsets.UTF_8).contains("Hudson was here"));
     }
 
@@ -106,14 +103,14 @@ public class ShellTest {
         FreeStyleProject p = rule.createFreeStyleProject();
         p.getBuildersList().add(createNewShell("", exitCode));
         p.setAssignedNode(slave);
-        rule.assertBuildStatus(Result.UNSTABLE, p.scheduleBuild2(0).get());
+        rule.buildAndAssertStatus(Result.UNSTABLE, p);
     }
 
     @Test
     @Issue("JENKINS-23786")
     public void unixExitCodes1To255ShouldMakeBuildUnstable() throws Exception {
         assumeFalse(Functions.isWindows());
-        for( int exitCode: new int [] {1, 2, 255}) {
+        for (int exitCode : new int [] {1, 2, 255}) {
             nonZeroExitCodeShouldMakeBuildUnstable(exitCode);
         }
     }
@@ -126,12 +123,12 @@ public class ShellTest {
         p = rule.createFreeStyleProject();
         p.getBuildersList().add(createNewShell("", null));
         p.setAssignedNode(slave);
-        rule.assertBuildStatus(Result.FAILURE, p.scheduleBuild2(0).get());
+        rule.buildAndAssertStatus(Result.FAILURE, p);
 
         p = rule.createFreeStyleProject();
         p.getBuildersList().add(createNewShell("", 0));
         p.setAssignedNode(slave);
-        rule.assertBuildStatus(Result.FAILURE, p.scheduleBuild2(0).get());
+        rule.buildAndAssertStatus(Result.FAILURE, p);
     }
 
     @Test
@@ -139,7 +136,7 @@ public class ShellTest {
     public void unixExitCodes1To255ShouldBreakTheBuildByDefault() throws Exception {
         assumeFalse(Functions.isWindows());
 
-        for( int exitCode: new int [] {1, 2, 255}) {
+        for (int exitCode : new int [] {1, 2, 255}) {
             nonZeroExitCodeShouldBreakTheBuildByDefault(exitCode);
         }
     }
@@ -152,14 +149,14 @@ public class ShellTest {
         FreeStyleProject p = rule.createFreeStyleProject();
         p.getBuildersList().add(createNewShell("", notMatchingExitCode));
         p.setAssignedNode(slave);
-        rule.assertBuildStatus(Result.FAILURE, p.scheduleBuild2(0).get());
+        rule.buildAndAssertStatus(Result.FAILURE, p);
     }
 
     @Test
     @Issue("JENKINS-23786")
     public void unixExitCodes1To255ShouldBreakTheBuildIfNotMatching() throws Exception {
         assumeFalse(Functions.isWindows());
-        for( int exitCode: new int [] {1, 2, 255}) {
+        for (int exitCode : new int [] {1, 2, 255}) {
             nonZeroExitCodeShouldBreakTheBuildIfNotMatching(exitCode);
         }
     }
@@ -170,11 +167,11 @@ public class ShellTest {
         assumeFalse(Functions.isWindows());
 
         PretendSlave slave = rule.createPretendSlave(new ReturnCodeFakeLauncher(0));
-        for( Integer unstableReturn: new Integer [] {null, 0, 1}) {
+        for (Integer unstableReturn : new Integer [] {null, 0, 1}) {
             FreeStyleProject p = rule.createFreeStyleProject();
             p.getBuildersList().add(createNewShell("", unstableReturn));
             p.setAssignedNode(slave);
-            rule.assertBuildStatus(Result.SUCCESS, p.scheduleBuild2(0).get());
+            rule.buildAndAssertSuccess(p);
         }
     }
 
@@ -184,7 +181,7 @@ public class ShellTest {
         assumeFalse(Functions.isWindows());
 
         /* Creating unstable=0 produces unstable=null */
-        assertNull( createNewShell("",0).getUnstableReturn() );
+        assertNull(createNewShell("", 0).getUnstableReturn());
     }
 
     @Issue("JENKINS-40894")

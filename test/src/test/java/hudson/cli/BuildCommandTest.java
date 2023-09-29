@@ -26,6 +26,7 @@ package hudson.cli;
 
 import static hudson.cli.CLICommandInvoker.Matcher.failedWith;
 import static hudson.cli.CLICommandInvoker.Matcher.succeeded;
+import static org.awaitility.Awaitility.await;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsString;
@@ -60,7 +61,9 @@ import hudson.tasks.Shell;
 import hudson.util.OneShotEvent;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import net.sf.json.JSONObject;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -107,6 +110,7 @@ public class BuildCommandTest {
         started.block();
         assertTrue(p.getBuildByNumber(1).isBuilding());
         completed.signal();
+        j.waitForCompletion(p.getBuildByNumber(1));
     }
 
     /**
@@ -174,6 +178,7 @@ public class BuildCommandTest {
         assertThat(r.stderr(), containsString(BuildCommand.BUILD_SCHEDULING_REFUSED));
     }
     // <=>
+
     @TestExtension("consoleOutputWhenBuildSchedulingRefused")
     public static class UnschedulingVetoer extends QueueDecisionHandler {
         @Override
@@ -225,7 +230,7 @@ public class BuildCommandTest {
         FreeStyleProject project = j.createFreeStyleProject("foo");
         project.setAssignedNode(slave);
 
-        // Create test parameter with Null default value 
+        // Create test parameter with Null default value
         NullDefaultValueParameterDefinition nullDefaultDefinition = new NullDefaultValueParameterDefinition();
         ParametersDefinitionProperty pdp = new ParametersDefinitionProperty(
                 new StringParameterDefinition("string", "defaultValue", "description"),
@@ -237,9 +242,9 @@ public class BuildCommandTest {
         // Warmup
         j.buildAndAssertSuccess(project);
 
-        for (Executor exec : slave.toComputer().getExecutors()) {
-            assertTrue("Executor has died before the test start: " + exec, exec.isActive());
-        }
+        await().pollInterval(250, TimeUnit.MILLISECONDS)
+                .atMost(10, TimeUnit.SECONDS)
+                .until(() -> slave.toComputer().getExecutors().stream().map(Executor::isActive).allMatch(Boolean::valueOf));
 
         // Create CLI & run command
         CLICommandInvoker invoker = new CLICommandInvoker(j, new BuildCommand());
@@ -252,9 +257,9 @@ public class BuildCommandTest {
         assertNull("Build should not be scheduled", project.getBuildByNumber(2));
 
         // Check executors health after a timeout
-        for (Executor exec : slave.toComputer().getExecutors()) {
-            assertTrue("Executor is dead: " + exec, exec.isActive());
-        }
+        await().pollInterval(250, TimeUnit.MILLISECONDS)
+                .atMost(10, TimeUnit.SECONDS)
+                .until(() -> slave.toComputer().getExecutors().stream().map(Executor::isActive).allMatch(Boolean::valueOf));
     }
 
     public static final class NullDefaultValueParameterDefinition extends SimpleParameterDefinition {
@@ -296,7 +301,7 @@ public class BuildCommandTest {
             }
         });
         assertThat(new CLICommandInvoker(j, "build").
-                withStdin(new ByteArrayInputStream("uploaded content here".getBytes())).
+                withStdin(new ByteArrayInputStream("uploaded content here".getBytes(Charset.defaultCharset()))).
                 invokeWithArgs("-f", "-p", "file=", "myjob"),
             CLICommandInvoker.Matcher.succeeded());
         FreeStyleBuild b = p.getBuildByNumber(1);

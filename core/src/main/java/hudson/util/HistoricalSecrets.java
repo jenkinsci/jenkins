@@ -22,6 +22,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.util;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -52,7 +53,7 @@ public class HistoricalSecrets {
             throw new IOException("Could not decode secret", ex);
         }
         Secret s = tryDecrypt(key.decrypt(), in);
-        if (s!=null)    return s;
+        if (s != null)    return s;
 
         // try our historical key for backward compatibility
         Cipher cipher = Secret.getCipher("AES");
@@ -63,8 +64,8 @@ public class HistoricalSecrets {
     /*package*/ static Secret tryDecrypt(Cipher cipher, byte[] in) {
         try {
             String plainText = new String(cipher.doFinal(in), UTF_8);
-            if(plainText.endsWith(MAGIC))
-                return new Secret(plainText.substring(0,plainText.length()-MAGIC.length()));
+            if (plainText.endsWith(MAGIC))
+                return new Secret(plainText.substring(0, plainText.length() - MAGIC.length()));
             return null;
         } catch (GeneralSecurityException e) {
             return null; // if the key doesn't match with the bytes, it can result in BadPaddingException

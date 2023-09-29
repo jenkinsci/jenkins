@@ -48,7 +48,7 @@ public abstract class ArtifactManager {
      * The selected manager will be persisted inside a build, so the build reference should be {@code transient} (quasi-{@code final}) and restored here.
      * @param build a historical build with which this manager was associated
      */
-    public abstract void onLoad(@NonNull Run<?,?> build);
+    public abstract void onLoad(@NonNull Run<?, ?> build);
 
     /**
      * Archive all configured artifacts from a build.
@@ -65,7 +65,7 @@ public abstract class ArtifactManager {
      * @throws InterruptedException if transfer was interrupted
      * @see ArtifactArchiver#perform(Run, FilePath, Launcher, TaskListener)
      */
-    public abstract void archive(FilePath workspace, Launcher launcher, BuildListener listener, Map<String,String> artifacts) throws IOException, InterruptedException;
+    public abstract void archive(FilePath workspace, Launcher launcher, BuildListener listener, Map<String, String> artifacts) throws IOException, InterruptedException;
 
     /**
      * Delete all artifacts associated with an earlier build (if any).

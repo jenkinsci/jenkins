@@ -24,6 +24,7 @@
 
 package hudson.tools;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.FilePath;
 import hudson.util.LineEndingConversion;
@@ -59,6 +60,7 @@ public class CommandInstaller extends AbstractCommandInstaller {
     @Extension @Symbol("command")
     public static class DescriptorImpl extends Descriptor<CommandInstaller> {
 
+        @NonNull
         @Override
         public String getDisplayName() {
             return Messages.CommandInstaller_DescriptorImpl_displayName();

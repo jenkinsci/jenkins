@@ -1,0 +1,13 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:f="/lib/form">
+  <l:layout title="help">
+    <l:main-panel>
+      <div id="link-panel">
+        <f:helpLink featureName="${it.featureName}" url="foo" />
+      </div>
+      <div id="icon-panel">
+        <l:helpIcon tooltip="${it.featureName}" />
+      </div>
+    </l:main-panel>
+  </l:layout>
+</j:jelly>

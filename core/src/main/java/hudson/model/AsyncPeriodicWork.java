@@ -45,7 +45,7 @@ public abstract class AsyncPeriodicWork extends PeriodicWork {
      *
      * @since 1.651
      */
-    private static final long LOG_ROTATE_SIZE = SystemProperties.getLong(AsyncPeriodicWork.class.getName() + ".logRotateSize", -1L);
+    private static final long LOG_ROTATE_SIZE = SystemProperties.getLong(AsyncPeriodicWork.class.getName() + ".logRotateSize", 10485760L);
     /**
      * The number of milliseconds (since startup or previous rotation) after which to try and rotate the log file.
      *
@@ -87,16 +87,16 @@ public abstract class AsyncPeriodicWork extends PeriodicWork {
     @SuppressWarnings("deprecation") // in this case we really want to use PeriodicWork.logger since it reports the impl class
     public final void doRun() {
         try {
-            if(thread!=null && thread.isAlive()) {
+            if (thread != null && thread.isAlive()) {
                 logger.log(this.getSlowLoggingLevel(), "{0} thread is still running. Execution aborted.", name);
                 return;
             }
             thread = new Thread(() -> {
-                logger.log(getNormalLoggingLevel(), "Started {0}", name);
+                logger.log(Level.FINE, "Started {0}", name);
                 long startTime = System.currentTimeMillis();
                 long stopTime;
 
-                LazyTaskListener l = new LazyTaskListener(() -> createListener(), String.format("Started at %tc", new Date(startTime)));
+                LazyTaskListener l = new LazyTaskListener(this::createListener, String.format("Started at %tc", new Date(startTime)));
                 try {
                     try (ACLContext ctx = ACL.as2(ACL.SYSTEM2)) {
                         execute(l);
@@ -110,9 +110,9 @@ public abstract class AsyncPeriodicWork extends PeriodicWork {
                     l.close(String.format("Finished at %tc. %dms", new Date(stopTime), stopTime - startTime));
                 }
 
-                logger.log(getNormalLoggingLevel(), "Finished {0}. {1,number} ms",
+                logger.log(Level.FINE, "Finished {0}. {1,number} ms",
                         new Object[]{name, stopTime - startTime});
-            },name+" thread");
+            }, name + " thread");
             thread.start();
         } catch (Throwable t) {
             LogRecord lr = new LogRecord(this.getErrorLoggingLevel(), "{0} thread failed with error");
@@ -214,11 +214,11 @@ public abstract class AsyncPeriodicWork extends PeriodicWork {
     protected File getLogFile() {
         return new File(getLogsRoot(), "/tasks/" + name + ".log");
     }
-    
+
     /**
      * Returns the logging level at which normal messages are displayed.
-     * 
-     * @return 
+     *
+     * @return
      *      The logging level as @Level.
      *
      * @since 1.551
@@ -226,7 +226,7 @@ public abstract class AsyncPeriodicWork extends PeriodicWork {
     protected Level getNormalLoggingLevel() {
         return Level.INFO;
     }
-    
+
     /**
      * Returns the logging level at which previous task still executing messages is displayed.
      *
@@ -241,8 +241,8 @@ public abstract class AsyncPeriodicWork extends PeriodicWork {
 
     /**
      * Returns the logging level at which error messages are displayed.
-     * 
-     * @return 
+     *
+     * @return
      *      The logging level as @Level.
      *
      * @since 1.551
@@ -250,7 +250,7 @@ public abstract class AsyncPeriodicWork extends PeriodicWork {
     protected Level getErrorLoggingLevel() {
         return Level.SEVERE;
     }
-    
+
     /**
      * Executes the task.
      *

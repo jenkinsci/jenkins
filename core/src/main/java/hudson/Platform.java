@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson;
 
 import hudson.util.VersionNumber;
@@ -36,10 +37,10 @@ import java.util.Locale;
  * @author Kohsuke Kawaguchi
  */
 public enum Platform {
-    WINDOWS(';'),UNIX(':');
+    WINDOWS(';'), UNIX(':');
 
     /**
-     * The character that separates paths in environment variables like PATH and CLASSPATH. 
+     * The character that separates paths in environment variables like PATH and CLASSPATH.
      * On Windows ';' and on Unix ':'.
      *
      * @see File#pathSeparator
@@ -51,7 +52,7 @@ public enum Platform {
     }
 
     public static Platform current() {
-        if(File.pathSeparatorChar==':') return UNIX;
+        if (File.pathSeparatorChar == ':') return UNIX;
         return WINDOWS;
     }
 
@@ -65,7 +66,7 @@ public enum Platform {
      */
     public static boolean isSnowLeopardOrLater() {
         try {
-            return isDarwin() && new VersionNumber(System.getProperty("os.version")).compareTo(new VersionNumber("10.6"))>=0;
+            return isDarwin() && new VersionNumber(System.getProperty("os.version")).compareTo(new VersionNumber("10.6")) >= 0;
         } catch (IllegalArgumentException e) {
             // failed to parse the version
             return false;

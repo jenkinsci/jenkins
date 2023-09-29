@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.model.lazy;
 
 import java.util.AbstractList;
@@ -46,7 +47,7 @@ class SortedIntList extends AbstractList<Integer> {
      * Internal copy constructor.
      */
     SortedIntList(SortedIntList that) {
-        this.data = new int[that.size+8];
+        this.data = new int[that.size + 8];
         System.arraycopy(that.data, 0, this.data, 0,
                          that.size);
         this.size = that.size;
@@ -65,16 +66,16 @@ class SortedIntList extends AbstractList<Integer> {
 
     @Override
     public boolean contains(Object o) {
-        return o instanceof Integer && contains(((Integer)o).intValue());
+        return o instanceof Integer && contains(((Integer) o).intValue());
     }
 
     public boolean contains(int i) {
-        return find(i)>=0;
+        return find(i) >= 0;
     }
 
     @Override
     public Integer get(int index) {
-        if (size<=index)    throw new IndexOutOfBoundsException();
+        if (size <= index)    throw new IndexOutOfBoundsException();
         return data[index];
     }
 
@@ -93,15 +94,15 @@ class SortedIntList extends AbstractList<Integer> {
     }
 
     public boolean add(int i) {
-        ensureCapacity(size+1);
+        ensureCapacity(size + 1);
         data[size++] = i;
         return true;
     }
 
     private void ensureCapacity(int i) {
-        if (data.length<i) {
-            int[] r = new int[Math.max(data.length*2,i)];
-            System.arraycopy(data,0,r,0,size);
+        if (data.length < i) {
+            int[] r = new int[Math.max(data.length * 2, i)];
+            System.arraycopy(data, 0, r, 0, size);
             data = r;
         }
     }
@@ -135,21 +136,21 @@ class SortedIntList extends AbstractList<Integer> {
     }
 
     public boolean isInRange(int idx) {
-        return 0<=idx && idx<size;
+        return 0 <= idx && idx < size;
     }
 
     public void sort() {
-        Arrays.sort(data,0,size);
+        Arrays.sort(data, 0, size);
     }
 
     public void copyInto(int[] dest) {
-        System.arraycopy(data,0,dest,0,size);
+        System.arraycopy(data, 0, dest, 0, size);
     }
 
     public void removeValue(int n) {
         int idx = find(n);
-        if (idx<0)  return;
-        System.arraycopy(data,idx+1,data,idx,size-(idx+1));
+        if (idx < 0)  return;
+        System.arraycopy(data, idx + 1, data, idx, size - (idx + 1));
         size--;
     }
 }

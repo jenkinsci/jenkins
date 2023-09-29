@@ -23,15 +23,15 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:local="local">
-  <st:documentation>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:f="/lib/form" xmlns:local="local">
+  <st:documentation> <![CDATA[
     Outer most tag for creating a heterogeneous list, where the user can choose arbitrary number of
     arbitrary items from the given list of descriptors, and configure them independently.
 
-    The submission can be data-bound into List&lt;T&gt; where T is the common base type for the describable instances.
+    The submission can be data-bound into List<T> where T is the common base type for the describable instances.
 
-    For databinding use, please use &lt;f:repeatableHeteroProperty /&gt;
-
+    For databinding use, please use <f:repeatableHeteroProperty />
+    ]]>
     <st:attribute name="name" use="required">
       form name that receives an array for all the items in the heterogeneous list.
     </st:attribute>
@@ -50,9 +50,10 @@ THE SOFTWARE.
     <st:attribute name="targetType">
       the type for which descriptors will be configured. Defaults to ${it.class} (optional)
     </st:attribute>
-    <st:attribute name="hasHeader">
+    <st:attribute name="hasHeader"> <![CDATA[
       For each item, add a caption from descriptor.getDisplayName().
-      This also activates drag&amp;drop (where the header is a grip), and help text support.
+      This also activates drag&drop (where the header is a grip), and help text support.
+        ]]>
     </st:attribute>
     <st:attribute name="oneEach">
       If true, only allow up to one instance per descriptor.
@@ -70,8 +71,8 @@ THE SOFTWARE.
       to nominate additional variables and their values to be captured for descriptors.
     </st:attribute>
     <st:attribute name="titleClassMethod">
-      If set to an item of the form <tt>className#classMethod</tt>, it will be used
-      to call <tt>className.classMethod(descriptor)</tt> to calculate each item title.
+      If set to an item of the form <code>className#classMethod</code>, it will be used
+      to call <code>className.classMethod(descriptor)</code> to calculate each item title.
     </st:attribute>
     <st:attribute name="disableDragAndDrop" type="java.lang.Boolean">
       If true the drag and drop will not be activated. This just removes the drag and
@@ -80,38 +81,31 @@ THE SOFTWARE.
   </st:documentation>
   <d:taglib uri="local">
     <d:tag name="body">
-      <div style="width:100%">
+      <div class="help-sibling" style="width:100%">
         <j:set var="help" value="${descriptor.helpFile}" />
-        <j:if test="${hasHeader}">
-          <div class="tr help-sibling">
-            <div colspan="3">
-              <div class="${attrs.disableDragAndDrop or readOnlyMode ? '' : 'dd-handle'}">
-                <b>${descriptor.displayName}</b>
-              </div>
-              <f:helpLink url="${help}"/>
-            </div>
-          </div>
-          <!-- TODO: help support is unintuitive; people should be able to see help from drop-down menu -->
-          <j:if test="${help!=null}">
-            <f:helpArea />
-          </j:if>
-        </j:if>
 
-        <d:invokeBody/>
+        <div class="repeated-chunk__header">
+          <div class="${attrs.disableDragAndDrop or readOnlyMode ? '' : 'dd-handle'}"/>
+
+          ${descriptor.displayName}
+
+          <f:helpLink url="${help}"/>
+
+          <j:if test="${!readOnlyMode}">
+            <f:repeatableDeleteButton value="${attrs.deleteCaption}" />
+          </j:if>
+        </div>
+
+        <j:if test="${help!=null}">
+          <f:helpArea />
+        </j:if>
 
         <f:class-entry descriptor="${descriptor}" />
-        <j:if test="${!readOnlyMode}">
-          <f:block>
-            <div align="right">
-              <f:repeatableDeleteButton value="${attrs.deleteCaption}" />
-            </div>
-          </f:block>
-        </j:if>
+
+        <d:invokeBody/>
       </div>
     </d:tag>
   </d:taglib>
-
-  <st:adjunct includes="lib.form.hetero-list.hetero-list"/>
 
   <j:set var="targetType" value="${attrs.targetType?:it.class}"/>
   <div class="jenkins-form-item hetero-list-container ${hasHeader?'with-drag-drop':''} ${attrs.oneEach?'one-each':''} ${attrs.honorOrder?'honor-order':''}">
@@ -160,7 +154,8 @@ THE SOFTWARE.
 
     <j:if test="${!readOnlyMode}">
       <div>
-        <input type="button" value="${attrs.addCaption?:'%Add'}" class="hetero-list-add" menualign="${attrs.menuAlign}" suffix="${attrs.name}"/>
+        <button type="button" class="jenkins-button hetero-list-add" menualign="${attrs.menuAlign}" suffix="${attrs.name}">${attrs.addCaption?:'%Add'}<l:icon src="symbol-chevron-down"/>
+        </button>
       </div>
     </j:if>
   </div>

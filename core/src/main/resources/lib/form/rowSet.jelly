@@ -37,19 +37,20 @@ THE SOFTWARE.
     </st:attribute>
   </st:documentation>
 
-  <div class="rowSet-container">
-    <j:choose>
-      <j:when test="${attrs.ref==null and attrs.name==null}">
-        <!-- noop -->
-        <d:invokeBody />
-      </j:when>
-      <j:otherwise>
+  <j:set var="contents" trim="true">
+    <d:invokeBody />
+  </j:set>
+
+  <j:choose>
+    <j:when test="${attrs.ref==null and attrs.name==null}">
+      <j:out value="${contents}" />
+    </j:when>
+    <j:otherwise>
+      <j:if test="${contents.length() != 0}">
         <div ref="${attrs.ref}" class="row-set-start row-group-start tr" style="display:none" name="${attrs.name}"></div>
-        <div class="form-container tr">
-          <d:invokeBody />
-        </div>
-        <div class="row-set-end row-group-end tr"></div>
-      </j:otherwise>
-    </j:choose>
-  </div>
+        <j:out value="${contents}" />
+        <div class="row-set-end row-group-end tr jenkins-!-display-contents"></div>
+      </j:if>
+    </j:otherwise>
+  </j:choose>
 </j:jelly>

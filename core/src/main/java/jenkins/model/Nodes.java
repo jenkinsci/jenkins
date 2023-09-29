@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.model;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
@@ -32,7 +33,6 @@ import hudson.model.Computer;
 import hudson.model.Node;
 import hudson.model.Queue;
 import hudson.model.Saveable;
-import hudson.model.labels.LabelAtom;
 import hudson.model.listeners.SaveableListener;
 import hudson.slaves.EphemeralNode;
 import hudson.slaves.OfflineCause;
@@ -198,7 +198,7 @@ public class Nodes implements Saveable {
     public boolean updateNode(final @NonNull Node node) throws IOException {
         boolean exists;
         try {
-            exists = Queue.withLock(new Callable<Boolean>() {
+            exists = Queue.withLock(new Callable<>() {
                 @Override
                 public Boolean call() throws Exception {
                     if (node == nodes.get(node.getNodeName())) {

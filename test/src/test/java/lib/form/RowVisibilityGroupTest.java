@@ -4,12 +4,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import com.gargoylesoftware.htmlunit.html.DomNodeUtil;
-import com.gargoylesoftware.htmlunit.html.HtmlElement;
-import com.gargoylesoftware.htmlunit.html.HtmlInput;
-import com.gargoylesoftware.htmlunit.html.HtmlOption;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.html.HtmlSelect;
 import hudson.ExtensionList;
 import hudson.model.AbstractDescribableImpl;
 import hudson.model.Describable;
@@ -20,6 +14,12 @@ import java.util.List;
 import java.util.Objects;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
+import org.htmlunit.html.DomNodeUtil;
+import org.htmlunit.html.HtmlElement;
+import org.htmlunit.html.HtmlInput;
+import org.htmlunit.html.HtmlOption;
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.html.HtmlSelect;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -54,9 +54,9 @@ public class RowVisibilityGroupTest {
     public void test1() throws Exception {
         HtmlPage p = j.createWebClient().goTo("self/test1");
 
-        HtmlElement outer = (HtmlElement)DomNodeUtil.selectSingleNode(p, "//INPUT[@name='outer']");
-        HtmlElement inner = (HtmlElement)DomNodeUtil.selectSingleNode(p, "//INPUT[@name='inner']");
-        HtmlInput field = (HtmlInput)DomNodeUtil.selectSingleNode(p, "//INPUT[@type='text'][@name='_.field']");
+        HtmlElement outer = DomNodeUtil.selectSingleNode(p, "//INPUT[@name='outer']");
+        HtmlElement inner = DomNodeUtil.selectSingleNode(p, "//INPUT[@name='inner']");
+        HtmlInput field = DomNodeUtil.selectSingleNode(p, "//INPUT[@type='text'][@name='_.field']");
 
         // outer gets unfolded, but inner should be still folded
         outer.click();
@@ -80,32 +80,32 @@ public class RowVisibilityGroupTest {
     public void test2() throws Exception {
         HtmlPage p = j.createWebClient().goTo("self/test2");
 
-        HtmlSelect s = (HtmlSelect)DomNodeUtil.selectSingleNode(p, "//SELECT");
+        HtmlSelect s = DomNodeUtil.selectSingleNode(p, "//SELECT");
         List<HtmlOption> opts = s.getOptions();
 
         // those first selections will load additional HTMLs
-        s.setSelectedAttribute(opts.get(0),true);
-        s.setSelectedAttribute(opts.get(1),true);
+        s.setSelectedAttribute(opts.get(0), true);
+        s.setSelectedAttribute(opts.get(1), true);
 
         // now select back what's already loaded, to cause the existing elements to be displayed
-        s.setSelectedAttribute(opts.get(0),true);
+        s.setSelectedAttribute(opts.get(0), true);
 
         // make sure that the inner control is still hidden
         List<HtmlInput> textboxes = DomNodeUtil.selectNodes(p, "//INPUT[@name='_.textbox2']");
-        assertEquals(2,textboxes.size());
+        assertEquals(2, textboxes.size());
         for (HtmlInput e : textboxes)
             assertFalse(e.isDisplayed());
 
         // reveal the text box
         List<HtmlInput> checkboxes = DomNodeUtil.selectNodes(p, "//INPUT[@name='inner']");
-        assertEquals(2,checkboxes.size());
+        assertEquals(2, checkboxes.size());
         checkboxes.get(0).click();
         assertTrue(textboxes.get(0).isDisplayed());
         textboxes.get(0).type("Budweiser");
 
         // toggle the selection again
-        s.setSelectedAttribute(opts.get(1),true);
-        s.setSelectedAttribute(opts.get(0),true);
+        s.setSelectedAttribute(opts.get(1), true);
+        s.setSelectedAttribute(opts.get(0), true);
 
         // make sure it's still displayed this time
         assertTrue(checkboxes.get(0).isChecked());

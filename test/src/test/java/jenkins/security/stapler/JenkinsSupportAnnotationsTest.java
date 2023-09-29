@@ -1,5 +1,8 @@
 package jenkins.security.stapler;
 
+import static org.junit.Assume.assumeFalse;
+
+import hudson.Functions;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.For;
@@ -17,6 +20,7 @@ public class JenkinsSupportAnnotationsTest {
     @Test
     @WithPlugin("annotations-test.hpi")
     public void testPluginWithAnnotations() throws Exception {
+        assumeFalse("TODO: Implement this test on Windows", Functions.isWindows());
         // test fails if TypedFilter ignores @StaplerDispatchable
         j.createWebClient().goTo("annotationsTest/whatever", "");
 

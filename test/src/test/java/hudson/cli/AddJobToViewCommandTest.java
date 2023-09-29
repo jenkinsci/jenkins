@@ -64,7 +64,7 @@ public class AddJobToViewCommandTest extends ViewManipulationTestBase {
         assertThat(j.jenkins.getView("aView").contains(project), equalTo(true));
     }
 
-    @Test public void addJobShouldSucceedEvenAlreadyAdded () throws Exception {
+    @Test public void addJobShouldSucceedEvenAlreadyAdded() throws Exception {
 
         FreeStyleProject project = j.createFreeStyleProject("aProject");
 
@@ -100,7 +100,7 @@ public class AddJobToViewCommandTest extends ViewManipulationTestBase {
         assertThat(result, succeededSilently());
         assertThat(j.jenkins.getView("aView").getAllItems().size(), equalTo(2));
         assertThat(j.jenkins.getView("aView").contains(project1), equalTo(true));
-        assertThat(j.jenkins.getView("aView").contains(project2 ), equalTo(true));
+        assertThat(j.jenkins.getView("aView").contains(project2), equalTo(true));
     }
 
     @Test public void addJobManyShouldSucceedEvenAJobIsSpecifiedTwice() throws Exception {

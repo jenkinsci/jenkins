@@ -21,29 +21,29 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
-import static org.hamcrest.CoreMatchers.allOf;
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.hasItem;
-import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.util.NameValuePair;
 import hudson.FilePath;
 import hudson.Functions;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
-import org.apache.commons.io.FileUtils;
+import org.htmlunit.Page;
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.util.NameValuePair;
 import org.junit.Assume;
 import org.junit.Rule;
 import org.junit.Test;
@@ -55,39 +55,39 @@ import org.jvnet.hudson.test.recipes.LocalData;
 public class FileParameterValueTest {
     @Rule
     public JenkinsRule j = new JenkinsRule();
-    
+
     @Rule
     public TemporaryFolder tmp = new TemporaryFolder();
-    
+
     @Test
     @Issue("SECURITY-1074")
     public void fileParameter_cannotCreateFile_outsideOfBuildFolder() throws Exception {
         // you can test the behavior before the correction by setting FileParameterValue.ALLOW_FOLDER_TRAVERSAL_OUTSIDE_WORKSPACE to true
-        
+
         FilePath root = j.jenkins.getRootPath();
-        
+
         FreeStyleProject p = j.createFreeStyleProject();
-        p.addProperty(new ParametersDefinitionProperty(Collections.singletonList(
+        p.addProperty(new ParametersDefinitionProperty(List.of(
                 new FileParameterDefinition("../../../../../root-level.txt", null)
         )));
-        
+
         assertThat(root.child("root-level.txt").exists(), equalTo(false));
-        
+
         String uploadedContent = "test-content";
         File uploadedFile = tmp.newFile();
-        FileUtils.write(uploadedFile, uploadedContent, StandardCharsets.UTF_8);
-        
+        Files.writeString(uploadedFile.toPath(), uploadedContent, StandardCharsets.UTF_8);
+
         FreeStyleBuild build = p.scheduleBuild2(0, new Cause.UserIdCause(), new ParametersAction(
                 new FileParameterValue("../../../../../root-level.txt", uploadedFile, "uploaded-file.txt")
         )).get();
-    
+
         assertThat(build.getResult(), equalTo(Result.FAILURE));
         assertThat(root.child("root-level.txt").exists(), equalTo(false));
-    
+
         // ensure also the file is not reachable by request
         JenkinsRule.WebClient wc = j.createWebClient();
         wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
-    
+
         checkUrlNot200AndNotContains(wc, build.getUrl() + "parameters/parameter/..%2F..%2F..%2F..%2F..%2Froot-level.txt/uploaded-file.txt", uploadedContent);
         // encoding dots
         checkUrlNot200AndNotContains(wc, build.getUrl() + "parameters/parameter/%2E%2E%2F%2E%2E%2F%2E%2E%2F%2E%2E%2F%2E%2E%2Froot-level.txt/uploaded-file.txt", uploadedContent);
@@ -107,7 +107,7 @@ public class FileParameterValueTest {
         FilePath root = j.jenkins.getRootPath();
 
         FreeStyleProject p = j.createFreeStyleProject();
-        p.addProperty(new ParametersDefinitionProperty(Collections.singletonList(
+        p.addProperty(new ParametersDefinitionProperty(List.of(
                 new FileParameterDefinition("dir/../../../pwned", null)
         )));
 
@@ -115,7 +115,7 @@ public class FileParameterValueTest {
 
         String uploadedContent = "test-content";
         File uploadedFile = tmp.newFile();
-        FileUtils.write(uploadedFile, uploadedContent, StandardCharsets.UTF_8);
+        Files.writeString(uploadedFile.toPath(), uploadedContent, StandardCharsets.UTF_8);
 
         FreeStyleBuild build = p.scheduleBuild2(0, new Cause.UserIdCause(), new ParametersAction(
                 new FileParameterValue("dir/../../../pwned", uploadedFile, "uploaded-file.txt")
@@ -134,7 +134,7 @@ public class FileParameterValueTest {
         FilePath root = j.jenkins.getRootPath();
 
         FreeStyleProject p = j.createFreeStyleProject();
-        p.addProperty(new ParametersDefinitionProperty(Collections.singletonList(
+        p.addProperty(new ParametersDefinitionProperty(List.of(
                 new FileParameterDefinition("../pwned", null)
         )));
 
@@ -142,7 +142,7 @@ public class FileParameterValueTest {
 
         String uploadedContent = "test-content";
         File uploadedFile = tmp.newFile();
-        FileUtils.write(uploadedFile, uploadedContent, StandardCharsets.UTF_8);
+        Files.writeString(uploadedFile.toPath(), uploadedContent, StandardCharsets.UTF_8);
 
         FreeStyleBuild build = p.scheduleBuild2(0, new Cause.UserIdCause(), new ParametersAction(
                 new FileParameterValue("../pwned", uploadedFile, "uploaded-file.txt")
@@ -161,132 +161,132 @@ public class FileParameterValueTest {
         assertThat(pageForEncoded.getWebResponse().getStatusCode(), not(equalTo(200)));
         assertThat(pageForEncoded.getWebResponse().getContentAsString(), not(containsString(contentNotPresent)));
     }
-    
+
     @Test
     @Issue("SECURITY-1074")
     public void fileParameter_cannotCreateFile_outsideOfBuildFolder_backslashEdition() throws Exception {
         Assume.assumeTrue("Backslashes are only dangerous on Windows", Functions.isWindows());
-        
+
         // you can test the behavior before the correction by setting FileParameterValue.ALLOW_FOLDER_TRAVERSAL_OUTSIDE_WORKSPACE to true
-    
+
         FilePath root = j.jenkins.getRootPath();
-        
+
         FreeStyleProject p = j.createFreeStyleProject();
-        p.addProperty(new ParametersDefinitionProperty(Collections.singletonList(
+        p.addProperty(new ParametersDefinitionProperty(List.of(
                 new FileParameterDefinition("..\\..\\..\\..\\..\\root-level.txt", null)
         )));
-        
+
         assertThat(root.child("root-level.txt").exists(), equalTo(false));
-        
+
         String uploadedContent = "test-content";
         File uploadedFile = tmp.newFile();
-        FileUtils.write(uploadedFile, uploadedContent, StandardCharsets.UTF_8);
-        
+        Files.writeString(uploadedFile.toPath(), uploadedContent, StandardCharsets.UTF_8);
+
         FreeStyleBuild build = p.scheduleBuild2(0, new Cause.UserIdCause(), new ParametersAction(
                 new FileParameterValue("..\\..\\..\\..\\..\\root-level.txt", uploadedFile, "uploaded-file.txt")
         )).get();
-        
+
         assertThat(build.getResult(), equalTo(Result.FAILURE));
         assertThat(root.child("root-level.txt").exists(), equalTo(false));
-        
+
         // ensure also the file is not reachable by request
         JenkinsRule.WebClient wc = j.createWebClient();
         wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
-        
+
         checkUrlNot200AndNotContains(wc, build.getUrl() + "parameters/parameter/..\\..\\..\\..\\..\\root-level.txt/uploaded-file.txt", uploadedContent);
         checkUrlNot200AndNotContains(wc, build.getUrl() + "parameters/parameter/..%2F..%2F..%2F..%2F..%2Froot-level.txt/uploaded-file.txt", uploadedContent);
     }
-    
+
     @Test
     @Issue("SECURITY-1074")
     public void fileParameter_withSingleDot() throws Exception {
         // this case was not working even before the patch
-        
+
         FreeStyleProject p = j.createFreeStyleProject();
-        p.addProperty(new ParametersDefinitionProperty(Collections.singletonList(
+        p.addProperty(new ParametersDefinitionProperty(List.of(
                 new FileParameterDefinition(".", null)
         )));
-        
+
         String uploadedContent = "test-content";
         File uploadedFile = tmp.newFile();
-        FileUtils.write(uploadedFile, uploadedContent, StandardCharsets.UTF_8);
-        
+        Files.writeString(uploadedFile.toPath(), uploadedContent, StandardCharsets.UTF_8);
+
         FreeStyleBuild build = p.scheduleBuild2(0, new Cause.UserIdCause(), new ParametersAction(
                 new FileParameterValue(".", uploadedFile, "uploaded-file.txt")
         )).get();
-        
+
         assertThat(build.getResult(), equalTo(Result.FAILURE));
-        
+
         // ensure also the file is not reachable by request
         JenkinsRule.WebClient wc = j.createWebClient();
         wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
-        
+
         checkUrlNot200AndNotContains(wc, build.getUrl() + "parameters/parameter/uploaded-file.txt", uploadedContent);
         checkUrlNot200AndNotContains(wc, build.getUrl() + "parameters/parameter/./uploaded-file.txt", uploadedContent);
     }
-    
+
     @Test
     @Issue("SECURITY-1074")
     public void fileParameter_withDoubleDot() throws Exception {
         // this case was not working even before the patch
-        
+
         FreeStyleProject p = j.createFreeStyleProject();
-        p.addProperty(new ParametersDefinitionProperty(Collections.singletonList(
+        p.addProperty(new ParametersDefinitionProperty(List.of(
                 new FileParameterDefinition("..", null)
         )));
-        
+
         String uploadedContent = "test-content";
         File uploadedFile = tmp.newFile();
-        FileUtils.write(uploadedFile, uploadedContent, StandardCharsets.UTF_8);
-        
+        Files.writeString(uploadedFile.toPath(), uploadedContent, StandardCharsets.UTF_8);
+
         FreeStyleBuild build = p.scheduleBuild2(0, new Cause.UserIdCause(), new ParametersAction(
                 new FileParameterValue("..", uploadedFile, "uploaded-file.txt")
         )).get();
-        
+
         assertThat(build.getResult(), equalTo(Result.FAILURE));
-        
+
         // ensure also the file is not reachable by request
         JenkinsRule.WebClient wc = j.createWebClient();
         wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
-        
+
         checkUrlNot200AndNotContains(wc, build.getUrl() + "parameters/uploaded-file.txt", uploadedContent);
         checkUrlNot200AndNotContains(wc, build.getUrl() + "parameters/parameter/../uploaded-file.txt", uploadedContent);
     }
-    
+
     @Test
     @Issue("SECURITY-1074")
     public void fileParameter_cannotEraseFile_outsideOfBuildFolder() throws Exception {
         // you can test the behavior before the correction by setting FileParameterValue.ALLOW_FOLDER_TRAVERSAL_OUTSIDE_WORKSPACE to true
-        
+
         FilePath root = j.jenkins.getRootPath();
-        
+
         FreeStyleProject p = j.createFreeStyleProject();
-        p.addProperty(new ParametersDefinitionProperty(Collections.singletonList(
+        p.addProperty(new ParametersDefinitionProperty(List.of(
                 new FileParameterDefinition("../../../../../root-level.txt", null)
         )));
-        
+
         assertThat(root.child("root-level.txt").exists(), equalTo(false));
         String initialContent = "do-not-erase-me";
         root.child("root-level.txt").write(initialContent, StandardCharsets.UTF_8.name());
-        
+
         String uploadedContent = "test-content";
         File uploadedFile = tmp.newFile();
-        FileUtils.write(uploadedFile, uploadedContent, StandardCharsets.UTF_8);
-        
+        Files.writeString(uploadedFile.toPath(), uploadedContent, StandardCharsets.UTF_8);
+
         FreeStyleBuild build = p.scheduleBuild2(0, new Cause.UserIdCause(), new ParametersAction(
                 new FileParameterValue("../../../../../root-level.txt", uploadedFile, "uploaded-file.txt")
         )).get();
-        
+
         assertThat(build.getResult(), equalTo(Result.FAILURE));
         assertThat(root.child("root-level.txt").readToString(), equalTo(initialContent));
-        
+
         // ensure also the file is not reachable by request
         JenkinsRule.WebClient wc = j.createWebClient();
         wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
-    
+
         checkUrlNot200AndNotContains(wc, build.getUrl() + "parameters/parameter/..%2F..%2F..%2F..%2F..%2Froot-level.txt/uploaded-file.txt", uploadedContent);
     }
-    
+
     @Test
     public void fileParameter_canStillUse_internalHierarchy() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
@@ -294,28 +294,28 @@ public class FileParameterValueTest {
                 new FileParameterDefinition("direct-child1.txt", null),
                 new FileParameterDefinition("parent/child2.txt", null)
         )));
-        
+
         File uploadedFile1 = tmp.newFile();
-        FileUtils.write(uploadedFile1, "test1", StandardCharsets.UTF_8);
+        Files.writeString(uploadedFile1.toPath(), "test1", StandardCharsets.UTF_8);
         File uploadedFile2 = tmp.newFile();
-        FileUtils.write(uploadedFile2, "test2", StandardCharsets.UTF_8);
-        
+        Files.writeString(uploadedFile2.toPath(), "test2", StandardCharsets.UTF_8);
+
         FreeStyleBuild build = j.assertBuildStatusSuccess(p.scheduleBuild2(0, new Cause.UserIdCause(), new ParametersAction(
                 new FileParameterValue("direct-child1.txt", uploadedFile1, "uploaded-file-1.txt"),
                 new FileParameterValue("parent/child2.txt", uploadedFile2, "uploaded-file-2.txt")
         )));
-        
+
         // files are correctly saved in the build "fileParameters" folder
         File directChild = new File(build.getRootDir(), "fileParameters/" + "direct-child1.txt");
         assertTrue(directChild.exists());
-        
+
         File parentChild = new File(build.getRootDir(), "fileParameters/" + "parent/child2.txt");
         assertTrue(parentChild.exists());
-        
+
         // both are correctly copied inside the workspace
         assertTrue(build.getWorkspace().child("direct-child1.txt").exists());
         assertTrue(build.getWorkspace().child("parent").child("child2.txt").exists());
-        
+
         // and reachable using request
         JenkinsRule.WebClient wc = j.createWebClient();
         HtmlPage workspacePage = wc.goTo(p.getUrl() + "ws");
@@ -332,12 +332,12 @@ public class FileParameterValueTest {
     @Test
     public void fileParameter_canStillUse_doubleDotsInFileName() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
-        p.addProperty(new ParametersDefinitionProperty(Collections.singletonList(
+        p.addProperty(new ParametersDefinitionProperty(List.of(
                 new FileParameterDefinition("weird..name.txt", null)
         )));
 
         File uploadedFile = tmp.newFile();
-        FileUtils.write(uploadedFile, "test1", StandardCharsets.UTF_8);
+        Files.writeString(uploadedFile.toPath(), "test1", StandardCharsets.UTF_8);
 
         FreeStyleBuild build = j.assertBuildStatusSuccess(p.scheduleBuild2(0, new Cause.UserIdCause(), new ParametersAction(
                 new FileParameterValue("weird..name.txt", uploadedFile, "uploaded-file.txt")
@@ -360,12 +360,12 @@ public class FileParameterValueTest {
     @Test
     public void fileParameter_canStillUse_TildeInFileName() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
-        p.addProperty(new ParametersDefinitionProperty(Collections.singletonList(
+        p.addProperty(new ParametersDefinitionProperty(List.of(
                 new FileParameterDefinition("~name", null)
         )));
 
         File uploadedFile = tmp.newFile();
-        FileUtils.write(uploadedFile, "test1", StandardCharsets.UTF_8);
+        Files.writeString(uploadedFile.toPath(), "test1", StandardCharsets.UTF_8);
 
         FreeStyleBuild build = j.assertBuildStatusSuccess(p.scheduleBuild2(0, new Cause.UserIdCause(), new ParametersAction(
                 new FileParameterValue("~name", uploadedFile, "uploaded-file.txt")

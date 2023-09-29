@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.cli.handlers;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
@@ -94,7 +95,7 @@ public class ViewOptionHandler extends OptionHandler<View> {
         View view = null;
 
         final StringTokenizer tok = new StringTokenizer(name, "/");
-        while(tok.hasMoreTokens()) {
+        while (tok.hasMoreTokens()) {
 
             String viewName = tok.nextToken();
 

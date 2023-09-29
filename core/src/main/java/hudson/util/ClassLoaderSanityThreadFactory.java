@@ -4,9 +4,9 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 /**
- *  Explicitly sets the {@link Thread#contextClassLoader} for threads it creates to its own classloader.
+ *  Explicitly sets the {@link Thread#setContextClassLoader} for threads it creates to its own classloader.
  *  This avoids issues where threads are lazily created (ex by invoking {@link java.util.concurrent.ScheduledExecutorService#schedule(Runnable, long, TimeUnit)})
- *   in a context where they would receive a customized {@link Thread#contextClassLoader} that was never meant to be used.
+ *   in a context where they would receive a customized {@link Thread#getContextClassLoader} that was never meant to be used.
  *
  *  Commonly this is a problem for Groovy use, where this may result in memory leaks.
  *  @see <a href="https://issues.jenkins.io/browse/JENKINS-49206">JENKINS-49206</a>

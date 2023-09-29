@@ -21,29 +21,44 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-function resetSeed(button){
-    var userSeedPanel = button.up('.user-seed-panel');
-    var confirmMessage = button.getAttribute('data-confirm');
-    var targetUrl = button.getAttribute('data-target-url');
-    var redirectAfterClick = button.getAttribute('data-redirect-url');
-    
-    var warningMessage = userSeedPanel.querySelector('.display-after-reset');
-    if (warningMessage.hasClassName('visible')) {
-        warningMessage.removeClassName('visible');
-    }
-    
-    if (confirm(confirmMessage)) {
-        new Ajax.Request(targetUrl, {
-            method: "post",
-            onSuccess: function(rsp, _) {
-                if (redirectAfterClick) {
-                    window.location.href = redirectAfterClick;
-                } else {
-                    if (!warningMessage.hasClassName('visible')) {
-                        warningMessage.addClassName('visible');
-                    }
-                }
+function resetSeed(button) {
+  var userSeedPanel = button.closest(".user-seed-panel");
+  var confirmMessage = button.getAttribute("data-confirm");
+  var confirmTitle = button.getAttribute("data-confirm-title");
+  var targetUrl = button.getAttribute("data-target-url");
+  var redirectAfterClick = button.getAttribute("data-redirect-url");
+
+  var warningMessage = userSeedPanel.querySelector(".display-after-reset");
+  if (warningMessage.classList.contains("visible")) {
+    warningMessage.classList.remove("visible");
+  }
+
+  dialog
+    .confirm(confirmTitle, { message: confirmMessage, type: "destructive" })
+    .then(() => {
+      fetch(targetUrl, {
+        method: "post",
+        headers: crumb.wrap({}),
+      }).then((rsp) => {
+        if (rsp.ok) {
+          if (redirectAfterClick) {
+            window.location.href = redirectAfterClick;
+          } else {
+            if (!warningMessage.classList.contains("visible")) {
+              warningMessage.classList.add("visible");
             }
-        });
-    }
+          }
+        }
+      });
+    });
 }
+
+(function () {
+  document.addEventListener("DOMContentLoaded", function () {
+    document
+      .getElementById("user-seed-property-reset-seed")
+      .addEventListener("click", function (event) {
+        resetSeed(event.target);
+      });
+  });
+})();

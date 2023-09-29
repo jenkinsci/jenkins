@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,27 +21,24 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
-import static org.hamcrest.CoreMatchers.allOf;
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.hasItem;
-import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.UnexpectedPage;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.util.NameValuePair;
 import com.sun.management.UnixOperatingSystemMXBean;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionList;
@@ -49,9 +46,11 @@ import hudson.FilePath;
 import hudson.Functions;
 import hudson.Launcher;
 import hudson.Util;
+import hudson.slaves.WorkspaceList;
 import hudson.tasks.ArtifactArchiver;
 import hudson.tasks.BatchFile;
 import hudson.tasks.Shell;
+import hudson.util.StreamTaskListener;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -66,6 +65,8 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -81,10 +82,12 @@ import jenkins.model.ArtifactManagerFactory;
 import jenkins.model.ArtifactManagerFactoryDescriptor;
 import jenkins.model.Jenkins;
 import jenkins.util.VirtualFile;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
+import org.htmlunit.Page;
+import org.htmlunit.UnexpectedPage;
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.util.NameValuePair;
 import org.junit.Assume;
 import org.junit.Rule;
 import org.junit.Test;
@@ -112,14 +115,14 @@ public class DirectoryBrowserSupportTest {
     public void doubleDots() throws Exception {
         // create a problematic file name in the workspace
         FreeStyleProject p = j.createFreeStyleProject();
-        if(Functions.isWindows())
+        if (Functions.isWindows())
             p.getBuildersList().add(new BatchFile("echo > abc..def"));
         else
             p.getBuildersList().add(new Shell("touch abc..def"));
-        p.scheduleBuild2(0).get();
+        j.buildAndAssertSuccess(p);
 
         // can we see it?
-        j.createWebClient().goTo("job/"+p.getName()+"/ws/abc..def","application/octet-stream");
+        j.createWebClient().goTo("job/" + p.getName() + "/ws/abc..def", "application/octet-stream");
 
         // TODO: implement negative check to make sure we aren't serving unexpected directories.
         // the following trivial attempt failed. Someone in between is normalizing.
@@ -132,7 +135,7 @@ public class DirectoryBrowserSupportTest {
     }
 
     /**
-     * <strike>Also makes sure '\\' in the file name for Unix is handled correctly</strike>.
+     * <del>Also makes sure '\\' in the file name for Unix is handled correctly</del>.
      *
      * To prevent directory traversal attack, we now treat '\\' just like '/'.
      */
@@ -144,10 +147,10 @@ public class DirectoryBrowserSupportTest {
         // create a problematic file name in the workspace
         FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildersList().add(new Shell("mkdir abc; touch abc/def.bin"));
-        p.scheduleBuild2(0).get();
+        j.buildAndAssertSuccess(p);
 
         // can we see it?
-        j.createWebClient().goTo("job/"+p.getName()+"/ws/abc%5Cdef.bin","application/octet-stream");
+        j.createWebClient().goTo("job/" + p.getName() + "/ws/abc%5Cdef.bin", "application/octet-stream");
     }
 
     @Test
@@ -157,14 +160,14 @@ public class DirectoryBrowserSupportTest {
         p.getBuildersList().add(new TestBuilder() {
             @Override
             public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
-                build.getWorkspace().child("\u6F22\u5B57.bin").touch(0); // Kanji
+                build.getWorkspace().child("漢字.bin").touch(0); // Kanji
                 return true;
             }
         }); // Kanji
-        p.scheduleBuild2(0).get();
+        j.buildAndAssertSuccess(p);
 
         // can we see it?
-        j.createWebClient().goTo("job/"+p.getName()+"/ws/%e6%bc%a2%e5%ad%97.bin","application/octet-stream");
+        j.createWebClient().goTo("job/" + p.getName() + "/ws/%e6%bc%a2%e5%ad%97.bin", "application/octet-stream");
     }
 
     @Test
@@ -183,8 +186,8 @@ public class DirectoryBrowserSupportTest {
                 return true;
             }
         });
-        assertEquals(Result.SUCCESS, p.scheduleBuild2(0).get().getResult());
-        String text = j.createWebClient().goTo("job/"+p.getName()+"/ws/**/*.java").asText();
+        j.buildAndAssertSuccess(p);
+        String text = j.createWebClient().goTo("job/" + p.getName() + "/ws/**/*.java").asNormalizedText();
         assertTrue(text, text.contains("X.java"));
         assertTrue(text, text.contains("XTest.java"));
         assertFalse(text, text.contains("pom.xml"));
@@ -197,9 +200,9 @@ public class DirectoryBrowserSupportTest {
         FreeStyleProject p = j.createFreeStyleProject();
         p.setScm(new SingleFileSCM("artifact.out", "Hello world!"));
         p.getPublishersList().add(new ArtifactArchiver("*", "", true));
-        assertEquals(Result.SUCCESS, p.scheduleBuild2(0).get().getResult());
+        j.buildAndAssertSuccess(p);
 
-        HtmlPage page = j.createWebClient().goTo("job/"+p.getName()+"/lastSuccessfulBuild/artifact/");
+        HtmlPage page = j.createWebClient().goTo("job/" + p.getName() + "/lastSuccessfulBuild/artifact/");
         Page download = page.getAnchorByHref("./*zip*/archive.zip").click();
         File zipfile = download((UnexpectedPage) download);
 
@@ -223,7 +226,7 @@ public class DirectoryBrowserSupportTest {
         FreeStyleProject p = j.createFreeStyleProject();
         p.setScm(new SingleFileSCM("artifact.out", content));
         p.getPublishersList().add(new ArtifactArchiver("*", "", true));
-        assertEquals(Result.SUCCESS, p.scheduleBuild2(0).get().getResult());
+        j.buildAndAssertSuccess(p);
 
         HtmlPage page = j.createWebClient().goTo("job/" + p.getName() + "/lastSuccessfulBuild/artifact/");
         Page downloadPage = page.getAnchorByHref("artifact.out").click();
@@ -246,7 +249,7 @@ public class DirectoryBrowserSupportTest {
             // add randomness just to prevent any potential caching issue
             p.setScm(new SingleFileSCM("artifact.out", "Hello world! " + Math.random()));
             p.getPublishersList().add(new ArtifactArchiver("*", "", true));
-            assertEquals(Result.SUCCESS, p.scheduleBuild2(0).get().getResult());
+            j.buildAndAssertSuccess(p);
 
             HtmlPage page = j.createWebClient().goTo("job/" + p.getName() + "/lastSuccessfulBuild/artifact/");
             for (int clicks = 0; clicks < numOfClicks; clicks++) {
@@ -255,7 +258,7 @@ public class DirectoryBrowserSupportTest {
             long finalOpenFds = getOpenFdCount();
 
             if (finalOpenFds < initialOpenFds + numOfClicks) {
-                // when there was a file leak, the number of open file handle was always 
+                // when there was a file leak, the number of open file handle was always
                 // greater or equal to the number of download
                 // in reverse, since the correction, the likelihood to overpass the limit was less than 1%
                 freeFromLeak = true;
@@ -282,13 +285,13 @@ public class DirectoryBrowserSupportTest {
         }
 
         String summary = String.join("\n", messages);
-        System.out.println("Summary of the test: \n"+ summary);
-        assertTrue("There should be no difference greater than "+numOfClicks+", but the output was: \n"+ summary, freeFromLeak);
+        System.out.println("Summary of the test: \n" + summary);
+        assertTrue("There should be no difference greater than " + numOfClicks + ", but the output was: \n" + summary, freeFromLeak);
     }
 
     private long getOpenFdCount() {
         OperatingSystemMXBean os = ManagementFactory.getOperatingSystemMXBean();
-        if(os instanceof UnixOperatingSystemMXBean){
+        if (os instanceof UnixOperatingSystemMXBean) {
             return ((UnixOperatingSystemMXBean) os).getOpenFileDescriptorCount();
         }
         return -1;
@@ -300,7 +303,7 @@ public class DirectoryBrowserSupportTest {
         FreeStyleProject p = j.createFreeStyleProject();
         p.setScm(new SingleFileSCM("test.html", "<html><body><h1>Hello world!</h1></body></html>"));
         p.getPublishersList().add(new ArtifactArchiver("*", "", true));
-        assertEquals(Result.SUCCESS, p.scheduleBuild2(0).get().getResult());
+        j.buildAndAssertSuccess(p);
 
         HtmlPage page = j.createWebClient().goTo("job/" + p.getName() + "/lastSuccessfulBuild/artifact/test.html");
         for (String header : new String[]{"Content-Security-Policy", "X-WebKit-CSP", "X-Content-Security-Policy"}) {
@@ -350,21 +353,26 @@ public class DirectoryBrowserSupportTest {
         assertEquals("Hello world!", download.getWebResponse().getContentAsString());
     }
     /** Simulation of a storage service with URLs unrelated to {@link Run#doArtifact}. */
+
     @TestExtension("externalURLDownload")
     public static final class ContentAddressableStore implements UnprotectedRootAction {
         final List<byte[]> files = new ArrayList<>();
+
         @Override
         public String getUrlName() {
             return "files";
         }
+
         @Override
         public String getIconFileName() {
             return null;
         }
+
         @Override
         public String getDisplayName() {
             return null;
         }
+
         public void doDynamic(StaplerRequest req, StaplerResponse rsp) throws Exception {
             String hash = req.getRestOfPath().substring(1);
             for (byte[] file : files) {
@@ -377,27 +385,32 @@ public class DirectoryBrowserSupportTest {
             rsp.sendError(404);
         }
     }
+
     public static final class ExternalArtifactManagerFactory extends ArtifactManagerFactory {
         @Override
         public ArtifactManager managerFor(Run<?, ?> build) {
             return new ExternalArtifactManager();
         }
+
         @TestExtension("externalURLDownload")
         public static final class DescriptorImpl extends ArtifactManagerFactoryDescriptor {}
     }
+
     private static final class ExternalArtifactManager extends ArtifactManager {
         String hash;
+
         @Override
         public void archive(FilePath workspace, Launcher launcher, BuildListener listener, Map<String, String> artifacts) throws IOException, InterruptedException {
             assertEquals(1, artifacts.size());
             Map.Entry<String, String> entry = artifacts.entrySet().iterator().next();
             assertEquals("f", entry.getKey());
             try (InputStream is = workspace.child(entry.getValue()).read()) {
-                byte[] data = IOUtils.toByteArray(is);
+                byte[] data = is.readAllBytes();
                 ExtensionList.lookupSingleton(ContentAddressableStore.class).files.add(data);
                 hash = Util.getDigestOf(new ByteArrayInputStream(data));
             }
         }
+
         @Override
         public VirtualFile root() {
             final VirtualFile file = new VirtualFile() { // the file inside the root
@@ -405,55 +418,68 @@ public class DirectoryBrowserSupportTest {
                 public String getName() {
                     return "f";
                 }
+
                 @Override
                 public URI toURI() {
                     return URI.create("root:f");
                 }
+
                 @Override
                 public VirtualFile getParent() {
                     return root();
                 }
+
                 @Override
                 public boolean isDirectory() {
                     return false;
                 }
+
                 @Override
                 public boolean isFile() {
                     return true;
                 }
+
                 @Override
                 public boolean exists() {
                     return true;
                 }
+
                 @Override
                 public VirtualFile[] list() {
                     return new VirtualFile[0];
                 }
+
                 @Override
                 public Collection<String> list(@NonNull String includes, String excludes, boolean useDefaultExcludes) {
                     return Collections.emptySet();
                 }
+
                 @NonNull
                 @Override
                 public VirtualFile child(@NonNull String name) {
                     throw new UnsupportedOperationException();
                 }
+
                 @Override
                 public long length() {
                     return 0;
                 }
+
                 @Override
                 public long lastModified() {
                     return 0;
                 }
+
                 @Override
                 public boolean canRead() {
                     return true;
                 }
+
                 @Override
                 public InputStream open() throws IOException {
                     throw new FileNotFoundException("expect to be opened via URL only");
                 }
+
                 @Override
                 public URL toExternalURL() throws IOException {
                     return new URL(Jenkins.get().getRootUrl() + "files/" + hash);
@@ -465,37 +491,45 @@ public class DirectoryBrowserSupportTest {
                 public String getName() {
                     return "";
                 }
+
                 @NonNull
                 @Override
                 public URI toURI() {
                     return URI.create("root:");
                 }
+
                 @Override
                 public VirtualFile getParent() {
                     return this;
                 }
+
                 @Override
                 public boolean isDirectory() {
                     return true;
                 }
+
                 @Override
                 public boolean isFile() {
                     return false;
                 }
+
                 @Override
                 public boolean exists() {
                     return true;
                 }
+
                 @NonNull
                 @Override
                 public VirtualFile[] list() {
                     return new VirtualFile[] {file};
                 }
+
                 @NonNull
                 @Override
                 public Collection<String> list(@NonNull String includes, String excludes, boolean useDefaultExcludes) {
                     throw new UnsupportedOperationException();
                 }
+
                 @NonNull
                 @Override
                 public VirtualFile child(@NonNull String name) {
@@ -507,26 +541,32 @@ public class DirectoryBrowserSupportTest {
                         throw new UnsupportedOperationException("trying to call child on " + name);
                     }
                 }
+
                 @Override
                 public long length() {
                     return 0;
                 }
+
                 @Override
                 public long lastModified() {
                     return 0;
                 }
+
                 @Override
                 public boolean canRead() {
                     return true;
                 }
+
                 @Override
                 public InputStream open() throws IOException {
                     throw new FileNotFoundException();
                 }
             };
         }
+
         @Override
         public void onLoad(@NonNull Run<?, ?> build) {}
+
         @Override
         public boolean delete() {
             return false;
@@ -541,7 +581,7 @@ public class DirectoryBrowserSupportTest {
         File secretsFolder = new File(j.jenkins.getRootDir(), "secrets");
         File secretTarget = new File(secretsFolder, "goal.txt");
         String secretContent = "secret";
-        FileUtils.write(secretTarget, secretContent, StandardCharsets.UTF_8);
+        Files.writeString(secretTarget.toPath(), secretContent, StandardCharsets.UTF_8);
 
         /*
          *  secrets/
@@ -569,7 +609,7 @@ public class DirectoryBrowserSupportTest {
             p.getBuildersList().add(new Shell(script));
         }
 
-        assertEquals(Result.SUCCESS, p.scheduleBuild2(0).get().getResult());
+        j.buildAndAssertSuccess(p);
 
         JenkinsRule.WebClient wc = j.createWebClient();
         wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
@@ -680,10 +720,10 @@ public class DirectoryBrowserSupportTest {
         File secretsFolder = new File(j.jenkins.getRootDir(), "secrets");
         File secretTarget = new File(secretsFolder, "goal.txt");
         String secretContent = "secret";
-        FileUtils.write(secretTarget, secretContent, StandardCharsets.UTF_8);
-        FileUtils.write(new File(secretsFolder, "public_fake1.key"), secretContent, StandardCharsets.UTF_8);
-        FileUtils.write(new File(secretsFolder, "public_fake2.key"), secretContent, StandardCharsets.UTF_8);
-        FileUtils.write(new File(secretsFolder, "public_fake3.key"), secretContent, StandardCharsets.UTF_8);
+        Files.writeString(secretTarget.toPath(), secretContent, StandardCharsets.UTF_8);
+        Files.writeString(secretsFolder.toPath().resolve("public_fake1.key"), secretContent, StandardCharsets.UTF_8);
+        Files.writeString(secretsFolder.toPath().resolve("public_fake2.key"), secretContent, StandardCharsets.UTF_8);
+        Files.writeString(secretsFolder.toPath().resolve("public_fake3.key"), secretContent, StandardCharsets.UTF_8);
 
         /*
          *  secrets/
@@ -714,7 +754,7 @@ public class DirectoryBrowserSupportTest {
             p.getBuildersList().add(new Shell(script));
         }
 
-        assertEquals(Result.SUCCESS, p.scheduleBuild2(0).get().getResult());
+        j.buildAndAssertSuccess(p);
 
         JenkinsRule.WebClient wc = j.createWebClient();
         wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
@@ -754,7 +794,7 @@ public class DirectoryBrowserSupportTest {
         File secretsFolder = new File(j.jenkins.getRootDir(), "secrets");
         File secretTarget = new File(secretsFolder, "goal.txt");
         String secretContent = "secret";
-        FileUtils.write(secretTarget, secretContent, StandardCharsets.UTF_8);
+        Files.writeString(secretTarget.toPath(), secretContent, StandardCharsets.UTF_8);
 
         /*
          *  secrets/
@@ -777,7 +817,7 @@ public class DirectoryBrowserSupportTest {
         String script = loadContentFromResource("outsideWorkspaceStructureWithJunctions.bat");
         p.getBuildersList().add(new BatchFile(script));
 
-        assertEquals(Result.SUCCESS, p.scheduleBuild2(0).get().getResult());
+        j.buildAndAssertSuccess(p);
 
         JenkinsRule.WebClient wc = j.createWebClient();
         wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
@@ -879,6 +919,8 @@ public class DirectoryBrowserSupportTest {
             List<String> entryNames = getListOfEntriesInDownloadedZip((UnexpectedPage) zipPage);
             assertThat(entryNames, contains("intermediateFolder/public2.key"));
         }
+        // Explicitly delete everything including junctions, which TemporaryDirectoryAllocator.dispose may have trouble with:
+        new Launcher.LocalLauncher(StreamTaskListener.fromStderr()).launch().cmds("cmd", "/c", "rmdir", "/s", "/q", j.jenkins.getRootDir().getAbsolutePath()).start().join();
     }
 
     private List<String> getListOfEntriesInDownloadedZip(UnexpectedPage zipPage) throws Exception {
@@ -908,7 +950,7 @@ public class DirectoryBrowserSupportTest {
     public void directSymlink_forTestingZip() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
 
-        assertEquals(Result.SUCCESS, p.scheduleBuild2(0).get().getResult());
+        j.buildAndAssertSuccess(p);
         FilePath ws = p.getSomeWorkspace();
 
         /*
@@ -968,14 +1010,14 @@ public class DirectoryBrowserSupportTest {
         FreeStyleProject p = j.createFreeStyleProject();
 
         // build once to have the workspace set up
-        assertEquals(Result.SUCCESS, p.scheduleBuild2(0).get().getResult());
+        j.buildAndAssertSuccess(p);
 
         File jobWorkspaceFolder = new File(new File(j.jenkins.getRootDir(), "workspace"), p.name);
         File folderInsideWorkspace = new File(jobWorkspaceFolder, "asset");
         folderInsideWorkspace.mkdir();
         File fileTarget = new File(folderInsideWorkspace, "goal.txt");
         String publicContent = "not-secret";
-        FileUtils.write(fileTarget, publicContent, StandardCharsets.UTF_8);
+        Files.writeString(fileTarget.toPath(), publicContent, StandardCharsets.UTF_8);
 
         /*
          *  workspace/
@@ -995,7 +1037,7 @@ public class DirectoryBrowserSupportTest {
             p.getBuildersList().add(new Shell(script));
         }
 
-        assertEquals(Result.SUCCESS, p.scheduleBuild2(0).get().getResult());
+        j.buildAndAssertSuccess(p);
 
         JenkinsRule.WebClient wc = j.createWebClient();
         wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
@@ -1053,8 +1095,8 @@ public class DirectoryBrowserSupportTest {
         if (resourceUrl == null) {
             fail("The resource with fileName " + fileNameInResources + " is not present in the resources of the test");
         }
-        File resourceFile = new File(resourceUrl.toURI());
-        return FileUtils.readFileToString(resourceFile, StandardCharsets.UTF_8);
+        Path resourcePath = Paths.get(resourceUrl.toURI());
+        return Files.readString(resourcePath, StandardCharsets.UTF_8);
     }
 
     @Test
@@ -1062,14 +1104,14 @@ public class DirectoryBrowserSupportTest {
     public void windows_cannotViewAbsolutePath() throws Exception {
         Assume.assumeTrue("can only be tested this on Windows", Functions.isWindows());
 
-        File targetTmpFile = File.createTempFile("sec2481", "tmp");
+        Path targetTmpPath = Files.createTempFile("sec2481", "tmp");
         String content = "random data provided as fixed value";
-        FileUtils.writeStringToFile(targetTmpFile, content, StandardCharsets.UTF_8);
+        Files.writeString(targetTmpPath, content, StandardCharsets.UTF_8);
 
         JenkinsRule.WebClient wc = j.createWebClient().withThrowExceptionOnFailingStatusCode(false);
-        Page page = wc.goTo("userContent/" + targetTmpFile.getAbsolutePath() + "/*view*", null);
+        Page page = wc.goTo("userContent/" + targetTmpPath.toAbsolutePath() + "/*view*", null);
 
-        MatcherAssert.assertThat(page.getWebResponse().getStatusCode(), CoreMatchers.equalTo(404));
+        MatcherAssert.assertThat(page.getWebResponse().getStatusCode(), equalTo(404));
     }
 
     @Test
@@ -1080,15 +1122,15 @@ public class DirectoryBrowserSupportTest {
         String originalValue = System.getProperty(DirectoryBrowserSupport.ALLOW_ABSOLUTE_PATH_PROPERTY_NAME);
         System.setProperty(DirectoryBrowserSupport.ALLOW_ABSOLUTE_PATH_PROPERTY_NAME, "true");
         try {
-            File targetTmpFile = File.createTempFile("sec2481", "tmp");
+            Path targetTmpPath = Files.createTempFile("sec2481", "tmp");
             String content = "random data provided as fixed value";
-            FileUtils.writeStringToFile(targetTmpFile, content, StandardCharsets.UTF_8);
+            Files.writeString(targetTmpPath, content, StandardCharsets.UTF_8);
 
             JenkinsRule.WebClient wc = j.createWebClient().withThrowExceptionOnFailingStatusCode(false);
-            Page page = wc.goTo("userContent/" + targetTmpFile.getAbsolutePath() + "/*view*", null);
+            Page page = wc.goTo("userContent/" + targetTmpPath.toAbsolutePath() + "/*view*", null);
 
-            MatcherAssert.assertThat(page.getWebResponse().getStatusCode(), CoreMatchers.equalTo(200));
-            MatcherAssert.assertThat(page.getWebResponse().getContentAsString(), CoreMatchers.containsString(content));
+            MatcherAssert.assertThat(page.getWebResponse().getStatusCode(), equalTo(200));
+            MatcherAssert.assertThat(page.getWebResponse().getContentAsString(), containsString(content));
         } finally {
             if (originalValue == null) {
                 System.clearProperty(DirectoryBrowserSupport.ALLOW_ABSOLUTE_PATH_PROPERTY_NAME);
@@ -1100,17 +1142,221 @@ public class DirectoryBrowserSupportTest {
     }
 
     @Test
+    @Issue("SECURITY-1807")
+    public void tmpNotListed() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.getBuildersList().add(new TestBuilder() {
+            @Override
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+                FilePath ws = build.getWorkspace();
+                ws.child("anotherDir").mkdirs();
+                WorkspaceList.tempDir(ws.child("subdir")).mkdirs();
+                return true;
+            }
+        });
+        assertEquals(Result.SUCCESS, p.scheduleBuild2(0).get().getResult());
+
+        String text = j.createWebClient().goTo("job/" + p.getName() + "/ws/").asNormalizedText();
+        assertTrue(text, text.contains("anotherDir"));
+        assertFalse(text, text.contains("subdir"));
+    }
+
+    @Test
+    @Issue("SECURITY-1807")
+    public void tmpNotListedWithGlob() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+
+        assertEquals(Result.SUCCESS, p.scheduleBuild2(0).get().getResult());
+        FilePath ws = p.getSomeWorkspace();
+
+        FilePath anotherDir = ws.child("anotherDir");
+        anotherDir.mkdirs();
+        anotherDir.child("insideDir").mkdirs();
+
+        FilePath mainTmp = WorkspaceList.tempDir(ws.child("subDir"));
+        mainTmp.mkdirs();
+
+        FilePath anotherTmp = WorkspaceList.tempDir(anotherDir.child("insideDir"));
+        anotherTmp.mkdirs();
+
+        ws.child("anotherDir/one.txt").touch(0);
+        ws.child("anotherDir/insideDir/two.txt").touch(0);
+        mainTmp.child("three.txt").touch(0);
+        anotherTmp.child("four.txt").touch(0);
+
+        assertEquals(Result.SUCCESS, p.scheduleBuild2(0).get().getResult());
+
+        String text = j.createWebClient().goTo("job/" + p.getName() + "/ws/**/*.txt").asNormalizedText();
+        assertTrue(text, text.contains("one.txt"));
+        assertTrue(text, text.contains("two.txt"));
+        assertFalse(text, text.contains("three.txt"));
+        assertFalse(text, text.contains("four.txt"));
+    }
+
+    @Test
+    @Issue("SECURITY-1807")
+    public void noDirectAccessToTmp() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.getBuildersList().add(new TestBuilder() {
+            @Override
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+                FilePath ws = build.getWorkspace();
+
+                FilePath folder = ws.child("anotherDir");
+                folder.mkdirs();
+                folder.child("one.txt").touch(0);
+
+                FilePath mainTmp = WorkspaceList.tempDir(ws.child("subDir"));
+                mainTmp.mkdirs();
+                mainTmp.child("two.txt").touch(0);
+
+                return true;
+            }
+        });
+        assertEquals(Result.SUCCESS, p.scheduleBuild2(0).get().getResult());
+
+        JenkinsRule.WebClient wc = j.createWebClient();
+        wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
+
+        Page page = wc.goTo(p.getUrl() + "ws/anotherDir/", null);
+        assertThat(page.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_OK));
+        page = wc.goTo(p.getUrl() + "ws/anotherDir/one.txt", null);
+        assertThat(page.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_OK));
+
+        page = wc.goTo(p.getUrl() + "ws/subdir@tmp/", null);
+        assertThat(page.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_NOT_FOUND));
+
+        page = wc.goTo(p.getUrl() + "ws/subdir@tmp/two.txt", null);
+        assertThat(page.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_NOT_FOUND));
+    }
+
+    @Test
+    @Issue("SECURITY-1807")
+    public void tmpNotListedInPlain() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.getBuildersList().add(new TestBuilder() {
+            @Override
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+                FilePath ws = build.getWorkspace();
+                ws.child("anotherDir").mkdirs();
+                WorkspaceList.tempDir(ws.child("subdir")).mkdirs();
+                return true;
+            }
+        });
+        assertEquals(Result.SUCCESS, p.scheduleBuild2(0).get().getResult());
+
+        String text = j.createWebClient().goTo("job/" + p.getName() + "/ws/*plain*", "text/plain").getWebResponse().getContentAsString();
+        assertTrue(text, text.contains("anotherDir"));
+        assertFalse(text, text.contains("subdir"));
+    }
+
+    @Test
+    @Issue("SECURITY-1807")
+    public void tmpNotListedInZipWithoutGlob() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.getBuildersList().add(new TestBuilder() {
+            @Override
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+                FilePath ws = build.getWorkspace();
+
+                FilePath anotherDir = ws.child("anotherDir");
+                anotherDir.mkdirs();
+                anotherDir.child("insideDir").mkdirs();
+
+                FilePath mainTmp = WorkspaceList.tempDir(ws.child("subDir"));
+                mainTmp.mkdirs();
+
+                FilePath anotherTmp = WorkspaceList.tempDir(anotherDir.child("insideDir"));
+                anotherTmp.mkdirs();
+
+                ws.child("anotherDir/one.txt").touch(0);
+                ws.child("anotherDir/insideDir/two.txt").touch(0);
+                mainTmp.child("three.txt").touch(0);
+                anotherTmp.child("four.txt").touch(0);
+                return true;
+            }
+        });
+        assertEquals(Result.SUCCESS, p.scheduleBuild2(0).get().getResult());
+
+        JenkinsRule.WebClient wc = j.createWebClient();
+        wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
+
+        //http://localhost:54407/jenkins/job/test0/ws/**/*.txt/*zip*/glob.zip
+        Page zipPage = wc.goTo("job/" + p.getName() + "/ws/*zip*/" + p.getName(), null);
+        assertThat(zipPage.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_OK));
+
+        List<String> entryNames = getListOfEntriesInDownloadedZip((UnexpectedPage) zipPage);
+        assertThat(entryNames, hasSize(2));
+        assertThat(entryNames, containsInAnyOrder(
+                "test0/anotherDir/one.txt",
+                "test0/anotherDir/insideDir/two.txt"
+        ));
+
+        zipPage = wc.goTo("job/" + p.getName() + "/ws/anotherDir/*zip*/" + p.getName(), null);
+        assertThat(zipPage.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_OK));
+
+        entryNames = getListOfEntriesInDownloadedZip((UnexpectedPage) zipPage);
+        assertThat(entryNames, hasSize(2));
+        assertThat(entryNames, containsInAnyOrder(
+                "anotherDir/one.txt",
+                "anotherDir/insideDir/two.txt"
+        ));
+    }
+
+    @Test
+    @Issue("SECURITY-1807")
+    public void tmpNotListedInZipWithGlob() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.getBuildersList().add(new TestBuilder() {
+            @Override
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+                FilePath ws = build.getWorkspace();
+
+                FilePath anotherDir = ws.child("anotherDir");
+                anotherDir.mkdirs();
+                anotherDir.child("insideDir").mkdirs();
+
+                FilePath mainTmp = WorkspaceList.tempDir(ws.child("subDir"));
+                mainTmp.mkdirs();
+
+                FilePath anotherTmp = WorkspaceList.tempDir(anotherDir.child("insideDir"));
+                anotherTmp.mkdirs();
+
+                ws.child("anotherDir/one.txt").touch(0);
+                ws.child("anotherDir/insideDir/two.txt").touch(0);
+                mainTmp.child("three.txt").touch(0);
+                anotherTmp.child("four.txt").touch(0);
+                return true;
+            }
+        });
+        assertEquals(Result.SUCCESS, p.scheduleBuild2(0).get().getResult());
+
+        JenkinsRule.WebClient wc = j.createWebClient();
+        wc.getOptions().setThrowExceptionOnFailingStatusCode(false);
+
+        Page zipPage = wc.goTo("job/" + p.getName() + "/ws/**/*.txt/*zip*/glob.zip", null);
+        assertThat(zipPage.getWebResponse().getStatusCode(), equalTo(HttpURLConnection.HTTP_OK));
+
+        List<String> entryNames = getListOfEntriesInDownloadedZip((UnexpectedPage) zipPage);
+        assertThat(entryNames, hasSize(2));
+        assertThat(entryNames, containsInAnyOrder(
+                "anotherDir/one.txt",
+                "anotherDir/insideDir/two.txt"
+        ));
+    }
+
+    @Test
     public void canViewRelativePath() throws Exception {
         File testFile = new File(j.jenkins.getRootDir(), "userContent/test.txt");
         String content = "random data provided as fixed value";
 
-        FileUtils.writeStringToFile(testFile, content, StandardCharsets.UTF_8);
+        Files.writeString(testFile.toPath(), content, StandardCharsets.UTF_8);
 
         JenkinsRule.WebClient wc = j.createWebClient().withThrowExceptionOnFailingStatusCode(false);
         Page page = wc.goTo("userContent/test.txt/*view*", null);
 
-        MatcherAssert.assertThat(page.getWebResponse().getStatusCode(), CoreMatchers.equalTo(200));
-        MatcherAssert.assertThat(page.getWebResponse().getContentAsString(), CoreMatchers.containsString(content));
+        MatcherAssert.assertThat(page.getWebResponse().getStatusCode(), equalTo(200));
+        MatcherAssert.assertThat(page.getWebResponse().getContentAsString(), containsString(content));
     }
 
     public static final class SimulatedExternalArtifactManagerFactory extends ArtifactManagerFactory {
@@ -1118,6 +1364,7 @@ public class DirectoryBrowserSupportTest {
         public ArtifactManager managerFor(Run<?, ?> build) {
             return new SimulatedExternalArtifactManager();
         }
+
         @TestExtension("externalURLDownload")
         public static final class DescriptorImpl extends ArtifactManagerFactoryDescriptor {}
     }
@@ -1131,7 +1378,7 @@ public class DirectoryBrowserSupportTest {
             Map.Entry<String, String> entry = artifacts.entrySet().iterator().next();
             assertEquals("f", entry.getKey());
             try (InputStream is = workspace.child(entry.getValue()).read()) {
-                byte[] data = IOUtils.toByteArray(is);
+                byte[] data = is.readAllBytes();
                 ExtensionList.lookupSingleton(ContentAddressableStore.class).files.add(data);
                 hash = Util.getDigestOf(new ByteArrayInputStream(data));
             }
@@ -1144,54 +1391,67 @@ public class DirectoryBrowserSupportTest {
                 public String getName() {
                     return "f";
                 }
+
                 @Override
                 public URI toURI() {
                     return URI.create("root:f");
                 }
+
                 @Override
                 public VirtualFile getParent() {
                     return root();
                 }
+
                 @Override
                 public boolean isDirectory() {
                     return false;
                 }
+
                 @Override
                 public boolean isFile() {
                     return true;
                 }
+
                 @Override
                 public boolean exists() {
                     return true;
                 }
+
                 @Override
                 public VirtualFile[] list() {
                     return new VirtualFile[0];
                 }
+
                 @Override
                 public Collection<String> list(String includes, String excludes, boolean useDefaultExcludes) {
                     return Collections.emptySet();
                 }
+
                 @Override
                 public VirtualFile child(String name) {
                     throw new UnsupportedOperationException();
                 }
+
                 @Override
                 public long length() {
                     return 0;
                 }
+
                 @Override
                 public long lastModified() {
                     return 0;
                 }
+
                 @Override
                 public boolean canRead() {
                     return true;
                 }
+
                 @Override
                 public InputStream open() throws IOException {
                     throw new FileNotFoundException("expect to be opened via URL only");
                 }
+
                 @Override
                 public URL toExternalURL() throws IOException {
                     return new URL(Jenkins.get().getRootUrl() + "files/" + hash);
@@ -1202,34 +1462,42 @@ public class DirectoryBrowserSupportTest {
                 public String getName() {
                     return "";
                 }
+
                 @Override
                 public URI toURI() {
                     return URI.create("root:");
                 }
+
                 @Override
                 public VirtualFile getParent() {
                     return this;
                 }
+
                 @Override
                 public boolean isDirectory() {
                     return true;
                 }
+
                 @Override
                 public boolean isFile() {
                     return false;
                 }
+
                 @Override
                 public boolean exists() {
                     return true;
                 }
+
                 @Override
                 public VirtualFile[] list() {
                     return new VirtualFile[] {file};
                 }
+
                 @Override
                 public Collection<String> list(String includes, String excludes, boolean useDefaultExcludes) {
                     throw new UnsupportedOperationException();
                 }
+
                 @Override
                 public VirtualFile child(String name) {
                     if (name.equals("f")) {
@@ -1240,26 +1508,32 @@ public class DirectoryBrowserSupportTest {
                         throw new UnsupportedOperationException("trying to call child on " + name);
                     }
                 }
+
                 @Override
                 public long length() {
                     return 0;
                 }
+
                 @Override
                 public long lastModified() {
                     return 0;
                 }
+
                 @Override
                 public boolean canRead() {
                     return true;
                 }
+
                 @Override
                 public InputStream open() throws IOException {
                     throw new FileNotFoundException();
                 }
             };
         }
+
         @Override
         public void onLoad(Run<?, ?> build) {}
+
         @Override
         public boolean delete() {
             return false;

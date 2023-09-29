@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.security.apitoken;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -40,6 +41,7 @@ import java.io.File;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.text.SimpleDateFormat;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
@@ -50,7 +52,6 @@ import java.util.List;
 import java.util.Random;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -61,14 +62,14 @@ import org.mockito.Mockito;
 public class ApiTokenStatsTest {
     @Rule
     public TemporaryFolder tmp = new TemporaryFolder();
-    
+
     @Before
     public void prepareConfig() {
         // to separate completely the class under test from its environment
         ApiTokenPropertyConfiguration mockConfig = Mockito.mock(ApiTokenPropertyConfiguration.class);
 
     }
-    
+
     @Test
     public void regularUsage() throws Exception {
         final String ID_1 = UUID.randomUUID().toString();
@@ -164,7 +165,7 @@ public class ApiTokenStatsTest {
             }
         }
     }
-    
+
     @Test
     public void testResilientIfFileDoesNotExist() {
         ApiTokenPropertyConfiguration mockConfig = mock(ApiTokenPropertyConfiguration.class);
@@ -175,7 +176,7 @@ public class ApiTokenStatsTest {
             assertNotNull(tokenStats);
         }
     }
-    
+
     @Test
     public void resistantToDuplicatedUuid() throws Exception {
         final String ID_1 = UUID.randomUUID().toString();
@@ -202,10 +203,10 @@ public class ApiTokenStatsTest {
 
             { // replace the ID_1 with ID_2 in the file
                 XmlFile statsFile = ApiTokenStats.getConfigFile(tmp.getRoot());
-                String content = FileUtils.readFileToString(statsFile.getFile(), Charset.defaultCharset());
+                String content = Files.readString(statsFile.getFile().toPath(), Charset.defaultCharset());
                 // now there are multiple times the same id in the file with different stats
                 String newContentWithDuplicatedId = content.replace(ID_1, ID_2).replace(ID_3, ID_2);
-                FileUtils.write(statsFile.getFile(), newContentWithDuplicatedId, Charset.defaultCharset());
+                Files.writeString(statsFile.getFile().toPath(), newContentWithDuplicatedId, Charset.defaultCharset());
             }
 
             {
@@ -224,7 +225,7 @@ public class ApiTokenStatsTest {
             }
         }
     }
-    
+
     @Test
     public void resistantToDuplicatedUuid_withNull() throws Exception {
         final String ID = "ID";
@@ -257,7 +258,7 @@ public class ApiTokenStatsTest {
             }
         }
     }
-    
+
     @Test
     @SuppressWarnings("unchecked")
     public void testInternalComparator() throws Exception {
@@ -288,28 +289,28 @@ public class ApiTokenStatsTest {
             assertThat(idList, contains("A", "B", "C", "D"));
         }
     }
-    
+
     private ApiTokenStats.SingleTokenStats createSingleTokenStatsByReflection(String uuid, String dateString, Integer counter) throws Exception {
         Class<ApiTokenStats.SingleTokenStats> clazz = ApiTokenStats.SingleTokenStats.class;
         Constructor<ApiTokenStats.SingleTokenStats> constructor = clazz.getDeclaredConstructor(String.class);
         constructor.setAccessible(true);
-        
+
         ApiTokenStats.SingleTokenStats result = constructor.newInstance(uuid);
-    
+
         {
             Field field = clazz.getDeclaredField("useCounter");
             field.setAccessible(true);
             field.set(result, counter);
         }
-        if(dateString != null){
+        if (dateString != null) {
             Field field = clazz.getDeclaredField("lastUseDate");
             field.setAccessible(true);
             field.set(result, new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").parse(dateString));
         }
-        
+
         return result;
     }
-    
+
     @Test
     public void testDayDifference() throws Exception {
         final String ID = UUID.randomUUID().toString();
@@ -335,14 +336,14 @@ public class ApiTokenStatsTest {
             assertThat(stats.getNumDaysUse(), greaterThanOrEqualTo(2L));
         }
     }
-    
-    private ApiTokenStats createFromFile(File file){
+
+    private ApiTokenStats createFromFile(File file) {
         ApiTokenStats result = ApiTokenStats.internalLoad(file);
         if (result == null) {
             result = new ApiTokenStats();
             result.parent = file;
         }
-        
+
         return result;
     }
 }

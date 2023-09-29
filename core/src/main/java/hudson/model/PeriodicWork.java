@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import static hudson.init.InitMilestone.JOB_CONFIG_ADAPTED;
@@ -53,12 +54,12 @@ import jenkins.util.Timer;
  *
  * <p>
  * This class is designed to run a short task. Implementations whose periodic work takes a long time
- * to run should extend from {@link AsyncPeriodicWork} instead. 
+ * to run should extend from {@link AsyncPeriodicWork} instead.
  *
  * @author Kohsuke Kawaguchi
  * @see AsyncPeriodicWork
  */
-@SuppressFBWarnings(value="PREDICTABLE_RANDOM", justification = "The random is just used for an initial delay.")
+@SuppressFBWarnings(value = "PREDICTABLE_RANDOM", justification = "The random is just used for an initial delay.")
 public abstract class PeriodicWork extends SafeTimerTask implements ExtensionPoint {
 
     /** @deprecated Use your own logger, or send messages to the logger in {@link AsyncPeriodicWork#execute}. */
@@ -88,9 +89,9 @@ public abstract class PeriodicWork extends SafeTimerTask implements ExtensionPoi
     public long getInitialDelay() {
         long l = RANDOM.nextLong();
         // Math.abs(Long.MIN_VALUE)==Long.MIN_VALUE!
-        if (l==Long.MIN_VALUE)
+        if (l == Long.MIN_VALUE)
             l++;
-        return Math.abs(l)%getRecurrencePeriod();
+        return Math.abs(l) % getRecurrencePeriod();
     }
 
     /**
@@ -100,7 +101,7 @@ public abstract class PeriodicWork extends SafeTimerTask implements ExtensionPoi
         return ExtensionList.lookup(PeriodicWork.class);
     }
 
-    @Initializer(after= JOB_CONFIG_ADAPTED)
+    @Initializer(after = JOB_CONFIG_ADAPTED)
     public static void init() {
         // start all PeriodicWorks
         ExtensionList<PeriodicWork> extensionList = all();
@@ -115,9 +116,9 @@ public abstract class PeriodicWork extends SafeTimerTask implements ExtensionPoi
     }
 
     // time constants
-    protected static final long MIN = 1000*60;
-    protected static final long HOUR =60*MIN;
-    protected static final long DAY = 24*HOUR;
+    protected static final long MIN = 1000 * 60;
+    protected static final long HOUR = 60 * MIN;
+    protected static final long DAY = 24 * HOUR;
 
     private static final Random RANDOM = new Random();
 

@@ -24,7 +24,6 @@
 
 package hudson.tasks;
 
-import static hudson.tasks.LogRotatorTest.build;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.lessThan;
 import static org.junit.Assert.assertEquals;
@@ -83,7 +82,7 @@ public class ArtifactArchiverTest {
             final FreeStyleProject project = j.createFreeStyleProject();
             project.getBuildersList().add(new CreateArtifact());
             project.getPublishersList().add(new ArtifactArchiver("f"));
-            assertEquals(Result.SUCCESS, build(project));
+            j.buildAndAssertSuccess(project);
             assertTrue(project.getBuildByNumber(1).getHasArtifacts());
         } finally {
             StandardArtifactManager.TAR_COMPRESSION = prevCompression;
@@ -107,7 +106,7 @@ public class ArtifactArchiverTest {
                 return true;
             }
         }));
-        assertEquals(Result.SUCCESS, build(project)); // #1
+        j.buildAndAssertSuccess(project); // #1
         File artifacts = project.getBuildByNumber(1).getArtifactsDir();
         File[] kids = artifacts.listFiles();
         assertEquals(1, kids.length);
@@ -128,15 +127,29 @@ public class ArtifactArchiverTest {
         assertFalse(aa.getAllowEmptyArchive());
         aa.setAllowEmptyArchive(true);
         project.getPublishersList().replaceBy(Collections.singleton(aa));
-        assertEquals("(no artifacts)", Result.SUCCESS, build(project));
+        j.buildAndAssertSuccess(project);
         assertFalse(project.getBuildByNumber(1).getHasArtifacts());
+    }
+
+    @Test
+    @Issue("JENKINS-51913")
+    public void testFileMaskNoMatchesFoundException() throws Exception {
+        FreeStyleProject project = j.createFreeStyleProject();
+        String pattern = "dir/**";
+        ArtifactArchiver aa = new ArtifactArchiver(pattern);
+        aa.setAllowEmptyArchive(true);
+        project.getPublishersList().replaceBy(Collections.singleton(aa));
+        FreeStyleBuild build = j.buildAndAssertSuccess(project);
+        assertFalse(project.getBuildByNumber(1).getHasArtifacts());
+        j.assertLogContains("No artifacts found that match the file pattern \"" + pattern + "\"", build);
+        assertThat("No stacktrace shown", build.getLog(31), Matchers.iterableWithSize(lessThan(30)));
     }
 
     @Issue("JENKINS-21958")
     @Test public void symlinks() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildersList().add(new TestBuilder() {
-            @Override public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+            @Override public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
                 FilePath ws = build.getWorkspace();
                 if (ws == null) {
                     return false;
@@ -151,7 +164,7 @@ public class ArtifactArchiverTest {
         ArtifactArchiver aa = new ArtifactArchiver("dir/lodge");
         aa.setAllowEmptyArchive(true);
         p.getPublishersList().add(aa);
-        FreeStyleBuild b = j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        FreeStyleBuild b = j.buildAndAssertSuccess(p);
         FilePath ws = b.getWorkspace();
         assertNotNull(ws);
         assumeTrue("May not be testable on Windows:\n" + JenkinsRule.getLog(b), ws.child("dir/lodge").exists());
@@ -169,7 +182,7 @@ public class ArtifactArchiverTest {
     @Test public void notFollowSymlinks() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildersList().add(new TestBuilder() {
-            @Override public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+            @Override public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
                 FilePath ws = build.getWorkspace();
                 if (ws == null) {
                     return false;
@@ -186,7 +199,7 @@ public class ArtifactArchiverTest {
         aa.setFollowSymlinks(false);
         aa.setAllowEmptyArchive(true);
         p.getPublishersList().add(aa);
-        FreeStyleBuild b = j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        FreeStyleBuild b = j.buildAndAssertSuccess(p);
         FilePath ws = b.getWorkspace();
         assertNotNull(ws);
         assumeTrue("May not be testable on Windows:\n" + JenkinsRule.getLog(b), ws.child("dir/lodge").exists());
@@ -200,7 +213,7 @@ public class ArtifactArchiverTest {
         FreeStyleProject p = j.jenkins.getItemByFullName(Functions.isWindows() ? "sample-windows" : "sample", FreeStyleProject.class);
 
         FreeStyleBuild b = p.scheduleBuild2(0).get();
-        assumeTrue("May not be testable on Windows:\n" + JenkinsRule.getLog(b),b.getResult()==Result.SUCCESS);
+        assumeTrue("May not be testable on Windows:\n" + JenkinsRule.getLog(b), b.getResult() == Result.SUCCESS);
         FilePath ws = b.getWorkspace();
         assertNotNull(ws);
         List<FreeStyleBuild.Artifact> artifacts = b.getArtifacts();
@@ -217,7 +230,7 @@ public class ArtifactArchiverTest {
     @Test public void outsideSymlinks() throws Exception {
         final FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildersList().add(new TestBuilder() {
-            @Override public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+            @Override public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
                 FilePath ws = build.getWorkspace();
                 if (ws == null) {
                     return false;
@@ -227,7 +240,7 @@ public class ArtifactArchiverTest {
             }
         });
         p.getPublishersList().add(new ArtifactArchiver("hack", "", false, true));
-        FreeStyleBuild b = j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        FreeStyleBuild b = j.buildAndAssertSuccess(p);
         List<FreeStyleBuild.Artifact> artifacts = b.getArtifacts();
         assertEquals(1, artifacts.size());
         FreeStyleBuild.Artifact artifact = artifacts.get(0);
@@ -243,7 +256,7 @@ public class ArtifactArchiverTest {
 
     static class CreateArtifact extends TestBuilder {
         @Override
-        public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
+        public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
             build.getWorkspace().child("f").write("content", "UTF-8");
             return true;
         }
@@ -251,7 +264,7 @@ public class ArtifactArchiverTest {
 
     static class CreateArtifactAndFail extends TestBuilder {
         @Override
-        public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
+        public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
             build.getWorkspace().child("f").write("content", "UTF-8");
             throw new AbortException("failing the build");
         }
@@ -264,10 +277,10 @@ public class ArtifactArchiverTest {
         ArtifactArchiver aa = new ArtifactArchiver("f");
         project.getPublishersList().replaceBy(Collections.singleton(aa));
         project.getBuildersList().replaceBy(Collections.singleton(new CreateArtifactAndFail()));
-        assertEquals(Result.FAILURE, build(project));
+        j.buildAndAssertStatus(Result.FAILURE, project);
         assertTrue(project.getBuildByNumber(1).getHasArtifacts());
         aa.setOnlyIfSuccessful(true);
-        assertEquals(Result.FAILURE, build(project));
+        j.buildAndAssertStatus(Result.FAILURE, project);
         assertTrue(project.getBuildByNumber(1).getHasArtifacts());
         assertFalse(project.getBuildByNumber(2).getHasArtifacts());
     }
@@ -291,7 +304,7 @@ public class ArtifactArchiverTest {
 
     static class CreateDefaultExcludesArtifact extends TestBuilder {
         @Override
-        public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
+        public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
             FilePath dir = build.getWorkspace().child("dir");
             FilePath subSvnDir = dir.child(".svn");
             subSvnDir.mkdirs();
@@ -315,7 +328,7 @@ public class ArtifactArchiverTest {
         project.getPublishersList().replaceBy(Collections.singleton(artifactArchiver));
         project.getBuildersList().replaceBy(Collections.singleton(new CreateDefaultExcludesArtifact()));
 
-        assertEquals(Result.SUCCESS, build(project)); // #1
+        j.buildAndAssertSuccess(project); // #1
         VirtualFile artifacts = project.getBuildByNumber(1).getArtifactManager().root();
         assertFalse(artifacts.child(".svn").child("file").exists());
         assertFalse(artifacts.child("dir").child(".svn").child("file").exists());
@@ -332,7 +345,7 @@ public class ArtifactArchiverTest {
         project.getPublishersList().replaceBy(Collections.singleton(artifactArchiver));
         project.getBuildersList().replaceBy(Collections.singleton(new CreateDefaultExcludesArtifact()));
 
-        assertEquals(Result.SUCCESS, build(project)); // #1
+        j.buildAndAssertSuccess(project); // #1
         VirtualFile artifacts = project.getBuildByNumber(1).getArtifactManager().root();
         assertTrue(artifacts.child(".svn").child("file").exists());
         assertTrue(artifacts.child("dir").child(".svn").child("file").exists());
@@ -387,9 +400,8 @@ public class ArtifactArchiverTest {
         p.getPublishersList().add(new ArtifactArchiver(FILENAME));
         p.setAssignedNode(slave);
 
-        FreeStyleBuild build = p.scheduleBuild2(0).get();
+        FreeStyleBuild build = j.buildAndAssertStatus(Result.FAILURE, p);
         assumeFalse(FILENAME + " should not be readable by " + System.getProperty("user.name"), new File(build.getWorkspace().child(FILENAME).getRemote()).canRead());
-        j.assertBuildStatus(Result.FAILURE, build);
         String expectedPath = build.getWorkspace().child(FILENAME).getRemote();
         j.assertLogContains("ERROR: Step ‘Archive the artifacts’ failed: java.nio.file.AccessDeniedException: " + expectedPath, build);
         assertThat("No stacktrace shown", build.getLog(31), Matchers.iterableWithSize(lessThan(30)));
@@ -400,7 +412,7 @@ public class ArtifactArchiverTest {
     public void lengthOfArtifactIsCorrect_eventForInvalidSymlink() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildersList().add(new TestBuilder() {
-            @Override public boolean perform(AbstractBuild<?,?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+            @Override public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
                 FilePath ws = build.getWorkspace();
                 if (ws == null) {
                     return false;
@@ -416,7 +428,7 @@ public class ArtifactArchiverTest {
         ArtifactArchiver aa = new ArtifactArchiver("dir/**");
         aa.setAllowEmptyArchive(true);
         p.getPublishersList().add(aa);
-        FreeStyleBuild b = j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        FreeStyleBuild b = j.buildAndAssertSuccess(p);
         FilePath ws = b.getWorkspace();
         assertNotNull(ws);
         List<FreeStyleBuild.Artifact> artifacts = b.getArtifacts();

@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import java.util.Locale;
@@ -28,7 +29,7 @@ import org.jvnet.localizer.Localizable;
 
 /**
  * Describes an {@link Result} trend by taking the comparing the result of the current and the previous build.
- * 
+ *
  * @author kutzi
  * @since 1.416
  */
@@ -71,13 +72,13 @@ public enum ResultTrend {
      * Build didn't run (yet).
      */
     NOT_BUILT(Messages._ResultTrend_NotBuilt());
-    
+
     private final Localizable description;
 
     ResultTrend(Localizable description) {
         this.description = description;
     }
-    
+
     /**
      * Returns a short human-readable description of the result.
      */
@@ -91,35 +92,35 @@ public enum ResultTrend {
     public String getID() {
         return this.description.toString(Locale.ENGLISH).toUpperCase(Locale.ENGLISH);
     }
-    
+
     /**
      * Returns the result trend of a build.
-     * 
+     *
      * @param build the build
      * @return the result trend
      */
     public static ResultTrend getResultTrend(AbstractBuild<?, ?> build) {
-        return getResultTrend((Run<?,?>)build);
+        return getResultTrend((Run<?, ?>) build);
     }
 
     /**
      * Returns the result trend of a run.
-     * 
+     *
      * @param run the run
      * @return the result trend
-     * 
+     *
      * @since 1.441
      */
     public static ResultTrend getResultTrend(Run<?, ?> run) {
-        
+
         Result result = run.getResult();
-        
+
         if (result == Result.ABORTED) {
             return ABORTED;
         } else if (result == Result.NOT_BUILT) {
             return NOT_BUILT;
         }
-        
+
         if (result == Result.SUCCESS) {
             if (isFix(run)) {
                 return FIXED;
@@ -127,14 +128,14 @@ public enum ResultTrend {
                 return SUCCESS;
             }
         }
-        
+
         Run<?, ?> previousBuild = getPreviousNonAbortedBuild(run);
         if (result == Result.UNSTABLE) {
             if (previousBuild == null) {
                 return UNSTABLE;
             }
-            
-            
+
+
             if (previousBuild.getResult() == Result.UNSTABLE) {
                 return STILL_UNSTABLE;
             } else if (previousBuild.getResult() == Result.FAILURE) {
@@ -149,10 +150,10 @@ public enum ResultTrend {
                 return FAILURE;
             }
         }
-        
+
         throw new IllegalArgumentException("Unknown result: '" + result + "' for build: " + run);
     }
-    
+
     /**
      * Returns the previous 'not aborted' build (i.e. ignores ABORTED and NOT_BUILT builds)
      * or null.
@@ -160,10 +161,10 @@ public enum ResultTrend {
     private static Run<?, ?> getPreviousNonAbortedBuild(Run<?, ?> build) {
         Run<?, ?> previousBuild = build.getPreviousBuild();
         while (previousBuild != null) {
-            if (previousBuild.getResult() == null 
+            if (previousBuild.getResult() == null
                 || previousBuild.getResult() == Result.ABORTED
                 || previousBuild.getResult() == Result.NOT_BUILT) {
-                
+
                 previousBuild = previousBuild.getPreviousBuild();
             } else {
                 return previousBuild;
@@ -171,7 +172,7 @@ public enum ResultTrend {
         }
         return previousBuild;
     }
-    
+
     /**
      * Returns true if this build represents a 'fix'.
      * I.e. it is the first successful build after previous
@@ -182,7 +183,7 @@ public enum ResultTrend {
         if (build.getResult() != Result.SUCCESS) {
             return false;
         }
-        
+
         Run<?, ?> previousBuild = getPreviousNonAbortedBuild(build);
         if (previousBuild != null) {
             return previousBuild.getResult().isWorseThan(Result.SUCCESS);

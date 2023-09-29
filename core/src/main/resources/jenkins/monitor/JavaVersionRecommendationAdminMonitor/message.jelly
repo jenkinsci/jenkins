@@ -24,13 +24,15 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:f="/lib/form">
-    <div class="alert alert-info">
-        ${%Recommended_Java_Version}
-        <form method="post" action="${rootURL}/${it.url}/act" name="${it.id}">
+    <j:invokeStatic var="currentRuntimeJavaVersion" className="jenkins.util.java.JavaUtils" method="getCurrentRuntimeJavaVersion" />
+    <div class="alert alert-danger">
+        <form id="JavaVersionRecommendationAdminMonitor" method="post" action="${rootURL}/${it.url}/act" name="${it.id}">
             <f:submit name="yes" value="${%More Info}"/>
             <l:isAdmin>
-                <f:submit name="no" value="${%Dismiss}"/>
+                <f:submit value="${%Ignore}" name="no"/>
             </l:isAdmin>
         </form>
+        <h2>${%Recommended_Java_Version_Heading(currentRuntimeJavaVersion)}</h2>
+        ${%Recommended_Java_Version(currentRuntimeJavaVersion)}
     </div>
 </j:jelly>

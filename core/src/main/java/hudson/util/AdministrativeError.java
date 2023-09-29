@@ -11,7 +11,9 @@ import hudson.model.AdministrativeMonitor;
  * These errors are registered when instances are created. No need to use {@link Extension}.
  *
  * @author Kohsuke Kawaguchi
+ * @deprecated Implement {@link hudson.model.AdministrativeMonitor} directly instead.
  */
+@Deprecated
 public class AdministrativeError extends AdministrativeMonitor {
     public final String message;
     public final String title;

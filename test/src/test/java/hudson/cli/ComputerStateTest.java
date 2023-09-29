@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.cli;
 
 import static hudson.cli.CLICommandInvoker.Matcher.succeededSilently;
@@ -30,17 +31,17 @@ import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
-import com.gargoylesoftware.htmlunit.ElementNotFoundException;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.cli.CLICommandInvoker.Result;
 import hudson.model.Computer;
 import hudson.model.Slave;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.OfflineCause;
 import jenkins.model.Jenkins;
+import org.htmlunit.ElementNotFoundException;
+import org.htmlunit.html.HtmlPage;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -147,7 +148,7 @@ public class ComputerStateTest {
 
         assertLinkDoesNotExist(page, "System Information");
         HtmlPage info = wc.getPage(slave, "systemInfo");
-        assertThat(info.asText(), not(containsString("Environment Variables")));
+        assertThat(info.asNormalizedText(), not(containsString("Environment Variables")));
     }
 
     private void assertConnected(WebClient wc, DumbSlave slave) throws Exception {
@@ -160,13 +161,13 @@ public class ComputerStateTest {
 
         main.getAnchorByText("System Information");
         HtmlPage info = wc.getPage(slave, "systemInfo");
-        assertThat(info.asText(), containsString("Environment Variables"));
+        assertThat(info.asNormalizedText(), containsString("Environment Variables"));
     }
 
     private void assertLinkDoesNotExist(HtmlPage page, String text) {
-        try {
-            page.getAnchorByText(text);
-            fail(text + " link should not exist");
-        } catch (ElementNotFoundException ex) { /*expected*/ }
+        assertThrows(
+                text + " link should not exist",
+                ElementNotFoundException.class,
+                () -> page.getAnchorByText(text));
     }
 }

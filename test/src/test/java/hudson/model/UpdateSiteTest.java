@@ -37,8 +37,14 @@ import hudson.util.FormValidation;
 import hudson.util.PersistedList;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -46,12 +52,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import jenkins.model.Jenkins;
 import jenkins.security.UpdateSiteWarningsConfiguration;
 import jenkins.security.UpdateSiteWarningsMonitor;
-import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
@@ -60,7 +68,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 
 public class UpdateSiteTest {
@@ -71,12 +78,31 @@ public class UpdateSiteTest {
     private Server server;
     private URL baseUrl;
 
-    private String getResource(String resourceName) throws IOException {
+    private static String getResource(String resourceName) throws IOException {
         try {
             URL url = UpdateSiteTest.class.getResource(resourceName);
-            return url != null ? FileUtils.readFileToString(new File(url.toURI())) : null;
-        } catch(URISyntaxException e) {
+            if (url == null) {
+                url = extract(resourceName);
+            }
+            return url != null ? Files.readString(Paths.get(url.toURI()), StandardCharsets.UTF_8) : null;
+        } catch (URISyntaxException e) {
             return null;
+        }
+    }
+
+    public static URL extract(String resourceName) throws IOException {
+        URL url = UpdateSiteTest.class.getResource(resourceName + ".zip");
+        if (url == null) {
+            return null;
+        }
+        try (InputStream is = url.openStream(); ZipInputStream zis = new ZipInputStream(is)) {
+            ZipEntry zipEntry = zis.getNextEntry();
+            assertEquals(resourceName, zipEntry.getName());
+            Path result = Files.createTempFile(FilenameUtils.getBaseName(resourceName), FilenameUtils.getExtension(resourceName));
+            result.toFile().deleteOnExit();
+            Files.copy(zis, result, StandardCopyOption.REPLACE_EXISTING);
+            assertNull(zis.getNextEntry());
+            return result.toUri().toURL();
         }
     }
 
@@ -99,7 +125,7 @@ public class UpdateSiteTest {
                     baseRequest.setHandled(true);
                     response.setContentType("text/plain; charset=utf-8");
                     response.setStatus(HttpServletResponse.SC_OK);
-                    response.getOutputStream().write(responseBody.getBytes());
+                    response.getOutputStream().write(responseBody.getBytes(StandardCharsets.UTF_8));
                 }
             }
         });
@@ -111,7 +137,7 @@ public class UpdateSiteTest {
     public void shutdownWebserver() throws Exception {
         server.stop();
     }
-    
+
     @Test public void relativeURLs() throws Exception {
         URL url = new URL(baseUrl, "/plugins/htmlpublisher-update-center.json");
         UpdateSite site = new UpdateSite(UpdateCenter.ID_DEFAULT, url.toString());
@@ -139,7 +165,7 @@ public class UpdateSiteTest {
         UpdateSite site = getUpdateSite("/plugins/htmlpublisher-update-center.json");
         UpdateSite alternativeSite = getUpdateSite("/plugins/alternative-update-center.json", "alternative");
         overrideUpdateSite(site, alternativeSite);
-        // sites use different Wiki URL for dummy -> use URL from manifest 
+        // sites use different Wiki URL for dummy -> use URL from manifest
         PluginWrapper wrapper = buildPluginWrapper("dummy", "https://wiki.jenkins.io/display/JENKINS/dummy");
         assertEquals("https://wiki.jenkins.io/display/JENKINS/dummy", wrapper.getUrl());
         // sites use the same Wiki URL for HTML Publisher -> use it
@@ -173,50 +199,41 @@ public class UpdateSiteTest {
         assertNotEquals("plugin data is present", Collections.emptyMap(), site.getData().plugins);
     }
 
-    @Issue("JENKINS-56477")
-    @Test
-    public void isPluginUpdateCompatible() throws Exception {
-        UpdateSite site = getUpdateSite("/plugins/minJavaVersion-update-center.json");
-        final UpdateSite.Plugin tasksPlugin = site.getPlugin("tasks");
-        assertNotNull(tasksPlugin);
-        assertFalse(tasksPlugin.isNeededDependenciesForNewerJava());
-        assertFalse(tasksPlugin.isForNewerJava());
-        assertTrue(tasksPlugin.isCompatible());
-    }
-
-    @Issue("JENKINS-55048")
-    @Test public void minimumJavaVersion() throws Exception {
-        UpdateSite site = getUpdateSite("/plugins/minJavaVersion-update-center.json");
-
-        final UpdateSite.Plugin tasksPlugin = site.getPlugin("tasks");
-        assertNotNull(tasksPlugin);
-        assertFalse(tasksPlugin.isNeededDependenciesForNewerJava());
-        assertFalse(tasksPlugin.isForNewerJava());
-
-        final UpdateSite.Plugin pluginCompiledForTooRecentJava = site.getPlugin("java-too-recent");
-        assertFalse(pluginCompiledForTooRecentJava.isNeededDependenciesForNewerJava());
-        assertTrue(pluginCompiledForTooRecentJava.isForNewerJava());
-
-        final UpdateSite.Plugin pluginDependingOnPluginCompiledForTooRecentJava = site.getPlugin("depending-on-too-recent-java");
-        assertTrue(pluginDependingOnPluginCompiledForTooRecentJava.isNeededDependenciesForNewerJava());
-        assertFalse(pluginDependingOnPluginCompiledForTooRecentJava.isForNewerJava());
-
-    }
-
-    @Issue("JENKINS-31448")
-    @Test public void isLegacyDefault() {
-        assertFalse("isLegacyDefault should be false with null id",new UpdateSite(null,"url").isLegacyDefault());
-        assertFalse("isLegacyDefault should be false when id is not default and url is http://hudson-ci.org/",new UpdateSite("dummy","http://hudson-ci.org/").isLegacyDefault());
-        assertTrue("isLegacyDefault should be true when id is default and url is http://hudson-ci.org/",new UpdateSite(UpdateCenter.PREDEFINED_UPDATE_SITE_ID,"http://hudson-ci.org/").isLegacyDefault());
-        assertTrue("isLegacyDefault should be true when url is http://updates.hudson-labs.org/",new UpdateSite("dummy","http://updates.hudson-labs.org/").isLegacyDefault());
-        assertFalse("isLegacyDefault should be false with null url",new UpdateSite(null,null).isLegacyDefault());
-    }
-
     @Test public void getAvailables() throws Exception {
         UpdateSite site = getUpdateSite("/plugins/available-update-center.json");
         List<UpdateSite.Plugin> available = site.getAvailables();
         assertEquals("ALowTitle", available.get(0).getDisplayName());
         assertEquals("TheHighTitle", available.get(1).getDisplayName());
+    }
+
+    @Test public void deprecations() throws Exception {
+        UpdateSite site = getUpdateSite("/plugins/deprecations-update-center.json");
+
+        // present in plugins section of update-center.json, not deprecated
+        UpdateSite.Plugin credentials = site.getPlugin("credentials");
+        assertNotNull(credentials);
+        assertFalse(credentials.isDeprecated());
+        assertNull(credentials.getDeprecation());
+        assertNull(site.getData().getDeprecations().get("credentials"));
+
+        // present in plugins section of update-center.json, deprecated via label and top-level list
+        UpdateSite.Plugin iconShim = site.getPlugin("icon-shim");
+        assertNotNull(iconShim);
+        assertTrue(iconShim.isDeprecated());
+        assertEquals("https://www.jenkins.io/deprecations/icon-shim/", iconShim.getDeprecation().url);
+        assertEquals("https://www.jenkins.io/deprecations/icon-shim/", site.getData().getDeprecations().get("icon-shim").url);
+
+        // present in plugins section of update-center.json, deprecated via label only
+        UpdateSite.Plugin tokenMacro = site.getPlugin("token-macro");
+        assertNotNull(tokenMacro);
+        assertTrue(tokenMacro.isDeprecated());
+        assertEquals("https://wiki.jenkins-ci.org/display/JENKINS/Token+Macro+Plugin", tokenMacro.getDeprecation().url);
+        assertEquals("https://wiki.jenkins-ci.org/display/JENKINS/Token+Macro+Plugin", site.getData().getDeprecations().get("token-macro").url);
+
+        // not in plugins section of update-center.json, deprecated via top-level list
+        UpdateSite.Plugin variant = site.getPlugin("variant");
+        assertNull(variant);
+        assertEquals("https://www.jenkins.io/deprecations/variant/", site.getData().getDeprecations().get("variant").url);
     }
 
     private UpdateSite getUpdateSite(String path) throws Exception {

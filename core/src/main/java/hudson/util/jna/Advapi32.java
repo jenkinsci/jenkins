@@ -13,6 +13,7 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 Lesser General Public License for more details.
  */
+
 package hudson.util.jna;
 
 import com.sun.jna.Native;
@@ -31,6 +32,7 @@ import java.util.List;
  *
  * @author TB
  */
+@SuppressFBWarnings(value = "MS_OOI_PKGPROTECT", justification = "for backward compatibility")
 @SuppressWarnings("UnusedReturnValue")
 public interface Advapi32  extends StdCallLibrary {
   Advapi32 INSTANCE = (Advapi32) Native.load("Advapi32", Advapi32.class, Options.UNICODE_OPTIONS);
@@ -39,7 +41,7 @@ public interface Advapi32  extends StdCallLibrary {
      * Retrieves the name of the user associated with the current thread.
      *
      * <p>
-     * See http://msdn.microsoft.com/en-us/library/ms724432(VS.85).aspx
+     * See <a href="https://docs.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-getusernamea">GetUserNameA function (winbase.h)</a>
      */
     boolean GetUserName(char[] buffer, IntByReference lpnSize);
 

@@ -39,9 +39,7 @@ THE SOFTWARE.
   </st:documentation>
   <f:prepareDatabinding />
 
-  <f:radio name="_.${attrs.field}" value="true" checked="${instance[field]}" />
-  <label class="attach-previous">${attrs['true']?:'%Yes'}</label>
-  <f:radio name="_.${attrs.field}" value="false" checked="${!instance[field]}" />
-  <label class="attach-previous">${attrs['false']?:'%No'}</label>
+  <f:radio name="_.${attrs.field}" title="${attrs['true']?:'%Yes'}" value="true" checked="${instance[field]}" />
+  <f:radio name="_.${attrs.field}" title="${attrs['false']?:'%No'}" value="false" checked="${!instance[field]}" />
   <!-- TODO consider customizedFields -->
 </j:jelly>

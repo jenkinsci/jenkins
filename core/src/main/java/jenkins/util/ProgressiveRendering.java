@@ -102,7 +102,6 @@ public abstract class ProgressiveRendering {
     /**
      * For internal use.
      */
-    @SuppressWarnings("RV_RETURN_VALUE_IGNORED_BAD_PRACTICE")
     @JavaScriptMethod public final void start() {
         Ancestor ancestor = Stapler.getCurrentRequest().findAncestor(BoundObjectTable.class);
         if (ancestor == null) {
@@ -162,7 +161,7 @@ public abstract class ProgressiveRendering {
     private static RequestImpl createMockRequest() {
         RequestImpl currentRequest = (RequestImpl) Stapler.getCurrentRequest();
         HttpServletRequest original = (HttpServletRequest) currentRequest.getRequest();
-        final Map<String,Object> getters = new HashMap<>();
+        final Map<String, Object> getters = new HashMap<>();
         for (Method method : HttpServletRequest.class.getMethods()) {
             String m = method.getName();
             if ((m.startsWith("get") || m.startsWith("is")) && method.getParameterTypes().length == 0) {
@@ -250,7 +249,7 @@ public abstract class ProgressiveRendering {
         if (DEBUG_SLEEP != null) {
             try {
                 Thread.sleep(DEBUG_SLEEP);
-            } catch (InterruptedException x) {}
+            } catch (InterruptedException x) { }
         }
         if (status == ERROR) {
             return true; // recent call to data() failed

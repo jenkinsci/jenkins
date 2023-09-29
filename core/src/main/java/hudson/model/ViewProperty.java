@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import hudson.DescriptorExtensionList;
@@ -63,12 +64,12 @@ public class ViewProperty implements ReconfigurableDescribable<ViewProperty>, Ex
         return (ViewPropertyDescriptor) Jenkins.get().getDescriptorOrDie(getClass());
     }
 
-    public static DescriptorExtensionList<ViewProperty,ViewPropertyDescriptor> all() {
+    public static DescriptorExtensionList<ViewProperty, ViewPropertyDescriptor> all() {
         return Jenkins.get().getDescriptorList(ViewProperty.class);
     }
 
     @Override
     public ViewProperty reconfigure(StaplerRequest req, JSONObject form) throws Descriptor.FormException {
-    	return form==null ? null : getDescriptor().newInstance(req, form);
+        return form == null ? null : getDescriptor().newInstance(req, form);
     }
 }

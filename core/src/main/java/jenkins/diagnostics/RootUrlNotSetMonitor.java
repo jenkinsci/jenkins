@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.diagnostics;
 
 import hudson.Extension;
@@ -56,10 +57,10 @@ public class RootUrlNotSetMonitor extends AdministrativeMonitor {
         JenkinsLocationConfiguration loc = JenkinsLocationConfiguration.get();
         return loc.getUrl() == null || !UrlHelper.isValidRootUrl(loc.getUrl());
     }
-    
+
     // used by jelly to determined if it's a null url or invalid one
     @Restricted(NoExternalUse.class)
-    public boolean isUrlNull(){
+    public boolean isUrlNull() {
         JenkinsLocationConfiguration loc = JenkinsLocationConfiguration.get();
         return loc.getUrl() == null;
     }

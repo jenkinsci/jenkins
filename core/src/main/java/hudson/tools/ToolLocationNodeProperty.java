@@ -21,8 +21,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.tools;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.model.Descriptor;
@@ -87,7 +89,7 @@ public class ToolLocationNodeProperty extends NodeProperty<Node> {
      * @return
      *      never null.
      * @deprecated since 2009-04-09.
-     *      Use {@link ToolInstallation#translateFor(Node,TaskListener)} 
+     *      Use {@link ToolInstallation#translateFor(Node,TaskListener)}
      */
     @Deprecated
     public static String getToolHome(Node node, ToolInstallation installation, TaskListener log) throws IOException, InterruptedException {
@@ -117,6 +119,7 @@ public class ToolLocationNodeProperty extends NodeProperty<Node> {
     @Extension @Symbol("toolLocation")
     public static class DescriptorImpl extends NodePropertyDescriptor {
 
+        @NonNull
         @Override
         public String getDisplayName() {
             return Messages.ToolLocationNodeProperty_displayName();

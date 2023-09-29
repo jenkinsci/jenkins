@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import static org.junit.Assert.assertEquals;
@@ -35,18 +36,18 @@ public class TimeSeriesTest {
 
     @Test
     public void test1() {
-        TimeSeries ts = new TimeSeries(0,1-0.1f,100);
+        TimeSeries ts = new TimeSeries(0, 1 - 0.1f, 100);
         float last = ts.getLatest();
-        assertEquals(0f,last, 0f);
-        for( int i=0; i<100; i++ ) {
-            assertEquals(ts.getHistory().length,i+1);
+        assertEquals(0f, last, 0f);
+        for (int i = 0; i < 100; i++) {
+            assertEquals(ts.getHistory().length, i + 1);
             ts.update(1);
-            assertTrue(last<=ts.getLatest());
-            assertTrue(ts.getLatest()<=1);
+            assertTrue(last <= ts.getLatest());
+            assertTrue(ts.getLatest() <= 1);
             last = ts.getLatest();
         }
 
-        for( int i=0; i<100; i++ )
+        for (int i = 0; i < 100; i++)
         ts.update(1);
     }
 }

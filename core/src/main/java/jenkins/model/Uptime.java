@@ -22,10 +22,10 @@ public class Uptime {
     }
 
     public long getUptime() {
-        return System.currentTimeMillis()-startTime;
+        return System.currentTimeMillis() - startTime;
     }
 
-    @Initializer(after=InitMilestone.JOB_CONFIG_ADAPTED)
+    @Initializer(after = InitMilestone.JOB_CONFIG_ADAPTED)
     public void init() {
         startTime = System.currentTimeMillis();
     }

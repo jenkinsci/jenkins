@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson;
 
 import static org.junit.Assert.assertEquals;
@@ -43,7 +44,7 @@ public class BulkChangeTest {
         int saveCount = 0;
 
         @SuppressWarnings("unused")
-        int x,y;
+        int x, y;
 
         public void setX(int x) throws IOException {
             this.x = x;
@@ -62,7 +63,7 @@ public class BulkChangeTest {
 
         @Override
         public void save() {
-            if(BulkChange.contains(this))   return;
+            if (BulkChange.contains(this))   return;
             saveCount++;
         }
     }
@@ -73,8 +74,8 @@ public class BulkChangeTest {
     @Test
     public void noBulkChange() throws Exception {
         Point pt = new Point();
-        pt.set(0,0);
-        assertEquals(2,pt.saveCount);
+        pt.set(0, 0);
+        assertEquals(2, pt.saveCount);
     }
 
     /**
@@ -85,11 +86,11 @@ public class BulkChangeTest {
         Point pt = new Point();
         BulkChange bc = new BulkChange(pt);
         try {
-            pt.set(0,0);
+            pt.set(0, 0);
         } finally {
             bc.commit();
         }
-        assertEquals(1,pt.saveCount);
+        assertEquals(1, pt.saveCount);
     }
 
     /**
@@ -105,17 +106,17 @@ public class BulkChangeTest {
             try {
                 BulkChange bc3 = new BulkChange(pt);
                 try {
-                    pt.set(0,0);
+                    pt.set(0, 0);
                 } finally {
                     bc3.commit();
                 }
             } finally {
                 bc2.commit();
             }
-            pt.set(0,0);
+            pt.set(0, 0);
         } finally {
             bc1.commit();
         }
-        assertEquals(1,pt.saveCount);
+        assertEquals(1, pt.saveCount);
     }
 }

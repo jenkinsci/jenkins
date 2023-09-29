@@ -21,12 +21,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.cli.handlers;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.fail;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
@@ -144,9 +144,10 @@ public class ViewOptionHandlerTest {
         Jenkins jenkins = mock(Jenkins.class);
         try (MockedStatic<Jenkins> mocked = mockStatic(Jenkins.class)) {
             mockJenkins(mocked, jenkins);
+            IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> parse("missing_view"));
             assertEquals(
                     "No view named missing_view inside view Jenkins",
-                    parseFailedWith(IllegalArgumentException.class, "missing_view")
+                    e.getMessage()
             );
 
             verifyNoInteractions(setter);
@@ -157,9 +158,10 @@ public class ViewOptionHandlerTest {
         Jenkins jenkins = mock(Jenkins.class);
         try (MockedStatic<Jenkins> mocked = mockStatic(Jenkins.class)) {
             mockJenkins(mocked, jenkins);
+            IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> parse("outer/missing_view"));
             assertEquals(
                     "No view named missing_view inside view outer",
-                    parseFailedWith(IllegalArgumentException.class, "outer/missing_view")
+                    e.getMessage()
             );
 
             verifyNoInteractions(setter);
@@ -170,9 +172,10 @@ public class ViewOptionHandlerTest {
         Jenkins jenkins = mock(Jenkins.class);
         try (MockedStatic<Jenkins> mocked = mockStatic(Jenkins.class)) {
             mockJenkins(mocked, jenkins);
+            IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> parse("outer/nested/missing_view"));
             assertEquals(
                     "No view named missing_view inside view nested",
-                    parseFailedWith(IllegalArgumentException.class, "outer/nested/missing_view")
+                    e.getMessage()
             );
 
             verifyNoInteractions(setter);
@@ -183,9 +186,10 @@ public class ViewOptionHandlerTest {
         Jenkins jenkins = mock(Jenkins.class);
         try (MockedStatic<Jenkins> mocked = mockStatic(Jenkins.class)) {
             mockJenkins(mocked, jenkins);
+            IllegalStateException e = assertThrows(IllegalStateException.class, () -> parse("outer/nested/inner/missing"));
             assertEquals(
                     "inner view can not contain views",
-                    parseFailedWith(IllegalStateException.class, "outer/nested/inner/missing")
+                    e.getMessage()
             );
 
             verifyNoInteractions(setter);
@@ -227,9 +231,10 @@ public class ViewOptionHandlerTest {
             mockJenkins(mocked, jenkins);
             denyAccessOn(outer);
 
+            AccessDeniedException e = assertThrows(AccessDeniedException.class, () -> parse("outer/nested/inner"));
             assertEquals(
                     "Access denied for: outer",
-                    parseFailedWith(AccessDeniedException.class, "outer/nested/inner")
+                    e.getMessage()
             );
 
             verify(outer).checkPermission(View.READ);
@@ -246,9 +251,10 @@ public class ViewOptionHandlerTest {
             mockJenkins(mocked, jenkins);
             denyAccessOn(nested);
 
+            AccessDeniedException e = assertThrows(AccessDeniedException.class, () -> parse("outer/nested/inner"));
             assertEquals(
                     "Access denied for: nested",
-                    parseFailedWith(AccessDeniedException.class, "outer/nested/inner")
+                    e.getMessage()
             );
 
             verify(nested).checkPermission(View.READ);
@@ -264,9 +270,10 @@ public class ViewOptionHandlerTest {
             mockJenkins(mocked, jenkins);
             denyAccessOn(inner);
 
+            AccessDeniedException e = assertThrows(AccessDeniedException.class, () -> parse("outer/nested/inner"));
             assertEquals(
                     "Access denied for: inner",
-                    parseFailedWith(AccessDeniedException.class, "outer/nested/inner")
+                    e.getMessage()
             );
 
             verify(inner).checkPermission(View.READ);
@@ -281,28 +288,13 @@ public class ViewOptionHandlerTest {
         doThrow(ex).when(view).checkPermission(View.READ);
     }
 
-    private String parseFailedWith(Class<? extends Exception> type, final String... params) throws Exception {
-
-        try {
-            parse(params);
-
-        } catch (Exception ex) {
-
-            if (!type.isAssignableFrom(ex.getClass())) throw ex;
-
-            return ex.getMessage();
-        }
-
-        fail("No exception thrown. Expected " + type);
-        return null;
-    }
-
     private void parse(final String... params) throws CmdLineException {
         handler.parseArguments(new Parameters() {
             @Override
             public String getParameter(int idx) {
                 return params[idx];
             }
+
             @Override
             public int size() {
                 return params.length;

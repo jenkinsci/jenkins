@@ -37,7 +37,7 @@ THE SOFTWARE.
   <link rel="stylesheet" type="text/css" href="${resURL}/scripts/yui/assets/skins/sam/resize.css"/>
   <script type="text/javascript" src="${resURL}/scripts/yui/resize/resize-min.js"></script>
 
-  <j:invokeStatic var="tz" className="java.util.TimeZone" method="getDefault"/>
-  <div id="build-timeline-div" data-hour-local-timezone="${(tz.rawOffset + tz.DSTSavings) / 3600000}"></div>
+  <j:invokeStatic var="hourLocalTimezone" className="hudson.Functions" method="getHourLocalTimezone"/>
+  <div id="build-timeline-div" data-hour-local-timezone="${hourLocalTimezone}"></div>
   <st:adjunct includes="hudson.model.BuildTimelineWidget.build-timeline-widget" />
 </j:jelly>

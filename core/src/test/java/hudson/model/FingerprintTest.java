@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,16 +21,17 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import hudson.model.Fingerprint.RangeSet;
 import java.io.File;
@@ -45,7 +46,7 @@ import org.junit.rules.TemporaryFolder;
 public class FingerprintTest {
 
     @Rule public TemporaryFolder tmp = new TemporaryFolder();
-    
+
     @Test public void rangeSet() {
         RangeSet rs = new RangeSet();
         assertFalse(rs.includes(0));
@@ -56,26 +57,26 @@ public class FingerprintTest {
         assertFalse(rs.includes(2));
         assertTrue(rs.includes(3));
         assertFalse(rs.includes(4));
-        assertEquals("[3,4)",rs.toString());
+        assertEquals("[3,4)", rs.toString());
 
         rs.add(4);
         assertFalse(rs.includes(2));
         assertTrue(rs.includes(3));
         assertTrue(rs.includes(4));
         assertFalse(rs.includes(5));
-        assertEquals("[3,5)",rs.toString());
+        assertEquals("[3,5)", rs.toString());
 
         rs.add(10);
-        assertEquals("[3,5),[10,11)",rs.toString());
+        assertEquals("[3,5),[10,11)", rs.toString());
 
         rs.add(9);
-        assertEquals("[3,5),[9,11)",rs.toString());
+        assertEquals("[3,5),[9,11)", rs.toString());
 
         rs.add(6);
-        assertEquals("[3,5),[6,7),[9,11)",rs.toString());
+        assertEquals("[3,5),[6,7),[9,11)", rs.toString());
 
         rs.add(5);
-        assertEquals("[3,7),[9,11)",rs.toString());
+        assertEquals("[3,7),[9,11)", rs.toString());
     }
 
     @Test public void merge() {
@@ -85,16 +86,16 @@ public class FingerprintTest {
         x.add(3);
         x.add(5);
         x.add(6);
-        assertEquals("[1,4),[5,7)",x.toString());
+        assertEquals("[1,4),[5,7)", x.toString());
 
         RangeSet y = new RangeSet();
         y.add(3);
         y.add(4);
         y.add(5);
-        assertEquals("[3,6)",y.toString());
+        assertEquals("[3,6)", y.toString());
 
         x.add(y);
-        assertEquals("[1,7)",x.toString());
+        assertEquals("[1,7)", x.toString());
     }
 
     @Test public void merge2() {
@@ -103,31 +104,31 @@ public class FingerprintTest {
         x.add(2);
         x.add(5);
         x.add(6);
-        assertEquals("[1,3),[5,7)",x.toString());
+        assertEquals("[1,3),[5,7)", x.toString());
 
         RangeSet y = new RangeSet();
         y.add(3);
         y.add(4);
-        assertEquals("[3,5)",y.toString());
+        assertEquals("[3,5)", y.toString());
 
         x.add(y);
-        assertEquals("[1,7)",x.toString());
+        assertEquals("[1,7)", x.toString());
     }
 
     @Test public void merge3() {
         RangeSet x = new RangeSet();
         x.add(1);
         x.add(5);
-        assertEquals("[1,2),[5,6)",x.toString());
+        assertEquals("[1,2),[5,6)", x.toString());
 
         RangeSet y = new RangeSet();
         y.add(3);
         y.add(5);
         y.add(7);
-        assertEquals("[3,4),[5,6),[7,8)",y.toString());
+        assertEquals("[3,4),[5,6),[7,8)", y.toString());
 
         x.add(y);
-        assertEquals("[1,2),[3,4),[5,6),[7,8)",x.toString());
+        assertEquals("[1,2),[3,4),[5,6),[7,8)", x.toString());
     }
 
     @Test
@@ -135,15 +136,15 @@ public class FingerprintTest {
         RangeSet x = new RangeSet();
         RangeSet y = new RangeSet();
 
-        x.addAll(1,2,3, 10,11,       20);
-        y.addAll(  2,      11,12, 19,20,21);
+        x.addAll(1, 2, 3, 10, 11, 20);
+        y.addAll(2, 11, 12, 19, 20, 21);
 
         assertTrue(x.retainAll(y));
 
         RangeSet z = new RangeSet();
-        z.addAll(2,11,20);
+        z.addAll(2, 11, 20);
 
-        assertEquals(x,z);
+        assertEquals(x, z);
     }
 
     @Test
@@ -151,15 +152,15 @@ public class FingerprintTest {
         RangeSet x = new RangeSet();
         RangeSet y = new RangeSet();
 
-        x.addAll(1,2,3,4,5,6,7,8,9,10,      13,14,15,16,17,18,19,20);
-        y.addAll(  2,3,  5,6,    9,10,11,12,13,   15,16,   18,19);
+        x.addAll(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 13, 14, 15, 16, 17, 18, 19, 20);
+        y.addAll(2, 3,  5, 6, 9, 10, 11, 12, 13, 15, 16, 18, 19);
 
         assertTrue(x.retainAll(y));
 
         RangeSet z = new RangeSet();
-        z.addAll(2,3,5,6,9,10,13,15,16,18,19);
+        z.addAll(2, 3, 5, 6, 9, 10, 13, 15, 16, 18, 19);
 
-        assertEquals(x,z);
+        assertEquals(x, z);
     }
 
     @Test
@@ -167,7 +168,7 @@ public class FingerprintTest {
         RangeSet x = new RangeSet();
         RangeSet y = new RangeSet();
 
-        x.addAll(1,2,3,4,5);
+        x.addAll(1, 2, 3, 4, 5);
 
         assertTrue(x.retainAll(y));
         assertTrue(x.isEmpty());
@@ -178,15 +179,15 @@ public class FingerprintTest {
         RangeSet x = new RangeSet();
         RangeSet y = new RangeSet();
 
-        x.addAll(1,2,3, 10,11,       20);
-        y.addAll(  2,      11,12, 19,20,21);
+        x.addAll(1, 2, 3, 10, 11, 20);
+        y.addAll(2, 11, 12, 19, 20, 21);
 
         assertTrue(x.removeAll(y));
 
         RangeSet z = new RangeSet();
-        z.addAll(1,3,10);
+        z.addAll(1, 3, 10);
 
-        assertEquals(x,z);
+        assertEquals(x, z);
     }
 
     @Test
@@ -194,15 +195,15 @@ public class FingerprintTest {
         RangeSet x = new RangeSet();
         RangeSet y = new RangeSet();
 
-        x.addAll(1,2,3,4,5,6,7,8,9,10,      13,14,15,16,17,18,19,20);
-        y.addAll(  2,3,  5,6,    9,10,11,12,13,   15,16,   18,19);
+        x.addAll(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 13, 14, 15, 16, 17, 18, 19, 20);
+        y.addAll(2, 3, 5, 6, 9, 10, 11, 12, 13, 15, 16, 18, 19);
 
         assertTrue(x.removeAll(y));
 
         RangeSet z = new RangeSet();
-        z.addAll(1,4,7,8,14,17,20);
+        z.addAll(1, 4, 7, 8, 14, 17, 20);
 
-        assertEquals(x,z);
+        assertEquals(x, z);
     }
 
     @Test
@@ -210,7 +211,7 @@ public class FingerprintTest {
         RangeSet x = new RangeSet();
         RangeSet y = new RangeSet();
 
-        x.addAll(1,2,3,4,5);
+        x.addAll(1, 2, 3, 4, 5);
 
         assertFalse(x.removeAll(y));
     }
@@ -249,27 +250,27 @@ public class FingerprintTest {
         assertThat(RangeSet.fromString("+0", false).toString(), equalTo("[0,1)"));
         // Negative number
         assertThat(RangeSet.fromString("-1", true).toString(), equalTo(""));
-        assertThat(expectIAE("-1", "Unable to parse '-1', expected string with a range M-N"), is(true));
+        expectIAE("-1", "Unable to parse '-1', expected string with a range M-N");
         // Exceeded int number
         assertThat(RangeSet.fromString("2147483648", true).toString(), equalTo(""));
-        assertThat(expectIAE("2147483648", "Unable to parse '2147483648', expected number"), is(true));
+        expectIAE("2147483648", "Unable to parse '2147483648', expected number");
         // Invalid number
         assertThat(RangeSet.fromString("1a", true).toString(), equalTo(""));
-        assertThat(expectIAE("1a", "Unable to parse '1a', expected number"), is(true));
+        expectIAE("1a", "Unable to parse '1a', expected number");
         assertThat(RangeSet.fromString("aa", true).toString(), equalTo(""));
-        assertThat(expectIAE("aa", "Unable to parse 'aa', expected number"), is(true));
+        expectIAE("aa", "Unable to parse 'aa', expected number");
         //Empty
         assertThat(RangeSet.fromString("", true).toString(), equalTo(""));
         assertThat(RangeSet.fromString("", false).toString(), equalTo(""));
         //Space
         assertThat(RangeSet.fromString(" ", true).toString(), equalTo(""));
-        assertThat(expectIAE(" ", "Unable to parse ' ', expected number"), is(true));
+        expectIAE(" ", "Unable to parse ' ', expected number");
         // Comma
         assertThat(RangeSet.fromString(",", true).toString(), equalTo(""));
         assertThat(RangeSet.fromString(",", false).toString(), equalTo(""));
         // Hyphen
         assertThat(RangeSet.fromString("-", true).toString(), equalTo(""));
-        assertThat(expectIAE("-", "Unable to parse '-', expected string with a range M-N"), is(true));
+        expectIAE("-", "Unable to parse '-', expected string with a range M-N");
 
         //
         // Multiple numbers
@@ -290,59 +291,59 @@ public class FingerprintTest {
         assertThat(RangeSet.fromString("1,2,0", false).toString(), equalTo("[1,2),[2,3),[0,1)"));
         // Negative number
         assertThat(RangeSet.fromString("-1,2,3", true).toString(), equalTo("[2,3),[3,4)"));
-        assertThat(expectIAE("-1,2,3", "Unable to parse '-1,2,3', expected string with a range M-N"), is(true));
+        expectIAE("-1,2,3", "Unable to parse '-1,2,3', expected string with a range M-N");
         assertThat(RangeSet.fromString("1,-2,3", true).toString(), equalTo("[1,2),[3,4)"));
-        assertThat(expectIAE("1,-2,3", "Unable to parse '1,-2,3', expected string with a range M-N"), is(true));
+        expectIAE("1,-2,3", "Unable to parse '1,-2,3', expected string with a range M-N");
         assertThat(RangeSet.fromString("1,2,-3", true).toString(), equalTo("[1,2),[2,3)"));
-        assertThat(expectIAE("1,2,-3", "Unable to parse '1,2,-3', expected string with a range M-N"), is(true));
+        expectIAE("1,2,-3", "Unable to parse '1,2,-3', expected string with a range M-N");
         // Exceeded int number
         assertThat(RangeSet.fromString("2147483648,2,3", true).toString(), equalTo("[2,3),[3,4)"));
-        assertThat(expectIAE("2147483648,1,2", "Unable to parse '2147483648,1,2', expected number"), is(true));
+        expectIAE("2147483648,1,2", "Unable to parse '2147483648,1,2', expected number");
         assertThat(RangeSet.fromString("1,2147483648,3", true).toString(), equalTo("[1,2),[3,4)"));
-        assertThat(expectIAE("1,2147483648,2", "Unable to parse '1,2147483648,2', expected number"), is(true));
+        expectIAE("1,2147483648,2", "Unable to parse '1,2147483648,2', expected number");
         assertThat(RangeSet.fromString("1,2,2147483648", true).toString(), equalTo("[1,2),[2,3)"));
-        assertThat(expectIAE("1,2,2147483648", "Unable to parse '1,2,2147483648', expected number"), is(true));
+        expectIAE("1,2,2147483648", "Unable to parse '1,2,2147483648', expected number");
         // Invalid number
         assertThat(RangeSet.fromString("1a,2,3", true).toString(), equalTo("[2,3),[3,4)"));
-        assertThat(expectIAE("1a,1,2", "Unable to parse '1a,1,2', expected number"), is(true));
+        expectIAE("1a,1,2", "Unable to parse '1a,1,2', expected number");
         assertThat(RangeSet.fromString("1,2a,3", true).toString(), equalTo("[1,2),[3,4)"));
-        assertThat(expectIAE("1,2a,2", "Unable to parse '1,2a,2', expected number"), is(true));
+        expectIAE("1,2a,2", "Unable to parse '1,2a,2', expected number");
         assertThat(RangeSet.fromString("1,2,3a", true).toString(), equalTo("[1,2),[2,3)"));
-        assertThat(expectIAE("1,2,3a", "Unable to parse '1,2,3a', expected number"), is(true));
+        expectIAE("1,2,3a", "Unable to parse '1,2,3a', expected number");
         assertThat(RangeSet.fromString("aa,2,3", true).toString(), equalTo("[2,3),[3,4)"));
-        assertThat(expectIAE("aa,1,2", "Unable to parse 'aa,1,2', expected number"), is(true));
+        expectIAE("aa,1,2", "Unable to parse 'aa,1,2', expected number");
         assertThat(RangeSet.fromString("1,aa,3", true).toString(), equalTo("[1,2),[3,4)"));
-        assertThat(expectIAE("1,aa,2", "Unable to parse '1,aa,2', expected number"), is(true));
+        expectIAE("1,aa,2", "Unable to parse '1,aa,2', expected number");
         assertThat(RangeSet.fromString("1,2,aa", true).toString(), equalTo("[1,2),[2,3)"));
-        assertThat(expectIAE("1,2,aa", "Unable to parse '1,2,aa', expected number"), is(true));
+        expectIAE("1,2,aa", "Unable to parse '1,2,aa', expected number");
         //Empty
         assertThat(RangeSet.fromString(",1,2", true).toString(), equalTo(""));
-        assertThat(expectIAE(",1,2", "Unable to parse ',1,2', expected correct notation M,N or M-N"), is(true));
+        expectIAE(",1,2", "Unable to parse ',1,2', expected correct notation M,N or M-N");
         assertThat(RangeSet.fromString("1,,2", true).toString(), equalTo(""));
-        assertThat(expectIAE("1,,2", "Unable to parse '1,,2', expected correct notation M,N or M-N"), is(true));
+        expectIAE("1,,2", "Unable to parse '1,,2', expected correct notation M,N or M-N");
         assertThat(RangeSet.fromString("1,2,", true).toString(), equalTo(""));
-        assertThat(expectIAE("1,2,", "Unable to parse '1,2,', expected correct notation M,N or M-N"), is(true));
+        expectIAE("1,2,", "Unable to parse '1,2,', expected correct notation M,N or M-N");
         // Space
         assertThat(RangeSet.fromString(" ,1,2", true).toString(), equalTo("[1,2),[2,3)"));
-        assertThat(expectIAE(" ,1,2", "Unable to parse ' ,1,2', expected number"), is(true));
+        expectIAE(" ,1,2", "Unable to parse ' ,1,2', expected number");
         assertThat(RangeSet.fromString("1, ,2", true).toString(), equalTo("[1,2),[2,3)"));
-        assertThat(expectIAE("1, ,2", "Unable to parse '1, ,2', expected number"), is(true));
+        expectIAE("1, ,2", "Unable to parse '1, ,2', expected number");
         assertThat(RangeSet.fromString("1,2, ", true).toString(), equalTo("[1,2),[2,3)"));
-        assertThat(expectIAE("1,2, ", "Unable to parse '1,2, ', expected number"), is(true));
+        expectIAE("1,2, ", "Unable to parse '1,2, ', expected number");
         // Comma
         assertThat(RangeSet.fromString(",,1,2", true).toString(), equalTo(""));
-        assertThat(expectIAE(",,1,2", "Unable to parse ',,1,2', expected correct notation M,N or M-N"), is(true));
+        expectIAE(",,1,2", "Unable to parse ',,1,2', expected correct notation M,N or M-N");
         assertThat(RangeSet.fromString("1,,,2", true).toString(), equalTo(""));
-        assertThat(expectIAE("1,,,2", "Unable to parse '1,,,2', expected correct notation M,N or M-N"), is(true));
+        expectIAE("1,,,2", "Unable to parse '1,,,2', expected correct notation M,N or M-N");
         assertThat(RangeSet.fromString("1,2,,", true).toString(), equalTo(""));
-        assertThat(expectIAE("1,2,,", "Unable to parse '1,2,,', expected correct notation M,N or M-N"), is(true));
+        expectIAE("1,2,,", "Unable to parse '1,2,,', expected correct notation M,N or M-N");
         // Hyphen
         assertThat(RangeSet.fromString("-,1,2", true).toString(), equalTo("[1,2),[2,3)"));
-        assertThat(expectIAE("-,1,2", "Unable to parse '-,1,2', expected string with a range M-N"), is(true));
+        expectIAE("-,1,2", "Unable to parse '-,1,2', expected string with a range M-N");
         assertThat(RangeSet.fromString("1,-,2", true).toString(), equalTo("[1,2),[2,3)"));
-        assertThat(expectIAE("1,-,2", "Unable to parse '1,-,2', expected string with a range M-N"), is(true));
+        expectIAE("1,-,2", "Unable to parse '1,-,2', expected string with a range M-N");
         assertThat(RangeSet.fromString("1,2,-", true).toString(), equalTo("[1,2),[2,3)"));
-        assertThat(expectIAE("1,2,-", "Unable to parse '1,2,-', expected string with a range M-N"), is(true));
+        expectIAE("1,2,-", "Unable to parse '1,2,-', expected string with a range M-N");
 
         //
         // Single range
@@ -370,112 +371,112 @@ public class FingerprintTest {
         assertThat(RangeSet.fromString("+0-+2", true).toString(), equalTo("[0,3)"));
         assertThat(RangeSet.fromString("+0-+2", false).toString(), equalTo("[0,3)"));
         assertThat(RangeSet.fromString("0--1", true).toString(), equalTo(""));
-        assertThat(expectIAE("0--1", "Unable to parse '0--1', expected correct notation M,N or M-N"), is(true));
+        expectIAE("0--1", "Unable to parse '0--1', expected correct notation M,N or M-N");
         assertThat(RangeSet.fromString("+0--1", true).toString(), equalTo(""));
-        assertThat(expectIAE("+0--1", "Unable to parse '+0--1', expected correct notation M,N or M-N"), is(true));
+        expectIAE("+0--1", "Unable to parse '+0--1', expected correct notation M,N or M-N");
         assertThat(RangeSet.fromString("0--2", true).toString(), equalTo(""));
-        assertThat(expectIAE("0--2", "Unable to parse '0--2', expected correct notation M,N or M-N"), is(true));
+        expectIAE("0--2", "Unable to parse '0--2', expected correct notation M,N or M-N");
         assertThat(RangeSet.fromString("+0--2", true).toString(), equalTo(""));
-        assertThat(expectIAE("+0--2", "Unable to parse '+0--2', expected correct notation M,N or M-N"), is(true));
+        expectIAE("+0--2", "Unable to parse '+0--2', expected correct notation M,N or M-N");
         assertThat(RangeSet.fromString("1-0", true).toString(), equalTo(""));
-        assertThat(expectIAE("1-0", "Unable to parse '1-0', expected string with a range M-N where M<N"), is(true));
+        expectIAE("1-0", "Unable to parse '1-0', expected string with a range M-N where M<N");
         assertThat(RangeSet.fromString("+1-+0", true).toString(), equalTo(""));
-        assertThat(expectIAE("+1-+0", "Unable to parse '+1-+0', expected string with a range M-N where M<N"), is(true));
+        expectIAE("+1-+0", "Unable to parse '+1-+0', expected string with a range M-N where M<N");
         assertThat(RangeSet.fromString("2-0", true).toString(), equalTo(""));
-        assertThat(expectIAE("2-0", "Unable to parse '2-0', expected string with a range M-N where M<N"), is(true));
+        expectIAE("2-0", "Unable to parse '2-0', expected string with a range M-N where M<N");
         assertThat(RangeSet.fromString("+2-+0", true).toString(), equalTo(""));
-        assertThat(expectIAE("+2-+0", "Unable to parse '+2-+0', expected string with a range M-N where M<N"), is(true));
+        expectIAE("+2-+0", "Unable to parse '+2-+0', expected string with a range M-N where M<N");
         assertThat(RangeSet.fromString("-1-0", true).toString(), equalTo(""));
-        assertThat(expectIAE("-1-0", "Unable to parse '-1-0', expected correct notation M,N or M-N"), is(true));
+        expectIAE("-1-0", "Unable to parse '-1-0', expected correct notation M,N or M-N");
         assertThat(RangeSet.fromString("-1-+0", true).toString(), equalTo(""));
-        assertThat(expectIAE("-1-+0", "Unable to parse '-1-+0', expected correct notation M,N or M-N"), is(true));
+        expectIAE("-1-+0", "Unable to parse '-1-+0', expected correct notation M,N or M-N");
         assertThat(RangeSet.fromString("-2-0", true).toString(), equalTo(""));
-        assertThat(expectIAE("-2-0", "Unable to parse '-2-0', expected correct notation M,N or M-N"), is(true));
+        expectIAE("-2-0", "Unable to parse '-2-0', expected correct notation M,N or M-N");
         assertThat(RangeSet.fromString("-2-+0", true).toString(), equalTo(""));
-        assertThat(expectIAE("-2-+0", "Unable to parse '-2-+0', expected correct notation M,N or M-N"), is(true));
+        expectIAE("-2-+0", "Unable to parse '-2-+0', expected correct notation M,N or M-N");
         assertThat(RangeSet.fromString("0-0", true).toString(), equalTo("[0,1)"));
         assertThat(RangeSet.fromString("0-0", false).toString(), equalTo("[0,1)"));
         assertThat(RangeSet.fromString("+0-+0", true).toString(), equalTo("[0,1)"));
         assertThat(RangeSet.fromString("+0-+0", false).toString(), equalTo("[0,1)"));
         // Negative number
         assertThat(RangeSet.fromString("-1-1", true).toString(), equalTo(""));
-        assertThat(expectIAE("-1-1", "Unable to parse '-1-1', expected correct notation M,N or M-N"), is(true));
+        expectIAE("-1-1", "Unable to parse '-1-1', expected correct notation M,N or M-N");
         assertThat(RangeSet.fromString("-1-+1", true).toString(), equalTo(""));
-        assertThat(expectIAE("-1-+1", "Unable to parse '-1-+1', expected correct notation M,N or M-N"), is(true));
+        expectIAE("-1-+1", "Unable to parse '-1-+1', expected correct notation M,N or M-N");
         assertThat(RangeSet.fromString("-1-2", true).toString(), equalTo(""));
-        assertThat(expectIAE("-1-2", "Unable to parse '-1-2', expected correct notation M,N or M-N"), is(true));
+        expectIAE("-1-2", "Unable to parse '-1-2', expected correct notation M,N or M-N");
         assertThat(RangeSet.fromString("-1-+2", true).toString(), equalTo(""));
-        assertThat(expectIAE("-1-+2", "Unable to parse '-1-+2', expected correct notation M,N or M-N"), is(true));
+        expectIAE("-1-+2", "Unable to parse '-1-+2', expected correct notation M,N or M-N");
         assertThat(RangeSet.fromString("1--1", true).toString(), equalTo(""));
-        assertThat(expectIAE("1--1", "Unable to parse '1--1', expected correct notation M,N or M-N"), is(true));
+        expectIAE("1--1", "Unable to parse '1--1', expected correct notation M,N or M-N");
         assertThat(RangeSet.fromString("+1--1", true).toString(), equalTo(""));
-        assertThat(expectIAE("+1--1", "Unable to parse '+1--1', expected correct notation M,N or M-N"), is(true));
+        expectIAE("+1--1", "Unable to parse '+1--1', expected correct notation M,N or M-N");
         assertThat(RangeSet.fromString("1--2", true).toString(), equalTo(""));
-        assertThat(expectIAE("1--2", "Unable to parse '1--2', expected correct notation M,N or M-N"), is(true));
+        expectIAE("1--2", "Unable to parse '1--2', expected correct notation M,N or M-N");
         assertThat(RangeSet.fromString("+1--2", true).toString(), equalTo(""));
-        assertThat(expectIAE("+1--2", "Unable to parse '+1--2', expected correct notation M,N or M-N"), is(true));
+        expectIAE("+1--2", "Unable to parse '+1--2', expected correct notation M,N or M-N");
         assertThat(RangeSet.fromString("-1--1", true).toString(), equalTo(""));
-        assertThat(expectIAE("-1--1", "Unable to parse '-1--1', expected correct notation M,N or M-N"), is(true));
+        expectIAE("-1--1", "Unable to parse '-1--1', expected correct notation M,N or M-N");
         assertThat(RangeSet.fromString("-2--1", true).toString(), equalTo(""));
-        assertThat(expectIAE("-2--1", "Unable to parse '-2--1', expected correct notation M,N or M-N"), is(true));
+        expectIAE("-2--1", "Unable to parse '-2--1', expected correct notation M,N or M-N");
         // Exceeded int number
         assertThat(RangeSet.fromString("0-2147483648", true).toString(), equalTo(""));
-        assertThat(expectIAE("0-2147483648", "Unable to parse '0-2147483648', expected number"), is(true));
+        expectIAE("0-2147483648", "Unable to parse '0-2147483648', expected number");
         assertThat(RangeSet.fromString("2147483648-0", true).toString(), equalTo(""));
-        assertThat(expectIAE("2147483648-0", "Unable to parse '2147483648-0', expected number"), is(true));
+        expectIAE("2147483648-0", "Unable to parse '2147483648-0', expected number");
         assertThat(RangeSet.fromString("2147483648-2147483648", true).toString(), equalTo(""));
-        assertThat(expectIAE("2147483648-2147483648", "Unable to parse '2147483648-2147483648', expected number"), is(true));
+        expectIAE("2147483648-2147483648", "Unable to parse '2147483648-2147483648', expected number");
         // Invalid number
         assertThat(RangeSet.fromString("1-2a", true).toString(), equalTo(""));
-        assertThat(expectIAE("1-2a", "Unable to parse '1-2a', expected number"), is(true));
+        expectIAE("1-2a", "Unable to parse '1-2a', expected number");
         assertThat(RangeSet.fromString("2a-2", true).toString(), equalTo(""));
-        assertThat(expectIAE("2a-2", "Unable to parse '2a-2', expected number"), is(true));
+        expectIAE("2a-2", "Unable to parse '2a-2', expected number");
         assertThat(RangeSet.fromString("2a-2a", true).toString(), equalTo(""));
-        assertThat(expectIAE("2a-2a", "Unable to parse '2a-2a', expected number"), is(true));
+        expectIAE("2a-2a", "Unable to parse '2a-2a', expected number");
         assertThat(RangeSet.fromString("aa-2", true).toString(), equalTo(""));
-        assertThat(expectIAE("aa-2", "Unable to parse 'aa-2', expected number"), is(true));
+        expectIAE("aa-2", "Unable to parse 'aa-2', expected number");
         assertThat(RangeSet.fromString("1-aa", true).toString(), equalTo(""));
-        assertThat(expectIAE("1-aa", "Unable to parse '1-aa', expected number"), is(true));
+        expectIAE("1-aa", "Unable to parse '1-aa', expected number");
         assertThat(RangeSet.fromString("aa-aa", true).toString(), equalTo(""));
-        assertThat(expectIAE("aa-aa", "Unable to parse 'aa-aa', expected number"), is(true));
+        expectIAE("aa-aa", "Unable to parse 'aa-aa', expected number");
         // Empty
         assertThat(RangeSet.fromString("-1", true).toString(), equalTo(""));
-        assertThat(expectIAE("-1", "Unable to parse '-1', expected string with a range M-N"), is(true));
+        expectIAE("-1", "Unable to parse '-1', expected string with a range M-N");
         assertThat(RangeSet.fromString("1-", true).toString(), equalTo(""));
-        assertThat(expectIAE("1-", "Unable to parse '1-', expected string with a range M-N"), is(true));
+        expectIAE("1-", "Unable to parse '1-', expected string with a range M-N");
         assertThat(RangeSet.fromString("-", true).toString(), equalTo(""));
-        assertThat(expectIAE("-", "Unable to parse '-', expected string with a range M-N"), is(true));
+        expectIAE("-", "Unable to parse '-', expected string with a range M-N");
         // Space
         assertThat(RangeSet.fromString(" -1", true).toString(), equalTo(""));
-        assertThat(expectIAE(" -1", "Unable to parse ' -1', expected string with a range M-N"), is(true));
+        expectIAE(" -1", "Unable to parse ' -1', expected string with a range M-N");
         assertThat(RangeSet.fromString("1- ", true).toString(), equalTo(""));
-        assertThat(expectIAE("1- ", "Unable to parse '1- ', expected string with a range M-N"), is(true));
+        expectIAE("1- ", "Unable to parse '1- ', expected string with a range M-N");
         assertThat(RangeSet.fromString(" - ", true).toString(), equalTo(""));
-        assertThat(expectIAE(" - ", "Unable to parse ' - ', expected string with a range M-N"), is(true));
+        expectIAE(" - ", "Unable to parse ' - ', expected string with a range M-N");
         // Comma
         assertThat(RangeSet.fromString(",-1", true).toString(), equalTo(""));
-        assertThat(expectIAE(",-1", "Unable to parse ',-1', expected string with a range M-N"), is(true));
+        expectIAE(",-1", "Unable to parse ',-1', expected string with a range M-N");
         assertThat(RangeSet.fromString("1-,", true).toString(), equalTo(""));
-        assertThat(expectIAE("1-,", "Unable to parse '1-,', expected string with a range M-N"), is(true));
+        expectIAE("1-,", "Unable to parse '1-,', expected string with a range M-N");
         assertThat(RangeSet.fromString(",-,", true).toString(), equalTo(""));
-        assertThat(expectIAE(",-,", "Unable to parse ',-,', expected string with a range M-N"), is(true));
+        expectIAE(",-,", "Unable to parse ',-,', expected string with a range M-N");
         // Hyphen
         assertThat(RangeSet.fromString("--1", true).toString(), equalTo(""));
-        assertThat(expectIAE("--1", "Unable to parse '--1', expected correct notation M,N or M-N"), is(true));
+        expectIAE("--1", "Unable to parse '--1', expected correct notation M,N or M-N");
         assertThat(RangeSet.fromString("1--", true).toString(), equalTo(""));
-        assertThat(expectIAE("1--", "Unable to parse '1--', expected correct notation M,N or M-N"), is(true));
+        expectIAE("1--", "Unable to parse '1--', expected correct notation M,N or M-N");
         assertThat(RangeSet.fromString("---", true).toString(), equalTo(""));
-        assertThat(expectIAE("---", "Unable to parse '---', expected correct notation M,N or M-N"), is(true));
+        expectIAE("---", "Unable to parse '---', expected correct notation M,N or M-N");
         // Inverse range
         assertThat(RangeSet.fromString("2-1", true).toString(), equalTo(""));
-        assertThat(expectIAE("2-1", "Unable to parse '2-1', expected string with a range M-N where M<N"), is(true));
+        expectIAE("2-1", "Unable to parse '2-1', expected string with a range M-N where M<N");
         assertThat(RangeSet.fromString("10-1", true).toString(), equalTo(""));
-        assertThat(expectIAE("10-1", "Unable to parse '10-1', expected string with a range M-N where M<N"), is(true));
+        expectIAE("10-1", "Unable to parse '10-1', expected string with a range M-N where M<N");
         assertThat(RangeSet.fromString("-1--2", true).toString(), equalTo(""));
-        assertThat(expectIAE("-1--2", "Unable to parse '-1--2', expected correct notation M,N or M-N"), is(true));
+        expectIAE("-1--2", "Unable to parse '-1--2', expected correct notation M,N or M-N");
         // Invalid range
         assertThat(RangeSet.fromString("1-3-", true).toString(), equalTo(""));
-        assertThat(expectIAE("1-3-", "Unable to parse '1-3-', expected correct notation M,N or M-N"), is(true));
+        expectIAE("1-3-", "Unable to parse '1-3-', expected correct notation M,N or M-N");
 
         //
         // Multiple ranges
@@ -486,21 +487,10 @@ public class FingerprintTest {
         assertThat(RangeSet.fromString("1-3,2-3", true).toString(), equalTo("[1,4),[2,4)"));
         assertThat(RangeSet.fromString("1-5,2-3", true).toString(), equalTo("[1,6),[2,4)"));
     }
-    private boolean expectIAE(final String expr, final String msg) {
-        try {
-            RangeSet.fromString(expr, false);
-        } catch (Throwable e) {
-            if (e instanceof IllegalArgumentException) {
-                if (e.getMessage().isEmpty()) {
-                    return msg.isEmpty();
-                }
-                else {
-                    return !msg.isEmpty() && e.getMessage().contains(msg);
-                }
-            }
-        }
-        // Exception wasn't throws or thrown Exception wasn't an instance of IllegalArgumentException
-        fail("Should never be here");
-        return false;
+
+    private void expectIAE(final String expr, final String msg) {
+        IllegalArgumentException e =
+                assertThrows(IllegalArgumentException.class, () -> RangeSet.fromString(expr, false));
+        assertThat(e.getMessage(), containsString(msg));
     }
 }

@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.util;
 
 import static org.junit.Assert.assertThrows;
@@ -62,7 +63,7 @@ public class ResourceBundleUtilTest {
 
             JSONObject bundle = ResourceBundleUtil.getBundle("hudson.logging.Messages", new Locale("kok")); // konkani
             Assert.assertEquals("Initializing log recorders", bundle.getString("LogRecorderManager.init"));
-        }finally{
+        } finally {
             Locale.setDefault(defaultOSLocale);
         }
     }

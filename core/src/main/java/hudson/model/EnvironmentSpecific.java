@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import hudson.EnvVars;
@@ -28,7 +29,7 @@ import hudson.slaves.NodeSpecific;
 
 /**
  * Represents any concept that can be adapted for a certain environment.
- * 
+ *
  * Mainly for documentation purposes.
  *
  * @since 1.286
@@ -37,8 +38,8 @@ import hudson.slaves.NodeSpecific;
  * @see NodeSpecific
  */
 public interface EnvironmentSpecific<T extends EnvironmentSpecific<T>> {
-	/**
-	 * Returns a specialized copy of T for functioning in the given environment.
-	 */
-	T forEnvironment(EnvVars environment);
+    /**
+     * Returns a specialized copy of T for functioning in the given environment.
+     */
+    T forEnvironment(EnvVars environment);
 }

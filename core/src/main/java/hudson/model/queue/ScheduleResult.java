@@ -58,6 +58,7 @@ public abstract class ScheduleResult {
 
     public static final class Created extends ScheduleResult {
         private final WaitingItem item;
+
         private Created(WaitingItem item) {
             this.item = item;
         }

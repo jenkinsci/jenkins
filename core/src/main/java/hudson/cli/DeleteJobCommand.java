@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.cli;
 
 import hudson.AbortException;
@@ -41,7 +42,7 @@ import org.kohsuke.args4j.Argument;
 public class DeleteJobCommand extends CLICommand {
 
     @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
-    @Argument(usage="Name of the job(s) to delete", required=true, multiValued=true)
+    @Argument(usage = "Name of the job(s) to delete", required = true, multiValued = true)
     private List<String> jobs;
 
     @Override
@@ -58,20 +59,20 @@ public class DeleteJobCommand extends CLICommand {
 
         final HashSet<String> hs = new HashSet<>(jobs);
 
-        for (String job_s: hs) {
+        for (String job_s : hs) {
             AbstractItem job;
 
             try {
                 job = (AbstractItem) jenkins.getItemByFullName(job_s);
 
-                if(job == null) {
+                if (job == null) {
                     throw new IllegalArgumentException("No such job '" + job_s + "'");
                 }
 
                 job.checkPermission(Item.DELETE);
                 job.delete();
             } catch (Exception e) {
-                if(hs.size() == 1) {
+                if (hs.size() == 1) {
                     throw e;
                 }
 

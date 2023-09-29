@@ -39,19 +39,19 @@ import org.kohsuke.stapler.StaplerRequest;
  */
 @Extension @Symbol("artifactManager")
 public class ArtifactManagerConfiguration extends GlobalConfiguration implements PersistentDescriptor {
-    
+
     public static @NonNull ArtifactManagerConfiguration get() {
         return GlobalConfiguration.all().getInstance(ArtifactManagerConfiguration.class);
     }
 
-    private final DescribableList<ArtifactManagerFactory,ArtifactManagerFactoryDescriptor> artifactManagerFactories = new DescribableList<>(this);
+    private final DescribableList<ArtifactManagerFactory, ArtifactManagerFactoryDescriptor> artifactManagerFactories = new DescribableList<>(this);
 
     private Object readResolve() {
         artifactManagerFactories.setOwner(this);
         return this;
     }
 
-    public DescribableList<ArtifactManagerFactory,ArtifactManagerFactoryDescriptor> getArtifactManagerFactories() {
+    public DescribableList<ArtifactManagerFactory, ArtifactManagerFactoryDescriptor> getArtifactManagerFactories() {
         return artifactManagerFactories;
     }
 

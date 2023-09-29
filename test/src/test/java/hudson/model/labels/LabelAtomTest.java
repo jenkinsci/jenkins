@@ -39,9 +39,9 @@ public class LabelAtomTest {
         Label l2 = j.jenkins.getLabel("label2");
         Label l3 = j.jenkins.getLabel("label3");
         assertThat(l.getNodes().size(), is(2));
-        assertThat(l.getNodes(), containsInAnyOrder(n1,n2));
+        assertThat(l.getNodes(), containsInAnyOrder(n1, n2));
         assertThat(l2.getNodes().size(), is(2));
-        assertThat(l2.getNodes(), containsInAnyOrder(n3,n2));
+        assertThat(l2.getNodes(), containsInAnyOrder(n3, n2));
         assertThat(l3.getNodes(), is(empty()));
     }
 

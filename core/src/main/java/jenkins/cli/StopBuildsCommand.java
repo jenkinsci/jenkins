@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.cli;
 
 import hudson.Extension;
@@ -30,8 +31,9 @@ import hudson.model.Item;
 import hudson.model.Job;
 import hudson.model.Run;
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import jenkins.model.Jenkins;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -54,7 +56,8 @@ public class StopBuildsCommand extends CLICommand {
     @Override
     protected int run() throws Exception {
         Jenkins jenkins = Jenkins.get();
-        final HashSet<String> names = new HashSet<>(jobNames);
+        // Deduplicate job names, but preserve the order specified by the user.
+        final Set<String> names = new LinkedHashSet<>(jobNames);
 
         final List<Job> jobsToStop = new ArrayList<>();
         for (final String jobName : names) {
@@ -80,8 +83,10 @@ public class StopBuildsCommand extends CLICommand {
     private void stopJobBuilds(final Job job) {
         final Run lastBuild = job.getLastBuild();
         final String jobName = job.getFullDisplayName();
-        if (lastBuild != null && lastBuild.isBuilding()) {
-            stopBuild(lastBuild, jobName);
+        if (lastBuild != null) {
+            if (lastBuild.isBuilding()) {
+                stopBuild(lastBuild, jobName);
+            }
             checkAndStopPreviousBuilds(lastBuild, jobName);
         }
     }
@@ -95,7 +100,7 @@ public class StopBuildsCommand extends CLICommand {
                 executor.doStop();
                 isAnyBuildStopped = true;
                 stdout.printf("Build '%s' stopped for job '%s'%n", buildName, jobName);
-            } catch (final Exception e) {
+            } catch (final RuntimeException e) {
                 stdout.printf("Exception occurred while trying to stop build '%s' for job '%s'. ", buildName, jobName);
                 stdout.printf("Exception class: %s, message: %s%n", e.getClass().getSimpleName(), e.getMessage());
             }

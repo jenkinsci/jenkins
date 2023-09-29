@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Yahoo! Inc.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,27 +21,32 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package lib.form;
 
-import static com.gargoylesoftware.htmlunit.HttpMethod.POST;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.htmlunit.HttpMethod.POST;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.html.DomNodeList;
-import com.gargoylesoftware.htmlunit.html.HtmlButtonInput;
-import com.gargoylesoftware.htmlunit.html.HtmlElement;
-import com.gargoylesoftware.htmlunit.html.HtmlElementUtil;
-import com.gargoylesoftware.htmlunit.html.HtmlInput;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.model.FreeStyleProject;
 import hudson.model.Job;
 import hudson.model.UnprotectedRootAction;
 import hudson.util.HttpResponses;
 import jenkins.model.OptionalJobProperty;
+import org.htmlunit.Page;
+import org.htmlunit.WebRequest;
+import org.htmlunit.html.DomElement;
+import org.htmlunit.html.DomNodeList;
+import org.htmlunit.html.HtmlButton;
+import org.htmlunit.html.HtmlElement;
+import org.htmlunit.html.HtmlElementUtil;
+import org.htmlunit.html.HtmlInput;
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.html.HtmlTextArea;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -58,7 +63,7 @@ import org.w3c.dom.NodeList;
 public class ExpandableTextboxTest {
     @Rule
     public JenkinsRule j = new JenkinsRule();
-    
+
     @Issue("JENKINS-2816")
     @Test
     public void testMultiline() throws Exception {
@@ -69,7 +74,7 @@ public class ExpandableTextboxTest {
 
         NodeList textareas = page.getElementsByTagName("textarea");
         assertEquals(1, textareas.getLength());
-        assertEquals(j.jenkins.getSystemMessage(),textareas.item(0).getTextContent());
+        assertEquals(j.jenkins.getSystemMessage(), textareas.item(0).getTextContent());
     }
 
     /**
@@ -79,69 +84,68 @@ public class ExpandableTextboxTest {
         JenkinsRule.WebClient wc = j.createWebClient();
         WebRequest req = new WebRequest(wc.createCrumbedUrl("eval"), POST);
         req.setEncodingType(null);
-        req.setRequestBody("<j:jelly xmlns:j='jelly:core' xmlns:st='jelly:stapler' xmlns:l='/lib/layout' xmlns:f='/lib/form'>"+jellyScript+"</j:jelly>");
+        req.setRequestBody("<j:jelly xmlns:j='jelly:core' xmlns:st='jelly:stapler' xmlns:l='/lib/layout' xmlns:f='/lib/form'>" + jellyScript + "</j:jelly>");
         Page page = wc.getPage(req);
         return (HtmlPage) page;
     }
-    
+
     @Test
     public void noInjectionArePossible() throws Exception {
         TestRootAction testParams = j.jenkins.getExtensionList(UnprotectedRootAction.class).get(TestRootAction.class);
         assertNotNull(testParams);
-    
+
         checkRegularCase(testParams);
         checkInjectionInName(testParams);
     }
-    
+
     private void checkRegularCase(TestRootAction testParams) throws Exception {
         testParams.paramName = "testName";
-        
+
         JenkinsRule.WebClient wc = j.createWebClient()
                 .withThrowExceptionOnFailingStatusCode(false);
         HtmlPage p = wc.goTo("test");
-        
+
         HtmlElementUtil.click(getExpandButton(p));
         assertNotEquals("hacked", p.getTitleText());
     }
-    
+
     private void checkInjectionInName(TestRootAction testParams) throws Exception {
         testParams.paramName = "testName',document.title='hacked'+'";
-        
+
         JenkinsRule.WebClient wc = j.createWebClient()
                 .withThrowExceptionOnFailingStatusCode(false);
         HtmlPage p = wc.goTo("test");
-        
+
         HtmlElementUtil.click(getExpandButton(p));
         assertNotEquals("hacked", p.getTitleText());
     }
-    
-    private HtmlButtonInput getExpandButton(HtmlPage page){
-        DomNodeList<HtmlElement> buttons = page.getElementById("test-panel").getElementsByTagName("input");
-        // the first one is the text input
-        assertEquals(2, buttons.size());
-        return (HtmlButtonInput) buttons.get(1);
+
+    private HtmlButton getExpandButton(HtmlPage page) {
+        DomNodeList<HtmlElement> buttons = page.getElementById("test-panel").getElementsByTagName("button");
+        assertEquals(1, buttons.size());
+        return (HtmlButton) buttons.get(0);
     }
-    
+
     @TestExtension("noInjectionArePossible")
     public static final class TestRootAction implements UnprotectedRootAction {
-        
+
         public String paramName;
-        
+
         @Override
         public @CheckForNull String getIconFileName() {
             return null;
         }
-        
+
         @Override
         public @CheckForNull String getDisplayName() {
             return null;
         }
-        
+
         @Override
         public String getUrlName() {
             return "test";
         }
-        
+
         @WebMethod(name = "submit")
         public HttpResponse doSubmit(StaplerRequest request) {
             return HttpResponses.plainText("method:" + request.getMethod());
@@ -151,7 +155,7 @@ public class ExpandableTextboxTest {
     @Test
     @Issue("SECURITY-1498")
     public void noXssUsingInputValue() throws Exception {
-        XssProperty xssProperty = new XssProperty("</textarea><h1>HACK</h1>");
+        ExpandableTextBoxProperty xssProperty = new ExpandableTextBoxProperty("</textarea><h1>HACK</h1>");
         FreeStyleProject p = j.createFreeStyleProject();
         p.addProperty(xssProperty);
 
@@ -160,8 +164,8 @@ public class ExpandableTextboxTest {
 
         int numberOfH1Before = configurePage.getElementsByTagName("h1").size();
 
-        HtmlInput xssInput = configurePage.getElementByName("_.xss");
-        HtmlInput expandButton = (HtmlInput) xssInput.getParentNode().getNextSibling().getFirstChild();
+        HtmlInput xssInput = configurePage.getElementByName("_.theField");
+        HtmlButton expandButton = (HtmlButton) xssInput.getParentNode().getNextSibling().getFirstChild();
         HtmlElementUtil.click(expandButton);
 
         // no additional h1, meaning the "payload" is not interpreted
@@ -170,19 +174,37 @@ public class ExpandableTextboxTest {
         assertEquals(numberOfH1Before, numberOfH1After);
     }
 
-    public static final class XssProperty extends OptionalJobProperty<Job<?,?>> {
+    @Test
+    @Issue("JENKINS-67627")
+    public void expandsIntoNewlines() throws Exception {
+        OptionalJobProperty property = new ExpandableTextBoxProperty("foo bar baz"); // A bit of a misnomer here, we're using code for an existing test
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.addProperty(property);
 
-        private String xss;
+        JenkinsRule.WebClient wc = j.createWebClient();
+        HtmlPage configurePage = wc.getPage(p, "configure");
 
-        public XssProperty(String xss){
-            this.xss = xss;
+        HtmlInput input = configurePage.getElementByName("_.theField");
+        HtmlButton expandButton = (HtmlButton) input.getParentNode().getNextSibling().getFirstChild();
+        HtmlElementUtil.click(expandButton);
+        final DomElement textArea = configurePage.getElementByName("_.theField");
+        assertThat(textArea, instanceOf(HtmlTextArea.class));
+        assertEquals("foo\nbar\nbaz", ((HtmlTextArea) textArea).getText());
+    }
+
+    public static final class ExpandableTextBoxProperty extends OptionalJobProperty<Job<?, ?>> {
+
+        private String theField;
+
+        public ExpandableTextBoxProperty(String theField) {
+            this.theField = theField;
         }
 
-        public String getXss() {
-            return xss;
+        public String getTheField() {
+            return theField;
         }
 
-        @TestExtension("noXssUsingInputValue")
+        @TestExtension({"noXssUsingInputValue", "expandsIntoNewlines"})
         public static class DescriptorImpl extends OptionalJobProperty.OptionalJobPropertyDescriptor {
         }
     }

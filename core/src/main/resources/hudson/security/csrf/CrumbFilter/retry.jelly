@@ -32,7 +32,7 @@ THE SOFTWARE.
             <p>
                 ${%blurb}
             </p>
-            <p><tt>${requestURL}</tt></p>
+            <p><code>${requestURL}</code></p>
             <p><strong>${%warning}</strong></p>
             <f:form method="post" name="retry">
                 <f:submit value="${%Retry using POST}"/>

@@ -20,7 +20,7 @@ public class CloudProvisioningListenerTest {
 
     @Issue("JENKINS-63828")
     @Test
-    public void noOverride(){
+    public void noOverride() {
         Cloud.CloudState state = new Cloud.CloudState(null, 0);
         assertNull(new CloudProvisioningListenerNoOverride().canProvision(null, state, 0));
     }

@@ -26,29 +26,31 @@ THE SOFTWARE.
   <st:documentation>
     Foldable block expanded when the corresponding item is selected in the drop-down list.
 
-    <st:attribute name="title">
+    <st:attribute name="title"> <![CDATA[
       Human readable title text of this drop-down listbox.
-      Shown in the same position as &lt;f:entry title="..." />
+      Shown in the same position as <f:entry title="..." />
+    ]]>
     </st:attribute>
     <st:attribute name="name" use="required">
       name of the drop-down list.
     </st:attribute>
-    <st:attribute name="help">
-      Path to the inline help. See &lt;f:entry help="..." />
+    <st:attribute name="help"> <![CDATA[
+      Path to the inline help. See <f:entry help="..." />
+    ]]>
     </st:attribute>
   </st:documentation>
 
     <div class='jenkins-form-item'>
-        <div class="setting-name help-sibling">
+        <div class="jenkins-form-label help-sibling">
             ${attrs.title}
             <f:helpLink url="${attrs.help}" featureName="${title}"/>
         </div>
         <j:if test="${attrs.help!=null}">
             <f:helpArea/>
         </j:if>
-        <div class="setting-main">
+        <div class="jenkins-select">
             <!-- create drop-down list -->
-            <select class="setting-input dropdownList"
+            <select class="jenkins-select__input dropdownList"
                     disabled="${readOnlyMode ? 'true' : null}"
             >
                 <j:set var="dropdownListMode" value="createSelectField"/>

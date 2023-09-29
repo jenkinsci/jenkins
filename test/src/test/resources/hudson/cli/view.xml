@@ -5,7 +5,7 @@
   <filterQueue>false</filterQueue>
   <properties class="hudson.model.View$PropertyList"/>
   <jobNames>
-    <comparator class="hudson.util.CaseInsensitiveComparator"/>
+    <comparator class="java.lang.String$CaseInsensitiveComparator"/>
     <string>core_selenium-test</string>
     <string>jenkins_lts_branch</string>
     <string>jenkins_main_maven-3.1.0</string>

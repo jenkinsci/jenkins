@@ -5,13 +5,13 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.WebResponse;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.ExtensionList;
 import hudson.model.UnprotectedRootAction;
 import java.net.URL;
 import javax.servlet.http.HttpServletResponse;
+import org.htmlunit.WebRequest;
+import org.htmlunit.WebResponse;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
@@ -40,7 +40,7 @@ public class SuspiciousRequestFilterTest {
         assertThat(Foo.getInstance().baz, is(nullValue()));
         assertThat(response.getStatusCode(), is(HttpServletResponse.SC_BAD_REQUEST));
         // Actually served by Jetty; never even gets as far as SuspiciousRequestFilter.
-        assertThat(response.getContentAsString(), containsString("Ambiguous path parameter"));
+        assertThat(response.getContentAsString(), containsString("path parameter"));
     }
 
     @Ignore("No longer passes Jetty")

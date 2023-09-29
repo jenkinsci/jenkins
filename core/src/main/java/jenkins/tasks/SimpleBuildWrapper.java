@@ -96,7 +96,7 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
      * @throws IOException if something fails; {@link AbortException} for user errors
      * @throws InterruptedException if setup is interrupted
      */
-    public void setUp(Context context, Run<?,?> build, FilePath workspace, Launcher launcher, TaskListener listener, EnvVars initialEnvironment) throws IOException, InterruptedException {
+    public void setUp(Context context, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener, EnvVars initialEnvironment) throws IOException, InterruptedException {
         // If this does not require a workspace, defer to the version that does not take a workspace and launcher.
         if (!this.requiresWorkspace()) {
             this.setUp(context, build, listener, initialEnvironment);
@@ -121,7 +121,7 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
      * @throws InterruptedException if setup is interrupted
      * @since 2.258
      */
-    public void setUp(Context context, Run<?,?> build, TaskListener listener, EnvVars initialEnvironment) throws IOException, InterruptedException {
+    public void setUp(Context context, Run<?, ?> build, TaskListener listener, EnvVars initialEnvironment) throws IOException, InterruptedException {
         // If this wrapper requires a workspace, this is the wrong method to call.
         if (this.requiresWorkspace()) {
             throw new IllegalStateException("This build wrapper requires a workspace context, but none was provided.");
@@ -145,7 +145,7 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
      */
     public static final class Context {
         private Disposer disposer;
-        private final Map<String,String> env = new HashMap<>();
+        private final Map<String, String> env = new HashMap<>();
         private final @CheckForNull Boolean wrapperRequiresWorkspace;
 
         /**
@@ -185,7 +185,7 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
             return disposer;
         }
 
-        public @NonNull Map<String,String> getEnv() {
+        public @NonNull Map<String, String> getEnv() {
             return env;
         }
 
@@ -243,7 +243,7 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
          * @throws IOException if something fails; {@link AbortException} for user errors
          * @throws InterruptedException if tear down is interrupted
          */
-        public void tearDown(Run<?,?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws IOException, InterruptedException {
+        public void tearDown(Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener) throws IOException, InterruptedException {
             // If this does not require a workspace, defer to the version that does not take a workspace and launcher.
             if (!this.requiresWorkspace()) {
                 this.tearDown(build, listener);
@@ -266,7 +266,7 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
          * @throws InterruptedException if tear down is interrupted
          * @since 2.258
          */
-        public void tearDown(Run<?,?> build, TaskListener listener) throws IOException, InterruptedException {
+        public void tearDown(Run<?, ?> build, TaskListener listener) throws IOException, InterruptedException {
             // If this callback requires a workspace, this is the wrong method to call.
             if (this.requiresWorkspace()) {
                 throw new IllegalStateException("This end-of-wrapped-block callback requires a workspace context, but none was provided.");
@@ -307,17 +307,20 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
     private class EnvironmentWrapper extends Environment {
         private final Context c;
         private final Launcher launcher;
+
         EnvironmentWrapper(Context c, Launcher launcher) {
             this.c = c;
             this.launcher = launcher;
         }
-        @Override public void buildEnvVars(Map<String,String> env) {
+
+        @Override public void buildEnvVars(Map<String, String> env) {
             if (env instanceof EnvVars) {
                 ((EnvVars) env).overrideAll(c.env);
             } else { // ?
                 env.putAll(c.env);
             }
         }
+
         @Override public boolean tearDown(AbstractBuild build, BuildListener listener) throws IOException, InterruptedException {
             if (c.disposer != null) {
                 c.disposer.tearDown(build, build.getWorkspace(), launcher, listener);
@@ -332,7 +335,7 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
      * @return a filter which ignores its {@code build} parameter and is {@link Serializable}; or null (the default)
      * @since 1.608
      */
-    public @CheckForNull ConsoleLogFilter createLoggerDecorator(@NonNull Run<?,?> build) {
+    public @CheckForNull ConsoleLogFilter createLoggerDecorator(@NonNull Run<?, ?> build) {
         return null;
     }
 
@@ -360,7 +363,7 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
      * <p>{@inheritDoc}
      * @since 1.608
      */
-    @Override public void makeBuildVariables(AbstractBuild build, Map<String,String> variables) {
+    @Override public void makeBuildVariables(AbstractBuild build, Map<String, String> variables) {
         super.makeBuildVariables(build, variables);
     }
 

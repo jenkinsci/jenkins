@@ -21,17 +21,18 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.security.seed;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 
-import com.gargoylesoftware.htmlunit.HttpMethod;
-import com.gargoylesoftware.htmlunit.WebRequest;
 import hudson.model.User;
 import java.net.URL;
 import java.util.concurrent.atomic.AtomicReference;
+import org.htmlunit.HttpMethod;
+import org.htmlunit.WebRequest;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.For;

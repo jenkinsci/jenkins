@@ -21,14 +21,15 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package scripts;
 
 import static org.junit.Assert.assertEquals;
 
-import com.gargoylesoftware.htmlunit.ScriptResult;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.model.InvisibleAction;
 import hudson.model.RootAction;
+import org.htmlunit.ScriptResult;
+import org.htmlunit.html.HtmlPage;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -36,7 +37,7 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
 
 /**
- * Tests <tt>behaviour.js</tt>
+ * Tests <code>behaviour.js</code>
  *
  * @author Kohsuke Kawaguchi
  */
@@ -49,20 +50,20 @@ public class BehaviorTest {
         HtmlPage p = j.createWebClient().goTo("self/testCssSelectors");
 
         // basic class selector, that we use the most often
-        assertEquals(2,asInt(p.executeJavaScript("findElementsBySelector($('test1'),'.a',true).length")));
-        assertEquals(1,asInt(p.executeJavaScript("findElementsBySelector($('test1'),'.a',false).length")));
+        assertEquals(2, asInt(p.executeJavaScript("findElementsBySelector(document.getElementById('test1'),'.a',true).length")));
+        assertEquals(1, asInt(p.executeJavaScript("findElementsBySelector(document.getElementById('test1'),'.a',false).length")));
 
         // 'includeSelf' should only affect the first axis and not afterward
-        assertEquals(1,asInt(p.executeJavaScript("findElementsBySelector($('test2'),'.a .b',true).length")));
-        assertEquals(1,asInt(p.executeJavaScript("findElementsBySelector($('test2'),'.a .b',false).length")));
+        assertEquals(1, asInt(p.executeJavaScript("findElementsBySelector(document.getElementById('test2'),'.a .b',true).length")));
+        assertEquals(1, asInt(p.executeJavaScript("findElementsBySelector(document.getElementById('test2'),'.a .b',false).length")));
 
         // tag.class. Should exclude itself anyway even if it's included
-        assertEquals(1,asInt(p.executeJavaScript("findElementsBySelector($('test3'),'P.a',true).length")));
-        assertEquals(1,asInt(p.executeJavaScript("findElementsBySelector($('test3'),'P.a',false).length")));
+        assertEquals(1, asInt(p.executeJavaScript("findElementsBySelector(document.getElementById('test3'),'P.a',true).length")));
+        assertEquals(1, asInt(p.executeJavaScript("findElementsBySelector(document.getElementById('test3'),'P.a',false).length")));
     }
 
     private int asInt(ScriptResult r) {
-        return ((Double)r.getJavaScriptResult()).intValue();
+        return ((Double) r.getJavaScriptResult()).intValue();
     }
 
     @Issue("JENKINS-14495")
