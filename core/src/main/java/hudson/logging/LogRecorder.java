@@ -535,6 +535,16 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
      */
     @RequirePOST
     public synchronized void doDoDelete(StaplerResponse rsp) throws IOException, ServletException {
+        delete();
+        rsp.sendRedirect2("..");
+    }
+
+    /**
+     * Deletes this log recorder.
+     * @throws IOException In case anything went wrong while deleting the configuration file.
+     * @since 2.425
+     */
+    public void delete() throws IOException {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
 
         getConfigFile().delete();
@@ -544,7 +554,7 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
         loggers.forEach(Target::disable);
 
         getParent().getRecorders().forEach(logRecorder -> logRecorder.getLoggers().forEach(Target::enable));
-        rsp.sendRedirect2("..");
+        SaveableListener.fireOnChange(this, getConfigFile());
     }
 
     /**

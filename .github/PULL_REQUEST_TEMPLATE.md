@@ -28,12 +28,15 @@ For refactoring and code cleanup changes, exercise the code before and after the
 
 ### Proposed changelog entries
 
-- Entry 1: Issue, human-readable text
-- […]
+- \<replace with Issue ID if it exists or remove\>, human-readable text
 
 <!-- Comment:
 The changelog entry should be in the imperative mood; e.g., write "do this"/"return that" rather than "does this"/"returns that".
 For examples, see: https://www.jenkins.io/changelog/
+
+You may add multiple changelog entries if applicable by adding a new entry to the list, e.g.
+- First changelog entry
+- Second changelog entry
 -->
 
 ### Proposed upgrade guidelines
