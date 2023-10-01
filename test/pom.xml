@@ -108,6 +108,12 @@ THE SOFTWARE.
         <artifactId>script-security</artifactId>
         <version>1275.v23895f409fb_d</version>
       </dependency>
+      <dependency>
+        <!-- Required by plugin-util-api -->
+        <groupId>org.jenkins-ci.plugins.workflow</groupId>
+        <artifactId>workflow-support</artifactId>
+        <version>865.v43e78cc44e0d</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
   <dependencies>
