@@ -327,7 +327,7 @@ public class FingerprintCleanupThreadTest {
 
         @Override
         public boolean isReady() {
-            return storage.size() != 0;
+            return !storage.isEmpty();
         }
 
         @Override

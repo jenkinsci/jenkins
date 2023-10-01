@@ -36,7 +36,7 @@ import org.kohsuke.args4j.Option;
 /**
  * Safe Restart Jenkins - do not accept any new jobs and try to pause existing.
  *
- * @since TODO
+ * @since 2.414
  */
 @Extension
 @Restricted(NoExternalUse.class)
