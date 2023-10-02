@@ -31,6 +31,7 @@ THE SOFTWARE.
     <l:isAdmin>
       <l:header>
         <script src="${resURL}/jsbundles/pages/cloud-set.js" type="text/javascript" />
+        <link rel="stylesheet" href="${resURL}/jsbundles/pages/cloud-set.css" type="text/css" />
       </l:header>
     </l:isAdmin>
     <l:main-panel>
@@ -48,10 +49,7 @@ THE SOFTWARE.
             <table id="clouds" class="jenkins-table">
               <thead>
                 <tr>
-                  <l:isAdmin>
-                    <th tooltip="${%Drag and drop cells to reorder}">Order</th>
-                  </l:isAdmin>
-                  <th/>
+                  <th tooltip="${%Drag and drop cells to reorder}">${%Order}</th>
                   <th>${%Name}</th>
                   <th/>
                 </tr>
@@ -59,13 +57,8 @@ THE SOFTWARE.
               <tbody class="with-drag-drop">
                 <j:forEach var="cloud" items="${it.clouds}">
                   <tr class="repeated-chunk" id="cloud_${cloud.name}">
-                    <l:isAdmin>
-                      <td class="repeated-chunk__header jenkins-table__cell--tight" style="display: table-cell; padding-left: calc(var(--table-padding) * 2) !important">
-                        <div class="dd-handle"/>
-                      </td>
-                    </l:isAdmin>
                     <td data="${cloud.icon}" class="jenkins-table__cell--tight jenkins-table__icon">
-                      <div class="jenkins-table__cell__button-wrapper">
+                      <div class="jenkins-table__cell__button-wrapper dd-handle">
                         <l:icon src="${cloud.iconClassName}" tooltip="${cloud.iconAltText}"/>
                       </div>
                     </td>
