@@ -4,9 +4,7 @@ Behaviour.specify(
   0,
   function (copyButton) {
     copyButton.addEventListener("click", () => {
-      // HTMLUnit 2.70.0 does not recognize isSecureContext
-      // https://issues.jenkins.io/browse/JENKINS-70895
-      if (!window.isRunAsTest && isSecureContext) {
+      if (isSecureContext) {
         // Copy the text to the clipboard
         navigator.clipboard
           .writeText(copyButton.getAttribute("text"))
