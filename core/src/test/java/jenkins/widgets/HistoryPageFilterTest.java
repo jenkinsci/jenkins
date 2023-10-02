@@ -43,6 +43,7 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import jenkins.model.queue.QueueItem;
 import org.junit.Assert;
@@ -485,6 +486,7 @@ public class HistoryPageFilterTest {
         private final int buildNumber;
 
         private Map<String, String> buildVariables = Collections.emptyMap();
+        private Set<String> sensitiveBuildVariables = Collections.emptySet();
 
         private MockBuild(int buildNumber) {
             super(Mockito.mock(FreeStyleProject.class), Mockito.mock(Calendar.class));
@@ -499,6 +501,11 @@ public class HistoryPageFilterTest {
         @Override
         public Map<String, String> getBuildVariables() {
             return buildVariables;
+        }
+
+        @Override
+        public Set<String> getSensitiveBuildVariables() {
+            return sensitiveBuildVariables; // TODO This is never actually set (bad Mock), actual test in test harness
         }
 
         MockBuild withBuildVariables(Map<String, String> buildVariables) {
