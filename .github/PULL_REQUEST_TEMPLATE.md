@@ -28,14 +28,16 @@ For refactoring and code cleanup changes, exercise the code before and after the
 
 ### Proposed changelog entries
 
-- \<replace with Issue ID if it exists or remove\>, human-readable text
+- JENKINS-XXXXX, human-readable text
 
 <!-- Comment:
 The changelog entry should be in the imperative mood; e.g., write "do this"/"return that" rather than "does this"/"returns that".
 For examples, see: https://www.jenkins.io/changelog/
 
+Remove JENKINS-XXXXX if there is no issue for the pull request.
+
 You may add multiple changelog entries if applicable by adding a new entry to the list, e.g.
-- First changelog entry
+- JENKINS-123456, First changelog entry
 - Second changelog entry
 -->
 
