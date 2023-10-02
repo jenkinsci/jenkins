@@ -44,6 +44,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.Jenkins;
+import jenkins.model.Loadable;
 import jenkins.util.SystemProperties;
 import net.sf.json.JSONObject;
 import org.kohsuke.accmod.Restricted;
@@ -84,7 +85,7 @@ import org.kohsuke.stapler.StaplerResponse;
  * @author Kohsuke Kawaguchi
  * @since 1.42
  */
-public abstract class Plugin implements Saveable, StaplerProxy {
+public abstract class Plugin implements Loadable, Saveable, StaplerProxy {
 
     private static final Logger LOGGER = Logger.getLogger(Plugin.class.getName());
 
@@ -265,7 +266,8 @@ public abstract class Plugin implements Saveable, StaplerProxy {
      *
      * @since 1.245
      */
-    protected void load() throws IOException {
+    @Override
+    public void load() throws IOException {
         XmlFile xml = getConfigXml();
         if (xml.exists())
             xml.unmarshal(this);

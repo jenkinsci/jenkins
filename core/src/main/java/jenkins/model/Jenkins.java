@@ -344,7 +344,7 @@ import org.xml.sax.InputSource;
 @ExportedBean
 public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLevelItemGroup, StaplerProxy, StaplerFallback,
         ModifiableViewGroup, AccessControlled, DescriptorByNameOwner,
-        ModelObjectWithContextMenu, ModelObjectWithChildren, OnMaster {
+        ModelObjectWithContextMenu, ModelObjectWithChildren, OnMaster, Loadable {
     private final transient Queue queue;
 
     // flag indicating if we have loaded the jenkins configuration or not yet.
@@ -3365,6 +3365,15 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     @NonNull
     public Computer createComputer() {
         return new Hudson.MasterComputer();
+    }
+
+    @Override
+    public void load() {
+        try {
+            loadConfig();
+        } catch (IOException e) {
+            LOGGER.log(Level.WARNING, "Failed to load " + getConfigFile(), e);
+        }
     }
 
     private void loadConfig() throws IOException {
