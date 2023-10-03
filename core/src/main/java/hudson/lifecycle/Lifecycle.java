@@ -28,18 +28,22 @@ import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionPoint;
 import hudson.Functions;
+import hudson.PluginManager;
 import hudson.Util;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
 import org.apache.commons.io.FileUtils;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.Beta;
 
 /**
  * Provides the capability for starting/stopping/restarting/uninstalling Hudson.
@@ -57,9 +61,8 @@ public abstract class Lifecycle implements ExtensionPoint {
 
     /**
      * Gets the singleton instance.
-     *
-     * @return never null
      */
+    @NonNull
     public static synchronized Lifecycle get() {
         if (INSTANCE == null) {
             Lifecycle instance;
@@ -134,6 +137,19 @@ public abstract class Lifecycle implements ExtensionPoint {
         }
 
         return INSTANCE;
+    }
+
+    /**
+     * Sets the singleton instance.
+     * Appropriate for implementations defined in plugins,
+     * since {@link #get} may be called before plugins are initialized,
+     * and so it is not safe to pass a plugin-defined class to the system property {@code hudson.lifecycle}
+     * despite the use of {@link PluginManager#uberClassLoader}.
+     * @since TODO
+     */
+    @Restricted(Beta.class)
+    public static synchronized void set(@NonNull Lifecycle lifecycle) {
+        INSTANCE = Objects.requireNonNull(lifecycle);
     }
 
     /**
