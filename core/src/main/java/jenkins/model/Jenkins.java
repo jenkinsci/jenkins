@@ -3369,10 +3369,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     @Override
     public void load() throws IOException {
-        loadConfig();
-    }
-
-    private void loadConfig() throws IOException {
         XmlFile cfg = getConfigFile();
         if (cfg.exists()) {
             // reset some data that may not exist in the disk file
@@ -3493,7 +3489,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         Handle loadJenkins = g.requires(EXTENSIONS_AUGMENTED).attains(SYSTEM_CONFIG_LOADED).add("Loading global config", new Executable() {
             @Override
             public void run(Reactor session) throws Exception {
-                loadConfig();
+                load();
                 // if we are loading old data that doesn't have this field
                 if (slaves != null && !slaves.isEmpty() && nodes.isLegacy()) {
                     nodes.setNodes(slaves);
