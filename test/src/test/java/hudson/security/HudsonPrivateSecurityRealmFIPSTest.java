@@ -25,11 +25,15 @@
 package hudson.security;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.startsWith;
 import static org.junit.Assert.assertThrows;
 
 import hudson.model.User;
 import hudson.security.HudsonPrivateSecurityRealm.Details;
+import java.util.logging.Level;
+import org.hamcrest.Matcher;
 import org.htmlunit.FailingHttpStatusCodeException;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -39,14 +43,21 @@ import org.jvnet.hudson.test.FlagRule;
 import org.jvnet.hudson.test.For;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
+import org.jvnet.hudson.test.LoggerRule;
 
 
 @For(HudsonPrivateSecurityRealm.class)
 public class HudsonPrivateSecurityRealmFIPSTest {
 
+    // the jbcrypt encoded for of "a" without the quotes
+    private static final String JBCRYPT_ENCODED_PASSWORD = "#jbcrypt:$2a$06$m0CrhHm10qJ3lXRY.5zDGO3rS2KdeeWLuGmsfGlMfOxih58VYVfxe";
+
     @ClassRule
     // do not use the FIPS140 class here as that initializes the field before we set the property!
     public static TestRule flagRule = FlagRule.systemProperty("jenkins.security.FIPS140.COMPLIANCE", "true");
+
+    @Rule
+    public LoggerRule lr = new LoggerRule().record(HudsonPrivateSecurityRealm.class, Level.WARNING).capture(5);
 
     @Rule
     public JenkinsRule j = new JenkinsRule();
@@ -83,5 +94,40 @@ public class HudsonPrivateSecurityRealmFIPSTest {
         wc.login("user_hashed", "password");
 
         assertThrows(FailingHttpStatusCodeException.class, () -> wc.login("user_hashed", "password2"));
+        assertThat(lr, not(hasIncorrectHashingLogEntry()));
+    }
+
+    @Test
+    public void userLoginAfterEnablingFIPS() throws Exception {
+        HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
+        j.jenkins.setSecurityRealm(securityRealm);
+
+        User u1 = securityRealm.createAccount("user", "a");
+        u1.setFullName("A User");
+        // overwrite the password property using an password created using an incorrect algorithm
+        u1.addProperty(Details.fromHashedPassword(JBCRYPT_ENCODED_PASSWORD));
+
+        u1.save();
+        assertThat(u1.getProperty(Details.class).getPassword(), is(JBCRYPT_ENCODED_PASSWORD));
+
+        try (WebClient wc = j.createWebClient()) {
+            assertThrows(FailingHttpStatusCodeException.class, () -> wc.login("user", "a"));
+        }
+        assertThat(lr, hasIncorrectHashingLogEntry());
+    }
+
+    @Test
+    public void userCreationWithJBCryptPasswords() throws Exception {
+        HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
+
+        IllegalArgumentException illegalArgumentException = assertThrows(IllegalArgumentException.class,
+                () -> securityRealm.createAccountWithHashedPassword("user_hashed_incorrect_algorithm", JBCRYPT_ENCODED_PASSWORD));
+        assertThat(illegalArgumentException.getMessage(),
+                is("The hashed password was hashed with an incorrect algorithm. Jenkins is expecting $PBKDF2"));
+    }
+
+    private static Matcher<LoggerRule> hasIncorrectHashingLogEntry() {
+        return LoggerRule.recorded(is(
+                "A password appears to be stored (or is attempting to be stored) that was created with a different hashing/encryption algorithm, check the FIPS-140 state of the system has not changed inadvertently"));
     }
 }

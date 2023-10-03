@@ -60,6 +60,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -1078,7 +1079,17 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
             if (password == null) {
                 return false;
             }
-            return password.startsWith(getPasswordHeader()) && PASSWORD_HASH_ENCODER.isHashValid(password.substring(getPasswordHeader().length()));
+            if (password.startsWith(getPasswordHeader())) {
+                return PASSWORD_HASH_ENCODER.isHashValid(password.substring(getPasswordHeader().length()));
+            }
+            if (password.startsWith(FIPS140.useCompliantAlgorithms() ? JBCRYPT : PBKDF2)) {
+                // switch the header to see if this is using a different encryption
+                LOGGER.log(Level.WARNING, "A password appears to be stored (or is attempting to be stored) that was created with a different"
+                        + " hashing/encryption algorithm, check the FIPS-140 state of the system has not changed inadvertently");
+            } else {
+                LOGGER.log(Level.FINE, "A password appears to be stored (or is attempting to be stored) that is not hashed/encrypted.");
+            }
+            return false;
         }
     }
 
