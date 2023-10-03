@@ -14,5 +14,6 @@ import jenkins.model.Loadable;
 public interface PersistentDescriptor extends Loadable, Saveable {
 
     @PostConstruct
+    @Override
     void load();
 }
