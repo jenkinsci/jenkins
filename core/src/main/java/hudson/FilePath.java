@@ -974,14 +974,14 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      *      was considered up to date.
      * @since 1.299
      */
-    public boolean installIfNecessaryFrom(@NonNull URL archive, @CheckForNull TaskListener listener, @NonNull String message) throws IOException, InterruptedException {
+    public boolean installIfNecessaryFrom(@NonNull URL archive, @CheckForNull TaskListener listener, @NonNull String message) throws IOException, InterruptedException, URISyntaxException {
         if (listener == null) {
             listener = TaskListener.NULL;
         }
         return installIfNecessaryFrom(archive, listener, message, MAX_REDIRECTS);
     }
 
-    private boolean installIfNecessaryFrom(@NonNull URL archive, @NonNull TaskListener listener, @NonNull String message, int maxRedirects) throws InterruptedException, IOException {
+    private boolean installIfNecessaryFrom(@NonNull URL archive, @NonNull TaskListener listener, @NonNull String message, int maxRedirects) throws InterruptedException, IOException, URISyntaxException {
         try {
             FilePath timestamp = this.child(".timestamp");
             long lastModified = timestamp.lastModified();
@@ -1067,7 +1067,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         } catch (IOException e) {
             throw new IOException("Failed to install " + archive + " to " + remote, e);
         } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
+            throw new URISyntaxException(e.getInput(), e.getReason());
         }
     }
 

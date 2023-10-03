@@ -1953,10 +1953,8 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                 if (!url.getProtocol().equals("https")) {
                     return FormValidation.warning(Messages.PluginManager_insecureUrl());
                 }
-            } catch (MalformedURLException e) {
+            } catch (MalformedURLException |URISyntaxException e) {
                 return FormValidation.error(e.getMessage());
-            } catch (URISyntaxException e) {
-                throw new URISyntaxException(e.getReason(), e.getInput());
             }
         }
         return FormValidation.ok();

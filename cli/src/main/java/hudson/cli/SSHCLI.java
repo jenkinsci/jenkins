@@ -29,12 +29,9 @@ import static java.util.logging.Level.FINE;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.util.QuotedStringTokenizer;
 import java.io.IOException;
-import java.net.SocketTimeoutException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.URLConnection;
+import java.net.*;
 import java.security.KeyPair;
+import java.security.PublicKey;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
@@ -45,6 +42,7 @@ import org.apache.sshd.client.channel.ClientChannelEvent;
 import org.apache.sshd.client.future.ConnectFuture;
 import org.apache.sshd.client.keyverifier.DefaultKnownHostsServerKeyVerifier;
 import org.apache.sshd.client.keyverifier.KnownHostsServerKeyVerifier;
+import org.apache.sshd.client.keyverifier.ServerKeyVerifier;
 import org.apache.sshd.client.session.ClientSession;
 import org.apache.sshd.common.future.WaitableFuture;
 import org.apache.sshd.common.util.io.input.NoCloseInputStream;
@@ -65,7 +63,7 @@ class SSHCLI {
         try {
             url = new URI(jenkinsUrl + "login").toURL();
         } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
+            throw new URISyntaxException(e.getInput(),e.getReason());
         }
         URLConnection conn = openConnection(url);
         CLI.verifyJenkinsConnection(conn);
@@ -90,9 +88,12 @@ class SSHCLI {
 
         try (SshClient client = SshClient.setUpDefaultClient()) {
 
-            KnownHostsServerKeyVerifier verifier = new DefaultKnownHostsServerKeyVerifier((clientSession, remoteAddress, serverKey) -> {
-                CLI.LOGGER.log(Level.WARNING, "Unknown host key for {0}", remoteAddress.toString());
-                return !strictHostKey;
+            KnownHostsServerKeyVerifier verifier = new DefaultKnownHostsServerKeyVerifier(new ServerKeyVerifier() {
+                @Override
+                public boolean verifyServerKey(ClientSession clientSession, SocketAddress remoteAddress, PublicKey serverKey) {
+                    CLI.LOGGER.log(Level.WARNING, "Unknown host key for {0}", remoteAddress.toString());
+                    return !strictHostKey;
+                }
             }, true);
 
             client.setServerKeyVerifier(verifier);

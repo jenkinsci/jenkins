@@ -131,16 +131,14 @@ public final class TcpSlaveAgentListener extends Thread {
      * Gets the host name that we advertise protocol clients to connect to.
      * @since 2.198
      */
-    public String getAdvertisedHost() throws URISyntaxException {
+    public String getAdvertisedHost() {
         if (CLI_HOST_NAME != null) {
           return CLI_HOST_NAME;
         }
         try {
             return new URI(Jenkins.get().getRootUrl()).toURL().getHost();
-        } catch (MalformedURLException e) {
+        } catch (MalformedURLException | URISyntaxException e) {
             throw new IllegalStateException("Could not get TcpSlaveAgentListener host name", e);
-        } catch (URISyntaxException e) {
-            throw new URISyntaxException(e.getReason(), e.getInput());
         }
     }
 
