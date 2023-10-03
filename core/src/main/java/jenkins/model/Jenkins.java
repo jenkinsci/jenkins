@@ -3368,12 +3368,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     }
 
     @Override
-    public void load() {
-        try {
-            loadConfig();
-        } catch (IOException e) {
-            LOGGER.log(Level.WARNING, "Failed to load " + getConfigFile(), e);
-        }
+    public void load() throws IOException {
+        loadConfig();
     }
 
     private void loadConfig() throws IOException {
