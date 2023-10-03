@@ -41,7 +41,7 @@ THE SOFTWARE.
     <asm.version>9.6</asm.version>
     <slf4jVersion>2.0.9</slf4jVersion>
     <stapler.version>1814.vdc9dd5217ee2</stapler.version>
-    <groovy.version>4.0.15</groovy.version>
+    <groovy.version>3.0.12</groovy.version>
   </properties>
 
   <dependencyManagement>
