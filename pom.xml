@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.105</version>
+    <version>1.106</version>
     <relativePath />
   </parent>
 
@@ -73,7 +73,7 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.426</revision>
+    <revision>2.427</revision>
     <changelist>-SNAPSHOT</changelist>
 
     <!-- configuration for patch tracker plugin  -->
@@ -93,9 +93,9 @@ THE SOFTWARE.
     <spotbugs.effort>Max</spotbugs.effort>
     <spotbugs.threshold>Medium</spotbugs.threshold>
 
-    <access-modifier.version>1.32</access-modifier.version>
+    <access-modifier.version>1.33</access-modifier.version>
     <antlr.version>4.13.1</antlr.version>
-    <bridge-method-injector.version>1.28</bridge-method-injector.version>
+    <bridge-method-injector.version>1.29</bridge-method-injector.version>
     <spotless.check.skip>false</spotless.check.skip>
     <!-- Make sure to keep the jetty-maven-plugin version in war/pom.xml in sync with the Jetty release in Winstone: -->
     <winstone.version>6.13</winstone.version>
@@ -332,7 +332,7 @@ THE SOFTWARE.
             <dependency>
               <groupId>com.puppycrawl.tools</groupId>
               <artifactId>checkstyle</artifactId>
-              <version>10.12.3</version>
+              <version>10.12.4</version>
             </dependency>
           </dependencies>
           <executions>
