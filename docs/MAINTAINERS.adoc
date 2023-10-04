@@ -168,7 +168,7 @@ value which is only realized when the pull request is merged and delivered in a 
 
 The same goes for maintenance pull requests that do not deliver immediate value to users
 but improve the project's health and sustainability, for example,
-developer documentation updates, code quality improvements, project and test automation, etc.
+developer documentation updates, code quality improvements, project and test automation, enhanced security measures, etc.
 These pull requests also need to be merged,
 and it is in our best interests to do so rather sooner than later.
 
