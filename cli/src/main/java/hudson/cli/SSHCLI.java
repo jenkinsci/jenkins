@@ -29,7 +29,12 @@ import static java.util.logging.Level.FINE;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.util.QuotedStringTokenizer;
 import java.io.IOException;
-import java.net.*;
+import java.net.SocketAddress;
+import java.net.SocketTimeoutException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLConnection;
 import java.security.KeyPair;
 import java.security.PublicKey;
 import java.util.List;
@@ -63,7 +68,7 @@ class SSHCLI {
         try {
             url = new URI(jenkinsUrl + "login").toURL();
         } catch (URISyntaxException e) {
-            throw new URISyntaxException(e.getInput(),e.getReason());
+            throw new URISyntaxException(e.getInput(), e.getReason());
         }
         URLConnection conn = openConnection(url);
         CLI.verifyJenkinsConnection(conn);
