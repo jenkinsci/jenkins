@@ -81,7 +81,7 @@ import org.mindrot.jbcrypt.BCrypt;
 @For({UserSeedProperty.class, HudsonPrivateSecurityRealm.class})
 public class HudsonPrivateSecurityRealmTest {
 
-    // the PBKDF encoded for of "password" without the quotes
+    // the PBKDF encoded form of "password" without the quotes
     private static final String PBKDF_ENDOCED_PASSWORD =
             "$PBKDF2$HMACSHA512:210000:ffbb207b847010af98cdd2b09c79392c$f67c3b985daf60db83a9088bc2439f7b77016d26c1439a9877c4f863c377272283ce346edda4578a5607ea620a4beb662d853b800f373297e6f596af797743a6";
 
@@ -731,7 +731,7 @@ public class HudsonPrivateSecurityRealmTest {
     }
 
     @Test
-    public void userLoginAfterDisalbingFIPS() throws Exception {
+    public void userLoginAfterDisablingFIPS() throws Exception {
         HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
         j.jenkins.setSecurityRealm(securityRealm);
 
