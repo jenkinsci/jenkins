@@ -39,7 +39,6 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -83,8 +82,12 @@ public class ZipExtractionInstaller extends ToolInstaller {
     @Override
     public FilePath performInstallation(ToolInstallation tool, Node node, TaskListener log) throws IOException, InterruptedException {
         FilePath dir = preferredLocation(tool, node);
-        if (dir.installIfNecessaryFrom(new URL(url), log, "Unpacking " + url + " to " + dir + " on " + node.getDisplayName())) {
-            dir.act(new ChmodRecAPlusX());
+        try {
+            if (dir.installIfNecessaryFrom(new URI(url).toURL(), log, "Unpacking " + url + " to " + dir + " on " + node.getDisplayName())) {
+                dir.act(new ChmodRecAPlusX());
+            }
+        } catch (URISyntaxException e) {
+
         }
         if (subdir == null) {
             return dir;
