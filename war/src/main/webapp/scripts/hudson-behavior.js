@@ -639,17 +639,7 @@ function updateValidationArea(validationArea, content) {
     // Only change content if different, causes an unnecessary animation otherwise
     if (validationArea.innerHTML !== content) {
       validationArea.innerHTML = content;
-      validationArea.style.height =
-        validationArea.children[0].offsetHeight + "px";
-
-      // Only include the notice in the validation-error-area, move all other elements out
-      if (validationArea.children.length > 1) {
-        Array.from(validationArea.children)
-          .slice(1)
-          .forEach((element) => {
-            validationArea.after(element);
-          });
-      }
+      validationArea.style.height = "auto";
 
       Behaviour.applySubtree(validationArea);
       // For errors with additional details, apply the subtree to the expandable details pane
