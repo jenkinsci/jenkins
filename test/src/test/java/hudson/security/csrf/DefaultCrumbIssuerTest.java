@@ -17,6 +17,7 @@ import static org.junit.Assert.assertTrue;
 
 import hudson.model.User;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
 import javax.servlet.http.HttpServletResponse;
 import jenkins.model.Jenkins;
@@ -303,7 +304,7 @@ public class DefaultCrumbIssuerTest {
     }
 
     private WebRequest createRequestForJobCreation(String jobName) throws Exception {
-        WebRequest req = new WebRequest(new URL(r.getURL() + "createItem?name=" + jobName), HttpMethod.POST);
+        WebRequest req = new WebRequest(new URI(r.getURL() + "createItem?name=" + jobName).toURL(), HttpMethod.POST);
         req.setAdditionalHeader("Content-Type", "application/xml");
         req.setRequestBody("<project/>");
         return req;
