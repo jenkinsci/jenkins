@@ -14,7 +14,7 @@ This page provides information about contributing code to the Jenkins core codeb
    - Apache Maven 3.8.1 or above. You can [download Maven here](https://maven.apache.org/download.cgi).
      In the Jenkins project we usually use the most recent Maven release.
    - Any IDE which supports importing Maven projects.
-   - Install [Node.js 18.x](https://nodejs.org/en/). **Note:** only needed to work on the frontend assets found in the `war` module.
+   - Install [Node.js 20.x](https://nodejs.org/en/). **Note:** only needed to work on the frontend assets found in the `war` module.
      - Frontend tasks are run using [yarn](https://yarnpkg.com/). Run `npm install -g yarn` to install it.
 4. Set up your development environment as described in [Preparing for Plugin Development](https://www.jenkins.io/doc/developer/tutorial/prepare/)
 
