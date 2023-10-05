@@ -34,6 +34,8 @@ import com.thoughtworks.xstream.converters.ConversionException;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.Arrays;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -69,6 +71,20 @@ public class RobustReflectionConverterTest {
         assertThat(e.getMessage(), containsString("No such field hudson.util.Point.z"));
     }
 
+    private Map<String, String> getClassOwnerMap(String target){
+        Map<String, String> classOwnerMap = new TreeMap<>();
+        int index = target.indexOf("plugin=", 0);
+        while(index != -1){
+            int classNameStart = target.lastIndexOf("<", index) + 1;
+            String className = target.substring(classNameStart, index - 1);
+            int ownerNameEnd = target.indexOf("'", index + 8);
+            String ownerName = target.substring(index + 8, ownerNameEnd);
+            classOwnerMap.put(className, ownerName);
+            index = target.indexOf("plugin=", index + 1);
+        }
+        return classOwnerMap;
+    }
+
     @Test
     public void classOwnership() {
         XStream xs = new XStream2(clazz -> {
@@ -100,11 +116,9 @@ public class RobustReflectionConverterTest {
                 + "<Moonwalk plugin='p2'><number>3</number><boot/><jacket/><lover class='Jean' plugin='p4'/></Moonwalk>"
                 + "</steppes></Bild></bildz></Projekt>";
         String sample = xs.toXML(p).replace(prefix1, "").replace(prefix2, "").replaceAll("\r?\n *", "").replace('"', '\'');
-        char[] targetArray = target.toCharArray();
-        char[] sampleArray = sample.toCharArray();
-        Arrays.sort(targetArray);
-        Arrays.sort(sampleArray);
-        assertTrue(Arrays.equals(targetArray, sampleArray));
+        Map<String, String> targetClassOwnerMap = getClassOwnerMap(target);
+        Map<String, String> sampleClassOwnerMap = getClassOwnerMap(sample);
+        assertTrue(targetClassOwnerMap.equals(sampleClassOwnerMap));
         Moonwalk s = (Moonwalk) xs.fromXML("<" + prefix1 + "Moonwalk plugin='p2'><lover class='" + prefix2 + "Billy' plugin='p3'/></" + prefix1 + "Moonwalk>");
         assertEquals(Billy.class, s.lover.getClass());
     }
