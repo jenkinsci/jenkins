@@ -1,0 +1,104 @@
+#################################################
+# Categories outlined in this config
+# are based on the categories in the
+# perltidy man page:
+# http://perltidy.sourceforge.net/perltidy.html
+#################################################
+
+###################################
+# I/O Control
+###################################
+
+# Send all errors to standard output rather than a file.
+--standard-error-output
+
+# All non-critical warnings will be reported as errors.
+--warning-output
+
+###################################
+# Basic Options
+###################################
+
+# Maximum number of characters per line.
+--maximum-line-length=80
+
+###################################
+# Code Indentation Control
+###################################
+
+# The number of spaces to indent a line when a new block starts.
+--indent-columns=4
+
+# If a line continues, it should be indented 2 spaces.
+--continuation-indentation=4
+
+# If a comment is longer than the maximum line length, break it up for
+# readability.
+--outdent-long-comments
+
+# If a quoted string is longer than the maximum line length, do not break it up
+# for readability.
+--no-outdent-long-quotes
+
+###################################
+# Whitespace Control
+###################################
+
+# Stack opening braces in order to avoid having a brace sitting by itself on
+# a line.
+--stack-opening-tokens
+
+# Stack closing tokens in order to avoid having a brace sitting by itself on
+# a line.
+--stack-closing-tokens
+
+# Spaces between parentheses e.g. if ((my $len_tab = length($tabstr)) > 0) {
+--paren-tightness=2
+
+# Spaces between brackets e.g. $width = $col[$j + $k] - $col[$j];
+--square-bracket-tightness=2
+
+# Spaces between braces in expression e.g.  $obj->{$parsed_sql->{'table'}[0]};
+--brace-tightness=2
+
+# Spaces between braches with blocks of code
+# e.g. %bf = map { $_ => -M $_ } grep { /\.deb$/ } dirents '.';
+--block-brace-tightness=0
+
+# Do not add spaces between semicolons within for loops.
+--nospace-for-semicolon
+
+###################################
+# Comment Controls
+###################################
+
+# Indent comments to be at the same level as the code.
+--indent-block-comments
+
+###################################
+# Line Break Control
+###################################
+
+# The else is on the same line as the brace.
+--cuddled-else
+
+# Create a break after -> and period if a break is required.
+--want-break-after='-> .'
+
+###################################
+# Blank Line Control
+###################################
+
+# Do not force blank lines before full line comments.
+--noblanks-before-comments
+
+# Do not force blank lines before blocks starting with for, foreach, while,
+# until, and if,unless.
+--noblanks-before-blocks
+
+###################################
+# Vertical Alignment
+###################################
+
+# Turn off vertical alignment.
+-novalign

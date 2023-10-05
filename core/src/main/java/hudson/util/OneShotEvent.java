@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.util;
 
 /**
@@ -33,7 +34,7 @@ package hudson.util;
  *
  * <p>
  * Once the event becomes signaled, or the pandora's box is opened,
- * every thread gets through freely, and there's no way to turn it back off. 
+ * every thread gets through freely, and there's no way to turn it back off.
  *
  * @author Kohsuke Kawaguchi
  */
@@ -54,7 +55,7 @@ public final class OneShotEvent {
      */
     public void signal() {
         synchronized (lock) {
-            if(signaled)        return;
+            if (signaled)        return;
             this.signaled = true;
             lock.notifyAll();
         }
@@ -68,7 +69,7 @@ public final class OneShotEvent {
      */
     public void block() throws InterruptedException {
         synchronized (lock) {
-            while(!signaled)
+            while (!signaled)
                 lock.wait();
         }
     }
@@ -82,7 +83,7 @@ public final class OneShotEvent {
      */
     public void block(long timeout) throws InterruptedException {
         synchronized (lock) {
-            if(!signaled)
+            if (!signaled)
                 lock.wait(timeout);
         }
     }

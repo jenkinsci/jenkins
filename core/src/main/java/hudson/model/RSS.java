@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import hudson.FeedAdapter;
@@ -53,13 +54,13 @@ public final class RSS {
      *      Controls how to render entries to RSS.
      */
     public static <E> void forwardToRss(String title, String url, Collection<? extends E> entries, FeedAdapter<E> adapter, StaplerRequest req, HttpServletResponse rsp) throws IOException, ServletException {
-        req.setAttribute("adapter",adapter);
-        req.setAttribute("title",title);
-        req.setAttribute("url",url);
-        req.setAttribute("entries",entries);
+        req.setAttribute("adapter", adapter);
+        req.setAttribute("title", title);
+        req.setAttribute("url", url);
+        req.setAttribute("entries", entries);
 
         String flavor = req.getParameter("flavor");
-        if(flavor==null)    flavor="atom";
+        if (flavor == null)    flavor = "atom";
         flavor = flavor.replace('/', '_'); // Don't allow path to any jelly
 
         if (flavor.equals("atom")) {
@@ -68,7 +69,7 @@ public final class RSS {
             rsp.setContentType("text/xml; charset=UTF-8");
         }
 
-        req.getView(Jenkins.get(),"/hudson/"+flavor+".jelly").forward(req,rsp);
+        req.getView(Jenkins.get(), "/hudson/" + flavor + ".jelly").forward(req, rsp);
     }
 
     /**

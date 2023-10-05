@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.slaves;
 
 import hudson.Extension;
@@ -58,26 +59,26 @@ public class ConnectionActivityMonitor extends AsyncPeriodicWork {
         if (!enabled)   return;
 
         long now = System.currentTimeMillis();
-        for (Computer c: Jenkins.get().getComputers()) {
+        for (Computer c : Jenkins.get().getComputers()) {
             VirtualChannel ch = c.getChannel();
             if (ch instanceof Channel) {
                 Channel channel = (Channel) ch;
-                if (now-channel.getLastHeard() > TIME_TILL_PING) {
+                if (now - channel.getLastHeard() > TIME_TILL_PING) {
                     // haven't heard from this agent for a while.
-                    Long lastPing = (Long)channel.getProperty(ConnectionActivityMonitor.class);
+                    Long lastPing = (Long) channel.getProperty(ConnectionActivityMonitor.class);
 
-                    if (lastPing!=null && now-lastPing > TIMEOUT) {
-                        LOGGER.info("Repeated ping attempts failed on "+c.getName()+". Disconnecting");
+                    if (lastPing != null && now - lastPing > TIMEOUT) {
+                        LOGGER.info("Repeated ping attempts failed on " + c.getName() + ". Disconnecting");
                         c.disconnect(OfflineCause.create(Messages._ConnectionActivityMonitor_OfflineCause()));
                     } else {
                         // send a ping. if we receive a reply, it will be reflected in the next getLastHeard() call.
                         channel.callAsync(PING_COMMAND);
-                        if (lastPing==null)
-                            channel.setProperty(ConnectionActivityMonitor.class,now);
+                        if (lastPing == null)
+                            channel.setProperty(ConnectionActivityMonitor.class, now);
                     }
                 } else {
                     // we are receiving data nicely
-                    channel.setProperty(ConnectionActivityMonitor.class,null);
+                    channel.setProperty(ConnectionActivityMonitor.class, null);
                 }
             }
         }
@@ -91,21 +92,22 @@ public class ConnectionActivityMonitor extends AsyncPeriodicWork {
     /**
      * Time till initial ping
      */
-    private static final long TIME_TILL_PING = SystemProperties.getLong(ConnectionActivityMonitor.class.getName()+".timeToPing",TimeUnit.MINUTES.toMillis(3));
+    private static final long TIME_TILL_PING = SystemProperties.getLong(ConnectionActivityMonitor.class.getName() + ".timeToPing", TimeUnit.MINUTES.toMillis(3));
 
-    private static final long FREQUENCY = SystemProperties.getLong(ConnectionActivityMonitor.class.getName()+".frequency",TimeUnit.SECONDS.toMillis(10));
+    private static final long FREQUENCY = SystemProperties.getLong(ConnectionActivityMonitor.class.getName() + ".frequency", TimeUnit.SECONDS.toMillis(10));
 
     /**
      * When do we abandon the effort and cut off?
      */
-    private static final long TIMEOUT = SystemProperties.getLong(ConnectionActivityMonitor.class.getName()+".timeToPing",TimeUnit.MINUTES.toMillis(4));
+    private static final long TIMEOUT = SystemProperties.getLong(ConnectionActivityMonitor.class.getName() + ".timeToPing", TimeUnit.MINUTES.toMillis(4));
 
 
     // disabled by default until proven in the production
-    public boolean enabled = SystemProperties.getBoolean(ConnectionActivityMonitor.class.getName()+".enabled");
+    public boolean enabled = SystemProperties.getBoolean(ConnectionActivityMonitor.class.getName() + ".enabled");
 
     private static final PingCommand PING_COMMAND = new PingCommand();
-    private static final class PingCommand extends SlaveToMasterCallable<Void,RuntimeException> {
+
+    private static final class PingCommand extends SlaveToMasterCallable<Void, RuntimeException> {
         @Override
         public Void call() throws RuntimeException {
             return null;

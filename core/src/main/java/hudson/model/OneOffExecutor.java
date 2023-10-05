@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import hudson.model.Queue.FlyweightTask;
@@ -34,6 +35,6 @@ import hudson.model.Queue.FlyweightTask;
  */
 public class OneOffExecutor extends Executor {
     public OneOffExecutor(Computer owner) {
-        super(owner,-1);
+        super(owner, -1);
     }
 }

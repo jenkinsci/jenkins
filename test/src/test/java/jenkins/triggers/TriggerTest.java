@@ -1,10 +1,9 @@
 package jenkins.triggers;
 
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
 
-import antlr.ANTLRException;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.model.BuildableItem;
@@ -64,7 +63,7 @@ public class TriggerTest {
 
         private static final Logger LOGGER = Logger.getLogger(BadTimerTrigger.class.getName());
 
-        BadTimerTrigger(@NonNull final String specs) throws ANTLRException {
+        BadTimerTrigger(@NonNull final String specs) {
             super(specs);
         }
 
@@ -76,7 +75,7 @@ public class TriggerTest {
             }
 
             try {
-                Thread.sleep(Trigger.CRON_THRESHOLD*1000 + 100);
+                Thread.sleep(Trigger.CRON_THRESHOLD * 1000 + 100);
             } catch (Throwable e) {
                 LOGGER.log(Level.WARNING, "Interrupted: ", e);
             }
@@ -90,6 +89,7 @@ public class TriggerTest {
                 return item instanceof BuildableItem;
             }
 
+            @NonNull
             @Override
             public String getDisplayName() {
                 return "Bad";

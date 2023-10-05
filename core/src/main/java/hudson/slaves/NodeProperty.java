@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.slaves;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -54,7 +55,7 @@ import org.kohsuke.stapler.StaplerRequest;
  * <p>
  * Plugins can contribute this extension point to add additional data to {@link Node}.
  * {@link NodeProperty}s show up in the configuration screen of a node, and they are persisted with the {@link Node} object.
- * 
+ *
  * <p>
  * To add UI action to {@link Node}s, i.e. a new link shown in the left side menu on a node page ({@code ./computer/<a node>}), see instead {@link hudson.model.TransientComputerActionFactory}.
  *
@@ -116,7 +117,7 @@ public abstract class NodeProperty<N extends Node> implements ReconfigurableDesc
     /**
      * Runs before the {@link SCM#checkout(AbstractBuild, Launcher, FilePath, BuildListener, File)} runs, and performs a set up.
      * Can contribute additional properties to the environment.
-     * 
+     *
      * @param build
      *      The build in progress for which an {@link Environment} object is created.
      *      Never null.
@@ -133,8 +134,8 @@ public abstract class NodeProperty<N extends Node> implements ReconfigurableDesc
      *      terminates the build abnormally. Hudson will handle the exception
      *      and reports a nice error message.
      */
-    public Environment setUp( AbstractBuild build, Launcher launcher, BuildListener listener ) throws IOException, InterruptedException {
-    	return new Environment() {};
+    public Environment setUp(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
+        return new Environment() {};
     }
 
     /**
@@ -166,19 +167,19 @@ public abstract class NodeProperty<N extends Node> implements ReconfigurableDesc
      *
      * @since 1.489
      */
-    public void buildEnvVars(@NonNull EnvVars env, @NonNull TaskListener listener) throws IOException,InterruptedException {
+    public void buildEnvVars(@NonNull EnvVars env, @NonNull TaskListener listener) throws IOException, InterruptedException {
         // default is no-op
     }
 
     @Override
     public NodeProperty<?> reconfigure(StaplerRequest req, JSONObject form) throws FormException {
-        return form==null ? null : getDescriptor().newInstance(req, form);
+        return form == null ? null : getDescriptor().newInstance(req, form);
     }
 
     /**
      * Lists up all the registered {@link NodeDescriptor}s in the system.
      */
-    public static DescriptorExtensionList<NodeProperty<?>,NodePropertyDescriptor> all() {
+    public static DescriptorExtensionList<NodeProperty<?>, NodePropertyDescriptor> all() {
         return (DescriptorExtensionList) Jenkins.get().getDescriptorList(NodeProperty.class);
     }
 
@@ -187,6 +188,6 @@ public abstract class NodeProperty<N extends Node> implements ReconfigurableDesc
      * given project.
      */
     public static List<NodePropertyDescriptor> for_(Node node) {
-        return PropertyDescriptor.for_(all(),node);
+        return PropertyDescriptor.for_(all(), node);
     }
 }

@@ -32,13 +32,13 @@ public class LineEndingConversion {
      *     String updated with the new line endings or null if given null.
      */
     public static String convertEOL(String input, EOLType type) {
-        if (null == input || 0 == input.length()) {
+        if (null == input || input.isEmpty()) {
             return input;
         }
         // Convert line endings to Unix LF,
         // which also sets up the string for other conversions
-        input = input.replace("\r\n","\n");
-        input = input.replace('\r','\n');
+        input = input.replace("\r\n", "\n");
+        input = input.replace('\r', '\n');
         switch (type) {
             case CR:
             case Mac:

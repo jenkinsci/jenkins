@@ -29,13 +29,9 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
-import com.gargoylesoftware.htmlunit.HttpMethod;
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.WebResponse;
 import hudson.AbortException;
 import hudson.cli.CLICommand;
 import hudson.cli.CLICommandInvoker;
@@ -49,8 +45,10 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import jenkins.model.Jenkins;
-import jenkins.security.apitoken.ApiTokenTestHelper;
-import org.junit.Before;
+import org.htmlunit.FailingHttpStatusCodeException;
+import org.htmlunit.HttpMethod;
+import org.htmlunit.WebRequest;
+import org.htmlunit.WebResponse;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -66,11 +64,6 @@ public class ItemsTest {
     @Rule public JenkinsRule r = new JenkinsRule();
     @Rule public TemporaryFolder tmpRule = new TemporaryFolder();
 
-    @Before
-    public void setupLegacyBehavior(){
-        ApiTokenTestHelper.enableLegacyBehavior();
-    }
-    
     @Test public void getAllItems() throws Exception {
         MockFolder d = r.createFolder("d");
         MockFolder sub2 = d.createProject(MockFolder.class, "sub2");
@@ -134,7 +127,7 @@ public class ItemsTest {
         FreeStyleProject sub2charlie = sub2.createProject(FreeStyleProject.class, "charlie");
         assertThat(d.allItems(FreeStyleProject.class), containsInAnyOrder(dp, sub1p, sub1q, sub2ap, sub2alpha,
                 sub2bp, sub2BRAVO, sub2cp, sub2charlie));
-        assertThat(sub2.allItems(Item.class), containsInAnyOrder((Item)sub2a, sub2ap, sub2alpha, sub2b, sub2bp,
+        assertThat(sub2.allItems(Item.class), containsInAnyOrder((Item) sub2a, sub2ap, sub2alpha, sub2b, sub2bp,
                 sub2BRAVO, sub2c, sub2cp, sub2charlie));
     }
 
@@ -162,16 +155,16 @@ public class ItemsTest {
     @Issue("JENKINS-24825")
     @Test public void moveItem() throws Exception {
         File tmp = tmpRule.getRoot();
-        r.jenkins.setRawBuildsDir(tmp.getAbsolutePath()+"/${ITEM_FULL_NAME}");
+        r.jenkins.setRawBuildsDir(tmp.getAbsolutePath() + "/${ITEM_FULL_NAME}");
         MockFolder foo = r.createFolder("foo");
         MockFolder bar = r.createFolder("bar");
         FreeStyleProject test = foo.createProject(FreeStyleProject.class, "test");
-        test.scheduleBuild2(0).get();
+        r.buildAndAssertSuccess(test);
         Items.move(test, bar);
         assertFalse(new File(tmp, "foo/test/1").exists());
         assertTrue(new File(tmp, "bar/test/1").exists());
     }
-    
+
     // TODO would be more efficient to run these all as a single test case, but after a few Jetty seems to stop serving new content and new requests just hang.
 
     private void overwriteTargetSetUp() throws Exception {
@@ -205,13 +198,8 @@ public class ItemsTest {
     private void cannotOverwrite(String target) throws Exception {
         overwriteTargetSetUp();
         for (OverwriteTactic tactic : OverwriteTactic.values()) {
-            try {
-                tactic.run(r, target);
-                fail(tactic + " was not supposed to work against " + target);
-            } catch (Exception x) {
-                System.out.println("good, " + tactic + " failed on " + target + ": " + x);
-                assertEquals(tactic + " still overwrote " + target, target, r.jenkins.getItemByFullName(target, FreeStyleProject.class).getDescription());
-            }
+            assertThrows(tactic + " was not supposed to work against " + target, Exception.class, () -> tactic.run(r, target));
+            assertEquals(tactic + " still overwrote " + target, target, r.jenkins.getItemByFullName(target, FreeStyleProject.class).getDescription());
         }
     }
 
@@ -329,6 +317,7 @@ public class ItemsTest {
             }
         };
         abstract void run(JenkinsRule r, String target) throws Exception;
+
         private static JenkinsRule.WebClient wc(JenkinsRule r) {
             return r.createWebClient().withBasicApiToken("attacker");
         }

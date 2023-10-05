@@ -27,8 +27,8 @@ package hudson.model;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import com.gargoylesoftware.htmlunit.html.DomElement;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import org.htmlunit.html.DomElement;
+import org.htmlunit.html.HtmlPage;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.For;
@@ -42,7 +42,7 @@ public class AsynchPeopleTest {
 
     @Issue("JENKINS-18641")
     @Test public void display() throws Exception {
-        User.getById(  "bob", true);
+        User.getById("bob", true);
         JenkinsRule.WebClient wc = j.createWebClient();
 
         HtmlPage page = wc.goTo("asynchPeople");

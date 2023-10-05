@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.cli;
 
 import hudson.AbortException;
@@ -40,7 +41,7 @@ import org.kohsuke.args4j.Argument;
 public class DeleteViewCommand extends CLICommand {
 
     @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
-    @Argument(usage="View names to delete", required=true, multiValued=true)
+    @Argument(usage = "View names to delete", required = true, multiValued = true)
     private List<String> views;
 
     @Override
@@ -59,7 +60,7 @@ public class DeleteViewCommand extends CLICommand {
 
         ViewOptionHandler voh = new ViewOptionHandler(null, null, null);
 
-        for(String view_s : hs) {
+        for (String view_s : hs) {
             View view;
 
             try {
@@ -80,7 +81,7 @@ public class DeleteViewCommand extends CLICommand {
 
                 group.deleteView(view);
             } catch (Exception e) {
-                if(hs.size() == 1) {
+                if (hs.size() == 1) {
                     throw e;
                 }
 

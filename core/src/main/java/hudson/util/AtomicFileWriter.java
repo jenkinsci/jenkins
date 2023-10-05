@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.util;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -29,6 +30,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
+import java.lang.ref.Cleaner;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.AtomicMoveNotSupportedException;
@@ -54,6 +56,9 @@ public class AtomicFileWriter extends Writer {
 
     private static final Logger LOGGER = Logger.getLogger(AtomicFileWriter.class.getName());
 
+    private static final Cleaner CLEANER = Cleaner.create(
+            new NamingThreadFactory(new DaemonThreadFactory(), AtomicFileWriter.class.getName() + ".cleaner"));
+
     private static /* final */ boolean DISABLE_FORCED_FLUSH = SystemProperties.getBoolean(
             AtomicFileWriter.class.getName() + ".DISABLE_FORCED_FLUSH");
 
@@ -63,7 +68,7 @@ public class AtomicFileWriter extends Writer {
         }
     }
 
-    private final Writer core;
+    private final FileChannelWriter core;
     private final Path tmpPath;
     private final Path destPath;
 
@@ -141,7 +146,7 @@ public class AtomicFileWriter extends Writer {
             // JENKINS-48407: NIO's createTempFile creates file with 0600 permissions, so we use pre-NIO for this...
             tmpPath = File.createTempFile("atomic", "tmp", dir.toFile()).toPath();
         } catch (IOException e) {
-            throw new IOException("Failed to create a temporary file in "+ dir,e);
+            throw new IOException("Failed to create a temporary file in " + dir, e);
         }
 
         if (DISABLE_FORCED_FLUSH) {
@@ -150,6 +155,8 @@ public class AtomicFileWriter extends Writer {
         }
 
         core = new FileChannelWriter(tmpPath, charset, integrityOnFlush, integrityOnClose, StandardOpenOption.WRITE, StandardOpenOption.CREATE);
+
+        CLEANER.register(this, new CleanupChecker(core, tmpPath, destPath));
     }
 
     @Override
@@ -159,12 +166,12 @@ public class AtomicFileWriter extends Writer {
 
     @Override
     public void write(String str, int off, int len) throws IOException {
-        core.write(str,off,len);
+        core.write(str, off, len);
     }
 
     @Override
     public void write(char[] cbuf, int off, int len) throws IOException {
-        core.write(cbuf,off,len);
+        core.write(cbuf, off, len);
     }
 
     @Override
@@ -184,7 +191,12 @@ public class AtomicFileWriter extends Writer {
      * the {@link #commit()} is called, to simplify coding.
      */
     public void abort() throws IOException {
-        closeAndDeleteTempFile();
+        // One way or another, the temporary file should be deleted.
+        try {
+            close();
+        } finally {
+            Files.deleteIfExists(tmpPath);
+        }
     }
 
     public void commit() throws IOException {
@@ -224,17 +236,32 @@ public class AtomicFileWriter extends Writer {
         }
     }
 
-    @Override
-    protected void finalize() throws Throwable {
-        closeAndDeleteTempFile();
-    }
+    private static final class CleanupChecker implements Runnable {
+        private final FileChannelWriter core;
+        private final Path tmpPath;
+        private final Path destPath;
 
-    private void closeAndDeleteTempFile() throws IOException {
-        // one way or the other, temporary file should be deleted.
-        try {
-            close();
-        } finally {
-            Files.deleteIfExists(tmpPath);
+        CleanupChecker(final FileChannelWriter core, final Path tmpPath, final Path destPath) {
+            this.core = core;
+            this.tmpPath = tmpPath;
+            this.destPath = destPath;
+        }
+
+        @Override
+        public void run() {
+            if (core.isOpen()) {
+                LOGGER.log(Level.WARNING, "AtomicFileWriter for " + destPath + " was not closed before being released");
+                try {
+                    core.close();
+                } catch (IOException e) {
+                    LOGGER.log(Level.WARNING, "Failed to close " + tmpPath + " for destination file " + destPath, e);
+                }
+            }
+            try {
+                Files.deleteIfExists(tmpPath);
+            } catch (IOException e) {
+                LOGGER.log(Level.WARNING, "Failed to delete temporary file " + tmpPath + " for destination file " + destPath, e);
+            }
         }
     }
 

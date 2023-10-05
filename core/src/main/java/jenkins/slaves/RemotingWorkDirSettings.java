@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.slaves;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
@@ -41,20 +42,20 @@ import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
  * Defines settings of the Remoting work directory.
- * 
- * This class contains Remoting Work Directory settings, which can be used when starting Jenkins agents. 
+ *
+ * This class contains Remoting Work Directory settings, which can be used when starting Jenkins agents.
  * See <a href="https://github.com/jenkinsci/remoting/blob/master/docs/workDir.md">Remoting Work Dir Documentation</a>.
- * 
+ *
  * @author Oleg Nenashev
  * @since 2.72
  */
 public class RemotingWorkDirSettings implements Describable<RemotingWorkDirSettings> {
-    
+
     private static final String DEFAULT_INTERNAL_DIR = "remoting";
     private static final RemotingWorkDirSettings LEGACY_DEFAULT = new RemotingWorkDirSettings(true, null, DEFAULT_INTERNAL_DIR, false);
     private static final RemotingWorkDirSettings ENABLED_DEFAULT = new RemotingWorkDirSettings(false, null, DEFAULT_INTERNAL_DIR, false);
-    
-    
+
+
     private final boolean disabled;
     @CheckForNull
     private final String  workDirPath;
@@ -63,8 +64,8 @@ public class RemotingWorkDirSettings implements Describable<RemotingWorkDirSetti
     private final boolean failIfWorkDirIsMissing;
 
     @DataBoundConstructor
-    public RemotingWorkDirSettings(boolean disabled, 
-            @CheckForNull String workDirPath, @CheckForNull String internalDir, 
+    public RemotingWorkDirSettings(boolean disabled,
+            @CheckForNull String workDirPath, @CheckForNull String internalDir,
             boolean failIfWorkDirIsMissing) {
         this.disabled = disabled;
         this.workDirPath = Util.fixEmptyAndTrim(workDirPath);
@@ -80,17 +81,17 @@ public class RemotingWorkDirSettings implements Describable<RemotingWorkDirSetti
 
     /**
      * Check if workdir is disabled.
-     * 
+     *
      * @return {@code true} if the property is disabled.
      *         In such case Remoting will use the legacy mode.
      */
     public boolean isDisabled() {
         return disabled;
     }
-    
+
     /**
      * Indicates that agent root directory should be used as work directory.
-     * 
+     *
      * @return {@code true} if the agent root should be a work directory.
      */
     public boolean isUseAgentRootDir() {
@@ -99,7 +100,7 @@ public class RemotingWorkDirSettings implements Describable<RemotingWorkDirSetti
 
     /**
      * Check if startup should fail if the workdir is missing.
-     * 
+     *
      * @return {@code true} if Remoting should fail if the the work directory is missing instead of creating it
      */
     public boolean isFailIfWorkDirIsMissing() {
@@ -108,7 +109,7 @@ public class RemotingWorkDirSettings implements Describable<RemotingWorkDirSetti
 
     /**
      * Gets path to the custom workdir path.
-     * 
+     *
      * @return Custom workdir path.
      *         If {@code null}, an agent root directory path should be used instead.
      */
@@ -133,10 +134,10 @@ public class RemotingWorkDirSettings implements Describable<RemotingWorkDirSetti
      * @return Non-modifiable list of command-line arguments
      */
     public List<String> toCommandLineArgs(@NonNull SlaveComputer computer) {
-        if(disabled) {
+        if (disabled) {
             return Collections.emptyList();
         }
-        
+
         ArrayList<String> args = new ArrayList<>();
         args.add("-workDir");
         if (workDirPath == null) {
@@ -149,34 +150,34 @@ public class RemotingWorkDirSettings implements Describable<RemotingWorkDirSetti
         } else {
             args.add(workDirPath);
         }
-        
+
         if (!DEFAULT_INTERNAL_DIR.equals(internalDir)) {
             args.add("-internalDir");
             args.add(internalDir);
         }
-        
+
         if (failIfWorkDirIsMissing) {
-            args.add(" -failIfWorkDirIsMissing"); 
+            args.add(" -failIfWorkDirIsMissing");
         }
-        
+
         return Collections.unmodifiableList(args);
     }
-    
+
     /**
      * Gets a command line string, which can be passed to agent start command.
-     * 
+     *
      * @param computer Computer, for which the arguments need to be constructed.
-     * @return Command line arguments. 
+     * @return Command line arguments.
      *         It may be empty if the working directory is disabled or
      *         if the Computer type is not {@link SlaveComputer}.
      */
     @NonNull
     @Restricted(NoExternalUse.class)
     public String toCommandLineString(@NonNull SlaveComputer computer) {
-        if(disabled) {
+        if (disabled) {
             return "";
         }
-        
+
         StringBuilder bldr = new StringBuilder();
         bldr.append("-workDir \"");
         if (workDirPath == null) {
@@ -190,35 +191,35 @@ public class RemotingWorkDirSettings implements Describable<RemotingWorkDirSetti
             bldr.append(workDirPath);
         }
         bldr.append("\"");
-        
+
         if (!DEFAULT_INTERNAL_DIR.equals(internalDir)) {
             bldr.append(" -internalDir \"");
             bldr.append(internalDir);
             bldr.append("\"");
         }
-        
+
         if (failIfWorkDirIsMissing) {
-            bldr.append(" -failIfWorkDirIsMissing"); 
+            bldr.append(" -failIfWorkDirIsMissing");
         }
-                
+
         return bldr.toString();
     }
-    
+
     @Extension
     public static class DescriptorImpl extends Descriptor<RemotingWorkDirSettings> {
-        
+
     }
-    
+
     /**
      * Gets default settings for the disabled work directory.
-     * 
+     *
      * @return Legacy value: disabled work directory.
      */
     @NonNull
     public static RemotingWorkDirSettings getDisabledDefaults() {
         return LEGACY_DEFAULT;
     }
-    
+
     /**
      * Gets default settings of the enabled work directory.
      */

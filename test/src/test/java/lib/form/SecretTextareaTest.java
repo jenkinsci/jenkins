@@ -28,15 +28,17 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlHiddenInput;
-import com.gargoylesoftware.htmlunit.html.HtmlTextInput;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.AbstractProject;
 import hudson.model.Project;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
 import hudson.util.Secret;
 import java.io.IOException;
+import org.htmlunit.html.HtmlElement;
+import org.htmlunit.html.HtmlForm;
+import org.htmlunit.html.HtmlHiddenInput;
+import org.htmlunit.html.HtmlTextInput;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -114,12 +116,12 @@ public class SecretTextareaTest {
     }
 
     private static void clickSecretUpdateButton(HtmlForm configForm) throws IOException {
-        configForm.getOneHtmlElementByAttribute("input", "class", "secret-update-btn").click();
+        ((HtmlElement) configForm.querySelector("button.secret-update-btn")).click();
     }
 
     private static String getHiddenSecretValue(HtmlForm configForm) {
         HtmlHiddenInput hiddenSecret = configForm.getInputByName("_.secret");
-        return hiddenSecret == null ? null : hiddenSecret.getValueAttribute();
+        return hiddenSecret == null ? null : hiddenSecret.getValue();
     }
 
     public static class TestBuilder extends Builder {
@@ -160,6 +162,7 @@ public class SecretTextareaTest {
 
         @TestExtension
         public static class DescriptorImpl extends BuildStepDescriptor<Builder> {
+            @NonNull
             @Override
             public String getDisplayName() {
                 return "Test Secret";

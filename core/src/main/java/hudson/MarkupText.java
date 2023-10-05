@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson;
 
 import java.util.ArrayList;
@@ -66,7 +67,7 @@ public class MarkupText extends AbstractMarkupText {
 
         @Override
         public int compareTo(Tag that) {
-            return this.pos-that.pos;
+            return this.pos - that.pos;
         }
     }
 
@@ -74,7 +75,7 @@ public class MarkupText extends AbstractMarkupText {
      * Represents a substring of a {@link MarkupText}.
      */
     public final class SubText extends AbstractMarkupText {
-        private final int start,end;
+        private final int start, end;
         private final int[] groups;
 
         public SubText(Matcher m, int textOffset) {
@@ -82,10 +83,10 @@ public class MarkupText extends AbstractMarkupText {
             end   = m.end() + textOffset;
 
             int cnt = m.groupCount();
-            groups = new int[cnt*2];
-            for( int i=0; i<cnt; i++ ) {
-                groups[i*2  ] = m.start(i+1) + textOffset;
-                groups[i*2+1] = m.end(i+1) + textOffset;
+            groups = new int[cnt * 2];
+            for (int i = 0; i < cnt; i++) {
+                groups[i * 2  ] = m.start(i + 1) + textOffset;
+                groups[i * 2 + 1] = m.end(i + 1) + textOffset;
             }
         }
 
@@ -97,18 +98,18 @@ public class MarkupText extends AbstractMarkupText {
 
         @Override
         public SubText subText(int start, int end) {
-            return MarkupText.this.subText(this.start+start,
-                    end<0 ? this.end+1+end : this.start+end);
+            return MarkupText.this.subText(this.start + start,
+                    end < 0 ? this.end + 1 + end : this.start + end);
         }
 
         @Override
         public String getText() {
-            return text.substring(start,end);
+            return text.substring(start, end);
         }
 
         @Override
         public void addMarkup(int startPos, int endPos, String startTag, String endTag) {
-            MarkupText.this.addMarkup(startPos+start,  endPos+start, startTag, endTag);
+            MarkupText.this.addMarkup(startPos + start,  endPos + start, startTag, endTag);
         }
 
         /**
@@ -120,7 +121,7 @@ public class MarkupText extends AbstractMarkupText {
          * "\$" can be used to escape characters.
          */
         public void surroundWith(String startTag, String endTag) {
-            addMarkup(0,length(),replace(startTag),replace(endTag));
+            addMarkup(0, length(), replace(startTag), replace(endTag));
         }
 
         /**
@@ -128,14 +129,14 @@ public class MarkupText extends AbstractMarkupText {
          * that the token replacement is not performed on parameters.
          */
         public void surroundWithLiteral(String startTag, String endTag) {
-            addMarkup(0,length(),startTag,endTag);
+            addMarkup(0, length(), startTag, endTag);
         }
 
         /**
          * Surrounds this subtext with {@code <a>…</a>}.
          */
         public void href(String url) {
-            addHyperlink(0,length(),url);
+            addHyperlink(0, length(), url);
         }
 
         /**
@@ -146,8 +147,8 @@ public class MarkupText extends AbstractMarkupText {
          *      groups captured by '(...)' in the regexp.
          */
         public int start(int groupIndex) {
-            if(groupIndex==0)    return start;
-            return groups[groupIndex*2-2];
+            if (groupIndex == 0)    return start;
+            return groups[groupIndex * 2 - 2];
         }
 
         /**
@@ -161,8 +162,8 @@ public class MarkupText extends AbstractMarkupText {
          * Gets the end index of the captured group within {@link MarkupText#getText()}.
          */
         public int end(int groupIndex) {
-            if(groupIndex==0)    return end;
-            return groups[groupIndex*2-1];
+            if (groupIndex == 0)    return end;
+            return groups[groupIndex * 2 - 1];
         }
 
         /**
@@ -176,9 +177,9 @@ public class MarkupText extends AbstractMarkupText {
          * Gets the text that represents the captured group.
          */
         public String group(int groupIndex) {
-            if(start(groupIndex)==-1)
+            if (start(groupIndex) == -1)
                 return null;
-            return text.substring(start(groupIndex),end(groupIndex));
+            return text.substring(start(groupIndex), end(groupIndex));
         }
 
         /**
@@ -195,24 +196,24 @@ public class MarkupText extends AbstractMarkupText {
         public String replace(String s) {
             StringBuilder buf = new StringBuilder(s.length() + 10);
 
-            for( int i=0; i<s.length(); i++) {
+            for (int i = 0; i < s.length(); i++) {
                 char ch = s.charAt(i);
-                if (ch == '\\') {// escape char
+                if (ch == '\\') { // escape char
                     i++;
                     buf.append(s.charAt(i));
-                } else if (ch == '$') {// replace by group
+                } else if (ch == '$') { // replace by group
                     i++;
 
                     ch = s.charAt(i);
                     // get the group number
                     int groupId = ch - '0';
                     if (groupId < 0 || groupId > 9) {
-                    	buf.append('$').append(ch);
+                        buf.append('$').append(ch);
                     } else {
-                    	// add the group text
-                    	String group = group(groupId);
-                    	if (group != null) 
-                    		buf.append(group);
+                        // add the group text
+                        String group = group(groupId);
+                        if (group != null)
+                            buf.append(group);
                     }
 
                 } else {
@@ -226,7 +227,7 @@ public class MarkupText extends AbstractMarkupText {
 
         @Override
         protected SubText createSubText(Matcher m) {
-            return new SubText(m,start);
+            return new SubText(m, start);
         }
     }
 
@@ -252,29 +253,29 @@ public class MarkupText extends AbstractMarkupText {
      */
     @Override
     public SubText subText(int start, int end) {
-        return new SubText(start, end<0 ? text.length()+1+end : end);
+        return new SubText(start, end < 0 ? text.length() + 1 + end : end);
     }
 
     @Override
-    public void addMarkup( int startPos, int endPos, String startTag, String endTag ) {
+    public void addMarkup(int startPos, int endPos, String startTag, String endTag) {
         rangeCheck(startPos);
         rangeCheck(endPos);
-        if(startPos>endPos) throw new IndexOutOfBoundsException();
+        if (startPos > endPos) throw new IndexOutOfBoundsException();
 
         // when multiple tags are added to the same range, we want them to show up like
         // <b><i>abc</i></b>, not <b><i>abc</b></i>. Also, we'd like <b>abc</b><i>def</i>,
         // not <b>abc<i></b>def</i>. Do this by inserting them to different places.
         tags.add(new Tag(startPos, startTag));
-        tags.add(0,new Tag(endPos,endTag));
+        tags.add(0, new Tag(endPos, endTag));
     }
 
     public void addMarkup(int pos, String tag) {
         rangeCheck(pos);
-        tags.add(new Tag(pos,tag));
+        tags.add(new Tag(pos, tag));
     }
 
     private void rangeCheck(int pos) {
-        if(pos<0 || pos>text.length())
+        if (pos < 0 || pos > text.length())
             throw new IndexOutOfBoundsException();
     }
 
@@ -298,8 +299,8 @@ public class MarkupText extends AbstractMarkupText {
      *      If false, the escape is for the normal HTML, thus SP becomes &amp;nbsp; and CR/LF becomes {@code <BR>}
      */
     public String toString(boolean preEscape) {
-        if(tags.isEmpty())
-            return preEscape? Util.xmlEscape(text) : Util.escape(text);  // the most common case
+        if (tags.isEmpty())
+            return preEscape ? Util.xmlEscape(text) : Util.escape(text);  // the most common case
 
         Collections.sort(tags);
 
@@ -307,14 +308,14 @@ public class MarkupText extends AbstractMarkupText {
         int copied = 0; // # of chars already copied from text to buf
 
         for (Tag tag : tags) {
-            if (copied<tag.pos) {
+            if (copied < tag.pos) {
                 String portion = text.substring(copied, tag.pos);
                 buf.append(preEscape ? Util.xmlEscape(portion) : Util.escape(portion));
                 copied = tag.pos;
             }
             buf.append(tag.markup);
         }
-        if (copied<text.length()) {
+        if (copied < text.length()) {
             String portion = text.substring(copied);
             buf.append(preEscape ? Util.xmlEscape(portion) : Util.escape(portion));
         }
@@ -331,6 +332,6 @@ public class MarkupText extends AbstractMarkupText {
 
     @Override
     protected SubText createSubText(Matcher m) {
-        return new SubText(m,0);
+        return new SubText(m, 0);
     }
 }

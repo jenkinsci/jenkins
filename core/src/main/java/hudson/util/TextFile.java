@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.util;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -57,8 +58,8 @@ public class TextFile {
         return file.exists();
     }
 
-    public void delete() {
-        file.delete();
+    public void delete() throws IOException {
+        Files.deleteIfExists(Util.fileToPath(file));
     }
 
     /**
@@ -96,7 +97,7 @@ public class TextFile {
      * Overwrites the file by the given string.
      */
     public void write(String text) throws IOException {
-        file.getParentFile().mkdirs();
+        Util.createDirectories(Util.fileToPath(file.getParentFile()));
         try (AtomicFileWriter w = new AtomicFileWriter(file)) {
             try {
                 w.write(text);
@@ -114,14 +115,14 @@ public class TextFile {
         char[] buf = new char[numChars];
         int read = 0;
         try (Reader r = new FileReader(file)) {
-            while (read<numChars) {
-                int d = r.read(buf,read,buf.length-read);
-                if (d<0)
+            while (read < numChars) {
+                int d = r.read(buf, read, buf.length - read);
+                if (d < 0)
                     break;
                 read += d;
             }
 
-            return new String(buf,0,read);
+            return new String(buf, 0, read);
         }
     }
 
@@ -134,7 +135,7 @@ public class TextFile {
      * necessary chunk.
      *
      * <p>
-     * Some multi-byte encoding, such as Shift-JIS (http://en.wikipedia.org/wiki/Shift_JIS) doesn't
+     * Some multi-byte encoding, such as <a href="https://en.wikipedia.org/wiki/Shift_JIS">Shift-JIS</a>, doesn't
      * allow the first byte and the second byte of a single char to be unambiguously identified,
      * so it is possible that we end up decoding incorrectly if we start reading in the middle of a multi-byte
      * character. All the CJK multi-byte encodings that I know of are self-correcting; as they are ASCII-compatible,
@@ -177,7 +178,7 @@ public class TextFile {
      * Uses the platform default encoding.
      */
     public @NonNull String fastTail(int numChars) throws IOException {
-        return fastTail(numChars,Charset.defaultCharset());
+        return fastTail(numChars, Charset.defaultCharset());
     }
 
 

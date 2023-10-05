@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Jorg Heymans
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,18 +21,17 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import com.gargoylesoftware.htmlunit.ScriptResult;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.tasks.ArtifactArchiver;
@@ -53,6 +52,8 @@ import jenkins.model.ArtifactManagerFactory;
 import jenkins.model.ArtifactManagerFactoryDescriptor;
 import jenkins.model.Jenkins;
 import jenkins.util.VirtualFile;
+import org.htmlunit.ScriptResult;
+import org.htmlunit.html.HtmlPage;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -75,16 +76,18 @@ public class RunTest  {
                     @Override public String getDisplayName() {
                         return "Test";
                     }
+
                     @Override public String getIconFileName() {
                         return null;
                     }
+
                     @Override public String getUrlName() {
                         return null;
                     }
                 });
             }
         });
-        j.assertBuildStatusSuccess(j.createFreeStyleProject("stuff").scheduleBuild2(0));
+        j.buildAndAssertSuccess(j.createFreeStyleProject("stuff"));
         j.createWebClient().assertFails("job/stuff/1/nonexistent", HttpURLConnection.HTTP_NOT_FOUND);
     }
 
@@ -110,6 +113,7 @@ public class RunTest  {
         b.delete();
         assertTrue(Mgr.deleted.get());
     }
+
     @Issue("SECURITY-1902")
     @Test public void preventXssInBadgeTooltip() throws Exception {
         j.jenkins.setQuietPeriod(0);
@@ -153,9 +157,9 @@ public class RunTest  {
         HtmlPage htmlPage = wc.goTo(upProject.getUrl());
 
         // trigger the tooltip display
-        htmlPage.executeJavaScript("document.querySelector('#buildHistory table .build-badge img').dispatchEvent(new Event('mouseover'));");
+        htmlPage.executeJavaScript("document.querySelector('#buildHistory table .build-badge img')._tippy.show()");
         wc.waitForBackgroundJavaScript(500);
-        ScriptResult result = htmlPage.executeJavaScript("document.querySelector('#tt').innerHTML;");
+        ScriptResult result = htmlPage.executeJavaScript("document.querySelector('.tippy-content').innerHTML;");
         Object jsResult = result.getJavaScriptResult();
         assertThat(jsResult, instanceOf(String.class));
         String jsResultString = (String) jsResult;
@@ -217,22 +221,29 @@ public class RunTest  {
             }
         }
     }
-    
+
     public static final class Mgr extends ArtifactManager {
         static final AtomicBoolean deleted = new AtomicBoolean();
+
         @Override public boolean delete() {
             return !deleted.getAndSet(true);
         }
+
         @Override public void onLoad(Run<?, ?> build) {}
+
         @Override public void archive(FilePath workspace, Launcher launcher, BuildListener listener, Map<String, String> artifacts) {}
+
         @Override public VirtualFile root() {
             return VirtualFile.forFile(Jenkins.get().getRootDir()); // irrelevant
         }
+
         public static final class Factory extends ArtifactManagerFactory {
             @DataBoundConstructor public Factory() {}
+
             @Override public ArtifactManager managerFor(Run<?, ?> build) {
                 return new Mgr();
             }
+
             @TestExtension("deleteArtifactsCustom") public static final class DescriptorImpl extends ArtifactManagerFactoryDescriptor {}
         }
     }

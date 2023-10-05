@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import java.io.IOException;
@@ -44,5 +45,5 @@ public interface ModifiableItemGroup<T extends Item> extends ItemGroup<T> {
      * The request format follows that of {@code &lt;n:form xmlns:n="/lib/form">}.
      *
      */
-    T doCreateItem( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException;
+    T doCreateItem(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException;
 }

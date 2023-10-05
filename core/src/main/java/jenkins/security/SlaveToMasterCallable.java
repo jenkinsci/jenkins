@@ -9,10 +9,10 @@ import org.jenkinsci.remoting.RoleChecker;
  * @author Kohsuke Kawaguchi
  * @since 1.587 / 1.580.1
  */
-public abstract class SlaveToMasterCallable<V, T extends Throwable> implements Callable<V,T> {
+public abstract class SlaveToMasterCallable<V, T extends Throwable> implements Callable<V, T> {
     @Override
     public void checkRoles(RoleChecker checker) throws SecurityException {
-        checker.check(this,Roles.MASTER);
+        checker.check(this, Roles.MASTER);
     }
 
     private static final long serialVersionUID = 1L;

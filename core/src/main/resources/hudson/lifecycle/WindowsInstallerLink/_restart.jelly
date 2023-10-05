@@ -39,8 +39,7 @@ THE SOFTWARE.
             <meta name="ROBOTS" content="NOFOLLOW" />
             <!-- mobile friendly layout -->
             <meta name="viewport" content="width=device-width, initial-scale=1" />
-            <link rel="stylesheet" href="${resURL}/css/simple-page.css" type="text/css" />
-            <link rel="stylesheet" href="${resURL}/css/simple-page.theme.css" type="text/css" />
+            <link rel="stylesheet" href="${resURL}/jsbundles/simple-page.css" type="text/css" />
             <link rel="stylesheet" href="${resURL}/css/loading.css" type="text/css" />
         </head>
         <body>

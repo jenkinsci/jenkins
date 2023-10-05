@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.node_monitors;
 
 import hudson.Util;
@@ -134,7 +135,7 @@ public abstract class AbstractNodeMonitorDescriptor<T> extends Descriptor<NodeMo
      *      whereas {@link IOException} is useful for indicating a hard error that needs to be
      *      corrected.
      */
-    protected abstract T monitor(Computer c) throws IOException,InterruptedException;
+    protected abstract T monitor(Computer c) throws IOException, InterruptedException;
 
     /**
      * Performs monitoring across the board.
@@ -142,20 +143,20 @@ public abstract class AbstractNodeMonitorDescriptor<T> extends Descriptor<NodeMo
      * @return
      *      For all the computers, report the monitored values.
      */
-    protected Map<Computer,T> monitor() throws InterruptedException {
-        Map<Computer,T> data = new HashMap<>();
-        for( Computer c : Jenkins.get().getComputers() ) {
+    protected Map<Computer, T> monitor() throws InterruptedException {
+        Map<Computer, T> data = new HashMap<>();
+        for (Computer c : Jenkins.get().getComputers()) {
             try {
-                Thread.currentThread().setName("Monitoring "+c.getDisplayName()+" for "+getDisplayName());
+                Thread.currentThread().setName("Monitoring " + c.getDisplayName() + " for " + getDisplayName());
 
-                if(c.getChannel()==null)
-                    data.put(c,null);
+                if (c.getChannel() == null)
+                    data.put(c, null);
                 else
-                    data.put(c,monitor(c));
+                    data.put(c, monitor(c));
             } catch (RuntimeException | IOException e) {
-                LOGGER.log(Level.WARNING, "Failed to monitor "+c.getDisplayName()+" for "+getDisplayName(), e);
+                LOGGER.log(Level.WARNING, "Failed to monitor " + c.getDisplayName() + " for " + getDisplayName(), e);
             } catch (InterruptedException e) {
-                throw (InterruptedException)new InterruptedException("Node monitoring "+c.getDisplayName()+" for "+getDisplayName()+" aborted.").initCause(e);
+                throw (InterruptedException) new InterruptedException("Node monitoring " + c.getDisplayName() + " for " + getDisplayName() + " aborted.").initCause(e);
             }
         }
         return data;
@@ -168,7 +169,7 @@ public abstract class AbstractNodeMonitorDescriptor<T> extends Descriptor<NodeMo
      * If no data is available, a background task to collect data will be started.
      */
     public T get(Computer c) {
-        if(record==null || !record.data.containsKey(c)) {
+        if (record == null || !record.data.containsKey(c)) {
             // if we don't have the data, schedule the check now
             triggerUpdate();
             return null;
@@ -180,20 +181,20 @@ public abstract class AbstractNodeMonitorDescriptor<T> extends Descriptor<NodeMo
      * Is the monitoring activity currently in progress?
      */
     private synchronized boolean isInProgress() {
-        return inProgress !=null && inProgress.isAlive();
+        return inProgress != null && inProgress.isAlive();
     }
 
     /**
      * The timestamp that indicates when the last round of the monitoring has completed.
      */
     public long getTimestamp() {
-        return record==null ? 0L : record.timestamp;
+        return record == null ? 0L : record.timestamp;
     }
 
     public String getTimestampString() {
-        if (record==null)
+        if (record == null)
             return Messages.AbstractNodeMonitorDescriptor_NoDataYet();
-        return Util.getTimeSpanString(System.currentTimeMillis()-record.timestamp);
+        return Util.getTimeSpanString(System.currentTimeMillis() - record.timestamp);
     }
 
     /**
@@ -201,22 +202,22 @@ public abstract class AbstractNodeMonitorDescriptor<T> extends Descriptor<NodeMo
      */
     public boolean isIgnored() {
         NodeMonitor m = ComputerSet.getMonitors().get(this);
-        return m==null || m.isIgnored();
+        return m == null || m.isIgnored();
     }
 
     /**
      * Utility method to mark the computer online for derived classes.
-     * 
-     * @return true 
+     *
+     * @return true
      *      if the node was actually taken online by this act (as opposed to us deciding not to do it,
      *      or the computer was already online.)
      */
     protected boolean markOnline(Computer c) {
-        if(isIgnored() || c.isOnline()) return false; // noop
-        c.setTemporarilyOffline(false,null);
+        if (isIgnored() || c.isOnline()) return false; // noop
+        c.setTemporarilyOffline(false, null);
         return true;
     }
-    
+
     /**
      * Utility method to mark the computer offline for derived classes.
      *
@@ -225,13 +226,13 @@ public abstract class AbstractNodeMonitorDescriptor<T> extends Descriptor<NodeMo
      *      or the computer already marked offline.)
      */
     protected boolean markOffline(Computer c, OfflineCause oc) {
-        if(isIgnored() || c.isTemporarilyOffline()) return false; // noop
+        if (isIgnored() || c.isTemporarilyOffline()) return false; // noop
 
         c.setTemporarilyOffline(true, oc);
 
         // notify the admin
         MonitorMarkedNodeOffline no = AdministrativeMonitor.all().get(MonitorMarkedNodeOffline.class);
-        if(no!=null)
+        if (no != null)
             no.active = true;
         return true;
     }
@@ -242,7 +243,7 @@ public abstract class AbstractNodeMonitorDescriptor<T> extends Descriptor<NodeMo
      */
     @Deprecated
     protected boolean markOffline(Computer c) {
-        return markOffline(c,null);
+        return markOffline(c, null);
     }
 
     /**
@@ -288,12 +289,12 @@ public abstract class AbstractNodeMonitorDescriptor<T> extends Descriptor<NodeMo
         /**
          * Last computed monitoring result.
          */
-        private /*final*/ Map<Computer,T> data = Collections.emptyMap();
+        private /*final*/ Map<Computer, T> data = Collections.emptyMap();
 
         private long timestamp;
 
         Record() {
-            super("Monitoring thread for "+getDisplayName()+" started on "+new Date());
+            super("Monitoring thread for " + getDisplayName() + " started on " + new Date());
         }
 
         @Override
@@ -301,20 +302,20 @@ public abstract class AbstractNodeMonitorDescriptor<T> extends Descriptor<NodeMo
             try {
                 long startTime = System.currentTimeMillis();
                 String oldName = getName();
-                data=monitor();
+                data = monitor();
                 setName(oldName);
 
                 timestamp = System.currentTimeMillis();
                 record = this;
 
-                LOGGER.log(Level.FINE, "Node monitoring {0} completed in {1}ms", new Object[] {getDisplayName(), System.currentTimeMillis()-startTime});
+                LOGGER.log(Level.FINE, "Node monitoring {0} completed in {1}ms", new Object[] {getDisplayName(), System.currentTimeMillis() - startTime});
             } catch (InterruptedException x) {
                 // interrupted by new one, fine
             } catch (Throwable t) {
-                LOGGER.log(Level.WARNING, "Unexpected node monitoring termination: "+getDisplayName(),t);
+                LOGGER.log(Level.WARNING, "Unexpected node monitoring termination: " + getDisplayName(), t);
             } finally {
-                synchronized(AbstractNodeMonitorDescriptor.this) {
-                    if (inProgress==this)
+                synchronized (AbstractNodeMonitorDescriptor.this) {
+                    if (inProgress == this)
                         inProgress = null;
                 }
             }

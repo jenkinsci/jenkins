@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.model;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -36,7 +37,7 @@ import org.kohsuke.stapler.StaplerRequest;
  *
  * @author Kohsuke Kawaguchi
  */
-@Extension(ordinal=400) @Symbol("quietPeriod")
+@Extension(ordinal = 400) @Symbol("quietPeriod")
 public class GlobalQuietPeriodConfiguration extends GlobalConfiguration {
     public int getQuietPeriod() {
         return Jenkins.get().getQuietPeriod();
@@ -44,7 +45,7 @@ public class GlobalQuietPeriodConfiguration extends GlobalConfiguration {
 
     @Override
     public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
-        int i=0;
+        int i = 0;
         try {
             i = Integer.parseInt(json.getString("quietPeriod"));
         } catch (NumberFormatException e) {
@@ -55,7 +56,7 @@ public class GlobalQuietPeriodConfiguration extends GlobalConfiguration {
             Jenkins.get().setQuietPeriod(i);
             return true;
         } catch (IOException e) {
-            throw new FormException(e,"quietPeriod");
+            throw new FormException(e, "quietPeriod");
         }
     }
 

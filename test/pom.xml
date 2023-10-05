@@ -37,9 +37,16 @@ THE SOFTWARE.
   <description>Functional tests for Jenkins core</description>
 
   <properties>
-    <concurrency>2</concurrency> <!-- may use e.g. 2C for 2 × (number of cores) -->
     <mavenDebug>false</mavenDebug>
-    <jacocoSurefireArgs /><!-- empty by default -->
+    <!-- Filled in by jacoco-maven-plugin -->
+    <jacocoSurefireArgs />
+    <!--
+      Filled in by maven-hpi-plugin from the MANIFEST.MF entry in jenkins.war, but we provide a default value for the benefit of IDEs.
+      Make sure to keep the directives in core/pom.xml and war/pom.xml in sync with these.
+    -->
+    <jenkins.addOpens>--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED</jenkins.addOpens>
+    <!-- Filled in by maven-hpi-plugin with the path to org-netbeans-insane-hook.jar extracted from jenkins-test-harness -->
+    <jenkins.insaneHook />
   </properties>
 
   <dependencyManagement>
@@ -52,41 +59,78 @@ THE SOFTWARE.
         <scope>import</scope>
       </dependency>
       <dependency>
+        <groupId>io.jenkins.plugins</groupId>
+        <artifactId>commons-lang3-api</artifactId>
+        <version>3.13.0-62.v7d18e55f51e2</version>
+      </dependency>
+      <dependency>
+        <!-- RequireUpperBoundDeps between checks-api, plugin-util-api, and font-awesome-api -->
+        <groupId>io.jenkins.plugins</groupId>
+        <artifactId>commons-text-api</artifactId>
+        <version>1.10.0-78.v3e7b_ea_d5a_fe1</version>
+      </dependency>
+      <dependency>
+        <!-- RequireUpperBoundDeps between bootstrap5-api and echarts-api -->
+        <groupId>io.jenkins.plugins</groupId>
+        <artifactId>font-awesome-api</artifactId>
+        <version>6.4.2-1</version>
+      </dependency>
+      <dependency>
+        <groupId>io.jenkins.plugins</groupId>
+        <artifactId>ionicons-api</artifactId>
+        <version>56.v1b_1c8c49374e</version>
+      </dependency>
+      <dependency>
+        <groupId>io.jenkins.plugins</groupId>
+        <artifactId>javax-activation-api</artifactId>
+        <version>1.2.0-6</version>
+      </dependency>
+      <dependency>
+        <!-- RequireUpperBoundDeps between checks-api, echarts-api, font-awesome-api, and junit -->
+        <groupId>io.jenkins.plugins</groupId>
+        <artifactId>plugin-util-api</artifactId>
+        <version>3.3.0</version>
+      </dependency>
+      <dependency>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>ant</artifactId>
-        <version>1.12</version>
+        <version>497.v94e7d9fffa_b_9</version>
       </dependency>
       <dependency>
         <!-- RequireUpperBoundDeps via mailer and junit -->
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>display-url-api</artifactId>
-        <version>2.3.5</version>
+        <version>2.3.9</version>
       </dependency>
       <dependency>
         <!-- requireUpperBoundDeps via matrix-project and junit -->
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>script-security</artifactId>
-        <version>1.78</version>
+        <version>1275.v23895f409fb_d</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
   <dependencies>
+    <!-- For maven-hpi-plugin -->
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>jenkins-war</artifactId>
+      <artifactId>jenkins-core</artifactId>
       <version>${project.version}</version>
-      <type>executable-war</type>
-      <scope>test</scope>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>1645.vf98fc478f846</version>
+      <version>2064.vcd3b_b_8f3f2b_a_</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
           <groupId>${project.groupId}</groupId>
           <artifactId>jenkins-war</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.hamcrest</groupId>
+          <artifactId>hamcrest-core</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -95,71 +139,115 @@ THE SOFTWARE.
       <artifactId>jenkins-test-harness-tools</artifactId>
       <version>2.2</version>
       <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>${project.groupId}</groupId>
+          <artifactId>jenkins-test-harness</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
-      <groupId>org.jenkins-ci.plugins</groupId>
-      <artifactId>cloudbees-folder</artifactId>
-      <version>6.16</version>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>jenkins-war</artifactId>
+      <version>${project.version}</version>
+      <type>executable-war</type>
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.jenkins-ci.plugins</groupId>
-      <artifactId>mailer</artifactId>
-      <version>1.34</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.jenkins-ci.plugins</groupId>
-      <artifactId>matrix-auth</artifactId>
-      <version>2.6.8</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.jenkins-ci.plugins</groupId>
-      <artifactId>antisamy-markup-formatter</artifactId>
-      <version>2.5</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.jenkins-ci.plugins</groupId>
-      <artifactId>matrix-project</artifactId>
-      <version>1.19</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.jenkins-ci.plugins</groupId>
-      <artifactId>junit</artifactId>
-      <version>1.53</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.jenkins-ci.plugins</groupId>
-      <artifactId>structs</artifactId>
-      <version>1.24</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.hamcrest</groupId>
-      <artifactId>hamcrest-core</artifactId>
-      <version>2.2</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <!-- for testing JNLP launch. -->
-      <groupId>org.jvnet.hudson</groupId>
-      <artifactId>netx</artifactId>
-      <version>0.5-hudson-2</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.mockito</groupId>
-      <artifactId>mockito-inline</artifactId>
+      <groupId>io.jenkins.plugins</groupId>
+      <artifactId>javax-mail-api</artifactId>
+      <version>1.6.2-9</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.awaitility</groupId>
       <artifactId>awaitility</artifactId>
-      <version>4.1.1</version>
+      <version>4.2.0</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.hamcrest</groupId>
+      <artifactId>hamcrest</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci</groupId>
+      <artifactId>test-annotations</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.modules</groupId>
+      <artifactId>instance-identity</artifactId>
+      <version>173.va_37c494ec4e5</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>antisamy-markup-formatter</artifactId>
+      <version>162.v0e6ec0fcfcf6</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>cloudbees-folder</artifactId>
+      <version>6.848.ve3b_fd7839a_81</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>credentials</artifactId>
+      <version>1271.v54b_1c2c6388a_</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>junit</artifactId>
+      <version>1240.vf9529b_881428</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>mailer</artifactId>
+      <version>463.vedf8358e006b_</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>matrix-auth</artifactId>
+      <version>3.2.1</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>matrix-project</artifactId>
+      <version>808.v5a_b_5f56d6966</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>structs</artifactId>
+      <version>325.vcb_307d2a_2782</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.vintage</groupId>
+      <artifactId>junit-vintage-engine</artifactId>
+      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>org.hamcrest</groupId>
+          <artifactId>hamcrest-core</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -171,12 +259,22 @@ THE SOFTWARE.
         <artifactId>maven-hpi-plugin</artifactId>
         <!-- Version specified in grandparent POM -->
         <extensions>true</extensions>
-      </plugin>
-      <plugin>
-        <groupId>org.kohsuke.stapler</groupId>
-        <artifactId>maven-stapler-plugin</artifactId>
-        <!-- version specified in grandparent pom -->
-        <extensions>true</extensions>
+        <executions>
+          <execution>
+            <id>prepare-test-plugins</id>
+            <goals>
+              <goal>resolve-test-dependencies</goal>
+            </goals>
+            <phase>test-compile</phase>
+          </execution>
+          <execution>
+            <id>test-runtime</id>
+            <goals>
+              <goal>test-runtime</goal>
+            </goals>
+            <phase>test</phase>
+          </execution>
+        </executions>
       </plugin>
       <plugin>
         <artifactId>maven-dependency-plugin</artifactId>
@@ -184,11 +282,11 @@ THE SOFTWARE.
         <executions>
           <execution>
             <id>old-remoting-for-test</id>
-            <phase>generate-test-resources</phase>
             <goals>
               <!-- we use copy as this is a dependency from outside the reactor -->
               <goal>copy</goal>
             </goals>
+            <phase>generate-test-resources</phase>
             <configuration>
               <artifactItems>
                 <artifactItem>
@@ -197,7 +295,23 @@ THE SOFTWARE.
                   <version>${remoting.minimum.supported.version}</version>
                   <type>jar</type>
                   <outputDirectory>${project.build.outputDirectory}/old-remoting</outputDirectory>
-                  <destFileName>remoting-minimal-supported.jar</destFileName>
+                  <destFileName>remoting-minimum-supported.jar</destFileName>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>org.jenkins-ci.main</groupId>
+                  <artifactId>remoting</artifactId>
+                  <version>4.12</version>
+                  <type>jar</type>
+                  <outputDirectory>${project.build.outputDirectory}/old-remoting</outputDirectory>
+                  <destFileName>remoting-unsupported.jar</destFileName>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>io.jenkins.plugins</groupId>
+                  <artifactId>design-library</artifactId>
+                  <version>91.v257f311ea_1dc</version>
+                  <type>hpi</type>
+                  <outputDirectory>${project.build.outputDirectory}/plugins</outputDirectory>
+                  <destFileName>design-library.jpi</destFileName>
                 </artifactItem>
               </artifactItems>
             </configuration>
@@ -209,14 +323,31 @@ THE SOFTWARE.
         <artifactId>maven-surefire-plugin</artifactId>
         <!-- version specified in grandparent pom -->
         <configuration>
-          <argLine>${jacocoSurefireArgs} -Dfile.encoding=UTF-8 -Xmx1g -Djdk.net.URLClassPath.disableClassPathURLCheck=true</argLine>
+          <argLine>@{jacocoSurefireArgs} -Xmx1g @{jenkins.addOpens} @{jenkins.insaneHook}</argLine>
           <systemPropertyVariables>
             <hudson.maven.debug>${mavenDebug}</hudson.maven.debug>
             <buildDirectory>${project.build.directory}</buildDirectory>
           </systemPropertyVariables>
           <reuseForks>false</reuseForks>
-          <forkCount>${concurrency}</forkCount>
         </configuration>
+        <executions>
+          <!-- Unbind the default execution so that it does not run before test-runtime. -->
+          <execution>
+            <id>default-test</id>
+            <goals>
+              <goal>test</goal>
+            </goals>
+            <phase>none</phase>
+          </execution>
+          <!-- Bind a new execution which, by virtue of being declared after test-runtime, will also run after it. -->
+          <execution>
+            <id>functional-test</id>
+            <goals>
+              <goal>test</goal>
+            </goals>
+            <phase>test</phase>
+          </execution>
+        </executions>
       </plugin>
       <plugin>
         <artifactId>maven-deploy-plugin</artifactId>
@@ -267,50 +398,34 @@ THE SOFTWARE.
         </property>
       </activation>
       <properties>
-        <maven.test.redirectTestOutputToFile>true</maven.test.redirectTestOutputToFile>
-        <surefire.rerunFailingTestsCount>4</surefire.rerunFailingTestsCount>
         <surefire.skipAfterFailureCount>100</surefire.skipAfterFailureCount>
       </properties>
     </profile>
     <profile>
-      <id>jacoco</id>
+      <id>enable-jacoco</id>
       <build>
         <plugins>
           <plugin>
             <groupId>org.jacoco</groupId>
             <artifactId>jacoco-maven-plugin</artifactId>
-            <version>0.8.7</version>
+            <!-- Version specified in parent POM -->
             <executions>
-              <!--
-                Prepares the property pointing to the JaCoCo runtime agent which
-                is passed as VM argument when Maven the Surefire plugin is executed.
-              -->
               <execution>
-                <id>pre-unit-test</id>
                 <goals>
                   <goal>prepare-agent</goal>
                 </goals>
                 <configuration>
-                  <!-- Sets the path to the file which contains the execution data. -->
-                  <destFile>${project.build.directory}/coverage-reports/jacoco-ut.exec</destFile>
                   <propertyName>jacocoSurefireArgs</propertyName>
-                </configuration>
-              </execution>
-              <!--
-                Ensures that the code coverage report for unit tests is created after
-                unit tests have been run.
-              -->
-              <execution>
-                <id>post-unit-test</id>
-                <phase>test</phase>
-                <goals>
-                  <goal>report</goal>
-                </goals>
-                <configuration>
-                  <!-- Sets the path to the file which contains the execution data. -->
-                  <dataFile>${project.build.directory}/coverage-reports/jacoco-ut.exec</dataFile>
-                  <!-- Sets the output directory for the code coverage report. -->
-                  <outputDirectory>${project.reporting.outputDirectory}/jacoco-ut</outputDirectory>
+                  <includes>
+                    <include>hudson/*</include>
+                    <include>hudson/**/*</include>
+                    <include>jenkins/*</include>
+                    <include>jenkins/**/*</include>
+                    <include>org/jenkins/**/*</include>
+                  </includes>
+                  <excludes>
+                    <exclude>**/Messages.class</exclude>
+                  </excludes>
                 </configuration>
               </execution>
             </executions>

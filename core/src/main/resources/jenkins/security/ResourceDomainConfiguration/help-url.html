@@ -1,51 +1,95 @@
 <p>
-    Jenkins serves many files that are potentially created by untrusted users, such as files in project workspaces or archived artifacts.
-    When no resource root URL is defined, Jenkins will serve these files with the HTTP header <code>Content-Security-Policy</code> ("CSP").
-    By default it is set to a value that disables many modern web features to prevent cross-site scripting (XSS) and other attacks on Jenkins users accessing these files.
-    While the specific value for the CSP header is user configurable (and can even be disabled), doing so is a trade-off between security and functionality.
+  Jenkins serves many files that are potentially created by untrusted users,
+  such as files in project workspaces or archived artifacts. When no resource
+  root URL is defined, Jenkins will serve these files with the HTTP header
+  <code>Content-Security-Policy</code>
+  ("CSP"). By default it is set to a value that disables many modern web
+  features to prevent cross-site scripting (XSS) and other attacks on Jenkins
+  users accessing these files. While the specific value for the CSP header is
+  user configurable (and can even be disabled), doing so is a trade-off between
+  security and functionality.
 </p>
 <p>
-    If the resource root URL is defined, Jenkins will instead redirect requests for user-created resource files to URLs starting with the URL configured here.
-    These URLs will not set the CSP header, allowing JavaScript and similar features to work.
-    For this option to work as expected, the following constraints and considerations apply:
+  If the resource root URL is defined, Jenkins will instead redirect requests
+  for user-created resource files to URLs starting with the URL configured here.
+  These URLs will not set the CSP header, allowing JavaScript and similar
+  features to work. For this option to work as expected, the following
+  constraints and considerations apply:
 </p>
 <ul>
-    <li>The resource root URL must be a valid alternative choice for the Jenkins URL for requests to be processed correctly.</li>
-    <li>The Jenkins URL must be set and it must be different from this resource root URL (in fact, a different host name is required).</li>
-    <li>
-        Once set, Jenkins will only serve resource URL requests via the resource root URL.
-        All other requests will get <em>HTTP 404 Not Found</em> responses.
-    </li>
+  <li>
+    The resource root URL must be a valid alternative choice for the Jenkins URL
+    for requests to be processed correctly.
+  </li>
+  <li>
+    The Jenkins URL must be set and it must be different from this resource root
+    URL (in fact, a different host name is required).
+  </li>
+  <li>
+    Once set, Jenkins will only serve resource URL requests via the resource
+    root URL. All other requests will get
+    <em>HTTP 404 Not Found</em>
+    responses.
+  </li>
 </ul>
 <p>
-    Once this URL has been set up correctly, Jenkins will redirect requests to workspaces, archived artifacts, and similar collections of usually user-generated content to URLs starting with the resource root URL.
-    Instead of a path like <code>job/name_here/ws</code>, resource URLs will contain a token encoding that path, the user for which the URL was created, and when it was created.
-    These resource URLs access static files <em>as if</em> the user for which they were created would access them:
-    If the user’s permission to access these files is removed, the corresponding resource URLs will not work anymore either.
-    <strong>These URLs are accessible to anyone without authentication until they expire, so sharing these URLs is akin to sharing the files directly.</strong>
+  Once this URL has been set up correctly, Jenkins will redirect requests to
+  workspaces, archived artifacts, and similar collections of usually
+  user-generated content to URLs starting with the resource root URL. Instead of
+  a path like
+  <code>job/name_here/ws</code>
+  , resource URLs will contain a token encoding that path, the user for which
+  the URL was created, and when it was created. These resource URLs access
+  static files
+  <em>as if</em>
+  the user for which they were created would access them: If the user’s
+  permission to access these files is removed, the corresponding resource URLs
+  will not work anymore either.
+  <strong>
+    These URLs are accessible to anyone without authentication until they
+    expire, so sharing these URLs is akin to sharing the files directly.
+  </strong>
 </p>
 <h3>Security considerations</h3>
 <h4>Authentication</h4>
 <p>
-    Resource URLs do not require authentication (users will not have a valid session for the resource root URL).
-    Sharing a resource URL with another user, even one lacking Overall/Read permission for Jenkins, will grant that user access to these files until the URLs expire.
+  Resource URLs do not require authentication (users will not have a valid
+  session for the resource root URL). Sharing a resource URL with another user,
+  even one lacking Overall/Read permission for Jenkins, will grant that user
+  access to these files until the URLs expire.
 </p>
 <h4>Expiration</h4>
 <p>
-    Resource URLs expire after 30 minutes by default.
-    Expired resource URLs will redirect users to their equivalent Jenkins URLs, so that the user can reauthenticate, if necessary, and then be redirected back to a new resource URL that will be valid for another 30 minutes.
-    This will generally be transparent to the user if they have a valid Jenkins session.
-    Otherwise, they will need to authenticate with Jenkins again.
-    However, when browsing pages with HTML frames, like Javadoc sites, the login form cannot appear in a frame.
-    In these cases, users will need to reload the top-level frame to make the login form appear.
+  Resource URLs expire after 30 minutes by default. Expired resource URLs will
+  redirect users to their equivalent Jenkins URLs, so that the user can
+  reauthenticate, if necessary, and then be redirected back to a new resource
+  URL that will be valid for another 30 minutes. This will generally be
+  transparent to the user if they have a valid Jenkins session. Otherwise, they
+  will need to authenticate with Jenkins again. However, when browsing pages
+  with HTML frames, like Javadoc sites, the login form cannot appear in a frame.
+  In these cases, users will need to reload the top-level frame to make the
+  login form appear.
 </p>
 <p>
-    To change how quickly resource URLs expire, set the system property <code>jenkins.security.ResourceDomainRootAction.validForMinutes</code> to the desired value in minutes.
-    Earlier expiration might make it harder to use these URLs, while later expiration increases the likelihood of unauthorized users gaining access through URLs shared with them by authorized users.
+  To change how quickly resource URLs expire, set the system property
+  <code>jenkins.security.ResourceDomainRootAction.validForMinutes</code>
+  to the desired value in minutes. Earlier expiration might make it harder to
+  use these URLs, while later expiration increases the likelihood of
+  unauthorized users gaining access through URLs shared with them by authorized
+  users.
 </p>
 <h4>Authenticity</h4>
 <p>
-    Resource URLs encode the URL, the user for which they were created, and their creation timestamp.
-    Additionally, this string contains an <a href="https://en.wikipedia.org/wiki/HMAC" rel="noopener noreferrer" target="_blank">HMAC</a> to ensure the authenticity of the URL.
-    This prevents attackers from forging URLs that would grant them access to resource files as if they were another user.
+  Resource URLs encode the URL, the user for which they were created, and their
+  creation timestamp. Additionally, this string contains an
+  <a
+    href="https://en.wikipedia.org/wiki/HMAC"
+    rel="noopener noreferrer"
+    target="_blank"
+  >
+    HMAC
+  </a>
+  to ensure the authenticity of the URL. This prevents attackers from forging
+  URLs that would grant them access to resource files as if they were another
+  user.
 </p>

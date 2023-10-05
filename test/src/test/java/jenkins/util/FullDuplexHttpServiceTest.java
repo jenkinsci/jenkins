@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.util;
 
 import static org.junit.Assert.assertEquals;
@@ -69,13 +70,16 @@ public class FullDuplexHttpServiceTest {
         assertEquals(0, is.read()); // see FullDuplexHttpStream.getInputStream
         assertEquals(66, is.read());
     }
+
     @TestExtension("smokes")
     public static class Endpoint extends InvisibleAction implements RootAction {
         private final transient Map<UUID, FullDuplexHttpService> duplexServices = new HashMap<>();
+
         @Override
         public String getUrlName() {
             return "test";
         }
+
         public HttpResponse doIndex() {
             return new FullDuplexHttpService.Response(duplexServices) {
                 @Override
@@ -91,6 +95,7 @@ public class FullDuplexHttpServiceTest {
             };
         }
     }
+
     @TestExtension("smokes")
     public static class EndpointCrumbExclusion extends CrumbExclusion {
         @Override

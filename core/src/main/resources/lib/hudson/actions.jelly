@@ -39,8 +39,16 @@ THE SOFTWARE.
     <st:include page="action.jelly" from="${action}" optional="true">
       <j:set var="icon" value="${action.iconClassName != null ? action.iconClassName + ' icon-md' : action.iconFileName}"/>
       <j:if test="${icon!=null}">
-        <l:task icon="${icon}" title="${action.displayName}"
-                href="${h.getActionUrl(it.url,action)}" contextMenu="${h.isContextMenuVisible(action)}"/>
+        <j:choose>
+          <j:when test="${h.getActionUrl(it.url,action).contains('pollingLog')}">
+            <l:task icon="${icon}" title="${action.displayName}" href="${h.getActionUrl(it.url,action)}" contextMenu="${h.isContextMenuVisible(action)}">
+              <l:task href="${buildUrl.baseUrl}/pollingLog/pollingLog" icon="icon-document icon-md" title="${%View as plain text}"/>
+            </l:task>
+          </j:when>
+          <j:otherwise>
+            <l:task icon="${icon}" title="${action.displayName}" href="${h.getActionUrl(it.url,action)}" contextMenu="${h.isContextMenuVisible(action)}"/>
+          </j:otherwise>
+        </j:choose>
       </j:if>
     </st:include>
   </j:forEach>

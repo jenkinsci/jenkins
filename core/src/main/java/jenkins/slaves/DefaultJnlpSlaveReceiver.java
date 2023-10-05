@@ -9,6 +9,7 @@ import hudson.TcpSlaveAgentListener.ConnectionFromCurrentPeer;
 import hudson.model.Computer;
 import hudson.model.Slave;
 import hudson.remoting.Channel;
+import hudson.remoting.ChannelClosedException;
 import hudson.slaves.ComputerLauncher;
 import hudson.slaves.ComputerLauncherFilter;
 import hudson.slaves.DelegatingComputerLauncher;
@@ -16,10 +17,12 @@ import hudson.slaves.JNLPLauncher;
 import hudson.slaves.SlaveComputer;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.channels.ClosedChannelException;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.concurrent.ExecutionException;
@@ -39,7 +42,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
  * Match the name against the agent name and route the incoming agent as {@link Slave}.
  *
  * @author Kohsuke Kawaguchi
- * @since 1.561  
+ * @since 1.561
  * @since 1.614 handle() returns true on handshake error as it required in {@link JnlpAgentReceiver}.
  */
 @Extension
@@ -125,7 +128,7 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
         Channel ch = computer.getChannel();
         if (ch != null) {
             String cookie = event.getProperty(JnlpConnectionState.COOKIE_KEY);
-            String channelCookie = (String)ch.getProperty(JnlpConnectionState.COOKIE_KEY);
+            String channelCookie = (String) ch.getProperty(JnlpConnectionState.COOKIE_KEY);
             if (cookie != null && channelCookie != null && MessageDigest.isEqual(cookie.getBytes(StandardCharsets.UTF_8), channelCookie.getBytes(StandardCharsets.UTF_8))) {
                 // we think we are currently connected, but this request proves that it's from the party
                 // we are supposed to be communicating to. so let the current one get disconnected
@@ -147,14 +150,14 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
     }
 
     @Override
+    @SuppressFBWarnings(value = "OS_OPEN_STREAM", justification = "Closed by hudson.slaves.SlaveComputer#kill")
     public void beforeChannel(@NonNull JnlpConnectionState event) {
         DefaultJnlpSlaveReceiver.State state = event.getStash(DefaultJnlpSlaveReceiver.State.class);
         final SlaveComputer computer = state.getNode();
         final OutputStream log = computer.openLogFile();
         state.setLog(log);
-        try (PrintWriter logw = new PrintWriter(log, true)) {
-            logw.println("Inbound agent connected from " + event.getRemoteEndpointDescription());
-        }
+        PrintWriter logw = new PrintWriter(new OutputStreamWriter(log, /* TODO switch agent logs to UTF-8 */ Charset.defaultCharset()), true); // Closed by hudson.slaves.SlaveComputer#kill
+        logw.println("Inbound agent connected from " + event.getRemoteEndpointDescription());
         for (ChannelConfigurator cc : ChannelConfigurator.all()) {
             cc.onChannelBuilding(event.getChannelBuilder(), computer);
         }
@@ -172,7 +175,7 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
         try {
             computer.setChannel(event.getChannel(), state.getLog(), null);
         } catch (IOException | InterruptedException e) {
-            PrintWriter logw = new PrintWriter(state.getLog(), true);
+            PrintWriter logw = new PrintWriter(new OutputStreamWriter(state.getLog(), /* TODO switch agent logs to UTF-8 */ Charset.defaultCharset()), true);
             Functions.printStackTrace(e, logw);
             try {
                 event.getChannel().close();
@@ -186,7 +189,7 @@ public class DefaultJnlpSlaveReceiver extends JnlpAgentReceiver {
     public void channelClosed(@NonNull JnlpConnectionState event) {
         final String nodeName = event.getProperty(JnlpConnectionState.CLIENT_NAME_KEY);
         IOException cause = event.getCloseCause();
-        if (cause instanceof ClosedChannelException) {
+        if (cause instanceof ClosedChannelException || cause instanceof ChannelClosedException) {
             LOGGER.log(Level.INFO, "{0} for {1} terminated: {2}", new Object[] {Thread.currentThread().getName(), nodeName, cause});
         } else if (cause != null) {
             LOGGER.log(Level.WARNING, Thread.currentThread().getName() + " for " + nodeName + " terminated",

@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.security;
 
 import static org.springframework.security.core.context.SecurityContextHolder.getContext;
@@ -68,7 +69,7 @@ public class SecurityContextExecutorService extends InterceptingExecutorService 
     @Override
     protected <V> Callable<V> wrap(final Callable<V> c) {
         final SecurityContext callingContext = getContext();
-        return new Callable<V>() {
+        return new Callable<>() {
             @Override
             public V call() throws Exception {
                 SecurityContext old = getContext();

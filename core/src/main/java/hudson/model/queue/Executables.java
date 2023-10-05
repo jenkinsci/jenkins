@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model.queue;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
@@ -35,13 +36,13 @@ import java.lang.reflect.Method;
  * @author Kohsuke Kawaguchi
  */
 public class Executables {
-    
+
     /**
      * Due to the return type change in {@link Executable} in 1.377, the caller needs a special precaution now.
      * @param e Executable
      * @return Discovered subtask
      */
-    public static @NonNull SubTask getParentOf(@NonNull Executable e) 
+    public static @NonNull SubTask getParentOf(@NonNull Executable e)
             throws Error, RuntimeException {
         try {
             return e.getParent();
@@ -51,13 +52,13 @@ public class Executables {
                 m.setAccessible(true);
                 return (SubTask) m.invoke(e);
             } catch (IllegalAccessException x) {
-                throw (Error)new IllegalAccessError().initCause(x);
+                throw (Error) new IllegalAccessError().initCause(x);
             } catch (NoSuchMethodException x) {
-                throw (Error)new NoSuchMethodError().initCause(x);
+                throw (Error) new NoSuchMethodError().initCause(x);
             } catch (InvocationTargetException x) {
                 Throwable y = x.getTargetException();
-                if (y instanceof Error)     throw (Error)y;
-                if (y instanceof RuntimeException)     throw (RuntimeException)y;
+                if (y instanceof Error)     throw (Error) y;
+                if (y instanceof RuntimeException)     throw (RuntimeException) y;
                 throw new Error(x);
             }
         }

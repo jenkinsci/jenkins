@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.security.csrf;
 
 import hudson.Extension;
@@ -43,7 +44,7 @@ public class CSRFAdministrativeMonitor extends AdministrativeMonitor {
     public String getDisplayName() {
         return Messages.CSRFAdministrativeMonitor_displayName();
     }
-    
+
     @Override
     public boolean isActivated() {
         return Jenkins.get().getCrumbIssuer() == null;

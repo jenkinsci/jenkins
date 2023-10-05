@@ -1,47 +1,11 @@
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout">
 
   <l:layout type="full-screen" title="${it.displayName}">
     <l:main-panel>
-      <style type="text/css">
-        #create-admin-user {
-          padding: 20px 100px 20px 100px;
-          margin: 8px;
-        }
-
-        #create-admin-user form > div {
-          margin: 0 !important;
-        }
-
-        #create-admin-user h1 {
-          font-size: 48px;
-          line-height: 48px;
-          margin-top: 30px;
-          font-weight: 500;
-        }
-
-        #create-admin-user tr td {
-          padding-bottom: 2px;
-        }
-
-        #create-admin-user tr td, #create-admin-user input {
-          line-height: 25px;
-          margin-bottom: 6px;
-        }
-
-        #create-admin-user input[type=text], input[type=password] {
-          border: 1px solid #ddd;
-          border-radius: 2px;
-          padding: 1px 8px;
-        }
-      </style>
-
-     <div id="create-admin-user">
+     <div class="create-admin-user">
        <form action="${rootURL}/setupWizard/createAdminUser" method="post">
           <local:_entryForm it="${app.securityRealm}" host="${app.securityRealm}" title="${%Create First Admin User}" captcha="${false}" xmlns:local="/hudson/security/HudsonPrivateSecurityRealm" />
-          <script>
-            $('username').focus();
-          </script>
        </form>
      </div>
     </l:main-panel>

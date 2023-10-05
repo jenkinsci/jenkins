@@ -32,14 +32,14 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author Kohsuke Kawaguchi
  */
 public class Lookup {
-    private final ConcurrentHashMap<Class,Object> data = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<Class, Object> data = new ConcurrentHashMap<>();
 
     public <T> T get(Class<T> type) {
         return type.cast(data.get(type));
     }
 
     public <T> T set(Class<T> type, T instance) {
-        return type.cast(data.put(type,instance));
+        return type.cast(data.put(type, instance));
     }
 
     /**
@@ -51,7 +51,7 @@ public class Lookup {
      */
     public <T> T setIfNull(Class<T> type, T instance) {
         Object o = data.putIfAbsent(type, instance);
-        if (o!=null)    return type.cast(o);
+        if (o != null)    return type.cast(o);
         return instance;
     }
 }

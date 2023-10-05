@@ -36,7 +36,7 @@ import org.kohsuke.accmod.restrictions.DoNotUse;
 @Restricted(DoNotUse.class) // only for buildListTable.jelly
 public class BuildListTable extends RunListProgressiveRendering {
 
-    @Override protected void calculate(Run<?,?> build, JSONObject element) {
+    @Override protected void calculate(Run<?, ?> build, JSONObject element) {
         BallColor iconColor = build.getIconColor();
         element.put("iconColorOrdinal", iconColor.ordinal());
         element.put("iconColorDescription", iconColor.getDescription());

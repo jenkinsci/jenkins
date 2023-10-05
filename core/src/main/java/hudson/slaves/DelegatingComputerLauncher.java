@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.slaves;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
@@ -93,6 +94,7 @@ public abstract class DelegatingComputerLauncher extends ComputerLauncher {
          * The default implementation avoids all delegating descriptors, as that creates infinite recursion.
          * @deprecated use {@link #applicableDescriptors(Slave, Slave.SlaveDescriptor)}
          */
+
         @Deprecated
         @Restricted(DoNotUse.class)
         @RestrictedSince("2.12")

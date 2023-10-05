@@ -38,16 +38,16 @@ public abstract class AuthenticationException extends AcegiSecurityException {
     private Authentication authentication;
     private Object extraInformation;
 
-    public AuthenticationException(String msg) {
+    protected AuthenticationException(String msg) {
         super(msg);
     }
 
-    public AuthenticationException(String msg, Object extraInformation) {
+    protected AuthenticationException(String msg, Object extraInformation) {
         super(msg);
         this.extraInformation = extraInformation;
     }
 
-    public AuthenticationException(String msg, Throwable t) {
+    protected AuthenticationException(String msg, Throwable t) {
         super(msg, t);
     }
 

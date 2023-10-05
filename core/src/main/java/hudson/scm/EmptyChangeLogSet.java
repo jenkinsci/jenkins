@@ -13,7 +13,7 @@ import java.util.Iterator;
  */
 final class EmptyChangeLogSet extends ChangeLogSet<ChangeLogSet.Entry> {
     /*package*/ EmptyChangeLogSet(Run<?, ?> build) {
-        super(build, new RepositoryBrowser<ChangeLogSet.Entry>() {
+        super(build, new RepositoryBrowser<>() {
             @Override public URL getChangeSetLink(ChangeLogSet.Entry changeSet) throws IOException {
                 return null;
             }

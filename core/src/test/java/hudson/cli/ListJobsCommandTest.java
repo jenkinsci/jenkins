@@ -1,9 +1,9 @@
 package hudson.cli;
 
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
@@ -13,12 +13,15 @@ import hudson.model.TopLevelItem;
 import hudson.model.View;
 import hudson.model.ViewTest.CompositeView;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.PrintStream;
+import java.io.UncheckedIOException;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import jenkins.model.Jenkins;
 import org.hamcrest.Description;
 import org.hamcrest.TypeSafeMatcher;
@@ -109,7 +112,7 @@ public class ListJobsCommandTest {
         when(rootView.getViews()).thenReturn(Arrays.asList(leftView, rightView));
         when(rootView.getItems()).thenReturn(Arrays.asList(rootJob, sharedJob));
         when(leftView.getItems()).thenReturn(Arrays.asList(leftJob, sharedJob));
-        when(rightView.getItems()).thenReturn(Collections.singletonList(rightJob));
+        when(rightView.getItems()).thenReturn(List.of(rightJob));
 
         Jenkins jenkins = mock(Jenkins.class);
         try (MockedStatic<Jenkins> mocked = mockStatic(Jenkins.class)) {
@@ -150,12 +153,19 @@ public class ListJobsCommandTest {
 
     private TypeSafeMatcher<ByteArrayOutputStream> empty() {
 
-        return new TypeSafeMatcher<ByteArrayOutputStream>() {
+        return new TypeSafeMatcher<>() {
 
             @Override
             protected boolean matchesSafely(ByteArrayOutputStream item) {
-
-                return item.toString().isEmpty();
+                Charset charset;
+                try {
+                    charset = command.getClientCharset();
+                } catch (IOException e) {
+                    throw new UncheckedIOException(e);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+                return item.toString(charset).isEmpty();
             }
 
             @Override
@@ -168,14 +178,20 @@ public class ListJobsCommandTest {
 
     private TypeSafeMatcher<ByteArrayOutputStream> listsJobs(final String... expected) {
 
-        return new TypeSafeMatcher<ByteArrayOutputStream>() {
+        return new TypeSafeMatcher<>() {
 
             @Override
             protected boolean matchesSafely(ByteArrayOutputStream item) {
 
-                final HashSet<String> jobs = new HashSet<>(
-                        Arrays.asList(item.toString().split(System.getProperty("line.separator")))
-                );
+                Charset charset;
+                try {
+                    charset = command.getClientCharset();
+                } catch (IOException e) {
+                    throw new UncheckedIOException(e);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+                Set<String> jobs = new HashSet<>(Arrays.asList(item.toString(charset).split(System.getProperty("line.separator"))));
 
                 return new HashSet<>(Arrays.asList(expected)).equals(jobs);
             }

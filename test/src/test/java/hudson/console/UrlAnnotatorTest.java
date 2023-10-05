@@ -2,13 +2,13 @@ package hudson.console;
 
 import static org.junit.Assert.assertTrue;
 
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.Launcher;
 import hudson.MarkupText;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
+import org.htmlunit.html.HtmlPage;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -49,7 +49,7 @@ public class UrlAnnotatorTest {
     @Test
     public void test2() {
         MarkupText m = new MarkupText("{abc='http://url/',def='ghi'}");
-        new UrlAnnotator().newInstance(null).annotate(null,m);
+        new UrlAnnotator().newInstance(null).annotate(null, m);
         String html = m.toString(false);
         assertTrue(html.contains("<a href='http://url/'>http://url/</a>"));
         System.out.println(html);

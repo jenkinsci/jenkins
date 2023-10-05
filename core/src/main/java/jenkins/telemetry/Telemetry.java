@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.telemetry;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -29,19 +30,21 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
+import hudson.PluginWrapper;
 import hudson.ProxyConfiguration;
 import hudson.model.AsyncPeriodicWork;
 import hudson.model.TaskListener;
 import hudson.model.UsageStatistics;
+import hudson.util.VersionNumber;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLConnection;
-import java.nio.charset.StandardCharsets;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.time.LocalDate;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -76,7 +79,7 @@ public abstract class Telemetry implements ExtensionPoint {
      *
      * Good IDs are globally unique and human readable (i.e. no UUIDs).
      *
-     * For a periodically updated list of all public implementations, see https://www.jenkins.io/doc/developer/extensions/jenkins-core/#telemetry
+     * For a periodically updated list of all public implementations, see <a href="https://www.jenkins.io/doc/developer/extensions/jenkins-core/#telemetry">the developer documentation</a>.
      *
      * @return ID of the collector, never null or empty
      */
@@ -151,6 +154,24 @@ public abstract class Telemetry implements ExtensionPoint {
         return now.isAfter(getStart()) && now.isBefore(getEnd());
     }
 
+    /**
+     * Produces a list of Jenkins core and plugin version numbers
+     * to include in telemetry implementations for which this would be relevant.
+     * @return a map in a format suitable for a value of {@link #createContent}
+     * @since 2.325
+     */
+    protected final Map<String, String> buildComponentInformation() {
+        Map<String, String> components = new TreeMap<>();
+        VersionNumber core = Jenkins.getVersion();
+        components.put("jenkins-core", core == null ? "" : core.toString());
+        for (PluginWrapper plugin : Jenkins.get().pluginManager.getPlugins()) {
+            if (plugin.isActive()) {
+                components.put(plugin.getShortName(), plugin.getVersion());
+            }
+        }
+        return components;
+    }
+
     @Extension
     public static class TelemetryReporter extends AsyncPeriodicWork {
 
@@ -179,10 +200,10 @@ public abstract class Telemetry implements ExtensionPoint {
                     return;
                 }
 
-                JSONObject data = new JSONObject();
+                JSONObject data = null;
                 try {
                     data = telemetry.createContent();
-                } catch (Exception e) {
+                } catch (RuntimeException e) {
                     LOGGER.log(Level.WARNING, "Failed to build telemetry content for: '" + telemetry.getId() + "'", e);
                 }
 
@@ -197,31 +218,26 @@ public abstract class Telemetry implements ExtensionPoint {
                 String correlationId = ExtensionList.lookupSingleton(Correlator.class).getCorrelationId();
                 wrappedData.put("correlator", DigestUtils.sha256Hex(correlationId + telemetry.getId()));
 
+                String body = wrappedData.toString();
+                if (LOGGER.isLoggable(Level.FINEST)) {
+                    LOGGER.finest("Submitting JSON: " + body);
+                }
+                HttpClient httpClient = ProxyConfiguration.newHttpClient();
+                HttpRequest httpRequest;
                 try {
-                    URL url = new URL(ENDPOINT);
-                    URLConnection conn = ProxyConfiguration.open(url);
-                    if (!(conn instanceof HttpURLConnection)) {
-                        LOGGER.config("URL did not result in an HttpURLConnection: " + ENDPOINT);
-                        return;
-                    }
-                    HttpURLConnection http = (HttpURLConnection) conn;
-                    http.setRequestProperty("Content-Type", "application/json; charset=utf-8");
-                    http.setDoOutput(true);
-
-                    String body = wrappedData.toString();
-                    if (LOGGER.isLoggable(Level.FINEST)) {
-                        LOGGER.finest("Submitting JSON: " + body);
-                    }
-
-                    try (OutputStream out = http.getOutputStream();
-                            OutputStreamWriter writer = new OutputStreamWriter(out, StandardCharsets.UTF_8)) {
-                        writer.append(body);
-                    }
-
-                    LOGGER.config("Telemetry submission received response '" + http.getResponseCode() + " " + http.getResponseMessage() + "' for: " + telemetry.getId());
-                } catch (MalformedURLException e) {
+                    URI uri = new URI(ENDPOINT);
+                    httpRequest = ProxyConfiguration.newHttpRequestBuilder(uri)
+                            .headers("Content-Type", "application/json; charset=utf-8")
+                            .POST(HttpRequest.BodyPublishers.ofString(body))
+                            .build();
+                } catch (IllegalArgumentException | URISyntaxException e) {
                     LOGGER.config("Malformed endpoint URL: " + ENDPOINT + " for telemetry: " + telemetry.getId());
-                } catch (IOException e) {
+                    return;
+                }
+                try {
+                    HttpResponse<Void> response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.discarding());
+                    LOGGER.config("Telemetry submission received response " + response.statusCode() + " for: " + telemetry.getId());
+                } catch (IOException | InterruptedException e) {
                     // deliberately low visibility, as temporary infra problems aren't a big deal and we'd
                     // rather have some unsuccessful submissions than admins opting out to clean up logs
                     LOGGER.log(Level.CONFIG, "Failed to submit telemetry: " + telemetry.getId() + " to: " + ENDPOINT, e);

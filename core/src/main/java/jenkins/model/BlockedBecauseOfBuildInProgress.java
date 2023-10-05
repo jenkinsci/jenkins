@@ -36,7 +36,7 @@ import hudson.model.queue.CauseOfBlockage;
  * @since 1.624
  */
 public class BlockedBecauseOfBuildInProgress extends CauseOfBlockage {
-    
+
     @NonNull
     private final Run<?, ?> build;
 

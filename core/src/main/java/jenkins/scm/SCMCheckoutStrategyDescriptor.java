@@ -18,7 +18,7 @@ public abstract class SCMCheckoutStrategyDescriptor extends Descriptor<SCMChecko
 
     protected SCMCheckoutStrategyDescriptor() {
     }
-    
+
     /**
      * Allows {@link SCMCheckoutStrategyDescriptor} to target specific kind of projects,
      * such as matrix projects.
@@ -28,10 +28,10 @@ public abstract class SCMCheckoutStrategyDescriptor extends Descriptor<SCMChecko
     /**
      * Returns all the registered {@link SCMCheckoutStrategy}s.
      */
-    public static DescriptorExtensionList<SCMCheckoutStrategy,SCMCheckoutStrategyDescriptor> all() {
+    public static DescriptorExtensionList<SCMCheckoutStrategy, SCMCheckoutStrategyDescriptor> all() {
         return Jenkins.get().getDescriptorList(SCMCheckoutStrategy.class);
     }
-    
+
     public static List<SCMCheckoutStrategyDescriptor> _for(AbstractProject p) {
         List<SCMCheckoutStrategyDescriptor> r = new ArrayList<>();
         for (SCMCheckoutStrategyDescriptor d : all()) {
@@ -40,7 +40,7 @@ public abstract class SCMCheckoutStrategyDescriptor extends Descriptor<SCMChecko
         }
         return r;
     }
-                
-    
+
+
 
 }

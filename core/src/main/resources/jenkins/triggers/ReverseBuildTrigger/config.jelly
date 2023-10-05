@@ -28,20 +28,15 @@ THE SOFTWARE.
     <f:entry field="upstreamProjects" title="${%Projects to watch}">
         <f:textbox autoCompleteDelimChar=","/>
     </f:entry>
-    <f:entry title="">
-        <f:radio name="ReverseBuildTrigger.threshold" checked="${instance.threshold==null || instance.threshold.toString()=='SUCCESS'}"
-               title="${%Trigger only if build is stable}" value="SUCCESS"/>
-    </f:entry>
-    <f:entry title="">
-        <f:radio name="ReverseBuildTrigger.threshold" checked="${instance.threshold.toString()=='UNSTABLE'}"
-               title="${%Trigger even if the build is unstable}" value="UNSTABLE"/>
-    </f:entry>
-    <f:entry title="">
-        <f:radio name="ReverseBuildTrigger.threshold" checked="${instance.threshold.toString()=='FAILURE'}"
-               title="${%Trigger even if the build fails}" value="FAILURE"/>
-    </f:entry>
-    <f:entry title="">
-        <f:radio name="ReverseBuildTrigger.threshold" checked="${instance.threshold.toString()=='ABORTED'}"
-               title="${%Always trigger, even if the build is aborted}" value="ABORTED"/>
-    </f:entry>
+    <f:radio name="ReverseBuildTrigger.threshold" checked="${instance.threshold==null || instance.threshold.toString()=='SUCCESS'}"
+           title="${%Trigger only if build is stable}" value="SUCCESS"/>
+
+    <f:radio name="ReverseBuildTrigger.threshold" checked="${instance.threshold.toString()=='UNSTABLE'}"
+           title="${%Trigger even if the build is unstable}" value="UNSTABLE"/>
+
+    <f:radio name="ReverseBuildTrigger.threshold" checked="${instance.threshold.toString()=='FAILURE'}"
+           title="${%Trigger even if the build fails}" value="FAILURE"/>
+
+    <f:radio name="ReverseBuildTrigger.threshold" checked="${instance.threshold.toString()=='ABORTED'}"
+           title="${%Always trigger, even if the build is aborted}" value="ABORTED"/>
 </j:jelly>

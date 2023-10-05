@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model.labels;
 
 import hudson.Extension;
@@ -31,7 +32,7 @@ import hudson.model.Descriptor;
  *
  * <p>
  * Put {@link Extension} on your descriptor implementation to have it auto-registered.
- * 
+ *
  * <p>
  * When extending this class, override {@link Descriptor#getDisplayName()}. In the
  * context of LabelAtomPropertyDescriptor, this function is used to determine the label of

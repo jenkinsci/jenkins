@@ -23,16 +23,17 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
- <st:documentation>
-    &lt;input type="radio"> tag that takes true/false for @checked, which is more Jelly friendly.
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define">
+ <st:documentation> <![CDATA[
+    <input type="radio"> tag that takes true/false for @checked, which is more Jelly friendly.
 
-    Note that safari doesn't support onchange.
+    Note that Safari doesn't support onchange.
 
     Beware that the name attribute should be uniquified among all radio blocks on the page, such as by prefixing it with "G0025." or whatever gensym.
 
-    For a read only radio input set &lt;j:set var="readOnlyMode" value="true"/&gt; inside your entry tag
+    For a read only radio input set <j:set var="readOnlyMode" value="true"/> inside your entry tag
     See https://www.jenkins.io/doc/developer/views/read-only/#enabling-read-only-view-support
+    ]]>
     <st:attribute name="name" />
     <st:attribute name="checked" />
     <st:attribute name="value" />
@@ -43,9 +44,14 @@ THE SOFTWARE.
       toggles the radio.
     </st:attribute>
   </st:documentation>
-  <input type="radio" name="${attrs.name}" onclick="${attrs.onclick}" id="${attrs.id}" value="${attrs.value}"
-        checked="${attrs.checked?'true':null}" disabled="${readOnlyMode?'true':null}" />
-  <j:if test="${attrs.title!=null}">
-    <label class="attach-previous">${attrs.title}</label>
-  </j:if>
+  <j:set var="itemId" value="${attrs.id ?: h.generateItemId()}" />
+    <div class="jenkins-radio">
+        <input class="jenkins-radio__input" type="radio" name="${attrs.name}" onclick="${attrs.onclick}"
+               id="${itemId}" value="${attrs.value}" checked="${attrs.checked?'true':null}"
+               disabled="${readOnlyMode?'true':null}" />
+        <label class="jenkins-radio__label" for="${itemId}">${attrs.title}</label>
+        <div class="jenkins-radio__children">
+            <d:invokeBody />
+        </div>
+    </div>
 </j:jelly>

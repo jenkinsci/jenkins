@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.security.seed;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -33,18 +34,18 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
 
-import com.gargoylesoftware.htmlunit.ElementNotFoundException;
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
-import com.gargoylesoftware.htmlunit.HttpMethod;
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.xml.XmlPage;
 import hudson.model.User;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import org.htmlunit.ElementNotFoundException;
+import org.htmlunit.FailingHttpStatusCodeException;
+import org.htmlunit.HttpMethod;
+import org.htmlunit.WebRequest;
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.xml.XmlPage;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -58,7 +59,7 @@ public class UserSeedPropertyTest {
 
     @Test
     @Issue("SECURITY-901")
-    public void userCreation_implies_userSeedCreation() throws Exception {
+    public void userCreation_implies_userSeedCreation() {
         User alice = User.getById("alice", true);
         assertNotNull(alice);
         UserSeedProperty userSeed = alice.getProperty(UserSeedProperty.class);
@@ -258,7 +259,7 @@ public class UserSeedPropertyTest {
         HtmlPage htmlPage = wc.goTo(alice.getUrl() + "/configure");
         htmlPage.getDocumentElement().getOneHtmlElementByAttribute("div", "class", "user-seed-panel");
     }
-    
+
     @Test
     public void userSeedSection_isCorrectlyHidden_withSpecificSetting() throws Exception {
         boolean currentStatus = UserSeedProperty.HIDE_USER_SEED_SECTION;
@@ -286,7 +287,7 @@ public class UserSeedPropertyTest {
             UserSeedProperty.HIDE_USER_SEED_SECTION = currentStatus;
         }
     }
-    
+
     private void assertUserConnected(JenkinsRule.WebClient wc, String expectedUsername) throws Exception {
         XmlPage page = (XmlPage) wc.goTo("whoAmI/api/xml", "application/xml");
         assertThat(page, hasXPath("//name", is(expectedUsername)));

@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.model;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
@@ -75,7 +76,7 @@ public abstract class CauseOfInterruption implements Serializable {
      * Indicates that the build was interrupted from UI.
      */
     public static final class UserInterruption extends CauseOfInterruption {
-        
+
         @NonNull
         private final String user;
 
@@ -96,7 +97,7 @@ public abstract class CauseOfInterruption implements Serializable {
         public String getUserId() {
             return user;
         }
-        
+
         /**
          * Gets user, who caused the interruption.
          * @return User instance if it can be located.
@@ -107,7 +108,7 @@ public abstract class CauseOfInterruption implements Serializable {
             final User userInstance = getUserOrNull();
             return userInstance != null ? userInstance : User.getUnknown();
         }
-        
+
         /**
          * Gets user, who caused the interruption.
          * @return User or {@code null} if it has not been found

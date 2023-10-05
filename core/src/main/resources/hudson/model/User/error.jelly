@@ -1,0 +1,15 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
+  <l:layout title="Jenkins">
+    <l:header />
+    <l:side-panel>
+      <l:tasks>
+        <l:task href="configure" icon="icon-up icon-md" title="${%Back to user configuration}"/>
+      </l:tasks>
+    </l:side-panel>
+    <l:main-panel>
+      <h1>${%Error}</h1>
+      <p>${message}</p>
+    </l:main-panel>
+  </l:layout>
+</j:jelly>

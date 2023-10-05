@@ -21,24 +21,19 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package lib.form;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
-import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.html.DomElement;
-import com.gargoylesoftware.htmlunit.html.HtmlHiddenInput;
-import com.gargoylesoftware.htmlunit.html.HtmlInput;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.html.HtmlTextInput;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.FilePath;
@@ -66,14 +61,19 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
+import java.util.List;
 import java.util.Locale;
 import java.util.regex.Pattern;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.Jenkins;
 import jenkins.model.TransientActionFactory;
-import jenkins.security.apitoken.ApiTokenTestHelper;
 import jenkins.tasks.SimpleBuildStep;
+import org.htmlunit.Page;
+import org.htmlunit.html.DomElement;
+import org.htmlunit.html.HtmlHiddenInput;
+import org.htmlunit.html.HtmlInput;
+import org.htmlunit.html.HtmlPage;
+import org.htmlunit.html.HtmlTextInput;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -96,9 +96,9 @@ public class PasswordTest {
     public void secretNotPlainText() throws Exception {
         SecretNotPlainText.secret = Secret.fromString("secret");
         HtmlPage p = j.createWebClient().goTo("secretNotPlainText");
-        String value = ((HtmlInput)p.getElementById("password")).getValueAttribute();
+        String value = ((HtmlInput) p.getElementById("password")).getValue();
         assertNotEquals("password shouldn't be plain text", "secret", value);
-        assertEquals("secret",Secret.fromString(value).getPlainText());
+        assertEquals("secret", Secret.fromString(value).getPlainText());
     }
 
     @TestExtension("secretNotPlainText")
@@ -125,8 +125,6 @@ public class PasswordTest {
     @Issue({"SECURITY-266", "SECURITY-304"})
     @Test
     public void testExposedCiphertext() throws Exception {
-        ApiTokenTestHelper.enableLegacyBehavior();
-
         boolean saveEnabled = Item.EXTENDED_READ.getEnabled();
         Item.EXTENDED_READ.setEnabled(true);
         try {
@@ -175,8 +173,8 @@ public class PasswordTest {
             getJobCommand.setTransportAuth2(adminAuth);
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             String pName = p.getFullName();
-            getJobCommand.main(Collections.singletonList(pName), Locale.ENGLISH, System.in, new PrintStream(baos), System.err);
-            assertEquals(xmlAdmin, baos.toString(configXml.getWebResponse().getContentCharset().name()));
+            getJobCommand.main(List.of(pName), Locale.ENGLISH, System.in, new PrintStream(baos), System.err);
+            assertEquals(xmlAdmin, baos.toString(configXml.getWebResponse().getContentCharset()));
             CopyJobCommand copyJobCommand = new CopyJobCommand();
             copyJobCommand.setTransportAuth2(adminAuth);
             String pAdminName = pName + "-admin";
@@ -187,7 +185,7 @@ public class PasswordTest {
             assertEquals(p.getConfigFile().asString(), pAdmin.getConfigFile().asString());
 
             // Test case: another user with EXTENDED_READ but not CONFIGURE should not get access even to encrypted secrets.
-            wc.withBasicApiToken(dev);
+            wc.withBasicApiToken(User.getById("dev", false));
             configure = wc.getPage(p, "configure");
             assertThat(xml_regex_pattern.matcher(configure.getWebResponse().getContentAsString()).find(), is(false));
             configXml = wc.goTo(p.getUrl() + "config.xml", "application/xml");
@@ -198,8 +196,8 @@ public class PasswordTest {
             Authentication devAuth = User.get("dev").impersonate2();
             getJobCommand.setTransportAuth2(devAuth);
             baos = new ByteArrayOutputStream();
-            getJobCommand.main(Collections.singletonList(pName), Locale.ENGLISH, System.in, new PrintStream(baos), System.err);
-            assertEquals(xmlDev, baos.toString(configXml.getWebResponse().getContentCharset().name()));
+            getJobCommand.main(List.of(pName), Locale.ENGLISH, System.in, new PrintStream(baos), System.err);
+            assertEquals(xmlDev, baos.toString(configXml.getWebResponse().getContentCharset()));
             copyJobCommand = new CopyJobCommand();
             copyJobCommand.setTransportAuth2(devAuth);
             String pDevName = pName + "-dev";
@@ -234,14 +232,17 @@ public class PasswordTest {
 
     public static class VulnerableProperty extends JobProperty<FreeStyleProject> {
         public final Secret secret;
+
         @DataBoundConstructor
         public VulnerableProperty(Secret secret) {
             this.secret = secret;
         }
+
         @TestExtension
         public static class DescriptorImpl extends JobPropertyDescriptor {
             static String incomingURL;
             static String checkedSecret;
+
             public FormValidation doCheckSecret(@QueryParameter String value) {
                 StaplerRequest req = Stapler.getCurrentRequest();
                 incomingURL = req.getRequestURIWithQueryString();
@@ -280,8 +281,8 @@ public class PasswordTest {
             if ("hidden".equals(element.getAttribute("type")) && element.getAttribute("class").contains("complex-password-field")) {
                 final HtmlHiddenInput input = (HtmlHiddenInput) element;
                 // assert that all password fields contain encrypted values after we set plain values
-                assertTrue(input.getValueAttribute().startsWith("{"));
-                assertTrue(input.getValueAttribute().endsWith("}"));
+                assertTrue(input.getValue().startsWith("{"));
+                assertTrue(input.getValue().endsWith("}"));
             }
         }
 
@@ -335,7 +336,7 @@ public class PasswordTest {
         }
 
         public void setStringWithSecretGetterAndSetter(Secret stringWithSecretGetterAndSetter) {
-            this.stringWithSecretGetterAndSetter = stringWithSecretGetterAndSetter == null? null : stringWithSecretGetterAndSetter.getPlainText();
+            this.stringWithSecretGetterAndSetter = stringWithSecretGetterAndSetter == null ? null : stringWithSecretGetterAndSetter.getPlainText();
         }
 
         public static PasswordHolderConfiguration getInstance() {
@@ -397,8 +398,8 @@ public class PasswordTest {
             if ("hidden".equals(element.getAttribute("type")) && element.getAttribute("class").contains("complex-password-field")) {
                 final HtmlHiddenInput input = (HtmlHiddenInput) element;
                 // assert that all password fields contain encrypted values after we set plain values
-                assertTrue(input.getValueAttribute().startsWith("{"));
-                assertTrue(input.getValueAttribute().endsWith("}"));
+                assertTrue(input.getValue().startsWith("{"));
+                assertTrue(input.getValue().endsWith("}"));
                 i++;
             }
         }
@@ -421,7 +422,8 @@ public class PasswordTest {
         // confirm the Secret getter/setter will not change encrypted value (keeps IV)
         assertEquals(secretWithSecretGetterSecretSetter.getEncryptedValue(), buildStep.secretWithSecretGetterSecretSetter.getEncryptedValue());
 
-        // This depends on implementation; if the Getter returns the plain text (to be re-encrypted by Functions#getPasswordValue), then this won't work, but if they getter returns #getEncrytedValue (as implemented in the build step here), it does
+        // This depends on implementation; if the Getter returns the plain text (to be re-encrypted by Functions#getPasswordValue), then this won't work,
+        // but if the getter returns #getEncrytedValue (as implemented in the build step here), it does.
         // While clever, would recommend fixing mismatched getters/setters here
         assertEquals(secretWithStringGetterSecretSetter.getEncryptedValue(), buildStep.secretWithStringGetterSecretSetter.getEncryptedValue());
 
@@ -520,7 +522,7 @@ public class PasswordTest {
 
         @DataBoundSetter
         public void setStringWithStringGetterSecretSetter(Secret stringWithStringGetterSecretSetter) {
-            this.stringWithStringGetterSecretSetter = stringWithStringGetterSecretSetter == null? null : stringWithStringGetterSecretSetter.getPlainText();
+            this.stringWithStringGetterSecretSetter = stringWithStringGetterSecretSetter == null ? null : stringWithStringGetterSecretSetter.getPlainText();
         }
 
         public Secret getStringWithSecretGetterSecretSetter() {
@@ -529,7 +531,7 @@ public class PasswordTest {
 
         @DataBoundSetter
         public void setStringWithSecretGetterSecretSetter(Secret stringWithSecretGetterSecretSetter) {
-            this.stringWithSecretGetterSecretSetter = stringWithSecretGetterSecretSetter == null? null : stringWithSecretGetterSecretSetter.getPlainText();
+            this.stringWithSecretGetterSecretSetter = stringWithSecretGetterSecretSetter == null ? null : stringWithSecretGetterSecretSetter.getPlainText();
         }
 
         @Override
@@ -574,8 +576,8 @@ public class PasswordTest {
             if ("hidden".equals(element.getAttribute("type")) && element.getAttribute("class").contains("complex-password-field")) {
                 final HtmlHiddenInput input = (HtmlHiddenInput) element;
                 // assert that all password fields contain encrypted values after we set plain values
-                assertTrue(input.getValueAttribute().startsWith("{"));
-                assertTrue(input.getValueAttribute().endsWith("}"));
+                assertTrue(input.getValue().startsWith("{"));
+                assertTrue(input.getValue().endsWith("}"));
             }
         }
 
@@ -627,8 +629,8 @@ public class PasswordTest {
             if ("hidden".equals(element.getAttribute("type")) && element.getAttribute("class").contains("complex-password-field")) {
                 final HtmlHiddenInput input = (HtmlHiddenInput) element;
                 // assert that all password fields contain encrypted values after we set plain values
-                assertTrue(input.getValueAttribute().startsWith("{"));
-                assertTrue(input.getValueAttribute().endsWith("}"));
+                assertTrue(input.getValue().startsWith("{"));
+                assertTrue(input.getValue().endsWith("}"));
             }
         }
 
@@ -641,7 +643,7 @@ public class PasswordTest {
         for (DomElement element : htmlPage.getElementsByTagName("input")) {
             if ("hidden".equals(element.getAttribute("type")) && element.getAttribute("class").contains("complex-password-field")) {
                 final HtmlHiddenInput input = (HtmlHiddenInput) element;
-                assertEquals("********", input.getValueAttribute());
+                assertEquals("********", input.getValue());
             }
         }
     }
@@ -657,7 +659,7 @@ public class PasswordTest {
         @NonNull
         @Override
         public Collection<? extends Action> createFor(@NonNull Job target) {
-            return Collections.singletonList(new ActionImpl());
+            return List.of(new ActionImpl());
         }
     }
 
@@ -715,7 +717,7 @@ public class PasswordTest {
             wc.login(READONLY);
             HtmlPage page = wc.goTo("computer/(built-in)/secured/");
 
-            String value = ((HtmlInput)page.getElementById("password")).getValueAttribute();
+            String value = ((HtmlInput) page.getElementById("password")).getValue();
             assertThat(value, is("********"));
         }
 
@@ -723,7 +725,7 @@ public class PasswordTest {
             wc.login(ADMIN);
             HtmlPage page = wc.goTo("computer/(built-in)/secured/");
 
-            String value = ((HtmlInput)page.getElementById("password")).getValueAttribute();
+            String value = ((HtmlInput) page.getElementById("password")).getValue();
             assertThat(Secret.fromString(value).getPlainText(), is("abcdefgh"));
         }
     }

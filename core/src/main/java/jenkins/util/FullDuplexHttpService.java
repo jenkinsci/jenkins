@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.util;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -59,14 +60,14 @@ public abstract class FullDuplexHttpService {
      * Set to true if the servlet container doesn't support chunked encoding.
      */
     @Restricted(NoExternalUse.class)
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
     public static /* Script Console modifiable */ boolean DIY_CHUNKING = SystemProperties.getBoolean("hudson.diyChunking");
 
     /**
      * Controls the time out of waiting for the 2nd HTTP request to arrive.
      */
     @Restricted(NoExternalUse.class)
-    @SuppressFBWarnings("MS_SHOULD_BE_FINAL")
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
     public static /* Script Console modifiable */ long CONNECTION_TIMEOUT = TimeUnit.SECONDS.toMillis(15);
 
     protected final UUID uuid;
@@ -100,7 +101,7 @@ public abstract class FullDuplexHttpService {
         out.write(0);
         out.flush();
 
-        {// wait until we have the other channel
+        { // wait until we have the other channel
             long end = System.currentTimeMillis() + CONNECTION_TIMEOUT;
             while (upload == null && System.currentTimeMillis() < end) {
                 LOGGER.log(Level.FINE, "Waiting for upload stream for {0}: {1}", new Object[] {uuid, this});

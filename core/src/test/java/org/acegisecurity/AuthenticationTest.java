@@ -35,7 +35,7 @@ import hudson.security.ACL;
 import hudson.security.SecurityRealm;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
+import java.util.Set;
 import jenkins.model.Jenkins;
 import org.acegisecurity.providers.AbstractAuthenticationToken;
 import org.acegisecurity.providers.UsernamePasswordAuthenticationToken;
@@ -70,7 +70,7 @@ public class AuthenticationTest {
     @Test
     public void user() {
         assertEquality(new org.acegisecurity.providers.UsernamePasswordAuthenticationToken("user", "pass", new GrantedAuthority[] {SecurityRealm.AUTHENTICATED_AUTHORITY}),
-            new org.springframework.security.authentication.UsernamePasswordAuthenticationToken("user", "pass", Collections.singleton(SecurityRealm.AUTHENTICATED_AUTHORITY2)));
+            new org.springframework.security.authentication.UsernamePasswordAuthenticationToken("user", "pass", Set.of(SecurityRealm.AUTHENTICATED_AUTHORITY2)));
     }
 
     private void assertEquality(Authentication acegi, org.springframework.security.core.Authentication spring) {
@@ -117,18 +117,22 @@ public class AuthenticationTest {
     public void custom() {
         class CustomAuth extends AbstractAuthenticationToken {
             final int x;
+
             CustomAuth(int x) {
                 this.x = x;
             }
+
             @Override
             public Object getCredentials() {
                 return null;
             }
+
             @Override
             public Object getPrincipal() {
                 return "xxx";
             }
         }
+
         CustomAuth ca = new CustomAuth(23);
         Authentication a = Authentication.fromSpring(ca.toSpring());
         assertThat(a, instanceOf(CustomAuth.class));

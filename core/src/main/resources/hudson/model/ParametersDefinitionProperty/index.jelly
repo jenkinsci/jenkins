@@ -38,12 +38,11 @@ THE SOFTWARE.
   <l:layout title="${it.displayName}">
     <st:include page="sidepanel.jelly" it="${it.job}"/>
     <l:main-panel>
-      <div class="behavior-loading"><l:spinner text="${%LOADING}"/></div>
       <h1>${it.job.pronoun} ${it.job.displayName}</h1>
-      <p>${%description}</p>
+      <p class="jenkins-description">${%description}</p>
       <j:set var="delay" value="${request.getParameter('delay')}" />
       <f:form method="post" action="build${empty(delay)?'':'?delay='+delay}" name="parameters"
-              tableClass="parameters">
+              tableClass="parameters" class="jenkins-form">
         <j:forEach var="parameterDefinition" items="${it.parameterDefinitions}">
           <j:set var="escapeEntryTitleAndDescription" value="true"/> <!-- SECURITY-353 defense unless overridden -->
           <tbody>
@@ -51,7 +50,7 @@ THE SOFTWARE.
                         page="${parameterDefinition.descriptor.valuePage}" />
           </tbody>
         </j:forEach>
-        <f:block>
+        <f:bottomButtonBar>
           <!--
             When used from the UI, use 303 redirect and send back to the job top page.
             When neither of those options are given, we'll report "201 Created".
@@ -63,8 +62,14 @@ THE SOFTWARE.
            -->
           <input type="hidden" name="statusCode" value="303" />
           <input type="hidden" name="redirectTo" value="." />
-          <f:submit value="${%Build}" />
-        </f:block>
+          <button class="jenkins-button jenkins-button--primary jenkins-!-build-color">
+            <l:icon src="symbol-play" />
+            ${it.buildButtonText}
+          </button>
+          <a href="./" class="jenkins-button">
+            ${%Cancel}
+          </a>
+        </f:bottomButtonBar>
       </f:form>
     </l:main-panel>
   </l:layout>

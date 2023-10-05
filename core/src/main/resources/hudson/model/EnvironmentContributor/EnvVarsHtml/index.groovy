@@ -3,16 +3,11 @@ import hudson.model.EnvironmentContributor
 import hudson.scm.SCM
 
 def st = namespace("jelly:stapler")
+def l = namespace(lib.LayoutTagLib)
 
-st.contentType(value: "text/html;charset=UTF-8")
-
-html {
-    head {
-        title(_("Available Environmental Variables"))
-        style(type:"text/css", "dt { font-weight: bold; }")
-    }
-    body {
-        p "The following variables are available to shell scripts"
+l.layout(title: _("Available Environmental Variables"), type: 'one-column') {
+    l.main_panel {
+        p _("blurb")
 
         dl {
             EnvironmentContributor.all().each { e -> st.include(it:e, page:"buildEnv", optional:true) }

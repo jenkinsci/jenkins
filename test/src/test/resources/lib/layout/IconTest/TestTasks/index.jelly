@@ -35,6 +35,7 @@ THE SOFTWARE.
       <l:task href=".." icon="svgs/package.svg" title="Title"/>
       <l:task href=".." icon="images/svgs/package.svg" title="Title"/>
       <l:task href=".." icon="/images/svgs/package.svg" title="Title"/>
+      <l:task href=".." icon="symbol-settings" title="Title"/>
 
       <!-- unknown icon urls... -->
       <l:task href=".." icon="/plugin/xxx/icon.png" title="Title"/>

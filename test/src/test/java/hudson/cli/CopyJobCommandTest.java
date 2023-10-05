@@ -101,7 +101,7 @@ public class CopyJobCommandTest {
 
         assertThat(result, succeededSilently());
 
-        FreeStyleProject p2 = (FreeStyleProject)j.jenkins.getItem(copiedProjectName);
+        FreeStyleProject p2 = (FreeStyleProject) j.jenkins.getItem(copiedProjectName);
 
         assertNotNull(p2);
         assertTrue(p2.isBuildable());

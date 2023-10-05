@@ -1,6 +1,7 @@
 /*
  *
  */
+
 package hudson;
 
 import static org.junit.Assert.assertFalse;

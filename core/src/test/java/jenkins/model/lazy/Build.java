@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.model.lazy;
 
 /**
@@ -34,7 +35,7 @@ class Build {
     }
 
     public void asserts(int n) {
-        assert this.n == n;
+        assert this.n == n : "expected " + n + " but was " + this.n;
     }
 
     @Override public String toString() {

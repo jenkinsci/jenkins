@@ -862,7 +862,7 @@ if (!YAHOO.util.Event) {
              * script is dynamically injected into the page.  This means the
              * DOMReady custom event will never fire in FireFox or Opera when the
              * library is injected.  It _will_ fire in Safari, and the IE
-             * implementation would allow for us to fire it if the defered script
+             * implementation would allow for us to fire it if the deferred script
              * is not available.  We want this to behave the same in all browsers.
              * Is there a way to identify when the script has been injected
              * instead of included inline?  Is there a way to know whether the
@@ -910,7 +910,7 @@ if (!YAHOO.util.Event) {
              *                             object, this object becomes the execution
              *                             context.
              * @param {boolen}      capture capture or bubble phase
-             * @return {Boolean} True if the action was successful or defered,
+             * @return {Boolean} True if the action was successful or deferred,
              *                        false if one or more of the elements
              *                        could not have the listener attached,
              *                        or if the operation throws an exception.
@@ -1047,7 +1047,7 @@ if (!YAHOO.util.Event) {
              *                             the execution context of the listener. If an
              *                             object, this object becomes the execution
              *                             context.
-             * @return {Boolean} True if the action was successful or defered,
+             * @return {Boolean} True if the action was successful or deferred,
              *                        false if one or more of the elements
              *                        could not have the listener attached,
              *                        or if the operation throws an exception.
@@ -1078,7 +1078,7 @@ if (!YAHOO.util.Event) {
              *                             the execution context of the listener. If an
              *                             object, this object becomes the execution
              *                             context.
-             * @return {Boolean} True if the action was successful or defered,
+             * @return {Boolean} True if the action was successful or deferred,
              *                        false if one or more of the elements
              *                        could not have the listener attached,
              *                        or if the operation throws an exception.
@@ -1129,7 +1129,7 @@ if (!YAHOO.util.Event) {
              *                             the execution context of the listener. If an
              *                             object, this object becomes the execution
              *                             context.
-             * @return {Boolean} True if the action was successful or defered,
+             * @return {Boolean} True if the action was successful or deferred,
              *                        false if one or more of the elements
              *                        could not have the listener attached,
              *                        or if the operation throws an exception.
@@ -2011,7 +2011,7 @@ if (!YAHOO.util.Event) {
          *                             the execution context of the listener. If an
          *                             object, this object becomes the execution
          *                             context.
-         * @return {Boolean} True if the action was successful or defered,
+         * @return {Boolean} True if the action was successful or deferred,
          *                        false if one or more of the elements
          *                        could not have the listener attached,
          *                        or if the operation throws an exception.
@@ -2039,7 +2039,7 @@ if (!YAHOO.util.Event) {
 
 /*! DOMReady: based on work by: Dean Edwards/John Resig/Matthias Miller/Diego Perini */
 
-        // Internet Explorer: use the readyState of a defered script.
+        // Internet Explorer: use the readyState of a deferred script.
         // This isolates what appears to be a safe moment to manipulate
         // the DOM prior to when the document's readyState suggests
         // it is safe to do so.

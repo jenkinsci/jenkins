@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import hudson.Functions;
@@ -37,8 +38,8 @@ import jenkins.util.SystemProperties;
 
 /**
  * {@link AperiodicWork} that takes a long time to run. Similar to {@link AsyncPeriodicWork}, see {@link AsyncPeriodicWork} for
- * details and {@link AperiodicWork} for differences between {@link AperiodicWork} and {@link PeriodicWork}. 
- * 
+ * details and {@link AperiodicWork} for differences between {@link AperiodicWork} and {@link PeriodicWork}.
+ *
  * @author vjuranek
  * @since 1.410
  */
@@ -63,7 +64,7 @@ public abstract class AsyncAperiodicWork extends AperiodicWork {
      * @since 1.651
      */
     private static final long LOG_ROTATE_SIZE = SystemProperties.getLong(AsyncAperiodicWork.class.getName() + ".logRotateSize",
-            -1L);
+        10485760L);
     /**
      * The number of milliseconds (since startup or previous rotation) after which to try and rotate the log file.
      *
@@ -94,8 +95,8 @@ public abstract class AsyncAperiodicWork extends AperiodicWork {
     protected AsyncAperiodicWork(String name) {
         this.name = name;
         this.logRotateMillis = TimeUnit.MINUTES.toMillis(
-                SystemProperties.getLong(getClass().getName()+".logRotateMinutes", LOG_ROTATE_MINUTES));
-        this.logRotateSize = SystemProperties.getLong(getClass().getName() +".logRotateSize", LOG_ROTATE_SIZE);
+                SystemProperties.getLong(getClass().getName() + ".logRotateMinutes", LOG_ROTATE_MINUTES));
+        this.logRotateSize = SystemProperties.getLong(getClass().getName() + ".logRotateSize", LOG_ROTATE_SIZE);
     }
 
     /**
@@ -104,16 +105,16 @@ public abstract class AsyncAperiodicWork extends AperiodicWork {
     @Override
     public final void doAperiodicRun() {
         try {
-            if(thread!=null && thread.isAlive()) {
+            if (thread != null && thread.isAlive()) {
                 logger.log(getSlowLoggingLevel(), "{0} thread is still running. Execution aborted.", name);
                 return;
             }
             thread = new Thread(() -> {
-                logger.log(getNormalLoggingLevel(), "Started {0}", name);
+                logger.log(Level.FINE, "Started {0}", name);
                 long startTime = System.currentTimeMillis();
                 long stopTime;
 
-                AsyncPeriodicWork.LazyTaskListener l = new AsyncPeriodicWork.LazyTaskListener(() -> createListener(), String.format("Started at %tc", new Date(startTime)));
+                AsyncPeriodicWork.LazyTaskListener l = new AsyncPeriodicWork.LazyTaskListener(this::createListener, String.format("Started at %tc", new Date(startTime)));
                 try (ACLContext ctx = ACL.as2(ACL.SYSTEM2)) {
                     execute(l);
                 } catch (IOException e) {
@@ -125,12 +126,12 @@ public abstract class AsyncAperiodicWork extends AperiodicWork {
                     l.close(String.format("Finished at %tc. %dms", new Date(stopTime), stopTime - startTime));
                 }
 
-                logger.log(getNormalLoggingLevel(), "Finished {0}. {1,number} ms",
+                logger.log(Level.FINE, "Finished {0}. {1,number} ms",
                         new Object[]{name, stopTime - startTime});
-            },name+" thread");
-            thread.start(); 
+            }, name + " thread");
+            thread.start();
         } catch (Throwable t) {
-            logger.log(Level.SEVERE, name+" thread failed with error", t);
+            logger.log(Level.SEVERE, name + " thread failed with error", t);
         }
     }
 

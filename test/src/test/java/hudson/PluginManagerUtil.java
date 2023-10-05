@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson;
 
 import java.io.File;
@@ -29,6 +30,8 @@ import java.net.URL;
 import jenkins.RestartRequiredException;
 import jenkins.model.Jenkins;
 import org.apache.commons.io.FileUtils;
+import org.htmlunit.html.DomElement;
+import org.htmlunit.html.HtmlPage;
 import org.junit.runner.Description;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.RestartableJenkinsRule;
@@ -69,5 +72,9 @@ public class PluginManagerUtil {
             new File(dest.getPath() + ".disabled").createNewFile();
         }
         jenkins.pluginManager.dynamicLoad(dest);
+    }
+
+    public static DomElement getCheckForUpdatesButton(HtmlPage page) {
+        return page.getElementById("button-refresh");
     }
 }

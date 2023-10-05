@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.cli;
 
 import hudson.Extension;
@@ -31,7 +32,7 @@ import org.kohsuke.args4j.Argument;
 
 /**
  * Creates a new job by reading stdin as a configuration XML file.
- * 
+ *
  * @author Kohsuke Kawaguchi
  */
 @Extension
@@ -41,15 +42,15 @@ public class CreateJobCommand extends CLICommand {
         return Messages.CreateJobCommand_ShortDescription();
     }
 
-    @Argument(metaVar="NAME",usage="Name of the job to create",required=true)
+    @Argument(metaVar = "NAME", usage = "Name of the job to create", required = true)
     public String name;
 
     @Override
     protected int run() throws Exception {
         Jenkins h = Jenkins.get();
 
-        if (h.getItemByFullName(name)!=null) {
-            throw new IllegalStateException("Job '"+name+"' already exists");
+        if (h.getItemByFullName(name) != null) {
+            throw new IllegalStateException("Job '" + name + "' already exists");
         }
 
         ModifiableTopLevelItemGroup ig = h;

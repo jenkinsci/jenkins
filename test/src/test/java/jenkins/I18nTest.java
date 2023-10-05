@@ -21,9 +21,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins;
 
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.startsWith;
+
 import java.io.IOException;
 import net.sf.json.JSONObject;
 import org.junit.Assert;
@@ -31,7 +34,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.TestPluginManager;
 import org.xml.sax.SAXException;
 
 /**
@@ -51,18 +53,14 @@ public class I18nTest {
 
     @Test
     public void test_baseName_unknown() throws IOException, SAXException {
-        try {
-            JSONObject response = jenkinsRule.getJSON("i18n/resourceBundle?baseName=com.acme.XyzWhatever").getJSONObject();
-        } catch (FailingHttpStatusCodeException e) {
-            Assert.assertNotNull(e);
-            Assert.assertTrue(e.getMessage().contains("com.acme.XyzWhatever"));
-        }
+        JSONObject response = jenkinsRule.getJSON("i18n/resourceBundle?baseName=com.acme.XyzWhatever").getJSONObject();
+        Assert.assertEquals("error", response.getString("status"));
+        assertThat(response.getString("message"), startsWith("Can't find bundle for base name com.acme.XyzWhatever"));
     }
 
     @Issue("JENKINS-35270")
     @Test
     public void test_baseName_plugin() throws Exception {
-        ((TestPluginManager) jenkinsRule.jenkins.pluginManager).installDetachedPlugin("matrix-auth");
         JSONObject response = jenkinsRule.getJSON("i18n/resourceBundle?baseName=org.jenkinsci.plugins.matrixauth.Messages").getJSONObject();
         Assert.assertEquals(response.toString(), "ok", response.getString("status"));
         JSONObject data = response.getJSONObject("data");
@@ -99,6 +97,14 @@ public class I18nTest {
     @Test //fallthrough to default language if variant does not exit
     public void test_valid_fallback() throws IOException, SAXException {
         JSONObject response = jenkinsRule.getJSON("i18n/resourceBundle?baseName=jenkins.i18n.Messages&language=en_NZ_variant").getJSONObject();
+        Assert.assertEquals("ok", response.getString("status"));
+        JSONObject data = response.getJSONObject("data");
+        Assert.assertEquals("value", data.getString("Key"));
+    }
+
+    @Test // testing with unknown language falls through to default language
+    public void test_unsupported_language() throws IOException, SAXException {
+        JSONObject response = jenkinsRule.getJSON("i18n/resourceBundle?baseName=jenkins.i18n.Messages&language=xyz").getJSONObject();
         Assert.assertEquals("ok", response.getString("status"));
         JSONObject data = response.getJSONObject("data");
         Assert.assertEquals("value", data.getString("Key"));

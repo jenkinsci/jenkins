@@ -67,14 +67,14 @@ public class BatchFileTest {
         FreeStyleProject p = rule.createFreeStyleProject();
         p.getBuildersList().add(createNewBatchTask("", exitCode));
         p.setAssignedNode(slave);
-        rule.assertBuildStatus(Result.UNSTABLE, p.scheduleBuild2(0).get());
+        rule.buildAndAssertStatus(Result.UNSTABLE, p);
     }
 
     @Test
     @Issue("JENKINS-23786")
     public void windowsNonZeroErrorlevelsShouldMakeBuildUnstable() throws Exception {
         assumeTrue(Functions.isWindows());
-        for( int exitCode: new int [] {Integer.MIN_VALUE, -1, 1, Integer.MAX_VALUE}) {
+        for (int exitCode : new int [] {Integer.MIN_VALUE, -1, 1, Integer.MAX_VALUE}) {
             nonZeroErrorlevelShouldMakeBuildUnstable(exitCode);
         }
     }
@@ -87,19 +87,19 @@ public class BatchFileTest {
         p = rule.createFreeStyleProject();
         p.getBuildersList().add(createNewBatchTask("", null));
         p.setAssignedNode(slave);
-        rule.assertBuildStatus(Result.FAILURE, p.scheduleBuild2(0).get());
+        rule.buildAndAssertStatus(Result.FAILURE, p);
 
         p = rule.createFreeStyleProject();
         p.getBuildersList().add(createNewBatchTask("", 0));
         p.setAssignedNode(slave);
-        rule.assertBuildStatus(Result.FAILURE, p.scheduleBuild2(0).get());
+        rule.buildAndAssertStatus(Result.FAILURE, p);
     }
 
     @Test
     @Issue("JENKINS-23786")
     public void windowsNonZeroErrorlevelsShouldBreakTheBuildByDefault() throws Exception {
         assumeTrue(Functions.isWindows());
-        for( int exitCode: new int [] {Integer.MIN_VALUE, -1, 1, Integer.MAX_VALUE}) {
+        for (int exitCode : new int [] {Integer.MIN_VALUE, -1, 1, Integer.MAX_VALUE}) {
             nonZeroErrorlevelShouldBreakTheBuildByDefault(exitCode);
         }
     }
@@ -112,14 +112,14 @@ public class BatchFileTest {
         FreeStyleProject p = rule.createFreeStyleProject();
         p.getBuildersList().add(createNewBatchTask("", notMatchingExitCode));
         p.setAssignedNode(slave);
-        rule.assertBuildStatus(Result.FAILURE, p.scheduleBuild2(0).get());
+        rule.buildAndAssertStatus(Result.FAILURE, p);
     }
 
     @Test
     @Issue("JENKINS-23786")
     public void windowsErrorlevelsShouldBreakTheBuildIfNotMatching() throws Exception {
         assumeTrue(Functions.isWindows());
-        for( int exitCode: new int [] {Integer.MIN_VALUE, -1, 1, Integer.MAX_VALUE}) {
+        for (int exitCode : new int [] {Integer.MIN_VALUE, -1, 1, Integer.MAX_VALUE}) {
             nonZeroErrorlevelShouldBreakTheBuildIfNotMatching(exitCode);
         }
     }
@@ -130,11 +130,11 @@ public class BatchFileTest {
         assumeTrue(Functions.isWindows());
 
         PretendSlave slave = rule.createPretendSlave(new BatchFileTest.ReturnCodeFakeLauncher(0));
-        for( Integer unstableReturn: new Integer [] {null, 0, 1}) {
+        for (Integer unstableReturn : new Integer [] {null, 0, 1}) {
             FreeStyleProject p = rule.createFreeStyleProject();
             p.getBuildersList().add(createNewBatchTask("", unstableReturn));
             p.setAssignedNode(slave);
-            rule.assertBuildStatus(Result.SUCCESS, p.scheduleBuild2(0).get());
+            rule.buildAndAssertSuccess(p);
         }
     }
 
@@ -144,7 +144,7 @@ public class BatchFileTest {
         assumeTrue(Functions.isWindows());
 
         /* Creating unstable=0 produces unstable=null */
-        assertNull( createNewBatchTask("",0).getUnstableReturn() );
+        assertNull(createNewBatchTask("", 0).getUnstableReturn());
     }
 
     @Issue("JENKINS-40894")

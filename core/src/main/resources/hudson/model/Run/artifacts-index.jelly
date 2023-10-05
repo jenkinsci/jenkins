@@ -27,13 +27,14 @@ THE SOFTWARE.
   <j:if test="${!h.isArtifactsPermissionEnabled() or h.isArtifactsPermissionEnabled() and h.hasPermission(it.ARTIFACTS)}">
     <l:layout title="${it.fullDisplayName} Artifacts">
       <st:include page="sidepanel.jelly" />
+      <l:breadcrumb title="${%Artifacts}" />
       <l:main-panel>
         <t:buildCaption>${%Build Artifacts}</t:buildCaption>
         <table class="fileList">
           <j:forEach var="f" items="${it.artifacts}">
             <tr>
               <td>
-                <l:icon class="icon-text icon-sm"/>
+                <l:icon class="icon-document icon-sm"/>
               </td>
               <td>
                 <a href="artifact/${f.href}">${f.displayPath}</a>

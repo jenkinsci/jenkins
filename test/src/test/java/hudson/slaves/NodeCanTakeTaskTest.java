@@ -27,6 +27,7 @@ package hudson.slaves;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
@@ -37,7 +38,6 @@ import hudson.model.Result;
 import hudson.model.Slave;
 import hudson.model.queue.CauseOfBlockage;
 import java.util.List;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import org.junit.Rule;
@@ -60,8 +60,7 @@ public class NodeCanTakeTaskTest {
         FreeStyleProject project = r.createFreeStyleProject();
 
         // First, attempt to run our project before adding the property
-        Future<FreeStyleBuild> build = project.scheduleBuild2(0);
-        r.assertBuildStatus(Result.SUCCESS, build.get(20, TimeUnit.SECONDS));
+        r.buildAndAssertSuccess(project);
 
         // Add the build-blocker property and try again
         slave.getNodeProperties().add(new RejectAllTasksProperty());
@@ -75,6 +74,9 @@ public class NodeCanTakeTaskTest {
         assertEquals(project, item.task);
         assertNotNull(item.getCauseOfBlockage());
         assertEquals("rejecting everything", item.getCauseOfBlockage().getShortDescription());
+
+        // Clear the queue
+        assertTrue(r.jenkins.getQueue().cancel(project));
     }
 
     private static class RejectAllTasksProperty extends NodeProperty<Node> {
@@ -96,13 +98,18 @@ public class NodeCanTakeTaskTest {
         project.setAssignedNode(slave);
         project.setConcurrentBuild(true);
         project.getBuildersList().add(new SleepBuilder(Long.MAX_VALUE));
-        project.scheduleBuild2(0).waitForStart(); // consume the one executor
-        project.scheduleBuild2(0); // now try to reschedule
+        FreeStyleBuild build = project.scheduleBuild2(0).waitForStart(); // consume the one executor
+        var build2F = project.scheduleBuild2(0); // now try to reschedule
         Queue.Item item;
         while ((item = r.jenkins.getQueue().getItem(project)) == null || !item.isBuildable()) {
             Thread.sleep(100);
         }
         assertEquals(hudson.model.Messages.Queue_WaitingForNextAvailableExecutorOn(slave.getDisplayName()), item.getWhy());
+        build.doStop();
+        r.assertBuildStatus(Result.ABORTED, r.waitForCompletion(build));
+        FreeStyleBuild build2 = build2F.waitForStart();
+        build2.doStop();
+        r.assertBuildStatus(Result.ABORTED, r.waitForCompletion(build2));
     }
 
 }

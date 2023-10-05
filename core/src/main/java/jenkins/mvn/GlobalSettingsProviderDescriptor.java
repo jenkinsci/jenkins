@@ -14,7 +14,7 @@ import jenkins.model.Jenkins;
 public abstract class GlobalSettingsProviderDescriptor extends Descriptor<GlobalSettingsProvider> {
 
     @WithBridgeMethods(List.class)
-    public static DescriptorExtensionList<GlobalSettingsProvider,GlobalSettingsProviderDescriptor> all() {
+    public static DescriptorExtensionList<GlobalSettingsProvider, GlobalSettingsProviderDescriptor> all() {
         return Jenkins.get().getDescriptorList(GlobalSettingsProvider.class);
     }
 }

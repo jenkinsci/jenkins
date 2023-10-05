@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.util;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
@@ -35,7 +36,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -47,17 +47,15 @@ import java.util.logging.Logger;
 import jenkins.util.SystemProperties;
 import org.kohsuke.stapler.framework.io.WriterOutputStream;
 
-// TODO: AbstractTaskListener is empty now, but there are dependencies on that e.g. Ruby Runtime - JENKINS-48116)
-// The change needs API deprecation policy or external usages cleanup.
-
 /**
  * {@link TaskListener} that generates output into a single stream.
  *
  * <p>
  * This object is remotable.
- * 
+ *
  * @author Kohsuke Kawaguchi
  */
+@SuppressWarnings("deprecation") // to preserve serial form
 public class StreamTaskListener extends AbstractTaskListener implements TaskListener, Closeable {
     @NonNull
     private PrintStream out;
@@ -72,28 +70,37 @@ public class StreamTaskListener extends AbstractTaskListener implements TaskList
      */
     @Deprecated
     public StreamTaskListener(@NonNull PrintStream out) {
-        this(out,null);
+        this(out, null);
     }
 
+    /**
+     * @deprecated as of TODO
+     *      The caller should use {@link #StreamTaskListener(OutputStream, Charset)} to pass in
+     *      the charset and output stream separately, so that this class can handle encoding correctly,
+     *      or use {@link #fromStdout()} or {@link #fromStderr()}.
+     */
+    @Deprecated
     public StreamTaskListener(@NonNull OutputStream out) {
-        this(out,null);
+        this(out, null);
     }
 
     public StreamTaskListener(@NonNull OutputStream out, @CheckForNull Charset charset) {
-        try {
-            if (charset == null)
-                this.out = out instanceof PrintStream ? (PrintStream)out : new PrintStream(out, false);
-            else
-                this.out = new PrintStream(out, false, charset.name());
-            this.charset = charset;
-        } catch (UnsupportedEncodingException e) {
-            // it's not very pretty to do this, but otherwise we'd have to touch too many call sites.
-            throw new Error(e);
+        if (charset == null) {
+            this.out = out instanceof PrintStream ? (PrintStream) out : new PrintStream(out, false, Charset.defaultCharset());
+        } else {
+            this.out = new PrintStream(out, false, charset);
         }
+        this.charset = charset;
     }
 
+    /**
+     * @deprecated as of TODO
+     *      The caller should use {@link #StreamTaskListener(File, Charset)} to pass in
+     *      the charset and file separately, so that this class can handle encoding correctly.
+     */
+    @Deprecated
     public StreamTaskListener(@NonNull File out) throws IOException {
-        this(out,null);
+        this(out, null);
     }
 
     public StreamTaskListener(@NonNull File out, @CheckForNull Charset charset) throws IOException {
@@ -126,7 +133,7 @@ public class StreamTaskListener extends AbstractTaskListener implements TaskList
         // served to the browser immediately
         this(Files.newOutputStream(
                 asPath(out),
-                StandardOpenOption.CREATE, append ? StandardOpenOption.APPEND: StandardOpenOption.TRUNCATE_EXISTING
+                StandardOpenOption.CREATE, append ? StandardOpenOption.APPEND : StandardOpenOption.TRUNCATE_EXISTING
                 ),
                 charset
         );
@@ -142,15 +149,15 @@ public class StreamTaskListener extends AbstractTaskListener implements TaskList
      */
     @Deprecated
     public StreamTaskListener() throws IOException {
-        this(new NullStream());
+        this(OutputStream.nullOutputStream());
     }
 
     public static StreamTaskListener fromStdout() {
-        return new StreamTaskListener(System.out,Charset.defaultCharset());
+        return new StreamTaskListener(System.out, Charset.defaultCharset());
     }
 
     public static StreamTaskListener fromStderr() {
-        return new StreamTaskListener(System.err,Charset.defaultCharset());
+        return new StreamTaskListener(System.err, Charset.defaultCharset());
     }
 
     @Override
@@ -165,13 +172,14 @@ public class StreamTaskListener extends AbstractTaskListener implements TaskList
 
     private void writeObject(ObjectOutputStream out) throws IOException {
         out.writeObject(new RemoteOutputStream(new CloseProofOutputStream(this.out)));
-        out.writeObject(charset==null? null : charset.name());
+        out.writeObject(charset == null ? null : charset.name());
         if (LOGGER.isLoggable(Level.FINE)) {
             LOGGER.log(Level.FINE, null, new Throwable("serializing here with AUTO_FLUSH=" + AUTO_FLUSH));
         }
     }
 
     private static final String KEY_AUTO_FLUSH = StreamTaskListener.class.getName() + ".AUTO_FLUSH";
+
     static {
         SystemProperties.allowOnAgent(KEY_AUTO_FLUSH);
     }
@@ -181,12 +189,14 @@ public class StreamTaskListener extends AbstractTaskListener implements TaskList
      * This flag will ensure that no output is lost from tasks which neglect to do so,
      * at the expense of heavier Remoting traffic and reduced performance.
      */
+
     private static /* not final */ boolean AUTO_FLUSH = SystemProperties.getBoolean(KEY_AUTO_FLUSH);
 
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-        out = new PrintStream((OutputStream)in.readObject(), AUTO_FLUSH);
-        String name = (String)in.readObject();
-        charset = name==null ? null : Charset.forName(name);
+        OutputStream os = (OutputStream) in.readObject();
+        String name = (String) in.readObject();
+        out = new PrintStream(os, AUTO_FLUSH, name != null ? name : Charset.defaultCharset().name());
+        charset = name == null ? null : Charset.forName(name);
         if (LOGGER.isLoggable(Level.FINE)) {
             LOGGER.log(Level.FINE, null, new Throwable("deserializing here with AUTO_FLUSH=" + AUTO_FLUSH));
         }
@@ -206,7 +216,7 @@ public class StreamTaskListener extends AbstractTaskListener implements TaskList
         try {
             close();
         } catch (IOException e) {
-            LOGGER.log(Level.WARNING,"Failed to close",e);
+            LOGGER.log(Level.WARNING, "Failed to close", e);
         }
     }
 

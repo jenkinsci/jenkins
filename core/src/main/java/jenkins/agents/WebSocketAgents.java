@@ -24,8 +24,10 @@
 
 package jenkins.agents;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.ExtensionList;
+import hudson.Util;
 import hudson.model.Computer;
 import hudson.model.InvisibleAction;
 import hudson.model.UnprotectedRootAction;
@@ -42,6 +44,7 @@ import java.security.MessageDigest;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.slaves.JnlpAgentReceiver;
@@ -88,16 +91,24 @@ public final class WebSocketAgents extends InvisibleAction implements Unprotecte
         state.setRemoteEndpointDescription(req.getRemoteAddr());
         state.fireBeforeProperties();
         LOGGER.fine(() -> "connecting " + agent);
-        // TODO or just pass all request headers?
         Map<String, String> properties = new HashMap<>();
         properties.put(JnlpConnectionState.CLIENT_NAME_KEY, agent);
         properties.put(JnlpConnectionState.SECRET_KEY, secret);
+        String unsafeCookie = req.getHeader(Engine.WEBSOCKET_COOKIE_HEADER);
+        String cookie;
+        if (unsafeCookie != null) {
+            // This will blow up if the client sent us a malformed cookie.
+            cookie = Util.toHexString(Util.fromHexString(unsafeCookie));
+        } else {
+            cookie = JnlpAgentReceiver.generateCookie();
+        }
+        properties.put(JnlpConnectionState.COOKIE_KEY, cookie);
         state.fireAfterProperties(Collections.unmodifiableMap(properties));
         Capability remoteCapability = Capability.fromASCII(remoteCapabilityStr);
         LOGGER.fine(() -> "received " + remoteCapability);
         rsp.setHeader(Capability.KEY, new Capability().toASCII());
         rsp.setHeader(Engine.REMOTING_MINIMUM_VERSION_HEADER, RemotingVersionInfo.getMinimumSupportedVersion().toString());
-        rsp.setHeader(JnlpConnectionState.COOKIE_KEY, JnlpAgentReceiver.generateCookie()); // TODO figure out what this is for, if anything
+        rsp.setHeader(Engine.WEBSOCKET_COOKIE_HEADER, cookie);
         return WebSockets.upgrade(new Session(state, agent, remoteCapability));
     }
 
@@ -114,15 +125,19 @@ public final class WebSocketAgents extends InvisibleAction implements Unprotecte
             this.remoteCapability = remoteCapability;
         }
 
+        @SuppressFBWarnings(value = "RV_RETURN_VALUE_IGNORED_BAD_PRACTICE", justification = "method signature does not permit plumbing through the return value")
         @Override
         protected void opened() {
             Computer.threadPoolForRemoting.submit(() -> {
                 LOGGER.fine(() -> "setting up channel for " + agent);
                 state.fireBeforeChannel(new ChannelBuilder(agent, Computer.threadPoolForRemoting));
                 transport = new Transport();
-                state.fireAfterChannel(state.getChannelBuilder().build(transport));
-                LOGGER.fine(() -> "set up channel for " + agent);
-                return null;
+                try {
+                    state.fireAfterChannel(state.getChannelBuilder().build(transport));
+                    LOGGER.fine(() -> "set up channel for " + agent);
+                } catch (IOException x) {
+                    LOGGER.log(Level.WARNING, "failed to set up channel for " + agent, x);
+                }
             });
         }
 
@@ -152,11 +167,19 @@ public final class WebSocketAgents extends InvisibleAction implements Unprotecte
 
         class Transport extends AbstractByteBufferCommandTransport {
 
+            Transport() {
+                super(true);
+            }
+
             @Override
-            protected void write(ByteBuffer header, ByteBuffer data) throws IOException {
-                LOGGER.finest(() -> "sending message of length " + ChunkHeader.length(ChunkHeader.peek(header)));
-                sendBinary(header, false);
-                sendBinary(data, true);
+            protected void write(ByteBuffer headerAndData) throws IOException {
+                // As in Engine.runWebSocket:
+                LOGGER.finest(() -> "sending message of length " + (headerAndData.remaining() - ChunkHeader.SIZE));
+                try {
+                    sendBinary(headerAndData).get(5, TimeUnit.MINUTES);
+                } catch (Exception x) {
+                    throw new IOException(x);
+                }
             }
 
             @Override

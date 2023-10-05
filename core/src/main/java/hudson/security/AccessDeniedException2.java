@@ -28,12 +28,12 @@ public class AccessDeniedException2 extends AccessDeniedException {
     public final Permission permission;
 
     public AccessDeniedException2(Authentication authentication, Permission permission) {
-        this(null,authentication,permission);
+        this(null, authentication, permission);
     }
 
     public AccessDeniedException2(Throwable t, Authentication authentication, Permission permission) {
         super(Messages.AccessDeniedException2_MissingPermission(authentication.getName(),
-                permission.group.title+"/"+permission.name), t);
+                permission.group.title + "/" + permission.name), t);
         this.authentication = authentication;
         this.permission = permission;
     }

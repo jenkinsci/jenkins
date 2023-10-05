@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -31,12 +32,12 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeThat;
 
-import com.gargoylesoftware.htmlunit.html.HtmlElement;
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
 import java.io.IOException;
 import java.util.logging.Level;
+import org.htmlunit.html.HtmlElement;
+import org.htmlunit.html.HtmlForm;
+import org.htmlunit.html.HtmlPage;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -49,7 +50,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
  * @author Lucie Votypkova
  */
 public class MyViewTest {
-    
+
     @Rule
     public JenkinsRule rule = new JenkinsRule();
 
@@ -60,11 +61,11 @@ public class MyViewTest {
     public void setup() {
         rule.jenkins.setSecurityRealm(rule.createDummySecurityRealm());
     }
-    
+
     @Test
-    public void testContains() throws Exception{
-        
-        GlobalMatrixAuthorizationStrategy auth = new GlobalMatrixAuthorizationStrategy();   
+    public void testContains() throws Exception {
+
+        GlobalMatrixAuthorizationStrategy auth = new GlobalMatrixAuthorizationStrategy();
         rule.jenkins.setAuthorizationStrategy(auth);
         User user = User.getOrCreateByIdOrFullName("User1");
         FreeStyleProject job = rule.createFreeStyleProject("job");
@@ -76,16 +77,16 @@ public class MyViewTest {
         auth.add(Item.CONFIGURE, "User1");
         assertTrue("View " + view.getDisplayName() + " contain job " + job.getDisplayName(), view.contains(job));
     }
-    
+
     @Test
-    public void testDoCreateItem() throws Exception{
+    public void testDoCreateItem() throws Exception {
         logs.record(AbstractItem.class, Level.ALL);
         MyView view = new MyView("My", rule.jenkins);
         rule.jenkins.addView(view);
         HtmlPage newItemPage = rule.createWebClient().goTo("view/" + view.getDisplayName() + "/newJob");
         HtmlForm form = newItemPage.getFormByName("createItem");
         // Set the name of the item
-        form.getInputByName("name").setValueAttribute("job");
+        form.getInputByName("name").setValue("job");
         form.getInputByName("name").blur();
         // Select the item clicking on the first item type shown
         HtmlElement itemType = newItemPage.getFirstByXPath("//div[@class='category']/ul/li");
@@ -95,12 +96,12 @@ public class MyViewTest {
         assumeThat("TODO sometimes on Windows CI the submission does not seem to be really processed (most log messages are missing)", item, notNullValue());
         assertThat(view.getItems(), contains(equalTo(item)));
     }
-    
+
     @Test
     public void testGetItems() throws IOException {
         User user = User.getOrCreateByIdOrFullName("User1");
-        GlobalMatrixAuthorizationStrategy auth = new GlobalMatrixAuthorizationStrategy();   
-        rule.jenkins.setAuthorizationStrategy(auth);   
+        GlobalMatrixAuthorizationStrategy auth = new GlobalMatrixAuthorizationStrategy();
+        rule.jenkins.setAuthorizationStrategy(auth);
         FreeStyleProject job2 = rule.createFreeStyleProject("job2");
         FreeStyleProject job = rule.createFreeStyleProject("job");
         MyView view = new MyView("My", rule.jenkins);
@@ -112,6 +113,6 @@ public class MyViewTest {
         assertTrue("View " + view.getDisplayName() + " should contain job " + job.getDisplayName(), view.getItems().contains(job));
         assertTrue("View " + view.getDisplayName() + " should contain job " + job2.getDisplayName(), view.getItems().contains(job2));
     }
-    
-    
+
+
 }

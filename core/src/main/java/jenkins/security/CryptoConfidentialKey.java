@@ -28,7 +28,7 @@ public class CryptoConfidentialKey extends ConfidentialKey {
     }
 
     public CryptoConfidentialKey(Class owner, String shortName) {
-        this(owner.getName()+'.'+shortName);
+        this(owner.getName() + '.' + shortName);
     }
 
     private synchronized SecretKey getKey() {

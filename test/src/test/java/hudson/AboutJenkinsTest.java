@@ -21,15 +21,16 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertEquals;
 
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import java.net.HttpURLConnection;
 import jenkins.model.Jenkins;
+import org.htmlunit.html.HtmlPage;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -40,10 +41,10 @@ import org.jvnet.hudson.test.SmokeTest;
 
 @Category(SmokeTest.class)
 public class AboutJenkinsTest {
-    
+
     @Rule
     public JenkinsRule j = new JenkinsRule();
-    
+
     @Test
     @Issue("SECURITY-771")
     public void onlyAdminOrManageOrSystemReadCanReadAbout() throws Exception {
@@ -52,7 +53,7 @@ public class AboutJenkinsTest {
         final String MANAGER = "manager";
         final String READONLY = "readonly";
         final String MANAGER_READONLY = "manager-readonly";
-        
+
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
                 // full access
@@ -74,16 +75,16 @@ public class AboutJenkinsTest {
                 .grant(Jenkins.MANAGE).everywhere().to(MANAGER_READONLY)
                 .grant(Jenkins.SYSTEM_READ).everywhere().to(MANAGER_READONLY)
         );
-        
+
         JenkinsRule.WebClient wc = j.createWebClient()
                 .withThrowExceptionOnFailingStatusCode(false);
-        
+
         { // user cannot see it
             wc.login(USER);
             HtmlPage page = wc.goTo("about/");
             assertEquals(HttpURLConnection.HTTP_FORBIDDEN, page.getWebResponse().getStatusCode());
         }
-        
+
         { // admin can access it
             wc.login(ADMIN);
             HtmlPage page = wc.goTo("about/");
@@ -109,5 +110,5 @@ public class AboutJenkinsTest {
             assertEquals(HttpURLConnection.HTTP_OK, page.getWebResponse().getStatusCode());
         }
     }
-    
+
 }

@@ -14,6 +14,12 @@
   <description>Command line interface for Jenkins</description>
   <url>https://github.com/jenkinsci/jenkins</url>
 
+  <properties>
+    <mina-sshd.version>2.10.0</mina-sshd.version>
+    <!-- Filled in by jacoco-maven-plugin -->
+    <jacocoSurefireArgs />
+  </properties>
+
   <dependencyManagement>
     <dependencies>
       <dependency>
@@ -28,36 +34,43 @@
 
   <dependencies>
     <dependency>
-      <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter-api</artifactId>
-      <version>${junit.jupiter.version}</version>
-      <scope>test</scope>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
+      <optional>true</optional>
     </dependency>
     <dependency>
-      <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter-engine</artifactId>
-      <version>${junit.jupiter.version}</version>
-      <scope>test</scope>
+      <groupId>commons-lang</groupId>
+      <artifactId>commons-lang</artifactId>
+      <optional>true</optional>
     </dependency>
     <dependency>
-      <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter</artifactId>
-      <version>${junit.jupiter.version}</version>
-      <scope>test</scope>
+      <!-- ed25519 algorithm, see JENKINS-45318 -->
+      <groupId>net.i2p.crypto</groupId>
+      <artifactId>eddsa</artifactId>
+      <version>0.3.0</version>
+      <optional>true</optional>
     </dependency>
     <dependency>
-      <groupId>org.kohsuke</groupId>
-      <artifactId>access-modifier-annotation</artifactId>
-      <scope>provided</scope>
+      <groupId>org.apache.sshd</groupId>
+      <artifactId>sshd-common</artifactId>
+      <version>${mina-sshd.version}</version>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.sshd</groupId>
+      <artifactId>sshd-core</artifactId>
+      <version>${mina-sshd.version}</version>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>org.glassfish.tyrus.bundles</groupId>
+      <artifactId>tyrus-standalone-client-jdk</artifactId>
+      <version>2.1.3</version>
+      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci</groupId>
       <artifactId>annotation-indexer</artifactId>
-      <optional>true</optional>
-    </dependency>
-    <dependency>
-      <groupId>commons-io</groupId>
-      <artifactId>commons-io</artifactId>
       <optional>true</optional>
     </dependency>
     <dependency>
@@ -66,38 +79,31 @@
       <optional>true</optional>
     </dependency>
     <dependency>
-      <groupId>org.apache.sshd</groupId>
-      <artifactId>sshd-core</artifactId>
-      <version>2.7.0</version>
-      <optional>true</optional>
-    </dependency>
-    <!-- ed25519 algorithm, see JENKINS-45318 -->
-    <dependency>
-      <groupId>net.i2p.crypto</groupId>
-      <artifactId>eddsa</artifactId>
-      <version>0.3.0</version>
-      <optional>true</optional>
-    </dependency>
-    <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-jdk14</artifactId>
-      <optional>true</optional>
-    </dependency>
-    <dependency>
-      <groupId>org.glassfish.tyrus.bundles</groupId>
-      <artifactId>tyrus-standalone-client-jdk</artifactId>
-      <version>2.0.1</version>
       <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>com.github.spotbugs</groupId>
       <artifactId>spotbugs-annotations</artifactId>
       <scope>provided</scope>
+      <optional>true</optional>
+      <exclusions>
+        <exclusion>
+          <groupId>com.google.code.findbugs</groupId>
+          <artifactId>jsr305</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
-      <groupId>commons-lang</groupId>
-      <artifactId>commons-lang</artifactId>
-      <optional>true</optional>
+      <groupId>org.kohsuke</groupId>
+      <artifactId>access-modifier-annotation</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 
@@ -106,24 +112,23 @@
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
         <!-- Version specified in grandparent POM -->
+        <configuration>
+          <argLine>@{jacocoSurefireArgs}</argLine>
+        </configuration>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>
-        <version>3.2.4</version>
+        <version>3.5.0</version>
         <executions>
           <execution>
-            <phase>package</phase>
             <goals>
               <goal>shade</goal>
             </goals>
+            <phase>package</phase>
             <configuration>
               <createDependencyReducedPom>false</createDependencyReducedPom>
               <relocations>
-                <relocation>
-                  <pattern>javax.websocket</pattern>
-                  <shadedPattern>io.jenkins.cli.shaded.javax.websocket</shadedPattern>
-                </relocation>
                 <relocation>
                   <pattern>org</pattern>
                   <shadedPattern>io.jenkins.cli.shaded.org</shadedPattern>
@@ -131,6 +136,14 @@
                 <relocation>
                   <pattern>net</pattern>
                   <shadedPattern>io.jenkins.cli.shaded.net</shadedPattern>
+                </relocation>
+                <relocation>
+                  <pattern>com</pattern>
+                  <shadedPattern>io.jenkins.cli.shaded.com</shadedPattern>
+                </relocation>
+                <relocation>
+                  <pattern>jakarta</pattern>
+                  <shadedPattern>io.jenkins.cli.shaded.jakarta</shadedPattern>
                 </relocation>
               </relocations>
               <transformers>
@@ -170,10 +183,10 @@
         <executions>
           <execution>
             <id>add-source</id>
-            <phase>generate-sources</phase>
             <goals>
               <goal>add-source</goal>
             </goals>
+            <phase>generate-sources</phase>
             <configuration>
               <sources>
                 <source>${project.build.directory}/generated-sources/localizer</source>
@@ -184,4 +197,38 @@
       </plugin>
     </plugins>
   </build>
+  <profiles>
+    <profile>
+      <id>enable-jacoco</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.jacoco</groupId>
+            <artifactId>jacoco-maven-plugin</artifactId>
+            <!-- Version specified in parent POM -->
+            <executions>
+              <execution>
+                <goals>
+                  <goal>prepare-agent</goal>
+                </goals>
+                <configuration>
+                  <propertyName>jacocoSurefireArgs</propertyName>
+                  <includes>
+                    <include>hudson/*</include>
+                    <include>hudson/**/*</include>
+                    <include>jenkins/*</include>
+                    <include>jenkins/**/*</include>
+                    <include>org/jenkins/**/*</include>
+                  </includes>
+                  <excludes>
+                    <exclude>**/Messages.class</exclude>
+                  </excludes>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>

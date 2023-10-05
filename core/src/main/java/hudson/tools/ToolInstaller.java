@@ -169,7 +169,7 @@ public abstract class ToolInstaller implements Describable<ToolInstaller>, Exten
          * @param name the name of the release
          * @param url the URL of thr release
          */
-        public ToolInstallerEntry (String id, String name, String url) {
+        public ToolInstallerEntry(String id, String name, String url) {
             this.id = id;
             this.name = name;
             this.url = url;

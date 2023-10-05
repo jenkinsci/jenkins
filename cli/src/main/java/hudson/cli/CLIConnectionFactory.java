@@ -1,10 +1,11 @@
 package hudson.cli;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
 /**
  * Fluent-API to instantiate {@link CLI}.
- * 
+ *
  * @author Kohsuke Kawaguchi
  */
 public class CLIConnectionFactory {
@@ -25,7 +26,7 @@ public class CLIConnectionFactory {
      * Currently unused.
      */
     public CLIConnectionFactory basicAuth(String username, String password) {
-        return basicAuth(username+':'+password);
+        return basicAuth(username + ':' + password);
     }
 
     /**
@@ -33,7 +34,7 @@ public class CLIConnectionFactory {
      * Cf. {@code BasicHeaderApiTokenAuthenticator}.
      */
     public CLIConnectionFactory basicAuth(String userInfo) {
-        return authorization("Basic " + Base64.getEncoder().encodeToString(userInfo.getBytes()));
+        return authorization("Basic " + Base64.getEncoder().encodeToString(userInfo.getBytes(StandardCharsets.UTF_8)));
     }
 
     /**

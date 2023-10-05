@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.util;
 
 import org.junit.Assert;
@@ -30,7 +31,7 @@ import org.junit.Test;
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
 public class MultipartFormDataParserTest {
-    
+
     @Test
     public void testIsMultipart() {
         Assert.assertFalse("Wrongly identified \"multipart/form-data\"", MultipartFormDataParser.isMultiPartForm(null));

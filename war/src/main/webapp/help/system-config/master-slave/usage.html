@@ -2,33 +2,32 @@
   Controls how Jenkins schedules builds on this node.
 
   <dl>
-    <dt><b>
-      Use this node as much as possible
-    </b></dt>
+    <dt><b>Use this node as much as possible</b></dt>
     <dd>
       This is the default setting.
-      <br>
+      <br />
       In this mode, Jenkins uses this node freely. Whenever there is a build
       that can be done by using this node, Jenkins will use it.
     </dd>
 
-    <dt><b>
-      Only build jobs with label expressions matching this node
-    </b></dt>
+    <dt><b>Only build jobs with label expressions matching this node</b></dt>
     <dd>
-      In this mode, Jenkins will only build a project on this node when
-      that project is restricted to certain nodes using a label expression,
-      and that expression matches this node&apos;s name and/or labels.
+      In this mode, Jenkins will only build a project on this node when that
+      project is restricted to certain nodes using a label expression, and that
+      expression matches this node&apos;s name and/or labels.
       <p>
-      This allows a node to be reserved for certain kinds of jobs.
-      For example, if you have jobs that run performance tests, you may want
-      them to only run on a specially configured machine, while preventing all
-      other jobs from using that machine. To do so, you would restrict where the
-      test jobs may run by giving them a label expression matching that machine.
-      <br>
-      Furthermore, if you set the <i># of executors</i> value to 1, you
-      can ensure that only one performance test will execute at any given time
-      on that machine; no other builds will interfere.
+        This allows a node to be reserved for certain kinds of jobs. For
+        example, if you have jobs that run performance tests, you may want them
+        to only run on a specially configured machine, while preventing all
+        other jobs from using that machine. To do so, you would restrict where
+        the test jobs may run by giving them a label expression matching that
+        machine.
+        <br />
+        Furthermore, if you set the
+        <i># of executors</i>
+        value to 1, you can ensure that only one performance test will execute
+        at any given time on that machine; no other builds will interfere.
+      </p>
     </dd>
   </dl>
 </div>

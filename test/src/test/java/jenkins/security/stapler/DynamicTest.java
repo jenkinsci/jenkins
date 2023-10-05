@@ -1,7 +1,7 @@
 package jenkins.security.stapler;
 
-import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.model.UnprotectedRootAction;
@@ -21,7 +21,7 @@ public class DynamicTest {
     public JenkinsRule j = new JenkinsRule();
 
     @Test
-    public void testRequestsDispatchedToEligibleDynamic() throws Exception {
+    public void testRequestsDispatchedToEligibleDynamic() {
         JenkinsRule.WebClient wc = j.createWebClient();
         Stream.of("whatever", "displayName", "iconFileName", "urlName", "response1", "response2").forEach(url ->
         {

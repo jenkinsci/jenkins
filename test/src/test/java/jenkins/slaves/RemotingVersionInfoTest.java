@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.slaves;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -59,7 +60,7 @@ public class RemotingVersionInfoTest {
         }
     }
 
-    private void assertAttributeValue(Manifest manifest, String attributeName, Object expectedValue) throws AssertionError {
+    private void assertAttributeValue(Manifest manifest, String attributeName, Object expectedValue) {
         assertThat("Wrong value of manifest attribute " + attributeName,
                 manifest.getMainAttributes().getValue(attributeName),
                 equalTo(expectedValue.toString()));

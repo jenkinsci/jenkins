@@ -4,7 +4,6 @@ import static hudson.Util.fileToPath;
 
 import hudson.Functions;
 import hudson.Util;
-import hudson.os.PosixException;
 import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.File;
@@ -17,6 +16,7 @@ import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.util.Collection;
@@ -35,8 +35,9 @@ public class IOUtils {
      * Drains the input stream and closes it.
      */
     public static void drain(InputStream in) throws IOException {
-        org.apache.commons.io.IOUtils.copy(in, new NullStream());
-        in.close();
+        try (in; OutputStream out = OutputStream.nullOutputStream()) {
+            org.apache.commons.io.IOUtils.copy(in, out);
+        }
     }
 
     public static void copy(File src, OutputStream out) throws IOException {
@@ -81,13 +82,15 @@ public class IOUtils {
      * So to reliably skip just the N bytes, we'll actually read all those bytes.
      *
      * @since 1.349
+     * @deprecated use {@link org.apache.commons.io.IOUtils#skipFully(InputStream, long)}
      */
+    @Deprecated
     public static InputStream skip(InputStream in, long size) throws IOException {
         DataInputStream di = new DataInputStream(in);
 
-        while (size>0) {
-            int chunk = (int)Math.min(SKIP_BUFFER.length,size);
-            di.readFully(SKIP_BUFFER,0,chunk);
+        while (size > 0) {
+            int chunk = (int) Math.min(SKIP_BUFFER.length, size);
+            di.readFully(SKIP_BUFFER, 0, chunk);
             size -= chunk;
         }
 
@@ -128,15 +131,11 @@ public class IOUtils {
      * care about access permissions.
      * <p>If the file is symlink, the mode is that of the link target, not the link itself.
      * @return a file mode, or -1 if not on Unix
-     * @throws PosixException if the file could not be statted, e.g. broken symlink
+     * @throws IOException if the file could not be statted, e.g. broken symlink
      */
-    public static int mode(File f) throws PosixException {
-        if(Functions.isWindows())   return -1;
-        try {
-            return Util.permissionsToMode(Files.getPosixFilePermissions(fileToPath(f)));
-        } catch (IOException cause) {
-            throw new PosixException("Unable to get file permissions", cause);
-        }
+    public static int mode(File f) throws IOException {
+        if (Functions.isWindows())   return -1;
+        return Util.permissionsToMode(Files.getPosixFilePermissions(fileToPath(f)));
     }
 
     /**
@@ -148,54 +147,16 @@ public class IOUtils {
      */
     public static String readFirstLine(InputStream is, String encoding) throws IOException {
         try (BufferedReader reader = new BufferedReader(
-                encoding == null ? new InputStreamReader(is) : new InputStreamReader(is, encoding))) {
+                encoding == null ? new InputStreamReader(is, Charset.defaultCharset()) : new InputStreamReader(is, encoding))) {
             return reader.readLine();
         }
     }
-
-
-    /**
-     * @deprecated Use instead {@link org.apache.commons.io.IOUtils#DIR_SEPARATOR_UNIX}
-     */
-    @Deprecated
-    public static final char DIR_SEPARATOR_UNIX       = org.apache.commons.io.IOUtils.DIR_SEPARATOR_UNIX;
-
-    /**
-     * @deprecated Use instead {@link org.apache.commons.io.IOUtils#DIR_SEPARATOR_WINDOWS}
-     */
-    @Deprecated
-    public static final char DIR_SEPARATOR_WINDOWS    = org.apache.commons.io.IOUtils.DIR_SEPARATOR_WINDOWS;
-
-    /**
-     * @deprecated Use instead {@link org.apache.commons.io.IOUtils#DIR_SEPARATOR}
-     */
-    @Deprecated
-    public static final char DIR_SEPARATOR            = org.apache.commons.io.IOUtils.DIR_SEPARATOR;
-
-    /**
-     * @deprecated Use instead {@link org.apache.commons.io.IOUtils#LINE_SEPARATOR_UNIX}
-     */
-    @Deprecated
-    public static final String LINE_SEPARATOR_UNIX    = org.apache.commons.io.IOUtils.LINE_SEPARATOR_UNIX;
-
-    /**
-     * @deprecated Use instead {@link org.apache.commons.io.IOUtils#LINE_SEPARATOR_WINDOWS}
-     */
-    @Deprecated
-    public static final String LINE_SEPARATOR_WINDOWS = org.apache.commons.io.IOUtils.LINE_SEPARATOR_WINDOWS;
-
-    /**
-     * @deprecated Use instead {@link org.apache.commons.io.IOUtils#LINE_SEPARATOR}
-     */
-    @Deprecated
-    public static final String LINE_SEPARATOR;
 
     static {
         // avoid security issues
         StringWriter buf = new StringWriter(4);
         PrintWriter out = new PrintWriter(buf);
         out.println();
-        LINE_SEPARATOR = buf.toString();
     }
 
     /**

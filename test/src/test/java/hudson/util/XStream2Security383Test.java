@@ -9,11 +9,11 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.logging.Level;
 import javax.servlet.ReadListener;
 import javax.servlet.ServletInputStream;
 import jenkins.security.ClassFilterImpl;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.After;
 import org.junit.Before;
@@ -74,7 +74,8 @@ public class XStream2Security383Test {
 
             exploitXml = exploitXml.replace("@TOKEN@", exploitFile.getAbsolutePath());
 
-            FileUtils.write(new File(tempJobDir, "config.xml"), exploitXml, StandardCharsets.UTF_8);
+            Files.createDirectory(tempJobDir.toPath());
+            Files.writeString(tempJobDir.toPath().resolve("config.xml"), exploitXml, StandardCharsets.UTF_8);
 
             assertThrows(IOException.class, () -> Items.load(j.jenkins, tempJobDir));
             assertFalse("no file should be created here", exploitFile.exists());
@@ -123,22 +124,27 @@ public class XStream2Security383Test {
         public int read() throws IOException {
             return inner.read();
         }
+
         @Override
         public int read(byte[] b) throws IOException {
             return inner.read(b);
         }
+
         @Override
         public int read(byte[] b, int off, int len) throws IOException {
             return inner.read(b, off, len);
         }
+
         @Override
         public boolean isFinished() {
             throw new UnsupportedOperationException();
         }
+
         @Override
         public boolean isReady() {
             throw new UnsupportedOperationException();
         }
+
         @Override
         public void setReadListener(ReadListener readListener) {
             throw new UnsupportedOperationException();

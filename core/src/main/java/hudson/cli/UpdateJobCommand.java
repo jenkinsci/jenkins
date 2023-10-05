@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.cli;
 
 import hudson.Extension;
@@ -34,7 +35,7 @@ import org.kohsuke.args4j.Argument;
  */
 @Extension
 public class UpdateJobCommand extends CLICommand {
-    @Argument(metaVar="JOB",usage="Name of the job",required=true)
+    @Argument(metaVar = "JOB", usage = "Name of the job", required = true)
     public AbstractItem job;
 
     @Override
@@ -44,7 +45,7 @@ public class UpdateJobCommand extends CLICommand {
 
     @Override
     protected int run() throws Exception {
-        job.updateByXml((Source)new StreamSource(stdin));
+        job.updateByXml((Source) new StreamSource(stdin));
         return 0;
     }
 }

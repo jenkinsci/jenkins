@@ -63,6 +63,7 @@ public abstract class RestartListener implements ExtensionPoint {
             }
             return true;
         }
+
         private static boolean blocksRestart(Executor e) {
             if (e.isBusy()) {
                 AsynchronousExecution execution = e.getAsynchronousExecution();

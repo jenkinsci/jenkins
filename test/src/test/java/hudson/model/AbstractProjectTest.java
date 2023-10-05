@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -36,24 +37,12 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
-import com.gargoylesoftware.htmlunit.ElementNotFoundException;
-import com.gargoylesoftware.htmlunit.HttpMethod;
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.WebResponse;
-import com.gargoylesoftware.htmlunit.html.DomNode;
-import com.gargoylesoftware.htmlunit.html.DomNodeList;
-import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlInput;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.FilePath;
 import hudson.Functions;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.matrix.MatrixProject;
 import hudson.scm.NullSCM;
-import hudson.scm.SCM;
 import hudson.scm.SCMDescriptor;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
 import hudson.tasks.BatchFile;
@@ -70,15 +59,28 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.Set;
 import java.util.Vector;
 import java.util.concurrent.Future;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.IOUtils;
+import org.htmlunit.ElementNotFoundException;
+import org.htmlunit.HttpMethod;
+import org.htmlunit.Page;
+import org.htmlunit.WebRequest;
+import org.htmlunit.WebResponse;
+import org.htmlunit.html.DomNode;
+import org.htmlunit.html.DomNodeList;
+import org.htmlunit.html.HtmlAnchor;
+import org.htmlunit.html.HtmlForm;
+import org.htmlunit.html.HtmlInput;
+import org.htmlunit.html.HtmlPage;
+import org.jenkinsci.plugins.matrixauth.AuthorizationType;
+import org.jenkinsci.plugins.matrixauth.PermissionEntry;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -86,7 +88,6 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.MockFolder;
 import org.jvnet.hudson.test.TestExtension;
-import org.jvnet.hudson.test.TestPluginManager;
 import org.jvnet.hudson.test.recipes.PresetData;
 import org.jvnet.hudson.test.recipes.PresetData.DataSet;
 import org.kohsuke.args4j.CmdLineException;
@@ -114,7 +115,7 @@ public class AbstractProjectTest {
         FreeStyleProject project = j.createFreeStyleProject();
         project.getBuildersList().add(Functions.isWindows() ? new BatchFile("echo hello") : new Shell("echo hello"));
 
-        FreeStyleBuild b = project.scheduleBuild2(0).get();
+        FreeStyleBuild b = j.buildAndAssertSuccess(project);
 
         assertTrue("Workspace should exist by now", b.getWorkspace().exists());
 
@@ -127,12 +128,12 @@ public class AbstractProjectTest {
      * Makes sure that the workspace deletion is protected.
      */
     @Test
-    @PresetData(DataSet.NO_ANONYMOUS_READACCESS)
     public void wipeWorkspaceProtected() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject();
+        j.createDummySecurityRealm();
         project.getBuildersList().add(Functions.isWindows() ? new BatchFile("echo hello") : new Shell("echo hello"));
 
-        FreeStyleBuild b = project.scheduleBuild2(0).get();
+        FreeStyleBuild b = j.buildAndAssertSuccess(project);
 
         assertTrue("Workspace should exist by now", b.getWorkspace().exists());
 
@@ -150,7 +151,7 @@ public class AbstractProjectTest {
     @Test
     @PresetData(DataSet.ANONYMOUS_READONLY)
     public void wipeWorkspaceProtected2() throws Exception {
-        ((GlobalMatrixAuthorizationStrategy) j.jenkins.getAuthorizationStrategy()).add(Item.WORKSPACE, "anonymous");
+        ((GlobalMatrixAuthorizationStrategy) j.jenkins.getAuthorizationStrategy()).add(Item.WORKSPACE, new PermissionEntry(AuthorizationType.EITHER, "anonymous"));
 
         // make sure that the deletion is protected in the same way
         wipeWorkspaceProtected();
@@ -236,9 +237,10 @@ public class AbstractProjectTest {
             public boolean requiresWorkspaceForPolling() {
                 return true;
             }
+
             @Override
             public SCMDescriptor<?> getDescriptor() {
-                return new SCMDescriptor<SCM>(null) {
+                return new SCMDescriptor<>(null) {
                 };
             }
         });
@@ -283,7 +285,7 @@ public class AbstractProjectTest {
     @Issue("JENKINS-18678")
     public void renameJobLostBuilds() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject("initial");
-        j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        j.buildAndAssertSuccess(p);
         assertEquals(1, p.getBuilds().stream().count());
         p.renameTo("edited");
         p._getRuns().purgeCache();
@@ -355,17 +357,23 @@ public class AbstractProjectTest {
         JenkinsRule.WebClient wc = j.createWebClient()
                 .withThrowExceptionOnFailingStatusCode(false);
 
-        WebResponse rsp = wc.goTo(p.getUrl() + "build", null).getWebResponse();
+        WebResponse rsp = wc.getPage(wc.addCrumb(new WebRequest(new URL(j.getURL(), p.getUrl() +
+                "build?delay=0"),
+                HttpMethod.POST))).getWebResponse();
         assertEquals(HttpURLConnection.HTTP_CREATED, rsp.getStatusCode());
         assertNotNull(rsp.getResponseHeaderValue("Location"));
 
-        WebResponse rsp2 = wc.goTo(p.getUrl() + "build", null).getWebResponse();
+        WebResponse rsp2 = wc.getPage(wc.addCrumb(new WebRequest(new URL(j.getURL(), p.getUrl() +
+                "build?delay=0"),
+                HttpMethod.POST))).getWebResponse();
         assertEquals(HttpURLConnection.HTTP_CREATED, rsp2.getStatusCode());
         assertEquals(rsp.getResponseHeaderValue("Location"), rsp2.getResponseHeaderValue("Location"));
 
         p.makeDisabled(true);
 
-        WebResponse rsp3 = wc.goTo(p.getUrl() + "build", null).getWebResponse();
+        WebResponse rsp3 = wc.getPage(wc.addCrumb(new WebRequest(new URL(j.getURL(), p.getUrl() +
+                "build?delay=0"),
+                HttpMethod.POST))).getWebResponse();
         assertEquals(HttpURLConnection.HTTP_CONFLICT, rsp3.getStatusCode());
     }
 
@@ -375,7 +383,7 @@ public class AbstractProjectTest {
      */
     @Test
     public void vectorTriggers() throws Exception {
-        AbstractProject<?, ?> p = (AbstractProject<?,?>) j.jenkins.createProjectFromXML("foo", getClass().getResourceAsStream("AbstractProjectTest/vectorTriggers.xml"));
+        AbstractProject<?, ?> p = (AbstractProject<?, ?>) j.jenkins.createProjectFromXML("foo", getClass().getResourceAsStream("AbstractProjectTest/vectorTriggers.xml"));
         assertEquals(1, p.triggers().size());
         Trigger<?> t = p.triggers().get(0);
         assertEquals(SCMTrigger.class, t.getClass());
@@ -385,7 +393,7 @@ public class AbstractProjectTest {
     @Test
     @Issue("JENKINS-18813")
     public void removeTrigger() throws Exception {
-        AbstractProject<?, ?> p = (AbstractProject<?,?>) j.jenkins.createProjectFromXML("foo", getClass().getResourceAsStream("AbstractProjectTest/vectorTriggers.xml"));
+        AbstractProject<?, ?> p = (AbstractProject<?, ?>) j.jenkins.createProjectFromXML("foo", getClass().getResourceAsStream("AbstractProjectTest/vectorTriggers.xml"));
 
         TriggerDescriptor SCM_TRIGGER_DESCRIPTOR = (TriggerDescriptor) j.jenkins.getDescriptorOrDie(SCMTrigger.class);
         p.removeTrigger(SCM_TRIGGER_DESCRIPTOR);
@@ -395,7 +403,7 @@ public class AbstractProjectTest {
     @Test
     @Issue("JENKINS-18813")
     public void addTriggerSameType() throws Exception {
-        AbstractProject<?, ?> p = (AbstractProject<?,?>) j.jenkins.createProjectFromXML("foo", getClass().getResourceAsStream("AbstractProjectTest/vectorTriggers.xml"));
+        AbstractProject<?, ?> p = (AbstractProject<?, ?>) j.jenkins.createProjectFromXML("foo", getClass().getResourceAsStream("AbstractProjectTest/vectorTriggers.xml"));
 
         SCMTrigger newTrigger = new SCMTrigger("H/5 * * * *");
         p.addTrigger(newTrigger);
@@ -409,7 +417,7 @@ public class AbstractProjectTest {
     @Test
     @Issue("JENKINS-18813")
     public void addTriggerDifferentType() throws Exception {
-        AbstractProject<?, ?> p = (AbstractProject<?,?>) j.jenkins.createProjectFromXML("foo", getClass().getResourceAsStream("AbstractProjectTest/vectorTriggers.xml"));
+        AbstractProject<?, ?> p = (AbstractProject<?, ?>) j.jenkins.createProjectFromXML("foo", getClass().getResourceAsStream("AbstractProjectTest/vectorTriggers.xml"));
 
         TimerTrigger newTrigger = new TimerTrigger("20 * * * *");
         p.addTrigger(newTrigger);
@@ -424,15 +432,6 @@ public class AbstractProjectTest {
      */
     @Test
     public void configDotXmlSubmissionToDifferentType() throws Exception {
-        TestPluginManager tpm = (TestPluginManager) j.jenkins.pluginManager;
-        tpm.installDetachedPlugin("structs");
-        tpm.installDetachedPlugin("workflow-step-api");
-        tpm.installDetachedPlugin("scm-api");
-        tpm.installDetachedPlugin("workflow-api");
-        tpm.installDetachedPlugin("script-security");
-        tpm.installDetachedPlugin("junit");
-        tpm.installDetachedPlugin("matrix-project");
-
         j.jenkins.setCrumbIssuer(null);
         FreeStyleProject p = j.createFreeStyleProject();
 
@@ -453,10 +452,10 @@ public class AbstractProjectTest {
     private HttpURLConnection postConfigDotXml(FreeStyleProject p, String xml) throws Exception {
         HttpURLConnection con = (HttpURLConnection) new URL(j.getURL(), "job/" + p.getName() + "/config.xml").openConnection();
         con.setRequestMethod("POST");
-        con.setRequestProperty("Content-Type", "application/xml");
+        con.setRequestProperty("Content-Type", "application/xml; charset=utf-8");
         con.setDoOutput(true);
         try (OutputStream s = con.getOutputStream()) {
-            s.write(xml.getBytes());
+            s.write(xml.getBytes(StandardCharsets.UTF_8));
         }
         return con;
     }
@@ -476,7 +475,7 @@ public class AbstractProjectTest {
     @Test
     @Issue("JENKINS-27549")
     public void loadingWithNPEOnTriggerStart() throws Exception {
-        AbstractProject<?, ?> project = (AbstractProject<?,?>) j.jenkins.createProjectFromXML("foo", getClass().getResourceAsStream("AbstractProjectTest/npeTrigger.xml"));
+        AbstractProject<?, ?> project = (AbstractProject<?, ?>) j.jenkins.createProjectFromXML("foo", getClass().getResourceAsStream("AbstractProjectTest/npeTrigger.xml"));
 
         assertEquals(1, project.triggers().size());
     }
@@ -485,11 +484,11 @@ public class AbstractProjectTest {
     @Issue("JENKINS-30742")
     public void resolveForCLI() throws Exception {
         CmdLineException e = assertThrows(CmdLineException.class, () -> AbstractProject.resolveForCLI("never_created"));
-        assertEquals("No such job \u2018never_created\u2019 exists.", e.getMessage());
+        assertEquals("No such job ‘never_created’ exists.", e.getMessage());
 
         AbstractProject<?, ?> project = j.jenkins.createProject(FreeStyleProject.class, "never_created");
         e = assertThrows(CmdLineException.class, () -> AbstractProject.resolveForCLI("never_created1"));
-        assertEquals("No such job \u2018never_created1\u2019 exists. Perhaps you meant \u2018never_created\u2019?", e.getMessage());
+        assertEquals("No such job ‘never_created1’ exists. Perhaps you meant ‘never_created’?", e.getMessage());
     }
 
     public static class MockBuildTriggerThrowsNPEOnStart extends Trigger<Item> {
@@ -514,10 +513,10 @@ public class AbstractProjectTest {
     public void upstreamDownstreamExportApi() throws Exception {
         FreeStyleProject us = j.createFreeStyleProject("upstream-project");
         FreeStyleProject ds = j.createFreeStyleProject("downstream-project");
-        us.getPublishersList().add(new BuildTrigger(Collections.singleton(ds), Result.SUCCESS));
+        us.getPublishersList().add(new BuildTrigger(Set.of(ds), Result.SUCCESS));
         j.jenkins.rebuildDependencyGraph();
-        assertEquals(Collections.singletonList(ds), us.getDownstreamProjects());
-        assertEquals(Collections.singletonList(us), ds.getUpstreamProjects());
+        assertEquals(List.of(ds), us.getDownstreamProjects());
+        assertEquals(List.of(us), ds.getUpstreamProjects());
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().
                 grant(Jenkins.READ).everywhere().toEveryone().
@@ -537,6 +536,7 @@ public class AbstractProjectTest {
         System.out.println(api);
         assertThat(api, not(containsString("upstream-project")));
     }
+
     @Test
     public void ensureWhenNonExistingLabelsProposalsAreMade() throws Exception {
         j.jenkins.setCrumbIssuer(null);
@@ -612,17 +612,16 @@ public class AbstractProjectTest {
          * </div>
          */
         DomNodeList<DomNode> domNodes = htmlPage.getDocumentElement().querySelectorAll("*");
-        assertThat(domNodes, hasSize(5));
+        assertThat(domNodes, hasSize(4));
         assertEquals("head", domNodes.get(0).getNodeName());
         assertEquals("body", domNodes.get(1).getNodeName());
         assertEquals("div", domNodes.get(2).getNodeName());
-        assertEquals("img", domNodes.get(3).getNodeName());
-        assertEquals("a", domNodes.get(4).getNodeName());
+        assertEquals("a", domNodes.get(3).getNodeName());
 
         // only: "><img src=x onerror=alert(123)>
         // the first double quote was escaped during creation (with the backslash)
         String unquotedLabel = Label.parseExpression(label).getName();
-        HtmlAnchor anchor = (HtmlAnchor) domNodes.get(4);
+        HtmlAnchor anchor = (HtmlAnchor) domNodes.get(3);
         assertThat(anchor.getHrefAttribute(), containsString(Util.rawEncode(unquotedLabel)));
 
         assertThat(responseContent, containsString("ok"));
@@ -656,7 +655,7 @@ public class AbstractProjectTest {
 
     private JenkinsRule.JSONWebResponse requestAutoCompleteUpstreamProjectsWithUser(FreeStyleProject p, String value, String user) throws Exception {
         String relativeUrl = p.getUrl() + p.getDescriptor().getDescriptorUrl() + "/autoCompleteUpstreamProjects?value=" + Util.rawEncode(value);
-        Page page = j.createWebClient().withBasicCredentials(user).goTo( relativeUrl, "application/json");
+        Page page = j.createWebClient().withBasicCredentials(user).goTo(relativeUrl, "application/json");
         return new JenkinsRule.JSONWebResponse(page.getWebResponse());
     }
 

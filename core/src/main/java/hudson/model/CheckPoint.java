@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -60,7 +61,7 @@ import hudson.tasks.Recorder;
  * depend on its earlier result.
  *
  * @author Kohsuke Kawaguchi
- * @see BuildStep#getRequiredMonitorService() 
+ * @see BuildStep#getRequiredMonitorService()
  * @since 1.319
  */
 public final class CheckPoint {
@@ -87,7 +88,7 @@ public final class CheckPoint {
     @Override
     public boolean equals(Object that) {
         if (that == null || getClass() != that.getClass()) return false;
-        return identity== ((CheckPoint) that).identity;
+        return identity == ((CheckPoint) that).identity;
     }
 
     @Override
@@ -97,7 +98,7 @@ public final class CheckPoint {
 
     @Override
     public String toString() {
-        return "Check point "+internalName;
+        return "Check point " + internalName;
     }
 
     /**
@@ -140,7 +141,7 @@ public final class CheckPoint {
      * This method can be only called from an {@link Executor} thread.
      *
      * @throws InterruptedException
-     *      If the build (represented by the calling executor thread) is aborted while it's waiting.  
+     *      If the build (represented by the calling executor thread) is aborted while it's waiting.
      */
     public void block() throws InterruptedException {
         Run.waitForCheckpoint(this, null, null);

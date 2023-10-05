@@ -21,9 +21,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.scheduler;
 
 import static java.util.Calendar.MONDAY;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
@@ -45,7 +48,7 @@ import org.jvnet.hudson.test.Issue;
 public class CronTabTest {
 
     @Test
-    public void test1() throws ANTLRException {
+    public void test1() {
         new CronTab("@yearly");
         new CronTab("@weekly");
         new CronTab("@midnight");
@@ -56,29 +59,29 @@ public class CronTabTest {
     @Test
     public void testCeil1() throws Exception {
         CronTab x = new CronTab("0,30 * * * *");
-        Calendar c = new GregorianCalendar(2000, Calendar.MARCH,1,1,10);
-        compare(new GregorianCalendar(2000, Calendar.MARCH,1,1,30),x.ceil(c));
+        Calendar c = new GregorianCalendar(2000, Calendar.MARCH, 1, 1, 10);
+        compare(new GregorianCalendar(2000, Calendar.MARCH, 1, 1, 30), x.ceil(c));
 
         // roll up test
-        c =     new GregorianCalendar(2000, Calendar.MARCH,1,1,40);
-        compare(new GregorianCalendar(2000, Calendar.MARCH,1,2, 0),x.ceil(c));
+        c =     new GregorianCalendar(2000, Calendar.MARCH, 1, 1, 40);
+        compare(new GregorianCalendar(2000, Calendar.MARCH, 1, 2, 0), x.ceil(c));
     }
 
     @Test
     public void testCeil2() throws Exception {
         // make sure that lower fields are really reset correctly
         CronTab x = new CronTab("15,45 3 * * *");
-        Calendar c = new GregorianCalendar(2000, Calendar.MARCH,1,2,30);
-        compare(new GregorianCalendar(2000, Calendar.MARCH,1,3,15),x.ceil(c));
+        Calendar c = new GregorianCalendar(2000, Calendar.MARCH, 1, 2, 30);
+        compare(new GregorianCalendar(2000, Calendar.MARCH, 1, 3, 15), x.ceil(c));
     }
 
     @Test
     public void testCeil3() throws Exception {
         // conflict between DoM and DoW. In this we need to find a day that's the first day of a month and Sunday
         CronTab x = new CronTab("0 0 1 * 0");
-        Calendar c = new GregorianCalendar(2010, Calendar.JANUARY,1,15,55);
+        Calendar c = new GregorianCalendar(2010, Calendar.JANUARY, 1, 15, 55);
         // the first such day in 2010 is Aug 1st
-        compare(new GregorianCalendar(2010, Calendar.AUGUST,1,0,0),x.ceil(c));
+        compare(new GregorianCalendar(2010, Calendar.AUGUST, 1, 0, 0), x.ceil(c));
     }
 
     @Test(timeout = 1000)
@@ -86,7 +89,7 @@ public class CronTabTest {
     public void testCeil3_DoW7() throws Exception {
         // similar to testCeil3, but DoW=7 may stuck in an infinite loop
         CronTab x = new CronTab("0 0 1 * 7");
-        Calendar c = new GregorianCalendar(2010, Calendar.JANUARY,1,15,55);
+        Calendar c = new GregorianCalendar(2010, Calendar.JANUARY, 1, 15, 55);
         // the first such day in 2010 is Aug 1st
         compare(new GregorianCalendar(2010, Calendar.AUGUST, 1, 0, 0), x.ceil(c));
     }
@@ -96,7 +99,7 @@ public class CronTabTest {
      */
     @Issue("HUDSON-8656") // This is _not_ JENKINS-8656
     @Test
-    public void testCeil4() throws ANTLRException {
+    public void testCeil4() {
         final Calendar cal = Calendar.getInstance(new Locale("de", "de"));
         cal.set(2011, Calendar.JANUARY, 16, 0, 0, 0); // Sunday, Jan 16th 2011, 00:00
         final String cronStr = "0 23 * * 1-5"; // execute on weekdays @23:00
@@ -118,7 +121,7 @@ public class CronTabTest {
      */
     @Issue("HUDSON-8656") // This is _not_ JENKINS-8656
     @Test
-    public void testCeil5() throws ANTLRException {
+    public void testCeil5() {
         final Calendar cal = Calendar.getInstance(new Locale("de", "at"));
         cal.set(2011, Calendar.JANUARY, 16, 0, 0, 0); // Sunday, Jan 16th 2011, 00:00
         final String cronStr = "0 23 * * 1-5"; // execute on weekdays @23:00
@@ -138,29 +141,29 @@ public class CronTabTest {
     @Test
     public void testFloor1() throws Exception {
         CronTab x = new CronTab("30 * * * *");
-        Calendar c = new GregorianCalendar(2000, Calendar.MARCH,1,1,40);
-        compare(new GregorianCalendar(2000, Calendar.MARCH,1,1,30),x.floor(c));
+        Calendar c = new GregorianCalendar(2000, Calendar.MARCH, 1, 1, 40);
+        compare(new GregorianCalendar(2000, Calendar.MARCH, 1, 1, 30), x.floor(c));
 
         // roll down test
-        c =     new GregorianCalendar(2000, Calendar.MARCH,1,1,10);
-        compare(new GregorianCalendar(2000, Calendar.MARCH,1,0,30),x.floor(c));
+        c =     new GregorianCalendar(2000, Calendar.MARCH, 1, 1, 10);
+        compare(new GregorianCalendar(2000, Calendar.MARCH, 1, 0, 30), x.floor(c));
     }
 
     @Test
     public void testFloor2() throws Exception {
         // make sure that lower fields are really reset correctly
         CronTab x = new CronTab("15,45 3 * * *");
-        Calendar c = new GregorianCalendar(2000, Calendar.MARCH,1,4,30);
-        compare(new GregorianCalendar(2000, Calendar.MARCH,1,3,45),x.floor(c));
+        Calendar c = new GregorianCalendar(2000, Calendar.MARCH, 1, 4, 30);
+        compare(new GregorianCalendar(2000, Calendar.MARCH, 1, 3, 45), x.floor(c));
     }
 
     @Test
     public void testFloor3() throws Exception {
         // conflict between DoM and DoW. In this we need to find a day that's the first day of a month and Sunday in 2010
         CronTab x = new CronTab("0 0 1 * 0");
-        Calendar c = new GregorianCalendar(2011, Calendar.JANUARY,1,15,55);
+        Calendar c = new GregorianCalendar(2011, Calendar.JANUARY, 1, 15, 55);
         // the last such day in 2010 is Aug 1st
-        compare(new GregorianCalendar(2010, Calendar.AUGUST,1,0,0),x.floor(c));
+        compare(new GregorianCalendar(2010, Calendar.AUGUST, 1, 0, 0), x.floor(c));
     }
 
     @Issue("JENKINS-8401")
@@ -168,12 +171,12 @@ public class CronTabTest {
     public void testFloor4() throws Exception {
         // conflict between DoM and DoW. In this we need to find a day that's the first day of a month and Sunday in 2010
         CronTab x = new CronTab("0 0 1 * 0");
-        Calendar c = new GregorianCalendar(2011, Calendar.JANUARY,1,15,55);
+        Calendar c = new GregorianCalendar(2011, Calendar.JANUARY, 1, 15, 55);
         c.setFirstDayOfWeek(MONDAY);
         // the last such day in 2010 is Aug 1st
         GregorianCalendar answer = new GregorianCalendar(2010, Calendar.AUGUST, 1, 0, 0);
         answer.setFirstDayOfWeek(MONDAY);
-        compare(answer,x.floor(c));
+        compare(answer, x.floor(c));
     }
 
     @Test public void checkSanity() throws Exception {
@@ -209,10 +212,10 @@ public class CronTabTest {
 
     @Test
     public void testHash1() throws Exception {
-        CronTab x = new CronTab("H H(5-8) H/3 H(1-10)/4 *",new Hash() {
+        CronTab x = new CronTab("H H(5-8) H/3 H(1-10)/4 *", new Hash() {
             @Override
             public int next(int n) {
-                return n-1;
+                return n - 1;
             }
         });
 
@@ -234,7 +237,7 @@ public class CronTabTest {
 
     @Test
     public void testHash2() throws Exception {
-        CronTab x = new CronTab("H H(5-8) H/3 H(1-10)/4 *",new Hash() {
+        CronTab x = new CronTab("H H(5-8) H/3 H(1-10)/4 *", new Hash() {
             @Override
             public int next(int n) {
                 return 1;
@@ -265,8 +268,20 @@ public class CronTabTest {
         compare(new GregorianCalendar(2013, Calendar.MARCH, 21, 0, 2), new CronTab("H(0-3)/4 * * * *", Hash.from("junk")).ceil(new GregorianCalendar(2013, Calendar.MARCH, 21, 0, 0)));
         compare(new GregorianCalendar(2013, Calendar.MARCH, 21, 1, 2), new CronTab("H(0-3)/4 * * * *", Hash.from("junk")).ceil(new GregorianCalendar(2013, Calendar.MARCH, 21, 0, 5)));
 
-        assertThrows(ANTLRException.class, () -> compare(new GregorianCalendar(2013, Calendar.MARCH, 21, 0, 0), new CronTab("H(0-3)/15 * * * *", Hash.from("junk")).ceil(new GregorianCalendar(2013, Calendar.MARCH, 21, 0, 0))));
+        Locale saveLocale = Locale.getDefault();
+        Locale.setDefault(Locale.ENGLISH);
+
+        try {
+            ANTLRException e = assertThrows(ANTLRException.class, () ->
+                    compare(new GregorianCalendar(2013, Calendar.MARCH, 21, 0, 0), new CronTab("H(0-3)/15 * * * *", Hash.from("junk")).ceil(new GregorianCalendar(2013, Calendar.MARCH, 21, 0, 0))));
+            assertThat(e, instanceOf(IllegalArgumentException.class));
+            assertEquals("line 1:9: 15 is an invalid value. Must be within 1 and 4", e.getMessage());
+        }
+        finally {
+            Locale.setDefault(saveLocale);
+        }
     }
+
 
     @Test public void repeatedHash() throws Exception {
         CronTabList tabs = CronTabList.create("H * * * *\nH * * * *", Hash.from("seed"));
@@ -284,11 +299,31 @@ public class CronTabTest {
     }
 
     @Test public void rangeBoundsCheckFailHour() {
-        assertThrows(ANTLRException.class, () -> new CronTab("H H(12-24) * * *"));
+        Locale saveLocale = Locale.getDefault();
+        Locale.setDefault(Locale.ENGLISH);
+
+        try {
+            ANTLRException e = assertThrows(ANTLRException.class, () -> new CronTab("H H(12-24) * * *"));
+            assertThat(e, instanceOf(IllegalArgumentException.class));
+            assertEquals("line 1:10: 24 is an invalid value. Must be within 0 and 23", e.getMessage());
+        }
+        finally {
+            Locale.setDefault(saveLocale);
+        }
     }
 
     @Test public void rangeBoundsCheckFailMinute() {
-        assertThrows(ANTLRException.class, () -> new CronTab("H(33-66) * * * *"));
+        Locale saveLocale = Locale.getDefault();
+        Locale.setDefault(Locale.ENGLISH);
+
+        try {
+            ANTLRException e = assertThrows(ANTLRException.class, () -> new CronTab("H(33-66) * * * *"));
+            assertThat(e, instanceOf(IllegalArgumentException.class));
+            assertEquals("line 1:8: 66 is an invalid value. Must be within 0 and 59", e.getMessage());
+        }
+        finally {
+            Locale.setDefault(saveLocale);
+        }
     }
 
     @Issue("JENKINS-9283")

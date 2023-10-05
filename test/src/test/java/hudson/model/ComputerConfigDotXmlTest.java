@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -38,10 +39,6 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
-import com.gargoylesoftware.htmlunit.HttpMethod;
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.WebResponse;
 import hudson.security.ACL;
 import hudson.security.AccessDeniedException3;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
@@ -58,6 +55,10 @@ import javax.servlet.ServletInputStream;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.WriteListener;
 import jenkins.model.Jenkins;
+import org.htmlunit.FailingHttpStatusCodeException;
+import org.htmlunit.HttpMethod;
+import org.htmlunit.WebRequest;
+import org.htmlunit.WebResponse;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -143,7 +144,7 @@ public class ComputerConfigDotXmlTest {
         final String out = outputStream.toString();
         assertThat(out, startsWith("<?xml version=\"1.1\" encoding=\"UTF-8\"?>"));
         assertThat(out, containsString("<name>slave0</name>"));
-        assertThat(out, containsString("<description>dummy</description>"));
+        assertThat(out, containsString("<mode>NORMAL</mode>"));
     }
 
     @Test
@@ -218,7 +219,7 @@ public class ComputerConfigDotXmlTest {
         FailingHttpStatusCodeException e = assertThrows(FailingHttpStatusCodeException.class, () -> wc.getPage(req));
         assertThat(e.getStatusCode(), equalTo(400));
         File configDotXml = new File(rule.jenkins.getRootDir(), "config.xml");
-        String configDotXmlContents = new String(Files.readAllBytes(configDotXml.toPath()), StandardCharsets.UTF_8);
+        String configDotXmlContents = Files.readString(configDotXml.toPath(), StandardCharsets.UTF_8);
 
         assertThat(configDotXmlContents, not(containsString("<name>../</name>")));
     }

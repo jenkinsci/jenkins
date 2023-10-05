@@ -38,7 +38,7 @@ THE SOFTWARE.
             <input type="text" value="${it.command}" style="width:100%"/>
           </td>
           <td style="line-height:2em">
-            <l:copyButton message="${%Copied}" text="${it.command}"/>
+            <l:copyButton text="${it.command}"/>
           </td>
         </tr>
       </table>

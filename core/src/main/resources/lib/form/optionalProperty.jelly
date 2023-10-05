@@ -23,22 +23,24 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <st:documentation>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:f="/lib/form">
+  <st:documentation> <![CDATA[
     Renders inline an optional single-value nested data-bound property of the current instance,
-    by using a &lt;f:optionalBlock>
+    by using a <f:optionalBlock>
 
     This is useful when your object composes another data-bound object, and when that's optional,
     where the absence of the value is signified as null (in which case the optionalBlock will be drawn unchecked),
     and the presence of the value.
+    ]]>
     <st:attribute name="field" use="required" />
     <st:attribute name="title" use="required" />
+    <st:attribute name="help" />
   </st:documentation>
   <!--
     Without @checked, optionalBlock will try to coerce an object to a boolean, which fails,
     so override @checked manually.
   -->
-  <f:optionalBlock field="${field}" title="${title}" checked="${instance[field]!=null}">
+  <f:optionalBlock field="${field}" title="${title}" checked="${instance[field]!=null}" help="${help}">
     <j:set var="descriptor" value="${app.getDescriptorOrDie(descriptor.getPropertyTypeOrDie(instance,field).clazz)}" />
     <j:set var="instance" value="${instance[field]}"/>
     <st:include from="${descriptor}" page="${descriptor.configPage}" />

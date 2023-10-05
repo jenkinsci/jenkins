@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.tools;
 
 import hudson.FilePath;
@@ -37,7 +38,7 @@ import org.kohsuke.stapler.QueryParameter;
  * @see BatchCommandInstaller
  * @see CommandInstaller
  * @author Oleg Nenashev
- * 
+ *
  */
 public abstract class AbstractCommandInstaller extends ToolInstaller {
 
@@ -47,7 +48,7 @@ public abstract class AbstractCommandInstaller extends ToolInstaller {
     private final String command;
     private final String toolHome;
 
-    public AbstractCommandInstaller(String label, String command, String toolHome) {
+    protected AbstractCommandInstaller(String label, String command, String toolHome) {
         super(label);
         this.command = command;
         this.toolHome = toolHome;

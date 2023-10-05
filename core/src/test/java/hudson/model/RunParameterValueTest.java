@@ -31,7 +31,7 @@ import static org.junit.Assert.assertThrows;
 import org.junit.Test;
 
 public class RunParameterValueTest {
-    
+
     @SuppressWarnings("ResultOfObjectAllocationIgnored")
     @Test public void robustness() {
         RunParameterValue rpv = new RunParameterValue("whatever", "folder/job#57");

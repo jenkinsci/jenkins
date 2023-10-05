@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.util;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -59,7 +60,7 @@ public class CopyOnWriteListTest {
                 .withNodeMatcher(new DefaultNodeMatcher(ElementSelectors.byNameAndText)));
 
 
-        TestData td2 = (TestData)xs.fromXML(out);
+        TestData td2 = (TestData) xs.fromXML(out);
         assertTrue(td2.list1.isEmpty());
         assertTrue(td2.list2.isEmpty());
 
@@ -71,7 +72,7 @@ public class CopyOnWriteListTest {
                 + "</string></list2></hudson.util.CopyOnWriteListTest_-TestData>";
         assertThat(out, isSimilarTo(expected).ignoreWhitespace()
                 .withNodeMatcher(new DefaultNodeMatcher(ElementSelectors.byNameAndText)));
-        td2 = (TestData)xs.fromXML(out);
+        td2 = (TestData) xs.fromXML(out);
         assertEquals("foobar1", td2.list1.getView().get(0));
         assertEquals("foobar2", td2.list2.get(0));
     }

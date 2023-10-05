@@ -36,7 +36,7 @@ import org.apache.commons.io.IOUtils;
 /**
  * Utilities for the Windows Platform.
  * Adapted from:
- * https://blogs.msdn.microsoft.com/twistylittlepassagesallalike/2011/04/23/everyone-quotes-command-line-arguments-the-wrong-way/
+ * <a href="https://docs.microsoft.com/en-us/archive/blogs/twistylittlepassagesallalike/everyone-quotes-command-line-arguments-the-wrong-way">Everyone quotes command line arguments the wrong way</a>
  *
  * @since 2.183
  */
@@ -70,9 +70,7 @@ public class WindowsUtil {
             }
             // else backslashes have no special meaning and don't need to be escaped here
 
-            for (int j = 0; j < nrBackslashes; j++) {
-                sb.append('\\');
-            }
+            sb.append("\\".repeat(Math.max(0, nrBackslashes)));
 
             if (i < end) {
                 sb.append(argument.charAt(i));

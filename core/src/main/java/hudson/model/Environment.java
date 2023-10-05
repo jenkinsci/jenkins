@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import hudson.EnvVars;
@@ -52,60 +53,60 @@ import java.util.Map;
  * @see RunListener#setUpEnvironment(AbstractBuild, Launcher, BuildListener)
  */
 public abstract class Environment {
-	/**
-	 * Adds environmental variables for the builds to the given map.
-	 * 
-	 * <p>
-	 * If the {@link Environment} object wants to pass in information to the
-	 * build that runs, it can do so by exporting additional environment
-	 * variables to the map.
-	 * 
-	 * <p>
-	 * When this method is invoked, the map already contains the current
-	 * "planned export" list.
-	 * 
-	 * @param env
-	 *          never null. This really should have been typed as {@link EnvVars}
+    /**
+     * Adds environmental variables for the builds to the given map.
+     *
+     * <p>
+     * If the {@link Environment} object wants to pass in information to the
+     * build that runs, it can do so by exporting additional environment
+     * variables to the map.
+     *
+     * <p>
+     * When this method is invoked, the map already contains the current
+     * "planned export" list.
+     *
+     * @param env
+     *          never null. This really should have been typed as {@link EnvVars}
      *          but by the time we realized it it was too late.
-	 */
-	public void buildEnvVars(Map<String,String> env) {
-		// no-op by default
-	}
+     */
+    public void buildEnvVars(Map<String, String> env) {
+        // no-op by default
+    }
 
-	/**
-	 * Runs after the {@link Builder} completes, and performs a tear down.
-	 * 
-	 * <p>
-	 * This method is invoked even when the build failed, so that the clean up
-	 * operation can be performed regardless of the build result (for example,
-	 * you'll want to stop application server even if a build fails.)
-	 * 
-	 * @param build
-	 *            The same {@link Build} object given to the set up method.
-	 * @param listener
-	 *            The same {@link BuildListener} object given to the set up
-	 *            method.
-	 * @return true if the build can continue, false if there was an error and
-	 *         the build needs to be failed.
-	 * @throws IOException
-	 *             terminates the build abnormally. Jenkins will handle the
-	 *             exception and reports a nice error message.
-	 */
-	public boolean tearDown(AbstractBuild build, BuildListener listener)
-			throws IOException, InterruptedException {
-		return true;
-	}
+    /**
+     * Runs after the {@link Builder} completes, and performs a tear down.
+     *
+     * <p>
+     * This method is invoked even when the build failed, so that the clean up
+     * operation can be performed regardless of the build result (for example,
+     * you'll want to stop application server even if a build fails.)
+     *
+     * @param build
+     *            The same {@link Build} object given to the set up method.
+     * @param listener
+     *            The same {@link BuildListener} object given to the set up
+     *            method.
+     * @return true if the build can continue, false if there was an error and
+     *         the build needs to be failed.
+     * @throws IOException
+     *             terminates the build abnormally. Jenkins will handle the
+     *             exception and reports a nice error message.
+     */
+    public boolean tearDown(AbstractBuild build, BuildListener listener)
+            throws IOException, InterruptedException {
+        return true;
+    }
 
     /**
      * Creates {@link Environment} implementation that just sets the variables as given in the parameter.
      */
-	public static Environment create(final EnvVars envVars) {
-		return new Environment() {
-			@Override
-			public void buildEnvVars(Map<String, String> env) {
-				env.putAll(envVars);
-			}
-		};
-	}
-	
+    public static Environment create(final EnvVars envVars) {
+        return new Environment() {
+            @Override
+            public void buildEnvVars(Map<String, String> env) {
+                env.putAll(envVars);
+            }
+        };
+    }
+
 }

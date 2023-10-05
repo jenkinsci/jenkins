@@ -22,8 +22,7 @@ public class AbortedFreeStyleBuildTest {
         TestBuildWrapper wrapper = new TestBuildWrapper();
         project.getBuildWrappersList().add(wrapper);
         project.getBuildersList().add(new AbortingBuilder());
-        Run build = project.scheduleBuild2(0).get();
-        assertEquals(Result.ABORTED, build.getResult());
+        j.buildAndAssertStatus(Result.ABORTED, project);
         assertEquals(Result.ABORTED, wrapper.buildResultInTearDown);
     }
 
@@ -40,8 +39,7 @@ public class AbortedFreeStyleBuildTest {
                 throw new InterruptedException();
             }
         });
-        Run build = project.scheduleBuild2(0).get();
-        assertEquals(Result.FAILURE, build.getResult());
+        j.buildAndAssertStatus(Result.FAILURE, project);
         assertEquals(Result.FAILURE, wrapper.buildResultInTearDown);
     }
 

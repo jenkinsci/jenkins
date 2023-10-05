@@ -31,11 +31,13 @@ THE SOFTWARE.
         <f:textbox />
       </j:when>
       <j:otherwise>
-        <select name="_.id" disabled="${readOnlyMode ? 'true' : null}">
+      <div class="jenkins-select">
+        <select class="jenkins-select__input" name="_.id" disabled="${readOnlyMode ? 'true' : null}">
           <j:forEach var="tool" items="${tools}">
             <f:option value="${tool.id}" selected="${tool.id==instance.id}">${tool.name}</f:option>
           </j:forEach>
         </select>
+      </div>
       </j:otherwise>
     </j:choose>
   </f:entry>

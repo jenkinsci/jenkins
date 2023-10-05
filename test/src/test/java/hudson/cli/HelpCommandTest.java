@@ -26,8 +26,8 @@ package hudson.cli;
 
 import static hudson.cli.CLICommandInvoker.Matcher.hasNoStandardOutput;
 import static hudson.cli.CLICommandInvoker.Matcher.succeeded;
-import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.text.StringContainsInOrder.stringContainsInOrder;
 
 import hudson.cli.CLICommandInvoker.Result;
@@ -73,13 +73,13 @@ public class HelpCommandTest {
     @Test public void getHelpUsingJenkinsUI() throws Exception {
 
         WebClient wc = j.createWebClient();
-        String generalHelp = wc.goTo("cli").asText();
+        String generalHelp = wc.goTo("cli").asNormalizedText();
 
         assertContainsOverviewOfClassCommand(generalHelp);
         assertContainsOverviewOfMethodCommand(generalHelp);
 
-        assertContainsUsageOfClassCommand(wc.goTo("cli/command/class-command").asText());
-        assertContainsUsageOfMethodCommand(wc.goTo("cli/command/offline-node").asText());
+        assertContainsUsageOfClassCommand(wc.goTo("cli/command/class-command").asNormalizedText());
+        assertContainsUsageOfMethodCommand(wc.goTo("cli/command/offline-node").asNormalizedText());
     }
 
     private void assertContainsOverviewOfClassCommand(String text) {
@@ -115,10 +115,10 @@ public class HelpCommandTest {
         private static final String LONG_DESCRIPTION = "Long description of class-command";
         private static final String NAME = "class-command";
 
-        @Argument(usage="Job arg")
+        @Argument(usage = "Job arg")
         public AbstractProject<?, ?> job;
 
-        @Option(name="-b", metaVar="BUILD", usage="Build opt")
+        @Option(name = "-b", metaVar = "BUILD", usage = "Build opt")
         public String build;
 
         @Override

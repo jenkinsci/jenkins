@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.init;
 
 import org.jvnet.hudson.reactor.Milestone;
@@ -33,7 +34,7 @@ import org.jvnet.hudson.reactor.Milestone;
 public class InitializerFinder extends TaskMethodFinder<Initializer> {
 
     public InitializerFinder(ClassLoader cl) {
-        super(Initializer.class,InitMilestone.class,cl);
+        super(Initializer.class, InitMilestone.class, cl);
     }
 
     public InitializerFinder() {

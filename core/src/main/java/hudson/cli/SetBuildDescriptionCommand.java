@@ -18,30 +18,30 @@ public class SetBuildDescriptionCommand extends CLICommand implements Serializab
         return Messages.SetBuildDescriptionCommand_ShortDescription();
      }
 
-    @Argument(metaVar="JOB",usage="Name of the job to build",required=true,index=0)
-    public transient Job<?,?> job;
+    @Argument(metaVar = "JOB", usage = "Name of the job to build", required = true, index = 0)
+    public transient Job<?, ?> job;
 
-    @Argument(metaVar="BUILD#",usage="Number of the build",required=true,index=1)
+    @Argument(metaVar = "BUILD#", usage = "Number of the build", required = true, index = 1)
     public int number;
-    
-    @Argument(metaVar="DESCRIPTION",required=true,usage="Description to be set. '=' to read from stdin.", index=2)
+
+    @Argument(metaVar = "DESCRIPTION", required = true, usage = "Description to be set. '=' to read from stdin.", index = 2)
     public String description;
 
     @Override
     protected int run() throws Exception {
-    	Run run = job.getBuildByNumber(number);
+        Run run = job.getBuildByNumber(number);
         if (run == null)
-            throw new IllegalArgumentException("No such build #"+number);
+            throw new IllegalArgumentException("No such build #" + number);
 
         run.checkPermission(Run.UPDATE);
 
         if ("=".equals(description)) {
-        	description = IOUtils.toString(stdin);
+            description = IOUtils.toString(stdin);
         }
-        
+
         run.setDescription(description);
-        
+
         return 0;
     }
-    
+
 }

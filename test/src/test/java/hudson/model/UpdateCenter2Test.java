@@ -21,8 +21,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeNotNull;
@@ -56,7 +59,7 @@ public class UpdateCenter2Test {
         assumeNotNull(plugin);
         DownloadJob job = (DownloadJob) plugin.deploy().get(); // this seems like one of the smallest plugin
         System.out.println(job.status);
-        assertTrue(job.status instanceof Success);
+        assertThat(job.status, instanceOf(Success.class));
     }
 
     @Test public void getLastUpdatedString() {
@@ -77,7 +80,7 @@ public class UpdateCenter2Test {
         assumeNotNull(plugin);
         plugin.sha512 = wrongChecksum;
         DownloadJob job = (DownloadJob) plugin.deploy().get();
-        assertTrue(job.status instanceof Failure);
+        assertThat(job.status, instanceOf(Failure.class));
         assertTrue("error message references checksum", ((Failure) job.status).problem.getMessage().contains(wrongChecksum));
     }
 

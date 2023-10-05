@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.slaves;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -46,12 +47,12 @@ public abstract class ComputerConnector extends AbstractDescribableImpl<Computer
      * @param host
      *      The host name / IP address of the machine to connect to.
      * @param listener
-     *      If 
+     *      If
      */
     public abstract ComputerLauncher launch(@NonNull String host, TaskListener listener) throws IOException, InterruptedException;
 
     @Override
     public ComputerConnectorDescriptor getDescriptor() {
-        return (ComputerConnectorDescriptor)super.getDescriptor();
+        return (ComputerConnectorDescriptor) super.getDescriptor();
     }
 }

@@ -24,7 +24,7 @@ public class PeriodicWorkTest {
         int size = PeriodicWork.all().size();
         ExtensionList.lookup(PeriodicWork.class).add(tpw);
 
-        assertThat("we have one new PeriodicWork", PeriodicWork.all(), hasSize(size+1));
+        assertThat("we have one new PeriodicWork", PeriodicWork.all(), hasSize(size + 1));
         assertThat("The task was run within 15 seconds", tpw.doneSignal.await(15, TimeUnit.SECONDS), is(true));
     }
 

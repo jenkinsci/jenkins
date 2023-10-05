@@ -29,12 +29,12 @@ public class AccessDeniedException3 extends AccessDeniedException {
     public final Permission permission;
 
     public AccessDeniedException3(Authentication authentication, Permission permission) {
-        this(null,authentication,permission);
+        this(null, authentication, permission);
     }
 
     public AccessDeniedException3(Throwable t, Authentication authentication, Permission permission) {
         super(Messages.AccessDeniedException2_MissingPermission(authentication.getName(),
-                permission.group.title+"/"+permission.name), t);
+                permission.group.title + "/" + permission.name), t);
         this.authentication = authentication;
         this.permission = permission;
     }
@@ -43,16 +43,16 @@ public class AccessDeniedException3 extends AccessDeniedException {
      * Reports the details of the access failure in HTTP headers to assist diagnosis.
      */
     public void reportAsHeaders(HttpServletResponse rsp) {
-        rsp.addHeader("X-You-Are-Authenticated-As",authentication.getName());
+        rsp.addHeader("X-You-Are-Authenticated-As", authentication.getName());
         if (REPORT_GROUP_HEADERS) {
             for (GrantedAuthority auth : authentication.getAuthorities()) {
-                rsp.addHeader("X-You-Are-In-Group",auth.getAuthority());
+                rsp.addHeader("X-You-Are-In-Group", auth.getAuthority());
             }
         } else {
             rsp.addHeader("X-You-Are-In-Group-Disabled", "JENKINS-39402: use -Dhudson.security.AccessDeniedException2.REPORT_GROUP_HEADERS=true or use /whoAmI to diagnose");
         }
         rsp.addHeader("X-Required-Permission", permission.getId());
-        for (Permission p=permission.impliedBy; p!=null; p=p.impliedBy) {
+        for (Permission p = permission.impliedBy; p != null; p = p.impliedBy) {
             rsp.addHeader("X-Permission-Implied-By", p.getId());
         }
     }
@@ -63,15 +63,15 @@ public class AccessDeniedException3 extends AccessDeniedException {
      * but instead of using HTTP headers, this version is meant to go inside the payload.
      */
     public void report(PrintWriter w) {
-        w.println("You are authenticated as: "+authentication.getName());
+        w.println("You are authenticated as: " + authentication.getName());
         w.println("Groups that you are in:");
         for (GrantedAuthority auth : authentication.getAuthorities()) {
-            w.println("  "+auth.getAuthority());
+            w.println("  " + auth.getAuthority());
         }
 
-        w.println("Permission you need to have (but didn't): "+permission.getId());
-        for (Permission p=permission.impliedBy; p!=null; p=p.impliedBy) {
-            w.println(" ... which is implied by: "+p.getId());
+        w.println("Permission you need to have (but didn't): " + permission.getId());
+        for (Permission p = permission.impliedBy; p != null; p = p.impliedBy) {
+            w.println(" ... which is implied by: " + p.getId());
         }
     }
 }

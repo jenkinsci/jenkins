@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -34,7 +35,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
-import com.gargoylesoftware.htmlunit.xml.XmlPage;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -44,6 +44,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import jenkins.model.Jenkins;
+import org.htmlunit.xml.XmlPage;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.FailureBuilder;
@@ -465,7 +466,7 @@ public class RSSTest {
 
     private FreeStyleProject runSuccessfulBuild() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
-        j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        j.buildAndAssertSuccess(p);
         return p;
     }
 
@@ -478,7 +479,7 @@ public class RSSTest {
     private void runFailingBuild() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
         p.getBuildersList().add(new FailureBuilder());
-        j.assertBuildStatus(Result.FAILURE, p.scheduleBuild2(0).get());
+        j.buildAndAssertStatus(Result.FAILURE, p);
     }
 
     private void runFailingBuild(String userId) throws Exception {

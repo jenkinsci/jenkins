@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,14 +21,18 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.slaves;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.DescriptorExtensionList;
 import hudson.Extension;
 import hudson.ExtensionPoint;
 import hudson.Util;
+import hudson.init.InitMilestone;
+import hudson.init.Initializer;
 import hudson.model.Actionable;
 import hudson.model.Computer;
 import hudson.model.Describable;
@@ -42,10 +46,24 @@ import hudson.security.Permission;
 import hudson.security.PermissionScope;
 import hudson.slaves.NodeProvisioner.PlannedNode;
 import hudson.util.DescriptorList;
+import hudson.util.FormApply;
+import java.io.IOException;
 import java.util.Collection;
+import java.util.Objects;
 import java.util.concurrent.Future;
+import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
+import net.sf.json.JSONObject;
+import org.apache.commons.lang.Validate;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.HttpRedirect;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.interceptor.RequirePOST;
+import org.kohsuke.stapler.verb.POST;
 
 /**
  * Creates {@link Node}s to dynamically expand/shrink the agents attached to Hudson.
@@ -97,9 +115,10 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
      * This is expected to be short ID-like string that does not contain any character unsafe as variable name or
      * URL path token.
      */
-    public final String name;
+    public String name;
 
     protected Cloud(String name) {
+        Validate.notEmpty(name, Messages.Cloud_RequiredName());
         this.name = name;
     }
 
@@ -115,7 +134,7 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
      * @return Jenkins relative URL.
      */
     public @NonNull String getUrl() {
-        return "cloud/" + name;
+        return "cloud/" + Util.rawEncode(name) + "/";
     }
 
     @Override
@@ -240,7 +259,7 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
     /**
      * Returns all the registered {@link Cloud} descriptors.
      */
-    public static DescriptorExtensionList<Cloud,Descriptor<Cloud>> all() {
+    public static DescriptorExtensionList<Cloud, Descriptor<Cloud>> all() {
         return Jenkins.get().getDescriptorList(Cloud.class);
     }
 
@@ -254,6 +273,71 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
     public static final Permission PROVISION = new Permission(
             Computer.PERMISSIONS, "Provision", Messages._Cloud_ProvisionPermission_Description(), Jenkins.ADMINISTER, PERMISSION_SCOPE
     );
+
+    @SuppressFBWarnings(value = "RV_RETURN_VALUE_IGNORED_NO_SIDE_EFFECT", justification = "to guard against potential future compiler optimizations")
+    @Initializer(before = InitMilestone.SYSTEM_CONFIG_LOADED)
+    @Restricted(DoNotUse.class)
+    public static void registerPermissions() {
+        // Pending JENKINS-17200, ensure that the above permissions have been registered prior to
+        // allowing plugins to adapt the system configuration, which may depend on these permissions
+        // having been registered. Since this method is static and since it follows the above
+        // construction of static permission objects (and therefore their calls to
+        // PermissionGroup#register), there is nothing further to do in this method. We call
+        // Objects.hash() to guard against potential future compiler optimizations.
+        Objects.hash(PERMISSION_SCOPE, PROVISION);
+    }
+
+    public String getIcon() {
+        return "symbol-cloud";
+    }
+
+    public String getIconClassName() {
+        return "symbol-cloud";
+    }
+
+    @SuppressWarnings("unused") // stapler
+    public String getIconAltText() {
+        return getClass().getSimpleName().replace("Cloud", "");
+    }
+
+    /**
+     * Deletes the cloud.
+     */
+    @RequirePOST
+    public HttpResponse doDoDelete() throws IOException {
+        checkPermission(Jenkins.ADMINISTER);
+        Jenkins.get().clouds.remove(this);
+        return new HttpRedirect("..");
+    }
+
+    /**
+     * Accepts the update to the node configuration.
+     */
+    @POST
+    public HttpResponse doConfigSubmit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, Descriptor.FormException {
+        checkPermission(Jenkins.ADMINISTER);
+
+        Jenkins j = Jenkins.get();
+        Cloud cloud = j.getCloud(this.name);
+        if (cloud == null) {
+            throw new ServletException("No such cloud " + this.name);
+        }
+        Cloud result = cloud.reconfigure(req, req.getSubmittedForm());
+        String proposedName = result.name;
+        if (!proposedName.equals(this.name)
+                && j.getCloud(proposedName) != null) {
+            throw new Descriptor.FormException(jenkins.agents.Messages.CloudSet_CloudAlreadyExists(proposedName), "name");
+        }
+        j.clouds.replace(this, result);
+        j.save();
+        // take the user back to the cloud top page.
+        return FormApply.success(".");
+    }
+
+    public Cloud reconfigure(@NonNull final StaplerRequest req, JSONObject form) throws Descriptor.FormException {
+        if (form == null)     return null;
+        return getDescriptor().newInstance(req, form);
+    }
 
     /**
      * Parameter object for {@link hudson.slaves.Cloud}.

@@ -28,7 +28,7 @@ class SettingsPathHelper {
                     wsSettings = mrSettings;
                 }
             } catch (Exception e) {
-                throw new IllegalStateException("failed to find settings.xml at: " + wsSettings.getRemote());
+                throw new IllegalStateException("failed to find settings.xml at: " + wsSettings.getRemote(), e);
             }
             return wsSettings;
         }

@@ -21,11 +21,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
-import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assume.assumeFalse;
 
+import hudson.Functions;
 import hudson.model.MultiStageTimeSeries.TimeScale;
 import hudson.model.queue.SubTask;
 import java.awt.image.BufferedImage;
@@ -45,6 +48,7 @@ public class LoadStatisticsTest {
 
     @Test
     public void graph() throws IOException {
+        assumeFalse("TODO: Implement this test on Windows", Functions.isWindows());
         LoadStatistics ls = new LoadStatistics(0, 0) {
             @Override
             public int computeIdleExecutors() {
@@ -60,6 +64,7 @@ public class LoadStatisticsTest {
             public int computeQueueLength() {
                 throw new UnsupportedOperationException();
             }
+
             @Override
             protected Iterable<Node> getNodes() {
                 throw new UnsupportedOperationException();

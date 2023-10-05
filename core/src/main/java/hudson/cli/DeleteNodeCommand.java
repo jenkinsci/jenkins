@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.cli;
 
 import hudson.AbortException;
@@ -40,7 +41,7 @@ import org.kohsuke.args4j.Argument;
 public class DeleteNodeCommand extends CLICommand {
 
     @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
-    @Argument(usage="Names of nodes to delete", required=true, multiValued=true)
+    @Argument(usage = "Names of nodes to delete", required = true, multiValued = true)
     private List<String> nodes;
 
     @Override
@@ -69,7 +70,7 @@ public class DeleteNodeCommand extends CLICommand {
 
                 node.toComputer().doDoDelete();
             } catch (Exception e) {
-                if(hs.size() == 1) {
+                if (hs.size() == 1) {
                     throw e;
                 }
 

@@ -19,16 +19,16 @@ public class PackedMapTest {
 
     @Test
     public void basic() {
-        Map<String,String> o = new TreeMap<>();
-        o.put("a","b");
-        o.put("c","d");
+        Map<String, String> o = new TreeMap<>();
+        o.put("a", "b");
+        o.put("c", "d");
 
-        PackedMap<String,String> p = PackedMap.of(o);
-        assertEquals("b",p.get("a"));
+        PackedMap<String, String> p = PackedMap.of(o);
+        assertEquals("b", p.get("a"));
         assertEquals("d", p.get("c"));
         assertEquals(2, p.size());
-        for (Map.Entry<String,String> e : p.entrySet()) {
-            System.out.println(e.getKey()+'='+e.getValue());
+        for (Map.Entry<String, String> e : p.entrySet()) {
+            System.out.println(e.getKey() + '=' + e.getValue());
         }
 
         Holder h = new Holder();

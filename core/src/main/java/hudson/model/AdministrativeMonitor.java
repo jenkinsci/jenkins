@@ -1,18 +1,18 @@
 /*
  * The MIT License
- * 
+ *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.model;
 
 import hudson.Extension;
@@ -69,7 +70,9 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
  * {@code http://SERVER/jenkins/manage} page. This view should typically render
  * a DIV box with class='alert alert-danger' or class='alert alert-warning' with a human-readable text
  * inside it. It often also contains a link to a page that provides more details
- * about the problem.
+ * about the problem.<br>
+ * Additionally 2 numbers are shown in the Jenkins header of administrators, one with the number or active
+ * non-security relevant monitors and one with the number of active security relevant monitors.
  * </dd>
  * </dl>
  *
@@ -108,7 +111,7 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
      * Returns the URL of this monitor, relative to the context path, like "administrativeMonitor/foobar".
      */
     public String getUrl() {
-        return "administrativeMonitor/"+id;
+        return "administrativeMonitor/" + id;
     }
 
     @Override
@@ -175,7 +178,7 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
     public void doDisable(StaplerRequest req, StaplerResponse rsp) throws IOException {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         disable(true);
-        rsp.sendRedirect2(req.getContextPath()+"/manage");
+        rsp.sendRedirect2(req.getContextPath() + "/manage");
     }
 
     /**

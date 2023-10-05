@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins;
 
 import hudson.ExtensionComponent;
@@ -73,7 +74,7 @@ public abstract class ExtensionFilter implements ExtensionPoint {
 
     public static <T> boolean isAllowed(Class<T> type, ExtensionComponent<T> component) {
         // to avoid infinite recursion, those extension points are handled differently.
-        if (type==ExtensionFilter.class || type==ExtensionFinder.class)
+        if (type == ExtensionFilter.class || type == ExtensionFinder.class)
             return true;
 
         for (ExtensionFilter f : all())

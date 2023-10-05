@@ -21,6 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package jenkins.diagnostics;
 
 import static org.junit.Assert.assertFalse;
@@ -35,10 +36,10 @@ import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 
 public class ControllerExecutorsNoAgentsTest {
-    
+
     @Rule
     public JenkinsRule j = new JenkinsRule();
-    
+
     @Test
     public void testInitial() {
         ControllerExecutorsNoAgents monitor = j.jenkins.getExtensionList(AdministrativeMonitor.class).get(ControllerExecutorsNoAgents.class);

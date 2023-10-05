@@ -6,6 +6,7 @@ import hudson.console.AnnotatedLargeText;
 import hudson.security.ACL;
 import hudson.security.Permission;
 import java.io.ByteArrayOutputStream;
+import java.nio.charset.StandardCharsets;
 import org.junit.Test;
 
 /**
@@ -17,6 +18,7 @@ public class TaskActionTest {
         MyTaskThread(TaskAction taskAction) {
             super(taskAction, ListenerAndText.forMemory(taskAction));
         }
+
         @Override
         protected void perform(TaskListener listener) throws Exception {
             listener.hyperlink("/localpath", "a link");
@@ -33,6 +35,7 @@ public class TaskActionTest {
         public String getIconFileName() {
             return "Iconfilename";
         }
+
         @Override
         public String getDisplayName() {
             return "My Task Thread";
@@ -42,6 +45,7 @@ public class TaskActionTest {
         public String getUrlName() {
             return "xyz";
         }
+
         @Override
         protected Permission getPermission() {
             return Permission.READ;
@@ -65,6 +69,6 @@ public class TaskActionTest {
         final long length = annotatedText.writeLogTo(0, os);
         // Windows based systems will be 220, linux base 219
         assertTrue("length should be longer or even 219", length >= 219);
-        assertTrue(os.toString("UTF-8").startsWith("a linkCompleted"));
+        assertTrue(os.toString(StandardCharsets.UTF_8).startsWith("a linkCompleted"));
     }
 }

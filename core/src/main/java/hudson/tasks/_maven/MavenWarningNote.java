@@ -21,8 +21,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package hudson.tasks._maven;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.MarkupText;
 import hudson.console.ConsoleAnnotationDescriptor;
@@ -42,12 +44,13 @@ public class MavenWarningNote extends ConsoleNote {
 
     @Override
     public ConsoleAnnotator annotate(Object context, MarkupText text, int charPos) {
-        text.addMarkup(0,text.length(),"<span class=warning-inline>","</span>");
+        text.addMarkup(0, text.length(), "<span class=warning-inline>", "</span>");
         return null;
     }
 
     @Extension @Symbol("mavenWarnings")
     public static final class DescriptorImpl extends ConsoleAnnotationDescriptor {
+        @NonNull
         @Override
         public String getDisplayName() {
             return "Maven Warnings";

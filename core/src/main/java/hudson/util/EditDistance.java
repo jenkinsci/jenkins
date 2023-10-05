@@ -17,6 +17,7 @@
  * own identifying information: Portions Copyright [yyyy]
  * [name of copyright owner]
  */
+
 package hudson.util;
 
 import java.util.Arrays;
@@ -40,8 +41,8 @@ public class EditDistance {
      * <p>
      * The complexity is O(nm) where n=a.length() and m=b.length().
      */
-    public static int editDistance( String a, String b ) {
-        return new EditDistance(a,b).calc();
+    public static int editDistance(String a, String b) {
+        return new EditDistance(a, b).calc();
     }
 
     /**
@@ -50,11 +51,11 @@ public class EditDistance {
      *
      * @return null if group.length==0.
      */
-    public static String findNearest( String key, String[] group ) {
-        return findNearest(key,Arrays.asList(group));
+    public static String findNearest(String key, String[] group) {
+        return findNearest(key, Arrays.asList(group));
     }
 
-    public static String findNearest( String key, Collection<String> group ) {
+    public static String findNearest(String key, Collection<String> group) {
         int c = Integer.MAX_VALUE;
         String r = null;
 
@@ -74,15 +75,15 @@ public class EditDistance {
     private int[] back;
 
     /** Two strings to be compared. */
-    private final String a,b;
+    private final String a, b;
 
-    private EditDistance( String a, String b ) {
-        this.a=a;
-        this.b=b;
-        cost = new int[a.length()+1];
-        back = new int[a.length()+1]; // back buffer
+    private EditDistance(String a, String b) {
+        this.a = a;
+        this.b = b;
+        cost = new int[a.length() + 1];
+        back = new int[a.length() + 1]; // back buffer
 
-        for( int i=0; i<=a.length(); i++ )
+        for (int i = 0; i <= a.length(); i++)
             cost[i] = i;
     }
 
@@ -95,17 +96,17 @@ public class EditDistance {
         back = t;
     }
 
-    private int min(int a,int b,int c) {
-        return Math.min(a,Math.min(b,c));
+    private int min(int a, int b, int c) {
+        return Math.min(a, Math.min(b, c));
     }
 
     private int calc() {
-        for( int j=0; j<b.length(); j++ ) {
+        for (int j = 0; j < b.length(); j++) {
             flip();
-            cost[0] = j+1;
-            for( int i=0; i<a.length(); i++ ) {
+            cost[0] = j + 1;
+            for (int i = 0; i < a.length(); i++) {
                 int match = a.charAt(i) == b.charAt(j) ? 0 : 1;
-                cost[i+1] = min( back[i]+match, cost[i]+1, back[i+1]+1 );
+                cost[i + 1] = min(back[i] + match, cost[i] + 1, back[i + 1] + 1);
             }
         }
         return cost[a.length()];

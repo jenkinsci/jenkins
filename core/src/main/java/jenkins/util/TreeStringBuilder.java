@@ -20,8 +20,6 @@ import java.util.Map;
  * @author Kohsuke Kawaguchi
  * @since 1.473
  */
-@SuppressWarnings({"PMD", "all"})
-//CHECKSTYLE:OFF
 public class TreeStringBuilder {
     Child root = new Child(new TreeString());
 
@@ -39,7 +37,7 @@ public class TreeStringBuilder {
          * if any.
          */
         public Child intern(final String s) {
-            if (s.length() == 0) {
+            if (s.isEmpty()) {
                 return this;
             }
 
@@ -59,7 +57,7 @@ public class TreeStringBuilder {
 
                         return middle.intern(s.substring(plen));
                     }
-                    else {// entire key is suffix
+                    else { // entire key is suffix
                         return e.getValue().intern(s.substring(plen));
                     }
                 }
@@ -126,7 +124,7 @@ public class TreeStringBuilder {
      * Interns a string.
      */
     public TreeString intern(final String s) {
-        if (s==null)    return null;
+        if (s == null)    return null;
         return root.intern(s).node;
     }
 
@@ -134,7 +132,7 @@ public class TreeStringBuilder {
      * Interns a {@link TreeString} created elsewhere.
      */
     public TreeString intern(final TreeString s) {
-        if (s==null)    return null;
+        if (s == null)    return null;
         return root.intern(s.toString()).node;
     }
 
@@ -143,7 +141,7 @@ public class TreeStringBuilder {
      * multiple {@link TreeString}s.
      */
     public void dedup() {
-        root.dedup(new HashMap<String, char[]>());
+        root.dedup(new HashMap<>());
     }
 
     /**
