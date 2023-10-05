@@ -267,7 +267,7 @@ public abstract class Plugin implements Loadable, Saveable, StaplerProxy {
      * @since 1.245
      */
     @Override
-    public void load() throws IOException {
+    public synchronized void load() throws IOException {
         XmlFile xml = getConfigXml();
         if (xml.exists())
             xml.unmarshal(this);
@@ -279,7 +279,7 @@ public abstract class Plugin implements Loadable, Saveable, StaplerProxy {
      * @since 1.245
      */
     @Override
-    public void save() throws IOException {
+    public synchronized void save() throws IOException {
         if (BulkChange.contains(this))   return;
         XmlFile config = getConfigXml();
         config.write(this);
