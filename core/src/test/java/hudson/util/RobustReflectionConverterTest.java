@@ -43,14 +43,10 @@ import com.thoughtworks.xstream.mapper.Mapper;
 import com.thoughtworks.xstream.security.InputManipulationException;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.util.Arrays;
-<<<<<<< HEAD
 import java.util.Map;
 import java.util.TreeMap;
-=======
 import java.util.ArrayList;
 import java.util.HashSet;
->>>>>>> 104dafee1d109497fc9718deb3e33349963b62f9
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
