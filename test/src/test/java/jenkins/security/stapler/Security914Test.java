@@ -31,6 +31,7 @@ import static org.junit.Assume.assumeTrue;
 
 import hudson.Functions;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
 import org.htmlunit.Page;
 import org.htmlunit.WebRequest;
@@ -54,7 +55,7 @@ public class Security914Test {
 
         JenkinsRule.WebClient wc = j.createWebClient()
                 .withThrowExceptionOnFailingStatusCode(false);
-        WebRequest request = new WebRequest(new URL(j.getURL() + "plugin/credentials/.xml"));
+        WebRequest request = new WebRequest(new URI(j.getURL() + "plugin/credentials/.xml").toURL());
         // plugin deployed in: test\target\jenkins7375296945862059919tmp
         // rootDir is in     : test\target\jenkinsTests.tmp\jenkins1274934531848159942test
         // j.jenkins.getRootDir().getName() = jenkins1274934531848159942test
@@ -74,7 +75,7 @@ public class Security914Test {
 
         JenkinsRule.WebClient wc = j.createWebClient()
                 .withThrowExceptionOnFailingStatusCode(false);
-        WebRequest request = new WebRequest(new URL(j.getURL() + "plugin/credentials/.ini"));
+        WebRequest request = new WebRequest(new URI(j.getURL() + "plugin/credentials/.ini").toURL());
         // ../ can be multiply to infinity, no impact, we just need to have enough to reach the root
         request.setAdditionalHeader("Accept-Language", "../../../../../../../../../../../../windows/win");
 

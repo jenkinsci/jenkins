@@ -7,6 +7,8 @@ import static org.junit.Assert.assertFalse;
 
 import hudson.model.InvisibleAction;
 import hudson.model.UnprotectedRootAction;
+
+import java.net.URI;
 import java.net.URL;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.htmlunit.html.HtmlPage;
@@ -29,7 +31,7 @@ public class Security2761Test {
 
         JenkinsRule.WebClient wc = j.createWebClient();
         wc.setAlertHandler((page, s) -> alerted.set(true));
-        HtmlPage page = wc.getPage(new URL(wc.getContextPath() + ACTION_URL));
+        HtmlPage page = wc.getPage(new URI(wc.getContextPath() + ACTION_URL).toURL());
         String responseContent = page.getWebResponse().getContentAsString();
         wc.waitForBackgroundJavaScript(5000);
 
