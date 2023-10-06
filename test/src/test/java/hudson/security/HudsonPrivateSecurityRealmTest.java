@@ -41,6 +41,7 @@ import static org.junit.Assert.assertTrue;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionList;
 import hudson.model.User;
+import hudson.security.HudsonPrivateSecurityRealm.Details;
 import hudson.security.pages.SignupPage;
 import java.lang.reflect.Field;
 import java.net.URL;
@@ -50,11 +51,14 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
 import jenkins.security.ApiTokenProperty;
 import jenkins.security.SecurityListener;
 import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
 import jenkins.security.seed.UserSeedProperty;
 import org.apache.commons.lang.StringUtils;
+import org.hamcrest.Matcher;
+import org.htmlunit.FailingHttpStatusCodeException;
 import org.htmlunit.HttpMethod;
 import org.htmlunit.WebRequest;
 import org.htmlunit.html.HtmlForm;
@@ -70,14 +74,22 @@ import org.jvnet.hudson.test.For;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
+import org.jvnet.hudson.test.LoggerRule;
 import org.jvnet.hudson.test.TestExtension;
 import org.mindrot.jbcrypt.BCrypt;
 
 @For({UserSeedProperty.class, HudsonPrivateSecurityRealm.class})
 public class HudsonPrivateSecurityRealmTest {
 
+    // the PBKDF encoded form of "password" without the quotes
+    private static final String PBKDF_ENDOCED_PASSWORD =
+            "$PBKDF2$HMACSHA512:210000:ffbb207b847010af98cdd2b09c79392c$f67c3b985daf60db83a9088bc2439f7b77016d26c1439a9877c4f863c377272283ce346edda4578a5607ea620a4beb662d853b800f373297e6f596af797743a6";
+
     @Rule
     public JenkinsRule j = new JenkinsRule();
+
+    @Rule
+    public LoggerRule lr = new LoggerRule().record(HudsonPrivateSecurityRealm.class, Level.WARNING).capture(5);
 
     private SpySecurityListenerImpl spySecurityListener;
 
@@ -511,6 +523,7 @@ public class HudsonPrivateSecurityRealmTest {
 
         XmlPage w2 = (XmlPage) wc.goTo("whoAmI/api/xml", "application/xml");
         assertThat(w2, hasXPath("//name", is("user_hashed")));
+        assertThat(lr, not(hasIncorrectHashingLogEntry()));
     }
 
     @Test
@@ -715,6 +728,40 @@ public class HudsonPrivateSecurityRealmTest {
         } finally {
             UserSeedProperty.DISABLE_USER_SEED = previousConfig;
         }
+    }
+
+    @Test
+    public void userLoginAfterDisablingFIPS() throws Exception {
+        HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
+        j.jenkins.setSecurityRealm(securityRealm);
+
+        User u1 = securityRealm.createAccount("user", "password");
+        u1.setFullName("A User");
+        // overwrite the password property using an password created using an incorrect algorithm
+        u1.addProperty(Details.fromHashedPassword(PBKDF_ENDOCED_PASSWORD));
+
+        u1.save();
+        assertThat(u1.getProperty(Details.class).getPassword(), is(PBKDF_ENDOCED_PASSWORD));
+
+        try (WebClient wc = j.createWebClient()) {
+            assertThrows(FailingHttpStatusCodeException.class, () -> wc.login("user", "password"));
+        }
+        assertThat(lr, hasIncorrectHashingLogEntry());
+    }
+
+    @Test
+    public void userCreationWithPBKDFPasswords() throws Exception {
+        HudsonPrivateSecurityRealm securityRealm = new HudsonPrivateSecurityRealm(false, false, null);
+
+        IllegalArgumentException illegalArgumentException = assertThrows(IllegalArgumentException.class,
+                () -> securityRealm.createAccountWithHashedPassword("user_hashed_incorrect_algorithm", PBKDF_ENDOCED_PASSWORD));
+        assertThat(illegalArgumentException.getMessage(),
+                is("The hashed password was hashed with an incorrect algorithm. Jenkins is expecting #jbcrypt:"));
+    }
+
+    private static Matcher<LoggerRule> hasIncorrectHashingLogEntry() {
+        return LoggerRule.recorded(is(
+                "A password appears to be stored (or is attempting to be stored) that was created with a different hashing/encryption algorithm, check the FIPS-140 state of the system has not changed inadvertently"));
     }
 
     private User prepareRealmAndAlice() throws Exception {
