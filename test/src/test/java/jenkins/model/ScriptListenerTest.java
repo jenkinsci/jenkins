@@ -56,7 +56,7 @@ public class ScriptListenerTest {
             assertThat(messages.get(0), containsString("' with correlation: '"));
             assertThat(messages.get(0), containsString("' (no user)"));
 
-            assertThat(messages.get(1), containsString("Script output: 'hello from script console\n' in feature: 'class hudson.util.RemotingDiagnostics' and context: 'hudson.remoting.LocalChannel@"));
+            assertThat(messages.get(1), containsString("Script output: 'hello from script console" + System.lineSeparator() + "' in feature: 'class hudson.util.RemotingDiagnostics' and context: 'hudson.remoting.LocalChannel@"));
             assertThat(messages.get(1), containsString("' with correlation: '"));
             assertThat(messages.get(1), containsString("' (no user)"));
         }
@@ -92,7 +92,7 @@ public class ScriptListenerTest {
             assertThat(messages.get(1), containsString("Script output: 'hello from groovy CLI' in feature: 'class hudson.cli.GroovyCommand' and context: 'null' with correlation: '"));
             assertThat(messages.get(1), containsString("' (no user)"));
 
-            assertThat(messages.get(2), containsString("Script output: '\n' in feature: 'class hudson.cli.GroovyCommand' and context: 'null' with correlation: '"));
+            assertThat(messages.get(2), containsString("Script output: '" + System.lineSeparator() + "' in feature: 'class hudson.cli.GroovyCommand' and context: 'null' with correlation: '"));
             assertThat(messages.get(2), containsString("' (no user)"));
         }
 
@@ -133,7 +133,7 @@ public class ScriptListenerTest {
             assertThat(messages.get(5), containsString("]' in feature: 'class hudson.cli.GroovyshCommand' and context: 'null' with correlation: '"));
             assertThat(messages.get(5), containsString("' (no user)"));
 
-            assertThat(messages.get(6), containsString("Script output: 'hello from groovysh CLI\n' in feature: 'class hudson.cli.GroovyshCommand' and context: 'null' with correlation: '"));
+            assertThat(messages.get(6), containsString("Script output: 'hello from groovysh CLI" + System.lineSeparator() + "' in feature: 'class hudson.cli.GroovyshCommand' and context: 'null' with correlation: '"));
             assertThat(messages.get(6), containsString("' (no user)"));
 
             // Only match short substrings to not have to deal with color escape codes in the output
