@@ -1212,7 +1212,9 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
             try {
                 testConnection(new URI(connectionCheckUrl).toURL());
             } catch (URISyntaxException e) {
-
+                MalformedURLException mex = new MalformedURLException(e.getMessage());
+                mex.initCause(e);
+                throw mex;
             }
         }
 

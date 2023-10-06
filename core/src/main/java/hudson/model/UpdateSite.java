@@ -219,7 +219,7 @@ public class UpdateSite {
         try {
             return updateData(DownloadService.loadJSON(new URI(getUrl() + "?id=" + URLEncoder.encode(getId(), StandardCharsets.UTF_8) + "&version=" + URLEncoder.encode(Jenkins.VERSION, StandardCharsets.UTF_8)).toURL()), signatureCheck);
         } catch (URISyntaxException e) {
-            throw new MalformedURLException(e.getMessage());
+            throw new MalformedURLException("Incorrect URL data returned");
         }
     }
 

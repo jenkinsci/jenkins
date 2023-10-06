@@ -37,6 +37,7 @@ import hudson.util.FormValidation;
 import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.http.HttpClient;
@@ -87,7 +88,9 @@ public class ZipExtractionInstaller extends ToolInstaller {
                 dir.act(new ChmodRecAPlusX());
             }
         } catch (URISyntaxException e) {
-
+            MalformedURLException mex = new MalformedURLException(e.getMessage());
+            mex.initCause(e);
+            throw mex;
         }
         if (subdir == null) {
             return dir;
