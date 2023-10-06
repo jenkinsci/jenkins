@@ -131,7 +131,7 @@ public class UpdateSiteTest {
             }
         });
         server.start();
-        baseUrl = new URI("http").toURL();
+        baseUrl = new URI("http, null, "localhost", connector.getLocalPort(), RELATIVE_BASE, null, null).toURL();
     }
 
     @After
