@@ -300,10 +300,13 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
 
         JSONObject formData = req.getSubmittedForm();
         formData.put("name", fixedName);
-
-        // TODO type is probably NodeDescriptor.id but confirm
-        Node result = NodeDescriptor.all().find(type).newInstance(req, formData);
-        app.addNode(result);
+        
+        NodeDescriptor descriptor = NodeDescriptor.all().find(type);
+        if (descriptor != null) {  
+            // TODO type is probably NodeDescriptor.id but confirm
+            Node result = descriptor.newInstance(req, formData);
+            app.addNode(result);
+        }    
 
         // take the user back to the agent list top page
         rsp.sendRedirect2(".");
