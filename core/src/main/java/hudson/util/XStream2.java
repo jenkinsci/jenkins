@@ -475,12 +475,8 @@ public class XStream2 extends XStream {
                 return computeConverterClass(type);
             }
         };
-        private final ClassValue<Converter> cache = new ClassValue<Converter>() {
-            @Override
-            protected Converter computeValue(Class<?> type) {
-                return computeConverter(type);
-            }
-        };
+        private final ConcurrentHashMap<Class<?>, Converter> cache =
+                new ConcurrentHashMap<>();
 
         private AssociatedConverterImpl(XStream xstream) {
             this.xstream = xstream;
@@ -491,7 +487,9 @@ public class XStream2 extends XStream {
             if (t == null) {
                 return null;
             }
-            return cache.get(t);
+            Converter result = cache.computeIfAbsent(t, unused -> computeConverter(t));
+            // ConcurrentHashMap does not allow null, so use this object to represent null
+            return result == this ? null : result;
         }
 
         @CheckForNull
@@ -515,7 +513,8 @@ public class XStream2 extends XStream {
         private Converter computeConverter(@NonNull Class<?> t) {
             Class<? extends ConverterMatcher> cl = classCache.get(t);
             if (cl == null) {
-                return null;
+                // See above.. this object in cache represents null
+                return this;
             }
             try {
                 Constructor<?> c = cl.getConstructors()[0];

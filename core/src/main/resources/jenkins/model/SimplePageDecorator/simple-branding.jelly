@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2010, Sun Microsystems, Inc.
+Copyright (c) 2023, CloudBees, Inc.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -21,21 +21,10 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
-
-<!--
-  Entrance to the configuration page
--->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
-<l:layout title="Nodes">
-  <l:main-panel>
-    <script>
-      new Ajax.Request("./ajaxError", {
-        onComplete: function() {
-          throw "simulated error"; // simulated failure in AJAX call handling
-        }
-      });
-    </script>
-  </l:main-panel>
-</l:layout>
+<j:jelly xmlns:j="jelly:core">
+  <section class="app-sign-in-register__branding">
+    <div class="app-sign-in-register__branding__starburst"></div>
+    <img src="${imagesURL}/svgs/logo.svg" alt="${%logo}"/>
+  </section>
 </j:jelly>
