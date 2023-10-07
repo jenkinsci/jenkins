@@ -728,44 +728,62 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         }
 
         UserDetails asUserDetails() {
-            return new UserDetailsImpl();
+            return new UserDetailsImpl(getAuthorities2(), getPassword(), getUsername(), isAccountNonExpired(), isAccountNonLocked(), isCredentialsNonExpired(), isEnabled());
         }
 
-        private final class UserDetailsImpl implements UserDetails {
+        private static final class UserDetailsImpl implements UserDetails {
+            private static final long serialVersionUID = 1L;
+            private final Collection<? extends GrantedAuthority> authorities;
+            private final String password;
+            private final String username;
+            private final boolean accountNonExpired;
+            private final boolean accountNonLocked;
+            private final boolean credentialsNonExpired;
+            private final boolean enabled;
+
+            UserDetailsImpl(Collection<? extends GrantedAuthority> authorities, String password, String username, boolean accountNonExpired, boolean accountNonLocked, boolean credentialsNonExpired, boolean enabled) {
+                this.authorities = authorities;
+                this.password = password;
+                this.username = username;
+                this.accountNonExpired = accountNonExpired;
+                this.accountNonLocked = accountNonLocked;
+                this.credentialsNonExpired = credentialsNonExpired;
+                this.enabled = enabled;
+            }
 
             @Override
             public Collection<? extends GrantedAuthority> getAuthorities() {
-                return Details.this.getAuthorities2();
+                return authorities;
             }
 
             @Override
             public String getPassword() {
-                return Details.this.getPassword();
+                return password;
             }
 
             @Override
             public String getUsername() {
-                return Details.this.getUsername();
+                return username;
             }
 
             @Override
             public boolean isAccountNonExpired() {
-                return Details.this.isAccountNonExpired();
+                return accountNonExpired;
             }
 
             @Override
             public boolean isAccountNonLocked() {
-                return Details.this.isAccountNonLocked();
+                return accountNonLocked;
             }
 
             @Override
             public boolean isCredentialsNonExpired() {
-                return Details.this.isCredentialsNonExpired();
+                return credentialsNonExpired;
             }
 
             @Override
             public boolean isEnabled() {
-                return Details.this.isEnabled();
+                return enabled;
             }
 
             @Override
