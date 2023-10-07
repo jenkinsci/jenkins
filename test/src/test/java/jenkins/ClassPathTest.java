@@ -75,12 +75,7 @@ public class ClassPathTest {
             "org/fusesource/jansi/internal/Kernel32$SMALL_RECT.class",
             "org/fusesource/jansi/internal/Kernel32.class",
             "org/fusesource/jansi/internal/WindowsSupport.class",
-            "org/fusesource/jansi/WindowsAnsiOutputStream.class",
-            // TODO duplicated in [kxml2-2.3.0.jar, xpp3-1.1.4c.jar]
-            "org/xmlpull/v1/XmlPullParser.class",
-            "org/xmlpull/v1/XmlPullParserException.class",
-            "org/xmlpull/v1/XmlPullParserFactory.class",
-            "org/xmlpull/v1/XmlSerializer.class")));
+            "org/fusesource/jansi/WindowsAnsiOutputStream.class")));
 
     @Issue("JENKINS-46754")
     @Test
