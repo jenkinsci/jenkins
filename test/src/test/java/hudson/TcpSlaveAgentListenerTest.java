@@ -7,7 +7,6 @@ import static org.junit.Assert.assertEquals;
 
 import java.net.HttpURLConnection;
 import java.net.URI;
-import java.net.URL;
 import jenkins.model.Jenkins;
 import org.htmlunit.Page;
 import org.htmlunit.TextPage;

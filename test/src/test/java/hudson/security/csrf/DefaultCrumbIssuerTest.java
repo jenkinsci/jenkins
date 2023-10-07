@@ -18,7 +18,6 @@ import static org.junit.Assert.assertTrue;
 import hudson.model.User;
 import java.net.HttpURLConnection;
 import java.net.URI;
-import java.net.URL;
 import javax.servlet.http.HttpServletResponse;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
