@@ -33,9 +33,7 @@ import static org.junit.Assert.assertNull;
 
 import hudson.ExtensionComponent;
 import hudson.model.User;
-
 import java.net.URI;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.concurrent.atomic.AtomicReference;

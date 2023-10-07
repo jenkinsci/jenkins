@@ -32,7 +32,6 @@ import static org.junit.Assume.assumeTrue;
 import hudson.Functions;
 import java.net.HttpURLConnection;
 import java.net.URI;
-import java.net.URL;
 import org.htmlunit.Page;
 import org.htmlunit.WebRequest;
 import org.junit.Rule;

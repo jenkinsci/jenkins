@@ -12,7 +12,6 @@ import hudson.model.DirectoryBrowserSupport;
 import hudson.model.FreeStyleProject;
 import hudson.model.Item;
 import hudson.model.UnprotectedRootAction;
-
 import java.net.URI;
 import java.net.URL;
 import java.time.Instant;
