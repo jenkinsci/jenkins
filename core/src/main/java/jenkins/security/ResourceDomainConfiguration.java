@@ -121,7 +121,7 @@ public final class ResourceDomainConfiguration extends GlobalConfiguration {
 
         String resourceRootUrlHost = resourceRootUrl.getHost();
         try {
-            String jenkinsRootUrlHost = new URI(jenkinsRootUrlString).toURL().getHost();
+            String jenkinsRootUrlHost = new URI(jenkinsRootUrlString).getHost();
             if (jenkinsRootUrlHost.equals(resourceRootUrlHost)) {
                 // We do not allow the same host for Jenkins and resource root URLs even if there's some other difference.
                 // This is a conservative choice and prohibits same host/different proto/different port/different path:
