@@ -124,7 +124,7 @@ public class RobustReflectionConverterTest {
         });
         String prefix1 = RobustReflectionConverterTest.class.getName() + "_-";
         String prefix2 = RobustReflectionConverterTest.class.getName() + "$";
-        assertEquals("<Projekt><bildz><Bild><steppes>"
+        String target = "<Projekt><bildz><Bild><steppes>"
                 + "<Enchufla plugin='p1'><number>1</number><direction>North</direction></Enchufla>"
                 // note no plugin='p2' on <boot/> since that would be redundant; <jacket/> is quiet even though unowned
                 + "<Moonwalk plugin='p2'><number>2</number><boot/><lover class='Billy' plugin='p3'/></Moonwalk>"
