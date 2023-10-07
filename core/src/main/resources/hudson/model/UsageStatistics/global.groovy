@@ -12,7 +12,9 @@ f.section(title: _("Usage Statistics")) {
             raw(_("disabledBySystemProperty"))
         }
     } else if (FIPS140.useCompliantAlgorithms()) {
-        f.optionalBlock(field: "usageStatisticsCollected", checked: app.usageStatisticsCollected, title: _("statsBlurbFIPS"))
+        f.optionalBlock(field: "usageStatisticsCollected", checked: app.usageStatisticsCollected, title: _("statsBlurbFIPS")) {
+            f.description(_("statsDescriptionFIPS"))
+        }
     } else {
         f.optionalBlock(field: "usageStatisticsCollected", checked: app.usageStatisticsCollected, title: _("statsBlurb"))
     }
