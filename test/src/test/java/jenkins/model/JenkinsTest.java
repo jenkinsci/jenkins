@@ -24,6 +24,10 @@
 
 package jenkins.model;
 
+import static java.nio.file.attribute.PosixFilePermission.OWNER_EXECUTE;
+import static java.nio.file.attribute.PosixFilePermission.OWNER_READ;
+import static java.nio.file.attribute.PosixFilePermission.OWNER_WRITE;
+import static org.awaitility.Awaitility.await;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.arrayContaining;
 import static org.hamcrest.Matchers.containsString;
@@ -38,9 +42,11 @@ import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeFalse;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.ExtensionList;
+import hudson.Functions;
 import hudson.XmlFile;
 import hudson.init.InitMilestone;
 import hudson.init.Initializer;
@@ -67,27 +73,40 @@ import hudson.slaves.OfflineCause;
 import hudson.util.FormValidation;
 import hudson.util.HttpResponses;
 import hudson.util.VersionNumber;
+import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.Socket;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.LinkOption;
+import java.nio.file.attribute.PosixFilePermission;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 import jenkins.AgentProtocol;
+import org.apache.commons.io.FileUtils;
 import org.htmlunit.FailingHttpStatusCodeException;
 import org.htmlunit.HttpMethod;
 import org.htmlunit.Page;
 import org.htmlunit.TextPage;
 import org.htmlunit.WebRequest;
 import org.htmlunit.WebResponse;
+import org.htmlunit.html.HtmlForm;
 import org.htmlunit.html.HtmlPage;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
@@ -109,6 +128,46 @@ import org.mockito.Mockito;
 public class JenkinsTest {
 
     @Rule public JenkinsRule j = new JenkinsRule();
+
+    @Rule
+    public TemporaryFolder tmp = new TemporaryFolder();
+
+    @Test
+    @Issue("SECURITY-3073")
+    public void verifyUploadedFingerprintFilePermission() throws Exception {
+        assumeFalse(Functions.isWindows());
+
+        HtmlPage page = j.createWebClient().goTo("fingerprintCheck");
+        // The form doesn't have a name, the page contain the search form and the one we're interested in
+        HtmlForm form = page.getForms().get(1);
+        File dir = tmp.newFolder();
+        File plugin = new File(dir, "htmlpublisher.jpi");
+        // We're using a plugin to have a file above DiskFileItemFactory.DEFAULT_SIZE_THRESHOLD
+        FileUtils.copyURLToFile(Objects.requireNonNull(getClass().getClassLoader().getResource("plugins/htmlpublisher.jpi")), plugin);
+        form.getInputByName("name").setValueAttribute(plugin.getAbsolutePath());
+        j.submit(form);
+
+        File filesRef = Files.createTempFile("tmp", ".tmp").toFile();
+        File filesTmpDir = filesRef.getParentFile();
+        filesRef.deleteOnExit();
+
+        final Set<PosixFilePermission>[] filesPermission = new Set[]{new HashSet<>()};
+        await().pollInterval(250, TimeUnit.MILLISECONDS)
+                .atMost(10, TimeUnit.SECONDS)
+                .until(() -> {
+                    Optional<File> lastUploadedPlugin = Arrays.stream(Objects.requireNonNull(
+                                    filesTmpDir.listFiles((file, fileName) ->
+                                            fileName.startsWith("jenkins-multipart-uploads")))).
+                            max(Comparator.comparingLong(File::lastModified));
+                    if (lastUploadedPlugin.isPresent()) {
+                        filesPermission[0] = Files.getPosixFilePermissions(lastUploadedPlugin.get().toPath(), LinkOption.NOFOLLOW_LINKS);
+                        return true;
+                    } else {
+                        return false;
+                    }
+                });
+        assertEquals(EnumSet.of(OWNER_EXECUTE, OWNER_READ, OWNER_WRITE), filesPermission[0]);
+    }
 
     @Issue("SECURITY-406")
     @Test
