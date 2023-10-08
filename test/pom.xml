@@ -89,7 +89,7 @@ THE SOFTWARE.
         <!-- RequireUpperBoundDeps between checks-api, echarts-api, font-awesome-api, and junit -->
         <groupId>io.jenkins.plugins</groupId>
         <artifactId>plugin-util-api</artifactId>
-        <version>3.3.0</version>
+        <version>3.4.0</version>
       </dependency>
       <dependency>
         <groupId>org.jenkins-ci.plugins</groupId>
@@ -100,13 +100,19 @@ THE SOFTWARE.
         <!-- RequireUpperBoundDeps via mailer and junit -->
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>display-url-api</artifactId>
-        <version>2.3.9</version>
+        <version>2.200.vb_9327d658781</version>
       </dependency>
       <dependency>
         <!-- requireUpperBoundDeps via matrix-project and junit -->
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>script-security</artifactId>
         <version>1275.v23895f409fb_d</version>
+      </dependency>
+      <dependency>
+        <!-- Required by plugin-util-api -->
+        <groupId>org.jenkins-ci.plugins.workflow</groupId>
+        <artifactId>workflow-support</artifactId>
+        <version>865.v43e78cc44e0d</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -121,7 +127,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>2064.vcd3b_b_8f3f2b_a_</version>
+      <version>2085.va_c531db_287b_d</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -196,7 +202,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>credentials</artifactId>
-      <version>1271.v54b_1c2c6388a_</version>
+      <version>1293.vff276f713473</version>
       <scope>test</scope>
     </dependency>
     <dependency>
