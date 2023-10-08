@@ -86,10 +86,10 @@ public class RobustReflectionConverterTest {
         assertThat(e.getMessage(), containsString("No such field hudson.util.Point.z"));
     }
 
-    private Map<String, String> getClassOwnerMap(String target){
+    private Map<String, String> getClassOwnerMap(String target) {
         Map<String, String> classOwnerMap = new TreeMap<>();
         int index = target.indexOf("plugin=", 0);
-        while(index != -1){
+        while (index != -1) {
             int classNameStart = target.lastIndexOf("<", index) + 1;
             String className = target.substring(classNameStart, index - 1);
             int ownerNameEnd = target.indexOf("'", index + 8);
