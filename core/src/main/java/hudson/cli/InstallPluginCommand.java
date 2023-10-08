@@ -116,7 +116,7 @@ public class InstallPluginCommand extends CLICommand {
                 continue;
             } catch (MalformedURLException e) {
                 // not an URL
-                e.getMessage();
+                e.getCause();
             }
 
             // is this a plugin the update center?
