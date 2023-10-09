@@ -255,6 +255,7 @@ public class CloudSet extends AbstractModelObject implements Describable<CloudSe
 
     @POST
     public void doReorder(StaplerRequest req, StaplerResponse rsp) throws IOException {
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         var names = req.getParameterValues("name");
         if (names == null) {
             throw new Failure("No cloud names given");
