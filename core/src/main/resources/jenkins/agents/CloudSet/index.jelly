@@ -45,6 +45,7 @@ THE SOFTWARE.
               </a>
             </l:isAdmin>
           </l:app-bar>
+          <p class="description">${%description}</p>
           <f:form method="post" name="config" action="reorder">
             <table id="clouds" class="jenkins-table">
               <thead>
