@@ -711,7 +711,12 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         }
 
         Manifest manifest = parsePluginManifest(hpiResUrl);
-        String dependencySpec = manifest.getMainAttributes().getValue("Plugin-Dependencies");
+        String dependencySpec = null;
+        
+        if(manifest != null){
+            dependencySpec = manifest.getMainAttributes().getValue("Plugin-Dependencies");
+        }
+          
         if (dependencySpec != null) {
             String[] dependencyTokens = dependencySpec.split(",");
             ServletContext context = Jenkins.get().servletContext;
