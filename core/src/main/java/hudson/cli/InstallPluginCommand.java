@@ -34,6 +34,7 @@ import hudson.util.VersionNumber;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
@@ -114,7 +115,7 @@ public class InstallPluginCommand extends CLICommand {
                     pm.dynamicLoad(f);
                 }
                 continue;
-            } catch (MalformedURLException e) {
+            } catch (MalformedURLException | URISyntaxException e) {
                 // not an URL
                 e.getCause();
             }
