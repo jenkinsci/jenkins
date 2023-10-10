@@ -221,7 +221,7 @@ public class UpdateSite {
         } catch (URISyntaxException e) {
             MalformedURLException mex = new MalformedURLException(e.getMessage());
             mex.initCause(e);
-            throw mex
+            throw mex;
         }
     }
 
