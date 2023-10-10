@@ -51,6 +51,22 @@ public class DiskSpaceMonitor extends AbstractDiskSpaceMonitor {
 
     public DiskSpaceMonitor() {}
 
+    @Override
+    public long getThresholdBytes(Computer c) {
+        Node node = c.getNode();
+        if (node != null) {
+            DiskSpaceMonitorNodeProperty nodeProperty = node.getNodeProperty(DiskSpaceMonitorNodeProperty.class);
+            if (nodeProperty != null) {
+                try {
+                    return DiskSpace.parse(nodeProperty.getFreeDiskSpaceThreshold()).size;
+                } catch (ParseException e) {
+                    return getThresholdBytes();
+                }
+            }
+        }
+        return getThresholdBytes();
+    }
+
     public DiskSpace getFreeSpace(Computer c) {
         return DESCRIPTOR.get(c);
     }

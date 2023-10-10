@@ -25,18 +25,17 @@
 package hudson.node_monitors;
 
 import hudson.Functions;
-import hudson.Util;
 import hudson.node_monitors.DiskSpaceMonitorDescriptor.DiskSpace;
 import hudson.remoting.VirtualChannel;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
-import java.math.BigDecimal;
 import java.text.ParseException;
 import java.util.Locale;
 import jenkins.MasterToSlaveFileCallable;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
@@ -58,6 +57,7 @@ public abstract class DiskSpaceMonitorDescriptor extends AbstractAsyncNodeMonito
 
         private boolean triggered;
         private Class<? extends AbstractDiskSpaceMonitor> trigger;
+        private long threshold;
 
         /**
          * @param path
@@ -71,7 +71,13 @@ public abstract class DiskSpaceMonitorDescriptor extends AbstractAsyncNodeMonito
         @Override
         public String toString() {
             if (triggered) {
-                return Messages.DiskSpaceMonitorDescriptor_DiskSpace_FreeSpaceTooLow(getGbLeft(), path);
+                if (threshold >= 0) {
+                    return Messages.DiskSpaceMonitorDescriptor_DiskSpace_FreeSpaceTooLow(
+                            getGbLeft(), path, Functions.humanReadableByteSize(threshold));
+                } else {
+                    return Messages.DiskSpaceMonitorDescriptor_DiskSpace_FreeSpaceTooLow(
+                            getGbLeft(), path, "unset");
+                }
             }
             return Messages.DiskSpaceMonitorDescriptor_DiskSpace_FreeSpace(getGbLeft(), path);
         }
@@ -96,22 +102,19 @@ public abstract class DiskSpaceMonitorDescriptor extends AbstractAsyncNodeMonito
          * Gets GB left.
          */
         public String getGbLeft() {
-            long space = size;
-            space /= 1024L;   // convert to KB
-            space /= 1024L;   // convert to MB
-
-            return new BigDecimal(space).scaleByPowerOfTen(-3).toPlainString();
+            return Functions.humanReadableByteSize(size);
         }
 
         /**
          * Returns the HTML representation of the space.
          */
         public String toHtml() {
-            String humanReadableSpace = Functions.humanReadableByteSize(size);
-            if (triggered) {
-                return Util.wrapToErrorSpan(humanReadableSpace);
-            }
-            return humanReadableSpace;
+            return Functions.humanReadableByteSize(size);
+        }
+
+        @Restricted(NoExternalUse.class)
+        public boolean isTriggered() {
+            return triggered;
         }
 
         /**
@@ -130,20 +133,26 @@ public abstract class DiskSpaceMonitorDescriptor extends AbstractAsyncNodeMonito
             this.triggered = triggered;
         }
 
+        protected void setThreshold(long threshold) {
+            this.threshold = threshold;
+        }
+
         @Override
         public Class<? extends AbstractDiskSpaceMonitor> getTrigger() {
             return trigger;
         }
 
         /**
-         * Parses a human readable size description like "1GB", "0.5m", etc. into {@link DiskSpace}
+         * Parses a human readable size description like "1GB", "0.5m", "500KiB", etc. into {@link DiskSpace}
          *
          * @throws ParseException
          *      If failed to parse.
          */
         public static DiskSpace parse(String size) throws ParseException {
             size = size.toUpperCase(Locale.ENGLISH).trim();
-            if (size.endsWith("B"))    // cut off 'B' from KB, MB, etc.
+            if (size.endsWith("B"))    // cut off 'B' from KB, MB, KiB, etc.
+                size = size.substring(0, size.length() - 1);
+            if (size.endsWith("I"))    // cut off 'i' from KiB, MiB, etc.
                 size = size.substring(0, size.length() - 1);
 
             long multiplier = 1;
@@ -167,7 +176,9 @@ public abstract class DiskSpaceMonitorDescriptor extends AbstractAsyncNodeMonito
     }
 
     protected static final class GetUsableSpace extends MasterToSlaveFileCallable<DiskSpace> {
-        public GetUsableSpace() {}
+
+        public GetUsableSpace() {
+        }
 
         @Override
         public DiskSpace invoke(File f, VirtualChannel channel) throws IOException {

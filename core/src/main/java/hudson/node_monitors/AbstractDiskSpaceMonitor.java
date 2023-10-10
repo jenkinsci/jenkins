@@ -24,7 +24,7 @@ public abstract class AbstractDiskSpaceMonitor extends NodeMonitor {
     }
 
     protected AbstractDiskSpaceMonitor() {
-        this.freeSpaceThreshold = "1GB";
+        this.freeSpaceThreshold = "1GiB";
     }
 
     public long getThresholdBytes() {
@@ -37,12 +37,16 @@ public abstract class AbstractDiskSpaceMonitor extends NodeMonitor {
         }
     }
 
+    public long getThresholdBytes(Computer c) {
+        return getThresholdBytes();
+    }
+
     @Override
     public Object data(Computer c) {
         DiskSpace size = markNodeOfflineIfDiskspaceIsTooLow(c);
 
         // mark online (again), if free space is over threshold
-        if (size != null && size.size > getThresholdBytes() && c.isOffline() && c.getOfflineCause() instanceof DiskSpace)
+        if (size != null && size.size > getThresholdBytes(c) && c.isOffline() && c.getOfflineCause() instanceof DiskSpace)
             if (this.getClass().equals(((DiskSpace) c.getOfflineCause()).getTrigger()))
                 if (getDescriptor().markOnline(c)) {
                     LOGGER.info(Messages.DiskSpaceMonitor_MarkedOnline(c.getDisplayName()));
@@ -59,10 +63,14 @@ public abstract class AbstractDiskSpaceMonitor extends NodeMonitor {
     @Restricted(NoExternalUse.class)
     public DiskSpace markNodeOfflineIfDiskspaceIsTooLow(Computer c) {
         DiskSpace size = (DiskSpace) super.data(c);
-        if (size != null && size.size < getThresholdBytes()) {
-            size.setTriggered(this.getClass(), true);
-            if (getDescriptor().markOffline(c, size))  {
-                LOGGER.warning(Messages.DiskSpaceMonitor_MarkedOffline(c.getDisplayName()));
+        long threshold = getThresholdBytes(c);
+        if (size != null) {
+            size.setThreshold(threshold);
+            if (size.size < threshold) {
+                size.setTriggered(this.getClass(), true);
+                if (getDescriptor().markOffline(c, size)) {
+                    LOGGER.warning(Messages.DiskSpaceMonitor_MarkedOffline(c.getDisplayName()));
+                }
             }
         }
         return size;
