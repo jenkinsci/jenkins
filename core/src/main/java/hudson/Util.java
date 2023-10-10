@@ -1865,7 +1865,7 @@ public class Util {
                 "<meta http-equiv='refresh' content='1;url=%1$s'/>" +
                 "<script id='redirect' data-redirect-url='%1$s' src='" +
                 contextPath + Jenkins.RESOURCE_PATH +
-                "/scripts/redirect.js'/>" +
+                "/scripts/redirect.js'></script>" +
                 "</head>" +
                 "<body style='background-color:white; color:white;'>%n" +
                 "%2$s%n" +
