@@ -38,7 +38,6 @@ import java.io.OutputStream;
 import java.io.SequenceInputStream;
 import java.net.BindException;
 import java.net.InetSocketAddress;
-import java.net.MalformedURLException;
 import java.net.Socket;
 import java.net.SocketAddress;
 import java.net.URI;
