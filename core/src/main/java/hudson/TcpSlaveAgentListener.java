@@ -38,10 +38,10 @@ import java.io.OutputStream;
 import java.io.SequenceInputStream;
 import java.net.BindException;
 import java.net.InetSocketAddress;
-import java.net.MalformedURLException;
 import java.net.Socket;
 import java.net.SocketAddress;
-import java.net.URL;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.charset.StandardCharsets;
 import java.security.interfaces.RSAPublicKey;
@@ -85,8 +85,7 @@ public final class TcpSlaveAgentListener extends Thread {
     public final int configuredPort;
 
     /**
-     * @param port
-     *      Use 0 to choose a random port.
+     * @param port Use 0 to choose a random port.
      */
     public TcpSlaveAgentListener(int port) throws IOException {
         super("TCP agent listener port=" + port);
@@ -120,6 +119,7 @@ public final class TcpSlaveAgentListener extends Thread {
 
     /**
      * Gets the TCP port number in which we are advertising.
+     *
      * @since 1.656
      */
     public int getAdvertisedPort() {
@@ -128,21 +128,23 @@ public final class TcpSlaveAgentListener extends Thread {
 
     /**
      * Gets the host name that we advertise protocol clients to connect to.
+     *
      * @since 2.198
      */
     public String getAdvertisedHost() {
         if (CLI_HOST_NAME != null) {
-          return CLI_HOST_NAME;
+            return CLI_HOST_NAME;
         }
         try {
-            return new URL(Jenkins.get().getRootUrl()).getHost();
-        } catch (MalformedURLException e) {
+            return new URI(Jenkins.get().getRootUrl()).getHost();
+        } catch (URISyntaxException e) {
             throw new IllegalStateException("Could not get TcpSlaveAgentListener host name", e);
         }
     }
 
     /**
      * Gets the Base64 encoded public key that forms part of this instance's identity keypair.
+     *
      * @return the Base64 encoded public key
      * @since 2.16
      */
@@ -165,6 +167,7 @@ public final class TcpSlaveAgentListener extends Thread {
 
     /**
      * Gets Remoting minimum supported version to prevent unsupported agents from connecting
+     *
      * @since 2.171
      */
     public VersionNumber getRemotingMinimumVersion() {
@@ -228,9 +231,9 @@ public final class TcpSlaveAgentListener extends Thread {
 
     private final class ConnectionHandler extends Thread {
         private static final String DEFAULT_RESPONSE_404 = "HTTP/1.0 404 Not Found\r\n" +
-                        "Content-Type: text/plain;charset=UTF-8\r\n" +
-                        "\r\n" +
-                        "Not Found\r\n";
+                "Content-Type: text/plain;charset=UTF-8\r\n" +
+                "\r\n" +
+                "Not Found\r\n";
         private final Socket s;
         /**
          * Unique number to identify this connection. Used in the log.
@@ -407,8 +410,8 @@ public final class TcpSlaveAgentListener extends Thread {
                                     socket.getRemoteSocketAddress(),
                                     new String(ping, StandardCharsets.UTF_8),
                                     responseLength > 0 && responseLength <= response.length ?
-                                        new String(response, 0, responseLength, StandardCharsets.UTF_8) :
-                                        "bad response length " + responseLength,
+                                            new String(response, 0, responseLength, StandardCharsets.UTF_8) :
+                                            "bad response length " + responseLength,
                             });
                             return false;
                         }

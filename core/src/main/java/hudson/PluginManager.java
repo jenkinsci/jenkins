@@ -1843,7 +1843,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
         @Override
         public void copy(File target) throws Exception {
-            try (InputStream input =  ProxyConfiguration.getInputStream(new URL(url))) {
+            try (InputStream input =  ProxyConfiguration.getInputStream(new URI(url).toURL())) {
                 Files.copy(input, target.toPath());
             }
         }
@@ -1945,7 +1945,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     @RequirePOST public FormValidation doCheckPluginUrl(StaplerRequest request, @QueryParameter String value) throws IOException {
         if (StringUtils.isNotBlank(value)) {
             try {
-                URL url = new URL(value);
+                URL url = new URI(value).toURL();
                 if (!url.getProtocol().startsWith("http")) {
                     return FormValidation.error(Messages.PluginManager_invalidUrl());
                 }
@@ -1953,7 +1953,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                 if (!url.getProtocol().equals("https")) {
                     return FormValidation.warning(Messages.PluginManager_insecureUrl());
                 }
-            } catch (MalformedURLException e) {
+            } catch (MalformedURLException | URISyntaxException e) {
                 return FormValidation.error(e.getMessage());
             }
         }
