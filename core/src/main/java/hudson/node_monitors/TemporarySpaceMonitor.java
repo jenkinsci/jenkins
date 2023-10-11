@@ -72,6 +72,22 @@ public class TemporarySpaceMonitor extends AbstractDiskSpaceMonitor {
         return getThresholdBytes();
     }
 
+    @Override
+    protected long getWarningThresholdBytes(Computer c) {
+        Node node = c.getNode();
+        if (node != null) {
+            DiskSpaceMonitorNodeProperty nodeProperty = node.getNodeProperty(DiskSpaceMonitorNodeProperty.class);
+            if (nodeProperty != null) {
+                try {
+                    return DiskSpace.parse(nodeProperty.getFreeTempSpaceWarningThreshold()).size;
+                } catch (ParseException e) {
+                    return getThresholdBytes();
+                }
+            }
+        }
+        return getWarningThresholdBytes();
+    }
+
     public DiskSpace getFreeSpace(Computer c) {
         DiskSpaceMonitorDescriptor descriptor = (DiskSpaceMonitorDescriptor) Jenkins.get().getDescriptor(TemporarySpaceMonitor.class);
         return descriptor != null ? descriptor.get(c) : null;

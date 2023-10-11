@@ -30,12 +30,17 @@ THE SOFTWARE.
     </j:when>
     <j:otherwise>
       <td align="right" data="${data.freeSize}">
-        <j:if test="${data.triggered}">
-          <span class="error" tooltip="${data.toString()}">${data.toHtml()}</span>
-        </j:if>
-        <j:if test="${!data.triggered}">
-          ${data.toHtml()}
-        </j:if>
+        <j:choose>
+          <j:when test="${data.triggered}">
+            <span class="error" tooltip="${data.toString()}">${data.toHtml()}</span>
+          </j:when>
+          <j:when test="${data.warning}">
+            <span class="warning" tooltip="${data.toString()}">${data.toHtml()}</span>
+          </j:when>
+          <j:otherwise>
+            ${data.toHtml()}
+          </j:otherwise>
+        </j:choose>
       </td>
     </j:otherwise>
   </j:choose>

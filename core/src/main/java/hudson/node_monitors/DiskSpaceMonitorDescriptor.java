@@ -58,6 +58,7 @@ public abstract class DiskSpaceMonitorDescriptor extends AbstractAsyncNodeMonito
         private boolean triggered;
         private Class<? extends AbstractDiskSpaceMonitor> trigger;
         private long threshold;
+        private long warningThreshold;
 
         /**
          * @param path
@@ -78,6 +79,10 @@ public abstract class DiskSpaceMonitorDescriptor extends AbstractAsyncNodeMonito
                     return Messages.DiskSpaceMonitorDescriptor_DiskSpace_FreeSpaceTooLow(
                             getGbLeft(), path, "unset");
                 }
+            }
+            if (isWarning()) {
+                return Messages.DiskSpaceMonitorDescriptor_DiskSpace_FreeSpaceTooLow(
+                        getGbLeft(), path, Functions.humanReadableByteSize(warningThreshold));
             }
             return Messages.DiskSpaceMonitorDescriptor_DiskSpace_FreeSpace(getGbLeft(), path);
         }
@@ -117,6 +122,11 @@ public abstract class DiskSpaceMonitorDescriptor extends AbstractAsyncNodeMonito
             return triggered;
         }
 
+        @Restricted(NoExternalUse.class)
+        public boolean isWarning() {
+            return warningThreshold > 0 && size < warningThreshold;
+        }
+
         /**
          * Sets whether this disk space amount should be treated as outside
          * the acceptable conditions or not.
@@ -135,6 +145,10 @@ public abstract class DiskSpaceMonitorDescriptor extends AbstractAsyncNodeMonito
 
         protected void setThreshold(long threshold) {
             this.threshold = threshold;
+        }
+
+        protected void setWarningThreshold(long warningThreshold) {
+            this.warningThreshold = warningThreshold;
         }
 
         @Override

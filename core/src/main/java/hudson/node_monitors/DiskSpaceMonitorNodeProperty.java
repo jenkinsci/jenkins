@@ -12,10 +12,16 @@ public class DiskSpaceMonitorNodeProperty extends NodeProperty<Node> {
     private final String freeDiskSpaceThreshold;
     private final String freeTempSpaceThreshold;
 
+    private final String freeDiskSpaceWarningThreshold;
+    private final String freeTempSpaceWarningThreshold;
+
     @DataBoundConstructor
-    public DiskSpaceMonitorNodeProperty(String freeDiskSpaceThreshold, String freeTempSpaceThreshold) {
+    public DiskSpaceMonitorNodeProperty(String freeDiskSpaceThreshold, String freeTempSpaceThreshold,
+                                        String freeDiskSpaceWarningThreshold, String freeTempSpaceWarningThreshold) {
         this.freeDiskSpaceThreshold = freeDiskSpaceThreshold;
         this.freeTempSpaceThreshold = freeTempSpaceThreshold;
+        this.freeDiskSpaceWarningThreshold = freeDiskSpaceWarningThreshold;
+        this.freeTempSpaceWarningThreshold = freeTempSpaceWarningThreshold;
     }
 
     public String getFreeDiskSpaceThreshold() {
@@ -24,6 +30,14 @@ public class DiskSpaceMonitorNodeProperty extends NodeProperty<Node> {
 
     public String getFreeTempSpaceThreshold() {
         return freeTempSpaceThreshold;
+    }
+
+    public String getFreeDiskSpaceWarningThreshold() {
+        return freeDiskSpaceWarningThreshold;
+    }
+
+    public String getFreeTempSpaceWarningThreshold() {
+        return freeTempSpaceWarningThreshold;
     }
 
     @Extension
