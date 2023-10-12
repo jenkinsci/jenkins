@@ -22,20 +22,20 @@ function generateHandles() {
 }
 
 function convertInputsToButtons(e) {
-    let oldInputs = e.querySelectorAll("INPUT.hetero-list-add");
-    oldInputs.forEach((oldbtn) => {
-      let btn = document.createElement("button");
-      btn.setAttribute("type", "button");
-      btn.classList.add("hetero-list-add", "jenkins-button");
-      btn.innerText = oldbtn.getAttribute("value");
-      if (oldbtn.hasAttribute("suffix")) {
-        btn.setAttribute("suffix", oldbtn.getAttribute("suffix"));
-      }
-      let chevron = createElementFromHtml(Symbols.CHEVRON_DOWN);
-      btn.appendChild(chevron);
-      oldbtn.parentNode.appendChild(btn);
-      oldbtn.remove();
-    });
+  let oldInputs = e.querySelectorAll("INPUT.hetero-list-add");
+  oldInputs.forEach((oldbtn) => {
+    let btn = document.createElement("button");
+    btn.setAttribute("type", "button");
+    btn.classList.add("hetero-list-add", "jenkins-button");
+    btn.innerText = oldbtn.getAttribute("value");
+    if (oldbtn.hasAttribute("suffix")) {
+      btn.setAttribute("suffix", oldbtn.getAttribute("suffix"));
+    }
+    let chevron = createElementFromHtml(Symbols.CHEVRON_DOWN);
+    btn.appendChild(chevron);
+    oldbtn.parentNode.appendChild(btn);
+    oldbtn.remove();
+  });
 }
 
 function generateButtons() {
