@@ -72,6 +72,7 @@ public abstract class AbstractDiskSpaceMonitor extends NodeMonitor {
         }
     }
 
+    @Restricted(NoExternalUse.class)
     public long getThresholdBytes(Computer c) {
         return getThresholdBytes();
     }

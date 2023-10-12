@@ -6,8 +6,15 @@ import hudson.model.Node;
 import hudson.slaves.NodeProperty;
 import hudson.slaves.NodePropertyDescriptor;
 import org.jenkinsci.Symbol;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
 
+/**
+ * {@link NodeProperty} that allows users to set agent specific disk space thresholds.
+ *
+ * @since TODO
+ */
 public class DiskSpaceMonitorNodeProperty extends NodeProperty<Node> {
     private final String freeDiskSpaceThreshold;
     private final String freeTempSpaceThreshold;

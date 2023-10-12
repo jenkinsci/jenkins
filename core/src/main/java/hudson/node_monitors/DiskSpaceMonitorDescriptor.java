@@ -190,9 +190,7 @@ public abstract class DiskSpaceMonitorDescriptor extends AbstractAsyncNodeMonito
     }
 
     protected static final class GetUsableSpace extends MasterToSlaveFileCallable<DiskSpace> {
-
-        public GetUsableSpace() {
-        }
+        public GetUsableSpace() {}
 
         @Override
         public DiskSpace invoke(File f, VirtualChannel channel) throws IOException {
