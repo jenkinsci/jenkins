@@ -38,10 +38,10 @@ THE SOFTWARE.
   <description>The module contains dependencies that are used by a specific Jenkins version</description>
 
   <properties>
-    <asm.version>9.5</asm.version>
+    <asm.version>9.6</asm.version>
     <slf4jVersion>2.0.9</slf4jVersion>
     <!-- TODO https://github.com/jenkinsci/stapler/pull/385 -->
-    <stapler.version>1836.v84a_9ecd07179</stapler.version>
+    <stapler.version>1843.v81b_96c097869</stapler.version>
     <groovy.version>2.4.21</groovy.version>
   </properties>
 
@@ -129,7 +129,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>commons-io</groupId>
         <artifactId>commons-io</artifactId>
-        <version>2.13.0</version>
+        <version>2.14.0</version>
       </dependency>
       <dependency>
         <groupId>commons-jelly</groupId>
@@ -175,12 +175,6 @@ THE SOFTWARE.
         <groupId>net.jcip</groupId>
         <artifactId>jcip-annotations</artifactId>
         <version>1.0</version>
-      </dependency>
-      <!-- TODO remove after determining this will not break plugins -->
-      <dependency>
-        <groupId>net.sf.kxml</groupId>
-        <artifactId>kxml2</artifactId>
-        <version>2.3.0</version>
       </dependency>
       <dependency>
         <groupId>org.antlr</groupId>

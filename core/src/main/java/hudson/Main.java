@@ -37,6 +37,7 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.net.HttpRetryException;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -99,11 +100,11 @@ public class Main {
         if (!home.endsWith("/"))     home = home + '/';  // make sure it ends with '/'
 
         // check for authentication info
-        String auth = new URL(home).getUserInfo();
+        String auth = new URI(home).toURL().getUserInfo();
         if (auth != null) auth = "Basic " + new Base64Encoder().encode(auth.getBytes(StandardCharsets.UTF_8));
 
         { // check if the home is set correctly
-            HttpURLConnection con = open(new URL(home));
+            HttpURLConnection con = open(new URI(home).toURL());
             if (auth != null) con.setRequestProperty("Authorization", auth);
             con.connect();
             if (con.getResponseCode() != 200
@@ -113,7 +114,7 @@ public class Main {
             }
         }
 
-        URL jobURL = new URL(home + "job/" + Util.encode(projectName).replace("/", "/job/") + "/");
+        URL jobURL = new URI(home + "job/" + Util.encode(projectName).replace("/", "/job/") + "/").toURL();
 
         { // check if the job name is correct
             HttpURLConnection con = open(new URL(jobURL, "acceptBuildResult"));
@@ -128,8 +129,8 @@ public class Main {
         // get a crumb to pass the csrf check
         String crumbField = null, crumbValue = null;
         try {
-            HttpURLConnection con = open(new URL(home +
-                    "crumbIssuer/api/xml?xpath=concat(//crumbRequestField,\":\",//crumb)'"));
+            HttpURLConnection con = open(new URI(home +
+                    "crumbIssuer/api/xml?xpath=concat(//crumbRequestField,\":\",//crumb)'").toURL());
             if (auth != null) con.setRequestProperty("Authorization", auth);
             String line = IOUtils.readFirstLine(con.getInputStream(), "UTF-8");
             String[] components = line.split(":");
@@ -193,7 +194,7 @@ public class Main {
                 } catch (HttpRetryException e) {
                     if (e.getLocation() != null) {
                         // retry with the new location
-                        location = new URL(e.getLocation());
+                        location = new URI(e.getLocation()).toURL();
                         continue;
                     }
                     // otherwise failed for reasons beyond us.

@@ -22,6 +22,7 @@ import hudson.model.User;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
 import java.util.Collection;
 import java.util.List;
@@ -151,7 +152,7 @@ public class ApiTokenPropertyTest {
                 requirePOST.getWebResponse().getStatusCode());
 
         wc.setThrowExceptionOnFailingStatusCode(true);
-        WebRequest request = new WebRequest(new URL(j.getURL().toString() + foo.getUrl() + "/" + descriptor.getDescriptorUrl() + "/changeToken"), HttpMethod.POST);
+        WebRequest request = new WebRequest(new URI(j.getURL().toString() + foo.getUrl() + "/" + descriptor.getDescriptorUrl() + "/changeToken").toURL(), HttpMethod.POST);
         HtmlPage res = wc.getPage(request);
 
         // TODO This nicer alternative requires https://github.com/jenkinsci/jenkins/pull/2268 or similar to work

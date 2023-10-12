@@ -7,6 +7,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import groovy.lang.Binding;
 import groovy.lang.GroovyCodeSource;
 import groovy.lang.GroovyShell;
+import hudson.model.User;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -16,6 +17,7 @@ import java.util.TreeSet;
 import java.util.logging.Logger;
 import javax.servlet.ServletContext;
 import jenkins.model.Jenkins;
+import jenkins.util.ScriptListener;
 import jenkins.util.SystemProperties;
 
 /**
@@ -133,6 +135,7 @@ public class GroovyHookScript {
     @SuppressFBWarnings(value = "GROOVY_SHELL", justification = "Groovy hook scripts are a feature, not a bug")
     protected void execute(GroovyCodeSource s) {
         try {
+            ScriptListener.fireScriptExecution(s.getScriptText(), bindings, this.getClass(), s.getFile(), this.getClass().getName() + ":" + hook, User.current());
             createShell().evaluate(s);
         } catch (RuntimeException x) {
             LOGGER.log(WARNING, "Failed to run script " + s.getName(), x);

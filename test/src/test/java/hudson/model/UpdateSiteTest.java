@@ -38,6 +38,7 @@ import hudson.util.PersistedList;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -130,7 +131,7 @@ public class UpdateSiteTest {
             }
         });
         server.start();
-        baseUrl = new URL("http", "localhost", connector.getLocalPort(), RELATIVE_BASE);
+        baseUrl = new URI("http", null, "localhost", connector.getLocalPort(), RELATIVE_BASE, null, null).toURL();
     }
 
     @After

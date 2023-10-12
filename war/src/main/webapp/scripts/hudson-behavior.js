@@ -639,17 +639,7 @@ function updateValidationArea(validationArea, content) {
     // Only change content if different, causes an unnecessary animation otherwise
     if (validationArea.innerHTML !== content) {
       validationArea.innerHTML = content;
-      validationArea.style.height =
-        validationArea.children[0].offsetHeight + "px";
-
-      // Only include the notice in the validation-error-area, move all other elements out
-      if (validationArea.children.length > 1) {
-        Array.from(validationArea.children)
-          .slice(1)
-          .forEach((element) => {
-            validationArea.after(element);
-          });
-      }
+      validationArea.style.height = "auto";
 
       Behaviour.applySubtree(validationArea);
       // For errors with additional details, apply the subtree to the expandable details pane
@@ -2206,6 +2196,7 @@ function encode(str) {
 // when there are multiple form elements of the same name,
 // this method returns the input field of the given name that pairs up
 // with the specified 'base' input element.
+// eslint-disable-next-line no-unused-vars
 function findMatchingFormInput(base, name) {
   // find the FORM element that owns us
   var f = base.closest("form");
@@ -2236,17 +2227,6 @@ function findMatchingFormInput(base, name) {
   }
 
   return null; // not found
-}
-
-// TODO remove when Prototype.js is removed
-if (typeof Form === "object") {
-  /** @deprecated For backward compatibility only; use {@link findMatchingFormInput} instead. */
-  Form.findMatchingInput = function (base, name) {
-    console.warn(
-      "Deprecated call to Form.findMatchingInput detected; use findMatchingFormInput instead.",
-    );
-    return findMatchingFormInput(base, name);
-  };
 }
 
 // eslint-disable-next-line no-unused-vars
@@ -2633,14 +2613,7 @@ function buildFormTree(form) {
       }
     }
 
-    // TODO simplify when Prototype.js is removed
-    if (Object.toJSON) {
-      // Prototype.js
-      jsonElement.value = Object.toJSON(form.formDom);
-    } else {
-      // Standard
-      jsonElement.value = JSON.stringify(form.formDom);
-    }
+    jsonElement.value = JSON.stringify(form.formDom);
 
     // clean up
     for (i = 0; i < doms.length; i++) {
@@ -2807,15 +2780,6 @@ function createComboBox(idOrField, valueFunction) {
   } else {
     creator();
   }
-}
-
-// Exception in code during the AJAX processing should be reported,
-// so that our users can find them more easily.
-// TODO remove when Prototype.js is removed
-if (typeof Ajax === "object" && Ajax.Request) {
-  Ajax.Request.prototype.dispatchException = function (e) {
-    throw e;
-  };
 }
 
 // event callback when layouts/visibility are updated and elements might have moved around

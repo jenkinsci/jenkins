@@ -542,7 +542,7 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
     /**
      * Deletes this log recorder.
      * @throws IOException In case anything went wrong while deleting the configuration file.
-     * @since TODO
+     * @since 2.425
      */
     public void delete() throws IOException {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
