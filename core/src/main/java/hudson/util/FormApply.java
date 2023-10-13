@@ -75,7 +75,7 @@ public class FormApply {
      * When the response HTML includes a JavaScript function in a pre-determined name, that function gets executed.
      * This method generates such a response from JavaScript text.
      *
-     * @deprecated use {#{@link #showNotification(String, NotificationType)}} instead, which is CSP compatible version
+     * @deprecated use {@link #showNotification(String, NotificationType)} instead, which is CSP compatible version
      */
     @Deprecated
     public static HttpResponseException applyResponse(final String script) {
