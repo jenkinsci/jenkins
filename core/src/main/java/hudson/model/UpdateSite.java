@@ -46,8 +46,9 @@ import hudson.util.TextFile;
 import hudson.util.VersionNumber;
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URL;
+import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
@@ -215,7 +216,13 @@ public class UpdateSite {
 
     @Restricted(NoExternalUse.class)
     public @NonNull FormValidation updateDirectlyNow(boolean signatureCheck) throws IOException {
-        return updateData(DownloadService.loadJSON(new URL(getUrl() + "?id=" + URLEncoder.encode(getId(), StandardCharsets.UTF_8) + "&version=" + URLEncoder.encode(Jenkins.VERSION, StandardCharsets.UTF_8))), signatureCheck);
+        try {
+            return updateData(DownloadService.loadJSON(new URI(getUrl() + "?id=" + URLEncoder.encode(getId(), StandardCharsets.UTF_8) + "&version=" + URLEncoder.encode(Jenkins.VERSION, StandardCharsets.UTF_8)).toURL()), signatureCheck);
+        } catch (URISyntaxException e) {
+            MalformedURLException mex = new MalformedURLException(e.getMessage());
+            mex.initCause(e);
+            throw mex;
+        }
     }
 
     private FormValidation updateData(String json, boolean signatureCheck)

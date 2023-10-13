@@ -33,6 +33,8 @@ import hudson.util.EditDistance;
 import hudson.util.VersionNumber;
 import java.io.File;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
@@ -104,7 +106,7 @@ public class InstallPluginCommand extends CLICommand {
 
             // is this an URL?
             try {
-                URL u = new URL(source);
+                URL u = new URI(source).toURL();
                 stdout.println(Messages.InstallPluginCommand_InstallingPluginFromUrl(u));
                 File f = getTmpFile();
                 FileUtils.copyURLToFile(u, f); // TODO JENKINS-58248 proxy
@@ -113,7 +115,7 @@ public class InstallPluginCommand extends CLICommand {
                     pm.dynamicLoad(f);
                 }
                 continue;
-            } catch (MalformedURLException e) {
+            } catch (MalformedURLException | URISyntaxException e) {
                 // not an URL
             }
 

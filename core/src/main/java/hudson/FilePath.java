@@ -83,6 +83,7 @@ import java.io.Writer;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.Charset;
@@ -3338,7 +3339,13 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     @Restricted(NoExternalUse.class)
     static class UrlFactory {
         public URL newURL(String location) throws MalformedURLException {
-            return new URL(location);
+            try {
+                return new URI(location).toURL();
+            } catch (URISyntaxException e) {
+                MalformedURLException mex = new MalformedURLException(e.getMessage());
+                mex.initCause(e);
+                throw mex;
+            }
         }
     }
 
