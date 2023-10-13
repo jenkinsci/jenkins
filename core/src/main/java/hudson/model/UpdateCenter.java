@@ -110,6 +110,7 @@ import jenkins.RestartRequiredException;
 import jenkins.install.InstallUtil;
 import jenkins.management.Badge;
 import jenkins.model.Jenkins;
+import jenkins.model.Loadable;
 import jenkins.security.stapler.StaplerDispatchable;
 import jenkins.util.SystemProperties;
 import jenkins.util.Timer;
@@ -156,7 +157,7 @@ import org.springframework.security.core.Authentication;
  * @since 1.220
  */
 @ExportedBean
-public class UpdateCenter extends AbstractModelObject implements Saveable, OnMaster, StaplerProxy {
+public class UpdateCenter extends AbstractModelObject implements Loadable, Saveable, OnMaster, StaplerProxy {
 
     private static final Logger LOGGER;
     private static final String UPDATE_CENTER_URL;
@@ -986,6 +987,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     /**
      * Loads the data from the disk into this object.
      */
+    @Override
     public synchronized void load() throws IOException {
         XmlFile file = getConfigFile();
         if (file.exists()) {
