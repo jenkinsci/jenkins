@@ -1,13 +1,12 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2023, CloudBees, Inc.
+ * Copyright (c) 2023, Cloudbees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
@@ -22,33 +21,10 @@
  * THE SOFTWARE.
  */
 
-package jenkins.model.experimentalflags;
+package hudson.security;
 
-import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.Nullable;
-import hudson.Extension;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
-@Extension
-public final class RemovePrototypeUserExperimentalFlag extends BooleanUserExperimentalFlag {
-
-    public RemovePrototypeUserExperimentalFlag() {
-        super("remove-prototype.flag");
-    }
-
-    @NonNull
-    @Override
-    public Boolean getDefaultValue() {
-        return false;
-    }
-
-    @Override
-    public String getDisplayName() {
-        return "Remove Prototype.js";
-    }
-
-    @Nullable
-    @Override
-    public String getShortDescription() {
-        return "Remove Prototype.js from all Jenkins UI pages. This will break anything that depends on Prototype.js.";
-    }
+interface PasswordHashEncoder extends PasswordEncoder {
+     boolean isHashValid(String hash);
 }

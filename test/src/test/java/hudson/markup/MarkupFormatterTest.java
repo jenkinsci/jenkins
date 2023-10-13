@@ -33,7 +33,7 @@ import hudson.security.AuthorizationStrategy.Unsecured;
 import hudson.security.HudsonPrivateSecurityRealm;
 import java.io.IOException;
 import java.io.Writer;
-import java.net.URL;
+import java.net.URI;
 import org.htmlunit.HttpMethod;
 import org.htmlunit.Page;
 import org.htmlunit.WebRequest;
@@ -104,7 +104,7 @@ public class MarkupFormatterTest {
     @Issue("SECURITY-2153")
     public void security2153SetsCSP() throws Exception {
         final JenkinsRule.WebClient wc = j.createWebClient();
-        final Page htmlPage = wc.getPage(wc.addCrumb(new WebRequest(new URL(j.jenkins.getRootUrl() + "/markupFormatter/previewDescription?text=lolwut"), HttpMethod.POST)));
+        final Page htmlPage = wc.getPage(wc.addCrumb(new WebRequest(new URI(j.jenkins.getRootUrl() + "/markupFormatter/previewDescription?text=lolwut").toURL(), HttpMethod.POST)));
         final WebResponse response = htmlPage.getWebResponse();
         assertEquals(200, response.getStatusCode());
         assertThat(response.getContentAsString(), containsString("lolwut"));
