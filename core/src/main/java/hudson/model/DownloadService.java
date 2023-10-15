@@ -44,6 +44,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
@@ -79,6 +80,7 @@ public class DownloadService {
      * the prefix for the signature validator name
      */
     private static final String signatureValidatorPrefix = "downloadable";
+
     /**
      * Builds up an HTML fragment that starts all the download jobs.
      *
@@ -108,6 +110,7 @@ public class DownloadService {
      * Confusingly, the JSONP files are given the {@code *.json} file extension, when they are really JavaScript and should be {@code *.js}.
      * This method extracts the JSON from a JSONP URL, since that is what we actually want when we download from the server.
      * (Currently the true JSON is not published separately, and extracting from the {@code *.json.html} is more work.)
+     *
      * @param src a URL to a JSONP file (typically including {@code id} and {@code version} query parameters)
      * @return the embedded JSON text
      * @throws IOException if either downloading or processing failed
@@ -133,6 +136,7 @@ public class DownloadService {
 
     /**
      * Loads JSON from a JSON-with-{@code postMessage} URL.
+     *
      * @param src a URL to a JSON HTML file (typically including {@code id} and {@code version} query parameters)
      * @return the embedded JSON text
      * @throws IOException if either downloading or processing failed
@@ -215,14 +219,13 @@ public class DownloadService {
         /**
          * Creates a new downloadable.
          *
-         * @param id The ID to use.
-         * @param url
-         *      URL relative to {@link UpdateCenter#getDefaultBaseUrl()}.
-         *      So if this string is "foo.json", the ultimate URL will be
-         *      something like "http://updates.jenkins-ci.org/updates/foo.json"
-         *
-         *      For security and privacy reasons, we don't allow the retrieval
-         *      from random locations.
+         * @param id       The ID to use.
+         * @param url      URL relative to {@link UpdateCenter#getDefaultBaseUrl()}.
+         *                 So if this string is "foo.json", the ultimate URL will be
+         *                 something like "http://updates.jenkins-ci.org/updates/foo.json"
+         *                 <p>
+         *                 For security and privacy reasons, we don't allow the retrieval
+         *                 from random locations.
          * @param interval The interval, in milliseconds, between attempts to update this downloadable's data.
          */
         public Downloadable(@NonNull String id, @NonNull String url, long interval) {
@@ -286,7 +289,6 @@ public class DownloadService {
          *
          * @param clazz The class to use to generate an ID.
          * @return The ID generated based on the specified class.
-         *
          * @since 2.244
          */
         @NonNull
@@ -322,8 +324,7 @@ public class DownloadService {
         /**
          * How often do we retrieve the new image?
          *
-         * @return
-         *      number of milliseconds between retrieval.
+         * @return number of milliseconds between retrieval.
          */
         public long getInterval() {
             return interval;
@@ -388,7 +389,7 @@ public class DownloadService {
                 }
                 String jsonString;
                 try {
-                    jsonString = loadJSONHTML(new URL(site + ".html?id=" + URLEncoder.encode(getId(), StandardCharsets.UTF_8) + "&version=" + URLEncoder.encode(Jenkins.VERSION, StandardCharsets.UTF_8)));
+                    jsonString = loadJSONHTML(new URI(site + ".html?id=" + URLEncoder.encode(getId(), StandardCharsets.UTF_8) + "&version=" + URLEncoder.encode(Jenkins.VERSION, StandardCharsets.UTF_8)).toURL());
                     toolInstallerMetadataExists = true;
                 } catch (Exception e) {
                     LOGGER.log(Level.FINE, "Could not load json from " + site, e);
@@ -416,6 +417,7 @@ public class DownloadService {
 
         /**
          * Function that takes multiple JSONObjects and returns a single one.
+         *
          * @param jsonList to be processed
          * @return a single JSONObject
          */
@@ -425,9 +427,10 @@ public class DownloadService {
 
         /**
          * check if the list of update center entries has duplicates
+         *
          * @param genericList list of entries coming from multiple update centers
-         * @param comparator the unique ID of an entry
-         * @param <T> the generic class
+         * @param comparator  the unique ID of an entry
+         * @param <T>         the generic class
          * @return true if the list has duplicates, false otherwise
          */
         public static <T> boolean hasDuplicates(List<T> genericList, String comparator) {
@@ -470,7 +473,6 @@ public class DownloadService {
          * {@link #idFor(Class)}).
          *
          * @param clazz The class to use to determine the downloadable's ID.
-         *
          * @since 2.244
          */
         @CheckForNull

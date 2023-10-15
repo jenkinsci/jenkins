@@ -73,6 +73,7 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
+import jenkins.model.Loadable;
 import jenkins.security.MasterToSlaveCallable;
 import jenkins.util.MemoryReductionUtil;
 import net.sf.json.JSONObject;
@@ -99,7 +100,7 @@ import org.kohsuke.stapler.verb.POST;
  * @author Kohsuke Kawaguchi
  * @see LogRecorderManager
  */
-public class LogRecorder extends AbstractModelObject implements Saveable {
+public class LogRecorder extends AbstractModelObject implements Loadable, Saveable {
     private volatile String name;
 
     /**
@@ -476,6 +477,7 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
     /**
      * Loads the settings from a file.
      */
+    @Override
     public synchronized void load() throws IOException {
         getConfigFile().unmarshal(this);
         loggers.forEach(Target::enable);

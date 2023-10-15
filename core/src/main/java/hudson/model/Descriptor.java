@@ -75,6 +75,7 @@ import javax.servlet.ServletException;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.GlobalConfigurationCategory;
 import jenkins.model.Jenkins;
+import jenkins.model.Loadable;
 import jenkins.security.RedactSecretJsonInErrorMessageSanitizer;
 import jenkins.util.io.OnMaster;
 import net.sf.json.JSONArray;
@@ -143,7 +144,7 @@ import org.kohsuke.stapler.lang.Klass;
  * @author Kohsuke Kawaguchi
  * @see Describable
  */
-public abstract class Descriptor<T extends Describable<T>> implements Saveable, OnMaster {
+public abstract class Descriptor<T extends Describable<T>> implements Loadable, Saveable, OnMaster {
     /**
      * The class being described by this descriptor.
      */
@@ -924,6 +925,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
      * (If we do that in the base class, the derived class won't
      * get a chance to set default values.)
      */
+    @Override
     public synchronized void load() {
         XmlFile file = getConfigFile();
         if (!file.exists())
