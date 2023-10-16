@@ -1,8 +1,10 @@
 package jenkins.security;
 
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.Set;
 import java.util.TreeSet;
@@ -38,4 +40,39 @@ public class HMACConfidentialKeyTest {
         }
     }
 
+
+    @Test
+    public void testMacWithShortenedCodeOnFips() {
+        System.setProperty("jenkins.security.FIPS140.COMPLIANCE", "true");
+        HMACConfidentialKey key1 = new HMACConfidentialKey("test", 16);
+        try {
+            String str = key1.mac("Hello World");
+        } catch (IllegalArgumentException exception) {
+            assertEquals("Supplied length can't be less than 32 on FIPS mode", exception.getMessage());
+        }
+    }
+
+    @Test
+    public void testMacWithShortenedCodeOnNonFips() {
+        System.setProperty("jenkins.security.FIPS140.COMPLIANCE", "false");
+        HMACConfidentialKey key1 = new HMACConfidentialKey("test", 16);
+        try {
+            String str = key1.mac("Hello World");
+            assertTrue(str, str.matches("[0-9A-Fa-f]{32}"));
+        } catch (IllegalArgumentException exception) {
+            fail("Found IllegalArgumentException");
+        }
+    }
+
+    @Test
+    public void testCompleteMaCodeOnNonFips() {
+        System.setProperty("jenkins.security.FIPS140.COMPLIANCE", "true");
+        HMACConfidentialKey key1 = new HMACConfidentialKey("test", 32);
+        try {
+            String str = key1.mac("Hello World");
+            assertTrue(str, str.matches("[0-9A-Fa-f]{64}"));
+        } catch (IllegalArgumentException exception) {
+            fail("Found IllegalArgumentException");
+        }
+    }
 }
