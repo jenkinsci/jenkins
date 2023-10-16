@@ -81,7 +81,7 @@ public class TemporarySpaceMonitor extends AbstractDiskSpaceMonitor {
                 try {
                     return DiskSpace.parse(nodeProperty.getFreeTempSpaceWarningThreshold()).size;
                 } catch (ParseException e) {
-                    return getThresholdBytes();
+                    return getWarningThresholdBytes();
                 }
             }
         }

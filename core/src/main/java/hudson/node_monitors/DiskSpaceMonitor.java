@@ -76,7 +76,7 @@ public class DiskSpaceMonitor extends AbstractDiskSpaceMonitor {
                 try {
                     return DiskSpace.parse(nodeProperty.getFreeDiskSpaceWarningThreshold()).size;
                 } catch (ParseException e) {
-                    return getThresholdBytes();
+                    return getWarningThresholdBytes();
                 }
             }
         }
