@@ -66,6 +66,8 @@ import java.lang.reflect.Constructor;
 import java.net.HttpRetryException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.UnknownHostException;
@@ -108,6 +110,7 @@ import jenkins.RestartRequiredException;
 import jenkins.install.InstallUtil;
 import jenkins.management.Badge;
 import jenkins.model.Jenkins;
+import jenkins.model.Loadable;
 import jenkins.security.stapler.StaplerDispatchable;
 import jenkins.util.SystemProperties;
 import jenkins.util.Timer;
@@ -154,7 +157,7 @@ import org.springframework.security.core.Authentication;
  * @since 1.220
  */
 @ExportedBean
-public class UpdateCenter extends AbstractModelObject implements Saveable, OnMaster, StaplerProxy {
+public class UpdateCenter extends AbstractModelObject implements Loadable, Saveable, OnMaster, StaplerProxy {
 
     private static final Logger LOGGER;
     private static final String UPDATE_CENTER_URL;
@@ -984,6 +987,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     /**
      * Loads the data from the disk into this object.
      */
+    @Override
     public synchronized void load() throws IOException {
         XmlFile file = getConfigFile();
         if (file.exists()) {
@@ -1207,7 +1211,13 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
          * @throws IOException if a connection can't be established
          */
         public void checkConnection(ConnectionCheckJob job, String connectionCheckUrl) throws IOException {
-            testConnection(new URL(connectionCheckUrl));
+            try {
+                testConnection(new URI(connectionCheckUrl).toURL());
+            } catch (URISyntaxException e) {
+                MalformedURLException mex = new MalformedURLException(e.getMessage());
+                mex.initCause(e);
+                throw mex;
+            }
         }
 
         /**
@@ -1230,9 +1240,21 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         static URL toUpdateCenterCheckUrl(String updateCenterUrl) throws MalformedURLException {
             URL url;
             if (updateCenterUrl.startsWith("http://") || updateCenterUrl.startsWith("https://")) {
-                url = new URL(updateCenterUrl + (updateCenterUrl.indexOf('?') == -1 ? "?uctest" : "&uctest"));
+                try {
+                    url = new URI(updateCenterUrl + (updateCenterUrl.indexOf('?') == -1 ? "?uctest" : "&uctest")).toURL();
+                } catch (URISyntaxException e) {
+                    MalformedURLException mex = new MalformedURLException(e.getMessage());
+                    mex.initCause(e);
+                    throw mex;
+                }
             } else {
-                url = new URL(updateCenterUrl);
+                try {
+                    url = new URI(updateCenterUrl).toURL();
+                } catch (URISyntaxException e) {
+                    MalformedURLException mex = new MalformedURLException(e.getMessage());
+                    mex.initCause(e);
+                    throw mex;
+                }
             }
             return url;
         }
@@ -2422,7 +2444,13 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
 
         @Override
         protected URL getURL() throws MalformedURLException {
-            return new URL(plugin.url);
+            try {
+                return new URI(plugin.url).toURL();
+            } catch (URISyntaxException e) {
+                MalformedURLException mex = new MalformedURLException(e.getMessage());
+                mex.initCause(e);
+                throw mex;
+            }
         }
 
         @Override
@@ -2564,7 +2592,13 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
             if (site == null) {
                 throw new MalformedURLException("no update site defined");
             }
-            return new URL(site.getData().core.url);
+            try {
+                return new URI(site.getData().core.url).toURL();
+            } catch (URISyntaxException e) {
+                MalformedURLException mex = new MalformedURLException(e.getMessage());
+                mex.initCause(e);
+                throw mex;
+            }
         }
 
         @Override
