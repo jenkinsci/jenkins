@@ -115,7 +115,8 @@ public abstract class AbstractDiskSpaceMonitor extends NodeMonitor {
         long threshold = getThresholdBytes(c);
         if (size != null) {
             size.setThreshold(threshold);
-            size.setWarningThreshold(getWarningThresholdBytes(c));
+            long warningThreshold = getWarningThresholdBytes(c);
+            size.setWarningThreshold(warningThreshold);
             if (size.size < threshold) {
                 size.setTriggered(this.getClass(), true);
                 if (getDescriptor().markOffline(c, size)) {
