@@ -1,5 +1,7 @@
 package jenkins.security;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.matchesPattern;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -42,6 +44,7 @@ public class HMACConfidentialKeyTest {
     public void testTruncatedMacOnNonFips() {
         HMACConfidentialKey key1 = new HMACConfidentialKey("test", 16);
         String str = key1.mac("Hello World");
-        assertTrue(str, str.matches("[0-9A-Fa-f]{32}"));
+        String pattern = "[0-9A-Fa-f]{32}";
+        assertThat(str, matchesPattern(pattern));
     }
 }

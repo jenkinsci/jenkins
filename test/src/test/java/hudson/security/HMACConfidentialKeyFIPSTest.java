@@ -1,6 +1,7 @@
 package hudson.security;
 
-
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.matchesPattern;
 import static org.junit.Assert.assertThrows;
 
 import org.junit.ClassRule;
@@ -11,7 +12,6 @@ import org.jvnet.hudson.test.FlagRule;
 import jenkins.security.HMACConfidentialKey;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 public class HMACConfidentialKeyFIPSTest {
    @ClassRule
@@ -26,9 +26,10 @@ public class HMACConfidentialKeyFIPSTest {
     }
 
     @Test
-    public void testCompleteMacOnNonFips() {
+    public void testCompleteMacOnFips() {
         HMACConfidentialKey key1 = new HMACConfidentialKey("test", 32);
         String str = key1.mac("Hello World");
-        assertTrue(str, str.matches("[0-9A-Fa-f]{64}"));
+        String pattern = "[0-9A-Fa-f]{64}";
+        assertThat(str, matchesPattern(pattern));
     }
 }
