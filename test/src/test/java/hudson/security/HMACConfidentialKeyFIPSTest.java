@@ -2,16 +2,14 @@ package hudson.security;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.matchesPattern;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 
+import jenkins.security.HMACConfidentialKey;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.jvnet.hudson.test.FlagRule;
-
-import jenkins.security.HMACConfidentialKey;
-
-import static org.junit.Assert.assertEquals;
 
 public class HMACConfidentialKeyFIPSTest {
    @ClassRule
