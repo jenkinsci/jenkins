@@ -22,7 +22,7 @@ public class HMACConfidentialKeyFIPSTest {
     public void testTruncatedMacOnFips() {
         HMACConfidentialKey key1 = new HMACConfidentialKey("test", 16);
         IllegalArgumentException  iae = assertThrows(IllegalArgumentException.class, () -> key1.mac("Hello World"));
-        assertEquals("Supplied length can't be less than 32 on FIPS mode", iae .getMessage());
+        assertEquals("Supplied length can't be less than 32 on FIPS mode", iae.getMessage());
     }
 
     @Test
