@@ -149,7 +149,9 @@ public class TemporarySpaceMonitor extends AbstractDiskSpaceMonitor {
                 f = new File(System.getProperty("java.io.tmpdir"));
                 long s = f.getUsableSpace();
                 if (s <= 0)    return null;
-                return new DiskSpace(f.getCanonicalPath(), s);
+                DiskSpace ds = new DiskSpace(f.getCanonicalPath(), s);
+                ds.setTotalSize(f.getTotalSpace());
+                return ds;
         }
 
         private static final long serialVersionUID = 1L;

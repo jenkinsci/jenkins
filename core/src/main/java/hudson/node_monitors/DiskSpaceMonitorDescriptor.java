@@ -103,6 +103,8 @@ public abstract class DiskSpaceMonitorDescriptor extends AbstractAsyncNodeMonito
         @Exported
         public final long size;
 
+        private long totalSize;
+
         private boolean triggered;
         private Class<? extends AbstractDiskSpaceMonitor> trigger;
         private long threshold;
@@ -117,22 +119,37 @@ public abstract class DiskSpaceMonitorDescriptor extends AbstractAsyncNodeMonito
             this.size = size;
         }
 
+        @Restricted(NoExternalUse.class)
+        public void setTotalSize(long totalSize) {
+            this.totalSize = totalSize;
+        }
+
+        @Restricted(NoExternalUse.class)
+        @Exported
+        public long getTotalSize() {
+            return totalSize;
+        }
+
         @Override
         public String toString() {
             if (triggered) {
                 if (threshold >= 0) {
                     return Messages.DiskSpaceMonitorDescriptor_DiskSpace_FreeSpaceTooLow(
-                            getGbLeft(), path, Functions.humanReadableByteSize(threshold));
+                            getGbLeft(), path, Functions.humanReadableByteSize(threshold),
+                            Functions.humanReadableByteSize(totalSize));
                 } else {
                     return Messages.DiskSpaceMonitorDescriptor_DiskSpace_FreeSpaceTooLow(
-                            getGbLeft(), path, "unset");
+                            getGbLeft(), path, "unset",
+                            Functions.humanReadableByteSize(totalSize));
                 }
             }
             if (isWarning()) {
                 return Messages.DiskSpaceMonitorDescriptor_DiskSpace_FreeSpaceTooLow(
-                        getGbLeft(), path, Functions.humanReadableByteSize(warningThreshold));
+                        getGbLeft(), path, Functions.humanReadableByteSize(warningThreshold),
+                        Functions.humanReadableByteSize(totalSize));
             }
-            return Messages.DiskSpaceMonitorDescriptor_DiskSpace_FreeSpace(getGbLeft(), path);
+            return Messages.DiskSpaceMonitorDescriptor_DiskSpace_FreeSpace(getGbLeft(), path,
+                    Functions.humanReadableByteSize(totalSize));
         }
 
         /**
@@ -246,9 +263,11 @@ public abstract class DiskSpaceMonitorDescriptor extends AbstractAsyncNodeMonito
 
         @Override
         public DiskSpace invoke(File f, VirtualChannel channel) throws IOException {
-                long s = f.getUsableSpace();
-                if (s <= 0)    return null;
-                return new DiskSpace(f.getCanonicalPath(), s);
+            long s = f.getUsableSpace();
+            if (s <= 0)    return null;
+            DiskSpace ds = new DiskSpace(f.getCanonicalPath(), s);
+            ds.setTotalSize(f.getTotalSpace());
+            return ds;
         }
 
         private static final long serialVersionUID = 1L;
