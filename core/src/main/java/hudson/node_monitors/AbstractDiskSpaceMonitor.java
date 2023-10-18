@@ -6,8 +6,6 @@ import java.text.ParseException;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundSetter;
 
 /**
@@ -92,38 +90,8 @@ public abstract class AbstractDiskSpaceMonitor extends NodeMonitor {
 
     @Override
     public Object data(Computer c) {
-        DiskSpace size = markNodeOfflineIfDiskspaceIsTooLow(c);
-
-        // mark online (again), if free space is over threshold
-        if (size != null && size.size > getThresholdBytes(c) && c.isOffline() && c.getOfflineCause() instanceof DiskSpace)
-            if (this.getClass().equals(((DiskSpace) c.getOfflineCause()).getTrigger()))
-                if (getDescriptor().markOnline(c)) {
-                    LOGGER.info(Messages.DiskSpaceMonitor_MarkedOnline(c.getDisplayName()));
-                }
-        return size;
-    }
-
-    /**
-     * Marks the given node as offline if free disk space is below the configured threshold.
-     * @param c the node
-     * @return the free space
-     * @since 1.521
-     */
-    @Restricted(NoExternalUse.class)
-    public DiskSpace markNodeOfflineIfDiskspaceIsTooLow(Computer c) {
         DiskSpace size = (DiskSpace) super.data(c);
-        long threshold = getThresholdBytes(c);
-        if (size != null) {
-            size.setThreshold(threshold);
-            long warningThreshold = getWarningThresholdBytes(c);
-            size.setWarningThreshold(warningThreshold);
-            if (size.size < threshold) {
-                size.setTriggered(this.getClass(), true);
-                if (getDescriptor().markOffline(c, size)) {
-                    LOGGER.warning(Messages.DiskSpaceMonitor_MarkedOffline(c.getDisplayName()));
-                }
-            }
-        }
+        ((DiskSpaceMonitorDescriptor) getDescriptor()).markNodeOfflineOrOnline(c, size, this);
         return size;
     }
 

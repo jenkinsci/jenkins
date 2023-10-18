@@ -25,6 +25,8 @@
 package hudson.node_monitors;
 
 import hudson.Functions;
+import hudson.model.Computer;
+import hudson.model.ComputerSet;
 import hudson.node_monitors.DiskSpaceMonitorDescriptor.DiskSpace;
 import hudson.remoting.VirtualChannel;
 import java.io.File;
@@ -32,6 +34,8 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.text.ParseException;
 import java.util.Locale;
+import java.util.Map;
+import java.util.logging.Logger;
 import jenkins.MasterToSlaveFileCallable;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
@@ -46,6 +50,50 @@ import org.kohsuke.stapler.export.ExportedBean;
  * @since 1.520
 */
 public abstract class DiskSpaceMonitorDescriptor extends AbstractAsyncNodeMonitorDescriptor<DiskSpace> {
+
+    private static final Logger LOGGER = Logger.getLogger(DiskSpaceMonitorDescriptor.class.getName());
+
+    @Override
+    protected Map<Computer, DiskSpace> monitor() throws InterruptedException {
+        Result<DiskSpace> base = monitorDetailed();
+        Map<Computer, DiskSpace> data = base.getMonitoringData();
+        AbstractDiskSpaceMonitor monitor = (AbstractDiskSpaceMonitor) ComputerSet.getMonitors().get(this);
+        for (Map.Entry<Computer, DiskSpace> e : data.entrySet()) {
+            Computer c = e.getKey();
+            DiskSpace d = e.getValue();
+            if (base.getSkipped().contains(c)) {
+                assert d == null;
+                continue;
+            }
+            if (d == null) {
+                e.setValue(d = get(c));
+            }
+            markNodeOfflineOrOnline(c, d, monitor);
+        }
+        return data;
+    }
+
+    @Restricted(NoExternalUse.class)
+    public void markNodeOfflineOrOnline(Computer c, DiskSpace size, AbstractDiskSpaceMonitor monitor) {
+        if (size != null) {
+            long threshold = monitor.getThresholdBytes(c);
+            size.setThreshold(threshold);
+            long warningThreshold = monitor.getWarningThresholdBytes(c);
+            size.setWarningThreshold(warningThreshold);
+            if (size.size <= threshold) {
+                size.setTriggered(monitor.getClass(), true);
+                if (markOffline(c, size)) {
+                    LOGGER.warning(Messages.DiskSpaceMonitor_MarkedOffline(c.getDisplayName()));
+                }
+            }
+            if (size.size > threshold && c.isOffline() && c.getOfflineCause() instanceof DiskSpace)
+                if (monitor.getClass().equals(((DiskSpace) c.getOfflineCause()).getTrigger()))
+                    if (markOnline(c)) {
+                        LOGGER.info(Messages.DiskSpaceMonitor_MarkedOnline(c.getDisplayName()));
+                    }
+        }
+    }
+
     /**
      * Value object that represents the disk space.
      */
@@ -183,7 +231,11 @@ public abstract class DiskSpaceMonitorDescriptor extends AbstractAsyncNodeMonito
                 }
             }
 
-            return new DiskSpace("", (long) (Double.parseDouble(size.trim()) * multiplier));
+            try {
+                return new DiskSpace("", (long) (Double.parseDouble(size.trim()) * multiplier));
+            } catch (NumberFormatException nfe) {
+                throw new ParseException(nfe.getLocalizedMessage(), 0);
+            }
         }
 
         private static final long serialVersionUID = 2L;
