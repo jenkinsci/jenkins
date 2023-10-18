@@ -189,7 +189,7 @@ public abstract class DiskSpaceMonitorDescriptor extends AbstractAsyncNodeMonito
 
         @Restricted(NoExternalUse.class)
         public boolean isWarning() {
-            return size > threshold && size < warningThreshold ;
+            return size > threshold && size < warningThreshold;
         }
 
         /**
