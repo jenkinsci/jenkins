@@ -210,6 +210,7 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
      */
     public abstract static class Disposer implements Serializable {
 
+        private static final long serialVersionUID = -7263485554646019967L;
         @CheckForNull
         private Boolean wrapperRequiresWorkspace;
 

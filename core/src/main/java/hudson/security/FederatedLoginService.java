@@ -115,6 +115,7 @@ public abstract class FederatedLoginService implements ExtensionPoint {
      * Identity information as obtained from {@link FederatedLoginService}.
      */
     public abstract class FederatedIdentity implements Serializable {
+        private static final long serialVersionUID = -7269184394646019567L;
         /**
          * Gets the string representation of the identity in the form that makes sense to the enclosing
          * {@link FederatedLoginService}, such as full OpenID URL.

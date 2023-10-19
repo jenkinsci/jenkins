@@ -41,6 +41,7 @@ import org.kohsuke.stapler.export.ExportedBean;
 @ExportedBean
 @Restricted(NoExternalUse.class)
 public class Category implements Serializable {
+    private static final long serialVersionUID = 9269184394646019967L;
 
     private String id;
 

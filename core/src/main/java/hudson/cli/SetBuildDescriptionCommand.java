@@ -12,6 +12,7 @@ import org.kohsuke.args4j.Argument;
 @SuppressFBWarnings(value = "SE_NO_SERIALVERSIONID", justification = "The Serializable should be removed.")
 @Extension
 public class SetBuildDescriptionCommand extends CLICommand implements Serializable {
+    private static final long serialVersionUID = -7269184394646019447L;
 
     @Override
     public String getShortDescription() {
