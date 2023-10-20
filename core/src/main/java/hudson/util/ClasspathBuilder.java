@@ -15,7 +15,7 @@ import java.util.List;
  * @since 1.300
  */
 public class ClasspathBuilder implements Serializable {
-    private static final long serialVersionUID = -7269184387646019967L;
+    private static final long serialVersionUID = 1L;
 
     private final List<String> args = new ArrayList<>();
 

@@ -32,7 +32,7 @@ import javax.servlet.http.HttpServletRequest;
  */
 @Deprecated
 public class WebAuthenticationDetails implements Serializable {
-    private static final long serialVersionUID = -7369184394646019967L;
+    private static final long serialVersionUID = 1L;
     public WebAuthenticationDetails(HttpServletRequest request) {}
 
 }

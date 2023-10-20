@@ -88,7 +88,7 @@ import org.dom4j.io.SAXReader;
  */
 public abstract class ToolInstallation extends AbstractDescribableImpl<ToolInstallation>
         implements Serializable, ExtensionPoint {
-    private static final long serialVersionUID = -7261984394646019967L;
+    private static final long serialVersionUID = 1L;
 
     private static final Logger LOGGER = Logger.getLogger(ToolInstallation.class.getName());
 

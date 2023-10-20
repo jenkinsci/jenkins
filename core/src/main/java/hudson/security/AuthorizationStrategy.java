@@ -213,7 +213,7 @@ public abstract class AuthorizationStrategy extends AbstractDescribableImpl<Auth
     public static final AuthorizationStrategy UNSECURED = new Unsecured();
 
     public static final class Unsecured extends AuthorizationStrategy implements Serializable {
-        private static final long serialVersionUID = -7269184394646019967L;
+        private static final long serialVersionUID = 1L;
         /**
          * Maintains the singleton semantics.
          */

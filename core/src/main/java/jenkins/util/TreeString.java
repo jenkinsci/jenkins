@@ -60,11 +60,11 @@ public final class TreeString implements Serializable {
     /**
      * Creates a new root {@link TreeString}
      */
-    /* package */ TreeString() {
+    /* package */TreeString() {
         this(null, "");
     }
 
-    /* package */ TreeString(final TreeString parent, final String label) {
+    /* package */TreeString(final TreeString parent, final String label) {
         assert parent == null || label.length() > 0; // if there's a parent,
                                                      // label can't be empty.
 
@@ -158,7 +158,8 @@ public final class TreeString implements Serializable {
         char[] v = table.get(l);
         if (v != null) {
             label = v;
-        } else {
+        }
+        else {
             table.put(l, label);
         }
     }
@@ -190,8 +191,7 @@ public final class TreeString implements Serializable {
      * scoped to one unmarshalling.
      */
     public static final class ConverterImpl implements Converter {
-        public ConverterImpl(final XStream xs) {
-        }
+        public ConverterImpl(final XStream xs) {}
 
         @Override
         public void marshal(final Object source, final HierarchicalStreamWriter writer,

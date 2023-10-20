@@ -101,7 +101,7 @@ import org.kohsuke.stapler.StaplerResponse;
  * @author Kohsuke Kawaguchi
  */
 public abstract class Slave extends Node implements Serializable {
-    private static final long serialVersionUID = -7267774394646019967L;
+    private static final long serialVersionUID = 1L;
     private static final Logger LOGGER = Logger.getLogger(Slave.class.getName());
 
     /**

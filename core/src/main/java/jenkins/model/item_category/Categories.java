@@ -50,6 +50,7 @@ import org.kohsuke.stapler.export.Flavor;
 @ExportedBean
 @Restricted(NoExternalUse.class)
 public class Categories implements HttpResponse, Serializable {
+    private static final long serialVersionUID = 1L;
 
     private List<Category> items;
 

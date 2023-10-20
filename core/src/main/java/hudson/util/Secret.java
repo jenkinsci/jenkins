@@ -284,7 +284,7 @@ public final class Secret implements Serializable {
             return fromString(reader.getValue());
         }
 
-        private static final long serialVersionUID = 7269184394646019967L;
+        private static final long serialVersionUID = 1L;
     }
 
     /**
