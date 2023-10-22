@@ -86,11 +86,16 @@ public abstract class DiskSpaceMonitorDescriptor extends AbstractAsyncNodeMonito
                     LOGGER.warning(Messages.DiskSpaceMonitor_MarkedOffline(c.getDisplayName()));
                 }
             }
-            if (size.size > threshold && c.isOffline() && c.getOfflineCause() instanceof DiskSpace)
-                if (monitor.getClass().equals(((DiskSpace) c.getOfflineCause()).getTrigger()))
-                    if (markOnline(c)) {
-                        LOGGER.info(Messages.DiskSpaceMonitor_MarkedOnline(c.getDisplayName()));
+            if (size.size > threshold) {
+                size.setTriggered(false);
+                if (c.isOffline() && c.getOfflineCause() instanceof DiskSpace) {
+                    if (monitor.getClass().equals(((DiskSpace) c.getOfflineCause()).getTrigger())) {
+                        if (markOnline(c)) {
+                            LOGGER.info(Messages.DiskSpaceMonitor_MarkedOnline(c.getDisplayName()));
+                        }
                     }
+                }
+            }
         }
     }
 
