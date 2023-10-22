@@ -58,8 +58,9 @@ public class DiskSpaceMonitorDescriptorTest {
     public void string() {
         DiskSpace du = new DiskSpace("/tmp", 123 * 1024 * 1024);
         du.setTotalSize(300 * 1024 * 1024);
-        du.setThreshold(200 * 1024 * 1024);
+        du.setThreshold(100 * 1024 * 1024);
         assertEquals("123.00 MiB out of 300.00 MiB left on /tmp.", du.toString());
+        du.setThreshold(200 * 1024 * 1024);
         assertEquals("Disk space is below threshold of 200.00 MiB. Only 123.00 MiB out of 300.00 MiB left on /tmp.", du.toString());
     }
 }
