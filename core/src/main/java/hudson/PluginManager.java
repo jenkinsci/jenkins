@@ -620,6 +620,10 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             LOGGER.fine(() -> "not considering loading a detached dependency " + shortName + " as it is already on disk");
             return;
         }
+        if (new File(rootDir, shortName + ".jpi.uninstalled").isFile()) {
+            LOGGER.info(() -> "not considering loading a detached dependency " + shortName + " as it is marked as uninstalled.");
+            return;
+        }
         LOGGER.fine(() -> "considering loading a detached dependency " + shortName);
         for (String loadedFile : loadPluginsFromWar(getDetachedLocation(), (dir, name) -> normalisePluginName(name).equals(shortName))) {
             String loaded = normalisePluginName(loadedFile);
