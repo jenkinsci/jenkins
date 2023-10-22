@@ -46,7 +46,7 @@ public class DiskSpaceMonitorNodeProperty extends NodeProperty<Node> {
     }
 
     @Extension
-    @Symbol("diskspaceMonitor")
+    @Symbol("diskSpaceMonitor")
     public static class DescriptorImpl extends NodePropertyDescriptor {
 
         @NonNull

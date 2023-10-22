@@ -32,6 +32,7 @@ import hudson.remoting.VirtualChannel;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.text.ParseException;
 import java.util.Locale;
 import java.util.Map;
@@ -87,7 +88,6 @@ public abstract class DiskSpaceMonitorDescriptor extends AbstractAsyncNodeMonito
                 }
             }
             if (size.size > threshold) {
-                size.setTriggered(false);
                 if (c.isOffline() && c.getOfflineCause() instanceof DiskSpace) {
                     if (monitor.getClass().equals(((DiskSpace) c.getOfflineCause()).getTrigger())) {
                         if (markOnline(c)) {
@@ -140,20 +140,28 @@ public abstract class DiskSpaceMonitorDescriptor extends AbstractAsyncNodeMonito
             if (triggered) {
                 if (threshold >= 0) {
                     return Messages.DiskSpaceMonitorDescriptor_DiskSpace_FreeSpaceTooLow(
-                            getGbLeft(), path, Functions.humanReadableByteSize(threshold),
+                            Functions.humanReadableByteSize(size),
+                            path,
+                            Functions.humanReadableByteSize(threshold),
                             Functions.humanReadableByteSize(totalSize));
                 } else {
                     return Messages.DiskSpaceMonitorDescriptor_DiskSpace_FreeSpaceTooLow(
-                            getGbLeft(), path, "unset",
+                            Functions.humanReadableByteSize(size),
+                            path,
+                            "unset",
                             Functions.humanReadableByteSize(totalSize));
                 }
             }
             if (isWarning()) {
                 return Messages.DiskSpaceMonitorDescriptor_DiskSpace_FreeSpaceTooLow(
-                        getGbLeft(), path, Functions.humanReadableByteSize(warningThreshold),
+                        Functions.humanReadableByteSize(size),
+                        path,
+                        Functions.humanReadableByteSize(warningThreshold),
                         Functions.humanReadableByteSize(totalSize));
             }
-            return Messages.DiskSpaceMonitorDescriptor_DiskSpace_FreeSpace(getGbLeft(), path,
+            return Messages.DiskSpaceMonitorDescriptor_DiskSpace_FreeSpace(
+                    Functions.humanReadableByteSize(size),
+                    path,
                     Functions.humanReadableByteSize(totalSize));
         }
 
@@ -175,9 +183,18 @@ public abstract class DiskSpaceMonitorDescriptor extends AbstractAsyncNodeMonito
 
         /**
          * Gets GB left.
+         *
+         * @deprecated since TODO
+         *   Directly use the size field or to get a human-readable value with units use
+         *   {@link Functions#humanReadableByteSize(long)}
          */
+        @Deprecated
         public String getGbLeft() {
-            return Functions.humanReadableByteSize(size);
+            long space = size;
+            space /= 1024L;   // convert to KB
+            space /= 1024L;   // convert to MB
+
+            return new BigDecimal(space).scaleByPowerOfTen(-3).toPlainString();
         }
 
         /**
@@ -189,7 +206,7 @@ public abstract class DiskSpaceMonitorDescriptor extends AbstractAsyncNodeMonito
 
         @Restricted(NoExternalUse.class)
         public boolean isTriggered() {
-            return triggered;
+            return size <= threshold;
         }
 
         @Restricted(NoExternalUse.class)
@@ -213,12 +230,22 @@ public abstract class DiskSpaceMonitorDescriptor extends AbstractAsyncNodeMonito
             this.triggered = triggered;
         }
 
-        protected void setThreshold(long threshold) {
+        public void setThreshold(long threshold) {
             this.threshold = threshold;
         }
 
-        protected void setWarningThreshold(long warningThreshold) {
+        @Exported
+        public long getThreshold() {
+            return threshold;
+        }
+
+        public void setWarningThreshold(long warningThreshold) {
             this.warningThreshold = warningThreshold;
+        }
+
+        @Exported
+        public long getWarningThreshold() {
+            return warningThreshold;
         }
 
         @Override
