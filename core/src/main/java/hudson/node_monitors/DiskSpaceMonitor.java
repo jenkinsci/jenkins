@@ -63,6 +63,7 @@ public class DiskSpaceMonitor extends AbstractDiskSpaceMonitor {
         return Jenkins.get().hasPermission(Jenkins.ADMINISTER) ? super.getColumnCaption() : null;
     }
 
+    @SuppressFBWarnings(value = "MS_PKGPROTECT", justification = "for backward compatibility")
     public static /*almost final*/ DiskSpaceMonitorDescriptor DESCRIPTOR;
 
     @Extension @Symbol("diskSpace")
@@ -89,7 +90,7 @@ public class DiskSpaceMonitor extends AbstractDiskSpaceMonitor {
 
             return p.asCallableWith(new GetUsableSpace());
         }
-    };
+    }
 
     @Extension
     public static DiskSpaceMonitorDescriptor install() {

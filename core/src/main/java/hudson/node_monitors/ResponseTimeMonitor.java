@@ -52,7 +52,9 @@ public class ResponseTimeMonitor extends NodeMonitor {
     public ResponseTimeMonitor() {
     }
 
+    @SuppressFBWarnings(value = "MS_PKGPROTECT", justification = "for backward compatibility")
     public static /*almost final*/ AbstractNodeMonitorDescriptor<Data> DESCRIPTOR;
+
     @Extension
     @Symbol("responseTime")
     public static class DescriptorImpl extends AbstractAsyncNodeMonitorDescriptor<Data> {
@@ -106,7 +108,7 @@ public class ResponseTimeMonitor extends NodeMonitor {
         public NodeMonitor newInstance(StaplerRequest req, JSONObject formData) throws FormException {
             return new ResponseTimeMonitor();
         }
-    };
+    }
 
     private static final class Step1 extends MasterToSlaveCallable<Data, IOException> {
         private Data cur;
