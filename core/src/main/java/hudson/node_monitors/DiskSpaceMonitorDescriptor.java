@@ -82,7 +82,7 @@ public abstract class DiskSpaceMonitorDescriptor extends AbstractAsyncNodeMonito
             long warningThreshold = monitor.getWarningThresholdBytes(c);
             size.setWarningThreshold(warningThreshold);
             if (size.size <= threshold) {
-                size.setTriggered(monitor.getClass(), true);
+                size.setTrigger(monitor.getClass());
                 if (markOffline(c, size)) {
                     LOGGER.warning(Messages.DiskSpaceMonitor_MarkedOffline(c.getDisplayName()));
                 }
@@ -110,7 +110,6 @@ public abstract class DiskSpaceMonitorDescriptor extends AbstractAsyncNodeMonito
 
         private long totalSize;
 
-        private boolean triggered;
         private Class<? extends AbstractDiskSpaceMonitor> trigger;
         private long threshold;
         private long warningThreshold;
@@ -137,7 +136,7 @@ public abstract class DiskSpaceMonitorDescriptor extends AbstractAsyncNodeMonito
 
         @Override
         public String toString() {
-            if (triggered) {
+            if (isTriggered()) {
                 if (threshold >= 0) {
                     return Messages.DiskSpaceMonitorDescriptor_DiskSpace_FreeSpaceTooLow(
                             Functions.humanReadableByteSize(size),
@@ -215,19 +214,10 @@ public abstract class DiskSpaceMonitorDescriptor extends AbstractAsyncNodeMonito
         }
 
         /**
-         * Sets whether this disk space amount should be treated as outside
-         * the acceptable conditions or not.
+         * Sets the trigger class which made the decision
          */
-        protected void setTriggered(boolean triggered) {
-            this.triggered = triggered;
-        }
-
-        /**
-         * Same as {@link DiskSpace#setTriggered(boolean)}, also sets the trigger class which made the decision
-         */
-        protected void setTriggered(Class<? extends AbstractDiskSpaceMonitor> trigger, boolean triggered) {
+        protected void setTrigger(Class<? extends AbstractDiskSpaceMonitor> trigger) {
             this.trigger = trigger;
-            this.triggered = triggered;
         }
 
         public void setThreshold(long threshold) {
