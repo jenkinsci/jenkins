@@ -66,8 +66,6 @@ import java.lang.reflect.Constructor;
 import java.net.HttpRetryException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.UnknownHostException;
@@ -1211,13 +1209,7 @@ public class UpdateCenter extends AbstractModelObject implements Loadable, Savea
          * @throws IOException if a connection can't be established
          */
         public void checkConnection(ConnectionCheckJob job, String connectionCheckUrl) throws IOException {
-            try {
-                testConnection(new URI(connectionCheckUrl).toURL());
-            } catch (URISyntaxException e) {
-                MalformedURLException mex = new MalformedURLException(e.getMessage());
-                mex.initCause(e);
-                throw mex;
-            }
+            testConnection(new URL(connectionCheckUrl));
         }
 
         /**
@@ -1240,21 +1232,9 @@ public class UpdateCenter extends AbstractModelObject implements Loadable, Savea
         static URL toUpdateCenterCheckUrl(String updateCenterUrl) throws MalformedURLException {
             URL url;
             if (updateCenterUrl.startsWith("http://") || updateCenterUrl.startsWith("https://")) {
-                try {
-                    url = new URI(updateCenterUrl + (updateCenterUrl.indexOf('?') == -1 ? "?uctest" : "&uctest")).toURL();
-                } catch (URISyntaxException e) {
-                    MalformedURLException mex = new MalformedURLException(e.getMessage());
-                    mex.initCause(e);
-                    throw mex;
-                }
+                url = new URL(updateCenterUrl + (updateCenterUrl.indexOf('?') == -1 ? "?uctest" : "&uctest"));
             } else {
-                try {
-                    url = new URI(updateCenterUrl).toURL();
-                } catch (URISyntaxException e) {
-                    MalformedURLException mex = new MalformedURLException(e.getMessage());
-                    mex.initCause(e);
-                    throw mex;
-                }
+                url = new URL(updateCenterUrl);
             }
             return url;
         }
@@ -2444,13 +2424,7 @@ public class UpdateCenter extends AbstractModelObject implements Loadable, Savea
 
         @Override
         protected URL getURL() throws MalformedURLException {
-            try {
-                return new URI(plugin.url).toURL();
-            } catch (URISyntaxException e) {
-                MalformedURLException mex = new MalformedURLException(e.getMessage());
-                mex.initCause(e);
-                throw mex;
-            }
+            return new URL(plugin.url);
         }
 
         @Override
@@ -2592,13 +2566,7 @@ public class UpdateCenter extends AbstractModelObject implements Loadable, Savea
             if (site == null) {
                 throw new MalformedURLException("no update site defined");
             }
-            try {
-                return new URI(site.getData().core.url).toURL();
-            } catch (URISyntaxException e) {
-                MalformedURLException mex = new MalformedURLException(e.getMessage());
-                mex.initCause(e);
-                throw mex;
-            }
+            return new URL(site.getData().core.url);
         }
 
         @Override
