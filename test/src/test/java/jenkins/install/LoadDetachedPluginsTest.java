@@ -52,6 +52,9 @@ import java.util.stream.Collectors;
 import jenkins.plugins.DetachedPluginsUtil;
 import jenkins.plugins.DetachedPluginsUtil.DetachedPlugin;
 import jenkins.security.UpdateSiteWarningsMonitor;
+import org.apache.commons.io.FileUtils;
+import org.htmlunit.html.HtmlForm;
+import org.htmlunit.html.HtmlPage;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
@@ -202,7 +205,23 @@ public class LoadDetachedPluginsTest {
             uninstalledMarker.createNewFile();
             PluginManagerUtil.dynamicLoad("javax-activation-api.jpi", r.jenkins);
 
-            assertFalse(uninstalledMarker.exists());  // `.uninstalled` file should be delete after explicit install of detached
+            assertFalse(uninstalledMarker.exists());  // `.uninstalled` file should be deleted after explicit install of detached
+        });
+    }
+
+    @Issue("JENKINS-69487")
+    @Test public void impliedIsIgnoredWithSystemProperty() throws Exception {
+        rr.then(r -> {
+            PluginManager.IGNORE_DETACHED.add("javax-mail-api");
+            HtmlPage page = r.createWebClient().goTo("pluginManager/advanced");
+            HtmlForm f = page.getFormByName("uploadPlugin");
+            File dir = tmp.newFolder();
+            File plugin = new File(dir, "htmlpublisher.jpi");
+            FileUtils.copyURLToFile(getClass().getClassLoader().getResource("plugins/htmlpublisher.jpi"), plugin);
+            f.getInputByName("name").setValue(plugin.getAbsolutePath());
+            r.submit(f);
+            PluginWrapper pw = r.jenkins.pluginManager.getPlugin("javax-mail-api");
+            assertNull(pw);
         });
     }
 

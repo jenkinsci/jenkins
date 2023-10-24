@@ -211,11 +211,17 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      */
     /* private final */ static int CHECK_UPDATE_ATTEMPTS;
 
+    /**
+     * List of detached plugins that should not be installed as implied dependency.
+     */
+    public static final List<String> IGNORE_DETACHED = new ArrayList<>();
+
     static {
         try {
             // Secure initialization
             CHECK_UPDATE_SLEEP_TIME_MILLIS = SystemProperties.getInteger(PluginManager.class.getName() + ".checkUpdateSleepTimeMillis", 1000);
             CHECK_UPDATE_ATTEMPTS = SystemProperties.getInteger(PluginManager.class.getName() + ".checkUpdateAttempts", 1);
+            IGNORE_DETACHED.addAll(List.of(SystemProperties.getString(PluginManager.class.getName() + ".ignoreDetached", "").split(",")));
         } catch (RuntimeException e) {
             LOGGER.warning(String.format("There was an error initializing the PluginManager. Exception: %s", e));
         } finally {
@@ -620,7 +626,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             LOGGER.fine(() -> "not considering loading a detached dependency " + shortName + " as it is already on disk");
             return;
         }
-        if (new File(rootDir, shortName + ".jpi.uninstalled").isFile()) {
+        if (new File(rootDir, shortName + ".jpi.uninstalled").isFile() || IGNORE_DETACHED.contains(shortName)) {
             LOGGER.info(() -> "not considering loading a detached dependency " + shortName + " as it is marked as uninstalled.");
             return;
         }
