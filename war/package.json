@@ -30,7 +30,7 @@
     "clean-webpack-plugin": "4.0.0",
     "css-loader": "6.8.1",
     "css-minimizer-webpack-plugin": "5.0.1",
-    "eslint": "8.51.0",
+    "eslint": "8.52.0",
     "eslint-config-prettier": "9.0.0",
     "handlebars-loader": "1.7.3",
     "mini-css-extract-plugin": "2.7.6",
