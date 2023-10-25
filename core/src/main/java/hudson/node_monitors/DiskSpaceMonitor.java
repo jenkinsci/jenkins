@@ -91,12 +91,4 @@ public class DiskSpaceMonitor extends AbstractDiskSpaceMonitor {
             return p.asCallableWith(new GetUsableSpace());
         }
     }
-
-    /**
-     * @deprecated since TODO
-     */
-    @Deprecated
-    public static DiskSpaceMonitorDescriptor install() {
-        return (DiskSpaceMonitorDescriptor) Jenkins.get().getDescriptor(DiskSpaceMonitor.class);
-    }
 }
