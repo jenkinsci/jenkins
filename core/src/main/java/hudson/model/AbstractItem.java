@@ -730,7 +730,9 @@ public abstract class AbstractItem extends Actionable implements Loadable, Item,
                     Item item = Tasks.getItemOf(i.task);
                     while (item != null) {
                         if (item == this) {
-                            queue.cancel(i);
+                            if (!queue.cancel(i)) {
+                                LOGGER.warning(() -> "failed to cancel " + i);
+                            }
                             break;
                         }
                         if (item.getParent() instanceof Item) {
