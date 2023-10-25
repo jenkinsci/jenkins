@@ -37,7 +37,6 @@ import hudson.Functions;
 import hudson.Util;
 import hudson.XmlFile;
 import hudson.cli.declarative.CLIResolver;
-import hudson.model.Queue.Executable;
 import hudson.model.listeners.ItemListener;
 import hudson.model.listeners.SaveableListener;
 import hudson.model.queue.SubTask;
@@ -748,7 +747,7 @@ public abstract class AbstractItem extends Actionable implements Loadable, Item,
                 for (Computer c : Jenkins.get().getComputers()) {
                     for (Executor e : c.getAllExecutors()) {
                         final WorkUnit workUnit = e.getCurrentWorkUnit();
-                        final Executable executable = workUnit != null ? workUnit.getExecutable() : null;
+                        final Queue.Executable executable = workUnit != null ? workUnit.getExecutable() : null;
                         final SubTask subtask = executable != null ? getParentOf(executable) : null;
 
                         if (subtask != null) {
@@ -798,6 +797,24 @@ public abstract class AbstractItem extends Actionable implements Loadable, Item,
                         throw new Failure(Messages.AbstractItem_FailureToStopBuilds(
                                 buildsInProgress.size(), getFullDisplayName()
                         ));
+                    }
+                }
+            }
+            if (this instanceof ItemGroup) {
+                // delete individual items first
+                // (disregard whether they would be deletable in isolation)
+                // JENKINS-34939: do not hold the monitor on this folder while deleting them
+                // (thus we cannot do this inside performDelete)
+                try (ACLContext oldContext = ACL.as2(ACL.SYSTEM2)) {
+                    for (Item i : ((ItemGroup<?>) this).getItems(TopLevelItem.class::isInstance)) {
+                        try {
+                            i.delete();
+                        } catch (AbortException e) {
+                            throw (AbortException) new AbortException(
+                                    "Failed to delete " + i.getFullDisplayName() + " : " + e.getMessage()).initCause(e);
+                        } catch (IOException e) {
+                            throw new IOException("Failed to delete " + i.getFullDisplayName(), e);
+                        }
                     }
                 }
             }
