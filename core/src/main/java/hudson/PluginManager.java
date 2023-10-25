@@ -214,6 +214,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     /**
      * List of detached plugins that should not be installed as implied dependency.
      */
+    @SuppressFBWarnings(value = "MS_MUTABLE_COLLECTION_PKGPROTECT", justification = "for script console")
     public static final List<String> IGNORE_DETACHED = new ArrayList<>();
 
     static {
