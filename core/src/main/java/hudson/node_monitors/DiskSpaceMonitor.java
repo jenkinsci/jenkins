@@ -92,8 +92,11 @@ public class DiskSpaceMonitor extends AbstractDiskSpaceMonitor {
         }
     }
 
-    @Extension
+    /**
+     * @deprecated since TODO
+     */
+    @Deprecated
     public static DiskSpaceMonitorDescriptor install() {
-        return DESCRIPTOR;
+        return (DiskSpaceMonitorDescriptor) Jenkins.get().getDescriptor(DiskSpaceMonitor.class);
     }
 }
