@@ -190,7 +190,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>cloudbees-folder</artifactId>
-      <version>6.848.ve3b_fd7839a_81</version>
+      <version>6.858.v898218f3609d</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -220,7 +220,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>matrix-project</artifactId>
-      <version>808.v5a_b_5f56d6966</version>
+      <version>818.v7eb_e657db_924</version>
       <scope>test</scope>
     </dependency>
     <dependency>
