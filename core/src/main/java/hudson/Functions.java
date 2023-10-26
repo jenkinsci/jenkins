@@ -110,6 +110,7 @@ import java.lang.reflect.Type;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -1938,11 +1939,11 @@ public class Functions {
         String url = Jenkins.get().getRootUrl();
         try {
             if (url != null) {
-                String host = new URI(url).toURL().getHost();
+                String host = new URL(url).getHost();
                 if (host != null)
                     return host;
             }
-        } catch (MalformedURLException | URISyntaxException e) {
+        } catch (MalformedURLException e) {
             // fall back to HTTP request
         }
         return Stapler.getCurrentRequest().getServerName();

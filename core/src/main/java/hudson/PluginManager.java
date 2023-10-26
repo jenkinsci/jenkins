@@ -506,8 +506,10 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
                                         // obtain topologically sorted list and overwrite the list
                                         for (PluginWrapper p : cgd.getSorted()) {
-                                            if (p.isActive())
+                                            if (p.isActive()) {
                                                 activePlugins.add(p);
+                                                ((UberClassLoader) uberClassLoader).clearCacheMisses();
+                                            }
                                         }
                                     } catch (CycleDetectedException e) { // TODO this should be impossible, since we override reactOnCycle to not throw the exception
                                         stop(); // disable all plugins since classloading from them can lead to StackOverflow
@@ -932,9 +934,10 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             // so existing plugins can't be depending on this newly deployed one.
 
             plugins.add(p);
-            if (p.isActive())
+            if (p.isActive()) {
                 activePlugins.add(p);
-            ((UberClassLoader) uberClassLoader).loaded.clear();
+                ((UberClassLoader) uberClassLoader).clearCacheMisses();
+            }
 
             // TODO antimodular; perhaps should have a PluginListener to complement ExtensionListListener?
             CustomClassFilter.Contributed.load();
@@ -1843,7 +1846,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
         @Override
         public void copy(File target) throws Exception {
-            try (InputStream input =  ProxyConfiguration.getInputStream(new URI(url).toURL())) {
+            try (InputStream input =  ProxyConfiguration.getInputStream(new URL(url))) {
                 Files.copy(input, target.toPath());
             }
         }
@@ -1945,7 +1948,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     @RequirePOST public FormValidation doCheckPluginUrl(StaplerRequest request, @QueryParameter String value) throws IOException {
         if (StringUtils.isNotBlank(value)) {
             try {
-                URL url = new URI(value).toURL();
+                URL url = new URL(value);
                 if (!url.getProtocol().startsWith("http")) {
                     return FormValidation.error(Messages.PluginManager_invalidUrl());
                 }
@@ -1953,7 +1956,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                 if (!url.getProtocol().equals("https")) {
                     return FormValidation.warning(Messages.PluginManager_insecureUrl());
                 }
-            } catch (MalformedURLException | URISyntaxException e) {
+            } catch (MalformedURLException e) {
                 return FormValidation.error(e.getMessage());
             }
         }
@@ -2383,6 +2386,10 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                 }
             }
             return Collections.enumeration(resources);
+        }
+
+        void clearCacheMisses() {
+            loaded.values().removeIf(Optional::isEmpty);
         }
 
         @Override
