@@ -100,7 +100,7 @@ public class ConsoleUrlProviderGlobalConfiguration extends GlobalConfiguration {
         return ExtensionList.lookupSingleton(ConsoleUrlProviderGlobalConfiguration.class);
     }
 
-    public static List<? extends Descriptor<ConsoleUrlProvider>> getProvidersDescriptors() {
+    public List<? extends Descriptor<ConsoleUrlProvider>> getProvidersDescriptors() {
         // For the global configuration, the default provider will always be consulted as a last resort, and since it
         // handles all builds, there is no reason to ever select it explicitly.
         return Jenkins.get().getDescriptorList(ConsoleUrlProvider.class).stream()
