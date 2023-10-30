@@ -44,6 +44,13 @@ import org.kohsuke.stapler.Stapler;
 /**
  * Extension point that allows implementations to redirect build console links to a specified URL.
  * <p>In order to produce links to console URLs in Jelly templates, use {@link Functions#getConsoleUrl}.
+ * <p>Note: If you implement this API, consider providing a link to the classic console from within your console
+ * visualization as a fallback, particularly if your visualization is not as general as the classic console, has
+ * limitations that might be relevant in some cases, or requires advanced data that may be not exist for
+ * failed or corrupted builds. For example, if you visualize Pipeline build logs using only {@code LogStorage.stepLog},
+ * there will be log lines that will never show up in your visualization, or if your visualization traverses the
+ * Pipeline flow graph, there may be various edge cases where your visualization does not work at all, but the classic
+ * console view is unaffected.
  * @see Functions#getConsoleUrl
  * @since TODO
  */

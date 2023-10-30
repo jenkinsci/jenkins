@@ -28,13 +28,16 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.BulkChange;
 import hudson.Extension;
 import hudson.ExtensionList;
+import hudson.model.Descriptor;
 import java.io.IOException;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import jenkins.appearance.AppearanceCategory;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.GlobalConfigurationCategory;
+import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
@@ -95,5 +98,13 @@ public class ConsoleUrlProviderGlobalConfiguration extends GlobalConfiguration {
 
     public static ConsoleUrlProviderGlobalConfiguration get() {
         return ExtensionList.lookupSingleton(ConsoleUrlProviderGlobalConfiguration.class);
+    }
+
+    public static List<? extends Descriptor<ConsoleUrlProvider>> getProvidersDescriptors() {
+        // For the global configuration, the default provider will always be consulted as a last resort, and since it
+        // handles all builds, there is no reason to ever select it explicitly.
+        return Jenkins.get().getDescriptorList(ConsoleUrlProvider.class).stream()
+                .filter(d -> !(d instanceof DefaultConsoleUrlProvider.DescriptorImpl))
+                .collect(Collectors.toList());
     }
 }
