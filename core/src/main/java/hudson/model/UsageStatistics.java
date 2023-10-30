@@ -64,6 +64,7 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import jenkins.model.Jenkins;
+import jenkins.security.FIPS140;
 import jenkins.util.SystemProperties;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
@@ -102,8 +103,10 @@ public class UsageStatistics extends PageDecorator implements PersistentDescript
      * Returns true if it's time for us to check for new version.
      */
     public boolean isDue() {
-        // user opted out. no data collection.
-        if (!Jenkins.get().isUsageStatisticsCollected() || DISABLED)     return false;
+        // user opted out (explicitly or FIPS is requested). no data collection
+        if (!Jenkins.get().isUsageStatisticsCollected() || DISABLED || FIPS140.useCompliantAlgorithms()) {
+            return false;
+        }
 
         long now = System.currentTimeMillis();
         if (now - lastAttempt > DAY) {
@@ -212,7 +215,11 @@ public class UsageStatistics extends PageDecorator implements PersistentDescript
     public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
         try {
             // for backward compatibility reasons, this configuration is stored in Jenkins
-            Jenkins.get().setNoUsageStatistics(json.has("usageStatisticsCollected") ? null : true);
+            if (DISABLED) {
+                Jenkins.get().setNoUsageStatistics(Boolean.TRUE);
+            } else {
+                Jenkins.get().setNoUsageStatistics(json.has("usageStatisticsCollected") ? null : Boolean.TRUE);
+            }
             return true;
         } catch (IOException e) {
             throw new FormException(e, "usageStatisticsCollected");

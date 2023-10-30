@@ -109,13 +109,9 @@ function confirmAndRevokeAllSelected(button) {
             selectedValues.push({ userId: userId, uuid: uuid });
           }
 
-          // TODO simplify when Prototype.js is removed
-
           fetch(url, {
             method: "post",
-            body: Object.toJSON
-              ? Object.toJSON({ values: selectedValues })
-              : JSON.stringify({ values: selectedValues }),
+            body: JSON.stringify({ values: selectedValues }),
             headers: crumb.wrap({ "Content-Type": "application/json" }),
           }).then(() => window.location.reload());
         },

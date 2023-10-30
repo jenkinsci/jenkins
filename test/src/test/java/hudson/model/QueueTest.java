@@ -83,7 +83,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.HttpURLConnection;
-import java.net.URL;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
@@ -1199,7 +1199,7 @@ public class QueueTest {
         Queue.Item currentOne = items[0];
         assertFalse(currentOne.getFuture().isCancelled());
 
-        WebRequest request = new WebRequest(new URL(r.getURL() + urlProvider.apply(currentOne)), HttpMethod.POST);
+        WebRequest request = new WebRequest(new URI(r.getURL() + urlProvider.apply(currentOne)).toURL(), HttpMethod.POST);
 
         { // user without right cannot cancel
             JenkinsRule.WebClient wc = r.createWebClient()
