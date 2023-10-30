@@ -67,7 +67,7 @@ THE SOFTWARE.
         <!-- RequireUpperBoundDeps between checks-api, plugin-util-api, and font-awesome-api -->
         <groupId>io.jenkins.plugins</groupId>
         <artifactId>commons-text-api</artifactId>
-        <version>1.10.0-78.v3e7b_ea_d5a_fe1</version>
+        <version>1.10.0-93.v65a_030d8f170</version>
       </dependency>
       <dependency>
         <!-- RequireUpperBoundDeps between bootstrap5-api and echarts-api -->
