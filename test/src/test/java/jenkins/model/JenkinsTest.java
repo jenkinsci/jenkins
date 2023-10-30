@@ -77,6 +77,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.Socket;
+import java.net.URI;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
@@ -439,7 +440,7 @@ public class JenkinsTest {
     }
 
     private Page eval(WebClient wc) throws Exception {
-        WebRequest req = new WebRequest(new URL(wc.getContextPath() + "eval"), HttpMethod.POST);
+        WebRequest req = new WebRequest(new URI(wc.getContextPath() + "eval").toURL(), HttpMethod.POST);
         req.setEncodingType(null);
         req.setRequestBody("<j:jelly xmlns:j='jelly:core'>${1+2}</j:jelly>");
         return wc.getPage(req);

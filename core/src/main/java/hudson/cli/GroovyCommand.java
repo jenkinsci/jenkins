@@ -68,7 +68,7 @@ public class GroovyCommand extends CLICommand {
         final String scriptListenerCorrelationId = String.valueOf(System.identityHashCode(this));
 
         Binding binding = new Binding();
-        binding.setProperty("out", new ScriptListener.ListenerWriter(new PrintWriter(new OutputStreamWriter(stdout, getClientCharset()), true), GroovyCommand.class, null, scriptListenerCorrelationId, User.current()));
+        binding.setProperty("out", new PrintWriter(new ScriptListener.ListenerWriter(new OutputStreamWriter(stdout, getClientCharset()), GroovyCommand.class, null, scriptListenerCorrelationId, User.current()), true));
         binding.setProperty("stdin", stdin);
         binding.setProperty("stdout", stdout);
         binding.setProperty("stderr", stderr);

@@ -76,6 +76,7 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import jenkins.model.DirectlyModifiableTopLevelItemGroup;
 import jenkins.model.Jenkins;
+import jenkins.model.Loadable;
 import jenkins.model.queue.ItemDeletion;
 import jenkins.security.NotReallyRoleSensitiveCallable;
 import jenkins.util.SystemProperties;
@@ -111,7 +112,7 @@ import org.xml.sax.SAXException;
 // Item doesn't necessarily have to be Actionable, but
 // Java doesn't let multiple inheritance.
 @ExportedBean
-public abstract class AbstractItem extends Actionable implements Item, HttpDeletable, AccessControlled, DescriptorByNameOwner, StaplerProxy {
+public abstract class AbstractItem extends Actionable implements Loadable, Item, HttpDeletable, AccessControlled, DescriptorByNameOwner, StaplerProxy {
 
     private static final Logger LOGGER = Logger.getLogger(AbstractItem.class.getName());
 
@@ -934,6 +935,11 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      */
     @RequirePOST
     public void doReload() throws IOException {
+        load();
+    }
+
+    @Override
+    public void load() throws IOException {
         checkPermission(CONFIGURE);
 
         // try to reflect the changes by reloading
