@@ -34,6 +34,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.fail;
 
+import hudson.XmlFile;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Queue;
@@ -45,6 +46,7 @@ import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Level;
 import jenkins.model.Jenkins;
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -52,6 +54,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.BuildWatcher;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.LoggerRule;
 
 /**
  * @author pjanouse
@@ -68,6 +71,9 @@ public class QuietDownCommandTest {
 
     @Rule
     public final JenkinsRule j = new JenkinsRule();
+
+    @Rule
+    public final LoggerRule logging = new LoggerRule();
 
     @Before
     public void setUp() {
@@ -343,8 +349,7 @@ public class QuietDownCommandTest {
         final OneShotEvent finish = new OneShotEvent();
         final FreeStyleBuild build = OnlineNodeCommandTest.startBlockingAndFinishingBuild(project, finish);
 
-        boolean timeoutOccurred = false;
-        final FutureTask exec_task = new FutureTask(() -> {
+        final FutureTask<Void> exec_task = new FutureTask<>(() -> {
             assertJenkinsNotInQuietMode();
             beforeCli.signal();
             final CLICommandInvoker.Result result = command
@@ -356,7 +361,7 @@ public class QuietDownCommandTest {
         threadPool.submit(exec_task);
         beforeCli.block();
         assertJenkinsInQuietMode();
-        final boolean timeout_occured = false;
+        boolean timeoutOccurred = false;
         try {
             exec_task.get(TIMEOUT, TimeUnit.MILLISECONDS);
         } catch (TimeoutException e) {
@@ -370,6 +375,7 @@ public class QuietDownCommandTest {
         assertThat(build.isBuilding(), equalTo(false));
         j.assertBuildStatusSuccess(build);
         assertJenkinsInQuietMode();
+        logging.record(XmlFile.class, Level.FINEST);
     }
 
     //

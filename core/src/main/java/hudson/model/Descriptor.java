@@ -104,7 +104,7 @@ import org.kohsuke.stapler.lang.Klass;
  * to {@link Object}/{@link Class} relationship.
  *
  * A {@link Descriptor}/{@link Describable}
- * combination is used throughout in Hudson to implement a
+ * combination is used throughout in Jenkins to implement a
  * configuration/extensibility mechanism.
  *
  * <p>
@@ -117,7 +117,7 @@ import org.kohsuke.stapler.lang.Klass;
  * configuration of a view (what projects are in it, regular expression, etc.)
  *
  * <p>
- * For Hudson to create such configured {@link ListView} instance, Hudson
+ * For Jenkins to create such configured {@link ListView} instance, Jenkins
  * needs another object that captures the metadata of {@link ListView},
  * and that is what a {@link Descriptor} is for. {@link ListView} class
  * has a singleton descriptor, and this descriptor helps render
