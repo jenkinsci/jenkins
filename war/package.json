@@ -30,7 +30,7 @@
     "clean-webpack-plugin": "4.0.0",
     "css-loader": "6.8.1",
     "css-minimizer-webpack-plugin": "5.0.1",
-    "eslint": "8.51.0",
+    "eslint": "8.52.0",
     "eslint-config-prettier": "9.0.0",
     "handlebars-loader": "1.7.3",
     "mini-css-extract-plugin": "2.7.6",
@@ -39,7 +39,7 @@
     "postcss-preset-env": "9.2.0",
     "postcss-scss": "4.0.9",
     "prettier": "3.0.3",
-    "sass": "1.69.3",
+    "sass": "1.69.5",
     "sass-loader": "13.3.2",
     "style-loader": "3.3.3",
     "stylelint": "15.10.2",
@@ -62,5 +62,5 @@
     "defaults",
     "not IE 11"
   ],
-  "packageManager": "yarn@3.6.4"
+  "packageManager": "yarn@4.0.1"
 }

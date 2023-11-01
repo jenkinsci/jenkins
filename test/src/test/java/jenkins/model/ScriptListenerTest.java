@@ -79,7 +79,9 @@ public class ScriptListenerTest {
         logging.record(DefaultScriptListener.class.getName(), Level.FINEST).capture(100);
 
         InputStream scriptStream = new ByteArrayInputStream(script.getBytes());
-        new CLICommandInvoker(j, "groovy").withArgs("=").withStdin(scriptStream).invoke();
+        final CLICommandInvoker.Result result = new CLICommandInvoker(j, "groovy").withArgs("=").withStdin(scriptStream).invoke();
+        final String stdout = result.stdout();
+        assertThat(stdout, containsString("hello from groovy CLI"));
 
         { // DefaultScriptListener
             final List<String> messages = logging.getMessages();
