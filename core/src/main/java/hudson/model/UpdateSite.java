@@ -1212,13 +1212,6 @@ public class UpdateSite {
         public final Double popularity;
 
         /**
-         * The latest existing version of this plugin. May be different from the version being offered by the
-         * update site, which will result in a notice on the UI.
-         */
-        @Restricted(NoExternalUse.class)
-        public String latest;
-
-        /**
          * Issue trackers associated with this plugin.
          * This list is sorted by preference in descending order, meaning a UI
          * supporting only one issue tracker should reference the first one
@@ -1234,7 +1227,6 @@ public class UpdateSite {
             this.title = get(o, "title");
             this.excerpt = get(o, "excerpt");
             this.compatibleSinceVersion = Util.intern(get(o, "compatibleSinceVersion"));
-            this.latest = get(o, "latest");
             this.requiredCore = Util.intern(get(o, "requiredCore"));
             final String releaseTimestamp = get(o, "releaseTimestamp");
             Date date = null;

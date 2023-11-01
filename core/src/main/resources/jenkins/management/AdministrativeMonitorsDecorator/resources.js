@@ -19,6 +19,7 @@
       }
       close();
     }
+
     function onEscClose(e) {
       var escapeKeyCode = 27;
       if (e.keyCode === escapeKeyCode) {
@@ -31,19 +32,20 @@
         options.closeAll();
       }
 
-      new Ajax.Request(url, {
-        method: "GET",
-        onSuccess: function (rsp) {
-          var popupContent = rsp.responseText;
-          amList.innerHTML = popupContent;
-          amMonitorRoot.classList.add("visible");
-          document.addEventListener("click", onClose);
-          document.addEventListener("keydown", onEscClose);
+      fetch(url).then((rsp) => {
+        if (rsp.ok) {
+          rsp.text().then((responseText) => {
+            var popupContent = responseText;
+            amList.innerHTML = popupContent;
+            amMonitorRoot.classList.add("visible");
+            document.addEventListener("click", onClose);
+            document.addEventListener("keydown", onEscClose);
 
-          // Applies all initialization code to the elements within the popup
-          // Among other things, this sets the CSRF crumb to the forms within
-          Behaviour.applySubtree(amList);
-        },
+            // Applies all initialization code to the elements within the popup
+            // Among other things, this sets the CSRF crumb to the forms within
+            Behaviour.applySubtree(amList);
+          });
+        }
       });
     }
 
@@ -85,19 +87,19 @@
       document.getElementById("visible-am-container"),
       {
         closeAll: closeAll,
-      }
+      },
     );
     var securityMonitors = initializeAmMonitor(
       document.getElementById("visible-sec-am-container"),
       {
         closeAll: closeAll,
-      }
+      },
     );
-    monitorWidgets = [normalMonitors, securityMonitors].filter(function (
-      widget
-    ) {
-      return widget !== null;
-    });
+    monitorWidgets = [normalMonitors, securityMonitors].filter(
+      function (widget) {
+        return widget !== null;
+      },
+    );
 
     monitorWidgets.forEach(function (widget) {
       widget.startListeners();

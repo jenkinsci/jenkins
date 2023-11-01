@@ -190,23 +190,25 @@ public class LauncherTest {
     @Issue("JENKINS-52729")
     @Test public void remotable() throws Exception {
         File log = new File(rule.jenkins.root, "log");
-        TaskListener listener = new RemotableBuildListener(log);
-        Launcher.ProcStarter ps = rule.createOnlineSlave().createLauncher(listener).launch();
-        if (Functions.isWindows()) {
-            ps.cmds("cmd", "/c", "echo", "hello");
-        } else {
-            ps.cmds("echo", "hello");
+        try (var listener = new RemotableBuildListener(log)) {
+            Launcher.ProcStarter ps = rule.createOnlineSlave().createLauncher(listener).launch();
+            if (Functions.isWindows()) {
+                ps.cmds("cmd", "/c", "echo", "hello");
+            } else {
+                ps.cmds("echo", "hello");
+            }
+            assertEquals(0, ps.stdout(listener).join());
+            assertThat(Files.readString(log.toPath(), StandardCharsets.UTF_8).replace("\r\n", "\n"),
+                containsString("[master → slave0] $ " + (Functions.isWindows() ? "cmd /c " : "") + "echo hello\n" +
+                               "[master → slave0] hello"));
         }
-        assertEquals(0, ps.stdout(listener).join());
-        assertThat(Files.readString(log.toPath(), StandardCharsets.UTF_8).replace("\r\n", "\n"),
-            containsString("[master → slave0] $ " + (Functions.isWindows() ? "cmd /c " : "") + "echo hello\n" +
-                           "[master → slave0] hello"));
     }
 
-    private static class RemotableBuildListener implements BuildListener {
+    private static class RemotableBuildListener implements BuildListener, AutoCloseable {
         private static final long serialVersionUID = 1;
         /** location of log file streamed to by multiple sources */
         private final File logFile;
+        private OutputStream fos;
         /** records allocation & deserialization history; e.g., {@code master → agentName} */
         private final String id;
         private transient PrintStream logger;
@@ -223,7 +225,6 @@ public class LauncherTest {
         @NonNull
         @Override public PrintStream getLogger() {
             if (logger == null) {
-                final OutputStream fos;
                 try {
                     fos = new FileOutputStream(logFile, true);
                     logger = new PrintStream(new LineTransformationOutputStream() {
@@ -243,6 +244,13 @@ public class LauncherTest {
             Thread.dumpStack();
             String name = Channel.current().getName();
             return new RemotableBuildListener(logFile, id + " → " + name);
+        }
+
+        @Override
+        public void close() throws Exception {
+            if (fos != null) {
+                fos.close();
+            }
         }
     }
 

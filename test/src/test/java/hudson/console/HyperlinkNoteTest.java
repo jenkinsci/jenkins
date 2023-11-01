@@ -28,7 +28,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsString;
 
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Result;
@@ -38,6 +37,7 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import org.apache.commons.io.IOUtils;
+import org.htmlunit.html.HtmlPage;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -93,7 +93,7 @@ public class HyperlinkNoteTest {
     private static String annotate(String text) throws IOException {
         StringWriter writer = new StringWriter();
         try (ConsoleAnnotationOutputStream out = new ConsoleAnnotationOutputStream(writer, null, null, StandardCharsets.UTF_8)) {
-            IOUtils.copy(new StringReader(text), out);
+            IOUtils.copy(new StringReader(text), out, StandardCharsets.UTF_8);
         }
         return writer.toString();
     }

@@ -24,8 +24,8 @@
 
 package hudson.model.labels;
 
-import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThrows;
@@ -46,7 +46,6 @@ import hudson.slaves.RetentionStrategy;
 import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.Set;
-import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import org.junit.Rule;
 import org.junit.Test;
@@ -355,20 +354,17 @@ public class LabelExpressionTest {
 
     @Test
     public void formValidation() throws Exception {
-        j.executeOnServer(new Callable<>() {
-            @Override
-            public Object call() throws Exception {
-                Label l = j.jenkins.getLabel("foo");
-                DumbSlave s = j.createSlave(l);
-                String msg = LabelExpression.validate("goo").renderHtml();
-                assertTrue(msg.contains("foo"));
-                assertTrue(msg.contains("goo"));
+        j.executeOnServer(() -> {
+            Label l = j.jenkins.getLabel("foo");
+            DumbSlave s = j.createSlave(l);
+            String msg = LabelExpression.validate("goo").renderHtml();
+            assertTrue(msg.contains("foo"));
+            assertTrue(msg.contains("goo"));
 
-                msg = LabelExpression.validate("built-in && goo").renderHtml();
-                assertTrue(msg.contains("foo"));
-                assertTrue(msg.contains("goo"));
-                return null;
-            }
+            msg = LabelExpression.validate("built-in && goo").renderHtml();
+            assertTrue(msg.contains("foo"));
+            assertTrue(msg.contains("goo"));
+            return null;
         });
     }
 

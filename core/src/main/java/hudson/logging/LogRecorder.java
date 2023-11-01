@@ -73,6 +73,7 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
+import jenkins.model.Loadable;
 import jenkins.security.MasterToSlaveCallable;
 import jenkins.util.MemoryReductionUtil;
 import net.sf.json.JSONObject;
@@ -99,7 +100,7 @@ import org.kohsuke.stapler.verb.POST;
  * @author Kohsuke Kawaguchi
  * @see LogRecorderManager
  */
-public class LogRecorder extends AbstractModelObject implements Saveable {
+public class LogRecorder extends AbstractModelObject implements Loadable, Saveable {
     private volatile String name;
 
     /**
@@ -312,27 +313,27 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
         public boolean includes(LogRecord r) {
             if (r.getLevel().intValue() < level)
                 return false;   // below the threshold
-            if (name.length() == 0) {
+            if (name.isEmpty()) {
                 return true; // like root logger, includes everything
             }
             String logName = r.getLoggerName();
             if (logName == null || !logName.startsWith(name))
                 return false;   // not within this logger
             String rest = logName.substring(name.length());
-            return rest.startsWith(".") || rest.length() == 0;
+            return rest.startsWith(".") || rest.isEmpty();
         }
 
         @SuppressFBWarnings(value = "NP_BOOLEAN_RETURN_NULL", justification = "converting this to YesNoMaybe would break backward compatibility")
         public Boolean matches(LogRecord r) {
             boolean levelSufficient = r.getLevel().intValue() >= level;
-            if (name.length() == 0) {
+            if (name.isEmpty()) {
                 return levelSufficient; // include if level matches
             }
             String logName = r.getLoggerName();
             if (logName == null || !logName.startsWith(name))
                 return null; // not in the domain of this logger
             String rest = logName.substring(name.length());
-            if (rest.startsWith(".") || rest.length() == 0) {
+            if (rest.startsWith(".") || rest.isEmpty()) {
                 return levelSufficient; // include if level matches
             }
             return null;
@@ -476,6 +477,7 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
     /**
      * Loads the settings from a file.
      */
+    @Override
     public synchronized void load() throws IOException {
         getConfigFile().unmarshal(this);
         loggers.forEach(Target::enable);
@@ -535,6 +537,16 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
      */
     @RequirePOST
     public synchronized void doDoDelete(StaplerResponse rsp) throws IOException, ServletException {
+        delete();
+        rsp.sendRedirect2("..");
+    }
+
+    /**
+     * Deletes this log recorder.
+     * @throws IOException In case anything went wrong while deleting the configuration file.
+     * @since 2.425
+     */
+    public void delete() throws IOException {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
 
         getConfigFile().delete();
@@ -544,7 +556,7 @@ public class LogRecorder extends AbstractModelObject implements Saveable {
         loggers.forEach(Target::disable);
 
         getParent().getRecorders().forEach(logRecorder -> logRecorder.getLoggers().forEach(Target::enable));
-        rsp.sendRedirect2("..");
+        SaveableListener.fireOnChange(this, getConfigFile());
     }
 
     /**

@@ -506,8 +506,10 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
                                         // obtain topologically sorted list and overwrite the list
                                         for (PluginWrapper p : cgd.getSorted()) {
-                                            if (p.isActive())
+                                            if (p.isActive()) {
                                                 activePlugins.add(p);
+                                                ((UberClassLoader) uberClassLoader).clearCacheMisses();
+                                            }
                                         }
                                     } catch (CycleDetectedException e) { // TODO this should be impossible, since we override reactOnCycle to not throw the exception
                                         stop(); // disable all plugins since classloading from them can lead to StackOverflow
@@ -635,7 +637,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     /**
      * Defines the location of the detached plugins in the WAR.
      * @return by default, {@code /WEB-INF/detached-plugins}
-     * @since TODO
+     * @since 2.377
      */
     protected @NonNull String getDetachedLocation() {
         return "/WEB-INF/detached-plugins";
@@ -657,7 +659,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
         for (String pluginPath : plugins) {
             String fileName = pluginPath.substring(pluginPath.lastIndexOf('/') + 1);
-            if (fileName.length() == 0) {
+            if (fileName.isEmpty()) {
                 // see http://www.nabble.com/404-Not-Found-error-when-clicking-on-help-td24508544.html
                 // I suspect some containers are returning directory names.
                 continue;
@@ -932,9 +934,10 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             // so existing plugins can't be depending on this newly deployed one.
 
             plugins.add(p);
-            if (p.isActive())
+            if (p.isActive()) {
                 activePlugins.add(p);
-            ((UberClassLoader) uberClassLoader).loaded.clear();
+                ((UberClassLoader) uberClassLoader).clearCacheMisses();
+            }
 
             // TODO antimodular; perhaps should have a PluginListener to complement ExtensionListListener?
             CustomClassFilter.Contributed.load();
@@ -1130,7 +1133,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                 final JarEntry entry = entryName != null && jarFile != null ? jarFile.getJarEntry(entryName) : null;
                 if (entry != null) {
                     try (InputStream i = jarFile.getInputStream(entry)) {
-                        byte[] manifestBytes = IOUtils.toByteArray(i);
+                        byte[] manifestBytes = i.readAllBytes();
                         in = new ByteArrayInputStream(manifestBytes);
                     }
                 } else {
@@ -1464,7 +1467,11 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     jsonObject.put("sourceId", plugin.sourceId);
                     jsonObject.put("title", plugin.title);
                     jsonObject.put("displayName", plugin.getDisplayName());
-                    jsonObject.put("wiki", plugin.wiki);
+                    if (plugin.wiki == null || !(plugin.wiki.startsWith("https://") || plugin.wiki.startsWith("http://"))) {
+                        jsonObject.put("wiki", StringUtils.EMPTY);
+                    } else {
+                        jsonObject.put("wiki", plugin.wiki);
+                    }
                     jsonObject.put("categories", plugin.getCategoriesStream()
                         .filter(PluginManager::isNonMetaLabel)
                         .map(UpdateCenter::getCategoryDisplayName)
@@ -1481,7 +1488,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     jsonObject.put("version", plugin.version);
                     jsonObject.put("popularity", plugin.popularity);
                     if (plugin.isForNewerHudson()) {
-                        jsonObject.put("newerCoreRequired", Messages.PluginManager_coreWarning(plugin.requiredCore));
+                        jsonObject.put("newerCoreRequired", Messages.PluginManager_coreWarning(Util.xmlEscape(plugin.requiredCore)));
                     }
                     if (plugin.hasWarnings()) {
                         JSONObject unresolvedSecurityWarnings = new JSONObject();
@@ -1505,9 +1512,6 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                         releaseTimestamp.put("iso8601", Functions.iso8601DateTime(plugin.releaseTimestamp));
                         releaseTimestamp.put("displayValue", Messages.PluginManager_ago(Functions.getTimeSpanString(plugin.releaseTimestamp)));
                         jsonObject.put("releaseTimestamp", releaseTimestamp);
-                    }
-                    if (hasLatestVersionNewerThanOffered(plugin)) {
-                        jsonObject.put("newerVersionAvailableNotOffered", Messages.PluginManager_newerVersionExists(plugin.latest, plugin.wiki));
                     }
                     return jsonObject;
                 })
@@ -1863,7 +1867,8 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
             String fileName = "";
             PluginCopier copier;
-            ServletFileUpload upload = new ServletFileUpload(new DiskFileItemFactory());
+            File tmpDir = Files.createTempDirectory("uploadDir").toFile();
+            ServletFileUpload upload = new ServletFileUpload(new DiskFileItemFactory(DiskFileItemFactory.DEFAULT_SIZE_THRESHOLD, tmpDir));
             List<FileItem> items = upload.parseRequest(req);
             if (StringUtils.isNotBlank(items.get(1).getString())) {
                 // this is a URL deployment
@@ -1885,7 +1890,8 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             }
 
             // first copy into a temporary file name
-            File t = File.createTempFile("uploaded", ".jpi");
+            File t = File.createTempFile("uploaded", ".jpi", tmpDir);
+            tmpDir.deleteOnExit();
             t.deleteOnExit();
             // TODO Remove this workaround after FILEUPLOAD-293 is resolved.
             Files.delete(Util.fileToPath(t));
@@ -2228,7 +2234,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     @RequirePOST
     public HttpResponse doInstallNecessaryPlugins(StaplerRequest req) throws IOException {
         prevalidateConfig(req.getInputStream());
-        return HttpResponses.redirectViaContextPath("updates/");
+        return HttpResponses.redirectViaContextPath("pluginManager/updates/");
     }
 
     /**
@@ -2380,6 +2386,10 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                 }
             }
             return Collections.enumeration(resources);
+        }
+
+        void clearCacheMisses() {
+            loaded.values().removeIf(Optional::isEmpty);
         }
 
         @Override
@@ -2590,14 +2600,6 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     @Restricted(DoNotUse.class) // Used from table.jelly
     public boolean hasAdoptThisPluginLabel(UpdateSite.Plugin plugin) {
         return plugin.hasCategory("adopt-this-plugin");
-    }
-
-    @Restricted(DoNotUse.class) // Used from table.jelly
-    public boolean hasLatestVersionNewerThanOffered(UpdateSite.Plugin plugin) {
-        if (plugin.latest == null) {
-            return false;
-        }
-        return !plugin.latest.equalsIgnoreCase(plugin.version); // we can assume that any defined 'latest' will be newer than the actual offered version
     }
 
     @Restricted(DoNotUse.class) // Used from table.jelly

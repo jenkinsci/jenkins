@@ -200,7 +200,7 @@ public abstract class Telemetry implements ExtensionPoint {
                     return;
                 }
 
-                JSONObject data = new JSONObject();
+                JSONObject data = null;
                 try {
                     data = telemetry.createContent();
                 } catch (RuntimeException e) {

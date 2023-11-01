@@ -124,7 +124,6 @@ public class CLI {
 
         boolean noKeyAuth = false;
 
-        // TODO perhaps allow mode to be defined by environment variable too (assuming $JENKINS_USER_ID can be used for -user)
         Mode mode = null;
 
         String user = null;
@@ -273,7 +272,7 @@ public class CLI {
             args = List.of("help"); // default to help
 
         if (mode == null) {
-            mode = Mode.HTTP;
+            mode = Mode.WEB_SOCKET;
         }
 
         LOGGER.log(FINE, "using connection mode {0}", mode);

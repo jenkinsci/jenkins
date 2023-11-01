@@ -2,7 +2,6 @@ package jenkins.model;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Functions;
-import hudson.Util;
 import hudson.model.Action;
 import hudson.model.Actionable;
 import hudson.model.BallColor;
@@ -10,6 +9,7 @@ import hudson.model.Computer;
 import hudson.model.Job;
 import hudson.model.ModelObject;
 import hudson.model.Node;
+import hudson.slaves.Cloud;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import javax.servlet.ServletException;
+import jenkins.management.Badge;
 import org.apache.commons.jelly.JellyContext;
 import org.apache.commons.jelly.JellyException;
 import org.apache.commons.jelly.JellyTagException;
@@ -24,6 +25,8 @@ import org.apache.commons.jelly.Script;
 import org.apache.commons.jelly.XMLOutput;
 import org.jenkins.ui.icon.Icon;
 import org.jenkins.ui.icon.IconSet;
+import org.jenkins.ui.symbol.Symbol;
+import org.jenkins.ui.symbol.SymbolRequest;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.HttpResponse;
@@ -149,6 +152,33 @@ public interface ModelObjectWithContextMenu extends ModelObject {
             return this;
         }
 
+        /** @since 2.401 */
+        public ContextMenu add(String url, String icon, String iconXml, String text, boolean post, boolean requiresConfirmation, Badge badge) {
+            if (text != null && icon != null && url != null) {
+                MenuItem item = new MenuItem(url, icon, text);
+                item.iconXml = iconXml;
+                item.post = post;
+                item.requiresConfirmation = requiresConfirmation;
+                item.badge = badge;
+                items.add(item);
+            }
+            return this;
+        }
+
+        /** @since 2.415 */
+        public ContextMenu add(String url, String icon, String iconXml, String text, boolean post, boolean requiresConfirmation, Badge badge, String message) {
+            if (text != null && icon != null && url != null) {
+                MenuItem item = new MenuItem(url, icon, text);
+                item.iconXml = iconXml;
+                item.post = post;
+                item.requiresConfirmation = requiresConfirmation;
+                item.badge = badge;
+                item.message = message;
+                items.add(item);
+            }
+            return this;
+        }
+
         /**
          * Add a header row (no icon, no URL, rendered in header style).
          *
@@ -205,6 +235,13 @@ public interface ModelObjectWithContextMenu extends ModelObject {
                 .withDisplayName(c.getDisplayName())
                 .withIconClass(c.getIconClassName())
                 .withContextRelativeUrl(c.getUrl()));
+        }
+
+        public ContextMenu add(Cloud c) {
+            return add(new MenuItem()
+                    .withDisplayName(c.getDisplayName())
+                    .withIconClass(c.getIconClassName())
+                    .withContextRelativeUrl(c.getUrl()));
         }
 
         /**
@@ -317,6 +354,10 @@ public interface ModelObjectWithContextMenu extends ModelObject {
         public boolean requiresConfirmation;
 
 
+        private Badge badge;
+
+        private String message;
+
         /**
          * The type of menu item
          * @since 2.340
@@ -335,6 +376,20 @@ public interface ModelObjectWithContextMenu extends ModelObject {
         @Exported
         public String getIconXml() {
             return iconXml;
+        }
+
+        /**
+         * The badge to display for the context menu item
+         * @since 2.401
+         */
+        @Exported
+        public Badge getBadge() {
+            return badge;
+        }
+
+        @Exported
+        public String getMessage() {
+            return message;
         }
 
         public MenuItem(String url, String icon, String displayName) {
@@ -383,13 +438,23 @@ public interface ModelObjectWithContextMenu extends ModelObject {
         }
 
         public MenuItem withIconClass(String iconClass) {
-            Icon iconByClass = IconSet.icons.getIconByClassSpec(iconClass + " icon-md");
-            this.icon = iconByClass == null ? null : iconByClass.getQualifiedUrl(getResourceUrl());
+            if (iconClass != null && iconClass.startsWith("symbol-")) {
+                this.icon = iconClass;
+                this.iconXml = Symbol.get(new SymbolRequest.Builder()
+                        .withName(iconClass.split(" ")[0].substring(7))
+                        .withPluginName(Functions.extractPluginNameFromIconSrc(iconClass))
+                        .withClasses("icon-md")
+                        .build()
+                );
+            } else {
+                Icon iconByClass = IconSet.icons.getIconByClassSpec(iconClass + " icon-md");
+                this.icon = iconByClass == null ? null : iconByClass.getQualifiedUrl(getResourceUrl());
+            }
             return this;
         }
 
         public MenuItem withDisplayName(String displayName) {
-            this.displayName = Util.escape(displayName);
+            this.displayName = displayName;
             return this;
         }
 

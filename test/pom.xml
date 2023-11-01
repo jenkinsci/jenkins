@@ -44,7 +44,7 @@ THE SOFTWARE.
       Filled in by maven-hpi-plugin from the MANIFEST.MF entry in jenkins.war, but we provide a default value for the benefit of IDEs.
       Make sure to keep the directives in core/pom.xml and war/pom.xml in sync with these.
     -->
-    <jenkins.addOpens>--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.desktop/com.sun.beans.introspect=ALL-UNNAMED</jenkins.addOpens>
+    <jenkins.addOpens>--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED</jenkins.addOpens>
     <!-- Filled in by maven-hpi-plugin with the path to org-netbeans-insane-hook.jar extracted from jenkins-test-harness -->
     <jenkins.insaneHook />
   </properties>
@@ -60,25 +60,53 @@ THE SOFTWARE.
       </dependency>
       <dependency>
         <groupId>io.jenkins.plugins</groupId>
+        <artifactId>commons-lang3-api</artifactId>
+        <version>3.13.0-62.v7d18e55f51e2</version>
+      </dependency>
+      <dependency>
+        <!-- RequireUpperBoundDeps between checks-api, plugin-util-api, and font-awesome-api -->
+        <groupId>io.jenkins.plugins</groupId>
+        <artifactId>commons-text-api</artifactId>
+        <version>1.11.0-94.v3e1f4a_926e49</version>
+      </dependency>
+      <dependency>
+        <!-- RequireUpperBoundDeps between bootstrap5-api and echarts-api -->
+        <groupId>io.jenkins.plugins</groupId>
         <artifactId>font-awesome-api</artifactId>
-        <version>6.2.1-1</version>
+        <version>6.4.2-1</version>
+      </dependency>
+      <dependency>
+        <groupId>io.jenkins.plugins</groupId>
+        <artifactId>ionicons-api</artifactId>
+        <version>56.v1b_1c8c49374e</version>
+      </dependency>
+      <dependency>
+        <groupId>io.jenkins.plugins</groupId>
+        <artifactId>javax-activation-api</artifactId>
+        <version>1.2.0-6</version>
       </dependency>
       <dependency>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>ant</artifactId>
-        <version>481.v7b_09e538fcca</version>
+        <version>497.v94e7d9fffa_b_9</version>
       </dependency>
       <dependency>
         <!-- RequireUpperBoundDeps via mailer and junit -->
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>display-url-api</artifactId>
-        <version>2.3.7</version>
+        <version>2.200.vb_9327d658781</version>
       </dependency>
       <dependency>
         <!-- requireUpperBoundDeps via matrix-project and junit -->
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>script-security</artifactId>
-        <version>1228.vd93135a_2fb_25</version>
+        <version>1275.v23895f409fb_d</version>
+      </dependency>
+      <dependency>
+        <!-- Required by plugin-util-api -->
+        <groupId>org.jenkins-ci.plugins.workflow</groupId>
+        <artifactId>workflow-support</artifactId>
+        <version>865.v43e78cc44e0d</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -93,12 +121,16 @@ THE SOFTWARE.
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>1912.v0cdf15450b_fb</version>
+      <version>2104.v8d1866dd0ea_f</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
           <groupId>${project.groupId}</groupId>
           <artifactId>jenkins-war</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.hamcrest</groupId>
+          <artifactId>hamcrest-core</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -124,7 +156,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>io.jenkins.plugins</groupId>
       <artifactId>javax-mail-api</artifactId>
-      <version>1.6.2-8</version>
+      <version>1.6.2-9</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -135,7 +167,7 @@ THE SOFTWARE.
     </dependency>
     <dependency>
       <groupId>org.hamcrest</groupId>
-      <artifactId>hamcrest-core</artifactId>
+      <artifactId>hamcrest</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -146,55 +178,55 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
       <artifactId>instance-identity</artifactId>
-      <version>142.v04572ca_5b_265</version>
+      <version>173.va_37c494ec4e5</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>antisamy-markup-formatter</artifactId>
-      <version>155.v795fb_8702324</version>
+      <version>162.v0e6ec0fcfcf6</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>cloudbees-folder</artifactId>
-      <version>6.795.v3e23d3c6f194</version>
+      <version>6.858.v898218f3609d</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>credentials</artifactId>
-      <version>1214.v1de940103927</version>
+      <version>1307.v3757c78f17c3</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>junit</artifactId>
-      <version>1166.va_436e268e972</version>
+      <version>1240.vf9529b_881428</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>mailer</artifactId>
-      <version>438.v02c7f0a_12fa_4</version>
+      <version>463.vedf8358e006b_</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>matrix-auth</artifactId>
-      <version>3.1.6</version>
+      <version>3.2.1</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>matrix-project</artifactId>
-      <version>785.v06b_7f47b_c631</version>
+      <version>818.v7eb_e657db_924</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>structs</artifactId>
-      <version>324.va_f5d6774f3a_d</version>
+      <version>325.vcb_307d2a_2782</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -206,10 +238,16 @@ THE SOFTWARE.
       <groupId>org.junit.vintage</groupId>
       <artifactId>junit-vintage-engine</artifactId>
       <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>org.hamcrest</groupId>
+          <artifactId>hamcrest-core</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.mockito</groupId>
-      <artifactId>mockito-inline</artifactId>
+      <artifactId>mockito-core</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -262,10 +300,18 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>org.jenkins-ci.main</groupId>
                   <artifactId>remoting</artifactId>
-                  <version>4.6</version>
+                  <version>4.12</version>
                   <type>jar</type>
                   <outputDirectory>${project.build.outputDirectory}/old-remoting</outputDirectory>
                   <destFileName>remoting-unsupported.jar</destFileName>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>io.jenkins.plugins</groupId>
+                  <artifactId>design-library</artifactId>
+                  <version>91.v257f311ea_1dc</version>
+                  <type>hpi</type>
+                  <outputDirectory>${project.build.outputDirectory}/plugins</outputDirectory>
+                  <destFileName>design-library.jpi</destFileName>
                 </artifactItem>
               </artifactItems>
             </configuration>

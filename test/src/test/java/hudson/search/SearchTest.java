@@ -29,8 +29,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.model.FreeStyleProject;
 import hudson.model.ListView;
 import hudson.model.User;
@@ -39,6 +37,7 @@ import hudson.security.ACL;
 import hudson.security.ACLContext;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
@@ -48,6 +47,8 @@ import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import net.sf.json.JSONSerializer;
+import org.htmlunit.Page;
+import org.htmlunit.html.HtmlPage;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -395,15 +396,12 @@ public class SearchTest {
 
         // Alice can't
         assertFalse("no permission", j.jenkins.getView("foo").hasPermission2(User.get("alice").impersonate2(), View.READ));
-        ACL.impersonate2(User.get("alice").impersonate2(), new Runnable() {
-            @Override
-            public void run() {
-                assertEquals("no visible views", 0, Jenkins.get().getViews().size());
+        ACL.impersonate2(User.get("alice").impersonate2(), () -> {
+            assertEquals("no visible views", 0, Jenkins.get().getViews().size());
 
-                List<SearchItem> results = new ArrayList<>();
-                j.jenkins.getSearchIndex().suggest("foo", results);
-                assertEquals("empty results list", Collections.emptyList(), results);
-            }
+            List<SearchItem> results1 = new ArrayList<>();
+            j.jenkins.getSearchIndex().suggest("foo", results1);
+            assertEquals("empty results list", Collections.emptyList(), results1);
         });
     }
 
@@ -479,5 +477,43 @@ public class SearchTest {
 
         URL resultUrl = searchResult.getUrl();
         assertEquals(j.getInstance().getRootUrl() + freeStyleProject.getUrl(), resultUrl.toString());
+    }
+
+    @Test
+    @Issue("SECURITY-2399")
+    public void testSearchBound() throws Exception {
+
+        final String projectName1 = "projectName1";
+        final String projectName2 = "projectName2";
+        final String projectName3 = "projectName3";
+
+        j.createFreeStyleProject(projectName1);
+        j.createFreeStyleProject(projectName2);
+        j.createFreeStyleProject(projectName3);
+
+        final JenkinsRule.WebClient wc = j.createWebClient();
+
+        Page result = wc.goTo("search/suggest?query=projectName", "application/json");
+        JSONArray suggestions = getSearchJson(result);
+        assertEquals(3, suggestions.size());
+
+        Field declaredField = Search.class.getDeclaredField("MAX_SEARCH_SIZE");
+        declaredField.setAccessible(true);
+        declaredField.set(null, 2);
+
+        Page maximizedResult = wc.goTo("search/suggest?query=projectName", "application/json");
+        JSONArray maximizedSuggestions = getSearchJson(maximizedResult);
+        assertEquals(2, maximizedSuggestions.size());
+    }
+
+    private JSONArray getSearchJson(Page page) {
+        assertNotNull(page);
+        j.assertGoodStatus(page);
+        String content = page.getWebResponse().getContentAsString();
+        JSONObject jsonContent = (JSONObject) JSONSerializer.toJSON(content);
+        assertNotNull(jsonContent);
+        JSONArray jsonArray = jsonContent.getJSONArray("suggestions");
+        assertNotNull(jsonArray);
+        return jsonArray;
     }
 }

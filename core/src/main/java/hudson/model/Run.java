@@ -1242,12 +1242,7 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     /**
      * Maximum number of artifacts to list before using switching to the tree view.
      */
-    public static final int LIST_CUTOFF = Integer.parseInt(SystemProperties.getString("hudson.model.Run.ArtifactList.listCutoff", "16"));
-
-    /**
-     * Maximum number of artifacts to show in tree view before just showing a link.
-     */
-    public static final int TREE_CUTOFF = Integer.parseInt(SystemProperties.getString("hudson.model.Run.ArtifactList.treeCutoff", "40"));
+    public static final int LIST_CUTOFF = Integer.parseInt(SystemProperties.getString("hudson.model.Run.ArtifactList.listCutoff", "20"));
 
     // ..and then "too many"
 
@@ -1901,8 +1896,6 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
                     LOGGER.log(FINE, "{0} main build action completed: {1}", new Object[] {this, result});
                     CheckPoint.MAIN_COMPLETED.report();
-                } catch (ThreadDeath t) {
-                    throw t;
                 } catch (AbortException e) { // orderly abortion.
                     result = Result.FAILURE;
                     listener.error(e.getMessage());
@@ -1924,8 +1917,6 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
                 // even if the main build fails fatally, try to run post build processing
                 job.post(Objects.requireNonNull(listener));
 
-            } catch (ThreadDeath t) {
-                throw t;
             } catch (Throwable e) {
                 handleFatalBuildProblem(listener, e);
                 result = Result.FAILURE;

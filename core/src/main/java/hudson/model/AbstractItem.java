@@ -76,6 +76,7 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import jenkins.model.DirectlyModifiableTopLevelItemGroup;
 import jenkins.model.Jenkins;
+import jenkins.model.Loadable;
 import jenkins.model.queue.ItemDeletion;
 import jenkins.security.NotReallyRoleSensitiveCallable;
 import jenkins.util.SystemProperties;
@@ -111,7 +112,7 @@ import org.xml.sax.SAXException;
 // Item doesn't necessarily have to be Actionable, but
 // Java doesn't let multiple inheritance.
 @ExportedBean
-public abstract class AbstractItem extends Actionable implements Item, HttpDeletable, AccessControlled, DescriptorByNameOwner, StaplerProxy {
+public abstract class AbstractItem extends Actionable implements Loadable, Item, HttpDeletable, AccessControlled, DescriptorByNameOwner, StaplerProxy {
 
     private static final Logger LOGGER = Logger.getLogger(AbstractItem.class.getName());
 
@@ -479,7 +480,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     @Exported
     public final String getFullName() {
         String n = getParent().getFullName();
-        if (n.length() == 0)   return getName();
+        if (n.isEmpty())   return getName();
         else                return n + '/' + getName();
     }
 
@@ -487,7 +488,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     @Exported
     public final String getFullDisplayName() {
         String n = getParent().getFullDisplayName();
-        if (n.length() == 0)   return getDisplayName();
+        if (n.isEmpty())   return getDisplayName();
         else                return n + " » " + getDisplayName();
     }
 
@@ -555,9 +556,15 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
                     View view = (View) last.getObject();
                     if (view.getOwner().getItemGroup() == getParent() && !view.isDefault()) {
                         // Showing something inside a view, so should use that as the base URL.
-                        String base = last.getUrl().substring(req.getContextPath().length() + 1) + '/';
-                        LOGGER.log(Level.FINER, "using {0}{1} for {2} from {3}", new Object[] {base, shortUrl, this, uri});
-                        return base + shortUrl;
+                        String prefix = req.getContextPath() + "/";
+                        String url = last.getUrl();
+                        if (url.startsWith(prefix)) {
+                            String base = url.substring(prefix.length()) + '/';
+                            LOGGER.log(Level.FINER, "using {0}{1} for {2} from {3} given {4}", new Object[] {base, shortUrl, this, uri, prefix});
+                            return base + shortUrl;
+                        } else {
+                            LOGGER.finer(() -> url + " does not start with " + prefix + " as expected");
+                        }
                     } else {
                         LOGGER.log(Level.FINER, "irrelevant {0} for {1} from {2}", new Object[] {view.getViewName(), this, uri});
                     }
@@ -928,6 +935,11 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      */
     @RequirePOST
     public void doReload() throws IOException {
+        load();
+    }
+
+    @Override
+    public void load() throws IOException {
         checkPermission(CONFIGURE);
 
         // try to reflect the changes by reloading
@@ -940,8 +952,6 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
             }
         });
         Jenkins.get().rebuildDependencyGraphAsync();
-
-        SaveableListener.fireOnChange(this, getConfigFile());
     }
 
 

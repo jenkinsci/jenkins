@@ -31,7 +31,9 @@ import hudson.model.AbstractDescribableImpl;
 import hudson.model.Descriptor;
 import hudson.model.Saveable;
 import hudson.model.listeners.SaveableListener;
+import hudson.util.DaemonThreadFactory;
 import hudson.util.FormValidation;
+import hudson.util.NamingThreadFactory;
 import hudson.util.Scrambler;
 import hudson.util.Secret;
 import hudson.util.XStream2;
@@ -58,6 +60,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 import jenkins.UserAgentURLConnectionDecorator;
@@ -222,7 +226,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
 
         List<Pattern> r = new ArrayList<>();
         for (String s : noProxyHost.split("[ \t\n,|]+")) {
-            if (s.length() == 0)  continue;
+            if (s.isEmpty())  continue;
             r.add(Pattern.compile(s.replace(".", "\\.").replace("*", ".*")));
         }
         return r;
@@ -364,11 +368,13 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
      * ProxyConfiguration#DEFAULT_CONNECT_TIMEOUT_MILLIS}).
      *
      * @return a new {@link HttpClient}
-     * @since TODO
+     * @since 2.379
      */
     public static HttpClient newHttpClient() {
         return newHttpClientBuilder().followRedirects(HttpClient.Redirect.NORMAL).build();
     }
+
+    private static final Executor httpClientExecutor = Executors.newCachedThreadPool(new NamingThreadFactory(new DaemonThreadFactory(), "Jenkins HttpClient"));
 
     /**
      * Create a new {@link HttpClient.Builder} preconfigured with Jenkins-specific default settings.
@@ -378,7 +384,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
      * ProxyConfiguration#DEFAULT_CONNECT_TIMEOUT_MILLIS}).
      *
      * @return an {@link HttpClient.Builder}
-     * @since TODO
+     * @since 2.379
      */
     public static HttpClient.Builder newHttpClientBuilder() {
         HttpClient.Builder httpClientBuilder = HttpClient.newBuilder();
@@ -397,6 +403,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
         if (DEFAULT_CONNECT_TIMEOUT_MILLIS > 0) {
             httpClientBuilder.connectTimeout(Duration.ofMillis(DEFAULT_CONNECT_TIMEOUT_MILLIS));
         }
+        httpClientBuilder.executor(httpClientExecutor);
         return httpClientBuilder;
     }
 
@@ -410,7 +417,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
      * @param uri the request URI
      * @return an {@link HttpRequest.Builder}
      * @throws IllegalArgumentException if the URI scheme is not supported
-     * @since TODO
+     * @since 2.379
      */
     public static HttpRequest.Builder newHttpRequestBuilder(URI uri) {
         HttpRequest.Builder httpRequestBuilder = HttpRequest.newBuilder(uri);

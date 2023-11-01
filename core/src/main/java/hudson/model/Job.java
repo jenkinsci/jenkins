@@ -98,6 +98,7 @@ import jenkins.model.lazy.LazyBuildMixIn;
 import jenkins.scm.RunWithSCM;
 import jenkins.security.HexStringConfidentialKey;
 import jenkins.triggers.SCMTriggerItem;
+import jenkins.widgets.HasWidgets;
 import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.FileUtils;
@@ -135,7 +136,7 @@ import org.kohsuke.stapler.verb.POST;
  * @author Kohsuke Kawaguchi
  */
 public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, RunT>>
-        extends AbstractItem implements ExtensionPoint, StaplerOverridable, ModelObjectWithChildren {
+        extends AbstractItem implements ExtensionPoint, StaplerOverridable, ModelObjectWithChildren, HasWidgets {
 
     private static final Logger LOGGER = Logger.getLogger(Job.class.getName());
 
@@ -611,15 +612,10 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         return r;
     }
 
-    public List<Widget> getWidgets() {
-        ArrayList<Widget> r = new ArrayList<>();
-        r.add(createHistoryWidget());
-        return r;
-    }
-
     /**
-     * @see LazyBuildMixIn#createHistoryWidget
+     * @deprecated see {@link LazyBuildMixIn#createHistoryWidget()}
      */
+    @Deprecated(forRemoval = true, since = "2.410")
     protected HistoryWidget createHistoryWidget() {
         return new HistoryWidget<Job, RunT>(this, getBuilds(), HISTORY_ADAPTER);
     }
@@ -1013,6 +1009,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * Failing to find 3 of those, it will return up to 3 last unsuccessful builds.
      *
      * In any case it will not go more than 6 builds into the past to avoid costly build loading.
+     * @see LazyBuildMixIn#getEstimatedDurationCandidates
      */
     protected List<RunT> getEstimatedDurationCandidates() {
         List<RunT> candidates = new ArrayList<>(3);

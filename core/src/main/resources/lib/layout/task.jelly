@@ -77,9 +77,16 @@ THE SOFTWARE.
       (onclick supersedes this except in the context menu.)
       (since 1.512)
     </st:attribute>
+    <st:attribute name="badge" type="jenkins.management.Badge">
+      If set, displays the value as a small badge on the right side of the sidepanel item.
+      (since 2.401)
+    </st:attribute>
     <st:attribute name="confirmationMessage">
       Message to use for confirmation, if requested; defaults to title.
       (since 1.512)
+    </st:attribute>
+    <st:attribute name="destructive" type="boolean" since="TODO">
+      Show red confirmation button.
     </st:attribute>
   </st:documentation>
 
@@ -136,6 +143,11 @@ THE SOFTWARE.
                 <l:icon src="${icon}" />
               </span>
               <span class="task-link-text">${title}</span>
+              <j:if test="${attrs.badge != null}">
+                <span class="task-icon-badge" tooltip="${attrs.badge.tooltip}">
+                  ${attrs.badge.text}
+                </span>
+              </j:if>
             </span>
           </span>
         </div>
@@ -148,25 +160,33 @@ THE SOFTWARE.
             <j:set var="iconXml">
               <l:icon src="${icon}" />
             </j:set>
-            ${taskTags!=null and attrs.contextMenu!='false' ? taskTags.add(href, iconSrc, iconXml, title, post == 'true', requiresConfirmation == 'true') : null}
+            ${taskTags!=null and attrs.contextMenu!='false' ? taskTags.add(href, iconSrc, iconXml, title, post == 'true', requiresConfirmation == 'true', null, confirmationMessage ?: null) : null}
             <j:set var="id" value="${h.generateId()}"/>
             <j:if test="${attrs.onclick == null and post and not requiresConfirmation}">
                 <script>
                     function postRequest_${id}(a) {
-                        new Ajax.Request(a.href);
-                        hoverNotification('${%Done.}', a.parentNode);
-                        return false;
+                      fetch(a.href, {
+                        method: 'post',
+                        headers: crumb.wrap({}),
+                      })
+                      hoverNotification('${%Done.}', a.parentNode);
+                      return false;
                     }
                 </script>
             </j:if>
 
             <j:choose>
               <j:when test="${requiresConfirmation and not attrs.onClick}">
-                <l:confirmationLink class="task-link ${isCurrent ? 'task-link--active' : ''}" href="${href}" post="${post}" message="${confirmationMessage ?: title}">
+                <l:confirmationLink class="task-link ${isCurrent ? 'task-link--active' : ''}" href="${href}" post="${post}" message="${confirmationMessage ?: ''}" title="${title}">
                   <span class="task-icon-link">
                     <l:icon src="${icon}" />
                   </span>
                   <span>${title}</span>
+                  <j:if test="${attrs.badge != null}">
+                    <span class="task-icon-badge" tooltip="${attrs.badge.tooltip}">
+                      ${attrs.badge.text}
+                    </span>
+                  </j:if>
                 </l:confirmationLink>
               </j:when>
 
@@ -176,6 +196,11 @@ THE SOFTWARE.
                     <l:icon src="${icon}" />
                   </span>
                   <span class="task-link-text">${title}</span>
+                  <j:if test="${attrs.badge != null}">
+                    <span class="task-icon-badge" tooltip="${attrs.badge.tooltip}">
+                      ${attrs.badge.text}
+                    </span>
+                  </j:if>
                 </a>
               </j:otherwise>
             </j:choose>
