@@ -67,7 +67,7 @@ THE SOFTWARE.
         <!-- RequireUpperBoundDeps between checks-api, plugin-util-api, and font-awesome-api -->
         <groupId>io.jenkins.plugins</groupId>
         <artifactId>commons-text-api</artifactId>
-        <version>1.10.0-78.v3e7b_ea_d5a_fe1</version>
+        <version>1.11.0-94.v3e1f4a_926e49</version>
       </dependency>
       <dependency>
         <!-- RequireUpperBoundDeps between bootstrap5-api and echarts-api -->
@@ -121,7 +121,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>2099.vc95b_86578f37</version>
+      <version>2104.v8d1866dd0ea_f</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -178,7 +178,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
       <artifactId>instance-identity</artifactId>
-      <version>173.va_37c494ec4e5</version>
+      <version>185.v303dc7c645f9</version>
       <scope>test</scope>
     </dependency>
     <dependency>
