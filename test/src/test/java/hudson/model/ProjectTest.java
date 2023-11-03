@@ -73,7 +73,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.UncheckedIOException;
-import java.net.URL;
+import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.util.ArrayList;
@@ -618,7 +618,7 @@ public class ProjectTest {
 
         JenkinsRule.WebClient wc = j.createWebClient();
         wc.withBasicCredentials(user.getId(), "password");
-        WebRequest request = new WebRequest(new URL(wc.getContextPath() + project.getUrl() + "doWipeOutWorkspace"), HttpMethod.POST);
+        WebRequest request = new WebRequest(new URI(wc.getContextPath() + project.getUrl() + "doWipeOutWorkspace").toURL(), HttpMethod.POST);
         HtmlPage p = wc.getPage(request);
         assertEquals(200, p.getWebResponse().getStatusCode());
 

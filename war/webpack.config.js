@@ -28,6 +28,10 @@ module.exports = (env, argv) => ({
       ),
     ],
     app: [path.join(__dirname, "src/main/js/app.js")],
+    "pages/cloud-set": [
+      path.join(__dirname, "src/main/js/pages/cloud-set/index.js"),
+      path.join(__dirname, "src/main/js/pages/cloud-set/index.scss"),
+    ],
     "pages/manage-jenkins": [
       path.join(__dirname, "src/main/js/pages/manage-jenkins"),
     ],

@@ -48,7 +48,7 @@ import hudson.tasks.Builder;
 import hudson.triggers.Trigger;
 import java.io.IOException;
 import java.net.HttpURLConnection;
-import java.net.URL;
+import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.Semaphore;
@@ -231,7 +231,7 @@ public class Security400Test {
         j.jenkins.setNumExecutors(1);
 
         { // preliminary test, calling the stop method without any executor results in 404
-            WebRequest request = new WebRequest(new URL(j.getURL() + "computers/0/executors/0/stop"), HttpMethod.POST);
+            WebRequest request = new WebRequest(new URI(j.getURL() + "computers/0/executors/0/stop").toURL(), HttpMethod.POST);
             Page page = wc.getPage(request);
             assertEquals(404, page.getWebResponse().getStatusCode());
             assertRequestWasNotBlocked();
@@ -256,7 +256,7 @@ public class Security400Test {
             // we need to wait until the SemaphoreBuilder is running (blocked) otherwise the job is ABORTED not FAILURE
             j.waitForMessage(SemaphoredBuilder.START_MESSAGE, build);
 
-            WebRequest request = new WebRequest(new URL(j.getURL() + "computers/0/executors/0/stop"), HttpMethod.POST);
+            WebRequest request = new WebRequest(new URI(j.getURL() + "computers/0/executors/0/stop").toURL(), HttpMethod.POST);
             Page page = wc.getPage(request);
             assertEquals(404, page.getWebResponse().getStatusCode());
             assertRequestWasNotBlocked();
@@ -290,7 +290,7 @@ public class Security400Test {
         j.jenkins.setNumExecutors(1);
 
         { // preliminary test, calling stopBuild without any executor results in 404
-            WebRequest request = new WebRequest(new URL(j.getURL() + "computers/0/executors/0/stopBuild"), HttpMethod.POST);
+            WebRequest request = new WebRequest(new URI(j.getURL() + "computers/0/executors/0/stopBuild").toURL(), HttpMethod.POST);
             Page page = wc.getPage(request);
             assertEquals(404, page.getWebResponse().getStatusCode());
             assertRequestWasNotBlocked();
@@ -319,7 +319,7 @@ public class Security400Test {
             QueueTaskFuture<FreeStyleBuild> futureBuild = p.scheduleBuild2(0);
             futureBuild.waitForStart();
 
-            WebRequest request = new WebRequest(new URL(j.getURL() + "computers/0/executors/0/stopBuild"), HttpMethod.POST);
+            WebRequest request = new WebRequest(new URI(j.getURL() + "computers/0/executors/0/stopBuild").toURL(), HttpMethod.POST);
             Page page = wc.getPage(request);
             assertEquals(404, page.getWebResponse().getStatusCode());
             assertRequestWasNotBlocked();
@@ -340,7 +340,7 @@ public class Security400Test {
             FreeStyleBuild build = futureBuild.waitForStart();
             String runExtId = URLEncoder.encode(build.getExternalizableId(), StandardCharsets.UTF_8);
 
-            WebRequest request = new WebRequest(new URL(j.getURL() + "computers/0/executors/0/stopBuild?runExtId=" + runExtId), HttpMethod.POST);
+            WebRequest request = new WebRequest(new URI(j.getURL() + "computers/0/executors/0/stopBuild?runExtId=" + runExtId).toURL(), HttpMethod.POST);
             Page page = wc.getPage(request);
             assertEquals(404, page.getWebResponse().getStatusCode());
             assertRequestWasNotBlocked();
@@ -360,7 +360,7 @@ public class Security400Test {
             QueueTaskFuture<FreeStyleBuild> futureBuild = p.scheduleBuild2(0);
             futureBuild.waitForStart();
 
-            WebRequest request = new WebRequest(new URL(j.getURL() + "computers/0/executors/0/stopBuild?runExtId=whatever"), HttpMethod.POST);
+            WebRequest request = new WebRequest(new URI(j.getURL() + "computers/0/executors/0/stopBuild?runExtId=whatever").toURL(), HttpMethod.POST);
             Page page = wc.getPage(request);
             assertEquals(404, page.getWebResponse().getStatusCode());
             assertRequestWasNotBlocked();
@@ -564,7 +564,7 @@ public class Security400Test {
             assertEquals(404, wc.goTo("log/" + logNameForAdmin + "/autoCompleteLoggerName/?value=a", null).getWebResponse().getStatusCode());
             assertRequestWasNotBlocked();
 
-            WebRequest request = new WebRequest(new URL(j.getURL() + "log/newLogRecorder/?name=" + logNameForAdmin), HttpMethod.POST);
+            WebRequest request = new WebRequest(new URI(j.getURL() + "log/newLogRecorder/?name=" + logNameForAdmin).toURL(), HttpMethod.POST);
 
             wc.getOptions().setRedirectEnabled(false);
             Page page = wc.getPage(request);
@@ -588,7 +588,7 @@ public class Security400Test {
             assertEquals(403, wc.goTo("log/" + logNameForUser + "/autoCompleteLoggerName/?value=a", null).getWebResponse().getStatusCode());
             assertRequestWasNotBlocked();
 
-            WebRequest request = new WebRequest(new URL(j.getURL() + "log/newLogRecorder/?name=" + logNameForUser), HttpMethod.POST);
+            WebRequest request = new WebRequest(new URI(j.getURL() + "log/newLogRecorder/?name=" + logNameForUser).toURL(), HttpMethod.POST);
 
             wc.getOptions().setRedirectEnabled(false);
             Page page = wc.getPage(request);

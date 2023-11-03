@@ -34,6 +34,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Writer;
 import java.nio.charset.Charset;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.StaplerRequest;
 
 /**
@@ -130,6 +132,7 @@ public interface ScriptListener extends ExtensionPoint {
      * {@link java.io.Writer} that calls {@link #fireScriptOutput(String, Object, Object, String, hudson.model.User)} with the
      * output it writes to the wrapped {@link java.io.Writer}, and otherwise just forwards {@link #flush()} and {@link #close()}.
      */
+    @Restricted(NoExternalUse.class)
     class ListenerWriter extends Writer {
 
         private final Writer writer;
@@ -169,6 +172,7 @@ public interface ScriptListener extends ExtensionPoint {
      * the output it writes to the wrapped {@link java.io.OutputStream}, and otherwise just forwards {@link #flush()}
      * and {@link #close()}.
      */
+    @Restricted(NoExternalUse.class)
     class ListenerOutputStream extends OutputStream {
 
         private final OutputStream os;
