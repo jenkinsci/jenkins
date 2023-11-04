@@ -383,7 +383,7 @@ THE SOFTWARE.
                   <!-- dependency of jackson2-api -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>snakeyaml-api</artifactId>
-                  <version>1.33-95.va_b_a_e3e47b_fa_4</version>
+                  <version>2.2-111.vc6598e30cc65</version>
                   <type>hpi</type>
                 </artifactItem>
 
