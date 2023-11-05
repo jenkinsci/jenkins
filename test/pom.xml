@@ -59,16 +59,21 @@ THE SOFTWARE.
         <scope>import</scope>
       </dependency>
       <dependency>
+        <groupId>io.jenkins.plugins</groupId>
+        <artifactId>commons-lang3-api</artifactId>
+        <version>3.13.0-62.v7d18e55f51e2</version>
+      </dependency>
+      <dependency>
         <!-- RequireUpperBoundDeps between checks-api, plugin-util-api, and font-awesome-api -->
         <groupId>io.jenkins.plugins</groupId>
         <artifactId>commons-text-api</artifactId>
-        <version>1.10.0-68.v0d0b_c439292b_</version>
+        <version>1.11.0-94.v3e1f4a_926e49</version>
       </dependency>
       <dependency>
         <!-- RequireUpperBoundDeps between bootstrap5-api and echarts-api -->
         <groupId>io.jenkins.plugins</groupId>
         <artifactId>font-awesome-api</artifactId>
-        <version>6.4.0-2</version>
+        <version>6.4.2-1</version>
       </dependency>
       <dependency>
         <groupId>io.jenkins.plugins</groupId>
@@ -81,12 +86,6 @@ THE SOFTWARE.
         <version>1.2.0-6</version>
       </dependency>
       <dependency>
-        <!-- RequireUpperBoundDeps between checks-api, echarts-api, font-awesome-api, and junit -->
-        <groupId>io.jenkins.plugins</groupId>
-        <artifactId>plugin-util-api</artifactId>
-        <version>3.3.0</version>
-      </dependency>
-      <dependency>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>ant</artifactId>
         <version>497.v94e7d9fffa_b_9</version>
@@ -95,13 +94,19 @@ THE SOFTWARE.
         <!-- RequireUpperBoundDeps via mailer and junit -->
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>display-url-api</artifactId>
-        <version>2.3.9</version>
+        <version>2.200.vb_9327d658781</version>
       </dependency>
       <dependency>
         <!-- requireUpperBoundDeps via matrix-project and junit -->
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>script-security</artifactId>
-        <version>1271.vdede89739a_81</version>
+        <version>1275.v23895f409fb_d</version>
+      </dependency>
+      <dependency>
+        <!-- Required by plugin-util-api -->
+        <groupId>org.jenkins-ci.plugins.workflow</groupId>
+        <artifactId>workflow-support</artifactId>
+        <version>865.v43e78cc44e0d</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -116,7 +121,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>2058.va_7b_41a_286207</version>
+      <version>2104.v8d1866dd0ea_f</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -173,7 +178,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
       <artifactId>instance-identity</artifactId>
-      <version>173.va_37c494ec4e5</version>
+      <version>185.v303dc7c645f9</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -185,19 +190,19 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>cloudbees-folder</artifactId>
-      <version>6.848.ve3b_fd7839a_81</version>
+      <version>6.858.v898218f3609d</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>credentials</artifactId>
-      <version>1271.v54b_1c2c6388a_</version>
+      <version>1307.v3757c78f17c3</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>junit</artifactId>
-      <version>1217.v4297208a_a_b_ce</version>
+      <version>1240.vf9529b_881428</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -209,13 +214,13 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>matrix-auth</artifactId>
-      <version>3.2</version>
+      <version>3.2.1</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>matrix-project</artifactId>
-      <version>808.v5a_b_5f56d6966</version>
+      <version>818.v7eb_e657db_924</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -295,7 +300,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>org.jenkins-ci.main</groupId>
                   <artifactId>remoting</artifactId>
-                  <version>4.6</version>
+                  <version>4.12</version>
                   <type>jar</type>
                   <outputDirectory>${project.build.outputDirectory}/old-remoting</outputDirectory>
                   <destFileName>remoting-unsupported.jar</destFileName>

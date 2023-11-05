@@ -61,10 +61,11 @@ public class CauseTest {
     @Test public void deeplyNestedCauses() throws Exception {
         FreeStyleProject a = j.createFreeStyleProject("a");
         FreeStyleProject b = j.createFreeStyleProject("b");
-        Run<?, ?> early = null;
-        Run<?, ?> last = null;
+        FreeStyleBuild early = null;
+        FreeStyleBuild last = null;
+        List<QueueTaskFuture<FreeStyleBuild>> futures = new ArrayList<>();
         for (int i = 1; i <= 15; i++) {
-            last = b.scheduleBuild2(0, new Cause.UpstreamCause((Run<?, ?>) a.scheduleBuild2(0, last == null ? null : new Cause.UpstreamCause(last)).get())).get();
+            last = recordFuture(b.scheduleBuild2(0, new Cause.UpstreamCause(recordFuture(a.scheduleBuild2(0, last == null ? null : new Cause.UpstreamCause(last)), futures).get())), futures).get();
             if (i == 5) {
                 early = last;
             }
@@ -73,6 +74,9 @@ public class CauseTest {
         assertTrue("keeps full history:\n" + buildXml, buildXml.contains("<upstreamBuild>1</upstreamBuild>"));
         buildXml = new XmlFile(Run.XSTREAM, new File(last.getRootDir(), "build.xml")).asString();
         assertFalse("too big:\n" + buildXml, buildXml.contains("<upstreamBuild>1</upstreamBuild>"));
+        for (QueueTaskFuture<FreeStyleBuild> future : futures) {
+            j.assertBuildStatusSuccess(j.waitForCompletion(future.waitForStart()));
+        }
     }
 
     @Issue("JENKINS-15747")
@@ -84,17 +88,14 @@ public class CauseTest {
         Run<?, ?> last = null;
         for (int i = 1; i <= 10; i++) {
             Cause cause = last == null ? null : new Cause.UpstreamCause(last);
-            QueueTaskFuture<FreeStyleBuild> next1 = a.scheduleBuild2(0, cause);
-            futures.add(next1);
-            futures.add(a.scheduleBuild2(0, cause));
+            QueueTaskFuture<FreeStyleBuild> next1 = recordFuture(a.scheduleBuild2(0, cause), futures);
+            recordFuture(a.scheduleBuild2(0, cause), futures);
             cause = new Cause.UpstreamCause(next1.get());
-            QueueTaskFuture<FreeStyleBuild> next2 = b.scheduleBuild2(0, cause);
-            futures.add(next2);
-            futures.add(b.scheduleBuild2(0, cause));
+            QueueTaskFuture<FreeStyleBuild> next2 = recordFuture(b.scheduleBuild2(0, cause), futures);
+            recordFuture(b.scheduleBuild2(0, cause), futures);
             cause = new Cause.UpstreamCause(next2.get());
-            QueueTaskFuture<FreeStyleBuild> next3 = c.scheduleBuild2(0, cause);
-            futures.add(next3);
-            futures.add(c.scheduleBuild2(0, cause));
+            QueueTaskFuture<FreeStyleBuild> next3 = recordFuture(c.scheduleBuild2(0, cause), futures);
+            recordFuture(c.scheduleBuild2(0, cause), futures);
             last = next3.get();
         }
         int count = new XmlFile(Run.XSTREAM, new File(last.getRootDir(), "build.xml")).asString().split(Pattern.quote("<hudson.model.Cause_-UpstreamCause")).length;
@@ -105,6 +106,10 @@ public class CauseTest {
         }
     }
 
+    private static QueueTaskFuture<FreeStyleBuild> recordFuture(QueueTaskFuture<FreeStyleBuild> future, List<QueueTaskFuture<FreeStyleBuild>> futures) {
+        futures.add(future);
+        return future;
+    }
 
     @Issue("JENKINS-48467")
     @Test public void userIdCausePrintTest() throws Exception {

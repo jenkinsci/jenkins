@@ -26,8 +26,14 @@ THE SOFTWARE.
   Entrance to the configuration page
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:f="/lib/form">
   <l:layout title="${it.displayName}" type="one-column">
+    <l:isAdmin>
+      <l:header>
+        <script src="${resURL}/jsbundles/pages/cloud-set.js" type="text/javascript" />
+        <link rel="stylesheet" href="${resURL}/jsbundles/pages/cloud-set.css" type="text/css" />
+      </l:header>
+    </l:isAdmin>
     <l:main-panel>
       <j:choose>
         <j:when test="${it.cloudAvailable and it.hasClouds()}">
@@ -39,36 +45,46 @@ THE SOFTWARE.
               </a>
             </l:isAdmin>
           </l:app-bar>
-          <table id="clouds" class="jenkins-table sortable">
-            <thead>
-              <tr>
-                <th class="jenkins-table__cell--tight"/>
-                <th initialSortDir="down">${%Name}</th>
-                <th class="jenkins-table__cell--tight"/>
-              </tr>
-            </thead>
-            <tbody>
-              <j:forEach var="cloud" items="${it.clouds}">
-                <tr id="cloud_${cloud.name}">
-                  <td data="${cloud.icon}" class="jenkins-table__cell--tight jenkins-table__icon">
-                    <div class="jenkins-table__cell__button-wrapper">
-                      <l:icon src="${cloud.iconClassName}" tooltip="${cloud.iconAltText}"/>
-                    </div>
-                  </td>
-                  <td>
-                    <a href="${it.getCloudUrl(request,app,cloud)}" class="jenkins-table__link model-link inside">${cloud.name}</a>
-                  </td>
-                  <td class="jenkins-table__cell--tight">
-                    <div class="jenkins-table__cell__button-wrapper">
-                      <a href="${it.getCloudUrl(request,app,cloud)}configure" class="jenkins-table__button">
-                        <l:icon src="symbol-settings"/>
-                      </a>
-                    </div>
-                  </td>
+          <p class="description">${%description}</p>
+          <f:form method="post" name="config" action="reorder">
+            <table id="clouds" class="jenkins-table">
+              <thead>
+                <tr>
+                  <th tooltip="${%Drag and drop cells to reorder}">${%Order}</th>
+                  <th>${%Name}</th>
+                  <th/>
                 </tr>
-              </j:forEach>
-            </tbody>
-          </table>
+              </thead>
+              <tbody class="with-drag-drop">
+                <j:forEach var="cloud" items="${it.clouds}">
+                  <tr class="repeated-chunk" id="cloud_${cloud.name}">
+                    <td data="${cloud.icon}" class="jenkins-table__cell--tight jenkins-table__icon">
+                      <div class="jenkins-table__cell__button-wrapper dd-handle">
+                        <l:icon src="${cloud.iconClassName}" tooltip="${cloud.iconAltText}"/>
+                      </div>
+                    </td>
+                    <td>
+                      <input type="hidden" name="name" value="${cloud.name}" />
+                      <a href="${it.getCloudUrl(request,app,cloud)}" class="jenkins-table__link model-link inside">${cloud.name}</a>
+                    </td>
+                    <td class="jenkins-table__cell--tight">
+                      <div class="jenkins-table__cell__button-wrapper">
+                        <a href="${it.getCloudUrl(request,app,cloud)}configure" class="jenkins-table__button">
+                          <l:icon src="symbol-settings"/>
+                        </a>
+                      </div>
+                    </td>
+                  </tr>
+                </j:forEach>
+              </tbody>
+            </table>
+            <l:isAdmin>
+              <f:bottomButtonBar>
+                <f:submit id="saveButton" value="${%Save}" clazz="jenkins-hidden" />
+              </f:bottomButtonBar>
+            </l:isAdmin>
+          </f:form>
+          <st:adjunct includes="lib.form.confirm" />
         </j:when>
         <j:otherwise>
           <div class="empty-state-block">
