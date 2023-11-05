@@ -450,7 +450,10 @@ public class ExtensionList<T> extends AbstractList<T> implements OnMaster {
      */
     public static @NonNull <U> U lookupSingleton(Class<U> type) {
         ExtensionList<U> all = lookup(type);
-        if (all.size() != 1) {
+        if (Main.isUnitTest && all.isEmpty()) {
+            throw new IllegalStateException("Found no instances of " + type.getName() +
+                " registered (possible annotation processor issue); try using `mvn clean test -Dtest=…` rather than an IDE test runner");
+        } else if (all.size() != 1) {
             throw new IllegalStateException("Expected 1 instance of " + type.getName() + " but got " + all.size());
         }
         return all.get(0);

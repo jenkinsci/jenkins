@@ -431,7 +431,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     private volatile SecurityRealm securityRealm = SecurityRealm.NO_AUTHENTICATION;
 
     /**
-     * Disables the remember me on this computer option in the standard login screen.
+     * Disables the "Keep me signed in" option in the standard login screen.
      *
      * @since 1.534
      */
