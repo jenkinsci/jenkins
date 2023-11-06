@@ -133,7 +133,7 @@ public class RobustReflectionConverterTest {
         String sample = xs.toXML(p).replace(prefix1, "").replace(prefix2, "").replaceAll("\r?\n *", "").replace('"', '\'');
         Map<String, String> targetClassOwnerMap = getClassOwnerMap(target);
         Map<String, String> sampleClassOwnerMap = getClassOwnerMap(sample);
-        assertTrue(targetClassOwnerMap.equals(sampleClassOwnerMap));
+        assertEquals(targetClassOwnerMap, sampleClassOwnerMap);
         Moonwalk s = (Moonwalk) xs.fromXML("<" + prefix1 + "Moonwalk plugin='p2'><lover class='" + prefix2 + "Billy' plugin='p3'/></" + prefix1 + "Moonwalk>");
         assertEquals(Billy.class, s.lover.getClass());
     }
