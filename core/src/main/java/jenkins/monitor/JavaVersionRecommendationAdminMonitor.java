@@ -115,7 +115,7 @@ public class JavaVersionRecommendationAdminMonitor extends AdministrativeMonitor
 
     @Override
     public boolean isActivated() {
-        return !disabled && getDeprecationPeriod().toTotalMonths() < 18;
+        return !disabled && getDeprecationPeriod().toTotalMonths() < 12;
     }
 
     @Override
@@ -156,7 +156,7 @@ public class JavaVersionRecommendationAdminMonitor extends AdministrativeMonitor
 
     @NonNull
     private static Severity getSeverity() {
-        return getDeprecationPeriod().toTotalMonths() < 9 ? Severity.DANGER : Severity.WARNING;
+        return getDeprecationPeriod().toTotalMonths() < 3 ? Severity.DANGER : Severity.WARNING;
     }
 
     /**
