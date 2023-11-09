@@ -196,7 +196,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>credentials</artifactId>
-      <version>1307.v3757c78f17c3</version>
+      <version>1309.v8835d63eb_d8a_</version>
       <scope>test</scope>
     </dependency>
     <dependency>
