@@ -332,7 +332,7 @@ THE SOFTWARE.
             <dependency>
               <groupId>com.puppycrawl.tools</groupId>
               <artifactId>checkstyle</artifactId>
-              <version>10.12.4</version>
+              <version>10.12.5</version>
             </dependency>
           </dependencies>
           <executions>
