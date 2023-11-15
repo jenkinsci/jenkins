@@ -452,6 +452,11 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
             si.errors.put("password1", Messages.HudsonPrivateSecurityRealm_CreateAccount_PasswordRequired());
         }
 
+        if (FIPS140.useCompliantAlgorithms()) {
+            if (si.password1.length() < 14) {
+                si.errors.put("password1", Messages.HudsonPrivateSecurityRealm_CreateAccount_FIPS_PasswordLengthInvalid());
+            }
+        }
         if (si.fullname == null || si.fullname.isEmpty()) {
             si.fullname = si.username;
         }
