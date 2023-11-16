@@ -45,6 +45,7 @@ import hudson.model.AbstractItem;
 import hudson.model.AbstractModelObject;
 import hudson.model.AdministrativeMonitor;
 import hudson.model.Api;
+import hudson.model.Descriptor;
 import hudson.model.DownloadService;
 import hudson.model.Failure;
 import hudson.model.ItemGroupMixIn;
@@ -165,6 +166,7 @@ import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.interceptor.RequirePOST;
+import org.kohsuke.stapler.verb.POST;
 import org.springframework.security.core.Authentication;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
@@ -1795,6 +1797,16 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         return new HttpRedirect("advanced");
     }
 
+    @POST
+    public HttpResponse doProxyConfigure(StaplerRequest req) throws IOException, ServletException {
+        Jenkins jenkins = Jenkins.get();
+        jenkins.checkPermission(Jenkins.ADMINISTER);
+
+        ProxyConfiguration pc = req.bindJSON(ProxyConfiguration.class, req.getSubmittedForm());
+        ProxyConfigurationManager.saveProxyConfiguration(pc);
+        return new HttpRedirect("advanced");
+    }
+
     interface PluginCopier {
         void copy(File target) throws Exception;
 
@@ -2110,6 +2122,10 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             LOGGER.log(WARNING, "Failed to identify the short name from " + t, e);
         }
         return FilenameUtils.getBaseName(t.getName());    // fall back to the base name of what's uploaded
+    }
+
+    public Descriptor<ProxyConfiguration> getProxyDescriptor() {
+        return Jenkins.get().getDescriptor(ProxyConfiguration.class);
     }
 
     /**

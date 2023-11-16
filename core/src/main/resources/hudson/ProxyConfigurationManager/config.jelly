@@ -25,26 +25,11 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
          xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-    <l:layout title="${%Proxy Configuration}" permission="${app.SYSTEM_READ}">
-
-        <l:main-panel>
-          <div class="jenkins-form">
-            <section class="jenkins-section jenkins-!-margin-bottom-5">
-                <h2 class="jenkins-section__title">${%HTTP Proxy Configuration}</h2>
-                <f:form method="post" action="proxyConfigure" name="proxyConfigure">
-                    <j:scope>
-                        <j:set var="instance" value="${app.proxy}"/>
-                        <j:set var="descriptor" value="${it.proxyDescriptor}"/>
-                        <st:include from="${descriptor}" page="${descriptor.configPage}"/>
-                    </j:scope>
-                    <l:isAdmin>
-                        <f:block>
-                            <f:submit/>
-                        </f:block>
-                    </l:isAdmin>
-                </f:form>
-            </section>
-          </div>
-        </l:main-panel>
-    </l:layout>
+    <f:section title="${%HTTP Proxy Configuration}">
+        <j:scope>
+            <j:set var="descriptor" value="${instance.getProxyDescriptor()}"/>
+            <j:set var="instance" value="${app.proxy}"/>
+            <st:include from="${descriptor}" page="${descriptor.configPage}"/>
+        </j:scope>
+    </f:section>
 </j:jelly>

@@ -26,62 +26,38 @@ package hudson;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.Descriptor;
-import hudson.model.ManagementLink;
-import hudson.security.Permission;
 import java.io.IOException;
-import javax.servlet.ServletException;
+import jenkins.model.GlobalConfiguration;
 import jenkins.model.Jenkins;
-import org.kohsuke.stapler.HttpRedirect;
-import org.kohsuke.stapler.HttpResponse;
+import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.verb.POST;
 
 @Extension
-public class ProxyConfigurationManager extends ManagementLink {
+public class ProxyConfigurationManager extends GlobalConfiguration {
 
+    @NonNull
     @Override
     public String getDisplayName() {
         return Messages.ProxyConfigurationManager_DisplayName();
-    }
-
-    @Override
-    public String getIconFileName() {
-        return "symbol-proxy";
-    }
-
-    @Override
-    public String getUrlName() {
-        return "proxyConfigurationManager";
-    }
-
-    @NonNull
-    @Override
-    public Category getCategory() {
-        return Category.CONFIGURATION;
-    }
-
-    @NonNull
-    @Override
-    public Permission getRequiredPermission() {
-        return Jenkins.SYSTEM_READ;
-    }
-
-    @Override
-    public String getDescription() {
-        return Messages.ProxyConfigurationManager_Description();
     }
 
     public Descriptor<ProxyConfiguration> getProxyDescriptor() {
         return Jenkins.get().getDescriptor(ProxyConfiguration.class);
     }
 
+    @Override
+    public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
+        ProxyConfiguration pc = req.bindJSON(ProxyConfiguration.class, json);
+        try {
+            saveProxyConfiguration(pc);
+        } catch (IOException e) {
+            throw new FormException(e.getMessage(), e, null);
+        }
+        return true;
+    }
 
-    @POST
-    public HttpResponse doProxyConfigure(StaplerRequest req) throws IOException, ServletException {
+    public static void saveProxyConfiguration(ProxyConfiguration pc) throws IOException {
         Jenkins jenkins = Jenkins.get();
-        jenkins.checkPermission(Jenkins.ADMINISTER);
-
-        ProxyConfiguration pc = req.bindJSON(ProxyConfiguration.class, req.getSubmittedForm());
         if (pc.name == null) {
             jenkins.proxy = null;
             ProxyConfiguration.getXmlFile().delete();
@@ -89,7 +65,6 @@ public class ProxyConfigurationManager extends ManagementLink {
             jenkins.proxy = pc;
             jenkins.proxy.save();
         }
-        return new HttpRedirect("..");
     }
 
 }
