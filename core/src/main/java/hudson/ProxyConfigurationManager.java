@@ -30,9 +30,11 @@ import java.io.IOException;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.StaplerRequest;
 
-@Extension
+@Extension @Restricted(NoExternalUse.class)
 public class ProxyConfigurationManager extends GlobalConfiguration {
 
     @NonNull
