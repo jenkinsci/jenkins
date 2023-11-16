@@ -3,6 +3,7 @@ package hudson.model.queue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
+import static org.junit.Assert.assertTrue;
 
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
@@ -54,6 +55,9 @@ public class MaintainCanTakeStrengtheningTest {
 
         // The new error is shown in the logs
         assertThat(logging.getMessages(), hasItem(String.format("Exception evaluating if the node '%s' can take the task '%s'", faultyAgent.getDisplayName(), "theFaultyOne")));
+
+        // Clear the queue
+        assertTrue(r.jenkins.getQueue().cancel(r.jenkins.getItemByFullName("theFaultyOne", FreeStyleProject.class)));
 
         // Tear down
         r.assertBuildStatusSuccess(r.waitForCompletion(good1));

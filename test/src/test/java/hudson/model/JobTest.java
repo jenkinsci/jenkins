@@ -52,6 +52,7 @@ import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -556,11 +557,7 @@ public class JobTest {
         @NonNull
         @Override
         public String getNodeName() {
-            if (virtualName != null) {
-                return virtualName;
-            } else {
-                return super.getNodeName();
-            }
+            return Objects.requireNonNullElseGet(virtualName, super::getNodeName);
         }
     }
 

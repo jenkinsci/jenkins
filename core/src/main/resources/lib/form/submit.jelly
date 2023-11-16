@@ -48,7 +48,7 @@ THE SOFTWARE.
       @since 2.376
     </s:attribute>
     <s:attribute name="icon">
-      @since TODO
+      @since 2.411
     </s:attribute>
     <s:attribute name="clazz" />
   </s:documentation>

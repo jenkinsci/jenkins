@@ -39,6 +39,11 @@ import hudson.util.FormValidation;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletException;
@@ -246,6 +251,25 @@ public class CloudSet extends AbstractModelObject implements Describable<CloudSe
         }
         // take the user back to the cloud list top page
         rsp.sendRedirect2(".");
+    }
+
+    @POST
+    public void doReorder(StaplerRequest req, StaplerResponse rsp) throws IOException {
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+        var names = req.getParameterValues("name");
+        if (names == null) {
+            throw new Failure("No cloud names given");
+        }
+        var namesList = Arrays.asList(names);
+        var clouds = new ArrayList<>(Jenkins.get().clouds);
+        Collections.sort(clouds, Comparator.comparingInt(c -> getIndexOf(namesList, c)));
+        Jenkins.get().clouds.replaceBy(clouds);
+        rsp.sendRedirect2(".");
+    }
+
+    private static int getIndexOf(List<String> namesList, Cloud cloud) {
+        var i = namesList.indexOf(cloud.name);
+        return i == -1 ? Integer.MAX_VALUE : i;
     }
 
     @Extension

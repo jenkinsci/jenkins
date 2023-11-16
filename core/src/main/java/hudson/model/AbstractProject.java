@@ -351,7 +351,10 @@ public abstract class AbstractProject<P extends AbstractProject<P, R>, R extends
     @Override
     protected void performDelete() throws IOException, InterruptedException {
         // prevent a new build while a delete operation is in progress
-        makeDisabled(true);
+        if (supportsMakeDisabled()) {
+            setDisabled(true);
+            Jenkins.get().getQueue().cancel(this);
+        }
         FilePath ws = getWorkspace();
         if (ws != null) {
             Node on = getLastBuiltOn();
