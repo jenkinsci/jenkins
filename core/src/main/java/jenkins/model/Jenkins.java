@@ -344,7 +344,7 @@ import org.xml.sax.InputSource;
 @ExportedBean
 public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLevelItemGroup, StaplerProxy, StaplerFallback,
         ModifiableViewGroup, AccessControlled, DescriptorByNameOwner,
-        ModelObjectWithContextMenu, ModelObjectWithChildren, OnMaster {
+        ModelObjectWithContextMenu, ModelObjectWithChildren, OnMaster, Loadable {
     private final transient Queue queue;
 
     // flag indicating if we have loaded the jenkins configuration or not yet.
@@ -431,7 +431,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     private volatile SecurityRealm securityRealm = SecurityRealm.NO_AUTHENTICATION;
 
     /**
-     * Disables the remember me on this computer option in the standard login screen.
+     * Disables the "Keep me signed in" option in the standard login screen.
      *
      * @since 1.534
      */
@@ -2974,7 +2974,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
 
     /**
      * Returns if the quietingDown is a safe restart.
-     * @since TODO
+     * @since 2.414
      */
     @Restricted(NoExternalUse.class)
     @NonNull
@@ -3367,7 +3367,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         return new Hudson.MasterComputer();
     }
 
-    private void loadConfig() throws IOException {
+    @Override
+    public void load() throws IOException {
         XmlFile cfg = getConfigFile();
         if (cfg.exists()) {
             // reset some data that may not exist in the disk file
@@ -3488,7 +3489,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         Handle loadJenkins = g.requires(EXTENSIONS_AUGMENTED).attains(SYSTEM_CONFIG_LOADED).add("Loading global config", new Executable() {
             @Override
             public void run(Reactor session) throws Exception {
-                loadConfig();
+                load();
                 // if we are loading old data that doesn't have this field
                 if (slaves != null && !slaves.isEmpty() && nodes.isLegacy()) {
                     nodes.setNodes(slaves);
@@ -4161,7 +4162,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @param message Quiet reason that will be visible to user
      * @deprecated use {@link #doQuietDown(boolean, int, String, boolean)} instead.
      */
-    @Deprecated(since = "TODO")
+    @Deprecated(since = "2.414")
     public HttpRedirect doQuietDown(boolean block,
                                     int timeout,
                                     @CheckForNull String message) throws InterruptedException, IOException {
@@ -4176,7 +4177,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @param timeout If non-zero, only block up to the specified number of milliseconds
      * @param message Quiet reason that will be visible to user
      * @param safeRestart If the quietDown is for a safeRestart
-     * @since TODO
+     * @since 2.414
      */
     @RequirePOST
     public HttpRedirect doQuietDown(@QueryParameter boolean block,
@@ -4607,7 +4608,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @deprecated use {@link #doSafeRestart(StaplerRequest, String)} instead.
      *
      */
-    @Deprecated(since = "TODO")
+    @Deprecated(since = "2.414")
     public HttpResponse doSafeRestart(StaplerRequest req) throws IOException, ServletException, RestartNotSupportedException {
         return doSafeRestart(req, null);
     }
@@ -4615,7 +4616,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * Queues up a safe restart of Jenkins. Jobs have to finish or pause before it can proceed. No new jobs are accepted.
      *
-     * @since TODO
+     * @since 2.414
      */
     public HttpResponse doSafeRestart(StaplerRequest req, @QueryParameter("message") String message) throws IOException, ServletException, RestartNotSupportedException {
         checkPermission(MANAGE);
@@ -4676,7 +4677,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @since 1.332
      * @deprecated use {@link #safeRestart(String)} instead.
      */
-    @Deprecated(since = "TODO")
+    @Deprecated(since = "2.414")
     public void safeRestart() throws RestartNotSupportedException {
         safeRestart(null);
     }
@@ -4684,7 +4685,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * Queues up a restart to be performed once there are no builds currently running.
      * @param message the message to show to users in the shutdown banner.
-     * @since TODO
+     * @since 2.414
      */
     public void safeRestart(String message) throws RestartNotSupportedException {
         final Lifecycle lifecycle = restartableLifecycle();
