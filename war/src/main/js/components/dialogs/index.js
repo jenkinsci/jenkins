@@ -176,7 +176,10 @@ Dialog.prototype.show = function () {
     if (this.input != null) {
       this.input.focus();
     }
-    if (this.ok != null && (this.dialogType != "form" || !this.options.submitButton) ) {
+    if (
+      this.ok != null &&
+      (this.dialogType != "form" || !this.options.submitButton)
+    ) {
       this.ok.addEventListener(
         "click",
         (e) => {
