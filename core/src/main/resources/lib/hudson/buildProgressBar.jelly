@@ -36,5 +36,5 @@ THE SOFTWARE.
   <j:set var="executor" value="${executor?:build.executor}" /> <!-- TODO use Executor.of -->
   <t:progressBar tooltip="${%text(executor.timestampString,executor.estimatedRemainingTime)}"
                  red="${executor.isLikelyStuck()}"
-                 pos="${executor.progress}" href="${rootURL}/${build.url}console"/>
+                 pos="${executor.progress}" href="${h.getConsoleUrl(build) ?: (rootURL + '/' + build.url + 'console')}"/>
 </j:jelly>

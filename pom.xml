@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.103</version>
+    <version>1.107</version>
     <relativePath />
   </parent>
 
@@ -73,7 +73,7 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.417</revision>
+    <revision>2.433</revision>
     <changelist>-SNAPSHOT</changelist>
 
     <!-- configuration for patch tracker plugin  -->
@@ -86,19 +86,19 @@ THE SOFTWARE.
     <changelog.url>https://www.jenkins.io/changelog</changelog.url>
 
     <!-- Bundled Remoting version -->
-    <remoting.version>3131.vf2b_b_798b_ce99</remoting.version>
+    <remoting.version>3192.v713e3b_039fb_e</remoting.version>
     <!-- Minimum Remoting version, which is tested for API compatibility -->
-    <remoting.minimum.supported.version>4.7</remoting.minimum.supported.version>
+    <remoting.minimum.supported.version>4.13</remoting.minimum.supported.version>
 
     <spotbugs.effort>Max</spotbugs.effort>
     <spotbugs.threshold>Medium</spotbugs.threshold>
 
-    <access-modifier.version>1.32</access-modifier.version>
-    <antlr.version>4.13.0</antlr.version>
-    <bridge-method-injector.version>1.27</bridge-method-injector.version>
+    <access-modifier.version>1.33</access-modifier.version>
+    <antlr.version>4.13.1</antlr.version>
+    <bridge-method-injector.version>1.29</bridge-method-injector.version>
     <spotless.check.skip>false</spotless.check.skip>
     <!-- Make sure to keep the jetty-maven-plugin version in war/pom.xml in sync with the Jetty release in Winstone: -->
-    <winstone.version>6.12</winstone.version>
+    <winstone.version>6.16</winstone.version>
   </properties>
 
   <!--
@@ -332,7 +332,7 @@ THE SOFTWARE.
             <dependency>
               <groupId>com.puppycrawl.tools</groupId>
               <artifactId>checkstyle</artifactId>
-              <version>10.12.1</version>
+              <version>10.12.4</version>
             </dependency>
           </dependencies>
           <executions>
@@ -348,7 +348,7 @@ THE SOFTWARE.
         <plugin>
           <groupId>org.jacoco</groupId>
           <artifactId>jacoco-maven-plugin</artifactId>
-          <version>0.8.10</version>
+          <version>0.8.11</version>
         </plugin>
       </plugins>
     </pluginManagement>

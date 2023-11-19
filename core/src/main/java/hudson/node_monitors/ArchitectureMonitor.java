@@ -32,6 +32,7 @@ import java.io.IOException;
 import jenkins.security.MasterToSlaveCallable;
 import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
+import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 
 /**
@@ -40,6 +41,11 @@ import org.kohsuke.stapler.StaplerRequest;
  * @author Kohsuke Kawaguchi
  */
 public class ArchitectureMonitor extends NodeMonitor {
+
+    @DataBoundConstructor
+    public ArchitectureMonitor() {
+    }
+
     @Extension @Symbol("architecture")
     public static final class DescriptorImpl extends AbstractAsyncNodeMonitorDescriptor<String> {
         @Override

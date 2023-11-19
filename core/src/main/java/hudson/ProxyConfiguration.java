@@ -31,7 +31,9 @@ import hudson.model.AbstractDescribableImpl;
 import hudson.model.Descriptor;
 import hudson.model.Saveable;
 import hudson.model.listeners.SaveableListener;
+import hudson.util.DaemonThreadFactory;
 import hudson.util.FormValidation;
+import hudson.util.NamingThreadFactory;
 import hudson.util.Scrambler;
 import hudson.util.Secret;
 import hudson.util.XStream2;
@@ -58,6 +60,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 import jenkins.UserAgentURLConnectionDecorator;
@@ -370,6 +374,8 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
         return newHttpClientBuilder().followRedirects(HttpClient.Redirect.NORMAL).build();
     }
 
+    private static final Executor httpClientExecutor = Executors.newCachedThreadPool(new NamingThreadFactory(new DaemonThreadFactory(), "Jenkins HttpClient"));
+
     /**
      * Create a new {@link HttpClient.Builder} preconfigured with Jenkins-specific default settings.
      *
@@ -397,6 +403,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
         if (DEFAULT_CONNECT_TIMEOUT_MILLIS > 0) {
             httpClientBuilder.connectTimeout(Duration.ofMillis(DEFAULT_CONNECT_TIMEOUT_MILLIS));
         }
+        httpClientBuilder.executor(httpClientExecutor);
         return httpClientBuilder;
     }
 
