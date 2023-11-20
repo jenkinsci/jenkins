@@ -24,6 +24,8 @@
 
 package hudson.slaves;
 
+import com.google.common.escape.Escaper;
+import com.google.common.escape.Escapers;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -38,6 +40,7 @@ import jenkins.model.identity.InstanceIdentityProvider;
 import jenkins.slaves.RemotingWorkDirSettings;
 import jenkins.util.SystemProperties;
 import jenkins.websocket.WebSockets;
+import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -194,6 +197,59 @@ public class JNLPLauncher extends ComputerLauncher {
     @Deprecated
     @Restricted(NoExternalUse.class)
     public static /*almost final*/ Descriptor<ComputerLauncher> DESCRIPTOR;
+
+    @NonNull
+    @Restricted(NoExternalUse.class)
+    public String getRemotingOptionsUnix(@NonNull Computer computer) {
+        return getRemotingOptions(escapeUnix(computer.getName()));
+    }
+
+    @NonNull
+    @Restricted(NoExternalUse.class)
+    public String getRemotingOptionsWindows(@NonNull Computer computer) {
+        return getRemotingOptions(escapeWindows(computer.getName()));
+    }
+
+    private String getRemotingOptions(String computerName) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("-name ");
+        sb.append(computerName);
+        sb.append(' ');
+        if (isWebSocket()) {
+            sb.append("-webSocket ");
+        }
+        if (tunnel != null) {
+            sb.append(" -tunnel ");
+            sb.append(tunnel);
+            sb.append(' ');
+        }
+        return sb.toString();
+    }
+
+    /**
+     * {@link Jenkins#checkGoodName(String)} saves us from most troublesome characters, but we still have to deal with
+     * spaces and therefore with double quotes and backticks.
+     */
+    private static String escapeUnix(String input) {
+        if (StringUtils.isAlphanumeric(input)) {
+            return input;
+        }
+        Escaper escaper =
+                Escapers.builder().addEscape('"', "\\\"").addEscape('`', "\\`").build();
+        return "\"" + escaper.escape(input) + "\"";
+    }
+
+    /**
+     * {@link Jenkins#checkGoodName(String)} saves us from most troublesome characters, but we still have to deal with
+     * spaces and therefore with double quotes.
+     */
+    private static String escapeWindows(String input) {
+        if (StringUtils.isAlphanumeric(input)) {
+            return input;
+        }
+        Escaper escaper = Escapers.builder().addEscape('"', "\\\"").build();
+        return "\"" + escaper.escape(input) + "\"";
+    }
 
     /**
      * Gets work directory options as a String.
