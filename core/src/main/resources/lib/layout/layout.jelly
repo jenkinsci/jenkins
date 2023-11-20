@@ -123,10 +123,6 @@ THE SOFTWARE.
     <link rel="mask-icon" href="${resURL}/mask-icon.svg" color="#191717" />
     <meta name="theme-color" content="#ffffff" />
 
-    <l:userExperimentalFlag var="removePrototype" flagClassName="jenkins.model.experimentalflags.RemovePrototypeUserExperimentalFlag" />
-    <j:if test="${!removePrototype}">
-      <script src="${resURL}/scripts/prototype.js" type="text/javascript"/>
-    </j:if>
     <script src="${resURL}/scripts/behavior.js" type="text/javascript"/>
 
     <st:adjunct includes="org.kohsuke.stapler.bind"/>

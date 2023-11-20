@@ -56,6 +56,7 @@ import hudson.util.OneShotEvent;
 import hudson.util.StreamTaskListener;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -140,7 +141,7 @@ public class AbstractProjectTest {
         // make sure that the action link is protected
         JenkinsRule.WebClient wc = j.createWebClient()
                 .withThrowExceptionOnFailingStatusCode(false);
-        Page page = wc.getPage(new WebRequest(new URL(wc.getContextPath() + project.getUrl() + "doWipeOutWorkspace"), HttpMethod.POST));
+        Page page = wc.getPage(new WebRequest(new URI(wc.getContextPath() + project.getUrl() + "doWipeOutWorkspace").toURL(), HttpMethod.POST));
         assertEquals(HttpURLConnection.HTTP_FORBIDDEN, page.getWebResponse().getStatusCode());
     }
 
@@ -323,7 +324,7 @@ public class AbstractProjectTest {
     private String deleteRedirectTarget(String job) throws Exception {
         JenkinsRule.WebClient wc = j.createWebClient();
         String base = wc.getContextPath();
-        String loc = wc.getPage(wc.addCrumb(new WebRequest(new URL(base + job + "/doDelete"), HttpMethod.POST))).getUrl().toString();
+        String loc = wc.getPage(wc.addCrumb(new WebRequest(new URI(base + job + "/doDelete").toURL(), HttpMethod.POST))).getUrl().toString();
         assert loc.startsWith(base) : loc;
         return loc.substring(base.length());
     }

@@ -29,6 +29,7 @@ import hudson.Util;
 import hudson.model.BallColor;
 import hudson.model.Run;
 import java.util.Date;
+import jenkins.console.ConsoleUrlProvider;
 import net.sf.json.JSONObject;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
@@ -41,6 +42,7 @@ public class BuildListTable extends RunListProgressiveRendering {
         element.put("iconColorOrdinal", iconColor.ordinal());
         element.put("iconColorDescription", iconColor.getDescription());
         element.put("url", build.getUrl());
+        element.put("consoleUrl", ConsoleUrlProvider.getRedirectUrl(build));
         element.put("iconName", build.getIconColor().getIconName());
         element.put("parentUrl", build.getParent().getUrl());
         element.put("parentFullDisplayName", Functions.breakableString(Functions.escape(build.getParent().getFullDisplayName())));

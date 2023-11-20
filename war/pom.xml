@@ -46,12 +46,12 @@ THE SOFTWARE.
     <host>localhost</host>
     <!-- HTTP listener port -->
     <port>8080</port>
-    <node.version>18.17.1</node.version>
+    <node.version>20.9.0</node.version>
     <!-- frontend-maven-plugin will install this Yarn version as bootstrap, then hand over control to Yarn Berry. -->
     <yarn.version>1.22.19</yarn.version>
     <!-- maven-antrun-plugin will download this Yarn version. -->
-    <yarn-berry.version>3.6.2</yarn-berry.version>
-    <yarn-berry.sha256sum>506981787ad29ec22e9c904a0d630c3b03b2e5c078b074990404aabbf2fb007b</yarn-berry.sha256sum>
+    <yarn-berry.version>4.0.1</yarn-berry.version>
+    <yarn-berry.sha256sum>5a9d054e67fbbae8774cd3667736fd74407ffbbb336898523ca1fe87b3fc4ee3</yarn-berry.sha256sum>
   </properties>
 
   <dependencyManagement>
@@ -383,7 +383,7 @@ THE SOFTWARE.
                   <!-- dependency of jackson2-api -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>snakeyaml-api</artifactId>
-                  <version>1.33-95.va_b_a_e3e47b_fa_4</version>
+                  <version>2.2-111.vc6598e30cc65</version>
                   <type>hpi</type>
                 </artifactItem>
 
@@ -636,7 +636,7 @@ THE SOFTWARE.
       <plugin>
         <groupId>org.eclipse.jetty</groupId>
         <artifactId>jetty-maven-plugin</artifactId>
-        <version>10.0.15</version>
+        <version>10.0.18</version>
         <configuration>
           <!--
             Reload webapp when you hit ENTER. (See JETTY-282 for more)
@@ -780,7 +780,7 @@ THE SOFTWARE.
           <plugin>
             <groupId>com.github.eirslett</groupId>
             <artifactId>frontend-maven-plugin</artifactId>
-            <version>1.13.4</version>
+            <version>1.14.2</version>
             <executions>
 
               <execution>
