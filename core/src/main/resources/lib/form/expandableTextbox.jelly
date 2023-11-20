@@ -28,33 +28,14 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
   <st:documentation>
-    A single-line textbox that can be expanded into a multi-line textarea.
+    A single-line textbox that can be expanded into a multi-line textarea. This control is useful for a field that expects multiple whitespace-separated tokens (such as URLs, glob patterns, etc.) When the user only enters a few tokens, they can keep
+    it as a single line to save space, but to enter a large number of values, this can be turned into textarea for better visibility. If the initial value is already multi-line text, the control starts with textarea. On the server side, your program
+    is responsible for treating ' ', \t, \r, and \n for separators. (StringTokenizer would do this.)
 
-    This control is useful for a field that expects multiple whitespace-separated tokens
-    (such as URLs, glob patterns, etc.) When the user only enters a few tokens,
-    they can keep it as a single line to save space, but to enter a large number of values,
-    this can be turned into textarea for better visibility.
-
-    If the initial value is already multi-line text, the control starts with
-    textarea.
-
-    On the server side, your program is responsible for treating ' ', \t, \r, and \n for
-    separators. (StringTokenizer would do this.)
-
-    <st:attribute name="field">
-      Used for databinding. TBD.
-    </st:attribute>
-    <st:attribute name="name"> <![CDATA[
-      This becomes @name of the <input> tag.
-      If @field is specified, this value is inferred from it.
-    ]]>
-    </st:attribute>
-    <st:attribute name="value"> <![CDATA[
-      The initial value of the field. This becomes the @value of the <input> tag.
-      If @field is specified, the current property from the "instance" object
-      will be set as the initial value automatically,
-      which is the recommended approach.
-    ]]>
+    <st:attribute name="field">Used for databinding. TBD.</st:attribute>
+    <st:attribute name="name"><![CDATA[ This becomes @name of the <input> tag. If @field is specified, this value is inferred from it. ]]></st:attribute>
+    <st:attribute name="value">
+      <![CDATA[ The initial value of the field. This becomes the @value of the <input> tag. If @field is specified, the current property from the "instance" object will be set as the initial value automatically, which is the recommended approach. ]]>
     </st:attribute>
   </st:documentation>
   <f:prepareDatabinding />
@@ -62,25 +43,24 @@ THE SOFTWARE.
   <j:choose>
     <j:when test="${h.isMultiline(value)}">
       <!-- multiline text area to begin with -->
-      <f:textarea name='${attrs.name}' value="${value}" field="${attrs.field}"/>
+      <f:textarea name="${attrs.name}" value="${value}" field="${attrs.field}" />
     </j:when>
     <j:otherwise>
-      <st:adjunct includes="lib.form.expandableTextbox.expandableTextbox"/>
+      <st:adjunct includes="lib.form.expandableTextbox.expandableTextbox" />
       <!-- single line textbox with expand button -->
       <f:possibleReadOnlyField>
         <div class="expanding-input">
           <div class="expanding-input__input">
             <j:set var="name" value="${attrs.name ?: '_.'+attrs.field}" />
-            <input class="jenkins-input" type="text"
-                   name="${name}" value="${value}"
-                   id="textarea.${name}" />
+            <input class="jenkins-input" type="text" name="${name}" value="${value}" id="textarea.${name}" />
             <j:if test="${customizedFields != null and attrs.field != null and (value ?: '') != ''}">
               <j:mute>${customizedFields.add(name)}</j:mute>
             </j:if>
           </div>
           <div class="expanding-input__button">
-            <button type="button" class="jenkins-button jenkins-!-margin-left-1"
-                    tooltip="${%tooltip}"><l:icon src="symbol-chevron-down"/></button>
+            <button type="button" class="jenkins-button jenkins-!-margin-left-1" tooltip="${%tooltip}">
+              <l:icon src="symbol-chevron-down" />
+            </button>
           </div>
         </div>
       </f:possibleReadOnlyField>

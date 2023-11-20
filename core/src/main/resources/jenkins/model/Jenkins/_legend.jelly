@@ -29,88 +29,64 @@ THE SOFTWARE.
 
   <dl class="app-icon-legend">
     <dt>
-      <l:icon class="icon-blue icon-lg"/>
+      <l:icon class="icon-blue icon-lg" />
     </dt>
-    <dd>
-      ${%blue}
-    </dd>
+    <dd>${%blue}</dd>
 
     <dt>
-      <l:icon class="icon-blue-anime icon-lg"/>
+      <l:icon class="icon-blue-anime icon-lg" />
     </dt>
-    <dd>
-      ${%blue_anime}
-    </dd>
+    <dd>${%blue_anime}</dd>
 
     <dt>
-      <l:icon class="icon-yellow icon-lg"/>
+      <l:icon class="icon-yellow icon-lg" />
     </dt>
-    <dd>
-      ${%yellow}
-    </dd>
+    <dd>${%yellow}</dd>
 
     <dt>
-      <l:icon class="icon-yellow-anime icon-lg"/>
+      <l:icon class="icon-yellow-anime icon-lg" />
     </dt>
-    <dd>
-      ${%yellow_anime}
-    </dd>
+    <dd>${%yellow_anime}</dd>
 
     <dt>
-      <l:icon class="icon-red icon-lg"/>
+      <l:icon class="icon-red icon-lg" />
     </dt>
-    <dd>
-      ${%red}
-    </dd>
+    <dd>${%red}</dd>
 
     <dt>
-      <l:icon class="icon-red-anime icon-lg"/>
+      <l:icon class="icon-red-anime icon-lg" />
     </dt>
-    <dd>
-      ${%red_anime}
-    </dd>
+    <dd>${%red_anime}</dd>
 
     <dt>
-      <l:icon class="icon-nobuilt icon-lg"/>
+      <l:icon class="icon-nobuilt icon-lg" />
     </dt>
-    <dd>
-      ${%lightgrey}
-    </dd>
+    <dd>${%lightgrey}</dd>
 
     <dt>
-      <l:icon class="icon-nobuilt-anime icon-lg"/>
+      <l:icon class="icon-nobuilt-anime icon-lg" />
     </dt>
-    <dd>
-      ${%lightgrey_anime}
-    </dd>
+    <dd>${%lightgrey_anime}</dd>
 
     <dt>
-      <l:icon class="icon-disabled icon-lg"/>
+      <l:icon class="icon-disabled icon-lg" />
     </dt>
-    <dd>
-      ${%grey}
-    </dd>
+    <dd>${%grey}</dd>
 
     <dt>
-      <l:icon class="icon-disabled-anime icon-lg"/>
+      <l:icon class="icon-disabled-anime icon-lg" />
     </dt>
-    <dd>
-      ${%grey_anime}
-    </dd>
+    <dd>${%grey_anime}</dd>
 
     <dt>
-      <l:icon class="icon-aborted icon-lg"/>
+      <l:icon class="icon-aborted icon-lg" />
     </dt>
-    <dd>
-      ${%darkgrey}
-    </dd>
+    <dd>${%darkgrey}</dd>
 
     <dt>
-      <l:icon class="icon-aborted-anime icon-lg"/>
+      <l:icon class="icon-aborted-anime icon-lg" />
     </dt>
-    <dd>
-      ${%darkgrey_anime}
-    </dd>
+    <dd>${%darkgrey_anime}</dd>
   </dl>
 
   <h2 class="jenkins-dialog__subtitle">${%Project Health}</h2>
@@ -119,36 +95,26 @@ THE SOFTWARE.
     <dt>
       <l:icon src="symbol-weather-icon-health-80plus" />
     </dt>
-    <dd>
-      ${%health-81plus}
-    </dd>
+    <dd>${%health-81plus}</dd>
 
     <dt>
       <l:icon src="symbol-weather-icon-health-60to79" />
     </dt>
-    <dd>
-      ${%health-61to80}
-    </dd>
+    <dd>${%health-61to80}</dd>
 
     <dt>
       <l:icon src="symbol-weather-icon-health-40to59" />
     </dt>
-    <dd>
-      ${%health-41to60}
-    </dd>
+    <dd>${%health-41to60}</dd>
 
     <dt>
       <l:icon src="symbol-weather-icon-health-20to39" />
     </dt>
-    <dd>
-      ${%health-21to40}
-    </dd>
+    <dd>${%health-21to40}</dd>
 
     <dt>
       <l:icon src="symbol-weather-icon-health-00to19" />
     </dt>
-    <dd>
-      ${%health-00to20}
-    </dd>
+    <dd>${%health-00to20}</dd>
   </dl>
 </j:jelly>

@@ -25,9 +25,7 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <h2>Available Plugins</h2>
-  <p>
-    Each plugin advertised in an update site has its own URL:
-  </p>
+  <p>Each plugin advertised in an update site has its own URL:</p>
   <ul>
     <j:forEach var="p" items="${it.availables}">
       <li>
@@ -35,5 +33,4 @@ THE SOFTWARE.
       </li>
     </j:forEach>
   </ul>
-
 </j:jelly>

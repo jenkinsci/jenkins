@@ -27,9 +27,10 @@ THE SOFTWARE.
   <t:summary icon="symbol-trigger">
     <j:forEach var="entry" items="${it.causeCounts.entrySet()}">
       <p>
-        <st:include page="description.jelly" it="${entry.key}"/>
+        <st:include page="description.jelly" it="${entry.key}" />
         <j:if test="${entry.value > 1}">
-          <st:nbsp/>${%Ntimes(entry.value)}
+          <st:nbsp />
+          ${%Ntimes(entry.value)}
         </j:if>
       </p>
     </j:forEach>

@@ -26,22 +26,28 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <h2>Load Statistics</h2>
   <p>
-    Load statistics of this computer has <a href="../loadStatistics/api/">its own separate API</a>.
+    Load statistics of this computer has
+    <a href="../loadStatistics/api/">its own separate API</a>
+    .
   </p>
 
   <h2>Fetch/Update config.xml</h2>
   <p>
-    To programmatically obtain <code>config.xml</code>, hit <a href="../config.xml">this URL</a>.
-    You can also POST an updated <code>config.xml</code> to the same URL to programmatically
-    update the configuration of a node.
+    To programmatically obtain
+    <code>config.xml</code>
+    , hit
+    <a href="../config.xml">this URL</a>
+    . You can also POST an updated
+    <code>config.xml</code>
+    to the same URL to programmatically update the configuration of a node.
   </p>
 
   <h2>Marking this node temporarily offline</h2>
   <p>
-      You can POST to <a href="../toggleOffline?offlineMessage=some%20text">this URL</a>
-      to mark this node temporary offline, or bring it back online.
-      Or you can POST to <a href="../changeOfflineCause?offlineMessage=some%20text">this URL</a>
-      to mark this node temporary offline, or adjust the offline cause message if it is already offline.
+    You can POST to
+    <a href="../toggleOffline?offlineMessage=some%20text">this URL</a>
+    to mark this node temporary offline, or bring it back online. Or you can POST to
+    <a href="../changeOfflineCause?offlineMessage=some%20text">this URL</a>
+    to mark this node temporary offline, or adjust the offline cause message if it is already offline.
   </p>
-
 </j:jelly>

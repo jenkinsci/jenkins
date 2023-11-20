@@ -34,14 +34,12 @@ THE SOFTWARE.
           <j:forEach var="f" items="${it.artifacts}">
             <tr>
               <td>
-                <l:icon class="icon-document icon-sm"/>
+                <l:icon class="icon-document icon-sm" />
               </td>
               <td>
                 <a href="artifact/${f.href}">${f.displayPath}</a>
               </td>
-              <td class="fileSize">
-                ${f.length}
-              </td>
+              <td class="fileSize">${f.length}</td>
             </tr>
           </j:forEach>
         </table>

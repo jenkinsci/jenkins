@@ -25,18 +25,14 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <st:documentation>
-    Renders inline a single-value nested data-bound property of the current instance.
-    This is useful when your object composes another data-bound object as a nested object,
-    yet your UI would still like to render it
+    Renders inline a single-value nested data-bound property of the current instance. This is useful when your object composes another data-bound object as a nested object, yet your UI would still like to render it
 
     <st:attribute name="field" use="required" />
-    <st:attribute name="propertyDescriptor">
-      If specified, bypass the item descriptor inference and use this instead.
-    </st:attribute>
+    <st:attribute name="propertyDescriptor">If specified, bypass the item descriptor inference and use this instead.</st:attribute>
   </st:documentation>
   <f:rowSet name="${field}">
     <j:set var="descriptor" value="${attrs.propertyDescriptor ?: app.getDescriptorOrDie(descriptor.getPropertyTypeOrDie(instance,field).clazz)}" />
-    <j:set var="instance" value="${instance[field]}"/>
+    <j:set var="instance" value="${instance[field]}" />
     <st:include from="${descriptor}" page="${descriptor.configPage}" />
   </f:rowSet>
 </j:jelly>

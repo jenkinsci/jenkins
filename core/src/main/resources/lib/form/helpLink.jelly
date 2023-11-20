@@ -24,34 +24,15 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:f="/lib/form">
-  <st:documentation> <![CDATA[
-    Outputs a help link for a <f:form> item if help is available or
-    a spacer if none is available.
-
-    The help link is rendered as a table cell with an (?) icon.
-    If the user clicks it, the content of the HTML fragment at the given URL 
-    is rendered in the area designated as <f:helpArea> by the caller,
-    usually in a row beneath the item with help.
-    
-    The alternative spacer is just an empty table cell.
-    
-    This tag was introduced to ensure that the space reserved for help items
-    is consistent over the UI whether or not help exists.
-
-    @since 1.576
-    ]]>
-    <st:attribute name="url"> <![CDATA[
-      URL to the HTML page. Optional. If not given, no help icon is displayed.
-
-      The URL should return a UTF-8 encoded HTML fragment wrapped in a <div> tag.
-      The URL is interpreted to be rooted at the context path of Jenkins,
-      so it's normally something like "/plugin/foobar/help/abc.html".
-      ]]>
+  <st:documentation>
+    <![CDATA[ Outputs a help link for a <f:form> item if help is available or a spacer if none is available. The help link is rendered as a table cell with an (?) icon. If the user clicks it, the content of the HTML fragment at the given URL is
+    rendered in the area designated as <f:helpArea> by the caller, usually in a row beneath the item with help. The alternative spacer is just an empty table cell. This tag was introduced to ensure that the space reserved for help items is consistent
+    over the UI whether or not help exists. @since 1.576 ]]>
+    <st:attribute name="url">
+      <![CDATA[ URL to the HTML page. Optional. If not given, no help icon is displayed. The URL should return a UTF-8 encoded HTML fragment wrapped in a <div> tag. The URL is interpreted to be rooted at the context path of Jenkins, so it's normally
+      something like "/plugin/foobar/help/abc.html". ]]>
     </st:attribute>
-    <st:attribute name="featureName">
-      Name of the feature described by the help text, used for constructing the 
-      icon's alt attribute. Optional.
-    </st:attribute>
+    <st:attribute name="featureName">Name of the feature described by the help text, used for constructing the icon's alt attribute. Optional.</st:attribute>
   </st:documentation>
   <j:choose>
     <j:when test="${attrs.url!=null}">

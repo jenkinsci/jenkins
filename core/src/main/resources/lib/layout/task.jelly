@@ -24,70 +24,29 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout">
-  <st:documentation> <![CDATA[
-    This tag inside <l:tasks> tag renders the left navigation bar of Jenkins.
-    Each <task> tag gets an icon and link.
-    ]]>
-    <st:attribute name="href" use="required">
-      Link target. Relative to the current page.
-    </st:attribute>
+  <st:documentation>
+    <![CDATA[ This tag inside <l:tasks> tag renders the left navigation bar of Jenkins. Each <task> tag gets an icon and link. ]]>
+    <st:attribute name="href" use="required">Link target. Relative to the current page.</st:attribute>
     <st:attribute name="icon" use="required">
-      URL to an icon image, or the icon class specification.  If using an image URL,
-      the image should be 24x24 in size and relative to the context path of Hudson.
-
-      Common values include:
-
-      # "symbol-search" / "symbol-terminal" / "symbol-settings" - use a Jenkins Symbol as the icon for your task
-      # "icon-folder icon-md" is an example of using a class spec for a medium folder icon
-      # "images/24x24/..." then points to the stock icon resources
-      # "plugin/foobar/abc/def.png" that points to "src/main/webapp/abc/def.png" in your plugin resources
+      URL to an icon image, or the icon class specification. If using an image URL, the image should be 24x24 in size and relative to the context path of Hudson. Common values include: # "symbol-search" / "symbol-terminal" / "symbol-settings" - use a
+      Jenkins Symbol as the icon for your task # "icon-folder icon-md" is an example of using a class spec for a medium folder icon # "images/24x24/..." then points to the stock icon resources # "plugin/foobar/abc/def.png" that points to
+      "src/main/webapp/abc/def.png" in your plugin resources
     </st:attribute>
-    <st:attribute name="title" use="required">
-      Human readable text that follows the icon.
-    </st:attribute>
-    <st:attribute name="enabled">
-      If specified, then this controls whether the task is enabled or not.
-    </st:attribute>
-    <st:attribute name="contextMenu" type="boolean">
-      If "false", remove this item from the context menu.
-    </st:attribute>
+    <st:attribute name="title" use="required">Human readable text that follows the icon.</st:attribute>
+    <st:attribute name="enabled">If specified, then this controls whether the task is enabled or not.</st:attribute>
+    <st:attribute name="contextMenu" type="boolean">If "false", remove this item from the context menu.</st:attribute>
     <st:attribute name="permission">
-      If specified, the link will be only displayed when the current user
-      has the specified permission against the "it" object.
-
-      This is useful for showing links to restricted pages, as showing
-      them to unprivileged users don't make sense.
-
-      If both permission and permissions is set, then permissions will be used
+      If specified, the link will be only displayed when the current user has the specified permission against the "it" object. This is useful for showing links to restricted pages, as showing them to unprivileged users don't make sense. If both
+      permission and permissions is set, then permissions will be used
     </st:attribute>
     <st:attribute name="permissions">
-      If specified, the link will be only displayed when the current user has
-      one or more of the specified permissions against the "it" object.
-
-      If both permission and permissions is set, then permissions will be used
+      If specified, the link will be only displayed when the current user has one or more of the specified permissions against the "it" object. If both permission and permissions is set, then permissions will be used
     </st:attribute>
-    <st:attribute name="post" type="boolean">
-      If true, send a POST rather than a GET request.
-      (onclick supersedes this except in the context menu.)
-      (since 1.504)
-    </st:attribute>
-    <st:attribute name="requiresConfirmation" type="boolean">
-      If true, require confirmation before clicking.
-      Generally used with post="true".
-      (onclick supersedes this except in the context menu.)
-      (since 1.512)
-    </st:attribute>
-    <st:attribute name="badge" type="jenkins.management.Badge">
-      If set, displays the value as a small badge on the right side of the sidepanel item.
-      (since 2.401)
-    </st:attribute>
-    <st:attribute name="confirmationMessage">
-      Message to use for confirmation, if requested; defaults to title.
-      (since 1.512)
-    </st:attribute>
-    <st:attribute name="destructive" type="boolean" since="TODO">
-      Show red confirmation button.
-    </st:attribute>
+    <st:attribute name="post" type="boolean">If true, send a POST rather than a GET request. (onclick supersedes this except in the context menu.) (since 1.504)</st:attribute>
+    <st:attribute name="requiresConfirmation" type="boolean">If true, require confirmation before clicking. Generally used with post="true". (onclick supersedes this except in the context menu.) (since 1.512)</st:attribute>
+    <st:attribute name="badge" type="jenkins.management.Badge">If set, displays the value as a small badge on the right side of the sidepanel item. (since 2.401)</st:attribute>
+    <st:attribute name="confirmationMessage">Message to use for confirmation, if requested; defaults to title. (since 1.512)</st:attribute>
+    <st:attribute name="destructive" type="boolean" since="TODO">Show red confirmation button.</st:attribute>
   </st:documentation>
 
   <!--
@@ -97,7 +56,7 @@ THE SOFTWARE.
   -->
   <j:set var="isCurrent" value="${h.hyperlinkMatchesCurrentPage(href)}" />
   <j:scope>
-    <j:set var="parentTagContext" value="${context.parent}"/>
+    <j:set var="parentTagContext" value="${context.parent}" />
     <d:invokeBody />
   </j:scope>
   <j:if test="${attrs.permission != null}">
@@ -116,7 +75,7 @@ THE SOFTWARE.
     <j:choose>
       <j:when test="${parentTagContext!=null}">
         <j:if test="${isCurrent or hasMatchingChild}">
-          <j:set target="${parentTagContext.variables}" property="hasMatchingChild" value="true"/>
+          <j:set target="${parentTagContext.variables}" property="hasMatchingChild" value="true" />
         </j:if>
       </j:when>
       <j:set var="match" value="${isCurrent or hasMatchingChild}" />
@@ -144,9 +103,7 @@ THE SOFTWARE.
               </span>
               <span class="task-link-text">${title}</span>
               <j:if test="${attrs.badge != null}">
-                <span class="task-icon-badge" tooltip="${attrs.badge.tooltip}">
-                  ${attrs.badge.text}
-                </span>
+                <span class="task-icon-badge" tooltip="${attrs.badge.tooltip}">${attrs.badge.text}</span>
               </j:if>
             </span>
           </span>
@@ -154,25 +111,25 @@ THE SOFTWARE.
       </j:when>
 
       <j:otherwise>
-        <div class="task ">
+        <div class="task">
           <span class="task-link-wrapper ${watch ? 'task--active' : ''}">
-            <j:set var="iconSrc" value="${h.tryGetIconPath(icon, context)}"/>
+            <j:set var="iconSrc" value="${h.tryGetIconPath(icon, context)}" />
             <j:set var="iconXml">
               <l:icon src="${icon}" />
             </j:set>
             ${taskTags!=null and attrs.contextMenu!='false' ? taskTags.add(href, iconSrc, iconXml, title, post == 'true', requiresConfirmation == 'true', null, confirmationMessage ?: null) : null}
-            <j:set var="id" value="${h.generateId()}"/>
+            <j:set var="id" value="${h.generateId()}" />
             <j:if test="${attrs.onclick == null and post and not requiresConfirmation}">
-                <script>
-                    function postRequest_${id}(a) {
-                      fetch(a.href, {
-                        method: 'post',
-                        headers: crumb.wrap({}),
-                      })
-                      hoverNotification('${%Done.}', a.parentNode);
-                      return false;
-                    }
-                </script>
+              <script>
+                function postRequest_${id}(a) {
+                  fetch(a.href, {
+                    method: 'post',
+                    headers: crumb.wrap({}),
+                  })
+                  hoverNotification('${%Done.}', a.parentNode);
+                  return false;
+                }
+              </script>
             </j:if>
 
             <j:choose>
@@ -183,9 +140,7 @@ THE SOFTWARE.
                   </span>
                   <span>${title}</span>
                   <j:if test="${attrs.badge != null}">
-                    <span class="task-icon-badge" tooltip="${attrs.badge.tooltip}">
-                      ${attrs.badge.text}
-                    </span>
+                    <span class="task-icon-badge" tooltip="${attrs.badge.tooltip}">${attrs.badge.text}</span>
                   </j:if>
                 </l:confirmationLink>
               </j:when>
@@ -197,9 +152,7 @@ THE SOFTWARE.
                   </span>
                   <span class="task-link-text">${title}</span>
                   <j:if test="${attrs.badge != null}">
-                    <span class="task-icon-badge" tooltip="${attrs.badge.tooltip}">
-                      ${attrs.badge.text}
-                    </span>
+                    <span class="task-icon-badge" tooltip="${attrs.badge.tooltip}">${attrs.badge.text}</span>
                   </j:if>
                 </a>
               </j:otherwise>

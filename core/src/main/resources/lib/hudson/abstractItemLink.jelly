@@ -25,9 +25,6 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define">
-  <st:documentation>
-    Displays a link when given an AbstractItem. It is assumed that that Abstract
-    Item is passed in ${it}
-  </st:documentation>  
-  <a href="${it.absoluteUrl}"  class="model-link inside">${it.displayName}</a>
+  <st:documentation>Displays a link when given an AbstractItem. It is assumed that that Abstract Item is passed in ${it}</st:documentation>
+  <a href="${it.absoluteUrl}" class="model-link inside">${it.displayName}</a>
 </j:jelly>

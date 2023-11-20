@@ -1,4 +1,10 @@
 {
   "endOfLine": "auto",
-  "htmlWhitespaceSensitivity": "ignore"
+  "htmlWhitespaceSensitivity": "ignore",
+  "overrides": [
+    {
+      "files": "*.jelly",
+      "options": { "parser": "html", "printWidth": 250 }
+    }
+  ]
 }

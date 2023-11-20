@@ -33,7 +33,7 @@ THE SOFTWARE.
   <j:set var="link" value="${it.widget.baseUrl}/${build.number}/" />
   <j:if test="${h.isUserTimeZoneOverride()}">
     <i:setTimeZone value="${h.getUserTimeZone()}" />
-   </j:if>
+  </j:if>
   <tr class="build-row ${transitive} single-line" page-entry-id="${pageEntry.entryId}">
     <td class="build-row-cell">
       <div class="pane build-name">
@@ -45,23 +45,24 @@ THE SOFTWARE.
         <a class="model-link inside build-link display-name" update-parent-class=".build-row" href="${link}">${build.displayName}</a>
       </div>
       <div class="pane build-details" time="${build.timestamp.time.time}">
-        <j:set var="linkTitleAttr" value=""/> 
+        <j:set var="linkTitleAttr" value="" />
         <j:if test="${!build.building}">
           <j:set var="linkTitleAttr">${%Took} ${build.durationString}</j:set>
         </j:if>
         <a class="model-link inside build-link" href="${link}" update-parent-class=".build-row" tooltip="${linkTitleAttr}">
-          <i:formatDate value="${build.timestamp.time}" type="both" dateStyle="medium" timeStyle="short" /> ${h.getUserTimeZonePostfix()}
+          <i:formatDate value="${build.timestamp.time}" type="both" dateStyle="medium" timeStyle="short" />
+          ${h.getUserTimeZonePostfix()}
         </a>
         <j:if test="${build.building}">
-	  <j:set target="${it.widget}" property="nextBuildNumberToFetch" value="${build.number}"/>
-          <t:buildProgressBar build="${build}"/>
+          <j:set target="${it.widget}" property="nextBuildNumberToFetch" value="${build.number}" />
+          <t:buildProgressBar build="${build}" />
         </j:if>
       </div>
       <div class="pane build-controls">
         <div class="middle-align build-badge">
-          <j:set var="badges" value="${build.badgeActions}"/>
+          <j:set var="badges" value="${build.badgeActions}" />
           <j:if test="${!empty(badges)}">
-            <st:nbsp/>
+            <st:nbsp />
             <j:forEach var="badge" items="${badges}">
               <st:include it="${badge}" page="badge.jelly" />
             </j:forEach>
@@ -78,7 +79,7 @@ THE SOFTWARE.
       </div>
       <j:if test="${!empty build.truncatedDescription}">
         <div class="pane desc indent-multiline">
-          <j:out value="${app.markupFormatter.translate(build.truncatedDescription)}"/>
+          <j:out value="${app.markupFormatter.translate(build.truncatedDescription)}" />
         </div>
       </j:if>
       <div class="left-bar" />

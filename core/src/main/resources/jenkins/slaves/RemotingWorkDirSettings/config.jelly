@@ -28,10 +28,10 @@ THE SOFTWARE.
     <f:checkbox title="${%Disable WorkDir}" />
   </f:entry>
   <f:entry title="${%Custom WorkDir path}" field="workDirPath">
-    <f:textbox/>
+    <f:textbox />
   </f:entry>
   <f:entry title="${%Internal data directory}" field="internalDir">
-    <f:textbox default="remoting"/>
+    <f:textbox default="remoting" />
   </f:entry>
   <f:entry field="failIfWorkDirIsMissing">
     <f:checkbox title="${%Fail if workspace is missing}" />
