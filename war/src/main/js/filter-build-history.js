@@ -16,9 +16,9 @@ const noBuildsBanner = document.getElementById("no-builds");
 const sidePanel = document.getElementById("side-panel");
 const buildHistoryPageNav = document.getElementById("buildHistoryPageNav");
 
-const pageOne = buildHistoryPageNav.querySelector(".pageOne");
-const pageUp = buildHistoryPageNav.querySelector(".pageUp");
-const pageDown = buildHistoryPageNav.querySelector(".pageDown");
+const pageOne = buildHistoryPageNav?.querySelector(".pageOne");
+const pageUp = buildHistoryPageNav?.querySelector(".pageUp");
+const pageDown = buildHistoryPageNav?.querySelector(".pageDown");
 
 const leftRightPadding = 4;
 const updateBuildsRefreshInterval = 5000;
@@ -159,8 +159,8 @@ function updatePageParams(dataTable) {
   );
 }
 function togglePageUpDown() {
-  buildHistoryPageNav.classList.remove("hasUpPage");
-  buildHistoryPageNav.classList.remove("hasDownPage");
+  buildHistoryPageNav?.classList.remove("hasUpPage");
+  buildHistoryPageNav?.classList.remove("hasDownPage");
   if (hasPageUp()) {
     buildHistoryPageNav.classList.add("hasUpPage");
   }
@@ -559,25 +559,25 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Show/hide the nav as the mouse moves into the sidepanel and build history.
   sidePanel.addEventListener("mouseover", function () {
-    buildHistoryPageNav.classList.add("mouseOverSidePanel");
+    buildHistoryPageNav?.classList.add("mouseOverSidePanel");
   });
   sidePanel.addEventListener("mouseout", function () {
-    buildHistoryPageNav.classList.remove("mouseOverSidePanel");
+    buildHistoryPageNav?.classList.remove("mouseOverSidePanel");
   });
   buildHistoryContainer.addEventListener("mouseover", function () {
-    buildHistoryPageNav.classList.add("mouseOverSidePanelBuildHistory");
+    buildHistoryPageNav?.classList.add("mouseOverSidePanelBuildHistory");
   });
   buildHistoryContainer.addEventListener("mouseout", function () {
-    buildHistoryPageNav.classList.remove("mouseOverSidePanelBuildHistory");
+    buildHistoryPageNav?.classList.remove("mouseOverSidePanelBuildHistory");
   });
 
-  pageOne.addEventListener("click", function () {
+  pageOne?.addEventListener("click", function () {
     loadPage();
   });
-  pageUp.addEventListener("click", function () {
+  pageUp?.addEventListener("click", function () {
     loadPage({ "newer-than": getNewestEntryId() });
   });
-  pageDown.addEventListener("click", function () {
+  pageDown?.addEventListener("click", function () {
     if (hasPageDown()) {
       cancelRefreshTimeout();
       loadPage({ "older-than": getOldestEntryId() });
