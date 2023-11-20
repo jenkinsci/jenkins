@@ -44,7 +44,7 @@ jobs:
     runs-on: ubuntu-latest
     if: github.repository_owner == 'jenkinsci'
     steps:
-      - uses: tibdex/github-app-token@v1
+      - uses: tibdex/github-app-token@v2
         id: generate-token
         with:
           app_id: ${{ secrets.JENKINS_CHANGELOG_UPDATER_APP_ID }}
