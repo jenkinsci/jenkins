@@ -101,14 +101,6 @@ public class TemporarySpaceMonitor extends AbstractDiskSpaceMonitor {
         }
     }
 
-    /**
-     * @deprecated as of 2.0
-     */
-    @Deprecated
-    public static DiskSpaceMonitorDescriptor install() {
-        return (DiskSpaceMonitorDescriptor) Jenkins.get().getDescriptor(TemporarySpaceMonitor.class);
-    }
-
     protected static final class GetTempSpace extends MasterToSlaveFileCallable<DiskSpace> {
         @Override
         public DiskSpace invoke(File f, VirtualChannel channel) throws IOException {

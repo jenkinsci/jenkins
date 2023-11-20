@@ -43,6 +43,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.Writer;
@@ -108,6 +109,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
+import jenkins.model.Jenkins;
 import jenkins.util.MemoryReductionUtil;
 import jenkins.util.SystemProperties;
 import jenkins.util.io.PathRemover;
@@ -1854,6 +1856,20 @@ public class Util {
             throw new IllegalArgumentException("No ancestor of type " + clazz.getName() + " in the request");
         }
         return t;
+    }
+
+    @Restricted(NoExternalUse.class)
+    public static void printRedirect(String contextPath, String redirectUrl, String message, PrintWriter out) {
+        out.printf(
+                "<html><head>" +
+                "<meta http-equiv='refresh' content='1;url=%1$s'/>" +
+                "<script id='redirect' data-redirect-url='%1$s' src='" +
+                contextPath + Jenkins.RESOURCE_PATH +
+                "/scripts/redirect.js'></script>" +
+                "</head>" +
+                "<body style='background-color:white; color:white;'>%n" +
+                "%2$s%n" +
+                "<!--%n", Functions.htmlAttributeEscape(redirectUrl), message);
     }
 
     public static final FastDateFormat XS_DATETIME_FORMATTER = FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ss'Z'", new SimpleTimeZone(0, "GMT"));

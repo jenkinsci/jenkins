@@ -70,7 +70,7 @@ function menuItem(options) {
     `);
 
   if (options.onClick) {
-    item.addEventListener("click", () => options.onClick());
+    item.addEventListener("click", (event) => options.onClick(event));
   }
 
   return item;
@@ -94,10 +94,17 @@ function placeholder(label) {
   );
 }
 
+function disabled(label) {
+  return createElementFromHtml(
+    `<p class="jenkins-dropdown__disabled">${label}</p>`,
+  );
+}
+
 export default {
   dropdown,
   menuItem,
   heading,
   separator,
   placeholder,
+  disabled,
 };

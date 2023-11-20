@@ -611,16 +611,12 @@ function geval(script) {
  */
 // eslint-disable-next-line no-unused-vars
 function fireEvent(element, event) {
-  if (document.createEvent) {
-    // dispatch for firefox + others
-    let evt = document.createEvent("HTMLEvents");
-    evt.initEvent(event, true, true); // event type,bubbling,cancelable
-    return !element.dispatchEvent(evt);
-  } else {
-    // dispatch for IE
-    let evt = document.createEventObject();
-    return element.fireEvent("on" + event, evt);
-  }
+  return !element.dispatchEvent(
+    new Event(event, {
+      bubbles: true,
+      cancelable: true,
+    }),
+  );
 }
 
 // Behavior rules
@@ -643,17 +639,7 @@ function updateValidationArea(validationArea, content) {
     // Only change content if different, causes an unnecessary animation otherwise
     if (validationArea.innerHTML !== content) {
       validationArea.innerHTML = content;
-      validationArea.style.height =
-        validationArea.children[0].offsetHeight + "px";
-
-      // Only include the notice in the validation-error-area, move all other elements out
-      if (validationArea.children.length > 1) {
-        Array.from(validationArea.children)
-          .slice(1)
-          .forEach((element) => {
-            validationArea.after(element);
-          });
-      }
+      validationArea.style.height = "auto";
 
       Behaviour.applySubtree(validationArea);
       // For errors with additional details, apply the subtree to the expandable details pane
@@ -1786,28 +1772,6 @@ function rowvgStartEachRow(recursive, f) {
     },
   );
 
-  Behaviour.specify(".track-mouse", "-track-mouse", ++p, function (element) {
-    var DOM = YAHOO.util.Dom;
-
-    element.addEventListener("mouseenter", function () {
-      element.classList.add("mouseover");
-
-      var mousemoveTracker = function (event) {
-        var elementRegion = DOM.getRegion(element);
-        if (
-          event.x < elementRegion.left ||
-          event.x > elementRegion.right ||
-          event.y < elementRegion.top ||
-          event.y > elementRegion.bottom
-        ) {
-          element.classList.remove("mouseover");
-          document.removeEventListener("mousemove", mousemoveTracker);
-        }
-      };
-      document.addEventListener("mousemove", mousemoveTracker);
-    });
-  });
-
   window.addEventListener("load", function () {
     // Add a class to the bottom bar when it's stuck to the bottom of the screen
     const el = document.querySelector("#bottom-sticker");
@@ -2226,6 +2190,7 @@ function encode(str) {
 // when there are multiple form elements of the same name,
 // this method returns the input field of the given name that pairs up
 // with the specified 'base' input element.
+// eslint-disable-next-line no-unused-vars
 function findMatchingFormInput(base, name) {
   // find the FORM element that owns us
   var f = base.closest("form");
@@ -2256,17 +2221,6 @@ function findMatchingFormInput(base, name) {
   }
 
   return null; // not found
-}
-
-// TODO remove when Prototype.js is removed
-if (typeof Form === "object") {
-  /** @deprecated For backward compatibility only; use {@link findMatchingFormInput} instead. */
-  Form.findMatchingInput = function (base, name) {
-    console.warn(
-      "Deprecated call to Form.findMatchingInput detected; use findMatchingFormInput instead.",
-    );
-    return findMatchingFormInput(base, name);
-  };
 }
 
 // eslint-disable-next-line no-unused-vars
@@ -2653,14 +2607,7 @@ function buildFormTree(form) {
       }
     }
 
-    // TODO simplify when Prototype.js is removed
-    if (Object.toJSON) {
-      // Prototype.js
-      jsonElement.value = Object.toJSON(form.formDom);
-    } else {
-      // Standard
-      jsonElement.value = JSON.stringify(form.formDom);
-    }
+    jsonElement.value = JSON.stringify(form.formDom);
 
     // clean up
     for (i = 0; i < doms.length; i++) {
@@ -2827,15 +2774,6 @@ function createComboBox(idOrField, valueFunction) {
   } else {
     creator();
   }
-}
-
-// Exception in code during the AJAX processing should be reported,
-// so that our users can find them more easily.
-// TODO remove when Prototype.js is removed
-if (typeof Ajax === "object" && Ajax.Request) {
-  Ajax.Request.prototype.dispatchException = function (e) {
-    throw e;
-  };
 }
 
 // event callback when layouts/visibility are updated and elements might have moved around

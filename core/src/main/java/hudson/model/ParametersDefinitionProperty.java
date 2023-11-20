@@ -34,6 +34,7 @@ import hudson.Extension;
 import hudson.Util;
 import hudson.model.Queue.WaitingItem;
 import hudson.model.queue.ScheduleResult;
+import hudson.util.AlternativeUiTextProvider;
 import java.io.IOException;
 import java.util.AbstractList;
 import java.util.ArrayList;
@@ -72,6 +73,8 @@ import org.kohsuke.stapler.export.ExportedBean;
 public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
         implements Action {
 
+    public static final AlternativeUiTextProvider.Message<Job> BUILD_BUTTON_TEXT = new AlternativeUiTextProvider.Message<>();
+
     private final List<ParameterDefinition> parameterDefinitions;
 
     @DataBoundConstructor
@@ -85,6 +88,11 @@ public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
 
     private Object readResolve() {
         return parameterDefinitions == null ? new ParametersDefinitionProperty() : this;
+    }
+
+
+    public final String getBuildButtonText() {
+        return AlternativeUiTextProvider.get(BUILD_BUTTON_TEXT, owner, Messages.ParametersDefinitionProperty_BuildButtonText());
     }
 
     @Deprecated

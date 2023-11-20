@@ -28,7 +28,7 @@ THE SOFTWARE.
     Creates a delete link with confirmation and trashcan icon in the left navigation pane of Jenkins.
     Requires that the target has implemented the doDoDelete method.
 
-    @since TODO
+    @since 2.415
     ]]>
     <st:attribute name="title" use="required">
       Human readable text that follows the icon.

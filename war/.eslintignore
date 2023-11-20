@@ -11,5 +11,4 @@ jsbundles
 
 # External scripts
 src/main/webapp/scripts/yui
-src/main/webapp/scripts/prototype.js
 src/main/js/plugin-setup-wizard/bootstrap-detached.js

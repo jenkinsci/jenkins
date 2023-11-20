@@ -31,9 +31,6 @@ THE SOFTWARE.
     <l:breadcrumb title="${%Build Time Trend}" />
     <st:adjunct includes="hudson.model.Job.buildTimeTrend_resources" />
     <l:main-panel>
-      <h1>${%Timeline}</h1>
-      <st:include page="control.jelly" it="${it.timeline}" />
-
       <h1>${%Build Time Trend}</h1>
           <div align="center">
             <img class="build-time-graph" src="buildTimeGraph/png" width="500" height="400" lazymap="buildTimeGraph/map" alt="[${%Build time graph}]" />
@@ -44,7 +41,7 @@ THE SOFTWARE.
             <j:new var="handler" className="jenkins.widgets.BuildTimeTrend"/>
             ${handler.setBuilds(it.builds)}
             <l:progressiveRendering handler="${handler}" callback="buildTimeTrend_displayBuilds"/>
-            <table class="sortable" id="trend" 
+            <table class="sortable" id="trend"
                    data-is-distributed-build-enabled="${isDistributedBuildEnabled}">
               <tr>
                 <th><st:nbsp/></th>
