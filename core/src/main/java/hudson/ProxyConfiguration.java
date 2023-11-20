@@ -577,7 +577,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
             try {
                 HttpResponse<Void> httpResponse = httpClient.send(httpRequest, HttpResponse.BodyHandlers.discarding());
                 if (httpResponse.statusCode() < HttpURLConnection.HTTP_BAD_REQUEST) {
-                    return FormValidation.ok(Messages.ProxyConfiguration_Success());
+                    return FormValidation.ok(Messages.ProxyConfiguration_Success(httpResponse.statusCode()));
                 }
                 return FormValidation.error(Messages.ProxyConfiguration_FailedToConnect(testUrl, httpResponse.statusCode()));
             } catch (IOException e) {
