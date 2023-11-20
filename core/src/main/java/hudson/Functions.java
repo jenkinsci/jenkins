@@ -2475,6 +2475,10 @@ public class Functions {
         return String.valueOf(Math.floor(Math.random() * 3000));
     }
 
+    /**
+     * @param keyboardShortcut the shortcut to be translated
+     * @return the translated shortcut, e.g. CMD+K -> ⌘+K for macOS, CTRL+K for Windows
+     */
     @Restricted(NoExternalUse.class)
     public static String translateModifierKeysForUsersPlatform(String keyboardShortcut) {
         StaplerRequest currentRequest = Stapler.getCurrentRequest();
