@@ -32,11 +32,11 @@ THE SOFTWARE.
       Optional suffix to the shortcut
     </st:attribute>
     Displays a keyboard shortcut chip based on the component's body.
-    CMD/CTRL will automatically be translated to the user's operating system's appropriate variant.
+    CMD will automatically be translated to the user's operating system's appropriate variant.
   </st:documentation>
 
   <div class="jenkins-tooltip__keyboard-shortcut">
-    <j:if test="${attrs.prefix != null}">
+    <j:if test="${attrs.containsKey('prefix')}">
       <span>
         ${attrs.prefix}
       </span>
@@ -47,7 +47,7 @@ THE SOFTWARE.
       </j:set>
       <j:out value="${h.translateModifierKeysForUsersPlatform(body)}" />
     </div>
-    <j:if test="${attrs.suffix != null}">
+    <j:if test="${attrs.containsKey('suffix')}">
       <span>
         ${attrs.suffix}
       </span>
