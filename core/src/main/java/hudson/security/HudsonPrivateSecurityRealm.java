@@ -114,6 +114,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
  * @author Kohsuke Kawaguchi
  */
 public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRealm implements ModelObject, AccessControlled {
+    private static final int FIPS_PASSWORD_LENGTH = 14;
     private static /* not final */ String ID_REGEX = System.getProperty(HudsonPrivateSecurityRealm.class.getName() + ".ID_REGEX");
 
     /**
@@ -453,7 +454,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
         }
 
         if (FIPS140.useCompliantAlgorithms()) {
-            if (si.password1.length() < 14) {
+            if (si.password1.length() < FIPS_PASSWORD_LENGTH) {
                 si.errors.put("password1", Messages.HudsonPrivateSecurityRealm_CreateAccount_FIPS_PasswordLengthInvalid());
             }
         }
