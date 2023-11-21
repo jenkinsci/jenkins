@@ -355,8 +355,6 @@ public class HealthReport implements Serializable, Comparable<HealthReport> {
      * Fix deserialization of older data.
      */
     public static class ConverterImpl extends XStream2.PassthruConverter<HealthReport> {
-        private static final long serialVersionUID = 1L;
-        
         public ConverterImpl(XStream2 xstream) { super(xstream); }
 
         @Override protected void callback(HealthReport hr, UnmarshallingContext context) {
@@ -370,5 +368,7 @@ public class HealthReport implements Serializable, Comparable<HealthReport> {
                 hr.iconClassName = iconIMGToClassMap.get(hr.iconUrl);
             }
         }
+
+        private static final long serialVersionUID = 1L;
     }
 }
