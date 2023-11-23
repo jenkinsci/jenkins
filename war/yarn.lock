@@ -22,9 +22,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/cli@npm:7.23.0":
-  version: 7.23.0
-  resolution: "@babel/cli@npm:7.23.0"
+"@babel/cli@npm:7.23.4":
+  version: 7.23.4
+  resolution: "@babel/cli@npm:7.23.4"
   dependencies:
     "@jridgewell/trace-mapping": "npm:^0.3.17"
     "@nicolo-ribaudo/chokidar-2": "npm:2.1.8-no-fsevents.3"
@@ -45,7 +45,7 @@ __metadata:
   bin:
     babel: ./bin/babel.js
     babel-external-helpers: ./bin/babel-external-helpers.js
-  checksum: 80ebb68216adab239ea2eb73e1dc1eb3a70ee8e1afad2ae8f2b7518119ebd247f776bd7d4ab2cb73c2cf0253e202b6af00e4a5fec79c2733084963901bde3903
+  checksum: f71bc378f62dd19983adc8dae4ee33cd44ac7d8ea3224709f787f290e0c3a4b8a36dad76d672b3479de2b9f524e55b4bb12a2296154c73134ba111114a15779c
   languageName: node
   linkType: hard
 
@@ -4406,7 +4406,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "jenkins-ui@workspace:."
   dependencies:
-    "@babel/cli": "npm:7.23.0"
+    "@babel/cli": "npm:7.23.4"
     "@babel/core": "npm:7.23.3"
     "@babel/preset-env": "npm:7.23.3"
     babel-loader: "npm:9.1.3"
