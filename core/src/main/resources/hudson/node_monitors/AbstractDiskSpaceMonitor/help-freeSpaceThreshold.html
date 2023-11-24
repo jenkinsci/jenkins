@@ -1,6 +1,11 @@
 <div>
   This option configures the amount of minimum amount of free disk space desired
-  for an agent's proper operation, such as "1.5GB", "100KB", etc. If an agent is
-  found to have less free disk space than this amount, it will be marked
-  offline.
+  for an agent's proper operation, such as "1.5GB", "100KiB", etc. If an agent
+  is found to have less free disk space than this amount, it will be marked
+  temporarily offline. The threshold can be configured individually for each
+  agent via a property.
+  <p>
+    Set to 0 to disable this check except for agents that configure the
+    threshold explicitly.
+  </p>
 </div>
