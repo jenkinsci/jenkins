@@ -66,6 +66,21 @@ public abstract class AbstractNodeMonitorDescriptor<T> extends Descriptor<NodeMo
     }
 
     /**
+     * Indicates if this monitor is capable to take agents offline in case it detects a problem.
+     * If true, this will enable the configuration option to ignore the monitor.
+     * Defaults to {@code true} so plugins that do not override this method behave as before.
+     * @return true if this monitor might take agents offline
+     */
+    public boolean canTakeOffline() {
+        return true;
+    }
+
+    @Override
+    public String getConfigPage() {
+        return getViewPage(clazz, "configure.jelly");
+    }
+
+    /**
      * @deprecated as of 1.522
      *      Extend from {@link AbstractAsyncNodeMonitorDescriptor}
      */
