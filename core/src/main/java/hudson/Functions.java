@@ -2318,13 +2318,17 @@ public class Functions {
         double number = size;
         if (number >= 1024) {
             number = number / 1024;
-            measure = "KB";
+            measure = "KiB";
             if (number >= 1024) {
                 number = number / 1024;
-                measure = "MB";
+                measure = "MiB";
                 if (number >= 1024) {
                     number = number / 1024;
-                    measure = "GB";
+                    measure = "GiB";
+                    if (number >= 1024) {
+                        number = number / 1024;
+                        measure = "TiB";
+                    }
                 }
             }
         }

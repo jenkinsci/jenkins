@@ -44,6 +44,8 @@ import hudson.model.Descriptor.FormException;
 import hudson.model.Queue.FlyweightTask;
 import hudson.model.labels.LabelAtom;
 import hudson.model.queue.WorkUnit;
+import hudson.node_monitors.AbstractDiskSpaceMonitor;
+import hudson.node_monitors.DiskSpaceMonitorNodeProperty;
 import hudson.node_monitors.NodeMonitor;
 import hudson.remoting.Channel;
 import hudson.remoting.VirtualChannel;
@@ -1514,6 +1516,14 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
 
         Node result = node.reconfigure(req, req.getSubmittedForm());
         Jenkins.get().getNodesObject().replaceNode(this.getNode(), result);
+
+        if (result.getNodeProperty(DiskSpaceMonitorNodeProperty.class) != null) {
+            for (NodeMonitor monitor : NodeMonitor.getAll()) {
+                if (monitor instanceof AbstractDiskSpaceMonitor) {
+                    monitor.data(this);
+                }
+            }
+        }
 
         // take the user back to the agent top page.
         rsp.sendRedirect2("../" + result.getNodeName() + '/');
