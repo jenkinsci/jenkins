@@ -34,7 +34,7 @@ import org.acegisecurity.providers.anonymous.AnonymousAuthenticationToken;
 import org.acegisecurity.userdetails.UserDetails;
 
 /**
- * @deprecated use TODO or {@link org.springframework.security.core.Authentication}
+ * @deprecated use {@link org.springframework.security.core.Authentication}
  */
 @Deprecated
 public interface Authentication extends Principal, Serializable {
