@@ -27,97 +27,102 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
-  <l:layout title="${%Nodes}">
-    <st:include page="sidepanel.jelly" />
-    <!-- no need for additional breadcrumb here as we're on an index page already including breadcrumb -->
-    <l:main-panel>
-      <l:app-bar title="${%Nodes}">
-        <j:getStatic var="createPermission" className="hudson.model.Computer" field="CREATE" />
-        <j:if test="${h.hasPermission(createPermission)}">
-          <a class="jenkins-button jenkins-button--primary" href="new">
-            <l:icon src="symbol-add" />
-            ${%New Node}
-          </a>
-        </j:if>
-        <j:set var="hasPermission" value="${h.hasAnyPermission(it, app.MANAGE_AND_SYSTEM_READ)}" />
-        <j:if test="${hasPermission}">
-          <a class="jenkins-button" href="configure">${%Node Monitoring}</a>
-        </j:if>
-        <l:hasAdministerOrManage>
-          <form method="post" action="updateNow" class="jenkins-!-display-contents">
-            <button tooltip="${%Refresh status}" class="jenkins-button">
-              <l:icon src="symbol-refresh" />
-            </button>
-          </form>
-        </l:hasAdministerOrManage>
-      </l:app-bar>
+<l:layout title="${%Nodes}">
+  <st:include page="sidepanel.jelly" />
+  <!-- no need for additional breadcrumb here as we're on an index page already including breadcrumb -->
+  <l:main-panel>
+    <l:app-bar title="${%Nodes}">
+      <j:getStatic var="createPermission" className="hudson.model.Computer" field="CREATE"/>
+      <j:if test="${h.hasPermission(createPermission)}">
+        <a class="jenkins-button jenkins-button--primary" href="new">
+          <l:icon src="symbol-add" />
+          ${%New Node}
+        </a>
+      </j:if>
+      <j:set var="hasPermission" value="${h.hasAnyPermission(it, app.MANAGE_AND_SYSTEM_READ)}" />
+      <j:if test="${hasPermission}">
+        <a class="jenkins-button" href="configure" tooltip="${%Configure Node Monitors}">
+          ${%Configure Monitors}
+        </a>
+      </j:if>
+      <l:hasAdministerOrManage>
+        <form method="post" action="updateNow" class="jenkins-!-display-contents">
+          <button tooltip="${%Refresh status}" class="jenkins-button">
+            <l:icon src="symbol-refresh" />
+          </button>
+        </form>
+      </l:hasAdministerOrManage>
+    </l:app-bar>
 
-      <j:set var="monitors" value="${it._monitors}" />
-      <j:set var="tableWidth" value="${3}" />
+    <j:set var="monitors" value="${it._monitors}"/>
+    <j:set var="tableWidth" value="${3}"/>
 
-      <table id="computers" class="jenkins-table sortable">
-        <thead>
-          <tr>
-            <th class="jenkins-table__cell--tight">S</th>
-            <th initialSortDir="down">${%Name}</th>
-            <j:forEach var="m" items="${monitors}">
-              <j:if test="${m.columnCaption!=null}">
-                <j:set var="tableWidth" value="${tableWidth+1}" />
-                <th align="right" tooltip="${m.descriptor.timestampString}">${m.columnCaption}</th>
-              </j:if>
-            </j:forEach>
-            <th class="jenkins-table__cell--tight" data-sort-disable="true" />
-          </tr>
-        </thead>
-        <tbody>
-          <j:forEach var="c" items="${it._all}">
-            <tr id="node_${c.name}">
-              <td data="${c.icon}" class="jenkins-table__cell--tight jenkins-table__icon">
-                <div class="jenkins-table__cell__button-wrapper">
-                  <l:icon src="${c.iconClassName}" alt="${c.iconAltText}" />
-                </div>
-              </td>
+    <table id="computers" class="jenkins-table sortable">
+      <thead>
+        <tr>
+          <th class="jenkins-table__cell--tight">S</th>
+          <th initialSortDir="down">${%Name}</th>
+          <j:forEach var="m" items="${monitors}">
+            <j:if test="${m.columnCaption!=null}">
+              <j:set var="tableWidth" value="${tableWidth+1}"/>
+              <th align="right" tooltip="${m.descriptor.timestampString}">${m.columnCaption}</th>
+            </j:if>
+          </j:forEach>
+          <th class="jenkins-table__cell--tight" data-sort-disable="true" />
+        </tr>
+      </thead>
+      <tbody>
 
-              <td>
-                <a href="../${c.url}" class="jenkins-table__link model-link inside">${c.displayName}</a>
-              </td>
+      <j:forEach var="c" items="${it._all}">
+        <tr id="node_${c.name}">
+          <td data="${c.icon}" class="jenkins-table__cell--tight jenkins-table__icon">
+            <div class="jenkins-table__cell__button-wrapper">
+              <l:icon src="${c.iconClassName}" alt="${c.iconAltText}"/>
+            </div>
+          </td>
 
-              <j:forEach var="m" items="${monitors}">
-                <j:if test="${m.columnCaption!=null}">
-                  <j:set var="data" value="${m.data(c)}" />
-                  <st:include page="column.jelly" from="${m}" />
-                </j:if>
-              </j:forEach>
+          <td>
+            <a href="../${c.url}" class="jenkins-table__link model-link inside">${c.displayName}</a>
+          </td>
 
-              <td class="jenkins-table__cell--tight">
-                <j:if test="${c.hasPermission(c.EXTENDED_READ)}">
-                  <div class="jenkins-table__cell__button-wrapper">
-                    <a href="../${c.url}configure" class="jenkins-table__button">
-                      <l:icon src="symbol-settings" />
-                    </a>
-                  </div>
-                </j:if>
-              </td>
-            </tr>
+          <j:forEach var="m" items="${monitors}">
+            <j:if test="${m.columnCaption!=null}">
+              <j:set var="data" value="${m.data(c)}"/>
+              <st:include page="column.jelly" from="${m}" />
+            </j:if>
           </j:forEach>
 
-          <!-- let clouds contribute fragments here -->
-          <j:forEach var="cloud" items="${app.clouds}">
-            <st:include it="${cloud}" page="computerSet.jelly" optional="true" />
-          </j:forEach>
+          <td class="jenkins-table__cell--tight">
+            <j:if test="${c.hasPermission(c.EXTENDED_READ)}">
+              <div class="jenkins-table__cell__button-wrapper">
+                <a href="../${c.url}configure" class="jenkins-table__button">
+                  <l:icon src="symbol-settings" />
+                </a>
+              </div>
+            </j:if>
+          </td>
+        </tr>
+      </j:forEach>
 
-          <tr class="sortbottom">
-            <th />
-            <th>${%Data obtained}</th>
-            <j:forEach var="m" items="${monitors}">
-              <j:if test="${m.columnCaption!=null}">
-                <th align="right">${m.descriptor.timestampString}</th>
-              </j:if>
-            </j:forEach>
-            <th />
-          </tr>
-        </tbody>
-      </table>
-    </l:main-panel>
-  </l:layout>
+      <!-- let clouds contribute fragments here -->
+      <j:forEach var="cloud" items="${app.clouds}">
+        <st:include it="${cloud}" page="computerSet.jelly" optional="true" />
+      </j:forEach>
+
+      <tr class="sortbottom">
+        <th />
+        <th>${%Data obtained}</th>
+        <j:forEach var="m" items="${monitors}">
+          <j:if test="${m.columnCaption!=null}">
+            <th align="right">
+              ${m.descriptor.timestampString}
+            </th>
+          </j:if>
+        </j:forEach>
+        <th />
+      </tr>
+      </tbody>
+    </table>
+  </l:main-panel>
+</l:layout>
 </j:jelly>

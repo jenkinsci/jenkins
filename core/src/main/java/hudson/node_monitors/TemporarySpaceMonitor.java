@@ -56,6 +56,38 @@ public class TemporarySpaceMonitor extends AbstractDiskSpaceMonitor {
 
     public TemporarySpaceMonitor() {}
 
+    @Override
+    public long getThresholdBytes(Computer c) {
+        Node node = c.getNode();
+        if (node != null) {
+            DiskSpaceMonitorNodeProperty nodeProperty = node.getNodeProperty(DiskSpaceMonitorNodeProperty.class);
+            if (nodeProperty != null) {
+                try {
+                    return DiskSpace.parse(nodeProperty.getFreeTempSpaceThreshold()).size;
+                } catch (ParseException e) {
+                    return getThresholdBytes();
+                }
+            }
+        }
+        return getThresholdBytes();
+    }
+
+    @Override
+    protected long getWarningThresholdBytes(Computer c) {
+        Node node = c.getNode();
+        if (node != null) {
+            DiskSpaceMonitorNodeProperty nodeProperty = node.getNodeProperty(DiskSpaceMonitorNodeProperty.class);
+            if (nodeProperty != null) {
+                try {
+                    return DiskSpace.parse(nodeProperty.getFreeTempSpaceWarningThreshold()).size;
+                } catch (ParseException e) {
+                    return getWarningThresholdBytes();
+                }
+            }
+        }
+        return getWarningThresholdBytes();
+    }
+
     public DiskSpace getFreeSpace(Computer c) {
         DiskSpaceMonitorDescriptor descriptor = (DiskSpaceMonitorDescriptor) Jenkins.get().getDescriptor(TemporarySpaceMonitor.class);
         return descriptor != null ? descriptor.get(c) : null;
@@ -109,7 +141,9 @@ public class TemporarySpaceMonitor extends AbstractDiskSpaceMonitor {
                 f = new File(System.getProperty("java.io.tmpdir"));
                 long s = f.getUsableSpace();
                 if (s <= 0)    return null;
-                return new DiskSpace(f.getCanonicalPath(), s);
+                DiskSpace ds = new DiskSpace(f.getCanonicalPath(), s);
+                ds.setTotalSize(f.getTotalSpace());
+                return ds;
         }
 
         private static final long serialVersionUID = 1L;
