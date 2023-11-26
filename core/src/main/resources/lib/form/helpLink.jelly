@@ -23,14 +23,14 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <st:documentation>
-    Outputs an help link for a &lt;f:form> item if help is available or 
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:f="/lib/form">
+  <st:documentation> <![CDATA[
+    Outputs a help link for a <f:form> item if help is available or
     a spacer if none is available.
 
     The help link is rendered as a table cell with an (?) icon.
     If the user clicks it, the content of the HTML fragment at the given URL 
-    is rendered in the area designated as &lt;f:helpArea> by the caller,
+    is rendered in the area designated as <f:helpArea> by the caller,
     usually in a row beneath the item with help.
     
     The alternative spacer is just an empty table cell.
@@ -39,12 +39,14 @@ THE SOFTWARE.
     is consistent over the UI whether or not help exists.
 
     @since 1.576
-    <st:attribute name="url">
+    ]]>
+    <st:attribute name="url"> <![CDATA[
       URL to the HTML page. Optional. If not given, no help icon is displayed.
 
-      The URL should return a UTF-8 encoded HTML fragment wrapped in a &lt;div> tag.
+      The URL should return a UTF-8 encoded HTML fragment wrapped in a <div> tag.
       The URL is interpreted to be rooted at the context path of Jenkins,
       so it's normally something like "/plugin/foobar/help/abc.html".
+      ]]>
     </st:attribute>
     <st:attribute name="featureName">
       Name of the feature described by the help text, used for constructing the 

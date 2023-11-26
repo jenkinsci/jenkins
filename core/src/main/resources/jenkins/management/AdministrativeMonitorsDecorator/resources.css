@@ -80,12 +80,14 @@
   border-right: 7px solid transparent;
   border-bottom: 7px solid #fff;
   opacity: 0;
-  transition: all 0.05s;
+  transition-property: all;
+  transition-delay: 0s;
   z-index: 1001;
 }
 .am-container.visible .am-button:after {
   opacity: 1;
-  transition: all 0.25s;
+  transition-property: all;
+  transition-delay: 0.15s;
 }
 .am-container .am-message {
   display: block;
@@ -101,6 +103,9 @@
   position: relative;
   float: right;
   margin: -6px 0 0 0 !important;
+  gap: 0.5rem;
+  display: flex;
+  padding-left: 0.5rem;
 }
 
 .am-container .am-message .alert form span {

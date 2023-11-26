@@ -24,6 +24,8 @@
 
 package hudson.slaves;
 
+import com.google.common.escape.Escaper;
+import com.google.common.escape.Escapers;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -38,6 +40,7 @@ import jenkins.model.identity.InstanceIdentityProvider;
 import jenkins.slaves.RemotingWorkDirSettings;
 import jenkins.util.SystemProperties;
 import jenkins.websocket.WebSockets;
+import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -195,6 +198,59 @@ public class JNLPLauncher extends ComputerLauncher {
     @Restricted(NoExternalUse.class)
     public static /*almost final*/ Descriptor<ComputerLauncher> DESCRIPTOR;
 
+    @NonNull
+    @Restricted(NoExternalUse.class)
+    public String getRemotingOptionsUnix(@NonNull Computer computer) {
+        return getRemotingOptions(escapeUnix(computer.getName()));
+    }
+
+    @NonNull
+    @Restricted(NoExternalUse.class)
+    public String getRemotingOptionsWindows(@NonNull Computer computer) {
+        return getRemotingOptions(escapeWindows(computer.getName()));
+    }
+
+    private String getRemotingOptions(String computerName) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("-name ");
+        sb.append(computerName);
+        sb.append(' ');
+        if (isWebSocket()) {
+            sb.append("-webSocket ");
+        }
+        if (tunnel != null) {
+            sb.append(" -tunnel ");
+            sb.append(tunnel);
+            sb.append(' ');
+        }
+        return sb.toString();
+    }
+
+    /**
+     * {@link Jenkins#checkGoodName(String)} saves us from most troublesome characters, but we still have to deal with
+     * spaces and therefore with double quotes and backticks.
+     */
+    private static String escapeUnix(String input) {
+        if (StringUtils.isAlphanumeric(input)) {
+            return input;
+        }
+        Escaper escaper =
+                Escapers.builder().addEscape('"', "\\\"").addEscape('`', "\\`").build();
+        return "\"" + escaper.escape(input) + "\"";
+    }
+
+    /**
+     * {@link Jenkins#checkGoodName(String)} saves us from most troublesome characters, but we still have to deal with
+     * spaces and therefore with double quotes.
+     */
+    private static String escapeWindows(String input) {
+        if (StringUtils.isAlphanumeric(input)) {
+            return input;
+        }
+        Escaper escaper = Escapers.builder().addEscape('"', "\\\"").build();
+        return "\"" + escaper.escape(input) + "\"";
+    }
+
     /**
      * Gets work directory options as a String.
      *
@@ -211,7 +267,7 @@ public class JNLPLauncher extends ComputerLauncher {
         return workDirSettings.toCommandLineString((SlaveComputer) computer);
     }
 
-    @Extension @Symbol("jnlp")
+    @Extension @Symbol({"inbound", "jnlp"})
     public static class DescriptorImpl extends Descriptor<ComputerLauncher> {
         @SuppressFBWarnings(value = "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD", justification = "for backward compatibility")
         public DescriptorImpl() {
@@ -243,17 +299,17 @@ public class JNLPLauncher extends ComputerLauncher {
         public FormValidation doCheckWebSocket(@QueryParameter boolean webSocket, @QueryParameter String tunnel) {
             if (webSocket) {
                 if (!WebSockets.isSupported()) {
-                    return FormValidation.error("WebSocket support is not enabled in this Jenkins installation");
+                    return FormValidation.error(Messages.JNLPLauncher_WebsocketNotEnabled());
                 }
                 if (Util.fixEmptyAndTrim(tunnel) != null) {
-                    return FormValidation.error("Tunneling is not supported in WebSocket mode");
+                    return FormValidation.error(Messages.JNLPLauncher_TunnelingNotSupported());
                 }
             } else {
                 if (Jenkins.get().getTcpSlaveAgentListener() == null) {
-                    return FormValidation.error("Either WebSocket mode is selected, or the TCP port for inbound agents must be enabled");
+                    return FormValidation.error(Messages.JNLPLauncher_TCPPortDisabled());
                 }
                 if (InstanceIdentityProvider.RSA.getCertificate() == null || InstanceIdentityProvider.RSA.getPrivateKey() == null) {
-                    return FormValidation.error("You must install the instance-identity plugin to use inbound agents in TCP mode");
+                    return FormValidation.error(Messages.JNLPLauncher_InstanceIdentityRequired());
                 }
             }
             return FormValidation.ok();

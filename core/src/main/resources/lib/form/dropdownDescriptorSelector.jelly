@@ -22,11 +22,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <st:documentation>
-    Renders a single &lt;select> control for choosing a Describable.
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:f="/lib/form">
+  <st:documentation> <![CDATA[
+    Renders a single <select> control for choosing a Describable.
     Depending on the currently selected value, its config.jelly will be
-    rendered below &lt;select>, allowing the user to configure Describable.
+    rendered below <select>, allowing the user to configure Describable.
+    ]]>
 
     <st:attribute name="field" use="required">
       Form field name. Used for databinding.

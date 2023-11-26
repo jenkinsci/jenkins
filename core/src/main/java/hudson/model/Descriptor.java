@@ -30,6 +30,7 @@ import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.BulkChange;
 import hudson.DescriptorExtensionList;
 import hudson.ExtensionList;
@@ -74,6 +75,7 @@ import javax.servlet.ServletException;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.GlobalConfigurationCategory;
 import jenkins.model.Jenkins;
+import jenkins.model.Loadable;
 import jenkins.security.RedactSecretJsonInErrorMessageSanitizer;
 import jenkins.util.io.OnMaster;
 import net.sf.json.JSONArray;
@@ -102,7 +104,7 @@ import org.kohsuke.stapler.lang.Klass;
  * to {@link Object}/{@link Class} relationship.
  *
  * A {@link Descriptor}/{@link Describable}
- * combination is used throughout in Hudson to implement a
+ * combination is used throughout in Jenkins to implement a
  * configuration/extensibility mechanism.
  *
  * <p>
@@ -115,7 +117,7 @@ import org.kohsuke.stapler.lang.Klass;
  * configuration of a view (what projects are in it, regular expression, etc.)
  *
  * <p>
- * For Hudson to create such configured {@link ListView} instance, Hudson
+ * For Jenkins to create such configured {@link ListView} instance, Jenkins
  * needs another object that captures the metadata of {@link ListView},
  * and that is what a {@link Descriptor} is for. {@link ListView} class
  * has a singleton descriptor, and this descriptor helps render
@@ -142,7 +144,7 @@ import org.kohsuke.stapler.lang.Klass;
  * @author Kohsuke Kawaguchi
  * @see Describable
  */
-public abstract class Descriptor<T extends Describable<T>> implements Saveable, OnMaster {
+public abstract class Descriptor<T extends Describable<T>> implements Loadable, Saveable, OnMaster {
     /**
      * The class being described by this descriptor.
      */
@@ -439,8 +441,8 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
             QueryParameter qp = p.annotation(QueryParameter.class);
             if (qp != null) {
                 String name = qp.value();
-                if (name.length() == 0) name = p.name();
-                if (name == null || name.length() == 0)
+                if (name.isEmpty()) name = p.name();
+                if (name == null || name.isEmpty())
                     continue;   // unknown parameter name. we'll report the error when the form is submitted.
 
                 RelativePath rp = p.annotation(RelativePath.class);
@@ -755,6 +757,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
         return getHelpFile(getKlass(), fieldName);
     }
 
+    @SuppressFBWarnings(value = "SBSC_USE_STRINGBUFFER_CONCATENATION", justification = "no big deal")
     public String getHelpFile(Klass<?> clazz, String fieldName) {
         HelpRedirect r = helpRedirect.get(fieldName);
         if (r != null)    return r.resolve();
@@ -922,6 +925,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
      * (If we do that in the base class, the derived class won't
      * get a chance to set default values.)
      */
+    @Override
     public synchronized void load() {
         XmlFile file = getConfigFile();
         if (!file.exists())

@@ -23,11 +23,10 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
-         xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <st:documentation>
-    &lt;input type="checkbox"> tag that takes true/false for @checked, which is more Jelly friendly.
-
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:f="/lib/form">
+  <st:documentation> <![CDATA[
+    <input type="checkbox"> tag that takes true/false for @checked, which is more Jelly friendly.
+    ]]>
     <st:attribute name="name"/>
     <st:attribute name="checked"/>
     <st:attribute name="value"/>

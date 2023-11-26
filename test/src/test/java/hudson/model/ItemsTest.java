@@ -29,13 +29,9 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
-import com.gargoylesoftware.htmlunit.HttpMethod;
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.WebResponse;
 import hudson.AbortException;
 import hudson.cli.CLICommand;
 import hudson.cli.CLICommandInvoker;
@@ -45,12 +41,14 @@ import hudson.security.ACL;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.net.HttpURLConnection;
-import java.net.URL;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import jenkins.model.Jenkins;
-import jenkins.security.apitoken.ApiTokenTestHelper;
-import org.junit.Before;
+import org.htmlunit.FailingHttpStatusCodeException;
+import org.htmlunit.HttpMethod;
+import org.htmlunit.WebRequest;
+import org.htmlunit.WebResponse;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -65,11 +63,6 @@ public class ItemsTest {
 
     @Rule public JenkinsRule r = new JenkinsRule();
     @Rule public TemporaryFolder tmpRule = new TemporaryFolder();
-
-    @Before
-    public void setupLegacyBehavior() {
-        ApiTokenTestHelper.enableLegacyBehavior();
-    }
 
     @Test public void getAllItems() throws Exception {
         MockFolder d = r.createFolder("d");
@@ -205,13 +198,8 @@ public class ItemsTest {
     private void cannotOverwrite(String target) throws Exception {
         overwriteTargetSetUp();
         for (OverwriteTactic tactic : OverwriteTactic.values()) {
-            try {
-                tactic.run(r, target);
-                fail(tactic + " was not supposed to work against " + target);
-            } catch (Exception x) {
-                System.out.println("good, " + tactic + " failed on " + target + ": " + x);
-                assertEquals(tactic + " still overwrote " + target, target, r.jenkins.getItemByFullName(target, FreeStyleProject.class).getDescription());
-            }
+            assertThrows(tactic + " was not supposed to work against " + target, Exception.class, () -> tactic.run(r, target));
+            assertEquals(tactic + " still overwrote " + target, target, r.jenkins.getItemByFullName(target, FreeStyleProject.class).getDescription());
         }
     }
 
@@ -240,7 +228,7 @@ public class ItemsTest {
                         // redirect perversely counts as a failure
                         .withRedirectEnabled(false)
                         .withThrowExceptionOnFailingStatusCode(false);
-                WebResponse webResponse = wc.getPage(new WebRequest(new URL(wc.getContextPath() + "createItem?name=" + target + "&mode=hudson.model.FreeStyleProject"), HttpMethod.POST)).getWebResponse();
+                WebResponse webResponse = wc.getPage(new WebRequest(new URI(wc.getContextPath() + "createItem?name=" + target + "&mode=hudson.model.FreeStyleProject").toURL(), HttpMethod.POST)).getWebResponse();
                 if (webResponse.getStatusCode() != HttpURLConnection.HTTP_MOVED_TEMP) {
                     throw new FailingHttpStatusCodeException(webResponse);
                 }
@@ -253,7 +241,7 @@ public class ItemsTest {
                 JenkinsRule.WebClient wc = wc(r)
                         .withRedirectEnabled(false)
                         .withThrowExceptionOnFailingStatusCode(false);
-                WebResponse webResponse = wc.getPage(new WebRequest(new URL(wc.getContextPath() + "createItem?name=" + target + "&mode=copy&from=dupe"), HttpMethod.POST)).getWebResponse();
+                WebResponse webResponse = wc.getPage(new WebRequest(new URI(wc.getContextPath() + "createItem?name=" + target + "&mode=copy&from=dupe").toURL(), HttpMethod.POST)).getWebResponse();
                 r.jenkins.getItem("dupe").delete();
                 if (webResponse.getStatusCode() != HttpURLConnection.HTTP_MOVED_TEMP) {
                     throw new FailingHttpStatusCodeException(webResponse);
@@ -264,7 +252,7 @@ public class ItemsTest {
         REST_CREATE {
             @Override void run(JenkinsRule r, String target) throws Exception {
                 JenkinsRule.WebClient wc = wc(r);
-                WebRequest req = new WebRequest(new URL(wc.getContextPath() + "createItem?name=" + target), HttpMethod.POST);
+                WebRequest req = new WebRequest(new URI(wc.getContextPath() + "createItem?name=" + target).toURL(), HttpMethod.POST);
                 req.setAdditionalHeader("Content-Type", "application/xml");
                 req.setRequestBody("<project/>");
                 wc.getPage(req);
@@ -277,7 +265,7 @@ public class ItemsTest {
                 JenkinsRule.WebClient wc = wc(r)
                         .withRedirectEnabled(false)
                         .withThrowExceptionOnFailingStatusCode(false);
-                WebResponse webResponse = wc.getPage(new WebRequest(new URL(wc.getContextPath() + "job/dupe/doRename?newName=" + target), HttpMethod.POST)).getWebResponse();
+                WebResponse webResponse = wc.getPage(new WebRequest(new URI(wc.getContextPath() + "job/dupe/doRename?newName=" + target).toURL(), HttpMethod.POST)).getWebResponse();
                 if (webResponse.getStatusCode() != HttpURLConnection.HTTP_MOVED_TEMP) {
                     r.jenkins.getItem("dupe").delete();
                     throw new FailingHttpStatusCodeException(webResponse);

@@ -26,17 +26,17 @@ package hudson.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
-import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-import com.gargoylesoftware.htmlunit.WebRequest;
 import hudson.FilePath;
 import hudson.tasks.Mailer;
-import java.net.URL;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import org.htmlunit.WebRequest;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -80,6 +80,14 @@ public class UserRestartTest {
         });
         sessions.then(r -> {
             FreeStyleProject p = r.jenkins.getItemByFullName("p", FreeStyleProject.class);
+            /*
+             * User.Replacer.readResolve() is racy, as its comments acknowledge. The loading of jobs
+             * and the initialization of UserIdMapper run concurrently, and UserIdMapper may not
+             * have been initialized yet when we are loading the job. The only way for this test to
+             * work reliably is to reload the job after UserIdMapper has been initialized, thus
+             * assuring that the job's reference to the user can be properly deserialized.
+             */
+            p.doReload();
             User u = p.getProperty(BadProperty.class).user; // do not inline: call User.get second
             assertEquals(User.get("pqhacker"), u);
         });
@@ -107,7 +115,7 @@ public class UserRestartTest {
                     JenkinsRule.WebClient wc = r.createWebClient()
                             .withThrowExceptionOnFailingStatusCode(false);
 
-                    WebRequest request = new WebRequest(new URL(r.jenkins.getRootUrl() + "whoAmI/api/xml"));
+                    WebRequest request = new WebRequest(new URI(r.jenkins.getRootUrl() + "whoAmI/api/xml").toURL());
                     request.setAdditionalHeader("Authorization", base64("..", "any-password"));
                     wc.getPage(request);
                 }
@@ -115,7 +123,7 @@ public class UserRestartTest {
                     JenkinsRule.WebClient wc = r.createWebClient()
                             .withThrowExceptionOnFailingStatusCode(false);
 
-                    WebRequest request = new WebRequest(new URL(r.jenkins.getRootUrl() + "whoAmI/api/xml"));
+                    WebRequest request = new WebRequest(new URI(r.jenkins.getRootUrl() + "whoAmI/api/xml").toURL());
                     request.setAdditionalHeader("Authorization", base64("../users/..", "any-password"));
                     wc.getPage(request);
                 }

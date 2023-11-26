@@ -1,15 +1,15 @@
 package jenkins.security;
 
-import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertFalse;
 
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.model.InvisibleAction;
 import hudson.model.UnprotectedRootAction;
-import java.net.URL;
+import java.net.URI;
 import java.util.concurrent.atomic.AtomicBoolean;
+import org.htmlunit.html.HtmlPage;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -29,7 +29,7 @@ public class Security2761Test {
 
         JenkinsRule.WebClient wc = j.createWebClient();
         wc.setAlertHandler((page, s) -> alerted.set(true));
-        HtmlPage page = wc.getPage(new URL(wc.getContextPath() + ACTION_URL));
+        HtmlPage page = wc.getPage(new URI(wc.getContextPath() + ACTION_URL).toURL());
         String responseContent = page.getWebResponse().getContentAsString();
         wc.waitForBackgroundJavaScript(5000);
 

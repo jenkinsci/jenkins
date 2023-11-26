@@ -39,8 +39,7 @@ THE SOFTWARE.
   <url>https://github.com/jenkinsci/jenkins</url>
 
   <properties>
-    <hamcrest.version>2.2</hamcrest.version>
-    <xmlunit.version>2.9.0</xmlunit.version>
+    <xmlunit.version>2.9.1</xmlunit.version>
     <!-- Filled in by jacoco-maven-plugin -->
     <jacocoSurefireArgs />
   </properties>
@@ -66,10 +65,6 @@ THE SOFTWARE.
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>remoting</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>antlr</groupId>
-      <artifactId>antlr</artifactId>
     </dependency>
     <dependency>
       <groupId>args4j</groupId>
@@ -168,10 +163,6 @@ THE SOFTWARE.
     <dependency>
       <groupId>commons-fileupload</groupId>
       <artifactId>commons-fileupload</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>commons-httpclient</groupId>
-      <artifactId>commons-httpclient</artifactId>
     </dependency>
     <dependency>
       <groupId>commons-io</groupId>
@@ -275,8 +266,8 @@ THE SOFTWARE.
       <artifactId>jcip-annotations</artifactId>
     </dependency>
     <dependency>
-      <groupId>net.sf.kxml</groupId>
-      <artifactId>kxml2</artifactId>
+      <groupId>org.antlr</groupId>
+      <artifactId>antlr4-runtime</artifactId>
     </dependency>
     <dependency>
       <groupId>org.apache.ant</groupId>
@@ -332,9 +323,10 @@ THE SOFTWARE.
       <artifactId>websocket-spi</artifactId>
       <version>${project.version}</version>
       <exclusions>
+        <!-- Provided by Jetty/Winstone -->
         <exclusion>
-          <groupId>javax.servlet</groupId>
-          <artifactId>javax.servlet-api</artifactId>
+          <groupId>jakarta.servlet</groupId>
+          <artifactId>jakarta.servlet-api</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -345,20 +337,6 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jvnet.hudson</groupId>
       <artifactId>commons-jelly-tags-define</artifactId>
-      <exclusions>
-        <exclusion>
-          <groupId>commons-cli</groupId>
-          <artifactId>commons-cli</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>dom4j</groupId>
-          <artifactId>dom4j</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.jvnet.hudson</groupId>
-          <artifactId>commons-jelly</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.jvnet.localizer</groupId>
@@ -400,10 +378,6 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
       <artifactId>stapler-adjunct-codemirror</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.kohsuke.stapler</groupId>
-      <artifactId>stapler-adjunct-timeline</artifactId>
     </dependency>
     <dependency>
       <groupId>org.kohsuke.stapler</groupId>
@@ -485,7 +459,7 @@ THE SOFTWARE.
       <!-- working around MCOMPILER-97 -->
       <groupId>org.jenkins-ci</groupId>
       <artifactId>core-annotation-processors</artifactId>
-      <version>1.0</version>
+      <version>13.v2dcfc22a_a_b_29</version>
       <scope>provided</scope>
       <optional>true</optional>
     </dependency>
@@ -500,13 +474,6 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.hamcrest</groupId>
       <artifactId>hamcrest</artifactId>
-      <version>${hamcrest.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.hamcrest</groupId>
-      <artifactId>hamcrest-library</artifactId>
-      <version>${hamcrest.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -525,17 +492,8 @@ THE SOFTWARE.
       <scope>test</scope>
     </dependency>
     <dependency>
-      <!-- this helps us see the source code of the control while we edit Jenkins -->
-      <groupId>org.kohsuke.stapler</groupId>
-      <artifactId>stapler-adjunct-timeline</artifactId>
-      <version>1.5</version>
-      <classifier>tests</classifier>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
       <groupId>org.mockito</groupId>
-      <artifactId>mockito-inline</artifactId>
-      <version>${mockito.version}</version>
+      <artifactId>mockito-core</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -572,7 +530,9 @@ THE SOFTWARE.
             <phase>generate-sources</phase>
             <configuration>
               <sources>
-                <source>${project.build.directory}/generated-sources/antlr</source>
+                <!-- The antlr4 sources are found automatically by the maven compiler,
+                but listing them explicitly avoids a missing classpath entry when importing the maven project in eclipse. -->
+                <source>${project.build.directory}/generated-sources/antlr4</source>
                 <source>${project.build.directory}/generated-sources/localizer</source>
                 <source>${project.build.directory}/generated-sources/taglib-interface</source>
               </sources>
@@ -633,29 +593,15 @@ THE SOFTWARE.
         </executions>
       </plugin>
       <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>antlr-maven-plugin</artifactId>
+        <groupId>org.antlr</groupId>
+        <artifactId>antlr4-maven-plugin</artifactId>
         <!-- version specified in grandparent pom -->
         <executions>
           <execution>
-            <id>cron</id>
+            <id>antlr</id>
             <goals>
-              <goal>generate</goal>
+              <goal>antlr4</goal>
             </goals>
-            <configuration>
-              <sourceDirectory>${basedir}/src/main/grammar</sourceDirectory>
-              <grammars>crontab.g</grammars>
-            </configuration>
-          </execution>
-          <execution>
-            <id>labelExpr</id>
-            <goals>
-              <goal>generate</goal>
-            </goals>
-            <configuration>
-              <sourceDirectory>${basedir}/src/main/grammar</sourceDirectory>
-              <grammars>labelExpr.g</grammars>
-            </configuration>
           </execution>
         </executions>
       </plugin>
@@ -691,7 +637,7 @@ THE SOFTWARE.
         <!-- Version specified in grandparent POM -->
         <configuration>
           <!-- Make sure to keep the directives in test/pom.xml and war/pom.xml in sync with these. -->
-          <argLine>@{jacocoSurefireArgs} --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.desktop/com.sun.beans.introspect=ALL-UNNAMED</argLine>
+          <argLine>@{jacocoSurefireArgs} --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.io=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED</argLine>
           <reuseForks>false</reuseForks>
         </configuration>
       </plugin>
@@ -716,8 +662,8 @@ THE SOFTWARE.
     <plugins>
       <plugin>
         <!-- generate Jelly tag lib documentation -->
-        <groupId>org.kohsuke.stapler</groupId>
-        <artifactId>maven-stapler-plugin</artifactId>
+        <groupId>io.jenkins.tools.maven</groupId>
+        <artifactId>stapler-maven-plugin</artifactId>
         <!-- Version specified in grandparent POM -->
         <configuration>
           <patterns>
@@ -742,15 +688,6 @@ THE SOFTWARE.
       <activation>
         <activeByDefault>true</activeByDefault>
       </activation>
-    </profile>
-    <profile>
-      <!-- Run SpotBugs for better error detection. Run as "mvn -Pspotbugs verify". -->
-      <!-- SpotBugs has been moved to the default build flow, but here we fail the build on errors-->
-      <id>spotbugs</id>
-      <properties>
-        <!-- In the default profile we always fail the build if there SpotBugs errors -->
-        <spotbugs.failOnError>true</spotbugs.failOnError>
-      </properties>
     </profile>
     <profile>
       <id>enable-jacoco</id>

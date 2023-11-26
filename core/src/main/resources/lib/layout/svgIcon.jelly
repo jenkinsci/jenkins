@@ -1,21 +1,22 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:d="jelly:define">
-    <st:documentation>
+    <st:documentation> <![CDATA[
 
-        Opinionated helper to use icons via &lt;svg> tags. Can be used by passing a href or a body:
+        Opinionated helper to use icons via <svg> tags. Can be used by passing a href or a body:
 
         {noformat}
-        # &lt;l:svgIcon href="/path/to/my/sprite.svg#my-icon" />
-        # &lt;l:svgIcon>&lt;path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z">&lt;/path>&lt;/l:svgIcon>
+        # <l:svgIcon href="/path/to/my/sprite.svg#my-icon" />
+        # <l:svgIcon><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"></path></l:svgIcon>
         {noformat}
 
         @since 2.222
+        ]]>
         <st:attribute name="class">
             Extra CSS classes passed to the icon. Currently only the 'svg-icon' class is applied by default.
         </st:attribute>
 
         <st:attribute name="id">
-            ID of the icon element. Since TODO.
+            ID of the icon element. Since 2.289.
         </st:attribute>
 
         <st:attribute name="href">
@@ -41,7 +42,7 @@
          style="${attrs.style}"
          onclick="${attrs.onclick}"
          id="${attrs.id}"
-         tooltip="${attrs.tooltip != null ? h.xmlEscape(attrs.tooltip) : null}">
+         tooltip="${attrs.tooltip != null ? attrs.tooltip : null}">
 
         <j:choose>
             <j:when test="${attrs.href != null}">

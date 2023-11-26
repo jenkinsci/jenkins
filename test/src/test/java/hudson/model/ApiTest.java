@@ -31,14 +31,14 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.WebResponse;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import javax.servlet.http.HttpServletResponse;
 import net.sf.json.JSONObject;
+import org.htmlunit.Page;
+import org.htmlunit.WebResponse;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;

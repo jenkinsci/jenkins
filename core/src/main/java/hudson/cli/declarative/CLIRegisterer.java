@@ -27,7 +27,6 @@ package hudson.cli.declarative;
 import static java.util.logging.Level.SEVERE;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.AbortException;
 import hudson.Extension;
 import hudson.ExtensionComponent;
@@ -72,12 +71,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
  * @author Kohsuke Kawaguchi
  */
 @Extension
-@SuppressFBWarnings(
-        value = {
-            "THROWS_METHOD_THROWS_CLAUSE_BASIC_EXCEPTION",
-            "THROWS_METHOD_THROWS_RUNTIMEEXCEPTION"
-        },
-        justification = "TODO needs triage")
 public class CLIRegisterer extends ExtensionFinder {
     @Override
     public ExtensionComponentSet refresh() throws ExtensionRefreshException {

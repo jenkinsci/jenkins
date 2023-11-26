@@ -30,6 +30,7 @@ THE SOFTWARE.
          xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <l:layout permission="${app.ADMINISTER}" title="${%title(it.displayName)}">
     <st:include page="sidepanel.jelly"/>
+    <l:breadcrumb title="${%Configure}" />
     <l:main-panel>
       <f:form method="post" action="configSubmit" name="config">
 

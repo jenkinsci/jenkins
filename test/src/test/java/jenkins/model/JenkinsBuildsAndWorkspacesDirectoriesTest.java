@@ -1,7 +1,7 @@
 package jenkins.model;
 
-import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
@@ -23,9 +23,11 @@ import java.util.logging.Level;
 import java.util.stream.Stream;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.LoggerRule;
 import org.jvnet.hudson.test.MockFolder;
@@ -49,6 +51,9 @@ public class JenkinsBuildsAndWorkspacesDirectoriesTest {
 
     @Rule
     public LoggerRule loggerRule = new LoggerRule();
+
+    @ClassRule
+    public static TemporaryFolder tmp = new TemporaryFolder();
 
     @Before
     public void before() {
@@ -284,7 +289,7 @@ public class JenkinsBuildsAndWorkspacesDirectoriesTest {
         final List<String> builds = new ArrayList<>();
 
         story.then(steps -> {
-            builds.add(story.j.createTmpDir().toString());
+            builds.add(tmp.newFolder().toString());
             assertTrue(story.j.getInstance().isDefaultBuildDir());
             setBuildsDirProperty(builds.get(0) + "/${ITEM_FULL_NAME}");
         });

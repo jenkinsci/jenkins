@@ -61,6 +61,7 @@ import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithChildren;
 import jenkins.model.ModelObjectWithContextMenu.ContextMenu;
 import jenkins.util.Timer;
+import jenkins.widgets.HasWidgets;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
@@ -79,7 +80,7 @@ import org.kohsuke.stapler.verb.POST;
  * @author Kohsuke Kawaguchi
  */
 @ExportedBean
-public final class ComputerSet extends AbstractModelObject implements Describable<ComputerSet>, ModelObjectWithChildren {
+public final class ComputerSet extends AbstractModelObject implements Describable<ComputerSet>, ModelObjectWithChildren, HasWidgets {
     /**
      * This is the owner that persists {@link #monitors}.
      */

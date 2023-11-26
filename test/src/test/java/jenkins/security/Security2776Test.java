@@ -1,16 +1,16 @@
 package jenkins.security;
 
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.is;
 
-import com.gargoylesoftware.htmlunit.ScriptResult;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import hudson.Util;
+import hudson.Functions;
 import hudson.model.InvisibleAction;
 import hudson.model.UnprotectedRootAction;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import org.htmlunit.ScriptResult;
+import org.htmlunit.html.HtmlPage;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -25,29 +25,35 @@ public class Security2776Test {
 
     @Test
     public void escapedTooltipIsEscaped() throws Exception {
-        assertExpectedBehaviorForTooltip("#symbol-icons .unsafe svg", _getUnsafeTooltip(), true);
-        assertExpectedBehaviorForTooltip("#symbol-icons .safe svg", _getSafeTooltip(), false);
-        assertExpectedBehaviorForTooltip("#png-icons .unsafe img", _getUnsafeTooltip(), true);
-        assertExpectedBehaviorForTooltip("#png-icons .safe img", _getSafeTooltip(), false);
+        assertExpectedBehaviorForTooltip("#symbol-icons .unsafe svg",
+                "&lt;img src=\"x\" onerror=\"alert(1)\"&gt;");
+        assertExpectedBehaviorForTooltip("#symbol-icons .safe svg",
+                Functions.htmlAttributeEscape(_getSafeTooltip()));
+        assertExpectedBehaviorForTooltip("#png-icons .unsafe img",
+                "&lt;img src=\"x\" onerror=\"alert(1)\"&gt;");
+        assertExpectedBehaviorForTooltip("#png-icons .safe img",
+                Functions.htmlAttributeEscape(_getSafeTooltip()));
 
         // Outlier after the fix for SECURITY-1955
-        assertExpectedBehaviorForTooltip("#svgIcons .unsafe svg", _getSafeTooltip(), false);
-        assertExpectedBehaviorForTooltip("#svgIcons .safe svg", Util.xmlEscape(_getSafeTooltip()), false);
+        assertExpectedBehaviorForTooltip("#svgIcons .unsafe svg",
+                "&lt;img src=\"x\" onerror=\"alert(1)\"&gt;");
+        assertExpectedBehaviorForTooltip("#svgIcons .safe svg",
+                "&amp;lt;img src=&amp;quot;x&amp;quot; onerror=&amp;quot;alert(1)&amp;quot;&amp;gt;");
     }
 
-    private void assertExpectedBehaviorForTooltip(String selector, String expectedTooltipContent, boolean alertExpected) throws IOException, SAXException {
+    private void assertExpectedBehaviorForTooltip(String selector, String expectedResult) throws IOException, SAXException {
         final AtomicBoolean alerts = new AtomicBoolean();
         final JenkinsRule.WebClient wc = j.createWebClient();
         wc.setAlertHandler((p, s) -> alerts.set(true));
         final HtmlPage page = wc.goTo(URL_NAME);
-        page.executeJavaScript("document.querySelector('" + selector + "').dispatchEvent(new Event('mouseover'));");
+        page.executeJavaScript("document.querySelector('" + selector + "')._tippy.show()");
         wc.waitForBackgroundJavaScript(2000L);
-        ScriptResult result = page.executeJavaScript("document.querySelector('#tt').innerHTML;");
+        ScriptResult result = page.executeJavaScript("document.querySelector('.tippy-content').innerHTML;");
         Object jsResult = result.getJavaScriptResult();
         assertThat(jsResult, instanceOf(String.class));
         String jsResultString = (String) jsResult;
-        assertThat(jsResultString, containsString(expectedTooltipContent));
-        Assert.assertEquals(alertExpected ? "Alert expected" : "No alert expected", alertExpected, alerts.get());
+        assertThat(jsResultString, is(expectedResult));
+        Assert.assertFalse("No alert expected", alerts.get());
     }
 
     private static String _getUnsafeTooltip() {
@@ -55,7 +61,7 @@ public class Security2776Test {
     }
 
     private static String _getSafeTooltip() {
-        return Util.xmlEscape(_getUnsafeTooltip());
+        return Functions.htmlAttributeEscape(_getUnsafeTooltip());
     }
 
     @TestExtension

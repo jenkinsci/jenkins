@@ -24,13 +24,13 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:d="jelly:define" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
-  <st:documentation>
-    Used in the &lt;l:side-panel> to draw a box with a title.
+  <st:documentation> <![CDATA[
+    Used in the <l:side-panel> to draw a box with a title.
 
     The box is drawn as a table, and the body of this tag
-    is expected to draw a series of &lt;TR>s to fill in the contents
+    is expected to draw a series of <TR>s to fill in the contents
     of the box.
-
+    ]]>
     <st:attribute name="title" use="required">
       Title of the box. Can include HTML.
     </st:attribute>
@@ -52,29 +52,31 @@ THE SOFTWARE.
     </st:attribute>
   </st:documentation>
   <j:set var="paneIsCollapsed" value="${h.isCollapsed(attrs.id)}" />
-  <div class="container-fluid pane-frame track-mouse ${paneIsCollapsed ? 'collapsed' : 'expanded'}" id="${attrs.id}">
-    <div class="row">
-      <div class="col-xs-24 pane-header">
-        <span class="pane-header-title">
-          <j:out value="${title}"/>
-        </span>
+  <div class="pane-frame ${paneIsCollapsed ? 'collapsed' : 'expanded'}" id="${attrs.id}">
+    <div class="pane-header">
+      <span class="pane-header-title">
+        <j:out value="${title}"/>
+      </span>
 
-        <j:if test="${attrs.id != null}">
-          <a class="collapse" href="${rootURL}/toggleCollapse?paneId=${attrs.id}"
-             title="${paneIsCollapsed ? '%expand' : '%collapse'}">
+      <j:if test="${attrs.id != null}">
+        <a class="collapse" href="${rootURL}/toggleCollapse?paneId=${attrs.id}"
+           title="${paneIsCollapsed ? '%expand' : '%collapse'}">
 
-            <j:set var="svgIconId" value="${paneIsCollapsed ? 'chevron-up' : 'chevron-down'}" />
-            <l:icon src="symbol-${svgIconId}" />
-          </a>
-        </j:if>
-      </div>
+          <j:set var="svgIconId" value="${paneIsCollapsed ? 'chevron-up' : 'chevron-down'}" />
+          <l:icon src="symbol-${svgIconId}" />
+        </a>
+      </j:if>
     </div>
     <j:choose>
-      <div class="row pane-content">
+      <div class="pane-content">
         <j:when test="${paneIsCollapsed}">
-          <div class="row">
-            <div class="col-xs-24 cell">${attrs.collapsedText}</div>
-          </div>
+          <table class="pane">
+            <tr>
+              <td class="pane">
+                ${attrs.collapsedText}
+              </td>
+            </tr>
+          </table>
         </j:when>
         <j:otherwise>
           <table class="pane ${attrs.class}">
@@ -84,10 +86,8 @@ THE SOFTWARE.
       </div>
     </j:choose>
     <j:if test="${attrs.footer != null}">
-      <div class="row">
-        <div class="col-xs-24 pane-footer">
-          <j:out value="${attrs.footer}"/>
-        </div>
+      <div class="pane-footer">
+        <j:out value="${attrs.footer}"/>
       </div>
     </j:if>
   </div>

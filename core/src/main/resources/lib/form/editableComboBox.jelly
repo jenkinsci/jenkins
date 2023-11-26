@@ -24,15 +24,16 @@ THE SOFTWARE.
 
 <!-- Tomcat doesn't like us using the attribute called 'class' -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:f="/lib/form">
   <st:documentation>
     Editable drop-down combo box. Deprecated as of 1.356. Use f:combobox and databinding instead.
 
     <st:attribute name="clazz">
       Additional CSS classes that the control gets.
     </st:attribute>
-    <st:attribute name="items">
-      List of possible values. Either this or nested &lt;f:editableComboBoxValue/>s are required.
+    <st:attribute name="items"> <![CDATA[
+      List of possible values. Either this or nested <f:editableComboBoxValue/>s are required.
+    ]]>
     </st:attribute>
     <st:attribute name="field">
       Used for databinding.

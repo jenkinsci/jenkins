@@ -26,7 +26,6 @@ package jenkins.scm;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.model.Job;
 import hudson.model.Result;
 import hudson.model.Run;
@@ -48,7 +47,6 @@ import org.kohsuke.stapler.export.Exported;
  *
  * @since 2.60
  */
-@SuppressFBWarnings(value = "NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE", justification = "TODO needs triage")
 public interface RunWithSCM<JobT extends Job<JobT, RunT>,
         RunT extends Run<JobT, RunT> & RunWithSCM<JobT, RunT>> {
 

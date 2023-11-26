@@ -70,7 +70,9 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
  * {@code http://SERVER/jenkins/manage} page. This view should typically render
  * a DIV box with class='alert alert-danger' or class='alert alert-warning' with a human-readable text
  * inside it. It often also contains a link to a page that provides more details
- * about the problem.
+ * about the problem.<br>
+ * Additionally 2 numbers are shown in the Jenkins header of administrators, one with the number or active
+ * non-security relevant monitors and one with the number of active security relevant monitors.
  * </dd>
  * </dl>
  *

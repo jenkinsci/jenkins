@@ -9,8 +9,15 @@ on:
     branches:
       - master
 
+permissions:
+  contents: read
+
 jobs:
   update_draft_release:
+    permissions:
+      pull-requests: write # to add label to PR (release-drafter/release-drafter)
+      contents: write # to create a github release (release-drafter/release-drafter)
+
     if: github.repository_owner == 'jenkinsci'
     runs-on: ubuntu-latest
     steps:
@@ -44,7 +51,7 @@ jobs:
           private_key: ${{ secrets.JENKINS_CHANGELOG_UPDATER_PRIVATE_KEY }}
           repository: jenkins-infra/jenkins.io
       - name: Check out
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - name: Publish jenkins.io changelog draft

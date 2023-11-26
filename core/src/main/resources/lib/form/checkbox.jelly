@@ -23,9 +23,10 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <st:documentation>
-    &lt;input type="checkbox"> tag that takes true/false for @checked, which is more Jelly friendly.
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:f="/lib/form">
+  <st:documentation> <![CDATA[
+    <input type="checkbox"> tag that takes true/false for @checked, which is more Jelly friendly.
+    ]]>
 
     <st:attribute name="name" />
     <st:attribute name="checked" />
@@ -37,7 +38,7 @@ THE SOFTWARE.
       and none otherwise, making the subset selection easier.
     </st:attribute>
     <st:attribute name="default">
-      The default value of the check box, in case both @checked and @instance are null.
+      The default value of the checkbox, in case both @checked and @instance are null.
       If this attribute is unspecified or null, it defaults to unchecked, otherwise checked.
     </st:attribute>
     <st:attribute name="id" />
@@ -50,12 +51,13 @@ THE SOFTWARE.
     </st:attribute>
     <st:attribute name="class" />
     <st:attribute name="negative" />
-    <st:attribute name="readonly" deprecated="true">
+    <st:attribute name="readonly" deprecated="true"> <![CDATA[
       If set to true, this will take precedence over the onclick attribute and prevent the state of the checkbox from being changed.
 
       Note: if you want an actual read only checkbox then add:
-      &lt;j:set var="readOnlyMode" value="true"/&gt; inside your entry tag
+      <j:set var="readOnlyMode" value="true"/> inside your entry tag
       See https://www.jenkins.io/doc/developer/views/read-only/#enabling-read-only-view-support
+      ]]>
     </st:attribute>
     <st:attribute name="field">
       Used for databinding. TBD.

@@ -15,20 +15,21 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
-import com.gargoylesoftware.htmlunit.HttpMethod;
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.WebResponse;
-import com.gargoylesoftware.htmlunit.html.DomElement;
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.model.User;
 import java.net.HttpURLConnection;
-import java.net.URL;
+import java.net.URI;
 import javax.servlet.http.HttpServletResponse;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
+import org.htmlunit.FailingHttpStatusCodeException;
+import org.htmlunit.HttpMethod;
+import org.htmlunit.Page;
+import org.htmlunit.WebRequest;
+import org.htmlunit.WebResponse;
+import org.htmlunit.html.DomElement;
+import org.htmlunit.html.HtmlForm;
+import org.htmlunit.html.HtmlHiddenInput;
+import org.htmlunit.html.HtmlPage;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -37,7 +38,7 @@ import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
-import org.jvnet.hudson.test.recipes.PresetData;
+import org.jvnet.hudson.test.recipes.WithTimeout;
 
 /**
  * @author dty
@@ -120,8 +121,11 @@ public class DefaultCrumbIssuerTest {
         r.submit(p.getFormByName("config"));
    }
 
-    @PresetData(PresetData.DataSet.ANONYMOUS_READONLY)
     @Test public void apiXml() throws Exception {
+        r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
+        r.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
+                .grant(Jenkins.READ).everywhere().toEveryone()
+        );
         WebClient wc = r.createWebClient();
         r.assertXPathValue(wc.goToXml("crumbIssuer/api/xml"), "//crumbRequestField", r.jenkins.getCrumbIssuer().getCrumbRequestField());
         String text = wc.goTo("crumbIssuer/api/xml?xpath=concat(//crumbRequestField,'=',//crumb)", "text/plain").getWebResponse().getContentAsString();
@@ -140,8 +144,11 @@ public class DefaultCrumbIssuerTest {
         wc.assertFails("crumbIssuer/api/xml?xpath=concat(//crumbRequestField,'=',//crumb)", HttpURLConnection.HTTP_FORBIDDEN); // perhaps interpretable as JS number
     }
 
-    @PresetData(PresetData.DataSet.ANONYMOUS_READONLY)
     @Test public void apiJson() throws Exception {
+        r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
+        r.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
+                .grant(Jenkins.READ).everywhere().toEveryone()
+        );
         WebClient wc = r.createWebClient();
         String json = wc.goTo("crumbIssuer/api/json", "application/json").getWebResponse().getContentAsString();
         JSONObject jsonObject = JSONObject.fromObject(json);
@@ -169,6 +176,7 @@ public class DefaultCrumbIssuerTest {
 
     @Test
     @Issue("SECURITY-626")
+    @WithTimeout(300)
     public void crumbOnlyValidForOneSession() throws Exception {
         r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
         DefaultCrumbIssuer issuer = new DefaultCrumbIssuer(false);
@@ -214,7 +222,7 @@ public class DefaultCrumbIssuerTest {
 
     private void replaceAllCrumbInPageBy(HtmlPage page, String newCrumb) {
         for (DomElement el : page.getElementsByName("Jenkins-Crumb")) {
-            el.setAttribute("value", newCrumb);
+            ((HtmlHiddenInput) el).setValue(newCrumb);
         }
     }
 
@@ -295,7 +303,7 @@ public class DefaultCrumbIssuerTest {
     }
 
     private WebRequest createRequestForJobCreation(String jobName) throws Exception {
-        WebRequest req = new WebRequest(new URL(r.getURL() + "createItem?name=" + jobName), HttpMethod.POST);
+        WebRequest req = new WebRequest(new URI(r.getURL() + "createItem?name=" + jobName).toURL(), HttpMethod.POST);
         req.setAdditionalHeader("Content-Type", "application/xml");
         req.setRequestBody("<project/>");
         return req;

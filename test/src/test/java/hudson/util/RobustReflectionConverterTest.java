@@ -30,9 +30,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import com.gargoylesoftware.htmlunit.HttpMethod;
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.WebRequest;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.cli.CLICommandInvoker;
 import hudson.diagnosis.OldDataMonitor;
@@ -47,12 +44,15 @@ import hudson.model.Saveable;
 import hudson.security.ACL;
 import java.io.ByteArrayInputStream;
 import java.net.HttpURLConnection;
-import java.net.URL;
+import java.net.URI;
 import java.nio.charset.Charset;
 import java.util.Map;
 import java.util.Set;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
+import org.htmlunit.HttpMethod;
+import org.htmlunit.Page;
+import org.htmlunit.WebRequest;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -206,7 +206,7 @@ public class RobustReflectionConverterTest {
             r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
             WebClient wc = r.createWebClient();
             wc.withBasicApiToken("test");
-            WebRequest req = new WebRequest(new URL(wc.getContextPath() + String.format("%s/config.xml", p.getUrl())), HttpMethod.POST);
+            WebRequest req = new WebRequest(new URI(wc.getContextPath() + String.format("%s/config.xml", p.getUrl())).toURL(), HttpMethod.POST);
             req.setEncodingType(null);
             req.setRequestBody(String.format(CONFIGURATION_TEMPLATE, "badvalue", AcceptOnlySpecificKeyword.ACCEPT_KEYWORD));
             wc.getPage(req);
@@ -237,7 +237,7 @@ public class RobustReflectionConverterTest {
             WebClient wc = r.createWebClient()
                     .withThrowExceptionOnFailingStatusCode(false);
             wc.withBasicApiToken("test");
-            WebRequest req = new WebRequest(new URL(wc.getContextPath() + String.format("%s/config.xml", p.getUrl())), HttpMethod.POST);
+            WebRequest req = new WebRequest(new URI(wc.getContextPath() + String.format("%s/config.xml", p.getUrl())).toURL(), HttpMethod.POST);
             req.setEncodingType(null);
             req.setRequestBody(String.format(CONFIGURATION_TEMPLATE, AcceptOnlySpecificKeyword.ACCEPT_KEYWORD, "badvalue"));
 

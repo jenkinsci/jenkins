@@ -68,9 +68,10 @@ THE SOFTWARE.
       At least provide this number of copies initially.
       minimum="1" is useful to make sure there's always at least one entry for the user to fill in.
     </st:attribute>
-    <st:attribute name="header">
+    <st:attribute name="header"> <![CDATA[
       For each item, add this header.
-      This also activates drag&amp;drop (where the header is a grip).
+      This also activates drag&drop (where the header is a grip).
+       ]]>
     </st:attribute>
   </st:documentation>
 

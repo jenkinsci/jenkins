@@ -29,6 +29,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.HttpRetryException;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
@@ -212,6 +213,7 @@ public class SetupWizard extends PageDecorator {
         }
     }
 
+    @SuppressFBWarnings(value = "UNSAFE_HASH_EQUALS", justification = "only checked against true")
     private void createInitialApiToken(User user) throws IOException, InterruptedException {
         ApiTokenProperty apiTokenProperty = user.getProperty(ApiTokenProperty.class);
 
@@ -560,7 +562,7 @@ public class SetupWizard extends PageDecorator {
                 suggestedPluginUrl = suggestedPluginUrl + (suggestedPluginUrl.contains("?") ? "&" : "?") + "version=" + version;
             }
             try {
-                URLConnection connection = ProxyConfiguration.open(new URL(suggestedPluginUrl));
+                URLConnection connection = ProxyConfiguration.open(new URI(suggestedPluginUrl).toURL());
 
                 try {
                     String initialPluginJson = IOUtils.toString(connection.getInputStream(), StandardCharsets.UTF_8);

@@ -24,8 +24,9 @@
 
 package hudson.util;
 
-import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
@@ -77,7 +78,7 @@ public class RobustReflectionConverterTest {
 
     @Test
     public void ifWorkaroundNeeded() {
-        XStream xs = new XStream();
+        XStream xs = new XStream(XStream2.getDefaultDriver());
         xs.allowTypes(new Class[] {Point.class});
         final ConversionException e = assertThrows(ConversionException.class, () -> read(xs));
         assertThat(e.getMessage(), containsString("No such field hudson.util.Point.z"));
@@ -195,8 +196,8 @@ public class RobustReflectionConverterTest {
 
         CriticalXStreamException e = assertThrows(CriticalXStreamException.class, () -> xstream2.fromXML(xml));
         Throwable cause = e.getCause();
-        assertNotNull("A non-null cause of CriticalXStreamException is expected", cause);
-        assertTrue("Cause of CriticalXStreamException is expected to be InputManipulationException", cause instanceof InputManipulationException);
+        assertNotNull(cause);
+        assertThat(cause, instanceOf(InputManipulationException.class));
         InputManipulationException ime = (InputManipulationException) cause;
         assertTrue("Limit expected in message", ime.getMessage().contains("exceeds 5 seconds"));
     }
@@ -234,8 +235,8 @@ public class RobustReflectionConverterTest {
         // the parsing is continued despite the DoS prevention being triggered due to the robustness
         CriticalXStreamException e = assertThrows(CriticalXStreamException.class, () -> xstream2.fromXML(xml));
         Throwable cause = e.getCause();
-        assertNotNull("A non-null cause of CriticalXStreamException is expected", cause);
-        assertTrue("Cause of CriticalXStreamException is expected to be InputManipulationException", cause instanceof InputManipulationException);
+        assertNotNull(cause);
+        assertThat(cause, instanceOf(InputManipulationException.class));
         InputManipulationException ime = (InputManipulationException) cause;
         assertTrue("Limit expected in message", ime.getMessage().contains("exceeds 5 seconds"));
     }

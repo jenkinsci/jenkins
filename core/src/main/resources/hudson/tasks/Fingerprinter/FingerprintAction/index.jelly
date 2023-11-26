@@ -33,7 +33,6 @@ THE SOFTWARE.
     <st:include it="${it.run}" page="sidepanel.jelly"/>
     <l:main-panel>
       <h1>
-        <l:icon class="icon-fingerprint icon-xlg"/>
         ${%Recorded Fingerprints}
       </h1>
       <table class="fingerprint-in-build sortable jenkins-table">

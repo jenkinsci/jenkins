@@ -236,7 +236,7 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
 
     @Override
     public void perform(Run<?, ?> build, FilePath ws, EnvVars environment, Launcher launcher, TaskListener listener) throws IOException, InterruptedException {
-        if (artifacts.length() == 0) {
+        if (artifacts.isEmpty()) {
             throw new AbortException(Messages.ArtifactArchiver_NoIncludes());
         }
 

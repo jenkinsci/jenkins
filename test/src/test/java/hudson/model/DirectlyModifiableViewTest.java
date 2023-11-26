@@ -28,13 +28,13 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import com.gargoylesoftware.htmlunit.HttpMethod;
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.WebResponse;
 import java.io.IOException;
-import java.net.URL;
+import java.net.URI;
 import org.hamcrest.Matchers;
+import org.htmlunit.HttpMethod;
+import org.htmlunit.Page;
+import org.htmlunit.WebRequest;
+import org.htmlunit.WebResponse;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -188,7 +188,7 @@ public class DirectlyModifiableViewTest {
         WebClient wc = j.createWebClient()
                 .withThrowExceptionOnFailingStatusCode(false);
         WebRequest req = new WebRequest(
-                new URL(j.jenkins.getRootUrl() + view.getUrl() + path),
+                new URI(j.jenkins.getRootUrl() + view.getUrl() + path).toURL(),
                 HttpMethod.POST
         );
 

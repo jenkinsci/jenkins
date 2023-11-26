@@ -32,6 +32,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import hudson.Functions;
 import hudson.model.FreeStyleBuild;
@@ -200,7 +201,7 @@ public class ConsoleCommandTest {
             project.getBuildersList().add(new BatchFile("echo start - %BUILD_NUMBER%\r\n"
                     + "ping -n 10 127.0.0.1 >nul\r\necho after sleep - %BUILD_NUMBER%"));
         } else {
-            project.getBuildersList().add(new Shell("echo start - ${BUILD_NUMBER}\nsleep 10s\n"
+            project.getBuildersList().add(new Shell("echo start - ${BUILD_NUMBER}\nsleep 10\n"
                     + "echo after sleep - ${BUILD_NUMBER}"));
         }
         FreeStyleBuild build = project.scheduleBuild2(0).waitForStart();
@@ -258,7 +259,7 @@ public class ConsoleCommandTest {
                     + "ping -n 10 127.0.0.1 >nul\r\necho 6\r\necho 7\r\necho 8\r\necho 9"));
         } else {
             project.getBuildersList().add(new Shell("echo 1\necho 2\necho 3\necho 4\necho 5\n"
-                    + "sleep 10s\n"
+                    + "sleep 10\n"
                     + "echo 6\necho 7\necho 8\necho 9"));
         }
 
@@ -285,7 +286,7 @@ public class ConsoleCommandTest {
     @Test public void consoleShouldFailIfTheBuildIsStuckInTheQueue() throws Exception {
 
         FreeStyleProject project = j.createFreeStyleProject("aProject");
-        project.getBuildersList().add(new Shell("echo 1\nsleep 10s"));
+        project.getBuildersList().add(new Shell("echo 1\nsleep 10"));
         project.setAssignedLabel(new LabelAtom("never_created"));
 
         assertNotNull(project.scheduleBuild2(0));
@@ -300,6 +301,7 @@ public class ConsoleCommandTest {
         assertThat(result, failedWith(3));
         assertThat(result, hasNoStandardOutput());
         assertThat(result.stderr(), containsString("ERROR: No such build #1"));
+        assertTrue(j.jenkins.getQueue().cancel(project));
     }
 
 }
