@@ -16,7 +16,7 @@ window.buildTimeTrend_displayBuilds = function (data) {
 
     let link = document.createElement("a");
     link.classList.add("build-status-link");
-    link.href = e.number + "/console";
+    link.href = e.consoleUrl;
     td.appendChild(link);
     let svg = generateSVGIcon(e.iconName);
     link.appendChild(svg);
@@ -209,7 +209,7 @@ window.displayBuilds = function (data) {
     div2.classList.add("jenkins-table__cell__button-wrapper");
     var a3 = document.createElement("a");
     a3.classList.add("jenkins-table__button");
-    a3.href = rootUrl + "/" + e.url + "console";
+    a3.href = e.consoleUrl;
     a3.innerHTML = p.dataset.consoleOutputIcon;
     div2.appendChild(a3);
     td5.appendChild(div2);

@@ -56,7 +56,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.springframework</groupId>
         <artifactId>spring-framework-bom</artifactId>
-        <version>5.3.30</version>
+        <version>5.3.31</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -188,7 +188,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.apache.commons</groupId>
         <artifactId>commons-compress</artifactId>
-        <version>1.24.0</version>
+        <version>1.25.0</version>
       </dependency>
       <dependency>
         <groupId>org.codehaus.groovy</groupId>
