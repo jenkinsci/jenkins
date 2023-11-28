@@ -118,17 +118,7 @@ window.displayBuilds = function (data) {
 
     var td3 = document.createElement("td");
     td3.setAttribute("data", e.timestampString2);
-    var button = document.createElement("button");
-    button.classList.add("jenkins-table__link");
-    button.setAttribute("tooltip", p.dataset.scrollTooltip);
-    button.setAttribute(
-      "onclick",
-      'javascript:tl.getBand(0).scrollToCenter(Timeline.DateTime.parseGregorianDateTime("' +
-        e.timestampString3 +
-        '"))',
-    );
-    button.textContent = e.timestampString;
-    td3.appendChild(button);
+    td3.textContent = e.timestampString;
     tr.appendChild(td3);
 
     var td4 = document.createElement("td");
