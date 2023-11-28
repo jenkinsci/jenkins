@@ -39,7 +39,7 @@ THE SOFTWARE.
       <div class="pane build-name">
         <div class="build-icon">
           <a class="build-status-link" href="${h.getConsoleUrl(build)}" tooltip="${build.iconColor.description} > ${%Console Output}">
-            <l:icon class="${build.buildStatusIconClassName} icon-sm" />
+            <l:icon src="symbol-status-${build.iconColor.iconName}" />
           </a>
         </div>
         <a class="model-link inside build-link display-name" update-parent-class=".build-row" href="${link}">${build.displayName}</a>
