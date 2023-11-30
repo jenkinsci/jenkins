@@ -38,7 +38,7 @@ THE SOFTWARE.
           <l:app-bar title="${%Advanced settings}"/>
 
           <div class="alert alert-info">
-              <strong>${%The Proxy configuration form has been moved to} <a href="${rootURL}/manage/configure">Configure System page</a></strong>
+              <strong>${%proxyMovedBlurb(rootURL+"/manage/configure")}</strong>
           </div>
 
           <div class="jenkins-form">
