@@ -27,11 +27,11 @@ THE SOFTWARE.
          xmlns:t="/lib/hudson" xmlns:f="/lib/form">
     <f:section title="${%HTTP Proxy Configuration}">
         <f:advanced title="${%Setup}">
-        <j:scope>
-            <j:set var="descriptor" value="${instance.getProxyDescriptor()}"/>
-            <j:set var="instance" value="${app.proxy}"/>
-            <st:include from="${descriptor}" page="${descriptor.configPage}"/>
-        </j:scope>
+            <j:scope>
+                <j:set var="descriptor" value="${instance.getProxyDescriptor()}"/>
+                <j:set var="instance" value="${app.proxy}"/>
+                <st:include from="${descriptor}" page="${descriptor.configPage}"/>
+            </j:scope>
         </f:advanced>
     </f:section>
 </j:jelly>
