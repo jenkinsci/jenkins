@@ -25,20 +25,22 @@
 package jenkins.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
 
 import hudson.model.PermalinkProjectAction;
 import hudson.model.Run;
+import java.util.stream.Collectors;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import org.junit.Test;
 
 public final class PeepholePermalinkTest {
 
-    @SuppressWarnings("deprecation")
     @Test
     public void classLoadingDeadlock() throws Exception {
         PeepholePermalink.initialized();
         Thread t = new Thread(() -> {
-            assertThat("successfully loaded LAST_STABLE_BUILD", PermalinkProjectAction.Permalink.LAST_STABLE_BUILD.getId(), is("lastStableBuild"));
+            assertThat("successfully loaded permalinks",
+                PermalinkProjectAction.Permalink.BUILTIN.stream().map(p -> p.getId()).collect(Collectors.toSet()),
+                containsInAnyOrder("lastBuild", "lastStableBuild", "lastSuccessfulBuild", "lastFailedBuild", "lastUnstableBuild", "lastUnsuccessfulBuild", "lastCompletedBuild"));
         });
         t.start();
         new PeepholePermalink() {
