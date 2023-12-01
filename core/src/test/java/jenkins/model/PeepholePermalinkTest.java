@@ -28,7 +28,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
 import hudson.model.PermalinkProjectAction;
-import java.io.File;
+import hudson.model.Run;
 import org.junit.Test;
 
 public final class PeepholePermalinkTest {
@@ -39,7 +39,22 @@ public final class PeepholePermalinkTest {
             assertThat("successfully loaded LAST_STABLE_BUILD", PermalinkProjectAction.Permalink.LAST_STABLE_BUILD.getId(), is("lastStableBuild"));
         });
         t.start();
-        PeepholePermalink.cacheFor(new File("."));
+        new PeepholePermalink() {
+            @Override
+            public boolean apply(Run<?, ?> run) {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override
+            public String getDisplayName() {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override
+            public String getId() {
+                throw new UnsupportedOperationException();
+            }
+        };
         t.join();
     }
 
