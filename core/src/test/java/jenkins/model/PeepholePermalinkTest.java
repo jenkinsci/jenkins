@@ -33,8 +33,10 @@ import org.junit.Test;
 
 public final class PeepholePermalinkTest {
 
+    @SuppressWarnings("deprecation")
     @Test
     public void classLoadingDeadlock() throws Exception {
+        PeepholePermalink.initialized();
         Thread t = new Thread(() -> {
             assertThat("successfully loaded LAST_STABLE_BUILD", PermalinkProjectAction.Permalink.LAST_STABLE_BUILD.getId(), is("lastStableBuild"));
         });
