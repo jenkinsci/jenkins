@@ -461,12 +461,12 @@ public class ExtensionList<T> extends AbstractList<T> implements OnMaster {
 
     /**
      * Convenience method allowing lookup of the instance of a given type with the highest ordinal.
-     * Equivalent to {@code ExtensionList.lookup(Class).get(0)} if there is at least one instance,
-     * and throws an {@code IllegalStateException} otherwise if no instance could be found.
+     * Equivalent to {@code ExtensionList.lookup(type).get(0)} if there is at least one instance,
+     * and throws an {@link IllegalStateException} otherwise if no instance could be found.
      *
      * @param type The type to look up.
      * @return the singleton instance of the given type in its list.
-     * @throws IllegalStateException if there are no instances, or more than one
+     * @throws IllegalStateException if there are no instances
      *
      * @since TODO
      */
