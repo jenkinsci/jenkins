@@ -25,11 +25,11 @@
 package jenkins.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 
 import hudson.model.PermalinkProjectAction;
 import hudson.model.Run;
 import java.util.stream.Collectors;
-import static org.hamcrest.Matchers.containsInAnyOrder;
 import org.junit.Test;
 
 public final class PeepholePermalinkTest {
