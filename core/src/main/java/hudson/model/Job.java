@@ -1062,16 +1062,13 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         return Math.round((double) totalDuration / builds.size());
     }
 
-    static {
-        PeepholePermalink.initialized();
-    }
-
     /**
      * Gets all the {@link Permalink}s defined for this job.
      *
      * @return never null
      */
     public PermalinkList getPermalinks() {
+        PeepholePermalink.initialized();
         // TODO: shall we cache this?
         PermalinkList permalinks = new PermalinkList(Permalink.BUILTIN);
         for (PermalinkProjectAction ppa : getActions(PermalinkProjectAction.class)) {
