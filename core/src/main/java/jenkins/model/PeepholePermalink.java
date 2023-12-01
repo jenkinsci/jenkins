@@ -135,7 +135,7 @@ public abstract class PeepholePermalink extends Permalink implements Predicate<R
         return b;
     }
 
-    private static @NonNull Map<String, Integer> cacheFor(@NonNull File buildDir) {
+    static @NonNull Map<String, Integer> cacheFor(@NonNull File buildDir) {
         synchronized (caches) {
             Map<String, Integer> cache = caches.get(buildDir);
             if (cache == null) {
