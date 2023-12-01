@@ -24,10 +24,11 @@
 
 package jenkins.model;
 
-import hudson.model.PermalinkProjectAction;
-import java.io.File;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+
+import hudson.model.PermalinkProjectAction;
+import java.io.File;
 import org.junit.Test;
 
 public final class PeepholePermalinkTest {
