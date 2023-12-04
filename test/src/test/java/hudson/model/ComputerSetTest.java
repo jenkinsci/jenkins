@@ -130,7 +130,7 @@ public class ComputerSetTest {
         assertEquals(HttpURLConnection.HTTP_OK, page.getWebResponse().getStatusCode());
         responseContent = page.getWebResponse().getContentAsString();
         // the "Node Monitoring" link in the app bar is visible
-        assertThat(responseContent, containsString("Node Monitoring"));
+        assertThat(responseContent, containsString("Configure Monitors"));
         page = wc.goTo("computer/configure");
         assertEquals(HttpURLConnection.HTTP_OK, page.getWebResponse().getStatusCode());
         // and the save button is visible

@@ -321,12 +321,13 @@ public class FunctionsTest {
             Locale.setDefault(Locale.ENGLISH);
             assertEquals("0 B", Functions.humanReadableByteSize(0));
             assertEquals("1023 B", Functions.humanReadableByteSize(1023));
-            assertEquals("1.00 KB", Functions.humanReadableByteSize(1024));
-            assertEquals("1.50 KB", Functions.humanReadableByteSize(1536));
-            assertEquals("20.00 KB", Functions.humanReadableByteSize(20480));
-            assertEquals("1023.00 KB", Functions.humanReadableByteSize(1047552));
-            assertEquals("1.00 MB", Functions.humanReadableByteSize(1048576));
-            assertEquals("1.50 GB", Functions.humanReadableByteSize(1610612700));
+            assertEquals("1.00 KiB", Functions.humanReadableByteSize(1024));
+            assertEquals("1.50 KiB", Functions.humanReadableByteSize(1536));
+            assertEquals("20.00 KiB", Functions.humanReadableByteSize(20480));
+            assertEquals("1023.00 KiB", Functions.humanReadableByteSize(1047552));
+            assertEquals("1.00 MiB", Functions.humanReadableByteSize(1048576));
+            assertEquals("1.50 GiB", Functions.humanReadableByteSize(1610612700));
+            assertEquals("1.50 TiB", Functions.humanReadableByteSize(1649267441664L));
         } finally {
             Locale.setDefault(defaultLocale);
         }

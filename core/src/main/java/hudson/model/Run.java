@@ -2665,18 +2665,13 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
 
     public static class RedirectUp {
-        public void doDynamic(StaplerResponse rsp) throws IOException {
+        public void doDynamic(StaplerRequest req, StaplerResponse rsp) throws IOException {
             // Compromise to handle both browsers (auto-redirect) and programmatic access
             // (want accurate 404 response).. send 404 with javascript to redirect browsers.
             rsp.setStatus(HttpServletResponse.SC_NOT_FOUND);
             rsp.setContentType("text/html;charset=UTF-8");
             PrintWriter out = rsp.getWriter();
-            out.println("<html><head>" +
-                "<meta http-equiv='refresh' content='1;url=..'/>" +
-                "<script>window.location.replace('..');</script>" +
-                "</head>" +
-                "<body style='background-color:white; color:white;'>" +
-                "Not found</body></html>");
+            Util.printRedirect(req.getContextPath(), "..", "Not found", out);
             out.flush();
         }
     }

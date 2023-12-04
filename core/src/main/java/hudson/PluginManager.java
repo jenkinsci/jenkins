@@ -1831,13 +1831,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         jenkins.checkPermission(Jenkins.ADMINISTER);
 
         ProxyConfiguration pc = req.bindJSON(ProxyConfiguration.class, req.getSubmittedForm());
-        if (pc.name == null) {
-            jenkins.proxy = null;
-            ProxyConfiguration.getXmlFile().delete();
-        } else {
-            jenkins.proxy = pc;
-            jenkins.proxy.save();
-        }
+        ProxyConfigurationManager.saveProxyConfiguration(pc);
         return new HttpRedirect("advanced");
     }
 
@@ -1874,7 +1868,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
         @Override
         public void copy(File target) throws Exception {
-            try (InputStream input =  ProxyConfiguration.getInputStream(new URI(url).toURL())) {
+            try (InputStream input =  ProxyConfiguration.getInputStream(new URL(url))) {
                 Files.copy(input, target.toPath());
             }
         }
@@ -1976,7 +1970,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     @RequirePOST public FormValidation doCheckPluginUrl(StaplerRequest request, @QueryParameter String value) throws IOException {
         if (StringUtils.isNotBlank(value)) {
             try {
-                URL url = new URI(value).toURL();
+                URL url = new URL(value);
                 if (!url.getProtocol().startsWith("http")) {
                     return FormValidation.error(Messages.PluginManager_invalidUrl());
                 }
@@ -1984,7 +1978,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                 if (!url.getProtocol().equals("https")) {
                     return FormValidation.warning(Messages.PluginManager_insecureUrl());
                 }
-            } catch (MalformedURLException | URISyntaxException e) {
+            } catch (MalformedURLException e) {
                 return FormValidation.error(e.getMessage());
             }
         }

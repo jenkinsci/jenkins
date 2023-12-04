@@ -114,6 +114,7 @@ import org.jfree.data.category.CategoryDataset;
 import org.jfree.ui.RectangleInsets;
 import org.jvnet.localizer.Localizable;
 import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
@@ -1597,6 +1598,8 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         return Jenkins.get().getAuthorizationStrategy().getACL(this);
     }
 
+    @Deprecated
+    @Restricted(DoNotUse.class)
     public BuildTimelineWidget getTimeline() {
         return new BuildTimelineWidget(getBuilds());
     }
