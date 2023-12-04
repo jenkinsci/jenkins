@@ -49,7 +49,8 @@ jobs:
         with:
           app_id: ${{ secrets.JENKINS_CHANGELOG_UPDATER_APP_ID }}
           private_key: ${{ secrets.JENKINS_CHANGELOG_UPDATER_PRIVATE_KEY }}
-          repository: jenkins-infra/jenkins.io
+          repositories: >-
+            ["jenkins-infra/jenkins.io"]
       - name: Check out
         uses: actions/checkout@v4
         with:
