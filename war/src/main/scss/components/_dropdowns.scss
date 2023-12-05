@@ -41,6 +41,7 @@ $dropdown-padding: 0.4rem;
   display: flex;
   flex-direction: column;
   padding: $dropdown-padding;
+  background: var(--background);
 
   &--compact {
     > .jenkins-dropdown__item,
