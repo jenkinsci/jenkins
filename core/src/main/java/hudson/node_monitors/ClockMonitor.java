@@ -36,6 +36,7 @@ import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 
 /**
@@ -46,6 +47,11 @@ import org.kohsuke.stapler.StaplerRequest;
  * @since 1.123
  */
 public class ClockMonitor extends NodeMonitor {
+
+    @DataBoundConstructor
+    public ClockMonitor() {
+    }
+
     public ClockDifference getDifferenceFor(Computer c) {
         return DESCRIPTOR.get(c);
     }

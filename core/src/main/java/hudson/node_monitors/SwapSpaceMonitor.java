@@ -37,6 +37,7 @@ import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
 import org.jvnet.hudson.MemoryMonitor;
 import org.jvnet.hudson.MemoryUsage;
+import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
@@ -48,6 +49,11 @@ import org.kohsuke.stapler.export.ExportedBean;
  * @since 1.233
  */
 public class SwapSpaceMonitor extends NodeMonitor {
+
+    @DataBoundConstructor
+    public SwapSpaceMonitor() {
+    }
+
     /**
      * Returns the HTML representation of the space.
      */

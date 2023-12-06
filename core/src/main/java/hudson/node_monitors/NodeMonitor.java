@@ -61,6 +61,9 @@ import org.kohsuke.stapler.export.ExportedBean;
  * <p>
  * {@link NodeMonitor}s are persisted via XStream.
  *
+ * <h2>CasC</h2>
+ * To be able to configure {@link NodeMonitor}s via JCasC, they should have a {@link org.kohsuke.stapler.DataBoundConstructor}
+ *
  * @author Kohsuke Kawaguchi
  * @since 1.123
  */

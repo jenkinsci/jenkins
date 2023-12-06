@@ -344,7 +344,7 @@ import org.xml.sax.InputSource;
 @ExportedBean
 public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLevelItemGroup, StaplerProxy, StaplerFallback,
         ModifiableViewGroup, AccessControlled, DescriptorByNameOwner,
-        ModelObjectWithContextMenu, ModelObjectWithChildren, OnMaster {
+        ModelObjectWithContextMenu, ModelObjectWithChildren, OnMaster, Loadable {
     private final transient Queue queue;
 
     // flag indicating if we have loaded the jenkins configuration or not yet.
@@ -431,7 +431,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     private volatile SecurityRealm securityRealm = SecurityRealm.NO_AUTHENTICATION;
 
     /**
-     * Disables the remember me on this computer option in the standard login screen.
+     * Disables the "Keep me signed in" option in the standard login screen.
      *
      * @since 1.534
      */
@@ -3367,7 +3367,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         return new Hudson.MasterComputer();
     }
 
-    private void loadConfig() throws IOException {
+    @Override
+    public void load() throws IOException {
         XmlFile cfg = getConfigFile();
         if (cfg.exists()) {
             // reset some data that may not exist in the disk file
@@ -3488,7 +3489,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         Handle loadJenkins = g.requires(EXTENSIONS_AUGMENTED).attains(SYSTEM_CONFIG_LOADED).add("Loading global config", new Executable() {
             @Override
             public void run(Reactor session) throws Exception {
-                loadConfig();
+                load();
                 // if we are loading old data that doesn't have this field
                 if (slaves != null && !slaves.isEmpty() && nodes.isLegacy()) {
                     nodes.setNodes(slaves);

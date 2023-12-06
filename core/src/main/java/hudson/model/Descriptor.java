@@ -75,6 +75,7 @@ import javax.servlet.ServletException;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.GlobalConfigurationCategory;
 import jenkins.model.Jenkins;
+import jenkins.model.Loadable;
 import jenkins.security.RedactSecretJsonInErrorMessageSanitizer;
 import jenkins.util.io.OnMaster;
 import net.sf.json.JSONArray;
@@ -103,7 +104,7 @@ import org.kohsuke.stapler.lang.Klass;
  * to {@link Object}/{@link Class} relationship.
  *
  * A {@link Descriptor}/{@link Describable}
- * combination is used throughout in Hudson to implement a
+ * combination is used throughout in Jenkins to implement a
  * configuration/extensibility mechanism.
  *
  * <p>
@@ -116,7 +117,7 @@ import org.kohsuke.stapler.lang.Klass;
  * configuration of a view (what projects are in it, regular expression, etc.)
  *
  * <p>
- * For Hudson to create such configured {@link ListView} instance, Hudson
+ * For Jenkins to create such configured {@link ListView} instance, Jenkins
  * needs another object that captures the metadata of {@link ListView},
  * and that is what a {@link Descriptor} is for. {@link ListView} class
  * has a singleton descriptor, and this descriptor helps render
@@ -143,7 +144,7 @@ import org.kohsuke.stapler.lang.Klass;
  * @author Kohsuke Kawaguchi
  * @see Describable
  */
-public abstract class Descriptor<T extends Describable<T>> implements Saveable, OnMaster {
+public abstract class Descriptor<T extends Describable<T>> implements Loadable, Saveable, OnMaster {
     /**
      * The class being described by this descriptor.
      */
@@ -924,6 +925,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Saveable, 
      * (If we do that in the base class, the derived class won't
      * get a chance to set default values.)
      */
+    @Override
     public synchronized void load() {
         XmlFile file = getConfigFile();
         if (!file.exists())

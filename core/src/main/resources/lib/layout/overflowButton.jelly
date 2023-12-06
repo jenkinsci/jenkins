@@ -64,6 +64,8 @@ THE SOFTWARE.
     ${attrs.text}
   </button>
   <template>
-    <d:invokeBody />
+    <div class="jenkins-dropdown">
+      <d:invokeBody />
+    </div>
   </template>
 </j:jelly>
