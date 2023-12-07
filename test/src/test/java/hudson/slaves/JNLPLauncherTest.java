@@ -158,6 +158,7 @@ public class JNLPLauncherTest {
         ArgumentListBuilder args = new ArgumentListBuilder();
         args.add(new File(new File(System.getProperty("java.home")), "bin/java").getPath(), "-jar");
         args.add(Which.jarFile(Launcher.class).getAbsolutePath());
+        // TODO deprecated mode
         args.add("-jnlpUrl", j.getURL() + "computer/" + c.getName() + "/jenkins-agent.jnlp");
 
         if (c instanceof SlaveComputer) {

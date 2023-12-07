@@ -38,28 +38,6 @@ THE SOFTWARE.
       <j:set var="copy_java_cmd_unix" value="java -jar agent.jar -url ${jenkinsURL} ${it.launcher.getRemotingOptionsUnix(it)}${it.launcher.getWorkDirOptions(it)}" />
       <j:set var="copy_java_cmd_windows" value="java -jar agent.jar -url ${jenkinsURL} ${it.launcher.getRemotingOptionsWindows(it)}${it.launcher.getWorkDirOptions(it)}" />
       <j:if test="${h.hasPermission(it, it.CONNECT)}">
-          <j:choose>
-            <j:when test="${it.ACL.hasPermission(app.ANONYMOUS, it.CONNECT)}">
-                <h3>
-                  ${%slaveAgent.cli.run} (Unix)
-                  <l:copyButton text="${copy_agent_jar_unix};${copy_java_cmd_unix}"/>
-                </h3>
-<pre>
-${copy_agent_jar_unix}
-${copy_java_cmd_unix}
-</pre>
-
-                <h3>
-                  ${%slaveAgent.cli.run} (Windows)
-                  <l:copyButton text="${copy_agent_jar_windows} &amp; ${copy_java_cmd_windows}"/>
-                </h3>
-<pre>
-${copy_agent_jar_windows}
-${copy_java_cmd_windows}
-</pre>
-
-            </j:when>
-            <j:otherwise>
                 <j:set var="copy_java_cmd_secret_unix" value="java -jar agent.jar -url ${jenkinsURL} -secret ${it.jnlpMac} ${it.launcher.getRemotingOptionsUnix(it)}${it.launcher.getWorkDirOptions(it)}" />
                 <j:set var="copy_java_cmd_secret_windows" value="java -jar agent.jar -url ${jenkinsURL} -secret ${it.jnlpMac} ${it.launcher.getRemotingOptionsWindows(it)}${it.launcher.getWorkDirOptions(it)}" />
                 <h3>
@@ -104,8 +82,11 @@ ${copy_secret_to_file}
 ${copy_agent_jar_windows}
 ${copy_java_cmd_secret2_windows}
 </pre>
-            </j:otherwise>
-          </j:choose>
+          <j:if test="${!it.configured}">
+              <p>
+                  ${%commonOptions}
+              </p>
+          </j:if>
           <p>
             ${%powerShell.cli.curl}
           </p>
