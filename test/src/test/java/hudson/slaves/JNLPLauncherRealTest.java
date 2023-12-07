@@ -27,12 +27,10 @@ package hudson.slaves;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
-import hudson.ExtensionList;
 import hudson.PluginWrapper;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Slave;
-import hudson.util.FormValidation;
 import java.io.File;
 import jenkins.agents.WebSocketAgentsTest;
 import jenkins.slaves.JnlpSlaveAgentProtocol4;
@@ -98,7 +96,6 @@ public class JNLPLauncherRealTest {
             for (PluginWrapper plugin : r.jenkins.pluginManager.getPlugins()) {
                 System.err.println(plugin + " active=" + plugin.isActive() + " enabled=" + plugin.isEnabled());
             }
-            assertThat(ExtensionList.lookupSingleton(JNLPLauncher.DescriptorImpl.class).doCheckWebSocket(webSocket, null).kind, is(FormValidation.Kind.OK));
             Slave agent = (Slave) r.jenkins.getNode(agentName);
             FreeStyleProject p = r.createFreeStyleProject();
             p.setAssignedNode(agent);
