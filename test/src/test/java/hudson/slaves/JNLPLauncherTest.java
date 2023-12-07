@@ -50,6 +50,7 @@ import jenkins.security.SlaveToMasterCallable;
 import jenkins.slaves.RemotingWorkDirSettings;
 import org.htmlunit.Page;
 import org.htmlunit.html.HtmlPage;
+import static org.junit.Assert.assertFalse;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -112,10 +113,8 @@ public class JNLPLauncherTest {
     }
 
     @Test
-    @Issue("JENKINS-44112")
-    @SuppressWarnings("deprecation")
     public void testDefaults() {
-        assertTrue("Work directory should be disabled for agents created via old API", new JNLPLauncher().getWorkDirSettings().isDisabled());
+        assertFalse("Work directory enabled by default", new JNLPLauncher().getWorkDirSettings().isDisabled());
     }
 
     @Test
