@@ -42,7 +42,6 @@ THE SOFTWARE.
             <j:when test="${it.ACL.hasPermission(app.ANONYMOUS, it.CONNECT)}">
                 <h3>
                   ${%slaveAgent.cli.run} (Unix)
-                  <l:copyButton text="${copy_agent_jar_unix} ; ${copy_java_cmd}"/>
                   <l:copyButton text="${copy_agent_jar_unix} ; ${copy_java_cmd_unix}"/>
                 </h3>
 <pre>
