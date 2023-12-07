@@ -48,9 +48,11 @@ jobs:
         id: generate-token
         with:
           app_id: ${{ secrets.JENKINS_CHANGELOG_UPDATER_APP_ID }}
+          installation_retrieval_mode: repository
+          installation_retrieval_payload: jenkins-infra/jenkins.io
           private_key: ${{ secrets.JENKINS_CHANGELOG_UPDATER_PRIVATE_KEY }}
           repositories: >-
-            ["jenkins-infra/jenkins.io"]
+            ["jenkins.io"]
       - name: Check out
         uses: actions/checkout@v4
         with:
