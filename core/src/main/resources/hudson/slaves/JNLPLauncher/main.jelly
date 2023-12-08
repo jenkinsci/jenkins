@@ -82,7 +82,7 @@ ${copy_secret_to_file}
 ${copy_agent_jar_windows}
 ${copy_java_cmd_secret2_windows}
 </pre>
-          <j:if test="${!it.configured}">
+          <j:if test="${!it.launcher.configured}">
               <p>
                   ${%commonOptions}
               </p>
