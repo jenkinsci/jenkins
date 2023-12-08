@@ -35,8 +35,10 @@ import hudson.model.Computer;
 import hudson.model.Descriptor;
 import hudson.model.TaskListener;
 import jenkins.model.Jenkins;
+import jenkins.model.identity.InstanceIdentityProvider;
 import jenkins.slaves.RemotingWorkDirSettings;
 import jenkins.util.SystemProperties;
+import jenkins.websocket.WebSockets;
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
@@ -274,6 +276,21 @@ public class JNLPLauncher extends ComputerLauncher {
             // This property is included only for JNLPLauncher by default.
             // Causes JENKINS-45895 in the case of includes otherwise
             return DescriptorImpl.class.equals(getClass());
+        }
+
+        @Restricted(DoNotUse.class)
+        public boolean isTcpSupported() {
+            return Jenkins.get().getTcpSlaveAgentListener() != null;
+        }
+
+        @Restricted(DoNotUse.class)
+        public boolean isInstanceIdentityInstalled() {
+            return InstanceIdentityProvider.RSA.getCertificate() != null && InstanceIdentityProvider.RSA.getPrivateKey() != null;
+        }
+
+        @Restricted(DoNotUse.class)
+        public boolean isWebSocketSupported() {
+            return WebSockets.isSupported();
         }
 
     }

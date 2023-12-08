@@ -25,12 +25,6 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <j:choose>
-    <j:when test="${!it.launcher.webSocket and app.slaveAgentPort == -1}">
-      <div class="error">
-        ${%slaveAgentPort.disabled}
-        <l:isAdmin><a href="${rootURL}/configureSecurity">${%configure.link.text}</a>.</l:isAdmin>
-      </div>
-    </j:when>
     <j:when test="${it.offline and !it.temporarilyOffline}">
       <j:set var="jenkinsURL" value="${h.inferHudsonURL(request)}"/>
       <j:set var="copy_agent_jar_unix" value="curl -sO ${jenkinsURL}jnlpJars/agent.jar" />
@@ -85,6 +79,23 @@ ${copy_java_cmd_secret2_windows}
           <j:if test="${!it.launcher.configured}">
               <p>
                   ${%commonOptions}
+              </p>
+          </j:if>
+          <j:if test="${!it.launcher.descriptor.tcpSupported}">
+              <p>
+                  ${%tcp-port-disabled}
+                  <l:isAdmin><a href="${rootURL}/manage/configureSecurity/">${%configure.link.text}</a>.</l:isAdmin>
+              </p>
+          </j:if>
+          <j:if test="${!it.launcher.descriptor.instanceIdentityInstalled}">
+              <p>
+                  ${%instance-identity-missing}
+                  <l:isAdmin><a href="${rootURL}/manage/pluginManager/available">${%install-instance-identity}</a>.</l:isAdmin>
+              </p>
+          </j:if>
+          <j:if test="${!it.launcher.descriptor.webSocketSupported}">
+              <p>
+                  ${%web-socket-unsupported}
               </p>
           </j:if>
           <p>
