@@ -90,6 +90,7 @@ THE SOFTWARE.
       <div class="jenkins-jobs-list jenkins-mobile-show">
         <j:forEach var="job" items="${jobs}">
           <j:set var="relativeLinkToJob" value="${h.getRelativeLinkTo(job)}"/>
+          <j:set var="jobBaseUrl" value="${relativeLinkToJob.substring(0, relativeLinkToJob.length() - job.shortUrl.length())}"/>
           <div class="jenkins-jobs-list__item">
             <a class="jenkins-jobs-list__item__details" href="${jobBaseUrl}${job.shortUrl}">
               <div class="jenkins-jobs-list__item__icons">
