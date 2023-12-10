@@ -23,9 +23,9 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:d="jelly:define">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define">
     <st:documentation>
-
+        Allows for custom components inside of dropdowns
     </st:documentation>
 
     <template data-dropdown-type="CUSTOM">

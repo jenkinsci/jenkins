@@ -26,11 +26,13 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout">
     <st:documentation>
         <st:attribute name="icon">
-            Optional icon to be used for the button, defaults to three dots
+            Icon to be used for the menu item
         </st:attribute>
         <st:attribute name="text">
-            Optional text to be displayed on the button
+            Text to be displayed on the menu item
         </st:attribute>
+
+        Displays the contents as a submenu to a menu item
     </st:documentation>
 
     <j:set var="icon">

@@ -24,9 +24,5 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
-    <st:documentation>
-
-    </st:documentation>
-
     <template data-dropdown-type="SEPARATOR" />
 </j:jelly>

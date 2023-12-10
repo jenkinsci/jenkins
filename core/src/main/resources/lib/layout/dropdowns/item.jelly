@@ -26,13 +26,16 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
     <st:documentation>
         <st:attribute name="icon">
-            Optional icon to be used for the button, defaults to three dots
+            Icon to be used for the menu item
         </st:attribute>
         <st:attribute name="text">
-            Optional text to be displayed on the button
+            Text to be displayed on the menu item
         </st:attribute>
         <st:attribute name="id">
-            Optional ID for the button
+            Optional ID for the menu item
+        </st:attribute>
+        <st:attribute name="href">
+            Optional HREF for the menu item
         </st:attribute>
     </st:documentation>
 
@@ -42,8 +45,8 @@ THE SOFTWARE.
 
     <template data-dropdown-type="ITEM"
               data-dropdown-id="${attrs.id}"
+              data-dropdown-icon="${icon}"
               data-dropdown-text="${attrs.text}"
               data-dropdown-href="${attrs.href}"
-              data-dropdown-icon="${icon}"
     />
 </j:jelly>
