@@ -67,13 +67,13 @@ THE SOFTWARE.
         <!-- RequireUpperBoundDeps between checks-api, plugin-util-api, and font-awesome-api -->
         <groupId>io.jenkins.plugins</groupId>
         <artifactId>commons-text-api</artifactId>
-        <version>1.11.0-94.v3e1f4a_926e49</version>
+        <version>1.11.0-95.v22a_d30ee5d36</version>
       </dependency>
       <dependency>
         <!-- RequireUpperBoundDeps between bootstrap5-api and echarts-api -->
         <groupId>io.jenkins.plugins</groupId>
         <artifactId>font-awesome-api</artifactId>
-        <version>6.4.2-1</version>
+        <version>6.5.1-1</version>
       </dependency>
       <dependency>
         <groupId>io.jenkins.plugins</groupId>
@@ -84,6 +84,11 @@ THE SOFTWARE.
         <groupId>io.jenkins.plugins</groupId>
         <artifactId>javax-activation-api</artifactId>
         <version>1.2.0-6</version>
+      </dependency>
+      <dependency>
+        <groupId>io.jenkins.plugins</groupId>
+        <artifactId>plugin-util-api</artifactId>
+        <version>3.6.0</version>
       </dependency>
       <dependency>
         <groupId>org.jenkins-ci.plugins</groupId>
@@ -100,7 +105,12 @@ THE SOFTWARE.
         <!-- requireUpperBoundDeps via matrix-project and junit -->
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>script-security</artifactId>
-        <version>1281.v22fb_899df1a_e</version>
+        <version>1294.v99333c047434</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jenkins-ci.plugins.workflow</groupId>
+        <artifactId>workflow-api</artifactId>
+        <version>1283.v99c10937efcb_</version>
       </dependency>
       <dependency>
         <!-- Required by plugin-util-api -->
@@ -121,7 +131,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>2105.v5a_7b_f123294f</version>
+      <version>2129.v09f309d2339c</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
