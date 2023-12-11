@@ -25,34 +25,36 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
   <st:documentation>
     Generates a link to a build.
-    <st:attribute name="job" type="hudson.model.Job">
-      Job object to be displayed. Can be omitted if you don't want to link.
-    </st:attribute>
-    <st:attribute name="jobName" type="String">
-      Name of the job. Can be omitted if you don't want to show a name.
-    </st:attribute>
-    <st:attribute name="number" type="int" use="required">
-      Build number to link to.
-    </st:attribute>
-    <st:attribute name="href" type="String">
-      Link target. If missing, the top page of the build.
-    </st:attribute>
+    <st:attribute name="job" type="hudson.model.Job">Job object to be displayed. Can be omitted if you don't want to link.</st:attribute>
+    <st:attribute name="jobName" type="String">Name of the job. Can be omitted if you don't want to show a name.</st:attribute>
+    <st:attribute name="number" type="int" use="required">Build number to link to.</st:attribute>
+    <st:attribute name="href" type="String">Link target. If missing, the top page of the build.</st:attribute>
   </st:documentation>
-  <j:set var="jobName_" value="${h.appendSpaceIfNotNull(jobName)}"/>
+  <j:set var="jobName_" value="${h.appendSpaceIfNotNull(jobName)}" />
   <j:choose>
     <j:when test="${job==null}">
-      ${jobName_}#<!-- -->${number}
+      ${jobName_}#
+      <!-- -->
+      ${number}
     </j:when>
     <j:otherwise>
       <j:set var="r" value="${job.getBuildByNumber(number)}" />
       <j:choose>
         <j:when test="${r==null}">
           <a href="${rootURL}/${job.url}" class="model-link">${jobName}</a>
-          #<!-- -->${number}
+          #
+          <!-- -->
+          ${number}
         </j:when>
         <j:otherwise>
           <a href="${attrs.href ?: rootURL+'/'+r.url}" class="model-link">
-          <l:icon alt="${r.iconColor.description}" src="symbol-status-${r.iconColor.iconName}" class="icon-sm" style="margin-left: 0; position: relative; top: -0.1rem;"/><span class="jenkins-icon-adjacent">${jobName_}#<!-- -->${number}</span></a>
+            <l:icon alt="${r.iconColor.description}" src="symbol-status-${r.iconColor.iconName}" class="icon-sm" style="margin-left: 0; position: relative; top: -0.1rem" />
+            <span class="jenkins-icon-adjacent">
+              ${jobName_}#
+              <!-- -->
+              ${number}
+            </span>
+          </a>
         </j:otherwise>
       </j:choose>
     </j:otherwise>
