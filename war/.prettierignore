@@ -26,3 +26,6 @@ src/main/scss/_bootstrap.scss
 
 # Incorrectly flagging forwarding slashes in regex
 ../.github/renovate.json
+
+# Breaks the file
+../core/src/main/resources/hudson/rss20.jelly

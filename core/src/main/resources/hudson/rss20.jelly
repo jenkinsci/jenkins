@@ -24,24 +24,22 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
-  <l:view contentType="text/xml;charset=UTF-8">
-    <!-- No whitespace before xml header: -->
-    &lt;?xml version="1.0" encoding="UTF-8"?&gt;
+  <l:view contentType="text/xml;charset=UTF-8"><!-- No whitespace before xml header: -->&lt;?xml version="1.0" encoding="UTF-8"?&gt;
     <!-- RSS 2.0 feed. See http://cyber.law.harvard.edu/rss/rss.html for the format -->
     <rss version="2.0">
       <channel>
         <title>${title}</title>
-        <link ${app.rootUrl}${url} />
+        <link>${app.rootUrl}${url}</link>
         <description>${title}</description>
 
-        <j:forEach var="e" items="${entries}">
+        <j:forEach var="e" items="${entries}" >
           <item>
             <title>${adapter.getEntryTitle(e)}</title>
-            <link ${app.rootUrl}${h.encode(adapter.getEntryUrl(e))} />
+            <link>${app.rootUrl}${h.encode(adapter.getEntryUrl(e))}</link>
             <guid isPermaLink="false">${adapter.getEntryID(e)}</guid>
             <pubDate>${h.rfc822Date(adapter.getEntryTimestamp(e))}</pubDate>
-            <author><st:out value="${adapter.getEntryAuthor(e)}" /></author>
-            <j:set var="desc" value="${adapter.getEntryDescription(e)}" />
+            <author><st:out value="${adapter.getEntryAuthor(e)}"/></author>
+            <j:set var="desc" value="${adapter.getEntryDescription(e)}"/>
             <j:if test="${desc!=null}">
               <description>${desc}</description>
             </j:if>
