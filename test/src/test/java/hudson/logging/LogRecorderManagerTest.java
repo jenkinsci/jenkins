@@ -26,7 +26,9 @@ package hudson.logging;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -34,7 +36,10 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
+import hudson.XmlFile;
 import hudson.model.Computer;
+import hudson.model.Saveable;
+import hudson.model.listeners.SaveableListener;
 import hudson.remoting.VirtualChannel;
 import hudson.util.FormValidation;
 import java.io.IOException;
@@ -52,6 +57,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.Url;
 
 /**
@@ -202,6 +208,34 @@ public class LogRecorderManagerTest {
 
         assertThat(log.logRecorders.size(), is(1));
         assertThat(log.getRecorders().size(), is(1));
+    }
+
+    @Test
+    public void deletingLogRecorder() throws IOException {
+        LogRecorderManager log = j.jenkins.getLog();
+        assertThat(log.getRecorders(), empty());
+        LogRecorder logRecorder = new LogRecorder("dummy");
+        logRecorder.getLoggers().add(new LogRecorder.Target("dummy", Level.ALL));
+        log.getRecorders().add(logRecorder);
+        logRecorder.save();
+        assertThat(log.getRecorders(), hasSize(1));
+        logRecorder.delete();
+        assertThat(log.getRecorders(), empty());
+        assertTrue(DeletingLogRecorderListener.recordDeletion);
+    }
+
+    @TestExtension("deletingLogRecorder")
+    public static class DeletingLogRecorderListener extends SaveableListener {
+        private static boolean recordDeletion;
+
+        @Override
+        public void onChange(Saveable o, XmlFile file) {
+            if (o instanceof LogRecorder && "dummy".equals(((LogRecorder) o).getName())) {
+                if (!file.exists()) {
+                    recordDeletion = true;
+                }
+            }
+        }
     }
 
     private static final class Log extends MasterToSlaveCallable<Boolean, Error> {

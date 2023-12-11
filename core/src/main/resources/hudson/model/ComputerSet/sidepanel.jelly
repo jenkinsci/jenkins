@@ -34,7 +34,6 @@ THE SOFTWARE.
               title="${%Nodes}"/>
       <l:task href="../cloud/" icon="symbol-cloud" permission="${app.SYSTEM_READ}"
               title="${app.hasPermission(app.ADMINISTER) ? '%Clouds' : '%View Clouds'}"/>
-      <l:task href="configure" icon="symbol-settings" permissions="${app.MANAGE_AND_SYSTEM_READ}" title="${%Node Monitoring}"/>
     </l:tasks>
     <j:forEach var="w" items="${it.widgets}">
       <st:include it="${w}" page="index" />

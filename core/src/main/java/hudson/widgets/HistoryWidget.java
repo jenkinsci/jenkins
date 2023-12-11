@@ -32,6 +32,7 @@ import hudson.model.Job;
 import hudson.model.ModelObject;
 import hudson.model.Queue;
 import hudson.model.Run;
+import hudson.util.AlternativeUiTextProvider;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -61,6 +62,12 @@ import org.kohsuke.stapler.StaplerResponse;
  * @author Kohsuke Kawaguchi
  */
 public class HistoryWidget<O extends ModelObject, T> extends Widget {
+
+    /**
+     * Replaceable title for describing the kind of tasks this history shows. Defaults to "Build History".
+     */
+    public static final AlternativeUiTextProvider.Message<HistoryWidget<?, ?>> DISPLAY_NAME = new AlternativeUiTextProvider.Message<>();
+
     /**
      * The given data model of records. Newer ones first.
      */
@@ -115,7 +122,7 @@ public class HistoryWidget<O extends ModelObject, T> extends Widget {
      * Title of the widget.
      */
     public String getDisplayName() {
-        return Messages.BuildHistoryWidget_DisplayName();
+        return AlternativeUiTextProvider.get(DISPLAY_NAME, this, Messages.BuildHistoryWidget_DisplayName());
     }
 
     @Override

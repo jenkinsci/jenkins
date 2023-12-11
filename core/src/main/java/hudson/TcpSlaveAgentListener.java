@@ -314,6 +314,7 @@ public final class TcpSlaveAgentListener extends Thread {
                 if (header.startsWith("GET / ")) {
                     response = "HTTP/1.0 200 OK\r\n" +
                             "Content-Type: text/plain;charset=UTF-8\r\n" +
+                            "X-Content-Type-Options: nosniff\r\n" +
                             "\r\n" +
                             "Jenkins-Agent-Protocols: " + getAgentProtocolNames() + "\r\n" +
                             "Jenkins-Version: " + Jenkins.VERSION + "\r\n" +

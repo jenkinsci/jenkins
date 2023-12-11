@@ -43,6 +43,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.Writer;
@@ -108,6 +109,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
+import jenkins.model.Jenkins;
 import jenkins.util.MemoryReductionUtil;
 import jenkins.util.SystemProperties;
 import jenkins.util.io.PathRemover;
@@ -1856,6 +1858,20 @@ public class Util {
         return t;
     }
 
+    @Restricted(NoExternalUse.class)
+    public static void printRedirect(String contextPath, String redirectUrl, String message, PrintWriter out) {
+        out.printf(
+                "<html><head>" +
+                "<meta http-equiv='refresh' content='1;url=%1$s'/>" +
+                "<script id='redirect' data-redirect-url='%1$s' src='" +
+                contextPath + Jenkins.RESOURCE_PATH +
+                "/scripts/redirect.js'></script>" +
+                "</head>" +
+                "<body style='background-color:white; color:white;'>%n" +
+                "%2$s%n" +
+                "<!--%n", Functions.htmlAttributeEscape(redirectUrl), message);
+    }
+
     public static final FastDateFormat XS_DATETIME_FORMATTER = FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ss'Z'", new SimpleTimeZone(0, "GMT"));
 
     // Note: RFC822 dates must not be localized!
@@ -1926,5 +1942,30 @@ public class Util {
 
     private static PathRemover newPathRemover(@NonNull PathRemover.PathChecker pathChecker) {
         return PathRemover.newFilteredRobustRemover(pathChecker, DELETION_RETRIES, GC_AFTER_FAILED_DELETE, WAIT_BETWEEN_DELETION_RETRIES);
+    }
+
+    /**
+     * Returns SHA-256 Digest of input bytes
+     */
+    @Restricted(NoExternalUse.class)
+    public static byte[] getSHA256DigestOf(@NonNull byte[] input) {
+        try {
+                MessageDigest messageDigest = MessageDigest.getInstance("SHA-256");
+                messageDigest.update(input);
+                return messageDigest.digest();
+        } catch (NoSuchAlgorithmException noSuchAlgorithmException) {
+            throw new IllegalStateException("SHA-256 could not be instantiated, but is required to" +
+                    " be implemented by the language specification", noSuchAlgorithmException);
+        }
+    }
+
+    /**
+     * Returns Hex string of SHA-256 Digest of passed input
+     */
+    @Restricted(NoExternalUse.class)
+    public static String getHexOfSHA256DigestOf(byte[] input) throws IOException {
+        //get hex string of sha 256 of payload
+        byte[] payloadDigest = Util.getSHA256DigestOf(input);
+        return (payloadDigest != null) ? Util.toHexString(payloadDigest) : null;
     }
 }

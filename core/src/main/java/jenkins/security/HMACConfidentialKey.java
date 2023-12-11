@@ -98,6 +98,11 @@ public class HMACConfidentialKey extends ConfidentialKey {
     }
 
     private byte[] chop(byte[] mac) {
+        //don't shorten the mac code on FIPS mode
+        //if length supplied is less than original mac code length on FIPS, throw exception
+        if (FIPS140.useCompliantAlgorithms() && length < mac.length) {
+            throw new IllegalArgumentException("Supplied length can't be less than " + mac.length + " on FIPS mode");
+        }
         if (mac.length <= length)  return mac; // already too short
 
         byte[] b = new byte[length];

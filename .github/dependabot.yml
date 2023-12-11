@@ -58,7 +58,7 @@ updates:
         versions: [">=7.0.0"]
   - package-ecosystem: "maven"
     directory: "/"
-    target-branch: "stable-2.414"
+    target-branch: "stable-2.426"
     labels:
       - "into-lts"
       - "needs-justification"
