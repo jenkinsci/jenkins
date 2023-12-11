@@ -35,9 +35,7 @@ THE SOFTWARE.
 
     <l:main-panel>
       <h1>
-        <span class="icon-lg">
-          <l:icon src="${it.icon}" /> </span
-        >${it.caption} ${%System Information}
+        <span class="icon-lg"> <l:icon src="${it.icon}" /> </span>${it.caption} ${%System Information}
       </h1>
 
       <j:choose>

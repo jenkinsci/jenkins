@@ -39,7 +39,7 @@ THE SOFTWARE.
     href="${attrs.href}"
     style="
       $ {
-        attrs.href!=null? 'cursor:pointer' : null;
+        attrs.href!=null?'cursor:pointer' : null;
       }
     "
   >

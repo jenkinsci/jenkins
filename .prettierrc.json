@@ -7,7 +7,8 @@
       "options": {
         "parser": "html",
         "printWidth": 250,
-        "htmlWhitespaceSensitivity": "strict"
+        "htmlWhitespaceSensitivity": "strict",
+        "singleAttributePerLine": false
       }
     }
   ]
