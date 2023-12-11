@@ -1,4 +1,2 @@
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core">
-  ${%summary}
-</j:jelly>
+<j:jelly xmlns:j="jelly:core"> ${%summary} </j:jelly>

@@ -3,8 +3,6 @@
   <l:layout title="${it.displayName}">
     <st:include page="sidepanel.jelly" />
     <l:breadcrumb title="${%Already launched}" />
-    <l:main-panel>
-      The agent has been already launched.
-    </l:main-panel>
+    <l:main-panel> The agent has been already launched. </l:main-panel>
   </l:layout>
 </j:jelly>

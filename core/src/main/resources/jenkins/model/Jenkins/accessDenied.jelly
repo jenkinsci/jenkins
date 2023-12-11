@@ -31,7 +31,7 @@ THE SOFTWARE.
     <l:main-panel>
       <h1>${%Access Denied}</h1>
       <!-- TODO: message is not human readable. define a subclass -->
-      <p class="error"><st:out value="${exception.message}"/></p>
+      <p class="error"><st:out value="${exception.message}" /></p>
     </l:main-panel>
   </l:layout>
 </j:jelly>

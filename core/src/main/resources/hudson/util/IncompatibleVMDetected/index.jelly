@@ -30,13 +30,11 @@ THE SOFTWARE.
     <l:side-panel />
     <l:main-panel>
       <h1>${%Error}</h1>
-      <p>
-        ${%errorMessage}
-      </p>
+      <p> ${%errorMessage} </p>
 
       <h2>${%Detected JVM}</h2>
       <table>
-        <j:set var="prop" value="${it.systemProperties}"/>
+        <j:set var="prop" value="${it.systemProperties}" />
         <tr>
           <td>${%Vendor}</td>
           <td>: ${prop['java.vm.vendor']}</td>

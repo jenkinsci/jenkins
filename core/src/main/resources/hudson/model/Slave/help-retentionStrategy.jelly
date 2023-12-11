@@ -25,8 +25,6 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout">
   <l:ajax>
-    <div>
-      ${%Controls when Jenkins starts and stops this agent.}
-    </div>
+    <div> ${%Controls when Jenkins starts and stops this agent.} </div>
   </l:ajax>
 </j:jelly>

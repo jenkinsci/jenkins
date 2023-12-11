@@ -26,24 +26,20 @@ THE SOFTWARE.
   <div class="alert alert-warning">
     <l:isAdmin>
       <form method="post" action="${rootURL}/${it.url}/disable">
-        <f:submit value="${%Dismiss}"/>
+        <f:submit value="${%Dismiss}" />
       </form>
     </l:isAdmin>
     <j:set var="actionAnchor">
       <a href="${rootURL}/configure">${%actionUrlContent}</a>
     </j:set>
-  
+
     <j:choose>
-      <j:when test="${it.isUrlNull()}">
-        ${%urlIsNull}
-      </j:when>
-      <j:otherwise>
-        ${%urlIsInvalid}
-      </j:otherwise>
+      <j:when test="${it.isUrlNull()}"> ${%urlIsNull} </j:when>
+      <j:otherwise> ${%urlIsInvalid} </j:otherwise>
     </j:choose>
     <p />
     <l:isAdmin>
-      <j:out value="${%actionToTake(actionAnchor)}"/>
+      <j:out value="${%actionToTake(actionAnchor)}" />
     </l:isAdmin>
   </div>
 </j:jelly>

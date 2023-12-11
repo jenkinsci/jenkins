@@ -25,7 +25,7 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:f="/lib/form" xmlns:i="jelly:fmt" xmlns:st="jelly:stapler">
   <l:layout title="${%Java VM Crash Reports}">
-    <st:include page="sidepanel" it="${app}"/>
+    <st:include page="sidepanel" it="${app}" />
     <l:main-panel>
       <h1>${%Java VM Crash Reports}</h1>
 
@@ -35,24 +35,22 @@ THE SOFTWARE.
         <tr>
           <th>${%Name}</th>
           <th>${%Date}</th>
-          <th/>
+          <th />
         </tr>
         <j:forEach var="f" items="${it.files}" varStatus="idx">
           <tr>
-            <td style="padding-right:3em">
-              <l:icon class="icon-clipboard icon-lg" style="margin-right:1em"/>
-              <a href="files/${idx.index}/download/${f.name}">
-                ${f.path}
-              </a>
+            <td style="padding-right: 3em">
+              <l:icon class="icon-clipboard icon-lg" style="margin-right: 1em" />
+              <a href="files/${idx.index}/download/${f.name}"> ${f.path} </a>
             </td>
             <td data="${f.lastModified}">
-              <i:formatDate value="${f.lastModifiedDate}" type="both" dateStyle="medium" timeStyle="medium"/>
+              <i:formatDate value="${f.lastModifiedDate}" type="both" dateStyle="medium" timeStyle="medium" />
               <st:nbsp />
               (${%ago(f.timeSpanString)})
             </td>
             <td>
               <form method="post" action="files/${idx.index}/delete" name="${idx}">
-                <f:submit value="${%Delete}"/>
+                <f:submit value="${%Delete}" />
               </form>
             </td>
           </tr>

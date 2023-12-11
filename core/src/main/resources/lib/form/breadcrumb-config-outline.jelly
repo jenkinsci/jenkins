@@ -23,13 +23,9 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
-  <st:documentation> <![CDATA[
-    Adds one more in-page breadcrumb that jumps to sections in the page.
-    Put this tag right before <l:main-panel>
-    ]]>
-    <st:attribute name="title">
-      Optional title for this breadcrumb
-    </st:attribute>
+  <st:documentation>
+    <![CDATA[ Adds one more in-page breadcrumb that jumps to sections in the page. Put this tag right before <l:main-panel> ]]>
+    <st:attribute name="title"> Optional title for this breadcrumb </st:attribute>
   </st:documentation>
 
   <l:breadcrumb title="${attrs.title?:'%configuration'}" id="inpage-nav" />

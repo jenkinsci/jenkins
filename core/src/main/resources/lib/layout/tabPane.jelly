@@ -25,9 +25,7 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define">
   <st:documentation>
-    <st:attribute name="title" use="required">
-      The title of the tab
-    </st:attribute>
+    <st:attribute name="title" use="required"> The title of the tab </st:attribute>
     @since 2.385
   </st:documentation>
   <div class="jenkins-tab-pane">

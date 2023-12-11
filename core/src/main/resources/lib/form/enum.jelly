@@ -24,17 +24,10 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:f="/lib/form">
-  <st:documentation> <![CDATA[
-    Binds an enum field to a <select> element.
-    The body of this tag is evaluated for each enum value,
-    which is passed as 'it'.
-    ]]>
-    <st:attribute name="field">
-      Used for databinding. TBD.
-    </st:attribute>
-    <st:attribute name="default">
-      The name of the enum to set as default value for the first configuration.
-    </st:attribute>
+  <st:documentation>
+    <![CDATA[ Binds an enum field to a <select> element. The body of this tag is evaluated for each enum value, which is passed as 'it'. ]]>
+    <st:attribute name="field"> Used for databinding. TBD. </st:attribute>
+    <st:attribute name="default"> The name of the enum to set as default value for the first configuration. </st:attribute>
   </st:documentation>
 
   <j:if test="${attrs.field==null}">

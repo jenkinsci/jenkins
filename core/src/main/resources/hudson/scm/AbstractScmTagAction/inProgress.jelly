@@ -28,9 +28,7 @@ THE SOFTWARE.
     <st:include it="${it.run}" page="sidepanel.jelly" />
     <l:main-panel>
       <h1>Build ${it.run.displayName}</h1>
-      <p>
-        ${%Tagging is in progress:}
-      </p>
+      <p> ${%Tagging is in progress:} </p>
 
       <st:include page="log.jelly" />
     </l:main-panel>

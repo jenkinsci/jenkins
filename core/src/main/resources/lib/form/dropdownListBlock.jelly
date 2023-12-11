@@ -26,24 +26,12 @@ THE SOFTWARE.
   <st:documentation>
     Foldable block expanded when the corresponding item is selected in the drop-down list.
 
-    <st:attribute name="value" use="required"> <![CDATA[
-      value of the list item. set to <option value="...">
-    ]]>
-    </st:attribute>
-    <st:attribute name="title" use="required">
-      human readable text displayed for this list item.
-    </st:attribute>
-    <st:attribute name="selected" type="boolean">
-      is this value initially selected?
-    </st:attribute>
-    <st:attribute name="staplerClass">
-      provide hint for stapler data binding.
-      typically set to ${descriptor.clazz.name} if dropdownList is for a list of descriptors.
-    </st:attribute>
-    <st:attribute name="lazy"> <![CDATA[
-      If specified, the content of the dropdownListBlock will be rendered lazily when it first becomes visible.
-      The attribute value must be the variables to be captured. See the @capture of <renderOnDemand> tag.
-    ]]>
+    <st:attribute name="value" use="required"> <![CDATA[ value of the list item. set to <option value="..."> ]]> </st:attribute>
+    <st:attribute name="title" use="required"> human readable text displayed for this list item. </st:attribute>
+    <st:attribute name="selected" type="boolean"> is this value initially selected? </st:attribute>
+    <st:attribute name="staplerClass"> provide hint for stapler data binding. typically set to ${descriptor.clazz.name} if dropdownList is for a list of descriptors. </st:attribute>
+    <st:attribute name="lazy">
+      <![CDATA[ If specified, the content of the dropdownListBlock will be rendered lazily when it first becomes visible. The attribute value must be the variables to be captured. See the @capture of <renderOnDemand> tag. ]]>
     </st:attribute>
   </st:documentation>
   <j:choose>

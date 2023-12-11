@@ -40,7 +40,7 @@ THE SOFTWARE.
           <l:app-bar title="${%Clouds}">
             <l:isAdmin>
               <a class="jenkins-button jenkins-button--primary" href="new">
-                <l:icon src="symbol-add"/>
+                <l:icon src="symbol-add" />
                 ${%newCloud}
               </a>
             </l:isAdmin>
@@ -52,7 +52,7 @@ THE SOFTWARE.
                 <tr>
                   <th tooltip="${%Drag and drop cells to reorder}">${%Order}</th>
                   <th>${%Name}</th>
-                  <th/>
+                  <th />
                 </tr>
               </thead>
               <tbody class="with-drag-drop">
@@ -60,7 +60,7 @@ THE SOFTWARE.
                   <tr class="repeated-chunk" id="cloud_${cloud.name}">
                     <td data="${cloud.icon}" class="jenkins-table__cell--tight jenkins-table__icon">
                       <div class="jenkins-table__cell__button-wrapper dd-handle">
-                        <l:icon src="${cloud.iconClassName}" tooltip="${cloud.iconAltText}"/>
+                        <l:icon src="${cloud.iconClassName}" tooltip="${cloud.iconAltText}" />
                       </div>
                     </td>
                     <td>
@@ -70,7 +70,7 @@ THE SOFTWARE.
                     <td class="jenkins-table__cell--tight">
                       <div class="jenkins-table__cell__button-wrapper">
                         <a href="${it.getCloudUrl(request,app,cloud)}configure" class="jenkins-table__button">
-                          <l:icon src="symbol-settings"/>
+                          <l:icon src="symbol-settings" />
                         </a>
                       </div>
                     </td>
@@ -88,7 +88,7 @@ THE SOFTWARE.
         </j:when>
         <j:otherwise>
           <div class="empty-state-block">
-            <l:app-bar title="${%Clouds}"/>
+            <l:app-bar title="${%Clouds}" />
 
             <section class="empty-state-section">
               <j:choose>
@@ -102,18 +102,16 @@ THE SOFTWARE.
               <ul class="empty-state-section-list">
                 <j:if test="${it.cloudAvailable}">
                   <li class="content-block">
-                    <a href="new"
-                       class="content-block__link">
+                    <a href="new" class="content-block__link">
                       <span>${%newCloud}</span>
                       <span class="trailing-icon">
-                        <l:icon src="symbol-add"/>
+                        <l:icon src="symbol-add" />
                       </span>
                     </a>
                   </li>
                 </j:if>
                 <li class="content-block">
-                  <a href="${rootURL}/manage/pluginManager/available?filter=${it.cloudUpdateCenterCategoryLabel}"
-                     class="content-block__link">
+                  <a href="${rootURL}/manage/pluginManager/available?filter=${it.cloudUpdateCenterCategoryLabel}" class="content-block__link">
                     <span>${%installCloudPlugin}</span>
                     <span class="trailing-icon">
                       <l:icon src="symbol-plugins" />
@@ -121,9 +119,7 @@ THE SOFTWARE.
                   </a>
                 </li>
                 <li class="content-block">
-                  <a href="https://www.jenkins.io/redirect/distributed-builds"
-                     class="content-block__link"
-                     target="_blank" rel="noopener noreferrer">
+                  <a href="https://www.jenkins.io/redirect/distributed-builds" class="content-block__link" target="_blank" rel="noopener noreferrer">
                     <span>${%learnMoreDistributedBuilds}</span>
                     <span class="trailing-icon">
                       <l:icon src="symbol-help-circle" />

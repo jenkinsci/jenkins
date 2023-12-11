@@ -23,20 +23,14 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:x="jelly:xml">
-    <st:documentation>
-        <st:attribute name="handler" use="required">
-            Instance of jenkins.util.ProgressiveRendering.
-        </st:attribute>
-        <st:attribute name="callback" use="required">
-          Name of a global scope JavaScript function that takes one JSON-valued parameter which renders results as they come.
-        </st:attribute>
-        <st:attribute name="tooltip">
-            Optional tooltip for progress bar.
-        </st:attribute>
-    </st:documentation>
-    <st:adjunct includes="lib.layout.progressiveRendering.progressiveRendering"/>
-    <j:set var="id" value="${h.generateId()}"/>
-    <t:progressBar id="${id}" pos="0" tooltip="${tooltip ?: '%progressMessage'}"/>
-    <st:bind var="proxy" value="${handler}" />
-    <div class="progressive-rendering-information-holder" data-id="${id}" data-callback="${callback}" />
+  <st:documentation>
+    <st:attribute name="handler" use="required"> Instance of jenkins.util.ProgressiveRendering. </st:attribute>
+    <st:attribute name="callback" use="required"> Name of a global scope JavaScript function that takes one JSON-valued parameter which renders results as they come. </st:attribute>
+    <st:attribute name="tooltip"> Optional tooltip for progress bar. </st:attribute>
+  </st:documentation>
+  <st:adjunct includes="lib.layout.progressiveRendering.progressiveRendering" />
+  <j:set var="id" value="${h.generateId()}" />
+  <t:progressBar id="${id}" pos="0" tooltip="${tooltip ?: '%progressMessage'}" />
+  <st:bind var="proxy" value="${handler}" />
+  <div class="progressive-rendering-information-holder" data-id="${id}" data-callback="${callback}" />
 </j:jelly>

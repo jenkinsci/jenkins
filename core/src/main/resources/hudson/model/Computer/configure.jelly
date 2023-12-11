@@ -26,11 +26,10 @@ THE SOFTWARE.
   Config page
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
-         xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <l:layout permission="${it.EXTENDED_READ}" title="${%title(it.displayName)}">
     <j:set var="readOnlyMode" value="${!it.hasPermission(it.CONFIGURE)}" />
-    <st:include page="sidepanel.jelly"/>
+    <st:include page="sidepanel.jelly" />
     <l:breadcrumb title="${%Configure}" />
     <l:main-panel>
       <f:form method="post" action="configSubmit" name="config" class="jenkins-form">
@@ -38,9 +37,7 @@ THE SOFTWARE.
         <j:set var="descriptor" value="${instance.descriptor}" />
 
         <div class="jenkins-section">
-          <f:entry title="${%Name}" field="name">
-            <f:textbox value="${it.name}" /><!-- anomaly. instance[field] isn't what we want. -->
-          </f:entry>
+          <f:entry title="${%Name}" field="name"> <f:textbox value="${it.name}" /><!-- anomaly. instance[field] isn't what we want. --> </f:entry>
         </div>
 
         <!-- main body of the configuration -->
@@ -48,7 +45,7 @@ THE SOFTWARE.
 
         <j:if test="${h.hasPermission(it, it.CONFIGURE)}">
           <f:bottomButtonBar>
-            <f:submit value="${%Save}"/>
+            <f:submit value="${%Save}" />
           </f:bottomButtonBar>
         </j:if>
       </f:form>

@@ -28,31 +28,23 @@ THE SOFTWARE.
   <st:documentation>
     Button that copies text into the user's clipboard upon click
 
-    <st:attribute name="text" use="required">
-      Text to be copied into the clipboard.
-    </st:attribute>
-    <st:attribute name="message">
-      Confirmation message to be shown once the text is copied.
-    </st:attribute>
-    <st:attribute name="tooltip">
-      Tooltip of the button.
-    </st:attribute>
-    <st:attribute name="iconOnly">
-      Hides the background plate of the button
-    </st:attribute>
-    <st:attribute name="clazz">
-      Additional CSS class names
-    </st:attribute>
+    <st:attribute name="text" use="required"> Text to be copied into the clipboard. </st:attribute>
+    <st:attribute name="message"> Confirmation message to be shown once the text is copied. </st:attribute>
+    <st:attribute name="tooltip"> Tooltip of the button. </st:attribute>
+    <st:attribute name="iconOnly"> Hides the background plate of the button </st:attribute>
+    <st:attribute name="clazz"> Additional CSS class names </st:attribute>
   </st:documentation>
 
   <!-- 'copy-button' class is for backwards compatability -->
-  <button class="copy-button jenkins-button ${attrs.iconOnly == 'true' ? 'jenkins-button--tertiary' : ''} jenkins-copy-button ${attrs.clazz}"
-          text="${attrs.text}"
-          message="${attrs.message ?: '%Copied'}"
-          tooltip="${attrs.tooltip ?: '%Copy'}"
-          type="button">
+  <button
+    class="copy-button jenkins-button ${attrs.iconOnly == 'true' ? 'jenkins-button--tertiary' : ''} jenkins-copy-button ${attrs.clazz}"
+    text="${attrs.text}"
+    message="${attrs.message ?: '%Copied'}"
+    tooltip="${attrs.tooltip ?: '%Copy'}"
+    type="button"
+  >
     <span class="jenkins-copy-button__icon" />
   </button>
 
-  <st:adjunct includes="lib.layout.copyButton.copyButton"/>
+  <st:adjunct includes="lib.layout.copyButton.copyButton" />
 </j:jelly>

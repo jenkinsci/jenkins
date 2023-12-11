@@ -23,73 +23,56 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:x="jelly:xml" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
-         xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+<j:jelly xmlns:j="jelly:core" xmlns:x="jelly:xml" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <st:documentation>
     Renders a list of jobs and their key information.
 
-    <st:attribute name="jobs" use="required" trim="Collection">
-      Items to show.
-    </st:attribute>
-    <st:attribute name="useFullName" use="optional" type="boolean">
-      May be interpreted by columns to display the full name of a job.
-    </st:attribute>
-    <st:attribute name="jobBaseUrl" type="String">
-      Deprecated. Using this attribute has no effect.
-    </st:attribute>
-    <st:attribute name="showViewTabs" use="optional" type="boolean">
-      If the caller rendered a view tabes, set this attribute so that CSS is adjusted accordingly.
-    </st:attribute>
-    <st:attribute name="views" type="Collection&lt;View>">
-      If non-null, render nested views.
-    </st:attribute>
-    <st:attribute name="indenter" type="hudson.Indenter">
-      Optional Indenter instance used to indent items.
-    </st:attribute>
-    <st:attribute name="columnExtensions" type="Collection&lt;hudson.views.ListViewColumn>">
-      List view columns to render. If omitted, the default ones from ListView.getDefaultColumns() are used.
-    </st:attribute>
-    <st:attribute name="itemGroup" use="optional" type="hudson.model.ItemGroup">
-      The containing group, for purposes of name calculation.
-    </st:attribute>
+    <st:attribute name="jobs" use="required" trim="Collection"> Items to show. </st:attribute>
+    <st:attribute name="useFullName" use="optional" type="boolean"> May be interpreted by columns to display the full name of a job. </st:attribute>
+    <st:attribute name="jobBaseUrl" type="String"> Deprecated. Using this attribute has no effect. </st:attribute>
+    <st:attribute name="showViewTabs" use="optional" type="boolean"> If the caller rendered a view tabes, set this attribute so that CSS is adjusted accordingly. </st:attribute>
+    <st:attribute name="views" type="Collection&lt;View>"> If non-null, render nested views. </st:attribute>
+    <st:attribute name="indenter" type="hudson.Indenter"> Optional Indenter instance used to indent items. </st:attribute>
+    <st:attribute name="columnExtensions" type="Collection&lt;hudson.views.ListViewColumn>"> List view columns to render. If omitted, the default ones from ListView.getDefaultColumns() are used. </st:attribute>
+    <st:attribute name="itemGroup" use="optional" type="hudson.model.ItemGroup"> The containing group, for purposes of name calculation. </st:attribute>
   </st:documentation>
 
-  <t:setIconSize/>
+  <t:setIconSize />
   <div class="dashboard">
     <j:if test="${columnExtensions==null}">
-        <j:invokeStatic var="columnExtensions" className="hudson.model.ListView" method="getDefaultColumns"/>
+      <j:invokeStatic var="columnExtensions" className="hudson.model.ListView" method="getDefaultColumns" />
     </j:if>
 
     <j:if test="${!empty(jobs) or !empty(attrs.views)}">
       <!-- the caller can inject a tab bar here -->
       <div id="projectstatus-tabBar">
-        <d:invokeBody/>
+        <d:invokeBody />
       </div>
 
       <div class="jenkins-mobile-hide">
         <table id="projectstatus" class="jenkins-table ${iconSize == '16x16' ? 'jenkins-table--small' : iconSize == '24x24' ? 'jenkins-table--medium' : ''} sortable">
           <thead>
-          <tr>
-            <j:forEach var="col" items="${columnExtensions}">
-              <j:if test="${col.class.simpleName.equals('BuildButtonColumn')}">
-                <j:set var="buildButtonColumn" value="${col}" />
-              </j:if>
-              <st:include page="columnHeader.jelly" it="${col}" />
-            </j:forEach>
-          </tr>
+            <tr>
+              <j:forEach var="col" items="${columnExtensions}">
+                <j:if test="${col.class.simpleName.equals('BuildButtonColumn')}">
+                  <j:set var="buildButtonColumn" value="${col}" />
+                </j:if>
+                <st:include page="columnHeader.jelly" it="${col}" />
+              </j:forEach>
+            </tr>
           </thead>
 
           <j:forEach var="job" items="${jobs}">
-            <j:set var="relativeLinkToJob" value="${h.getRelativeLinkTo(job)}"/>
-            <t:projectViewRow jobBaseUrl="${relativeLinkToJob.substring(0, relativeLinkToJob.length() - job.shortUrl.length())}"/>
+            <j:set var="relativeLinkToJob" value="${h.getRelativeLinkTo(job)}" />
+            <t:projectViewRow jobBaseUrl="${relativeLinkToJob.substring(0, relativeLinkToJob.length() - job.shortUrl.length())}" />
           </j:forEach>
         </table>
-        <t:iconSize><t:rssBar/></t:iconSize>
+        <t:iconSize><t:rssBar /></t:iconSize>
       </div>
 
       <div class="jenkins-jobs-list jenkins-mobile-show">
         <j:forEach var="job" items="${jobs}">
-          <j:set var="relativeLinkToJob" value="${h.getRelativeLinkTo(job)}"/>
+          <j:set var="relativeLinkToJob" value="${h.getRelativeLinkTo(job)}" />
           <div class="jenkins-jobs-list__item">
             <a class="jenkins-jobs-list__item__details" href="${jobBaseUrl}${job.shortUrl}">
               <div class="jenkins-jobs-list__item__icons">
@@ -106,11 +89,9 @@ THE SOFTWARE.
               <div class="jenkins-jobs-list__item__details__text">
                 <p class="jenkins-jobs-list__item__label">${job.displayName}</p>
                 <div class="jenkins-jobs-list__item__description">
-                  <j:set var="lastBuild" value="${job.lastBuild}"/>
+                  <j:set var="lastBuild" value="${job.lastBuild}" />
                   <j:if test="${lastBuild != null}">
-                    <span>
-                      ${%Description(lastBuild.timestampString, lastBuild.durationString)}
-                    </span>
+                    <span> ${%Description(lastBuild.timestampString, lastBuild.durationString)} </span>
                   </j:if>
 
                   <j:forEach var="col" items="${columnExtensions}">

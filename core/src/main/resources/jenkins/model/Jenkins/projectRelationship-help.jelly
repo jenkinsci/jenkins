@@ -29,19 +29,13 @@ THE SOFTWARE.
     <l:breadcrumb title="${%Title}" />
     <l:main-panel>
       <h1>${%Title}</h1>
-      <p>
-        ${%body}
-      </p>
-      <p>
-        ${%For this feature to work, the following conditions need to be met:}
-      </p>
+      <p> ${%body} </p>
+      <p> ${%For this feature to work, the following conditions need to be met:} </p>
       <ol>
         <li>${%The upstream project records the fingerprints of its build artifacts.}</li>
         <li>${%The downstream project records the fingerprints of the upstream files it uses.}</li>
       </ol>
-      <p>
-        ${%This allows Jenkins to correlate two projects.}
-      </p>
+      <p> ${%This allows Jenkins to correlate two projects.} </p>
     </l:main-panel>
   </l:layout>
 </j:jelly>

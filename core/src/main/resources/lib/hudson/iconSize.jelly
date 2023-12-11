@@ -23,22 +23,17 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:x="jelly:xml" xmlns:st="jelly:stapler" xmlns:d="jelly:define" 
-         xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+<j:jelly xmlns:j="jelly:core" xmlns:x="jelly:xml" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <div class="jenkins-icon-size">
     <d:taglib uri="local">
       <d:tag name="iconSizeLink">
         <j:choose>
           <j:when test="${sz==iconSize}">
-            <li class="jenkins-icon-size__items-item" tooltip="${title}">
-              ${title.charAt(0)}<span class="jenkins-visually-hidden">${title.substring(1)}</span>
-            </li>
+            <li class="jenkins-icon-size__items-item" tooltip="${title}"> ${title.charAt(0)}<span class="jenkins-visually-hidden">${title.substring(1)}</span> </li>
           </j:when>
           <j:otherwise>
             <li>
-              <a class="jenkins-button jenkins-button--tertiary" href="${rootURL}/iconSize?${sz}" tooltip="${title}">
-                ${title.charAt(0)}<span class="jenkins-visually-hidden">${title.substring(1)}</span>
-              </a>
+              <a class="jenkins-button jenkins-button--tertiary" href="${rootURL}/iconSize?${sz}" tooltip="${title}"> ${title.charAt(0)}<span class="jenkins-visually-hidden">${title.substring(1)}</span> </a>
             </li>
           </j:otherwise>
         </j:choose>

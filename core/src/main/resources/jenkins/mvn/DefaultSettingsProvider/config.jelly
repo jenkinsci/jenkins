@@ -23,5 +23,4 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
-</j:jelly>
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form"> </j:jelly>

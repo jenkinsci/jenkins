@@ -30,16 +30,12 @@ THE SOFTWARE.
     <l:main-panel>
       <j:choose>
         <j:when test="${!it.installed}">
-          <h1>
-            ${%Install as Windows Service}
-          </h1>
+          <h1> ${%Install as Windows Service} </h1>
 
           <p>${%installBlurb}</p>
 
           <f:form action="doInstall" method="post" name="install">
-            <f:entry title="${%Installation Directory}">
-              <f:textbox name="dir" value="${app.rootDir}" /><!-- checkUrl="'/install/checkDir?value='+encodeURIComponent(this.value)" -->
-            </f:entry>
+            <f:entry title="${%Installation Directory}"> <f:textbox name="dir" value="${app.rootDir}" /><!-- checkUrl="'/install/checkDir?value='+encodeURIComponent(this.value)" --> </f:entry>
             <f:block>
               <f:submit value="${%Install}" />
             </f:block>
@@ -49,7 +45,7 @@ THE SOFTWARE.
         <!-- already installed -->
         <j:otherwise>
           <h1>
-            <l:icon class="icon-blue icon-xlg"/>
+            <l:icon class="icon-blue icon-xlg" />
             ${%Installation Complete}
           </h1>
 

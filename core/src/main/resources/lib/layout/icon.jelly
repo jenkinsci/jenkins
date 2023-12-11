@@ -27,43 +27,31 @@ THE SOFTWARE.
   <st:documentation>
     @since 1.576
 
-    <st:attribute name="src" use="optional">
-      Icon source
-      Supports Jenkins Symbols (e.g. 'symbol-search')
-      Supports path to bitmap image
-      Only relevant if the 'class' attribute is NOT specified.
-    </st:attribute>
+    <st:attribute name="src" use="optional"> Icon source Supports Jenkins Symbols (e.g. 'symbol-search') Supports path to bitmap image Only relevant if the 'class' attribute is NOT specified. </st:attribute>
 
-    <st:attribute name="class" use="optional">
-      The icon class specification e.g. 'icon-help icon-sm', 'icon-blue icon-md', 'icon-blue-anime icon-xlg'.
-    </st:attribute>
+    <st:attribute name="class" use="optional"> The icon class specification e.g. 'icon-help icon-sm', 'icon-blue icon-md', 'icon-blue-anime icon-xlg'. </st:attribute>
 
-    <st:attribute name="id">
-      ID of the icon element. Since 2.360.
-    </st:attribute>
+    <st:attribute name="id"> ID of the icon element. Since 2.360. </st:attribute>
 
     <st:attribute name="onclick" deprecated="true">onclick handler. Deprecated; assign an ID and look up the element that way to attach event handlers.</st:attribute>
     <st:attribute name="title" deprecated="true">title, deprecated use tooltip instead, or htmlTooltip if you intend to pass HTML.</st:attribute>
     <st:attribute name="style">style</st:attribute>
-    <st:attribute name="tooltip">
-      Adds a tooltip to the icon, ignores HTML except 'br' tags (but '\n' should be preferred for line breaks).</st:attribute>
-    <st:attribute name="htmlTooltip">
-      Tooltip but with HTML support. Make sure to call h.htmlAttributeEscape on all user-specified parts of the value to prevent cross-site scripting.
-      Use 'tooltip' if you don't need to pass HTML.</st:attribute>
+    <st:attribute name="tooltip"> Adds a tooltip to the icon, ignores HTML except 'br' tags (but '\n' should be preferred for line breaks).</st:attribute>
+    <st:attribute name="htmlTooltip"> Tooltip but with HTML support. Make sure to call h.htmlAttributeEscape on all user-specified parts of the value to prevent cross-site scripting. Use 'tooltip' if you don't need to pass HTML.</st:attribute>
     <st:attribute name="alt">alt, adds invisible text suitable for screen-readers for symbols, sets the alt attribute for normal images</st:attribute>
   </st:documentation>
 
-  <j:set var="iconSrc" value="${h.tryGetIconPath(src, context)}"/>
-  <j:set var="iconMetadata" value="${h.tryGetIcon(src)}"/>
-  <j:set var="imgStyle" value="${attrs.style}"/>
+  <j:set var="iconSrc" value="${h.tryGetIconPath(src, context)}" />
+  <j:set var="iconMetadata" value="${h.tryGetIcon(src)}" />
+  <j:set var="imgStyle" value="${attrs.style}" />
 
   <j:if test="${iconSrc == null}">
-    <j:set var="iconSrc" value="${h.tryGetIconPath(class, context)}"/>
-    <j:set var="iconMetadata" value="${h.tryGetIcon(class)}"/>
+    <j:set var="iconSrc" value="${h.tryGetIconPath(class, context)}" />
+    <j:set var="iconMetadata" value="${h.tryGetIcon(class)}" />
   </j:if>
 
   <j:if test="${iconMetadata != null}">
-    <j:set var="imgStyle" value="${iconMetadata.style} ${attrs.style}"/>
+    <j:set var="imgStyle" value="${iconMetadata.style} ${attrs.style}" />
   </j:if>
 
   <j:choose>
@@ -86,19 +74,30 @@ THE SOFTWARE.
 
           <span class="build-status-icon__wrapper ${attrs.class}" style="${imgStyle}">
             <span class="build-status-icon__outer">
-              <l:svgIcon href="${rootURL}/images/build-status/build-status-sprite.svg#${outerLayer}" id="${attrs.id}" tooltip="${attrs.tooltip}"/>
+              <l:svgIcon href="${rootURL}/images/build-status/build-status-sprite.svg#${outerLayer}" id="${attrs.id}" tooltip="${attrs.tooltip}" />
             </span>
-            <l:svgIcon class="${attrs.class}" href="${iconSrc}" id="${attrs.id}" tooltip="${attrs.tooltip}"/>
+            <l:svgIcon class="${attrs.class}" href="${iconSrc}" id="${attrs.id}" tooltip="${attrs.tooltip}" />
           </span>
         </j:when>
 
         <j:when test="${iconMetadata.svgSprite and !iconMetadata.buildStatus}">
-          <l:svgIcon class="${attrs.class}" href="${iconSrc}" id="${attrs.id}"/>
+          <l:svgIcon class="${attrs.class}" href="${iconSrc}" id="${attrs.id}" />
         </j:when>
 
         <j:otherwise>
-          <img class="${attrs.class}" src="${iconSrc}" style="${imgStyle}" title="${attrs.title}" height="${attrs.height}"
-               alt="${attrs.alt}" width="${attrs.width}" onclick="${attrs.onclick}" tooltip="${attrs.tooltip}" data-html-tooltip="${attrs.htmlTooltip}" id="${attrs.id}" />
+          <img
+            class="${attrs.class}"
+            src="${iconSrc}"
+            style="${imgStyle}"
+            title="${attrs.title}"
+            height="${attrs.height}"
+            alt="${attrs.alt}"
+            width="${attrs.width}"
+            onclick="${attrs.onclick}"
+            tooltip="${attrs.tooltip}"
+            data-html-tooltip="${attrs.htmlTooltip}"
+            id="${attrs.id}"
+          />
         </j:otherwise>
       </j:choose>
     </j:otherwise>

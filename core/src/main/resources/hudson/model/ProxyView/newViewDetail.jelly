@@ -23,6 +23,4 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<div>
-  ${%Shows the content of a global view.}
-</div>
+<div> ${%Shows the content of a global view.} </div>

@@ -25,18 +25,10 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
   <st:documentation>
-    <st:attribute name="name" use="required">
-      The name of the tab
-    </st:attribute>
-    <st:attribute name="href" use="required">
-      The url of the tab
-    </st:attribute>
-    <st:attribute name="active" type="java.lang.Boolean">
-      Whether the tab is active or not
-    </st:attribute>
-    <st:attribute name="title">
-      The title of the tab
-    </st:attribute>
+    <st:attribute name="name" use="required"> The name of the tab </st:attribute>
+    <st:attribute name="href" use="required"> The url of the tab </st:attribute>
+    <st:attribute name="active" type="java.lang.Boolean"> Whether the tab is active or not </st:attribute>
+    <st:attribute name="title"> The title of the tab </st:attribute>
   </st:documentation>
   <div class="tab${attrs.active?' active':''}">
     <j:choose>

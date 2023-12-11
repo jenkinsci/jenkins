@@ -26,9 +26,7 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
   <st:documentation>
     Load Yahoo UI module.
-    <st:attribute name="module" use="required">
-      YUI module name to load.
-    </st:attribute>
+    <st:attribute name="module" use="required"> YUI module name to load. </st:attribute>
   </st:documentation>
   <!--
     We used to take @suffix as '-beta' to loa beta modules, but as of YUI 2.9 there's no beta module.

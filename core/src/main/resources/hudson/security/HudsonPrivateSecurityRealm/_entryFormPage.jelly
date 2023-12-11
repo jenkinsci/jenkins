@@ -26,26 +26,14 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:f="/lib/form" xmlns:local="/hudson/security/HudsonPrivateSecurityRealm">
   <st:documentation>
-    <st:attribute name="host" use="required" type="hudson.security.HudsonPrivateSecurityRealm">
-      Corresponds to the "it" of Jelly, meaning the context where the page is loaded.
-    </st:attribute>
-    <st:attribute name="title" use="required"> <![CDATA[
-      Title of the HTML page. 
-      Rendered into <title> tag, in the page content inside a <h1> and as the label of the submit button.
-      ]]>
-    </st:attribute>
-    <st:attribute name="action" use="required">
-      The method to call from within the HudsonPrivateSecurityRealm.
-    </st:attribute>
-    <st:attribute name="captcha" use="optional" type="boolean">
-      Determines if the tag will include the captcha.
-    </st:attribute>
-    <st:attribute name="data" use="optional" type="hudson.security.HudsonPrivateSecurityRealm.SignupInfo">
-      The wrapper for the data provided by the user and the error message(s) if any. Is null on first form display.
-    </st:attribute>
+    <st:attribute name="host" use="required" type="hudson.security.HudsonPrivateSecurityRealm"> Corresponds to the "it" of Jelly, meaning the context where the page is loaded. </st:attribute>
+    <st:attribute name="title" use="required"> <![CDATA[ Title of the HTML page. Rendered into <title> tag, in the page content inside a <h1> and as the label of the submit button. ]]> </st:attribute>
+    <st:attribute name="action" use="required"> The method to call from within the HudsonPrivateSecurityRealm. </st:attribute>
+    <st:attribute name="captcha" use="optional" type="boolean"> Determines if the tag will include the captcha. </st:attribute>
+    <st:attribute name="data" use="optional" type="hudson.security.HudsonPrivateSecurityRealm.SignupInfo"> The wrapper for the data provided by the user and the error message(s) if any. Is null on first form display. </st:attribute>
   </st:documentation>
   <l:layout title="${title}" type="one-column">
-    <l:breadcrumb title="${title}"/>
+    <l:breadcrumb title="${title}" />
     <l:main-panel>
       <form action="${rootURL}/securityRealm/${action}" method="post" class="jenkins-form jenkins-form-item--small jenkins-!-margin-auto">
         <local:_entryForm title="${title}" action="${action}" captcha="${captcha}" it="${host}" data="${data}" />

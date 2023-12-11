@@ -27,28 +27,28 @@ THE SOFTWARE.
   <l:layout title="${%People} - ${it.parent.viewName}">
     <st:include page="sidepanel.jelly" it="${it.parent}" />
     <l:breadcrumb title="${%People}" />
-    <t:setIconSize/>
+    <t:setIconSize />
     <l:main-panel>
       <div class="jenkins-app-bar">
         <div class="jenkins-app-bar__content">
           <h1>
             ${%People}
-            <j:set var="viewType" value="${it.parent.class.simpleName}"/>
-            <j:set var="isAll" value="${viewType=='Hudson' or viewType=='AllView'}"/>
+            <j:set var="viewType" value="${it.parent.class.simpleName}" />
+            <j:set var="isAll" value="${viewType=='Hudson' or viewType=='AllView'}" />
             <j:if test="${!isAll}">- ${it.parent.displayName}</j:if>
           </h1>
         </div>
       </div>
-        <p class="jenkins-description">${%blurb}</p>
+      <p class="jenkins-description">${%blurb}</p>
       <st:adjunct includes="hudson.model.View.AsynchPeople.people-resources" />
-      <l:progressiveRendering handler="${it}" callback="display"/>
+      <l:progressiveRendering handler="${it}" callback="display" />
 
       <!-- cloned from JS -->
       <span id="person-circle" class="default-hidden">
         <l:icon src="symbol-person-circle" />
       </span>
 
-      <table class="jenkins-table ${iconSize == '16x16' ? 'jenkins-table--small' : iconSize == '24x24' ? 'jenkins-table--medium' : ''} sortable" id="people" style="display: none;">
+      <table class="jenkins-table ${iconSize == '16x16' ? 'jenkins-table--small' : iconSize == '24x24' ? 'jenkins-table--medium' : ''} sortable" id="people" style="display: none">
         <thead>
           <tr>
             <th data-sort-disable="true" class="jenkins-table__cell--tight"></th>
@@ -62,9 +62,7 @@ THE SOFTWARE.
       </table>
       <t:iconSize>
         <j:if test="${!isAll}">
-          <div style="float:right">
-            <a href="${rootURL}/asynchPeople/">${%All People}</a><st:nbsp/>
-          </div>
+          <div style="float: right"> <a href="${rootURL}/asynchPeople/">${%All People}</a><st:nbsp /> </div>
         </j:if>
       </t:iconSize>
     </l:main-panel>

@@ -25,16 +25,10 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <st:documentation>
-    Adds @nameRef to all table rows inside this tag, so that when the form is submitted,
-    it gets grouped in one JSON object.
+    Adds @nameRef to all table rows inside this tag, so that when the form is submitted, it gets grouped in one JSON object.
 
-    <st:attribute name="name">
-      if the group head is not available outside, use this attribute to specify the name.
-      @name and @ref are mutually exclusive.
-    </st:attribute>
-    <st:attribute name="ref">
-      id of the thing that serves as the group head, if that's available separately
-    </st:attribute>
+    <st:attribute name="name"> if the group head is not available outside, use this attribute to specify the name. @name and @ref are mutually exclusive. </st:attribute>
+    <st:attribute name="ref"> id of the thing that serves as the group head, if that's available separately </st:attribute>
   </st:documentation>
 
   <j:set var="contents" trim="true">
@@ -47,7 +41,7 @@ THE SOFTWARE.
     </j:when>
     <j:otherwise>
       <j:if test="${contents.length() != 0}">
-        <div ref="${attrs.ref}" class="row-set-start row-group-start tr" style="display:none" name="${attrs.name}"></div>
+        <div ref="${attrs.ref}" class="row-set-start row-group-start tr" style="display: none" name="${attrs.name}"></div>
         <j:out value="${contents}" />
         <div class="row-set-end row-group-end tr jenkins-!-display-contents"></div>
       </j:if>

@@ -22,20 +22,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
- xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <st:documentation>
     Binds a boolean field to two radio buttons that say Yes/No OK/Cancel Top/Bottom.
 
-    <st:attribute name="field">
-      Databinding field.
-    </st:attribute>
-    <st:attribute name="true">
-      Text to be displayed for the 'true' value. Defaults to 'Yes'.
-    </st:attribute>
-    <st:attribute name="false">
-      Text to be displayed for the 'false' value. Defaults to 'No'.
-    </st:attribute>
+    <st:attribute name="field"> Databinding field. </st:attribute>
+    <st:attribute name="true"> Text to be displayed for the 'true' value. Defaults to 'Yes'. </st:attribute>
+    <st:attribute name="false"> Text to be displayed for the 'false' value. Defaults to 'No'. </st:attribute>
   </st:documentation>
   <f:prepareDatabinding />
 

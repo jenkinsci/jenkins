@@ -29,7 +29,7 @@ THE SOFTWARE.
       <td align="right" data="-1">N/A</td>
     </j:when>
     <j:otherwise>
-      <td align="right" data="${from.toMB(data)}"><j:out value="${from.toHtml(data)}"/></td>
+      <td align="right" data="${from.toMB(data)}"><j:out value="${from.toHtml(data)}" /></td>
     </j:otherwise>
   </j:choose>
 </j:jelly>

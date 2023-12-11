@@ -27,55 +27,53 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-<l:layout title="${%Log Recorders}" type="one-column">
-  <!-- no need for additional breadcrumb here as we're on an index page already including breadcrumb -->
-  <l:main-panel xmlns:local="local">
-    <l:app-bar title="${%Log Recorders}">
-      <l:isAdmin>
-        <a href="new" class="jenkins-button jenkins-button--primary">
-          <l:icon src="symbol-add" />
-          ${%Add recorder}
-        </a>
-      </l:isAdmin>
-      <a href="levels" class="jenkins-button">
-        ${%Log levels}
-      </a>
-      <t:help tooltip="${%Additional information on log recorders}" href="https://www.jenkins.io/redirect/log-recorders" />
-    </l:app-bar>
+  <l:layout title="${%Log Recorders}" type="one-column">
+    <!-- no need for additional breadcrumb here as we're on an index page already including breadcrumb -->
+    <l:main-panel xmlns:local="local">
+      <l:app-bar title="${%Log Recorders}">
+        <l:isAdmin>
+          <a href="new" class="jenkins-button jenkins-button--primary">
+            <l:icon src="symbol-add" />
+            ${%Add recorder}
+          </a>
+        </l:isAdmin>
+        <a href="levels" class="jenkins-button"> ${%Log levels} </a>
+        <t:help tooltip="${%Additional information on log recorders}" href="https://www.jenkins.io/redirect/log-recorders" />
+      </l:app-bar>
 
-    <d:taglib uri="local">
-      <d:tag name="row">
-        <tr>
-          <td><a class="jenkins-table__link" href="${href}">${name}</a></td>
-          <td class="jenkins-table__cell--tight">
-            <d:invokeBody />
-          </td>
-        </tr>
-      </d:tag>
-    </d:taglib>
+      <d:taglib uri="local">
+        <d:tag name="row">
+          <tr>
+            <td><a class="jenkins-table__link" href="${href}">${name}</a></td>
+            <td class="jenkins-table__cell--tight">
+              <d:invokeBody />
+            </td>
+          </tr>
+        </d:tag>
+      </d:taglib>
 
-    <table id="logRecorders" class="jenkins-table sortable">
-      <thead>
-        <tr>
-          <th initialSortDir="down">${%Name}</th>
-          <th class="jenkins-table__cell--tight" data-sort-disable="true"/>
-        </tr>
-      </thead>
-      <tbody>
-        <local:row href="all" name="${%All Jenkins Logs}" />
-        <j:forEach var="lr" items="${it.recorders}">
-          <local:row name="${lr.name}" href="${lr.searchUrl}/">
-            <l:isAdmin>
-              <div class="jenkins-table__cell__button-wrapper">
-                <a href="${lr.searchUrl}/configure" class="jenkins-table__button">
-                  <l:icon src="symbol-settings" />
-                </a>
-              </div>
-            </l:isAdmin>
-          </local:row>
-        </j:forEach>
-      </tbody>
-    </table>
-  </l:main-panel>
-</l:layout>
+      <table id="logRecorders" class="jenkins-table sortable">
+        <thead>
+          <tr>
+            <th initialSortDir="down">${%Name}</th>
+            <th class="jenkins-table__cell--tight" data-sort-disable="true" />
+          </tr>
+        </thead>
+        <tbody>
+          <local:row href="all" name="${%All Jenkins Logs}" />
+          <j:forEach var="lr" items="${it.recorders}">
+            <local:row name="${lr.name}" href="${lr.searchUrl}/">
+              <l:isAdmin>
+                <div class="jenkins-table__cell__button-wrapper">
+                  <a href="${lr.searchUrl}/configure" class="jenkins-table__button">
+                    <l:icon src="symbol-settings" />
+                  </a>
+                </div>
+              </l:isAdmin>
+            </local:row>
+          </j:forEach>
+        </tbody>
+      </table>
+    </l:main-panel>
+  </l:layout>
 </j:jelly>

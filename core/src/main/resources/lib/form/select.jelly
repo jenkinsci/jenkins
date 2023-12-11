@@ -25,50 +25,37 @@ THE SOFTWARE.
 <!-- Tomcat doesn't like us using the attribute called 'class' -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:f="/lib/form">
-  <st:documentation> <![CDATA[
-    Glorified <select> control that supports the data binding and AJAX updates.
-    Your descriptor should have the 'doFillXyzItems' method, which returns a ListBoxModel
-    representation of the items in your drop-down list box, and your instance field should
-    hold the current value.
-    ]]>
-    <st:attribute name="clazz">
-      Additional CSS classes that the control gets.
-    </st:attribute>
-    <st:attribute name="field">
-      Used for databinding.
-    </st:attribute>
-    <st:attribute name="default">
-      The default value of the text box, in case both @value is and 'instance[field]' is null.
-    </st:attribute>
-    <st:attribute name="checkMessage">
-      Override the default error message when client-side validation fails,
-      as with clazz="required", etc.
-    </st:attribute>
+  <st:documentation>
+    <![CDATA[ Glorified <select> control that supports the data binding and AJAX updates. Your descriptor should have the 'doFillXyzItems' method, which returns a ListBoxModel representation of the items in your drop-down list box, and your instance
+    field should hold the current value. ]]>
+    <st:attribute name="clazz"> Additional CSS classes that the control gets. </st:attribute>
+    <st:attribute name="field"> Used for databinding. </st:attribute>
+    <st:attribute name="default"> The default value of the text box, in case both @value is and 'instance[field]' is null. </st:attribute>
+    <st:attribute name="checkMessage"> Override the default error message when client-side validation fails, as with clazz="required", etc. </st:attribute>
     <st:attribute name="checkUrl">
-      If specified, the value entered in this input field will be checked (via AJAX)
-      against this URL, and errors will be rendered under the text field.
-    
-      If @field is specified, this will be inferred automatically,
-      which is the recommended approach.
+      If specified, the value entered in this input field will be checked (via AJAX) against this URL, and errors will be rendered under the text field. If @field is specified, this will be inferred automatically, which is the recommended approach.
     </st:attribute>
     <st:attribute name="checkMethod" use="optional" type="String">
-      Specify 'get' (must be lowercase) to change the HTTP method used for the AJAX requests to @checkUrl from a POST to a GET.
-      If any other value is specified then requests will use POST.
-      The historical default was GET and 'post' had to be specified to change that, but this was changed in Jenkins 2.285.
+      Specify 'get' (must be lowercase) to change the HTTP method used for the AJAX requests to @checkUrl from a POST to a GET. If any other value is specified then requests will use POST. The historical default was GET and 'post' had to be specified
+      to change that, but this was changed in Jenkins 2.285.
     </st:attribute>
   </st:documentation>
 
-  <f:prepareDatabinding/>
-  <st:adjunct includes="lib.form.select.select"/>
+  <f:prepareDatabinding />
+  <st:adjunct includes="lib.form.select.select" />
 
-  ${descriptor.calcFillSettings(field,attrs)} <!-- this figures out the 'fillUrl' and 'fillDependsOn' attribute -->
+  ${descriptor.calcFillSettings(field,attrs)}
+  <!-- this figures out the 'fillUrl' and 'fillDependsOn' attribute -->
   <j:set var="value" value="${attrs.value ?: instance[attrs.field] ?: attrs.default}" />
   <div class="jenkins-select">
-    <m:select xmlns:m="jelly:hudson.util.jelly.MorphTagLibrary"
-              class="jenkins-select__input ${attrs.checkUrl!=null?'validated':''} select ${attrs.clazz}"
-              name="${attrs.name ?: '_.'+attrs.field}"
-              value="${value}"
-              ATTRIBUTES="${attrs}" EXCEPT="field clazz">
+    <m:select
+      xmlns:m="jelly:hudson.util.jelly.MorphTagLibrary"
+      class="jenkins-select__input ${attrs.checkUrl!=null?'validated':''} select ${attrs.clazz}"
+      name="${attrs.name ?: '_.'+attrs.field}"
+      value="${value}"
+      ATTRIBUTES="${attrs}"
+      EXCEPT="field clazz"
+    >
       <j:if test="${value!=null}">
         <option value="${value}">${value}</option>
       </j:if>

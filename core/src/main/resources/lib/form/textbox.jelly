@@ -25,92 +25,53 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:f="/lib/form">
   <st:documentation>
-    Generates an input field <code>&lt;input type="text" ... /></code> to be
-    used inside &lt;f:entry/>
-
-    For a read only input set &lt;j:set var="readOnlyMode" value="true"/&gt; inside your entry tag
-    See https://www.jenkins.io/doc/developer/views/read-only/#enabling-read-only-view-support
-    <st:attribute name="field">
-      Used for databinding. TBD.
+    Generates an input field <code>&lt;input type="text" ... /></code> to be used inside &lt;f:entry/> For a read only input set &lt;j:set var="readOnlyMode" value="true"/&gt; inside your entry tag See
+    https://www.jenkins.io/doc/developer/views/read-only/#enabling-read-only-view-support
+    <st:attribute name="field"> Used for databinding. TBD. </st:attribute>
+    <st:attribute name="autoCompleteField"> Used for determining the autocomplete URL. If @field is specified, that will be used for this. </st:attribute>
+    <st:attribute name="name"> <![CDATA[ This becomes @name of the <input> tag. If @field is specified, this value is inferred from it. ]]> </st:attribute>
+    <st:attribute name="value">
+      <![CDATA[ The initial value of the field. This becomes the @value of the <input> tag. If @field is specified, the current property from the "instance" object will be set as the initial value automatically, which is the recommended approach. ]]>
     </st:attribute>
-    <st:attribute name="autoCompleteField">
-      Used for determining the autocomplete URL.
-      If @field is specified, that will be used for this.
-    </st:attribute>
-    <st:attribute name="name"> <![CDATA[
-      This becomes @name of the <input> tag.
-      If @field is specified, this value is inferred from it.
-      ]]>
-    </st:attribute>
-    <st:attribute name="value"> <![CDATA[
-      The initial value of the field. This becomes the @value of the <input> tag.
-      If @field is specified, the current property from the "instance" object
-      will be set as the initial value automatically,
-      which is the recommended approach.
-       ]]>
-    </st:attribute>
-    <st:attribute name="default">
-      The default value of the text box, in case both @value is and 'instance[field]' is null.
-    </st:attribute>
+    <st:attribute name="default"> The default value of the text box, in case both @value is and 'instance[field]' is null. </st:attribute>
     <!-- Tomcat doesn't like us using the attribute called 'class' -->
-    <st:attribute name="clazz">
-      Additional CSS class(es) to add (such as client-side validation clazz="required",
-      "number" or "positive-number"; these may be combined, as clazz="required number").
-    </st:attribute>
-    <st:attribute name="placeholder">
-      Placeholder text for the text box
-    </st:attribute>
-    <st:attribute name="checkMessage">
-      Override the default error message when client-side validation fails,
-      as with clazz="required", etc.
-    </st:attribute>
+    <st:attribute name="clazz"> Additional CSS class(es) to add (such as client-side validation clazz="required", "number" or "positive-number"; these may be combined, as clazz="required number"). </st:attribute>
+    <st:attribute name="placeholder"> Placeholder text for the text box </st:attribute>
+    <st:attribute name="checkMessage"> Override the default error message when client-side validation fails, as with clazz="required", etc. </st:attribute>
     <st:attribute name="checkUrl">
-      If specified, the value entered in this input field will be checked (via AJAX)
-      against this URL, and errors will be rendered under the text field.
-
-      If @field is specified, this will be inferred automatically,
-      which is the recommended approach.
+      If specified, the value entered in this input field will be checked (via AJAX) against this URL, and errors will be rendered under the text field. If @field is specified, this will be inferred automatically, which is the recommended approach.
     </st:attribute>
-    <st:attribute name="checkDependsOn">
-      Fields to be sent during form validation.
-
-      If @field is specified, this will be inferred automatically,
-      which is the recommended approach.
-    </st:attribute>
+    <st:attribute name="checkDependsOn"> Fields to be sent during form validation. If @field is specified, this will be inferred automatically, which is the recommended approach. </st:attribute>
     <st:attribute name="checkMethod" use="optional" type="String">
-      Specify 'get' (must be lowercase) to change the HTTP method used for the AJAX requests to @checkUrl from a POST to a GET.
-      If any other value is specified then requests will use POST.
-      The historical default was GET and 'post' had to be specified to change that, but this was changed in Jenkins 2.285.
+      Specify 'get' (must be lowercase) to change the HTTP method used for the AJAX requests to @checkUrl from a POST to a GET. If any other value is specified then requests will use POST. The historical default was GET and 'post' had to be specified
+      to change that, but this was changed in Jenkins 2.285.
     </st:attribute>
-    <st:attribute name="autoCompleteUrl">
-      Url to use for auto-completion
-
-      If @field is specified, this will be inferred automatically,
-      which is the recommended approach.
-    </st:attribute>
+    <st:attribute name="autoCompleteUrl"> Url to use for auto-completion If @field is specified, this will be inferred automatically, which is the recommended approach. </st:attribute>
     <st:attribute name="autoCompleteDelimChar">
-      A single character that can be used as a delimiter for autocompletion. Normal
-      autocomplete will replace the entire content of the text box with the autocomplete
-      selection. With this attribute set, the selection will be appended with the
+      A single character that can be used as a delimiter for autocompletion. Normal autocomplete will replace the entire content of the text box with the autocomplete selection. With this attribute set, the selection will be appended with the
       delimiter to the existing value of the text box.
     </st:attribute>
   </st:documentation>
   <f:prepareDatabinding />
-  ${descriptor.calcAutoCompleteSettings(autoCompleteField?:field,attrs)} <!-- this figures out the 'autoCompleteUrl' attribute -->
+  ${descriptor.calcAutoCompleteSettings(autoCompleteField?:field,attrs)}
+  <!-- this figures out the 'autoCompleteUrl' attribute -->
 
   <!-- mostly pass-through all the attributes -->
-  <j:set var="name" value="${attrs.name ?: '_.'+attrs.field}"/>
-  <j:set var="default" value="${attrs.default ?: ''}"/>
-  <j:set var="value" value="${attrs.value ?: instance[attrs.field] ?: default}"/>
+  <j:set var="name" value="${attrs.name ?: '_.'+attrs.field}" />
+  <j:set var="default" value="${attrs.default ?: ''}" />
+  <j:set var="value" value="${attrs.value ?: instance[attrs.field] ?: default}" />
 
   <f:possibleReadOnlyField>
-      <m:input xmlns:m="jelly:hudson.util.jelly.MorphTagLibrary"
-               class="jenkins-input ${attrs.checkUrl!=null?'validated':''} ${attrs.autoCompleteUrl!=null?'auto-complete':null} ${attrs.clazz}"
-               name="${name}"
-               value="${value}"
-               type="text"
-               placeholder="${placeholder}"
-               ATTRIBUTES="${attrs}" EXCEPT="field clazz" />
+    <m:input
+      xmlns:m="jelly:hudson.util.jelly.MorphTagLibrary"
+      class="jenkins-input ${attrs.checkUrl!=null?'validated':''} ${attrs.autoCompleteUrl!=null?'auto-complete':null} ${attrs.clazz}"
+      name="${name}"
+      value="${value}"
+      type="text"
+      placeholder="${placeholder}"
+      ATTRIBUTES="${attrs}"
+      EXCEPT="field clazz"
+    />
   </f:possibleReadOnlyField>
   <j:if test="${customizedFields != null and attrs.field != null and value != default}">
     <j:mute>${customizedFields.add(name)}</j:mute>

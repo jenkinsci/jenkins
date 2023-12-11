@@ -2,7 +2,7 @@
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
   <div class="alert alert-danger" role="alert">
     <form method="post" action="${rootURL}/${it.url}/act" name="${it.id}">
-      <f:submit name="correct" value="${%Correct}"/>
+      <f:submit name="correct" value="${%Correct}" />
     </form>
     <p>${%blurbOriginal}</p>
     <p><strong>${%DirectlyDependentPlugins.title}</strong></p>

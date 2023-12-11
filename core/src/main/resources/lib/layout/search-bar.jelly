@@ -30,15 +30,9 @@ THE SOFTWARE.
     <st:attribute name="id" />
     <st:attribute name="autofocus" />
     <st:attribute name="clazz" />
-    <st:attribute name="hasKeyboardShortcut">
-      If false the default keyboard shortcut for the input is disabled. Defaults to true.
-    </st:attribute>
-    <st:attribute name="enabled" since="TODO">
-      Defaults to true. Sets whether the search bar is enabled or not.
-    </st:attribute>
-    Creates a search input
-
-    @since 2.369
+    <st:attribute name="hasKeyboardShortcut"> If false the default keyboard shortcut for the input is disabled. Defaults to true. </st:attribute>
+    <st:attribute name="enabled" since="TODO"> Defaults to true. Sets whether the search bar is enabled or not. </st:attribute>
+    Creates a search input @since 2.369
   </st:documentation>
 
   <div class="jenkins-search-container">
@@ -46,17 +40,19 @@ THE SOFTWARE.
       <div class="jenkins-search__icon">
         <l:icon src="symbol-search" />
       </div>
-      <input value="${attrs.value}"
-             id="${attrs.id}"
-             class="jenkins-search__input"
-             placeholder="${attrs.placeholder ?: '%Search'}"
-             type="search"
-             autofocus="${attrs.autofocus == 'true' ? 'true' : null}"
-             autocomplete="off"
-             autocorrect="off"
-             autocapitalize="off"
-             spellcheck="false"
-             disabled="${attrs.enabled == false ? true : null}" />
+      <input
+        value="${attrs.value}"
+        id="${attrs.id}"
+        class="jenkins-search__input"
+        placeholder="${attrs.placeholder ?: '%Search'}"
+        type="search"
+        autofocus="${attrs.autofocus == 'true' ? 'true' : null}"
+        autocomplete="off"
+        autocorrect="off"
+        autocapitalize="off"
+        spellcheck="false"
+        disabled="${attrs.enabled == false ? true : null}"
+      />
       <j:if test="${attrs.hasKeyboardShortcut != 'false'}">
         <div class="jenkins-search__shortcut" tooltip="${%Press / on your keyboard to focus}">
           <l:icon src="symbol-search-shortcut" />

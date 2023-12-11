@@ -37,24 +37,18 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <div>
     <j:choose>
-      <j:when test="${it.totalCount==0}">
-        ${%noTests}
-      </j:when>
+      <j:when test="${it.totalCount==0}"> ${%noTests} </j:when>
       <j:otherwise>
         <div>
           ${%failures(it.failCount)}
-          <j:if test="${prev!=null}">
-            (${h.getDiffString(it.failCount-prev.failCount)})
-          </j:if>
+          <j:if test="${prev!=null}"> (${h.getDiffString(it.failCount-prev.failCount)}) </j:if>
           <!-- Only show skips if there are some since they don't make sense for JUnit, only for TestNG. -->
           <j:if test="${it.skipCount > 0}">
             , ${%skipped(it.skipCount)}
-            <j:if test="${prev!=null}">
-              (${h.getDiffString(it.skipCount-prev.skipCount)})
-            </j:if>
+            <j:if test="${prev!=null}"> (${h.getDiffString(it.skipCount-prev.skipCount)}) </j:if>
           </j:if>
         </div>
-        <div style="width:100%; height:1em; background-color: #729FCF; border-radius: 6px; overflow: hidden;">
+        <div style="width: 100%; height: 1em; background-color: #729fcf; border-radius: 6px; overflow: hidden">
           <!-- Failed tests part of the bar. -->
           <div style="width:${it.failCount*100/it.totalCount}%; height: 1em; background-color: #EF2929; float: left; border-top-left-radius: 6px; border-bottom-left-radius: 6px;"></div>
           <!-- Skipped tests part of the bar. -->
@@ -62,9 +56,7 @@ THE SOFTWARE.
         </div>
         <div align="right">
           ${%tests(it.totalCount)}
-          <j:if test="${prev!=null}">
-            (${h.getDiffString(it.totalCount-prev.totalCount)})
-          </j:if>
+          <j:if test="${prev!=null}"> (${h.getDiffString(it.totalCount-prev.totalCount)}) </j:if>
         </div>
       </j:otherwise>
     </j:choose>

@@ -25,42 +25,38 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout">
   <st:documentation>
-    Expandable section that shows "advanced..." button by default.
-    Upon clicking it, a section unfolds, and the HTML rendered by the body of this tag
-    appears.
+    Expandable section that shows "advanced..." button by default. Upon clicking it, a section unfolds, and the HTML rendered by the body of this tag appears.
 
-    <st:attribute name="title" use="optional">
-      Caption of the button. By default "Advanced"
-    </st:attribute>
+    <st:attribute name="title" use="optional"> Caption of the button. By default "Advanced" </st:attribute>
   </st:documentation>
 
-  <div class='jenkins-form-item tr'>
-    <st:adjunct includes="lib.form.advanced.advanced"/>
+  <div class="jenkins-form-item tr">
+    <st:adjunct includes="lib.form.advanced.advanced" />
 
     <div class="advancedLink jenkins-buttons-row">
       <!-- advancedButton class is legacy -->
       <button type="button" class="jenkins-button advanced-button advancedButton">
         ${attrs.title?:'%Advanced'}
-        <l:icon src="symbol-chevron-down"/>
+        <l:icon src="symbol-chevron-down" />
       </button>
 
-      <j:set var="id" value="${h.generateId()}"/>
+      <j:set var="id" value="${h.generateId()}" />
       <span class="jenkins-edited-section-label jenkins-hidden" id="${id}" tooltip="${%customizedFields}">
         <l:icon src="symbol-edit" />
         ${%Edited}
       </span>
     </div>
 
-    <j:new var="customizedFields" className="java.util.TreeSet"/>
+    <j:new var="customizedFields" className="java.util.TreeSet" />
     <div class="advancedBody">
       <div class="tbody dropdownList-container">
         <!-- this is the hidden portion that hosts the "advanced" part. Contents will be moved to the master table when "advanced..." is clicked -->
-        <d:invokeBody/>
+        <d:invokeBody />
       </div>
     </div>
 
     <j:if test="${!customizedFields.isEmpty()}">
-      <div class="advanced-customized-fields-info" data-id="${id}" data-customized-fields="${customizedFields}"/>
+      <div class="advanced-customized-fields-info" data-id="${id}" data-customized-fields="${customizedFields}" />
     </j:if>
   </div>
 </j:jelly>

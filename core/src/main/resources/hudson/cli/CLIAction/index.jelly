@@ -25,15 +25,13 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <l:layout permission="${app.READ}">
-    <st:include page="sidepanel.jelly" it="${app}"/>
+    <st:include page="sidepanel.jelly" it="${app}" />
     <!-- no need for additional breadcrumb here as we're on an index page already including breadcrumb -->
     <l:main-panel>
       <l:app-bar title="${%Jenkins CLI}" />
-      <p class="jenkins-description">
-        ${%blurb(rootURL)}
-      </p>
-      <j:set var="commandArgs" value="help"/>
-      <st:include page="example.jelly"/>
+      <p class="jenkins-description"> ${%blurb(rootURL)} </p>
+      <j:set var="commandArgs" value="help" />
+      <st:include page="example.jelly" />
 
       <h2>${%Available Commands}</h2>
       <table class="jenkins-table sortable">
