@@ -1214,6 +1214,13 @@ function rowvgStartEachRow(recursive, f) {
 }
 
 (function () {
+  // This moves all link elements to the head
+  // fixes JENKINS-72196 when a link is inside a div of a repeatable and the
+  // div is deleted then the styling is lost for divs afterwards.
+  Behaviour.specify("body link", "move-css-to-head", -9999, function (link) {
+    document.head.appendChild(link);
+  });
+
   var p = 20;
   Behaviour.specify("TABLE.sortable", "table-sortable", ++p, function (e) {
     // sortable table

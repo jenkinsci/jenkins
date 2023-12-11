@@ -29,87 +29,87 @@ THE SOFTWARE.
 
   <dl class="app-icon-legend">
     <dt>
-      <l:icon class="icon-blue icon-lg"/>
+      <l:icon src="symbol-status-blue" />
     </dt>
     <dd>
       ${%blue}
     </dd>
 
     <dt>
-      <l:icon class="icon-blue-anime icon-lg"/>
+      <l:icon src="symbol-status-blue-anime" />
     </dt>
     <dd>
       ${%blue_anime}
     </dd>
 
     <dt>
-      <l:icon class="icon-yellow icon-lg"/>
+      <l:icon src="symbol-status-yellow" />
     </dt>
     <dd>
       ${%yellow}
     </dd>
 
     <dt>
-      <l:icon class="icon-yellow-anime icon-lg"/>
+      <l:icon src="symbol-status-yellow-anime" />
     </dt>
     <dd>
       ${%yellow_anime}
     </dd>
 
     <dt>
-      <l:icon class="icon-red icon-lg"/>
+      <l:icon src="symbol-status-red" />
     </dt>
     <dd>
       ${%red}
     </dd>
 
     <dt>
-      <l:icon class="icon-red-anime icon-lg"/>
+      <l:icon src="symbol-status-red-anime" />
     </dt>
     <dd>
       ${%red_anime}
     </dd>
 
     <dt>
-      <l:icon class="icon-nobuilt icon-lg"/>
+      <l:icon src="symbol-status-nobuilt" />
     </dt>
     <dd>
       ${%lightgrey}
     </dd>
 
     <dt>
-      <l:icon class="icon-nobuilt-anime icon-lg"/>
+      <l:icon src="symbol-status-nobuilt-anime" />
     </dt>
     <dd>
       ${%lightgrey_anime}
     </dd>
 
     <dt>
-      <l:icon class="icon-disabled icon-lg"/>
-    </dt>
-    <dd>
-      ${%grey}
-    </dd>
-
-    <dt>
-      <l:icon class="icon-disabled-anime icon-lg"/>
-    </dt>
-    <dd>
-      ${%grey_anime}
-    </dd>
-
-    <dt>
-      <l:icon class="icon-aborted icon-lg"/>
+      <l:icon src="symbol-status-aborted" />
     </dt>
     <dd>
       ${%darkgrey}
     </dd>
 
     <dt>
-      <l:icon class="icon-aborted-anime icon-lg"/>
+      <l:icon src="symbol-status-aborted-anime" />
     </dt>
     <dd>
       ${%darkgrey_anime}
+    </dd>
+
+    <dt>
+      <l:icon src="symbol-status-disabled" />
+    </dt>
+    <dd>
+      ${%grey}
+    </dd>
+
+    <dt>
+      <l:icon src="symbol-status-disabled-anime" />
+    </dt>
+    <dd>
+      ${%grey_anime}
     </dd>
   </dl>
 
