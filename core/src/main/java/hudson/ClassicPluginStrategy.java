@@ -290,6 +290,10 @@ public class ClassicPluginStrategy implements PluginStrategy {
 
         List<URL> urls = new ArrayList<>();
         for (File path : paths) {
+            if (path.getName().startsWith("jenkins-test-harness")) {
+                throw new IllegalStateException("Refusing to load the Jenkins test harness in production (via "
+                        + atts.getValue("Short-Name") + ")");
+            }
             urls.add(path.toURI().toURL());
         }
         URLClassLoader2 classLoader;

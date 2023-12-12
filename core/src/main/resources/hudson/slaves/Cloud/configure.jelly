@@ -40,7 +40,6 @@ THE SOFTWARE.
         <l:isAdmin>
           <f:bottomButtonBar>
             <f:submit value="${%Save}"/>
-            <f:apply />
           </f:bottomButtonBar>
         </l:isAdmin>
       </f:form>

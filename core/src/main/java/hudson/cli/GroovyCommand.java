@@ -27,12 +27,14 @@ package hudson.cli;
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 import hudson.Extension;
+import hudson.model.User;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 import jenkins.model.Jenkins;
+import jenkins.util.ScriptListener;
 import org.apache.commons.io.IOUtils;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
@@ -63,14 +65,18 @@ public class GroovyCommand extends CLICommand {
         // this allows the caller to manipulate the JVM state, so require the execute script privilege.
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
 
+        final String scriptListenerCorrelationId = String.valueOf(System.identityHashCode(this));
+
         Binding binding = new Binding();
-        binding.setProperty("out", new PrintWriter(new OutputStreamWriter(stdout, getClientCharset()), true));
+        binding.setProperty("out", new PrintWriter(new ScriptListener.ListenerWriter(new OutputStreamWriter(stdout, getClientCharset()), GroovyCommand.class, null, scriptListenerCorrelationId, User.current()), true));
         binding.setProperty("stdin", stdin);
         binding.setProperty("stdout", stdout);
         binding.setProperty("stderr", stderr);
 
         GroovyShell groovy = new GroovyShell(Jenkins.get().getPluginManager().uberClassLoader, binding);
-        groovy.run(loadScript(), "RemoteClass", remaining.toArray(new String[0]));
+        String script = loadScript();
+        ScriptListener.fireScriptExecution(script, binding, GroovyCommand.class, null, scriptListenerCorrelationId, User.current());
+        groovy.run(script, "RemoteClass", remaining.toArray(new String[0]));
         return 0;
     }
 

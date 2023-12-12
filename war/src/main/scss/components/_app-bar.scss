@@ -81,8 +81,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
 
-  .build-status-icon__wrapper,
-  .build-status-icon__wrapper svg {
+  svg {
     width: 2rem !important;
     height: 2rem !important;
   }

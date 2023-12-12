@@ -28,6 +28,7 @@ import hudson.model.AbstractBuild;
 import hudson.model.BallColor;
 import hudson.model.Node;
 import hudson.model.Run;
+import jenkins.console.ConsoleUrlProvider;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.kohsuke.accmod.Restricted;
@@ -45,6 +46,7 @@ public class BuildTimeTrend extends RunListProgressiveRendering {
         element.put("displayName", build.getDisplayName());
         element.put("duration", build.getDuration());
         element.put("durationString", build.getDurationString());
+        element.put("consoleUrl", ConsoleUrlProvider.getRedirectUrl(build));
         if (build instanceof AbstractBuild) {
             AbstractBuild<?, ?> b = (AbstractBuild) build;
             Node n = b.getBuiltOn();
