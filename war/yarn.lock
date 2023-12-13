@@ -4365,7 +4365,7 @@ __metadata:
     style-loader: "npm:3.3.3"
     stylelint: "npm:16.0.1"
     stylelint-checkstyle-reporter: "npm:0.2.0"
-    stylelint-config-standard: "npm:33.0.0"
+    stylelint-config-standard: "npm:35.0.0"
     tippy.js: "npm:6.3.7"
     webpack: "npm:5.89.0"
     webpack-cli: "npm:5.1.4"
@@ -6603,23 +6603,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"stylelint-config-recommended@npm:^12.0.0":
-  version: 12.0.0
-  resolution: "stylelint-config-recommended@npm:12.0.0"
+"stylelint-config-recommended@npm:^14.0.0":
+  version: 14.0.0
+  resolution: "stylelint-config-recommended@npm:14.0.0"
   peerDependencies:
-    stylelint: ^15.5.0
-  checksum: 907d93bf99e072f6964bff5e1b7a86ea9712521e8979639b29ec5a55ef09789eecb7fcdeafa688324f1a69e38c462a8f87de973b8b1fcc53058c2ca177b4f426
+    stylelint: ^16.0.0
+  checksum: 4ad15c36e8c03291aa7bbe4b672ebfb0f46ab698e7580a0da8d29644046d102d7f31dbf00a2a6eab94b565c390c6fb0d5d528737b83ac3acf6dc2ef085a90b11
   languageName: node
   linkType: hard
 
-"stylelint-config-standard@npm:33.0.0":
-  version: 33.0.0
-  resolution: "stylelint-config-standard@npm:33.0.0"
+"stylelint-config-standard@npm:35.0.0":
+  version: 35.0.0
+  resolution: "stylelint-config-standard@npm:35.0.0"
   dependencies:
-    stylelint-config-recommended: "npm:^12.0.0"
+    stylelint-config-recommended: "npm:^14.0.0"
   peerDependencies:
-    stylelint: ^15.5.0
-  checksum: d84629f691f8d04ff2ae31c8f5ec9a4a30ec23b97b945b8a8c3e62dca3c35e00d226e47a5d56385341c6328c18bf235545bb67468ceffaeb41ff67fa4ff0c575
+    stylelint: ^16.0.0
+  checksum: 791fbc26cc3029ce3c2423a643e903545b5e4cd605251b18f0ce790bac6fbaaf380469845c1ff45f4e320126af9f8a9dc1ca85d0df9274277ae60da91e81895b
   languageName: node
   linkType: hard
 
