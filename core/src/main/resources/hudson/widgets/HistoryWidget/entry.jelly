@@ -71,7 +71,7 @@ THE SOFTWARE.
           <div class="build-stop">
             <!-- Check CANCEL permission for Project, Admin permission otherwise -->
             <j:if test="${empty(it.widget.owner.CANCEL) ? h.hasPermission(app.ADMINISTER) : it.widget.owner.hasPermission(it.widget.owner.CANCEL)}">
-              <l:stopButton href="${link}stop" alt="[cancel]" confirm="${%confirm(build.fullDisplayName)}" />
+              <l:stopButton href="${link}stop" alt="${%Cancel}" confirm="${%confirm(build.fullDisplayName)}" />
             </j:if>
           </div>
         </j:if>
