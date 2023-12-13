@@ -126,7 +126,7 @@ THE SOFTWARE.
                 </st:include>
                 <td class="pane" align="center" valign="middle">
                   <j:if test="${h.hasPermission(exeparent,exeparent.READ) and e.hasStopPermission()}">
-                    <l:stopButton href="${rootURL}/${c.url}${url}/stopBuild?runExtId=${h.urlEncode(exe.externalizableId)}" confirm="${%confirm(exe.fullDisplayName)}" alt="${%terminate this build}"  />
+                    <l:stopButton href="${rootURL}/${c.url}${url}/stopBuild?runExtId=${h.urlEncode(exe.externalizableId)}" confirm="${%confirm(exe.fullDisplayName)}" alt="${%Cancel}"  />
                   </j:if>
                 </td>
               </j:otherwise>
