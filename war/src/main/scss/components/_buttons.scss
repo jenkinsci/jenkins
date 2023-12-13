@@ -301,8 +301,8 @@ $jenkins-split-button-border-radius: 0.2rem;
 }
 
 .stop-button-link {
-  --item-background--hover: color-mix(in srgb, var(--red) 20%, transparent);
-  --item-background--active: color-mix(in srgb, var(--red) 25%, transparent);
+  --item-background--hover: color-mix(in sRGB, var(--red) 20%, transparent);
+  --item-background--active: color-mix(in sRGB, var(--red) 25%, transparent);
   --item-box-shadow--focus: transparent;
 
   @include mixins.item;
@@ -316,7 +316,7 @@ $jenkins-split-button-border-radius: 0.2rem;
   border-radius: 4px;
 
   &::before {
-    background: color-mix(in srgb, var(--red) 15%, transparent);
+    background: color-mix(in sRGB, var(--red) 15%, transparent);
   }
 
   svg {
