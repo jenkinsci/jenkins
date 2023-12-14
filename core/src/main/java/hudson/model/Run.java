@@ -2480,10 +2480,12 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         }
         Jenkins j = Jenkins.getInstanceOrNull();
         if (j == null) {
+            LOGGER.fine(() -> "Jenkins not running");
             return null;
         }
         Job<?, ?> job = j.getItemByFullName(jobName, Job.class);
         if (job == null) {
+            LOGGER.fine(() -> "no such job " + jobName + " when running as " + Jenkins.getAuthentication2().getName());
             return null;
         }
         return job.getBuildByNumber(number);

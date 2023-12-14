@@ -518,15 +518,21 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer, R> 
         Index snapshot = index;
         if (snapshot.byNumber.containsKey(n)) {
             BuildReference<R> ref = snapshot.byNumber.get(n);
-            if (ref == null)      return null;    // known failure
+            if (ref == null) {
+                LOGGER.fine(() -> "known failure of #" + n + " in " + dir);
+                return null;
+            }
             R v = unwrap(ref);
-            if (v != null)        return v;       // already in memory
+            if (v != null) {
+                return v; // already in memory
+            }
             // otherwise fall through to load
         }
         synchronized (this) {
             if (index.byNumber.containsKey(n)) { // JENKINS-22767: recheck inside lock
                 BuildReference<R> ref = index.byNumber.get(n);
                 if (ref == null) {
+                    LOGGER.fine(() -> "known failure of #" + n + " in " + dir);
                     return null;
                 }
                 R v = unwrap(ref);
@@ -655,7 +661,10 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer, R> 
         assert Thread.holdsLock(this);
         try {
             R r = retrieve(dataDir);
-            if (r == null)    return null;
+            if (r == null) {
+                LOGGER.fine(() -> "nothing in " + dataDir);
+                return null;
+            }
 
             Index copy = editInPlace != null ? editInPlace : new Index(index);
 
