@@ -152,7 +152,7 @@ public class BuildTriggerTest {
         j.jenkins.setAuthorizationStrategy(auth);
         final FreeStyleProject upstream = j. createFreeStyleProject("upstream");
         Authentication alice = User.getOrCreateByIdOrFullName("alice").impersonate2();
-        QueueItemAuthenticatorConfiguration.get().getAuthenticators().add(new MockQueueItemAuthenticator(Map.of("upstream", alice)));
+        QueueItemAuthenticatorConfiguration.get().getAuthenticators().add(new MockQueueItemAuthenticator().authenticate("upstream", alice));
         Map<Permission, Set<String>> perms = new HashMap<>();
         perms.put(Item.READ, Set.of("alice"));
         perms.put(Item.CONFIGURE, Set.of("alice"));
@@ -207,7 +207,7 @@ public class BuildTriggerTest {
         assertNotNull(cause);
         assertEquals(b, cause.getUpstreamRun());
         // Now if we have configured some QIA’s but they are not active on this job, we should normally fall back to running as anonymous. Which would normally have no permissions:
-        QueueItemAuthenticatorConfiguration.get().getAuthenticators().replace(new MockQueueItemAuthenticator(Map.of("upstream", Jenkins.ANONYMOUS2)));
+        QueueItemAuthenticatorConfiguration.get().getAuthenticators().replace(new MockQueueItemAuthenticator().authenticate("upstream", Jenkins.ANONYMOUS2));
         assertDoCheck(alice, Messages.BuildTrigger_you_have_no_permission_to_build_(downstreamName), upstream, downstreamName);
         assertDoCheck(alice, null, null, downstreamName);
         b = j.buildAndAssertSuccess(upstream);
