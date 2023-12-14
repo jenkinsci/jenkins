@@ -40,12 +40,12 @@ THE SOFTWARE.
     <j:choose>
       <j:when test="${confirm == null}">
         <a class="stop-button-link" href="${href}" tooltip="${alt}">
-            <l:icon src="symbol-close" />
+          <l:icon src="symbol-close" />
         </a>
       </j:when>
       <j:otherwise>
         <a class="stop-button-link" href="${href}" data-confirm="${confirm}" tooltip="${alt}">
-            <l:icon src="symbol-close" />
+          <l:icon src="symbol-close" />
         </a>
       </j:otherwise>
     </j:choose>

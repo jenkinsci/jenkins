@@ -311,9 +311,9 @@ $jenkins-split-button-border-radius: 0.2rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 16px;
-  height: 16px;
-  border-radius: 4px;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 0.25rem;
 
   &::before {
     background: color-mix(in sRGB, var(--red) 15%, transparent);
