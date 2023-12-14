@@ -58,7 +58,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.GregorianCalendar;
 import java.util.List;
-import java.util.Map;
 import jenkins.model.Jenkins;
 import jenkins.security.QueueItemAuthenticatorConfiguration;
 import org.htmlunit.HttpMethod;
@@ -222,7 +221,7 @@ public class NodeTest {
         j.jenkins.setSecurityRealm(realm);
         realm.createAccount("John", "");
         notTake = false;
-        QueueItemAuthenticatorConfiguration.get().getAuthenticators().add(new MockQueueItemAuthenticator(Map.of(project.getFullName(), user.impersonate())));
+        QueueItemAuthenticatorConfiguration.get().getAuthenticators().add(new MockQueueItemAuthenticator().authenticate(project.getFullName(), user.impersonate2()));
         assertNotNull("Node should not take project because user does not have build permission.", node.canTake(item));
         message = Messages._Node_LackingBuildPermission(item.authenticate2().getName(), node.getNodeName()).toString();
         assertEquals("Cause of blockage should be build permission label.", message, node.canTake(item).getShortDescription());

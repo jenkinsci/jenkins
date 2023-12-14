@@ -34,7 +34,6 @@ import hudson.Util;
 import hudson.model.Computer;
 import hudson.model.Descriptor;
 import hudson.model.TaskListener;
-import hudson.util.FormValidation;
 import jenkins.model.Jenkins;
 import jenkins.model.identity.InstanceIdentityProvider;
 import jenkins.slaves.RemotingWorkDirSettings;
@@ -43,10 +42,10 @@ import jenkins.websocket.WebSockets;
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
-import org.kohsuke.stapler.QueryParameter;
 
 /**
  * {@link ComputerLauncher} via inbound connections.
@@ -56,18 +55,11 @@ import org.kohsuke.stapler.QueryParameter;
 */
 public class JNLPLauncher extends ComputerLauncher {
     /**
-     * If the agent needs to tunnel the connection to the controller,
-     * specify the "host:port" here. This can include the special
-     * syntax "host:" and ":port" to indicate the default host/port
-     * shall be used.
-     *
-     * <p>
-     * Null if no tunneling is necessary.
-     *
-     * @since 1.250
+     * Deprecated (only used with deprecated {@code -jnlpUrl} mode), but cannot mark it as such without breaking CasC.
      */
+    @DataBoundSetter
     @CheckForNull
-    public final String tunnel;
+    public String tunnel;
 
     /**
      * @deprecated No longer used.
@@ -75,9 +67,11 @@ public class JNLPLauncher extends ComputerLauncher {
     @Deprecated
     public final transient String vmargs = null;
 
+    @Deprecated
     @NonNull
     private RemotingWorkDirSettings workDirSettings = RemotingWorkDirSettings.getEnabledDefaults();
 
+    @Deprecated
     private boolean webSocket;
 
     /**
@@ -88,14 +82,7 @@ public class JNLPLauncher extends ComputerLauncher {
     public static final String CUSTOM_INBOUND_URL_PROPERTY = "jenkins.agent.inboundUrl";
 
     /**
-     * Constructor.
-     * @param tunnel Tunnel settings
-     * @param vmargs JVM arguments
-     * @param workDirSettings Settings for Work Directory management in Remoting.
-     *                        If {@code null}, {@link RemotingWorkDirSettings#getEnabledDefaults()}
-     *                        will be used to enable work directories by default in new agents.
-     * @since 2.68
-     * @deprecated use {@link #JNLPLauncher(String, String)} and {@link #setWorkDirSettings(RemotingWorkDirSettings)}
+     * @deprecated no useful properties, use {@link #JNLPLauncher()}
      */
     @Deprecated
     public JNLPLauncher(@CheckForNull String tunnel, @CheckForNull String vmargs, @CheckForNull RemotingWorkDirSettings workDirSettings) {
@@ -105,36 +92,30 @@ public class JNLPLauncher extends ComputerLauncher {
         }
     }
 
-    // TODO cannot easily make tunnel into a @DataBoundSetter because then the @DataBoundConstructor would be on a no-arg constructor
-    // which is already defined and deprecated. Could retroactively let no-arg constructor use default for workDirSettings,
-    // which would be a behavioral change only for callers of the Java constructor (unlikely).
-    @DataBoundConstructor
+    /**
+     * @deprecated no useful properties, use {@link #JNLPLauncher()}
+     */
+    @Deprecated
     public JNLPLauncher(@CheckForNull String tunnel) {
         this.tunnel = Util.fixEmptyAndTrim(tunnel);
     }
 
     /**
-     * @deprecated use {@link JNLPLauncher#JNLPLauncher(String)}
+     * @deprecated no useful properties, use {@link #JNLPLauncher()}
      */
     @Deprecated
     public JNLPLauncher(@CheckForNull String tunnel, @CheckForNull String vmargs) {
         this.tunnel = Util.fixEmptyAndTrim(tunnel);
     }
 
-    /**
-     * @deprecated This Launcher does not enable the work directory.
-     *             It is recommended to use {@link #JNLPLauncher(boolean)}
-     */
-    @Deprecated
+    @DataBoundConstructor
     public JNLPLauncher() {
-        this(false);
     }
 
     /**
-     * Constructor with default options.
-     *
-     * @param enableWorkDir If {@code true}, the work directory will be enabled with default settings.
+     * @deprecated no useful properties, use {@link #JNLPLauncher()}
      */
+    @Deprecated
     public JNLPLauncher(boolean enableWorkDir) {
         this(null, null, enableWorkDir
                 ? RemotingWorkDirSettings.getEnabledDefaults()
@@ -150,16 +131,14 @@ public class JNLPLauncher extends ComputerLauncher {
         return this;
     }
 
-    /**
-     * Returns work directory settings.
-     *
-     * @since 2.72
-     */
-    @NonNull
+    @Deprecated
     public RemotingWorkDirSettings getWorkDirSettings() {
         return workDirSettings;
     }
 
+    /**
+     * Deprecated (only used with deprecated {@code -jnlpUrl} mode), but cannot mark it as such without breaking CasC.
+     */
     @DataBoundSetter
     public final void setWorkDirSettings(@NonNull RemotingWorkDirSettings workDirSettings) {
         this.workDirSettings = workDirSettings;
@@ -170,15 +149,13 @@ public class JNLPLauncher extends ComputerLauncher {
         return false;
     }
 
-    /**
-     * @since 2.216
-     */
+    @Deprecated
     public boolean isWebSocket() {
         return webSocket;
     }
 
     /**
-     * @since 2.216
+     * Deprecated (only used with deprecated {@code -jnlpUrl} mode), but cannot mark it as such without breaking CasC.
      */
     @DataBoundSetter
     public void setWebSocket(boolean webSocket) {
@@ -208,6 +185,11 @@ public class JNLPLauncher extends ComputerLauncher {
     @Restricted(NoExternalUse.class)
     public String getRemotingOptionsWindows(@NonNull Computer computer) {
         return getRemotingOptions(escapeWindows(computer.getName()));
+    }
+
+    @Restricted(DoNotUse.class)
+    public boolean isConfigured() {
+        return webSocket || tunnel != null || workDirSettings.isConfigured();
     }
 
     private String getRemotingOptions(String computerName) {
@@ -296,23 +278,19 @@ public class JNLPLauncher extends ComputerLauncher {
             return DescriptorImpl.class.equals(getClass());
         }
 
-        public FormValidation doCheckWebSocket(@QueryParameter boolean webSocket, @QueryParameter String tunnel) {
-            if (webSocket) {
-                if (!WebSockets.isSupported()) {
-                    return FormValidation.error(Messages.JNLPLauncher_WebsocketNotEnabled());
-                }
-                if (Util.fixEmptyAndTrim(tunnel) != null) {
-                    return FormValidation.error(Messages.JNLPLauncher_TunnelingNotSupported());
-                }
-            } else {
-                if (Jenkins.get().getTcpSlaveAgentListener() == null) {
-                    return FormValidation.error(Messages.JNLPLauncher_TCPPortDisabled());
-                }
-                if (InstanceIdentityProvider.RSA.getCertificate() == null || InstanceIdentityProvider.RSA.getPrivateKey() == null) {
-                    return FormValidation.error(Messages.JNLPLauncher_InstanceIdentityRequired());
-                }
-            }
-            return FormValidation.ok();
+        @Restricted(DoNotUse.class)
+        public boolean isTcpSupported() {
+            return Jenkins.get().getTcpSlaveAgentListener() != null;
+        }
+
+        @Restricted(DoNotUse.class)
+        public boolean isInstanceIdentityInstalled() {
+            return InstanceIdentityProvider.RSA.getCertificate() != null && InstanceIdentityProvider.RSA.getPrivateKey() != null;
+        }
+
+        @Restricted(DoNotUse.class)
+        public boolean isWebSocketSupported() {
+            return WebSockets.isSupported();
         }
 
     }
