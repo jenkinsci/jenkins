@@ -5,6 +5,7 @@
   background: var(--card-background);
   border: var(--card-border-width) solid var(--card-border-color);
   margin-left: 10px;
+  margin-bottom: calc(var(--section-padding) / 2);
   overflow: hidden;
 }
 
@@ -81,13 +82,6 @@
   @include mixins.link-dark;
 
   text-decoration: underline;
-}
-
-/**
- * Build Queue
- */
-#buildQueue {
-  margin-bottom: calc(var(--section-padding) / 2);
 }
 
 /**
