@@ -28,6 +28,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -112,10 +113,8 @@ public class JNLPLauncherTest {
     }
 
     @Test
-    @Issue("JENKINS-44112")
-    @SuppressWarnings("deprecation")
     public void testDefaults() {
-        assertTrue("Work directory should be disabled for agents created via old API", new JNLPLauncher().getWorkDirSettings().isDisabled());
+        assertFalse("Work directory enabled by default", new JNLPLauncher().getWorkDirSettings().isDisabled());
     }
 
     @Test
@@ -158,6 +157,7 @@ public class JNLPLauncherTest {
         ArgumentListBuilder args = new ArgumentListBuilder();
         args.add(new File(new File(System.getProperty("java.home")), "bin/java").getPath(), "-jar");
         args.add(Which.jarFile(Launcher.class).getAbsolutePath());
+        // TODO deprecated mode
         args.add("-jnlpUrl", j.getURL() + "computer/" + c.getName() + "/jenkins-agent.jnlp");
 
         if (c instanceof SlaveComputer) {

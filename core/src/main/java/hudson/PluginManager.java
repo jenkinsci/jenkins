@@ -1803,13 +1803,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         jenkins.checkPermission(Jenkins.ADMINISTER);
 
         ProxyConfiguration pc = req.bindJSON(ProxyConfiguration.class, req.getSubmittedForm());
-        if (pc.name == null) {
-            jenkins.proxy = null;
-            ProxyConfiguration.getXmlFile().delete();
-        } else {
-            jenkins.proxy = pc;
-            jenkins.proxy.save();
-        }
+        ProxyConfigurationManager.saveProxyConfiguration(pc);
         return new HttpRedirect("advanced");
     }
 
