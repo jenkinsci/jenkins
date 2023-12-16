@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="ionicon" viewBox="0 0 512 512">
+    <ellipse opacity="0.4" cx="256" cy="256" rx="210" ry="210" fill="none" stroke="var(--orange)" stroke-linecap="round" stroke-miterlimit="10" stroke-width="36" />
+    <path d="M256 46C140.02 46 46 140.02 46 256" fill="transparent" stroke="var(--orange)" stroke-width="36" stroke-miterlimit="10" stroke-linecap="round" data-symbol-animation="spin" />
+    <path d="M250.26 166.05L256 288l5.73-121.95a5.74 5.74 0 00-5.79-6h0a5.74 5.74 0 00-5.68 6z" fill="none" stroke="var(--orange)" stroke-linecap="round" stroke-linejoin="round" stroke-width="36" />
+    <ellipse cx="256" cy="350" rx="26" ry="26" fill="var(--orange)" />
+</svg>
