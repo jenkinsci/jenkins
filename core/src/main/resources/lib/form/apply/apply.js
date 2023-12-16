@@ -43,23 +43,15 @@ Behaviour.specify(
         const doc = target.contentDocument || target.contentWindow.document;
         let error = doc.getElementById("error-description");
 
-        if (error) {
-          const title = error.querySelector("h2").textContent;
-          const errorMessage = error.querySelector("p").textContent;
-
-          notificationBar.show(
-            title + " - " + errorMessage,
-            notificationBar.ERROR,
-          );
-        } else {
+        if (!error) {
           // Fallback if it's not a regular error dialog from oops.jelly: use the entire body
           error = document.createElement("div");
           error.appendChild(doc.querySelector("#page-body"));
-
-          dialog.modal(error, {
-            minWidth: "850px",
-          });
         }
+
+        dialog.modal(error, {
+          minWidth: "850px",
+        });
 
         // Remove the iframe from the DOM
         target.remove();
