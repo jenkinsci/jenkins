@@ -308,7 +308,7 @@ public class SlaveComputer extends Computer {
                     e.addSuppressed(threadInfo);
                     Functions.printStackTrace(e, taskListener.error(Messages.ComputerLauncher_abortedLaunch()));
                     throw e;
-                } catch (RuntimeException e) {
+                } catch (RuntimeException | Error e) {
                     e.addSuppressed(threadInfo);
                     Functions.printStackTrace(e, taskListener.error(Messages.ComputerLauncher_unexpectedError()));
                     throw e;
@@ -877,6 +877,12 @@ public class SlaveComputer extends Computer {
 
     @WebMethod(name = "jenkins-agent.jnlp")
     public HttpResponse doJenkinsAgentJnlp(StaplerRequest req, StaplerResponse res) {
+        LOGGER.log(
+                Level.WARNING,
+                "Agent \"" + getName()
+                        + "\" is connecting with the \"-jnlpUrl\" argument, which is deprecated."
+                        + " Use \"-url\" and \"-name\" instead, potentially also passing in"
+                        + " \"-webSocket\", \"-tunnel\", and/or work directory options as needed.");
         return new EncryptedSlaveAgentJnlpFile(this, "jenkins-agent.jnlp.jelly", getName(), CONNECT);
     }
 

@@ -27,7 +27,6 @@ package jenkins.install;
 import static java.util.logging.Level.SEVERE;
 import static java.util.logging.Level.WARNING;
 
-import com.thoughtworks.xstream.XStream;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Functions;
@@ -37,6 +36,7 @@ import hudson.model.UpdateCenter.DownloadJob.Installing;
 import hudson.model.UpdateCenter.InstallationJob;
 import hudson.model.UpdateCenter.UpdateCenterJob;
 import hudson.util.VersionNumber;
+import hudson.util.XStream2;
 import jakarta.inject.Provider;
 import java.io.File;
 import java.io.IOException;
@@ -289,7 +289,7 @@ public class InstallUtil {
         if (installingPluginsFile == null || !installingPluginsFile.exists()) {
             return null;
         }
-        return (Map<String, String>) new XStream().fromXML(installingPluginsFile);
+        return (Map<String, String>) new XStream2().fromXML(installingPluginsFile);
     }
 
     /**
@@ -319,7 +319,7 @@ public class InstallUtil {
             }
         }
         try {
-            String installingPluginXml = new XStream().toXML(statuses);
+            String installingPluginXml = new XStream2().toXML(statuses);
             Files.writeString(Util.fileToPath(installingPluginsFile), installingPluginXml, StandardCharsets.UTF_8);
         } catch (IOException e) {
             LOGGER.log(SEVERE, "Failed to save " + installingPluginsFile.getAbsolutePath(), e);
