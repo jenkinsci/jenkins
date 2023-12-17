@@ -43,24 +43,20 @@
   top: 48px;
   right: 2%;
   height: auto;
-  z-index: 0;
   padding: 2em;
   text-align: left;
   display: block;
   background-color: var(--background);
-  border-radius: 5px;
-
-  /* Darken the box shadow to make the popup visible over the search box  */
-  box-shadow: 0 1px 7px 0 rgba(0, 0, 0, 0.3);
-
-  transition: all 0.15s cubic-bezier(0.84, 0.03, 0.21, 0.96);
+  box-shadow: var(--dropdown-box-shadow);
+  transition: var(--standard-transition);
+  border-radius: 15px;
   opacity: 0;
-  transform: scale(0);
+  transform: translateY(-10px) scale(0.975);
+  z-index: 1000;
 }
 .am-container.visible div.am-list {
   opacity: 1;
   transform: scale(1);
-  z-index: 1000;
 }
 /*.am-container.visible .am-button {*/
 /*  background-color: var(--header-link-bg-classic-active);*/
