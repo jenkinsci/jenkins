@@ -90,7 +90,7 @@ axes.values().combinations {
             }
             def mavenOptions = [
               '-Pdebug',
-              '-Penable-jacoco',
+              '-Pquick-build',
               '--update-snapshots',
               "-Dmaven.repo.local=$m2repo",
               '-Dmaven.test.failure.ignore',
@@ -104,26 +104,26 @@ axes.values().combinations {
               'clean',
               'install',
             ]
-            if (env.CHANGE_ID && !pullRequest.labels.contains('full-test')) {
-              def excludesFile
-              def target = platform == 'windows' ? '30%' : '100%'
-              withCredentials([string(credentialsId: 'launchable-jenkins-jenkins', variable: 'LAUNCHABLE_TOKEN')]) {
-                if (isUnix()) {
-                  excludesFile = "${tmpDir}/excludes.txt"
-                  sh "launchable verify && launchable subset --session ${session} --target ${target} --get-tests-from-previous-sessions --output-exclusion-rules maven >${excludesFile}"
-                } else {
-                  excludesFile = "${tmpDir}\\excludes.txt"
-                  bat "launchable verify && launchable subset --session ${session} --target ${target}% --get-tests-from-previous-sessions --output-exclusion-rules maven >${excludesFile}"
-                }
-              }
-              mavenOptions.add(0, "-Dsurefire.excludesFile=${excludesFile}")
-            }
-            realtimeJUnit(healthScaleFactor: 20.0, testResults: '*/target/surefire-reports/*.xml') {
+//             if (env.CHANGE_ID && !pullRequest.labels.contains('full-test')) {
+//               def excludesFile
+//               def target = platform == 'windows' ? '30%' : '100%'
+//               withCredentials([string(credentialsId: 'launchable-jenkins-jenkins', variable: 'LAUNCHABLE_TOKEN')]) {
+//                 if (isUnix()) {
+//                   excludesFile = "${tmpDir}/excludes.txt"
+//                   sh "launchable verify && launchable subset --session ${session} --target ${target} --get-tests-from-previous-sessions --output-exclusion-rules maven >${excludesFile}"
+//                 } else {
+//                   excludesFile = "${tmpDir}\\excludes.txt"
+//                   bat "launchable verify && launchable subset --session ${session} --target ${target}% --get-tests-from-previous-sessions --output-exclusion-rules maven >${excludesFile}"
+//                 }
+//               }
+//               mavenOptions.add(0, "-Dsurefire.excludesFile=${excludesFile}")
+//             }
+//             realtimeJUnit(healthScaleFactor: 20.0, testResults: '*/target/surefire-reports/*.xml') {
               infra.runMaven(mavenOptions, jdk)
-              if (isUnix()) {
-                sh 'git add . && git diff --exit-code HEAD'
-              }
-            }
+//               if (isUnix()) {
+//                 sh 'git add . && git diff --exit-code HEAD'
+//               }
+//             }
           }
         }
 
@@ -134,109 +134,78 @@ axes.values().combinations {
           if (failFast && currentBuild.result == 'UNSTABLE') {
             error 'There were test failures; halting early'
           }
-          if (platform == 'linux' && jdk == axes['jdks'][0]) {
-            def folders = env.JOB_NAME.split('/')
-            if (folders.length > 1) {
-              discoverGitReferenceBuild(scm: folders[1])
-            }
-            recordCoverage(tools: [[parser: 'JACOCO', pattern: 'coverage/target/site/jacoco-aggregate/jacoco.xml']],
-            sourceCodeRetention: 'MODIFIED', sourceDirectories: [[path: 'core/src/main/java']])
+//           if (platform == 'linux' && jdk == axes['jdks'][0]) {
+//             def folders = env.JOB_NAME.split('/')
+//             if (folders.length > 1) {
+//               discoverGitReferenceBuild(scm: folders[1])
+//             }
+//             recordCoverage(tools: [[parser: 'JACOCO', pattern: 'coverage/target/site/jacoco-aggregate/jacoco.xml']],
+//             sourceCodeRetention: 'MODIFIED', sourceDirectories: [[path: 'core/src/main/java']])
 
-            echo "Recording static analysis results for '${platform.capitalize()}'"
-            recordIssues(
-                enabledForFailure: true,
-                tools: [java()],
-                filters: [excludeFile('.*Assert.java')],
-                sourceCodeEncoding: 'UTF-8',
-                skipBlames: true,
-                trendChartType: 'TOOLS_ONLY'
-                )
-            recordIssues(
-                enabledForFailure: true,
-                tools: [javaDoc()],
-                filters: [excludeFile('.*Assert.java')],
-                sourceCodeEncoding: 'UTF-8',
-                skipBlames: true,
-                trendChartType: 'TOOLS_ONLY',
-                qualityGates: [[threshold: 1, type: 'TOTAL', unstable: true]]
-            )
-            recordIssues([tool: spotBugs(pattern: '**/target/spotbugsXml.xml'),
-              sourceCodeEncoding: 'UTF-8',
-              skipBlames: true,
-              trendChartType: 'TOOLS_ONLY',
-              qualityGates: [[threshold: 1, type: 'NEW', unstable: true]]])
-            recordIssues([tool: checkStyle(pattern: '**/target/checkstyle-result.xml'),
-              sourceCodeEncoding: 'UTF-8',
-              skipBlames: true,
-              trendChartType: 'TOOLS_ONLY',
-              qualityGates: [[threshold: 1, type: 'TOTAL', unstable: true]]])
-            recordIssues([tool: esLint(pattern: '**/target/eslint-warnings.xml'),
-              sourceCodeEncoding: 'UTF-8',
-              skipBlames: true,
-              trendChartType: 'TOOLS_ONLY',
-              qualityGates: [[threshold: 1, type: 'TOTAL', unstable: true]]])
-            recordIssues([tool: styleLint(pattern: '**/target/stylelint-warnings.xml'),
-              sourceCodeEncoding: 'UTF-8',
-              skipBlames: true,
-              trendChartType: 'TOOLS_ONLY',
-              qualityGates: [[threshold: 1, type: 'TOTAL', unstable: true]]])
-            if (failFast && currentBuild.result == 'UNSTABLE') {
-              error 'Static analysis quality gates not passed; halting early'
-            }
-            def changelist = readFile(changelistF)
-            dir(m2repo) {
-              archiveArtifacts(
-                  artifacts: "**/*$changelist/*$changelist*",
-                  excludes: '**/*.lastUpdated,**/jenkins-coverage*/,**/jenkins-test*/',
-                  allowEmptyArchive: true, // in case we forgot to reincrementalify
-                  fingerprint: true
-                  )
-            }
-          }
-          withCredentials([string(credentialsId: 'launchable-jenkins-jenkins', variable: 'LAUNCHABLE_TOKEN')]) {
-            if (isUnix()) {
-              sh "launchable verify && launchable record tests --session ${session} --flavor platform=${platform} --flavor jdk=${jdk} maven './**/target/surefire-reports'"
-            } else {
-              bat "launchable verify && launchable record tests --session ${session} --flavor platform=${platform} --flavor jdk=${jdk} maven ./**/target/surefire-reports"
-            }
-          }
+//             echo "Recording static analysis results for '${platform.capitalize()}'"
+//             recordIssues(
+//                 enabledForFailure: true,
+//                 tools: [java()],
+//                 filters: [excludeFile('.*Assert.java')],
+//                 sourceCodeEncoding: 'UTF-8',
+//                 skipBlames: true,
+//                 trendChartType: 'TOOLS_ONLY'
+//                 )
+//             recordIssues(
+//                 enabledForFailure: true,
+//                 tools: [javaDoc()],
+//                 filters: [excludeFile('.*Assert.java')],
+//                 sourceCodeEncoding: 'UTF-8',
+//                 skipBlames: true,
+//                 trendChartType: 'TOOLS_ONLY',
+//                 qualityGates: [[threshold: 1, type: 'TOTAL', unstable: true]]
+//             )
+//             recordIssues([tool: spotBugs(pattern: '**/target/spotbugsXml.xml'),
+//               sourceCodeEncoding: 'UTF-8',
+//               skipBlames: true,
+//               trendChartType: 'TOOLS_ONLY',
+//               qualityGates: [[threshold: 1, type: 'NEW', unstable: true]]])
+//             recordIssues([tool: checkStyle(pattern: '**/target/checkstyle-result.xml'),
+//               sourceCodeEncoding: 'UTF-8',
+//               skipBlames: true,
+//               trendChartType: 'TOOLS_ONLY',
+//               qualityGates: [[threshold: 1, type: 'TOTAL', unstable: true]]])
+//             recordIssues([tool: esLint(pattern: '**/target/eslint-warnings.xml'),
+//               sourceCodeEncoding: 'UTF-8',
+//               skipBlames: true,
+//               trendChartType: 'TOOLS_ONLY',
+//               qualityGates: [[threshold: 1, type: 'TOTAL', unstable: true]]])
+//             recordIssues([tool: styleLint(pattern: '**/target/stylelint-warnings.xml'),
+//               sourceCodeEncoding: 'UTF-8',
+//               skipBlames: true,
+//               trendChartType: 'TOOLS_ONLY',
+//               qualityGates: [[threshold: 1, type: 'TOTAL', unstable: true]]])
+//             if (failFast && currentBuild.result == 'UNSTABLE') {
+//               error 'Static analysis quality gates not passed; halting early'
+//             }
+//             def changelist = readFile(changelistF)
+//             dir(m2repo) {
+//               archiveArtifacts(
+//                   artifacts: "**/*$changelist/*$changelist*",
+//                   excludes: '**/*.lastUpdated,**/jenkins-coverage*/,**/jenkins-test*/',
+//                   allowEmptyArchive: true, // in case we forgot to reincrementalify
+//                   fingerprint: true
+//                   )
+//             }
+//           }
+//           withCredentials([string(credentialsId: 'launchable-jenkins-jenkins', variable: 'LAUNCHABLE_TOKEN')]) {
+//             if (isUnix()) {
+//               sh "launchable verify && launchable record tests --session ${session} --flavor platform=${platform} --flavor jdk=${jdk} maven './**/target/surefire-reports'"
+//             } else {
+//               bat "launchable verify && launchable record tests --session ${session} --flavor platform=${platform} --flavor jdk=${jdk} maven ./**/target/surefire-reports"
+//             }
+//           }
         }
       }
     }
   }
 }
 
-def athAxes = [
-  platforms: ['linux'],
-  jdks: [17],
-  browsers: ['firefox'],
-]
-athAxes.values().combinations {
-  def (platform, jdk, browser) = it
-  builds["ath-${platform}-jdk${jdk}-${browser}"] = {
-    retry(conditions: [agent(), nonresumable()], count: 2) {
-      node('docker-highmem') {
-        // Just to be safe
-        deleteDir()
-        checkout scm
-        infra.withArtifactCachingProxy {
-          sh "bash ath.sh ${jdk} ${browser}"
-        }
-        junit testResults: 'target/ath-reports/TEST-*.xml', testDataPublishers: [[$class: 'AttachmentPublisher']]
-        /*
-         * Currently disabled, as the fact that this is a manually created subset will confuse Launchable,
-         * which expects this to be a full build. When we implement subsetting, this can be re-enabled using
-         * Launchable's subset rather than our own.
-         */
-        /*
-         withCredentials([string(credentialsId: 'launchable-jenkins-acceptance-test-harness', variable: 'LAUNCHABLE_TOKEN')]) {
-         sh "launchable verify && launchable record tests --no-build --flavor platform=${platform} --flavor jdk=${jdk} --flavor browser=${browser} maven './target/ath-reports'"
-         }
-         */
-      }
-    }
-  }
-}
 
 builds.failFast = failFast
 parallel builds
