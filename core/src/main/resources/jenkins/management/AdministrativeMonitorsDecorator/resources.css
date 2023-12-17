@@ -32,7 +32,7 @@
   font-weight: 500;
   font-size: var(--font-size-sm);
 
-  border-radius: 4px;
+  border-radius: 6px;
 }
 .am-button.security-am .am-monitor__count {
   color: #fff;
@@ -57,31 +57,6 @@
 .am-container.visible div.am-list {
   opacity: 1;
   transform: scale(1);
-}
-/*.am-container.visible .am-button {*/
-/*  background-color: var(--header-link-bg-classic-active);*/
-/*  text-decoration: none;*/
-/*}*/
-/*.am-container .am-button:after {*/
-/*  content: "";*/
-/*  display: inline-block;*/
-/*  position: absolute;*/
-/*  bottom: 0;*/
-/*  left: 32%;*/
-/*  width: 0;*/
-/*  height: 0;*/
-/*  border-left: 7px solid transparent;*/
-/*  border-right: 7px solid transparent;*/
-/*  border-bottom: 7px solid #fff;*/
-/*  opacity: 0;*/
-/*  transition-property: all;*/
-/*  transition-delay: 0s;*/
-/*  z-index: 1001;*/
-/*}*/
-.am-container.visible .am-button:after {
-  opacity: 1;
-  transition-property: all;
-  transition-delay: 0.15s;
 }
 .am-container .am-message {
   display: block;
