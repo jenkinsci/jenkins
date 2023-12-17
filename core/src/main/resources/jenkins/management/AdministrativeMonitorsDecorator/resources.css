@@ -24,15 +24,15 @@
   display: inline-flex;
   justify-content: center;
   align-items: center;
-  height: 20px;
-  min-width: 20px;
+  height: 18px;
+  min-width: 18px;
 
   color: #fff;
   background-color: var(--warning-color);
   font-weight: 500;
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-xs);
 
-  border-radius: 6px;
+  border-radius: 16px;
 }
 .am-button.security-am .am-monitor__count {
   color: #fff;
