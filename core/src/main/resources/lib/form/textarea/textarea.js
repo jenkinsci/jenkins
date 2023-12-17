@@ -19,7 +19,8 @@ Behaviour.specify(
     hidePreview.style.display = "none";
     previewDiv.style.display = "none";
 
-    showPreview.onclick = function () {
+    showPreview.onclick = function (event) {
+      event.preventDefault();
       // Several TEXTAREAs may exist if CodeMirror is enabled. The first one has reference to the CodeMirror object.
       var textarea = e.parentNode.getElementsByTagName("TEXTAREA")[0];
       var text = "";
@@ -59,7 +60,8 @@ Behaviour.specify(
       });
     };
 
-    hidePreview.onclick = function () {
+    hidePreview.onclick = function (event) {
+      event.preventDefault();
       hidePreview.style.display = "none";
       previewDiv.style.display = "none";
     };

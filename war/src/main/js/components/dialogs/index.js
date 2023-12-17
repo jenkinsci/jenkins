@@ -139,7 +139,11 @@ Dialog.prototype.appendButtons = function () {
       }</button>
     </div>`);
 
-  this.dialog.appendChild(buttons);
+  if (this.dialogType === "form") {
+    this.form.appendChild(buttons);
+  } else {
+    this.dialog.appendChild(buttons);
+  }
 
   this.ok = buttons.querySelector("[data-id=ok]");
   this.cancel = buttons.querySelector("[data-id=cancel]");
@@ -172,25 +176,24 @@ Dialog.prototype.show = function () {
     if (this.input != null) {
       this.input.focus();
     }
-    if (this.ok != null) {
+    if (
+      this.ok != null &&
+      (this.dialogType != "form" || !this.options.submitButton)
+    ) {
       this.ok.addEventListener(
         "click",
         (e) => {
-          if (this.dialogType === "form" && this.options.submitButton) {
-            this.form.submit();
-          } else {
-            e.preventDefault();
+          e.preventDefault();
 
-            let value = true;
-            if (this.dialogType === "prompt") {
-              value = this.input.value;
-            }
-            if (this.dialogType === "form") {
-              value = new FormData(this.form);
-            }
-            this.dialog.remove();
-            resolve(value);
+          let value = true;
+          if (this.dialogType === "prompt") {
+            value = this.input.value;
           }
+          if (this.dialogType === "form") {
+            value = new FormData(this.form);
+          }
+          this.dialog.remove();
+          resolve(value);
         },
         { once: true },
       );

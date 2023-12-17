@@ -86,11 +86,6 @@ public class ClassicPluginStrategy implements PluginStrategy {
 
     private final PluginManager pluginManager;
 
-    /**
-     * All the plugins eventually delegate this classloader to load core, servlet APIs, and SE runtime.
-     */
-    private final MaskingClassLoader coreClassLoader = new MaskingClassLoader(getClass().getClassLoader());
-
     public ClassicPluginStrategy(PluginManager pluginManager) {
         this.pluginManager = pluginManager;
     }
@@ -235,16 +230,8 @@ public class ClassicPluginStrategy implements PluginStrategy {
 
         fix(atts, optionalDependencies);
 
-        // Register global classpath mask. This is useful for hiding JavaEE APIs that you might see from the container,
-        // such as database plugin for JPA support. The Mask-Classes attribute is insufficient because those classes
-        // also need to be masked by all the other plugins that depend on the database plugin.
-        String masked = atts.getValue("Global-Mask-Classes");
-        if (masked != null) {
-            for (String pkg : masked.trim().split("[ \t\r\n]+"))
-                coreClassLoader.add(pkg);
-        }
-
-        ClassLoader dependencyLoader = new DependencyClassLoader(coreClassLoader, archive, Util.join(dependencies, optionalDependencies), pluginManager);
+        ClassLoader dependencyLoader = new DependencyClassLoader(
+                getClass().getClassLoader(), archive, Util.join(dependencies, optionalDependencies), pluginManager);
         dependencyLoader = getBaseClassLoader(atts, dependencyLoader);
 
         return new PluginWrapper(pluginManager, archive, manifest, baseResourceURL,
@@ -290,6 +277,10 @@ public class ClassicPluginStrategy implements PluginStrategy {
 
         List<URL> urls = new ArrayList<>();
         for (File path : paths) {
+            if (path.getName().startsWith("jenkins-test-harness")) {
+                throw new IllegalStateException("Refusing to load the Jenkins test harness in production (via "
+                        + atts.getValue("Short-Name") + ")");
+            }
             urls.add(path.toURI().toURL());
         }
         URLClassLoader2 classLoader;

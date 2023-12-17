@@ -83,7 +83,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.HttpURLConnection;
-import java.net.URL;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
@@ -819,19 +819,18 @@ public class QueueTest {
      */
     @Test public void accessControl() throws Exception {
         FreeStyleProject p = r.createFreeStyleProject();
-        QueueItemAuthenticatorConfiguration.get().getAuthenticators().add(new MockQueueItemAuthenticator(Map.of(p.getFullName(), alice)));
+        QueueItemAuthenticatorConfiguration.get().getAuthenticators().add(new MockQueueItemAuthenticator().authenticate(p.getFullName(), alice));
         p.getBuildersList().add(new TestBuilder() {
             @Override
             public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) {
-                assertEquals(alice2, Jenkins.getAuthentication2());
+                assertEquals(alice, Jenkins.getAuthentication2());
                 return true;
             }
         });
         r.buildAndAssertSuccess(p);
     }
 
-    private static Authentication alice2 = new UsernamePasswordAuthenticationToken("alice", "alice", Collections.emptySet());
-    private static org.acegisecurity.Authentication alice = org.acegisecurity.Authentication.fromSpring(alice2);
+    private static Authentication alice = new UsernamePasswordAuthenticationToken("alice", "alice", Collections.emptySet());
 
 
     /**
@@ -846,11 +845,11 @@ public class QueueTest {
         DumbSlave s2 = r.createSlave();
 
         FreeStyleProject p = r.createFreeStyleProject();
-        QueueItemAuthenticatorConfiguration.get().getAuthenticators().add(new MockQueueItemAuthenticator(Map.of(p.getFullName(), alice)));
+        QueueItemAuthenticatorConfiguration.get().getAuthenticators().add(new MockQueueItemAuthenticator().authenticate(p.getFullName(), alice));
         p.getBuildersList().add(new TestBuilder() {
             @Override
             public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) {
-                assertEquals(alice2, Jenkins.getAuthentication2());
+                assertEquals(alice, Jenkins.getAuthentication2());
                 return true;
             }
         });
@@ -883,7 +882,7 @@ public class QueueTest {
             if (node.getNodeName().equals(blocked)) {
                 // ACL that allow anyone to do anything except Alice can't build.
                 SparseACL acl = new SparseACL(null);
-                acl.add(new PrincipalSid(alice2), Computer.BUILD, false);
+                acl.add(new PrincipalSid(alice), Computer.BUILD, false);
                 acl.add(new PrincipalSid("anonymous"), Jenkins.ADMINISTER, true);
                 return acl;
             }
@@ -1199,7 +1198,7 @@ public class QueueTest {
         Queue.Item currentOne = items[0];
         assertFalse(currentOne.getFuture().isCancelled());
 
-        WebRequest request = new WebRequest(new URL(r.getURL() + urlProvider.apply(currentOne)), HttpMethod.POST);
+        WebRequest request = new WebRequest(new URI(r.getURL() + urlProvider.apply(currentOne)).toURL(), HttpMethod.POST);
 
         { // user without right cannot cancel
             JenkinsRule.WebClient wc = r.createWebClient()

@@ -72,6 +72,10 @@ import java.util.jar.Manifest;
  */
 public class Main {
 
+    /**
+     * This list must remain synchronized with the one in {@code
+     * JavaVersionRecommendationAdminMonitor}.
+     */
     private static final NavigableSet<Integer> SUPPORTED_JAVA_VERSIONS =
             new TreeSet<>(Arrays.asList(11, 17, 21));
 
