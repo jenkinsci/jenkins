@@ -49,7 +49,7 @@ public class JavaSystemProperties extends Telemetry {
             "os.arch",
             "os.name",
             "os.version",
-            "user.language"
+            "user.language",
     };
 
     public Map<String, String> getProperties() {
