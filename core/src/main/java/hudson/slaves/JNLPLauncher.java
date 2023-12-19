@@ -55,9 +55,9 @@ import org.kohsuke.stapler.DataBoundSetter;
 */
 public class JNLPLauncher extends ComputerLauncher {
     /**
-     * Deprecated (only used with deprecated {@code -jnlpUrl} mode), but cannot mark it as such without breaking CasC.
+     * @deprecated see {@link #setTunnel}
      */
-    @DataBoundSetter
+    @Deprecated
     @CheckForNull
     public String tunnel;
 
@@ -160,6 +160,19 @@ public class JNLPLauncher extends ComputerLauncher {
     @DataBoundSetter
     public void setWebSocket(boolean webSocket) {
         this.webSocket = webSocket;
+    }
+
+    @Deprecated
+    public String getTunnel() {
+        return tunnel;
+    }
+
+    /**
+     * Deprecated (only used with deprecated {@code -jnlpUrl} mode), but cannot mark it as such without breaking CasC.
+     */
+    @DataBoundSetter
+    public void setTunnel(String tunnel) {
+        this.tunnel = tunnel;
     }
 
     @Override
