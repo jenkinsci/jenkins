@@ -1,5 +1,5 @@
 .am-container {
-  height: 100%;
+  display: contents;
 }
 
 .am-button {
@@ -43,7 +43,7 @@
   top: 48px;
   right: 2%;
   height: auto;
-  padding: 2em;
+  padding: var(--section-padding);
   text-align: left;
   display: block;
   background-color: var(--background);
@@ -66,6 +66,7 @@
 
 .am-message-list {
   padding: 0;
+  margin: 0;
 }
 
 .am-container .am-message .alert form {

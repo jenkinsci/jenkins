@@ -38,8 +38,7 @@ a.page-header__brand-link {
 }
 
 .page-header__am-wrapper {
-  height: 100%;
-  padding: 0.5rem 0;
+  display: contents;
 }
 
 .page-header__hyperlinks {
@@ -47,7 +46,8 @@ a.page-header__brand-link {
   align-items: center;
 }
 
-.page-header__hyperlinks a {
+.page-header__hyperlinks > a,
+.am-container > a {
   @include mixins.item;
 
   --text-color: var(--header-link-color);
@@ -56,11 +56,11 @@ a.page-header__brand-link {
   align-items: center;
   color: var(--text-color);
   text-decoration: none;
-
   padding: 0.5rem;
   margin-right: 0 !important;
 
-  &::before, &::after {
+  &::before,
+  &::after {
     inset: 0 !important;
   }
 
