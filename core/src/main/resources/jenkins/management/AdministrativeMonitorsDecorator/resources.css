@@ -63,6 +63,9 @@
   line-height: 1.4em;
   margin-bottom: 1.4em;
 }
+.am-container.visible .am-button:after {
+  background: var(--button-background--hover);
+}
 
 .am-message-list {
   padding: 0;
