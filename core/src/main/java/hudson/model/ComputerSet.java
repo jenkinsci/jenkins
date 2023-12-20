@@ -352,15 +352,33 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
         BulkChange bc = new BulkChange(MONITORS_OWNER);
         try {
             Jenkins.get().checkPermission(Jenkins.MANAGE);
-            monitors.rebuild(req, req.getSubmittedForm(), getNodeMonitorDescriptors());
+            JSONObject json = req.getSubmittedForm();
+            monitors.rebuild(req, json, getNodeMonitorDescriptors());
 
             // add in the rest of instances are ignored instances
-            for (Descriptor<NodeMonitor> d : NodeMonitor.all())
-                if (monitors.get(d) == null) {
+            for (Descriptor<NodeMonitor> d : NodeMonitor.all()) {
+                NodeMonitor monitor = monitors.get(d);
+                if (monitor == null) {
                     NodeMonitor i = createDefaultInstance(d, true);
                     if (i != null)
                         monitors.add(i);
+                } else {
+                    /*
+                     * Some monitors in plugins do not have a DataBoundConstructor
+                     * but a Descriptor that overrides newInstance. For those the ignored
+                     * field is not set, so we have to explicitly set it.
+                     */
+                    String name = d.getJsonSafeClassName();
+                    JSONObject o = json.optJSONObject(name);
+                    boolean ignored = true;
+                    if (o != null) {
+                        if (o.containsKey("ignored")) {
+                            ignored = o.getBoolean("ignored");
+                        }
+                    }
+                    monitor.setIgnored(ignored);
                 }
+            }
 
             // recompute the data
             for (NodeMonitor nm : monitors) {

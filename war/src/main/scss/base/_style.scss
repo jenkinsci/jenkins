@@ -498,7 +498,7 @@ div.listview-jobs {
     }
 
     td {
-      padding: 8px;
+      padding: 0 8px 8px;
     }
   }
 
@@ -593,7 +593,7 @@ div.listview-jobs {
 
 .build-row-cell .pane.build-name {
   width: 25%;
-  font-weight: bold;
+  font-weight: 500;
   vertical-align: top;
 }
 
