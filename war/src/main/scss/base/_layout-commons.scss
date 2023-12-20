@@ -42,23 +42,27 @@
     @media (max-width: breakpoints.$tablet-breakpoint) {
       width: 100%;
     }
+
+    & + .app-page-body__main-panel {
+      max-width: unset;
+      width: 100%;
+    }
   }
 
   &__main-panel {
-    width: 100%;
-  }
-
-  &:not(:has(&__side-panel)) {
-    .app-page-body__main-panel {
-      max-width: 1150px;
-      margin-inline: auto;
-    }
+    max-width: 1150px;
+    margin-inline: auto;
   }
 
   &--full-screen {
     flex-direction: column;
     padding: 0;
     gap: 0;
+
+    .app-page-body__main-panel {
+      max-width: unset !important;
+      width: 100%;
+    }
   }
 
   @media (max-width: breakpoints.$tablet-breakpoint) {
