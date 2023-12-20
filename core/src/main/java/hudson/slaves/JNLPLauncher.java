@@ -53,11 +53,11 @@ import org.kohsuke.stapler.DataBoundSetter;
  * @author Stephen Connolly
  * @author Kohsuke Kawaguchi
 */
+@SuppressWarnings("deprecation") // see comments about CasC
 public class JNLPLauncher extends ComputerLauncher {
     /**
-     * @deprecated see {@link #setTunnel}
+     * Deprecated (only used with deprecated {@code -jnlpUrl} mode), but cannot mark it as such without breaking CasC.
      */
-    @Deprecated
     @CheckForNull
     public String tunnel;
 
@@ -67,11 +67,9 @@ public class JNLPLauncher extends ComputerLauncher {
     @Deprecated
     public final transient String vmargs = null;
 
-    @Deprecated
     @NonNull
     private RemotingWorkDirSettings workDirSettings = RemotingWorkDirSettings.getEnabledDefaults();
 
-    @Deprecated
     private boolean webSocket;
 
     /**
@@ -131,7 +129,9 @@ public class JNLPLauncher extends ComputerLauncher {
         return this;
     }
 
-    @Deprecated
+    /**
+     * Deprecated (only used with deprecated {@code -jnlpUrl} mode), but cannot mark it as such without breaking CasC.
+     */
     public RemotingWorkDirSettings getWorkDirSettings() {
         return workDirSettings;
     }
@@ -149,7 +149,9 @@ public class JNLPLauncher extends ComputerLauncher {
         return false;
     }
 
-    @Deprecated
+    /**
+     * Deprecated (only used with deprecated {@code -jnlpUrl} mode), but cannot mark it as such without breaking CasC.
+     */
     public boolean isWebSocket() {
         return webSocket;
     }
@@ -162,7 +164,9 @@ public class JNLPLauncher extends ComputerLauncher {
         this.webSocket = webSocket;
     }
 
-    @Deprecated
+    /**
+     * Deprecated (only used with deprecated {@code -jnlpUrl} mode), but cannot mark it as such without breaking CasC.
+     */
     public String getTunnel() {
         return tunnel;
     }
