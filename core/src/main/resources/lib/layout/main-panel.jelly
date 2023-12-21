@@ -29,7 +29,7 @@ THE SOFTWARE.
   </st:documentation>
 
   <j:if test="${mode == 'main'}">
-    <div class="app-page-body__main-panel" id="main-panel">
+    <div id="main-panel" class="app-page-body__main-panel">
       <j:if test="${app.isQuietingDown()}">
         <j:choose>
           <j:when test="${app.isPreparingSafeRestart()}">
