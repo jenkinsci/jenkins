@@ -700,7 +700,7 @@ public class ViewTest {
         assertThat(e.getStatusCode(), equalTo(500));
 
         // This should have a different message, but this is the current behavior demonstrating the problem.
-        assertThat(e.getResponse().getContentAsString(), containsString("A problem occurred while processing the request."));
+        assertThat(e.getResponse().getContentAsString(), containsString("A problem occurred while processing the request"));
 
         OldDataMonitor odm = ExtensionList.lookupSingleton(OldDataMonitor.class);
         Map<Saveable, OldDataMonitor.VersionRange> data = odm.getData();
@@ -744,7 +744,7 @@ public class ViewTest {
         assertThat(e.getStatusCode(), equalTo(500));
 
         // This should have a different message, but this is the current behavior demonstrating the problem.
-        assertThat(e.getResponse().getContentAsString(), containsString("A problem occurred while processing the request."));
+        assertThat(e.getResponse().getContentAsString(), containsString("A problem occurred while processing the request"));
 
         OldDataMonitor odm = ExtensionList.lookupSingleton(OldDataMonitor.class);
         Map<Saveable, OldDataMonitor.VersionRange> data = odm.getData();
