@@ -698,7 +698,7 @@ public class Functions {
         }
 
         TimeZone tz = TimeZone.getTimeZone(getUserTimeZone());
-        return tz.getDisplayName(tz.inDaylightTime(date), TimeZone.SHORT);
+        return tz.getDisplayName(tz.inDaylightTime(date), TimeZone.SHORT, getCurrentLocale());
     }
 
     @Restricted(NoExternalUse.class)
