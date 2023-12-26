@@ -38,8 +38,8 @@ THE SOFTWARE.
     <td class="build-row-cell">
       <div class="pane build-name">
         <div class="build-icon">
-          <a class="build-status-link" href="${link}console" tooltip="${build.iconColor.description} > ${%Console Output}">
-            <l:icon class="${build.buildStatusIconClassName} icon-sm" />
+          <a class="build-status-link" href="${h.getConsoleUrl(build)}" tooltip="${build.iconColor.description} > ${%Console Output}">
+            <l:icon src="symbol-status-${build.iconColor.iconName}" />
           </a>
         </div>
         <a class="model-link inside build-link display-name" update-parent-class=".build-row" href="${link}">${build.displayName}</a>
@@ -50,7 +50,7 @@ THE SOFTWARE.
           <j:set var="linkTitleAttr">${%Took} ${build.durationString}</j:set>
         </j:if>
         <a class="model-link inside build-link" href="${link}" update-parent-class=".build-row" tooltip="${linkTitleAttr}">
-          <i:formatDate value="${build.timestamp.time}" type="both" dateStyle="medium" timeStyle="short" /> ${h.getUserTimeZonePostfix()}
+          <i:formatDate value="${build.timestamp.time}" type="both" dateStyle="medium" timeStyle="short" /> ${h.getUserTimeZonePostfix(build.timestamp.time)}
         </a>
         <j:if test="${build.building}">
 	  <j:set target="${it.widget}" property="nextBuildNumberToFetch" value="${build.number}"/>
@@ -71,7 +71,7 @@ THE SOFTWARE.
           <div class="build-stop">
             <!-- Check CANCEL permission for Project, Admin permission otherwise -->
             <j:if test="${empty(it.widget.owner.CANCEL) ? h.hasPermission(app.ADMINISTER) : it.widget.owner.hasPermission(it.widget.owner.CANCEL)}">
-              <l:stopButton href="${link}stop" alt="[cancel]" confirm="${%confirm(build.fullDisplayName)}" />
+              <l:stopButton href="${link}stop" alt="${%Cancel}" confirm="${%confirm(build.fullDisplayName)}" />
             </j:if>
           </div>
         </j:if>

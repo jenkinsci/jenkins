@@ -44,7 +44,7 @@ public class HudsonIsRestarting {
     private boolean safeRestart;
 
     /**
-     * @since TODO
+     * @since 2.414
      */
     public HudsonIsRestarting(boolean safeRestart) {
         this.safeRestart = safeRestart;
@@ -61,7 +61,7 @@ public class HudsonIsRestarting {
     }
 
     /**
-     * @since TODO
+     * @since 2.414
      */
     public boolean isSafeRestart() {
         return safeRestart;

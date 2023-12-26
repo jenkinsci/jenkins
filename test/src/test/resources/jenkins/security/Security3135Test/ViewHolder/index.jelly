@@ -1,0 +1,9 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:f="/lib/form">
+    <l:layout title="Security-3135">
+        <l:main-panel>
+            <a href="${rootUrl}${it.payload}" class="model-link" id="context-menu">Context Menu</a>
+            <a href="${rootUrl}${it.standardPayload}" class="model-link" id="standard-menu">Standard Menu</a>
+        </l:main-panel>
+    </l:layout>
+</j:jelly>
