@@ -50,7 +50,7 @@ THE SOFTWARE.
           <j:set var="linkTitleAttr">${%Took} ${build.durationString}</j:set>
         </j:if>
         <a class="model-link inside build-link" href="${link}" update-parent-class=".build-row" tooltip="${linkTitleAttr}">
-          <i:formatDate value="${build.timestamp.time}" type="both" dateStyle="medium" timeStyle="short" /> ${h.getUserTimeZonePostfix()}
+          <i:formatDate value="${build.timestamp.time}" type="both" dateStyle="medium" timeStyle="short" /> ${h.getUserTimeZonePostfix(build.timestamp.time)}
         </a>
         <j:if test="${build.building}">
 	  <j:set target="${it.widget}" property="nextBuildNumberToFetch" value="${build.number}"/>
