@@ -299,3 +299,33 @@ $jenkins-split-button-border-radius: 0.2rem;
     }
   }
 }
+
+.stop-button-link {
+  --item-background--hover: color-mix(in sRGB, var(--red) 20%, transparent);
+  --item-background--active: color-mix(in sRGB, var(--red) 25%, transparent);
+  --item-box-shadow--focus: transparent;
+
+  @include mixins.item;
+
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 0.25rem;
+
+  &::before {
+    background: color-mix(in sRGB, var(--red) 15%, transparent);
+  }
+
+  svg {
+    width: 87.5%;
+    height: 87.5%;
+    color: var(--red);
+
+    * {
+      stroke-width: 40px;
+    }
+  }
+}
