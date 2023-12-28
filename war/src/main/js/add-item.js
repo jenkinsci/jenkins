@@ -335,12 +335,14 @@ $.when(getItems()).done(function (data) {
           activateValidationMessage("#itemname-required", ".add-item-name");
           setTimeout(function () {
             var parentName = $('input[name="from"]', "#createItem").val();
-            $.get("job/" + parentName + "/api/json?tree=name").done(function (data) {
-              if (data.name === parentName) {
-                //if "name" is invalid, but "from" is a valid job, then switch focus to "name"
-                $('input[name="name"][type="text"]', "#createItem").focus();
-              }
-            })
+            $.get("job/" + parentName + "/api/json?tree=name").done(
+              function (data) {
+                if (data.name === parentName) {
+                  //if "name" is invalid, but "from" is a valid job, then switch focus to "name"
+                  $('input[name="name"][type="text"]', "#createItem").focus();
+                }
+              },
+            );
           }, 400);
         } else {
           if (getFormValidationStatus()) {
