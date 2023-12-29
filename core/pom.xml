@@ -282,7 +282,7 @@ THE SOFTWARE.
       <artifactId>groovy-all</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.connectbot.jbcrypt</groupId>
+      <groupId>org.connectbot</groupId>
       <artifactId>jbcrypt</artifactId>
     </dependency>
     <dependency>
