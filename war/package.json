@@ -35,7 +35,7 @@
     "handlebars-loader": "1.7.3",
     "mini-css-extract-plugin": "2.7.6",
     "postcss": "8.4.32",
-    "postcss-loader": "7.3.3",
+    "postcss-loader": "7.3.4",
     "postcss-preset-env": "9.3.0",
     "postcss-scss": "4.0.9",
     "prettier": "3.1.1",
