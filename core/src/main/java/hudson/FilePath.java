@@ -1037,7 +1037,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
             }
 
             if (this.exists()) {
-                if (resultEtag != null && !resultEtag.isEmpty() && etag != null && !etag.isEmpty() && resultEtag.contains(etag)) {
+                if (resultEtag != null && !resultEtag.isEmpty() && etag != null && !etag.isEmpty() && resultEtag.equals(etag)) {
                     return false;   // already up to date
                 }
                 if (lastModified != 0 && sourceTimestamp == lastModified)
