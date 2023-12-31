@@ -672,22 +672,32 @@ public class FilePathTest {
 
     @Issue("JENKINS-72469")
     @Test public void installIfNecessaryWithoutLastModifiedStrongValidator() throws Exception {
-        installIfNecessaryWithoutLastModified("\"An-ETag-strong-validator\"");
+        String validator = "\"An-ETag-strong-validator\"";
+        installIfNecessaryWithoutLastModified(validator, validator);
     }
 
     @Issue("JENKINS-72469")
     @Test public void installIfNecessaryWithoutLastModifiedStrongValidatorNoQuotes() throws Exception {
         // This ETag is a violation of the spec at https://httpwg.org/specs/rfc9110.html#field.etag
         // However, better safe to handle without quotes as well, just in case
-        installIfNecessaryWithoutLastModified("An-ETag-strong-validator-without-quotes");
+        String validator = "An-ETag-strong-validator-without-quotes";
+        installIfNecessaryWithoutLastModified(validator, validator);
     }
 
     @Issue("JENKINS-72469")
     @Test public void installIfNecessaryWithoutLastModifiedWeakValidator() throws Exception {
-        installIfNecessaryWithoutLastModified("W/\"An-ETag-weak-validator\"");
+        String validator = "W/\"An-ETag-weak-validator\"";
+        installIfNecessaryWithoutLastModified(validator, validator);
     }
 
-    private void installIfNecessaryWithoutLastModified(String validator) throws Exception {
+    @Issue("JENKINS-72469")
+    @Test public void installIfNecessaryWithoutLastModifiedWeakAndStrongValidators() throws Exception {
+        String validator = "\"An-ETag-validator\"";
+        String alternateValidator = "W/" + validator;
+        installIfNecessaryWithoutLastModified(validator, alternateValidator);
+    }
+
+    private void installIfNecessaryWithoutLastModified(String validator, String alternateValidator) throws Exception {
         final HttpURLConnection con = mock(HttpURLConnection.class);
         // getLastModified == 0 when last-modified header is not returned
         when(con.getLastModified()).thenReturn(0L);
@@ -709,12 +719,14 @@ public class FilePathTest {
         /* Second download should not occur if JENKINS-72469 is fixed and NOT_MODIFIED is returned */
         when(con.getResponseCode()).thenReturn(HttpURLConnection.HTTP_NOT_MODIFIED);
         when(con.getInputStream()).thenReturn(someZippedContent());
+        when(con.getHeaderField("ETag")).thenReturn(alternateValidator);
         assertFalse(d.installIfNecessaryFrom(url, null, "message if failed second download"));
 
         /* Third download should not occur if JENKINS-72469 is fixed and OK is returned with matching ETag */
         /* Unexpected to receive an OK and a matching ETag from a real web server, but check for safety */
         when(con.getResponseCode()).thenReturn(HttpURLConnection.HTTP_OK);
         when(con.getInputStream()).thenReturn(someZippedContent());
+        when(con.getHeaderField("ETag")).thenReturn(alternateValidator);
         assertFalse(d.installIfNecessaryFrom(url, null, "message if failed third download"));
     }
 
