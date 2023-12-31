@@ -670,6 +670,38 @@ public class FilePathTest {
         assertTrue(d.installIfNecessaryFrom(url, null, message));
     }
 
+    @Issue("JENKINS-72469")
+    @Test public void installIfNecessaryWithoutLastModified() throws Exception {
+        final HttpURLConnection con = mock(HttpURLConnection.class);
+        // getLastModified == 0 when last-modified header is not returned
+        when(con.getLastModified()).thenReturn(0L);
+        // An Etag is provided by Azul CDN without last-modified header
+        when(con.getHeaderField("ETag")).thenReturn("An-opaque-ETag-string");
+        when(con.getInputStream()).thenReturn(someZippedContent());
+
+        final URL url = someUrlToZipFile(con);
+
+        File tmp = temp.getRoot();
+        final FilePath d = new FilePath(tmp);
+
+        /* Initial download expected to occur */
+        assertTrue(d.installIfNecessaryFrom(url, null, "message if failed first download"));
+
+        /* Timestamp last modified == 0 means the header was not provided */
+        assertThat(d.child(".timestamp").lastModified(), is(0L));
+
+        /* Second download should not occur if JENKINS-72469 is fixed and NOT_MODIFIED is returned */
+        when(con.getResponseCode()).thenReturn(HttpURLConnection.HTTP_NOT_MODIFIED);
+        when(con.getInputStream()).thenReturn(someZippedContent());
+        assertFalse(d.installIfNecessaryFrom(url, null, "message if failed second download"));
+
+        /* Third download should not occur if JENKINS-72469 is fixed and OK is returned with matching ETag */
+        /* Unexpected to receive an OK and a matching ETag from a real web server, but check for safety */
+        when(con.getResponseCode()).thenReturn(HttpURLConnection.HTTP_OK);
+        when(con.getInputStream()).thenReturn(someZippedContent());
+        assertFalse(d.installIfNecessaryFrom(url, null, "message if failed third download"));
+    }
+
     private URL someUrlToZipFile(final URLConnection con) throws IOException {
 
         final URLStreamHandler urlHandler = new URLStreamHandler() {

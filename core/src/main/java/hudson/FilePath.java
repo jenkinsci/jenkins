@@ -962,7 +962,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      * </ul>
      *
      * @param archive
-     *      The resource that represents the tgz/zip file. This URL must support the {@code Last-Modified} header.
+     *      The resource that represents the tgz/zip file. This URL must support the {@code Last-Modified} header or the {@code ETag} header.
      *      (For example, you could use {@link ClassLoader#getResource}.)
      * @param listener
      *      If non-null, a message will be printed to this listener once this method decides to
@@ -984,11 +984,15 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         try {
             FilePath timestamp = this.child(".timestamp");
             long lastModified = timestamp.lastModified();
+            String etag = timestamp.exists() ? timestamp.readToString().replace("\"", "") : null;
             URLConnection con;
             try {
                 con = ProxyConfiguration.open(archive);
                 if (lastModified != 0) {
                     con.setIfModifiedSince(lastModified);
+                }
+                if (etag != null && !etag.isEmpty()) {
+                    con.setRequestProperty("If-None-Match", etag);
                 }
                 con.connect();
             } catch (IOException x) {
@@ -1016,7 +1020,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                         return false;
                     }
                 }
-                if (lastModified != 0) {
+                if (lastModified != 0 || (etag != null && !etag.isEmpty())) {
                     if (responseCode == HttpURLConnection.HTTP_NOT_MODIFIED) {
                         return false;
                     } else if (responseCode != HttpURLConnection.HTTP_OK) {
@@ -1027,8 +1031,15 @@ public final class FilePath implements SerializableOnlyOverRemoting {
             }
 
             long sourceTimestamp = con.getLastModified();
+            String resultEtag = con.getHeaderField("ETag");
+            if (resultEtag != null && !resultEtag.isEmpty()) {
+                resultEtag = resultEtag.replace("\"", "");
+            }
 
             if (this.exists()) {
+                if (resultEtag != null && !resultEtag.isEmpty() && etag != null && !etag.isEmpty() && resultEtag.contains(etag)) {
+                    return false;   // already up to date
+                }
                 if (lastModified != 0 && sourceTimestamp == lastModified)
                     return false;   // already up to date
                 this.deleteContents();
@@ -1042,6 +1053,10 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                 // First try to download from the agent machine.
                 try {
                     act(new Unpack(archive));
+                    if (resultEtag != null && !resultEtag.isEmpty() && !resultEtag.equals(etag)) {
+                        /* Store the ETag value in the timestamp file for later use */
+                        timestamp.write(resultEtag, "UTF-8");
+                    }
                     timestamp.touch(sourceTimestamp);
                     return true;
                 } catch (IOException x) {
@@ -1060,6 +1075,10 @@ public final class FilePath implements SerializableOnlyOverRemoting {
             } catch (IOException e) {
                 throw new IOException(String.format("Failed to unpack %s (%d bytes read of total %d)",
                         archive, cis.getByteCount(), con.getContentLength()), e);
+            }
+            if (resultEtag != null && !resultEtag.isEmpty() && !resultEtag.equals(etag)) {
+                /* Store the ETag value in the timestamp file for later use */
+                timestamp.write(resultEtag, "UTF-8");
             }
             timestamp.touch(sourceTimestamp);
             return true;
