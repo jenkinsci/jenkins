@@ -671,12 +671,28 @@ public class FilePathTest {
     }
 
     @Issue("JENKINS-72469")
-    @Test public void installIfNecessaryWithoutLastModified() throws Exception {
+    @Test public void installIfNecessaryWithoutLastModifiedStrongValidator() throws Exception {
+        installIfNecessaryWithoutLastModified("\"An-ETag-strong-validator\"");
+    }
+
+    @Issue("JENKINS-72469")
+    @Test public void installIfNecessaryWithoutLastModifiedStrongValidatorNoQuotes() throws Exception {
+        // This ETag is a violation of the spec at https://httpwg.org/specs/rfc9110.html#field.etag
+        // However, better safe to handle without quotes as well, just in case
+        installIfNecessaryWithoutLastModified("An-ETag-strong-validator-without-quotes");
+    }
+
+    @Issue("JENKINS-72469")
+    @Test public void installIfNecessaryWithoutLastModifiedWeakValidator() throws Exception {
+        installIfNecessaryWithoutLastModified("W/\"An-ETag-weak-validator\"");
+    }
+
+    private void installIfNecessaryWithoutLastModified(String validator) throws Exception {
         final HttpURLConnection con = mock(HttpURLConnection.class);
         // getLastModified == 0 when last-modified header is not returned
         when(con.getLastModified()).thenReturn(0L);
         // An Etag is provided by Azul CDN without last-modified header
-        when(con.getHeaderField("ETag")).thenReturn("An-opaque-ETag-string");
+        when(con.getHeaderField("ETag")).thenReturn(validator);
         when(con.getInputStream()).thenReturn(someZippedContent());
 
         final URL url = someUrlToZipFile(con);
