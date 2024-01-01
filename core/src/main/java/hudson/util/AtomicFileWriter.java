@@ -65,7 +65,7 @@ public class AtomicFileWriter extends Writer {
             AtomicFileWriter.class.getName() + ".DISABLE_FORCED_FLUSH");
 
     private static /* final */ boolean REQUIRES_DIR_FSYNC = SystemProperties.getBoolean(
-            AtomicFileWriter.class.getName() + ".REQUIRES_DIR_FSYNC", true);
+            AtomicFileWriter.class.getName() + ".REQUIRES_DIR_FSYNC", !Functions.isWindows());
 
     static {
         if (DISABLE_FORCED_FLUSH) {
@@ -240,7 +240,7 @@ public class AtomicFileWriter extends Writer {
             }
         }
 
-        if (!DISABLE_FORCED_FLUSH && REQUIRES_DIR_FSYNC && !Functions.isWindows()) {
+        if (!DISABLE_FORCED_FLUSH && REQUIRES_DIR_FSYNC) {
             try (FileChannel parentChannel = FileChannel.open(destPath.getParent())) {
                 parentChannel.force(true);
             }
