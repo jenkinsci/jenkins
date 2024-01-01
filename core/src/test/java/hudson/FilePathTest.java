@@ -699,8 +699,8 @@ public class FilePathTest {
 
     @Issue("JENKINS-72469")
     @Test public void installIfNecessaryWithoutLastModifiedWeakAndStrongValidators() throws Exception {
-        String weakValidator = "W/" + strongValidator;
         String strongValidator = "\"An-ETag-validator\"";
+        String weakValidator = "W/" + strongValidator;
         installIfNecessaryWithoutLastModified(weakValidator, strongValidator);
     }
 
