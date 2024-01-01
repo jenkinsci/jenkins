@@ -240,6 +240,13 @@ public class AtomicFileWriter extends Writer {
             }
         }
 
+
+        /*
+         * From fsync(2) on Linux:
+         *
+         *     Calling fsync() does not necessarily ensure that the entry in the directory containing the file has also
+         *     reached disk. For that an explicit fsync() on a file descriptor for the directory is also needed.
+         */
         if (!DISABLE_FORCED_FLUSH && REQUIRES_DIR_FSYNC) {
             try (FileChannel parentChannel = FileChannel.open(destPath.getParent())) {
                 parentChannel.force(true);
