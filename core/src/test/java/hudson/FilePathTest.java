@@ -673,7 +673,7 @@ public class FilePathTest {
     @Issue("JENKINS-72469")
     @Test public void installIfNecessaryWithoutLastModifiedStrongValidator() throws Exception {
         String validator = "\"An-ETag-strong-validator\"";
-        installIfNecessaryWithoutLastModified(validator, validator);
+        installIfNecessaryWithoutLastModified(validator);
     }
 
     @Issue("JENKINS-72469")
@@ -681,13 +681,13 @@ public class FilePathTest {
         // This ETag is a violation of the spec at https://httpwg.org/specs/rfc9110.html#field.etag
         // However, better safe to handle without quotes as well, just in case
         String validator = "An-ETag-strong-validator-without-quotes";
-        installIfNecessaryWithoutLastModified(validator, validator);
+        installIfNecessaryWithoutLastModified(validator);
     }
 
     @Issue("JENKINS-72469")
     @Test public void installIfNecessaryWithoutLastModifiedWeakValidator() throws Exception {
         String validator = "W/\"An-ETag-weak-validator\"";
-        installIfNecessaryWithoutLastModified(validator, validator);
+        installIfNecessaryWithoutLastModified(validator);
     }
 
     @Issue("JENKINS-72469")
@@ -695,6 +695,10 @@ public class FilePathTest {
         String validator = "\"An-ETag-validator\"";
         String alternateValidator = "W/" + validator;
         installIfNecessaryWithoutLastModified(validator, alternateValidator);
+    }
+
+    private void installIfNecessaryWithoutLastModified(String validator) throws Exception {
+        installIfNecessaryWithoutLastModified(validator, validator);
     }
 
     private void installIfNecessaryWithoutLastModified(String validator, String alternateValidator) throws Exception {
