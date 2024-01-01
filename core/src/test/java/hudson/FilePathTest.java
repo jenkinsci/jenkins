@@ -672,29 +672,36 @@ public class FilePathTest {
 
     @Issue("JENKINS-72469")
     @Test public void installIfNecessaryWithoutLastModifiedStrongValidator() throws Exception {
-        String validator = "\"An-ETag-strong-validator\"";
-        installIfNecessaryWithoutLastModified(validator);
+        String strongValidator = "\"An-ETag-strong-validator\"";
+        installIfNecessaryWithoutLastModified(strongValidator);
     }
 
     @Issue("JENKINS-72469")
     @Test public void installIfNecessaryWithoutLastModifiedStrongValidatorNoQuotes() throws Exception {
         // This ETag is a violation of the spec at https://httpwg.org/specs/rfc9110.html#field.etag
         // However, better safe to handle without quotes as well, just in case
-        String validator = "An-ETag-strong-validator-without-quotes";
-        installIfNecessaryWithoutLastModified(validator);
+        String strongValidator = "An-ETag-strong-validator-without-quotes";
+        installIfNecessaryWithoutLastModified(strongValidator);
     }
 
     @Issue("JENKINS-72469")
     @Test public void installIfNecessaryWithoutLastModifiedWeakValidator() throws Exception {
-        String validator = "W/\"An-ETag-weak-validator\"";
-        installIfNecessaryWithoutLastModified(validator);
+        String weakValidator = "W/\"An-ETag-weak-validator\"";
+        installIfNecessaryWithoutLastModified(weakValidator);
+    }
+
+    @Issue("JENKINS-72469")
+    @Test public void installIfNecessaryWithoutLastModifiedStrongAndWeakValidators() throws Exception {
+        String strongValidator = "\"An-ETag-validator\"";
+        String weakValidator = "W/" + strongValidator;
+        installIfNecessaryWithoutLastModified(strongValidator, weakValidator);
     }
 
     @Issue("JENKINS-72469")
     @Test public void installIfNecessaryWithoutLastModifiedWeakAndStrongValidators() throws Exception {
-        String validator = "\"An-ETag-validator\"";
-        String alternateValidator = "W/" + validator;
-        installIfNecessaryWithoutLastModified(validator, alternateValidator);
+        String weakValidator = "W/" + strongValidator;
+        String strongValidator = "\"An-ETag-validator\"";
+        installIfNecessaryWithoutLastModified(weakValidator, strongValidator);
     }
 
     private void installIfNecessaryWithoutLastModified(String validator) throws Exception {
