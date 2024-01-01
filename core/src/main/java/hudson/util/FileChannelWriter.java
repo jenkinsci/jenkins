@@ -1,5 +1,6 @@
 package hudson.util;
 
+import hudson.Functions;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.Writer;
@@ -11,6 +12,7 @@ import java.nio.charset.Charset;
 import java.nio.file.OpenOption;
 import java.nio.file.Path;
 import java.util.logging.Logger;
+import jenkins.util.SystemProperties;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -29,10 +31,15 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 @Restricted(NoExternalUse.class)
 public class FileChannelWriter extends Writer implements Channel {
 
+    private static final boolean REQUIRES_DIR_FSYNC =
+            SystemProperties.getBoolean(FileChannelWriter.class.getName() + ".requiresDirFsync", true);
+
     private static final Logger LOGGER = Logger.getLogger(FileChannelWriter.class.getName());
 
     private final Charset charset;
     private final FileChannel channel;
+
+    private final Path parent;
 
     /**
      * {@link FileChannel#force(boolean)} is a <strong>very</strong> costly operation. This flag has been introduced mostly to
@@ -64,6 +71,7 @@ public class FileChannelWriter extends Writer implements Channel {
         this.forceOnFlush = forceOnFlush;
         this.forceOnClose = forceOnClose;
         channel = FileChannel.open(filePath, options);
+        parent = filePath.getParent();
     }
 
     @Override
@@ -78,6 +86,11 @@ public class FileChannelWriter extends Writer implements Channel {
         if (forceOnFlush) {
             LOGGER.finest("Flush is forced");
             channel.force(true);
+            if (REQUIRES_DIR_FSYNC && !Functions.isWindows()) {
+                try (FileChannel parentChannel = FileChannel.open(parent)) {
+                    parentChannel.force(true);
+                }
+            }
         } else {
             LOGGER.finest("Force disabled on flush(), no-op");
         }
@@ -93,6 +106,11 @@ public class FileChannelWriter extends Writer implements Channel {
         if (channel.isOpen()) {
             if (forceOnClose) {
                 channel.force(true);
+                if (REQUIRES_DIR_FSYNC && !Functions.isWindows()) {
+                    try (FileChannel parentChannel = FileChannel.open(parent)) {
+                        parentChannel.force(true);
+                    }
+                }
             }
             channel.close();
         }
