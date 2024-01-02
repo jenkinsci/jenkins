@@ -845,6 +845,7 @@ textarea {
     width: 200px;
     padding: 4px;
     border-radius: 12px;
+
     & > span {
       border-radius: 10px !important;
     }
@@ -887,6 +888,7 @@ textarea {
   0% {
     background-position: 0 0;
   }
+
   100% {
     background-position: 25px 25px;
   }
