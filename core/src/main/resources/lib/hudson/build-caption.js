@@ -35,6 +35,7 @@
         rsp.text().then((responseText) => {
           document.querySelector(".jenkins-build-caption svg").outerHTML =
             responseText;
+          Behaviour.applySubtree(buildCaption, false);
         });
       }
     });
