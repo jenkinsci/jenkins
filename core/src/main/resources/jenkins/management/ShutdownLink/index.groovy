@@ -7,6 +7,8 @@ def l = namespace(lib.LayoutTagLib)
 def st = namespace("jelly:stapler")
 
 l.layout(norefresh: true, permission: app.MANAGE, title: my.displayName) {
+    st.include(page: "sidepanel.jelly", class: 'hudson.model.ManagementLink')
+
     l.main_panel {
         h1 {
             text(Messages.ShutdownLink_DisplayName_prepare())

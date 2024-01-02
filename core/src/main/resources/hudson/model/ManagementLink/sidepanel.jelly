@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, id:cactusman
+Copyright (c) 2023 Jan Faracik
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,21 +22,29 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<!--
-  Side panel
--->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
-  <l:header />
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout">
   <l:side-panel>
+    <l:app-bar title="${%Manage Jenkins}" />
+
     <l:tasks>
-      <l:task href="${h.getNearestAncestorUrl(request,it)}/" icon="symbol-computer"
-              title="${%Nodes}"/>
-      <l:task href="../cloud/" icon="symbol-cloud" permission="${app.SYSTEM_READ}"
-              title="${app.hasPermission(app.ADMINISTER) ? '%Clouds' : '%View Clouds'}"/>
+      <l:search-bar placeholder="${%Search}" id="settings-search-bar" />
+
+      <script src="${resURL}/jsbundles/pages/manage-jenkins.js" type="text/javascript" />
+
+      <j:invokeStatic var="j" className="jenkins.model.Jenkins" method="get" />
+      <j:forEach var="category" items="${j.categorizedManagementLinks.entrySet()}">
+        <h2 class="jenkins-side-nav__heading">${category.key.label}</h2>
+        <j:forEach var="item" items="${category.value}">
+          <l:task title="${item.displayName}"
+              href="${rootURL}/manage/${item.urlName}"
+              icon="${item.iconFileName}"
+              badge="${item.badge}"
+              requiresConfirmation="${item.requiresConfirmation}"
+              post="${item.requiresPOST}"
+              confirmationMessage="${%sure}" />
+        </j:forEach>
+      </j:forEach>
     </l:tasks>
-    <j:forEach var="w" items="${it.widgets}">
-      <st:include it="${w}" page="index" />
-    </j:forEach>
   </l:side-panel>
 </j:jelly>

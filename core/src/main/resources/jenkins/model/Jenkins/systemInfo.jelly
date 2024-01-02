@@ -32,7 +32,7 @@ THE SOFTWARE.
       <script src="${resURL}/jsbundles/section-to-tabs.js" type="text/javascript" defer="true" />
       <script src="${resURL}/jsbundles/pages/manage-jenkins/system-information.js" type="text/javascript" defer="true" />
     </l:header>
-    <st:include page="sidepanel.jelly" />
+    <st:include page="sidepanel.jelly" class="hudson.model.ManagementLink" />
     <l:breadcrumb title="${%System Information}"/>
     <l:main-panel>
       <l:app-bar title="${%System Information}" />

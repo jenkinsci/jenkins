@@ -24,7 +24,9 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:f="/lib/form">
-  <l:layout title="${%Appearance}" permissions="${app.MANAGE_AND_SYSTEM_READ}" type="one-column">
+  <l:layout title="${%Appearance}" permissions="${app.MANAGE_AND_SYSTEM_READ}">
+    <st:include page="sidepanel.jelly" class="hudson.model.ManagementLink" />
+
     <j:set var="readOnlyMode" value="${!app.hasPermission(app.MANAGE)}"/>
     <l:main-panel>
       <l:app-bar title="${%Appearance}"/>

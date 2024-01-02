@@ -7,8 +7,11 @@ def f=namespace(lib.FormTagLib)
 def l=namespace(lib.LayoutTagLib)
 def st=namespace("jelly:stapler")
 
-l.layout(permission:app.SYSTEM_READ, title:my.displayName, type:"one-column") {
+l.layout(permission:app.SYSTEM_READ, title:my.displayName) {
     set("readOnlyMode", !app.hasPermission(app.ADMINISTER))
+
+    st.include(page: "sidepanel.jelly", class: 'hudson.model.ManagementLink')
+
     l.main_panel {
         l.app_bar(title: my.displayName)
 
