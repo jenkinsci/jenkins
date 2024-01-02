@@ -28,7 +28,7 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <div class="jenkins-app-bar">
-    <div class="jenkins-app-bar__content jenkins-build-caption">
+    <div class="jenkins-app-bar__content jenkins-build-caption" data-status-url="${rootURL}/${it.url}/statusIcon">
       <l:icon alt="${it.iconColor.description}" src="symbol-status-${it.iconColor.iconName}"
           tooltip="${it.iconColor.description}"/>
       <h1>
