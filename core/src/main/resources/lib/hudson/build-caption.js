@@ -7,12 +7,8 @@
         let progress = rsp.headers.get("X-Progress");
         let runtime = rsp.headers.get("X-Executor-Runtime");
         let remaining = rsp.headers.get("X-Executor-Remaining");
-        let progressBar = document.querySelector(
-          ".app-progress-bar",
-        );
-        let progressBarDone = document.querySelector(
-          ".app-progress-bar span",
-        );
+        let progressBar = document.querySelector(".app-progress-bar");
+        let progressBarDone = document.querySelector(".app-progress-bar span");
         if (progressBar) {
           let tooltip = progressBar.dataset.tooltipTemplate;
           tooltip = tooltip.replace("%0", runtime).replace("%1", remaining);
@@ -21,7 +17,7 @@
           Behaviour.applySubtree(progressBar, true);
         }
         if (progressBarDone) {
-          progressBarDone.style.width = `${progress}%`
+          progressBarDone.style.width = `${progress}%`;
         }
       } else {
         let progressBar = document.querySelector(

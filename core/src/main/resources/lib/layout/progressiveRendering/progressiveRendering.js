@@ -30,19 +30,17 @@ function progressivelyRender(handler, callback, statusId) {
       document.getElementById(statusId).style.display = "none";
     } else if (r.status == "canceled") {
       // TODO ugly; replace with single tr of class=unknown?
-      document.querySelector("#" + statusId + " span").innerHTML =
-        "Aborted.";
+      document.querySelector("#" + statusId + " span").innerHTML = "Aborted.";
     } else if (r.status == "error") {
-      document.querySelector(
-        "#" + statusId + " span",
-      ).style.width = "100%";
+      document.querySelector("#" + statusId + " span").style.width = "100%";
       document.getElementById(statusId).classList.add("red");
-      document.getElementById(statusId).classList.remove("app-progress-bar-animate");
+      document
+        .getElementById(statusId)
+        .classList.remove("app-progress-bar-animate");
     } else {
       callback(r.data);
-      document.querySelector(
-        "#" + statusId + " span",
-      ).style.width = 100 * r.status + "%";
+      document.querySelector("#" + statusId + " span").style.width =
+        100 * r.status + "%";
       checkNewsLater(500);
     }
   }
