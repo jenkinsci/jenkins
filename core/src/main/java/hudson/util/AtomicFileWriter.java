@@ -240,7 +240,6 @@ public class AtomicFileWriter extends Writer {
             }
         }
 
-
         /*
          * From fsync(2) on Linux:
          *
