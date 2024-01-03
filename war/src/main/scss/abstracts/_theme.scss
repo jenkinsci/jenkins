@@ -311,12 +311,6 @@ $semantics: (
   --item-background--active: hsla(240, 25%, 75%, 0.225);
   --item-box-shadow--focus: hsla(240, 25%, 75%, 0.105);
 
-  // progress-bar
-  --progress-done: #3465a4;
-  --progress-done-red: #c00;
-  --progress-left: #bababa;
-  --progress-anime-bg: white;
-
   // Deprecated
   --primary: var(--accent-color); // Use var(--accent-color) instead
   --success: var(--green); // Use var(--success-color) instead

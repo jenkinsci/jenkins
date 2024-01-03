@@ -44,7 +44,7 @@ THE SOFTWARE.
                 ${%Progress}:
               </td>
               <td class="build-caption-progress-bar">
-                <t:buildProgressBar build="${it}"/>
+                <t:buildProgressBar build="${it}" animate="true"/>
               </td>
               <td class="jenkins-table__link">
                 <j:if test="${it.parent.hasAbortPermission()}">
