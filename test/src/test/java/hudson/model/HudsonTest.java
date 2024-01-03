@@ -28,10 +28,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
 
 import hudson.model.Node.Mode;
-import hudson.search.SearchTest;
 import hudson.security.AuthorizationStrategy;
 import hudson.security.SecurityRealm;
 import hudson.tasks.Ant;
@@ -44,7 +42,6 @@ import java.net.URL;
 import java.util.List;
 import jenkins.model.Jenkins;
 import org.htmlunit.HttpMethod;
-import org.htmlunit.Page;
 import org.htmlunit.WebRequest;
 import org.htmlunit.html.DomElement;
 import org.htmlunit.html.HtmlAnchor;
@@ -126,22 +123,6 @@ public class HudsonTest {
     private void assertJDK(JDK jdk, String name, String home) {
         assertEquals(jdk.getName(), name);
         assertEquals(jdk.getHome(), home);
-    }
-
-    /**
-     * Makes sure that the search index includes job names.
-     *
-     * @see SearchTest#testFailure
-     *      This test makes sure that a failure will result in an exception
-     */
-    @Test
-    public void searchIndex() throws Exception {
-        FreeStyleProject p = j.createFreeStyleProject();
-        Page jobPage = j.search(p.getName());
-
-        URL url = jobPage.getUrl();
-        System.out.println(url);
-        assertTrue(url.getPath().endsWith("/job/" + p.getName() + "/"));
     }
 
     /**

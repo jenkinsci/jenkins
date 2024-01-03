@@ -1,6 +1,6 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:i="jelly:fmt" xmlns:x="jelly:xml">
-    <header id="page-header" class="page-header">
+  <header id="page-header" class="page-header" data-root-url="${rootURL}" data-search-url="${rootURL + '/search/suggest'}" data-search-help-url="${searchHelpUrl}">
         <div class="page-header__brand">
             <div class="logo">
                 <a id="jenkins-home-link" href="${rootURL}/">
@@ -17,29 +17,14 @@
             </a>
         </div>
 
-        <div class="searchbox hidden-xs">
-            <!-- search box -->
-            <j:set var="searchURL" value="${h.searchURL}"/>
-            <form action="${searchURL}" method="get" style="position:relative;" class="no-json" name="search" role="search">
-                <!-- this div is used to calculate the width of the text box -->
-                <div id="search-box-sizer"/>
-                <div id="searchform">
-                    <input name="q" placeholder="${searchPlaceholder}" id="search-box" class="main-search__input" value="${request.getParameter('q')}" role="searchbox" />
-
-                    <span class="main-search__icon-leading">
-                        <l:icon src="symbol-search"/>
-                    </span>
-                    <a href="${searchHelpUrl}" class="main-search__icon-trailing">
-                        <l:icon src="symbol-help-circle"/>
-                    </a>
-
-                    <div id="search-box-completion" data-search-url="${searchURL}" />
-                    <st:adjunct includes="jenkins.views.JenkinsHeader.search-box" />
-                </div>
-            </form>
-        </div>
-
         <div class="login page-header__hyperlinks">
+          <j:set var="tooltip">
+            <l:keyboard-shortcut prefix="${%Search}">CMD+K</l:keyboard-shortcut>
+          </j:set>
+          <button id="button-open-command-palette" data-html-tooltip="${tooltip}" data-keyboard-shortcut="CMD+K">
+            <l:icon src="symbol-search" />
+          </button>
+
             <div id="visible-am-insertion" class="page-header__am-wrapper" />
             <div id="visible-sec-am-insertion" class="page-header__am-wrapper" />
 

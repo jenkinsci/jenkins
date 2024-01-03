@@ -38,7 +38,6 @@ import hudson.security.ACLContext;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -48,7 +47,6 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import net.sf.json.JSONSerializer;
 import org.htmlunit.Page;
-import org.htmlunit.html.HtmlPage;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -63,47 +61,6 @@ import org.jvnet.hudson.test.MockFolder;
 public class SearchTest {
 
     @Rule public JenkinsRule j = new JenkinsRule();
-
-    /**
-     * No exact match should result in a failure status code.
-     */
-    @Test
-    public void testFailure() throws Exception {
-        WebClient wc = j.createWebClient()
-                .withThrowExceptionOnFailingStatusCode(false);
-        HtmlPage resultPage = wc.search("no-such-thing");
-        assertEquals(HttpURLConnection.HTTP_NOT_FOUND, resultPage.getWebResponse().getStatusCode());
-    }
-
-    /**
-     * Makes sure the script doesn't execute.
-     */
-    @Issue("JENKINS-3415")
-    @Test
-    public void testXSS() throws Exception {
-        WebClient wc = j.createWebClient()
-                .withThrowExceptionOnFailingStatusCode(false);
-        wc.setAlertHandler((page, message) -> {
-            throw new AssertionError();
-        });
-        HtmlPage resultPage = wc.search("<script>alert('script');</script>");
-        assertEquals(HttpURLConnection.HTTP_NOT_FOUND, resultPage.getWebResponse().getStatusCode());
-    }
-
-    @Test
-    public void testSearchByProjectName() throws Exception {
-        final String projectName = "testSearchByProjectName";
-
-        j.createFreeStyleProject(projectName);
-
-        Page result = j.search(projectName);
-        assertNotNull(result);
-        j.assertGoodStatus(result);
-
-        // make sure we've fetched the testSearchByDisplayName project page
-        String contents = result.getWebResponse().getContentAsString();
-        assertTrue(contents.contains(String.format("<title>%s [Jenkins]</title>", projectName)));
-    }
 
     @Issue("JENKINS-24433")
     @Test
@@ -134,86 +91,6 @@ public class SearchTest {
 
         URL resultUrl = result.getUrl();
         assertEquals(j.getInstance().getRootUrl() + myFreeStyleProject.getUrl(), resultUrl.toString());
-    }
-
-    @Test
-    public void testSearchByDisplayName() throws Exception {
-        final String displayName = "displayName9999999";
-
-        FreeStyleProject project = j.createFreeStyleProject("testSearchByDisplayName");
-        project.setDisplayName(displayName);
-
-        Page result = j.search(displayName);
-        assertNotNull(result);
-        j.assertGoodStatus(result);
-
-        // make sure we've fetched the testSearchByDisplayName project page
-        String contents = result.getWebResponse().getContentAsString();
-        assertTrue(contents.contains(String.format("<title>%s [Jenkins]</title>", displayName)));
-    }
-
-    @Test
-    public void testSearch2ProjectsWithSameDisplayName() throws Exception {
-        // create 2 freestyle projects with the same display name
-        final String projectName1 = "projectName1";
-        final String projectName2 = "projectName2";
-        final String projectName3 = "projectName3";
-        final String displayName = "displayNameFoo";
-        final String otherDisplayName = "otherDisplayName";
-
-        FreeStyleProject project1 = j.createFreeStyleProject(projectName1);
-        project1.setDisplayName(displayName);
-        FreeStyleProject project2 = j.createFreeStyleProject(projectName2);
-        project2.setDisplayName(displayName);
-        FreeStyleProject project3 = j.createFreeStyleProject(projectName3);
-        project3.setDisplayName(otherDisplayName);
-
-        // make sure that on search we get back one of the projects, it doesn't
-        // matter which one as long as the one that is returned has displayName
-        // as the display name
-        Page result = j.search(displayName);
-        assertNotNull(result);
-        j.assertGoodStatus(result);
-
-        // make sure we've fetched the testSearchByDisplayName project page
-        String contents = result.getWebResponse().getContentAsString();
-        assertTrue(contents.contains(String.format("<title>%s [Jenkins]</title>", displayName)));
-        assertFalse(contents.contains(otherDisplayName));
-    }
-
-    @Test
-    public void testProjectNamePrecedesDisplayName() throws Exception {
-        final String project1Name = "foo";
-        final String project1DisplayName = "project1DisplayName";
-        final String project2Name = "project2Name";
-        final String project2DisplayName = project1Name;
-        final String project3Name = "project3Name";
-        final String project3DisplayName = "project3DisplayName";
-
-        // create 1 freestyle project with the name foo
-        FreeStyleProject project1 = j.createFreeStyleProject(project1Name);
-        project1.setDisplayName(project1DisplayName);
-
-        // create another with the display name foo
-        FreeStyleProject project2 = j.createFreeStyleProject(project2Name);
-        project2.setDisplayName(project2DisplayName);
-
-        // create a third project and make sure it's not picked up by search
-        FreeStyleProject project3 = j.createFreeStyleProject(project3Name);
-        project3.setDisplayName(project3DisplayName);
-
-        // search for foo
-        Page result = j.search(project1Name);
-        assertNotNull(result);
-        j.assertGoodStatus(result);
-
-        // make sure we get the project with the name foo
-        String contents = result.getWebResponse().getContentAsString();
-        assertTrue(contents.contains(String.format("<title>%s [Jenkins]</title>", project1DisplayName)));
-        // make sure projects 2 and 3 were not picked up
-        assertFalse(contents.contains(project2Name));
-        assertFalse(contents.contains(project3Name));
-        assertFalse(contents.contains(project3DisplayName));
     }
 
     @Test
