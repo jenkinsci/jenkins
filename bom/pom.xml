@@ -22,7 +22,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
@@ -39,7 +39,7 @@ THE SOFTWARE.
 
   <properties>
     <asm.version>9.6</asm.version>
-    <slf4jVersion>2.0.9</slf4jVersion>
+    <slf4jVersion>2.0.10</slf4jVersion>
     <stapler.version>1822.v120278426e1c</stapler.version>
     <groovy.version>2.4.21</groovy.version>
   </properties>
@@ -196,9 +196,9 @@ THE SOFTWARE.
         <version>${groovy.version}</version>
       </dependency>
       <dependency>
-        <groupId>org.connectbot.jbcrypt</groupId>
+        <groupId>org.connectbot</groupId>
         <artifactId>jbcrypt</artifactId>
-        <version>1.0.0</version>
+        <version>1.0.2</version>
       </dependency>
       <dependency>
         <!-- Groovy shell uses this, but it doesn't declare the dependency -->
