@@ -692,13 +692,13 @@ public class Functions {
     }
 
     @Restricted(NoExternalUse.class)
-    public static String getUserTimeZonePostfix() {
+    public static String getUserTimeZonePostfix(Date date) {
         if (!isUserTimeZoneOverride()) {
             return "";
         }
 
         TimeZone tz = TimeZone.getTimeZone(getUserTimeZone());
-        return tz.getDisplayName(tz.observesDaylightTime(), TimeZone.SHORT);
+        return tz.getDisplayName(tz.inDaylightTime(date), TimeZone.SHORT, getCurrentLocale());
     }
 
     @Restricted(NoExternalUse.class)

@@ -56,8 +56,8 @@ THE SOFTWARE.
 
     <j:set var="monitors" value="${it._monitors}"/>
     <j:set var="tableWidth" value="${3}"/>
-
-    <table id="computers" class="jenkins-table sortable">
+    <t:setIconSize/>
+    <table id="computers" class="jenkins-table ${iconSize == '16x16' ? 'jenkins-table--small' : iconSize == '24x24' ? 'jenkins-table--medium' : ''} sortable">
       <thead>
         <tr>
           <th class="jenkins-table__cell--tight">S</th>
@@ -123,6 +123,7 @@ THE SOFTWARE.
       </tr>
       </tbody>
     </table>
+    <t:iconSize/>
   </l:main-panel>
 </l:layout>
 </j:jelly>
