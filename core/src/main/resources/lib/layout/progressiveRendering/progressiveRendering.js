@@ -36,7 +36,7 @@ function progressivelyRender(handler, callback, statusId) {
       document.getElementById(statusId).classList.add("red");
       document
         .getElementById(statusId)
-        .classList.remove("app-progress-bar-animate");
+        .classList.remove("app-progress-bar--animate");
     } else {
       callback(r.data);
       document.querySelector("#" + statusId + " span").style.width =
