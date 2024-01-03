@@ -95,6 +95,14 @@
     ]
   },
   {
+    "category": "Appearance",
+    "plugins": [
+      { "name": "dark-theme", "suggested": true },
+      { "name": "simple-theme-plugin" },
+      { "name": "login-theme" }
+    ]
+  },
+  {
     "category": "Languages",
     "plugins": [{ "name": "locale" }, { "name": "localization-zh-cn" }]
   }
