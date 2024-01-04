@@ -2708,8 +2708,13 @@ function validateButton(checkUrl, paramList, button) {
   paramList.split(",").forEach(function (name) {
     var p = findPreviousFormItem(button, name);
     if (p != null) {
-      if (p.type == "checkbox") {
+      if (p.type === "checkbox") {
         parameters[name] = p.checked;
+      } else if (p.type === "radio") {
+        while (p && !p.checked) {
+          p = findPreviousFormItem(p, name);
+        }
+        parameters[name] = p.value;
       } else {
         parameters[name] = p.value;
       }
