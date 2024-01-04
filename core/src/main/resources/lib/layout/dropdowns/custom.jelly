@@ -26,6 +26,14 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define">
     <st:documentation>
         Allows for custom components inside of dropdowns
+
+        Pass HTML as the child of this component to render it inside of a dropdown, e.g.
+
+        <![CDATA[
+            <dd:custom>
+              <img src="jenkins.svg" />
+            </dd:custom>
+        ]]>
     </st:documentation>
 
     <template data-dropdown-type="CUSTOM">
