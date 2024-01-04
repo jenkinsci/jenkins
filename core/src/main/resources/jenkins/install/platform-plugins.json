@@ -96,11 +96,7 @@
   },
   {
     "category": "Appearance",
-    "plugins": [
-      { "name": "dark-theme", "suggested": true },
-      { "name": "simple-theme-plugin" },
-      { "name": "login-theme" }
-    ]
+    "plugins": [{ "name": "dark-theme", "suggested": true }]
   },
   {
     "category": "Languages",
