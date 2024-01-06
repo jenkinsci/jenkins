@@ -242,7 +242,7 @@ public abstract class PeepholePermalink extends Permalink implements Predicate<R
     }
 
     /**
-     * @since TODO
+     * @since 2.436
      */
     public static final Permalink LAST_STABLE_BUILD = new PeepholePermalink() {
         @Override
@@ -262,7 +262,7 @@ public abstract class PeepholePermalink extends Permalink implements Predicate<R
     };
 
     /**
-     * @since TODO
+     * @since 2.436
      */
     public static final Permalink LAST_SUCCESSFUL_BUILD = new PeepholePermalink() {
         @Override
@@ -283,7 +283,7 @@ public abstract class PeepholePermalink extends Permalink implements Predicate<R
     };
 
     /**
-     * @since TODO
+     * @since 2.436
      */
     public static final Permalink LAST_FAILED_BUILD = new PeepholePermalink() {
         @Override
@@ -303,7 +303,7 @@ public abstract class PeepholePermalink extends Permalink implements Predicate<R
     };
 
     /**
-     * @since TODO
+     * @since 2.436
      */
     public static final Permalink LAST_UNSTABLE_BUILD = new PeepholePermalink() {
         @Override
@@ -323,7 +323,7 @@ public abstract class PeepholePermalink extends Permalink implements Predicate<R
     };
 
     /**
-     * @since TODO
+     * @since 2.436
      */
     public static final Permalink LAST_UNSUCCESSFUL_BUILD = new PeepholePermalink() {
         @Override
@@ -343,7 +343,7 @@ public abstract class PeepholePermalink extends Permalink implements Predicate<R
     };
 
     /**
-     * @since TODO
+     * @since 2.436
      */
     public static final Permalink LAST_COMPLETED_BUILD = new PeepholePermalink() {
         @Override

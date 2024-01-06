@@ -52,7 +52,7 @@ import org.kohsuke.stapler.Stapler;
  * Pipeline flow graph, there may be various edge cases where your visualization does not work at all, but the classic
  * console view is unaffected.
  * @see Functions#getConsoleUrl
- * @since TODO
+ * @since 2.433
  */
 public interface ConsoleUrlProvider extends Describable<ConsoleUrlProvider> {
     @Restricted(NoExternalUse.class)
