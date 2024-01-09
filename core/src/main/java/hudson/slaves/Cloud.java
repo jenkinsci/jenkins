@@ -331,7 +331,8 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
         j.clouds.replace(this, result);
         j.save();
         // take the user back to the cloud top page.
-        return FormApply.success(".");
+        return FormApply.success("../" + result.name + '/');
+
     }
 
     public Cloud reconfigure(@NonNull final StaplerRequest req, JSONObject form) throws Descriptor.FormException {
