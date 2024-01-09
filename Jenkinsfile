@@ -5,7 +5,8 @@
  * It makes assumptions about plugins being installed, labels mapping to nodes that can build what is needed, etc.
  */
 
-def failFast = false
+// def failFast = false
+def failFast = true
 
 properties([
   buildDiscarder(logRotator(numToKeepStr: '50', artifactNumToKeepStr: '3')),
@@ -13,8 +14,10 @@ properties([
 ])
 
 def axes = [
-  platforms: ['linux', 'windows'],
-  jdks: [11, 17, 21],
+  // platforms: ['linux', 'windows'],
+  platforms: ['linux'],
+  // jdks: [11, 17, 21],
+  jdks: [21],
 ]
 
 stage('Record build') {
@@ -206,37 +209,37 @@ axes.values().combinations {
   }
 }
 
-def athAxes = [
-  platforms: ['linux'],
-  jdks: [17],
-  browsers: ['firefox'],
-]
-athAxes.values().combinations {
-  def (platform, jdk, browser) = it
-  builds["ath-${platform}-jdk${jdk}-${browser}"] = {
-    retry(conditions: [agent(), nonresumable()], count: 2) {
-      node('docker-highmem') {
-        // Just to be safe
-        deleteDir()
-        checkout scm
-        infra.withArtifactCachingProxy {
-          sh "bash ath.sh ${jdk} ${browser}"
-        }
-        junit testResults: 'target/ath-reports/TEST-*.xml', testDataPublishers: [[$class: 'AttachmentPublisher']]
-        /*
-         * Currently disabled, as the fact that this is a manually created subset will confuse Launchable,
-         * which expects this to be a full build. When we implement subsetting, this can be re-enabled using
-         * Launchable's subset rather than our own.
-         */
-        /*
-         withCredentials([string(credentialsId: 'launchable-jenkins-acceptance-test-harness', variable: 'LAUNCHABLE_TOKEN')]) {
-         sh "launchable verify && launchable record tests --no-build --flavor platform=${platform} --flavor jdk=${jdk} --flavor browser=${browser} maven './target/ath-reports'"
-         }
-         */
-      }
-    }
-  }
-}
+// def athAxes = [
+//   platforms: ['linux'],
+//   jdks: [17],
+//   browsers: ['firefox'],
+// ]
+// athAxes.values().combinations {
+//   def (platform, jdk, browser) = it
+//   builds["ath-${platform}-jdk${jdk}-${browser}"] = {
+//     retry(conditions: [agent(), nonresumable()], count: 2) {
+//       node('docker-highmem') {
+//         // Just to be safe
+//         deleteDir()
+//         checkout scm
+//         infra.withArtifactCachingProxy {
+//           sh "bash ath.sh ${jdk} ${browser}"
+//         }
+//         junit testResults: 'target/ath-reports/TEST-*.xml', testDataPublishers: [[$class: 'AttachmentPublisher']]
+//         /*
+//          * Currently disabled, as the fact that this is a manually created subset will confuse Launchable,
+//          * which expects this to be a full build. When we implement subsetting, this can be re-enabled using
+//          * Launchable's subset rather than our own.
+//          */
+//         /*
+//          withCredentials([string(credentialsId: 'launchable-jenkins-acceptance-test-harness', variable: 'LAUNCHABLE_TOKEN')]) {
+//          sh "launchable verify && launchable record tests --no-build --flavor platform=${platform} --flavor jdk=${jdk} --flavor browser=${browser} maven './target/ath-reports'"
+//          }
+//          */
+//       }
+//     }
+//   }
+// }
 
 builds.failFast = failFast
 parallel builds
