@@ -40,9 +40,9 @@ import org.kohsuke.stapler.StaplerRequest;
  *
  * @author Kohsuke Kawaguchi
  * @since 1.372
- * @deprecated since TODO
+ * @deprecated since 2.431
  */
-@Deprecated
+@Deprecated(since = "2.431")
 public class BuildTimelineWidget {
     protected final RunList<?> builds;
 
