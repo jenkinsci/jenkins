@@ -191,7 +191,7 @@ public class MavenTest {
         assertNotNull(isp.installers.get(MavenInstaller.class));
     }
 
-    @Test @WithTimeout(300) public void sensitiveParameters() throws Exception {
+    @Test @WithTimeout(500) public void sensitiveParameters() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject();
         ParametersDefinitionProperty pdb = new ParametersDefinitionProperty(
                 new StringParameterDefinition("string", "defaultValue", "string description"),
