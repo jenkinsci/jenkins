@@ -204,14 +204,15 @@ $dropdown-padding: 0.4rem;
       position: relative;
       margin-left: auto;
       margin-right: -0.85rem;
+      padding: 0 0.4rem;
+      border-radius: 100vmax;
+      box-shadow: 0 1px 1px rgba(black, 0.1);
 
       &::before {
         content: "";
         position: absolute;
-        inset: -0.0625rem -0.375rem;
         background: var(--text-color-secondary);
         opacity: 0.1;
-        border-radius: 100vmax;
       }
     }
 

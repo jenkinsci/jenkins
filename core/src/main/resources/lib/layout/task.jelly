@@ -156,7 +156,7 @@ THE SOFTWARE.
               </span>
               <span class="task-link-text">${title}</span>
               <j:if test="${attrs.badge != null}">
-                <span class="task-icon-badge" tooltip="${attrs.badge.tooltip}">
+                <span class="task-icon-badge alert-${attrs.badge.severity}" tooltip="${attrs.badge.tooltip}">
                   ${attrs.badge.text}
                 </span>
               </j:if>
@@ -182,7 +182,7 @@ THE SOFTWARE.
                   </span>
                   <span>${title}</span>
                   <j:if test="${attrs.badge != null}">
-                    <span class="task-icon-badge" tooltip="${attrs.badge.tooltip}">
+                    <span class="task-icon-badge alert-${attrs.badge.severity}" tooltip="${attrs.badge.tooltip}">
                       ${attrs.badge.text}
                     </span>
                   </j:if>
@@ -203,7 +203,7 @@ THE SOFTWARE.
                   </span>
                   <span class="task-link-text">${title}</span>
                   <j:if test="${attrs.badge != null}">
-                    <span class="task-icon-badge" tooltip="${attrs.badge.tooltip}">
+                    <span class="task-icon-badge alert-${attrs.badge.severity}" tooltip="${attrs.badge.tooltip}">
                       ${attrs.badge.text}
                     </span>
                   </j:if>

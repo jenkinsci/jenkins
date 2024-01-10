@@ -92,20 +92,19 @@ $background-outset: 0.7rem;
 
   .task-icon-badge {
     position: relative;
-    color: currentColor;
     letter-spacing: 0;
     z-index: 0;
     margin-left: auto;
     min-width: 24px;
     text-align: center;
-    padding: 0 8px;
+    padding: 6px 6px;
     line-height: 0.75rem;
     font-size: 0.75rem;
+    border-radius: 100vmax;
 
     &::before {
       content: "";
       position: absolute;
-      inset: -6px 0;
       background: var(--item-background--hover);
       border-radius: 100px;
       z-index: -1;
