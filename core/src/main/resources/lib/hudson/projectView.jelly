@@ -88,6 +88,7 @@ THE SOFTWARE.
       </div>
 
       <div class="jenkins-jobs-list jenkins-mobile-show">
+        <j:set var="jenkins_mobile_show" value="${true}"/>
         <j:forEach var="job" items="${jobs}">
           <j:set var="relativeLinkToJob" value="${h.getRelativeLinkTo(job)}"/>
           <j:set var="jobBaseUrl" value="${relativeLinkToJob.substring(0, relativeLinkToJob.length() - job.shortUrl.length())}"/>
@@ -121,7 +122,7 @@ THE SOFTWARE.
               </div>
             </a>
             <div class="jenkins-jobs-list__item__actions">
-              <st:include page="column.jelly" it="${buildButtonColumn}" optional="true" />
+              <st:include page="column.jelly" it="${buildButtonColumn}" optional="true"/>
             </div>
           </div>
         </j:forEach>
