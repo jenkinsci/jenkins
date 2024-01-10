@@ -54,9 +54,9 @@ THE SOFTWARE.
   <x:element name="${attrs.href != null ? 'a' : 'div'}">
     <x:attribute name="class">app-progress-bar ${attrs.large?'app-progress-bar--large':null} ${attrs.red?'app-progress-bar--error':null}</x:attribute>
     <x:attribute name="href">${attrs.href}</x:attribute>
-    <x:attribute name="tooltip"><j:out value="${attrs.tooltip}"/></x:attribute>
+    <x:attribute name="tooltip">${attrs.tooltip}</x:attribute>
     <x:attribute name="id">${attrs.id}</x:attribute>
-    <x:attribute name="data-tooltip-template"><j:out value="${attrs.tooltipTemplate}"/></x:attribute>
+    <x:attribute name="data-tooltip-template">${attrs.tooltipTemplate}</x:attribute>
       <j:choose>
         <j:when test="${pos lt 0}">
           <span class="${animate} app-progress-bar--unknown"/>
