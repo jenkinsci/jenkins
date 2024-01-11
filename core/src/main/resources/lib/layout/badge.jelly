@@ -22,14 +22,20 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
   <st:documentation>
     If a Badge is informed it will be displayed, otherwise nothing is done.
+    
+    @since TODO
     <st:attribute name="badge" type="jenkins.management.Badge">
       Badge to be displayed, accepts null value.
+      
+      @since TODO
     </st:attribute>
     <st:attribute name="class" use="optional">
-      Additional class to be applied
+      Additional class to be applied.
+      
+      @since TODO
     </st:attribute>
   </st:documentation>
   <j:if test="${attrs.badge != null}">
