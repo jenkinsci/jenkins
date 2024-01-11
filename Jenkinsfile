@@ -92,6 +92,7 @@ axes.values().combinations {
               session = readFile(sessionFile).trim()
             }
             def mavenOptions = [
+              '-Dtest=FilePathTest',
               '-Pdebug',
               '-Penable-jacoco',
               '--update-snapshots',
