@@ -200,20 +200,9 @@ $dropdown-padding: 0.4rem;
       }
     }
 
-    &__badge {
-      position: relative;
+    .badge {
       margin-left: auto;
       margin-right: -0.85rem;
-      padding: 0 0.4rem;
-      border-radius: 100vmax;
-      box-shadow: 0 1px 1px rgba(black, 0.1);
-
-      &::before {
-        content: "";
-        position: absolute;
-        background: var(--text-color-secondary);
-        opacity: 0.1;
-      }
     }
 
     &__chevron {

@@ -90,25 +90,8 @@ $background-outset: 0.7rem;
     }
   }
 
-  .task-icon-badge {
-    position: relative;
-    letter-spacing: 0;
-    z-index: 0;
+  .badge {
     margin-left: auto;
-    min-width: 24px;
-    text-align: center;
-    padding: 6px 6px;
-    line-height: 0.75rem;
-    font-size: 0.75rem;
-    border-radius: 100vmax;
-
-    &::before {
-      content: "";
-      position: absolute;
-      background: var(--item-background--hover);
-      border-radius: 100px;
-      z-index: -1;
-    }
   }
 
   .task-link-text {
