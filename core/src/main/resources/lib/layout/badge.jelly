@@ -25,13 +25,16 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define">
   <st:documentation>
     If a Badge is informed it will be displayed, otherwise nothing is done.
-    <st:attribute name="badge">
+    <st:attribute name="badge" type="jenkins.management.Badge">
       Badge to be displayed, accepts null value.
     </st:attribute>
+    <st:attribute name="class" use="optional">
+      Additional class to be applied
+    </st:attribute>
   </st:documentation>
-  <j:if test="${badge != null}">
-    <span class="badge alert-${attrs.badge.severity}" tooltip="${badge.tooltip}">
-      ${badge.text}
+  <j:if test="${attrs.badge != null}">
+    <span class="jenkins-badge alert-${attrs.badge.severity} ${attrs.class?:''}" tooltip="${attrs.badge.tooltip}">
+      ${attrs.badge.text}
     </span>
   </j:if>
 </j:jelly>

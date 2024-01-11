@@ -155,7 +155,7 @@ THE SOFTWARE.
                 <l:icon src="${icon}" />
               </span>
               <span class="task-link-text">${title}</span>
-              <l:badge badge="${attrs.badge}"/>
+              <l:badge badge="${attrs.badge}" class="task-icon-badge"/>
             </span>
           </span>
         </div>
@@ -177,7 +177,7 @@ THE SOFTWARE.
                     <l:icon src="${icon}" />
                   </span>
                   <span>${title}</span>
-                  <l:badge badge="${attrs.badge}"/>
+                  <l:badge badge="${attrs.badge}" class="task-icon-badge"/>
                 </l:confirmationLink>
               </j:when>
 
@@ -194,7 +194,7 @@ THE SOFTWARE.
                     <l:icon src="${icon}" />
                   </span>
                   <span class="task-link-text">${title}</span>
-                  <l:badge badge="${attrs.badge}"/>
+                  <l:badge badge="${attrs.badge}" class="task-icon-badge"/>
                 </m:a>
                 <st:adjunct includes="lib.layout.task.task" />
               </j:otherwise>

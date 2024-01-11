@@ -90,18 +90,18 @@
       background: var(--item-background--active);
     }
 
-     .badge{
-        position: absolute;
-        top: -4px;
-        right: -4px;
-    }
-
     img,
     svg {
       position: relative;
       width: 50% !important;
       height: 50% !important;
       color: currentColor;
+    }
+
+     &__badge{
+        position: absolute;
+        top: -4px;
+        right: -4px;
     }
   }
 
