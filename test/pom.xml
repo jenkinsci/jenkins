@@ -22,7 +22,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
@@ -67,13 +67,13 @@ THE SOFTWARE.
         <!-- RequireUpperBoundDeps between checks-api, plugin-util-api, and font-awesome-api -->
         <groupId>io.jenkins.plugins</groupId>
         <artifactId>commons-text-api</artifactId>
-        <version>1.11.0-94.v3e1f4a_926e49</version>
+        <version>1.11.0-95.v22a_d30ee5d36</version>
       </dependency>
       <dependency>
         <!-- RequireUpperBoundDeps between bootstrap5-api and echarts-api -->
         <groupId>io.jenkins.plugins</groupId>
         <artifactId>font-awesome-api</artifactId>
-        <version>6.4.2-1</version>
+        <version>6.5.1-1</version>
       </dependency>
       <dependency>
         <groupId>io.jenkins.plugins</groupId>
@@ -84,6 +84,11 @@ THE SOFTWARE.
         <groupId>io.jenkins.plugins</groupId>
         <artifactId>javax-activation-api</artifactId>
         <version>1.2.0-6</version>
+      </dependency>
+      <dependency>
+        <groupId>io.jenkins.plugins</groupId>
+        <artifactId>plugin-util-api</artifactId>
+        <version>3.8.0</version>
       </dependency>
       <dependency>
         <groupId>org.jenkins-ci.plugins</groupId>
@@ -100,7 +105,12 @@ THE SOFTWARE.
         <!-- requireUpperBoundDeps via matrix-project and junit -->
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>script-security</artifactId>
-        <version>1294.v99333c047434</version>
+        <version>1313.v7a_6067dc7087</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jenkins-ci.plugins.workflow</groupId>
+        <artifactId>workflow-api</artifactId>
+        <version>1283.v99c10937efcb_</version>
       </dependency>
       <dependency>
         <!-- Required by plugin-util-api -->
@@ -121,7 +131,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>2118.v03a_2d036b_6c9</version>
+      <version>2146.v6b_f8b_1cb_d12d</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -196,13 +206,13 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>credentials</artifactId>
-      <version>1309.v8835d63eb_d8a_</version>
+      <version>1311.vcf0a_900b_37c2</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>junit</artifactId>
-      <version>1240.vf9529b_881428</version>
+      <version>1252.vfc2e5efa_294f</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -220,7 +230,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>matrix-project</artifactId>
-      <version>818.v7eb_e657db_924</version>
+      <version>822.v01b_8c85d16d2</version>
       <scope>test</scope>
     </dependency>
     <dependency>

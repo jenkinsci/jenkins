@@ -53,6 +53,125 @@
     <Bug pattern="SF_SWITCH_NO_DEFAULT"/>
     <Class name="hudson.scheduler.CrontabParser"/>
   </Match>
+  <Match>
+    <!-- Preserve API compatibility -->
+    <Bug pattern="PA_PUBLIC_PRIMITIVE_ATTRIBUTE"/>
+    <Class name="hudson.PluginManager"/>
+    <Field name="pluginUploaded"/>
+  </Match>
+  <Match>
+    <Bug pattern="PA_PUBLIC_PRIMITIVE_ATTRIBUTE"/>
+    <Class name="hudson.ProxyConfiguration"/>
+    <Field name="noProxyHost"/>
+  </Match>
+  <Match>
+    <Bug pattern="PA_PUBLIC_PRIMITIVE_ATTRIBUTE"/>
+    <Class name="hudson.cli.CLICommand"/>
+    <Or>
+      <Field name="locale"/>
+      <Field name="stderr"/>
+      <Field name="stdin"/>
+      <Field name="stdout"/>
+    </Or>
+  </Match>
+  <Match>
+    <Bug pattern="PA_PUBLIC_PRIMITIVE_ATTRIBUTE"/>
+    <Class name="hudson.cli.CopyJobCommand"/>
+    <Field name="dst"/>
+  </Match>
+  <Match>
+    <Bug pattern="PA_PUBLIC_PRIMITIVE_ATTRIBUTE"/>
+    <Class name="hudson.cli.CreateJobCommand"/>
+    <Field name="name"/>
+  </Match>
+  <Match>
+    <Bug pattern="PA_PUBLIC_PRIMITIVE_ATTRIBUTE"/>
+    <Class name="hudson.cli.SetBuildDescriptionCommand"/>
+    <Field name="description"/>
+  </Match>
+  <Match>
+    <Bug pattern="PA_PUBLIC_PRIMITIVE_ATTRIBUTE"/>
+    <Class name="hudson.cli.SetBuildDisplayNameCommand"/>
+    <Field name="displayName"/>
+  </Match>
+  <Match>
+    <Bug pattern="PA_PUBLIC_PRIMITIVE_ATTRIBUTE"/>
+    <Class name="hudson.model.Job"/>
+    <Field name="runIdMigrator"/>
+  </Match>
+  <Match>
+    <Bug pattern="PA_PUBLIC_PRIMITIVE_ATTRIBUTE"/>
+    <Class name="hudson.model.StringParameterValue"/>
+    <Field name="value"/>
+  </Match>
+  <Match>
+    <Bug pattern="PA_PUBLIC_PRIMITIVE_ATTRIBUTE"/>
+    <Class name="hudson.security.Permission"/>
+    <Field name="enabled"/>
+  </Match>
+  <Match>
+    <Bug pattern="PA_PUBLIC_PRIMITIVE_ATTRIBUTE"/>
+    <Class name="hudson.tasks.Maven"/>
+    <Field name="usePrivateRepository"/>
+  </Match>
+  <Match>
+    <Bug pattern="PA_PUBLIC_PRIMITIVE_ATTRIBUTE"/>
+    <Class name="hudson.util.Graph"/>
+    <Field name="defaultScale"/>
+  </Match>
+  <Match>
+    <Bug pattern="PA_PUBLIC_PRIMITIVE_ATTRIBUTE"/>
+    <Class name="hudson.widgets.HistoryWidget"/>
+    <Field name="baseList"/>
+  </Match>
+  <Match>
+    <Bug pattern="PA_PUBLIC_PRIMITIVE_ATTRIBUTE"/>
+    <Class name="jenkins.model.Jenkins"/>
+    <Or>
+      <Field name="tcpSlaveAgentListener"/>
+      <Field name="proxy"/>
+      <Field name="VERSION"/>
+      <Field name="CHANGELOG_URL"/>
+      <Field name="VERSION_HASH"/>
+      <Field name="SESSION_HASH"/>
+      <Field name="RESOURCE_PATH"/>
+      <Field name="VIEW_RESOURCE_PATH"/>
+    </Or>
+  </Match>
+  <Match>
+    <Bug pattern="PA_PUBLIC_PRIMITIVE_ATTRIBUTE"/>
+    <Class name="jenkins.widgets.HistoryPageFilter"/>
+    <Or>
+      <Field name="hasDownPage"/>
+      <Field name="hasUpPage"/>
+      <Field name="newestOnPage"/>
+      <Field name="nextBuildNumber"/>
+      <Field name="oldestOnPage"/>
+    </Or>
+  </Match>
+  <Match>
+    <Bug pattern="PA_PUBLIC_PRIMITIVE_ATTRIBUTE"/>
+    <Class name="hudson.slaves.JNLPLauncher"/>
+    <Field name="tunnel"/>
+  </Match>
+  <Match>
+    <!-- Reserved for future use -->
+    <Bug pattern="SS_SHOULD_BE_STATIC"/>
+    <Class name="hudson.model.User"/>
+    <Field name="version"/>
+  </Match>
+  <Match>
+    <!-- Reserved for future use -->
+    <Bug pattern="SS_SHOULD_BE_STATIC"/>
+    <Class name="hudson.model.UserIdMapper"/>
+    <Field name="version"/>
+  </Match>
+  <Match>
+    <!-- Reserved for future use -->
+    <Bug pattern="SS_SHOULD_BE_STATIC"/>
+    <Class name="hudson.util.Graph"/>
+    <Field name="defaultScale"/>
+  </Match>
   <!--
     Here lies technical debt. Exclusions in this section have not yet been triaged. When working on
     on this section, pick an exclusion to triage, then:
@@ -376,5 +495,9 @@
         </Or>
       </And>
     </Or>
+  </Match>
+  <Match>
+    <Bug pattern="SIC_INNER_SHOULD_BE_STATIC"/>
+    <Class name="jenkins.security.stapler.StaplerDispatchValidator$ValidatorCache$Validator"/>
   </Match>
 </FindBugsFilter>
