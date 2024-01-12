@@ -4467,7 +4467,7 @@ __metadata:
     sass: "npm:1.69.7"
     sass-loader: "npm:13.3.3"
     sortablejs: "npm:1.15.1"
-    style-loader: "npm:3.3.3"
+    style-loader: "npm:3.3.4"
     stylelint: "npm:16.1.0"
     stylelint-checkstyle-reporter: "npm:0.2.0"
     stylelint-config-standard: "npm:33.0.0"
@@ -6733,12 +6733,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"style-loader@npm:3.3.3":
-  version: 3.3.3
-  resolution: "style-loader@npm:3.3.3"
+"style-loader@npm:3.3.4":
+  version: 3.3.4
+  resolution: "style-loader@npm:3.3.4"
   peerDependencies:
     webpack: ^5.0.0
-  checksum: 104bae8abd0627579dc14f3917cf65f1117e8098e3529872f09c26b5eee07933567b7be5c8ebf94d16e322b6e726dc569c5787111bf3786915850db4e351ef33
+  checksum: 8f8027fc5c6e91400cbb60066e7db3315810f8eaa0d19b2a254936eb0bec399ba8a7043b1789da9d05ab7c3ba50faf9267765ae0bf3571e48aa34ecdc774be37
   languageName: node
   linkType: hard
 
