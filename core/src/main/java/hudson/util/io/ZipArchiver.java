@@ -32,6 +32,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.OpenOption;
@@ -55,12 +56,12 @@ final class ZipArchiver extends Archiver {
     private final String prefix;
 
     ZipArchiver(OutputStream out) {
-        this(out, "");
+        this(out, "", Charset.defaultCharset());
     }
 
     // Restriction added for clarity, it's a package class, you should not use it outside of Jenkins core
     @Restricted(NoExternalUse.class)
-    ZipArchiver(OutputStream out, String prefix, OpenOption... openOptions) {
+    ZipArchiver(OutputStream out, String prefix, Charset filenamesEncoding, OpenOption... openOptions) {
         this.openOptions = openOptions;
         if (StringUtils.isBlank(prefix)) {
             this.prefix = "";
@@ -69,7 +70,7 @@ final class ZipArchiver extends Archiver {
         }
 
         zip = new ZipOutputStream(out);
-        zip.setEncoding(System.getProperty("file.encoding"));
+        zip.setEncoding(filenamesEncoding.name());
         zip.setUseZip64(Zip64Mode.AsNeeded);
     }
 
