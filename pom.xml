@@ -90,11 +90,7 @@ THE SOFTWARE.
     <!-- Minimum Remoting version, which is tested for API compatibility -->
     <remoting.minimum.supported.version>4.13</remoting.minimum.supported.version>
 
-    <!-- TODO: Remove when parent pom is using this version or newer -->
-    <!-- https://github.com/jenkinsci/pom/pull/510 -->
-    <spotbugs-maven-plugin.version>4.8.2.0</spotbugs-maven-plugin.version>
     <spotbugs.effort>Max</spotbugs.effort>
-    <spotbugs.omitVisitors>FindReturnRef,ConstructorThrow</spotbugs.omitVisitors>
     <spotbugs.threshold>Medium</spotbugs.threshold>
 
     <access-modifier.version>1.33</access-modifier.version>
