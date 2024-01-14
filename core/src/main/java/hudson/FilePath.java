@@ -28,6 +28,7 @@ package hudson;
 
 import static hudson.Util.fileToPath;
 import static hudson.Util.fixEmpty;
+import static hudson.Util.fixEmptyAndTrim;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.jcraft.jzlib.GZIPInputStream;
@@ -962,7 +963,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      * </ul>
      *
      * @param archive
-     *      The resource that represents the tgz/zip file. This URL must support the {@code Last-Modified} header.
+     *      The resource that represents the tgz/zip file. This URL must support the {@code Last-Modified} header or the {@code ETag} header.
      *      (For example, you could use {@link ClassLoader#getResource}.)
      * @param listener
      *      If non-null, a message will be printed to this listener once this method decides to
@@ -984,11 +985,17 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         try {
             FilePath timestamp = this.child(".timestamp");
             long lastModified = timestamp.lastModified();
+            // https://httpwg.org/specs/rfc9110.html#field.etag is the ETag specification
+            // Read previously stored ETag if timestamp is available
+            String etag = timestamp.exists() ? fixEmptyAndTrim(timestamp.readToString()) : null;
             URLConnection con;
             try {
                 con = ProxyConfiguration.open(archive);
                 if (lastModified != 0) {
                     con.setIfModifiedSince(lastModified);
+                }
+                if (etag != null) {
+                    con.setRequestProperty("If-None-Match", etag);
                 }
                 con.connect();
             } catch (IOException x) {
@@ -1016,7 +1023,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                         return false;
                     }
                 }
-                if (lastModified != 0) {
+                if (lastModified != 0 || etag != null) {
                     if (responseCode == HttpURLConnection.HTTP_NOT_MODIFIED) {
                         return false;
                     } else if (responseCode != HttpURLConnection.HTTP_OK) {
@@ -1027,8 +1034,12 @@ public final class FilePath implements SerializableOnlyOverRemoting {
             }
 
             long sourceTimestamp = con.getLastModified();
+            String resultEtag = fixEmptyAndTrim(con.getHeaderField("ETag"));
 
             if (this.exists()) {
+                if (equalETags(etag, resultEtag)) {
+                    return false;   // already up to date
+                }
                 if (lastModified != 0 && sourceTimestamp == lastModified)
                     return false;   // already up to date
                 this.deleteContents();
@@ -1042,6 +1053,10 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                 // First try to download from the agent machine.
                 try {
                     act(new Unpack(archive));
+                    if (resultEtag != null && !equalETags(etag, resultEtag)) {
+                        /* Store the ETag value in the timestamp file for later use */
+                        timestamp.write(resultEtag, "UTF-8");
+                    }
                     timestamp.touch(sourceTimestamp);
                     return true;
                 } catch (IOException x) {
@@ -1061,11 +1076,34 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                 throw new IOException(String.format("Failed to unpack %s (%d bytes read of total %d)",
                         archive, cis.getByteCount(), con.getContentLength()), e);
             }
+            if (resultEtag != null && !equalETags(etag, resultEtag)) {
+                /* Store the ETag value in the timestamp file for later use */
+                timestamp.write(resultEtag, "UTF-8");
+            }
             timestamp.touch(sourceTimestamp);
             return true;
         } catch (IOException e) {
             throw new IOException("Failed to install " + archive + " to " + remote, e);
         }
+    }
+
+    /* Return true if etag1 equals etag2 as defined by the etag specification
+       https://httpwg.org/specs/rfc9110.html#field.etag
+     */
+    private boolean equalETags(String etag1, String etag2) {
+        if (etag1 == null || etag2 == null) {
+            return false;
+        }
+        if (etag1.equals(etag2)) {
+            return true;
+        }
+        /* Weak tags are identified by leading characters "W/" as a marker */
+        /* Weak tag marker must not be considered in tag comparison.
+           This implements the weak comparison in the specification at
+           https://httpwg.org/specs/rfc9110.html#field.etag */
+        String opaqueTag1 = etag1.startsWith("W/") ? etag1.substring(2) : etag1;
+        String opaqueTag2 = etag2.startsWith("W/") ? etag2.substring(2) : etag2;
+        return opaqueTag1.equals(opaqueTag2);
     }
 
     // this reads from arbitrary URL

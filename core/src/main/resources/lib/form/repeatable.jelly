@@ -134,8 +134,7 @@ THE SOFTWARE.
     <!-- The first DIV is the master copy. -->
     <div class="repeated-chunk to-be-removed" name="${name}">
       <div class="repeated-chunk__header">
-        <j:if test="${!empty(header)}"><div class="${readOnlyMode ? '' : 'dd-handle'}"/></j:if>
-        ${header}
+        <j:if test="${!empty(header)}"><div class="${readOnlyMode ? '' : 'dd-handle'}"/>${header}</j:if>
       </div>
       <j:scope>
         <j:set var="${var}" value="${null}"/>
@@ -151,7 +150,9 @@ THE SOFTWARE.
     <j:forEach var="loop" varStatus="loopStatus" items="${items}">
       <div class="repeated-chunk" name="${name}">
         <j:set var="${var}" value="${loop}" />
-        <j:if test="${!empty(header)}"><div class="${readOnlyMode ? '' : 'dd-handle'}">${header}</div></j:if>
+        <div class="repeated-chunk__header">
+          <j:if test="${!empty(header)}"><div class="${readOnlyMode ? '' : 'dd-handle'}"/>${header}</j:if>
+        </div>
         <d:invokeBody />
       </div>
     </j:forEach>
@@ -161,7 +162,9 @@ THE SOFTWARE.
       <j:forEach begin="${h.size2(items)}" end="${minimum-1}" var="i">
         <j:set var="${var}" value="${null}" />
         <div class="repeated-chunk" name="${name}">
-          <j:if test="${!empty(header)}"><div class="${readOnlyMode ? '' : 'dd-handle'}">${header}</div></j:if>
+          <div class="repeated-chunk__header">
+            <j:if test="${!empty(header)}"><div class="${readOnlyMode ? '' : 'dd-handle'}"/>${header}</j:if>
+          </div>
           <d:invokeBody />
         </div>
       </j:forEach>

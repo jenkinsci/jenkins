@@ -499,6 +499,10 @@ public class Queue extends ResourceController implements Saveable {
     }
 
     /*package*/ File getXMLQueueFile() {
+        String id = SystemProperties.getString(Queue.class.getName() + ".id");
+        if (id != null) {
+            return new File(Jenkins.get().getRootDir(), "queue/" + id + ".xml");
+        }
         return new File(Jenkins.get().getRootDir(), "queue.xml");
     }
 

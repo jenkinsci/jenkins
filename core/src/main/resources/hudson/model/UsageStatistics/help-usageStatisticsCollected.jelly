@@ -6,25 +6,35 @@
         When enabled, Jenkins periodically sends information to the Jenkins project.
         The Jenkins project uses this information to set development priorities.
     </div>
-    <h1>General usage statistics</h1>
-    <div>
-        <p>Jenkins reports the following general usage statistics:</p>
-        <ul>
-            <li>Your Jenkins version</li>
-            <li>For your controller and each agent, the OS type and number of executors</li>
-            <li>Installed plugins and their versions</li>
-            <li>Number of items (like jobs) of each item type</li>
-        </ul>
-        <p>
-            This <b>does not</b> report any personally identifiable information. The only information reported by Jenkins is information inherently revealed by the HTTP protocol, such as the IP address.
-
-            These usage statistics are aggregated, updated monthly, and published to <a href="https://stats.jenkins.io">stats.jenkins.io</a>
-        </p>
-    </div>
+    <j:invokeStatic className="jenkins.security.FIPS140" method="useCompliantAlgorithms" var="fips"/>
+    <j:if test="${!fips}">
+        <h1>General usage statistics</h1>
+        <div>
+            <p>Jenkins reports the following general usage statistics:</p>
+            <ul>
+                <li>Your Jenkins version</li>
+                <li>For your controller and each agent, the OS type and number of executors</li>
+                <li>Installed plugins and their versions</li>
+                <li>Number of items (like jobs) of each item type</li>
+            </ul>
+            <p>
+                This <b>does not</b> report any personally identifiable information.
+                The only information reported by Jenkins is information inherently revealed by the HTTP protocol, such as the IP address.
+                These usage statistics are aggregated, updated monthly, and published to <a href="https://stats.jenkins.io">stats.jenkins.io</a>
+            </p>
+        </div>
+    </j:if>
     <h1>Telemetry collection</h1>
     <div>
         <p>
-            In addition to the general usage statistics listed above, the Jenkins project collects telemetry data from specific trials to inform future development.
+            <j:choose>
+                <j:when test="${fips}">
+                    The Jenkins project collects telemetry data from specific trials to inform future development.
+                </j:when>
+                <j:otherwise>
+                    In addition to the general usage statistics listed above, the Jenkins project collects telemetry data from specific trials to inform future development.
+                </j:otherwise>
+            </j:choose>
             Each trial has a specific purpose and a defined end date, after which collection stops, independent of the installed versions of Jenkins or plugins.
             Once a trial is complete, the trial results may be aggregated and shared with the developer community.
         </p>
@@ -38,7 +48,7 @@
                 <j:if test="${not collector.end.isBefore(now)}">
                     <dt>${collector.displayName}</dt>
                     <dd>
-                        <st:include from="${collector}" optional="true" page="description.jelly"/>
+                        <st:include it="${collector}" optional="true" page="description.jelly"/>
                         <p>
                             Start date: ${collector.start}<br/>
                             End date: ${collector.end}
