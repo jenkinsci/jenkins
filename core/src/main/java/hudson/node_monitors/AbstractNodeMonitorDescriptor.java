@@ -73,7 +73,7 @@ public abstract class AbstractNodeMonitorDescriptor<T> extends Descriptor<NodeMo
      * method and return false.
      *
      * @return true if this monitor might take agents offline
-     * @since TODO
+     * @since 2.437
      */
     public boolean canTakeOffline() {
         return true;
