@@ -183,11 +183,11 @@ public abstract class DiskSpaceMonitorDescriptor extends AbstractAsyncNodeMonito
         /**
          * Gets GB left.
          *
-         * @deprecated since TODO
+         * @deprecated
          *   Directly use the size field or to get a human-readable value with units use
          *   {@link Functions#humanReadableByteSize(long)}
          */
-        @Deprecated
+        @Deprecated(since = "2.434")
         public String getGbLeft() {
             long space = size;
             space /= 1024L;   // convert to KB
