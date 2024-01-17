@@ -325,9 +325,10 @@ public final class DirectoryBrowserSupport implements HttpResponse {
             } else
             if (serveDirIndex) {
                 // serve directory index
-                glob = baseFile.run(new BuildChildPaths(root, baseFile, req.getLocale()));
+                var result = baseFile.run(new BuildChildPaths(baseFile, req.getLocale(), getOpenOptions()));
+                glob = result.glob;
                 containsSymlink = baseFile.containsSymLinkChild(getOpenOptions());
-                containsTmpDir = baseFile.containsTmpDirChild(getOpenOptions());
+                containsTmpDir = result.containsTmpDir;
             }
 
             if (glob != null) {
@@ -747,19 +748,28 @@ public final class DirectoryBrowserSupport implements HttpResponse {
         }
     }
 
-    private static final class BuildChildPaths extends MasterToSlaveCallable<List<List<Path>>, IOException> {
-        private VirtualFile root;
+    private static final class BuildChildPathsResult implements Serializable { // TODO Java 21+ record
+        private static final long serialVersionUID = 1;
+        private final List<List<Path>> glob;
+        private final boolean containsTmpDir;
+        BuildChildPathsResult(List<List<Path>> glob, boolean containsTmpDir) {
+            this.glob = glob;
+            this.containsTmpDir = containsTmpDir;
+        }
+    }
+    private static final class BuildChildPaths extends MasterToSlaveCallable<BuildChildPathsResult, IOException> {
         private final VirtualFile cur;
         private final Locale locale;
+        private final OpenOption[] openOptions;
 
-        BuildChildPaths(VirtualFile root, VirtualFile cur, Locale locale) {
-            this.root = root;
+        BuildChildPaths(VirtualFile cur, Locale locale, OpenOption[] openOptions) {
             this.cur = cur;
             this.locale = locale;
+            this.openOptions = openOptions;
         }
 
-        @Override public List<List<Path>> call() throws IOException {
-            return buildChildPaths(cur, locale);
+        @Override public BuildChildPathsResult call() throws IOException {
+            return new BuildChildPathsResult(buildChildPaths(cur, locale), cur.containsTmpDirChild(openOptions));
         }
     }
     /**
