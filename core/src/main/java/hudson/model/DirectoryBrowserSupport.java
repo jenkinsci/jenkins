@@ -327,7 +327,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
                 // serve directory index
                 var result = baseFile.run(new BuildChildPaths(baseFile, req.getLocale(), getOpenOptions()));
                 glob = result.glob;
-                containsSymlink = baseFile.containsSymLinkChild(getOpenOptions());
+                containsSymlink = result.containsSymLink;
                 containsTmpDir = result.containsTmpDir;
             }
 
@@ -751,9 +751,11 @@ public final class DirectoryBrowserSupport implements HttpResponse {
     private static final class BuildChildPathsResult implements Serializable { // TODO Java 21+ record
         private static final long serialVersionUID = 1;
         private final List<List<Path>> glob;
+        private final boolean containsSymLink;
         private final boolean containsTmpDir;
-        BuildChildPathsResult(List<List<Path>> glob, boolean containsTmpDir) {
+        BuildChildPathsResult(List<List<Path>> glob, boolean containsSymLink, boolean containsTmpDir) {
             this.glob = glob;
+            this.containsSymLink = containsSymLink;
             this.containsTmpDir = containsTmpDir;
         }
     }
@@ -769,7 +771,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
         }
 
         @Override public BuildChildPathsResult call() throws IOException {
-            return new BuildChildPathsResult(buildChildPaths(cur, locale), cur.containsTmpDirChild(openOptions));
+            return new BuildChildPathsResult(buildChildPaths(cur, locale), cur.containsSymLinkChild(openOptions), cur.containsTmpDirChild(openOptions));
         }
     }
     /**
