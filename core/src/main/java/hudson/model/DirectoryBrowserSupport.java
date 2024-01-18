@@ -753,12 +753,14 @@ public final class DirectoryBrowserSupport implements HttpResponse {
         private final List<List<Path>> glob;
         private final boolean containsSymLink;
         private final boolean containsTmpDir;
+
         BuildChildPathsResult(List<List<Path>> glob, boolean containsSymLink, boolean containsTmpDir) {
             this.glob = glob;
             this.containsSymLink = containsSymLink;
             this.containsTmpDir = containsTmpDir;
         }
     }
+
     private static final class BuildChildPaths extends MasterToSlaveCallable<BuildChildPathsResult, IOException> {
         private final VirtualFile cur;
         private final Locale locale;
