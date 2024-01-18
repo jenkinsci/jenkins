@@ -17,6 +17,11 @@
   }
 
   & > thead {
+    position: sticky;
+    top: 2.5rem;
+    z-index: 1;
+    background: var(--table-background);
+
     & > tr {
       & > th {
         color: var(--table-header-foreground);
