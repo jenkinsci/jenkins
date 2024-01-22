@@ -95,6 +95,10 @@
     ]
   },
   {
+    "category": "Appearance",
+    "plugins": [{ "name": "dark-theme", "suggested": true }]
+  },
+  {
     "category": "Languages",
     "plugins": [{ "name": "locale" }, { "name": "localization-zh-cn" }]
   }
