@@ -1,0 +1,80 @@
+@use "../abstracts/mixins";
+
+$label-grid-gap: 20px;
+$label-grid-margin-bottom: 20px;
+$label-grid-margin-left: 10px; // Inverse of inset left/right
+
+$label-grid-col-p: 1;
+$label-grid-col-t: 2;
+$label-grid-col-ds: 3;
+$label-grid-col-dm: 4;
+$label-grid-col-dl: 5;
+$label-grid-col-dxl: 6;
+
+
+.jenkins-label-list {
+  display: grid;
+  gap: $label-grid-gap;
+  margin: 0 0 $label-grid-margin-bottom $label-grid-margin-left;
+
+  @media only screen and (max-width: 640px) {
+    grid-template-columns: repeat($label-grid-col-p, minmax(auto, calc(100% / $label-grid-col-p - $label-grid-gap)));
+  }
+  @media only screen and (min-width: 641px) and (max-width: 1280px) {
+    grid-template-columns: repeat($label-grid-col-t, minmax(auto, calc(100% / $label-grid-col-t - $label-grid-gap)));
+  }
+  @media only screen and (min-width: 1281px) and (max-width: 1600px) {
+    grid-template-columns: repeat($label-grid-col-ds, minmax(auto, calc(100% / $label-grid-col-ds - $label-grid-gap)));
+  }
+  @media only screen and (min-width: 1601px) and (max-width: 1920px) {
+    grid-template-columns: repeat($label-grid-col-dm, minmax(auto, calc(100% / $label-grid-col-dm - $label-grid-gap)));
+  }
+  @media only screen and (min-width: 1921px) and (max-width: 2560px) {
+    grid-template-columns: repeat($label-grid-col-dl, minmax(auto, calc(100% / $label-grid-col-dl - $label-grid-gap)));
+  }
+  @media only screen and (min-width: 2561px) {
+    grid-template-columns: repeat($label-grid-col-dxl, minmax(auto, calc(100% / $label-grid-col-dxl - $label-grid-gap)));
+  }
+
+  .jenkins-label-node {
+    @include mixins.link;
+    display: flex;
+    align-items: center;
+    border: 0;
+    outline: 0;
+
+    .name {
+      margin-left: 5px;
+      text-overflow: ellipsis;
+      max-width: 90%;
+      overflow: hidden;
+      display: block;
+      white-space: nowrap;
+    }
+
+    &::before {
+      content: "";
+      inset: -7px -10px;
+      border-radius: 6px;
+      background-color: transparent;
+      position: absolute;
+      transform-style: var(--standard-transition);
+      pointer-events: none;
+    }
+
+    &:not(:disabled):hover::before {
+      background-color: var(--item-background--hover);
+      right: -30px !important;
+    }
+
+    .icon {
+      width: 16px;
+      height: 16px;
+      color: var(--text-color) !important;
+    }
+
+    &:hover, &:active, &:visited, &:focus, &:focus-visible, &:focus-within, &:target {
+      text-decoration: none;
+    }
+  }
+}

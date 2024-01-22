@@ -42,16 +42,16 @@ THE SOFTWARE.
 
       <div>
         <h2>${%Nodes}</h2>
-        <j:forEach var="n" items="${it.sortedNodes}">
-          <j:set var="c" value="${app.getComputer(n.nodeName)}"/>
-          <j:set var="url" value="${rootURL}/${c.url}"/>
-          <nobr>
-            <a href="${url}" class="jenkins-link--with-icon"><l:icon src="${c.iconClassName}" /></a>
-            <st:nbsp/>
-            <a href="${url}" class="model-link inside">${c.displayName}</a>
-          </nobr>
-          <wbr/>
-        </j:forEach>
+        <div class="jenkins-label-list">
+          <j:forEach var="n" items="${it.sortedNodes}">
+            <j:set var="c" value="${app.getComputer(n.nodeName)}"/>
+            <j:set var="url" value="${rootURL}/${c.url}"/>
+            <a href="${url}" class="model-link jenkins-label-node">
+              <l:icon class="icon" src="${c.iconClassName}" />
+              <span class="name">${c.displayName}</span>
+            </a>
+          </j:forEach>
+        </div>
       </div>
 
       <h2>${%Projects}</h2>
