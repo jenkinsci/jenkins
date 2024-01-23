@@ -24,12 +24,22 @@
 
 package hudson.widgets;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.Extension;
+import hudson.model.Job;
+import hudson.model.Queue;
 import hudson.model.Queue.Task;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import jenkins.model.Jenkins;
 import jenkins.model.queue.QueueItem;
 import jenkins.widgets.HistoryPageFilter;
+import jenkins.widgets.WidgetFactory;
+import org.jenkinsci.Symbol;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 
 /**
  * Displays the build history on the side panel.
@@ -77,5 +87,29 @@ public class BuildHistoryWidget<T> extends HistoryWidget<Task, T> {
         historyPageFilter.widget = this;
 
         return updateFirstTransientBuildKey(historyPageFilter);
+    }
+
+    @Extension
+    @Restricted(DoNotUse.class)
+    @Symbol("buildHistory")
+    public static final class FactoryImpl extends WidgetFactory<Job, BuildHistoryWidget> {
+        @Override
+        public Class<Job> type() {
+            return Job.class;
+        }
+
+        @Override
+        public Class<BuildHistoryWidget> widgetType() {
+            return BuildHistoryWidget.class;
+        }
+
+        @NonNull
+        @Override
+        public Collection<BuildHistoryWidget> createFor(@NonNull Job target) {
+            if (target instanceof Queue.Task) {
+                return List.of(new BuildHistoryWidget<>((Queue.Task) target, target.getBuilds(), Job.HISTORY_ADAPTER));
+            }
+            return Collections.emptySet();
+        }
     }
 }

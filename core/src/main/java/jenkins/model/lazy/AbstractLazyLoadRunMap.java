@@ -51,6 +51,7 @@ import java.util.TreeMap;
 import java.util.function.IntConsumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import jenkins.util.MemoryReductionUtil;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -332,6 +333,8 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer, R> 
         loadNumberOnDisk();
     }
 
+    private static final Pattern BUILD_NUMBER = Pattern.compile("[0-9]+");
+
     private void loadNumberOnDisk() {
         String[] kids = dir.list();
         if (kids == null) {
@@ -340,10 +343,14 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer, R> 
         }
         SortedIntList list = new SortedIntList(kids.length / 2);
         for (String s : kids) {
+            if (!BUILD_NUMBER.matcher(s).matches()) {
+                // not a build directory
+                continue;
+            }
             try {
                 list.add(Integer.parseInt(s));
             } catch (NumberFormatException e) {
-                // this isn't a build dir
+                // matched BUILD_NUMBER but not an int?
             }
         }
         list.sort();
@@ -511,15 +518,21 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer, R> 
         Index snapshot = index;
         if (snapshot.byNumber.containsKey(n)) {
             BuildReference<R> ref = snapshot.byNumber.get(n);
-            if (ref == null)      return null;    // known failure
+            if (ref == null) {
+                LOGGER.fine(() -> "known failure of #" + n + " in " + dir);
+                return null;
+            }
             R v = unwrap(ref);
-            if (v != null)        return v;       // already in memory
+            if (v != null) {
+                return v; // already in memory
+            }
             // otherwise fall through to load
         }
         synchronized (this) {
             if (index.byNumber.containsKey(n)) { // JENKINS-22767: recheck inside lock
                 BuildReference<R> ref = index.byNumber.get(n);
                 if (ref == null) {
+                    LOGGER.fine(() -> "known failure of #" + n + " in " + dir);
                     return null;
                 }
                 R v = unwrap(ref);
@@ -648,7 +661,10 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer, R> 
         assert Thread.holdsLock(this);
         try {
             R r = retrieve(dataDir);
-            if (r == null)    return null;
+            if (r == null) {
+                LOGGER.fine(() -> "nothing in " + dataDir);
+                return null;
+            }
 
             Index copy = editInPlace != null ? editInPlace : new Index(index);
 

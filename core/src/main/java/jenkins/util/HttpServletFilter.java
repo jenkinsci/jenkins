@@ -45,7 +45,7 @@ import org.kohsuke.accmod.restrictions.DoNotUse;
  * More convenient and declarative way to use {@link PluginServletFilter}.
  * Register an implementation if you wish to intercept certain HTTP requests.
  * Typical implementations will inspect {@link HttpServletRequest#getPathInfo} to determine if they should be active.
- * @since TODO
+ * @since 2.406
  * @see CrumbExclusion
  */
 public interface HttpServletFilter extends ExtensionPoint {

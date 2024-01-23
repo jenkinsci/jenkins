@@ -34,6 +34,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
 
 import hudson.model.User;
+import java.net.URI;
 import java.net.URL;
 import java.util.List;
 import jenkins.security.ApiTokenProperty;
@@ -73,7 +74,7 @@ public class ApiTokenStatsTest {
 
         final String TOKEN_NAME = "New Token Name";
 
-        WebRequest request = new WebRequest(new URL(j.getURL() + "user/" + u.getId() + "/descriptorByName/" + ApiTokenProperty.class.getName() + "/generateNewToken"), HttpMethod.POST);
+        WebRequest request = new WebRequest(new URI(j.getURL() + "user/" + u.getId() + "/descriptorByName/" + ApiTokenProperty.class.getName() + "/generateNewToken").toURL(), HttpMethod.POST);
         request.setRequestParameters(List.of(new NameValuePair("newTokenName", TOKEN_NAME)));
 
         Page page = wc.getPage(request);

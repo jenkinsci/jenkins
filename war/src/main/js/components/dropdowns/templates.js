@@ -32,7 +32,7 @@ function menuItem(options) {
     {
       type: "link",
     },
-    options
+    options,
   );
 
   const label = xmlEscape(itemOptions.label);
@@ -70,7 +70,7 @@ function menuItem(options) {
     `);
 
   if (options.onClick) {
-    item.addEventListener("click", () => options.onClick());
+    item.addEventListener("click", (event) => options.onClick(event));
   }
 
   return item;
@@ -78,19 +78,25 @@ function menuItem(options) {
 
 function heading(label) {
   return createElementFromHtml(
-    `<p class="jenkins-dropdown__heading">${label}</p>`
+    `<p class="jenkins-dropdown__heading">${label}</p>`,
   );
 }
 
 function separator() {
   return createElementFromHtml(
-    `<div class="jenkins-dropdown__separator"></div>`
+    `<div class="jenkins-dropdown__separator"></div>`,
   );
 }
 
 function placeholder(label) {
   return createElementFromHtml(
-    `<p class="jenkins-dropdown__placeholder">${label}</p>`
+    `<p class="jenkins-dropdown__placeholder">${label}</p>`,
+  );
+}
+
+function disabled(label) {
+  return createElementFromHtml(
+    `<p class="jenkins-dropdown__disabled">${label}</p>`,
   );
 }
 
@@ -100,4 +106,5 @@ export default {
   heading,
   separator,
   placeholder,
+  disabled,
 };

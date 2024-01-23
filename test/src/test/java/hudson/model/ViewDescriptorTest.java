@@ -120,7 +120,7 @@ public class ViewDescriptorTest {
 
 
         HtmlForm editViewForm = editViewPage.getFormByName("viewConfig");
-        editViewForm.getTextAreaByName("description").setText("This list view is awesome !");
+        editViewForm.getTextAreaByName("_.description").setText("This list view is awesome !");
         r.submit(editViewForm);
 
         //Check that the description is updated on view

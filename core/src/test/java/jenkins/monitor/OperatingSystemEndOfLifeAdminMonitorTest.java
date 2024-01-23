@@ -30,11 +30,17 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.Random;
+import java.util.stream.Stream;
 import org.junit.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 public class OperatingSystemEndOfLifeAdminMonitorTest {
 
@@ -105,106 +111,46 @@ public class OperatingSystemEndOfLifeAdminMonitorTest {
         return "https://www.jenkins.io/redirect/operating-system-end-of-life?q=" + component;
     }
 
-    @Test
-    public void testReadDocumentationUrlAlma8() throws Exception {
-        File releaseFile = new File(this.getClass().getResource("os-release-alma-8").toURI());
-        assertThat(monitor.readDocumentationUrl(releaseFile, "AlmaLinux.* 8"), is(docsUrl("AlmaLinux-8.7-Stone-Smilodon")));
+    private static Stream<Arguments> testReadDocumentationUrls() {
+        return Stream.of(
+            Arguments.of("os-release-alma-8", "AlmaLinux.* 8.*", "AlmaLinux-8.7-Stone-Smilodon"),
+            Arguments.of("os-release-alma-9", "AlmaLinux.* 9.*", "AlmaLinux-9.3-Shamrock-Pampas-Cat"),
+            Arguments.of("os-release-alpine-3.14", "Alpine Linux v3.14", "Alpine-Linux-v3.14"),
+            Arguments.of("os-release-alpine-3.15", "Alpine Linux v3.15", "Alpine-Linux-v3.15"),
+            Arguments.of("os-release-alpine-3.16", "Alpine Linux v3.16", "Alpine-Linux-v3.16"),
+            Arguments.of("os-release-alpine-3.17", "Alpine Linux v3.17", "Alpine-Linux-v3.17"),
+            Arguments.of("os-release-alpine-3.18", "Alpine Linux v3.18", "Alpine-Linux-v3.18"),
+            Arguments.of("os-release-alpine-3.19", "Alpine Linux v3.19", "Alpine-Linux-v3.19"),
+            Arguments.of("os-release-amazon-linux-2", "Amazon Linux 2", "Amazon-Linux-2"),
+            Arguments.of("os-release-amazon-linux-2023", "Amazon Linux 2023", "Amazon-Linux-2023"),
+            Arguments.of("os-release-centos-7", "CentOS Linux.* 7.*", "CentOS-Linux-7-Core"),
+            Arguments.of("os-release-centos-8", "CentOS Linux.* 8.*", "CentOS-Linux-8"),
+            Arguments.of("os-release-debian-10", "Debian.* 10.*", "Debian-GNU-Linux-10-buster"),
+            Arguments.of("os-release-debian-11", "Debian.* 11.*", "Debian-GNU-Linux-11-bullseye"),
+            Arguments.of("os-release-debian-12", "Debian.* 12.*", "Debian-GNU-Linux-12-bookworm"),
+            Arguments.of("os-release-fedora-36", "Fedora.* 36.*", "Fedora-Linux-36-Container-Image"),
+            Arguments.of("os-release-fedora-37", "Fedora.* 37.*", "Fedora-Linux-37-Container-Image"),
+            Arguments.of("os-release-fedora-38", "Fedora.* 38.*", "Fedora-Linux-38-Container-Image"),
+            Arguments.of("os-release-fedora-39", "Fedora.* 39.*", "Fedora-Linux-39-Container-Image"),
+            Arguments.of("os-release-oracle-7", "Oracle Linux.* 7.*", "Oracle-Linux-Server-7.9"),
+            Arguments.of("os-release-oracle-8", "Oracle Linux.* 8.*", "Oracle-Linux-Server-8.7"),
+            Arguments.of("os-release-redhat-7", "Red Hat Enterprise Linux.* 7.*", "Red-Hat-Enterprise-Linux-Server-7.9-Maipo"),
+            Arguments.of("os-release-redhat-8", "Red Hat Enterprise Linux.* 8.*", "Red-Hat-Enterprise-Linux-8.8-Ootpa"),
+            Arguments.of("os-release-rocky-8", "Rocky Linux.* 8.*", "Rocky-Linux-8.7-Green-Obsidian"),
+            Arguments.of("os-release-scientific-7", "Scientific Linux.* 7.*", "Scientific-Linux-7.9-Nitrogen"),
+            Arguments.of("os-release-ubuntu-18.04", "Ubuntu.* 18.*", "Ubuntu-18.04.6-LTS"),
+            Arguments.of("os-release-ubuntu-20.04", "Ubuntu.* 20.*", "Ubuntu-20.04.6-LTS"),
+            Arguments.of("os-release-ubuntu-22.04", "Ubuntu.* 22.*", "Ubuntu-22.04.3-LTS")
+        );
     }
 
-    @Test
-    public void testReadDocumentationUrlAlpine314() throws Exception {
-        File releaseFile = new File(this.getClass().getResource("os-release-alpine-3.14").toURI());
-        assertThat(monitor.readDocumentationUrl(releaseFile, "Alpine Linux v3.14"), is(docsUrl("Alpine-Linux-v3.14")));
-    }
-
-    @Test
-    public void testReadDocumentationUrlAlpine315() throws Exception {
-        File releaseFile = new File(this.getClass().getResource("os-release-alpine-3.15").toURI());
-        assertThat(monitor.readDocumentationUrl(releaseFile, "Alpine Linux v3.15"), is(docsUrl("Alpine-Linux-v3.15")));
-    }
-
-    @Test
-    public void testReadDocumentationUrlAlpine316() throws Exception {
-        File releaseFile = new File(this.getClass().getResource("os-release-alpine-3.16").toURI());
-        assertThat(monitor.readDocumentationUrl(releaseFile, "Alpine Linux v3.16"), is(docsUrl("Alpine-Linux-v3.16")));
-    }
-
-    @Test
-    public void testReadDocumentationUrlAlpine317() throws Exception {
-        File releaseFile = new File(this.getClass().getResource("os-release-alpine-3.17").toURI());
-        assertThat(monitor.readDocumentationUrl(releaseFile, "Alpine Linux v3.17"), is(docsUrl("Alpine-Linux-v3.17")));
-    }
-
-    @Test
-    public void testReadDocumentationUrlAlpine318() throws Exception {
-        File releaseFile = new File(this.getClass().getResource("os-release-alpine-3.18").toURI());
-        assertThat(monitor.readDocumentationUrl(releaseFile, "Alpine Linux v3.18"), is(docsUrl("Alpine-Linux-v3.18")));
-    }
-
-    @Test
-    public void testReadDocumentationUrlCentOS7() throws Exception {
-        File releaseFile = new File(this.getClass().getResource("os-release-centos-7").toURI());
-        assertThat(monitor.readDocumentationUrl(releaseFile, "CentOS Linux.* 7"), is(docsUrl("CentOS-Linux-7-Core")));
-    }
-
-    @Test
-    public void testReadDocumentationUrlDebian10() throws Exception {
-        File releaseFile = new File(this.getClass().getResource("os-release-debian-10").toURI());
-        assertThat(monitor.readDocumentationUrl(releaseFile, "Debian.* 10"), is(docsUrl("Debian-GNU-Linux-10-buster")));
-    }
-
-    @Test
-    public void testReadDocumentationUrlFedora36() throws Exception {
-        File releaseFile = new File(this.getClass().getResource("os-release-fedora-36").toURI());
-        assertThat(monitor.readDocumentationUrl(releaseFile, "Fedora.* 36"), is(docsUrl("Fedora-Linux-36-Container-Image")));
-    }
-
-    @Test
-    public void testReadDocumentationUrlFedora37() throws Exception {
-        File releaseFile = new File(this.getClass().getResource("os-release-fedora-37").toURI());
-        assertThat(monitor.readDocumentationUrl(releaseFile, "Fedora.* 37"), is(docsUrl("Fedora-Linux-37-Container-Image")));
-    }
-
-    @Test
-    public void testReadDocumentationUrlOracle7() throws Exception {
-        File releaseFile = new File(this.getClass().getResource("os-release-oracle-7").toURI());
-        assertThat(monitor.readDocumentationUrl(releaseFile, "Oracle Linux.* 7"), is(docsUrl("Oracle-Linux-Server-7.9")));
-    }
-
-    @Test
-    public void testReadDocumentationUrlOracle8() throws Exception {
-        File releaseFile = new File(this.getClass().getResource("os-release-oracle-8").toURI());
-        assertThat(monitor.readDocumentationUrl(releaseFile, "Oracle Linux.* 8"), is(docsUrl("Oracle-Linux-Server-8.7")));
-    }
-
-    @Test
-    public void testReadDocumentationUrlRedHat7() throws Exception {
-        File releaseFile = new File(this.getClass().getResource("os-release-redhat-7").toURI());
-        assertThat(monitor.readDocumentationUrl(releaseFile, "Red Hat Enterprise Linux.* 7"), is(docsUrl("Red-Hat-Enterprise-Linux-Server-7.9-Maipo")));
-    }
-
-    @Test
-    public void testReadDocumentationUrlRedHat8() throws Exception {
-        File releaseFile = new File(this.getClass().getResource("os-release-redhat-8").toURI());
-        assertThat(monitor.readDocumentationUrl(releaseFile, "Red Hat Enterprise Linux.* 8"), is(docsUrl("Red-Hat-Enterprise-Linux-8.8-Ootpa")));
-    }
-
-    @Test
-    public void testReadDocumentationUrlRocky8() throws Exception {
-        File releaseFile = new File(this.getClass().getResource("os-release-rocky-8").toURI());
-        assertThat(monitor.readDocumentationUrl(releaseFile, "Rocky Linux.* 8"), is(docsUrl("Rocky-Linux-8.7-Green-Obsidian")));
-    }
-
-    @Test
-    public void testReadDocumentationUrlScientific7() throws Exception {
-        File releaseFile = new File(this.getClass().getResource("os-release-scientific-7").toURI());
-        assertThat(monitor.readDocumentationUrl(releaseFile, "Scientific Linux.* 7"), is(docsUrl("Scientific-Linux-7.9-Nitrogen")));
-    }
-
-    @Test
-    public void testReadDocumentationUrlUbuntu18() throws Exception {
-        File releaseFile = new File(this.getClass().getResource("os-release-ubuntu-18.04").toURI());
-        assertThat(monitor.readDocumentationUrl(releaseFile, "Ubuntu.* 18"), is(docsUrl("Ubuntu-18.04.6-LTS")));
+    @ParameterizedTest
+    @MethodSource
+    public void testReadDocumentationUrls(String fileName, String pattern, String component) throws Exception {
+        URL fileUrl = this.getClass().getResource(fileName);
+        assertTrue("Resource file '" + fileName + "' not found", fileUrl != null);
+        File releaseFile = new File(fileUrl.toURI());
+        assertThat(monitor.readDocumentationUrl(releaseFile, pattern), is(docsUrl(component)));
     }
 
     @Test
@@ -225,110 +171,47 @@ public class OperatingSystemEndOfLifeAdminMonitorTest {
         assertThat(e.getMessage(), is("Missing pattern in definition file"));
     }
 
-    @Test
-    public void testReadOperatingSystemNameAlma8() throws Exception {
-        File releaseFile = new File(this.getClass().getResource("os-release-alma-8").toURI());
-        assertThat(monitor.readOperatingSystemName(releaseFile, "AlmaLinux.* 8"), is("AlmaLinux 8.7 (Stone Smilodon)"));
+    private static Stream<Arguments> testReadOperatingSystemNames() {
+        return Stream.of(
+            Arguments.of("os-release-alma-8", "AlmaLinux.* 8.*", "AlmaLinux 8.7 (Stone Smilodon)"),
+            Arguments.of("os-release-alma-9", "AlmaLinux.* 9.*", "AlmaLinux 9.3 (Shamrock Pampas Cat)"),
+            Arguments.of("os-release-alpine-3.14", "Alpine Linux v3.14", "Alpine Linux v3.14"),
+            Arguments.of("os-release-alpine-3.15", "Alpine Linux v3.15", "Alpine Linux v3.15"),
+            Arguments.of("os-release-alpine-3.16", "Alpine Linux v3.16", "Alpine Linux v3.16"),
+            Arguments.of("os-release-alpine-3.17", "Alpine Linux v3.17", "Alpine Linux v3.17"),
+            Arguments.of("os-release-alpine-3.18", "Alpine Linux v3.18", "Alpine Linux v3.18"),
+            Arguments.of("os-release-alpine-3.19", "Alpine Linux v3.19", "Alpine Linux v3.19"),
+            Arguments.of("os-release-amazon-linux-2", "Amazon Linux 2", "Amazon Linux 2"),
+            Arguments.of("os-release-amazon-linux-2023", "Amazon Linux 2023", "Amazon Linux 2023"),
+            Arguments.of("os-release-centos-7", "CentOS Linux.* 7.*", "CentOS Linux 7 (Core)"),
+            Arguments.of("os-release-debian-10", "Debian.* 10.*", "Debian GNU/Linux 10 (buster)"),
+            Arguments.of("os-release-debian-11", "Debian.* 11.*", "Debian GNU/Linux 11 (bullseye)"),
+            Arguments.of("os-release-debian-12", "Debian.* 12.*", "Debian GNU/Linux 12 (bookworm)"),
+            Arguments.of("os-release-fedora-36", "Fedora.* 36.*", "Fedora Linux 36 (Container Image)"),
+            Arguments.of("os-release-fedora-37", "Fedora.* 37.*", "Fedora Linux 37 (Container Image)"),
+            Arguments.of("os-release-oracle-7", "Oracle Linux.* 7.*", "Oracle Linux Server 7.9"),
+            Arguments.of("os-release-oracle-8", "Oracle Linux.* 8.*", "Oracle Linux Server 8.7"),
+            Arguments.of("os-release-redhat-7", "Red Hat Enterprise Linux.* 7.*", "Red Hat Enterprise Linux Server 7.9 (Maipo)"),
+            Arguments.of("os-release-redhat-8", "Red Hat Enterprise Linux.* 8.*", "Red Hat Enterprise Linux 8.8 (Ootpa)"),
+            Arguments.of("os-release-rocky-8", "Rocky Linux.* 8.*", "Rocky Linux 8.7 (Green Obsidian)"),
+            Arguments.of("os-release-scientific-7", "Scientific Linux.* 7.*", "Scientific Linux 7.9 (Nitrogen)"),
+            Arguments.of("os-release-ubuntu-18.04", "Ubuntu.* 18.*", "Ubuntu 18.04.6 LTS"),
+            Arguments.of("os-release-ubuntu-20.04", "Ubuntu.* 20.*", "Ubuntu 20.04.6 LTS"),
+            Arguments.of("os-release-ubuntu-22.04", "Ubuntu.* 22.*", "Ubuntu 22.04.3 LTS")
+        );
     }
 
-    @Test
-    public void testReadOperatingSystemNameAlpine314() throws Exception {
-        File releaseFile = new File(this.getClass().getResource("os-release-alpine-3.14").toURI());
-        assertThat(monitor.readOperatingSystemName(releaseFile, "Alpine Linux v3.14"), is("Alpine Linux v3.14"));
-    }
-
-    @Test
-    public void testReadOperatingSystemNameAlpine315() throws Exception {
-        File releaseFile = new File(this.getClass().getResource("os-release-alpine-3.15").toURI());
-        assertThat(monitor.readOperatingSystemName(releaseFile, "Alpine Linux v3.15"), is("Alpine Linux v3.15"));
-    }
-
-    @Test
-    public void testReadOperatingSystemNameAlpine316() throws Exception {
-        File releaseFile = new File(this.getClass().getResource("os-release-alpine-3.16").toURI());
-        assertThat(monitor.readOperatingSystemName(releaseFile, "Alpine Linux v3.16"), is("Alpine Linux v3.16"));
-    }
-
-    @Test
-    public void testReadOperatingSystemNameAlpine317() throws Exception {
-        File releaseFile = new File(this.getClass().getResource("os-release-alpine-3.17").toURI());
-        assertThat(monitor.readOperatingSystemName(releaseFile, "Alpine Linux v3.17"), is("Alpine Linux v3.17"));
-    }
-
-    @Test
-    public void testReadOperatingSystemNameAlpine318() throws Exception {
-        File releaseFile = new File(this.getClass().getResource("os-release-alpine-3.18").toURI());
-        assertThat(monitor.readOperatingSystemName(releaseFile, "Alpine Linux v3.18"), is("Alpine Linux v3.18"));
-    }
-
-    @Test
-    public void testReadOperatingSystemNameCentOS7() throws Exception {
-        File releaseFile = new File(this.getClass().getResource("os-release-centos-7").toURI());
-        assertThat(monitor.readOperatingSystemName(releaseFile, "CentOS Linux.* 7"), is("CentOS Linux 7 (Core)"));
-    }
-
-    @Test
-    public void testReadOperatingSystemNameDebian10() throws Exception {
-        File releaseFile = new File(this.getClass().getResource("os-release-debian-10").toURI());
-        assertThat(monitor.readOperatingSystemName(releaseFile, "Debian.* 10"), is("Debian GNU/Linux 10 (buster)"));
-    }
-
-    @Test
-    public void testReadOperatingSystemNameFedora36() throws Exception {
-        File releaseFile = new File(this.getClass().getResource("os-release-fedora-36").toURI());
-        assertThat(monitor.readOperatingSystemName(releaseFile, "Fedora.* 36"), is("Fedora Linux 36 (Container Image)"));
-    }
-
-    @Test
-    public void testReadOperatingSystemNameFedora37() throws Exception {
-        File releaseFile = new File(this.getClass().getResource("os-release-fedora-37").toURI());
-        assertThat(monitor.readOperatingSystemName(releaseFile, "Fedora.* 37"), is("Fedora Linux 37 (Container Image)"));
+    @ParameterizedTest
+    @MethodSource
+    public void testReadOperatingSystemNames(String fileName, String pattern, String job) throws Exception {
+        URL fileUrl = this.getClass().getResource(fileName);
+        assertTrue("Resource file '" + fileName + "' not found", fileUrl != null);
+        File releaseFile = new File(fileUrl.toURI());
+        assertThat(monitor.readOperatingSystemName(releaseFile, pattern), is(job));
     }
 
     @Test
     public void testReadOperatingSystemNameMissingFile() {
         assertThat(monitor.readOperatingSystemName(new File("/this/file/does/not/exist"), ".*"), is(""));
-    }
-
-    @Test
-    public void testReadOperatingSystemNameOracle7() throws Exception {
-        File releaseFile = new File(this.getClass().getResource("os-release-oracle-7").toURI());
-        assertThat(monitor.readOperatingSystemName(releaseFile, "Oracle Linux.* 7"), is("Oracle Linux Server 7.9"));
-    }
-
-    @Test
-    public void testReadOperatingSystemNameOracle8() throws Exception {
-        File releaseFile = new File(this.getClass().getResource("os-release-oracle-8").toURI());
-        assertThat(monitor.readOperatingSystemName(releaseFile, "Oracle Linux.* 8"), is("Oracle Linux Server 8.7"));
-    }
-
-    @Test
-    public void testReadOperatingSystemNameRedHat7() throws Exception {
-        File releaseFile = new File(this.getClass().getResource("os-release-redhat-7").toURI());
-        assertThat(monitor.readOperatingSystemName(releaseFile, "Red Hat Enterprise Linux.* 7"), is("Red Hat Enterprise Linux Server 7.9 (Maipo)"));
-    }
-
-    @Test
-    public void testReadOperatingSystemNameRedHat8() throws Exception {
-        File releaseFile = new File(this.getClass().getResource("os-release-redhat-8").toURI());
-        assertThat(monitor.readOperatingSystemName(releaseFile, "Red Hat Enterprise Linux.* 8"), is("Red Hat Enterprise Linux 8.8 (Ootpa)"));
-    }
-
-    @Test
-    public void testReadOperatingSystemNameRocky8() throws Exception {
-        File releaseFile = new File(this.getClass().getResource("os-release-rocky-8").toURI());
-        assertThat(monitor.readOperatingSystemName(releaseFile, "Rocky Linux.* 8"), is("Rocky Linux 8.7 (Green Obsidian)"));
-    }
-
-    @Test
-    public void testReadOperatingSystemNameScientific7() throws Exception {
-        File releaseFile = new File(this.getClass().getResource("os-release-scientific-7").toURI());
-        assertThat(monitor.readOperatingSystemName(releaseFile, "Scientific Linux.* 7"), is("Scientific Linux 7.9 (Nitrogen)"));
-    }
-
-    @Test
-    public void testReadOperatingSystemNameUbuntu18() throws Exception {
-        File releaseFile = new File(this.getClass().getResource("os-release-ubuntu-18.04").toURI());
-        assertThat(monitor.readOperatingSystemName(releaseFile, "Ubuntu.* 18"), is("Ubuntu 18.04.6 LTS"));
     }
 }

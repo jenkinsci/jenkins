@@ -14,7 +14,7 @@ properties([
 
 def axes = [
   platforms: ['linux', 'windows'],
-  jdks: [11, 17, 19],
+  jdks: [11, 17, 21],
 ]
 
 stage('Record build') {
@@ -208,7 +208,7 @@ axes.values().combinations {
 
 def athAxes = [
   platforms: ['linux'],
-  jdks: [11],
+  jdks: [17],
   browsers: ['firefox'],
 ]
 athAxes.values().combinations {

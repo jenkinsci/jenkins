@@ -109,10 +109,11 @@ THE SOFTWARE.
                                     </j:otherwise>
                                 </j:choose>
 
-                                <a href="#" onclick="return revokeToken(this)"
-                                   class="jenkins-button jenkins-button--tertiary jenkins-!-destructive-color token-revoke"
+                                <a href="#"
+                                   class="jenkins-button jenkins-button--tertiary jenkins-!-destructive-color api-token-property-token-revoke"
                                    data-message-if-legacy-revoked="${%RevokedToken}"
                                    data-confirm="${%ConfirmRevokeSingle}"
+                                   data-confirm-title="${%ConfirmRevokeSingleTitle}"
                                    data-target-url="${descriptor.descriptorFullUrl}/revoke">
                                     <local:revokeIcon title="${%RevokeToken}" />
                                 </a>
@@ -126,7 +127,9 @@ THE SOFTWARE.
                             <st:nbsp /><!-- without this non-breakable space, double click on the div will put the focus on the input -->
                             <span class="new-token-value"><!--will be filled by javascript--></span>
                             <span class="token-save">
-                                <button class="jenkins-button" type="button" tabindex="0" data-target-url="${descriptor.descriptorFullUrl}/generateNewToken" onclick="saveApiToken(this)">
+                                <button class="jenkins-button" type="button" tabindex="0"
+                                        id="api-token-property-token-save"
+                                        data-target-url="${descriptor.descriptorFullUrl}/generateNewToken">
                                     ${%GenerateNewToken}
                                 </button>
                             </span>
@@ -135,9 +138,10 @@ THE SOFTWARE.
                             </span>
                             <div class="controls-container">
                               <l:copyButton text="" clazz="jenkins-hidden" tooltip="${%CopyToken}" iconOnly="true" />
-                              <a href="#" onclick="return revokeToken(this)"
-                                 class="jenkins-button jenkins-button--tertiary jenkins-!-destructive-color token-revoke hidden-button"
+                              <a href="#"
+                                 class="jenkins-button jenkins-button--tertiary jenkins-!-destructive-color api-token-property-token-revoke hidden-button"
                                  data-confirm="${%ConfirmRevokeSingle}"
+                                 data-confirm-title="${%ConfirmRevokeSingleTitle}"
                                  data-target-url="${descriptor.descriptorFullUrl}/revoke">
                                 <local:revokeIcon title="${%RevokeToken}" />
                               </a>

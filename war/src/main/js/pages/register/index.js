@@ -4,7 +4,7 @@ const passwordField = document.querySelector("#password1");
 const password2Field = document.querySelector("#password2");
 const showPasswordField = document.querySelector("#showPassword");
 const passwordStrengthWrapper = document.querySelector(
-  "#passwordStrengthWrapper"
+  "#passwordStrengthWrapper",
 );
 const passwordStrengthIndicator = document.querySelector("#passwordStrength");
 

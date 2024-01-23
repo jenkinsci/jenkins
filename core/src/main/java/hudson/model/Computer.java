@@ -44,6 +44,8 @@ import hudson.model.Descriptor.FormException;
 import hudson.model.Queue.FlyweightTask;
 import hudson.model.labels.LabelAtom;
 import hudson.model.queue.WorkUnit;
+import hudson.node_monitors.AbstractDiskSpaceMonitor;
+import hudson.node_monitors.DiskSpaceMonitorNodeProperty;
 import hudson.node_monitors.NodeMonitor;
 import hudson.remoting.Channel;
 import hudson.remoting.VirtualChannel;
@@ -88,6 +90,7 @@ import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -110,6 +113,7 @@ import jenkins.util.ContextResettingExecutorService;
 import jenkins.util.ErrorLoggingExecutorService;
 import jenkins.util.Listeners;
 import jenkins.util.SystemProperties;
+import jenkins.widgets.HasWidgets;
 import net.jcip.annotations.GuardedBy;
 import org.apache.commons.lang.StringUtils;
 import org.jenkins.ui.icon.Icon;
@@ -160,7 +164,7 @@ import org.kohsuke.stapler.verb.POST;
  * @author Kohsuke Kawaguchi
  */
 @ExportedBean
-public /*transient*/ abstract class Computer extends Actionable implements AccessControlled, ExecutorListener, DescriptorByNameOwner, StaplerProxy {
+public /*transient*/ abstract class Computer extends Actionable implements AccessControlled, ExecutorListener, DescriptorByNameOwner, StaplerProxy, HasWidgets {
 
     private final CopyOnWriteArrayList<Executor> executors = new CopyOnWriteArrayList<>();
     // TODO:
@@ -617,6 +621,8 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         return LabelAtom.get(nodeName != null ? nodeName : Jenkins.get().getSelfLabel().toString()).loadStatistics;
     }
 
+    @Deprecated
+    @Restricted(DoNotUse.class)
     public BuildTimelineWidget getTimeline() {
         return new BuildTimelineWidget(getBuilds());
     }
@@ -1156,6 +1162,17 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         return r;
     }
 
+    @Restricted(NoExternalUse.class)
+    public Map<NodeMonitor, Object> getMonitoringData() {
+        Map<NodeMonitor, Object> r = new LinkedHashMap<>();
+        for (NodeMonitor monitor : NodeMonitor.getAll()) {
+            if (monitor.getColumnCaption() != null) {
+                r.put(monitor, monitor.data(this));
+            }
+        }
+        return r;
+    }
+
     /**
      * Gets the system properties of the JVM on this computer.
      * If this is the master, it returns the system property of the master computer.
@@ -1511,6 +1528,14 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
 
         Node result = node.reconfigure(req, req.getSubmittedForm());
         Jenkins.get().getNodesObject().replaceNode(this.getNode(), result);
+
+        if (result.getNodeProperty(DiskSpaceMonitorNodeProperty.class) != null) {
+            for (NodeMonitor monitor : NodeMonitor.getAll()) {
+                if (monitor instanceof AbstractDiskSpaceMonitor) {
+                    monitor.data(this);
+                }
+            }
+        }
 
         // take the user back to the agent top page.
         rsp.sendRedirect2("../" + result.getNodeName() + '/');
