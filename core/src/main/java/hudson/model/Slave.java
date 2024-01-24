@@ -245,8 +245,7 @@ public abstract class Slave extends Node implements Serializable {
                 LOGGER.log(Level.WARNING, "could not update historical agentCommand setting to CommandLauncher", x);
             }
         }
-        // Default launcher does not use Work Directory
-        return launcher == null ? new JNLPLauncher(false) : launcher;
+        return launcher == null ? new JNLPLauncher() : launcher;
     }
 
     public void setLauncher(ComputerLauncher launcher) {

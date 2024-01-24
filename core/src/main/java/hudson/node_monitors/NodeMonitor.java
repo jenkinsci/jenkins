@@ -37,6 +37,7 @@ import hudson.tasks.Publisher;
 import hudson.util.DescriptorList;
 import java.util.List;
 import jenkins.model.Jenkins;
+import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
@@ -133,6 +134,7 @@ public abstract class NodeMonitor implements ExtensionPoint, Describable<NodeMon
         return ignored;
     }
 
+    @DataBoundSetter
     public void setIgnored(boolean ignored) {
         this.ignored = ignored;
     }
