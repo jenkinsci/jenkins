@@ -176,7 +176,7 @@ public final class RemotingDiagnostics {
     private static class GetHeapDump extends MasterToSlaveCallable<FilePath, IOException> {
             @Override
             public FilePath call() throws IOException {
-                final File hprof = File.createTempFile("hudson-heapdump", "hprof");
+                final File hprof = File.createTempFile("hudson-heapdump", ".hprof");
                 Files.delete(Util.fileToPath(hprof));
                 try {
                     MBeanServer server = ManagementFactory.getPlatformMBeanServer();
