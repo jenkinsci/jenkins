@@ -73,7 +73,7 @@ THE SOFTWARE.
         <!-- RequireUpperBoundDeps between bootstrap5-api and echarts-api -->
         <groupId>io.jenkins.plugins</groupId>
         <artifactId>font-awesome-api</artifactId>
-        <version>6.5.1-1</version>
+        <version>6.5.1-2</version>
       </dependency>
       <dependency>
         <groupId>io.jenkins.plugins</groupId>
@@ -131,7 +131,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>2148.v80482520b_d2c</version>
+      <version>2152.v60323ca_97732</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -200,7 +200,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>cloudbees-folder</artifactId>
-      <version>6.858.v898218f3609d</version>
+      <version>6.897.vb_943ea_6b_a_08b_</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -212,7 +212,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>junit</artifactId>
-      <version>1252.vfc2e5efa_294f</version>
+      <version>1256.v002534a_5f33e</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -230,13 +230,13 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>matrix-project</artifactId>
-      <version>822.v01b_8c85d16d2</version>
+      <version>822.824.v14451b_c0fd42</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>structs</artifactId>
-      <version>325.vcb_307d2a_2782</version>
+      <version>337.v1b_04ea_4df7c8</version>
       <scope>test</scope>
     </dependency>
     <dependency>
