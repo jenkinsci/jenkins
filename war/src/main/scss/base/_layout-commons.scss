@@ -33,6 +33,7 @@
 }
 
 .app-page-body__sidebar {
+  /* stylelint-disable-next-line media-query-no-invalid */
   @media (min-width: breakpoints.$tablet-breakpoint) {
     &--sticky {
       position: sticky;
@@ -96,6 +97,7 @@ body.full-screen #main-panel {
   padding: 0;
 }
 
+/* stylelint-disable-next-line media-query-no-invalid */
 @media (max-width: breakpoints.$tablet-breakpoint) {
   body.two-column #page-body {
     flex-wrap: wrap;
