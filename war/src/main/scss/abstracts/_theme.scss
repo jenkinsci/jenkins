@@ -256,6 +256,7 @@ $semantics: (
   --form-item-max-width--medium: min(50vw, 1400px);
   --form-item-max-width--small: min(35vw, 1200px);
 
+  /* stylelint-disable-next-line media-query-no-invalid */
   @media screen and (max-width: breakpoints.$tablet-breakpoint) {
     --section-padding: 1.25rem;
     --form-item-max-width: 100%;

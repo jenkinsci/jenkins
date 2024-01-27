@@ -55,7 +55,7 @@ public class HudsonPrivateSecurityRealmTest {
      * or slow hardware, so this is commented out but left for ease of running locally when desired.
      */
     //@Test
-    public void timingBcrypt() {
+    public void timingJBCrypt() {
         // ignore the salt generation - check just matching....
         JBCryptEncoder encoder = new JBCryptEncoder();
         String encoded = encoder.encode("thisIsMyPassword1");
@@ -142,5 +142,13 @@ public class HudsonPrivateSecurityRealmTest {
             assertTrue(pbkdf2PasswordEncoder.isHashValid(PBKDF2_HMAC_SHA512_ENCODED_PASSWORD));
             assertThrows(RuntimeException.class, () -> pbkdf2PasswordEncoder.matches("MySecurePassword", PBKDF2_HMAC_SHA512_ENCODED_PASSWORD));
         }
+    }
+
+    @Test
+    public void testJBCryptPasswordMatching() {
+        JBCryptEncoder encoder = new JBCryptEncoder();
+        String encoded = encoder.encode("thisIsMyPassword");
+        assertTrue(encoder.matches("thisIsMyPassword", encoded));
+        assertFalse(encoder.matches("thisIsNotMyPassword", encoded));
     }
 }
