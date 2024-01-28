@@ -38,8 +38,8 @@ Behaviour.specify(
           }, 1000);
           return;
         }
-        if (rsp.status === 403) {
-          // likely an expired crumb
+        if (rsp.status >= 400) {
+          // An expired crumb, job/agent deleted or removed permissions
           location.reload();
           return;
         }
