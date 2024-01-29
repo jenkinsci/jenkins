@@ -3765,7 +3765,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     }
 
     /**
-     * Check if the relative child is really a descendant after symlink resolution if any.     
+     * Check if the relative child is really a descendant after symlink resolution if any.
      */
     public boolean isDescendant(@NonNull String potentialChildRelativePath) throws IOException, InterruptedException {
         return act(new IsDescendant(potentialChildRelativePath));
