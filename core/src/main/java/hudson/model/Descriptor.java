@@ -57,16 +57,7 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.IdentityHashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -991,17 +982,25 @@ public abstract class Descriptor<T extends Describable<T>> implements Loadable, 
     }
 
     private URL getStaticHelpUrl(Klass<?> c, String suffix) {
-        Locale locale = Stapler.getCurrentRequest().getLocale();
 
         String base = "help" + suffix;
-
         URL url;
-        url = c.getResource(base + '_' + locale.getLanguage() + '_' + locale.getCountry() + '_' + locale.getVariant() + ".html");
-        if (url != null)    return url;
-        url = c.getResource(base + '_' + locale.getLanguage() + '_' + locale.getCountry() + ".html");
-        if (url != null)    return url;
-        url = c.getResource(base + '_' + locale.getLanguage() + ".html");
-        if (url != null)    return url;
+
+        Enumeration<Locale> locales = Stapler.getCurrentRequest().getLocales();
+        while (locales.hasMoreElements()) {
+            Locale locale = locales.nextElement();
+            url = c.getResource(base + '_' + locale.getLanguage() + '_' + locale.getCountry() + '_' + locale.getVariant() + ".html");
+            if (url != null)    return url;
+            url = c.getResource(base + '_' + locale.getLanguage() + '_' + locale.getCountry() + ".html");
+            if (url != null)    return url;
+        }
+
+        locales = Stapler.getCurrentRequest().getLocales();
+        while (locales.hasMoreElements()) {
+            Locale locale = locales.nextElement();
+            url = c.getResource(base + '_' + locale.getLanguage() + ".html");
+            if (url != null)    return url;
+        }
 
         // default
         return c.getResource(base + ".html");
