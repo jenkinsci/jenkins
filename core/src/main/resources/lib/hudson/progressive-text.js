@@ -8,6 +8,7 @@ Behaviour.specify(
     let spinner = holder.getAttribute("data-spinner");
     let startOffset = holder.getAttribute("data-start-offset");
     let onFinishEvent = holder.getAttribute("data-on-finish-event");
+    let errorMessage = holder.getAttribute("data-error-message");
 
     var scroller = new AutoScroller(document.body);
     /*
@@ -38,13 +39,25 @@ Behaviour.specify(
           }, 1000);
           return;
         }
-        if (rsp.status >= 400) {
-          // An expired crumb, job/agent deleted or removed permissions
+        if (rsp.status === 403) {
+          // likely an expired crumb
           location.reload();
           return;
         }
-        /* append text and do autoscroll if applicable */
         var stickToBottom = scroller.isSticking();
+        if (rsp.status >= 400) {
+          var p = document.createElement("DIV");
+          e.appendChild(p);
+          p.innerHTML = '<br/><div class="error">' + errorMessage + "</div>"
+          if (stickToBottom) {
+            scroller.scrollToBottom();
+          }
+          if (spinner !== "") {
+            document.getElementById(spinner).style.display = "none";
+          }
+          return;
+        }
+        /* append text and do autoscroll if applicable */
         rsp.text().then((responseText) => {
           var text = responseText;
           if (text !== "") {
