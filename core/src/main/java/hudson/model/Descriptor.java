@@ -991,7 +991,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Loadable, 
         rsp.sendError(SC_NOT_FOUND);
     }
 
-    private URL getStaticHelpUrl(Klass<?> c, String suffix) {
+    public static URL getStaticHelpUrl(Klass<?> c, String suffix) {
 
         String base = "help" + suffix;
         URL url;
@@ -1003,11 +1003,6 @@ public abstract class Descriptor<T extends Describable<T>> implements Loadable, 
             if (url != null)    return url;
             url = c.getResource(base + '_' + locale.getLanguage() + '_' + locale.getCountry() + ".html");
             if (url != null)    return url;
-        }
-
-        locales = Stapler.getCurrentRequest().getLocales();
-        while (locales.hasMoreElements()) {
-            Locale locale = locales.nextElement();
             url = c.getResource(base + '_' + locale.getLanguage() + ".html");
             if (url != null)    return url;
         }
