@@ -1979,14 +1979,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@oozcitak/dom@npm:1.15.8":
-  version: 1.15.8
-  resolution: "@oozcitak/dom@npm:1.15.8"
+"@oozcitak/dom@npm:1.15.10":
+  version: 1.15.10
+  resolution: "@oozcitak/dom@npm:1.15.10"
   dependencies:
     "@oozcitak/infra": "npm:1.0.8"
     "@oozcitak/url": "npm:1.0.4"
     "@oozcitak/util": "npm:8.3.8"
-  checksum: ce856019caedce0163ce35052d898f5db50b5a8700acae8e21936cc85240d8066573e908ab9fe42b3a8d11174a9b72e2c9d91000165054ed90a3311ffc3221fe
+  checksum: 128162dd35fd21976e7589a4b50e980d8fb72e1f90e5675a3baca70b23cfdd87c0df57bff1ec708e7927671247a7233f240a27a4546bb904e069be1b4d4d7a05
   languageName: node
   linkType: hard
 
@@ -3825,6 +3825,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"get-stdin@npm:9.0.0":
+  version: 9.0.0
+  resolution: "get-stdin@npm:9.0.0"
+  checksum: 7ef2edc0c81a0644ca9f051aad8a96ae9373d901485abafaabe59fd347a1c378689d8a3d8825fb3067415d1d09dfcaa43cb9b9516ecac6b74b3138b65a8ccc6b
+  languageName: node
+  linkType: hard
+
 "glob-parent@npm:^5.1.2, glob-parent@npm:~5.1.2":
   version: 5.1.2
   resolution: "glob-parent@npm:5.1.2"
@@ -4338,7 +4345,7 @@ __metadata:
     sortablejs: "npm:1.15.2"
     style-loader: "npm:3.3.4"
     stylelint: "npm:16.2.0"
-    stylelint-checkstyle-reporter: "npm:0.2.0"
+    stylelint-checkstyle-reporter: "npm:1.0.0"
     stylelint-config-standard: "npm:36.0.0"
     tippy.js: "npm:6.3.7"
     webpack: "npm:5.90.0"
@@ -4408,15 +4415,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"js-yaml@npm:3.14.0":
-  version: 3.14.0
-  resolution: "js-yaml@npm:3.14.0"
+"js-yaml@npm:3.14.1":
+  version: 3.14.1
+  resolution: "js-yaml@npm:3.14.1"
   dependencies:
     argparse: "npm:^1.0.7"
     esprima: "npm:^4.0.0"
   bin:
     js-yaml: bin/js-yaml.js
-  checksum: 9b21ab19f03aae734c83e5c8a3d5e6f80bab5ce0e24bdbb186e531fb0887ff0034affd96ae3eed993c33e33bc606a6b78389207b853df97094393804d6c37184
+  checksum: 6746baaaeac312c4db8e75fa22331d9a04cccb7792d126ed8ce6a0bbcfef0cedaddd0c5098fade53db067c09fe00aa1c957674b4765610a8b06a5a189e46433b
   languageName: node
   linkType: hard
 
@@ -6555,12 +6562,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"stylelint-checkstyle-reporter@npm:0.2.0":
-  version: 0.2.0
-  resolution: "stylelint-checkstyle-reporter@npm:0.2.0"
+"stylelint-checkstyle-reporter@npm:1.0.0":
+  version: 1.0.0
+  resolution: "stylelint-checkstyle-reporter@npm:1.0.0"
   dependencies:
-    xmlbuilder2: "npm:^2.4.0"
-  checksum: a486da693225ac0ff25a75c124cb3b59b7b6bacbd4aa0dc62b05ab38d45a69e9c113599f6b3c8f21db6887ffc8fb4425a75fb634d77ecd778cc3a661ebf87e5b
+    get-stdin: "npm:9.0.0"
+    xmlbuilder2: "npm:3.1.1"
+  bin:
+    stylelint-checkstyle-reporter: dist/reporter-with-stdin.mjs
+  checksum: 26d45528ab75ad4129abdf34436578a2a0e6a10c552e53b1bb19fb7eff8433f1fd77ab3fb6698b295802df54f9005d8031791451b695fa86269e20385b978a9b
   languageName: node
   linkType: hard
 
@@ -7114,16 +7124,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"xmlbuilder2@npm:^2.4.0":
-  version: 2.4.1
-  resolution: "xmlbuilder2@npm:2.4.1"
+"xmlbuilder2@npm:3.1.1":
+  version: 3.1.1
+  resolution: "xmlbuilder2@npm:3.1.1"
   dependencies:
-    "@oozcitak/dom": "npm:1.15.8"
+    "@oozcitak/dom": "npm:1.15.10"
     "@oozcitak/infra": "npm:1.0.8"
     "@oozcitak/util": "npm:8.3.8"
-    "@types/node": "npm:*"
-    js-yaml: "npm:3.14.0"
-  checksum: ce3ae6d671d65f86d9864dc3cad436812e630e7043e5dbc79c79477626f808c052b8451bb2032f3cf6d5e9b7a98280865988e88441cac75efe392130f9214f06
+    js-yaml: "npm:3.14.1"
+  checksum: a3e7dd5cbc052f6b53773a4a9d5efb26b0647aa8868bc1a597478d534e78184263b5b3e495e82613f21d0bf016a24145bb793f6e197e8911139dddba9cd831cc
   languageName: node
   linkType: hard
 
