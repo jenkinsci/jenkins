@@ -48,7 +48,7 @@ Behaviour.specify(
         if (rsp.status >= 400) {
           var p = document.createElement("DIV");
           e.appendChild(p);
-          p.innerHTML = '<br/><div class="error">' + errorMessage + "</div>"
+          p.innerHTML = '<br/><div class="error">' + errorMessage + "</div>";
           if (stickToBottom) {
             scroller.scrollToBottom();
           }
