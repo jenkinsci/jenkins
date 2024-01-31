@@ -84,6 +84,8 @@ import net.sf.json.JSONObject;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jvnet.tiger_types.Types;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.Ancestor;
 import org.kohsuke.stapler.BindInterceptor;
 import org.kohsuke.stapler.Facet;
@@ -780,7 +782,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Loadable, 
                 throw new Error(e);
             }
 
-            if (getStaticHelpUrl(c, suffix) != null)    return page;
+            if (getStaticHelpUrl(Stapler.getCurrentRequest(), c, suffix) != null)    return page;
         }
         return null;
     }
@@ -977,7 +979,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Loadable, 
                 return;
             }
 
-            URL url = getStaticHelpUrl(c, path);
+            URL url = getStaticHelpUrl(Stapler.getCurrentRequest(), c, path);
             if (url != null) {
                 // TODO: generalize macro expansion and perhaps even support JEXL
                 rsp.setContentType("text/html;charset=UTF-8");
@@ -991,12 +993,13 @@ public abstract class Descriptor<T extends Describable<T>> implements Loadable, 
         rsp.sendError(SC_NOT_FOUND);
     }
 
-    public static URL getStaticHelpUrl(Klass<?> c, String suffix) {
+    @Restricted(NoExternalUse.class)
+    public static URL getStaticHelpUrl(StaplerRequest req, Klass<?> c, String suffix) {
 
         String base = "help" + suffix;
         URL url;
 
-        Enumeration<Locale> locales = Stapler.getCurrentRequest().getLocales();
+        Enumeration<Locale> locales = req.getLocales();
         while (locales.hasMoreElements()) {
             Locale locale = locales.nextElement();
             url = c.getResource(base + '_' + locale.getLanguage() + '_' + locale.getCountry() + '_' + locale.getVariant() + ".html");

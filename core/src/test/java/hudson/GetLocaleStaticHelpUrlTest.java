@@ -27,82 +27,194 @@ package hudson;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
 import hudson.model.Descriptor;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
-import java.util.List;
 import java.util.Locale;
-import org.junit.Before;
-import org.junit.Test;
-import org.kohsuke.stapler.Stapler;
+import org.junit.jupiter.api.Test;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.lang.Klass;
-import org.mockito.MockedStatic;
 
 public class GetLocaleStaticHelpUrlTest {
 
-    @Before
-    public void setUp() {
-        MockedStatic<Stapler> mockedStapler = mockStatic(Stapler.class);
-        StaplerRequest staplerRequest = mock(StaplerRequest.class);
-        mockedStapler.when(Stapler::getCurrentRequest).thenReturn(staplerRequest);
-
-        // Accept-Language: zh,zh-CN;q=0.9,en-US;q=0.8,en;q=0.7,zh-TW;q=0.6
-        Enumeration<Locale> locales = Collections.enumeration(
-                List.of(Locale.CHINESE, Locale.SIMPLIFIED_CHINESE, Locale.ENGLISH, Locale.US, Locale.TRADITIONAL_CHINESE)
+    @Test
+    public void getStaticHelpUrlAcceptEnResDefault() {
+        // Accept-Language: en
+        StaplerRequest req = mockStaplerRequest(
+                Locale.ENGLISH
         );
-        when(staplerRequest.getLocales()).thenReturn(locales);
+
+        Klass klass = mockKlass(
+                "help-id.html"
+        );
+
+        URL id = Descriptor.getStaticHelpUrl(req, klass, "-id");
+        localeResourceIs(id, "help-id.html");
     }
 
     @Test
-    public void getStaticHelpUrl1() {
-        Klass klass = mock(Klass.class);
-        when(klass.getResource("help-id.html")).thenReturn(getUrl("https://jenkins/help_id.html"));
-        when(klass.getResource("help-id_zh_CN.html")).thenReturn(getUrl("https://jenkins/help-id_zh_CN.html"));
-        URL id = Descriptor.getStaticHelpUrl(klass, "-id");
-        assertThat(id.toString(), equalTo("https://jenkins/help-id_zh_CN.html"));
+    public void getStaticHelpUrlAcceptDeResDeNoCountry() {
+        // Accept-Language: de-DE,de;q=0.9,en;q=0.8
+        StaplerRequest req = mockStaplerRequest(
+                Locale.GERMANY,
+                Locale.GERMAN,
+                Locale.ENGLISH
+        );
+
+        Klass klass = mockKlass(
+                "help-id.html",
+                "help-id_de.html"
+        );
+
+        URL id = Descriptor.getStaticHelpUrl(req, klass, "-id");
+        localeResourceIs(id, "help-id_de.html");
     }
 
     @Test
-    public void getStaticHelpUrl2() {
-        Klass klass = mock(Klass.class);
-        when(klass.getResource("help-id.html")).thenReturn(getUrl("https://jenkins/help_id.html"));
-        when(klass.getResource("help-id_zh.html")).thenReturn(getUrl("https://jenkins/help-id_zh.html"));
-        when(klass.getResource("help-id_zh_CN.html")).thenReturn(getUrl("https://jenkins/help-id_zh_CN.html"));
-        URL id = Descriptor.getStaticHelpUrl(klass, "-id");
-        assertThat(id.toString(), equalTo("https://jenkins/help-id_zh.html"));
+    public void getStaticHelpUrlAcceptDeResDeCountry() {
+        // Accept-Language: de-DE,de;q=0.9,en;q=0.8
+        StaplerRequest req = mockStaplerRequest(
+                Locale.GERMANY,
+                Locale.GERMAN,
+                Locale.ENGLISH
+        );
+
+        Klass klass = mockKlass(
+                "help-id.html",
+                "help-id_de_DE.html"
+        );
+
+        URL id = Descriptor.getStaticHelpUrl(req, klass, "-id");
+        localeResourceIs(id, "help-id_de_DE.html");
     }
 
     @Test
-    public void getStaticHelpUrl3() {
-        Klass klass = mock(Klass.class);
-        when(klass.getResource("help-id.html")).thenReturn(getUrl("https://jenkins/help_id.html"));
-        when(klass.getResource("help-id_zh_CN.html")).thenReturn(getUrl("https://jenkins/help-id_zh_CN.html"));
-        when(klass.getResource("help-id_zh_TW.html")).thenReturn(getUrl("https://jenkins/help-id_zh_TW.html"));
-        URL id = Descriptor.getStaticHelpUrl(klass, "-id");
-        assertThat(id.toString(), equalTo("https://jenkins/help-id_zh_CN.html"));
+    public void getStaticHelpUrlAcceptDeResBoth() {
+        // Accept-Language: de-DE,de;q=0.9,en;q=0.8
+        StaplerRequest req = mockStaplerRequest(
+                Locale.GERMANY,
+                Locale.GERMAN,
+                Locale.ENGLISH
+        );
+
+        Klass klass = mockKlass(
+                "help-id.html",
+                "help-id_de.html",
+                "help-id_de_DE.html"
+        );
+
+        URL id = Descriptor.getStaticHelpUrl(req, klass, "-id");
+        localeResourceIs(id, "help-id_de_DE.html");
     }
 
     @Test
-    public void getStaticHelpUrl4() {
+    public void getStaticHelpUrlAcceptZhResDefault() {
+        // Accept-Language: zh,zh-CN;q=0.9,en-US;q=0.8,en;q=0.7,zh-TW;q=0.6
+        StaplerRequest req = mockStaplerRequest(
+                Locale.CHINESE,
+                Locale.SIMPLIFIED_CHINESE,
+                Locale.ENGLISH,
+                Locale.US,
+                Locale.TRADITIONAL_CHINESE
+        );
+
+        Klass klass = mockKlass(
+                "help-id.html"
+        );
+
+        URL id = Descriptor.getStaticHelpUrl(req, klass, "-id");
+        localeResourceIs(id, "help-id.html");
+    }
+
+    @Test
+    public void getStaticHelpUrlAcceptZhResZhCountry() {
+        // Accept-Language: zh,zh-CN;q=0.9,en-US;q=0.8,en;q=0.7,zh-TW;q=0.6
+        StaplerRequest req = mockStaplerRequest(
+                Locale.CHINESE,
+                Locale.SIMPLIFIED_CHINESE,
+                Locale.ENGLISH,
+                Locale.US,
+                Locale.TRADITIONAL_CHINESE
+        );
+
+        Klass klass = mockKlass(
+                "help-id.html",
+                "help-id_zh_CN.html"
+        );
+
+        URL id = Descriptor.getStaticHelpUrl(req, klass, "-id");
+        localeResourceIs(id, "help-id_zh_CN.html");
+    }
+
+    @Test
+    public void getStaticHelpUrlAcceptZhResBoth() {
+        // Accept-Language: zh,zh-CN;q=0.9,en-US;q=0.8,en;q=0.7,zh-TW;q=0.6
+        StaplerRequest req = mockStaplerRequest(
+                Locale.CHINESE,
+                Locale.SIMPLIFIED_CHINESE,
+                Locale.ENGLISH,
+                Locale.US,
+                Locale.TRADITIONAL_CHINESE
+        );
+
+        Klass klass = mockKlass(
+                "help-id.html",
+                "help-id_zh.html",
+                "help-id_zh_CN.html"
+        );
+        URL id = Descriptor.getStaticHelpUrl(req, klass, "-id");
+        localeResourceIs(id, "help-id_zh.html");
+    }
+
+    @Test
+    public void getStaticHelpUrlAcceptZhResMore() {
+        // Accept-Language: zh,zh-CN;q=0.9,en-US;q=0.8,en;q=0.7,zh-TW;q=0.6
+        StaplerRequest req = mockStaplerRequest(
+                Locale.CHINESE,
+                Locale.SIMPLIFIED_CHINESE,
+                Locale.ENGLISH,
+                Locale.US,
+                Locale.TRADITIONAL_CHINESE
+        );
+
+        Klass klass = mockKlass(
+                "help-id.html",
+                "help-id_zh_CN.html",
+                "help-id_zh_TW.html",
+                "help-id_de_DE.html"
+        );
+        URL id = Descriptor.getStaticHelpUrl(req, klass, "-id");
+        localeResourceIs(id, "help-id_zh_CN.html");
+    }
+
+    private StaplerRequest mockStaplerRequest(Locale... localeArr) {
+        StaplerRequest req = mock(StaplerRequest.class);
+        Enumeration<Locale> locales = Collections.enumeration(Arrays.asList(localeArr));
+        when(req.getLocales()).thenReturn(locales);
+        return req;
+    }
+
+    private Klass mockKlass(String... resources) {
         Klass klass = mock(Klass.class);
-        when(klass.getResource("help-id.html")).thenReturn(getUrl("https://jenkins/help_id.html"));
-        when(klass.getResource("help-id_en.html")).thenReturn(getUrl("https://jenkins/help-id_en.html"));
-        when(klass.getResource("help-id_zh_TW.html")).thenReturn(getUrl("https://jenkins/help-id_zh_TW.html"));
-        URL id = Descriptor.getStaticHelpUrl(klass, "-id");
-        assertThat(id.toString(), equalTo("https://jenkins/help-id_en.html"));
+        for (String resource : resources) {
+            when(klass.getResource(resource)).thenReturn(getUrl("https://jenkins/" + resource));
+        }
+        return klass;
     }
 
     private URL getUrl(final String realUrl) {
         try {
             return new URL(realUrl);
         } catch (Exception ex) {
-
             throw new RuntimeException(ex);
         }
+    }
+
+    private void localeResourceIs(URL url, String resource) {
+        assertThat(url.toString(), equalTo("https://jenkins/" + resource));
     }
 }
