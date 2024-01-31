@@ -59,7 +59,7 @@ THE SOFTWARE.
   </s:documentation>
 
   <button id="${attrs.id}" name="${attrs.name ?: 'Submit'}" formNoValidate="formNoValidate"
-          class="jenkins-button ${attrs.primary != 'false' ? 'jenkins-button--primary' : ''} ${attrs.clazz}" tooltip="${attrs.tooltip}">
+          class="jenkins-button jenkins-submit-button ${attrs.primary != 'false' ? 'jenkins-button--primary' : ''} ${attrs.clazz}" tooltip="${attrs.tooltip}">
     <j:if test="${attrs.icon != null}">
       <l:icon src="${attrs.icon}" />
     </j:if>
