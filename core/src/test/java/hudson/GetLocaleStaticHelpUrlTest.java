@@ -53,7 +53,7 @@ public class GetLocaleStaticHelpUrlTest {
         );
 
         URL id = Descriptor.getStaticHelpUrl(req, klass, "-id");
-        localeResourceIs(id, "help-id.html");
+        assertThatLocaleResourceIs(id, "help-id.html");
     }
 
     @Test
@@ -71,7 +71,7 @@ public class GetLocaleStaticHelpUrlTest {
         );
 
         URL id = Descriptor.getStaticHelpUrl(req, klass, "-id");
-        localeResourceIs(id, "help-id_de.html");
+        assertThatLocaleResourceIs(id, "help-id_de.html");
     }
 
     @Test
@@ -89,7 +89,7 @@ public class GetLocaleStaticHelpUrlTest {
         );
 
         URL id = Descriptor.getStaticHelpUrl(req, klass, "-id");
-        localeResourceIs(id, "help-id_de_DE.html");
+        assertThatLocaleResourceIs(id, "help-id_de_DE.html");
     }
 
     @Test
@@ -108,7 +108,7 @@ public class GetLocaleStaticHelpUrlTest {
         );
 
         URL id = Descriptor.getStaticHelpUrl(req, klass, "-id");
-        localeResourceIs(id, "help-id_de_DE.html");
+        assertThatLocaleResourceIs(id, "help-id_de_DE.html");
     }
 
     @Test
@@ -127,7 +127,7 @@ public class GetLocaleStaticHelpUrlTest {
         );
 
         URL id = Descriptor.getStaticHelpUrl(req, klass, "-id");
-        localeResourceIs(id, "help-id.html");
+        assertThatLocaleResourceIs(id, "help-id.html");
     }
 
     @Test
@@ -147,7 +147,7 @@ public class GetLocaleStaticHelpUrlTest {
         );
 
         URL id = Descriptor.getStaticHelpUrl(req, klass, "-id");
-        localeResourceIs(id, "help-id_zh_CN.html");
+        assertThatLocaleResourceIs(id, "help-id_zh_CN.html");
     }
 
     @Test
@@ -167,7 +167,7 @@ public class GetLocaleStaticHelpUrlTest {
                 "help-id_zh_CN.html"
         );
         URL id = Descriptor.getStaticHelpUrl(req, klass, "-id");
-        localeResourceIs(id, "help-id_zh.html");
+        assertThatLocaleResourceIs(id, "help-id_zh.html");
     }
 
     @Test
@@ -188,7 +188,7 @@ public class GetLocaleStaticHelpUrlTest {
                 "help-id_de_DE.html"
         );
         URL id = Descriptor.getStaticHelpUrl(req, klass, "-id");
-        localeResourceIs(id, "help-id_zh_CN.html");
+        assertThatLocaleResourceIs(id, "help-id_zh_CN.html");
     }
 
     private StaplerRequest mockStaplerRequest(Locale... localeArr) {
@@ -214,7 +214,7 @@ public class GetLocaleStaticHelpUrlTest {
         }
     }
 
-    private void localeResourceIs(URL url, String resource) {
+    private void assertThatLocaleResourceIs(URL url, String resource) {
         assertThat(url.toString(), equalTo("https://jenkins/" + resource));
     }
 }
