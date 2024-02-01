@@ -483,7 +483,6 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      * @return The number of files/directories archived.
      *          This is only really useful to check for a situation where nothing
      */
-    @Restricted(NoExternalUse.class)
     public int zip(OutputStream out, DirScanner scanner, String verificationRoot, String prefix, OpenOption... openOptions) throws IOException, InterruptedException {
         ArchiverFactory archiverFactory = prefix == null ? ArchiverFactory.ZIP : ArchiverFactory.createZipWithPrefix(prefix, openOptions);
         return archive(archiverFactory, out, scanner, verificationRoot, openOptions);
@@ -515,7 +514,6 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      * @return The number of files/directories archived.
      *          This is only really useful to check for a situation where nothing
      */
-    @Restricted(NoExternalUse.class)
     public int archive(final ArchiverFactory factory, OutputStream os, final DirScanner scanner,
                        String verificationRoot, OpenOption... openOptions) throws IOException, InterruptedException {
         final OutputStream out = channel != null ? new RemoteOutputStream(os) : os;
@@ -762,7 +760,6 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         }
     }
 
-    @Restricted(NoExternalUse.class)
     public boolean hasSymlink(FilePath verificationRoot, OpenOption... openOptions) throws IOException, InterruptedException {
         return act(new HasSymlink(verificationRoot == null ? null : verificationRoot.remote, openOptions));
     }
@@ -783,7 +780,6 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         }
     }
 
-    @Restricted(NoExternalUse.class)
     public boolean containsSymlink(FilePath verificationRoot, OpenOption... openOptions) throws IOException, InterruptedException {
         return !list(new SymlinkRetainingFileFilter(verificationRoot, openOptions)).isEmpty();
     }
@@ -2057,7 +2053,6 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      * @param openOptions the options to apply when opening.
      * @return Direct children of this directory.
      */
-    @Restricted(NoExternalUse.class)
     @NonNull
     public List<FilePath> list(FilePath verificationRoot, OpenOption... openOptions) throws IOException, InterruptedException {
         return list(new OptionalDiscardingFileFilter(verificationRoot, openOptions));
@@ -2222,7 +2217,6 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         return read(null, new OpenOption[0]);
     }
 
-    @Restricted(NoExternalUse.class)
     public InputStream read(FilePath rootPath, OpenOption... openOptions) throws IOException, InterruptedException {
         String rootPathString = rootPath == null ? null : rootPath.remote;
         if (channel == null) {
@@ -2237,7 +2231,6 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         return p.getIn();
     }
 
-    @Restricted(NoExternalUse.class)
     public static InputStream newInputStreamDenyingSymlinkAsNeeded(File file, String verificationRoot, OpenOption... openOptions) throws IOException {
         InputStream inputStream = null;
         try {
@@ -2254,7 +2247,6 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         return inputStream;
     }
 
-    @Restricted(NoExternalUse.class)
     public static InputStream openInputStream(File file, OpenOption[] openOptions) throws IOException {
         return Files.newInputStream(fileToPath(file), stripLocalOptions(openOptions));
     }
@@ -2290,7 +2282,6 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         }
     }
 
-    @Restricted(NoExternalUse.class)
     public static boolean isSymlink(File file, String root, OpenOption... openOptions) {
         if (isNoFollowLink(openOptions)) {
             if (Util.isSymlink(file.toPath())) {
@@ -2306,7 +2297,6 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         return isSymlink(visitorInfo.f, visitorInfo.verificationRoot, visitorInfo.openOptions);
     }
 
-    @Restricted(NoExternalUse.class)
     public static boolean isTmpDir(File file, String root, OpenOption... openOptions) {
         if (isIgnoreTmpDirs(openOptions)) {
             if (isTmpDir(file)) {
@@ -2318,7 +2308,6 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         return false;
     }
 
-    @Restricted(NoExternalUse.class)
     public static boolean isTmpDir(String filename, OpenOption... openOptions) {
         if (isIgnoreTmpDirs(openOptions)) {
             return isTmpDir(filename);
@@ -2338,12 +2327,10 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         return filename.length() > WorkspaceList.TMP_DIR_SUFFIX.length() && filename.endsWith(WorkspaceList.TMP_DIR_SUFFIX);
     }
 
-    @Restricted(NoExternalUse.class)
     public static boolean isNoFollowLink(OpenOption... openOptions) {
         return Arrays.asList(openOptions).contains(LinkOption.NOFOLLOW_LINKS);
     }
 
-    @Restricted(NoExternalUse.class)
     public static boolean isIgnoreTmpDirs(OpenOption... openOptions) {
         return Arrays.asList(openOptions).contains(DisplayOption.IGNORE_TMP_DIRS);
     }
@@ -3713,7 +3700,6 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     /**
      * Wraps {@link FileVisitor} to ignore symlinks.
      */
-    @Restricted(NoExternalUse.class)
     public static FileVisitor ignoringSymlinks(final FileVisitor v, String verificationRoot, OpenOption... openOptions) {
         return validatingVisitor(FilePath::isNoFollowLink,
                 visitorInfo -> !isSymlink(visitorInfo),
@@ -3723,7 +3709,6 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     /**
      * Wraps {@link FileVisitor} to ignore tmp directories.
      */
-    @Restricted(NoExternalUse.class)
     public static FileVisitor ignoringTmpDirs(final FileVisitor v, String verificationRoot, OpenOption... openOptions) {
         return validatingVisitor(FilePath::isIgnoreTmpDirs,
                 visitorInfo -> !isTmpDir(visitorInfo),
