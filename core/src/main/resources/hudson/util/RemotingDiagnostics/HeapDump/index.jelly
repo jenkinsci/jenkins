@@ -1,0 +1,15 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+    <l:layout permission="${app.ADMINISTER}">
+        <st:include page="sidepanel.jelly" it="${it.context}"/>
+        <l:main-panel>
+            <l:app-bar title="${%title(it.context.displayName)}"/>
+            <p class="jenkins-description">
+                ${%blurb}
+            </p>
+            <form action="heapdump.hprof" method="post">
+                <input type="submit" class="jenkins-button" value="${%Download}"/>
+            </form>
+        </l:main-panel>
+    </l:layout>
+</j:jelly>
