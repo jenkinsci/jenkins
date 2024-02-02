@@ -118,6 +118,11 @@ public class ResourceDomainRootAction implements UnprotectedRootAction {
             return null;
         }
 
+        if (!ACL.isAnonymous2(Jenkins.getAuthentication2())) {
+            rsp.sendError(400);
+            return null;
+        }
+
         Token token = Token.decode(id);
         if (token == null) {
             rsp.sendError(404, ResourceDomainFilter.ERROR_RESPONSE);
