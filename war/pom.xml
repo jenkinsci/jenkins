@@ -50,8 +50,8 @@ THE SOFTWARE.
     <!-- frontend-maven-plugin will install this Yarn version as bootstrap, then hand over control to Yarn Berry. -->
     <yarn.version>1.22.19</yarn.version>
     <!-- maven-antrun-plugin will download this Yarn version. -->
-    <yarn-berry.version>4.0.2</yarn-berry.version>
-    <yarn-berry.sha256sum>825003a0f561ad09a3b1ac4a3b3ea6207af2796d54f62a9420520915721f5186</yarn-berry.sha256sum>
+    <yarn-berry.version>4.1.0</yarn-berry.version>
+    <yarn-berry.sha256sum>81a00df816059803e6b5148acf03ce313cad36b7f6e5af6efa040a15981a6ffb</yarn-berry.sha256sum>
   </properties>
 
   <dependencyManagement>
