@@ -612,9 +612,10 @@ function geval(script) {
 // eslint-disable-next-line no-unused-vars
 function fireEvent(element, event) {
   return !element.dispatchEvent(
-    new Event(event, {
+    new CustomEvent(event, {
       bubbles: true,
       cancelable: true,
+      detail: element,
     }),
   );
 }
