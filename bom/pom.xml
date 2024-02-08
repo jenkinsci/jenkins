@@ -39,7 +39,7 @@ THE SOFTWARE.
 
   <properties>
     <asm.version>9.6</asm.version>
-    <slf4jVersion>2.0.11</slf4jVersion>
+    <slf4jVersion>2.0.12</slf4jVersion>
     <stapler.version>1822.v120278426e1c</stapler.version>
     <groovy.version>2.4.21</groovy.version>
   </properties>
