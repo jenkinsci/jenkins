@@ -48,16 +48,46 @@
   display: block;
   background-color: var(--background);
   box-shadow: var(--dropdown-box-shadow);
-  transition: var(--standard-transition);
   border-radius: 15px;
   opacity: 0;
-  transform: translateY(-10px) scale(0.975);
-  z-index: 1000;
+  animation: hide-am-list 300ms ease-in 1 normal;
+  z-index: 0;
 }
+
 .am-container.visible div.am-list {
   opacity: 1;
-  transform: scale(1);
+  animation: show-am-list 300ms ease-in 1 normal forwards;
+  z-index: 1000;
 }
+
+@keyframes show-am-list {
+  from {
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px) scale(0.975);
+  }
+  to {
+    opacity: 1;
+    visibility: visible;
+    transform: scale(1);
+  }
+}
+
+@keyframes hide-am-list {
+  from {
+    opacity: 1;
+    visibility: visible;
+    transform: scale(1);
+    z-index: 1000;
+  }
+  to {
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px) scale(0.975);
+    z-index: 1000;
+  }
+}
+
 .am-container .am-message {
   display: block;
   line-height: 1.4em;
