@@ -147,7 +147,7 @@ function convertHtmlToItems(children) {
     const type = child.dataset.dropdownType;
 
     switch (type) {
-      case "ITEM":
+      case "ITEM": {
         const item = {
           label: attributes.dropdownText,
           id: attributes.dropdownId,
@@ -164,6 +164,7 @@ function convertHtmlToItems(children) {
 
         items.push(item);
         break;
+      }
       case "SUBMENU":
         items.push({
           type: "ITEM",
