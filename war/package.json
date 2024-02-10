@@ -34,7 +34,7 @@
     "eslint-config-prettier": "9.1.0",
     "handlebars-loader": "1.7.3",
     "mini-css-extract-plugin": "2.8.0",
-    "postcss": "8.4.34",
+    "postcss": "8.4.35",
     "postcss-loader": "8.1.0",
     "postcss-preset-env": "9.3.0",
     "postcss-scss": "4.0.9",
