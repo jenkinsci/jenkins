@@ -153,6 +153,7 @@ function convertHtmlToItems(children) {
           id: attributes.dropdownId,
           icon: attributes.dropdownIcon,
           iconXml: attributes.dropdownIcon,
+          clazz: attributes.dropdownClazz,
         };
 
         if (attributes.dropdownHref) {
