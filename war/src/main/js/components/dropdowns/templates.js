@@ -45,7 +45,7 @@ function menuItem(options) {
   const tag = itemOptions.type === "link" ? "a" : "button";
 
   const item = createElementFromHtml(`
-      <${tag} class="jenkins-dropdown__item ${itemOptions.clazz ? itemOptions.clazz : ''}" href="${itemOptions.url}" id="${itemOptions.id}">
+      <${tag} class="jenkins-dropdown__item ${itemOptions.clazz ? itemOptions.clazz : ""}" href="${itemOptions.url}" id="${itemOptions.id}">
           ${
             itemOptions.icon
               ? `<div class="jenkins-dropdown__item__icon">${
