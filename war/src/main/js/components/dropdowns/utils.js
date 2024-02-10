@@ -142,7 +142,7 @@ function generateDropdownItems(items, compact) {
 
 function convertHtmlToItems(children) {
   const items = [];
-  Array.from(children).forEach(child => {
+  Array.from(children).forEach((child) => {
     const attributes = child.dataset;
     const type = child.dataset.dropdownType;
 
@@ -152,7 +152,7 @@ function convertHtmlToItems(children) {
           label: attributes.dropdownText,
           id: attributes.dropdownId,
           icon: attributes.dropdownIcon,
-          iconXml: attributes.dropdownIcon
+          iconXml: attributes.dropdownIcon,
         };
 
         if (attributes.dropdownHref) {
@@ -165,15 +165,13 @@ function convertHtmlToItems(children) {
         items.push(item);
         break;
       case "SUBMENU":
-        items.push(
-          {
-            type: "ITEM",
-            label: attributes.dropdownText,
-            icon: attributes.dropdownIcon,
-            iconXml: attributes.dropdownIcon,
-            subMenu: () => convertHtmlToItems(child.content.children)
-          }
-        );
+        items.push({
+          type: "ITEM",
+          label: attributes.dropdownText,
+          icon: attributes.dropdownIcon,
+          iconXml: attributes.dropdownIcon,
+          subMenu: () => convertHtmlToItems(child.content.children),
+        });
         break;
       case "SEPARATOR":
         items.push({ type: type });
