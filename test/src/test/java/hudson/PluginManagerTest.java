@@ -794,7 +794,7 @@ public class PluginManagerTest {
             PluginManagerUtil.getCheckForUpdatesButton(p).click();
             HtmlPage available = wc.goTo("pluginManager/available");
             assertTrue(available.querySelector(".alert-danger")
-                    .getTextContent().contains("This plugin is built for Jenkins 2.999"));
+                    .getTextContent().contains("This plugin is built for Jenkins 9999999"));
             wc.waitForBackgroundJavaScript(100);
 
             HtmlAnchor anchor = available.querySelector(".jenkins-table__link");

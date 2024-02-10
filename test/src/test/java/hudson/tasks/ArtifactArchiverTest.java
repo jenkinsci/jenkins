@@ -46,6 +46,7 @@ import hudson.model.FreeStyleProject;
 import hudson.model.Label;
 import hudson.model.Result;
 import hudson.model.Run;
+import hudson.model.Slave;
 import hudson.remoting.VirtualChannel;
 import hudson.slaves.DumbSlave;
 import java.io.File;
@@ -134,8 +135,48 @@ public class ArtifactArchiverTest {
     @Test
     @Issue("JENKINS-51913")
     public void testFileMaskNoMatchesFoundException() throws Exception {
+        hudson.FilePath.VALIDATE_ANT_FILE_MASK_BOUND = 1;
         FreeStyleProject project = j.createFreeStyleProject();
-        String pattern = "dir/**";
+        project.getBuildersList().replaceBy(Collections.singleton(new TestBuilder() {
+            @Override
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+                FilePath dir = build.getWorkspace().child("dir");
+                dir.child("file").write("content", "UTF-8");
+                dir.child("file2").write("content", "UTF-8");
+                dir.child("file3").write("content", "UTF-8");
+                return true;
+            }
+        }));
+
+        String pattern = "dir/*.log";
+        ArtifactArchiver aa = new ArtifactArchiver(pattern);
+        aa.setAllowEmptyArchive(true);
+        project.getPublishersList().replaceBy(Collections.singleton(aa));
+        FreeStyleBuild build = j.buildAndAssertSuccess(project);
+        assertFalse(project.getBuildByNumber(1).getHasArtifacts());
+        j.assertLogContains("No artifacts found that match the file pattern \"" + pattern + "\"", build);
+        assertThat("No stacktrace shown", build.getLog(31), Matchers.iterableWithSize(lessThan(30)));
+    }
+
+    @Test
+    @Issue("JENKINS-71700")
+    public void testFileMaskNoMatchesFoundExceptionOnAgent() throws Exception {
+        Slave agent = j.createOnlineSlave();
+        hudson.FilePath.VALIDATE_ANT_FILE_MASK_BOUND = 1;
+        FreeStyleProject project = j.createFreeStyleProject();
+        project.setAssignedNode(agent);
+        project.getBuildersList().replaceBy(Collections.singleton(new TestBuilder() {
+            @Override
+            public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) throws InterruptedException, IOException {
+                FilePath dir = build.getWorkspace().child("dir");
+                dir.child("file").write("content", "UTF-8");
+                dir.child("file2").write("content", "UTF-8");
+                dir.child("file3").write("content", "UTF-8");
+                return true;
+            }
+        }));
+
+        String pattern = "dir/*.log";
         ArtifactArchiver aa = new ArtifactArchiver(pattern);
         aa.setAllowEmptyArchive(true);
         project.getPublishersList().replaceBy(Collections.singleton(aa));

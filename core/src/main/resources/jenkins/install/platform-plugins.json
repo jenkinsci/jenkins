@@ -35,7 +35,7 @@
   {
     "category": "Build Analysis and Reporting",
     "plugins": [
-      { "name": "cobertura" },
+      { "name": "coverage" },
       { "name": "htmlpublisher" },
       { "name": "junit" },
       { "name": "warnings-ng" },
