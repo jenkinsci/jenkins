@@ -406,7 +406,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
     }
 
     /**
-     * @since TODO
+     * @since 2.426
      */
     @DataBoundSetter
     public void setFilterExecutors(boolean filterExecutors) {
@@ -421,7 +421,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
     }
 
     /**
-     * @since TODO
+     * @since 2.426
      */
     @DataBoundSetter
     public void setFilterQueue(boolean filterQueue) {
@@ -1173,6 +1173,8 @@ public abstract class View extends AbstractModelObject implements AccessControll
         return new RunList(this);
     }
 
+    @Deprecated
+    @Restricted(DoNotUse.class)
     public BuildTimelineWidget getTimeline() {
         return new BuildTimelineWidget(getBuilds());
     }

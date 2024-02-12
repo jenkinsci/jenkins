@@ -35,6 +35,7 @@ import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletException;
+import jenkins.console.ConsoleUrlProviderGlobalConfiguration;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.kohsuke.accmod.Restricted;
@@ -49,7 +50,18 @@ public class AppearanceGlobalConfiguration extends ManagementLink {
     private static final Logger LOGGER = Logger.getLogger(AppearanceGlobalConfiguration.class.getName());
 
     @Restricted(NoExternalUse.class)
-    public static final Predicate<Descriptor> FILTER = input -> input.getCategory() instanceof AppearanceCategory;
+    public static final Predicate<Descriptor> FILTER = input -> {
+        if (input.getCategory() instanceof AppearanceCategory) {
+            // Special case because ConsoleUrlProviderGlobalConfiguration is (currently) the only type in core that uses
+            // AppearanceCategory, and it hides its configuration if there are no custom providers, so we want to
+            // hide the whole "Appearance" link in that case.
+            if (input instanceof ConsoleUrlProviderGlobalConfiguration) {
+                return ((ConsoleUrlProviderGlobalConfiguration) input).isEnabled();
+            }
+            return true;
+        }
+        return false;
+    };
 
     @Override
     public String getIconFileName() {

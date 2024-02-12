@@ -65,7 +65,7 @@ THE SOFTWARE.
 	  <div class="pane build-controls">
 	    <div class="build-stop">
 	      <j:if test="${item.hasCancelPermission()}">
-		<l:stopButton href="${rootURL}/queue/cancelItem?id=${item.id}" alt="${%cancel this build}"/>
+		<l:stopButton href="${rootURL}/queue/cancelItem?id=${item.id}" alt="${%Cancel this build}"/>
 	      </j:if>
 	    </div>
 	  </div>

@@ -1220,6 +1220,13 @@ function rowvgStartEachRow(recursive, f) {
 }
 
 (function () {
+  // This moves all link elements to the head
+  // fixes JENKINS-72196 when a link is inside a div of a repeatable and the
+  // div is deleted then the styling is lost for divs afterwards.
+  Behaviour.specify("body link", "move-css-to-head", -9999, function (link) {
+    document.head.appendChild(link);
+  });
+
   var p = 20;
   Behaviour.specify("TABLE.sortable", "table-sortable", ++p, function (e) {
     // sortable table
@@ -2707,8 +2714,13 @@ function validateButton(checkUrl, paramList, button) {
   paramList.split(",").forEach(function (name) {
     var p = findPreviousFormItem(button, name);
     if (p != null) {
-      if (p.type == "checkbox") {
+      if (p.type === "checkbox") {
         parameters[name] = p.checked;
+      } else if (p.type === "radio") {
+        while (p && !p.checked) {
+          p = findPreviousFormItem(p, name);
+        }
+        parameters[name] = p.value;
       } else {
         parameters[name] = p.value;
       }

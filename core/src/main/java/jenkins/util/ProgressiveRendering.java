@@ -70,7 +70,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
  * <li>As results become available, call {@link #progress}.
  * <li>Make {@link #data} produce whatever JSON you want to send to the page to be displayed.
  * </ol>
- * {@code ui-samples-plugin} demonstrates all this.
+ * {@code design-library} demonstrates all this.
  * @since 1.484
  */
 public abstract class ProgressiveRendering {
