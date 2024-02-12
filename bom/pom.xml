@@ -39,7 +39,7 @@ THE SOFTWARE.
 
   <properties>
     <asm.version>9.6</asm.version>
-    <slf4jVersion>2.0.11</slf4jVersion>
+    <slf4jVersion>2.0.12</slf4jVersion>
     <!-- TODO https://github.com/jenkinsci/stapler/pull/385 -->
     <stapler.version>1867.v70a_fd882b_468</stapler.version>
     <groovy.version>2.4.21</groovy.version>
@@ -114,7 +114,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>commons-codec</groupId>
         <artifactId>commons-codec</artifactId>
-        <version>1.16.0</version>
+        <version>1.16.1</version>
       </dependency>
       <dependency>
         <groupId>commons-collections</groupId>
