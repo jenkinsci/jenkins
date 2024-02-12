@@ -155,11 +155,7 @@ THE SOFTWARE.
                 <l:icon src="${icon}" />
               </span>
               <span class="task-link-text">${title}</span>
-              <j:if test="${attrs.badge != null}">
-                <span class="task-icon-badge" tooltip="${attrs.badge.tooltip}">
-                  ${attrs.badge.text}
-                </span>
-              </j:if>
+              <l:badge badge="${attrs.badge}" class="task-icon-badge"/>
             </span>
           </span>
         </div>
@@ -181,11 +177,7 @@ THE SOFTWARE.
                     <l:icon src="${icon}" />
                   </span>
                   <span>${title}</span>
-                  <j:if test="${attrs.badge != null}">
-                    <span class="task-icon-badge" tooltip="${attrs.badge.tooltip}">
-                      ${attrs.badge.text}
-                    </span>
-                  </j:if>
+                  <l:badge badge="${attrs.badge}" class="task-icon-badge"/>
                 </l:confirmationLink>
               </j:when>
 
@@ -202,11 +194,7 @@ THE SOFTWARE.
                     <l:icon src="${icon}" />
                   </span>
                   <span class="task-link-text">${title}</span>
-                  <j:if test="${attrs.badge != null}">
-                    <span class="task-icon-badge" tooltip="${attrs.badge.tooltip}">
-                      ${attrs.badge.text}
-                    </span>
-                  </j:if>
+                  <l:badge badge="${attrs.badge}" class="task-icon-badge"/>
                 </m:a>
                 <st:adjunct includes="lib.layout.task.task" />
               </j:otherwise>
