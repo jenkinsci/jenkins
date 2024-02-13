@@ -50,8 +50,12 @@
   box-shadow: var(--dropdown-box-shadow);
   border-radius: 15px;
   opacity: 0;
-  animation: hide-am-list 300ms ease-in 1 normal;
   z-index: 0;
+  transform: scale(0);
+}
+
+.am-container.am-hidden div.am-list {
+  animation: hide-am-list 300ms ease-in 1 normal;
 }
 
 .am-container.visible div.am-list {
