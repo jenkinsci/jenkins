@@ -51,6 +51,7 @@
   border-radius: 15px;
   opacity: 0;
   z-index: 0;
+  transform: scale(0);
 }
 
 .am-container.am-hidden div.am-list {
