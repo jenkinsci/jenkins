@@ -1,5 +1,3 @@
-@use "../abstracts/mixins";
-
 .page-header {
   display: flex;
   align-items: center;
@@ -38,7 +36,8 @@ a.page-header__brand-link {
 }
 
 .page-header__am-wrapper {
-  display: contents;
+  height: 100%;
+  padding: 0.5rem 0;
 }
 
 .page-header__hyperlinks {
@@ -46,22 +45,37 @@ a.page-header__brand-link {
   align-items: center;
 }
 
-.page-header__hyperlinks > a,
-.am-container > a {
-  @include mixins.item;
-
+.page-header__hyperlinks a {
   --text-color: var(--header-link-color);
 
   display: inline-flex;
   align-items: center;
-  color: var(--text-color);
-  text-decoration: none;
+
+  // need to override an existing rule
+  /* stylelint-disable declaration-block-no-shorthand-property-overrides */
+  padding-right: 0.5rem;
   padding: 0.5rem;
   margin-right: 0 !important;
+  font-weight: bold;
 
-  &::before,
-  &::after {
-    inset: 0 !important;
+  &:link,
+  &:visited {
+    color: var(--header-link-color);
+    border-radius: var(--header-item-border-radius);
+    text-decoration: none;
+  }
+
+  &:hover,
+  &:focus,
+  &.mouseIsOverMenuSelector {
+    color: var(--header-link-color-active);
+    background-color: var(--header-link-bg-classic-hover);
+    text-decoration: underline;
+    text-decoration-color: var(--header-link-color-active);
+  }
+
+  &:active {
+    background-color: var(--header-link-bg-classic-active);
   }
 
   .jenkins-menu-dropdown-chevron {
@@ -77,6 +91,8 @@ a.page-header__brand-link {
 }
 
 .page-header__hyperlinks a span {
+  font-weight: bold;
+
   &:not(:first-child) {
     margin-left: 0.25rem;
   }
