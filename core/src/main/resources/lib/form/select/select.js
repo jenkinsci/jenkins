@@ -132,7 +132,10 @@ Behaviour.specify("SELECT.select", "select", 1000, function (e) {
   // handle readonly mode, the actually selected option is only filled asynchronously so we have
   // to wait until the data is filled by registering to the filled event.
   let parentDiv = e.closest(".jenkins-select");
-  if (parentDiv.dataset.readonly === "true" && !parentDiv.hasAttribute("data-listener-added")) {
+  if (
+    parentDiv.dataset.readonly === "true" &&
+    !parentDiv.hasAttribute("data-listener-added")
+  ) {
     // need to avoid duplicate eventListeners so mark that we already added it
     parentDiv.setAttribute("data-listener-added", "true");
     function handleFilled(event) {
