@@ -132,13 +132,6 @@ public class SetupWizard extends PageDecorator {
     @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "Accessible via System Groovy Scripts")
     private static /* not final */ String ADMIN_INITIAL_API_TOKEN = SystemProperties.getString(ADMIN_INITIAL_API_TOKEN_PROPERTY_NAME);
 
-    /**
-     * At setup time, Jenkins will read a json file with suggested plugins coming from a json from {@link UpdateSite#getUrl()}
-     * and replace "/update-center.json" with the value fo this system property (default is {@code "/platform-plugins.json"}
-     */
-    private static final String SUGGESTED_PLUGINS_FILE_NAME =
-            SystemProperties.getString(SetupWizard.class.getName() + ".SUGGESTED_PLUGINS_FILE_NAME", "/platform-plugins.json");
-
     @NonNull
     @Override
     public String getDisplayName() {
@@ -560,8 +553,7 @@ public class SetupWizard extends PageDecorator {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         JSONArray initialPluginList = null;
         updateSiteList: for (UpdateSite updateSite : Jenkins.get().getUpdateCenter().getSiteList()) {
-            String updateCenterJsonUrl = updateSite.getUrl();
-            String suggestedPluginUrl = updateCenterJsonUrl.replace("/update-center.json", SUGGESTED_PLUGINS_FILE_NAME);
+            String suggestedPluginUrl = updateSite.getSuggestedPluginsUrl();
             VersionNumber version = Jenkins.getVersion();
             if (version != null && (suggestedPluginUrl.startsWith("https://") || suggestedPluginUrl.startsWith("http://"))) {
                 // Allow remote update site to distinguish based on the current version
