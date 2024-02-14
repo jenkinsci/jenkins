@@ -35,7 +35,7 @@ THE SOFTWARE.
     <l:main-panel>
       <t:buildCaption>
         ${%Console Output}
-        <l:copyButton message="${%successfullyCopied}" tooltip="${%clickToCopy}" ref="output"/>
+        <l:copyButton message="${%successfullyCopied}" tooltip="${%clickToCopy}" ref="out"/>
       </t:buildCaption>
       <j:set var="threshold" value="${h.getSystemProperty('hudson.consoleTailKB')?:'150'}" />
       <!-- Show at most last 150KB (can override with system property) unless consoleFull is set -->
@@ -63,7 +63,7 @@ THE SOFTWARE.
         </j:when>
         <!-- output is completed now. -->
         <j:otherwise>
-          <pre class="console-output" id="output">
+          <pre class="console-output" id="out">
             <st:getOutput var="output" />
             <j:whitespace>${it.writeLogTo(offset,output)}</j:whitespace>
           </pre>
