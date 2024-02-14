@@ -63,7 +63,7 @@ THE SOFTWARE.
 
   ${descriptor.calcFillSettings(field,attrs)} <!-- this figures out the 'fillUrl' and 'fillDependsOn' attribute -->
   <j:set var="value" value="${attrs.value ?: instance[attrs.field] ?: attrs.default}" />
-  <div class="jenkins-select">
+  <div class="jenkins-select" data-readonly="${readOnlyMode}">
     <m:select xmlns:m="jelly:hudson.util.jelly.MorphTagLibrary"
               class="jenkins-select__input ${attrs.checkUrl!=null?'validated':''} select ${attrs.clazz}"
               name="${attrs.name ?: '_.'+attrs.field}"
