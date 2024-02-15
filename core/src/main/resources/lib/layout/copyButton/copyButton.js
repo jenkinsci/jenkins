@@ -8,7 +8,7 @@ Behaviour.specify(
         var text = copyButton.getAttribute("text");
         if (copyButton.hasAttribute("ref")) {
           var ref = copyButton.getAttribute("ref");
-          var target = document.querySelector("#" + ref);
+          var target = document.getElementById(ref);
           if (target) {
             text = target.innerText;
           }
