@@ -496,7 +496,7 @@ public class UpdateSite {
     /**
      *
      * @return the URL used by {@link jenkins.install.SetupWizard} for suggested plugins to install at setup time
-     * @since 2.445 (ish)
+     * @since TODO
      */
     @Exported
     public String getSuggestedPluginsUrl() {
