@@ -69,7 +69,6 @@ window.buildTimeTrend_displayBuilds = function (data) {
  */
 function generateSVGIcon(iconName) {
   const icons = document.querySelector("#jenkins-build-status-icons");
-  iconName = iconName.replace("-anime", "");
 
   return icons.content.querySelector(`#${iconName}`).cloneNode(true);
 }
