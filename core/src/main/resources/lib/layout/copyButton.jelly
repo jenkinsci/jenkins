@@ -28,7 +28,7 @@ THE SOFTWARE.
   <st:documentation>
     Button that copies text into the user's clipboard upon click, either <code>text</code> or <code>ref</code> is required.
 
-    <st:attribute name="text">
+    <st:attribute name="text" use="required">
       Text to be copied into the clipboard.
     </st:attribute>
     <st:attribute name="message">
@@ -43,7 +43,7 @@ THE SOFTWARE.
     <st:attribute name="clazz">
       Additional CSS class names
     </st:attribute>
-    <st:attribute name="ref">
+    <st:attribute name="ref" use="required">
       The id of the target element to be copied
     </st:attribute>
   </st:documentation>
