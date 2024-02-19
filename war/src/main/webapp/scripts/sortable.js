@@ -78,6 +78,13 @@ var Sortable = (function () {
         this.arrows.push(cell.firstElementChild.lastElementChild);
 
         var self = this;
+        if (cell.hasAttribute("tooltip")) {
+          cell.firstElementChild.setAttribute(
+            "tooltip",
+            cell.getAttribute("tooltip"),
+          );
+          cell.removeAttribute("tooltip");
+        }
         cell.firstElementChild.onclick = function () {
           self.onClicked(this);
           return false;
@@ -252,11 +259,11 @@ var Sortable = (function () {
       this.arrows.forEach(function (e, i) {
         // to check the columns with sort disabled
         if (e) {
-          e.parentNode.classList.remove('sortheader--up')
-          e.parentNode.classList.remove('sortheader--down')
+          e.parentNode.classList.remove("sortheader--up");
+          e.parentNode.classList.remove("sortheader--down");
 
           if (i === column) {
-            e.parentNode.classList.add('sortheader--' + dir.id)
+            e.parentNode.classList.add("sortheader--" + dir.id);
           }
 
           e.innerHTML = dir.text;

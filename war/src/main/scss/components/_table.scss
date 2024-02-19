@@ -45,19 +45,23 @@
 
         .sortheader {
           @include mixins.item;
-          padding: 0;
+
+          padding: 7px 0;
+          margin-block: -7px;
           color: var(--table-header-foreground);
           font-weight: inherit;
           font-size: inherit;
 
           &::before,
           &::after {
-            inset: -7px -10px;
+            inset: 0 -10px;
             pointer-events: all;
           }
 
-          &--up, &--down {
-            &::before, &::after {
+          &--up,
+          &--down {
+            &::before,
+            &::after {
               right: -30px;
             }
 
@@ -88,6 +92,12 @@
               height: 0.875rem;
               transition: 0.2s ease;
               opacity: 0.65;
+            }
+          }
+
+          &:hover {
+            svg {
+              opacity: 1 !important;
             }
           }
         }
@@ -184,7 +194,7 @@
   }
 
   &__link {
-  //.sortheader {
+    //.sortheader {
     display: inline-flex;
   }
 
