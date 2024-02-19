@@ -72,9 +72,9 @@ var Sortable = (function () {
          * Using the innerHTML will return the escaped content that could be reused directly within the wrapper.
          */
         cell.innerHTML =
-          '<a href="#" class="sortheader">' +
+          '<button class="sortheader">' +
           cell.innerHTML +
-          '<span class="sortarrow"></span></a>';
+          '<span class="sortarrow"></span></button>';
         this.arrows.push(cell.firstElementChild.lastElementChild);
 
         var self = this;
@@ -252,7 +252,14 @@ var Sortable = (function () {
       this.arrows.forEach(function (e, i) {
         // to check the columns with sort disabled
         if (e) {
-          e.innerHTML = (i == column ? dir : arrowTable.none).text;
+          e.parentNode.classList.remove('sortheader--up')
+          e.parentNode.classList.remove('sortheader--down')
+
+          if (i === column) {
+            e.parentNode.classList.add('sortheader--' + dir.id)
+          }
+
+          e.innerHTML = dir.text;
         }
       });
     },
@@ -307,11 +314,12 @@ var Sortable = (function () {
   var arrowTable = {
     up: {
       id: "up",
-      text: "&nbsp;&nbsp;&uarr;",
+      text: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="52" d="M112 268l144 144 144-144M256 392V100"/></svg>`,
+      // text: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="52" d="M112 244l144-144 144 144M256 120v292"/></svg>`,
     },
     down: {
       id: "down",
-      text: "&nbsp;&nbsp;&darr;",
+      text: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="52" d="M112 268l144 144 144-144M256 392V100"/></svg>`,
     },
     none: {
       id: "none",

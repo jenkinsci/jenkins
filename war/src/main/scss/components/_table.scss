@@ -43,12 +43,59 @@
           padding-right: var(--table-padding);
         }
 
-        a {
+        .sortheader {
+          @include mixins.item;
+
+          appearance: none;
+          background: none;
+          border: none;
+          outline: none;
+          padding: 0;
+          cursor: pointer;
           color: var(--table-header-foreground);
-          font-weight: 700;
+          font-weight: inherit;
+          font-size: inherit;
+          text-decoration: none !important;
+          line-height: 1 !important;
+
+          &::before,
+          &::after {
+            inset: -7px -10px;
+          }
+
+          &--up, &--down {
+            &::before, &::after {
+              right: -30px;
+            }
+
+            .sortarrow {
+              opacity: 1 !important;
+              scale: 1 !important;
+              translate: 5px 0 !important;
+            }
+          }
+
+          &--up {
+            .sortarrow {
+              rotate: 180deg;
+            }
+          }
 
           span.sortarrow {
-            width: 24px;
+            position: absolute;
+            width: 0.875rem;
+            height: 0.875rem;
+            transition: 0.2s ease;
+            opacity: 0;
+            scale: 0.5;
+            translate: -5px 0;
+
+            svg {
+              width: 0.875rem;
+              height: 0.875rem;
+              transition: 0.2s ease;
+              opacity: 0.65;
+            }
           }
         }
 
@@ -124,7 +171,7 @@
 
   &__cell--tight {
     padding-left: 0 !important;
-    text-align: right !important;
+    //text-align: right !important;
     white-space: nowrap;
     width: 4rem;
   }
@@ -143,8 +190,8 @@
     display: inline-flex;
   }
 
-  &__link,
-  .sortheader {
+  &__link {
+  //.sortheader {
     display: inline-flex;
   }
 
@@ -212,7 +259,7 @@
   }
 
   &__button,
-  .sortheader,
+  //.sortheader,
   &__link {
     @include mixins.item;
 
