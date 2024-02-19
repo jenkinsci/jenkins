@@ -60,6 +60,13 @@
   position: relative;
   z-index: 0;
   border-radius: 0.66rem;
+  appearance: none;
+  background: none;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  text-decoration: none !important;
+  line-height: 1 !important;
 
   &::before,
   &::after {

@@ -45,18 +45,10 @@
 
         .sortheader {
           @include mixins.item;
-
-          appearance: none;
-          background: none;
-          border: none;
-          outline: none;
           padding: 0;
-          cursor: pointer;
           color: var(--table-header-foreground);
           font-weight: inherit;
           font-size: inherit;
-          text-decoration: none !important;
-          line-height: 1 !important;
 
           &::before,
           &::after {
