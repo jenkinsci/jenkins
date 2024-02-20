@@ -22,9 +22,9 @@ function registerTooltip(element) {
   const tooltip = element.getAttribute("tooltip");
   const htmlTooltip = element.getAttribute("data-html-tooltip");
   if (
-    tooltip != null &&
-    tooltip.length > 0 &&
-    (htmlTooltip == null || htmlTooltip.length == 0)
+    tooltip !== null &&
+    tooltip.trim().length > 0 &&
+    (htmlTooltip === null || htmlTooltip.trim().length == 0)
   ) {
     tippy(
       element,
@@ -46,7 +46,7 @@ function registerTooltip(element) {
     );
   }
 
-  if (htmlTooltip != null && htmlTooltip.length > 0) {
+  if (htmlTooltip !== null && htmlTooltip.trim().length > 0) {
     tippy(
       element,
       Object.assign(
