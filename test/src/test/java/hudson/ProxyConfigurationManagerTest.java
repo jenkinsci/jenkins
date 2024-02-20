@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2013 Jesse Glick.
+ * Copyright 2024 CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,43 +22,29 @@
  * THE SOFTWARE.
  */
 
-package hudson.model;
+package hudson;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertNotNull;
 
-import org.htmlunit.html.DomElement;
-import org.htmlunit.html.HtmlPage;
 import org.junit.Rule;
 import org.junit.Test;
-import org.jvnet.hudson.test.For;
-import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.recipes.LocalData;
 
-@For(View.AsynchPeople.class)
-public class AsynchPeopleTest {
+public class ProxyConfigurationManagerTest {
 
-    @Rule public JenkinsRule j = new JenkinsRule();
+    @Rule public JenkinsRule r = new JenkinsRule();
 
-    @Issue("JENKINS-18641")
-    @Test public void display() throws Exception {
-        User.getById("bob", true);
-        JenkinsRule.WebClient wc = j.createWebClient();
-
-        HtmlPage page = wc.goTo("asynchPeople");
-        assertEquals(0, wc.waitForBackgroundJavaScript(120000));
-        boolean found = false;
-        for (DomElement div : page.getElementsByTagName("div")) {
-            if (div.getAttribute("class").contains("app-progress-bar")) {
-                found = true;
-                assertEquals("display: none;", div.getAttribute("style"));
-                break;
-            }
-        }
-        assertTrue(found);
-        /* TODO this still fails occasionally, for reasons TBD (I think because User.getAll sometimes is empty):
-        assertNotNull(page.getElementById("person-bob"));
+    @LocalData
+    @Test public void serialForm() throws Exception {
+        /* Set up this way:
+        r.jenkins.proxy = new ProxyConfiguration("proxy.mycorp", 80);
+        r.jenkins.proxy.save();
         */
+        ProxyConfiguration pc = r.jenkins.proxy;
+        assertNotNull(pc);
+        assertEquals("proxy.mycorp", pc.name);
     }
 
 }

@@ -612,9 +612,10 @@ function geval(script) {
 // eslint-disable-next-line no-unused-vars
 function fireEvent(element, event) {
   return !element.dispatchEvent(
-    new Event(event, {
+    new CustomEvent(event, {
       bubbles: true,
       cancelable: true,
+      detail: element,
     }),
   );
 }
@@ -1228,7 +1229,7 @@ function rowvgStartEachRow(recursive, f) {
   });
 
   Behaviour.specify(
-    "TABLE.progress-bar",
+    "TABLE.progress-bar, div.app-progress-bar",
     "table-progress-bar",
     ++p,
     function (e) {
