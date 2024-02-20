@@ -58,7 +58,7 @@ THE SOFTWARE.
 	    </j:choose>
 	  <j:if test="${!item.params.isEmpty()}">
 	    <div style="float:right;margin-right:10px;">
-	      <a href="#" tooltip="Build Parameters:${item.params}"><l:icon class="icon-notepad icon-sm" /></a>
+	      <l:icon src="symbol-parameters" class="icon-sm" tooltip="Build Parameters:${item.params}"/>
 	    </div>
 	  </j:if>
 	  </div>
