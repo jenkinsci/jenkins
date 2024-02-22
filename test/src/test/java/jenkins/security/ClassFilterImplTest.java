@@ -47,6 +47,7 @@ import hudson.model.Result;
 import hudson.model.Saveable;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Builder;
+import hudson.util.XStream2;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -152,7 +153,7 @@ public class ClassFilterImplTest {
         config.save();
         assertThat(config.getConfigFile().asString(), not(containsString("LinkedListMultimap")));
         config.unrelated = "modified";
-        Files.writeString(config.getConfigFile().getFile().toPath(), new XStream().toXML(config), StandardCharsets.UTF_8);
+        Files.writeString(config.getConfigFile().getFile().toPath(), new XStream(XStream2.getDefaultDriver()).toXML(config), StandardCharsets.UTF_8);
         assertThat(config.getConfigFile().asString(), allOf(containsString("LinkedListMultimap"), containsString("modified")));
         config.obj = null;
         config.unrelated = null;

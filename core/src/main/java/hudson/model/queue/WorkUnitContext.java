@@ -190,6 +190,7 @@ public final class WorkUnitContext {
                         }
                     }
                 }
+                future.finished();
             }
         }
     }

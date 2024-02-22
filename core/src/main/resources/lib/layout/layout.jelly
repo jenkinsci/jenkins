@@ -123,10 +123,6 @@ THE SOFTWARE.
     <link rel="mask-icon" href="${resURL}/mask-icon.svg" color="#191717" />
     <meta name="theme-color" content="#ffffff" />
 
-    <l:userExperimentalFlag var="removePrototype" flagClassName="jenkins.model.experimentalflags.RemovePrototypeUserExperimentalFlag" />
-    <j:if test="${!removePrototype}">
-      <script src="${resURL}/scripts/prototype.js" type="text/javascript"/>
-    </j:if>
     <script src="${resURL}/scripts/behavior.js" type="text/javascript"/>
 
     <st:adjunct includes="org.kohsuke.stapler.bind"/>
@@ -196,16 +192,8 @@ THE SOFTWARE.
 
     <div id="page-body" class="app-page-body app-page-body--${layoutType} clear">
       <j:if test="${layoutType=='two-column'}">
-        <div id="side-panel" class="app-page-body__sidebar">
-          <j:set var="mode" value="side-panel" />
-          <d:invokeBody />
-
-          <!-- add YUI logger if debugging YUI -->
-          <j:if test="${h.yuiSuffix=='debug'}">
-          <!-- script to transform this into the Logger Console is done in hudson-behavior.js -->
-          <div id="yui-logreader" style="margin-top:1em"/>
-          </j:if>
-        </div>
+        <j:set var="mode" value="side-panel" />
+        <d:invokeBody />
       </j:if>
       <div id="main-panel">
         <j:set var="mode" value="main-panel" />

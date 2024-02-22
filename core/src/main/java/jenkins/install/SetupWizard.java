@@ -29,6 +29,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.HttpRetryException;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
@@ -552,8 +553,7 @@ public class SetupWizard extends PageDecorator {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         JSONArray initialPluginList = null;
         updateSiteList: for (UpdateSite updateSite : Jenkins.get().getUpdateCenter().getSiteList()) {
-            String updateCenterJsonUrl = updateSite.getUrl();
-            String suggestedPluginUrl = updateCenterJsonUrl.replace("/update-center.json", "/platform-plugins.json");
+            String suggestedPluginUrl = updateSite.getSuggestedPluginsUrl();
             VersionNumber version = Jenkins.getVersion();
             if (version != null && (suggestedPluginUrl.startsWith("https://") || suggestedPluginUrl.startsWith("http://"))) {
                 // Allow remote update site to distinguish based on the current version
@@ -561,7 +561,7 @@ public class SetupWizard extends PageDecorator {
                 suggestedPluginUrl = suggestedPluginUrl + (suggestedPluginUrl.contains("?") ? "&" : "?") + "version=" + version;
             }
             try {
-                URLConnection connection = ProxyConfiguration.open(new URL(suggestedPluginUrl));
+                URLConnection connection = ProxyConfiguration.open(new URI(suggestedPluginUrl).toURL());
 
                 try {
                     String initialPluginJson = IOUtils.toString(connection.getInputStream(), StandardCharsets.UTF_8);

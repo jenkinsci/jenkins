@@ -73,7 +73,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.UncheckedIOException;
-import java.net.URL;
+import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.util.ArrayList;
@@ -402,6 +402,7 @@ public class ProjectTest {
         QueueTaskFuture<FreeStyleBuild> b3 = waitForStart(p);
         assertThat("Build can not start because build of upstream project has not finished.", downstream.getCauseOfBlockage(), instanceOf(BecauseOfUpstreamBuildInProgress.class));
         b3.get();
+        assertTrue(j.jenkins.getQueue().cancel(downstream));
     }
 
     private static final Logger LOGGER = Logger.getLogger(ProjectTest.class.getName());
@@ -617,7 +618,7 @@ public class ProjectTest {
 
         JenkinsRule.WebClient wc = j.createWebClient();
         wc.withBasicCredentials(user.getId(), "password");
-        WebRequest request = new WebRequest(new URL(wc.getContextPath() + project.getUrl() + "doWipeOutWorkspace"), HttpMethod.POST);
+        WebRequest request = new WebRequest(new URI(wc.getContextPath() + project.getUrl() + "doWipeOutWorkspace").toURL(), HttpMethod.POST);
         HtmlPage p = wc.getPage(request);
         assertEquals(200, p.getWebResponse().getStatusCode());
 
@@ -713,6 +714,7 @@ public class ProjectTest {
         Thread.sleep(1000);
         //Assert that the job IS submitted to Queue.
         assertEquals(1, j.jenkins.getQueue().getItems().length);
+        assertTrue(j.jenkins.getQueue().cancel(proj));
     }
 
     /**
@@ -785,6 +787,7 @@ public class ProjectTest {
         Thread.sleep(1000);
         //The job should be in queue
         assertEquals(1, j.jenkins.getQueue().getItems().length);
+        assertTrue(j.jenkins.getQueue().cancel(proj));
     }
 
     @Issue("JENKINS-22750")
@@ -806,7 +809,8 @@ public class ProjectTest {
         t.new Runner().run();
 
 
-        assertFalse(j.jenkins.getQueue().isEmpty());
+        assertEquals(1, j.jenkins.getQueue().getItems().length);
+        assertTrue(j.jenkins.getQueue().cancel(proj));
     }
 
     public static class TransientAction extends InvisibleAction{

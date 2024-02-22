@@ -28,8 +28,6 @@ import static hudson.init.InitMilestone.COMPLETED;
 import static hudson.init.InitMilestone.PLUGINS_LISTED;
 import static hudson.init.InitMilestone.PLUGINS_PREPARED;
 import static hudson.init.InitMilestone.PLUGINS_STARTED;
-import static java.nio.file.attribute.PosixFilePermission.OWNER_READ;
-import static java.nio.file.attribute.PosixFilePermission.OWNER_WRITE;
 import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.INFO;
 import static java.util.logging.Level.WARNING;
@@ -83,7 +81,6 @@ import java.net.URLClassLoader;
 import java.net.URLConnection;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
-import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Paths;
@@ -91,10 +88,8 @@ import java.nio.file.attribute.FileTime;
 import java.security.CodeSource;
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -511,8 +506,10 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
                                         // obtain topologically sorted list and overwrite the list
                                         for (PluginWrapper p : cgd.getSorted()) {
-                                            if (p.isActive())
+                                            if (p.isActive()) {
                                                 activePlugins.add(p);
+                                                ((UberClassLoader) uberClassLoader).clearCacheMisses();
+                                            }
                                         }
                                     } catch (CycleDetectedException e) { // TODO this should be impossible, since we override reactOnCycle to not throw the exception
                                         stop(); // disable all plugins since classloading from them can lead to StackOverflow
@@ -937,9 +934,10 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             // so existing plugins can't be depending on this newly deployed one.
 
             plugins.add(p);
-            if (p.isActive())
+            if (p.isActive()) {
                 activePlugins.add(p);
-            ((UberClassLoader) uberClassLoader).loaded.clear();
+                ((UberClassLoader) uberClassLoader).clearCacheMisses();
+            }
 
             // TODO antimodular; perhaps should have a PluginListener to complement ExtensionListListener?
             CustomClassFilter.Contributed.load();
@@ -1805,13 +1803,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         jenkins.checkPermission(Jenkins.ADMINISTER);
 
         ProxyConfiguration pc = req.bindJSON(ProxyConfiguration.class, req.getSubmittedForm());
-        if (pc.name == null) {
-            jenkins.proxy = null;
-            ProxyConfiguration.getXmlFile().delete();
-        } else {
-            jenkins.proxy = pc;
-            jenkins.proxy.save();
-        }
+        ProxyConfigurationManager.saveProxyConfiguration(pc);
         return new HttpRedirect("advanced");
     }
 
@@ -1883,16 +1875,6 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                 copier = new FileUploadPluginCopier(fileItem);
             }
 
-            if (FileSystems.getDefault().supportedFileAttributeViews().contains("posix")) {
-                Arrays.stream(Objects.requireNonNull(tmpDir.listFiles())).forEach((file -> {
-                    try {
-                        Files.setPosixFilePermissions(file.toPath(), EnumSet.of(OWNER_READ, OWNER_WRITE));
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                }));
-            }
-
             if ("".equals(fileName)) {
                 return new HttpRedirect("advanced");
             }
@@ -1902,7 +1884,8 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             }
 
             // first copy into a temporary file name
-            File t = File.createTempFile("uploaded", ".jpi");
+            File t = File.createTempFile("uploaded", ".jpi", tmpDir);
+            tmpDir.deleteOnExit();
             t.deleteOnExit();
             // TODO Remove this workaround after FILEUPLOAD-293 is resolved.
             Files.delete(Util.fileToPath(t));
@@ -1913,9 +1896,6 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                 throw new ServletException(e);
             }
             copier.cleanup();
-            if (!tmpDir.delete()) {
-                System.err.println("Failed to delete temporary directory: " + tmpDir);
-            }
 
             final String baseName = identifyPluginShortName(t);
 
@@ -2400,6 +2380,10 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                 }
             }
             return Collections.enumeration(resources);
+        }
+
+        void clearCacheMisses() {
+            loaded.values().removeIf(Optional::isEmpty);
         }
 
         @Override

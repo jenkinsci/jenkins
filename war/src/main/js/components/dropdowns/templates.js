@@ -38,9 +38,11 @@ function menuItem(options) {
   const label = xmlEscape(itemOptions.label);
   let badgeText;
   let badgeTooltip;
+  let badgeSeverity;
   if (itemOptions.badge) {
     badgeText = xmlEscape(itemOptions.badge.text);
     badgeTooltip = xmlEscape(itemOptions.badge.tooltip);
+    badgeSeverity = xmlEscape(itemOptions.badge.severity);
   }
   const tag = itemOptions.type === "link" ? "a" : "button";
 
@@ -58,7 +60,7 @@ function menuItem(options) {
           ${label}
                     ${
                       itemOptions.badge != null
-                        ? `<span class="jenkins-dropdown__item__badge" tooltip="${badgeTooltip}">${badgeText}</span>`
+                        ? `<span class="jenkins-dropdown__item__badge jenkins-badge alert-${badgeSeverity}" tooltip="${badgeTooltip}">${badgeText}</span>`
                         : ``
                     }
           ${
@@ -70,7 +72,7 @@ function menuItem(options) {
     `);
 
   if (options.onClick) {
-    item.addEventListener("click", () => options.onClick());
+    item.addEventListener("click", (event) => options.onClick(event));
   }
 
   return item;
@@ -94,10 +96,17 @@ function placeholder(label) {
   );
 }
 
+function disabled(label) {
+  return createElementFromHtml(
+    `<p class="jenkins-dropdown__disabled">${label}</p>`,
+  );
+}
+
 export default {
   dropdown,
   menuItem,
   heading,
   separator,
   placeholder,
+  disabled,
 };

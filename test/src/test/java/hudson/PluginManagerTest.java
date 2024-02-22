@@ -24,9 +24,13 @@
 
 package hudson;
 
+import static java.nio.file.attribute.PosixFilePermission.OWNER_EXECUTE;
 import static java.nio.file.attribute.PosixFilePermission.OWNER_READ;
 import static java.nio.file.attribute.PosixFilePermission.OWNER_WRITE;
 import static org.awaitility.Awaitility.await;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -173,7 +177,7 @@ public class PluginManagerTest {
         }
 
         public void doDynamic(StaplerRequest staplerRequest, StaplerResponse staplerResponse) throws ServletException, IOException {
-            staplerResponse.setContentType("application/octet");
+            staplerResponse.setContentType("application/octet-stream");
             staplerResponse.setStatus(200);
             staplerResponse.serveFile(staplerRequest,  PluginManagerTest.class.getClassLoader().getResource("plugins/htmlpublisher.jpi"));
         }
@@ -487,7 +491,7 @@ public class PluginManagerTest {
         // Check that the basic API endpoint invocation works.
         assertEquals("ok", response.getString("status"));
         JSONArray data = response.getJSONArray("data");
-        assertTrue(data.size() > 0);
+        assertThat(data, not(empty()));
 
         // Check that there was some data in the response and that the first entry
         // at least had some of the expected fields.
@@ -563,7 +567,7 @@ public class PluginManagerTest {
         f.getInputByName("name").setValue(plugin.getAbsolutePath());
         r.submit(f);
 
-        assertTrue(r.jenkins.getUpdateCenter().getJobs().size() > 0);
+        assertThat(r.jenkins.getUpdateCenter().getJobs(), not(empty()));
 
         // wait for all the download jobs to complete
         boolean done = true;
@@ -743,24 +747,34 @@ public class PluginManagerTest {
         File dir = tmp.newFolder();
         File plugin = new File(dir, "htmlpublisher.jpi");
         FileUtils.copyURLToFile(Objects.requireNonNull(getClass().getClassLoader().getResource("plugins/htmlpublisher.jpi")), plugin);
-        f.getInputByName("name").setValue(plugin.getAbsolutePath());
+        f.getInputByName("name").setValueAttribute(plugin.getAbsolutePath());
         r.submit(f);
 
-        File tmpDir = new File(File.createTempFile("tmp", ".tmp").getParent());
-        tmpDir.deleteOnExit();
+        File filesRef = Files.createTempFile("tmp", ".tmp").toFile();
+        File filesTmpDir = filesRef.getParentFile();
+        filesRef.deleteOnExit();
+
         final Set<PosixFilePermission>[] filesPermission = new Set[]{new HashSet<>()};
         await().pollInterval(250, TimeUnit.MILLISECONDS)
                 .atMost(10, TimeUnit.SECONDS)
                 .until(() -> {
-                    Optional<File> lastUploadedPlugin = Arrays.stream(Objects.requireNonNull(tmpDir.listFiles((file, fileName) -> fileName.startsWith("uploaded")))).max(Comparator.comparingLong(File::lastModified));
-                    if (lastUploadedPlugin.isPresent()) {
-                        filesPermission[0] = Files.getPosixFilePermissions(lastUploadedPlugin.get().toPath(), LinkOption.NOFOLLOW_LINKS);
+                    Optional<File> lastUploadedPluginDir = Arrays.stream(Objects.requireNonNull(
+                                    filesTmpDir.listFiles((file, fileName) ->
+                                            fileName.startsWith("uploadDir")))).
+                            max(Comparator.comparingLong(File::lastModified));
+                    if (lastUploadedPluginDir.isPresent()) {
+                        filesPermission[0] = Files.getPosixFilePermissions(lastUploadedPluginDir.get().toPath(), LinkOption.NOFOLLOW_LINKS);
+                        Optional<File> pluginFile = Arrays.stream(Objects.requireNonNull(
+                                        lastUploadedPluginDir.get().listFiles((file, fileName) ->
+                                                fileName.startsWith("uploaded")))).
+                                max(Comparator.comparingLong(File::lastModified));
+                        assertTrue(pluginFile.isPresent());
                         return true;
                     } else {
                         return false;
                     }
                 });
-        assertEquals(EnumSet.of(OWNER_READ, OWNER_WRITE), filesPermission[0]);
+        assertEquals(EnumSet.of(OWNER_EXECUTE, OWNER_READ, OWNER_WRITE), filesPermission[0]);
     }
 
     @Test
@@ -780,7 +794,7 @@ public class PluginManagerTest {
             PluginManagerUtil.getCheckForUpdatesButton(p).click();
             HtmlPage available = wc.goTo("pluginManager/available");
             assertTrue(available.querySelector(".alert-danger")
-                    .getTextContent().contains("This plugin is built for Jenkins 2.999"));
+                    .getTextContent().contains("This plugin is built for Jenkins 9999999"));
             wc.waitForBackgroundJavaScript(100);
 
             HtmlAnchor anchor = available.querySelector(".jenkins-table__link");
@@ -788,6 +802,43 @@ public class PluginManagerTest {
             wc.waitForBackgroundJavaScript(100);
             assertTrue(alertHandler.messages.isEmpty());
         }
+    }
+
+    @Test
+    @Issue("SECURITY-3072")
+    public void verifyUploadedPluginFromURLPermission() throws Exception {
+        assumeFalse(Functions.isWindows());
+
+        HtmlPage page = r.createWebClient().goTo("pluginManager/advanced");
+        HtmlForm f = page.getFormByName("uploadPlugin");
+        f.getInputByName("pluginUrl").setValue(Jenkins.get().getRootUrl() + "pluginManagerGetPlugin/htmlpublisher.jpi");
+        r.submit(f);
+
+        File filesRef = Files.createTempFile("tmp", ".tmp").toFile();
+        File filesTmpDir = filesRef.getParentFile();
+        filesRef.deleteOnExit();
+
+        final Set<PosixFilePermission>[] filesPermission = new Set[]{new HashSet<>()};
+        await().pollInterval(250, TimeUnit.MILLISECONDS)
+                .atMost(10, TimeUnit.SECONDS)
+                .until(() -> {
+                    Optional<File> lastUploadedPluginDir = Arrays.stream(Objects.requireNonNull(
+                                    filesTmpDir.listFiles((file, fileName) ->
+                                            fileName.startsWith("uploadDir")))).
+                            max(Comparator.comparingLong(File::lastModified));
+                    if (lastUploadedPluginDir.isPresent()) {
+                        filesPermission[0] = Files.getPosixFilePermissions(lastUploadedPluginDir.get().toPath(), LinkOption.NOFOLLOW_LINKS);
+                        Optional<File> pluginFile = Arrays.stream(Objects.requireNonNull(
+                                        lastUploadedPluginDir.get().listFiles((file, fileName) ->
+                                                fileName.startsWith("uploaded")))).
+                                max(Comparator.comparingLong(File::lastModified));
+                        assertTrue(pluginFile.isPresent());
+                        return true;
+                    } else {
+                        return false;
+                    }
+                });
+        assertEquals(EnumSet.of(OWNER_EXECUTE, OWNER_READ, OWNER_WRITE), filesPermission[0]);
     }
 
     static class AlertHandlerImpl implements AlertHandler {
@@ -821,6 +872,31 @@ public class PluginManagerTest {
             staplerResponse.setContentType("application/json");
             staplerResponse.setStatus(200);
             staplerResponse.serveFile(staplerRequest, PluginManagerTest.class.getResource("/plugins/security3037-update-center.json"));
+        }
+    }
+
+    @TestExtension("verifyUploadedPluginFromURLPermission")
+    public static final class Security3072JpiAction implements RootAction {
+
+        @Override
+        public String getIconFileName() {
+            return "gear2.png";
+        }
+
+        @Override
+        public String getDisplayName() {
+            return "URL to retrieve a plugin jpi";
+        }
+
+        @Override
+        public String getUrlName() {
+            return "pluginManagerGetPlugin";
+        }
+
+        public void doDynamic(StaplerRequest staplerRequest, StaplerResponse staplerResponse) throws ServletException, IOException {
+            staplerResponse.setContentType("application/octet-stream");
+            staplerResponse.setStatus(200);
+            staplerResponse.serveFile(staplerRequest,  PluginManagerTest.class.getClassLoader().getResource("plugins/htmlpublisher.jpi"));
         }
     }
 

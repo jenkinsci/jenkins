@@ -25,6 +25,7 @@
 package hudson.node_monitors;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.model.Computer;
 import hudson.remoting.Callable;
@@ -33,8 +34,8 @@ import java.io.Serializable;
 import java.util.Map;
 import java.util.logging.Logger;
 import jenkins.security.MasterToSlaveCallable;
-import net.sf.json.JSONObject;
-import org.kohsuke.stapler.StaplerRequest;
+import org.jenkinsci.Symbol;
+import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
@@ -44,8 +45,22 @@ import org.kohsuke.stapler.export.ExportedBean;
  * @author Kohsuke Kawaguchi
  */
 public class ResponseTimeMonitor extends NodeMonitor {
+
+    @DataBoundConstructor
+    public ResponseTimeMonitor() {
+    }
+
+    @SuppressFBWarnings(value = "MS_PKGPROTECT", justification = "for backward compatibility")
+    public static /*almost final*/ AbstractNodeMonitorDescriptor<Data> DESCRIPTOR;
+
     @Extension
-    public static final AbstractNodeMonitorDescriptor<Data> DESCRIPTOR = new AbstractAsyncNodeMonitorDescriptor<>() {
+    @Symbol("responseTime")
+    public static class DescriptorImpl extends AbstractAsyncNodeMonitorDescriptor<Data> {
+
+        @SuppressFBWarnings(value = "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD", justification = "for backward compatibility")
+        public DescriptorImpl() {
+            DESCRIPTOR = this;
+        }
 
         @Override
         protected Callable<Data, IOException> createCallable(Computer c) {
@@ -86,12 +101,7 @@ public class ResponseTimeMonitor extends NodeMonitor {
         public String getDisplayName() {
             return Messages.ResponseTimeMonitor_DisplayName();
         }
-
-        @Override
-        public NodeMonitor newInstance(StaplerRequest req, JSONObject formData) throws FormException {
-            return new ResponseTimeMonitor();
-        }
-    };
+    }
 
     private static final class Step1 extends MasterToSlaveCallable<Data, IOException> {
         private Data cur;
