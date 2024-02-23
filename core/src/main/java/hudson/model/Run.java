@@ -364,8 +364,7 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      */
     public void reload() throws IOException {
         this.state = State.COMPLETED;
-        // TODO ABORTED would perhaps make more sense than FAILURE:
-        this.result = Result.FAILURE;  // defensive measure. value should be overwritten by unmarshal, but just in case the saved data is inconsistent
+        this.result = Result.ABORTED;  // defensive measure. value should be overwritten by unmarshal, but just in case the saved data is inconsistent
         getDataFile().unmarshal(this); // load the rest of the data
 
         if (state == State.COMPLETED) {
