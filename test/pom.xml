@@ -113,6 +113,11 @@ THE SOFTWARE.
         <version>1291.v51fd2a_625da_7</version>
       </dependency>
       <dependency>
+        <groupId>org.jenkins-ci.plugins.workflow</groupId>
+        <artifactId>workflow-step-api</artifactId>
+        <version>657.v03b_e8115821b_</version>
+      </dependency>
+      <dependency>
         <!-- Required by plugin-util-api -->
         <groupId>org.jenkins-ci.plugins.workflow</groupId>
         <artifactId>workflow-support</artifactId>
