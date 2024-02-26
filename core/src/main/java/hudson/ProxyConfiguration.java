@@ -168,7 +168,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
     }
 
     public String getUserName() {
-        return Util.fixEmptyAndTrim(userName);
+        return userName;
     }
 
     public Secret getSecretPassword() {
@@ -290,6 +290,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
             secretPassword = Secret.fromString(Scrambler.descramble(password));
         password = null;
         authenticator = newAuthenticator();
+        userName = Util.fixEmptyAndTrim(userName);
         return this;
     }
 
