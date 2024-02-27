@@ -163,6 +163,10 @@ pre {
   }
 }
 
+pre.jenkins-readonly {
+  margin-bottom: 0 !important;
+}
+
 pre.console {
   overflow: auto;
 }
@@ -498,7 +502,7 @@ div.listview-jobs {
     }
 
     td {
-      padding: 8px;
+      padding: 0 8px 8px;
     }
   }
 
@@ -593,7 +597,7 @@ div.listview-jobs {
 
 .build-row-cell .pane.build-name {
   width: 25%;
-  font-weight: bold;
+  font-weight: 500;
   vertical-align: top;
 }
 
@@ -866,13 +870,22 @@ table.progress-bar.red td.progress-bar-done {
 
 /* Unknown */
 
+[data-symbol-animation] {
+  animation: spin 1s linear infinite;
+  transform-origin: center;
+
+  @media (prefers-reduced-motion) {
+    animation-duration: 3s;
+  }
+}
+
 @keyframes spin {
   from {
-    transform: rotate(0deg) translateZ(0);
+    transform: rotate(0deg);
   }
 
   to {
-    transform: rotate(360deg) translateZ(0);
+    transform: rotate(360deg);
   }
 }
 

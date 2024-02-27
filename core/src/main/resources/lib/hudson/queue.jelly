@@ -93,7 +93,7 @@ THE SOFTWARE.
             </td>
             <td class="pane" width="16" align="center" valign="middle">
               <j:if test="${item.hasCancelPermission()}">
-                <l:stopButton href="${rootURL}/queue/cancelItem?id=${item.id}" confirm="${%confirm(item.displayName)}" alt="${%cancel this build}"/>
+                <l:stopButton href="${rootURL}/queue/cancelItem?id=${item.id}" confirm="${%confirm(item.displayName)}" alt="${%Cancel this build}"/>
               </j:if>
              </td>
           </tr>

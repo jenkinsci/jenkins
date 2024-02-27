@@ -109,13 +109,16 @@ public class ValidateButtonTest {
 
             public void doValidateTest1(@QueryParameter("a") String a, @QueryParameter("b") boolean b,
                                         @QueryParameter("c") boolean c, @QueryParameter("d") String d,
-                                        @QueryParameter("e") String e) {
+                                        @QueryParameter("e") String e,
+                                        @QueryParameter("f") String f
+                                        ) {
                 try {
                     assertEquals("avalue", a);
                     assertTrue(b);
                     assertFalse(c);
                     assertEquals("dvalue", d);
                     assertEquals("e2", e);
+                    assertEquals("f", f);
                     test1Outcome = null;
                 } catch (RuntimeException t) {
                     test1Outcome = t;

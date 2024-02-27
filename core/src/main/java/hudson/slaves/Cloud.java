@@ -263,7 +263,7 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
         return Jenkins.get().getDescriptorList(Cloud.class);
     }
 
-    private static final PermissionScope PERMISSION_SCOPE = new PermissionScope(Cloud.class);
+    private static final PermissionScope PERMISSION_SCOPE = new PermissionScope(Cloud.class, PermissionScope.JENKINS);
 
     /**
      * Permission constant to control mutation operations on {@link Cloud}.
@@ -331,7 +331,8 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
         j.clouds.replace(this, result);
         j.save();
         // take the user back to the cloud top page.
-        return FormApply.success(".");
+        return FormApply.success("../" + result.name + '/');
+
     }
 
     public Cloud reconfigure(@NonNull final StaplerRequest req, JSONObject form) throws Descriptor.FormException {

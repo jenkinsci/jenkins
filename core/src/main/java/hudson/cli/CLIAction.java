@@ -49,8 +49,10 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 import jenkins.model.Jenkins;
 import jenkins.util.FullDuplexHttpService;
+import jenkins.util.SystemProperties;
 import jenkins.websocket.WebSocketSession;
 import jenkins.websocket.WebSockets;
+import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -72,6 +74,12 @@ import org.springframework.security.core.Authentication;
 public class CLIAction implements UnprotectedRootAction, StaplerProxy {
 
     private static final Logger LOGGER = Logger.getLogger(CLIAction.class.getName());
+
+    /**
+     * Boolean values map to allowing/disallowing WS CLI endpoint always, {@code null} is the default of doing an {@code Origin} check.
+     * {@code true} is only advisable if anonymous users have no permissions, and Jenkins sends SameSite=Lax cookies (or browsers use that as the implicit default).
+     */
+    /* package-private for testing */ static /* non-final for Script Console */ Boolean ALLOW_WEBSOCKET = SystemProperties.optBoolean(CLIAction.class.getName() + ".ALLOW_WEBSOCKET");
 
     private final transient Map<UUID, FullDuplexHttpService> duplexServices = new HashMap<>();
 
@@ -114,9 +122,20 @@ public class CLIAction implements UnprotectedRootAction, StaplerProxy {
     /**
      * WebSocket endpoint.
      */
-    public HttpResponse doWs() {
+    public HttpResponse doWs(StaplerRequest req) {
         if (!WebSockets.isSupported()) {
             return HttpResponses.notFound();
+        }
+        if (ALLOW_WEBSOCKET == null) {
+            final String actualOrigin = req.getHeader("Origin");
+            final String expectedOrigin = StringUtils.removeEnd(StringUtils.removeEnd(Jenkins.get().getRootUrlFromRequest(), "/"), req.getContextPath());
+
+            if (actualOrigin == null || !actualOrigin.equals(expectedOrigin)) {
+                LOGGER.log(Level.FINE, () -> "Rejecting origin: " + actualOrigin + "; expected was from request: " + expectedOrigin);
+                return HttpResponses.forbidden();
+            }
+        } else if (!ALLOW_WEBSOCKET) {
+            return HttpResponses.forbidden();
         }
         Authentication authentication = Jenkins.getAuthentication2();
         return WebSockets.upgrade(new WebSocketSession() {

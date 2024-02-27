@@ -1,0 +1,22 @@
+<div>
+  This monitors the available virtual memory (also known as
+  <code>swap space</code>
+  ).
+  <p>The exact definition of swap space is platform dependent.</p>
+  <ul>
+    <li>
+      On Windows this is the available space of the page file. As Windows can
+      automatically increase the page file size, this value doesn't mean much.
+    </li>
+    <li>
+      On Linux this value is retrieved from
+      <code>/proc/meminfo</code>
+      .
+    </li>
+    <li>
+      For other Unix systems, the value is obtained from the
+      <code>top</code>
+      command.
+    </li>
+  </ul>
+</div>
