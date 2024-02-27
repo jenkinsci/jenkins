@@ -27,14 +27,14 @@ package org.acegisecurity.util;
 import java.lang.reflect.Field;
 
 /**
- * @deprecated use {@link org.apache.commons.lang.reflect.FieldUtils}
+ * @deprecated use {@link org.apache.commons.lang3.reflect.FieldUtils}
  */
 @Deprecated
 public final class FieldUtils {
 
     public static Object getProtectedFieldValue(String protectedField, Object object) {
         try {
-            return org.apache.commons.lang.reflect.FieldUtils.readField(object, protectedField, true);
+            return org.apache.commons.lang3.reflect.FieldUtils.readField(object, protectedField, true);
         } catch (IllegalAccessException x) {
             throw new RuntimeException(x);
         }
@@ -46,7 +46,7 @@ public final class FieldUtils {
             // FieldUtils.writeField(Object, field, true) only sets accessible on *non* public fields
             // and then fails with IllegalAccessException (even if you make the field accessible in the interim!
             // for backwards compatability we need to use a few steps
-            Field field = org.apache.commons.lang.reflect.FieldUtils.getField(object.getClass(), protectedField, true);
+            Field field = org.apache.commons.lang3.reflect.FieldUtils.getField(object.getClass(), protectedField, true);
             field.setAccessible(true);
             field.set(object, newValue);
         } catch (Exception x) {
