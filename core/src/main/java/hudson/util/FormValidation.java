@@ -28,6 +28,7 @@ import static hudson.Functions.jsStringEscape;
 import static hudson.Util.singleQuote;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.FilePath;
 import hudson.Functions;
 import hudson.Launcher;
@@ -225,6 +226,7 @@ public abstract class FormValidation extends IOException implements HttpResponse
      * @return Validation of the least successful kind aggregating all child messages.
      * @since 1.590
      */
+    @SuppressFBWarnings(value = "POTENTIAL_XML_INJECTION", justification = "intentional; caller's responsibility to escape HTML")
     public static @NonNull FormValidation aggregate(@NonNull Collection<FormValidation> validations) {
         if (validations == null || validations.isEmpty()) return FormValidation.ok();
 
