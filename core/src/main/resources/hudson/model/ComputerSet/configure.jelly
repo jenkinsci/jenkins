@@ -40,7 +40,10 @@ THE SOFTWARE.
       <div class="jenkins-description">${%description}</div>
 
       <f:form method="post" action="configSubmit" name="config">
-        <f:descriptorList title="${%Preventive Node Monitoring}" descriptors="${it.nodeMonitorDescriptors}" instances="${it.nonIgnoredMonitors}" />
+        <f:descriptorList title="${%Preventive Node Monitoring}"
+                          descriptors="${it.nodeMonitorDescriptors}"
+                          instances="${it.monitors}"
+                          forceRowSet="true"/>
 
         <l:hasAdministerOrManage>
           <f:bottomButtonBar>

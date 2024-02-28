@@ -26,22 +26,23 @@ THE SOFTWARE.
   2nd page in the "new slave" page for displaying the entire configuration entries for the selected job type.
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
+         xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <l:layout permission="${it.CREATE}" type="one-column">
     <l:main-panel>
       <f:form method="post" action="doCreateItem" name="config" class="jenkins-form">
         <f:entry title="${%Name}" help="${requestScope.descriptor.getHelpFile('name')}">
-          <f:textbox name="name" value="${request.getParameter('name')}" clazz="required" checkMessage="${%Name is mandatory}" />
+          <f:textbox name="name" value="${request.getParameter('name')}" clazz="required" checkMessage="${%Name is mandatory}"/>
         </f:entry>
 
         <!-- main body of the configuration -->
         <j:set var="it" value="${null}" />
         <st:include class="${requestScope.descriptor.clazz}" page="configure-entries.jelly" />
-
+        
         <f:bottomButtonBar>
-          <input type="hidden" name="type" value="${request.getParameter('mode')}" />
+          <input type="hidden" name="type" value="${request.getParameter('mode')}"/>
 
-          <f:submit value="${%Save}" />
+          <f:submit value="${%Save}"/>
         </f:bottomButtonBar>
       </f:form>
       <st:adjunct includes="lib.form.confirm" />

@@ -27,8 +27,13 @@ THE SOFTWARE.
   <st:documentation>
     A listbox for choosing the agent's usage.
 
-    <st:attribute name="name"><![CDATA[ Name of the <select> element. ]]></st:attribute>
-    <st:attribute name="node">Node object.</st:attribute>
+    <st:attribute name="name"> <![CDATA[
+      Name of the <select> element.
+    ]]>
+    </st:attribute>
+    <st:attribute name="node">
+      Node object.
+    </st:attribute>
   </st:documentation>
   <f:entry title="${%Usage}" help="/help/system-config/master-slave/usage.html">
     <j:choose>
@@ -36,6 +41,7 @@ THE SOFTWARE.
         <span>${node.mode}</span>
       </j:when>
       <j:otherwise>
+
         <div class="jenkins-select">
           <select class="jenkins-select__input" name="${name}">
             <j:forEach var="m" items="${h.getNodeModes()}">
@@ -43,6 +49,7 @@ THE SOFTWARE.
             </j:forEach>
           </select>
         </div>
+
       </j:otherwise>
     </j:choose>
   </f:entry>

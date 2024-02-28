@@ -30,8 +30,12 @@ THE SOFTWARE.
     <l:side-panel />
     <l:main-panel>
       <h1>${%Error}</h1>
-      <p>${%errorMessage.1}</p>
-      <p>${%errorMessage.2}</p>
+      <p>
+         ${%errorMessage.1}
+      </p>
+      <p>
+         ${%errorMessage.2}
+      </p>
       <pre>${it.stackTraceString}</pre>
     </l:main-panel>
   </l:layout>

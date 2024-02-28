@@ -20,35 +20,37 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout">
-  <l:view contentType="text/html">
-    <html>
-      <body>
-        <j:choose>
-          <j:if test="${parentPath.size() ne 0}">
-            <a href="..">..</a>
-            <br />
-          </j:if>
-          <j:when test="${empty(files)}">
-            <p>${%No files in directory}</p>
-          </j:when>
-          <j:otherwise>
-            <j:forEach var="f" items="${files}">
-              <j:set var="x" value="${f.get(f.size()-1)}" />
-              <j:forEach var="t" items="${f}" varStatus="st">
+    <l:view contentType="text/html">
+        <html>
+            <body>
                 <j:choose>
-                  <j:when test="${x.readable}">
-                    <a href="${t.href}">${t.title}</a>
-                  </j:when>
-                  <j:otherwise>${t.title}</j:otherwise>
-                </j:choose>
+                    <j:if test="${parentPath.size() ne 0}">
+                        <a href="..">..</a><br/>
+                    </j:if>
+                    <j:when test="${empty(files)}">
+                        <p>${%No files in directory}</p>
+                    </j:when>
+                    <j:otherwise>
+                        <j:forEach var="f" items="${files}">
+                            <j:set var="x" value="${f.get(f.size()-1)}"/>
+                            <j:forEach var="t" items="${f}" varStatus="st">
 
-                <j:if test="${!st.last}">/</j:if>
-              </j:forEach>
-              <br />
-            </j:forEach>
-          </j:otherwise>
-        </j:choose>
-      </body>
-    </html>
-  </l:view>
+                                <j:choose>
+                                    <j:when test="${x.readable}">
+                                        <a href="${t.href}">${t.title}</a>
+                                    </j:when>
+                                    <j:otherwise>
+                                        ${t.title}
+                                    </j:otherwise>
+                                </j:choose>
+
+                                <j:if test="${!st.last}">/</j:if>
+                            </j:forEach>
+                            <br/>
+                        </j:forEach>
+                    </j:otherwise>
+                </j:choose>
+            </body>
+        </html>
+    </l:view>
 </j:jelly>

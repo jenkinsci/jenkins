@@ -90,6 +90,7 @@ import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -1157,6 +1158,17 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         if (hasPermission(CONNECT)) {
             for (NodeMonitor monitor : NodeMonitor.getAll())
                 r.put(monitor.getClass().getName(), monitor.data(this));
+        }
+        return r;
+    }
+
+    @Restricted(NoExternalUse.class)
+    public Map<NodeMonitor, Object> getMonitoringData() {
+        Map<NodeMonitor, Object> r = new LinkedHashMap<>();
+        for (NodeMonitor monitor : NodeMonitor.getAll()) {
+            if (monitor.getColumnCaption() != null) {
+                r.put(monitor, monitor.data(this));
+            }
         }
         return r;
     }

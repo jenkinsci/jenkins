@@ -24,28 +24,62 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <st:documentation>
-    <![CDATA[ Data-bound only version of <f:repeatable> that assumes the type pointed by the property is data-bound as well. The nested property type must be Describable and it needs to have config.jelly. Unless that nested config.jelly already adds
-    a delete button (deprecated), you should normally put the following inside this tag: {noformat} <f:block> <div align="right"> <f:repeatableDeleteButton /> </div> </f:block> {noformat} Due to a bug in Stapler data binding the model elements are
-    only set if they consist of one or more values. If all values have been removed in the user interface (i.e. the associated form is empty), then the setter is not invoked anymore. As a workaround, you need to override the corresponding configure
-    method and clear the model property manually before invoking the data binding. See warnings-ng-plugin PR#266. ]]>
+  <st:documentation> <![CDATA[
+    Data-bound only version of <f:repeatable> that assumes the type pointed by the property is data-bound as well.
+    The nested property type must be Describable and it needs to have config.jelly.
 
-    <st:attribute name="field">Used for the data binding.</st:attribute>
-    <st:attribute name="default">The default value to use for this collection when 'instance[field]' is null.</st:attribute>
-    <st:attribute name="noAddButton">true if the default 'add' button (that adds a new copy) shouldn't be displayed. When you use this attribute,</st:attribute>
-    <st:attribute name="enableTopButton">
-      true if a new Add button, for adding new copy of repeatable item, should be displayed above repeatable form. Display of top button depends also on number of items. If there is no item, only one button is displayed. When at least one item is
-      present, there are two buttons displayed (only when enableTopButton is true). One above and one below. Top button adds item on top of repeatable form. Bottom button adds item on the bottom of repeatable form.
+    Unless that nested config.jelly already adds a delete button (deprecated), you should normally put the following inside this tag:
+
+      	{noformat}
+      	<f:block>
+          <div align="right">
+            <f:repeatableDeleteButton />
+          </div>
+        </f:block>
+        {noformat}
+
+    Due to a bug in Stapler data binding the model elements are only set if they consist of one or more values.
+    If all values have been removed in the user interface (i.e. the associated form is empty), then the setter is not
+    invoked anymore. As a workaround, you need to override the corresponding configure method and clear the model
+    property manually before invoking the data binding. See warnings-ng-plugin PR#266.
+
+    ]]>
+
+    <st:attribute name="field">
+      Used for the data binding.
     </st:attribute>
-    <st:attribute name="add">If specified, this text will replace the standard "Add" text.</st:attribute>
-    <st:attribute name="minimum">At least provide this number of copies initially. minimum="1" is useful to make sure there's always at least one entry for the user to fill in.</st:attribute>
-    <st:attribute name="header"><![CDATA[ For each item, add this header. This also activates drag&drop (where the header is a grip). ]]></st:attribute>
+    <st:attribute name="default">
+      The default value to use for this collection when 'instance[field]' is null.
+    </st:attribute>
+    <st:attribute name="noAddButton">
+      true if the default 'add' button (that adds a new copy) shouldn't be displayed.
+      When you use this attribute,
+    </st:attribute>
+    <st:attribute name="enableTopButton">
+      true if a new Add button, for adding new copy of repeatable item, should be displayed above repeatable form.
+      Display of top button depends also on number of items. If there is no item, only one button is displayed. When at least one item is present, there are two
+      buttons displayed (only when enableTopButton is true). One above and one below.
+      Top button adds item on top of repeatable form. Bottom button adds item on the bottom of repeatable form.
+    </st:attribute>
+    <st:attribute name="add">
+      If specified, this text will replace the standard "Add" text.
+    </st:attribute>
+    <st:attribute name="minimum">
+      At least provide this number of copies initially.
+      minimum="1" is useful to make sure there's always at least one entry for the user to fill in.
+    </st:attribute>
+    <st:attribute name="header"> <![CDATA[
+      For each item, add this header.
+      This also activates drag&drop (where the header is a grip).
+       ]]>
+    </st:attribute>
   </st:documentation>
 
+
   <f:repeatable field="${attrs.field}" default="${attrs.default}" noAddButton="${attrs.noAddButton}" header="${attrs.header}" add="${attrs.add}" minimum="${attrs.minimum ?: 0}" enableTopButton="${attrs.enableTopButton}">
-    <div style="width: 100%">
+    <div style="width:100%">
       <st:include page="config.jelly" class="${descriptor.clazz}" />
-      <d:invokeBody />
+      <d:invokeBody/>
     </div>
   </f:repeatable>
 </j:jelly>

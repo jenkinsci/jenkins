@@ -23,4 +23,6 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<div>${%detail}</div>
+<div>
+  ${%detail}
+</div>

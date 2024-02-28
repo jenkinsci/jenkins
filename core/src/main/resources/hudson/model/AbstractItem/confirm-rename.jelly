@@ -31,7 +31,7 @@ THE SOFTWARE.
       <h1>${%DescribeRename(it.pronoun, it.name)}</h1>
       <f:form method="post" action="confirmRename" name="config" tableClass="config-table scrollspy">
         <f:entry title="${%NewName}">
-          <f:textbox name="newName" value="${it.name}" autocomplete="on" checkUrl="checkNewName" checkDependsOn="newName" />
+          <f:textbox name="newName" value="${it.name}" autocomplete="on" checkUrl="checkNewName" checkDependsOn="newName"/>
         </f:entry>
         <f:bottomButtonBar>
           <f:submit value="${%Rename}" />

@@ -24,18 +24,24 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:d="jelly:define" xmlns:st="jelly:stapler">
-  <st:documentation>
-    <st:attribute name="class">'tabBarFrame' class specification. This will allow styling.</st:attribute>
 
-    <st:attribute name="showBaseline">Set to true to show the baseline</st:attribute>
+  <st:documentation>
+    <st:attribute name="class">
+      'tabBarFrame' class specification.  This will allow styling.
+    </st:attribute>
+
+    <st:attribute name="showBaseline">
+      Set to true to show the baseline
+    </st:attribute>
   </st:documentation>
 
   <!-- Use the current millis time as an id for the tab group -->
   <j:set scope="parent" var="tabBarId" value="${h.getCurrentTime().getTime()}" />
   <div class="tabBarFrame ${attrs.class} ${attrs.showBaseline ? 'showBaseline' : ''}">
     <div class="tabBar">
-      <d:invokeBody />
+      <d:invokeBody/>
     </div>
     <div class="tabBarBaseline"></div>
   </div>
+
 </j:jelly>

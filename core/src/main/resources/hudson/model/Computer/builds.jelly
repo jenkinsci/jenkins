@@ -28,12 +28,14 @@ THE SOFTWARE.
     <st:include page="sidepanel.jelly" />
     <l:breadcrumb title="${%Build History}" />
     <l:main-panel>
-      <h1>${%title(it.displayName)}</h1>
+      <h1>
+        ${%title(it.displayName)}
+      </h1>
       <p>
         <em>${%disclaimer}</em>
       </p>
 
-      <t:buildListTable builds="${it.builds}" />
+      <t:buildListTable builds="${it.builds}"/>
     </l:main-panel>
   </l:layout>
 </j:jelly>

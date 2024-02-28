@@ -373,7 +373,7 @@ public class Items {
      */
     public static Item load(ItemGroup parent, File dir) throws IOException {
         Item item = (Item) getConfigFile(dir).read();
-        item.onLoad(parent, dir.getName());
+        item.onLoad(parent, parent.getItemName(dir, item));
         return item;
     }
 

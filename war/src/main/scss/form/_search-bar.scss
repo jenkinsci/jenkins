@@ -100,8 +100,7 @@
       max-height: 1.1rem;
       grid-column-start: 1;
       grid-row-start: 1;
-      justify-self: center;
-      align-self: center;
+      place-self: center center;
       transition: var(--standard-transition);
     }
 
@@ -117,8 +116,7 @@
       transition: var(--standard-transition);
       grid-column-start: 1;
       grid-row-start: 1;
-      justify-self: center;
-      align-self: center;
+      place-self: center center;
       opacity: 0;
     }
 

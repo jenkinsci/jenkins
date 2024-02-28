@@ -33,11 +33,10 @@ THE SOFTWARE.
     <j:set var="build" value="${request.findAncestorObject(buildClass)}" />
     <st:include page="sidepanel.jelly" it="${build}" />
     <l:main-panel>
-      <t:buildCaption it="${build}">${title}</t:buildCaption>
-      <j:set var="escapeEntryTitleAndDescription" value="true" />
-      <!-- SECURITY-353 defense unless overridden -->
+	  <t:buildCaption it="${build}">${title}</t:buildCaption>
+      <j:set var="escapeEntryTitleAndDescription" value="true" /> <!-- SECURITY-353 defense unless overridden -->
       <j:forEach var="parameterValue" items="${it.parameters}">
-        <st:include it="${parameterValue}" page="value.jelly" />
+	    <st:include it="${parameterValue}" page="value.jelly" />
       </j:forEach>
     </l:main-panel>
   </l:layout>

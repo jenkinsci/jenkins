@@ -27,7 +27,7 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout">
-  <l:view contentType="text/plain;charset=UTF-8">
-    <j:out value="${output}" />
-  </l:view>
+    <l:view contentType="text/plain;charset=UTF-8">
+        <j:out value="${output}"/>
+    </l:view>
 </j:jelly>

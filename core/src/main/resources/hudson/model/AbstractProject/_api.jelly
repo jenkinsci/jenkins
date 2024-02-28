@@ -28,10 +28,7 @@ THE SOFTWARE.
 
   <h2>Disable/Enable a job</h2>
   <p>
-    To programmatically disable a job, post to
-    <a href="../disable">this URL</a>
-    . Similarly post to
-    <a href="../enable">this URL</a>
-    for enabling this job.
+    To programmatically disable a job, post to <a href="../disable">this URL</a>.
+    Similarly post to <a href="../enable">this URL</a> for enabling this job.
   </p>
 </j:jelly>

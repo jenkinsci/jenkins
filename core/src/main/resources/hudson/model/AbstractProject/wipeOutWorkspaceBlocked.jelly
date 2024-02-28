@@ -30,7 +30,9 @@ THE SOFTWARE.
     <l:breadcrumb title="${%Error}" />
     <l:main-panel>
       <h1>${%Error: Wipe Out Workspace blocked by SCM}</h1>
-      <p>${%The SCM for this project has blocked this attempt to wipe out the project's workspace.}</p>
+      <p>
+        ${%The SCM for this project has blocked this attempt to wipe out the project's workspace.}
+      </p>
     </l:main-panel>
   </l:layout>
 </j:jelly>

@@ -26,7 +26,7 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <st:structuredMessageFormat key="description">
     <st:structuredMessageArgument>
-      <t:jobLink job="${it.up}" />
+      <t:jobLink job="${it.up}"/>
     </st:structuredMessageArgument>
   </st:structuredMessageFormat>
 </j:jelly>

@@ -24,42 +24,44 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:f="/lib/form">
-  <j:set var="userProperty" value="${instance}" />
-  <f:entry field="experimentalFlags">
-    <j:invokeStatic var="flagConfigs" className="jenkins.model.experimentalflags.UserExperimentalFlag" method="all" />
-
-    <j:if test="${empty(flagConfigs)}">
-      <div class="jenkins-form-item">${%NoFlagInfo}</div>
-    </j:if>
-    <j:if test="${!empty(flagConfigs)}">
-      <f:rowSet name="flags">
-        <table class="jenkins-table sortable">
-          <thead>
-            <tr>
-              <th>${%FlagDisplayName}</th>
-              <th>${%FlagDescription}</th>
-              <th>${%FlagConfig}</th>
-            </tr>
-          </thead>
-          <tbody>
-            <j:forEach var="flagConfig" items="${flagConfigs}" varStatus="loop">
-              <j:set var="flagValue" value="${userProperty.getFlagValue(flagConfig.flagKey)}" />
-              <tr>
-                <td>
-                  ${flagConfig.displayName}
-                  <span class="jenkins-label jenkins-label--tertiary jenkins-!-padding-left-1">${flagConfig.flagKey}</span>
-                </td>
-                <td>
-                  <st:include it="${flagConfig}" page="${flagConfig.flagDescriptionPage}" />
-                </td>
-                <td>
-                  <st:include it="${flagConfig}" page="${flagConfig.flagConfigPage}" />
-                </td>
-              </tr>
-            </j:forEach>
-          </tbody>
-        </table>
-      </f:rowSet>
-    </j:if>
-  </f:entry>
+    <j:set var="userProperty" value="${instance}"/>
+    <f:entry field="experimentalFlags">
+        <j:invokeStatic var="flagConfigs" className="jenkins.model.experimentalflags.UserExperimentalFlag"
+                        method="all"/>
+    
+        <j:if test="${empty(flagConfigs)}">
+            <div class="jenkins-form-item">
+                ${%NoFlagInfo}
+            </div>
+        </j:if>
+        <j:if test="${!empty(flagConfigs)}">
+            <f:rowSet name="flags">
+                <table class="jenkins-table sortable">
+                    <thead>
+                        <tr>
+                            <th>${%FlagDisplayName}</th>
+                            <th>${%FlagDescription}</th>
+                            <th>${%FlagConfig}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <j:forEach var="flagConfig" items="${flagConfigs}" varStatus="loop">
+                            <j:set var="flagValue" value="${userProperty.getFlagValue(flagConfig.flagKey)}"/>
+                            <tr>
+                                <td>
+                                    ${flagConfig.displayName}<span class="jenkins-label jenkins-label--tertiary jenkins-!-padding-left-1">${flagConfig.flagKey}</span>
+                                </td>
+                                <td>
+                                    <st:include it="${flagConfig}" page="${flagConfig.flagDescriptionPage}"/>
+                                </td>
+                                <td>
+                                    <st:include it="${flagConfig}" page="${flagConfig.flagConfigPage}"/>
+                                </td>
+                            </tr>
+                        </j:forEach>
+                    </tbody>
+                </table>
+            </f:rowSet>
+        </j:if>
+    </f:entry>
 </j:jelly>

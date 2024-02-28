@@ -30,24 +30,23 @@ THE SOFTWARE.
   <d:taglib uri="local">
     <d:tag name="relationship">
       <j:if test="${lhs.fingerprintConfigured and rhs.fingerprintConfigured}">
-        <st:nbsp />
+        <st:nbsp/>
         <a href="${rootURL}/projectRelationship?lhs=${h.urlEncode(lhs.name)}&amp;rhs=${h.urlEncode(rhs.name)}">
-          <l:icon class="icon-fingerprint icon-sm" />
+          <l:icon class="icon-fingerprint icon-sm"/>
         </a>
       </j:if>
     </d:tag>
 
-    <d:tag name="list">
-      <!-- @title, @items and @up -->
+    <d:tag name="list"> <!-- @title, @items and @up -->
       <j:if test="${!empty(items)}">
         <h2>${title}</h2>
-        <ul style="list-style-type: none">
+        <ul style="list-style-type: none;">
           <j:forEach var="item" items="${items}">
-            <j:if test="${h.hasPermission(item,item.READ)}">
-              <li>
-                <t:jobLink job="${item}" />
-                <local:relationship lhs="${up ? item : it}" rhs="${up ? it : item}" />
-              </li>
+          <j:if test="${h.hasPermission(item,item.READ)}">
+            <li>
+              <t:jobLink job="${item}"/>
+              <local:relationship lhs="${up ? item : it}" rhs="${up ? it : item}"/>
+            </li>
             </j:if>
           </j:forEach>
         </ul>

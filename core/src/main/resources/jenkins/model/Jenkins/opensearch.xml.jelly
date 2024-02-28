@@ -28,13 +28,13 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout">
   <l:view contentType="application/xml;charset=UTF-8">
-    <OpenSearchDescription xmlns="http://a9.com/-/spec/opensearch/1.1/">
-      <j:set var="rootURL" value="${h.inferHudsonURL(request)}" />
-      <ShortName>Jenkins</ShortName>
-      <Description>Jenkins at ${rootURL}</Description>
-      <InputEncoding>UTF-8</InputEncoding>
-      <Url type="text/html" method="GET" template="${rootURL}search/?q={searchTerms}" />
-      <Url type="application/x-suggestions+json" template="${rootURL}search/suggestOpenSearch?q={searchTerms}" />
-    </OpenSearchDescription>
+  <OpenSearchDescription xmlns="http://a9.com/-/spec/opensearch/1.1/">
+  <j:set var="rootURL" value="${h.inferHudsonURL(request)}"/>
+  <ShortName>Jenkins</ShortName>
+  <Description>Jenkins at ${rootURL}</Description>
+  <InputEncoding>UTF-8</InputEncoding>
+  <Url type="text/html" method="GET" template="${rootURL}search/?q={searchTerms}" />
+  <Url type="application/x-suggestions+json" template="${rootURL}search/suggestOpenSearch?q={searchTerms}"/>
+</OpenSearchDescription>
   </l:view>
 </j:jelly>

@@ -25,19 +25,19 @@ THE SOFTWARE.
 <!-- This page have not existed historically so plugins might well not provide any views. -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
-  <l:layout title="${%Cloud(it.name)}" permission="${app.SYSTEM_READ}">
-    <st:include page="sidepanel.jelly" it="${it}" />
-    <!-- no need for additional breadcrumb here as we're on an index page already including breadcrumb -->
-    <l:main-panel>
-      <h1>${%Cloud(it.name)}</h1>
+    <l:layout title="${%Cloud(it.name)}" permission="${app.SYSTEM_READ}">
+        <st:include page="sidepanel.jelly" it="${it}"/>
+        <!-- no need for additional breadcrumb here as we're on an index page already including breadcrumb -->
+        <l:main-panel>
+            <h1>${%Cloud(it.name)}</h1>
 
-      <st:include page="top.jelly" optional="true" />
+            <st:include page="top.jelly" optional="true"/>
 
-      <j:forEach var="action" items="${it.allActions}">
-        <st:include page="summary.jelly" from="${action}" optional="true" it="${action}" />
-      </j:forEach>
+            <j:forEach var="action" items="${it.allActions}">
+                <st:include page="summary.jelly" from="${action}" optional="true" it="${action}" />
+            </j:forEach>
 
-      <st:include page="main.jelly" optional="true" />
-    </l:main-panel>
-  </l:layout>
+            <st:include page="main.jelly" optional="true"/>
+        </l:main-panel>
+    </l:layout>
 </j:jelly>

@@ -30,9 +30,9 @@ THE SOFTWARE.
   <l:header />
   <l:side-panel>
     <l:tasks>
-      <l:task href="." icon="symbol-journal" title="${%Log records}" />
+      <l:task href="." icon="symbol-journal" title="${%Log records}"/>
       <l:isAdmin>
-        <l:task href="configure" icon="symbol-settings" title="${%Configure}" />
+        <l:task href="configure" icon="symbol-settings" title="${%Configure}"/>
         <l:delete title="${%Delete}" message="${%delete.logrecorder(it.displayName)}" />
       </l:isAdmin>
     </l:tasks>

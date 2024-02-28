@@ -36,13 +36,13 @@ THE SOFTWARE.
 
     <l:breadcrumb title="${%Configuration}" />
 
-    <l:side-panel>
+    <l:side-panel sticky="true">
       <l:app-bar title="${%Configure}" />
       <div id="tasks" />
     </l:side-panel>
 
     <l:main-panel>
-      <div class="behavior-loading"><l:spinner text="${%LOADING}" /></div>
+      <div class="behavior-loading"><l:spinner text="${%LOADING}"/></div>
 
       <f:form method="post" class="jenkins-form" action="configSubmit" name="config" tableClass="config-table">
         <l:app-bar title="${%General}" headingLevel="h2">
@@ -54,11 +54,11 @@ THE SOFTWARE.
 
         <div class="jenkins-section jenkins-section--no-border jenkins-!-margin-top-6">
           <f:entry title="${%Description}" help="${app.markupFormatter.helpUrl}">
-            <f:textarea name="description" value="${it.description}" codemirror-mode="${app.markupFormatter.codeMirrorMode}" codemirror-config="${app.markupFormatter.codeMirrorConfig}" previewEndpoint="/markupFormatter/previewDescription" />
+            <f:textarea name="description" value="${it.description}" codemirror-mode="${app.markupFormatter.codeMirrorMode}" codemirror-config="${app.markupFormatter.codeMirrorConfig}" previewEndpoint="/markupFormatter/previewDescription"/>
           </f:entry>
         </div>
 
-        <f:descriptorList field="properties" descriptors="${h.getJobPropertyDescriptors(it)}" forceRowSet="true" />
+        <f:descriptorList field="properties" descriptors="${h.getJobPropertyDescriptors(it)}" forceRowSet="true"/>
 
         <!-- additional entries from derived classes -->
         <st:include page="configure-entries.jelly" />

@@ -27,6 +27,12 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:f="/lib/form">
-  <st:documentation><![CDATA[ Deprecated as of 1.463. Use <config-publishers2> and update your code to do publishers.rebuildHetero(req, json, Publisher.all(), "publisher"); ]]></st:documentation>
-  <f:descriptorList title="${%Post-build Actions}" descriptors="${h.getPublisherDescriptors(it)}" instances="${it.publishers}" />
+  <st:documentation> <![CDATA[
+    Deprecated as of 1.463. Use <config-publishers2> and update your code to do
+    publishers.rebuildHetero(req, json, Publisher.all(), "publisher");
+    ]]>
+  </st:documentation>
+  <f:descriptorList title="${%Post-build Actions}"
+                    descriptors="${h.getPublisherDescriptors(it)}"
+                    instances="${it.publishers}" />
 </j:jelly>

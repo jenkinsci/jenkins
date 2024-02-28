@@ -5,30 +5,25 @@
     <l:breadcrumb title="${%Retry delete}" />
     <l:main-panel>
       <table>
-        <tr>
-          <td>
-            <form method="post" action="doDelete">
-              <div class="error">${%Not successful}</div>
-              <f:submit name="now" value="${%Retry delete}" />
-            </form>
-          </td>
-        </tr>
-        <tr>
-          <td>
-            <a id="delete-retry-show-error" href="">${%Show reason}</a>
-            <st:adjunct includes="hudson.model.Run._delete-retry" />
-          </td>
-        </tr>
-        <tr>
-          <td>
-            <div id="delete-error" style="display: none">
-              <pre>
-              ${request.getAttribute('stackTraces')}
-            </pre
-              >
+        <tr><td>
+          <form method="post" action="doDelete">
+            <div class="error">
+              ${%Not successful}
             </div>
-          </td>
-        </tr>
+            <f:submit name="now" value="${%Retry delete}" />
+          </form>
+        </td></tr>
+        <tr><td>
+          <a id="delete-retry-show-error" href="">${%Show reason}</a>
+          <st:adjunct includes="hudson.model.Run._delete-retry" />
+        </td></tr>
+        <tr><td>
+          <div id="delete-error" style="display: none">
+            <pre>
+              ${request.getAttribute('stackTraces')}
+            </pre>
+          </div>
+        </td></tr>
       </table>
     </l:main-panel>
   </l:layout>

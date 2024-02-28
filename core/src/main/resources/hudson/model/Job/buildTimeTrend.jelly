@@ -38,28 +38,36 @@ THE SOFTWARE.
         <l:icon src="symbol-status-nobuilt" id="nobuilt" />
         <l:icon src="symbol-status-aborted" id="aborted" />
         <l:icon src="symbol-status-disabled" id="disabled" />
+
+        <l:icon src="symbol-status-blue-anime" id="blue-anime" />
+        <l:icon src="symbol-status-yellow-anime" id="yellow-anime" />
+        <l:icon src="symbol-status-red-anime" id="red-anime" />
+        <l:icon src="symbol-status-nobuilt-anime" id="nobuilt-anime" />
+        <l:icon src="symbol-status-aborted-anime" id="aborted-anime" />
+        <l:icon src="symbol-status-disabled-anime" id="disabled-anime" />
       </template>
       <h1>${%Build Time Trend}</h1>
-      <div align="center">
-        <img class="build-time-graph" src="buildTimeGraph/png" width="500" height="400" lazymap="buildTimeGraph/map" alt="[${%Build time graph}]" />
-      </div>
+          <div align="center">
+            <img class="build-time-graph" src="buildTimeGraph/png" width="500" height="400" lazymap="buildTimeGraph/map" alt="[${%Build time graph}]" />
+          </div>
 
-      <j:set var="isDistributedBuildEnabled" value="${!empty(app.nodes)}" />
-      <div align="center">
-        <j:new var="handler" className="jenkins.widgets.BuildTimeTrend" />
-        ${handler.setBuilds(it.builds)}
-        <l:progressiveRendering handler="${handler}" callback="buildTimeTrend_displayBuilds" />
-        <table class="sortable" id="trend" data-is-distributed-build-enabled="${isDistributedBuildEnabled}">
-          <tr>
-            <th><st:nbsp /></th>
-            <th initialSortDir="up">${%Build}</th>
-            <th>${%Duration}</th>
-            <j:if test="${isDistributedBuildEnabled}">
-              <th>${%Agent}</th>
-            </j:if>
-          </tr>
-        </table>
-      </div>
+          <j:set var="isDistributedBuildEnabled" value="${!empty(app.nodes)}"/>
+          <div align="center">
+            <j:new var="handler" className="jenkins.widgets.BuildTimeTrend"/>
+            ${handler.setBuilds(it.builds)}
+            <l:progressiveRendering handler="${handler}" callback="buildTimeTrend_displayBuilds"/>
+            <table class="sortable" id="trend"
+                   data-is-distributed-build-enabled="${isDistributedBuildEnabled}">
+              <tr>
+                <th><st:nbsp/></th>
+                <th initialSortDir="up">${%Build}</th>
+                <th>${%Duration}</th>
+                <j:if test="${isDistributedBuildEnabled}">
+                  <th>${%Agent}</th>
+                </j:if>
+              </tr>
+            </table>
+          </div>
     </l:main-panel>
   </l:layout>
 </j:jelly>

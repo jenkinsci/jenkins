@@ -32,12 +32,12 @@ THE SOFTWARE.
     <l:breadcrumb title="${%Configure}" />
     <l:main-panel>
       <f:form method="post" action="configSubmit" name="config">
-        <j:set var="instance" value="${it}" />
+        <j:set var="instance" value="${it}"/>
         <f:entry title="${%Full name}" help="/help/user/fullName.html">
-          <f:textbox field="fullName" />
+          <f:textbox field="fullName"/>
         </f:entry>
         <f:entry title="${%Description}" help="/help/user/description.html">
-          <f:textarea field="description" codemirror-mode="${app.markupFormatter.codeMirrorMode}" codemirror-config="${app.markupFormatter.codeMirrorConfig}" previewEndpoint="/markupFormatter/previewDescription" />
+          <f:textarea field="description" codemirror-mode="${app.markupFormatter.codeMirrorMode}" codemirror-config="${app.markupFormatter.codeMirrorConfig}" previewEndpoint="/markupFormatter/previewDescription"/>
         </f:entry>
 
         <!-- user property configurations -->
@@ -50,7 +50,7 @@ THE SOFTWARE.
               <j:set var="instance" value="${instances[d]}" />
 
               <f:rowSet name="userProperty${loop.index}">
-                <st:include from="${d}" page="${d.configPage}" />
+                <st:include from="${d}" page="${d.configPage}"/>
               </f:rowSet>
             </f:section>
           </j:if>

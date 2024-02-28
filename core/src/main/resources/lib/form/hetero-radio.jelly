@@ -27,18 +27,23 @@ THE SOFTWARE.
   <st:documentation>
     Sibling of hetero-list, which only allows the user to pick one type from the list of descriptors and configure it.
 
-    <st:attribute name="field" use="required">Field name in the parent object where databinding happens.</st:attribute>
-    <st:attribute name="descriptors" use="required">all types that the user can add.</st:attribute>
+    <st:attribute name="field" use="required">
+      Field name in the parent object where databinding happens.
+    </st:attribute>
+    <st:attribute name="descriptors" use="required">
+      all types that the user can add.
+    </st:attribute>
   </st:documentation>
 
   <f:prepareDatabinding />
 
-  <div style="width: 100%">
+  <div style="width:100%">
     <j:set var="currentInstance" value="${instance[field]}" />
     <j:set var="currentDescriptor" value="${currentInstance.descriptor}" />
     <j:set var="uniqueId" value="${h.generateId()}" />
     <j:forEach var="d" items="${descriptors}" varStatus="loop">
-      <f:radioBlock name="${uniqueId}.${field}" help="${d.helpFile}" value="${loop.index}" title="${d.displayName}" checked="${currentDescriptor==d}">
+      <f:radioBlock name="${uniqueId}.${field}" help="${d.helpFile}" value="${loop.index}"
+        title="${d.displayName}" checked="${currentDescriptor==d}">
         <j:set var="descriptor" value="${d}" />
         <j:set var="instance" value="${currentDescriptor==d?currentInstance:null}" />
         <st:include from="${d}" page="${d.configPage}" optional="true" />

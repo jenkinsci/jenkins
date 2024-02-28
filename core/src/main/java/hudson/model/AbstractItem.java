@@ -966,7 +966,7 @@ public abstract class AbstractItem extends Actionable implements Loadable, Item,
         Items.whileUpdatingByXml(new NotReallyRoleSensitiveCallable<Void, IOException>() {
             @Override
             public Void call() throws IOException {
-                onLoad(getParent(), getRootDir().getName());
+                onLoad(getParent(), getParent().getItemName(getRootDir(), AbstractItem.this));
                 return null;
             }
         });

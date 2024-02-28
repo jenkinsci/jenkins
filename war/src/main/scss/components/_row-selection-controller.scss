@@ -37,8 +37,7 @@
     height: 0.85rem;
     grid-column-start: 1;
     grid-row-start: 1;
-    justify-self: center;
-    align-self: center;
+    place-self: center center;
     transition: var(--elastic-transition);
     transform: scale(0);
     color: var(--text-color);

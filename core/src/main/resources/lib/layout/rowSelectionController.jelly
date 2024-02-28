@@ -24,7 +24,9 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout">
-  <st:documentation>Controls checkbox selections in tables</st:documentation>
+  <st:documentation>
+    Controls checkbox selections in tables
+  </st:documentation>
 
   <div class="jenkins-table__checkbox-container">
     <button type="button" class="jenkins-table__checkbox">

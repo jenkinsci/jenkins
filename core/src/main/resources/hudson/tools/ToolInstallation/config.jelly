@@ -24,12 +24,14 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <st:documentation>
-    Per ToolInstallation configuration page added to the system configuration. Often this is the only view that you need to override in ToolInstallation. If you need to change the view more drastically, override global.jelly.
+    Per ToolInstallation configuration page added to the system configuration.
+    Often this is the only view that you need to override in ToolInstallation.
+    If you need to change the view more drastically, override global.jelly.
   </st:documentation>
   <f:entry title="${%Name}" field="name">
-    <f:textbox />
+    <f:textbox/>
   </f:entry>
   <f:entry title="${%Installation directory}" field="home">
-    <f:textbox />
+    <f:textbox/>
   </f:entry>
 </j:jelly>
