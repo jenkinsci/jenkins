@@ -384,7 +384,8 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
      * <p><strong>Warning:</strong> if both {@link #getName} and {@link #getUserName} are set
      * (meaning that an authenticated proxy is defined),
      * you will not be able to pass an {@code Authorization} header to the real server
-     * when running on Java 17 and later.
+     * when running on Java 17 and later
+     * (pending <a href="https://bugs.openjdk.org/browse/JDK-8326949">JDK-8326949</a>.
      *
      * @return an {@link HttpClient.Builder}
      * @since 2.379
