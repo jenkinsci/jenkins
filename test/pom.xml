@@ -73,7 +73,7 @@ THE SOFTWARE.
         <!-- RequireUpperBoundDeps between bootstrap5-api and echarts-api -->
         <groupId>io.jenkins.plugins</groupId>
         <artifactId>font-awesome-api</artifactId>
-        <version>6.5.1-2</version>
+        <version>6.5.1-3</version>
       </dependency>
       <dependency>
         <groupId>io.jenkins.plugins</groupId>
@@ -105,7 +105,7 @@ THE SOFTWARE.
         <!-- requireUpperBoundDeps via matrix-project and junit -->
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>script-security</artifactId>
-        <version>1321.va_73c0795b_923</version>
+        <version>1326.vdb_c154de8669</version>
       </dependency>
       <dependency>
         <groupId>org.jenkins-ci.plugins.workflow</groupId>
@@ -131,7 +131,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>2161.v114f3cb_78326</version>
+      <version>2165.vf0266a_2d187f</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -200,7 +200,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>cloudbees-folder</artifactId>
-      <version>6.901.vb_4c7a_da_75da_3</version>
+      <version>6.921.vfb_b_224371fb_4</version>
       <scope>test</scope>
     </dependency>
     <dependency>

@@ -28,7 +28,7 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <div class="jenkins-app-bar">
-    <div class="jenkins-app-bar__content jenkins-build-caption">
+    <div class="jenkins-app-bar__content jenkins-build-caption" data-status-url="${rootURL}/${it.url}statusIcon">
       <l:icon alt="${it.iconColor.description}" src="symbol-status-${it.iconColor.iconName}"
           tooltip="${it.iconColor.description}"/>
       <h1>
@@ -44,9 +44,9 @@ THE SOFTWARE.
                 ${%Progress}:
               </td>
               <td class="build-caption-progress-bar">
-                <t:buildProgressBar build="${it}"/>
+                <t:buildProgressBar build="${it}" animate="true"/>
               </td>
-              <td>
+              <td class="jenkins-table__link">
                 <j:if test="${it.parent.hasAbortPermission()}">
                   <l:stopButton href="stop" confirm="${%confirm(it.fullDisplayName)}"
                           alt="${%cancel}"/>
