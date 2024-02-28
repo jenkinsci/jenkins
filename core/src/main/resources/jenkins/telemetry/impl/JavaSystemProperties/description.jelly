@@ -1,0 +1,24 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core">
+    <p>
+        ${%blurb}
+    </p>
+    <ul>
+        <j:forEach items="${it.properties.entrySet()}" var="e">
+            <li>
+                <tt>${e.key}</tt>
+                <j:choose>
+                    <j:when test="${e.value == null}">
+                        (current value: <em>undefined</em>)
+                    </j:when>
+                    <j:otherwise>
+                        (current value: <tt>${e.value}</tt>)
+                    </j:otherwise>
+                </j:choose>
+            </li>
+        </j:forEach>
+    </ul>
+    <p>
+        ${%blurb2}
+    </p>
+</j:jelly>

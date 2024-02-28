@@ -35,7 +35,7 @@
   {
     "category": "Build Analysis and Reporting",
     "plugins": [
-      { "name": "cobertura" },
+      { "name": "coverage" },
       { "name": "htmlpublisher" },
       { "name": "junit" },
       { "name": "warnings-ng" },
@@ -93,6 +93,10 @@
       { "name": "emailext-template" },
       { "name": "mailer", "suggested": true }
     ]
+  },
+  {
+    "category": "Appearance",
+    "plugins": [{ "name": "dark-theme", "suggested": true }]
   },
   {
     "category": "Languages",

@@ -60,6 +60,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
@@ -83,6 +84,8 @@ import net.sf.json.JSONObject;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jvnet.tiger_types.Types;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.Ancestor;
 import org.kohsuke.stapler.BindInterceptor;
 import org.kohsuke.stapler.Facet;
@@ -779,7 +782,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Loadable, 
                 throw new Error(e);
             }
 
-            if (getStaticHelpUrl(c, suffix) != null)    return page;
+            if (getStaticHelpUrl(Stapler.getCurrentRequest(), c, suffix) != null)    return page;
         }
         return null;
     }
@@ -976,7 +979,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Loadable, 
                 return;
             }
 
-            URL url = getStaticHelpUrl(c, path);
+            URL url = getStaticHelpUrl(Stapler.getCurrentRequest(), c, path);
             if (url != null) {
                 // TODO: generalize macro expansion and perhaps even support JEXL
                 rsp.setContentType("text/html;charset=UTF-8");
@@ -990,18 +993,22 @@ public abstract class Descriptor<T extends Describable<T>> implements Loadable, 
         rsp.sendError(SC_NOT_FOUND);
     }
 
-    private URL getStaticHelpUrl(Klass<?> c, String suffix) {
-        Locale locale = Stapler.getCurrentRequest().getLocale();
+    @Restricted(NoExternalUse.class)
+    public static URL getStaticHelpUrl(StaplerRequest req, Klass<?> c, String suffix) {
 
         String base = "help" + suffix;
-
         URL url;
-        url = c.getResource(base + '_' + locale.getLanguage() + '_' + locale.getCountry() + '_' + locale.getVariant() + ".html");
-        if (url != null)    return url;
-        url = c.getResource(base + '_' + locale.getLanguage() + '_' + locale.getCountry() + ".html");
-        if (url != null)    return url;
-        url = c.getResource(base + '_' + locale.getLanguage() + ".html");
-        if (url != null)    return url;
+
+        Enumeration<Locale> locales = req.getLocales();
+        while (locales.hasMoreElements()) {
+            Locale locale = locales.nextElement();
+            url = c.getResource(base + '_' + locale.getLanguage() + '_' + locale.getCountry() + '_' + locale.getVariant() + ".html");
+            if (url != null)    return url;
+            url = c.getResource(base + '_' + locale.getLanguage() + '_' + locale.getCountry() + ".html");
+            if (url != null)    return url;
+            url = c.getResource(base + '_' + locale.getLanguage() + ".html");
+            if (url != null)    return url;
+        }
 
         // default
         return c.getResource(base + ".html");
