@@ -3388,6 +3388,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             primaryView = v.getViewName();
         }
         primaryView = AllView.migrateLegacyPrimaryAllViewLocalizedName(views, primaryView);
+        clouds.setOwner(this);
         configLoaded = true;
         try {
             checkRawBuildsDir(buildsDir);
@@ -3497,8 +3498,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 } else {
                     nodes.load();
                 }
-
-                clouds.setOwner(Jenkins.this);
             }
         });
 
