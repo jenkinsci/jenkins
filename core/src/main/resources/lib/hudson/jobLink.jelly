@@ -26,13 +26,11 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <st:documentation>
     Generates a link to a job.
-    <st:attribute name="job" type="hudson.model.Job" use="required">
-      Job object to be displayed.
-    </st:attribute>
+    <st:attribute name="job" type="hudson.model.Job" use="required">Job object to be displayed.</st:attribute>
   </st:documentation>
 
-  <l:icon alt="${job.iconColor.description}" src="symbol-status-${job.iconColor.iconName}" class="icon-sm"/>
+  <l:icon alt="${job.iconColor.description}" src="symbol-status-${job.iconColor.iconName}" class="icon-sm" />
   <a href="${h.getRelativeLinkTo(job)}" class="model-link jenkins-icon-adjacent">
-    <l:breakable value="${job.fullDisplayName}"/>
+    <l:breakable value="${job.fullDisplayName}" />
   </a>
 </j:jelly>

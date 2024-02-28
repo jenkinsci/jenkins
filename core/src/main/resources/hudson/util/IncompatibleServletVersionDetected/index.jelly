@@ -30,9 +30,7 @@ THE SOFTWARE.
     <l:side-panel />
     <l:main-panel>
       <h1>${%Error}</h1>
-      <p>
-        ${%errorMessage(it.whereServletIsLoaded)}
-      </p>
+      <p>${%errorMessage(it.whereServletIsLoaded)}</p>
     </l:main-panel>
   </l:layout>
 </j:jelly>

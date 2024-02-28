@@ -34,6 +34,6 @@ THE SOFTWARE.
     so we try not to make the secondary icons look bigger than the icon.
     we want the user's eyes to go to balls, not the clock.
   -->
-  <j:set scope="parent" var="subIconSize" value="${iconSize=='32x32'?'24x24':iconSize}"/>
-  <j:set scope="parent" var="subIconSizeClass" value="${icons.toNormalizedIconSizeClass(subIconSize)}"/>
+  <j:set scope="parent" var="subIconSize" value="${iconSize=='32x32'?'24x24':iconSize}" />
+  <j:set scope="parent" var="subIconSizeClass" value="${icons.toNormalizedIconSizeClass(subIconSize)}" />
 </j:jelly>

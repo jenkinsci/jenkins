@@ -25,28 +25,22 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:d="jelly:define" xmlns:i="jelly:fmt" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
-    <st:documentation>
-        Creates a clickable "Stop" button.
-        <st:attribute name="href" use="required">
-            Link target. Relative to the current page.
-        </st:attribute>
-        <st:attribute name="alt" use="required">
-            Alt text for image.
-        </st:attribute>
-        <st:attribute name="confirm" use="optional">
-            If defined, the user will be asked for confirmation first, and the value will be used as question.
-        </st:attribute>
-    </st:documentation>
-    <j:choose>
-      <j:when test="${confirm == null}">
-        <a class="stop-button-link" href="${href}" tooltip="${alt}">
-          <l:icon src="symbol-close" />
-        </a>
-      </j:when>
-      <j:otherwise>
-        <a class="stop-button-link" href="${href}" data-confirm="${confirm}" tooltip="${alt}">
-          <l:icon src="symbol-close" />
-        </a>
-      </j:otherwise>
-    </j:choose>
+  <st:documentation>
+    Creates a clickable "Stop" button.
+    <st:attribute name="href" use="required">Link target. Relative to the current page.</st:attribute>
+    <st:attribute name="alt" use="required">Alt text for image.</st:attribute>
+    <st:attribute name="confirm" use="optional">If defined, the user will be asked for confirmation first, and the value will be used as question.</st:attribute>
+  </st:documentation>
+  <j:choose>
+    <j:when test="${confirm == null}">
+      <a class="stop-button-link" href="${href}" tooltip="${alt}">
+        <l:icon src="symbol-close" />
+      </a>
+    </j:when>
+    <j:otherwise>
+      <a class="stop-button-link" href="${href}" data-confirm="${confirm}" tooltip="${alt}">
+        <l:icon src="symbol-close" />
+      </a>
+    </j:otherwise>
+  </j:choose>
 </j:jelly>

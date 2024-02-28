@@ -30,12 +30,8 @@ THE SOFTWARE.
     <l:side-panel />
     <l:main-panel>
       <h1>${%Error}</h1>
-      <p>
-        ${%errorMessage.1(it.home)}
-      </p>
-      <p>
-         ${%errorMessage.2}
-      </p>
+      <p>${%errorMessage.1(it.home)}</p>
+      <p>${%errorMessage.2}</p>
     </l:main-panel>
   </l:layout>
 </j:jelly>

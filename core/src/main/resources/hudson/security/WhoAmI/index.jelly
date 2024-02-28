@@ -25,11 +25,10 @@ THE SOFTWARE.
 <!-- show debug information about the current user -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
-
   <l:layout title="Who Am I">
     <l:hasPermission permission="${app.READ}">
       <st:include page="sidepanel.jelly" it="${app}" />
-   </l:hasPermission>
+    </l:hasPermission>
     <l:main-panel>
       <j:set var="auth" value="${app.authentication}" />
       <h1>Who Am I?</h1>
@@ -49,12 +48,8 @@ THE SOFTWARE.
               <j:forEach var="a" items="${auth.authorities}">
                 <li>
                   <j:choose>
-                    <j:when test="${a==null}">
-                      null
-                    </j:when>
-                    <j:otherwise>
-                      "${a}"
-                    </j:otherwise>
+                    <j:when test="${a==null}">null</j:when>
+                    <j:otherwise>"${a}"</j:otherwise>
                   </j:choose>
                 </li>
               </j:forEach>
@@ -67,7 +62,7 @@ THE SOFTWARE.
       <table>
         <j:forEach var="n" items="${request.getHeaderNames()}">
           <j:choose>
-            <j:when test="${it.isHeaderDangerous(n)}" >
+            <j:when test="${it.isHeaderDangerous(n)}">
               <tr>
                 <td rowspan="1">${n}</td>
                 <td>
@@ -76,12 +71,10 @@ THE SOFTWARE.
               </tr>
             </j:when>
             <j:otherwise>
-              <j:set var="values" value="${h.getRequestHeaders(n)}"/>
+              <j:set var="values" value="${h.getRequestHeaders(n)}" />
               <tr>
                 <td rowspan="${values.size()}">${n}</td>
-                <td>
-                  ${values[0]}
-                </td>
+                <td>${values[0]}</td>
               </tr>
               <j:forEach var="v" items="${values.subList(1,values.size())}">
                 <tr>
@@ -92,6 +85,6 @@ THE SOFTWARE.
           </j:choose>
         </j:forEach>
       </table>
-     </l:main-panel>
-    </l:layout>
+    </l:main-panel>
+  </l:layout>
 </j:jelly>

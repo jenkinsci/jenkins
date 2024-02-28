@@ -34,7 +34,7 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:d="jelly:define">
-	<div id="tasks">
-	  <d:invokeBody />
-	</div>
+  <div id="tasks">
+    <d:invokeBody />
+  </div>
 </j:jelly>

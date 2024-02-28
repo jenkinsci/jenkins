@@ -34,12 +34,11 @@ THE SOFTWARE.
     <l:breadcrumb title="${%System Information}" />
 
     <l:main-panel>
-
       <h1>
         <span class="icon-lg">
-          <l:icon src="${it.icon}"/>
-        </span>${it.caption}
-        ${%System Information}
+          <l:icon src="${it.icon}" />
+        </span>
+        ${it.caption} ${%System Information}
       </h1>
 
       <j:choose>
@@ -49,13 +48,11 @@ THE SOFTWARE.
           <j:forEach var="instance" items="${it.systemInfoExtensions}">
             <l:hasPermission permission="${instance.requiredPermission}">
               <h1>${instance.displayName}</h1>
-              <st:include page="systemInfo" from="${instance}"/>
+              <st:include page="systemInfo" from="${instance}" />
             </l:hasPermission>
           </j:forEach>
         </j:when>
-        <j:otherwise>
-          ${%System Information is unavailable when agent is offline.}
-        </j:otherwise>
+        <j:otherwise>${%System Information is unavailable when agent is offline.}</j:otherwise>
       </j:choose>
     </l:main-panel>
   </l:layout>

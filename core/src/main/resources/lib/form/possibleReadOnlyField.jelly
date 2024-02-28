@@ -12,7 +12,7 @@
       </j:choose>
     </j:when>
     <j:otherwise>
-      <d:invokeBody/>
+      <d:invokeBody />
     </j:otherwise>
   </j:choose>
 </j:jelly>

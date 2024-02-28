@@ -28,17 +28,13 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:f="/lib/form">
   <l:layout title="${%Available plugins} - ${%Plugins}" permission="${app.SYSTEM_READ}">
-    <st:include page="sidepanel.jelly"/>
+    <st:include page="sidepanel.jelly" />
     <!-- no need for additional breadcrumb here as the side panel offers enough functionality to browse between different pages -->
 
     <l:main-panel>
       <div class="jenkins-app-bar jenkins-app-bar--sticky">
         <div class="jenkins-app-bar__content">
-          <l:search-bar clazz="jenkins-search--app-bar"
-                        placeholder="${%Search available plugins}"
-                        id="filter-box"
-                        autofocus="true"
-                        value="${request.getParameter('filter')}" />
+          <l:search-bar clazz="jenkins-search--app-bar" placeholder="${%Search available plugins}" id="filter-box" autofocus="true" value="${request.getParameter('filter')}" />
         </div>
         <div class="jenkins-app-bar__controls">
           <l:isAdmin>
@@ -49,10 +45,7 @@ THE SOFTWARE.
                 </div>
                 ${%Install}
               </button>
-              <l:overflowButton id="button-install-after-restart"
-                                icon="symbol-chevron-down"
-                                tooltip="${null}"
-                                clazz="jenkins-button--primary">
+              <l:overflowButton id="button-install-after-restart" icon="symbol-chevron-down" tooltip="${null}" clazz="jenkins-button--primary">
                 <button form="form" type="submit" class="jenkins-dropdown__item">
                   <div class="jenkins-dropdown__item__icon">
                     <l:icon src="symbol-download" />
@@ -62,30 +55,26 @@ THE SOFTWARE.
               </l:overflowButton>
             </div>
           </l:isAdmin>
-          <st:include page="check.jelly"/>
+          <st:include page="check.jelly" />
         </div>
       </div>
 
-      <script src="${resURL}/jsbundles/plugin-manager-ui.js" type="text/javascript"/>
+      <script src="${resURL}/jsbundles/plugin-manager-ui.js" type="text/javascript" />
 
       <form id="form" method="post" action="install">
-        <table id="plugins" class="jenkins-table sortable"
-               data-hasAdmin="${h.hasPermission(app.ADMINISTER)}">
+        <table id="plugins" class="jenkins-table sortable" data-hasAdmin="${h.hasPermission(app.ADMINISTER)}">
           <thead>
             <tr>
               <l:isAdmin>
-                <th data-sort-disable="true">
-                  ${%Install}
-                </th>
+                <th data-sort-disable="true">${%Install}</th>
               </l:isAdmin>
               <th initialSortDir="down">${%Name}</th>
               <th>${%Released}</th>
             </tr>
           </thead>
-          <tbody/>
+          <tbody />
         </table>
       </form>
     </l:main-panel>
   </l:layout>
-
 </j:jelly>

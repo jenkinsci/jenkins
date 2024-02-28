@@ -24,18 +24,14 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:f="/lib/form">
-  <st:documentation> <![CDATA[
-    Binds a set of Enum to a list of checkboxes, each with the label taken from enum Enum.toString()
-    Should be used inside an <f:entry field='...'> element.
-    ]]>
-    <st:attribute name="field" implicit="true">
-      Used for databinding.
-    </st:attribute>
+  <st:documentation>
+    <![CDATA[ Binds a set of Enum to a list of checkboxes, each with the label taken from enum Enum.toString() Should be used inside an <f:entry field='...'> element. ]]>
+    <st:attribute name="field" implicit="true">Used for databinding.</st:attribute>
   </st:documentation>
   <div name="${field}">
     <j:forEach var="e" items="${descriptor.getPropertyType(instance,field).itemType.enumConstants}">
       <div>
-        <input type="checkbox" name="_.${e.name()}" checked="${instance[field].contains(e)?'true':null}"/>
+        <input type="checkbox" name="_.${e.name()}" checked="${instance[field].contains(e)?'true':null}" />
         <label class="attach-previous">${e}</label>
       </div>
     </j:forEach>
