@@ -52,8 +52,8 @@ public class RegistryKey implements AutoCloseable {
     }
 
     private static String combine(String a, String b) {
-        if (a.length() == 0)   return b;
-        if (b.length() == 0)   return a;
+        if (a.isEmpty())   return b;
+        if (b.isEmpty())   return a;
         return a + '\\' + b;
     }
 
@@ -276,12 +276,6 @@ public class RegistryKey implements AutoCloseable {
         }
     }
 
-
-    @Override
-    protected void finalize() throws Throwable {
-        super.finalize();
-        dispose();
-    }
 
     public void dispose() {
         if (handle != 0)

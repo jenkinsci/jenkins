@@ -26,7 +26,7 @@ Remoting updates in the core are subject to the process though.
 === Communication channels
 
 * Mailing list: link:https://groups.google.com/d/forum/jenkinsci-dev[Jenkins Developer Mailing List]
-* Chat for runtime Jenkins release coordination: `#jenkins-release` on Libera IRC
+* Chat for runtime Jenkins release coordination takes place in link:https://matrix.to/#/#jenkins-release:matrix.org[#jenkins-release:matrix.org].
 ** All async communications should go to the developer mailing list
 
 === Roles
@@ -35,6 +35,7 @@ Remoting updates in the core are subject to the process though.
 * Issue Triage Team Member 
 * Core Pull Request Reviewer
 * Core Maintainer
+** Pull Request Assignee
 * Release Team Member
 
 **Contributors** submit pull requests to the Jenkins core and review changes submitted by others.
@@ -53,7 +54,10 @@ and to guide newcomer contributors who are not familiar with the project's proce
 GitHub team: link:https://github.com/orgs/jenkinsci/teams/core-pr-reviewers[@jenkinsci/core-pr-reviewers].
 
 **Core Maintainers** get `Write` permissions in the repository, and hence they are able to merge pull requests.
-Their responsibility is to perform pull request reviews on a regular basis and to merge ready pull requests towards the weekly releases (`master` branch).
+Their responsibility is to perform pull request reviews on a regular basis and to bring pull requests to closure,
+either by merging ready pull requests towards weekly releases (`master` branch)
+or by closing pull requests that are not ready for merge because of submitter inaction after an extended period of time.
+Core maintainers make a commitment to bringing a pull request to closure by becoming an **Assignee.**
 They are also responsible to monitor the weekly release status and to perform triage of critical issues.
 GitHub team: link:https://github.com/orgs/jenkinsci/teams/core[@jenkinsci/core].
 
@@ -84,7 +88,10 @@ At the same time, we are interested to make the review process as simple as poss
 Pull requests review in Jenkins is not just about reviewing code and accepting them if the code is OK.
 Core maintainers are expected to ensure feasibility and compatibility of changes,
 to maintain a good quality of the codebase and documentation,
-and to ensure there is a consensus between contributors.
+to ensure there is a consensus between contributors,
+and to bring pull requests to closure in a timely fashion,
+either by merging ready pull requests towards weekly releases
+or by closing pull requests that are not ready for merge because of submitter inaction after an extended period of time.
 
 ==== Verifying Feasibility
 
@@ -148,6 +155,147 @@ code reviewers are expected to suggest proper channels for contributors to discu
 * A discussion in the link:https://groups.google.com/d/forum/jenkinsci-dev[Jenkins Developer Mailing List] is the default way to go
 * If no consensus can be reached on the mailing list,
   voting at the link:https://www.jenkins.io/project/governance-meeting/[Jenkins Governance Meeting] can be used to get a final decision.
+
+=== Bringing pull requests to closure
+
+==== Motivation
+
+An obvious goal of the project is to deliver value to end users
+(without incurring an undue maintenance burden),
+without which end users would cease use of the delivered software.
+A pull request represents potential value for end users,
+value which is only realized when the pull request is merged and delivered in a shipping release.
+
+The same goes for maintenance pull requests that do not deliver immediate value to users
+but improve the project's health and sustainability, for example,
+developer documentation updates, code quality improvements, project and test automation, etc.
+These pull requests also need to be merged,
+and it is in our best interests to do so rather sooner than later.
+
+[cols="1,1"]
+|===
+|Optimal Outcome|Suboptimal Outcome
+
+|When a pull request is merged and delivered in a shipping release, users are rewarded with this value.
+|Inversely, when a pull request remains unmerged and unreleased for an extended period of time, users are deprived of this value.
+|===
+
+Another explicit goal of the project is to encourage both new and seasoned contributors alike.
+
+[cols="1,1"]
+|===
+|Optimal Outcome|Suboptimal Outcome
+
+|When a submission that is ready for merge is approved, merged, and released in a timely fashion, the contributor is more likely to contribute again.
+|Inversely, when a submission that is ready for merge languishes without timely approval, merge, and release, the contributor is less likely to contribute again.
+|When the contributor of a submission that is not _yet_ ready for merge is provided with clear, actionable, and justified feedback and when, after the action has been taken, the submission is subsequently reviewed again, approved, merged, and released in a timely fashion, the contributor is more likely to contribute again.
+|Inversely, when the contributor of a submission that is not _yet_ ready for merge is provided feedback without reasoning or asked questions that do not ultimately lead to a clear action item, the contributor is less likely to improve the quality of the submission.
+|When contributors and reviewers successfully negotiate scope, the contributor is more likely to complete the submission.
+|Inversely, when contributors and reviewers fail to negotiate a middle ground regarding scope, the contributor is less likely to complete the submission.
+|When an impractical submission is reviewed and explicitly rejected with reasoning in a timely fashion, the contributor is more likely to improve the quality of future submissions.
+|Inversely, when an impractical submission is ignored without an explicit rejection or rejected explicitly without reasoning, the contributor is less likely to improve the quality of future submissions.
+|===
+
+For these reasons, core maintainers are expected not only to review pull requests but also to bring them to closure in a timely fashion,
+either by merging ready pull requests towards weekly releases
+or by closing pull requests that are not ready for merge after an extended period of time.
+As part of the process of bringing pull requests to closure,
+core maintainers are expected to steer discussions towards the identification of clear action items with reasoning
+and to explicitly reject with reasoning pull requests for which there are no clear and justified action items or for which such action items remain incomplete after an extended period of time.
+
+==== Indicating intent to merge or close
+
+Core maintainers communicate their intention to bring a pull request to closure by adding themselves to the pull request in the **Assignees** field,
+through which they make a commitment to work with the contributor to either merge the pull request or to explicitly reject it.
+To avoid ambiguity, at most one (1) core maintainer should be assigned to a pull request.
+Only core maintainers should be assigned to pull requests,
+since a non-maintainer would be unable to fulfill the commitment by merging the pull request or explicitly rejecting it.
+To avoid making commitments on behalf of others that cannot be fulfilled,
+core maintainers should only assign pull requests to themselves and not to other core maintainers.
+An exception to the above would be if, following the adoption of this system, a pull request is brought to closure but remains unassigned.
+In that case, any core maintainer can retroactively assign the pull request to the core maintainer who merged or closed it for tracking purposes.
+In light of the responsibility to merge or close pull requests implied by membership on the core team,
+all core maintainers are strongly encouraged to regularly merge or close pull requests.
+
+==== Providing actionable and justified feedback
+
+Once assigned to a pull request, a core maintainer should make every reasonable effort to drive the pull request to closure in a timely fashion.
+If further action is needed before the pull request can be accepted, this action should be explicitly requested along with the reasoning behind it.
+Contributors are far more likely to successfully complete action items when the reasoning behind the request is explicit and cogent.
+It is perfectly reasonable for the assignee or any other reviewer to ask questions,
+but the ultimate goal of these questions should be to arrive at clear and justified action item(s);
+otherwise, the process can languish for an extended period of time.
+It is the responsibility of the assignee to steer the discussion towards concrete and justified action item(s).
+
+==== Providing confirmation that feedback has been addressed
+
+Once any requested actions have been taken, the assignee should make every reasonable effort to provide explicit confirmation that each action item has been completed.
+This gives contributors positive reinforcement and confidence that their submission is moving forward through the process,
+ultimately making them more likely to complete the process and contribute again.
+Assignees who cannot provide such confirmation in a timely fashion are strongly encouraged to remove their assignment from the pull request in order to allow another core maintainer to pick it up.
+If the assignee cannot respond in a timely fashion, the author or another core maintainer may ask the current assignee about their intentions;
+in the absence of a timely response, another core maintainer may remove the assignment.
+
+==== Negotiating scope
+
+Not every pull request reaches a state of perfection at the end of the review process.
+Sometimes, requests are made that, while justified, represent an additional amount of work that the contributor may not be willing to do.
+In some cases it is critical to complete the additional work, but in others "you aren't gonna need it" (YAGNI).
+In such cases, the assignee should make a good faith effort to negotiate with the contributor to find a reasonable middle ground that is "good enough."
+Failure to negotiate successfully can often chase contributors away.
+If the additional work is simple enough and the submission is not moving forward,
+the assignee may consider occasionally giving the contributor a lift by completing the additional work,
+though this is not expected in the general case
+and would not be fair to the assignee if a large amount of additional work is necessary.
+
+==== Voting process
+
+A pull request can often serve as a catalyst for a discussion in which several possible paths forward are identified.
+When there is no clear consensus among the core maintainers about the path forward,
+the assignee should call for a vote.
+While only core maintainers have formally binding votes, any interested parties are generally encouraged to vote, even if their votes are advisory.
+To avoid ambiguity, it is preferred that votes be done using https://www.apache.org/foundation/voting.html#expressing-votes-1-0-1-and-fractions[Apache conventions].
+Unlike in the Apache Software Foundation, a -1 vote is not a veto but rather a very strong objection.
+A -1 vote by a core maintainer stops a pull request in its tracks
+until and unless the core maintainer withdraws the -1 vote or is outvoted by other core maintainers.
+To ensure that -1 votes are used prudently,
+the core maintainer must provide with the -1 vote a technical justification showing why the change is bad
+(e.g., opens a security exposure, negatively affects performance, etc.).
+A -1 vote without a justification is invalid and has no weight.
+
+==== Acceptance [[acceptance]]
+
+Once a pull request has reached the point where it is ready for merge, it is time to begin the countdown period by applying the `ready-for-merge` label.
+To avoid ambiguity, this label should only be applied by a core maintainer who actually intends to merge the pull request.
+Non-maintainers, including members of the core PR reviewers team, should not start the countdown period,
+as this sends a signal to the contributor that their submission will be merged soon when in fact there may not be a core maintainer who has committed to merging it.
+To avoid making commitments on behalf of others that cannot be fulfilled,
+the `ready-for-merge` label should be applied by the assignee and not by another core maintainer.
+If the pull request does not have an assignee, applying the `ready-for-merge` label implies self-assignment,
+and this self-assignment may retroactively be made explicit by another core maintainer for tracking purposes.
+Please be mindful that people are more likely to contribute again when they are thanked for their contribution.
+An example acceptance message is as follows:
+
+> This PR is now ready for merge. We will merge it after approximately 24 hours if there is no negative feedback. Please see the https://github.com/jenkinsci/jenkins/blob/master/docs/MAINTAINERS.adoc#merge-process[merge process documentation] for more information about the merge process. Thanks!
+
+==== Rejection
+
+Not all pull requests reach the point where they are ready for merge.
+In some cases, the pull request is close to being ready, but one or more justified action items remain incomplete.
+In other cases, negotiations regarding scope have reached an impasse.
+In other cases, the pull request is very far from being ready or is completely impractical, and no progress is being made.
+When a pull request is not ready for merge after an extended period of time,
+the assignee is responsible for completing the rejection process,
+first by applying the `stalled` label, then by applying the `proposed-for-closed` label, and finally by closing the pull request with a rejection message.
+This process should be undertaken with the utmost care and respect
+in order to ensure that the contributor feels welcome to contribute again.
+At minimum, the reasoning behind the rejection should be stated in objective and factual terms.
+If the proposed change might be accepted again in the future once additional action item(s) have been completed,
+these should be stated to allow for the original author or a different author to complete the proposed change.
+Please be mindful that people are more likely to contribute again when they are thanked for their contribution.
+An example rejection message is as follows:
+
+> I am closing this PR due to <insert reasoning here>. On behalf of the core team, I would like to thank you for your contribution. Even though this PR did not make it across the finish line, it was a promising start! I continue to encourage you (or anyone else who is interested) to pick up this effort and drive it to completion. Thanks!
 
 === Review non-goals
 
@@ -360,17 +508,9 @@ For these reasons, the following changes should not be merged during the week be
 If the change is ready, but it is not a good time, consider labelling the pull request with the `on-hold` label.
 Make sure to add a comment explaining why it was put on hold.
 
-==== Step 3: Marking for merge
+==== Step 3: Acceptance
 
-Once the checklist is passed, a Core PR Reviewer or a Maintainer can mark the pull request for merge.
-
-* `ready-for-merge` label is set
-* An explicit comment is added to the pull request so that other repository watchers are notified.
-  Example: _Thanks to all contributors! We consider this change as ready to be merged towards the next weekly release. It may be merged after 24hours if there is no negative feedback_
-
-==== Step 4: Merge!
-
-A Core Maintainer merges the change after allowing sufficient time for comment (if needed).
+Once the checklist is passed, the PR is eligible to begin xref:acceptance[the acceptance process].
 After that, the change will be landed in the next weekly release.
 LTS backporting, if needed, will be handled separately by the release team.
 
@@ -444,8 +584,8 @@ Any Jenkins contributors are welcome to participate in backporting and release c
   Lists unresolved recent regressions, unresolved recent core bugs, and popular new issues.
 * link:https://github.com/jenkinsci/core-pr-tester[Core Pull Request Tester]
 * link:https://github.com/jenkinsci/core-changelog-generator[Core Changelog Generator]
-* link:https://github.com/jenkins-infra/backend-commit-history-parser[Toolkit for LTS backporting]
-* link:/update-since-todo.sh[Javadoc @since version updater]
+* link:https://github.com/jenkins-infra/release/tree/master/tools[Toolkit for LTS backporting]
+* link:/update-since-todo.py[@since version updater]
 
 == Feedback
 

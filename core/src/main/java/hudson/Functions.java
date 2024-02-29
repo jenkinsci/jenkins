@@ -54,6 +54,7 @@ import hudson.model.PaneStatusProperties;
 import hudson.model.ParameterDefinition;
 import hudson.model.ParameterDefinition.ParameterDescriptor;
 import hudson.model.PasswordParameterDefinition;
+import hudson.model.Queue;
 import hudson.model.Run;
 import hudson.model.Slave;
 import hudson.model.TimeZoneProperty;
@@ -148,6 +149,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import jenkins.console.ConsoleUrlProvider;
 import jenkins.model.GlobalConfiguration;
 import jenkins.model.GlobalConfigurationCategory;
 import jenkins.model.Jenkins;
@@ -690,13 +692,13 @@ public class Functions {
     }
 
     @Restricted(NoExternalUse.class)
-    public static String getUserTimeZonePostfix() {
+    public static String getUserTimeZonePostfix(Date date) {
         if (!isUserTimeZoneOverride()) {
             return "";
         }
 
         TimeZone tz = TimeZone.getTimeZone(getUserTimeZone());
-        return tz.getDisplayName(tz.observesDaylightTime(), TimeZone.SHORT);
+        return tz.getDisplayName(tz.inDaylightTime(date), TimeZone.SHORT, getCurrentLocale());
     }
 
     @Restricted(NoExternalUse.class)
@@ -1655,7 +1657,7 @@ public class Functions {
      * Converts "abc" to "Abc".
      */
     public static String capitalize(String s) {
-        if (s == null || s.length() == 0) return s;
+        if (s == null || s.isEmpty()) return s;
         return Character.toUpperCase(s.charAt(0)) + s.substring(1);
     }
 
@@ -1867,7 +1869,7 @@ public class Functions {
     public static String joinPath(String... components) {
         StringBuilder buf = new StringBuilder();
         for (String s : components) {
-            if (s.length() == 0)  continue;
+            if (s.isEmpty())  continue;
 
             if (buf.length() > 0) {
                 if (buf.charAt(buf.length() - 1) != '/')
@@ -1901,6 +1903,23 @@ public class Functions {
         else
             // relative URL name
             return joinPath(Stapler.getCurrentRequest().getContextPath() + '/' + itUrl, urlName);
+    }
+
+    /**
+     * Computes the link to the console for the run for the specified executable, taking {@link ConsoleUrlProvider} into account.
+     * @param executable the executable (normally a {@link Run})
+     * @return the absolute URL for accessing the build console for the executable, or null if there is no build associated with the executable
+     * @since 2.433
+     */
+    public static @CheckForNull String getConsoleUrl(Queue.Executable executable) {
+        if (executable == null) {
+            return null;
+        } else if (executable instanceof Run) {
+            return ConsoleUrlProvider.getRedirectUrl((Run<?, ?>) executable);
+        } else {
+            // Handles cases such as PlaceholderExecutable for Pipeline node steps.
+            return getConsoleUrl(executable.getParentExecutable());
+        }
     }
 
     /**
@@ -2223,8 +2242,17 @@ public class Functions {
         return SystemProperties.getBoolean("hudson.security.WipeOutPermission");
     }
 
+    @Deprecated
     public static String createRenderOnDemandProxy(JellyContext context, String attributesToCapture) {
         return Stapler.getCurrentRequest().createJavaScriptProxy(new RenderOnDemandClosure(context, attributesToCapture));
+    }
+
+    /**
+     * Called from renderOnDemand.jelly to generate the parameters for the proxy object generation.
+     */
+    @Restricted(NoExternalUse.class)
+    public static StaplerRequest.RenderOnDemandParameters createRenderOnDemandProxyParameters(JellyContext context, String attributesToCapture) {
+        return Stapler.getCurrentRequest().createJavaScriptProxyParameters(new RenderOnDemandClosure(context, attributesToCapture));
     }
 
     public static String getCurrentDescriptorByNameUrl() {
@@ -2299,13 +2327,17 @@ public class Functions {
         double number = size;
         if (number >= 1024) {
             number = number / 1024;
-            measure = "KB";
+            measure = "KiB";
             if (number >= 1024) {
                 number = number / 1024;
-                measure = "MB";
+                measure = "MiB";
                 if (number >= 1024) {
                     number = number / 1024;
-                    measure = "GB";
+                    measure = "GiB";
+                    if (number >= 1024) {
+                        number = number / 1024;
+                        measure = "TiB";
+                    }
                 }
             }
         }

@@ -493,6 +493,17 @@ public class UpdateSite {
         return url;
     }
 
+    /**
+     *
+     * @return the URL used by {@link jenkins.install.SetupWizard} for suggested plugins to install at setup time
+     * @since TODO
+     */
+    @Exported
+    public String getSuggestedPluginsUrl() {
+        String updateCenterJsonUrl = getUrl();
+        return updateCenterJsonUrl.replace("/update-center.json", "/platform-plugins.json");
+    }
+
 
     /**
      * URL which exposes the metadata location in a specific update site.

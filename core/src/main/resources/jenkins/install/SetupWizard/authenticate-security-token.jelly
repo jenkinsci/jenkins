@@ -14,7 +14,6 @@
                   <h4 class="modal-title">${%authenticate-security-token.getting.started}</h4>
                 </div>
                 <div class="modal-body setup-wizard-heading">
-                  <i class="water-mark icon-service"></i>
                   <div class="jumbotron welcome-panel offline">
                     <h1>${%authenticate-security-token.unlock.jenkins}</h1>
                     <p>${%jenkins.install.findSecurityTokenMessage(it.initialAdminPasswordFile)}</p>

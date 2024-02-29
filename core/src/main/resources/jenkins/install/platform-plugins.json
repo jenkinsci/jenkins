@@ -17,7 +17,6 @@
       { "name": "config-file-provider" },
       { "name": "credentials-binding", "suggested": true },
       { "name": "embeddable-build-status" },
-      { "name": "rebuild" },
       { "name": "ssh-agent" },
       { "name": "throttle-concurrents" },
       { "name": "timestamper", "suggested": true },
@@ -36,7 +35,7 @@
   {
     "category": "Build Analysis and Reporting",
     "plugins": [
-      { "name": "cobertura" },
+      { "name": "coverage" },
       { "name": "htmlpublisher" },
       { "name": "junit" },
       { "name": "warnings-ng" },
@@ -94,6 +93,10 @@
       { "name": "emailext-template" },
       { "name": "mailer", "suggested": true }
     ]
+  },
+  {
+    "category": "Appearance",
+    "plugins": [{ "name": "dark-theme", "suggested": true }]
   },
   {
     "category": "Languages",

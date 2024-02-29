@@ -92,12 +92,14 @@ import jenkins.model.DirectlyModifiableTopLevelItemGroup;
 import jenkins.model.Jenkins;
 import jenkins.model.JenkinsLocationConfiguration;
 import jenkins.model.ModelObjectWithChildren;
+import jenkins.model.PeepholePermalink;
 import jenkins.model.ProjectNamingStrategy;
 import jenkins.model.RunIdMigrator;
 import jenkins.model.lazy.LazyBuildMixIn;
 import jenkins.scm.RunWithSCM;
 import jenkins.security.HexStringConfidentialKey;
 import jenkins.triggers.SCMTriggerItem;
+import jenkins.widgets.HasWidgets;
 import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.FileUtils;
@@ -113,6 +115,7 @@ import org.jfree.data.category.CategoryDataset;
 import org.jfree.ui.RectangleInsets;
 import org.jvnet.localizer.Localizable;
 import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
@@ -135,7 +138,7 @@ import org.kohsuke.stapler.verb.POST;
  * @author Kohsuke Kawaguchi
  */
 public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, RunT>>
-        extends AbstractItem implements ExtensionPoint, StaplerOverridable, ModelObjectWithChildren {
+        extends AbstractItem implements ExtensionPoint, StaplerOverridable, ModelObjectWithChildren, HasWidgets {
 
     private static final Logger LOGGER = Logger.getLogger(Job.class.getName());
 
@@ -611,15 +614,10 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         return r;
     }
 
-    public List<Widget> getWidgets() {
-        ArrayList<Widget> r = new ArrayList<>();
-        r.add(createHistoryWidget());
-        return r;
-    }
-
     /**
-     * @see LazyBuildMixIn#createHistoryWidget
+     * @deprecated see {@link LazyBuildMixIn#createHistoryWidget()}
      */
+    @Deprecated(forRemoval = true, since = "2.410")
     protected HistoryWidget createHistoryWidget() {
         return new HistoryWidget<Job, RunT>(this, getBuilds(), HISTORY_ADAPTER);
     }
@@ -944,7 +942,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     @Exported
     @QuickSilver
     public RunT getLastSuccessfulBuild() {
-        return (RunT) Permalink.LAST_SUCCESSFUL_BUILD.resolve(this);
+        return (RunT) PeepholePermalink.LAST_SUCCESSFUL_BUILD.resolve(this);
     }
 
     /**
@@ -954,7 +952,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     @Exported
     @QuickSilver
     public RunT getLastUnsuccessfulBuild() {
-        return (RunT) Permalink.LAST_UNSUCCESSFUL_BUILD.resolve(this);
+        return (RunT) PeepholePermalink.LAST_UNSUCCESSFUL_BUILD.resolve(this);
     }
 
     /**
@@ -964,7 +962,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     @Exported
     @QuickSilver
     public RunT getLastUnstableBuild() {
-        return (RunT) Permalink.LAST_UNSTABLE_BUILD.resolve(this);
+        return (RunT) PeepholePermalink.LAST_UNSTABLE_BUILD.resolve(this);
     }
 
     /**
@@ -974,7 +972,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     @Exported
     @QuickSilver
     public RunT getLastStableBuild() {
-        return (RunT) Permalink.LAST_STABLE_BUILD.resolve(this);
+        return (RunT) PeepholePermalink.LAST_STABLE_BUILD.resolve(this);
     }
 
     /**
@@ -983,7 +981,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     @Exported
     @QuickSilver
     public RunT getLastFailedBuild() {
-        return (RunT) Permalink.LAST_FAILED_BUILD.resolve(this);
+        return (RunT) PeepholePermalink.LAST_FAILED_BUILD.resolve(this);
     }
 
     /**
@@ -992,7 +990,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     @Exported
     @QuickSilver
     public RunT getLastCompletedBuild() {
-        return (RunT) Permalink.LAST_COMPLETED_BUILD.resolve(this);
+        return (RunT) PeepholePermalink.LAST_COMPLETED_BUILD.resolve(this);
     }
 
     /**
@@ -1013,6 +1011,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * Failing to find 3 of those, it will return up to 3 last unsuccessful builds.
      *
      * In any case it will not go more than 6 builds into the past to avoid costly build loading.
+     * @see LazyBuildMixIn#getEstimatedDurationCandidates
      */
     protected List<RunT> getEstimatedDurationCandidates() {
         List<RunT> candidates = new ArrayList<>(3);
@@ -1069,6 +1068,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * @return never null
      */
     public PermalinkList getPermalinks() {
+        PeepholePermalink.initialized();
         // TODO: shall we cache this?
         PermalinkList permalinks = new PermalinkList(Permalink.BUILTIN);
         for (PermalinkProjectAction ppa : getActions(PermalinkProjectAction.class)) {
@@ -1600,6 +1600,8 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         return Jenkins.get().getAuthorizationStrategy().getACL(this);
     }
 
+    @Deprecated
+    @Restricted(DoNotUse.class)
     public BuildTimelineWidget getTimeline() {
         return new BuildTimelineWidget(getBuilds());
     }

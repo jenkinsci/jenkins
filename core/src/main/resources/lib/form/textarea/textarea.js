@@ -15,10 +15,7 @@ Behaviour.specify("TEXTAREA.codemirror", "textarea", 0, function (e) {
   if (typeof codemirror.getScrollerElement !== "function") {
     // Maybe older versions of CodeMirror do not provide getScrollerElement method.
     codemirror.getScrollerElement = function () {
-      return findElementsBySelector(
-        codemirror.getWrapperElement(),
-        ".CodeMirror-scroll"
-      )[0];
+      return codemirror.getWrapperElement().querySelector(".CodeMirror-scroll");
     };
   }
   var lineCount = codemirror.lineCount();
@@ -29,9 +26,9 @@ Behaviour.specify("TEXTAREA.codemirror", "textarea", 0, function (e) {
   scroller.style.height = Math.max(lineHeight * lineCount + 30, 130) + "px";
 
   // the form needs to be populated before the "Apply" button
-  if (e.up("form")) {
+  if (e.closest("form")) {
     // Protect against undefined element
-    Element.on(e.up("form"), "jenkins:apply", function () {
+    e.closest("form").addEventListener("jenkins:apply", function () {
       e.value = codemirror.getValue();
     });
   }
@@ -42,13 +39,14 @@ Behaviour.specify(
   "textarea",
   100,
   function (e) {
-    var previewDiv = findElementsBySelector(e, ".textarea-preview")[0];
-    var showPreview = findElementsBySelector(e, ".textarea-show-preview")[0];
-    var hidePreview = findElementsBySelector(e, ".textarea-hide-preview")[0];
-    $(hidePreview).hide();
-    $(previewDiv).hide();
+    var previewDiv = e.nextSibling;
+    var showPreview = e.querySelector(".textarea-show-preview");
+    var hidePreview = e.querySelector(".textarea-hide-preview");
+    hidePreview.style.display = "none";
+    previewDiv.style.display = "none";
 
-    showPreview.onclick = function () {
+    showPreview.onclick = function (event) {
+      event.preventDefault();
       // Several TEXTAREAs may exist if CodeMirror is enabled. The first one has reference to the CodeMirror object.
       var textarea = e.parentNode.getElementsByTagName("TEXTAREA")[0];
       var text = "";
@@ -62,31 +60,36 @@ Behaviour.specify(
           : textarea.value;
       }
       var render = function (txt) {
-        $(hidePreview).show();
-        $(previewDiv).show();
+        hidePreview.style.display = "";
+        previewDiv.style.display = "";
         previewDiv.innerHTML = txt;
         layoutUpdateCallback.call();
       };
 
-      new Ajax.Request(rootURL + showPreview.getAttribute("previewEndpoint"), {
-        parameters: {
+      fetch(rootURL + showPreview.getAttribute("previewEndpoint"), {
+        method: "post",
+        headers: crumb.wrap({
+          "Content-Type": "application/x-www-form-urlencoded",
+        }),
+        body: new URLSearchParams({
           text: text,
-        },
-        onSuccess: function (obj) {
-          render(obj.responseText);
-        },
-        onFailure: function (obj) {
-          render(
-            obj.status + " " + obj.statusText + "<HR/>" + obj.responseText
-          );
-        },
+        }),
+      }).then((rsp) => {
+        rsp.text().then((responseText) => {
+          if (rsp.ok) {
+            render(responseText);
+          } else {
+            render(rsp.status + " " + rsp.statusText + "<HR/>" + responseText);
+          }
+          return false;
+        });
       });
-      return false;
     };
 
-    hidePreview.onclick = function () {
-      $(hidePreview).hide();
-      $(previewDiv).hide();
+    hidePreview.onclick = function (event) {
+      event.preventDefault();
+      hidePreview.style.display = "none";
+      previewDiv.style.display = "none";
     };
-  }
+  },
 );

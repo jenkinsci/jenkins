@@ -8,15 +8,21 @@ Behaviour.specify(
       let expanded = button.dataset.expanded;
 
       if (expanded === undefined) {
-        let hiddenContent = parentContainer.next("table.advancedBody");
+        let hiddenContent = parentContainer.nextElementSibling;
+        while (hiddenContent && !hiddenContent.matches("table.advancedBody")) {
+          hiddenContent = hiddenContent.nextElementSibling;
+        }
         let tr;
 
         if (hiddenContent) {
-          hiddenContent = hiddenContent.down(); // TABLE -> TBODY
-          tr = parentContainer.up("TR");
+          hiddenContent = hiddenContent.firstElementChild; // TABLE -> TBODY
+          tr = parentContainer.closest("TR");
         } else {
-          hiddenContent = parentContainer.next("div.advancedBody");
-          tr = parentContainer.up(".tr");
+          hiddenContent = parentContainer.nextElementSibling;
+          while (hiddenContent && !hiddenContent.matches("div.advancedBody")) {
+            hiddenContent = hiddenContent.nextElementSibling;
+          }
+          tr = parentContainer.closest(".tr");
         }
 
         // move the contents of the advanced portion into the main table
@@ -27,11 +33,11 @@ Behaviour.specify(
           if (nameRef != null && row.getAttribute("nameref") == null) {
             row.setAttribute("nameref", nameRef);
           }
-          tr.parentNode.insertBefore(row, $(tr).next());
+          tr.parentNode.insertBefore(row, tr.nextElementSibling);
         }
 
         const oneOrMoreFieldsEditedNotice = parentContainer.querySelector(
-          ".jenkins-edited-section-label"
+          ".jenkins-edited-section-label",
         );
 
         if (oneOrMoreFieldsEditedNotice.classList.contains("jenkins-hidden")) {
@@ -57,7 +63,7 @@ Behaviour.specify(
                 JSON.stringify(Object.fromEntries(formData));
               oneOrMoreFieldsEditedNotice.classList.toggle(
                 "jenkins-hidden",
-                result
+                result,
               );
             });
           });
@@ -77,7 +83,7 @@ Behaviour.specify(
       layoutUpdateCallback.call();
     });
     e = null; // avoid memory leak
-  }
+  },
 );
 
 Behaviour.specify(
@@ -86,12 +92,12 @@ Behaviour.specify(
   0,
   function (element) {
     const id = element.getAttribute("data-id");
-    const oneOrMoreFieldsEditedNotice = $(id);
+    const oneOrMoreFieldsEditedNotice = document.getElementById(id);
     if (oneOrMoreFieldsEditedNotice != null) {
       oneOrMoreFieldsEditedNotice.classList.remove("jenkins-hidden");
     } else if (console && console.log) {
       const customizedFields = element.getAttribute("data-customized-fields");
       console.log("no element " + id + " for " + customizedFields);
     }
-  }
+  },
 );

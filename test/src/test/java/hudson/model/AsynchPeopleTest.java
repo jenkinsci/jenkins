@@ -27,8 +27,8 @@ package hudson.model;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import com.gargoylesoftware.htmlunit.html.DomElement;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import org.htmlunit.html.DomElement;
+import org.htmlunit.html.HtmlPage;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.For;
@@ -48,10 +48,10 @@ public class AsynchPeopleTest {
         HtmlPage page = wc.goTo("asynchPeople");
         assertEquals(0, wc.waitForBackgroundJavaScript(120000));
         boolean found = false;
-        for (DomElement table : page.getElementsByTagName("table")) {
-            if (table.getAttribute("class").contains("progress-bar")) {
+        for (DomElement div : page.getElementsByTagName("div")) {
+            if (div.getAttribute("class").contains("app-progress-bar")) {
                 found = true;
-                assertEquals("display: none;", table.getAttribute("style"));
+                assertEquals("display: none;", div.getAttribute("style"));
                 break;
             }
         }

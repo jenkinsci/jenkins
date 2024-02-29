@@ -1,4 +1,4 @@
-var rootUrlField = $("root-url");
+var rootUrlField = document.getElementById("root-url");
 
 rootUrlField.focus();
 rootUrlField.onkeydown = function (event) {
@@ -13,7 +13,7 @@ rootUrlField.onkeydown = function (event) {
   var iframeRelativeUrl = "setupWizard/setupWizardConfigureInstance";
   var rootUrl = iframeUrl.substr(
     0,
-    iframeUrl.length - iframeRelativeUrl.length
+    iframeUrl.length - iframeRelativeUrl.length,
   );
   // to keep only the root url
   rootUrlField.value = rootUrl;

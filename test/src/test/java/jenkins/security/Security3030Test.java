@@ -24,13 +24,11 @@
 
 package jenkins.security;
 
-import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
-import com.gargoylesoftware.htmlunit.HttpMethod;
-import com.gargoylesoftware.htmlunit.WebRequest;
 import hudson.ExtensionList;
 import hudson.model.RootAction;
 import hudson.util.HttpResponses;
@@ -48,6 +46,8 @@ import javax.servlet.ServletException;
 import org.apache.commons.fileupload.FileCountLimitExceededException;
 import org.apache.commons.fileupload.FileUploadBase;
 import org.apache.commons.fileupload.FileUploadException;
+import org.htmlunit.HttpMethod;
+import org.htmlunit.WebRequest;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;

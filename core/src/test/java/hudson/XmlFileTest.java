@@ -1,18 +1,20 @@
 package hudson;
 
-import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThrows;
 
+import com.thoughtworks.xstream.converters.ConversionException;
+import com.thoughtworks.xstream.io.StreamException;
 import hudson.model.Node;
+import hudson.util.RobustReflectionConverter;
 import hudson.util.XStream2;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import jenkins.model.Jenkins;
-import org.junit.Ignore;
 import org.junit.Test;
-import org.xml.sax.SAXParseException;
 
 public class XmlFileTest {
 
@@ -30,9 +32,6 @@ public class XmlFileTest {
         }
     }
 
-    // KXml2Driver is able to parse XML 1.0 even if it has control characters which
-    // should be illegal.  Ignoring this test until we switch to a more compliant driver
-    @Ignore
     @Test
     public void xml1_0_withSpecialCharsShouldFail() {
         URL configUrl = getClass().getResource("/hudson/config_1_0_with_special_chars.xml");
@@ -41,7 +40,15 @@ public class XmlFileTest {
 
         XmlFile xmlFile =  new XmlFile(xs, new File(configUrl.getFile()));
         if (xmlFile.exists()) {
-            assertThrows(SAXParseException.class, xmlFile::read);
+            IOException e = assertThrows(IOException.class, xmlFile::read);
+            assertThat(e.getCause(), instanceOf(ConversionException.class));
+            ConversionException ce = (ConversionException) e.getCause();
+            assertThat(ce.get("cause-exception"), is(StreamException.class.getName()));
+            assertThat(ce.get("class"), is(Jenkins.class.getName()));
+            assertThat(ce.get("required-type"), is(Jenkins.class.getName()));
+            assertThat(ce.get("converter-type"), is(RobustReflectionConverter.class.getName()));
+            assertThat(ce.get("path"), is("/hudson/label"));
+            assertThat(ce.get("line number"), is("7"));
         }
     }
 

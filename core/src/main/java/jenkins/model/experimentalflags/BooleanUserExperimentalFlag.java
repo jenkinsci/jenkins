@@ -27,7 +27,7 @@ package jenkins.model.experimentalflags;
 import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
- * @since TODO
+ * @since 2.395
  */
 public abstract class BooleanUserExperimentalFlag extends UserExperimentalFlag<Boolean> {
     protected BooleanUserExperimentalFlag(@NonNull String flagKey) {

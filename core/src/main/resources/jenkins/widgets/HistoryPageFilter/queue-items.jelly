@@ -58,14 +58,14 @@ THE SOFTWARE.
 	    </j:choose>
 	  <j:if test="${!item.params.isEmpty()}">
 	    <div style="float:right;margin-right:10px;">
-	      <a href="#" tooltip="Build Parameters:${item.params}"><l:icon class="icon-notepad icon-sm" /></a>
+	      <l:icon src="symbol-parameters" class="icon-sm" tooltip="Build Parameters:${item.params}"/>
 	    </div>
 	  </j:if>
 	  </div>
 	  <div class="pane build-controls">
 	    <div class="build-stop">
 	      <j:if test="${item.hasCancelPermission()}">
-		<l:stopButton href="${rootURL}/queue/cancelItem?id=${item.id}" alt="${%cancel this build}"/>
+		<l:stopButton href="${rootURL}/queue/cancelItem?id=${item.id}" alt="${%Cancel this build}"/>
 	      </j:if>
 	    </div>
 	  </div>

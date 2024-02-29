@@ -25,7 +25,8 @@ tabPanes.forEach((tabPane, index) => {
     tab.classList.add("active");
   }
 
-  tab.addEventListener("click", function () {
+  tab.addEventListener("click", function (e) {
+    e.preventDefault();
     document.querySelectorAll(".tab").forEach((tab) => {
       tab.classList.remove("active");
     });
@@ -38,6 +39,7 @@ tabPanes.forEach((tabPane, index) => {
   });
 
   const tabLink = document.createElement("a");
+  tabLink.setAttribute("href", "#");
   tabLink.innerText = tabPaneTitle.textContent;
 
   tab.append(tabLink);
