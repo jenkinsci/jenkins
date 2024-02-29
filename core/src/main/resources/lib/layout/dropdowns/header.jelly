@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+Copyright (c) 2024, Jan Faracik
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,16 +22,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<!-- list of feed links -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:dd="/lib/layout/dropdowns">
-    <dd:item icon="symbol-rss"
-             text="${%All}"
-             href="rss" />
-    <dd:item icon="symbol-rss"
-             text="${%WARNING}"
-             href="rss?level=WARNING" />
-    <dd:item icon="symbol-rss"
-             text="${%SEVERE}"
-             href="rss?level=SEVERE" />
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
+    <st:documentation>
+        <st:attribute name="text" />
+
+        Displays a header to visually group items in a dropdown
+    </st:documentation>
+
+    <template data-dropdown-type="HEADER" data-dropdown-text="${attrs.text}" />
 </j:jelly>
