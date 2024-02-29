@@ -248,7 +248,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
 
     @DataBoundSetter
     public void setUserName(String userName) {
-        this.userName = userName;
+        this.userName = Util.fixEmptyAndTrim(userName);
     }
 
     @DataBoundSetter
@@ -290,6 +290,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
             secretPassword = Secret.fromString(Scrambler.descramble(password));
         password = null;
         authenticator = newAuthenticator();
+        userName = Util.fixEmptyAndTrim(userName);
         return this;
     }
 
@@ -363,12 +364,9 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
      *
      * <p>Equivalent to {@code newHttpClientBuilder().followRedirects(HttpClient.Redirect.NORMAL).build()}.
      *
-     * <p>The Jenkins-specific default settings include a proxy server and proxy authentication (as
-     * configured by {@link ProxyConfiguration}) and a connection timeout (as configured by {@link
-     * ProxyConfiguration#DEFAULT_CONNECT_TIMEOUT_MILLIS}).
-     *
      * @return a new {@link HttpClient}
      * @since 2.379
+     * @see #newHttpClientBuilder
      */
     public static HttpClient newHttpClient() {
         return newHttpClientBuilder().followRedirects(HttpClient.Redirect.NORMAL).build();
@@ -382,6 +380,12 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
      * <p>The Jenkins-specific default settings include a proxy server and proxy authentication (as
      * configured by {@link ProxyConfiguration}) and a connection timeout (as configured by {@link
      * ProxyConfiguration#DEFAULT_CONNECT_TIMEOUT_MILLIS}).
+     *
+     * <p><strong>Warning:</strong> if both {@link #getName} and {@link #getUserName} are set
+     * (meaning that an authenticated proxy is defined),
+     * you will not be able to pass an {@code Authorization} header to the real server
+     * when running on Java 17 and later
+     * (pending <a href="https://bugs.openjdk.org/browse/JDK-8326949">JDK-8326949</a>.
      *
      * @return an {@link HttpClient.Builder}
      * @since 2.379
