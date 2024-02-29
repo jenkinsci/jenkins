@@ -4,16 +4,18 @@
     const descriptionPane = document.querySelector("#description");
     const dataUrl = descriptionPane.dataset.url;
     const dataDescription = descriptionPane.dataset.description;
-    let descriptionLink = document.getElementById(descriptionPane.dataset.buttonSetter);
+    // let descriptionLink = document.getElementById();
 
-    descriptionLink.addEventListener("click", function (e) {
-      e.preventDefault();
+    Behaviour.specify("#" + descriptionPane.dataset.buttonSetter, "description-setter", 0, function (e) {
+      e.addEventListener('click', () => {
+        // e.preventDefault();
 
-      if (dataUrl == null && dataDescription == null) {
-        return replaceDescription();
-      } else {
-        return replaceDescription(dataDescription, dataUrl);
-      }
+        if (dataUrl == null && dataDescription == null) {
+          return replaceDescription();
+        } else {
+          return replaceDescription(dataDescription, dataUrl);
+        }
+      })
     });
   });
 })();
