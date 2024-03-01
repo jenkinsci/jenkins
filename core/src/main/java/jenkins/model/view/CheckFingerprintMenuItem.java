@@ -42,6 +42,10 @@ public class CheckFingerprintMenuItem implements Action {
 
         @Override
         public Collection<? extends Action> createFor(View target) {
+            if (!Jenkins.get().getFingerprintMap().isReady()) {
+                return Set.of();
+            }
+
             return Set.of(new CheckFingerprintMenuItem());
         }
     }
