@@ -95,6 +95,7 @@ import javax.xml.transform.stream.StreamSource;
 import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithChildren;
 import jenkins.model.ModelObjectWithContextMenu;
+import jenkins.model.TransientActionFactory;
 import jenkins.model.item_category.Categories;
 import jenkins.model.item_category.Category;
 import jenkins.model.item_category.ItemCategory;
@@ -1458,4 +1459,12 @@ public abstract class View extends Actionable implements AccessControlled, Descr
     public static final Message<View> NEW_PRONOUN = new Message<>();
 
     private static final Logger LOGGER = Logger.getLogger(View.class.getName());
+
+    public List<Action> getTransientActions() {
+        List<Action> actions = new ArrayList<>();
+        for (TransientActionFactory factory : TransientActionFactory.factoriesFor(getClass(), Action.class)) {
+            actions.addAll(factory.createFor(this));
+        }
+        return Collections.unmodifiableList(actions);
+    }
 }

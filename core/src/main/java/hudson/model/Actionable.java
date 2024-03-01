@@ -95,6 +95,11 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
     public final List<? extends Action> getAllActions() {
         List<Action> _actions = getActions();
         boolean adding = false;
+
+        System.out.println("Your class is ");
+        System.out.println(getClass());
+        System.out.println("Your class was");
+
         for (TransientActionFactory<?> taf : TransientActionFactory.factoriesFor(getClass(), Action.class)) {
             Collection<? extends Action> additions = createFor(taf);
             if (!additions.isEmpty()) {

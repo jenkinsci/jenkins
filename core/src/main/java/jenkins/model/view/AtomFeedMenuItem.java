@@ -24,7 +24,7 @@ public class AtomFeedMenuItem implements Action {
 
     @Override
     public Group getGroup() {
-        return Group.IN_MENU;
+        return Group.of(200);
     }
 
     @Override

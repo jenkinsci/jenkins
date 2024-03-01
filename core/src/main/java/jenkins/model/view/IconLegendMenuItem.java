@@ -13,7 +13,7 @@ public class IconLegendMenuItem implements Action {
 
     @Override
     public String getId() {
-        return "menu-item-icon-legend";
+        return "button-icon-legend";
     }
 
     @Override
@@ -28,7 +28,7 @@ public class IconLegendMenuItem implements Action {
 
     @Override
     public Group getGroup() {
-        return Group.IN_MENU;
+        return Group.of(200);
     }
 
     @Override

@@ -63,11 +63,11 @@ THE SOFTWARE.
             </j:forEach>
 
             <l:overflowButton>
-              <j:set var="currentGroup" value="null" />
-              <j:forEach var="action" items="${it.allActions}">
+              <j:set var="currentGroup" value="${null}" />
+              <j:forEach var="action" items="${it.transientActions}">
                 <j:if test="${action.iconFileName != null}">
                   <j:if test="${action.group.order gt 2}">
-                    <j:if test="${currentGroup lt action.group.order and currentGroup != null}">
+                    <j:if test="${currentGroup != null and currentGroup lt action.group.order}">
                       <dd:separator />
                     </j:if>
                     <j:set var="currentGroup" value="${action.group.order}" />
@@ -79,6 +79,7 @@ THE SOFTWARE.
                           <j:forEach var="action" items="${action.action.actions}">
                             <dd:item icon="${action.iconFileName}"
                                      text="${action.displayName}"
+                                     id="${action.id}"
                                      href="${action.action.url}"
                                      clazz="${action.semantic != null ? 'jenkins-!-' + action.semantic.name().toLowerCase() + '-color' : ''}"
                                      badge="${action.badge}" />
@@ -88,6 +89,7 @@ THE SOFTWARE.
                       <j:otherwise>
                         <dd:item icon="${action.iconFileName}"
                                  text="${action.displayName}"
+                                 id="${action.id}"
                                  href="${action.action.url}"
                                  clazz="${action.semantic != null ? 'jenkins-!-' + action.semantic.name().toLowerCase() + '-color' : ''}"
                                  badge="${action.badge}" />
@@ -98,6 +100,12 @@ THE SOFTWARE.
               </j:forEach>
             </l:overflowButton>
           </l:app-bar>
+
+          <template id="template-icon-legend" data-title="${%Icon legend}">
+            <st:include page="_legend.jelly" it="${app}" />
+          </template>
+
+          <script src="${resURL}/jsbundles/pages/dashboard.js" type="text/javascript" defer="true" />
 
           <st:include page="view-index-top.jelly" it="${it.owner}" optional="true">
             <!-- allow the owner to take over the top section, but we also need the default to be backward compatible -->
