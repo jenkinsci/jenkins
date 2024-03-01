@@ -1465,6 +1465,9 @@ public abstract class View extends Actionable implements AccessControlled, Descr
         for (TransientActionFactory factory : TransientActionFactory.factoriesFor(getClass(), Action.class)) {
             actions.addAll(factory.createFor(this));
         }
-        return Collections.unmodifiableList(actions);
+        return actions.stream()
+                .sorted(Comparator.comparingInt((Action e) -> e.getGroup().getOrder())
+                        .thenComparing(Action::getDisplayName))
+                .collect(Collectors.toUnmodifiableList());
     }
 }

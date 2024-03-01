@@ -13,7 +13,7 @@ public class CheckFingerprintMenuItem implements Action {
 
     @Override
     public String getDisplayName() {
-        return "Check File Fingerprint";
+        return "Check file fingerprint";
     }
 
     @Override
