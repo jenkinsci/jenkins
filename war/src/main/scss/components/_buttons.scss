@@ -7,6 +7,7 @@
 
   @include mixins.item;
 
+  position: relative;
   appearance: none;
   display: inline-flex;
   align-items: center;
@@ -40,6 +41,13 @@
     opacity: 0.5;
     filter: saturate(0.6);
     cursor: not-allowed;
+  }
+
+  .jenkins-badge {
+    position: absolute;
+    top: 0;
+    right: 0;
+    translate: 40% -40%;
   }
 }
 

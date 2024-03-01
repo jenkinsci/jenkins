@@ -2,7 +2,8 @@ package jenkins.model.view;
 
 import hudson.Extension;
 import hudson.model.Action;
-import hudson.model.View;
+import hudson.model.AllView;
+import hudson.model.ListView;
 import java.util.Collection;
 import java.util.Set;
 import jenkins.model.TransientActionFactory;
@@ -32,15 +33,37 @@ public class NewProjectMenuItem implements Action {
     }
 
     @Extension
-    public static class TransientActionFactoryImpl extends TransientActionFactory<View> {
+    public static class TransientActionFactoryListViewImpl extends TransientActionFactory<ListView> {
 
         @Override
-        public Class<View> type() {
-            return View.class;
+        public Class<ListView> type() {
+            return ListView.class;
         }
 
         @Override
-        public Collection<? extends Action> createFor(View target) {
+        public Collection<? extends Action> createFor(ListView target) {
+            if (!target.hasPermission(ListView.CREATE)) {
+                return Set.of();
+            }
+
+            return Set.of(new NewProjectMenuItem());
+        }
+    }
+
+    @Extension
+    public static class TransientActionFactoryViewImpl extends TransientActionFactory<AllView> {
+
+        @Override
+        public Class<AllView> type() {
+            return AllView.class;
+        }
+
+        @Override
+        public Collection<? extends Action> createFor(AllView target) {
+            if (!target.hasPermission(AllView.CREATE)) {
+                return Set.of();
+            }
+
             return Set.of(new NewProjectMenuItem());
         }
     }

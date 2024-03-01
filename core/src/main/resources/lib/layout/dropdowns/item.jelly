@@ -40,6 +40,9 @@ THE SOFTWARE.
         <st:attribute name="clazz">
             Optional class for the menu item
         </st:attribute>
+        <st:attribute name="badge" type="jenkins.management.Badge">
+            Optional badge for the menu item
+        </st:attribute>
     </st:documentation>
 
     <j:set var="icon">
@@ -52,5 +55,8 @@ THE SOFTWARE.
               data-dropdown-text="${attrs.text}"
               data-dropdown-href="${attrs.href}"
               data-dropdown-clazz="${attrs.clazz}"
+              data-dropdown-badge-text="${attrs.badge.text}"
+              data-dropdown-badge-tooltip="${attrs.badge.tooltip}"
+              data-dropdown-badge-severity="${attrs.badge.severity}"
     />
 </j:jelly>

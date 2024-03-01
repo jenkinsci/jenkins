@@ -7,7 +7,7 @@ import java.util.Collection;
 import java.util.Set;
 import jenkins.model.TransientActionFactory;
 import jenkins.model.menu.Group;
-import jenkins.model.menu.event.JavascriptAction;
+import jenkins.model.menu.event.DoNothingAction;
 
 public class IconLegendMenuItem implements Action {
 
@@ -33,7 +33,7 @@ public class IconLegendMenuItem implements Action {
 
     @Override
     public jenkins.model.menu.event.Action getAction() {
-        return JavascriptAction.of("TODO");
+        return new DoNothingAction();
     }
 
     @Extension

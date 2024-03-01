@@ -8,6 +8,7 @@ import java.util.Set;
 import jenkins.model.TransientActionFactory;
 import jenkins.model.menu.Group;
 import jenkins.model.menu.event.DropdownAction;
+import jenkins.model.menu.event.LinkAction;
 
 public class AtomFeedMenuItem implements Action {
 
@@ -39,6 +40,11 @@ public class AtomFeedMenuItem implements Action {
                     public String getDisplayName() {
                         return "All";
                     }
+
+                    @Override
+                    public jenkins.model.menu.event.Action getAction() {
+                        return LinkAction.of("rssAll");
+                    }
                 },
                 new Action() {
                     @Override
@@ -50,6 +56,11 @@ public class AtomFeedMenuItem implements Action {
                     public String getDisplayName() {
                         return "Failures";
                     }
+
+                    @Override
+                    public jenkins.model.menu.event.Action getAction() {
+                        return LinkAction.of("rssFailed");
+                    }
                 },
                 new Action() {
                     @Override
@@ -60,6 +71,11 @@ public class AtomFeedMenuItem implements Action {
                     @Override
                     public String getDisplayName() {
                         return "Latest builds";
+                    }
+
+                    @Override
+                    public jenkins.model.menu.event.Action getAction() {
+                        return LinkAction.of("latestBuilds");
                     }
                 }
         );

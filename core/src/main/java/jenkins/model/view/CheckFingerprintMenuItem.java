@@ -2,46 +2,46 @@ package jenkins.model.view;
 
 import hudson.Extension;
 import hudson.model.Action;
-import hudson.model.View;
+import hudson.model.ListView;
 import java.util.Collection;
 import java.util.Set;
 import jenkins.model.TransientActionFactory;
 import jenkins.model.menu.Group;
 import jenkins.model.menu.event.LinkAction;
 
-public class ConfigureMenuItem implements Action {
+public class CheckFingerprintMenuItem implements Action {
 
     @Override
     public String getDisplayName() {
-        return "Configure";
+        return "Check File Fingerprint";
     }
 
     @Override
     public String getIconFileName() {
-        return "symbol-settings";
+        return "symbol-fingerprint";
     }
 
     @Override
     public Group getGroup() {
-        return Group.IN_APP_BAR;
+        return Group.FIRST_IN_MENU;
     }
 
     @Override
     public jenkins.model.menu.event.Action getAction() {
-        return LinkAction.of("configure");
+        return LinkAction.of("fingerprint");
     }
 
     @Extension
-    public static class TransientActionFactoryImpl extends TransientActionFactory<View> {
+    public static class TransientActionFactoryImpl extends TransientActionFactory<ListView> {
 
         @Override
-        public Class<View> type() {
-            return View.class;
+        public Class<ListView> type() {
+            return ListView.class;
         }
 
         @Override
-        public Collection<? extends Action> createFor(View target) {
-            return Set.of(new ConfigureMenuItem());
+        public Collection<? extends Action> createFor(ListView target) {
+            return Set.of(new CheckFingerprintMenuItem());
         }
     }
 }

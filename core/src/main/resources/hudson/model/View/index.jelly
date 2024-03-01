@@ -35,12 +35,15 @@ THE SOFTWARE.
                 <j:if test="${action.group.order lt 3}">
                   <j:choose>
                     <j:when test="${action.action.url != null}">
-                      <a href="${action.action.url}"
+                      <a href="${action.action.url}" draggable="false" role="button"
                               class="jenkins-button ${action.semantic != null ? 'jenkins-!-' + action.semantic.name().toLowerCase() + '-color' : ''}">
                         <j:if test="${action.group.order == 0}">
                           <l:icon src="${action.iconFileName}" />
                         </j:if>
                         ${action.displayName}
+                        <j:if test="${action.badge != null}">
+                          <l:badge badge="${action.badge}" />
+                        </j:if>
                       </a>
                     </j:when>
                     <j:otherwise>
@@ -49,6 +52,9 @@ THE SOFTWARE.
                           <l:icon src="${action.iconFileName}" />
                         </j:if>
                         ${action.displayName}
+                        <j:if test="${action.badge != null}">
+                          <l:badge badge="${action.badge}" />
+                        </j:if>
                       </button>
                     </j:otherwise>
                   </j:choose>
@@ -65,9 +71,28 @@ THE SOFTWARE.
                       <dd:separator />
                     </j:if>
                     <j:set var="currentGroup" value="${action.group.order}" />
-                    <dd:item icon="${action.iconFileName}"
-                             text="${action.displayName}"
-                             clazz="${action.semantic != null ? 'jenkins-!-' + action.semantic.name().toLowerCase() + '-color' : ''}" />
+                    <j:choose>
+                      <j:when test="${action.action.actions != null}">
+                        <dd:submenu icon="${action.iconFileName}"
+                                 text="${action.displayName}"
+                        >
+                          <j:forEach var="action" items="${action.action.actions}">
+                            <dd:item icon="${action.iconFileName}"
+                                     text="${action.displayName}"
+                                     href="${action.action.url}"
+                                     clazz="${action.semantic != null ? 'jenkins-!-' + action.semantic.name().toLowerCase() + '-color' : ''}"
+                                     badge="${action.badge}" />
+                          </j:forEach>
+                        </dd:submenu>
+                      </j:when>
+                      <j:otherwise>
+                        <dd:item icon="${action.iconFileName}"
+                                 text="${action.displayName}"
+                                 href="${action.action.url}"
+                                 clazz="${action.semantic != null ? 'jenkins-!-' + action.semantic.name().toLowerCase() + '-color' : ''}"
+                                 badge="${action.badge}" />
+                      </j:otherwise>
+                    </j:choose>
                   </j:if>
                 </j:if>
               </j:forEach>

@@ -7,34 +7,28 @@ import java.util.Collection;
 import java.util.Set;
 import jenkins.model.TransientActionFactory;
 import jenkins.model.menu.Group;
-import jenkins.model.menu.Semantic;
 import jenkins.model.menu.event.LinkAction;
 
-public class DeleteViewMenuItem implements Action {
+public class ProjectRelationshipMenuItem implements Action {
 
     @Override
     public String getDisplayName() {
-        return "Delete view";
+        return "Project relationship";
     }
 
     @Override
     public String getIconFileName() {
-        return "symbol-trash";
+        return "symbol-project-relationship";
     }
 
     @Override
     public Group getGroup() {
-        return Group.LAST_IN_MENU;
+        return Group.FIRST_IN_MENU;
     }
 
     @Override
     public jenkins.model.menu.event.Action getAction() {
-        return LinkAction.of("delete");
-    }
-
-    @Override
-    public Semantic getSemantic() {
-        return Semantic.DESTRUCTIVE;
+        return LinkAction.of("projectRelationship");
     }
 
     @Extension
@@ -47,11 +41,7 @@ public class DeleteViewMenuItem implements Action {
 
         @Override
         public Collection<? extends Action> createFor(ListView target) {
-            if (!target.hasPermission(ListView.DELETE) || !target.getOwner().canDelete(target)) {
-                return Set.of();
-            }
-
-            return Set.of(new DeleteViewMenuItem());
+            return Set.of(new ProjectRelationshipMenuItem());
         }
     }
 }

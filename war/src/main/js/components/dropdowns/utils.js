@@ -156,6 +156,13 @@ function convertHtmlToItems(children) {
           clazz: attributes.dropdownClazz,
         };
 
+        if (attributes.dropdownBadgeText) {
+          item.badge = {
+            text: attributes.dropdownBadgeText,
+            severity: attributes.dropdownBadgeSeverity,
+            tooltip: attributes.dropdownBadgeTooltip
+          }
+        }
         if (attributes.dropdownHref) {
           item.url = attributes.dropdownHref;
           item.type = "link";
