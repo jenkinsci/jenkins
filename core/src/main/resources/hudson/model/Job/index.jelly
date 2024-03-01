@@ -40,13 +40,15 @@ THE SOFTWARE.
             <l:breakable value="${it.displayName}"/>
           </h1>
         </div>
-        <div class="jenkins-app-bar__controls">
-          <l:overflowButton>
-            <dd:item id="custom-description"
-                     text="${empty(it.description) ? 'Add description' : 'Edit description'}"
-                     icon="symbol-edit" />
-          </l:overflowButton>
-        </div>
+        <l:hasPermission permission="${it.CONFIGURE}">
+          <div class="jenkins-app-bar__controls">
+            <l:overflowButton>
+              <dd:item id="custom-description"
+                       text="${empty(it.description) ? 'Add description' : 'Edit description'}"
+                       icon="symbol-edit" />
+            </l:overflowButton>
+          </div>
+        </l:hasPermission>
       </div>
 
       <t:editableDescription permission="${it.CONFIGURE}" customButton="custom-description" />
