@@ -30,9 +30,11 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <l:layout title="${it.displayName} ${%System Information}" permissions="${it.EXTENDED_READ_AND_CONNECT}">
-    <l:header>
-      <script src="${resURL}/jsbundles/section-to-tabs.js" type="text/javascript" defer="true" />
-    </l:header>
+    <j:if test="${it.channel != null}">
+      <l:header>
+        <script src="${resURL}/jsbundles/section-to-tabs.js" type="text/javascript" defer="true" />
+      </l:header>
+    </j:if>
     <st:include page="sidepanel.jelly" />
     <l:breadcrumb title="${%System Information}" />
 
