@@ -27,6 +27,7 @@ package jenkins.model;
 import hudson.Extension;
 import hudson.model.AbstractItem;
 import hudson.model.Action;
+import hudson.model.Hudson;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
@@ -38,7 +39,7 @@ public class RenameAction implements Action {
 
     @Override
     public String getIconFileName() {
-        return "notepad.png";
+        return "symbol-edit";
     }
 
     @Override
@@ -61,7 +62,11 @@ public class RenameAction implements Action {
 
         @Override
         public Collection<? extends Action> createFor(AbstractItem target) {
-            if (target.isNameEditable()) {
+            boolean hasPermission = target.hasPermission(target.CONFIGURE) ||
+                    (target.hasPermission(target.DELETE) &&
+                    ((Hudson)target.getParent()).hasPermission(target.CREATE));
+
+            if (hasPermission && target.isNameEditable()) {
                 return Set.of(new RenameAction());
             } else {
                 return Collections.emptyList();

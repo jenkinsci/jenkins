@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright 2018 CloudBees, Inc.
+Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,10 +22,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
+<!--
+  Action list
+-->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
-    <!-- TODO: Should use permission attribute after JENKINS-18649 -->
-    <j:if test="${it.hasPermission(it.CONFIGURE) or (it.parent.hasPermission(it.CREATE) and it.hasPermission(it.DELETE))}">
-      <l:task href="${h.getActionUrl(it.url, action)}" icon="symbol-edit" enabled="${it.nameEditable}" title="${%Rename}"/>
-    </j:if>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+  <t:actionsNew />
 </j:jelly>

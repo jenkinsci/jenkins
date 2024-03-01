@@ -45,7 +45,6 @@ THE SOFTWARE.
       <j:if test="${it.configurable}">
         <p:configurable/>
       </j:if>
-      <st:include page="actions.jelly" />
     </l:tasks>
 
     <st:include page="sidepanel2.jelly" optional="true" />

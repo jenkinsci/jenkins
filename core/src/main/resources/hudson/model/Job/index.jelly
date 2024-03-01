@@ -46,6 +46,8 @@ THE SOFTWARE.
               <dd:item id="custom-description"
                        text="${empty(it.description) ? 'Add description' : 'Edit description'}"
                        icon="symbol-edit" />
+              <dd:separator />
+              <st:include page="actionsNew.jelly" />
             </l:overflowButton>
           </div>
         </l:hasPermission>
