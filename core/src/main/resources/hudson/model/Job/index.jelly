@@ -43,7 +43,7 @@ THE SOFTWARE.
         <div class="jenkins-app-bar__controls">
           <l:overflowButton>
             <dd:item id="custom-description"
-                     text="${empty(actualDescription) ? 'Add description' : 'Edit description'}"
+                     text="${empty(it.description) ? 'Add description' : 'Edit description'}"
                      icon="symbol-edit" />
           </l:overflowButton>
         </div>
