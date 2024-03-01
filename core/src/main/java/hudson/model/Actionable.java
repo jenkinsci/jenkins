@@ -24,17 +24,15 @@
 
 package hudson.model;
 
+
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.Util;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import jenkins.model.ModelObjectWithContextMenu;
 import jenkins.model.TransientActionFactory;
 import org.kohsuke.stapler.StaplerRequest;
@@ -107,7 +105,9 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
                 _actions.addAll(additions);
             }
         }
-        return Collections.unmodifiableList(_actions);
+
+        return _actions.stream()
+                .sorted(Comparator.comparingInt(e -> e.getGroup().getOrder())).collect(Collectors.toUnmodifiableList());
     }
 
     private <T> Collection<? extends Action> createFor(TransientActionFactory<T> taf) {

@@ -23,12 +23,57 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<st:compress xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+<st:compress xmlns:j="jelly:core" xmlns:dd="/lib/layout/dropdowns" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
     <l:layout title="${(it.class.name=='hudson.model.AllView' and it.ownerItemGroup == app) ? '%Dashboard' : it.displayName}${not empty it.ownerItemGroup.fullDisplayName?' ['+it.ownerItemGroup.fullDisplayName+']':''}">
       <j:set var="view" value="${it}"/> <!-- expose view to the scripts we include from owner -->
         <st:include page="sidepanel.jelly" />
         <!-- no need for additional breadcrumb here as we're on an index page already including breadcrumb -->
         <l:main-panel>
+          <l:app-bar title="app bar concept">
+            <j:forEach var="action" items="${it.allActions}">
+              <j:if test="${action.iconFileName != null}">
+                <j:if test="${action.group.order lt 3}">
+                  <j:choose>
+                    <j:when test="${action.action.url != null}">
+                      <a href="${action.action.url}"
+                              class="jenkins-button ${action.semantic != null ? 'jenkins-!-' + action.semantic.name().toLowerCase() + '-color' : ''}">
+                        <j:if test="${action.group.order == 0}">
+                          <l:icon src="${action.iconFileName}" />
+                        </j:if>
+                        ${action.displayName}
+                      </a>
+                    </j:when>
+                    <j:otherwise>
+                      <button class="jenkins-button ${action.semantic != null ? 'jenkins-!-' + action.semantic.name().toLowerCase() + '-color' : ''}">
+                        <j:if test="${action.group.order == 0}">
+                          <l:icon src="${action.iconFileName}" />
+                        </j:if>
+                        ${action.displayName}
+                      </button>
+                    </j:otherwise>
+                  </j:choose>
+                </j:if>
+              </j:if>
+            </j:forEach>
+
+            <l:overflowButton>
+              <j:set var="currentGroup" value="null" />
+              <j:forEach var="action" items="${it.allActions}">
+                <j:if test="${action.iconFileName != null}">
+                  <j:if test="${action.group.order gt 2}">
+                    <j:if test="${currentGroup lt action.group.order and currentGroup != null}">
+                      <dd:separator />
+                    </j:if>
+                    <j:set var="currentGroup" value="${action.group.order}" />
+                    <dd:item icon="${action.iconFileName}"
+                             text="${action.displayName}"
+                             clazz="${action.semantic != null ? 'jenkins-!-' + action.semantic.name().toLowerCase() + '-color' : ''}" />
+                  </j:if>
+                </j:if>
+              </j:forEach>
+            </l:overflowButton>
+          </l:app-bar>
+
           <st:include page="view-index-top.jelly" it="${it.owner}" optional="true">
             <!-- allow the owner to take over the top section, but we also need the default to be backward compatible -->
             <div id="view-message">
