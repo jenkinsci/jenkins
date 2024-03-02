@@ -29,14 +29,14 @@ THE SOFTWARE.
         <st:include page="sidepanel.jelly" />
         <!-- no need for additional breadcrumb here as we're on an index page already including breadcrumb -->
         <l:main-panel>
-          <l:app-bar title="app bar concept">
-            <j:forEach var="action" items="${it.allActions}">
+          <l:app-bar title="${it.owner}">
+            <j:forEach var="action" items="${it.transientActions}">
               <j:if test="${action.iconFileName != null}">
                 <j:if test="${action.group.order lt 3}">
                   <j:choose>
                     <j:when test="${action.action.url != null}">
                       <a href="${action.action.url}" draggable="false" role="button"
-                              class="jenkins-button ${action.semantic != null ? 'jenkins-!-' + action.semantic.name().toLowerCase() + '-color' : ''}">
+                         class="jenkins-button ${action.semantic != null ? 'jenkins-!-' + action.semantic.name().toLowerCase() + '-color' : ''}">
                         <j:if test="${action.group.order == 0}">
                           <l:icon src="${action.iconFileName}" />
                         </j:if>
@@ -45,6 +45,20 @@ THE SOFTWARE.
                           <l:badge badge="${action.badge}" />
                         </j:if>
                       </a>
+                    </j:when>
+                    <j:when test="${action.action.actions != null}">
+                      <l:overflowButton
+                              icon="${null}"
+                              text="${action.displayName}..." tooltip="${null}">
+                        <j:forEach var="action" items="${action.action.actions}">
+                          <dd:item icon="${action.iconFileName}"
+                                   text="${action.displayName}"
+                                   id="${action.id}"
+                                   href="${action.action.url}"
+                                   clazz="${action.semantic != null ? 'jenkins-!-' + action.semantic.name().toLowerCase() + '-color' : ''}"
+                                   badge="${action.badge}" />
+                        </j:forEach>
+                      </l:overflowButton>
                     </j:when>
                     <j:otherwise>
                       <button class="jenkins-button ${action.semantic != null ? 'jenkins-!-' + action.semantic.name().toLowerCase() + '-color' : ''}">

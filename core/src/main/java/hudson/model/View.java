@@ -1462,12 +1462,31 @@ public abstract class View extends Actionable implements AccessControlled, Descr
 
     public List<Action> getTransientActions() {
         List<Action> actions = new ArrayList<>();
+
+        if (this.getOwner() instanceof Actionable) {
+            for (TransientActionFactory factory : TransientActionFactory.factoriesFor(this.getOwner().getClass(), Action.class)) {
+                actions.addAll(factory.createFor(this.getOwner()));
+            }
+        }
+
         for (TransientActionFactory factory : TransientActionFactory.factoriesFor(getClass(), Action.class)) {
             actions.addAll(factory.createFor(this));
         }
-        return actions.stream()
+
+        List<Action> collect = actions.stream()
                 .sorted(Comparator.comparingInt((Action e) -> e.getGroup().getOrder())
                         .thenComparing(Action::getDisplayName))
-                .collect(Collectors.toUnmodifiableList());
+                .collect(Collectors.toList());
+
+        if (this.getOwner() instanceof HideActionsable) {
+            var ignored = ((HideActionsable)this.getOwner()).hideActions();
+
+            collect = collect.stream().filter(e -> !ignored.contains(e.getClass()))
+                    .collect(Collectors.toUnmodifiableList());
+
+            System.out.println("Ignoring " + ignored);
+        }
+
+        return collect;
     }
 }
