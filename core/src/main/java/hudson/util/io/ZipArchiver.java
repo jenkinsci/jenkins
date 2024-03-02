@@ -36,7 +36,6 @@ import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.OpenOption;
 import java.nio.file.attribute.BasicFileAttributes;
-import org.apache.commons.lang.StringUtils;
 import org.apache.tools.zip.Zip64Mode;
 import org.apache.tools.zip.ZipEntry;
 import org.apache.tools.zip.ZipOutputStream;
@@ -62,7 +61,7 @@ final class ZipArchiver extends Archiver {
     @Restricted(NoExternalUse.class)
     ZipArchiver(OutputStream out, String prefix, OpenOption... openOptions) {
         this.openOptions = openOptions;
-        if (StringUtils.isBlank(prefix)) {
+        if (prefix == null || prefix.isBlank()) {
             this.prefix = "";
         } else {
             this.prefix = Util.ensureEndsWith(prefix, "/");

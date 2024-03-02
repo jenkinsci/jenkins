@@ -133,7 +133,6 @@ import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.io.input.CountingInputStream;
-import org.apache.commons.lang.StringUtils;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Project;
@@ -1712,7 +1711,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     public FilePath createTempDir(final String prefix, final String suffix) throws IOException, InterruptedException {
         try {
             String[] s;
-            if (StringUtils.isBlank(suffix)) {
+            if (suffix == null || suffix.isBlank()) {
                 s = new String[]{prefix, "tmp"}; // see File.createTempFile - tmp is used if suffix is null
             } else {
                 s = new String[]{prefix, suffix};

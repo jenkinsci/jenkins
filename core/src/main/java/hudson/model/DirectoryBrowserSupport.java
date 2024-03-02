@@ -63,7 +63,6 @@ import jenkins.security.ResourceDomainRootAction;
 import jenkins.util.SystemProperties;
 import jenkins.util.VirtualFile;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
 import org.apache.tools.zip.ZipEntry;
 import org.apache.tools.zip.ZipOutputStream;
 import org.kohsuke.accmod.Restricted;
@@ -280,7 +279,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
             if (zip) {
                 rsp.setContentType("application/zip");
                 String includes, prefix;
-                if (StringUtils.isBlank(rest)) {
+                if (rest == null || rest.isBlank()) {
                     includes = "**";
                     // JENKINS-19947, JENKINS-61473: traditional behavior is to prepend the directory name
                     prefix = baseFile.getName();

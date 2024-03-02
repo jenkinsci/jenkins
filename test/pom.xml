@@ -88,7 +88,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>io.jenkins.plugins</groupId>
         <artifactId>plugin-util-api</artifactId>
-        <version>3.8.0</version>
+        <version>4.1.0</version>
       </dependency>
       <dependency>
         <groupId>org.jenkins-ci.plugins</groupId>
@@ -111,6 +111,11 @@ THE SOFTWARE.
         <groupId>org.jenkins-ci.plugins.workflow</groupId>
         <artifactId>workflow-api</artifactId>
         <version>1291.v51fd2a_625da_7</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jenkins-ci.plugins.workflow</groupId>
+        <artifactId>workflow-step-api</artifactId>
+        <version>657.v03b_e8115821b_</version>
       </dependency>
       <dependency>
         <!-- Required by plugin-util-api -->
