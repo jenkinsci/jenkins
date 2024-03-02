@@ -1475,7 +1475,7 @@ public abstract class View extends Actionable implements AccessControlled, Descr
 
         List<Action> collect = actions.stream()
                 .sorted(Comparator.comparingInt((Action e) -> e.getGroup().getOrder())
-                        .thenComparing(Action::getDisplayName))
+                        .thenComparing(action -> Objects.requireNonNullElse(action.getDisplayName(), "")))
                 .collect(Collectors.toList());
 
         if (this.getOwner() instanceof HideActionsable) {
