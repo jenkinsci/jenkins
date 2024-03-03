@@ -31,7 +31,7 @@ THE SOFTWARE.
         <l:main-panel>
           <div>
 <!--            ${it} - ${it.owner}-->
-            ${it.isEditable}
+            ${it.isEditable()}
           </div>
 
           <div class="jenkins-app-bar">
