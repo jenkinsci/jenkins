@@ -111,6 +111,36 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
                 .sorted(Comparator.comparingInt(e -> e.getGroup().getOrder())).collect(Collectors.toUnmodifiableList());
     }
 
+    public List<Action> getTransientActions() {
+        List<Action> actions = new ArrayList<>();
+
+//        if (this.getOwner() instanceof Actionable) {
+//            for (TransientActionFactory factory : TransientActionFactory.factoriesFor(this.getOwner().getClass(), Action.class)) {
+//                actions.addAll(factory.createFor(this.getOwner()));
+//            }
+//        }
+
+        for (TransientActionFactory factory : TransientActionFactory.factoriesFor(getClass(), Action.class)) {
+            actions.addAll(factory.createFor(this));
+        }
+
+        List<Action> collect = actions.stream()
+                .sorted(Comparator.comparingInt((Action e) -> e.getGroup().getOrder())
+                        .thenComparing(action -> Objects.requireNonNullElse(action.getDisplayName(), "")))
+                .collect(Collectors.toList());
+
+//        if (this.getOwner() instanceof HideActionsable) {
+//            var ignored = ((HideActionsable)this.getOwner()).hideActions();
+//
+//            collect = collect.stream().filter(e -> !ignored.contains(e.getClass()))
+//                    .collect(Collectors.toUnmodifiableList());
+//
+//            System.out.println("Ignoring " + ignored);
+//        }
+
+        return collect;
+    }
+
     private <T> Collection<? extends Action> createFor(TransientActionFactory<T> taf) {
         try {
             Collection<? extends Action> result = taf.createFor(taf.type().cast(this));

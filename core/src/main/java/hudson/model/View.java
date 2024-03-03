@@ -1460,8 +1460,11 @@ public abstract class View extends Actionable implements AccessControlled, Descr
 
     private static final Logger LOGGER = Logger.getLogger(View.class.getName());
 
+    @Override
     public List<Action> getTransientActions() {
         List<Action> actions = new ArrayList<>();
+
+//        System.out.println("I was called");
 
         if (this.getOwner() instanceof Actionable) {
             for (TransientActionFactory factory : TransientActionFactory.factoriesFor(this.getOwner().getClass(), Action.class)) {
@@ -1484,8 +1487,11 @@ public abstract class View extends Actionable implements AccessControlled, Descr
             collect = collect.stream().filter(e -> !ignored.contains(e.getClass()))
                     .collect(Collectors.toUnmodifiableList());
 
-            System.out.println("Ignoring " + ignored);
+//            System.out.println("Ignoring " + ignored);
         }
+
+        System.out.println(collect);
+        System.out.println("----");
 
         return collect;
     }

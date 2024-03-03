@@ -29,6 +29,11 @@ THE SOFTWARE.
         <st:include page="sidepanel.jelly" />
         <!-- no need for additional breadcrumb here as we're on an index page already including breadcrumb -->
         <l:main-panel>
+          <div>
+<!--            ${it} - ${it.owner}-->
+            ${it.isEditable}
+          </div>
+
           <div class="jenkins-app-bar">
             <div class="jenkins-app-bar__content jenkins-build-caption">
               <j:set var="iconClass" value="${it.owner.iconColor.getIconClassName()}"/>

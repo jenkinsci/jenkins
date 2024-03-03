@@ -55,6 +55,7 @@ import java.util.logging.Logger;
 import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithChildren;
+import jenkins.model.ModelObjectWithContextMenu;
 import jenkins.model.ModelObjectWithContextMenu.ContextMenu;
 import jenkins.util.Timer;
 import jenkins.widgets.HasWidgets;
@@ -115,7 +116,10 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
     public ContextMenu doChildrenContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
         ContextMenu m = new ContextMenu();
         for (Computer c : get_all()) {
-            m.add(c);
+            m.add(new ModelObjectWithContextMenu.MenuItem()
+                    .withDisplayName(c.getDisplayName())
+                    .withIconClass(c.getIconClassName())
+                    .withContextRelativeUrl(c.getUrl()));
         }
         return m;
     }

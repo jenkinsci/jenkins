@@ -551,7 +551,11 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
     public ContextMenu doChildrenContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
         ContextMenu menu = new ContextMenu();
         for (Node node : getNodes()) {
-            menu.add(node);
+            Computer c = node.toComputer();
+            menu.add(new MenuItem()
+                    .withDisplayName(node.getDisplayName())
+                    .withStockIcon(c == null ? "computer.svg" : c.getIcon())
+                    .withContextRelativeUrl(node.getSearchUrl()));
         }
         return menu;
     }

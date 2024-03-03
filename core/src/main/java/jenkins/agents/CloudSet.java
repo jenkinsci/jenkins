@@ -131,7 +131,10 @@ public class CloudSet extends AbstractModelObject implements Describable<CloudSe
     @Override
     public ModelObjectWithContextMenu.ContextMenu doChildrenContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
         ModelObjectWithContextMenu.ContextMenu m = new ModelObjectWithContextMenu.ContextMenu();
-        Jenkins.get().clouds.stream().forEach(c -> m.add(c));
+        Jenkins.get().clouds.stream().forEach(c -> m.add(new ModelObjectWithContextMenu.MenuItem()
+                .withDisplayName(c.getDisplayName())
+                .withIconClass(c.getIconClassName())
+                .withContextRelativeUrl(c.getUrl())));
         return m;
     }
 

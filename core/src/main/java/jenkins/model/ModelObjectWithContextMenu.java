@@ -4,25 +4,14 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Functions;
 import hudson.model.Action;
 import hudson.model.Actionable;
-import hudson.model.BallColor;
-import hudson.model.Computer;
-import hudson.model.Job;
 import hudson.model.ModelObject;
-import hudson.model.Node;
-import hudson.slaves.Cloud;
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import javax.servlet.ServletException;
 import jenkins.management.Badge;
-import org.apache.commons.jelly.JellyContext;
 import org.apache.commons.jelly.JellyException;
-import org.apache.commons.jelly.JellyTagException;
-import org.apache.commons.jelly.Script;
-import org.apache.commons.jelly.XMLOutput;
 import org.jenkins.ui.icon.Icon;
 import org.jenkins.ui.icon.IconSet;
 import org.jenkins.ui.symbol.Symbol;
@@ -33,13 +22,9 @@ import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.WebApp;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.export.Flavor;
-import org.kohsuke.stapler.jelly.JellyClassTearOff;
-import org.kohsuke.stapler.jelly.JellyFacet;
-import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * {@link ModelObject} that has context menu in the breadcrumb.
@@ -94,89 +79,21 @@ public interface ModelObjectWithContextMenu extends ModelObject {
         /**
          * @see ContextMenuVisibility
          */
-        public ContextMenu add(Action a) {
-            if (!Functions.isContextMenuVisible(a)) {
-                return this;
-            }
-            StaplerRequest req = Stapler.getCurrentRequest();
-            String text = a.getDisplayName();
-            String base = Functions.getIconFilePath(a);
-            if (base == null)     return this;
-            String url =  Functions.getActionUrl(req.findAncestor(ModelObject.class).getUrl(), a);
+        public ContextMenu add(Action action) {
+            MenuItem menuItem = new MenuItem()
+                    .withDisplayName(action.getDisplayName());
 
-            if (base.startsWith("symbol-")) {
-                Icon icon = Functions.tryGetIcon(base);
-                return add(url, icon.getClassSpec(), text);
+            if (action.getIconFileName() != null && action.getIconFileName().startsWith("symbol-")) {
+                menuItem.icon = action.getIconFileName();
+                menuItem.iconXml = Symbol.get(new SymbolRequest.Builder()
+                        .withName(action.getIconFileName().split(" ")[0].substring(7))
+                        .withPluginName(Functions.extractPluginNameFromIconSrc(action.getIconFileName()))
+                        .build());
             } else {
-                String icon = Stapler.getCurrentRequest().getContextPath() + (base.startsWith("images/") ? Functions.getResourcePath() : "") + '/' + base;
-                return add(url, icon, text);
+                menuItem.icon = action.getIconFileName();
             }
-        }
 
-        public ContextMenu add(String url, String icon, String text) {
-            if (text != null && icon != null && url != null)
-                items.add(new MenuItem(url, icon, text));
-            return this;
-        }
-
-        /** @since 1.504 */
-        public ContextMenu add(String url, String icon, String text, boolean post) {
-            if (text != null && icon != null && url != null) {
-                MenuItem item = new MenuItem(url, icon, text);
-                item.post = post;
-                items.add(item);
-            }
-            return this;
-        }
-
-        /** @since 1.512 */
-        public ContextMenu add(String url, String icon, String text, boolean post, boolean requiresConfirmation) {
-            if (text != null && icon != null && url != null) {
-                MenuItem item = new MenuItem(url, icon, text);
-                item.post = post;
-                item.requiresConfirmation = requiresConfirmation;
-                items.add(item);
-            }
-            return this;
-        }
-
-        /** @since 2.335 */
-        public ContextMenu add(String url, String icon, String iconXml, String text, boolean post, boolean requiresConfirmation) {
-            if (text != null && icon != null && url != null) {
-                MenuItem item = new MenuItem(url, icon, text);
-                item.iconXml = iconXml;
-                item.post = post;
-                item.requiresConfirmation = requiresConfirmation;
-                items.add(item);
-            }
-            return this;
-        }
-
-        /** @since 2.401 */
-        public ContextMenu add(String url, String icon, String iconXml, String text, boolean post, boolean requiresConfirmation, Badge badge) {
-            if (text != null && icon != null && url != null) {
-                MenuItem item = new MenuItem(url, icon, text);
-                item.iconXml = iconXml;
-                item.post = post;
-                item.requiresConfirmation = requiresConfirmation;
-                item.badge = badge;
-                items.add(item);
-            }
-            return this;
-        }
-
-        /** @since 2.415 */
-        public ContextMenu add(String url, String icon, String iconXml, String text, boolean post, boolean requiresConfirmation, Badge badge, String message) {
-            if (text != null && icon != null && url != null) {
-                MenuItem item = new MenuItem(url, icon, text);
-                item.iconXml = iconXml;
-                item.post = post;
-                item.requiresConfirmation = requiresConfirmation;
-                item.badge = badge;
-                item.message = message;
-                items.add(item);
-            }
-            return this;
+            return add(menuItem);
         }
 
         /**
@@ -213,50 +130,6 @@ public interface ModelObjectWithContextMenu extends ModelObject {
         }
 
         /**
-         * Adds a node
-         *
-         * @since 1.513
-         */
-        public ContextMenu add(Node n) {
-            Computer c = n.toComputer();
-            return add(new MenuItem()
-                .withDisplayName(n.getDisplayName())
-                .withStockIcon(c == null ? "computer.svg" : c.getIcon())
-                .withContextRelativeUrl(n.getSearchUrl()));
-        }
-
-        /**
-         * Adds a computer
-         *
-         * @since 1.513
-         */
-        public ContextMenu add(Computer c) {
-            return add(new MenuItem()
-                .withDisplayName(c.getDisplayName())
-                .withIconClass(c.getIconClassName())
-                .withContextRelativeUrl(c.getUrl()));
-        }
-
-        public ContextMenu add(Cloud c) {
-            return add(new MenuItem()
-                    .withDisplayName(c.getDisplayName())
-                    .withIconClass(c.getIconClassName())
-                    .withContextRelativeUrl(c.getUrl()));
-        }
-
-        /**
-         * Adds a child item when rendering context menu of its parent.
-         *
-         * @since 1.513
-         */
-        public ContextMenu add(Job job) {
-            return add(new MenuItem()
-                .withDisplayName(job.getDisplayName())
-                .withIcon(job.getIconColor())
-                .withUrl(job.getSearchUrl()));
-        }
-
-        /**
          * Default implementation of the context menu generation.
          *
          * <p>
@@ -275,29 +148,33 @@ public interface ModelObjectWithContextMenu extends ModelObject {
         }
 
         public ContextMenu from(ModelObjectWithContextMenu self, StaplerRequest request, StaplerResponse response, String view) throws JellyException, IOException {
-            WebApp webApp = WebApp.getCurrent();
-            final Script s = webApp.getMetaClass(self).getTearOff(JellyClassTearOff.class).findScript(view);
-            if (s != null) {
-                JellyFacet facet = webApp.getFacet(JellyFacet.class);
-                request.setAttribute("taskTags", this); // <l:task> will look for this variable and populate us
-                request.setAttribute("mode", "side-panel");
-                // run sidepanel but ignore generated HTML
-                facet.scriptInvoker.invokeScript(request, response, new Script() {
-                    @Override
-                    public Script compile() throws JellyException {
-                        return this;
-                    }
+//            WebApp webApp = WebApp.getCurrent();
+//            final Script s = webApp.getMetaClass(self).getTearOff(JellyClassTearOff.class).findScript(view);
+//            if (s != null) {
+//                JellyFacet facet = webApp.getFacet(JellyFacet.class);
+//                request.setAttribute("taskTags", this); // <l:task> will look for this variable and populate us
+//                request.setAttribute("mode", "side-panel");
+//                // run sidepanel but ignore generated HTML
+//                facet.scriptInvoker.invokeScript(request, response, new Script() {
+//                    @Override
+//                    public Script compile() throws JellyException {
+//                        return this;
+//                    }
+//
+//                    @Override
+//                    public void run(JellyContext context, XMLOutput output) throws JellyTagException {
+//                        Functions.initPageVariables(context);
+//                        s.run(context, output);
+//                    }
+//                }, self, new XMLOutput(new DefaultHandler()));
+//            } else
+//            System.out.println("----");
+//            System.out.println("Doing menu for " + self.getClass());
+//            System.out.println("----");
 
-                    @Override
-                    public void run(JellyContext context, XMLOutput output) throws JellyTagException {
-                        Functions.initPageVariables(context);
-                        s.run(context, output);
-                    }
-                }, self, new XMLOutput(new DefaultHandler()));
-            } else
             if (self instanceof Actionable) {
                 // fallback
-                this.addAll(((Actionable) self).getAllActions());
+                this.addAll(((Actionable) self).getTransientActions());
             }
 
             return this;
@@ -326,7 +203,7 @@ public interface ModelObjectWithContextMenu extends ModelObject {
         public String displayName;
 
         /**
-         * Optional URL to the icon image. Rendered as 24x24.
+         * Optional URL to the icon image
          */
         @Exported
         @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD", justification = "read by Stapler")
@@ -400,11 +277,11 @@ public interface ModelObjectWithContextMenu extends ModelObject {
         }
 
         public MenuItem withUrl(String url) {
-            try {
-                this.url = new URI(Stapler.getCurrentRequest().getRequestURI()).resolve(new URI(url)).toString();
-            } catch (URISyntaxException x) {
-                throw new IllegalArgumentException("Bad URI from " + Stapler.getCurrentRequest().getRequestURI() + " vs. " + url, x);
-            }
+//            try {
+//                this.url = new URI(Stapler.getCurrentRequest().getRequestURI()).resolve(new URI(url)).toString();
+//            } catch (URISyntaxException x) {
+//                throw new IllegalArgumentException("Bad URI from " + Stapler.getCurrentRequest().getRequestURI() + " vs. " + url, x);
+//            }
             return this;
         }
 
@@ -422,9 +299,14 @@ public interface ModelObjectWithContextMenu extends ModelObject {
             return this;
         }
 
-        public MenuItem withIcon(BallColor color) {
-            return withStockIcon(color.getImage());
+        public MenuItem withIconXml(String icon) {
+            this.iconXml = icon;
+            return this;
         }
+
+//        public MenuItem withIcon(BallColor color) {
+//            return withStockIcon(color.getImage());
+//        }
 
         /**
          * Sets the icon from core's stock icon
