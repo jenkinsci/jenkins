@@ -386,7 +386,7 @@ public class SlaveComputer extends Computer {
     public OutputStream openLogFile() {
         try {
             log.rewind();
-            return log;
+            return decorate(log);
         } catch (IOException e) {
             logger.log(Level.SEVERE, "Failed to create log file " + getLogFile(), e);
             return OutputStream.nullOutputStream();
