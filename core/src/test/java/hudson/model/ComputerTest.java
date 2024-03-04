@@ -76,7 +76,7 @@ public class ComputerTest {
         }
     }
 
-    private static class WaitAndGetContextClassLoader{
+    private static class WaitAndGetContextClassLoader {
 
         public static synchronized ClassLoader getContextClassloader() throws InterruptedException {
             ClassLoader ccl = Thread.currentThread().getContextClassLoader();
