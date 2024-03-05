@@ -87,6 +87,7 @@ import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.CopyOption;
 import java.nio.file.FileSystemException;
 import java.nio.file.FileSystems;
@@ -2834,8 +2835,8 @@ public final class FilePath implements SerializableOnlyOverRemoting {
             // local -> remote copy
             final Pipe pipe = Pipe.createLocalToRemote();
 
-            Future<Void> future = target.actAsync(new ReadFromTar(target, pipe, description, compression));
-            Future<Integer> future2 = actAsync(new WriteToTar(scanner, pipe, compression));
+            Future<Void> future = target.actAsync(new ReadFromTar(target, pipe, description, compression, StandardCharsets.UTF_8));
+            Future<Integer> future2 = actAsync(new WriteToTar(scanner, pipe, compression, StandardCharsets.UTF_8));
             try {
                 // JENKINS-9540 in case the reading side failed, report that error first
                 future.get();
@@ -2847,9 +2848,9 @@ public final class FilePath implements SerializableOnlyOverRemoting {
             // remote -> local copy
             final Pipe pipe = Pipe.createRemoteToLocal();
 
-            Future<Integer> future = actAsync(new CopyRecursiveRemoteToLocal(pipe, scanner, compression));
+            Future<Integer> future = actAsync(new CopyRecursiveRemoteToLocal(pipe, scanner, compression, StandardCharsets.UTF_8));
             try {
-                readFromTar(remote + '/' + description, new File(target.remote), compression.extract(pipe.getIn()));
+                readFromTar(remote + '/' + description, new File(target.remote), compression.extract(pipe.getIn()), StandardCharsets.UTF_8);
             } catch (IOException e) { // BuildException or IOException
                 try {
                     future.get(3, TimeUnit.SECONDS);
@@ -2962,12 +2963,14 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         private final String description;
         private final TarCompression compression;
         private final FilePath target;
+        private final String filenamesEncoding;
 
-        ReadFromTar(FilePath target, Pipe pipe, String description, @NonNull TarCompression compression) {
+        ReadFromTar(FilePath target, Pipe pipe, String description, @NonNull TarCompression compression, Charset filenamesEncoding) {
             this.target = target;
             this.pipe = pipe;
             this.description = description;
             this.compression = compression;
+            this.filenamesEncoding = filenamesEncoding.name();
         }
 
         private static final long serialVersionUID = 1L;
@@ -2975,7 +2978,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         @Override
         public Void invoke(File f, VirtualChannel channel) throws IOException {
             try (InputStream in = pipe.getIn()) {
-                readFromTar(target.remote + '/' + description, f, compression.extract(in));
+                readFromTar(target.remote + '/' + description, f, compression.extract(in), Charset.forName(filenamesEncoding));
                 return null;
             }
         }
@@ -2985,18 +2988,20 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         private final DirScanner scanner;
         private final Pipe pipe;
         private final TarCompression compression;
+        private final String filenamesEncoding;
 
-        WriteToTar(DirScanner scanner, Pipe pipe, @NonNull TarCompression compression) {
+        WriteToTar(DirScanner scanner, Pipe pipe, @NonNull TarCompression compression, Charset filenamesEncoding) {
             this.scanner = scanner;
             this.pipe = pipe;
             this.compression = compression;
+            this.filenamesEncoding = filenamesEncoding.name();
         }
 
         private static final long serialVersionUID = 1L;
 
         @Override
         public Integer invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
-            return writeToTar(f, scanner, compression.compress(pipe.getOut()));
+            return writeToTar(f, scanner, compression.compress(pipe.getOut()), Charset.forName(filenamesEncoding));
         }
     }
 
@@ -3005,17 +3010,19 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         private final Pipe pipe;
         private final DirScanner scanner;
         private final TarCompression compression;
+        private final String filenamesEncoding;
 
-        CopyRecursiveRemoteToLocal(Pipe pipe, DirScanner scanner, @NonNull TarCompression compression) {
+        CopyRecursiveRemoteToLocal(Pipe pipe, DirScanner scanner, @NonNull TarCompression compression, Charset filenamesEncoding) {
             this.pipe = pipe;
             this.scanner = scanner;
             this.compression = compression;
+            this.filenamesEncoding = filenamesEncoding.name();
         }
 
         @Override
         public Integer invoke(File f, VirtualChannel channel) throws IOException {
             try (OutputStream out = pipe.getOut()) {
-                return writeToTar(f, scanner, compression.compress(out));
+                return writeToTar(f, scanner, compression.compress(out), Charset.forName(filenamesEncoding));
             }
         }
     }
@@ -3047,22 +3054,26 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      * @return
      *      number of files/directories that are written.
      */
-    private static Integer writeToTar(File baseDir, DirScanner scanner, OutputStream out) throws IOException {
-        Archiver tw = ArchiverFactory.TAR.create(out);
+    private static Integer writeToTar(File baseDir, DirScanner scanner, OutputStream out, Charset filenamesEncoding) throws IOException {
+        Archiver tw = ArchiverFactory.TAR.create(out, filenamesEncoding);
         try (tw) {
             scanner.scan(baseDir, tw);
         }
         return tw.countEntries();
     }
 
+    private static void readFromTar(String name, File baseDir, InputStream in) throws IOException {
+        readFromTar(name, baseDir, in, Charset.defaultCharset());
+    }
+
     /**
      * Reads from a tar stream and stores obtained files to the base dir.
      * Supports large files > 10 GB since 1.627 when this was migrated to use commons-compress.
      */
-    private static void readFromTar(String name, File baseDir, InputStream in) throws IOException {
+    private static void readFromTar(String name, File baseDir, InputStream in, Charset filenamesEncoding) throws IOException {
 
         // TarInputStream t = new TarInputStream(in);
-        try (TarArchiveInputStream t = new TarArchiveInputStream(in)) {
+        try (TarArchiveInputStream t = new TarArchiveInputStream(in, filenamesEncoding.name())) {
             TarArchiveEntry te;
             while ((te = t.getNextTarEntry()) != null) {
                 File f = new File(baseDir, te.getName());
