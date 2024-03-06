@@ -63,6 +63,7 @@ import hudson.slaves.OfflineCause.ByCLI;
 import hudson.slaves.RetentionStrategy;
 import hudson.slaves.WorkspaceList;
 import hudson.triggers.SafeTimerTask;
+import hudson.util.ClassLoaderSanityThreadFactory;
 import hudson.util.DaemonThreadFactory;
 import hudson.util.EditDistance;
 import hudson.util.ExceptionCatchingThreadFactory;
@@ -1380,7 +1381,9 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
                 Executors.newCachedThreadPool(
                     new ExceptionCatchingThreadFactory(
                         new NamingThreadFactory(
-                            new DaemonThreadFactory(), "Computer.threadPoolForRemoting")))), ACL.SYSTEM2));
+                            new ClassLoaderSanityThreadFactory(new DaemonThreadFactory()),
+                            "Computer.threadPoolForRemoting")))),
+            ACL.SYSTEM2));
 
 //
 //
