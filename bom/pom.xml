@@ -68,6 +68,12 @@ THE SOFTWARE.
         <type>pom</type>
         <scope>import</scope>
       </dependency>
+      <!-- force spring core version - CRITICAL CVE-2024-22243 -->
+      <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-core</artifactId>
+        <version>5.3.32</version>
+      </dependency>
       <dependency>
         <!-- JENKINS-21160: Remoting also depends on args4j; please update accordingly -->
         <groupId>args4j</groupId>
