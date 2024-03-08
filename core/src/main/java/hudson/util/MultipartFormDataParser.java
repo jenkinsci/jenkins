@@ -38,7 +38,6 @@ import org.apache.commons.fileupload.FileUploadBase;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
-import org.apache.commons.lang.ArrayUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -150,7 +149,11 @@ public class MultipartFormDataParser implements AutoCloseable {
             return false;
         }
 
-        String[] parts = contentType.split(";");
-        return ArrayUtils.contains(parts, "multipart/form-data");
+        for (String part : contentType.split(";")) {
+            if ("multipart/form-data".equals(part)) {
+                return true;
+            }
+        }
+        return false;
     }
 }
