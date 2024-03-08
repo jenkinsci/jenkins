@@ -418,7 +418,7 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
             boolean hasProjects = false;
             while (tokens.hasMoreTokens()) {
                 String projectName = tokens.nextToken().trim();
-                if (StringUtils.isNotBlank(projectName)) {
+                if (projectName != null && !projectName.isBlank()) {
                     Item item = Jenkins.get().getItem(projectName, project, Item.class);
                     if (item == null) {
                         Job<?, ?> nearest = Items.findNearest(Job.class, projectName, project.getParent());

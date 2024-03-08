@@ -32,6 +32,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -49,8 +50,8 @@ final class TarArchiver extends Archiver {
     private final byte[] buf = new byte[8192];
     private final TarArchiveOutputStream tar;
 
-    TarArchiver(OutputStream out) {
-        tar = new TarArchiveOutputStream(out);
+    TarArchiver(OutputStream out, Charset filenamesEncoding) {
+        tar = new TarArchiveOutputStream(out, filenamesEncoding.name());
         tar.setBigNumberMode(TarArchiveOutputStream.BIGNUMBER_STAR);
         tar.setLongFileMode(TarArchiveOutputStream.LONGFILE_GNU);
     }

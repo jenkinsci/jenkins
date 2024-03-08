@@ -25,11 +25,11 @@
 package jenkins.diagnostics;
 
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import hudson.model.AdministrativeMonitor;
 import jenkins.model.JenkinsLocationConfiguration;
-import org.apache.commons.lang.StringUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -45,7 +45,9 @@ public class RootUrlNotSetMonitorTest {
     public void testWithRootUrl_configured() {
         // test relies on the default JTH behavior
         JenkinsLocationConfiguration config = JenkinsLocationConfiguration.get();
-        assertTrue(StringUtils.isNotBlank(config.getUrl()));
+        String url = config.getUrl();
+        assertNotNull(url);
+        assertFalse(url.isBlank());
 
         RootUrlNotSetMonitor monitor = j.jenkins.getExtensionList(AdministrativeMonitor.class).get(RootUrlNotSetMonitor.class);
         assertFalse("Monitor must not be activated", monitor.isActivated());
