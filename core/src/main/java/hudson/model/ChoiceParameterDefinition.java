@@ -7,6 +7,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.Util;
 import hudson.util.FormValidation;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -160,8 +161,12 @@ public class ChoiceParameterDefinition extends SimpleParameterDefinition {
     }
 
     private void checkValue(StringParameterValue value, String value2) {
-        if (!isValid(value)) {
-            throw new IllegalArgumentException("Illegal choice for parameter " + getName() + ": " + value2);
+        try {
+            if (!isValid(value)) {
+                throw new IOException("Illegal choice for parameter " + getName() + ": " + value2);
+            }
+        } catch (Exception e) {
+            throw new IllegalArgumentException("An unexpected error occured: ", e);
         }
     }
 
