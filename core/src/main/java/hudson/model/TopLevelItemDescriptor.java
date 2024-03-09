@@ -34,7 +34,6 @@ import jenkins.model.Jenkins;
 import jenkins.model.item_category.ItemCategory;
 import org.apache.commons.jelly.Script;
 import org.apache.commons.jelly.XMLOutput;
-import org.apache.commons.lang.StringUtils;
 import org.jenkins.ui.icon.Icon;
 import org.jenkins.ui.icon.IconSet;
 import org.jenkins.ui.icon.IconSpec;
@@ -215,8 +214,9 @@ public abstract class TopLevelItemDescriptor extends Descriptor<TopLevelItem> im
     @CheckForNull
     @Deprecated
     public String getIconFilePath(String size) {
-        if (!StringUtils.isBlank(getIconFilePathPattern())) {
-            return getIconFilePathPattern().replace(":size", size);
+        String iconFilePathPattern = getIconFilePathPattern();
+        if (iconFilePathPattern != null && !iconFilePathPattern.isBlank()) {
+            return iconFilePathPattern.replace(":size", size);
         }
         return null;
     }

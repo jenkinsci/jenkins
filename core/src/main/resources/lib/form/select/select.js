@@ -150,6 +150,7 @@ Behaviour.specify("SELECT.select", "select", 1000, function (e) {
   // handle readonly mode, the actually selected option is only filled asynchronously so we have
   // to wait until the data is filled by registering to the filled event.
   if (
+    parentDiv != null &&
     parentDiv.dataset.readonly === "true" &&
     !parentDiv.hasAttribute("data-listener-added")
   ) {

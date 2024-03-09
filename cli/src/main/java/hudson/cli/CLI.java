@@ -245,9 +245,9 @@ public class CLI {
 
         if (auth == null && bearer == null) {
             // -auth option not set
-            if (StringUtils.isNotBlank(userIdEnv) && StringUtils.isNotBlank(tokenEnv)) {
+            if ((userIdEnv != null && !userIdEnv.isBlank()) && (tokenEnv != null && !tokenEnv.isBlank())) {
                 auth = StringUtils.defaultString(userIdEnv).concat(":").concat(StringUtils.defaultString(tokenEnv));
-            } else if (StringUtils.isNotBlank(userIdEnv) || StringUtils.isNotBlank(tokenEnv)) {
+            } else if ((userIdEnv != null && !userIdEnv.isBlank()) || (tokenEnv != null && !tokenEnv.isBlank())) {
                 printUsage(Messages.CLI_BadAuth());
                 return -1;
             } // Otherwise, none credentials were set
