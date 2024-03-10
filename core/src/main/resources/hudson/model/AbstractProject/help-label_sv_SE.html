@@ -4,23 +4,22 @@
   varje tillgänglig agent, kommer att vara antingen
   <i>true</i>
   eller
-  <i>false</i>
-  . Om uttrycket utvärderas som
+  <i>false</i>.
+  Om uttrycket utvärderas som
   <i>true</i>
   kommer denna agent tillåtas att köra byggen av detta projekt.
   <p>
     Om detta projekt alltid ska byggas på en specifik agent eller på den inbyggda \
     noden behöver du bara ange agentens namn respektive
-    <code>built-in</code>
-    .
+    <code>built-in</code>.
   </p>
 
   <p>
     Du bör dock generellt undvika att använda
     <i>namnet</i>
     på en agent här och hellre använda agentens
-    <i>etiketter</i>
-    . Enligt dokumentationen på konfigurationssidan för varje agent och sidan
+    <i>etiketter</i>.
+    Enligt dokumentationen på konfigurationssidan för varje agent och sidan
     <i>Konfigurera system</i>
     för huvudnoden kan etiketter användas för att representera vilket
     operativsystem agenten körs på, dess processorarkitektur eller någon
@@ -34,12 +33,11 @@
     Ett etikettuttryck kan vara så enkelt som att ange en
     <b>etikett</b>
     eller ett
-    <b>agentnamn</b>
-    , t.ex.
+    <b>agentnamn</b>,
+    t.ex.
     <code>android-builder</code>
     eller
-    <code>linux-machine-42</code>
-    .
+    <code>linux-machine-42</code>.
     <br />
     Du kan också använda olika
     <i>operatörer</i>
@@ -88,8 +86,7 @@
     <dt><code>a -> b</code></dt>
     <dd>
       "implicerande" operatör — motsvarar
-      <code>!a || b</code>
-      .
+      <code>!a || b</code>.
       <br />
       Till exempel kan
       <code>windows -> x64</code>
@@ -125,16 +122,14 @@
       Alla operatörer är vänsterassociativa, d.v.s.
       <code>a -> b -> c</code>
       motsvarar
-      <code>(a -> b) -> c</code>
-      .
+      <code>(a -> b) -> c</code>.
     </li>
     <li>
       Etiketter eller agentnamn kan omges med citattecken om de innehåller
       tecken som skulle hamna i konflikt med operatörsyntaxen.
       <br />
       T.ex.
-      <code>"osx (10.11)" || "Windows Server"</code>
-      .
+      <code>"osx (10.11)" || "Windows Server"</code>.
     </li>
     <li>
       Uttryck kan skrivas utan blanksteg, men rekommenderas att användas
