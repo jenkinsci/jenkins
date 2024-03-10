@@ -120,13 +120,13 @@ public abstract class Lifecycle implements ExtensionPoint {
                     // if run on Unix, we can do restart
                     try {
                         instance = new UnixLifecycle();
-                    } catch (final IOException e) {
-                        LOGGER.log(Level.WARNING, "Failed to install embedded lifecycle implementation", e);
+                    } catch (final Throwable t) {
+                        LOGGER.log(Level.WARNING, "Failed to install embedded lifecycle implementation", t);
                         instance = new Lifecycle() {
                             @Override
                             public void verifyRestartable() throws RestartNotSupportedException {
                                 throw new RestartNotSupportedException(
-                                        "Failed to install embedded lifecycle implementation, so cannot restart: " + e, e);
+                                        "Failed to install embedded lifecycle implementation, so cannot restart: " + t, t);
                             }
                         };
                     }
