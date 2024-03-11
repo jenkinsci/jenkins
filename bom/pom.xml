@@ -188,7 +188,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.apache.commons</groupId>
         <artifactId>commons-compress</artifactId>
-        <version>1.26.0</version>
+        <version>1.26.1</version>
       </dependency>
       <dependency>
         <groupId>org.codehaus.groovy</groupId>
