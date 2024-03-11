@@ -61,7 +61,6 @@ import java.util.stream.Stream;
 import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
-import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.Stapler;
@@ -638,7 +637,7 @@ public abstract class FormValidation extends IOException implements HttpResponse
 
         public CheckMethod(Descriptor descriptor, String fieldName) {
             this.descriptor = descriptor;
-            this.capitalizedFieldName = StringUtils.capitalize(fieldName);
+            this.capitalizedFieldName = fieldName == null || fieldName.isEmpty() ? fieldName : Character.toTitleCase(fieldName.charAt(0)) + fieldName.substring(1);
 
             method = ReflectionUtils.getPublicMethodNamed(descriptor.getClass(), "doCheck" + capitalizedFieldName);
             if (method != null) {

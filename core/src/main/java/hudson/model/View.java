@@ -106,7 +106,6 @@ import jenkins.widgets.HasWidgets;
 import net.sf.json.JSON;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import org.apache.commons.lang.StringUtils;
 import org.jenkins.ui.icon.Icon;
 import org.jenkins.ui.icon.IconSet;
 import org.kohsuke.accmod.Restricted;
@@ -1121,7 +1120,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
         int order = 0;
         String resUrl;
 
-        if (StringUtils.isNotBlank(iconStyle)) {
+        if (iconStyle != null && !iconStyle.isBlank()) {
             resUrl = req.getContextPath() + Jenkins.RESOURCE_PATH;
         } else {
             resUrl = null;
@@ -1137,7 +1136,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
             metadata.put("description", descriptor.getDescription());
             metadata.put("iconFilePathPattern", descriptor.getIconFilePathPattern());
             String iconClassName = descriptor.getIconClassName();
-            if (StringUtils.isNotBlank(iconClassName)) {
+            if (iconClassName != null && !iconClassName.isBlank()) {
                 metadata.put("iconClassName", iconClassName);
                 if (resUrl != null) {
                     Icon icon = IconSet.icons

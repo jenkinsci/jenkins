@@ -272,7 +272,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      */
     public static @NonNull PluginManager createDefault(@NonNull Jenkins jenkins) {
         String pmClassName = SystemProperties.getString(CUSTOM_PLUGIN_MANAGER);
-        if (!StringUtils.isBlank(pmClassName)) {
+        if (pmClassName != null && !pmClassName.isBlank()) {
             LOGGER.log(FINE, String.format("Use of custom plugin manager [%s] requested.", pmClassName));
             try {
                 final Class<? extends PluginManager> klass = Class.forName(pmClassName).asSubclass(PluginManager.class);
@@ -370,7 +370,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             throw new UncheckedIOException(e);
         }
         String workDir = SystemProperties.getString(PluginManager.class.getName() + ".workDir");
-        this.workDir = StringUtils.isBlank(workDir) ? null : new File(workDir);
+        this.workDir = workDir == null || workDir.isBlank() ? null : new File(workDir);
 
         strategy = createPluginStrategy();
     }
@@ -1429,7 +1429,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         for (UpdateSite site : Jenkins.get().getUpdateCenter().getSiteList()) {
             List<JSONObject> sitePlugins = site.getAvailables().stream()
                 .filter(plugin -> {
-                    if (StringUtils.isBlank(query)) {
+                    if (query == null || query.isBlank()) {
                         return true;
                     }
                     return StringUtils.containsIgnoreCase(plugin.name, query) ||
@@ -1864,9 +1864,10 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             File tmpDir = Files.createTempDirectory("uploadDir").toFile();
             ServletFileUpload upload = new ServletFileUpload(new DiskFileItemFactory(DiskFileItemFactory.DEFAULT_SIZE_THRESHOLD, tmpDir));
             List<FileItem> items = upload.parseRequest(req);
-            if (StringUtils.isNotBlank(items.get(1).getString())) {
+            String string = items.get(1).getString();
+            if (string != null && !string.isBlank()) {
                 // this is a URL deployment
-                fileName = items.get(1).getString();
+                fileName = string;
                 copier = new UrlPluginCopier(fileName);
             } else {
                 // this is a file upload
@@ -1909,7 +1910,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                 }
                 String deps = m.getMainAttributes().getValue("Plugin-Dependencies");
 
-                if (StringUtils.isNotBlank(deps)) {
+                if (deps != null && !deps.isBlank()) {
                     // now we get to parse it!
                     String[] plugins = deps.split(",");
                     for (String p : plugins) {
@@ -1940,7 +1941,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
     @Restricted(NoExternalUse.class)
     @RequirePOST public FormValidation doCheckPluginUrl(StaplerRequest request, @QueryParameter String value) throws IOException {
-        if (StringUtils.isNotBlank(value)) {
+        if (value != null && !value.isBlank()) {
             try {
                 URL url = new URL(value);
                 if (!url.getProtocol().startsWith("http")) {

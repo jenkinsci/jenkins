@@ -12,7 +12,7 @@ import hudson.model.InvisibleAction;
 import hudson.model.RootAction;
 import java.util.Arrays;
 import java.util.List;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.htmlunit.Page;
 import org.htmlunit.ScriptException;
 import org.htmlunit.html.HtmlPage;

@@ -82,7 +82,6 @@ import jenkins.util.io.OnMaster;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
 import org.jvnet.tiger_types.Types;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -425,7 +424,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Loadable, 
      * sets that as the 'fillUrl' attribute.
      */
     public void calcFillSettings(String field, Map<String, Object> attributes) {
-        String capitalizedFieldName = StringUtils.capitalize(field);
+        String capitalizedFieldName = field == null || field.isEmpty() ? field : Character.toTitleCase(field.charAt(0)) + field.substring(1);
         String methodName = "doFill" + capitalizedFieldName + "Items";
         Method method = ReflectionUtils.getPublicMethodNamed(getClass(), methodName);
         if (method == null)
@@ -467,7 +466,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Loadable, 
      * Computes the auto-completion setting
      */
     public void calcAutoCompleteSettings(String field, Map<String, Object> attributes) {
-        String capitalizedFieldName = StringUtils.capitalize(field);
+        String capitalizedFieldName = field == null || field.isEmpty() ? field : Character.toTitleCase(field.charAt(0)) + field.substring(1);
         String methodName = "doAutoComplete" + capitalizedFieldName;
         Method method = ReflectionUtils.getPublicMethodNamed(getClass(), methodName);
         if (method == null)
