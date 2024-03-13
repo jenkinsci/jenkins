@@ -274,11 +274,6 @@ THE SOFTWARE.
           <!-- Version specified in parent POM -->
         </plugin>
         <plugin>
-          <groupId>org.jvnet.updatecenter2</groupId>
-          <artifactId>maven-makepkgs-plugin</artifactId>
-          <version>0.6.2</version>
-        </plugin>
-        <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-enforcer-plugin</artifactId>
           <!-- Version specified in parent POM -->
