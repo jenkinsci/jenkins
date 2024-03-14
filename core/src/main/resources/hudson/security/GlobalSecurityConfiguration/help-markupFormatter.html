@@ -1,0 +1,37 @@
+<div>
+  <p>
+    Jenkins shows user-provided descriptions on objects like jobs, views, or
+    builds. The markup formatter controls how those descriptions are rendered.
+  </p>
+  <p>
+    &ldquo;Plain text&rdquo; is the default formatter and renders the provided
+    description largely as entered.
+  </p>
+  <p>
+    Plugins may contribute additional markup formatters that support HTML or
+    other markup languages.
+  </p>
+  <p>
+    <strong>Note:</strong>
+    Some descriptions can be provided from possibly unexpected sources. Some
+    examples:
+  </p>
+  <ul>
+    <li>any user with an account in Jenkins can set their own description</li>
+    <li>
+      Pipelines, as well as build steps for other job types, may be configured
+      to set the current build's description
+    </li>
+  </ul>
+  <p>
+    Using a markup formatter that renders user input verbatim as HTML may allow
+    <a
+      href="https://en.wikipedia.org/wiki/Cross-site_scripting"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      cross-site scripting
+    </a>
+    attacks.
+  </p>
+</div>
