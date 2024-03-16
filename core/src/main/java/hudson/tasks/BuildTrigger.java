@@ -68,7 +68,6 @@ import jenkins.model.Jenkins;
 import jenkins.model.ParameterizedJobMixIn;
 import jenkins.triggers.ReverseBuildTrigger;
 import net.sf.json.JSONObject;
-import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -114,7 +113,7 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
 
     @DataBoundConstructor
     public BuildTrigger(String childProjects, String threshold) {
-        this(childProjects, Result.fromString(StringUtils.defaultString(threshold, Result.SUCCESS.toString())));
+        this(childProjects, Result.fromString(threshold == null ? Result.SUCCESS.toString() : threshold));
     }
 
     public BuildTrigger(String childProjects, Result threshold) {

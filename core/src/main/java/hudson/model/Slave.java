@@ -73,7 +73,6 @@ import jenkins.model.Jenkins;
 import jenkins.security.MasterToSlaveCallable;
 import jenkins.slaves.WorkspaceLocator;
 import jenkins.util.SystemProperties;
-import org.apache.commons.lang.StringUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -393,7 +392,7 @@ public abstract class Slave extends Node implements Serializable {
             // if computer is null then channel is null and thus we were going to return null anyway
             return null;
         } else {
-            return createPath(StringUtils.defaultString(computer.getAbsoluteRemoteFs(), remoteFS));
+            return createPath(computer.getAbsoluteRemoteFs() == null ? remoteFS : computer.getAbsoluteRemoteFs());
         }
     }
 
