@@ -145,7 +145,6 @@ import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.LogFactory;
 import org.jenkinsci.Symbol;
 import org.jvnet.hudson.reactor.Executable;
@@ -1472,7 +1471,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     jsonObject.put("title", plugin.title);
                     jsonObject.put("displayName", plugin.getDisplayName());
                     if (plugin.wiki == null || !(plugin.wiki.startsWith("https://") || plugin.wiki.startsWith("http://"))) {
-                        jsonObject.put("wiki", StringUtils.EMPTY);
+                        jsonObject.put("wiki", "");
                     } else {
                         jsonObject.put("wiki", plugin.wiki);
                     }
