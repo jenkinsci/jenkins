@@ -1,5 +1,9 @@
 package jenkins.model.menu;
 
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
+
+@ExportedBean
 public class Group {
 
     private final int order;
@@ -28,6 +32,7 @@ public class Group {
         return new Group(customOrder);
     }
 
+    @Exported
     public int getOrder() {
         return order;
     }

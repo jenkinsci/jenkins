@@ -1489,9 +1489,6 @@ public abstract class View extends Actionable implements AccessControlled, Descr
 //            System.out.println("Ignoring " + ignored);
         }
 
-        System.out.println(collect);
-        System.out.println("----");
-
         return collect;
     }
 }

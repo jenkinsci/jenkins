@@ -11,6 +11,10 @@ import java.util.Collection;
 import java.util.List;
 import javax.servlet.ServletException;
 import jenkins.management.Badge;
+import jenkins.model.menu.Group;
+import jenkins.model.menu.Semantic;
+import jenkins.model.menu.event.DropdownAction;
+import jenkins.model.menu.event.LinkAction;
 import org.apache.commons.jelly.JellyException;
 import org.jenkins.ui.icon.Icon;
 import org.jenkins.ui.icon.IconSet;
@@ -82,6 +86,20 @@ public interface ModelObjectWithContextMenu extends ModelObject {
         public ContextMenu add(Action action) {
             MenuItem menuItem = new MenuItem()
                     .withDisplayName(action.getDisplayName());
+
+            menuItem.badge = action.getBadge();
+            menuItem.semantic = action.getSemantic();
+            menuItem.group = action.getGroup();
+            menuItem.action = action.getAction();
+
+            if (action.getAction().getClass() == LinkAction.class) {
+                menuItem.url = ((LinkAction)action.getAction()).getUrl();
+            }
+
+            if (action.getAction().getClass() == DropdownAction.class) {
+                ContextMenu cm = new ContextMenu();
+                menuItem.subMenu = cm.addAll(((DropdownAction)action.getAction()).getActions());
+            }
 
             if (action.getIconFileName() != null && action.getIconFileName().startsWith("symbol-")) {
                 menuItem.icon = action.getIconFileName();
@@ -230,8 +248,16 @@ public interface ModelObjectWithContextMenu extends ModelObject {
         @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD", justification = "read by Stapler")
         public boolean requiresConfirmation;
 
-
         private Badge badge;
+
+//        @Exported(inline = true)
+        private Group group;
+
+//        @Exported(inline = true)
+        private jenkins.model.menu.event.Action action;
+
+//        @Exported(inline = true)
+        private Semantic semantic;
 
         private String message;
 
@@ -262,6 +288,21 @@ public interface ModelObjectWithContextMenu extends ModelObject {
         @Exported
         public Badge getBadge() {
             return badge;
+        }
+
+        @Exported(inline = true)
+        public Group getGroup() {
+            return group;
+        }
+
+        @Exported(inline = true)
+        public jenkins.model.menu.event.Action getAction() {
+            return action;
+        }
+
+        @Exported
+        public Semantic getSemantic() {
+            return semantic;
         }
 
         @Exported

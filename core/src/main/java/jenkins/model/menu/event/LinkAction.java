@@ -1,5 +1,9 @@
 package jenkins.model.menu.event;
 
+import org.kohsuke.stapler.export.Exported;
+import org.kohsuke.stapler.export.ExportedBean;
+
+@ExportedBean
 public final class LinkAction implements Action {
 
     private final String url;
@@ -12,6 +16,7 @@ public final class LinkAction implements Action {
         return new LinkAction(url);
     }
 
+    @Exported
     public String getUrl() {
         return url;
     }
