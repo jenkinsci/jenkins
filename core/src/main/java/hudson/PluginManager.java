@@ -1436,14 +1436,14 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     if (query == null || query.isBlank()) {
                         return true;
                     }
-                    return StringUtils.containsIgnoreCase(plugin.name, query) ||
-                        StringUtils.containsIgnoreCase(plugin.title, query) ||
-                        StringUtils.containsIgnoreCase(plugin.excerpt, query) ||
+                    return (plugin.name != null && plugin.name.toLowerCase().contains(query.toLowerCase())) ||
+                        (plugin.title != null && plugin.title.toLowerCase().contains(query.toLowerCase())) ||
+                        (plugin.excerpt != null && plugin.excerpt.toLowerCase().contains(query.toLowerCase())) ||
                         plugin.hasCategory(query) ||
                         plugin.getCategoriesStream()
                             .map(UpdateCenter::getCategoryDisplayName)
-                            .anyMatch(category -> StringUtils.containsIgnoreCase(category, query)) ||
-                        plugin.hasWarnings() && query.equalsIgnoreCase("warning:");
+                            .anyMatch(category -> category != null && category.toLowerCase().contains(query.toLowerCase())) ||
+                        (plugin.hasWarnings() && query.equalsIgnoreCase("warning:"));
                 })
                 .limit(Math.max(limit - plugins.size(), 1))
                 .sorted((o1, o2) -> {
