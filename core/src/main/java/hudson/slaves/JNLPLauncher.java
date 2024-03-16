@@ -228,8 +228,8 @@ public class JNLPLauncher extends ComputerLauncher {
      * {@link Jenkins#checkGoodName(String)} saves us from most troublesome characters, but we still have to deal with
      * spaces and therefore with double quotes and backticks.
      */
-    private static String escapeUnix(String input) {
-        if (input != null && !input.isEmpty() && input.chars().allMatch(Character::isLetterOrDigit)) {
+    private static String escapeUnix(@NonNull String input) {
+        if (!input.isEmpty() && input.chars().allMatch(Character::isLetterOrDigit)) {
             return input;
         }
         Escaper escaper =
@@ -241,8 +241,8 @@ public class JNLPLauncher extends ComputerLauncher {
      * {@link Jenkins#checkGoodName(String)} saves us from most troublesome characters, but we still have to deal with
      * spaces and therefore with double quotes.
      */
-    private static String escapeWindows(String input) {
-        if (input != null && !input.isEmpty() && input.chars().allMatch(Character::isLetterOrDigit)) {
+    private static String escapeWindows(@NonNull String input) {
+        if (!input.isEmpty() && input.chars().allMatch(Character::isLetterOrDigit)) {
             return input;
         }
         Escaper escaper = Escapers.builder().addEscape('"', "\\\"").build();
