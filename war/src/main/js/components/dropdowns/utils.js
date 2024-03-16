@@ -163,6 +163,7 @@ function convertHtmlToItems(children) {
             tooltip: attributes.dropdownBadgeTooltip
           }
         }
+
         if (attributes.dropdownHref) {
           item.url = attributes.dropdownHref;
           item.type = "link";

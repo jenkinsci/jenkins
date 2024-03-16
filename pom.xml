@@ -73,7 +73,7 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.449</revision>
+    <revision>2.450</revision>
     <changelist>-SNAPSHOT</changelist>
 
     <!-- configuration for patch tracker plugin  -->
@@ -137,16 +137,6 @@ THE SOFTWARE.
       <plugins>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-deploy-plugin</artifactId>
-          <!-- Version specified in parent POM -->
-        </plugin>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-dependency-plugin</artifactId>
-          <!-- Version specified in parent POM -->
-        </plugin>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-compiler-plugin</artifactId>
           <!-- Version specified in parent POM -->
           <configuration>
@@ -163,32 +153,12 @@ THE SOFTWARE.
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-gpg-plugin</artifactId>
-          <!-- Version specified in parent POM -->
-        </plugin>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-install-plugin</artifactId>
-          <!-- Version specified in parent POM -->
-        </plugin>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-javadoc-plugin</artifactId>
           <!-- Version specified in parent POM -->
           <configuration>
             <quiet>true</quiet>
             <splitindex>true</splitindex>
           </configuration>
-        </plugin>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-jar-plugin</artifactId>
-          <!-- Version specified in parent POM -->
-        </plugin>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-war-plugin</artifactId>
-          <!-- Version specified in parent POM -->
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
@@ -217,11 +187,6 @@ THE SOFTWARE.
             <storepass>${hudson.sign.storepass}</storepass>
             <keystore>${hudson.sign.keystore}</keystore>
           </configuration>
-        </plugin>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-resources-plugin</artifactId>
-          <!-- Version specified in parent POM -->
         </plugin>
         <plugin>
           <groupId>org.kohsuke</groupId>
@@ -267,21 +232,6 @@ THE SOFTWARE.
           <groupId>org.antlr</groupId>
           <artifactId>antlr4-maven-plugin</artifactId>
           <version>${antlr.version}</version>
-        </plugin>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-pmd-plugin</artifactId>
-          <!-- Version specified in parent POM -->
-        </plugin>
-        <plugin>
-          <groupId>org.jvnet.updatecenter2</groupId>
-          <artifactId>maven-makepkgs-plugin</artifactId>
-          <version>0.6.2</version>
-        </plugin>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-enforcer-plugin</artifactId>
-          <!-- Version specified in parent POM -->
         </plugin>
         <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
         <plugin>
@@ -332,7 +282,7 @@ THE SOFTWARE.
             <dependency>
               <groupId>com.puppycrawl.tools</groupId>
               <artifactId>checkstyle</artifactId>
-              <version>10.14.0</version>
+              <version>10.14.1</version>
             </dependency>
           </dependencies>
           <executions>
@@ -425,11 +375,6 @@ THE SOFTWARE.
             </configuration>
           </execution>
         </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-checkstyle-plugin</artifactId>
-        <!-- Version specified in parent POM -->
       </plugin>
     </plugins>
   </build>
