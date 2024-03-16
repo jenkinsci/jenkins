@@ -15,7 +15,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
 
 /**
  * Helper class to load symbols from Jenkins core or plugins.
@@ -50,7 +49,7 @@ public final class Symbol {
         String pluginName = request.getPluginName();
         String id = request.getId();
 
-        String identifier = StringUtils.defaultIfBlank(pluginName, "core");
+        String identifier = (pluginName == null || pluginName.isBlank()) ? "core" : pluginName;
 
         String symbol = SYMBOLS
                 .computeIfAbsent(identifier, key -> new ConcurrentHashMap<>())
