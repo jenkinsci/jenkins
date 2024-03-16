@@ -39,7 +39,6 @@ import jenkins.model.identity.InstanceIdentityProvider;
 import jenkins.slaves.RemotingWorkDirSettings;
 import jenkins.util.SystemProperties;
 import jenkins.websocket.WebSockets;
-import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
@@ -230,7 +229,7 @@ public class JNLPLauncher extends ComputerLauncher {
      * spaces and therefore with double quotes and backticks.
      */
     private static String escapeUnix(String input) {
-        if (StringUtils.isAlphanumeric(input)) {
+        if (input != null && !input.isEmpty() && input.chars().allMatch(Character::isLetterOrDigit)) {
             return input;
         }
         Escaper escaper =
@@ -243,7 +242,7 @@ public class JNLPLauncher extends ComputerLauncher {
      * spaces and therefore with double quotes.
      */
     private static String escapeWindows(String input) {
-        if (StringUtils.isAlphanumeric(input)) {
+        if (input != null && !input.isEmpty() && input.chars().allMatch(Character::isLetterOrDigit)) {
             return input;
         }
         Escaper escaper = Escapers.builder().addEscape('"', "\\\"").build();
