@@ -29,6 +29,11 @@ THE SOFTWARE.
     <st:include page="sidepanel.jelly" />
     <!-- no need for additional breadcrumb here as we're on an index page already including breadcrumb -->
     <l:main-panel>
+      <div class="jenkins-app-bar jenkins-app-bar--sticky">
+        <t:buildCaption>${it.displayName} (<i:formatDate value="${it.timestamp.time}" type="both" dateStyle="medium" timeStyle="medium"/>)</t:buildCaption>
+        <l:appbarthing />
+      </div>
+
       <div style="float:right; z-index: 1; position:relative; margin-left: 1em">
         <l:hasPermission permission="${it.UPDATE}">
           <st:include page="logKeep.jelly" />
@@ -47,8 +52,6 @@ THE SOFTWARE.
           </j:if>
         </div>
       </div>
-
-      <t:buildCaption>${it.displayName} (<i:formatDate value="${it.timestamp.time}" type="both" dateStyle="medium" timeStyle="medium"/>)</t:buildCaption>
 
       <div>
         <t:editableDescription permission="${it.UPDATE}" />
