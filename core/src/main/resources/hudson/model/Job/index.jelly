@@ -28,7 +28,7 @@ THE SOFTWARE.
     <st:include page="sidepanel.jelly" />
     <!-- no need for additional breadcrumb here as we're on an index page already including breadcrumb -->
     <l:main-panel>
-      <div class="jenkins-app-bar">
+      <div class="jenkins-app-bar jenkins-app-bar--sticky">
         <div class="jenkins-app-bar__content jenkins-build-caption">
           <j:set var="lastBuild" value="${it.lastBuild}" />
           <j:if test="${lastBuild != null}">
@@ -61,6 +61,57 @@ THE SOFTWARE.
       <st:include page="main.jelly" />
 
       <st:include page="permalinks.jelly" />
+
+      <script src="${resURL}/jsbundles/pages/project.js" type="text/javascript" defer="true" />
+
+      <br/>
+      <br/>
+      <br/>
+      <br/>
+      <br/>
+      <br/>
+      <br/>
+      <br/>
+      <br/>
+      <br/>
+      <br/>
+      <br/>
+      <br/>
+      <br/>
+      <br/>
+      <br/>
+      <br/>
+      <br/>
+      <br/>
+      <br/>
+      <br/>
+      <br/>
+      <br/>
+      <br/>
+      <br/>
+      <br/>
+      <br/>
+      <br/>
+      <br/>
+      <br/>
+      <br/>
+      <br/>
+      <br/>
+      <br/>
+      <br/>
+      <br/>
+      <br/>
+      <br/>
+      <br/>
+      <br/>
+      <br/>
+      <br/>
+      <br/>
+      <br/>
+      <br/>
+      <br/>
+      <br/>
+      <br/>
     </l:main-panel>
   </l:layout>
 </j:jelly>

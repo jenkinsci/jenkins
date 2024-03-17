@@ -57,7 +57,7 @@ THE SOFTWARE.
                                 </l:overflowButton>
                             </j:when>
                             <j:otherwise>
-                                <button class="jenkins-button ${action.semantic != null ? 'jenkins-!-' + action.semantic.name().toLowerCase() + '-color' : ''}">
+                                <button id="${action.id}" class="jenkins-button ${action.semantic != null ? 'jenkins-!-' + action.semantic.name().toLowerCase() + '-color' : ''}">
                                     <j:if test="${action.group.order == 0}">
                                         <l:icon src="${action.iconFileName}" />
                                     </j:if>

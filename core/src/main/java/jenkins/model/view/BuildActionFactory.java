@@ -1,26 +1,27 @@
 package jenkins.model.view;
 
 import hudson.Extension;
+import hudson.model.AbstractProject;
 import hudson.model.Action;
-import hudson.model.Job;
 import hudson.model.View;
 import java.util.Collection;
 import java.util.Set;
 import jenkins.model.TransientActionFactory;
 import jenkins.model.menu.Group;
 import jenkins.model.menu.Semantic;
+import jenkins.model.menu.event.DoNothingAction;
 import jenkins.model.menu.event.LinkAction;
 
 @Extension
-public class BuildActionFactory extends TransientActionFactory<Job> {
+public class BuildActionFactory extends TransientActionFactory<AbstractProject> {
 
     @Override
-    public Class<Job> type() {
-        return Job.class;
+    public Class<AbstractProject> type() {
+        return AbstractProject.class;
     }
 
     @Override
-    public Collection<? extends Action> createFor(Job target) {
+    public Collection<? extends Action> createFor(AbstractProject target) {
         if (!target.hasPermission(View.CREATE)) {
             return Set.of();
         }
@@ -28,7 +29,7 @@ public class BuildActionFactory extends TransientActionFactory<Job> {
         return Set.of(new Action() {
                 @Override
                 public String getDisplayName() {
-                    return "Build";
+                    return target.getBuildNowText();
                 }
 
                 @Override
@@ -46,9 +47,18 @@ public class BuildActionFactory extends TransientActionFactory<Job> {
                 return Semantic.BUILD;
             }
 
+            @Override
+            public String getId() {
+                return "button-build";
+            }
+
                 @Override
                 public jenkins.model.menu.event.Action getAction() {
-                    return LinkAction.of("build");
+                    if (target.isParameterized()) {
+                        return LinkAction.of("build");
+                    } else {
+                     return new DoNothingAction();
+                    }
                 }
         });
     }

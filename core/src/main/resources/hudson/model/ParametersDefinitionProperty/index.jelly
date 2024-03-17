@@ -35,10 +35,9 @@ THE SOFTWARE.
     405 is "Method Not Allowed" and this fits here because we need POST.
   -->
   <st:statusCode value="405" />
-  <l:layout title="${it.displayName}">
-    <st:include page="sidepanel.jelly" it="${it.job}"/>
+  <l:layout title="${it.displayName}" type="one-column">
     <l:main-panel>
-      <h1>${it.job.pronoun} ${it.job.displayName}</h1>
+      <h1>Build with parameters</h1>
       <p class="jenkins-description">${%description}</p>
       <j:set var="delay" value="${request.getParameter('delay')}" />
       <f:form method="post" action="build${empty(delay)?'':'?delay='+delay}" name="parameters"
