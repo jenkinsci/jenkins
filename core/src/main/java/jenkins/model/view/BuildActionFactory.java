@@ -4,13 +4,12 @@ import hudson.Extension;
 import hudson.model.Action;
 import hudson.model.Job;
 import hudson.model.View;
+import java.util.Collection;
+import java.util.Set;
 import jenkins.model.TransientActionFactory;
 import jenkins.model.menu.Group;
 import jenkins.model.menu.Semantic;
 import jenkins.model.menu.event.LinkAction;
-
-import java.util.Collection;
-import java.util.Set;
 
 @Extension
 public class BuildActionFactory extends TransientActionFactory<Job> {
