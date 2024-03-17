@@ -28,6 +28,11 @@ public class AtomFeedMenuItem implements Action {
     }
 
     @Override
+    public boolean isVisibleInContextMenu() {
+        return false;
+    }
+
+    @Override
     public jenkins.model.menu.event.Action getAction() {
         return DropdownAction.of(
                 new Action() {

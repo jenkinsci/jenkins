@@ -107,6 +107,7 @@ import jenkins.widgets.HasWidgets;
 import net.sf.json.JSON;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import org.apache.commons.lang.StringUtils;
 import org.jenkins.ui.icon.Icon;
 import org.jenkins.ui.icon.IconSet;
 import org.kohsuke.accmod.Restricted;
@@ -1459,6 +1460,19 @@ public abstract class View extends Actionable implements AccessControlled, Descr
 
     private static final Logger LOGGER = Logger.getLogger(View.class.getName());
 
+    @Override public ContextMenu doContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
+        System.out.println("Owner is " + this.getOwner().getClass().getSimpleName());
+
+        if (this.getOwner() != null && this.getOwner() instanceof Actionable) {
+            System.out.println("Generating context menu for " + this.getOwner().getClass().getSimpleName());
+
+            return new ContextMenu().addAll(((Actionable) this.getOwner()).getTransientActions());
+        }
+
+        System.out.println("Generating context menu for " + this.getClass().getSimpleName());
+        return new ContextMenu().from(this, request, response);
+    }
+
     @Override
     public List<Action> getTransientActions() {
         List<Action> actions = new ArrayList<>();
@@ -1476,6 +1490,7 @@ public abstract class View extends Actionable implements AccessControlled, Descr
         }
 
         List<Action> collect = actions.stream()
+                .filter(e -> !StringUtils.isBlank(e.getDisplayName()) && !StringUtils.isBlank(e.getIconFileName()))
                 .sorted(Comparator.comparingInt((Action e) -> e.getGroup().getOrder())
                         .thenComparing(action -> Objects.requireNonNullElse(action.getDisplayName(), "")))
                 .collect(Collectors.toList());

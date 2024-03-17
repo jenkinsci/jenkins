@@ -32,6 +32,11 @@ public class IconLegendMenuItem implements Action {
     }
 
     @Override
+    public boolean isVisibleInContextMenu() {
+        return false;
+    }
+
+    @Override
     public jenkins.model.menu.event.Action getAction() {
         return new DoNothingAction();
     }

@@ -55,7 +55,7 @@ function generateDropdowns() {
               ),
             ),
           )
-          .catch((error) => console.log(`Jumplist request failed: ${error}`))
+          // .catch((error) => console.log(`Jumplist request failed: ${error}`))
           .finally(() => (instance.loaded = true));
       }),
   );
@@ -99,12 +99,12 @@ function mapChildrenItemsToDropdownItems(items) {
 
         const response = []
 
-        if (initialGroup != null && item.group.order !== initialGroup && item.group.order > 3) {
+        if (initialGroup != null && item.group?.order !== initialGroup && item.group.order > 2) {
 response.push({
   type: "SEPARATOR",
 })
         }
-        initialGroup = item.group.order;
+        initialGroup = item.group?.order;
 
         response.push({
           icon: item.icon,

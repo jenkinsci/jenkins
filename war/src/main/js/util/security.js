@@ -1,4 +1,8 @@
 function xmlEscape(str) {
+  if (str == null) {
+    return ""
+  }
+
   return str.replace(/[<>&'"]/g, (match) => {
     switch (match) {
       case "<":

@@ -75,8 +75,12 @@ public interface ModelObjectWithContextMenu extends ModelObject {
         }
 
         public ContextMenu addAll(Collection<? extends Action> actions) {
-            for (Action a : actions)
-                add(a);
+            for (Action a : actions) {
+                if (a.isVisibleInContextMenu()) {
+                    add(a);
+                }
+            }
+
             return this;
         }
 
