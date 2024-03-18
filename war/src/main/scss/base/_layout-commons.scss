@@ -39,6 +39,7 @@
       padding-top: var(--section-padding);
     }
 
+    /* stylelint-disable-next-line media-query-no-invalid */
     @media (max-width: breakpoints.$tablet-breakpoint) {
       width: 100%;
     }
@@ -64,6 +65,7 @@
     }
   }
 
+  /* stylelint-disable-next-line media-query-no-invalid */
   @media (max-width: breakpoints.$tablet-breakpoint) {
     flex-direction: column;
   }
