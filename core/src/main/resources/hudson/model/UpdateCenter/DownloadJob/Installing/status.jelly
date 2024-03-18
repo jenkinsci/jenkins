@@ -28,6 +28,6 @@ THE SOFTWARE.
     <l:icon class="icon-nobuilt-anime icon-md"/> ${%Installing}
   </div>
   <div style="padding-left: 32px">
-    <t:progressBar pos="${it.percentage}" />
+    <t:progressBar pos="${it.percentage}" animate="true"/>
   </div>
 </j:jelly>

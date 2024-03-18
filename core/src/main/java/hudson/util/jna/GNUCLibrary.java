@@ -77,7 +77,7 @@ public interface GNUCLibrary extends Library {
 
     int fcntl(int fd, int command);
 
-    int fcntl(int fd, int command, int flags);
+    int fcntl(int fd, int command, Object... flags);
 
     // obtained from Linux. Needs to be checked if these values are portable.
     int F_GETFD = 1;

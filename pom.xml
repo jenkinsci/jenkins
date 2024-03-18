@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.108</version>
+    <version>1.111</version>
     <relativePath />
   </parent>
 
@@ -73,7 +73,7 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.440</revision>
+    <revision>2.450</revision>
     <changelist>-SNAPSHOT</changelist>
 
     <!-- configuration for patch tracker plugin  -->
@@ -86,15 +86,11 @@ THE SOFTWARE.
     <changelog.url>https://www.jenkins.io/changelog</changelog.url>
 
     <!-- Bundled Remoting version -->
-    <remoting.version>3198.v03a_401881f3e</remoting.version>
+    <remoting.version>3206.vb_15dcf73f6a_9</remoting.version>
     <!-- Minimum Remoting version, which is tested for API compatibility -->
     <remoting.minimum.supported.version>4.13</remoting.minimum.supported.version>
 
-    <!-- TODO: Remove when parent pom is using this version or newer -->
-    <!-- https://github.com/jenkinsci/pom/pull/510 -->
-    <spotbugs-maven-plugin.version>4.8.2.0</spotbugs-maven-plugin.version>
     <spotbugs.effort>Max</spotbugs.effort>
-    <spotbugs.omitVisitors>FindReturnRef,ConstructorThrow</spotbugs.omitVisitors>
     <spotbugs.threshold>Medium</spotbugs.threshold>
 
     <access-modifier.version>1.33</access-modifier.version>
@@ -102,7 +98,7 @@ THE SOFTWARE.
     <bridge-method-injector.version>1.29</bridge-method-injector.version>
     <spotless.check.skip>false</spotless.check.skip>
     <!-- Make sure to keep the jetty-maven-plugin version in war/pom.xml in sync with the Jetty release in Winstone: -->
-    <winstone.version>6.16</winstone.version>
+    <winstone.version>6.18</winstone.version>
   </properties>
 
   <!--
@@ -141,16 +137,6 @@ THE SOFTWARE.
       <plugins>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-deploy-plugin</artifactId>
-          <!-- Version specified in parent POM -->
-        </plugin>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-dependency-plugin</artifactId>
-          <!-- Version specified in parent POM -->
-        </plugin>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-compiler-plugin</artifactId>
           <!-- Version specified in parent POM -->
           <configuration>
@@ -167,32 +153,12 @@ THE SOFTWARE.
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-gpg-plugin</artifactId>
-          <!-- Version specified in parent POM -->
-        </plugin>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-install-plugin</artifactId>
-          <!-- Version specified in parent POM -->
-        </plugin>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-javadoc-plugin</artifactId>
           <!-- Version specified in parent POM -->
           <configuration>
             <quiet>true</quiet>
             <splitindex>true</splitindex>
           </configuration>
-        </plugin>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-jar-plugin</artifactId>
-          <!-- Version specified in parent POM -->
-        </plugin>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-war-plugin</artifactId>
-          <!-- Version specified in parent POM -->
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
@@ -221,11 +187,6 @@ THE SOFTWARE.
             <storepass>${hudson.sign.storepass}</storepass>
             <keystore>${hudson.sign.keystore}</keystore>
           </configuration>
-        </plugin>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-resources-plugin</artifactId>
-          <!-- Version specified in parent POM -->
         </plugin>
         <plugin>
           <groupId>org.kohsuke</groupId>
@@ -271,21 +232,6 @@ THE SOFTWARE.
           <groupId>org.antlr</groupId>
           <artifactId>antlr4-maven-plugin</artifactId>
           <version>${antlr.version}</version>
-        </plugin>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-pmd-plugin</artifactId>
-          <!-- Version specified in parent POM -->
-        </plugin>
-        <plugin>
-          <groupId>org.jvnet.updatecenter2</groupId>
-          <artifactId>maven-makepkgs-plugin</artifactId>
-          <version>0.6.2</version>
-        </plugin>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-enforcer-plugin</artifactId>
-          <!-- Version specified in parent POM -->
         </plugin>
         <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
         <plugin>
@@ -336,7 +282,7 @@ THE SOFTWARE.
             <dependency>
               <groupId>com.puppycrawl.tools</groupId>
               <artifactId>checkstyle</artifactId>
-              <version>10.12.7</version>
+              <version>10.14.1</version>
             </dependency>
           </dependencies>
           <executions>
@@ -429,11 +375,6 @@ THE SOFTWARE.
             </configuration>
           </execution>
         </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-checkstyle-plugin</artifactId>
-        <!-- Version specified in parent POM -->
       </plugin>
     </plugins>
   </build>
