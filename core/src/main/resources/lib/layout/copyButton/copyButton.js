@@ -5,9 +5,18 @@ Behaviour.specify(
   function (copyButton) {
     copyButton.addEventListener("click", () => {
       if (isSecureContext) {
+        var text = copyButton.getAttribute("text");
+        if (copyButton.hasAttribute("ref")) {
+          var ref = copyButton.getAttribute("ref");
+          var target = document.getElementById(ref);
+          if (target) {
+            text = target.innerText;
+          }
+        }
+
         // Copy the text to the clipboard
         navigator.clipboard
-          .writeText(copyButton.getAttribute("text"))
+          .writeText(text)
           .then(() => {
             // Show the completion message
             hoverNotification(copyButton.getAttribute("message"), copyButton);

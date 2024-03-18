@@ -968,7 +968,7 @@ public class Functions {
     public static String getFooterURL() {
         if (footerURL == null) {
             footerURL = SystemProperties.getString("hudson.footerURL");
-            if (StringUtils.isBlank(footerURL)) {
+            if (footerURL == null || footerURL.isBlank()) {
                 footerURL = "https://www.jenkins.io/";
             }
         }
@@ -2194,7 +2194,7 @@ public class Functions {
             int firstPeriod = part.indexOf(".");
             return slash > 0 && firstPeriod > 0 && slash < firstPeriod;
         }).collect(Collectors.joining(" "));
-        if (StringUtils.isBlank(views)) {
+        if (views == null || views.isBlank()) {
             // fallback to full thread name if there are no apparent views
             return threadName;
         }
@@ -2242,8 +2242,17 @@ public class Functions {
         return SystemProperties.getBoolean("hudson.security.WipeOutPermission");
     }
 
+    @Deprecated
     public static String createRenderOnDemandProxy(JellyContext context, String attributesToCapture) {
         return Stapler.getCurrentRequest().createJavaScriptProxy(new RenderOnDemandClosure(context, attributesToCapture));
+    }
+
+    /**
+     * Called from renderOnDemand.jelly to generate the parameters for the proxy object generation.
+     */
+    @Restricted(NoExternalUse.class)
+    public static StaplerRequest.RenderOnDemandParameters createRenderOnDemandProxyParameters(JellyContext context, String attributesToCapture) {
+        return Stapler.getCurrentRequest().createJavaScriptProxyParameters(new RenderOnDemandClosure(context, attributesToCapture));
     }
 
     public static String getCurrentDescriptorByNameUrl() {
