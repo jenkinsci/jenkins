@@ -24,7 +24,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:i="jelly:fmt" xmlns:x="jelly:xml">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:i="jelly:fmt"
+         xmlns:x="jelly:xml" xmlns:dd="/lib/layout/dropdowns">
   <st:documentation> <![CDATA[
     Outer-most tag for a normal (non-AJAX) HTML rendering.
     This is used with nested <header>, <side-panel>, and <main-panel>
@@ -222,26 +223,17 @@ THE SOFTWARE.
                               icon="${null}"
                               tooltip="${null}">
               <l:hasPermission permission="${app.SYSTEM_READ}">
-                <a class="jenkins-dropdown__item" href="${rootURL}/manage/about">
-                  <div class="jenkins-dropdown__item__icon">
-                    <l:icon src="symbol-jenkins" />
-                  </div>
-                  ${%About Jenkins}
-                </a>
-                <div class="jenkins-dropdown__separator"></div>
+                <dd:item icon="symbol-jenkins"
+                        text="${%About Jenkins}"
+                         href="${rootURL}/manage/about" />
+                <dd:separator />
               </l:hasPermission>
-              <a class="jenkins-dropdown__item" href="https://www.jenkins.io/participate/" rel="noopener noreferrer" target="_blank">
-                <div class="jenkins-dropdown__item__icon">
-                  <l:icon src="symbol-heart" />
-                </div>
-                ${%Get involved}
-              </a>
-              <a class="jenkins-dropdown__item" href="${h.getFooterURL()}" rel="noopener noreferrer" target="_blank">
-                <div class="jenkins-dropdown__item__icon">
-                  <l:icon src="symbol-external" />
-                </div>
-                ${%Website}
-              </a>
+              <dd:item icon="symbol-heart"
+                       text="${%Get involved}"
+                       href="https://www.jenkins.io/participate/" />
+              <dd:item icon="symbol-external"
+                       text="${%Website}"
+                       href="${h.getFooterURL()}" />
             </l:overflowButton>
           </div>
         </div>
