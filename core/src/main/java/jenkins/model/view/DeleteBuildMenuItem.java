@@ -14,7 +14,7 @@ public class DeleteBuildMenuItem implements Action {
 
     @Override
     public String getDisplayName() {
-        return "Delete view";
+        return "Delete build";
     }
 
     @Override
