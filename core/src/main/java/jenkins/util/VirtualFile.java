@@ -62,7 +62,6 @@ import java.util.stream.Collectors;
 import jenkins.MasterToSlaveFileCallable;
 import jenkins.model.ArtifactManager;
 import jenkins.security.MasterToSlaveCallable;
-import org.apache.commons.lang.StringUtils;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.types.AbstractFileSet;
 import org.apache.tools.ant.types.selectors.SelectorUtils;
@@ -368,7 +367,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
     public int zip(OutputStream outputStream, String includes, String excludes, boolean useDefaultExcludes,
                    String prefix, OpenOption... openOptions) throws IOException {
         String correctPrefix;
-        if (StringUtils.isBlank(prefix)) {
+        if (prefix == null || prefix.isBlank()) {
             correctPrefix = "";
         } else {
             correctPrefix = Util.ensureEndsWith(prefix, "/");

@@ -679,7 +679,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
 
         // Return encoded value or at least "/" in the case exception occurred during encode()
         // or if the encoded content is blank value
-        return StringUtils.isBlank(returnValue) ? "/" : returnValue;
+        return returnValue == null || returnValue.isBlank() ? "/" : returnValue;
     }
 
     private static class None extends SecurityRealm {

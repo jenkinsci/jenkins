@@ -78,7 +78,6 @@ import jenkins.security.LastGrantedAuthoritiesProperty;
 import jenkins.security.UserDetailsCache;
 import jenkins.util.SystemProperties;
 import net.sf.json.JSONObject;
-import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -795,7 +794,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * @since 1.600
      */
     public static boolean isIdOrFullnameAllowed(@CheckForNull String id) {
-        if (StringUtils.isBlank(id)) {
+        if (id == null || id.isBlank()) {
             return false;
         }
         final String trimmedId = id.trim();

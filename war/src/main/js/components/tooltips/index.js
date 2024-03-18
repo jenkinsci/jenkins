@@ -19,16 +19,18 @@ function registerTooltip(element) {
     element._tippy.destroy();
   }
 
+  const tooltip = element.getAttribute("tooltip");
+  const htmlTooltip = element.getAttribute("data-html-tooltip");
   if (
-    element.hasAttribute("tooltip") &&
-    !element.hasAttribute("data-html-tooltip")
+    tooltip !== null &&
+    tooltip.trim().length > 0 &&
+    (htmlTooltip === null || htmlTooltip.trim().length == 0)
   ) {
     tippy(
       element,
       Object.assign(
         {
-          content: (element) =>
-            element.getAttribute("tooltip").replace(/<br[ /]?\/?>|\\n/g, "\n"),
+          content: () => tooltip.replace(/<br[ /]?\/?>|\\n/g, "\n"),
           onCreate(instance) {
             instance.reference.setAttribute("title", instance.props.content);
           },
@@ -44,12 +46,12 @@ function registerTooltip(element) {
     );
   }
 
-  if (element.hasAttribute("data-html-tooltip")) {
+  if (htmlTooltip !== null && htmlTooltip.trim().length > 0) {
     tippy(
       element,
       Object.assign(
         {
-          content: (element) => element.getAttribute("data-html-tooltip"),
+          content: () => htmlTooltip,
           allowHTML: true,
           onCreate(instance) {
             instance.props.interactive =

@@ -56,7 +56,7 @@ import jenkins.security.ApiTokenProperty;
 import jenkins.security.SecurityListener;
 import jenkins.security.apitoken.ApiTokenPropertyConfiguration;
 import jenkins.security.seed.UserSeedProperty;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.hamcrest.Matcher;
 import org.htmlunit.FailingHttpStatusCodeException;
 import org.htmlunit.HttpMethod;

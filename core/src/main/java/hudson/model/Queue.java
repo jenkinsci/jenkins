@@ -102,7 +102,6 @@ import java.util.TreeSet;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
@@ -113,6 +112,7 @@ import javax.servlet.http.HttpServletResponse;
 import jenkins.model.Jenkins;
 import jenkins.model.queue.AsynchronousExecution;
 import jenkins.model.queue.CompositeCauseOfBlockage;
+import jenkins.model.queue.QueueIdStrategy;
 import jenkins.model.queue.QueueItem;
 import jenkins.security.QueueItemAuthenticator;
 import jenkins.security.QueueItemAuthenticatorProvider;
@@ -124,6 +124,7 @@ import jenkins.util.Timer;
 import net.jcip.annotations.GuardedBy;
 import org.jenkinsci.remoting.RoleChecker;
 import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.Beta;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
@@ -369,9 +370,20 @@ public class Queue extends ResourceController implements Saveable {
     /**
      * Simple queue state persistence object.
      */
-    static class State {
-        public long counter;
-        public List<Item> items = new ArrayList<>();
+    @Restricted(Beta.class)
+    public static final class State {
+        public /* almost final */ List<Item> items = new ArrayList<>();
+        public /* almost final */ Map<String, Object> properties = new HashMap<>();
+
+        private Object readResolve() {
+            if (items == null) {
+                items = new ArrayList<>();
+            }
+            if (properties == null) {
+                properties = new HashMap<>();
+            }
+            return this;
+        }
     }
 
     /**
@@ -391,21 +403,18 @@ public class Queue extends ResourceController implements Saveable {
                 Object unmarshaledObj = new XmlFile(XSTREAM, queueFile).read();
                 List items;
 
+                State state;
                 if (unmarshaledObj instanceof State) {
-                    State state = (State) unmarshaledObj;
+                    state = (State) unmarshaledObj;
                     items = state.items;
-                    WaitingItem.COUNTER.set(state.counter);
                 } else {
                     // backward compatibility - it's an old List queue.xml
                     items = (List) unmarshaledObj;
-                    long maxId = 0;
-                    for (Object o : items) {
-                        if (o instanceof Item) {
-                            maxId = Math.max(maxId, ((Item) o).id);
-                        }
-                    }
-                    WaitingItem.COUNTER.set(maxId);
+                    state = new State();
+                    state.items.addAll(items);
                 }
+                QueueIdStrategy.get().load(state);
+
 
                 for (Object o : items) {
                     if (o instanceof Task) {
@@ -460,8 +469,7 @@ public class Queue extends ResourceController implements Saveable {
         try {
             // write out the queue state we want to save
             State state = new State();
-            state.counter = WaitingItem.COUNTER.longValue();
-
+            QueueIdStrategy.get().persist(state);
             // write out the tasks on the queue
             for (Item item : getItems()) {
                 if (item.task instanceof TransientTask)  continue;
@@ -2532,8 +2540,6 @@ public class Queue extends ResourceController implements Saveable {
      * {@link Item} in the {@link Queue#waitingList} stage.
      */
     public static final class WaitingItem extends Item implements Comparable<WaitingItem> {
-        private static final AtomicLong COUNTER = new AtomicLong(0);
-
         /**
          * This item can be run after this time.
          */
@@ -2541,12 +2547,8 @@ public class Queue extends ResourceController implements Saveable {
         public Calendar timestamp;
 
         public WaitingItem(Calendar timestamp, Task project, List<Action> actions) {
-            super(project, actions, COUNTER.incrementAndGet(), new FutureImpl(project));
+            super(project, actions, QueueIdStrategy.get().generateIdFor(project, actions), new FutureImpl(project));
             this.timestamp = timestamp;
-        }
-
-        static int getCurrentCounterValue() {
-            return COUNTER.intValue();
         }
 
         @Override

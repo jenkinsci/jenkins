@@ -88,12 +88,22 @@ THE SOFTWARE.
       </div>
 
       <div class="jenkins-jobs-list jenkins-mobile-show">
+        <j:set var="jenkins_mobile_show" value="${true}"/>
         <j:forEach var="job" items="${jobs}">
           <j:set var="relativeLinkToJob" value="${h.getRelativeLinkTo(job)}"/>
+          <j:set var="jobBaseUrl" value="${relativeLinkToJob.substring(0, relativeLinkToJob.length() - job.shortUrl.length())}"/>
           <div class="jenkins-jobs-list__item">
             <a class="jenkins-jobs-list__item__details" href="${jobBaseUrl}${job.shortUrl}">
               <div class="jenkins-jobs-list__item__icons">
-                <t:ballColorTd it="${job.iconColor}" />
+                <j:choose>
+                  <j:when test="${job.iconColor.iconName != null}">
+                    <l:icon src="symbol-status-${job.iconColor.iconName}" tooltip="${job.iconColor.description}" />
+                  </j:when>
+                  <j:otherwise>
+                    <!-- This is for special conditions, such as folders -->
+                    <l:icon src="${job.iconColor.iconClassName}" />
+                  </j:otherwise>
+                </j:choose>
               </div>
               <div class="jenkins-jobs-list__item__details__text">
                 <p class="jenkins-jobs-list__item__label">${job.displayName}</p>
@@ -112,7 +122,7 @@ THE SOFTWARE.
               </div>
             </a>
             <div class="jenkins-jobs-list__item__actions">
-              <st:include page="column.jelly" it="${buildButtonColumn}" optional="true" />
+              <st:include page="column.jelly" it="${buildButtonColumn}" optional="true"/>
             </div>
           </div>
         </j:forEach>
