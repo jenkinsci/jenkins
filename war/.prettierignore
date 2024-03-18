@@ -29,3 +29,6 @@ src/main/scss/_bootstrap.scss
 
 # Breaks the file
 ../core/src/main/resources/hudson/rss20.jelly
+
+# Breaks the spacing between description.jelly and the summary count
+../core/src/main/resources/hudson/model/CauseAction/summary.jelly
