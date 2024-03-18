@@ -36,7 +36,7 @@
     "mini-css-extract-plugin": "2.8.1",
     "postcss": "8.4.35",
     "postcss-loader": "8.1.1",
-    "postcss-preset-env": "9.5.0",
+    "postcss-preset-env": "9.5.1",
     "postcss-scss": "4.0.9",
     "prettier": "3.2.5",
     "sass": "1.71.1",
