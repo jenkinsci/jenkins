@@ -824,7 +824,6 @@ public abstract class View extends AbstractModelObject implements AccessControll
     public static final class AsynchPeople extends ProgressiveRendering { // JENKINS-15206
 
         private final Collection<TopLevelItem> items;
-        private final User unknown;
         private final Map<User, UserInfo> users = new HashMap<>();
         private final Set<User> modified = new HashSet<>();
         private final String iconSize;
