@@ -24,27 +24,24 @@
 
 package hudson.model;
 
-import org.htmlunit.FailingHttpStatusCodeException;
-import org.htmlunit.html.DomElement;
-import org.htmlunit.html.HtmlPage;
 import static org.junit.Assert.*;
 
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Sets;
 import hudson.security.AuthorizationMatrixProperty;
 import hudson.security.Permission;
+import java.util.*;
 import jenkins.model.Jenkins;
+import org.htmlunit.html.DomElement;
+import org.htmlunit.html.HtmlPage;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.FakeChangeLogSCM;
-import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.For;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.recipes.LocalData;
 import org.springframework.security.core.context.SecurityContextHolder;
-
-import java.util.*;
 
 @For(View.AsynchPeople.class)
 public class AsynchPeopleTest {
@@ -123,7 +120,7 @@ public class AsynchPeopleTest {
         view.add(p2);
 
         {
-            SecurityContextHolder.getContext().setAuthentication(Jenkins.ANONYMOUS);
+            SecurityContextHolder.getContext().setAuthentication(Jenkins.ANONYMOUS2);
             View.AsynchPeople people = view.getAsynchPeople();
             people.start();
             while(!people.isFinished()) {
@@ -137,7 +134,7 @@ public class AsynchPeopleTest {
         }
 
         {
-            SecurityContextHolder.getContext().setAuthentication(user1.impersonate());
+            SecurityContextHolder.getContext().setAuthentication(user1.impersonate2());
             View.AsynchPeople people = view.getAsynchPeople();
             people.start();
             while(!people.isFinished()) {
@@ -151,7 +148,7 @@ public class AsynchPeopleTest {
         }
 
         {
-            SecurityContextHolder.getContext().setAuthentication(admin.impersonate());
+            SecurityContextHolder.getContext().setAuthentication(admin.impersonate2());
             View.AsynchPeople people = view.getAsynchPeople();
             people.start();
             while(!people.isFinished()) {
