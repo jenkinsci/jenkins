@@ -28,7 +28,6 @@ import static org.junit.Assert.assertFalse;
 
 import com.cloudbees.hudson.plugins.folder.Folder;
 import hudson.model.TopLevelItem;
-import hudson.model.View;
 import java.awt.Point;
 import java.util.Arrays;
 import java.util.Collections;
@@ -266,19 +265,19 @@ public class GetterMethodFilterTest extends StaplerAbstractTest {
         assertNotReachable("testWithReturnMultiple/map/a/");
         assertNotReachable("testWithReturnMultiple/map/b/");
     }
-
-    @TestExtension
-    public static class TestWithReturnCoreObject extends AbstractUnprotectedRootAction {
-        public View.People getPeople() {
-            // provide an index jelly view
-            return new View.People(Jenkins.get());
-        }
-    }
-
-    @Test
-    public void testWithReturnCoreObject_people() throws Exception {
-        assertReachableWithoutOk("testWithReturnCoreObject/people/");
-    }
+//
+//    @TestExtension
+//    public static class TestWithReturnCoreObject extends AbstractUnprotectedRootAction {
+//        public View.People getPeople() {
+//            // provide an index jelly view
+//            return new View.People(Jenkins.get());
+//        }
+//    }
+//
+//    @Test
+//    public void testWithReturnCoreObject_people() throws Exception {
+//        assertReachableWithoutOk("testWithReturnCoreObject/people/");
+//    }
 
     @Test
     public void testTopLevelItemIsLegal() throws Exception {

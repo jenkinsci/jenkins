@@ -41,7 +41,6 @@ import hudson.init.InitMilestone;
 import hudson.init.Initializer;
 import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.ItemListener;
-import hudson.scm.ChangeLogSet;
 import hudson.search.CollectionSearchIndex;
 import hudson.search.SearchIndexBuilder;
 import hudson.security.ACL;
@@ -81,7 +80,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -98,19 +96,13 @@ import jenkins.model.ModelObjectWithContextMenu;
 import jenkins.model.item_category.Categories;
 import jenkins.model.item_category.Category;
 import jenkins.model.item_category.ItemCategory;
-import jenkins.scm.RunWithSCM;
-import jenkins.security.stapler.StaplerAccessibleType;
-import jenkins.util.ProgressiveRendering;
 import jenkins.util.xml.XMLUtils;
 import jenkins.widgets.HasWidgets;
-import net.sf.json.JSON;
-import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.jenkins.ui.icon.Icon;
 import org.jenkins.ui.icon.IconSet;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
@@ -701,264 +693,6 @@ public abstract class View extends AbstractModelObject implements AccessControll
             if (lastChange == null)    return 0;
             return lastChange.getTimeInMillis();
         }
-    }
-
-    /**
-     * Does this {@link View} has any associated user information recorded?
-     * @deprecated Potentially very expensive call; do not use from Jelly views.
-     */
-    @Deprecated
-    public boolean hasPeople() {
-        return People.isApplicable(getItems());
-    }
-
-    /**
-     * Gets the users that show up in the changelog of this job collection.
-     */
-    public People getPeople() {
-        return new People(this);
-    }
-
-    /**
-     * @since 1.484
-     */
-    public AsynchPeople getAsynchPeople() {
-        return new AsynchPeople(this);
-    }
-
-    @ExportedBean
-    @StaplerAccessibleType
-    public static final class People  {
-        @Exported
-        public final List<UserInfo> users;
-
-        public final ModelObject parent;
-
-        public People(Jenkins parent) {
-            this.parent = parent;
-            // for Hudson, really load all users
-            Map<User, UserInfo> users = getUserInfo(parent.getItems());
-            User unknown = User.getUnknown();
-            for (User u : User.getAll()) {
-                if (u == unknown)  continue;   // skip the special 'unknown' user
-                if (!users.containsKey(u))
-                    users.put(u, new UserInfo(u, null, null));
-            }
-            this.users = toList(users);
-        }
-
-        public People(View parent) {
-            this.parent = parent;
-            this.users = toList(getUserInfo(parent.getItems()));
-        }
-
-        private Map<User, UserInfo> getUserInfo(Collection<? extends Item> items) {
-            Map<User, UserInfo> users = new HashMap<>();
-            for (Item item : items) {
-                for (Job<?, ?> job : item.getAllJobs()) {
-                    RunList<? extends Run<?, ?>> runs = job.getBuilds();
-                    for (Run<?, ?> r : runs) {
-                        if (r instanceof RunWithSCM) {
-                            RunWithSCM<?, ?> runWithSCM = (RunWithSCM<?, ?>) r;
-
-                            for (ChangeLogSet<? extends ChangeLogSet.Entry> c : runWithSCM.getChangeSets()) {
-                                for (ChangeLogSet.Entry entry : c) {
-                                    User user = entry.getAuthor();
-
-                                    UserInfo info = users.get(user);
-                                    if (info == null)
-                                        users.put(user, new UserInfo(user, job, r.getTimestamp()));
-                                    else if (info.getLastChange().before(r.getTimestamp())) {
-                                        info.project = job;
-                                        info.lastChange = r.getTimestamp();
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            return users;
-        }
-
-        private List<UserInfo> toList(Map<User, UserInfo> users) {
-            ArrayList<UserInfo> list = new ArrayList<>(users.values());
-            Collections.sort(list);
-            return Collections.unmodifiableList(list);
-        }
-
-        public Api getApi() {
-            return new Api(this);
-        }
-
-        /**
-         * @deprecated Potentially very expensive call; do not use from Jelly views.
-         */
-        @Deprecated
-        public static boolean isApplicable(Collection<? extends Item> items) {
-            for (Item item : items) {
-                for (Job job : item.getAllJobs()) {
-                    RunList<? extends Run<?, ?>> runs = job.getBuilds();
-
-                    for (Run<?, ?> r : runs) {
-                        if (r instanceof RunWithSCM) {
-                            RunWithSCM<?, ?> runWithSCM = (RunWithSCM<?, ?>) r;
-                            for (ChangeLogSet<? extends ChangeLogSet.Entry> c : runWithSCM.getChangeSets()) {
-                                for (ChangeLogSet.Entry entry : c) {
-                                    User user = entry.getAuthor();
-                                    if (user != null)
-                                        return true;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            return false;
-        }
-    }
-
-    /**
-     * Variant of {@link People} which can be displayed progressively, since it may be slow.
-     * @since 1.484
-     */
-    public static final class AsynchPeople extends ProgressiveRendering { // JENKINS-15206
-
-        private final Collection<TopLevelItem> items;
-        private final User unknown;
-        private final Map<User, UserInfo> users = new HashMap<>();
-        private final Set<User> modified = new HashSet<>();
-        private final String iconSize;
-        public final ModelObject parent;
-
-        /** @see Jenkins#getAsynchPeople */
-        public AsynchPeople(Jenkins parent) {
-            this.parent = parent;
-            items = parent.getItems();
-            unknown = User.getUnknown();
-        }
-
-        /** @see View#getAsynchPeople */
-        public AsynchPeople(View parent) {
-            this.parent = parent;
-            items = parent.getItems();
-            unknown = null;
-        }
-
-        {
-            StaplerRequest req = Stapler.getCurrentRequest();
-            iconSize = req != null ? Functions.validateIconSize(Functions.getCookie(req, "iconSize", "32x32")) : "32x32";
-        }
-
-        @Override protected void compute() throws Exception {
-            int itemCount = 0;
-            for (Item item : items) {
-                for (Job<?, ?> job : item.getAllJobs()) {
-                    RunList<? extends Run<?, ?>> builds = job.getBuilds();
-                    int buildCount = 0;
-                    for (Run<?, ?> r : builds) {
-                        if (canceled()) {
-                            return;
-                        }
-                        if (!(r instanceof RunWithSCM)) {
-                            continue;
-                        }
-
-                        RunWithSCM<?, ?> runWithSCM = (RunWithSCM<?, ?>) r;
-                        for (ChangeLogSet<? extends ChangeLogSet.Entry> c : runWithSCM.getChangeSets()) {
-                            for (ChangeLogSet.Entry entry : c) {
-                                User user = entry.getAuthor();
-                                UserInfo info = users.get(user);
-                                if (info == null) {
-                                    UserInfo userInfo = new UserInfo(user, job, r.getTimestamp());
-                                    userInfo.avatar = UserAvatarResolver.resolveOrNull(user, iconSize);
-                                    synchronized (this) {
-                                        users.put(user, userInfo);
-                                        modified.add(user);
-                                    }
-                                } else if (info.getLastChange().before(r.getTimestamp())) {
-                                    synchronized (this) {
-                                        info.project = job;
-                                        info.lastChange = r.getTimestamp();
-                                        modified.add(user);
-                                    }
-                                }
-                            }
-                        }
-                        // TODO consider also adding the user of the UserCause when applicable
-                        buildCount++;
-                        // TODO this defeats lazy-loading. Should rather do a breadth-first search, as in hudson.plugins.view.dashboard.builds.LatestBuilds
-                        // (though currently there is no quick implementation of RunMap.size() ~ idOnDisk.size(), which would be needed for proper progress)
-                        progress((itemCount + 1.0 * buildCount / builds.size()) / (items.size() + 1));
-                    }
-                }
-                itemCount++;
-                progress(1.0 * itemCount / (items.size() + /* handling User.getAll */1));
-            }
-            if (unknown != null) {
-                if (canceled()) {
-                    return;
-                }
-                for (User u : User.getAll()) { // TODO nice to have a method to iterate these lazily
-                    if (canceled()) {
-                        return;
-                    }
-                    if (u == unknown) {
-                        continue;
-                    }
-                    if (!users.containsKey(u)) {
-                        UserInfo userInfo = new UserInfo(u, null, null);
-                        userInfo.avatar = UserAvatarResolver.resolveOrNull(u, iconSize);
-                        synchronized (this) {
-                            users.put(u, userInfo);
-                            modified.add(u);
-                        }
-                    }
-                }
-            }
-        }
-
-        @NonNull
-        @Override protected synchronized JSON data() {
-            JSONArray r = new JSONArray();
-            for (User u : modified) {
-                UserInfo i = users.get(u);
-                JSONObject entry = new JSONObject().
-                        accumulate("id", u.getId()).
-                        accumulate("fullName", u.getFullName()).
-                        accumulate("url", u.getUrl() + "/").
-                        accumulate("avatar", i.avatar != null ? i.avatar : Stapler.getCurrentRequest().getContextPath() + Functions.getResourcePath() + "/images/svgs/person.svg").
-                        accumulate("timeSortKey", i.getTimeSortKey()).
-                        accumulate("lastChangeTimeString", i.getLastChangeTimeString());
-                Job<?, ?> p = i.getJob();
-                if (p != null) {
-                    entry.accumulate("projectUrl", p.getUrl()).accumulate("projectFullDisplayName", p.getFullDisplayName());
-                }
-                r.add(entry);
-            }
-            modified.clear();
-            return r;
-        }
-
-        public Api getApi() {
-            return new Api(new People());
-        }
-
-        /** JENKINS-16397 workaround */
-        @Restricted(NoExternalUse.class)
-        @ExportedBean
-        public final class People {
-
-            private View.People people;
-
-            @Exported public synchronized List<UserInfo> getUsers() {
-                if (people == null) {
-                    people = parent instanceof Jenkins ? new View.People((Jenkins) parent) : new View.People((View) parent);
-                }
-                return people.users;
-            }
-        }
-
     }
 
     void addDisplayNamesToSearchIndex(SearchIndexBuilder sib, Collection<TopLevelItem> items) {
