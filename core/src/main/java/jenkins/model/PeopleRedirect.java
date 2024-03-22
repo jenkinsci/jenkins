@@ -28,22 +28,12 @@ import hudson.Extension;
 import hudson.model.Action;
 import hudson.model.TransientViewActionFactory;
 import hudson.model.View;
-import java.io.IOException;
 import java.util.List;
-import javax.servlet.ServletException;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
 
 @Restricted(NoExternalUse.class)
 public abstract class PeopleRedirect implements Action {
-    /* Ensure all requests end in the index view */
-    public void doDynamic(StaplerRequest req, StaplerResponse rsp) throws ServletException, IOException {
-        // TODO this has broken breadcrumbs -- also, do we even need this?
-        rsp.forward(this, "", req);
-    }
-
     @Override
     public String getIconFileName() {
         return null;
