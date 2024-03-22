@@ -121,7 +121,7 @@ THE SOFTWARE.
         <!-- Required by plugin-util-api -->
         <groupId>org.jenkins-ci.plugins.workflow</groupId>
         <artifactId>workflow-support</artifactId>
-        <version>865.v43e78cc44e0d</version>
+        <version>881.v7663695646cf</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
