@@ -48,7 +48,6 @@ import hudson.security.AccessControlled;
 import hudson.security.Permission;
 import hudson.security.PermissionGroup;
 import hudson.security.PermissionScope;
-import hudson.tasks.UserAvatarResolver;
 import hudson.util.AlternativeUiTextProvider;
 import hudson.util.AlternativeUiTextProvider.Message;
 import hudson.util.DescribableList;
@@ -69,11 +68,9 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -626,74 +623,6 @@ public abstract class View extends AbstractModelObject implements AccessControll
     /** @deprecated Does not work properly with moved jobs. Use {@link ItemListener#onLocationChanged} instead. */
     @Deprecated
     public void onJobRenamed(Item item, String oldName, String newName) {}
-
-    @ExportedBean(defaultVisibility = 2)
-    public static final class UserInfo implements Comparable<UserInfo> {
-        private final User user;
-        /**
-         * When did this user made a last commit on any of our projects? Can be null.
-         */
-        private Calendar lastChange;
-        /**
-         * Which project did this user commit? Can be null.
-         */
-        private Job<?, ?> project;
-
-        /** @see UserAvatarResolver */
-        String avatar;
-
-        UserInfo(User user, Job<?, ?> p, Calendar lastChange) {
-            this.user = user;
-            this.project = p;
-            this.lastChange = lastChange;
-        }
-
-        @Exported
-        public User getUser() {
-            return user;
-        }
-
-        @Exported
-        public Calendar getLastChange() {
-            return lastChange;
-        }
-
-        @Deprecated
-        public AbstractProject getProject() {
-            return project instanceof AbstractProject ? (AbstractProject) project : null;
-        }
-
-        @Exported(name = "project")
-        public Job<?, ?> getJob() {
-            return project;
-        }
-
-        /**
-         * Returns a human-readable string representation of when this user was last active.
-         */
-        public String getLastChangeTimeString() {
-            if (lastChange == null)    return "N/A";
-            long duration = new GregorianCalendar().getTimeInMillis() - ordinal();
-            return Util.getTimeSpanString(duration);
-        }
-
-        public String getTimeSortKey() {
-            if (lastChange == null)    return "-";
-            return Util.XS_DATETIME_FORMATTER.format(lastChange.getTime());
-        }
-
-        @Override
-        public int compareTo(UserInfo that) {
-            long rhs = that.ordinal();
-            long lhs = this.ordinal();
-            return Long.compare(rhs, lhs);
-        }
-
-        private long ordinal() {
-            if (lastChange == null)    return 0;
-            return lastChange.getTimeInMillis();
-        }
-    }
 
     void addDisplayNamesToSearchIndex(SearchIndexBuilder sib, Collection<TopLevelItem> items) {
         for (TopLevelItem item : items) {
