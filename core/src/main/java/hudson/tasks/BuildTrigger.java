@@ -58,6 +58,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.StringTokenizer;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -113,7 +114,7 @@ public class BuildTrigger extends Recorder implements DependencyDeclarer {
 
     @DataBoundConstructor
     public BuildTrigger(String childProjects, String threshold) {
-        this(childProjects, Result.fromString(threshold == null ? Result.SUCCESS.toString() : threshold));
+        this(childProjects, Result.fromString(Objects.toString(threshold, Result.SUCCESS.toString())));
     }
 
     public BuildTrigger(String childProjects, Result threshold) {

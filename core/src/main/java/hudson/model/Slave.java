@@ -63,6 +63,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
@@ -392,7 +393,7 @@ public abstract class Slave extends Node implements Serializable {
             // if computer is null then channel is null and thus we were going to return null anyway
             return null;
         } else {
-            return createPath(computer.getAbsoluteRemoteFs() == null ? remoteFS : computer.getAbsoluteRemoteFs());
+            return createPath(Objects.toString(computer.getAbsoluteRemoteFs(), remoteFS));
         }
     }
 
