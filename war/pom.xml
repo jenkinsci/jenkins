@@ -81,24 +81,6 @@ THE SOFTWARE.
       <groupId>org.jenkins-ci.main</groupId>
       <artifactId>jenkins-core</artifactId>
       <version>${project.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>com.google.code.findbugs</groupId>
-          <artifactId>jsr305</artifactId>
-        </exclusion>
-        <!--
-          jars that are not needed in war. most of the exclusions should happen in the core, to make IDEs happy, not here.
-        -->
-        <exclusion>
-          <groupId>jakarta.servlet.jsp</groupId>
-          <artifactId>jakarta.servlet.jsp-api</artifactId>
-        </exclusion>
-        <!-- Stapler 1.195 fails to declare this as optional, and the 1.1 version lacks a license: -->
-        <exclusion>
-          <groupId>org.kohsuke.metainf-services</groupId>
-          <artifactId>metainf-services</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.main</groupId>
