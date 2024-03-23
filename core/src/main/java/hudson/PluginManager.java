@@ -1442,7 +1442,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                         plugin.getCategoriesStream()
                             .map(UpdateCenter::getCategoryDisplayName)
                             .anyMatch(category -> category != null && category.toLowerCase().contains(query.toLowerCase())) ||
-                        (plugin.hasWarnings() && query.equalsIgnoreCase("warning:"));
+                        plugin.hasWarnings() && query.equalsIgnoreCase("warning:");
                 })
                 .limit(Math.max(limit - plugins.size(), 1))
                 .sorted((o1, o2) -> {
