@@ -2,9 +2,9 @@
   När det här alternativet är markerat kan flera byggen av detta projekt köras
   parallellt.
   <p>
-    Som standard körs endast ett enda bygge av ett projekt åt gången &mdash; alla
-    andra begäran om att börja bygga projektet kommer att stanna i byggkön tills
-    det första bygget är klart.
+    Som standard körs endast ett enda bygge av ett projekt åt gången &mdash;
+    alla andra begäran om att börja bygga projektet kommer att stanna i byggkön
+    tills det första bygget är klart.
     <br />
     Detta är ett säkert standardvärde eftersom projekt ofta kan kräva exklusiv
     åtkomst till vissa resurser, t.ex. en databas eller hårdvara.
@@ -19,10 +19,11 @@
   </p>
 
   <p>
-    Att aktivera samtidiga byggen är användbart för projekt som kör långa testsviter
-    eftersom det låter varje bygge innehålla ett smärre antal förändringar,
-    medan den totala handläggningstiden minskar eftersom efterföljande byggen inte
-    behöver vänta på att tidigare testkörningar ska slutföras.
+    Att aktivera samtidiga byggen är användbart för projekt som kör långa
+    testsviter eftersom det låter varje bygge innehålla ett smärre antal
+    förändringar, medan den totala handläggningstiden minskar eftersom
+    efterföljande byggen inte behöver vänta på att tidigare testkörningar ska
+    slutföras.
     <br />
     Den här funktionen är också användbar för parametriserade projekt, vars
     individuella byggkörningar &mdash; beroende på vilka parametrar som används
@@ -46,9 +47,14 @@
     " skulle ändra avgränsaren till ett bindestreck.
     <br />
     Mer information om hur man konfigurerar systemegenskaper finns på
-    <a href="https://www.jenkins.io/redirect/setting-system-properties" rel="noopener noreferrer" target="_blank">
+    <a
+      href="https://www.jenkins.io/redirect/setting-system-properties"
+      rel="noopener noreferrer"
+      target="_blank"
+    >
       webbplatsen
-    </a>.
+    </a>
+    .
   </p>
 
   <p>
