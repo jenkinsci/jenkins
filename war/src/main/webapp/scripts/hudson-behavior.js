@@ -612,9 +612,10 @@ function geval(script) {
 // eslint-disable-next-line no-unused-vars
 function fireEvent(element, event) {
   return !element.dispatchEvent(
-    new Event(event, {
+    new CustomEvent(event, {
       bubbles: true,
       cancelable: true,
+      detail: element,
     }),
   );
 }
@@ -996,7 +997,13 @@ function renderOnDemand(e, callback, noBehaviour) {
   if (!e || !e.classList.contains("render-on-demand")) {
     return;
   }
-  var proxy = eval(e.getAttribute("proxy"));
+
+  let proxyMethod = e.getAttribute("data-proxy-method");
+  let proxyUrl = e.getAttribute("data-proxy-url");
+  let proxyCrumb = e.getAttribute("data-proxy-crumb");
+  let proxyUrlNames = e.getAttribute("data-proxy-url-names").split(",");
+
+  var proxy = window[proxyMethod](proxyUrl, proxyCrumb, proxyUrlNames);
   proxy.render(function (t) {
     var contextTagName = e.parentNode.tagName;
     var c;
@@ -1228,7 +1235,7 @@ function rowvgStartEachRow(recursive, f) {
   });
 
   Behaviour.specify(
-    "TABLE.progress-bar",
+    "TABLE.progress-bar, div.app-progress-bar",
     "table-progress-bar",
     ++p,
     function (e) {
@@ -2708,8 +2715,13 @@ function validateButton(checkUrl, paramList, button) {
   paramList.split(",").forEach(function (name) {
     var p = findPreviousFormItem(button, name);
     if (p != null) {
-      if (p.type == "checkbox") {
+      if (p.type === "checkbox") {
         parameters[name] = p.checked;
+      } else if (p.type === "radio") {
+        while (p && !p.checked) {
+          p = findPreviousFormItem(p, name);
+        }
+        parameters[name] = p.value;
       } else {
         parameters[name] = p.value;
       }

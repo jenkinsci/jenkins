@@ -48,6 +48,7 @@ import hudson.util.RingBufferLogHandler;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.charset.Charset;
@@ -261,12 +262,35 @@ public class WebAppMain implements ServletContextListener {
                         new HudsonFailedToLoad(e).publish(context, _home);
                         throw e;
                     } catch (Exception e) {
-                        new HudsonFailedToLoad(e).publish(context, _home);
+                        // Allow plugins to override error page on boot with custom BootFailure subclass thrown
+                        Throwable error = unwrapException(e);
+                        if (error instanceof InvocationTargetException) {
+                            Throwable targetException = ((InvocationTargetException) error).getTargetException();
+
+                            if (targetException instanceof BootFailure) {
+                                ((BootFailure) targetException).publish(context, _home);
+                            } else {
+                                new HudsonFailedToLoad(e).publish(context, _home);
+                            }
+                        } else {
+                            new HudsonFailedToLoad(e).publish(context, _home);
+                        }
                     } finally {
                         Jenkins instance = Jenkins.getInstanceOrNull();
                         if (!success && instance != null)
                             instance.cleanUp();
                     }
+                }
+
+                private Throwable unwrapException(Exception e) {
+                    Throwable error = e;
+                    while (error.getCause() != null) {
+                        if (error.getCause() instanceof InvocationTargetException) {
+                            return error.getCause();
+                        }
+                        error = error.getCause();
+                    }
+                    return error;
                 }
             };
             initThread.start();

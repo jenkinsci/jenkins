@@ -157,12 +157,21 @@ public class JNLPLauncherTest {
         ArgumentListBuilder args = new ArgumentListBuilder();
         args.add(new File(new File(System.getProperty("java.home")), "bin/java").getPath(), "-jar");
         args.add(Which.jarFile(Launcher.class).getAbsolutePath());
-        // TODO deprecated mode
-        args.add("-jnlpUrl", j.getURL() + "computer/" + c.getName() + "/jenkins-agent.jnlp");
+        args.add("-url");
+        args.add(j.getURL());
+        args.add("-name");
+        args.add(c.getName());
 
         if (c instanceof SlaveComputer) {
             SlaveComputer sc = (SlaveComputer) c;
+            args.add("-secret");
+            args.add(sc.getJnlpMac());
             ComputerLauncher launcher = sc.getLauncher();
+            if (launcher instanceof ComputerLauncherFilter) {
+                launcher = ((ComputerLauncherFilter) launcher).getCore();
+            } else if (launcher instanceof DelegatingComputerLauncher) {
+                launcher = ((DelegatingComputerLauncher) launcher).getLauncher();
+            }
             if (launcher instanceof JNLPLauncher) {
                 args.add(((JNLPLauncher) launcher).getWorkDirSettings().toCommandLineArgs(sc));
             }

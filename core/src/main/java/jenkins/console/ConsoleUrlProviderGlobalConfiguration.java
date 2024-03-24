@@ -48,7 +48,7 @@ import org.kohsuke.stapler.StaplerRequest;
 /**
  * Allows administrators to activate and sort {@link ConsoleUrlProvider} extensions to set defaults for all users.
  * @see ConsoleUrlProviderUserProperty
- * @since TODO
+ * @since 2.433
  */
 @Extension
 @Symbol("consoleUrlProvider")

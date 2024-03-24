@@ -1,11 +1,12 @@
 @use "../abstracts/mixins";
 
 #side-panel .pane-frame {
-  border-radius: 0;
-  border-left: none;
-  border-right: none;
-  border-color: var(--panel-border-color);
-  border-width: 1px;
+  border-radius: 1rem;
+  background: var(--card-background);
+  border: var(--card-border-width) solid var(--card-border-color);
+  margin-left: 10px;
+  margin-bottom: calc(var(--section-padding) / 2);
+  overflow: hidden;
 }
 
 #side-panel .pane-header {
@@ -20,16 +21,14 @@
 #side-panel .pane-header,
 #side-panel .pane-footer {
   color: var(--link-dark-color);
-  background-color: var(--panel-header-bg-color);
-  border-radius: 0;
-  border-width: 1px;
-  padding: 0.5rem 1.25rem;
+  background: transparent;
+  padding: 0.65rem 1rem;
 }
 
 #side-panel .pane-header-title {
   display: inline-block;
   flex: 1;
-  font-weight: bold;
+  font-weight: 500;
 
   & > div {
     font-weight: normal;
@@ -85,21 +84,6 @@
   text-decoration: underline;
 }
 
-#side-panel .pane-header a {
-  font-weight: bold;
-}
-
-#side-panel .pane-content a {
-  font-weight: 600;
-}
-
-/**
- * Build Queue
- */
-#buildQueue {
-  margin-bottom: var(--section-padding);
-}
-
 /**
  * Executors
  */
@@ -123,8 +107,8 @@
 }
 
 .build-row-cell .pane.build-name {
-  width: 30%;
-  font-weight: bold;
+  width: 32%;
+  font-weight: 500;
   vertical-align: top;
 }
 
@@ -133,7 +117,7 @@
 }
 
 .build-row-cell .pane.build-controls {
-  width: 20%;
+  width: 18%;
   text-align: right;
 }
 
@@ -257,7 +241,7 @@
 .jenkins-pane__header--build-history {
   display: grid;
   grid-template-columns: auto 1fr auto;
-  font-weight: bold !important;
+  font-weight: 500 !important;
 
   .jenkins-table__cell--tight {
     width: auto;

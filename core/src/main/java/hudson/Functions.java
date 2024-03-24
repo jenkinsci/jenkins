@@ -692,13 +692,13 @@ public class Functions {
     }
 
     @Restricted(NoExternalUse.class)
-    public static String getUserTimeZonePostfix() {
+    public static String getUserTimeZonePostfix(Date date) {
         if (!isUserTimeZoneOverride()) {
             return "";
         }
 
         TimeZone tz = TimeZone.getTimeZone(getUserTimeZone());
-        return tz.getDisplayName(tz.observesDaylightTime(), TimeZone.SHORT);
+        return tz.getDisplayName(tz.inDaylightTime(date), TimeZone.SHORT, getCurrentLocale());
     }
 
     @Restricted(NoExternalUse.class)
@@ -968,7 +968,7 @@ public class Functions {
     public static String getFooterURL() {
         if (footerURL == null) {
             footerURL = SystemProperties.getString("hudson.footerURL");
-            if (StringUtils.isBlank(footerURL)) {
+            if (footerURL == null || footerURL.isBlank()) {
                 footerURL = "https://www.jenkins.io/";
             }
         }
@@ -1909,7 +1909,7 @@ public class Functions {
      * Computes the link to the console for the run for the specified executable, taking {@link ConsoleUrlProvider} into account.
      * @param executable the executable (normally a {@link Run})
      * @return the absolute URL for accessing the build console for the executable, or null if there is no build associated with the executable
-     * @since TODO
+     * @since 2.433
      */
     public static @CheckForNull String getConsoleUrl(Queue.Executable executable) {
         if (executable == null) {
@@ -2194,7 +2194,7 @@ public class Functions {
             int firstPeriod = part.indexOf(".");
             return slash > 0 && firstPeriod > 0 && slash < firstPeriod;
         }).collect(Collectors.joining(" "));
-        if (StringUtils.isBlank(views)) {
+        if (views == null || views.isBlank()) {
             // fallback to full thread name if there are no apparent views
             return threadName;
         }
@@ -2242,8 +2242,17 @@ public class Functions {
         return SystemProperties.getBoolean("hudson.security.WipeOutPermission");
     }
 
+    @Deprecated
     public static String createRenderOnDemandProxy(JellyContext context, String attributesToCapture) {
         return Stapler.getCurrentRequest().createJavaScriptProxy(new RenderOnDemandClosure(context, attributesToCapture));
+    }
+
+    /**
+     * Called from renderOnDemand.jelly to generate the parameters for the proxy object generation.
+     */
+    @Restricted(NoExternalUse.class)
+    public static StaplerRequest.RenderOnDemandParameters createRenderOnDemandProxyParameters(JellyContext context, String attributesToCapture) {
+        return Stapler.getCurrentRequest().createJavaScriptProxyParameters(new RenderOnDemandClosure(context, attributesToCapture));
     }
 
     public static String getCurrentDescriptorByNameUrl() {
