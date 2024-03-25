@@ -282,8 +282,7 @@ public class QuotedStringTokenizer
     /* ------------------------------------------------------------ */
     @Override
     public String nextToken()
-    
-   {
+    {
         if (!hasMoreTokens() || _token == null)
             throw new NoSuchElementException();
         String t = _token.toString();
@@ -295,8 +294,7 @@ public class QuotedStringTokenizer
     /* ------------------------------------------------------------ */
     @Override
     public String nextToken(String delim)
-    
-   {
+    {
         _delim = delim;
         _i = _lastStart;
         _token.setLength(0);
@@ -314,8 +312,7 @@ public class QuotedStringTokenizer
     /* ------------------------------------------------------------ */
     @Override
     public Object nextElement()
-    
-   {
+    {
         return nextToken();
     }
 
