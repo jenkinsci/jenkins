@@ -345,21 +345,21 @@ public final class FilePath implements SerializableOnlyOverRemoting {
             String token = tokens.get(i);
             if (token.equals(".")) {
                 tokens.remove(i);
-                if (tokens.size() > 0)
+                if (!tokens.isEmpty())
                     tokens.remove(i > 0 ? i - 1 : i);
             } else if (token.equals("..")) {
                 if (i == 0) {
                     // If absolute path, just remove: /../something
                     // If relative path, not collapsible so leave as-is
                     tokens.remove(0);
-                    if (tokens.size() > 0) token += tokens.remove(0);
+                    if (!tokens.isEmpty()) token += tokens.remove(0);
                     if (!isAbsolute) buf.append(token);
                 } else {
                     // Normalize: remove something/.. plus separator before/after
                     i -= 2;
                     for (int j = 0; j < 3; j++) tokens.remove(i);
                     if (i > 0) tokens.remove(i - 1);
-                    else if (tokens.size() > 0) tokens.remove(0);
+                    else if (!tokens.isEmpty()) tokens.remove(0);
                 }
             } else
                 i += 2;
