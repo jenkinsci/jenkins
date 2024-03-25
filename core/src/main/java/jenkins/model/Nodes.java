@@ -332,9 +332,6 @@ public class Nodes implements PersistenceRoot {
      */
     public void load() throws IOException {
         final File nodesDir = getRootDir();
-        if (!nodesDir.exists()) {
-            return;
-        }
         final File[] subdirs = nodesDir.listFiles(File::isDirectory);
         final Map<String, Node> newNodes = new TreeMap<>();
         if (subdirs != null) {
