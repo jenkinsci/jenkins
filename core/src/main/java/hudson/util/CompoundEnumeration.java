@@ -38,7 +38,7 @@ public class CompoundEnumeration<T> implements Enumeration<T> {
     }
 
     @Override
-    public T nextElement() throws NoSuchElementException {
+    public T nextElement() {
         return cur.nextElement();
     }
 }

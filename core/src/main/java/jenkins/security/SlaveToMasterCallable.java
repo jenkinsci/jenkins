@@ -11,7 +11,7 @@ import org.jenkinsci.remoting.RoleChecker;
  */
 public abstract class SlaveToMasterCallable<V, T extends Throwable> implements Callable<V, T> {
     @Override
-    public void checkRoles(RoleChecker checker) throws SecurityException {
+    public void checkRoles(RoleChecker checker) {
         checker.check(this, Roles.MASTER);
     }
 

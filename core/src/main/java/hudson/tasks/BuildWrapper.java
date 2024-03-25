@@ -206,7 +206,7 @@ public abstract class BuildWrapper extends AbstractDescribableImpl<BuildWrapper>
      * @since 1.280
      * @see LauncherDecorator
      */
-    public Launcher decorateLauncher(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException, RunnerAbortedException {
+    public Launcher decorateLauncher(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
         return launcher;
     }
 
@@ -233,7 +233,7 @@ public abstract class BuildWrapper extends AbstractDescribableImpl<BuildWrapper>
      * @since 1.374
      * @see ConsoleLogFilter
      */
-    public OutputStream decorateLogger(AbstractBuild build, OutputStream logger) throws IOException, InterruptedException, RunnerAbortedException {
+    public OutputStream decorateLogger(AbstractBuild build, OutputStream logger) throws IOException, InterruptedException {
         return logger;
     }
 

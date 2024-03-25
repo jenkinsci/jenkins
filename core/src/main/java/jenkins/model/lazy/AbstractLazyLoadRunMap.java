@@ -592,7 +592,7 @@ public abstract class AbstractLazyLoadRunMap<R> extends AbstractMap<Integer, R> 
         return numberOnDisk.max();
     }
 
-    protected final synchronized void proposeNewNumber(int number) throws IllegalStateException {
+    protected final synchronized void proposeNewNumber(int number) {
         if (number <= maxNumberOnDisk()) {
             throw new IllegalStateException("JENKINS-27530: cannot create a build with number " + number + " since that (or higher) is already in use among " + numberOnDisk);
         }

@@ -100,7 +100,7 @@ public class PathRemover {
     @Restricted(NoExternalUse.class)
     @FunctionalInterface
     public interface PathChecker {
-        void check(@NonNull Path path) throws SecurityException;
+        void check(@NonNull Path path);
 
         PathChecker ALLOW_ALL = path -> {};
     }

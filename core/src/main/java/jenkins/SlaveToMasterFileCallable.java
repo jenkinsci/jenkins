@@ -26,7 +26,7 @@ public abstract class SlaveToMasterFileCallable<T> implements FileCallable<T> {
     public static final Logger LOGGER = Logger.getLogger(SlaveToMasterFileCallable.class.getName());
 
     @Override
-    public void checkRoles(RoleChecker checker) throws SecurityException {
+    public void checkRoles(RoleChecker checker) {
         warnOnController();
         checker.check(this, Roles.MASTER);
     }

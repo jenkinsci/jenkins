@@ -89,7 +89,7 @@ public class OldDataMonitor extends AdministrativeMonitor {
      *              It should never happen since the monitor is located in the core.
      */
     @NonNull
-    static OldDataMonitor get(Jenkins j) throws IllegalStateException {
+    static OldDataMonitor get(Jenkins j) {
         return ExtensionList.lookupSingleton(OldDataMonitor.class);
     }
 

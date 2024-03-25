@@ -153,7 +153,7 @@ public class SystemProperties {
             }
 
             @Override
-            public Void call() throws RuntimeException {
+            public Void call() {
                 handler = new CopiedHandler(snapshot);
                 return null;
             }

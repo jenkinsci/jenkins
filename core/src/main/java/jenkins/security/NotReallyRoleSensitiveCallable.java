@@ -12,7 +12,7 @@ import org.jenkinsci.remoting.RoleChecker;
  */
 public abstract class NotReallyRoleSensitiveCallable<V, T extends Throwable> implements Callable<V, T> {
     @Override
-    public void checkRoles(RoleChecker checker) throws SecurityException {
+    public void checkRoles(RoleChecker checker) {
         // not meant to be used where this matters
         throw new UnsupportedOperationException();
     }
