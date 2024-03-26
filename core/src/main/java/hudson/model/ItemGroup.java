@@ -184,7 +184,7 @@ public interface ItemGroup<T extends Item> extends PersistenceRoot, ModelObject 
      * @param dir The root directory the item was loaded from.
      * @param item the partially loaded item (take care what methods you call, the item will not have a reference to its parent).
      *
-     * @since TODO
+     * @since 2.444
      */
     default String getItemName(File dir, T item) {
         return dir.getName();
