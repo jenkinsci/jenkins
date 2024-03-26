@@ -1572,7 +1572,7 @@ public class UpdateSite {
          */
         @Restricted(DoNotUse.class)
         public boolean hasWarnings() {
-            return getWarnings().size() > 0;
+            return !getWarnings().isEmpty();
         }
 
         /**
