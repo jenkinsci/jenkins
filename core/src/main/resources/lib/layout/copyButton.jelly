@@ -37,7 +37,7 @@ THE SOFTWARE.
     <st:attribute name="tooltip">Tooltip of the button.</st:attribute>
     <st:attribute name="iconOnly">Hides the background plate of the button</st:attribute>
     <st:attribute name="clazz">Additional CSS class names</st:attribute>
-    <st:attribute name="ref" use="required">The id of the target element to be copied @since TODO</st:attribute>
+    <st:attribute name="ref" use="required">The id of the target element to be copied @since 2.449</st:attribute>
   </st:documentation>
 
   <!-- 'copy-button' class is for backwards compatability -->

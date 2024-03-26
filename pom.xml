@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.111</version>
+    <version>1.112</version>
     <relativePath />
   </parent>
 
@@ -73,7 +73,7 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.450</revision>
+    <revision>2.452</revision>
     <changelist>-SNAPSHOT</changelist>
 
     <!-- configuration for patch tracker plugin  -->
@@ -282,7 +282,7 @@ THE SOFTWARE.
             <dependency>
               <groupId>com.puppycrawl.tools</groupId>
               <artifactId>checkstyle</artifactId>
-              <version>10.14.1</version>
+              <version>10.14.2</version>
             </dependency>
           </dependencies>
           <executions>

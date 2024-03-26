@@ -496,7 +496,7 @@ public class UpdateSite {
     /**
      *
      * @return the URL used by {@link jenkins.install.SetupWizard} for suggested plugins to install at setup time
-     * @since TODO
+     * @since 2.446
      */
     @Exported
     public String getSuggestedPluginsUrl() {
@@ -1572,7 +1572,7 @@ public class UpdateSite {
          */
         @Restricted(DoNotUse.class)
         public boolean hasWarnings() {
-            return getWarnings().size() > 0;
+            return !getWarnings().isEmpty();
         }
 
         /**
