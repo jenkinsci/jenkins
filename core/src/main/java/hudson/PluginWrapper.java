@@ -73,7 +73,6 @@ import jenkins.model.Jenkins;
 import jenkins.plugins.DetachedPluginsUtil;
 import jenkins.security.UpdateSiteWarningsMonitor;
 import jenkins.util.URLClassLoader2;
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.LogFactory;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.Beta;
@@ -497,7 +496,12 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
 
     @Override
     public String getDisplayName() {
-        return StringUtils.removeStart(getLongName(), "Jenkins ");
+        String displayName = getLongName();
+        String removePrefix = "Jenkins ";
+        if (displayName != null && displayName.startsWith(removePrefix)) {
+            return displayName.substring(removePrefix.length());
+        }
+        return displayName;
     }
 
     public Api getApi() {

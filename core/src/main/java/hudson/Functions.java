@@ -163,7 +163,6 @@ import org.apache.commons.jelly.Script;
 import org.apache.commons.jelly.XMLOutput;
 import org.apache.commons.jexl.parser.ASTSizeFunction;
 import org.apache.commons.jexl.util.Introspector;
-import org.apache.commons.lang.StringUtils;
 import org.jenkins.ui.icon.Icon;
 import org.jenkins.ui.icon.IconSet;
 import org.jvnet.tiger_types.Types;
@@ -2415,7 +2414,7 @@ public class Functions {
     }
 
     private static @NonNull String filterIconNameClasses(@NonNull String classNames) {
-        return Arrays.stream(StringUtils.split(classNames, ' '))
+        return Arrays.stream(classNames.split(" "))
             .filter(className -> className.startsWith("icon-"))
             .collect(Collectors.joining(" "));
     }
