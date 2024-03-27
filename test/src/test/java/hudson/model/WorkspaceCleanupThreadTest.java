@@ -182,6 +182,7 @@ public class WorkspaceCleanupThreadTest {
         FilePath ws = createOldWorkspaceOn(r.jenkins, p);
         FilePath tmp = WorkspaceList.tempDir(ws);
         tmp.child("stuff").write("content", null);
+        tmp.act(new Touch(0));
         createOldWorkspaceOn(r.createOnlineSlave(), p);
         performCleanup();
         assertFalse(ws.exists());
@@ -190,13 +191,12 @@ public class WorkspaceCleanupThreadTest {
 
     @Issue("JENKINS-65829")
     @Test
-    public void deleteSoleTemporaryDirectory() throws Exception {
+    public void deleteSoleLibsDirectory() throws Exception {
         FreeStyleProject p = r.createFreeStyleProject();
         FilePath jobWs = Jenkins.get().getWorkspaceFor(p);
         FilePath libsWs = jobWs.withSuffix(WorkspaceList.COMBINATOR + "libs");
         libsWs.child("test-libs").write("content", null);
         libsWs.act(new Touch(0));
-//        FilePath jobWsOnNode = createOldWorkspaceOn(r.createOnlineSlave(), p);
         assertFalse(jobWs.exists());
         assertTrue(libsWs.exists());
         performCleanup();
