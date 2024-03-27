@@ -290,6 +290,33 @@ public class RobustReflectionConverter implements Converter {
         return serializationMethodInvoker.callReadResolve(result);
     }
 
+    private void processAttribute(final Object result, final HierarchicalStreamReader reader, final SeenFields seenFields, String attrAlias) {
+        String attrName = mapper.attributeForAlias(attrAlias);
+        Class classDefiningField = determineWhichClassDefinesField(reader);
+        boolean fieldExistsInClass = fieldDefinedInClass(result, attrName);
+        if (fieldExistsInClass) {
+            Field field = reflectionProvider.getField(result.getClass(), attrName);
+            SingleValueConverter converter = mapper.getConverterFromAttribute(field.getDeclaringClass(), attrName, field.getType());
+            Class type = field.getType();
+            if (converter == null) {
+                converter = mapper.getConverterFromItemType(type);
+                // TODO add fieldName & definedIn args
+            }
+            if (converter != null) {
+                Object value = converter.fromString(reader.getAttribute(attrAlias));
+                if (type.isPrimitive()) {
+                    type = Primitives.box(type);
+                }
+                if (value != null && !type.isAssignableFrom(value.getClass())) {
+                    throw new ConversionException("Cannot convert type " + value.getClass().getName() + " to type " + type.getName());
+                }            reflectionProvider.writeField(result, attrName, value, classDefiningField);
+                seenFields.add(classDefiningField, attrName);
+            }
+        }
+    }
+
+
+
     public Object doUnmarshal(final Object result, final HierarchicalStreamReader reader, final UnmarshallingContext context) {
         final SeenFields seenFields = new SeenFields();
         Iterator it = reader.getAttributeNames();
@@ -300,31 +327,10 @@ public class RobustReflectionConverter implements Converter {
         // Process attributes before recursing into child elements.
         while (it.hasNext()) {
             String attrAlias = (String) it.next();
-            String attrName = mapper.attributeForAlias(attrAlias);
-            Class classDefiningField = determineWhichClassDefinesField(reader);
-            boolean fieldExistsInClass = fieldDefinedInClass(result, attrName);
-            if (fieldExistsInClass) {
-                Field field = reflectionProvider.getField(result.getClass(), attrName);
-                SingleValueConverter converter = mapper.getConverterFromAttribute(field.getDeclaringClass(), attrName, field.getType());
-                Class type = field.getType();
-                if (converter == null) {
-                    converter = mapper.getConverterFromItemType(type); // TODO add fieldName & definedIn args
-                }
-                if (converter != null) {
-                    Object value = converter.fromString(reader.getAttribute(attrAlias));
-                    if (type.isPrimitive()) {
-                        type = Primitives.box(type);
-                    }
-                    if (value != null && !type.isAssignableFrom(value.getClass())) {
-                        throw new ConversionException("Cannot convert type " + value.getClass().getName() + " to type " + type.getName());
-                    }
-                    reflectionProvider.writeField(result, attrName, value, classDefiningField);
-                    seenFields.add(classDefiningField, attrName);
-                }
-            }
+            processAttribute(result, reader, seenFields, attrAlias);
         }
 
-        Map implicitCollectionsForCurrentObject = null;
+        Map implicitCollectionsObject = null;
         while (reader.hasMoreChildren()) {
             reader.moveDown();
 
@@ -348,7 +354,7 @@ public class RobustReflectionConverter implements Converter {
                 if (fieldExistsInClass) {
                     Field field = reflectionProvider.getField(result.getClass(), fieldName);
                     value = unmarshalField(context, result, type, field);
-                    // TODO the reflection provider should have returned the proper field in first place ....
+                    // TODO the reflection provider should implicitCollectionsObject have returned the proper field in first place ....
                     Class definedType = reflectionProvider.getFieldType(result, fieldName, classDefiningField);
                     if (!definedType.isPrimitive()) {
                         type = definedType;
@@ -365,7 +371,7 @@ public class RobustReflectionConverter implements Converter {
                         reflectionProvider.writeField(result, fieldName, value, classDefiningField);
                         seenFields.add(classDefiningField, fieldName);
                     } else {
-                        implicitCollectionsForCurrentObject = writeValueToImplicitCollection(context, value, implicitCollectionsForCurrentObject, result, fieldName);
+                        implicitCollectionsObject = writeValueToImplicitCollection(context, value, implicitCollectionsObject, result, fieldName);
                     }
                 }
             } catch (CriticalXStreamException e) {
