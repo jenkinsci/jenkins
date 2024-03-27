@@ -99,7 +99,7 @@ public class WorkspaceCleanupThread extends AsyncPeriodicWork {
                 if (check) {
                     listener.getLogger().println("Deleting " + ws + " on " + node.getDisplayName());
                     try {
-                        ws.act(new CleanupOldWorkspaces());
+                        ws.act(new CleanupOldWorkspaces(retainForDays));
                     } catch (IOException | InterruptedException x) {
                         Functions.printStackTrace(x, listener.error("Failed to delete " + ws + " on " + node.getDisplayName()));
                     }
@@ -141,12 +141,18 @@ public class WorkspaceCleanupThread extends AsyncPeriodicWork {
 
     private static class CleanupOldWorkspaces extends MasterToSlaveFileCallable<Void> {
 
+        private final int retentionInDays;
+
+        public CleanupOldWorkspaces(int retentionInDays) {
+            this.retentionInDays = retentionInDays;
+        }
+
         @Override
         public Void invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
             File[] workspaces = null;
             File parentWs = f.getParentFile();
             if (parentWs != null) {
-                workspaces = parentWs.listFiles(new ShouldBeDeletedFilter(f.getName()));
+                workspaces = parentWs.listFiles(new ShouldBeDeletedFilter(this.retentionInDays, f.getName()));
             }
 
             if (workspaces != null) {
@@ -161,9 +167,12 @@ public class WorkspaceCleanupThread extends AsyncPeriodicWork {
 
     private static class ShouldBeDeletedFilter implements FileFilter, Serializable {
 
+        private final int retentionInDays;
+
         private final String workspaceBaseName;
 
-        ShouldBeDeletedFilter(String workspaceBaseName) {
+        public ShouldBeDeletedFilter(int retentionInDays, String workspaceBaseName) {
+            this.retentionInDays = retentionInDays;
             this.workspaceBaseName = workspaceBaseName;
         }
 
@@ -181,7 +190,7 @@ public class WorkspaceCleanupThread extends AsyncPeriodicWork {
 
             // if younger than a month, keep it
             long now = new Date().getTime();
-            if (dir.lastModified() + retainForDays * DAY > now) {
+            if (dir.lastModified() + this.retentionInDays * DAY > now) {
                 LOGGER.log(Level.FINE, "Directory {0} is only {1} old, so not deleting", new Object[] {dir, Util.getTimeSpanString(now - dir.lastModified())});
                 return false;
             }
