@@ -687,7 +687,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
 
         public String getTimeSortKey() {
             if (lastChange == null)    return "-";
-            return Util.XS_DATETIME_FORMATTER.format(lastChange.getTime());
+            return Util.XS_DATETIME_FORMATTER2.format(lastChange.toInstant());
         }
 
         @Override
