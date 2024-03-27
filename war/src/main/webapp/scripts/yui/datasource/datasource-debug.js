@@ -1085,7 +1085,9 @@ Math.max(oFullResponse.lastIndexOf("]"),oFullResponse.lastIndexOf("}"));
 
                             // Turn the string into an object literal...
                             // ...eval is necessary here
-                            oFullResponse = eval("(" + oFullResponse + ")");
+                            //eval needs to changed for more details https://www.jenkins.io/doc/developer/security/csp/#eval-calls
+                            oFullResponse = JSON.parse(oFullResponse);
+                            
 
                         }
                     }
@@ -1132,8 +1134,9 @@ Math.max(oFullResponse.lastIndexOf("]"),oFullResponse.lastIndexOf("}"));
     
                             // Turn the string into an object literal...
                             // ...eval is necessary here
-                            oFullResponse = eval("(" + oFullResponse + ")");
-    
+                            //eval needs to changed for more details https://www.jenkins.io/doc/developer/security/csp/#eval-calls
+                            oFullResponse = JSON.parse(oFullResponse);
+
                         }
                     }
                 }
