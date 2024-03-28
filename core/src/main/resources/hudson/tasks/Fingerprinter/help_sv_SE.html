@@ -1,0 +1,44 @@
+<div>
+  Jenkins kan registrera "fingeravtryck" av filer (oftast jar-filer) för att
+  hålla reda på var/när dessa filer produceras och används. När du har
+  sammanlänkade projekt på Jenkins kan detta låta dig snabbt få svar på frågor
+  som:
+
+  <ul>
+    <li>
+      <code>foo.jar</code>
+      finns på min hårddisk, men vilket versionsnummer av FOO kommer den ifrån?
+    </li>
+    <li>
+      Mitt projekt BAR har ett beroende av
+      <code>foo.jar</code>
+      från projektet FOO.
+    </li>
+    <li>
+      <ul>
+        <li>
+          Vilken bygge av
+          <code>foo.jar</code>
+          används i BAR #51?
+        </li>
+        <li>
+          Vilken bygge av BAR innehåller min buggfix till
+          <code>foo.jar</code>
+          #32?
+        </li>
+      </ul>
+    </li>
+  </ul>
+
+  <p>
+    För att använda denna funktion måste alla inblandade projekt (inte bara
+    projektet där en fil produceras, utan även projekten där filen används)
+    använda detta och registrera fingeravtryck.
+  </p>
+
+  <p>
+    Mer information finns i
+    <a href="https://www.jenkins.io/redirect/fingerprint">det här dokumentet</a>
+    .
+  </p>
+</div>

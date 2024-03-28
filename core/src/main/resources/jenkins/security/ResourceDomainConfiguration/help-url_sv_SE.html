@@ -1,0 +1,100 @@
+<p>
+  Jenkins hanterar många filer som potentiellt skapas av opålitliga användare,
+  t.ex. filer i projektarbetsytor eller arkiverade artefakter. När ingen
+  rotwebbadress till en resurs är definierad kommer Jenkins att hantera dessa
+  filer med HTTP-huvudet
+  <code>Content-Security-Policy</code>
+  ("CSP"). Som standard är det konfigurerat till ett värde som inaktiverar många
+  moderna webbfunktioner för att förhindra cross-site scripting (XSS) och andra
+  attacker på Jenkins-användare som har åtkomst till dessa filer. Även om det
+  specifika värdet för CSP-huvudet kan konfigureras av användare (och t.o.m. kan
+  inaktiveras) är det en avvägning mellan säkerhet och funktionalitet.
+</p>
+<p>
+  Om rotwebbadressen till en resurs är definierad kommer Jenkins istället att
+  omdirigera förfrågningar om användarskapade resursfiler till webbadresser som
+  börjar med den webbadress som konfigurerats här. Dessa webbadresser kommer
+  inte att konfigurera CSP-huvudet vilket gör att JavaScript och liknande
+  funktioner fungerar. För att det här alternativet ska fungera som förväntat
+  gäller följande begränsningar och överväganden:
+</p>
+<ul>
+  <li>
+    Rotwebbadressen till en resurs måste vara ett giltigt alternativ för
+    Jenkins-webbadressen för att förfrågningar ska behandlas korrekt.
+  </li>
+  <li>
+    Jenkins-webbadressen måste konfigureras och skilja sig från denna
+    rotwebbadress till en resurs (i själva verket krävs ett annat värdnamn).
+  </li>
+  <li>
+    När den väl har konfigurerats kommer Jenkins endast att hantera
+    förfrågningar från resurens webbaddress via rotwebbadressen till en resurs.
+    Alla andra förfrågningar får svaret
+    <em>HTTP 404 Kunde inte hittas</em>
+    .
+  </li>
+</ul>
+<p>
+  När denna webbadress har konfigurerats ordentligt kommer Jenkins att
+  omdirigera förfrågningar till arbetsytor, arkiverade artefakter och liknande
+  samlingar av vanligtvis användargenererat innehåll till webbadresser som
+  börjar med rotwebbadressen till en resurs. Istället för en sökväg som
+  <code>job/namn/ws</code>
+  kommer resurswebbadresser att innehålla en token som kodar sökvägen,
+  användaren som webbadressen skapades för och när den skapades. Dessa
+  resurswebbadreser får åtkomst till statiska filer
+  <em>som om</em>
+  användaren som de skapades för skulle komma åt dem: Om användarens behörighet
+  att komma åt dessa filer tas bort kommer motsvarande resurswebbadress inte
+  heller att fungera längre.
+  <strong>
+    Dessa webbadresser är tillgängliga för alla utan autentisering tills de
+    löper ut, så att dela dessa webbadresser är som att dela filerna direkt.
+  </strong>
+</p>
+<h3>Säkerhetsaspekter</h3>
+<h4>Autentisering</h4>
+<p>
+  Resurswebbadresser kräver inte autentisering (användare kommer inte att ha en
+  giltig session för rotwebbadressen till en resurs). Att dela en
+  resurswebbadress med en annan användare, även en som saknar övergripande
+  behörighet eller läsbehörighet för Jenkins, kommer att bevilja åtkomst till
+  dessa filer tills webbadresserna löper ut.
+</p>
+<h4>Utgångsdatum</h4>
+<p>
+  Resurswebbadresser löper ut som standard efter 30 minuter. Utgångna
+  resurswebbadresser omdirigerar användare till motsvarande Jenkins-webbadresser
+  så att användaren kan vid behov autentisera och sedan omdirigeras tillbaka
+  till en ny resurswebbadress som kommer att vara giltig i ytterligare 30
+  minuter. Detta kommer i allmänhet att vara transparent för användaren om de
+  har en giltig Jenkins-session. Annars måste de autentisera sig igen med
+  Jenkins. Men när man besöker sidor med HTML-frames, t.ex. Javadoc-webbplatser,
+  kan inloggningsformuläret inte visas i en frame. I dessa fall kommer användare
+  behöva ladda om den frame som är överst för att inloggningsformuläret ska
+  visas.
+</p>
+<p>
+  Konfigurera systemegenskapen
+  <code>jenkins.security.ResourceDomainRootAction.validForMinutes</code>
+  till önskat värde i minuter för att ändra hur snabbt resurswebbadresser löper
+  ut. Tidigare utgångstid kan göra det svårare att använda dessa webbadresser,
+  medan senare utgångstid ökar sannolikheten för att obehöriga användare får
+  åtkomst via webbadresser som delas med dem av behöriga användare.
+</p>
+<h4>Autenticitet</h4>
+<p>
+  Resurswebbadresser kodar webbadressen, användaren som de skapades för och
+  tidsstämpeln när de skapades. Dessutom innehåller denna sträng en
+  <a
+    href="https://en.wikipedia.org/wiki/HMAC"
+    rel="noopener noreferrer"
+    target="_blank"
+  >
+    HMAC
+  </a>
+  för att säkerställa webbadressens autenticitet. Detta förhindrar angripare
+  från att förfalska webbadresser som skulle ge dem åtkomst till resursfiler som
+  om de vore en annan användare.
+</p>

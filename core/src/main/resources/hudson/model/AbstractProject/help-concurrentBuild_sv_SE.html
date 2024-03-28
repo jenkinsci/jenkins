@@ -1,0 +1,66 @@
+<div>
+  När det här alternativet är markerat kan flera byggen av detta projekt köras
+  parallellt.
+  <p>
+    Som standard körs endast ett enda bygge av ett projekt åt gången &mdash;
+    alla andra begäran om att börja bygga projektet kommer att stanna i byggkön
+    tills det första bygget är klart.
+    <br />
+    Detta är ett säkert standardvärde eftersom projekt ofta kan kräva exklusiv
+    åtkomst till vissa resurser, t.ex. en databas eller hårdvara.
+  </p>
+
+  <p>
+    Men när detta alternativ är aktiverat och om det finns tillräckligt många
+    tillgängliga byggexekverare som kan hantera det här projektet kommer flera
+    byggen av detta projekt att köras parallellt. Om det inte finns tillräckligt
+    många tillgängliga exekverare vid något tillfälle kommer alla ytterligare
+    byggbegäran att hållas i byggkön som vanligt.
+  </p>
+
+  <p>
+    Att aktivera samtidiga byggen är användbart för projekt som kör långa
+    testsviter eftersom det låter varje bygge innehålla ett smärre antal
+    förändringar, medan den totala handläggningstiden minskar eftersom
+    efterföljande byggen inte behöver vänta på att tidigare testkörningar ska
+    slutföras.
+    <br />
+    Den här funktionen är också användbar för parametriserade projekt, vars
+    individuella byggkörningar &mdash; beroende på vilka parametrar som används
+    &mdash; kan vara oberoende av varandra.
+  </p>
+
+  <p>
+    Varje samtidig byggkörning sker i sin egen byggarbetsyta isolerad från alla
+    andra byggen. Som standard lägger Jenkins till "
+    <code>@&lt;num&gt;</code>
+    " i arbetsytans katalognamn, t.ex. "
+    <code>@2</code>
+    ".
+    <br />
+    Avgränsaren "
+    <code>@</code>
+    " kan ändras genom att konfigurera Java-systemegenskapen
+    <code>hudson.slaves.WorkspaceList</code>
+    när Jenkins startas. Till exempel "
+    <code>hudson.slaves.WorkspaceList=-</code>
+    " skulle ändra avgränsaren till ett bindestreck.
+    <br />
+    Mer information om hur man konfigurerar systemegenskaper finns på
+    <a
+      href="https://www.jenkins.io/redirect/setting-system-properties"
+      rel="noopener noreferrer"
+      target="_blank"
+    >
+      webbplatsen
+    </a>
+    .
+  </p>
+
+  <p>
+    Om du aktiverar alternativet
+    <i>Använd anpassad arbetsyta</i>
+    kommer alla byggen att köras i samma arbetsyta. Därför krävs försiktighet
+    eftersom flera byggen kan komma att ändra samma katalog samtidigt.
+  </p>
+</div>
