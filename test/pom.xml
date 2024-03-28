@@ -102,6 +102,12 @@ THE SOFTWARE.
         <version>2.200.vb_9327d658781</version>
       </dependency>
       <dependency>
+        <!-- Required by workflow-support -->
+        <groupId>org.jenkins-ci.plugins</groupId>
+        <artifactId>scm-api</artifactId>
+        <version>689.v237b_6d3a_ef7f</version>
+      </dependency>
+      <dependency>
         <!-- requireUpperBoundDeps via matrix-project and junit -->
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>script-security</artifactId>
@@ -121,7 +127,7 @@ THE SOFTWARE.
         <!-- Required by plugin-util-api -->
         <groupId>org.jenkins-ci.plugins.workflow</groupId>
         <artifactId>workflow-support</artifactId>
-        <version>865.v43e78cc44e0d</version>
+        <version>881.v7663695646cf</version>
       </dependency>
     </dependencies>
   </dependencyManagement>

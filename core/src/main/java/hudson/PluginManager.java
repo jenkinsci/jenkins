@@ -145,7 +145,6 @@ import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.LogFactory;
 import org.jenkinsci.Symbol;
 import org.jvnet.hudson.reactor.Executable;
@@ -1436,13 +1435,13 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     if (query == null || query.isBlank()) {
                         return true;
                     }
-                    return StringUtils.containsIgnoreCase(plugin.name, query) ||
-                        StringUtils.containsIgnoreCase(plugin.title, query) ||
-                        StringUtils.containsIgnoreCase(plugin.excerpt, query) ||
+                    return (plugin.name != null && plugin.name.toLowerCase().contains(query.toLowerCase())) ||
+                        (plugin.title != null && plugin.title.toLowerCase().contains(query.toLowerCase())) ||
+                        (plugin.excerpt != null && plugin.excerpt.toLowerCase().contains(query.toLowerCase())) ||
                         plugin.hasCategory(query) ||
                         plugin.getCategoriesStream()
                             .map(UpdateCenter::getCategoryDisplayName)
-                            .anyMatch(category -> StringUtils.containsIgnoreCase(category, query)) ||
+                            .anyMatch(category -> category != null && category.toLowerCase().contains(query.toLowerCase())) ||
                         plugin.hasWarnings() && query.equalsIgnoreCase("warning:");
                 })
                 .limit(Math.max(limit - plugins.size(), 1))
@@ -1472,7 +1471,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     jsonObject.put("title", plugin.title);
                     jsonObject.put("displayName", plugin.getDisplayName());
                     if (plugin.wiki == null || !(plugin.wiki.startsWith("https://") || plugin.wiki.startsWith("http://"))) {
-                        jsonObject.put("wiki", StringUtils.EMPTY);
+                        jsonObject.put("wiki", "");
                     } else {
                         jsonObject.put("wiki", plugin.wiki);
                     }

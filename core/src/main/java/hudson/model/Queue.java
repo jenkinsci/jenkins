@@ -1751,7 +1751,7 @@ public class Queue extends ResourceController implements Saveable {
             Label lbl = p.getAssignedLabel();
 
             Computer masterComputer = h.toComputer();
-            if (lbl != null && lbl.equals(h.getSelfLabel())) {
+            if (lbl != null && lbl.equals(h.getSelfLabel()) && masterComputer != null) {
                 // the flyweight task is bound to the master
                 if (h.canTake(p) == null) {
                     return createFlyWeightTaskRunnable(p, masterComputer);
@@ -1760,7 +1760,7 @@ public class Queue extends ResourceController implements Saveable {
                 }
             }
 
-            if (lbl == null && h.canTake(p) == null && masterComputer.isOnline() && masterComputer.isAcceptingTasks()) {
+            if (lbl == null && h.canTake(p) == null && masterComputer != null && masterComputer.isOnline() && masterComputer.isAcceptingTasks()) {
                 // The flyweight task is not tied to a specific label, so execute on master if possible.
                 // This will ensure that actual agent disconnects do not impact flyweight tasks randomly assigned to them.
                 return createFlyWeightTaskRunnable(p, masterComputer);
@@ -1794,7 +1794,7 @@ public class Queue extends ResourceController implements Saveable {
         return null;
     }
 
-    private Runnable createFlyWeightTaskRunnable(final BuildableItem p, final Computer c) {
+    private Runnable createFlyWeightTaskRunnable(final BuildableItem p, final @NonNull Computer c) {
         if (LOGGER.isLoggable(Level.FINEST)) {
             LOGGER.log(Level.FINEST, "Creating flyweight task {0} for computer {1}",
                     new Object[]{p.task.getFullDisplayName(), c.getName()});

@@ -39,7 +39,6 @@ import jenkins.model.identity.InstanceIdentityProvider;
 import jenkins.slaves.RemotingWorkDirSettings;
 import jenkins.util.SystemProperties;
 import jenkins.websocket.WebSockets;
-import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
@@ -229,8 +228,8 @@ public class JNLPLauncher extends ComputerLauncher {
      * {@link Jenkins#checkGoodName(String)} saves us from most troublesome characters, but we still have to deal with
      * spaces and therefore with double quotes and backticks.
      */
-    private static String escapeUnix(String input) {
-        if (StringUtils.isAlphanumeric(input)) {
+    private static String escapeUnix(@NonNull String input) {
+        if (!input.isEmpty() && input.chars().allMatch(Character::isLetterOrDigit)) {
             return input;
         }
         Escaper escaper =
@@ -242,8 +241,8 @@ public class JNLPLauncher extends ComputerLauncher {
      * {@link Jenkins#checkGoodName(String)} saves us from most troublesome characters, but we still have to deal with
      * spaces and therefore with double quotes.
      */
-    private static String escapeWindows(String input) {
-        if (StringUtils.isAlphanumeric(input)) {
+    private static String escapeWindows(@NonNull String input) {
+        if (!input.isEmpty() && input.chars().allMatch(Character::isLetterOrDigit)) {
             return input;
         }
         Escaper escaper = Escapers.builder().addEscape('"', "\\\"").build();
