@@ -47,9 +47,9 @@ THE SOFTWARE.
     </j:when>
     <j:otherwise>
       <j:if test="${contents.length() != 0}">
-        <div ref="${attrs.ref}" class="row-set-start row-group-start tr" style="display:none" name="${attrs.name}"></div>
+        <div ref="${attrs.ref}" class="row-set-start tr" style="display:none" name="${attrs.name}"></div>
         <j:out value="${contents}" />
-        <div class="row-set-end row-group-end tr jenkins-!-display-contents"></div>
+        <div class="row-set-end tr jenkins-!-display-contents"></div>
       </j:if>
     </j:otherwise>
   </j:choose>
