@@ -209,7 +209,7 @@ public class SimpleScheduledRetentionStrategy extends RetentionStrategy<SlaveCom
                         LOGGER.log(INFO,
                                 "Disabling new jobs for computer {0} as it has finished its scheduled uptime",
                                 new Object[]{c.getName()});
-                        return 1;
+                        return 0;
                     } else if (c.isIdle() && c.isAcceptingTasks()) {
                         Queue.withLock(new Runnable() {
                             @Override
@@ -243,7 +243,7 @@ public class SimpleScheduledRetentionStrategy extends RetentionStrategy<SlaveCom
                 }
             }
         }
-        return 1;
+        return 0;
     }
 
     private synchronized boolean isOnlineScheduled() {
