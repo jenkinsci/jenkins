@@ -108,7 +108,6 @@ THE SOFTWARE.
                       <j:choose>
                         <j:when test="${h.hasPermission(exeparent,exeparent.READ)}">
                           <a href="${rootURL}/${exeparent.url}"><l:breakable value="${exeparent.fullDisplayName}"/></a>
-                          <t:buildProgressBar build="${exe}" executor="${executor}"/>
                         </j:when>
                         <j:otherwise>
                           <span>${%Unknown Task}</span>
@@ -121,6 +120,7 @@ THE SOFTWARE.
                 <td class="pane">
                   <j:if test="${h.hasPermission(exeparent,exeparent.READ)}">
                       <a href="${rootURL}/${exe.url}" class="model-link inside" style="display: block;"><l:breakable value="${exe.displayName}"/></a>
+                      <t:buildProgressBar build="${exe}" executor="${executor}"/>
                   </j:if>
                 </td>
                 </st:include>
