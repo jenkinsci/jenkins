@@ -34,7 +34,7 @@ THE SOFTWARE.
     </st:attribute>
   </st:documentation>
 
-  <div class='jenkins-form-item tr'>
+  <div data-type="jenkins-advanced-button-group" class='jenkins-form-item'>
     <st:adjunct includes="lib.form.advanced.advanced"/>
 
     <div class="advancedLink jenkins-buttons-row">
