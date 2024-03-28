@@ -201,15 +201,6 @@ public class RunIdMigratorTest {
                     + "</run>'}, lastFailedBuild=→-1, lastSuccessfulBuild=→99, legacyIds='2014-01-02_03-04-05 99\n"
                     + "'}",
                 summarize());
-        RunIdMigrator.main(root.getAbsolutePath());
-        assertEquals(
-                "{2014-01-02_03-04-05={build.xml='<?xml version='1.0' encoding='UTF-8'?>\n"
-                    + "<run>\n"
-                    + "  <stuff>ok</stuff>\n"
-                    + "  <number>99</number>\n"
-                    + "  <otherstuff>ok</otherstuff>\n"
-                    + "</run>'}, 99=→2014-01-02_03-04-05, lastFailedBuild=→-1, lastSuccessfulBuild=→99}",
-                summarize());
     }
 
     @Test public void reverseAfterNewBuilds() throws Exception {
@@ -232,15 +223,6 @@ public class RunIdMigratorTest {
                     + "  <timestamp>1388649845000</timestamp>\n"
                     + "  <otherstuff>ok</otherstuff>\n"
                     + "</run>'}, legacyIds=''}",
-                summarize());
-        RunIdMigrator.main(root.getAbsolutePath());
-        assertEquals(
-                "{1=→2014-01-02_03-04-05, 2014-01-02_03-04-05={build.xml='<?xml version='1.0' encoding='UTF-8'?>\n"
-                    + "<run>\n"
-                    + "  <stuff>ok</stuff>\n"
-                    + "  <number>1</number>\n"
-                    + "  <otherstuff>ok</otherstuff>\n"
-                    + "</run>'}}",
                 summarize());
     }
 
@@ -265,15 +247,6 @@ public class RunIdMigratorTest {
                     + "  <otherstuff>ok</otherstuff>\n"
                     + "</run>'}, legacyIds=''}",
                 summarize());
-        RunIdMigrator.main(root.getAbsolutePath());
-        assertEquals(
-                "{1=→2014-01-02_03-04-05, 2014-01-02_03-04-05={build.xml='<?xml version='1.0' encoding='UTF-8'?>\n"
-                    + "<run>\n"
-                    + "  <stuff>ok</stuff>\n"
-                    + "  <number>1</number>\n"
-                    + "  <otherstuff>ok</otherstuff>\n"
-                    + "</run>'}}",
-                summarize());
     }
 
     @Test public void reverseMavenAfterNewBuilds() throws Exception {
@@ -296,15 +269,6 @@ public class RunIdMigratorTest {
                     + "  <timestamp>1388649845000</timestamp>\n"
                     + "  <otherstuff>ok</otherstuff>\n"
                     + "</run>'}, legacyIds=''}",
-                summarize());
-        RunIdMigrator.main(root.getAbsolutePath());
-        assertEquals(
-                "{1=→2014-01-02_03-04-05, 2014-01-02_03-04-05={build.xml='<?xml version='1.0' encoding='UTF-8'?>\n"
-                    + "<run>\n"
-                    + "  <stuff>ok</stuff>\n"
-                    + "  <number>1</number>\n"
-                    + "  <otherstuff>ok</otherstuff>\n"
-                    + "</run>'}}",
                 summarize());
     }
 

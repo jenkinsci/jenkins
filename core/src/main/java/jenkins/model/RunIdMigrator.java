@@ -31,19 +31,12 @@ import static java.util.logging.Level.WARNING;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import hudson.Extension;
 import hudson.Util;
 import hudson.model.Job;
-import hudson.model.RootAction;
 import hudson.model.Run;
 import hudson.util.AtomicFileWriter;
-import hudson.util.StreamTaskListener;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.text.DateFormat;
@@ -51,23 +44,15 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.apache.commons.lang.time.FastDateFormat;
-import org.apache.tools.ant.BuildException;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.stapler.StaplerProxy;
-import org.kohsuke.stapler.framework.io.WriterOutputStream;
 
 /**
  * Converts legacy {@code builds} directories to the current format.
@@ -85,11 +70,6 @@ public final class RunIdMigrator {
     private static final String MAP_FILE = "legacyIds";
     /** avoids wasting a map for new jobs */
     private static final Map<String, Integer> EMPTY = new TreeMap<>();
-
-    /**
-     * Did we record "unmigrate" instruction for this $JENKINS_HOME? Yes if it's in the set.
-     */
-    private static final Set<File> offeredToUnmigrate = Collections.synchronizedSet(new HashSet<>());
 
     private @NonNull Map<String, Integer> idToNumber = EMPTY;
 
@@ -164,32 +144,10 @@ public final class RunIdMigrator {
             LOGGER.log(/* normal during Job.movedTo */FINE, "{0} was unexpectedly missing", dir);
             return false;
         }
-        LOGGER.log(INFO, "Migrating build records in {0}", dir);
+        LOGGER.log(INFO, "Migrating build records in {0}. See https://www.jenkins.io/redirect/build-record-migration for more information.", dir);
         doMigrate(dir);
         save(dir);
-        if (jenkinsHome != null && offeredToUnmigrate.add(jenkinsHome))
-            LOGGER.log(WARNING, "Build record migration (https://www.jenkins.io/redirect/build-record-migration) is one-way. If you need to downgrade Jenkins, run: {0}", getUnmigrationCommandLine(jenkinsHome));
         return true;
-    }
-
-    private static String getUnmigrationCommandLine(File jenkinsHome) {
-        StringBuilder cp = new StringBuilder();
-        for (Class<?> c : new Class<?>[] {RunIdMigrator.class, /* TODO how to calculate transitive dependencies automatically? */WriterOutputStream.class, BuildException.class, FastDateFormat.class}) {
-            URL location = c.getProtectionDomain().getCodeSource().getLocation();
-            String locationS = location.toString();
-            if (location.getProtocol().equals("file")) {
-                try {
-                    locationS = new File(location.toURI()).getAbsolutePath();
-                } catch (URISyntaxException x) {
-                    // never mind
-                }
-            }
-            if (cp.length() > 0) {
-                cp.append(File.pathSeparator);
-            }
-            cp.append(locationS);
-        }
-        return String.format("java -classpath \"%s\" %s \"%s\"", cp, RunIdMigrator.class.getName(), jenkinsHome);
     }
 
     private static final Pattern NUMBER_ELT = Pattern.compile("(?m)^  <number>(\\d+)</number>(\r?\n)");
@@ -308,140 +266,6 @@ public final class RunIdMigrator {
     public synchronized void delete(File dir, String id) {
         if (idToNumber.remove(id) != null) {
             save(dir);
-        }
-    }
-
-    /**
-     * Reverses the migration, in case you want to revert to the older format.
-     * @param args one parameter, {@code $JENKINS_HOME}
-     */
-    public static void main(String... args) throws Exception {
-        if (args.length != 1) {
-            throw new Exception("pass one parameter, $JENKINS_HOME");
-        }
-        File root = constructFile(args[0]);
-        File jobs = new File(root, "jobs");
-        if (!jobs.isDirectory()) {
-            throw new FileNotFoundException("no such $JENKINS_HOME " + root);
-        }
-        new RunIdMigrator().unmigrateJobsDir(jobs);
-    }
-
-    @SuppressFBWarnings(value = "PATH_TRAVERSAL_IN", justification = "Only invoked from the command line as a standalone utility")
-    private static File constructFile(String arg) {
-        return new File(arg);
-    }
-
-    private void unmigrateJobsDir(File jobs) throws Exception {
-        File[] jobDirs = jobs.listFiles();
-        if (jobDirs == null) {
-            System.err.println(jobs + " claimed to exist, but cannot be listed");
-            return;
-        }
-        for (File job : jobDirs) {
-
-            if (job.getName().equals("builds")) {
-                // Might be maven modules, matrix builds, etc. which are direct children of job
-                unmigrateBuildsDir(job);
-            }
-
-            File[] kids = job.listFiles();
-            if (kids == null) {
-                continue;
-            }
-            for (File kid : kids) {
-                if (!kid.isDirectory()) {
-                    continue;
-                }
-                if (kid.getName().equals("builds")) {
-                    unmigrateBuildsDir(kid);
-                } else {
-                    // Might be jobs, modules, promotions, etc.; we assume an ItemGroup.getRootDirFor implementation
-                    // returns grandchildren, unmigrateJobsDir(job) call above handles children.
-                    unmigrateJobsDir(kid);
-                }
-            }
-        }
-    }
-
-    private static final Pattern ID_ELT = Pattern.compile("(?m)^  <id>([0-9_-]+)</id>(\r?\n)");
-    private static final Pattern TIMESTAMP_ELT = Pattern.compile("(?m)^  <timestamp>(\\d+)</timestamp>(\r?\n)");
-    /** Inverse of {@link #doMigrate}. */
-
-    private void unmigrateBuildsDir(File builds) throws Exception {
-        File mapFile = new File(builds, MAP_FILE);
-        if (!mapFile.isFile()) {
-            System.err.println(builds + " does not look to have been migrated yet; skipping");
-            return;
-        }
-        for (File build : builds.listFiles()) {
-            int number;
-            try {
-                number = Integer.parseInt(build.getName());
-            } catch (NumberFormatException x) {
-                continue;
-            }
-            File buildXml = new File(build, "build.xml");
-            if (!buildXml.isFile()) {
-                System.err.println(buildXml + " did not exist");
-                continue;
-            }
-            String xml = Files.readString(Util.fileToPath(buildXml), StandardCharsets.UTF_8);
-            Matcher m = TIMESTAMP_ELT.matcher(xml);
-            if (!m.find()) {
-                System.err.println(buildXml + " did not contain <timestamp> as expected");
-                continue;
-            }
-            long timestamp = Long.parseLong(m.group(1));
-            String nl = m.group(2);
-            xml = m.replaceFirst("  <number>" + number + "</number>" + nl);
-            m = ID_ELT.matcher(xml);
-            String id;
-            if (m.find()) {
-                id = m.group(1);
-                xml = m.replaceFirst("");
-            } else {
-                // Post-migration build. We give it a new ID based on its timestamp.
-                id = legacyIdFormatter.format(new Date(timestamp));
-            }
-            Files.writeString(Util.fileToPath(buildXml), xml, StandardCharsets.UTF_8);
-            if (!build.renameTo(new File(builds, id))) {
-                System.err.println(build + " could not be renamed");
-            }
-            Util.createSymlink(builds, id, Integer.toString(number), StreamTaskListener.fromStderr());
-        }
-        Util.deleteFile(mapFile);
-        System.err.println(builds + " has been restored to its original format");
-    }
-
-    /**
-     * Expose unmigration instruction to the user.
-     */
-    @Extension
-    public static class UnmigrationInstruction implements RootAction, StaplerProxy {
-        @Override
-        public String getIconFileName() {
-            return null;
-        }
-
-        @Override
-        public String getDisplayName() {
-            return null;
-        }
-
-        @Override
-        public String getUrlName() {
-            return "JENKINS-24380";
-        }
-
-        @Override
-        public Object getTarget() {
-            Jenkins.get().checkPermission(Jenkins.ADMINISTER);
-            return this;
-        }
-
-        public String getCommand() {
-            return RunIdMigrator.getUnmigrationCommandLine(Jenkins.get().getRootDir());
         }
     }
 }
