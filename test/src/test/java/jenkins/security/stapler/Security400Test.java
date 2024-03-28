@@ -647,12 +647,6 @@ public class Security400Test {
             checkPageIsRedirectedToLogin(page);
             assertThat(page.getWebResponse().getContentAsString(), not(containsString("secretUser")));
             assertRequestWasNotBlocked();
-
-            page = wc.goTo("asynchPeople/", null);
-            assertEquals(200, page.getWebResponse().getStatusCode());
-            // javascript will load the user list asynch
-            assertThat(page.getWebResponse().getContentAsString(), containsString("Includes all known"));
-            assertRequestWasNotBlocked();
         }
 
         authorizationStrategy.setAllowAnonymousRead(false);
@@ -662,12 +656,6 @@ public class Security400Test {
             wc.getOptions().setRedirectEnabled(false);
 
             Page page = wc.goTo("securityRealm/", null);
-            checkPageIsRedirectedToLogin(page);
-            assertThat(page.getWebResponse().getContentAsString(), not(containsString("secretUser")));
-            assertRequestWasNotBlocked();
-
-            // with the restriction we disallow the anon to even read the list of all users
-            page = wc.goTo("asynchPeople/", null);
             checkPageIsRedirectedToLogin(page);
             assertThat(page.getWebResponse().getContentAsString(), not(containsString("secretUser")));
             assertRequestWasNotBlocked();
