@@ -24,92 +24,67 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:f="/lib/form">
-  <st:documentation> <![CDATA[
-    <textarea> tag on steroids.
-    The textarea will be rendered to fit the content. It also gets the resize handle.
-    ]]>
-    <st:attribute name="field">
-      Used for databinding. TBD.
-    </st:attribute>
-    <st:attribute name="name"> <![CDATA[
-      This becomes @name of the <textarea> tag.
-      If @field is specified, this value is inferred from it.
+  <st:documentation>
+    <![CDATA[ <textarea> tag on steroids. The textarea will be rendered to fit the content. It also gets the resize handle. ]]>
+    <st:attribute name="field">Used for databinding. TBD.</st:attribute>
+    <st:attribute name="name"><![CDATA[ This becomes @name of the <textarea> tag. If @field is specified, this value is inferred from it. ]]></st:attribute>
+    <st:attribute name="value">
+      <![CDATA[ The initial value of the field. This becomes the value of the <textarea> tag. If @field is specified, the current property from the "instance" object will be set as the initial value automatically, which is the recommended approach.
       ]]>
     </st:attribute>
-    <st:attribute name="value"> <![CDATA[
-      The initial value of the field. This becomes the value of the <textarea> tag.
-      If @field is specified, the current property from the "instance" object
-      will be set as the initial value automatically,
-      which is the recommended approach.
-       ]]>
-    </st:attribute>
-    <st:attribute name="default">
-      The default value of the text box, in case both @value is and 'instance[field]' is null.
-    </st:attribute>
-    <st:attribute name="checkMessage">
-      Override the default error message when client-side validation fails,
-      as with clazz="required", etc.
-    </st:attribute>
+    <st:attribute name="default">The default value of the text box, in case both @value is and 'instance[field]' is null.</st:attribute>
+    <st:attribute name="checkMessage">Override the default error message when client-side validation fails, as with clazz="required", etc.</st:attribute>
     <st:attribute name="checkUrl">
-      If specified, the value entered in this input field will be checked (via AJAX)
-      against this URL, and errors will be rendered under the text field.
-
-      If @field is specified, this will be inferred automatically,
-      which is the recommended approach.
+      If specified, the value entered in this input field will be checked (via AJAX) against this URL, and errors will be rendered under the text field. If @field is specified, this will be inferred automatically, which is the recommended approach.
     </st:attribute>
     <st:attribute name="checkMethod" use="optional" type="String">
-      Specify 'get' (must be lowercase) to change the HTTP method used for the AJAX requests to @checkUrl from a POST to a GET.
-      If any other value is specified then requests will use POST.
-      The historical default was GET and 'post' had to be specified to change that, but this was changed in Jenkins 2.285.
+      Specify 'get' (must be lowercase) to change the HTTP method used for the AJAX requests to @checkUrl from a POST to a GET. If any other value is specified then requests will use POST. The historical default was GET and 'post' had to be specified
+      to change that, but this was changed in Jenkins 2.285.
     </st:attribute>
-    <st:attribute name="codemirror-mode">
-      Turns this text area into CodeMirror-assisted code editing text area.
-      This attribute specifies the mode of CodeMirror, such as "text/x-java".
-      See https://codemirror.net/ for more details.
-    </st:attribute>
-    <st:attribute name="codemirror-config">
-      Specifies additional key/value pairs in the JSON format (except the start and end bracket)
-      to be passed as CodeMirror option object.
-    </st:attribute>
-    <st:attribute name="previewEndpoint">
-      If specified, this text area has preview feature.
-      The previewEndpoint is used to obtain formatted html.
-    </st:attribute>
+    <st:attribute name="codemirror-mode">Turns this text area into CodeMirror-assisted code editing text area. This attribute specifies the mode of CodeMirror, such as "text/x-java". See https://codemirror.net/ for more details.</st:attribute>
+    <st:attribute name="codemirror-config">Specifies additional key/value pairs in the JSON format (except the start and end bracket) to be passed as CodeMirror option object.</st:attribute>
+    <st:attribute name="previewEndpoint">If specified, this text area has preview feature. The previewEndpoint is used to obtain formatted html.</st:attribute>
   </st:documentation>
 
   <f:prepareDatabinding />
-  <j:set var="default" value="${attrs.default ?: ''}"/>
+  <j:set var="default" value="${attrs.default ?: ''}" />
   <j:set var="value" value="${attrs.value ?: instance[attrs.field] ?: default}" />
   <j:if test="${attrs['previewEndpoint']!=null || attrs['codemirror-mode']!=null}">
-    <st:adjunct includes="lib.form.textarea.textarea"/>
+    <st:adjunct includes="lib.form.textarea.textarea" />
   </j:if>
   <j:if test="${attrs['codemirror-mode']!=null}">
-    <st:adjunct includes="
+    <st:adjunct
+      includes="
         org.kohsuke.stapler.codemirror.mode.${attrs['codemirror-mode']}.${attrs['codemirror-mode']},
-        org.kohsuke.stapler.codemirror.theme.default"/>
+        org.kohsuke.stapler.codemirror.theme.default"
+    />
   </j:if>
-  <j:set var="name" value="${attrs.name ?: '_.'+attrs.field}"/>
+  <j:set var="name" value="${attrs.name ?: '_.'+attrs.field}" />
   <f:possibleReadOnlyField>
-      <textarea id="${attrs.id}" style="${attrs.style}"
-                name ="${name}"
-                class="jenkins-input ${attrs.checkUrl!=null?'validated':''} ${attrs['codemirror-mode']!=null?'codemirror':''} ${attrs.class}"
-                checkUrl="${attrs.checkUrl}" checkDependsOn="${attrs.checkDependsOn}" checkMethod="${attrs.checkMethod}"
-                rows="${h.determineRows(value)}"
-                readonly="${attrs.readonly}"
-                codemirror-mode="${attrs['codemirror-mode']}"
-                codemirror-config="${attrs['codemirror-config']}">
+    <textarea
+      id="${attrs.id}"
+      style="${attrs.style}"
+      name="${name}"
+      class="jenkins-input ${attrs.checkUrl!=null?'validated':''} ${attrs['codemirror-mode']!=null?'codemirror':''} ${attrs.class}"
+      checkUrl="${attrs.checkUrl}"
+      checkDependsOn="${attrs.checkDependsOn}"
+      checkMethod="${attrs.checkMethod}"
+      rows="${h.determineRows(value)}"
+      readonly="${attrs.readonly}"
+      codemirror-mode="${attrs['codemirror-mode']}"
+      codemirror-config="${attrs['codemirror-config']}"
+    >
         <j:if test="${value != null &amp;&amp; !empty(value.toString()) &amp;&amp; (value.toString().codePointAt(0) == 10 || value.toString().codePointAt(0) == 13)}"><j:whitespace>&#10;</j:whitespace></j:if>
         <st:out value="${value}" />
-      </textarea>
+      </textarea
+    >
     <j:if test="${customizedFields != null and attrs.field != null and value != default}">
       <j:mute>${customizedFields.add(name)}</j:mute>
     </j:if>
   </f:possibleReadOnlyField>
   <j:if test="${attrs.previewEndpoint!=null and !readOnlyMode}">
     <div class="textarea-preview-container">
-      <j:if test="${attrs.previewEndpoint == '/markupFormatter/previewDescription'}">
-        ${app.markupFormatter.descriptor.displayName}
-      </j:if>
+      <j:if test="${attrs.previewEndpoint == '/markupFormatter/previewDescription'}">${app.markupFormatter.descriptor.displayName}</j:if>
       <a href="#" class="textarea-show-preview" previewEndpoint="${attrs.previewEndpoint}">${%Preview}</a>
       <a href="#" class="textarea-hide-preview">${%Hide preview}</a>
     </div>

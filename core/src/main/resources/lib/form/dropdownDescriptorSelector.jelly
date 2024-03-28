@@ -23,30 +23,18 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:f="/lib/form">
-  <st:documentation> <![CDATA[
-    Renders a single <select> control for choosing a Describable.
-    Depending on the currently selected value, its config.jelly will be
-    rendered below <select>, allowing the user to configure Describable.
-    ]]>
+  <st:documentation>
+    <![CDATA[ Renders a single <select> control for choosing a Describable. Depending on the currently selected value, its config.jelly will be rendered below <select>, allowing the user to configure Describable. ]]>
 
-    <st:attribute name="field" use="required">
-      Form field name. Used for databinding.
-    </st:attribute>
-    <st:attribute name="title" use="required">
-      Human readable title of this control.
-    </st:attribute>
-    <st:attribute name="descriptors">
-      Collection that lists up all the valid candidate descriptors.
-      If unspecified, inferred from the type of the field.
-    </st:attribute>
+    <st:attribute name="field" use="required">Form field name. Used for databinding.</st:attribute>
+    <st:attribute name="title" use="required">Human readable title of this control.</st:attribute>
+    <st:attribute name="descriptors">Collection that lists up all the valid candidate descriptors. If unspecified, inferred from the type of the field.</st:attribute>
     <st:attribute name="default">
-      If specified, this will be chosen as the default value in case the current selection is null. The default can be a specific instance or a descriptor e.g.
-      ${descriptor.defaultSettingsProvider} or ${descriptor.defaultSettingsProvider.descriptor}. In the later case, the from input fields will be empty.
+      If specified, this will be chosen as the default value in case the current selection is null. The default can be a specific instance or a descriptor e.g. ${descriptor.defaultSettingsProvider} or ${descriptor.defaultSettingsProvider.descriptor}.
+      In the later case, the from input fields will be empty.
     </st:attribute>
     <st:attribute name="capture">
-      Config fragments from descriptors are rendered lazily by default, which means
-      variables seen in the caller aren't visible to them. This attribute allows you
-      to nominate additional variables and their values to be captured for descriptors.
+      Config fragments from descriptors are rendered lazily by default, which means variables seen in the caller aren't visible to them. This attribute allows you to nominate additional variables and their values to be captured for descriptors.
     </st:attribute>
   </st:documentation>
   <f:prepareDatabinding />
@@ -55,20 +43,18 @@ THE SOFTWARE.
   <f:dropdownList name="${attrs.field}" title="${attrs.title}" help="${descriptor.getHelpFile(attrs.field)}">
     <d:invokeBody />
 
-    <j:set var="current" value="${instance[attrs.field]}"/>
-    <j:set var="current" value="${current!=null ? current : (default.descriptor!=null ? default : null)}"/>
+    <j:set var="current" value="${instance[attrs.field]}" />
+    <j:set var="current" value="${current!=null ? current : (default.descriptor!=null ? default : null)}" />
     <j:set var="capture" value="${attrs.capture?:''}" />
     <j:forEach var="descriptor" items="${attrs.descriptors}" varStatus="loop">
-      <f:dropdownListBlock value="${loop.index}" title="${descriptor.displayName}"
-        selected="${current.descriptor==descriptor || (current==null and descriptor==attrs.default)}" staplerClass="${descriptor.clazz.name}"
-        lazy="descriptor,it,${capture}">
+      <f:dropdownListBlock value="${loop.index}" title="${descriptor.displayName}" selected="${current.descriptor==descriptor || (current==null and descriptor==attrs.default)}" staplerClass="${descriptor.clazz.name}" lazy="descriptor,it,${capture}">
         <l:ajax>
           <j:set var="instance" value="${current.descriptor==descriptor ? current : null}" />
-          <j:set var="help" value="${descriptor.helpFile}"/>
+          <j:set var="help" value="${descriptor.helpFile}" />
           <j:if test="${help != null}">
             <div class="help-sibling jenkins-select-help">
-              <f:helpLink url="${help}" featureName="${descriptor.displayName}"/>
-              <f:helpArea/>
+              <f:helpLink url="${help}" featureName="${descriptor.displayName}" />
+              <f:helpArea />
             </div>
           </j:if>
           <st:include from="${descriptor}" page="${descriptor.configPage}" optional="true" />

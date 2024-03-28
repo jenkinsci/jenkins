@@ -25,11 +25,11 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson">
   <l:view contentType="application/x-java-jnlp-file">
-  <j:invokeStatic var="rootURL" className="hudson.slaves.JNLPLauncher" method="getInboundAgentUrl" />
+    <j:invokeStatic var="rootURL" className="hudson.slaves.JNLPLauncher" method="getInboundAgentUrl" />
 
     <!-- JavaWebStart is no longer supported, but a subset of the syntax is retained for compatibility reasons: hudson.remoting.Launcher.parseJnlpArguments -->
     <jnlp>
-      <j:set var="launcher" value="${it.delegatedLauncher}"/>
+      <j:set var="launcher" value="${it.delegatedLauncher}" />
 
       <application-desc>
         <argument>${it.jnlpMac}</argument>

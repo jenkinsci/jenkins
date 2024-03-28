@@ -24,11 +24,13 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout">
-  <l:view contentType="application/atom+xml;charset=UTF-8"><!-- No whitespace before xml header: -->&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+  <l:view contentType="application/atom+xml;charset=UTF-8">
+    <!-- No whitespace before xml header: -->
+    &lt;?xml version="1.0" encoding="UTF-8"?&gt;
     <!-- ATOM. See http://atompub.org/rfc4287.html for the format -->
     <feed xmlns="http://www.w3.org/2005/Atom">
       <title>${title}</title>
-      <link rel="alternate" type="text/html" href="${app.rootUrl}${url}"/>
+      <link rel="alternate" type="text/html" href="${app.rootUrl}${url}" />
 
       <j:choose>
         <j:when test="${empty(entries)}">
@@ -43,14 +45,14 @@ THE SOFTWARE.
       </author>
       <id>urn:uuid:903deee0-7bfa-11db-9fe1-0800200c9a66</id>
 
-      <j:forEach var="e" items="${entries}" >
+      <j:forEach var="e" items="${entries}">
         <entry>
           <title>${adapter.getEntryTitle(e)}</title>
-          <link rel="alternate" type="text/html" href="${app.rootUrl}${h.encode(adapter.getEntryUrl(e))}"/>
+          <link rel="alternate" type="text/html" href="${app.rootUrl}${h.encode(adapter.getEntryUrl(e))}" />
           <id>${adapter.getEntryID(e)}</id>
           <published>${h.xsDate(adapter.getEntryTimestamp(e))}</published>
           <updated>${h.xsDate(adapter.getEntryTimestamp(e))}</updated>
-          <j:set var="desc" value="${adapter.getEntryDescription(e)}"/>
+          <j:set var="desc" value="${adapter.getEntryDescription(e)}" />
           <j:if test="${desc!=null}">
             <content>${desc}</content>
           </j:if>

@@ -36,7 +36,7 @@ THE SOFTWARE.
           </tr>
         </thead>
         <tbody>
-          <d:invokeBody/>
+          <d:invokeBody />
         </tbody>
       </table>
     </d:tag>
@@ -45,18 +45,17 @@ THE SOFTWARE.
         <td>
           <a href="${attrs.url}" rel="noopener noreferrer" class="jenkins-table__link" target="_blank">${attrs.name}</a>
         </td>
-        <td>
-          ${attrs.groupId}:${attrs.artifactId}:${attrs.version}
-        </td>
+        <td>${attrs.groupId}:${attrs.artifactId}:${attrs.version}</td>
         <td>
           <d:invokeBody />
         </td>
       </tr>
     </d:tag>
-    <d:tag name="description"/>
+    <d:tag name="description" />
     <d:tag name="license">
-      <a href="${attrs.url}" class="jenkins-table__link" rel="noopener noreferrer" target="_blank">${attrs.name}</a><br/>
+      <a href="${attrs.url}" class="jenkins-table__link" rel="noopener noreferrer" target="_blank">${attrs.name}</a>
+      <br />
     </d:tag>
   </d:taglib>
-  <d:invokeBody/>
+  <d:invokeBody />
 </j:jelly>

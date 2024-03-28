@@ -30,11 +30,9 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:t="/lib/hudson">
   <l:layout>
-    <st:include it="${it.run}" page="sidepanel.jelly"/>
+    <st:include it="${it.run}" page="sidepanel.jelly" />
     <l:main-panel>
-      <h1>
-        ${%Recorded Fingerprints}
-      </h1>
+      <h1>${%Recorded Fingerprints}</h1>
       <table class="fingerprint-in-build sortable jenkins-table">
         <thead>
           <tr>
@@ -47,26 +45,18 @@ THE SOFTWARE.
           <j:set var="f" value="${e.value}" />
           <tr>
             <td>
-              <a class="jenkins-table__link" href="${rootURL}/fingerprint/${f.hashString}/">
-                ${e.key}
-              </a>
+              <a class="jenkins-table__link" href="${rootURL}/fingerprint/${f.hashString}/">${e.key}</a>
             </td>
             <td>
               <j:choose>
-                <j:when test="${f.original==null}">
-                  ${%outside Jenkins}
-                </j:when>
-                <j:when test="${f.original.run==it.run}">
-                  ${%this build}
-                </j:when>
+                <j:when test="${f.original==null}">${%outside Jenkins}</j:when>
+                <j:when test="${f.original.run==it.run}">${%this build}</j:when>
                 <j:otherwise>
                   <t:buildLink jobName="${f.original.name}" job="${f.original.job}" number="${f.original.number}" />
                 </j:otherwise>
               </j:choose>
             </td>
-            <td data="${-f.timestamp.time}">
-              ${f.timestampString} old
-            </td>
+            <td data="${-f.timestamp.time}">${f.timestampString} old</td>
           </tr>
         </j:forEach>
       </table>

@@ -27,20 +27,12 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <l:layout title="${%No matching record found}">
     <l:main-panel>
-      <h1>
-        ${title}
-      </h1>
+      <h1>${title}</h1>
 
-      <p>
-        ${%description(it.displayName)}
-      </p>
+      <p>${%description(it.displayName)}</p>
       <ol>
-        <li>
-          ${%cause.1}
-        </li>
-        <li>
-          ${%cause.2}
-        </li>
+        <li>${%cause.1}</li>
+        <li>${%cause.2}</li>
       </ol>
     </l:main-panel>
   </l:layout>

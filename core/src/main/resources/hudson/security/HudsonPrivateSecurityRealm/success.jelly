@@ -30,9 +30,7 @@ THE SOFTWARE.
     </l:hasPermission>
     <l:main-panel>
       <h1>${%Success}</h1>
-      <div>
-        ${%description}
-      </div>
+      <div>${%description}</div>
     </l:main-panel>
   </l:layout>
 </j:jelly>

@@ -27,9 +27,7 @@ THE SOFTWARE.
   <st:documentation>
     Shows a list of tasks.
 
-    <st:attribute name="actions">
-      List of actions. Defaults to "it.allActions ?: it.actions"
-    </st:attribute>
+    <st:attribute name="actions">List of actions. Defaults to "it.allActions ?: it.actions"</st:attribute>
   </st:documentation>
   <j:forEach var="action" items="${attrs.actions ?: it.allActions ?: it.actions}">
     <!--
@@ -37,16 +35,16 @@ THE SOFTWARE.
       the action object itself is available in the 'action' variable
     -->
     <st:include page="action.jelly" from="${action}" optional="true">
-      <j:set var="icon" value="${action.iconClassName != null ? action.iconClassName + ' icon-md' : action.iconFileName}"/>
+      <j:set var="icon" value="${action.iconClassName != null ? action.iconClassName + ' icon-md' : action.iconFileName}" />
       <j:if test="${icon!=null}">
         <j:choose>
           <j:when test="${h.getActionUrl(it.url,action).contains('pollingLog')}">
             <l:task icon="${icon}" title="${action.displayName}" href="${h.getActionUrl(it.url,action)}" contextMenu="${h.isContextMenuVisible(action)}">
-              <l:task href="${buildUrl.baseUrl}/pollingLog/pollingLog" icon="icon-document icon-md" title="${%View as plain text}"/>
+              <l:task href="${buildUrl.baseUrl}/pollingLog/pollingLog" icon="icon-document icon-md" title="${%View as plain text}" />
             </l:task>
           </j:when>
           <j:otherwise>
-            <l:task icon="${icon}" title="${action.displayName}" href="${h.getActionUrl(it.url,action)}" contextMenu="${h.isContextMenuVisible(action)}"/>
+            <l:task icon="${icon}" title="${action.displayName}" href="${h.getActionUrl(it.url,action)}" contextMenu="${h.isContextMenuVisible(action)}" />
           </j:otherwise>
         </j:choose>
       </j:if>

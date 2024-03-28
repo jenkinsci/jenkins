@@ -24,16 +24,13 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
-    <f:entry field="variables" title="${%variablesLabel}"
-             description="${%variablesDescription}" >
-        <f:textbox value="${instance.variables}" />
-    </f:entry>
-    <f:entry field="retainCharacteristicEnvVars" title="${%retainCharacteristicEnvVarsLabel}">
-        <f:checkbox default="true" />
-    </f:entry>
-    <f:entry title="${%retainProcessVariablesLabel}">
-        <f:enum field="processVariablesHandling" default="RESET">
-            ${it.displayName}
-        </f:enum>
-    </f:entry>
+  <f:entry field="variables" title="${%variablesLabel}" description="${%variablesDescription}">
+    <f:textbox value="${instance.variables}" />
+  </f:entry>
+  <f:entry field="retainCharacteristicEnvVars" title="${%retainCharacteristicEnvVarsLabel}">
+    <f:checkbox default="true" />
+  </f:entry>
+  <f:entry title="${%retainProcessVariablesLabel}">
+    <f:enum field="processVariablesHandling" default="RESET">${it.displayName}</f:enum>
+  </f:entry>
 </j:jelly>

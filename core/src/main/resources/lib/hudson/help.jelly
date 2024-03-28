@@ -26,12 +26,8 @@ THE SOFTWARE.
   <st:documentation>
     Displays a help button
 
-    <st:attribute name="href" use="required">
-      Destination of the help icon's link
-    </st:attribute>
-    <st:attribute name="tooltip">
-      The tooltip to display
-    </st:attribute>
+    <st:attribute name="href" use="required">Destination of the help icon's link</st:attribute>
+    <st:attribute name="tooltip">The tooltip to display</st:attribute>
   </st:documentation>
 
   <a href="${attrs.href}" class="jenkins-button" tooltip="${attrs.tooltip ?: '%Help'}" target="_blank" rel="noopener noreferrer">

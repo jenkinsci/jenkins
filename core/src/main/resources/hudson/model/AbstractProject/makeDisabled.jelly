@@ -1,8 +1,5 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:p="/lib/hudson/project" xmlns:st="jelly:stapler">
-    <st:documentation> <![CDATA[
-        Deprecated but kept for compatibility. Use <p:makeDisabled/>.
-    ]]>
-    </st:documentation>
-    <p:makeDisabled/>
+  <st:documentation><![CDATA[ Deprecated but kept for compatibility. Use <p:makeDisabled/>. ]]></st:documentation>
+  <p:makeDisabled />
 </j:jelly>

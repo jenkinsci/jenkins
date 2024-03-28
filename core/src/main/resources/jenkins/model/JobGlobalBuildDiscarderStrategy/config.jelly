@@ -23,8 +23,6 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
-    <!-- config files are required but can be empty if there are no options -->
-    <f:description>
-        ${%blurb}
-    </f:description>
+  <!-- config files are required but can be empty if there are no options -->
+  <f:description>${%blurb}</f:description>
 </j:jelly>

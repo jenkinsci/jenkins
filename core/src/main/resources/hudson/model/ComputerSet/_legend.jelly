@@ -6,29 +6,21 @@
     <dt>
       <l:icon src="symbol-computer" />
     </dt>
-    <dd>
-      ${%online}
-    </dd>
+    <dd>${%online}</dd>
 
     <dt>
       <l:icon src="symbol-computer-disconnected" />
     </dt>
-    <dd>
-      ${%temp-offline}
-    </dd>
+    <dd>${%temp-offline}</dd>
 
     <dt>
       <l:icon src="symbol-computer-not-accepting" />
     </dt>
-    <dd>
-      ${%not-accepting}
-    </dd>
+    <dd>${%not-accepting}</dd>
 
     <dt>
       <l:icon src="symbol-computer-offline" />
     </dt>
-    <dd>
-      ${%offline}
-    </dd>
+    <dd>${%offline}</dd>
   </dl>
 </j:jelly>

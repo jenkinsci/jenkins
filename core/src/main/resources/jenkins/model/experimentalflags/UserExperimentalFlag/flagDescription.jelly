@@ -23,5 +23,5 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core">
-    <j:out value="${it.shortDescription}" />
+  <j:out value="${it.shortDescription}" />
 </j:jelly>

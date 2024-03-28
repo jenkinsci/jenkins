@@ -29,12 +29,12 @@ THE SOFTWARE.
   <l:ajax>
     <j:choose>
       <j:when test="${it.size() > 0}">
-	<table class="pane hasPageData" page-entry-newest="${it.newestOnPage}" page-entry-oldest="${it.oldestOnPage}" page-has-up="${it.hasUpPage}" page-has-down="${it.hasDownPage}">
-	  <st:include page="entries.jelly" />
-	</table>
+        <table class="pane hasPageData" page-entry-newest="${it.newestOnPage}" page-entry-oldest="${it.oldestOnPage}" page-has-up="${it.hasUpPage}" page-has-down="${it.hasDownPage}">
+          <st:include page="entries.jelly" />
+        </table>
       </j:when>
       <j:otherwise>
-	<table class="pane"></table>
+        <table class="pane"></table>
       </j:otherwise>
     </j:choose>
   </l:ajax>

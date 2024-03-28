@@ -26,41 +26,32 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:t="/lib/hudson">
   <l:layout title="${it.fileName}" type="one-column">
     <l:main-panel>
-      <h1>
-        ${it.fileName}
-      </h1>
-      <div class="md5sum">
-        MD5: ${it.hashString}
-      </div>
+      <h1>${it.fileName}</h1>
+      <div class="md5sum">MD5: ${it.hashString}</div>
       <div>
         ${%introduced(it.timestampString)}
         <j:choose>
-          <j:when test="${it.original==null}">
-            ${%outside Jenkins}
-          </j:when>
+          <j:when test="${it.original==null}">${%outside Jenkins}</j:when>
           <j:otherwise>
             <t:buildLink job="${it.original.job}" number="${it.original.number}" jobName="${it.original.name}" />
           </j:otherwise>
         </j:choose>
       </div>
       <h2>${%Usage}</h2>
-      <j:set var="jobs" value="${it.jobs}"/>
+      <j:set var="jobs" value="${it.jobs}" />
       <j:choose>
         <j:when test="${empty(jobs)}">
-          <p>
-            ${%This file has not been used anywhere else.}
-          </p>
+          <p>${%This file has not been used anywhere else.}</p>
         </j:when>
         <j:otherwise>
-          <p>
-            ${%This file has been used in the following places}:
-          </p>
+          <p>${%This file has been used in the following places}:</p>
           <table class="fingerprint-summary">
-            <j:set var="usages" value="${it.usages}"/>
+            <j:set var="usages" value="${it.usages}" />
             <j:forEach var="j" items="${it.jobs}">
               <j:set var="job" value="${app.getItemByFullName(j)}" />
               <j:set var="range" value="${usages[j]}" />
-              <j:if test="${job!=null}"> <!--Otherwise we don't display links at all-->
+              <j:if test="${job!=null}">
+                <!--Otherwise we don't display links at all-->
                 <tr>
                   <td class="fingerprint-summary-header">
                     <a href="${rootURL}/${job.url}" class="model-link inside">${j}</a>
@@ -75,7 +66,7 @@ THE SOFTWARE.
         </j:otherwise>
       </j:choose>
       <j:forEach var="ff" items="${it.sortedFacets}">
-        <st:include page="main.jelly" optional="true" it="${ff}"/>
+        <st:include page="main.jelly" optional="true" it="${ff}" />
       </j:forEach>
     </l:main-panel>
   </l:layout>

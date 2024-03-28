@@ -24,7 +24,5 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
-    <st:documentation>
-        Deprecated; empty. See ReverseBuildTrigger.
-    </st:documentation>
+  <st:documentation>Deprecated; empty. See ReverseBuildTrigger.</st:documentation>
 </j:jelly>

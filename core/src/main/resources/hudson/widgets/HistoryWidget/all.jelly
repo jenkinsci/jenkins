@@ -28,7 +28,7 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout">
   <l:ajax>
-    <j:set var="all" value="${true}"/>
+    <j:set var="all" value="${true}" />
     <st:include page="index.jelly" />
   </l:ajax>
 </j:jelly>

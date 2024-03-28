@@ -24,7 +24,7 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:s="/lib/form">
-  <j:getStatic var="permission" className="hudson.model.Item" field="CREATE"/>
+  <j:getStatic var="permission" className="hudson.model.Item" field="CREATE" />
 
   <l:layout type="one-column" permission="${permission}" title="${%NewJob(it.newPronoun)}">
     <l:header>
@@ -33,42 +33,42 @@ THE SOFTWARE.
     </l:header>
 
     <l:main-panel>
-    <div id="add-item-panel" style="display: none;">
-          <form method="post" action="createItem" name="createItem" id="createItem">
-            <div class="header">
-              <div class="add-item-name">
-                <label for="name" class="h3">${%ItemName.label}</label>
-                <input name="name" class="jenkins-input" id="name" data-valid="false" type="text" tabindex="0" />
-                <div class="input-help">&#187; ${%ItemName.help}</div>
-                <div id="itemname-required" class="input-validation-message input-message-disabled">&#187; ${%ItemName.validation.required}</div>
-                <div id="itemname-invalid" class="input-validation-message input-message-disabled"></div>
-                <div id="itemtype-required" class="input-validation-message input-message-disabled">&#187; ${%ItemType.validation.required}</div>
-              </div>
+      <div id="add-item-panel" style="display: none">
+        <form method="post" action="createItem" name="createItem" id="createItem">
+          <div class="header">
+            <div class="add-item-name">
+              <label for="name" class="h3">${%ItemName.label}</label>
+              <input name="name" class="jenkins-input" id="name" data-valid="false" type="text" tabindex="0" />
+              <div class="input-help">&#187; ${%ItemName.help}</div>
+              <div id="itemname-required" class="input-validation-message input-message-disabled">&#187; ${%ItemName.validation.required}</div>
+              <div id="itemname-invalid" class="input-validation-message input-message-disabled"></div>
+              <div id="itemtype-required" class="input-validation-message input-message-disabled">&#187; ${%ItemType.validation.required}</div>
             </div>
+          </div>
 
-            <div id="items" class="categories flat" role="radiogroup" aria-labelledby="Items" data-valid="false" />
+          <div id="items" class="categories flat" role="radiogroup" aria-labelledby="Items" data-valid="false" />
 
-            <j:if test="${!empty(app.items)}">
-              <div class="item-copy">
-                <p class="description">${%CopyOption.description}</p>
-                <div class="add-item-copy">
-                  <input type="radio" name="mode" value="copy" />
-                  <div class="icon">
-                    <img src="${resURL}/images/48x48/copy.png" />
-                  </div>
-                  <label>${%CopyOption.label}</label>
-                  <j:set var="descriptor" value="${it.descriptor}" />
-                  <s:textbox id="from" data-valid="false" name="from" placeholder="${%CopyOption.placeholder}" field="copyNewItemFrom"/>
+          <j:if test="${!empty(app.items)}">
+            <div class="item-copy">
+              <p class="description">${%CopyOption.description}</p>
+              <div class="add-item-copy">
+                <input type="radio" name="mode" value="copy" />
+                <div class="icon">
+                  <img src="${resURL}/images/48x48/copy.png" />
                 </div>
-              </div>
-            </j:if>
-
-            <div class="footer">
-              <div class="btn-decorator">
-                <st:include page="newJobButtonBar.jelly"/>
+                <label>${%CopyOption.label}</label>
+                <j:set var="descriptor" value="${it.descriptor}" />
+                <s:textbox id="from" data-valid="false" name="from" placeholder="${%CopyOption.placeholder}" field="copyNewItemFrom" />
               </div>
             </div>
-          </form>
+          </j:if>
+
+          <div class="footer">
+            <div class="btn-decorator">
+              <st:include page="newJobButtonBar.jelly" />
+            </div>
+          </div>
+        </form>
       </div>
     </l:main-panel>
   </l:layout>

@@ -31,7 +31,7 @@ If you do it using variable, the content will be escaped by Jelly and not displa
 In such case, if you force the un-escaping with j:out, this could lead to XSS if the content is not fully trusted.
 -->
 
- <?jelly escape-by-default='true'?>
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core">
-    <th>${it.columnCaption}</th>
- </j:jelly>
+  <th>${it.columnCaption}</th>
+</j:jelly>

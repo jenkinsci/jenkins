@@ -23,21 +23,14 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:d="jelly:define" xmlns:st="jelly:stapler">
-  <st:documentation> <![CDATA[
-    <option> tag for the <select> element that takes true/false for selected.
-    ]]>
+  <st:documentation>
+    <![CDATA[ <option> tag for the <select> element that takes true/false for selected. ]]>
     <st:attribute name="value">
-      The value to be sent when the form is submitted.
-      If omitted, the body of the tag will be placed in the value attribute as well
-      (due to the browser incompatibility between IE and Firefox, value attribute
-       must be included).
+      The value to be sent when the form is submitted. If omitted, the body of the tag will be placed in the value attribute as well (due to the browser incompatibility between IE and Firefox, value attribute must be included).
     </st:attribute>
-    <st:attribute name="selected" type="boolean">
-      If true, the option value appears as selected.
-    </st:attribute>
+    <st:attribute name="selected" type="boolean">If true, the option value appears as selected.</st:attribute>
   </st:documentation>
   <!-- No escape/encode to avoid double-encoding if used in value attribute below -->
-  <j:set var="optionBody" encode="false"><d:invokeBody escapeText="false"/></j:set>
-  <option value="${attrs.value!=null?attrs.value:h.xmlUnescape(optionBody)}"
-          selected="${attrs.selected?'true':null}">${h.xmlUnescape(optionBody)}</option>
+  <j:set var="optionBody" encode="false"><d:invokeBody escapeText="false" /></j:set>
+  <option value="${attrs.value!=null?attrs.value:h.xmlUnescape(optionBody)}" selected="${attrs.selected?'true':null}">${h.xmlUnescape(optionBody)}</option>
 </j:jelly>

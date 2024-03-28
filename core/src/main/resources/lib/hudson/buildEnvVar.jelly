@@ -25,11 +25,8 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:x="jelly:xml" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <st:documentation>
-    Renders a help entry for one environment variable. See EnvironmentContributor. The body of this tag
-    renders the content.
-    <st:attribute name="name" use="required">
-      Name of the environment variable.
-    </st:attribute>
+    Renders a help entry for one environment variable. See EnvironmentContributor. The body of this tag renders the content.
+    <st:attribute name="name" use="required">Name of the environment variable.</st:attribute>
   </st:documentation>
   <dt>${attrs.name}</dt>
   <dd>

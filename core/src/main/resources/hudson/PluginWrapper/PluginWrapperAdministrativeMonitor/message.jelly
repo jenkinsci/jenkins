@@ -2,14 +2,17 @@
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
   <div class="alert alert-danger" role="alert">
     <form method="post" action="${rootURL}/${it.url}/act" name="${it.id}">
-      <f:submit name="correct" value="${%Correct}"/>
+      <f:submit name="correct" value="${%Correct}" />
     </form>
     <p>${%blurbOriginal}</p>
     <p><strong>${%DirectlyDependentPlugins.title}</strong></p>
     <j:forEach items="${it.plugins}" var="plugin">
       <j:if test="${plugin.hasOriginalDependencyErrors()}">
         <dl>
-          <dt>${plugin.longName} <span class="plugin_version">(${plugin.version})</span></dt>
+          <dt>
+            ${plugin.longName}
+            <span class="plugin_version">(${plugin.version})</span>
+          </dt>
           <j:forEach items="${plugin.originalDependencyErrors}" var="d">
             <dd>${d}</dd>
           </j:forEach>
@@ -22,7 +25,10 @@
       <dl>
         <j:forEach items="${it.plugins}" var="plugin">
           <j:if test="${plugin.hasDerivedDependencyErrors()}">
-            <dt>${plugin.displayName} <span class="plugin_version">(${plugin.version})</span></dt>
+            <dt>
+              ${plugin.displayName}
+              <span class="plugin_version">(${plugin.version})</span>
+            </dt>
             <j:forEach items="${plugin.derivedDependencyErrors}" var="d">
               <dd>${d}</dd>
             </j:forEach>

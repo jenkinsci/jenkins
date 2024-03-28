@@ -26,9 +26,7 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <st:documentation>
     Creates a table of builds.
-    <st:attribute name="builds" use="required">
-      A collection of builds to be displayed.
-    </st:attribute>
+    <st:attribute name="builds" use="required">A collection of builds to be displayed.</st:attribute>
   </st:documentation>
   <template id="jenkins-build-status-icons">
     <l:icon src="symbol-status-blue" id="blue" />
@@ -46,25 +44,31 @@ THE SOFTWARE.
     <l:icon src="symbol-terminal" id="console" />
   </template>
 
-  <t:setIconSize/>
+  <t:setIconSize />
   <st:adjunct includes="hudson.model.Job.buildTimeTrend_resources" />
-  <j:new var="handler" className="jenkins.widgets.BuildListTable"/>
+  <j:new var="handler" className="jenkins.widgets.BuildListTable" />
   ${handler.setBuilds(attrs.builds)}
-  <l:progressiveRendering handler="${handler}" callback="displayBuilds"/>
+  <l:progressiveRendering handler="${handler}" callback="displayBuilds" />
   <j:set var="consoleOutputIcon" trim="true">
     <l:icon src="symbol-terminal" alt="${%Console output}" />
   </j:set>
-  <table class="jenkins-table ${iconSize == '16x16' ? 'jenkins-table--small' : iconSize == '24x24' ? 'jenkins-table--medium' : ''} sortable" id="projectStatus" style="display: none;" data-icon-size-class="${iconSizeClass}"  data-console-output-icon="${consoleOutputIcon}">
+  <table
+    class="jenkins-table ${iconSize == '16x16' ? 'jenkins-table--small' : iconSize == '24x24' ? 'jenkins-table--medium' : ''} sortable"
+    id="projectStatus"
+    style="display: none"
+    data-icon-size-class="${iconSizeClass}"
+    data-console-output-icon="${consoleOutputIcon}"
+  >
     <thead>
-        <tr>
-            <th class="jenkins-table__cell--tight">${%S}</th>
-            <th>${%Build}</th>
-            <th initialSortDir="up">${%Time Since}</th>
-            <th>${%Status}</th>
-            <th class="jenkins-table__cell--tight" data-sort-disable="true"></th>
-        </tr>
+      <tr>
+        <th class="jenkins-table__cell--tight">${%S}</th>
+        <th>${%Build}</th>
+        <th initialSortDir="up">${%Time Since}</th>
+        <th>${%Status}</th>
+        <th class="jenkins-table__cell--tight" data-sort-disable="true"></th>
+      </tr>
     </thead>
     <tbody></tbody>
   </table>
-  <t:rssBar-with-iconSize/>
+  <t:rssBar-with-iconSize />
 </j:jelly>

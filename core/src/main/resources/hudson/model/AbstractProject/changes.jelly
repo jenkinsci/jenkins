@@ -31,16 +31,15 @@ THE SOFTWARE.
     <st:include page="sidepanel.jelly" />
     <l:breadcrumb title="${%Changes}" />
     <l:main-panel>
-      <j:set var="from" value="${request.getParameter('from')}"/>
-      <j:set var="to" value="${request.getParameter('to')}"/>
-      <j:set var="browser" value="${it.scm.effectiveBrowser}"/> <!-- for compatibility; newer project-changes.jelly override this -->
+      <j:set var="from" value="${request.getParameter('from')}" />
+      <j:set var="to" value="${request.getParameter('to')}" />
+      <j:set var="browser" value="${it.scm.effectiveBrowser}" />
+      <!-- for compatibility; newer project-changes.jelly override this -->
 
       <h1>
         ${%Changes}
         <j:choose>
-          <j:when test="${from!=null and to!=null}">
-            ${%range.label(from, to)}
-          </j:when>
+          <j:when test="${from!=null and to!=null}">${%range.label(from, to)}</j:when>
           <j:otherwise>
             <j:if test="${from!=null}">${%from.label(from)}</j:if>
             <j:if test="${to!=null}">${%to.label(to)}</j:if>

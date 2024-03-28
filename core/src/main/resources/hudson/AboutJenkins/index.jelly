@@ -29,7 +29,7 @@ THE SOFTWARE.
     <l:header>
       <script src="${resURL}/jsbundles/section-to-tabs.js" type="text/javascript" defer="true" />
     </l:header>
-    
+
     <l:main-panel>
       <div class="app-about-branding">
         <div class="app-about-branding__aurora"></div>
@@ -39,9 +39,7 @@ THE SOFTWARE.
       <div class="jenkins-app-bar">
         <div class="jenkins-app-bar__content">
           <h1 class="app-about-heading">Jenkins</h1>
-          <p class="app-about-version">
-            ${%Version} ${app.VERSION}
-          </p>
+          <p class="app-about-version">${%Version} ${app.VERSION}</p>
         </div>
         <div class="jenkins-app-bar__controls">
           <a href="https://www.jenkins.io/participate/" class="jenkins-button" target="_blank">
@@ -55,11 +53,11 @@ THE SOFTWARE.
 
       <div class="jenkins-tab-pane">
         <h2 class="jenkins-tab-pane__title">${%maven.dependencies}</h2>
-        <j:set var="uri" value="${it.licensesURL}"/>
+        <j:set var="uri" value="${it.licensesURL}" />
         <j:choose>
           <j:when test="${uri != null}">
             <t:thirdPartyLicenses>
-              <j:include uri="${uri}"/>
+              <j:include uri="${uri}" />
             </t:thirdPartyLicenses>
           </j:when>
           <j:otherwise>
@@ -81,9 +79,7 @@ THE SOFTWARE.
           <tbody>
             <tr>
               <td>
-                <a class="jenkins-table__link" href="https://github.com/jenkins-contrib-themes/jenkins-core-theme">
-                  Jenkins Contrib Themes
-                </a>
+                <a class="jenkins-table__link" href="https://github.com/jenkins-contrib-themes/jenkins-core-theme">Jenkins Contrib Themes</a>
               </td>
               <td>
                 <a class="jenkins-table__link" href="https://github.com/afonsof">Afonso Franca</a>
@@ -100,9 +96,7 @@ THE SOFTWARE.
                 <a class="jenkins-table__link" href="https://github.com/ionic-team">Ionic</a>
               </td>
               <td>
-                <a class="jenkins-table__link" href="https://github.com/ionic-team/ionicons/blob/master/LICENSE">MIT
-                  License
-                </a>
+                <a class="jenkins-table__link" href="https://github.com/ionic-team/ionicons/blob/master/LICENSE">MIT License</a>
               </td>
             </tr>
           </tbody>
@@ -123,9 +117,7 @@ THE SOFTWARE.
                 <td>
                   <a class="jenkins-table__link" href="${rootURL}/plugin/${p.shortName}/wrapper/thirdPartyLicenses">
                     <j:choose>
-                      <j:when test="${p.active}">
-                        ${p.displayName}
-                      </j:when>
+                      <j:when test="${p.active}">${p.displayName}</j:when>
                       <j:otherwise>
                         <strike>${p.displayName}</strike>
                       </j:otherwise>

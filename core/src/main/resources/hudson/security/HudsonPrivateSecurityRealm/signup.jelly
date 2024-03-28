@@ -28,25 +28,25 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:x="jelly:xml">
   <l:view xmlns:l="/lib/layout" contentType="text/html;charset=UTF-8">
-    <st:setHeader name="Expires" value="0"/>
-    <st:setHeader name="Cache-Control" value="no-cache,no-store,must-revalidate"/>
+    <st:setHeader name="Expires" value="0" />
+    <st:setHeader name="Cache-Control" value="no-cache,no-store,must-revalidate" />
     <!--
     needed to generate a session if non exists,
     without it we would add ";jsessionid=" to the url which will result in a 404
     -->
-    <j:set var="_" value="${request.getSession()}"/>
-    <x:doctype name="html"/>
+    <j:set var="_" value="${request.getSession()}" />
+    <x:doctype name="html" />
     <!-- in case of error we want to surround the form elements with an error hint -->
-    <j:set var="inputClass" value="${data.errorMessage!=null ? 'jenkins-input--error' : ''}"/>
-    <j:set var="simpleDecorator" value="${h.simplePageDecorator}"/>
-    <j:set var="simpleDecorators" value="${h.simplePageDecorators}"/>
+    <j:set var="inputClass" value="${data.errorMessage!=null ? 'jenkins-input--error' : ''}" />
+    <j:set var="simpleDecorator" value="${h.simplePageDecorator}" />
+    <j:set var="simpleDecorators" value="${h.simplePageDecorators}" />
     <html lang="${request.getLocale().toLanguageTag()}">
       <head data-rooturl="${rootURL}" data-resurl="${resURL}" data-imagesurl="${imagesURL}" resURL="${resURL}">
         <title>${%Register} [Jenkins]</title>
         <!-- we do not want bots on this page -->
-        <meta name="ROBOTS" content="NOFOLLOW"/>
+        <meta name="ROBOTS" content="NOFOLLOW" />
         <!-- mobile friendly layout -->
-        <meta name="viewport" content="width=device-width, initial-scale=1"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
         <!-- css styling, will fallback to default implementation -->
         <st:include it="${simpleDecorator}" page="simple-head.jelly" />
         <script src="${resURL}/jsbundles/pages/register.js" type="text/javascript" defer="true" />
@@ -59,116 +59,72 @@ THE SOFTWARE.
 
             <st:include it="${simpleDecorator}" page="simple-header.jelly" />
 
-            <template id="i18n" data-strength-strong="${%Strong}"
-                                data-strength-moderate="${%Moderate}"
-                                data-strength-weak="${%Weak}"
-                                data-strength-poor="${%Poor}" />
+            <template id="i18n" data-strength-strong="${%Strong}" data-strength-moderate="${%Moderate}" data-strength-weak="${%Weak}" data-strength-poor="${%Poor}" />
 
             <form class="signup" action="${rootURL}/securityRealm/createAccount" method="post">
               <div>
-                <label class="app-sign-in-register__form-label ${data.errors.containsKey('username') ? 'alert' : ''}" for="username">
-                  ${%Username}
-                </label>
-                <div class="app-sign-in-register__error">
-                  ${data.errors.containsKey('username') ? data.errors.get('username') : ''}
-                </div>
-                <input class="jenkins-input ${data.errors.containsKey('username') ? 'jenkins-input--error' : ''}"
-                       autofocus="${(data == null || data.errors.containsKey('username')) ? true : null}"
-                       value="${data.username}"
-                       type="text"
-                       name="username"
-                       id="username" />
+                <label class="app-sign-in-register__form-label ${data.errors.containsKey('username') ? 'alert' : ''}" for="username">${%Username}</label>
+                <div class="app-sign-in-register__error">${data.errors.containsKey('username') ? data.errors.get('username') : ''}</div>
+                <input
+                  class="jenkins-input ${data.errors.containsKey('username') ? 'jenkins-input--error' : ''}"
+                  autofocus="${(data == null || data.errors.containsKey('username')) ? true : null}"
+                  value="${data.username}"
+                  type="text"
+                  name="username"
+                  id="username"
+                />
               </div>
               <div>
-                <label class="app-sign-in-register__form-label ${data.errors.containsKey('fullname') ? 'alert' : ''}" for="fullname">
-                  ${%Full name}
-                </label>
-                <div class="app-sign-in-register__error">
-                  ${data.errors.containsKey('fullname') ? data.errors.get('fullname') : ''}
-                </div>
-                <input class="jenkins-input ${data.errors.containsKey('fullname') ? 'jenkins-input--error' : ''}"
-                       autofocus="${data.errors.containsKey('fullname') ? true : null}"
-                       value="${data.fullname}"
-                       type="text"
-                       name="fullname"
-                       id="fullname"
-                />
+                <label class="app-sign-in-register__form-label ${data.errors.containsKey('fullname') ? 'alert' : ''}" for="fullname">${%Full name}</label>
+                <div class="app-sign-in-register__error">${data.errors.containsKey('fullname') ? data.errors.get('fullname') : ''}</div>
+                <input class="jenkins-input ${data.errors.containsKey('fullname') ? 'jenkins-input--error' : ''}" autofocus="${data.errors.containsKey('fullname') ? true : null}" value="${data.fullname}" type="text" name="fullname" id="fullname" />
               </div>
               <j:if test="${it.mailerPluginPresent}">
                 <div>
-                  <label class="app-sign-in-register__form-label ${data.errors.containsKey('email') ? 'alert' : ''}" for="email"
-                  >
-                    ${%Email}
-                  </label>
-                  <div class="app-sign-in-register__error">
-                    ${data.errors.containsKey('email') ? data.errors.get('email') : ''}
-                  </div>
-                  <input class="jenkins-input ${data.errors.containsKey('email') ? 'jenkins-input--error' : ''}"
-                         value="${data.email}"
-                         type="text"
-                         name="email"
-                         id="email"
-                         autofocus="${data.errors.containsKey('email') ? true : null}" />
+                  <label class="app-sign-in-register__form-label ${data.errors.containsKey('email') ? 'alert' : ''}" for="email">${%Email}</label>
+                  <div class="app-sign-in-register__error">${data.errors.containsKey('email') ? data.errors.get('email') : ''}</div>
+                  <input class="jenkins-input ${data.errors.containsKey('email') ? 'jenkins-input--error' : ''}" value="${data.email}" type="text" name="email" id="email" autofocus="${data.errors.containsKey('email') ? true : null}" />
                 </div>
               </j:if>
               <j:if test="${it.isEnableCaptcha()}">
                 <div>
-                  <label class="app-sign-in-register__form-label ${data.errors.containsKey('captcha') ? 'alert' : ''}" for="captcha">
-                    ${%Enter text as shown}
-                  </label>
-                  <input class="${data.errors.containsKey('captcha') ? 'jenkins-input--error' : ''}"
-                         autofocus="${data.errors.containsKey('captcha') ? true : null}"
-                         type="text"
-                         name="captcha"
-                         id="captcha"
-                         autocomplete="off" />
-                  <img src="${rootURL}/securityRealm/captcha" alt="[captcha]"/>
+                  <label class="app-sign-in-register__form-label ${data.errors.containsKey('captcha') ? 'alert' : ''}" for="captcha">${%Enter text as shown}</label>
+                  <input class="${data.errors.containsKey('captcha') ? 'jenkins-input--error' : ''}" autofocus="${data.errors.containsKey('captcha') ? true : null}" type="text" name="captcha" id="captcha" autocomplete="off" />
+                  <img src="${rootURL}/securityRealm/captcha" alt="[captcha]" />
                 </div>
               </j:if>
               <div>
                 <div class="inputHeader password">
-                  <label class="app-sign-in-register__form-label ${data.errors.containsKey('password1') ? 'alert' : ''}" for="password1">
-                    ${%Password}
-                  </label>
+                  <label class="app-sign-in-register__form-label ${data.errors.containsKey('password1') ? 'alert' : ''}" for="password1">${%Password}</label>
                   <div class="jenkins-checkbox">
                     <input type="checkbox" id="showPassword" />
                     <label for="showPassword">${%Show}</label>
                   </div>
                 </div>
-                <div class="app-sign-in-register__error">
-                  ${data.errors.containsKey('password1') ? data.errors.get('password1') : ''}
-                </div>
-                <input class="jenkins-input ${data.errors.containsKey('password1') ? 'jenkins-input--error' : ''}"
-                       value="${data.password1}"
-                       type="password"
-                       name="password1"
-                       id="password1"
-                       autofocus="${data.errors.containsKey('password1') ? true : null}" />
+                <div class="app-sign-in-register__error">${data.errors.containsKey('password1') ? data.errors.get('password1') : ''}</div>
+                <input
+                  class="jenkins-input ${data.errors.containsKey('password1') ? 'jenkins-input--error' : ''}"
+                  value="${data.password1}"
+                  type="password"
+                  name="password1"
+                  id="password1"
+                  autofocus="${data.errors.containsKey('password1') ? true : null}"
+                />
                 <div id="passwordStrengthWrapper">
-                  ${%Strength}: <span id="passwordStrength"></span>
+                  ${%Strength}:
+                  <span id="passwordStrength"></span>
                 </div>
               </div>
-              <div class="app-sign-in-register__password-notice">
-                ${%A strong password is a long password that's unique for every site. Try using a phrase with 5-6 words for the best security.}
-              </div>
-              <input class="${data.errors.containsKey('password1') ? 'jenkins-input--error' : ''}"
-                      value="${data.password2}"
-                      type="hidden"
-                      name="password2"
-                      id="password2"
-              />
-              <button type="submit"
-                      name="Submit"
-                      class="jenkins-button jenkins-button--primary">
-                ${%Create account}
-              </button>
+              <div class="app-sign-in-register__password-notice">${%A strong password is a long password that's unique for every site. Try using a phrase with 5-6 words for the best security.}</div>
+              <input class="${data.errors.containsKey('password1') ? 'jenkins-input--error' : ''}" value="${data.password2}" type="hidden" name="password2" id="password2" />
+              <button type="submit" name="Submit" class="jenkins-button jenkins-button--primary">${%Create account}</button>
               <div class="app-sign-in-register__switcher">
                 <a href="${rootURL}/login">${%or sign in}</a>
               </div>
-              <input type="hidden" name="${h.getCrumbRequestField()}" value="${h.getCrumb(request)}"/>
+              <input type="hidden" name="${h.getCrumbRequestField()}" value="${h.getCrumb(request)}" />
               <div class="footer">
                 <j:forEach var="decorator" items="${simpleDecorators}">
-                  <st:include it="${decorator}" page="simple-footer.jelly" optional="true"/>
+                  <st:include it="${decorator}" page="simple-footer.jelly" optional="true" />
                 </j:forEach>
               </div>
             </form>
