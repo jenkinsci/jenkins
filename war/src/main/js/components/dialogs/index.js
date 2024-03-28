@@ -105,8 +105,8 @@ Dialog.prototype.init = function () {
 
     this.dialog.addEventListener("keydown", (e) => {
       if (e.key === "Enter") {
-        e.preventDefault();
-        if (this.ok.disabled == false) {
+        if (e.target != this.cancel && this.ok.disabled == false) {
+          e.preventDefault();
           this.ok.dispatchEvent(new Event("click"));
         }
       }
@@ -134,7 +134,7 @@ Dialog.prototype.appendButtons = function () {
       }" class="jenkins-button jenkins-button--primary ${
         _typeClassMap[this.options.type]
       }">${this.options.okText}</button>
-      <button data-id="cancel" class="jenkins-button">${
+      <button data-id="cancel" class="jenkins-button" type="button">${
         this.options.cancelText
       }</button>
     </div>`);
@@ -152,6 +152,7 @@ Dialog.prototype.appendButtons = function () {
   } else {
     this.cancel.addEventListener("click", (e) => {
       e.preventDefault();
+      e.stopPropagation();
       this.dialog.dispatchEvent(new Event("cancel"));
     });
   }
