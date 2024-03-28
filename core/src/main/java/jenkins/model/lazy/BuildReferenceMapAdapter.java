@@ -91,7 +91,7 @@ class BuildReferenceMapAdapter<R> implements SortedMap<Integer, R> {
 
     @Override
     public Set<Entry<Integer, R>> entrySet() {
-        return new SetAdapter(core.entrySet());
+        return new SetAdapter<>(core.entrySet(), loader);
     }
 
     @Override
@@ -264,122 +264,5 @@ class BuildReferenceMapAdapter<R> implements SortedMap<Integer, R> {
         }
     }
 
-    private class SetAdapter implements Set<Entry<Integer, R>> {
-        private final Set<Entry<Integer, BuildReference<R>>> core;
 
-        private SetAdapter(Set<Entry<Integer, BuildReference<R>>> core) {
-            this.core = core;
-        }
-
-        @Override
-        public int size() {
-            return core.size();
-        }
-
-        @Override
-        public boolean isEmpty() {
-            return core.isEmpty();
-        }
-
-        @Override
-        public boolean contains(Object o) {
-            // TODO: to properly pass this onto core, we need to wrap o into BuildReference but also needs to figure out ID.
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public Iterator<Entry<Integer, R>> iterator() {
-            return Iterators.removeNull(new AdaptedIterator<>(core.iterator()) {
-                @Override
-                protected Entry<Integer, R> adapt(Entry<Integer, BuildReference<R>> e) {
-                    return _unwrap(e);
-                }
-            });
-        }
-
-        @Override
-        public Object[] toArray() {
-            List<Object> list = new ArrayList<>(size());
-            for (var e : this) {
-                list.add(e);
-            }
-            return list.toArray();
-        }
-
-        @Override
-        public <T> T[] toArray(T[] a) {
-            return new ArrayList<>(this).toArray(a);
-        }
-
-        @Override
-        public boolean add(Entry<Integer, R> value) {
-            return core.add(_wrap(value));
-        }
-
-        @Override
-        public boolean remove(Object o) {
-//            return core.remove(o);
-            // TODO: to properly pass this onto core, we need to wrap o into BuildReference but also needs to figure out ID.
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public boolean containsAll(Collection<?> c) {
-            for (Object o : c) {
-                if (!contains(o))
-                    return false;
-            }
-            return true;
-        }
-
-        @Override
-        public boolean addAll(Collection<? extends Entry<Integer, R>> c) {
-            boolean b = false;
-            for (Entry<Integer, R> r : c) {
-                b |= add(r);
-            }
-            return b;
-        }
-
-        @Override
-        public boolean removeAll(Collection<?> c) {
-            boolean b = false;
-            for (Object o : c) {
-                b |= remove(o);
-            }
-            return b;
-        }
-
-        @Override
-        public boolean retainAll(Collection<?> c) {
-            // TODO: to properly pass this onto core, we need to wrap o into BuildReference but also needs to figure out ID.
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public void clear() {
-            core.clear();
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            return core.equals(o);
-        }
-
-        @Override
-        public int hashCode() {
-            return core.hashCode();
-        }
-
-        private Entry<Integer, BuildReference<R>> _wrap(Entry<Integer, R> e) {
-            return new AbstractMap.SimpleEntry<>(e.getKey(), wrap(e.getValue()));
-        }
-
-        private Entry<Integer, R> _unwrap(Entry<Integer, BuildReference<R>> e) {
-            R v = unwrap(e.getValue());
-            if (v == null)
-                return null;
-            return new AbstractMap.SimpleEntry<>(e.getKey(), v);
-        }
-    }
 }
