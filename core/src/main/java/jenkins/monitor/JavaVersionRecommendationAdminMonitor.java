@@ -52,6 +52,7 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 @Extension
 @Restricted(NoExternalUse.class)
 @Symbol("javaVersionRecommendation")
+@Deprecated(since = "TODO", forRemoval = true)
 public class JavaVersionRecommendationAdminMonitor extends AdministrativeMonitor {
 
     /**

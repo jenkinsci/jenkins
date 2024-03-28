@@ -43,19 +43,23 @@ public class JavaUtils {
     /**
      * Check whether the current JVM is running with Java 8 or below
      * @return {@code true} if it is Java 8 or older version
+     * @deprecated because the current version is at least Java 11,
+     * this method is redundant.
      */
+    @Deprecated(since = "TODO", forRemoval = true)
     public static boolean isRunningWithJava8OrBelow() {
-        String javaVersion = getCurrentRuntimeJavaVersion();
-        return javaVersion.startsWith("1.");
+        return false;
     }
 
     /**
      * Check whether the current JVM is running with Java 9 or above.
      * @return {@code true} if it is Java 9 or above
+     * @deprecated because the current version is at least Java 11,
+     * this method is redundant.
      */
+    @Deprecated(since = "TODO", forRemoval = true)
     public static boolean isRunningWithPostJava8() {
-        String javaVersion = getCurrentRuntimeJavaVersion();
-        return !javaVersion.startsWith("1.");
+        return true;
     }
 
     /**
