@@ -30,6 +30,7 @@ import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Util;
+import hudson.model.AbstractProject;
 import hudson.util.EditDistance;
 import java.io.IOException;
 import java.util.AbstractList;
@@ -74,7 +75,11 @@ public class Search implements StaplerProxy {
     private static /* nonfinal for Jenkins script console */ int MAX_SEARCH_SIZE = Integer.getInteger(Search.class.getName() + ".MAX_SEARCH_SIZE", 500);
 
     public void doIndex(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+        String query = req.getParameter("q");
         List<Ancestor> l = req.getAncestors();
+
+        List<SuggestedItem> foundItem = new ArrayList<>();
+
         for (int i = l.size() - 1; i >= 0; i--) {
             Ancestor a = l.get(i);
             if (a.getObject() instanceof SearchableModelObject) {
@@ -84,21 +89,51 @@ public class Search implements StaplerProxy {
                 }
 
                 SearchIndex index = smo.getSearchIndex();
-                String query = req.getParameter("q");
                 if (query != null) {
                     SuggestedItem target = find(index, query, smo);
                     if (target != null) {
                         // found
-                        rsp.sendRedirect2(req.getContextPath() + target.getUrl());
-                        return;
+                        foundItem.add(target);
                     }
                 }
             }
         }
 
-        // no exact match. show the suggestions
-        rsp.setStatus(SC_NOT_FOUND);
-        req.getView(this, "search-failed.jelly").forward(req, rsp);
+        // Search for builds
+        Iterable<AbstractProject> projects = Jenkins.get().allItems(AbstractProject.class);
+        for (AbstractProject p : projects) {
+            SearchableModelObject smo = p;
+            SearchIndex index = smo.getSearchIndex();
+            SuggestedItem target = find(index, query, smo);
+            if (target != null) {
+                // found
+                foundItem.add(target);
+            }
+        }
+
+        if (foundItem.size() == 1) {
+            rsp.sendRedirect2(req.getContextPath() + "/" + foundItem.get(0).item.getSearchUrl());
+
+        } else if (foundItem.size() > 1) {
+            // Check if the urls in the list are the same or not.
+            // If they are the same, redirect page to the target page.
+            // Otherwise, show suggestion page.
+            Set<String> urls = new HashSet<>();
+            urls.add(foundItem.get(0).getUrl());
+            for (int i = 1; i < foundItem.size(); i++) {
+                if (urls.add(foundItem.get(i).getUrl())) {
+                    rsp.setStatus(SC_NOT_FOUND);
+                    req.getView(this, "search-failed.jelly").forward(req, rsp);
+                    return;
+                }
+            }
+            rsp.sendRedirect2(req.getContextPath() + "/" + foundItem.get(0).item.getSearchUrl());
+
+        } else {
+            // found 0 item
+            rsp.setStatus(SC_NOT_FOUND);
+            req.getView(this, "search-failed.jelly").forward(req, rsp);
+        }
     }
 
     /**
@@ -154,8 +189,22 @@ public class Search implements StaplerProxy {
                 r.hasMoreResults = true;
                 break;
             }
-            if (paths.add(i.getPath()))
+            if (paths.add(i.item.getSearchUrl()))
                 r.add(i);
+        }
+
+        // Search for builds
+        Iterable<AbstractProject> projects = Jenkins.get().allItems(AbstractProject.class);
+        for (AbstractProject p : projects) {
+            SearchIndex index = p.getSearchIndex();
+            for (SuggestedItem i : suggest(index, query, smo)) {
+                if (r.size() >= max) {
+                    r.hasMoreResults = true;
+                    break;
+                }
+                if (paths.add(i.item.getSearchUrl()))
+                    r.add(i);
+            }
         }
         return r;
     }
