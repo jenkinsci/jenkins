@@ -218,12 +218,12 @@ public class Functions {
     }
 
     public static String xsDate(Calendar cal) {
-        return Util.XS_DATETIME_FORMATTER.format(cal.getTime());
+        return Util.XS_DATETIME_FORMATTER2.format(cal.toInstant());
     }
 
     @Restricted(NoExternalUse.class)
     public static String iso8601DateTime(Date date) {
-        return Util.XS_DATETIME_FORMATTER.format(date);
+        return Util.XS_DATETIME_FORMATTER2.format(date.toInstant());
     }
 
     /**

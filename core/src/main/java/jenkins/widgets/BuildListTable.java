@@ -28,7 +28,7 @@ import hudson.Functions;
 import hudson.Util;
 import hudson.model.BallColor;
 import hudson.model.Run;
-import java.util.Date;
+import java.time.Instant;
 import jenkins.console.ConsoleUrlProvider;
 import net.sf.json.JSONObject;
 import org.kohsuke.accmod.Restricted;
@@ -49,7 +49,7 @@ public class BuildListTable extends RunListProgressiveRendering {
         element.put("displayName", build.getDisplayName());
         element.put("timestampString", build.getTimestampString());
         element.put("timestampString2", build.getTimestampString2());
-        element.put("timestampString3", Util.XS_DATETIME_FORMATTER.format(new Date(build.getStartTimeInMillis())));
+        element.put("timestampString3", Util.XS_DATETIME_FORMATTER2.format(Instant.ofEpochMilli(build.getStartTimeInMillis())));
         Run.Summary buildStatusSummary = build.getBuildStatusSummary();
         element.put("buildStatusSummaryWorse", buildStatusSummary.isWorse);
         element.put("buildStatusSummaryMessage", buildStatusSummary.message);
