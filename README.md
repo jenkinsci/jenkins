@@ -9,6 +9,8 @@
 [![Docker Pulls](https://img.shields.io/docker/pulls/jenkins/jenkins.svg)](https://hub.docker.com/r/jenkins/jenkins/)
 [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/3538/badge)](https://bestpractices.coreinfrastructure.org/projects/3538)
 [![Gitter](https://img.shields.io/gitter/room/jenkinsci/jenkins)](https://app.gitter.im/#/room/#jenkinsci_jenkins:gitter.im)
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/jenkinsci/jenkins/badge)](https://api.securityscorecards.dev/projects/github.com/jenkinsci/jenkins)
+
 
 In a nutshell, Jenkins is the leading open-source automation server.
 Built with Java, it provides over 1,800 [plugins](https://plugins.jenkins.io/) to support automating virtually anything,
