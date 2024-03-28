@@ -29,6 +29,7 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.Util;
 import hudson.model.Descriptor.FormException;
+import hudson.model.userproperty.UserPropertyCategory;
 import hudson.security.ACL;
 import hudson.util.FormValidation;
 import hudson.views.MyViewsTabBar;
@@ -245,6 +246,11 @@ public class MyViewsProperty extends UserProperty implements ModifiableViewGroup
         @Override
         public UserProperty newInstance(User user) {
             return new MyViewsProperty();
+        }
+
+        @Override
+        public @NonNull UserPropertyCategory getUserPropertyCategory() {
+            return UserPropertyCategory.get(UserPropertyCategory.Preferences.class);
         }
     }
 

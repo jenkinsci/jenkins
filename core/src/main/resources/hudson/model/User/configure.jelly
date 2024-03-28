@@ -25,6 +25,7 @@ THE SOFTWARE.
 <!--
   Config page
 -->
+<!-- FIXME DRAFT system property, this page is still accessible by direct URL call, could be wrapped with feature flag -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <l:layout permission="${app.ADMINISTER}" title="${%title(it.fullName)}">
