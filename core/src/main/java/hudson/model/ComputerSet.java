@@ -34,6 +34,7 @@ import hudson.Util;
 import hudson.XmlFile;
 import hudson.init.Initializer;
 import hudson.model.Descriptor.FormException;
+import hudson.model.labels.LabelAtom;
 import hudson.model.listeners.SaveableListener;
 import hudson.node_monitors.NodeMonitor;
 import hudson.slaves.NodeDescriptor;
@@ -46,9 +47,12 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.AbstractList;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -95,6 +99,20 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
     @Exported
     public String getDisplayName() {
         return Messages.ComputerSet_DisplayName();
+    }
+
+    @SuppressWarnings("unused") // used by jelly view
+    @Exported
+    public Set<LabelAtom> getAllLabels() {
+        Set<LabelAtom> labels = new HashSet<>();
+        for (Computer c : get_all()) {
+            // assigned labels
+            Set<LabelAtom> assignedNodeLabels = Label.parse(c.getNode().getLabelString());
+            // + dynamic labels (some plugins use it)
+            assignedNodeLabels.addAll(c.getNode().getDynamicLabels());
+            labels.addAll(assignedNodeLabels);
+        }
+        return Collections.unmodifiableSet(labels);
     }
 
     /**

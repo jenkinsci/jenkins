@@ -349,7 +349,8 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
      * This calls all the LabelFinder implementations with the node converts
      * the results into Labels.
      */
-    private HashSet<LabelAtom> getDynamicLabels() {
+    @Restricted(NoExternalUse.class)
+    public HashSet<LabelAtom> getDynamicLabels() {
         HashSet<LabelAtom> result = new HashSet<>();
         for (LabelFinder labeler : LabelFinder.all()) {
             // Filter out any bad(null) results from plugins
