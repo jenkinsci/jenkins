@@ -28,36 +28,38 @@ THE SOFTWARE.
     Generates the body as the main content part of a Jenkins page.
   </st:documentation>
 
-  <j:if test="${mode=='main-panel'}">
-    <j:if test="${app.isQuietingDown()}">
-      <j:choose>
-        <j:when test="${app.isPreparingSafeRestart()}">
-          <div id='safe-restart-msg'>
-            <j:choose>
-              <j:when test="${!app.getQuietDownReason().trim().isEmpty()}">
-                ${app.getQuietDownReason()}
-              </j:when>
-              <j:otherwise>
-                ${%saferestart}
-              </j:otherwise>
-            </j:choose>
-          </div>
-        </j:when>
-        <j:otherwise>
-          <div id='shutdown-msg'>
-            <j:choose>
-              <j:when test="${app.getQuietDownReason() != null}">
-                ${app.getQuietDownReason()}
-              </j:when>
-              <j:otherwise>
-                ${%shutdown}
-              </j:otherwise>
-            </j:choose>
-          </div>
-        </j:otherwise>
-      </j:choose>
-    </j:if>
-    <a id="skip2content" />
-    <d:invokeBody />
+  <j:if test="${mode == 'main'}">
+    <div id="main-panel" class="app-page-body__main-panel">
+      <j:if test="${app.isQuietingDown()}">
+        <j:choose>
+          <j:when test="${app.isPreparingSafeRestart()}">
+            <div id='safe-restart-msg'>
+              <j:choose>
+                <j:when test="${!app.getQuietDownReason().trim().isEmpty()}">
+                  ${app.getQuietDownReason()}
+                </j:when>
+                <j:otherwise>
+                  ${%saferestart}
+                </j:otherwise>
+              </j:choose>
+            </div>
+          </j:when>
+          <j:otherwise>
+            <div id='shutdown-msg'>
+              <j:choose>
+                <j:when test="${app.getQuietDownReason() != null}">
+                  ${app.getQuietDownReason()}
+                </j:when>
+                <j:otherwise>
+                  ${%shutdown}
+                </j:otherwise>
+              </j:choose>
+            </div>
+          </j:otherwise>
+        </j:choose>
+      </j:if>
+      <a id="skip2content" />
+      <d:invokeBody />
+    </div>
   </j:if>
 </j:jelly>

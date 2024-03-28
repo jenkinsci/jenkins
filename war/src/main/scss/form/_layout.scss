@@ -1,7 +1,3 @@
-.jenkins-form {
-  max-width: var(--form-item-max-width);
-}
-
 .jenkins-fieldset {
   border: none;
   margin: 0;
@@ -13,7 +9,6 @@
 }
 
 .jenkins-form-item {
-  max-width: var(--form-item-max-width);
   margin-bottom: var(--section-padding);
 
   // Workaround for float:right button controls
