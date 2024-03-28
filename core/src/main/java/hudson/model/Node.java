@@ -275,7 +275,7 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
             // At startup, we need to restore any previously in-effect temp offline cause.
             // We wait until the computer is started rather than getting the data to it sooner
             // so that the normal computer start up processing works as expected.
-            if (node != null && node.temporaryOfflineCause != null && node.temporaryOfflineCause != c.getOfflineCause()) {
+            if (node != null && node.temporaryOfflineCause != null && node.temporaryOfflineCause != c.getTemporarilyOfflineCause()) {
                 c.setTemporarilyOffline(true, node.temporaryOfflineCause);
             }
         }
