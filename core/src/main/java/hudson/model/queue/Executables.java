@@ -43,7 +43,7 @@ public class Executables {
      * @return Discovered subtask
      */
     public static @NonNull SubTask getParentOf(@NonNull Executable e)
-            throws Error, RuntimeException {
+            throws Error {
         try {
             return e.getParent();
         } catch (AbstractMethodError ignored) { // will fallback to a private implementation

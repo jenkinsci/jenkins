@@ -339,7 +339,7 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
         return null;
     }
 
-    @Override public final OutputStream decorateLogger(AbstractBuild build, OutputStream logger) throws IOException, InterruptedException, Run.RunnerAbortedException {
+    @Override public final OutputStream decorateLogger(AbstractBuild build, OutputStream logger) throws IOException, InterruptedException {
         ConsoleLogFilter filter = createLoggerDecorator(build);
         return filter != null ? filter.decorateLogger(build, logger) : logger;
     }
@@ -349,7 +349,7 @@ public abstract class SimpleBuildWrapper extends BuildWrapper {
      * <p>{@inheritDoc}
      * @since 1.608
      */
-    @Override public Launcher decorateLauncher(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException, Run.RunnerAbortedException {
+    @Override public Launcher decorateLauncher(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
         return super.decorateLauncher(build, launcher, listener);
         // TODO reasonable to decorate Launcher within a dynamic scope, but this signature does not mix well with Context pattern.
         // Called from AbstractBuildExecution.createLauncher; how do we track what is decorating what?

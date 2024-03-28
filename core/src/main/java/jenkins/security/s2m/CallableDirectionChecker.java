@@ -39,7 +39,7 @@ public class CallableDirectionChecker extends RoleChecker {
     public static boolean BYPASS = SystemProperties.getBoolean(BYPASS_PROP);
 
     @Override
-    public void check(RoleSensitive subject, @NonNull Collection<Role> expected) throws SecurityException {
+    public void check(RoleSensitive subject, @NonNull Collection<Role> expected) {
         final String name = subject.getClass().getName();
 
         if (expected.contains(Roles.MASTER)) {

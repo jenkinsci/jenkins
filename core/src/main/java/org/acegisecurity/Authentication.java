@@ -49,7 +49,7 @@ public interface Authentication extends Principal, Serializable {
 
     boolean isAuthenticated();
 
-    void setAuthenticated(boolean isAuthenticated) throws IllegalArgumentException;
+    void setAuthenticated(boolean isAuthenticated);
 
     static @NonNull Authentication fromSpring(@NonNull org.springframework.security.core.Authentication a) {
         Objects.requireNonNull(a);
@@ -90,7 +90,7 @@ public interface Authentication extends Principal, Serializable {
                 }
 
                 @Override
-                public void setAuthenticated(boolean isAuthenticated) throws IllegalArgumentException {
+                public void setAuthenticated(boolean isAuthenticated) {
                     a.setAuthenticated(isAuthenticated);
                 }
 

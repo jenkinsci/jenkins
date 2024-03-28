@@ -53,7 +53,7 @@ public interface DirectlyModifiableTopLevelItemGroup extends ModifiableTopLevelI
      * @throws IOException if adding fails
      * @throws IllegalArgumentException if {@link #canAdd} is false, or an item with this name already exists, or this item is as yet unnamed
      */
-    <I extends TopLevelItem> I add(I item, String name) throws IOException, IllegalArgumentException;
+    <I extends TopLevelItem> I add(I item, String name) throws IOException;
 
     /**
      * Removes an item from this group.
@@ -62,6 +62,6 @@ public interface DirectlyModifiableTopLevelItemGroup extends ModifiableTopLevelI
      * @throws IOException if removing fails
      * @throws IllegalArgumentException if this was not part of the group to begin with
      */
-    void remove(TopLevelItem item) throws IOException, IllegalArgumentException;
+    void remove(TopLevelItem item) throws IOException;
 
 }
