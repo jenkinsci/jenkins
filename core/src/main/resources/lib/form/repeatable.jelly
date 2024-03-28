@@ -150,6 +150,7 @@ THE SOFTWARE.
     <j:forEach var="loop" varStatus="loopStatus" items="${items}">
       <div class="repeated-chunk" name="${name}">
         <j:set var="${var}" value="${loop}" />
+        <j:set var="${varStatus}" value="${loopStatus}" />
         <div class="repeated-chunk__header">
           <j:if test="${!empty(header)}"><div class="${readOnlyMode ? '' : 'dd-handle'}"/>${header}</j:if>
         </div>
