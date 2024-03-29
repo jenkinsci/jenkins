@@ -42,7 +42,7 @@
     "sass": "1.72.0",
     "sass-loader": "14.1.1",
     "style-loader": "3.3.4",
-    "stylelint": "16.3.0",
+    "stylelint": "16.3.1",
     "stylelint-checkstyle-reporter": "1.0.0",
     "stylelint-config-standard": "36.0.0",
     "webpack": "5.91.0",
