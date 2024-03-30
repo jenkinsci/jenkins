@@ -70,7 +70,7 @@ public class WebSockets {
 
     /**
      * Variant of {@link #upgrade} that does not presume a {@link StaplerRequest}.
-     * @since TODO
+     * @since 2.446
      */
     public static void upgradeResponse(WebSocketSession session, HttpServletRequest req, HttpServletResponse rsp) throws IOException, ServletException {
         if (provider == null) {

@@ -45,7 +45,7 @@ THE SOFTWARE.
     </st:attribute>
     <st:attribute name="ref" use="required">
       The id of the target element to be copied
-      @since TODO
+      @since 2.449
     </st:attribute>
   </st:documentation>
 
