@@ -27,7 +27,7 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <l:layout title="${it.title} : ${path}">
     <st:include page="sidepanel.jelly" it="${it.owner}"/>
-    <l:breadcrumb title="${%Workspace}" />
+    <l:breadcrumb title="${it.title}" />
     <l:main-panel>
       <h1><l:breakable value="${it.title}"/></h1>
       <div class="dirTree">
