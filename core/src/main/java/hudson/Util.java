@@ -84,6 +84,7 @@ import java.text.NumberFormat;
 import java.text.ParseException;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -1873,7 +1874,14 @@ public class Util {
                 "<!--%n", Functions.htmlAttributeEscape(redirectUrl), message);
     }
 
+    /**
+     * @deprecated use {@link #XS_DATETIME_FORMATTER2}
+     */
+    @Deprecated
     public static final FastDateFormat XS_DATETIME_FORMATTER = FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ss'Z'", new SimpleTimeZone(0, "GMT"));
+
+    public static final DateTimeFormatter XS_DATETIME_FORMATTER2 =
+            DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'").withZone(ZoneOffset.UTC);
 
     // Note: RFC822 dates must not be localized!
     /**
