@@ -142,7 +142,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>2174.v111a_b_471784f</version>
+      <version>2182.v0138ccb_c0b_cb_</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -223,7 +223,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>junit</artifactId>
-      <version>1259.v65ffcef24a_88</version>
+      <version>1265.v65b_14fa_f12f0</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -329,10 +329,26 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>design-library</artifactId>
-                  <version>91.v257f311ea_1dc</version>
+                  <version>286.v6643a_81e02b_8</version>
                   <type>hpi</type>
                   <outputDirectory>${project.build.outputDirectory}/plugins</outputDirectory>
                   <destFileName>design-library.jpi</destFileName>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>io.jenkins.plugins</groupId>
+                  <artifactId>prism-api</artifactId>
+                  <version>1.29.0-13</version>
+                  <type>hpi</type>
+                  <outputDirectory>${project.build.outputDirectory}/plugins</outputDirectory>
+                  <destFileName>prism-api.jpi</destFileName>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>io.jenkins.plugins</groupId>
+                  <artifactId>bootstrap5-api</artifactId>
+                  <version>5.3.3-1</version>
+                  <type>hpi</type>
+                  <outputDirectory>${project.build.outputDirectory}/plugins</outputDirectory>
+                  <destFileName>bootstrap5-api.jpi</destFileName>
                 </artifactItem>
               </artifactItems>
             </configuration>

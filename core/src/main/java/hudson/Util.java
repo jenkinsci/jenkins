@@ -1884,6 +1884,10 @@ public class Util {
             DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'").withZone(ZoneOffset.UTC);
 
     // Note: RFC822 dates must not be localized!
+    /**
+     * @deprecated use {@link DateTimeFormatter#RFC_1123_DATE_TIME}
+     */
+    @Deprecated
     public static final FastDateFormat RFC822_DATETIME_FORMATTER
             = FastDateFormat.getInstance("EEE, dd MMM yyyy HH:mm:ss Z", Locale.US);
 

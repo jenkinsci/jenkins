@@ -117,6 +117,9 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -235,7 +238,7 @@ public class Functions {
     }
 
     public static String rfc822Date(Calendar cal) {
-        return Util.RFC822_DATETIME_FORMATTER.format(cal.getTime());
+        return DateTimeFormatter.RFC_1123_DATE_TIME.format(ZonedDateTime.ofInstant(cal.toInstant(), ZoneId.systemDefault()));
     }
 
     /**
