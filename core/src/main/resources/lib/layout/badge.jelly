@@ -26,16 +26,16 @@ THE SOFTWARE.
   <st:documentation>
     If a Badge is informed it will be displayed, otherwise nothing is done.
     
-    @since TODO
+    @since 2.445
     <st:attribute name="badge" type="jenkins.management.Badge">
       Badge to be displayed, accepts null value.
       
-      @since TODO
+      @since 2.445
     </st:attribute>
     <st:attribute name="class" use="optional">
       Additional class to be applied.
       
-      @since TODO
+      @since 2.445
     </st:attribute>
   </st:documentation>
   <j:if test="${attrs.badge != null}">

@@ -115,6 +115,7 @@ import org.jfree.data.category.CategoryDataset;
 import org.jfree.ui.RectangleInsets;
 import org.jvnet.localizer.Localizable;
 import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.Beta;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.args4j.Argument;
@@ -424,6 +425,16 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             this.nextBuildNumber = next;
             saveNextBuildNumber();
         }
+    }
+
+    /**
+     * Unconditionally sets the value of {@link #getNextBuildNumber}.
+     * Unlike {@link #updateNextBuildNumber} this does not save the number on disk,
+     * and does not check {@link #getLastBuild}.
+     */
+    @Restricted(Beta.class)
+    public void fastUpdateNextBuildNumber(int nextBuildNumber) {
+        this.nextBuildNumber = nextBuildNumber;
     }
 
     /**

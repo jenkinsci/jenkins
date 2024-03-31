@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.SortedSet;
@@ -203,7 +202,7 @@ public class TelemetryTest {
         @NonNull
         @Override
         public LocalDate getStart() {
-            return LocalDate.now().plus(1, ChronoUnit.DAYS);
+            return LocalDate.now().plusDays(1);
         }
 
         @NonNull
@@ -243,7 +242,7 @@ public class TelemetryTest {
         @NonNull
         @Override
         public LocalDate getEnd() {
-            return LocalDate.now().minus(1, ChronoUnit.DAYS);
+            return LocalDate.now().minusDays(1);
         }
 
         @NonNull

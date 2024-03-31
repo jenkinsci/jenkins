@@ -27,8 +27,8 @@ package jenkins.security.stapler;
 import static org.junit.Assert.assertFalse;
 
 import com.cloudbees.hudson.plugins.folder.Folder;
+import hudson.AboutJenkins;
 import hudson.model.TopLevelItem;
-import hudson.model.View;
 import java.awt.Point;
 import java.util.Arrays;
 import java.util.Collections;
@@ -269,9 +269,9 @@ public class GetterMethodFilterTest extends StaplerAbstractTest {
 
     @TestExtension
     public static class TestWithReturnCoreObject extends AbstractUnprotectedRootAction {
-        public View.People getPeople() {
+        public AboutJenkins getPeople() {
             // provide an index jelly view
-            return new View.People(Jenkins.get());
+            return new AboutJenkins();
         }
     }
 

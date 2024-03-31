@@ -483,7 +483,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
     private static class DoVetoersExist extends SlaveToMasterCallable<Boolean, IOException> {
         @Override
         public Boolean call() throws IOException {
-            return ProcessKillingVeto.all().size() > 0;
+            return !ProcessKillingVeto.all().isEmpty();
         }
     }
 

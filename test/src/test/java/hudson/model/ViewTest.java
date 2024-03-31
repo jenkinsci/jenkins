@@ -127,8 +127,8 @@ public class ViewTest {
         j.configRoundtrip(view);
 
         assertEquals("Some description", view.getDescription());
-        assertEquals(true, view.isFilterExecutors());
-        assertEquals(true, view.isFilterQueue());
+        assertTrue(view.isFilterExecutors());
+        assertTrue(view.isFilterQueue());
     }
 
     @Issue("JENKINS-7100")

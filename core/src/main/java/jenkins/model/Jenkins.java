@@ -1455,26 +1455,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         save();
     }
 
-    public View.People getPeople() {
-        return new View.People(this);
-    }
-
-    /**
-     * @since 1.484
-     */
-    public View.AsynchPeople getAsynchPeople() {
-        return new View.AsynchPeople(this);
-    }
-
-    /**
-     * Does this {@link View} has any associated user information recorded?
-     * @deprecated Potentially very expensive call; do not use from Jelly views.
-     */
-    @Deprecated
-    public boolean hasPeople() {
-        return View.People.isApplicable(items.values());
-    }
-
     public Api getApi() {
         /* Do not show "REST API" link in footer when on 404 error page */
         final StaplerRequest req = Stapler.getCurrentRequest();
