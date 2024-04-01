@@ -48,12 +48,10 @@ THE SOFTWARE.
               </div>
             </div>
 
-            <br/>
-
-            <div class="jenkins-form-label">${%ItemType.label}</div>
-            <div id="items" class="categories flat" role="radiogroup" aria-labelledby="Items" data-valid="false" />
-
-            <br/>
+            <div>
+              <div class="jenkins-form-label">${%ItemType.label}</div>
+              <div id="items" class="categories flat" role="radiogroup" aria-labelledby="Items" data-valid="false" />
+            </div>
 
             <j:if test="${!empty(app.items)}">
               <div class="item-copy">
@@ -66,8 +64,6 @@ THE SOFTWARE.
                 </div>
               </div>
             </j:if>
-
-            <br/>
 
             <s:bottomButtonBar>
               <st:include page="newJobButtonBar.jelly"/>

@@ -4,6 +4,12 @@
   max-width: 850px;
   margin: auto;
 
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--section-padding);
+  }
+
   .item-copy {
     position: relative;
 
