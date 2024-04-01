@@ -70,33 +70,9 @@ $.when(getItems()).done(function (data) {
     }
 
     function hideInputHelp(context) {
-      $(".input-help", context).addClass("input-message-disabled");
     }
 
     function showInputHelp(context) {
-      $(".input-help", context).removeClass("input-message-disabled");
-    }
-
-    // About Scroll-linked effect: https://developer.mozilla.org/en-US/docs/Mozilla/Performance/Scroll-linked_effects
-    function doSticky() {
-      var decorator = $("form .footer .btn-decorator");
-      var pos = decorator.offset();
-      var vpH = $(window).height();
-      if (pos.top >= vpH) {
-        decorator.css({ position: "fixed" });
-      }
-
-      $(window).scroll(function () {
-        var footer = $("form .footer");
-        var ref1 = decorator.offset().top + decorator.outerHeight();
-        var ref2 = footer.offset().top + footer.outerHeight();
-        var vpH = $(window).height();
-        if (ref2 > vpH + $(window).scrollTop()) {
-          decorator.css({ position: "fixed" });
-        } else if (ref2 - 1 <= ref1) {
-          decorator.css({ position: "absolute" });
-        }
-      });
     }
 
     function enableSubmit(status) {
@@ -173,6 +149,9 @@ $.when(getItems()).done(function (data) {
       item.setAttribute("role", "radio");
       item.setAttribute("aria-checked", "false");
 
+      var iconDiv = drawIcon(elem);
+      item.appendChild(iconDiv);
+
       var label = item.appendChild(document.createElement("label"));
 
       var radio = label.appendChild(document.createElement("input"));
@@ -188,9 +167,6 @@ $.when(getItems()).done(function (data) {
       var desc = item.appendChild(document.createElement("div"));
       desc.className = "desc";
       desc.innerHTML = checkForLink(elem.description);
-
-      var iconDiv = drawIcon(elem);
-      item.appendChild(iconDiv);
 
       function select(e) {
         e.preventDefault();
@@ -228,7 +204,6 @@ $.when(getItems()).done(function (data) {
         iconDiv.className = "icon";
 
         var img1 = document.createElement("img");
-        img1.className = elem.iconClassName + " icon-xlg";
         img1.src = elem.iconQualifiedUrl;
         iconDiv.appendChild(img1);
 
@@ -373,8 +348,5 @@ $.when(getItems()).done(function (data) {
 
     // Disable the submit button
     enableSubmit(false);
-
-    // Do sticky the form buttons
-    doSticky();
   });
 });
