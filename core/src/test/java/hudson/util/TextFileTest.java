@@ -8,7 +8,6 @@ import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.StringUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -80,7 +79,7 @@ public class TextFileTest {
         }
 
         String tail = t.fastTail(35, Charset.forName("Shift_JIS"));
-        assertEquals(StringUtils.repeat("\u30e2", 34) + "\n", tail);
+        assertEquals("\u30e2".repeat(34) + "\n", tail);
         assertEquals(35, tail.length());
 
         // add one more byte to force fastTail to read from one byte ahead
@@ -91,7 +90,7 @@ public class TextFileTest {
         }
 
         tail = t.fastTail(35, Charset.forName("Shift_JIS"));
-        assertEquals(StringUtils.repeat("\u30e2", 33) + "\n\n", tail);
+        assertEquals("\u30e2".repeat(33) + "\n\n", tail);
         assertEquals(35, tail.length());
     }
 
