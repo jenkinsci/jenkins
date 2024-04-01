@@ -316,6 +316,26 @@ public class RobustReflectionConverter implements Converter {
     }
 
 
+    private Object unmarshalValue(final UnmarshallingContext context, final Object result, final Class classDefiningField, final String fieldName, Class type, boolean fieldExistsInClass) {
+        Object value;
+        if (fieldExistsInClass) {
+            Field field = reflectionProvider.getField(result.getClass(), fieldName);
+            value = unmarshalField(context, result, type, field);
+            // TODO the reflection provider should implicitCollectionsObject have returned the proper field in first place ....
+            Class definedType = reflectionProvider.getFieldType(result, fieldName, classDefiningField);
+            if (!definedType.isPrimitive()) {
+                type = definedType;
+            }
+        } else {
+            value = context.convertAnother(result, type);
+        }
+
+        if (value != null && !type.isAssignableFrom(value.getClass())) {
+            LOGGER.warning("Cannot convert type " + value.getClass().getName() + " to type " + type.getName());
+            return null;
+        }
+        return value;
+    }
 
     public Object doUnmarshal(final Object result, final HierarchicalStreamReader reader, final UnmarshallingContext context) {
         final SeenFields seenFields = new SeenFields();
@@ -350,23 +370,8 @@ public class RobustReflectionConverter implements Converter {
                 boolean fieldExistsInClass = !implicitCollectionHasSameName && fieldDefinedInClass(result, fieldName);
 
                 Class type = determineType(reader, fieldExistsInClass, result, fieldName, classDefiningField);
-                final Object value;
-                if (fieldExistsInClass) {
-                    Field field = reflectionProvider.getField(result.getClass(), fieldName);
-                    value = unmarshalField(context, result, type, field);
-                    // TODO the reflection provider should implicitCollectionsObject have returned the proper field in first place ....
-                    Class definedType = reflectionProvider.getFieldType(result, fieldName, classDefiningField);
-                    if (!definedType.isPrimitive()) {
-                        type = definedType;
-                    }
-                } else {
-                    value = context.convertAnother(result, type);
-                }
-
-                if (value != null && !type.isAssignableFrom(value.getClass())) {
-                    LOGGER.warning("Cannot convert type " + value.getClass().getName() + " to type " + type.getName());
-                    // behave as if we didn't see this element
-                } else {
+                final Object value = unmarshalValue(context, result, classDefiningField, fieldName, type, fieldExistsInClass);
+                if(value != null){
                     if (fieldExistsInClass) {
                         reflectionProvider.writeField(result, fieldName, value, classDefiningField);
                         seenFields.add(classDefiningField, fieldName);
