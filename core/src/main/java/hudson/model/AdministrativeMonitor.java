@@ -36,9 +36,7 @@ import java.util.Set;
 import jenkins.model.Jenkins;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.stapler.StaplerProxy;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.*;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
@@ -102,6 +100,11 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
     protected AdministrativeMonitor(String id) {
         this.id = id;
     }
+
+    public HttpResponse doAct(@QueryParameter String no) throws IOException{
+        //send the traffic to  /manage by default, can be overridden for nuanced checks.
+        return HttpResponses.redirectViaContextPath("/manage");
+    };
 
     protected AdministrativeMonitor() {
         this.id = this.getClass().getName();
