@@ -97,6 +97,11 @@ public class FormApply {
     /**
      * Generates the response for the asynchronous background form submission (AKA the Apply button),
      * that will show a notification of certain type and with provided message.
+     *
+     * @param message a message to display in the popup. Only plain text is supported.
+     * @param notificationType type of notification. See {@link NotificationType} for supported types. Defines the notification
+     *                         color and the icon that will be shown.
+     *
      * @since TODO
      */
     public static HttpResponseException showNotification(final String message, final NotificationType notificationType) {
