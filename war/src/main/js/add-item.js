@@ -59,7 +59,6 @@ $.when(getItems()).done(function (data) {
         $(messageId, context).text("» " + message);
       }
       cleanValidationMessages(context);
-      hideInputHelp(context);
       $(messageId).removeClass("input-message-disabled");
     }
 
@@ -67,12 +66,6 @@ $.when(getItems()).done(function (data) {
       $(context)
         .find(".input-validation-message")
         .addClass("input-message-disabled");
-    }
-
-    function hideInputHelp(context) {
-    }
-
-    function showInputHelp(context) {
     }
 
     function enableSubmit(status) {
@@ -279,7 +272,6 @@ $.when(getItems()).done(function (data) {
             );
           } else {
             cleanValidationMessages(".add-item-name");
-            showInputHelp(".add-item-name");
             setFieldValidationStatus("name", true);
             if (getFormValidationStatus()) {
               enableSubmit(true);
