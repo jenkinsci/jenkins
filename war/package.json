@@ -23,9 +23,9 @@
     "lint": "yarn lint:js && yarn lint:css"
   },
   "devDependencies": {
-    "@babel/cli": "7.23.9",
-    "@babel/core": "7.23.9",
-    "@babel/preset-env": "7.23.9",
+    "@babel/cli": "7.24.1",
+    "@babel/core": "7.24.3",
+    "@babel/preset-env": "7.24.3",
     "babel-loader": "9.1.3",
     "clean-webpack-plugin": "4.0.0",
     "css-loader": "6.10.0",
@@ -33,19 +33,19 @@
     "eslint": "8.57.0",
     "eslint-config-prettier": "9.1.0",
     "handlebars-loader": "1.7.3",
-    "mini-css-extract-plugin": "2.8.0",
-    "postcss": "8.4.35",
-    "postcss-loader": "8.1.0",
-    "postcss-preset-env": "9.4.0",
+    "mini-css-extract-plugin": "2.8.1",
+    "postcss": "8.4.38",
+    "postcss-loader": "8.1.1",
+    "postcss-preset-env": "9.5.2",
     "postcss-scss": "4.0.9",
     "prettier": "3.2.5",
-    "sass": "1.71.1",
+    "sass": "1.72.0",
     "sass-loader": "14.1.1",
     "style-loader": "3.3.4",
-    "stylelint": "16.2.1",
+    "stylelint": "16.3.1",
     "stylelint-checkstyle-reporter": "1.0.0",
     "stylelint-config-standard": "36.0.0",
-    "webpack": "5.90.3",
+    "webpack": "5.91.0",
     "webpack-cli": "5.1.4",
     "webpack-remove-empty-scripts": "1.0.4"
   },
@@ -62,5 +62,5 @@
     "defaults",
     "not IE 11"
   ],
-  "packageManager": "yarn@4.1.0"
+  "packageManager": "yarn@4.1.1"
 }

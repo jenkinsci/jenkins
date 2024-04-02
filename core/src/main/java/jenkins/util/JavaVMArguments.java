@@ -1,6 +1,6 @@
 package jenkins.util;
 
-import com.google.common.primitives.Ints;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Functions;
 import hudson.util.ProcessTree;
 import java.lang.management.ManagementFactory;
@@ -20,6 +20,7 @@ public class JavaVMArguments {
     /**
      * Gets the process argument list of the current process.
      */
+    @NonNull
     public static List<String> current() {
         ProcessHandle.Info info = ProcessHandle.current().info();
         if (info.command().isPresent() && info.arguments().isPresent()) {
@@ -30,7 +31,7 @@ public class JavaVMArguments {
             return args;
         } else if (Functions.isGlibcSupported()) {
             // Native approach
-            int pid = Ints.checkedCast(ProcessHandle.current().pid());
+            int pid = Math.toIntExact(ProcessHandle.current().pid());
             ProcessTree.OSProcess process = ProcessTree.get().get(pid);
             if (process != null) {
                 List<String> args = process.getArguments();

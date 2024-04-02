@@ -84,7 +84,7 @@ public abstract class AbstractPasswordBasedSecurityRealm extends SecurityRealm {
 
     /**
      * A public alias of @{link {@link #authenticate2(String, String)}.
-     * @since TODO
+     * @since 2.444
      */
     @Restricted(Beta.class)
     public final UserDetails authenticateByPassword(String username, String password) throws AuthenticationException {

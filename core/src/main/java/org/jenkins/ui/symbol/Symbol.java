@@ -15,7 +15,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
 
 /**
  * Helper class to load symbols from Jenkins core or plugins.
@@ -50,24 +49,24 @@ public final class Symbol {
         String pluginName = request.getPluginName();
         String id = request.getId();
 
-        String identifier = StringUtils.defaultIfBlank(pluginName, "core");
+        String identifier = (pluginName == null || pluginName.isBlank()) ? "core" : pluginName;
 
         String symbol = SYMBOLS
                 .computeIfAbsent(identifier, key -> new ConcurrentHashMap<>())
                 .computeIfAbsent(name, key -> loadSymbol(identifier, key));
-        if (StringUtils.isNotBlank(tooltip) && StringUtils.isBlank(htmlTooltip)) {
+        if ((tooltip != null && !tooltip.isBlank()) && (htmlTooltip == null || htmlTooltip.isBlank())) {
             symbol = symbol.replaceAll("<svg", "<svg tooltip=\"" + Functions.htmlAttributeEscape(tooltip) + "\"");
         }
-        if (StringUtils.isNotBlank(htmlTooltip)) {
+        if (htmlTooltip != null && !htmlTooltip.isBlank()) {
             symbol = symbol.replaceAll("<svg", "<svg data-html-tooltip=\"" + Functions.htmlAttributeEscape(htmlTooltip) + "\"");
         }
-        if (StringUtils.isNotBlank(id)) {
+        if (id != null && !id.isBlank()) {
             symbol = symbol.replaceAll("<svg", "<svg id=\"" + Functions.htmlAttributeEscape(id) + "\"");
         }
-        if (StringUtils.isNotBlank(classes)) {
+        if (classes != null && !classes.isBlank()) {
             symbol = symbol.replaceAll("<svg", "<svg class=\"" + Functions.htmlAttributeEscape(classes) + "\"");
         }
-        if (StringUtils.isNotBlank(title)) {
+        if (title != null && !title.isBlank()) {
             symbol = "<span class=\"jenkins-visually-hidden\">" + Util.xmlEscape(title) + "</span>" + symbol;
         }
         return symbol;

@@ -61,7 +61,6 @@ import java.util.logging.Logger;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
-import org.apache.commons.lang.StringUtils;
 import org.glassfish.tyrus.client.ClientManager;
 import org.glassfish.tyrus.client.ClientProperties;
 import org.glassfish.tyrus.client.SslEngineConfigurator;
@@ -245,9 +244,9 @@ public class CLI {
 
         if (auth == null && bearer == null) {
             // -auth option not set
-            if (StringUtils.isNotBlank(userIdEnv) && StringUtils.isNotBlank(tokenEnv)) {
-                auth = StringUtils.defaultString(userIdEnv).concat(":").concat(StringUtils.defaultString(tokenEnv));
-            } else if (StringUtils.isNotBlank(userIdEnv) || StringUtils.isNotBlank(tokenEnv)) {
+            if ((userIdEnv != null && !userIdEnv.isBlank()) && (tokenEnv != null && !tokenEnv.isBlank())) {
+                auth = userIdEnv.concat(":").concat(tokenEnv);
+            } else if ((userIdEnv != null && !userIdEnv.isBlank()) || (tokenEnv != null && !tokenEnv.isBlank())) {
                 printUsage(Messages.CLI_BadAuth());
                 return -1;
             } // Otherwise, none credentials were set

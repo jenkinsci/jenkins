@@ -117,6 +117,9 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -163,7 +166,6 @@ import org.apache.commons.jelly.Script;
 import org.apache.commons.jelly.XMLOutput;
 import org.apache.commons.jexl.parser.ASTSizeFunction;
 import org.apache.commons.jexl.util.Introspector;
-import org.apache.commons.lang.StringUtils;
 import org.jenkins.ui.icon.Icon;
 import org.jenkins.ui.icon.IconSet;
 import org.jvnet.tiger_types.Types;
@@ -219,12 +221,12 @@ public class Functions {
     }
 
     public static String xsDate(Calendar cal) {
-        return Util.XS_DATETIME_FORMATTER.format(cal.getTime());
+        return Util.XS_DATETIME_FORMATTER2.format(cal.toInstant());
     }
 
     @Restricted(NoExternalUse.class)
     public static String iso8601DateTime(Date date) {
-        return Util.XS_DATETIME_FORMATTER.format(date);
+        return Util.XS_DATETIME_FORMATTER2.format(date.toInstant());
     }
 
     /**
@@ -236,7 +238,7 @@ public class Functions {
     }
 
     public static String rfc822Date(Calendar cal) {
-        return Util.RFC822_DATETIME_FORMATTER.format(cal.getTime());
+        return DateTimeFormatter.RFC_1123_DATE_TIME.format(ZonedDateTime.ofInstant(cal.toInstant(), ZoneId.systemDefault()));
     }
 
     /**
@@ -968,7 +970,7 @@ public class Functions {
     public static String getFooterURL() {
         if (footerURL == null) {
             footerURL = SystemProperties.getString("hudson.footerURL");
-            if (StringUtils.isBlank(footerURL)) {
+            if (footerURL == null || footerURL.isBlank()) {
                 footerURL = "https://www.jenkins.io/";
             }
         }
@@ -2194,7 +2196,7 @@ public class Functions {
             int firstPeriod = part.indexOf(".");
             return slash > 0 && firstPeriod > 0 && slash < firstPeriod;
         }).collect(Collectors.joining(" "));
-        if (StringUtils.isBlank(views)) {
+        if (views == null || views.isBlank()) {
             // fallback to full thread name if there are no apparent views
             return threadName;
         }
@@ -2415,7 +2417,7 @@ public class Functions {
     }
 
     private static @NonNull String filterIconNameClasses(@NonNull String classNames) {
-        return Arrays.stream(StringUtils.split(classNames, ' '))
+        return Arrays.stream(classNames.split(" "))
             .filter(className -> className.startsWith("icon-"))
             .collect(Collectors.joining(" "));
     }
