@@ -40,7 +40,8 @@ THE SOFTWARE.
   <properties>
     <asm.version>9.7</asm.version>
     <slf4jVersion>2.0.12</slf4jVersion>
-    <stapler.version>1839.ved17667b_a_eb_5</stapler.version>
+    <!-- TODO https://github.com/jenkinsci/stapler/pull/517 -->
+    <stapler.version>1843.vfa_d6d43e70a_6</stapler.version>
     <groovy.version>2.4.21</groovy.version>
   </properties>
 
