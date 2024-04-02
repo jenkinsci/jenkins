@@ -62,12 +62,12 @@ THE SOFTWARE.
 	    </div>
 	  </j:if>
 	  </div>
-	  <div class="pane build-controls">
-	    <div class="build-stop">
-	      <j:if test="${item.hasCancelPermission()}">
+	  <div class="pane build-badges">
+	    <j:if test="${item.hasCancelPermission()}">
+        <div class="run-badge">
 		<l:stopButton href="${rootURL}/queue/cancelItem?id=${item.id}" alt="${%Cancel this build}"/>
-	      </j:if>
-	    </div>
+        </div>
+	    </j:if>
 	  </div>
 	  <div class="left-bar"></div>
 	</td>

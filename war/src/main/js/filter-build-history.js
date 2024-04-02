@@ -20,8 +20,13 @@ const pageOne = buildHistoryPageNav.querySelector(".pageOne");
 const pageUp = buildHistoryPageNav.querySelector(".pageUp");
 const pageDown = buildHistoryPageNav.querySelector(".pageDown");
 
-const leftRightPadding = 4;
+const leftRightPadding = 8; // the left + right padding of a build-row-cell
+const multiLinePadding = 20; // the left padding of the second/third line
+const tabletBreakpoint = 900; // the breakpoint between tablet view and normal view,
+// keep in sync with _breakpoints.scss
 const updateBuildsRefreshInterval = 5000;
+
+let lastClientWidth = 0;
 
 function updateBuilds(params) {
   if (isPageVisible()) {
@@ -169,12 +174,23 @@ function togglePageUpDown() {
   }
 }
 
-function checkRowCellOverflows(row) {
+/*
+ * Arranges name, details (timestamp) and the badges for a build
+ * so that it makes best use of the limited available space.
+ * There are 6 possibilities how the parts can be arranged
+ * 1. put everything in one row, with the name having a fixed width so that details are aligned.
+ * 2. put name and badges in first row, details in first row
+ * 3. put name in first row, details and badges in second row
+ * 4. put name and details in first row, badges in second row
+ * 5. put everything in separate rows
+ * 6. there are no badges and name and details don't fit in one row
+ */
+function checkRowCellOverflows(row, recalculate = false) {
   if (!row) {
     return;
   }
 
-  if (row.classList.contains("overflow-checked")) {
+  if (row.classList.contains("overflow-checked") && !recalculate) {
     // already done.
     return;
   }
@@ -195,9 +211,6 @@ function checkRowCellOverflows(row) {
     var div = document.createElement("div");
 
     div.classList.add("block");
-    div.classList.add("wrap");
-    el1.classList.add("wrapped");
-    el2.classList.add("wrapped");
 
     el1.parentNode.insertBefore(div, el1);
     el1.parentNode.removeChild(el1);
@@ -207,40 +220,51 @@ function checkRowCellOverflows(row) {
 
     return div;
   }
-  function blockUnwrap(element) {
-    element.querySelectorAll(".wrapped").forEach(function (wrappedEl) {
-      wrappedEl.parentNode.removeChild(wrappedEl);
-      element.parentNode.insertBefore(wrappedEl, element);
-      wrappedEl.classList.remove("wrapped");
-    });
-    element.parentNode.removeChild(element);
-  }
 
+  var cell = row.querySelector(".build-row-cell");
   var buildName = row.querySelector(".build-name");
   var buildDetails = row.querySelector(".build-details");
-
+  var leftBar = row.querySelector(".left-bar");
   if (!buildName || !buildDetails) {
     return;
   }
 
-  var buildControls = row.querySelector(".build-controls");
+  var buildBadges = row.querySelector(".build-badges");
+  if (buildBadges.childElementCount === 0) {
+    buildBadges.remove();
+    buildBadges = null;
+  }
+
   var desc = row.querySelector(".desc");
 
   function resetCellOverflows() {
     markSingleline();
 
-    // undo block wraps
-    row.querySelectorAll(".block.wrap").forEach(function (blockWrap) {
-      blockUnwrap(blockWrap);
-    });
-
+    cell.insertBefore(buildName, leftBar);
+    cell.insertBefore(buildDetails, leftBar);
+    if (buildBadges) {
+      cell.insertBefore(buildBadges, leftBar);
+    }
     buildName.classList.remove("block");
+    buildName.classList.remove("block");
+    buildName.classList.remove("indent-multiline");
     buildName.removeAttribute("style");
     buildDetails.classList.remove("block");
     buildDetails.removeAttribute("style");
-    if (buildControls) {
-      buildControls.classList.remove("block");
-      buildDetails.removeAttribute("style");
+    buildDetails.classList.remove("indent-multiline");
+    if (buildBadges) {
+      buildBadges.classList.remove("block");
+      buildBadges.removeAttribute("style");
+      buildBadges.classList.remove("indent-multiline");
+    }
+    const nameBadges = cell.querySelector(".build-name-badges");
+    if (nameBadges) {
+      nameBadges.remove();
+    }
+
+    const detailsBadges = cell.querySelector(".build-details-badges");
+    if (detailsBadges) {
+      detailsBadges.remove();
     }
   }
 
@@ -252,208 +276,164 @@ function checkRowCellOverflows(row) {
     markMultiline();
   }
 
+  //
+  function getElementOverflowData(element, width) {
+    // First we force it to wrap so we can get those dimension.
+    // Then we force it to "nowrap", so we can get those dimension.
+    // We can then compare the two sets, which will indicate if
+    // wrapping is potentially happening, or not.
+    // The scrollWidth is calculated based on the content and not the actual
+    // width of the element
+
+    // Force it to wrap.
+    const oldWidth = element.style.width;
+    element.style.width = width + "px";
+    element.classList.add("force-wrap");
+    var wrappedClientHeight = element.clientHeight;
+    element.classList.remove("force-wrap");
+
+    // Force it to nowrap. Return the comparisons.
+    element.classList.add("force-nowrap");
+    element.style.width = "fit-content";
+    var nowrapClientHeight = element.clientHeight;
+    try {
+      var overflowParams = {
+        element: element,
+        scrollWidth: element.scrollWidth + 5, // 1 for rounding + 4 for left/right padding
+        isOverflowed: wrappedClientHeight > nowrapClientHeight,
+      };
+      return overflowParams;
+    } finally {
+      element.classList.remove("force-nowrap");
+      element.style.width = oldWidth;
+    }
+  }
+
+  // eslint-disable-next-line no-inner-declarations
+  function expandLeftWithRight(
+    leftCellOverFlowParams,
+    rightCellOverflowParams,
+  ) {
+    // Float them left and right...
+    leftCellOverFlowParams.element.style.float = "left";
+    rightCellOverflowParams.element.style.float = "right";
+
+    leftCellOverFlowParams.element.style.width =
+      leftCellOverFlowParams.scrollWidth + "px";
+    rightCellOverflowParams.element.style.width =
+      rightCellOverflowParams.scrollWidth + "px";
+  }
+
   var rowWidth = buildHistoryContainer.clientWidth;
   var usableRowWidth = rowWidth - leftRightPadding * 2;
-  var nameOverflowParams = getElementOverflowParams(buildName);
-  var detailsOverflowParams = getElementOverflowParams(buildDetails);
 
-  var controlsOverflowParams;
-  if (buildControls) {
-    controlsOverflowParams = getElementOverflowParams(buildControls);
+  let nameWidth = usableRowWidth * 0.32;
+  let detailsWidth = usableRowWidth * 0.5;
+  let badgesWidth = usableRowWidth * 0.18;
+
+  var nameOverflowParams = getElementOverflowData(buildName, nameWidth);
+  var detailsOverflowParams = getElementOverflowData(
+    buildDetails,
+    detailsWidth,
+  );
+  var badgesOverflowParams;
+  if (buildBadges) {
+    badgesOverflowParams = getElementOverflowData(buildBadges, badgesWidth);
+  } else {
+    badgesOverflowParams = {
+      element: null,
+      scrollWidth: 0,
+      isOverflowed: false,
+    };
   }
 
-  function fitToControlsHeight(element) {
-    if (buildControls) {
-      if (element.clientHeight < buildControls.clientHeight) {
-        element.style.height = buildControls.clientHeight.toString() + "px";
-      }
-    }
-  }
-
-  function setBuildControlWidths() {
-    if (buildControls) {
-      var buildBadge = buildControls.querySelector(".build-badge");
-
-      if (buildBadge) {
-        var buildControlsWidth = buildControls.clientWidth;
-        var buildBadgeWidth;
-
-        var buildStop = buildControls.querySelector(".build-stop");
-        if (buildStop) {
-          buildStop.style.width = "24px";
-          // Minus 24 for the buildStop width,
-          // minus 4 for left+right padding in the controls container
-          buildBadgeWidth = buildControlsWidth - 24 - leftRightPadding;
-          if (buildControls.classList.contains("indent-multiline")) {
-            buildBadgeWidth = buildBadgeWidth - 20;
-          }
-          buildBadge.style.width = buildBadgeWidth + "px";
-        } else {
-          buildBadge.style.width = "100%";
-        }
-      }
-      controlsOverflowParams = getElementOverflowParams(buildControls);
-    }
-  }
-  setBuildControlWidths();
-
-  var controlsRepositioned = false;
-
-  if (nameOverflowParams.isOverflowed || detailsOverflowParams.isOverflowed) {
-    // At least one of the cells (name or details) needs to move to a row of its own.
-
-    markMultiline();
-
-    if (buildControls) {
-      // We have build controls. Lets see can we find a combination that allows the build controls
-      // to sit beside either the build name or the build details.
-
-      var badgesOverflowing = false;
-      var nameLessThanHalf = true;
-      var detailsLessThanHalf = true;
-      var buildBadge = buildControls.querySelector(".build-badge");
-      if (buildBadge) {
-        var badgeOverflowParams = getElementOverflowParams(buildBadge);
-
-        if (badgeOverflowParams.isOverflowed) {
-          // The badges are also overflowing. In this case, we will only attempt to
-          // put the controls on the same line as the name or details (see below)
-          // if the name or details is using less than half the width of the build history
-          // widget.
-          badgesOverflowing = true;
-          nameLessThanHalf =
-            nameOverflowParams.scrollWidth < usableRowWidth / 2;
-          detailsLessThanHalf =
-            detailsOverflowParams.scrollWidth < usableRowWidth / 2;
-        }
-      }
-      // eslint-disable-next-line no-inner-declarations
-      function expandLeftWithRight(
-        leftCellOverFlowParams,
-        rightCellOverflowParams,
-      ) {
-        // Float them left and right...
-        leftCellOverFlowParams.element.style.float = "left";
-        rightCellOverflowParams.element.style.float = "right";
-
-        if (
-          !leftCellOverFlowParams.isOverflowed &&
-          !rightCellOverflowParams.isOverflowed
-        ) {
-          // If neither left nor right are overflowed, just leave as is and let them float left and right.
-          return;
-        }
-        if (
-          leftCellOverFlowParams.isOverflowed &&
-          !rightCellOverflowParams.isOverflowed
-        ) {
-          leftCellOverFlowParams.element.style.width =
-            leftCellOverFlowParams.scrollWidth + "px";
-          return;
-        }
-        if (
-          !leftCellOverFlowParams.isOverflowed &&
-          rightCellOverflowParams.isOverflowed
-        ) {
-          rightCellOverflowParams.element.style.width =
-            rightCellOverflowParams.scrollWidth + "px";
-          return;
-        }
-      }
-
-      if (
-        (!badgesOverflowing || nameLessThanHalf) &&
-        nameOverflowParams.scrollWidth + controlsOverflowParams.scrollWidth <=
-          usableRowWidth
-      ) {
-        // Build name and controls can go on one row (first row). Need to move build details down
-        // to a row of its own (second row) by making it a block element, forcing it to wrap. If there
-        // are controls, we move them up to position them after the build name by inserting before the
-        // build details.
-        buildDetails.classList.add("block");
-        buildControls.parentNode.removeChild(buildControls);
-        buildDetails.parentNode.insertBefore(buildControls, buildDetails);
-        var wrap = blockWrap(buildName, buildControls);
-        wrap.classList.add("build-name-controls");
-        indentMultiline(buildDetails);
-        nameOverflowParams = getElementOverflowParams(buildName); // recalculate
-        expandLeftWithRight(nameOverflowParams, controlsOverflowParams);
-        setBuildControlWidths();
-        fitToControlsHeight(buildName);
-      } else if (
-        (!badgesOverflowing || detailsLessThanHalf) &&
-        detailsOverflowParams.scrollWidth +
-          controlsOverflowParams.scrollWidth <=
-          usableRowWidth
-      ) {
-        // Build details and controls can go on one row. Need to make the
-        // build name (first field) a block element, forcing the details and controls to wrap
-        // onto the next row (creating a second row).
-        buildName.classList.add("block");
-        wrap = blockWrap(buildDetails, buildControls);
-        indentMultiline(wrap);
-        wrap.classList.add("build-details-controls");
-        detailsOverflowParams = getElementOverflowParams(buildDetails); // recalculate
-        expandLeftWithRight(detailsOverflowParams, controlsOverflowParams);
-        setBuildControlWidths();
-        fitToControlsHeight(buildDetails);
-      } else {
-        // No suitable combo fits on a row. All need to go on rows of their own.
-        buildName.classList.add("block");
-        buildDetails.classList.add("block");
-        buildControls.classList.add("block");
-        indentMultiline(buildDetails);
-        indentMultiline(buildControls);
-        nameOverflowParams = getElementOverflowParams(buildName); // recalculate
-        detailsOverflowParams = getElementOverflowParams(buildDetails); // recalculate
-        setBuildControlWidths();
-      }
-      controlsRepositioned = true;
-    } else {
-      buildName.classList.add("block");
-      buildDetails.classList.add("block");
-      indentMultiline(buildDetails);
-    }
-  }
-
-  if (buildControls && !controlsRepositioned) {
-    buildBadge = buildControls.querySelector(".build-badge");
-    if (buildBadge) {
-      badgeOverflowParams = getElementOverflowParams(buildBadge);
-
-      if (badgeOverflowParams.isOverflowed) {
-        markMultiline();
-        indentMultiline(buildControls);
-        buildControls.classList.add("block");
-        controlsRepositioned = true;
-        setBuildControlWidths();
-      }
-    }
+  function setBuildBadgesWidths() {
+    buildBadges.style.width = "100%";
   }
 
   if (
     !nameOverflowParams.isOverflowed &&
-    !detailsOverflowParams.isOverflowed &&
-    !controlsRepositioned
+    nameWidth +
+      detailsOverflowParams.scrollWidth +
+      badgesOverflowParams.scrollWidth <
+      usableRowWidth
   ) {
-    fitToControlsHeight(buildName);
-    fitToControlsHeight(buildDetails);
+    // Everything fits in one row
+    buildDetails.style.width = "fit-content";
+    buildBadges.style.float = "right";
+    buildBadges.style.width = "fit-content";
+  } else {
+    markMultiline();
+    if (buildBadges) {
+      // We have build badges. Lets see can we find a combination that allows the build badges
+      // to sit beside either the build name or the build details.
+
+      if (
+        nameOverflowParams.scrollWidth + badgesOverflowParams.scrollWidth <=
+        usableRowWidth
+      ) {
+        // Build name and badges can go on one row (first row). Need to move build details down
+        // to a row of its own (second row) by making it a block element, forcing it to wrap. If there
+        // are badges, we move them up to position them after the build name by inserting before the
+        // build details.
+        buildDetails.classList.add("block");
+        buildBadges.parentNode.removeChild(buildBadges);
+        buildDetails.parentNode.insertBefore(buildBadges, buildDetails);
+        var wrap = blockWrap(buildName, buildBadges);
+        wrap.classList.add("build-name-badges");
+        indentMultiline(buildDetails);
+        expandLeftWithRight(nameOverflowParams, badgesOverflowParams);
+      } else if (
+        detailsOverflowParams.scrollWidth +
+          badgesOverflowParams.scrollWidth +
+          multiLinePadding <=
+        usableRowWidth
+      ) {
+        // Build details and badges can go on one row. Need to make the
+        // build name (first field) a block element, forcing the details and badges to wrap
+        // onto the next row (creating a second row).
+        buildName.classList.add("block");
+        wrap = blockWrap(buildDetails, buildBadges);
+        indentMultiline(wrap);
+        wrap.classList.add("build-details-badges");
+        expandLeftWithRight(detailsOverflowParams, badgesOverflowParams);
+      } else if (
+        !nameOverflowParams.isOverflowed &&
+        nameWidth + detailsOverflowParams.scrollWidth < usableRowWidth
+      ) {
+        // Build name and details can go on one row. Make badges take full row
+        // it goes on separate row
+        indentMultiline(buildBadges);
+        setBuildBadgesWidths();
+      } else {
+        // No suitable combo fits on a row. All need to go on rows of their own.
+        buildName.classList.add("block");
+        buildDetails.classList.add("block");
+        buildBadges.classList.add("block");
+        indentMultiline(buildDetails);
+        indentMultiline(buildBadges);
+        setBuildBadgesWidths();
+      }
+    } else {
+      // name and details don't fit in one row
+      indentMultiline(buildDetails);
+      buildName.classList.add("block");
+    }
   }
 
   row.classList.add("overflow-checked");
 }
 
-function checkAllRowCellOverflows() {
+function checkAllRowCellOverflows(recalculate = false) {
   if (isRunAsTest) {
     return;
   }
-
   var dataTable = getDataTable(buildHistoryContainer);
   var rows = dataTable.rows;
 
   for (var i = 0; i < rows.length; i++) {
     var row = rows[i];
-    checkRowCellOverflows(row);
+    checkRowCellOverflows(row, recalculate);
   }
 }
 
@@ -524,6 +504,31 @@ function loadPage(params, focusOnSearch) {
   });
 }
 
+const handleResize = function () {
+  checkAllRowCellOverflows(true);
+};
+
+const debouncedResizer = debounce(handleResize, 500);
+
+addEventListener("resize", function () {
+  const newClientWidth = document.body.clientWidth;
+  // the sidepanel has 2 sizes depending on the clientWidth
+  // > tabletBreakpoint: the sidepanel has fixed width
+  // <= tabletBreakpoint: the sidepanel takes the complete width
+  if (
+    lastClientWidth > tabletBreakpoint &&
+    newClientWidth > tabletBreakpoint &&
+    lastClientWidth != newClientWidth
+  ) {
+    // we're in a range of the clientWidth were changes do not affect the layout
+    // or the width hasn't changed.
+    lastClientWidth = newClientWidth;
+    return;
+  }
+  lastClientWidth = newClientWidth;
+  debouncedResizer();
+});
+
 const handleFilter = function () {
   loadPage({}, true);
 };
@@ -531,6 +536,7 @@ const handleFilter = function () {
 const debouncedFilter = debounce(handleFilter, 300);
 
 document.addEventListener("DOMContentLoaded", function () {
+  lastClientWidth = document.body.clientWidth;
   // Apply correct styling upon filter bar text change, call API after wait
   if (pageSearchInput !== null) {
     pageSearchInput.addEventListener("input", function () {

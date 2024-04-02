@@ -2261,6 +2261,8 @@ function getElementOverflowParams(element) {
   // Then we force it to "nowrap", so we can get those dimension.
   // We can then compare the two sets, which will indicate if
   // wrapping is potentially happening, or not.
+  // The scrollWidth is calculated based on the content and not the actual
+  // width of the element
 
   // Force it to wrap.
   element.classList.add("force-wrap");
@@ -2270,6 +2272,8 @@ function getElementOverflowParams(element) {
 
   // Force it to nowrap. Return the comparisons.
   element.classList.add("force-nowrap");
+  const oldWidth = element.style.width;
+  element.style.width = "fit-content";
   var nowrapClientHeight = element.clientHeight;
   try {
     var overflowParams = {
@@ -2281,6 +2285,7 @@ function getElementOverflowParams(element) {
     return overflowParams;
   } finally {
     element.classList.remove("force-nowrap");
+    element.style.width = oldWidth;
   }
 }
 

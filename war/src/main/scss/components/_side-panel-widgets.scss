@@ -116,20 +116,27 @@
   width: 50%;
 }
 
-.build-row-cell .pane.build-controls {
+.build-row-cell .pane.build-badges {
   width: 18%;
-  text-align: right;
+  display: inline-flex !important;
+  justify-content: end;
+  align-items: center;
+  gap: 2px;
+  flex-wrap: wrap-reverse;
+  flex-direction: row-reverse;
 }
 
 .build-row-cell .pane.build-details.block {
   width: 100%;
+  display: block;
 }
 
 .build-row.multi-line .build-row-cell .pane.build-name.block {
   width: 100%;
+  display: block;
 }
 
-.build-row-cell .pane.build-controls.block {
+.build-row-cell .pane.build-badges.block {
   width: 100%;
 }
 
@@ -144,37 +151,33 @@
   z-index: 1;
 }
 
-.build-row-cell .build-stop {
-  display: inline-block;
-  width: 30%;
-}
-
-.build-row-cell .build-badge {
-  display: inline-block;
-  text-align: right;
-  width: 70%;
-  padding: 2px 0;
-}
-
-.build-row-cell .build-badge > span {
+.build-row-cell .build-badges > span {
   display: inline-block;
   max-width: 256px;
   padding: 0 1px;
   overflow: hidden;
 }
 
-.build-row-cell .build-badge > span + span {
+.build-row-cell .build-badges > span + span {
   margin: 0 0 0 2px !important;
 }
 
 @media (width >= 1170px) {
-  .build-row-cell .build-badge > span {
+  .build-row-cell .build-badges > span {
     max-width: 296px;
   }
 }
 
-.build-row .build-name-controls .pane.build-name,
-.build-row .build-details-controls .pane.build-details {
+.build-row-cell .build-badges > .run-badge {
+  display: inline-flex;
+}
+
+.build-row-cell .build-badges > .run-badge > a {
+  display: inline-flex;
+}
+
+.build-row .build-name-badges .pane.build-name,
+.build-row .build-details-badges .pane.build-details {
   width: 70%;
 }
 
@@ -186,7 +189,6 @@
 }
 
 .build-row.multi-line .build-row-cell .block {
-  display: block;
   overflow: auto;
 }
 
