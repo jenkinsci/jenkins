@@ -50,6 +50,7 @@ public class ItemDeletion extends Queue.QueueDecisionHandler {
     /**
      * Lock to guard the {@link #registrations} set.
      */
+    private static final DeletionLockManager deletionLockManager = new DeletionLockManager();
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
     /**
      * The explicit deletions in progress.
@@ -104,16 +105,7 @@ public class ItemDeletion extends Queue.QueueDecisionHandler {
      * deletion.
      */
     public static boolean isRegistered(@NonNull Item item) {
-        ItemDeletion instance = instance();
-        if (instance == null) {
-            return false;
-        }
-        instance.lock.readLock().lock();
-        try {
-            return instance.registrations.contains(item);
-        } finally {
-            instance.lock.readLock().unlock();
-        }
+        return deletionLockManager.isRegistered(item);
     }
 
     /**
@@ -124,16 +116,7 @@ public class ItemDeletion extends Queue.QueueDecisionHandler {
      * {@link #deregister(Item)}.
      */
     public static boolean register(@NonNull Item item) {
-        ItemDeletion instance = instance();
-        if (instance == null) {
-            return false;
-        }
-        instance.lock.writeLock().lock();
-        try {
-            return instance.registrations.add(item);
-        } finally {
-            instance.lock.writeLock().unlock();
-        }
+        return deletionLockManager.register(item);
     }
 
     /**
@@ -142,15 +125,7 @@ public class ItemDeletion extends Queue.QueueDecisionHandler {
      * @param item the {@link Item} that was to be deleted and is now either deleted or the delete was aborted.
      */
     public static void deregister(@NonNull Item item) {
-        ItemDeletion instance = instance();
-        if (instance != null) {
-            instance.lock.writeLock().lock();
-            try {
-                instance.registrations.remove(item);
-            } finally {
-                instance.lock.writeLock().unlock();
-            }
-        }
+        deletionLockManager.deregister(item);
     }
 
     /**
