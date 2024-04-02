@@ -91,17 +91,45 @@ $semantics: (
 
   // Alert call outs
   --alert-success-text-color: var(--success-color);
-  --alert-success-bg-color: color-mix(in srgb, var(--success-color) 10%, transparent);
-  --alert-success-border-color: color-mix(in srgb, var(--success-color) 5%, transparent);
+  --alert-success-bg-color: color-mix(
+    in sRGB,
+    var(--success-color) 10%,
+    transparent
+  );
+  --alert-success-border-color: color-mix(
+    in sRGB,
+    var(--success-color) 5%,
+    transparent
+  );
   --alert-info-text-color: var(--blue);
-  --alert-info-bg-color: color-mix(in srgb, var(--blue) 10%, transparent);
-  --alert-info-border-color: color-mix(in srgb, var(--blue) 5%, transparent);
-  --alert-warning-text-color: color-mix(in srgb, var(--warning-color) 80%, var(--text-color));
-  --alert-warning-bg-color: color-mix(in srgb, var(--warning-color) 10%, transparent);
-  --alert-warning-border-color: color-mix(in srgb, var(--warning-color) 5%, transparent);
+  --alert-info-bg-color: color-mix(in sRGB, var(--blue) 10%, transparent);
+  --alert-info-border-color: color-mix(in sRGB, var(--blue) 5%, transparent);
+  --alert-warning-text-color: color-mix(
+    in sRGB,
+    var(--warning-color) 80%,
+    var(--text-color)
+  );
+  --alert-warning-bg-color: color-mix(
+    in sRGB,
+    var(--warning-color) 10%,
+    transparent
+  );
+  --alert-warning-border-color: color-mix(
+    in sRGB,
+    var(--warning-color) 5%,
+    transparent
+  );
   --alert-danger-text-color: var(--error-color);
-  --alert-danger-bg-color: color-mix(in srgb, var(--error-color) 10%, transparent);
-  --alert-danger-border-color: color-mix(in srgb, var(--error-color) 5%, transparent);
+  --alert-danger-bg-color: color-mix(
+    in sRGB,
+    var(--error-color) 10%,
+    transparent
+  );
+  --alert-danger-border-color: color-mix(
+    in sRGB,
+    var(--error-color) 5%,
+    transparent
+  );
 
   // Typography
   --text-color-secondary: var(--secondary);
