@@ -142,7 +142,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>2182.v0138ccb_c0b_cb_</version>
+      <version>2185.v796448319b_7c</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
