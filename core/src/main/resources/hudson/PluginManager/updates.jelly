@@ -236,11 +236,5 @@ THE SOFTWARE.
         <d:invokeBody/>
       </form>
     </l:main-panel>
-    <div class="grey-anime-preload" style="display:none">
-      <l:icon class="icon-grey-anime icon-md"/>
-      <l:icon class="icon-blue icon-md"/>
-      <l:icon class="icon-red icon-md"/>
-      <l:icon class="icon-grey icon-md"/>
-    </div>
   </l:layout>
 </j:jelly>
