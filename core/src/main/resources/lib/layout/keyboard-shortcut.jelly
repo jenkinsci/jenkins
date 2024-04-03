@@ -36,7 +36,7 @@ THE SOFTWARE.
   </st:documentation>
 
   <div class="jenkins-tooltip__keyboard-shortcut">
-    <j:if test="${attrs.containsKey('prefix')}">
+    <j:if test="${attrs.containsKey('prefix') and attrs.prefix != '(empty)'}">
       <span>
         ${attrs.prefix}
       </span>
@@ -47,7 +47,7 @@ THE SOFTWARE.
       </j:set>
       <j:out value="${h.translateModifierKeysForUsersPlatform(body)}" />
     </div>
-    <j:if test="${attrs.containsKey('suffix')}">
+    <j:if test="${attrs.containsKey('suffix') and attrs.suffix != '(empty)'}">
       <span>
         ${attrs.suffix}
       </span>
