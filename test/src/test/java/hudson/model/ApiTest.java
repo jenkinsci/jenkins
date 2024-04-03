@@ -70,7 +70,7 @@ public class ApiTest {
         JSONObject json = JSONObject.fromObject(response.getContentAsString());
         assertEquals("p", json.get("name"));
 
-        String s = wc.goTo(p.getUrl() + "api/json?tree=name&jsonp=wrap", "application/javascript").getWebResponse().getContentAsString();
+        String s = wc.goTo(p.getUrl() + "api/json?tree=name&jsonp=wrap", "text/javascript").getWebResponse().getContentAsString();
         assertTrue(s.startsWith("wrap("));
         assertEquals(')', s.charAt(s.length() - 1));
         json = JSONObject.fromObject(s.substring("wrap(".length(), s.length() - 1));
