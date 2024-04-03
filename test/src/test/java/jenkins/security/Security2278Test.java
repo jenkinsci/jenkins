@@ -70,7 +70,7 @@ public class Security2278Test {
         assertThat(contentAsString, containsString("Build Executor Status"));
         assertThat(contentAsString, containsString("Unknown Task"));
         assertThat(contentAsString, not(containsString("job/foo/job/bar")));
-        assertThat(contentAsString, not(containsString("icon-stop")));
+        assertThat(contentAsString, not(containsString("stop-button-link")));
     }
 
     @Test
@@ -81,7 +81,7 @@ public class Security2278Test {
         assertThat(contentAsString, containsString("Build Executor Status"));
         assertThat(contentAsString, not(containsString("Unknown Task")));
         assertThat(contentAsString, containsString("job/foo/job/bar"));
-        assertThat(contentAsString, containsString("icon-stop"));
+        assertThat(contentAsString, containsString("stop-button-link"));
     }
 
     @Test

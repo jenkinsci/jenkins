@@ -27,7 +27,6 @@ package hudson.search;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import org.apache.commons.lang.StringUtils;
 
 /**
  * Set of {@link SearchItem}s that are statically known upfront.
@@ -62,7 +61,7 @@ public class FixedSet implements SearchIndex {
         boolean caseInsensitive = UserSearchProperty.isCaseInsensitive();
         for (SearchItem i : items) {
             String name = i.getSearchName();
-            if (name != null && (name.contains(token) || (caseInsensitive && StringUtils.containsIgnoreCase(name, token)))) {
+            if (name != null && (name.contains(token) || (caseInsensitive && name.toLowerCase().contains(token.toLowerCase())))) {
                 result.add(i);
             }
         }

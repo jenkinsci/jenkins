@@ -35,6 +35,7 @@ import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
 import hudson.model.Environment;
+import hudson.model.Job;
 import hudson.model.JobProperty;
 import hudson.model.Run;
 import hudson.model.Run.RunnerAbortedException;
@@ -46,8 +47,11 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import jenkins.model.lazy.AbstractLazyLoadRunMap;
 import jenkins.util.Listeners;
 import org.jvnet.tiger_types.Types;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.Beta;
 
 /**
  * Receives notifications about builds.
@@ -170,6 +174,18 @@ public abstract class RunListener<R extends Run> implements ExtensionPoint {
      *      from breaking all the builds.
      */
     public void onDeleted(R r) {}
+
+    /**
+     * Allows listeners to veto build loading.
+     * @param job the job from which a build might be loaded
+     * @param buildNumber the proposed build number
+     * @return false to veto build loading
+     * @see AbstractLazyLoadRunMap#recognizeNumber
+     */
+    @Restricted(Beta.class)
+    public boolean allowLoad(@NonNull Job<?, ?> job, int buildNumber) {
+        return true;
+    }
 
     /**
      * Registers this object as an active listener so that it can start getting

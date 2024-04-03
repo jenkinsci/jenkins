@@ -31,7 +31,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.commons.jelly.JellyContext;
-import org.apache.commons.lang.StringUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -238,7 +237,7 @@ public class Icon {
         if (string == null) {
             return null;
         }
-        if (StringUtils.endsWithAny(string, SUPPORTED_FORMATS)) {
+        if (Arrays.stream(SUPPORTED_FORMATS).anyMatch(string::endsWith)) {
             string = string.substring(0, string.length() - 4);
         }
         return string.replace('_', '-');

@@ -176,4 +176,17 @@ public interface ItemGroup<T extends Item> extends PersistenceRoot, ModelObject 
     // TODO could delegate to allItems overload taking Authentication, but perhaps more useful to introduce a variant to perform preauth filtering using Predicate and check Item.READ afterwards
     // or return a Stream<Item> and provide a Predicate<Item> public static Items.readable(), and see https://stackoverflow.com/q/22694884/12916 if you are looking for just one result
 
+    /**
+     * Determines the item name based on a logic that can be overridden (e.g. by AbstractFolder).
+     *
+     * Defaults to the item root directory name.
+     *
+     * @param dir The root directory the item was loaded from.
+     * @param item the partially loaded item (take care what methods you call, the item will not have a reference to its parent).
+     *
+     * @since 2.444
+     */
+    default String getItemName(File dir, T item) {
+        return dir.getName();
+    }
 }

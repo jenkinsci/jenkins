@@ -23,18 +23,18 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout">
-  <td class="jenkins-table__cell--tight jenkins-table__icon" data="${job.iconColor.ordinal()}">
-    <div class="jenkins-table__cell__button-wrapper">
-      <j:choose>
-        <j:when test="${job.iconColor.iconName != null}">
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:t="/lib/hudson">
+  <j:choose>
+    <j:when test="${job.iconColor.iconName != null}">
+      <td class="jenkins-table__cell--tight jenkins-table__icon" data="${job.iconColor.ordinal()}">
+        <div class="jenkins-table__cell__button-wrapper">
           <l:icon src="symbol-status-${job.iconColor.iconName}" tooltip="${job.iconColor.description}" />
-        </j:when>
-        <j:otherwise>
-          <!-- This is for special conditions, such as folders -->
-          <l:icon src="${job.iconColor.iconClassName}" />
-        </j:otherwise>
-      </j:choose>
-    </div>
-  </td>
+        </div>
+      </td>
+    </j:when>
+    <j:otherwise>
+      <!-- This is for special conditions, such as folders -->
+      <t:ballColorTd it="${job.iconColor}" />
+    </j:otherwise>
+  </j:choose>
 </j:jelly>

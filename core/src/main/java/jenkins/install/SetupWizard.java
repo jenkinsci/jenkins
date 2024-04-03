@@ -1,7 +1,5 @@
 package jenkins.install;
 
-import static org.apache.commons.lang.StringUtils.defaultIfBlank;
-
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -486,7 +484,11 @@ public class SetupWizard extends PageDecorator {
         File state = getUpdateStateFile();
         if (state.exists()) {
             try {
-                from = new VersionNumber(defaultIfBlank(Files.readString(Util.fileToPath(state), StandardCharsets.UTF_8), "1.0").trim());
+                String version = Files.readString(Util.fileToPath(state), StandardCharsets.UTF_8);
+                if (version == null || version.isBlank()) {
+                    version = "1.0";
+                }
+                from = new VersionNumber(version.trim());
             } catch (IOException ex) {
                 LOGGER.log(Level.SEVERE, "Cannot read the current version file", ex);
                 return null;
@@ -553,8 +555,7 @@ public class SetupWizard extends PageDecorator {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         JSONArray initialPluginList = null;
         updateSiteList: for (UpdateSite updateSite : Jenkins.get().getUpdateCenter().getSiteList()) {
-            String updateCenterJsonUrl = updateSite.getUrl();
-            String suggestedPluginUrl = updateCenterJsonUrl.replace("/update-center.json", "/platform-plugins.json");
+            String suggestedPluginUrl = updateSite.getSuggestedPluginsUrl();
             VersionNumber version = Jenkins.getVersion();
             if (version != null && (suggestedPluginUrl.startsWith("https://") || suggestedPluginUrl.startsWith("http://"))) {
                 // Allow remote update site to distinguish based on the current version

@@ -29,7 +29,7 @@
   justify-content: center;
   overflow: hidden;
 
-  @media (width <= 992px) {
+  @media (width < 992px) {
     display: none;
   }
 

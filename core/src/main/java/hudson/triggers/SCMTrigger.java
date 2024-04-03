@@ -81,7 +81,6 @@ import jenkins.triggers.SCMTriggerItem;
 import jenkins.util.SystemProperties;
 import net.sf.json.JSONObject;
 import org.apache.commons.jelly.XMLOutput;
-import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
@@ -381,7 +380,7 @@ public class SCMTrigger extends Trigger<Item> {
         public FormValidation doCheckScmpoll_spec(@QueryParameter String value,
                                                   @QueryParameter boolean ignorePostCommitHooks,
                                                   @AncestorInPath Item item) {
-            if (StringUtils.isBlank(value)) {
+            if (value == null || value.isBlank()) {
                 if (ignorePostCommitHooks) {
                     return FormValidation.ok(Messages.SCMTrigger_no_schedules_no_hooks());
                 } else {
