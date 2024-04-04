@@ -108,6 +108,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import jenkins.model.BlockedBecauseOfBuildInProgress;
 import jenkins.model.Jenkins;
+import jenkins.model.queue.QueueIdStrategy;
 import jenkins.security.QueueItemAuthenticatorConfiguration;
 import org.acegisecurity.acls.sid.PrincipalSid;
 import org.apache.commons.fileupload.FileUploadException;
@@ -200,7 +201,7 @@ public class QueueTest {
 
         // The current counter should be the id from the item brought back
         // from the persisted queue.xml.
-        assertEquals(3, Queue.WaitingItem.getCurrentCounterValue());
+        assertEquals(3, QueueIdStrategy.DefaultStrategy.getCurrentCounterValue());
 
         // Clear the queue
         assertTrue(r.jenkins.getQueue().cancel(r.jenkins.getItemByFullName("test", FreeStyleProject.class)));
@@ -213,7 +214,7 @@ public class QueueTest {
         Queue q = r.jenkins.getQueue();
 
         resetQueueState();
-        assertEquals(0, Queue.WaitingItem.getCurrentCounterValue());
+        assertEquals(0, QueueIdStrategy.DefaultStrategy.getCurrentCounterValue());
 
         // prevent execution to push stuff into the queue
         r.jenkins.setNumExecutors(0);
@@ -234,7 +235,7 @@ public class QueueTest {
         assertEquals(0, q.getItems().length);
 
         // The counter state should be maintained.
-        assertEquals(1, Queue.WaitingItem.getCurrentCounterValue());
+        assertEquals(1, QueueIdStrategy.DefaultStrategy.getCurrentCounterValue());
     }
 
     /**

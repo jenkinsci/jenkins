@@ -1,7 +1,5 @@
 package jenkins.install;
 
-import static org.apache.commons.lang.StringUtils.defaultIfBlank;
-
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -486,7 +484,11 @@ public class SetupWizard extends PageDecorator {
         File state = getUpdateStateFile();
         if (state.exists()) {
             try {
-                from = new VersionNumber(defaultIfBlank(Files.readString(Util.fileToPath(state), StandardCharsets.UTF_8), "1.0").trim());
+                String version = Files.readString(Util.fileToPath(state), StandardCharsets.UTF_8);
+                if (version == null || version.isBlank()) {
+                    version = "1.0";
+                }
+                from = new VersionNumber(version.trim());
             } catch (IOException ex) {
                 LOGGER.log(Level.SEVERE, "Cannot read the current version file", ex);
                 return null;

@@ -46,6 +46,7 @@ THE SOFTWARE.
           <l:task href="${rootURL}/${it.viewUrl}asynchPeople/" icon="icon-user icon-md" title="${%People}"/>
         </j:otherwise>
       </j:choose>
+
       <l:task href="${rootURL}/${it.viewUrl}builds" icon="symbol-build-history" title="${%Build History}"/>
 
       <!-- subtypes can put more stuff here -->

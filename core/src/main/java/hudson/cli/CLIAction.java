@@ -52,7 +52,6 @@ import jenkins.util.FullDuplexHttpService;
 import jenkins.util.SystemProperties;
 import jenkins.websocket.WebSocketSession;
 import jenkins.websocket.WebSockets;
-import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -128,7 +127,17 @@ public class CLIAction implements UnprotectedRootAction, StaplerProxy {
         }
         if (ALLOW_WEBSOCKET == null) {
             final String actualOrigin = req.getHeader("Origin");
-            final String expectedOrigin = StringUtils.removeEnd(StringUtils.removeEnd(Jenkins.get().getRootUrlFromRequest(), "/"), req.getContextPath());
+
+            String o = Jenkins.get().getRootUrlFromRequest();
+            String removeSuffix1 = "/";
+            if (o.endsWith(removeSuffix1)) {
+                o = o.substring(0, o.length() - removeSuffix1.length());
+            }
+            String removeSuffix2 = req.getContextPath();
+            if (o.endsWith(removeSuffix2)) {
+                o = o.substring(0, o.length() - removeSuffix2.length());
+            }
+            final String expectedOrigin = o;
 
             if (actualOrigin == null || !actualOrigin.equals(expectedOrigin)) {
                 LOGGER.log(Level.FINE, () -> "Rejecting origin: " + actualOrigin + "; expected was from request: " + expectedOrigin);

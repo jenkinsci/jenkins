@@ -123,7 +123,17 @@ THE SOFTWARE.
       </tr>
       </tbody>
     </table>
-    <t:iconSize/>
+    <t:iconSize>
+      <div class="jenkins-buttons-row jenkins-buttons-row--invert">
+        <button class="jenkins-button jenkins-button--tertiary" id="button-computer-icon-legend">
+          ${%Legend}
+        </button>
+      </div>
+    </t:iconSize>
+    <template id="template-computer-icon-legend" data-title="${%Computer icon legend}">
+      <st:include page="_legend.jelly"/>
+    </template>
+    <script src="${resURL}/jsbundles/pages/computer-set.js" type="text/javascript" defer="true" />
   </l:main-panel>
 </l:layout>
 </j:jelly>
