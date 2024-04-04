@@ -95,7 +95,6 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
     public final List<? extends Action> getAllActions() {
         List<Action> _actions = getActions();
         boolean adding = false;
-
         for (TransientActionFactory<?> taf : TransientActionFactory.factoriesFor(getClass(), Action.class)) {
             Collection<? extends Action> additions = createFor(taf);
             if (!additions.isEmpty()) {
@@ -129,15 +128,6 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
                 .sorted(Comparator.comparingInt((Action e) -> e.getGroup().getOrder())
                         .thenComparing(action -> Objects.requireNonNullElse(action.getDisplayName(), "")))
                 .collect(Collectors.toList());
-
-//        if (this.getOwner() instanceof HideActionsable) {
-//            var ignored = ((HideActionsable)this.getOwner()).hideActions();
-//
-//            collect = collect.stream().filter(e -> !ignored.contains(e.getClass()))
-//                    .collect(Collectors.toUnmodifiableList());
-//
-//            System.out.println("Ignoring " + ignored);
-//        }
 
         return collect;
     }

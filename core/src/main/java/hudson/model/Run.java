@@ -405,20 +405,20 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * @return the list can be empty but never null. read only.
      * @deprecated Use {@link #getAllActions} instead.
      */
-//    @Deprecated
-//    public List<Action> getTransientActions() {
-//        List<Action> actions = new ArrayList<>();
-//        for (TransientBuildActionFactory factory : TransientBuildActionFactory.all()) {
-//            for (Action created : factory.createFor(this)) {
-//                if (created == null) {
-//                    LOGGER.log(WARNING, "null action added by {0}", factory);
-//                    continue;
-//                }
-//                actions.add(created);
-//            }
-//        }
-//        return Collections.unmodifiableList(actions);
-//    }
+    @Deprecated
+    public List<Action> getTransientActions() {
+        List<Action> actions = new ArrayList<>();
+        for (TransientBuildActionFactory factory : TransientBuildActionFactory.all()) {
+            for (Action created : factory.createFor(this)) {
+                if (created == null) {
+                    LOGGER.log(WARNING, "null action added by {0}", factory);
+                    continue;
+                }
+                actions.add(created);
+            }
+        }
+        return Collections.unmodifiableList(actions);
+    }
 
     /**
      * {@inheritDoc}

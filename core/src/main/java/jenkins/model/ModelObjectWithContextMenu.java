@@ -3,7 +3,6 @@ package jenkins.model;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Functions;
 import hudson.model.Action;
-import hudson.model.Actionable;
 import hudson.model.ModelObject;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -15,20 +14,20 @@ import jenkins.model.menu.Group;
 import jenkins.model.menu.Semantic;
 import jenkins.model.menu.event.DropdownAction;
 import jenkins.model.menu.event.LinkAction;
-import org.apache.commons.jelly.JellyException;
+import org.apache.commons.jelly.*;
 import org.jenkins.ui.icon.Icon;
 import org.jenkins.ui.icon.IconSet;
 import org.jenkins.ui.symbol.Symbol;
 import org.jenkins.ui.symbol.SymbolRequest;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
-import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.Stapler;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.*;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.export.Flavor;
+import org.kohsuke.stapler.jelly.JellyClassTearOff;
+import org.kohsuke.stapler.jelly.JellyFacet;
+import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * {@link ModelObject} that has context menu in the breadcrumb.
@@ -170,34 +169,35 @@ public interface ModelObjectWithContextMenu extends ModelObject {
         }
 
         public ContextMenu from(ModelObjectWithContextMenu self, StaplerRequest request, StaplerResponse response, String view) throws JellyException, IOException {
-//            WebApp webApp = WebApp.getCurrent();
-//            final Script s = webApp.getMetaClass(self).getTearOff(JellyClassTearOff.class).findScript(view);
-//            if (s != null) {
-//                JellyFacet facet = webApp.getFacet(JellyFacet.class);
-//                request.setAttribute("taskTags", this); // <l:task> will look for this variable and populate us
-//                request.setAttribute("mode", "side-panel");
-//                // run sidepanel but ignore generated HTML
-//                facet.scriptInvoker.invokeScript(request, response, new Script() {
-//                    @Override
-//                    public Script compile() throws JellyException {
-//                        return this;
-//                    }
-//
-//                    @Override
-//                    public void run(JellyContext context, XMLOutput output) throws JellyTagException {
-//                        Functions.initPageVariables(context);
-//                        s.run(context, output);
-//                    }
-//                }, self, new XMLOutput(new DefaultHandler()));
-//            } else
+            WebApp webApp = WebApp.getCurrent();
+            final Script s = webApp.getMetaClass(self).getTearOff(JellyClassTearOff.class).findScript(view);
+            if (s != null) {
+                JellyFacet facet = webApp.getFacet(JellyFacet.class);
+                request.setAttribute("taskTags", this); // <l:task> will look for this variable and populate us
+                request.setAttribute("mode", "side-panel");
+                // run sidepanel but ignore generated HTML
+                facet.scriptInvoker.invokeScript(request, response, new Script() {
+                    @Override
+                    public Script compile() throws JellyException {
+                        return this;
+                    }
+
+                    @Override
+                    public void run(JellyContext context, XMLOutput output) throws JellyTagException {
+                        Functions.initPageVariables(context);
+                        s.run(context, output);
+                    }
+                }, self, new XMLOutput(new DefaultHandler()));
+            }
+//            else
 //            System.out.println("----");
 //            System.out.println("Doing menu for " + self.getClass());
 //            System.out.println("----");
-
-            if (self instanceof Actionable) {
-                // fallback
-                this.addAll(((Actionable) self).getTransientActions());
-            }
+//
+//            if (self instanceof Actionable) {
+//                // fallback
+//                this.addAll(((Actionable) self).getTransientActions());
+//            }
 
             return this;
         }
