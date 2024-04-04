@@ -64,7 +64,7 @@ public class BuildTimelineWidget {
         return (req1, rsp, node) -> {
             JSONObject o = new JSONObject();
             o.put("events", JSONArray.fromObject(new ArrayList<>()));
-            rsp.setContentType("application/javascript;charset=UTF-8");
+            rsp.setContentType("text/javascript;charset=UTF-8");
             o.write(rsp.getWriter());
         };
     }

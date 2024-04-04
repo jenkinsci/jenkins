@@ -147,7 +147,7 @@ public class TypedFilter implements FieldRef.Filter, FunctionList.Filter {
 
         // check whitelist
         ExtensionList<RoutingDecisionProvider> decisionProviders = ExtensionList.lookup(RoutingDecisionProvider.class);
-        if (decisionProviders.size() > 0) {
+        if (!decisionProviders.isEmpty()) {
             for (RoutingDecisionProvider provider : decisionProviders) {
                 RoutingDecisionProvider.Decision fieldDecision = provider.decide(signature);
                 if (fieldDecision == RoutingDecisionProvider.Decision.ACCEPTED) {
@@ -204,7 +204,7 @@ public class TypedFilter implements FieldRef.Filter, FunctionList.Filter {
 
         // check whitelist
         ExtensionList<RoutingDecisionProvider> decision = ExtensionList.lookup(RoutingDecisionProvider.class);
-        if (decision.size() > 0) {
+        if (!decision.isEmpty()) {
             for (RoutingDecisionProvider provider : decision) {
                 RoutingDecisionProvider.Decision methodDecision = provider.decide(signature);
                 if (methodDecision == RoutingDecisionProvider.Decision.ACCEPTED) {

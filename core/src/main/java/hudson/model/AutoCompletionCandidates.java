@@ -34,7 +34,6 @@ import java.util.Arrays;
 import java.util.List;
 import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
-import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -173,6 +172,6 @@ public class AutoCompletionCandidates implements HttpResponse {
     }
 
     private static boolean startsWithImpl(String str, String prefix, boolean ignoreCase) {
-        return ignoreCase ? StringUtils.startsWithIgnoreCase(str, prefix) : str.startsWith(prefix);
+        return ignoreCase ? str.toLowerCase().startsWith(prefix.toLowerCase()) : str.startsWith(prefix);
     }
 }

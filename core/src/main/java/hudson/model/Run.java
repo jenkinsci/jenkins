@@ -87,6 +87,7 @@ import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -766,7 +767,7 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * Returns the timestamp formatted in xs:dateTime.
      */
     public @NonNull String getTimestampString2() {
-        return Util.XS_DATETIME_FORMATTER.format(new Date(timestamp));
+        return Util.XS_DATETIME_FORMATTER2.format(Instant.ofEpochMilli(timestamp));
     }
 
     /**
