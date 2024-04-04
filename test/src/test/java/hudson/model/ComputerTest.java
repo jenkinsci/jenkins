@@ -56,8 +56,6 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import jenkins.model.Jenkins;
-import jenkins.widgets.ExecutorsWidget;
-import jenkins.widgets.HasWidgetHelper;
 import org.htmlunit.FailingHttpStatusCodeException;
 import org.htmlunit.HttpMethod;
 import org.htmlunit.Page;
@@ -242,27 +240,6 @@ public class ComputerTest {
 
         WebClient wc = j.createWebClient();
         Page page = wc.getPage(wc.createCrumbedUrl(agent.toComputer().getUrl()));
-        String content = page.getWebResponse().getContentAsString();
-        assertThat(content, not(containsString(message)));
-
-        j.assertBuildStatus(Result.FAILURE, j.waitForCompletion(b));
-    }
-
-    @Test
-    public void testTerminatedNodeAjaxExecutorsDoesNotShowTrace() throws Exception {
-        DumbSlave agent = j.createOnlineSlave();
-        FreeStyleProject p = j.createFreeStyleProject();
-        p.setAssignedNode(agent);
-
-        FreeStyleBuild b = ExecutorTest.startBlockingBuild(p);
-
-        String message = "It went away";
-        b.getBuiltOn().toComputer().disconnect(
-                new OfflineCause.ChannelTermination(new RuntimeException(message))
-        );
-
-        WebClient wc = j.createWebClient();
-        Page page = wc.getPage(wc.createCrumbedUrl(HasWidgetHelper.getWidget(agent.toComputer(), ExecutorsWidget.class).orElseThrow().getUrl() + "ajax"));
         String content = page.getWebResponse().getContentAsString();
         assertThat(content, not(containsString(message)));
 

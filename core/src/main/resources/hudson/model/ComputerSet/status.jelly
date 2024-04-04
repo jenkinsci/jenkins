@@ -1,0 +1,179 @@
+<!--
+The MIT License
+
+Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+-->
+
+<!--
+  Manage monitoring
+-->
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
+         xmlns:t="/lib/hudson"
+         xmlns:local="local"
+>
+  <d:taglib uri="local">
+    <d:tag name="computerCaption">
+
+      <a href="${rootURL}/${c.url}" class="jenkins-link--with-icon model-link inside">
+        <l:icon src="${c.iconClassName}" alt="${altText}"/>
+        <span style="margin-left: 1ch;">${title}</span>
+      </a>
+      <span style="float: right; font-weight: normal;">
+        <j:if test="${c.offline}">
+          <j:choose>
+            <j:when test="${c.offlineCause!=null and !c.connecting}">
+              (
+              <img src="${imagesURL}/svgs/error.svg" width="16" height="16" title="${c.offlineCause}"/>
+              ${%offline})
+            </j:when>
+            <j:when test="${c.connecting}">
+              (<l:icon src="symbol-hourglass" class="icon-sm"/>${%launching})
+            </j:when>
+            <j:otherwise>
+              (${%offline})
+            </j:otherwise>
+          </j:choose>
+        </j:if>
+        <j:if test="${!c.acceptingTasks}">
+          <st:nbsp/>
+          (${%suspended})
+        </j:if>
+      </span>
+    </d:tag>
+    <d:tag name="executor">
+      <j:if test="${!c.offline or (c.offline and !e.idle)}">
+        <tr>
+          <td class="pane" align="right" style="vertical-align: top">
+            ${name}
+          </td>
+          <j:choose>
+            <j:when test="${e.idle}">
+              <td class="pane">
+                <j:choose>
+                  <j:when test="${c.offline}">
+                    <a href="${rootURL}/${c.url}" class="model-link inside">${%Offline}</a>
+                  </j:when>
+                  <j:otherwise>
+                    ${%Idle}
+                  </j:otherwise>
+                </j:choose>
+              </td>
+              <td class="pane"/>
+              <td class="pane"/>
+            </j:when>
+            <j:otherwise>
+              <!-- not actually optional, but it helps with backward compatibility -->
+              <j:set var="executor" value="${e}"/>
+              <st:include it="${e.currentExecutable}" page="executorCell.jelly" optional="true">
+                <td class="pane">
+                  <div style="white-space: normal">
+                    <j:set var="exe" value="${e.currentExecutable}"/>
+                    <j:set var="wu" value="${e.currentWorkUnit}"/>
+                    <j:choose>
+                      <j:when test="${exe == null and wu != null}">
+                        <j:set var="exeparent" value="${wu.work}"/>
+                        <j:choose>
+                          <j:when test="${h.hasPermission(exeparent,exeparent.READ)}">
+                            <a href="${rootURL}/${exeparent.url}">
+                              <l:breakable value="${exeparent.fullDisplayName}"/>
+                            </a>
+                            <t:progressBar tooltip="${%Pending}" pos="-1" href="${rootURL}/${exeparent.url}"/>
+                          </j:when>
+                          <j:otherwise>
+                            <span>${%Unknown Task}</span>
+                          </j:otherwise>
+                        </j:choose>
+                      </j:when>
+                      <j:when test="${exe == null and wu == null}">
+                        <!-- went idle concurrent with testing for idle -->
+                        ${%Idle}
+                      </j:when>
+                      <j:otherwise>
+                        <j:invokeStatic var="exeparent"
+                                        className="hudson.model.queue.Executables" method="getParentOf">
+                          <j:arg type="hudson.model.Queue$Executable" value="${exe}"/>
+                        </j:invokeStatic>
+                        <j:choose>
+                          <j:when test="${h.hasPermission(exeparent,exeparent.READ)}">
+                            <a href="${rootURL}/${exeparent.url}">
+                              <l:breakable value="${exeparent.fullDisplayName}"/>
+                            </a>
+                            <t:buildProgressBar build="${exe}" executor="${executor}"/>
+                          </j:when>
+                          <j:otherwise>
+                            <span>${%Unknown Task}</span>
+                          </j:otherwise>
+                        </j:choose>
+                      </j:otherwise>
+                    </j:choose>
+                  </div>
+                </td>
+                <td class="pane">
+                  <j:if test="${h.hasPermission(exeparent,exeparent.READ)}">
+                    <a href="${rootURL}/${exe.url}" class="model-link inside" style="display: block;">
+                      <l:breakable value="${exe.displayName}"/>
+                    </a>
+                  </j:if>
+                </td>
+              </st:include>
+              <td class="pane" align="center" valign="middle">
+                <j:if test="${h.hasPermission(exeparent,exeparent.READ) and e.hasStopPermission()}">
+                  <l:stopButton href="${rootURL}/${c.url}${url}/stopBuild?runExtId=${h.urlEncode(exe.externalizableId)}"
+                                confirm="${%confirm(exe.fullDisplayName)}" alt="${%terminate this build}"/>
+                </j:if>
+              </td>
+            </j:otherwise>
+          </j:choose>
+        </tr>
+      </j:if>
+    </d:tag>
+  </d:taglib>
+  <l:layout permissions="${app.MANAGE_AND_SYSTEM_READ}" title="${%Node Monitoring Configuration}" type="one-column">
+    <st:include page="sidepanel.jelly" />
+    <j:set var="readOnlyMode" value="${!app.hasPermission(app.MANAGE)}"/>
+    <l:breadcrumb title="${%Node status}"/>
+    <l:main-panel>
+      <l:app-bar title="${%Node status}"/>
+
+      <j:set var="computers" value="${it.get_all()}"/>
+      <j:set var="computersSize" value="${computers.size()}"/>
+
+      <table>
+        <j:forEach var="c" items="${computers}">
+          <j:set var="cDisplayExecutors" value="${c.displayExecutors}"/>
+          <tr>
+            <j:if
+                test="${(computersSize gt 1 and !cDisplayExecutors.isEmpty()) or (c.node == app and c.offline)}">
+              <th class="pane" colspan="4">
+                <local:computerCaption title="${c.displayName}"/>
+              </th>
+            </j:if>
+          </tr>
+          <j:forEach var="de" items="${cDisplayExecutors}" varStatus="eloop">
+            <j:set var="e" value="${de.executor}"/>
+            <local:executor name="${de.displayName}" url="${de.url}"/>
+          </j:forEach>
+        </j:forEach>
+      </table>
+    </l:main-panel>
+  </l:layout>
+</j:jelly>

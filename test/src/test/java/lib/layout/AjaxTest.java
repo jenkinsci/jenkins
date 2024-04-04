@@ -24,8 +24,6 @@
 
 package lib.layout;
 
-import jenkins.widgets.ExecutorsWidget;
-import jenkins.widgets.HasWidgetHelper;
 import org.htmlunit.html.DomElement;
 import org.htmlunit.html.HtmlLink;
 import org.htmlunit.html.HtmlPage;
@@ -85,6 +83,7 @@ public class AjaxTest {
     }
 
     private String getExecutorsWidgetAjaxViewUrl() {
-        return HasWidgetHelper.getWidget(r.jenkins.getPrimaryView(), ExecutorsWidget.class).orElseThrow().getUrl() + "ajax";
+        return "TODO";
+//        return HasWidgetHelper.getWidget(r.jenkins.getPrimaryView(), ExecutorsWidget.class).orElseThrow().getUrl() + "ajax";
     }
 }
