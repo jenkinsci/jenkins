@@ -113,12 +113,6 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
     public List<Action> getTransientActions() {
         List<Action> actions = new ArrayList<>();
 
-//        if (this.getOwner() instanceof Actionable) {
-//            for (TransientActionFactory factory : TransientActionFactory.factoriesFor(this.getOwner().getClass(), Action.class)) {
-//                actions.addAll(factory.createFor(this.getOwner()));
-//            }
-//        }
-
         for (TransientActionFactory factory : TransientActionFactory.factoriesFor(getClass(), Action.class)) {
             actions.addAll(factory.createFor(this));
         }
