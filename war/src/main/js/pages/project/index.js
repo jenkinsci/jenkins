@@ -1,13 +1,10 @@
 const el = document.querySelector("#button-build");
-if (!el.href) {
+if (el && !el.href) {
   el.addEventListener("click", () => {
-    fetch('build?delay=0sec', {
+    fetch("build?delay=0sec", {
       method: "post",
       headers: crumb.wrap({}),
     });
-    notificationBar.show(
-      'Build scheduled',
-      notificationBar.SUCCESS,
-    );
-  })
+    notificationBar.show("Build scheduled", notificationBar.SUCCESS);
+  });
 }

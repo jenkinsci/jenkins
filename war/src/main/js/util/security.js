@@ -1,6 +1,6 @@
 function xmlEscape(str) {
   if (str == null) {
-    return ""
+    return "";
   }
 
   return str.replace(/[<>&'"]/g, (match) => {

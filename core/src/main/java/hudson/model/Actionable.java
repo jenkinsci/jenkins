@@ -24,7 +24,6 @@
 
 package hudson.model;
 
-
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.Util;

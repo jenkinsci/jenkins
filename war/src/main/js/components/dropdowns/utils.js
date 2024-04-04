@@ -160,8 +160,8 @@ function convertHtmlToItems(children) {
           item.badge = {
             text: attributes.dropdownBadgeText,
             severity: attributes.dropdownBadgeSeverity,
-            tooltip: attributes.dropdownBadgeTooltip
-          }
+            tooltip: attributes.dropdownBadgeTooltip,
+          };
         }
 
         if (attributes.dropdownHref) {
