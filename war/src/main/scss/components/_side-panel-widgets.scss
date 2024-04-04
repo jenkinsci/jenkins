@@ -122,8 +122,7 @@
   justify-content: end;
   align-items: center;
   gap: 2px;
-  flex-wrap: wrap-reverse;
-  flex-direction: row-reverse;
+  flex-flow: row-reverse wrap-reverse;
 }
 
 .build-row-cell .pane.build-details.block {

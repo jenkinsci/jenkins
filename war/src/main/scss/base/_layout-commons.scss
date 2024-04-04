@@ -114,7 +114,7 @@ body.full-screen #main-panel {
   }
 }
 
-@media (width > breakpoints.$tablet-breakpoint) {
+@media (width > 900px) {
   body.two-column #side-panel {
     width: 340px;
   }
