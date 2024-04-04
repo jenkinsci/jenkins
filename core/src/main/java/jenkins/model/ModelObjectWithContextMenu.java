@@ -3,6 +3,7 @@ package jenkins.model;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Functions;
 import hudson.model.Action;
+import hudson.model.Actionable;
 import hudson.model.ModelObject;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -188,16 +189,11 @@ public interface ModelObjectWithContextMenu extends ModelObject {
                         s.run(context, output);
                     }
                 }, self, new XMLOutput(new DefaultHandler()));
-            }
-//            else
-//            System.out.println("----");
-//            System.out.println("Doing menu for " + self.getClass());
-//            System.out.println("----");
-//
-//            if (self instanceof Actionable) {
-//                // fallback
-//                this.addAll(((Actionable) self).getTransientActions());
-//            }
+            } else
+                if (self instanceof Actionable) {
+                    // fallback
+                    this.addAll(((Actionable) self).getAllActions());
+                }
 
             return this;
         }
@@ -254,13 +250,10 @@ public interface ModelObjectWithContextMenu extends ModelObject {
 
         private Badge badge;
 
-//        @Exported(inline = true)
         private Group group;
 
-//        @Exported(inline = true)
         private jenkins.model.menu.event.Action action;
 
-//        @Exported(inline = true)
         private Semantic semantic;
 
         private String message;
