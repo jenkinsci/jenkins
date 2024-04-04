@@ -448,5 +448,12 @@ THE SOFTWARE.
         </plugins>
       </build>
     </profile>
+    <profile>
+      <id>quick-build</id>
+      <properties>
+        <spotless.skip>true</spotless.skip>
+        <!-- other properties are defined in the parent POM -->
+      </properties>
+    </profile>
   </profiles>
 </project>
