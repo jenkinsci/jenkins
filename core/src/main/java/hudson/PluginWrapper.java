@@ -1359,7 +1359,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
         // Redo who depends on who.
         jenkins.getPluginManager().resolveDependentPlugins();
 
-        return HttpResponses.redirectViaContextPath("/pluginManager/installed");   // send back to plugin manager
+        return HttpResponses.redirectViaContextPath("/manage/pluginManager/installed");   // send back to plugin manager
     }
 
     @Restricted(DoNotUse.class) // Jelly
