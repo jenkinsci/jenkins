@@ -20,6 +20,9 @@ module.exports = (env, argv) => ({
       path.join(__dirname, "src/main/js/add-item.js"),
       path.join(__dirname, "src/main/js/add-item.scss"),
     ],
+    "pages/computer-set": [
+      path.join(__dirname, "src/main/js/pages/computer-set"),
+    ],
     "pages/dashboard": [path.join(__dirname, "src/main/js/pages/dashboard")],
     "pages/manage-jenkins/system-information": [
       path.join(
