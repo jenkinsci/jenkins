@@ -1,15 +1,15 @@
-package jenkins.model.view;
+package jenkins.model.project;
 
 import hudson.Extension;
 import hudson.model.Action;
-import hudson.model.ListView;
+import hudson.model.Job;
 import java.util.Collection;
 import java.util.Set;
 import jenkins.model.TransientActionFactory;
 import jenkins.model.menu.Group;
 import jenkins.model.menu.event.LinkAction;
 
-public class ConfigureViewMenuItem implements Action {
+public class ConfigureProjectMenuItem implements Action {
 
     @Override
     public String getDisplayName() {
@@ -32,20 +32,20 @@ public class ConfigureViewMenuItem implements Action {
     }
 
     @Extension
-    public static class TransientActionFactoryImpl extends TransientActionFactory<ListView> {
+    public static class TransientActionFactoryImpl extends TransientActionFactory<Job> {
 
         @Override
-        public Class<ListView> type() {
-            return ListView.class;
+        public Class<Job> type() {
+            return Job.class;
         }
 
         @Override
-        public Collection<? extends Action> createFor(ListView target) {
-            if (!target.hasPermission(ListView.CONFIGURE) || !target.isEditable()) {
+        public Collection<? extends Action> createFor(Job target) {
+            if (!target.hasPermission(Job.CONFIGURE)) {
                 return Set.of();
             }
 
-            return Set.of(new ConfigureViewMenuItem());
+            return Set.of(new ConfigureProjectMenuItem());
         }
     }
 }

@@ -1,4 +1,4 @@
-package jenkins.model.view;
+package jenkins.model.project;
 
 import hudson.Extension;
 import hudson.model.AbstractProject;

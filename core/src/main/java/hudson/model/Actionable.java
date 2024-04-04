@@ -385,7 +385,6 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
     }
 
     @Override public ContextMenu doContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
-        System.out.println("Generating context menu for " + this.getClass().getSimpleName());
         return new ContextMenu().from(this, request, response);
     }
 

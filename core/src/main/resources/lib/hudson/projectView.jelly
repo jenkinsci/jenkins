@@ -84,7 +84,7 @@ THE SOFTWARE.
             <t:projectViewRow jobBaseUrl="${relativeLinkToJob.substring(0, relativeLinkToJob.length() - job.shortUrl.length())}"/>
           </j:forEach>
         </table>
-        <t:iconSize></t:iconSize>
+        <t:iconSize><t:rssBar/></t:iconSize>
       </div>
 
       <div class="jenkins-jobs-list jenkins-mobile-show">

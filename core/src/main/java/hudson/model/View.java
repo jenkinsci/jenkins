@@ -90,14 +90,12 @@ import javax.xml.transform.stream.StreamSource;
 import jenkins.model.Jenkins;
 import jenkins.model.ModelObjectWithChildren;
 import jenkins.model.ModelObjectWithContextMenu;
-import jenkins.model.TransientActionFactory;
 import jenkins.model.item_category.Categories;
 import jenkins.model.item_category.Category;
 import jenkins.model.item_category.ItemCategory;
 import jenkins.util.xml.XMLUtils;
 import jenkins.widgets.HasWidgets;
 import net.sf.json.JSONObject;
-import org.apache.commons.lang.StringUtils;
 import org.jenkins.ui.icon.Icon;
 import org.jenkins.ui.icon.IconSet;
 import org.kohsuke.accmod.Restricted;
@@ -137,7 +135,7 @@ import org.xml.sax.SAXException;
  * @see ViewGroup
  */
 @ExportedBean
-public abstract class View extends Actionable implements AccessControlled, Describable<View>, ExtensionPoint, Saveable, ModelObjectWithChildren, DescriptorByNameOwner, HasWidgets {
+public abstract class View extends AbstractModelObject implements AccessControlled, Describable<View>, ExtensionPoint, Saveable, ModelObjectWithChildren, DescriptorByNameOwner, HasWidgets {
 
     /**
      * Container of this view. Set right after the construction
@@ -1122,51 +1120,4 @@ public abstract class View extends Actionable implements AccessControlled, Descr
     public static final Message<View> NEW_PRONOUN = new Message<>();
 
     private static final Logger LOGGER = Logger.getLogger(View.class.getName());
-
-    @Override public ContextMenu doContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
-        System.out.println("Owner is " + this.getOwner().getClass().getSimpleName());
-
-        if (this.getOwner() != null && this.getOwner() instanceof Actionable) {
-            System.out.println("Generating context menu for " + this.getOwner().getClass().getSimpleName());
-
-            return new ContextMenu().addAll(((Actionable) this.getOwner()).getTransientActions());
-        }
-
-        System.out.println("Generating context menu for " + this.getClass().getSimpleName());
-        return new ContextMenu().from(this, request, response);
-    }
-
-    @Override
-    public List<Action> getTransientActions() {
-        List<Action> actions = new ArrayList<>();
-
-//        System.out.println("I was called");
-
-        if (this.getOwner() instanceof Actionable) {
-            for (TransientActionFactory factory : TransientActionFactory.factoriesFor(this.getOwner().getClass(), Action.class)) {
-                actions.addAll(factory.createFor(this.getOwner()));
-            }
-        }
-
-        for (TransientActionFactory factory : TransientActionFactory.factoriesFor(getClass(), Action.class)) {
-            actions.addAll(factory.createFor(this));
-        }
-
-        List<Action> collect = actions.stream()
-                .filter(e -> !StringUtils.isBlank(e.getDisplayName()) && !StringUtils.isBlank(e.getIconFileName()))
-                .sorted(Comparator.comparingInt((Action e) -> e.getGroup().getOrder())
-                        .thenComparing(action -> Objects.requireNonNullElse(action.getDisplayName(), "")))
-                .collect(Collectors.toList());
-
-        if (this.getOwner() instanceof HideActionsable) {
-            var ignored = ((HideActionsable)this.getOwner()).hideActions();
-
-            collect = collect.stream().filter(e -> !ignored.contains(e.getClass()))
-                    .collect(Collectors.toUnmodifiableList());
-
-//            System.out.println("Ignoring " + ignored);
-        }
-
-        return collect;
-    }
 }
