@@ -1,11 +1,11 @@
 package jenkins.model.project;
 
 import hudson.Extension;
-import hudson.model.AbstractProject;
 import hudson.model.Action;
 import hudson.model.View;
 import java.util.Collection;
 import java.util.Set;
+import jenkins.model.ParameterizedJobMixIn;
 import jenkins.model.TransientActionFactory;
 import jenkins.model.menu.Group;
 import jenkins.model.menu.Semantic;
@@ -13,15 +13,15 @@ import jenkins.model.menu.event.DoNothingAction;
 import jenkins.model.menu.event.LinkAction;
 
 @Extension
-public class BuildActionFactory extends TransientActionFactory<AbstractProject> {
+public class BuildActionFactory extends TransientActionFactory<ParameterizedJobMixIn.ParameterizedJob> {
 
     @Override
-    public Class<AbstractProject> type() {
-        return AbstractProject.class;
+    public Class<ParameterizedJobMixIn.ParameterizedJob> type() {
+        return ParameterizedJobMixIn.ParameterizedJob.class;
     }
 
     @Override
-    public Collection<? extends Action> createFor(AbstractProject target) {
+    public Collection<? extends Action> createFor(ParameterizedJobMixIn.ParameterizedJob target) {
         if (!target.hasPermission(View.CREATE)) {
             return Set.of();
         }
