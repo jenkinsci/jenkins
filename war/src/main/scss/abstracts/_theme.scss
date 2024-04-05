@@ -90,18 +90,46 @@ $semantics: (
   --breadcrumbs-bar-background: hsla(240, 20%, 96.5%, 0.8);
 
   // Alert call outs
-  --alert-success-text-color: #155724;
-  --alert-success-bg-color: #d4edda;
-  --alert-success-border-color: #c3e6cb;
-  --alert-info-text-color: #31708f;
-  --alert-info-bg-color: #d9edf7;
-  --alert-info-border-color: #bce8f1;
-  --alert-warning-text-color: #8a6d3b;
-  --alert-warning-bg-color: #fcf8e3;
-  --alert-warning-border-color: #faebcc;
-  --alert-danger-text-color: #a94442;
-  --alert-danger-bg-color: #f2dede;
-  --alert-danger-border-color: #ebccd1;
+  --alert-success-text-color: var(--success-color);
+  --alert-success-bg-color: color-mix(
+    in sRGB,
+    var(--success-color) 10%,
+    transparent
+  );
+  --alert-success-border-color: color-mix(
+    in sRGB,
+    var(--success-color) 5%,
+    transparent
+  );
+  --alert-info-text-color: var(--blue);
+  --alert-info-bg-color: color-mix(in sRGB, var(--blue) 10%, transparent);
+  --alert-info-border-color: color-mix(in sRGB, var(--blue) 5%, transparent);
+  --alert-warning-text-color: color-mix(
+    in sRGB,
+    var(--warning-color) 80%,
+    var(--text-color)
+  );
+  --alert-warning-bg-color: color-mix(
+    in sRGB,
+    var(--warning-color) 10%,
+    transparent
+  );
+  --alert-warning-border-color: color-mix(
+    in sRGB,
+    var(--warning-color) 5%,
+    transparent
+  );
+  --alert-danger-text-color: var(--error-color);
+  --alert-danger-bg-color: color-mix(
+    in sRGB,
+    var(--error-color) 10%,
+    transparent
+  );
+  --alert-danger-border-color: color-mix(
+    in sRGB,
+    var(--error-color) 5%,
+    transparent
+  );
 
   // Typography
   --text-color-secondary: var(--secondary);

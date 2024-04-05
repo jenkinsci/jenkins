@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2010, Sun Microsystems, Inc., Kohsuke Kawaguchi, Alan Harder
+Copyright (c) 2023 Jenkins contributors
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -23,6 +23,15 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <l:icon src="symbol-status-red" class="icon-md"/> ${%Failure}
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:t="/lib/hudson">
+  <j:set var="changeSets" value="${it.changeSets}"/>
+  <j:if test="${!changeSets.isEmpty()}">
+    <table>
+      <t:summary icon="symbol-changes">
+        <j:forEach var="changeSet" items="${changeSets}">
+          <st:include it="${changeSet}" page="digest.jelly"/>
+        </j:forEach>
+      </t:summary>
+    </table>
+  </j:if>
 </j:jelly>
