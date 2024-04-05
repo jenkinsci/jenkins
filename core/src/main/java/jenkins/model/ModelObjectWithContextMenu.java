@@ -4,6 +4,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Functions;
 import hudson.model.Action;
 import hudson.model.Actionable;
+import hudson.model.Job;
 import hudson.model.ModelObject;
 import java.io.IOException;
 import java.net.URI;
@@ -186,6 +187,12 @@ public interface ModelObjectWithContextMenu extends ModelObject {
         }
 
         public ContextMenu from(ModelObjectWithContextMenu self, StaplerRequest request, StaplerResponse response, String view) throws JellyException, IOException {
+            // TODO - refactor this
+            if (self instanceof Job) {
+                this.addAll(((Actionable) self).getAllActions());
+                return this;
+            }
+
             WebApp webApp = WebApp.getCurrent();
             final Script s = webApp.getMetaClass(self).getTearOff(JellyClassTearOff.class).findScript(view);
             if (s != null) {

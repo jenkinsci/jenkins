@@ -31,46 +31,42 @@ import hudson.model.Hudson;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
 
-@Restricted(NoExternalUse.class)
-public class RenameAction implements Action {
+@Extension
+public class RenameActionTransientFactory extends TransientActionFactory<AbstractItem> {
 
     @Override
-    public String getIconFileName() {
-        return "symbol-edit";
+    public Class<AbstractItem> type() {
+        return AbstractItem.class;
     }
 
     @Override
-    public String getDisplayName() {
-        return "Rename";
-    }
+    public Collection<? extends Action> createFor(AbstractItem target) {
+        boolean hasPermission = target.hasPermission(target.CONFIGURE) ||
+                (target.hasPermission(target.DELETE) &&
+                        ((Hudson)target.getParent()).hasPermission(target.CREATE));
 
-    @Override
-    public String getUrlName() {
-        return "confirm-rename";
-    }
+        if (hasPermission && target.isNameEditable()) {
+            return Set.of(
+                    new Action() {
+                @Override
+                public String getIconFileName() {
+                    return "symbol-edit";
+                }
 
-    @Extension
-    public static class TransientActionFactoryImpl extends TransientActionFactory<AbstractItem> {
+                @Override
+                public String getDisplayName() {
+                    return "Rename";
+                }
 
-        @Override
-        public Class<AbstractItem> type() {
-            return AbstractItem.class;
-        }
-
-        @Override
-        public Collection<? extends Action> createFor(AbstractItem target) {
-            boolean hasPermission = target.hasPermission(target.CONFIGURE) ||
-                    (target.hasPermission(target.DELETE) &&
-                    ((Hudson)target.getParent()).hasPermission(target.CREATE));
-
-            if (hasPermission && target.isNameEditable()) {
-                return Set.of(new RenameAction());
-            } else {
-                return Collections.emptyList();
+                @Override
+                public String getUrlName() {
+                    return target.getAbsoluteUrl() + "confirm-rename";
+                }
             }
+            );
+        } else {
+            return Collections.emptyList();
         }
     }
 }

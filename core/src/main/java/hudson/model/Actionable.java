@@ -107,6 +107,7 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
         }
 
         return _actions.stream()
+                .filter(e -> !StringUtils.isBlank(e.getDisplayName()) && !StringUtils.isBlank(e.getIconFileName()))
                 .sorted(Comparator.comparingInt(e -> e.getGroup().getOrder())).collect(Collectors.toUnmodifiableList());
     }
 

@@ -55,7 +55,8 @@ public class BuildActionFactory extends TransientActionFactory<ParameterizedJobM
                 @Override
                 public jenkins.model.menu.event.Action getAction() {
                     if (target.isParameterized()) {
-                        return LinkAction.of("build");
+                        // TODO - deprecated method
+                        return LinkAction.of(target.getAbsoluteUrl() + "build");
                     } else {
                      return new DoNothingAction();
                     }

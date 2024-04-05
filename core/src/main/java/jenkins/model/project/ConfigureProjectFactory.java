@@ -41,7 +41,7 @@ public class ConfigureProjectFactory extends TransientActionFactory<Job> {
 
             @Override
             public jenkins.model.menu.event.Action getAction() {
-                return LinkAction.of("configure");
+                return LinkAction.of(target.getAbsoluteUrl() + "configure");
             }
         });
     }
