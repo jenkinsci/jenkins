@@ -72,7 +72,7 @@ public interface ModelObjectWithContextMenu extends ModelObject {
         }
 
         public ContextMenu add(String url, String text) {
-            items.add(new MenuItem(url, null, text));
+            items.add(new MenuItem().withUrl(url).withIcon(null).withDisplayName(text));
             return this;
         }
 
@@ -150,6 +150,20 @@ public interface ModelObjectWithContextMenu extends ModelObject {
          */
         public ContextMenu add(MenuItem item) {
             items.add(item);
+            return this;
+        }
+
+        // Used in Jelly! - task.jelly
+        public ContextMenu add(String url, String icon, String iconXml, String text, boolean post, boolean requiresConfirmation, Badge badge, String message) {
+            if (text != null && icon != null && url != null) {
+                MenuItem item = new MenuItem().withUrl(url).withIcon(icon).withDisplayName(text);
+                item.iconXml = iconXml;
+                item.post = post;
+                item.requiresConfirmation = requiresConfirmation;
+                item.badge = badge;
+                item.message = message;
+                items.add(item);
+            }
             return this;
         }
 
@@ -309,10 +323,6 @@ public interface ModelObjectWithContextMenu extends ModelObject {
             return message;
         }
 
-        public MenuItem(String url, String icon, String displayName) {
-            withUrl(url).withIcon(icon).withDisplayName(displayName);
-        }
-
         public MenuItem() {
         }
 
@@ -343,10 +353,6 @@ public interface ModelObjectWithContextMenu extends ModelObject {
             this.iconXml = icon;
             return this;
         }
-
-//        public MenuItem withIcon(BallColor color) {
-//            return withStockIcon(color.getImage());
-//        }
 
         /**
          * Sets the icon from core's stock icon
