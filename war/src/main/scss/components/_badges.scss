@@ -37,22 +37,14 @@
   align-items: center;
   justify-content: center;
   border-radius: 100px;
-  font-size: 0.7rem;
+  font-size: 0.6875rem;
   min-height: 20px;
   min-width: 20px;
   padding: 0 0.4rem;
-  box-shadow: 0 1px 1px rgba(black, 0.1);
+  box-shadow: 0 2px 2px color-mix(in srgb, var(--color) 25%, transparent);
   animation: animate-in-badge var(--elastic-transition) 0.1s both;
-
-  &::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(white, black);
-    border-radius: 100px;
-    mix-blend-mode: overlay;
-    opacity: 0.35;
-  }
+  background: var(--color);
+  color: var(--background) !important;
 }
 
 @keyframes animate-in-badge {
