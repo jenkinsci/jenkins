@@ -318,6 +318,8 @@ public final class ComputerSet extends AbstractModelObject implements Describabl
             throw new Failure("Query parameter 'name' is required");
 
         name = name.trim();
+        if ("(built-in)".equals(name))
+            throw new Failure(Messages.Jenkins_NotAllowedName("(built-in)"));
         Jenkins.checkGoodName(name);
 
         if (Jenkins.get().getNode(name) != null)
