@@ -8,7 +8,7 @@ public final class LinkAction implements Action {
 
     private final String url;
 
-    public LinkAction(String url) {
+    private LinkAction(String url) {
         this.url = url;
     }
 

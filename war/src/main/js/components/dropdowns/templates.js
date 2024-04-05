@@ -44,6 +44,7 @@ function menuItem(options) {
     badgeTooltip = xmlEscape(itemOptions.badge.tooltip);
     badgeSeverity = xmlEscape(itemOptions.badge.severity);
   }
+
   const tag = itemOptions.type === "link" ? "a" : "button";
 
   const item = createElementFromHtml(`
@@ -73,6 +74,27 @@ function menuItem(options) {
 
   if (options.onClick) {
     item.addEventListener("click", (event) => options.onClick(event));
+  }
+
+  if (options.confirmation) {
+    item.addEventListener("click", () => {
+      dialog
+        .confirm(options.confirmation.title, {
+          message: options.confirmation.description,
+          type: options.semantic ?? "default",
+        })
+        .then(
+          () => {
+            const form = document.createElement("form");
+            form.setAttribute("method", "POST");
+            form.setAttribute("action", options.confirmation.url);
+            crumb.appendToForm(form);
+            document.body.appendChild(form);
+            form.submit();
+          },
+          () => {},
+        );
+    });
   }
 
   return item;

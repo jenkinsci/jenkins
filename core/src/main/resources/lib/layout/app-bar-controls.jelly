@@ -91,6 +91,7 @@ THE SOFTWARE.
                            id="${action.id}"
                            href="${action.action.url}"
                            clazz="${action.semantic != null ? 'jenkins-!-' + action.semantic.name().toLowerCase() + '-color' : ''}"
+                           semantic="${action.semantic}"
                            badge="${action.badge}" />
                     </j:forEach>
                   </dd:submenu>
@@ -101,7 +102,10 @@ THE SOFTWARE.
                        id="${action.id}"
                        href="${action.action.url}"
                        clazz="${action.semantic != null ? 'jenkins-!-' + action.semantic.name().toLowerCase() + '-color' : ''}"
-                       badge="${action.badge}" />
+                       semantic="${action.semantic}"
+                       badge="${action.badge}"
+                       confirmation="${action.action}"
+                  />
                 </j:otherwise>
               </j:choose>
             </j:if>

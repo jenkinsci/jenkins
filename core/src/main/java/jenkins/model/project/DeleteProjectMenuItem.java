@@ -8,7 +8,7 @@ import java.util.Set;
 import jenkins.model.TransientActionFactory;
 import jenkins.model.menu.Group;
 import jenkins.model.menu.Semantic;
-import jenkins.model.menu.event.LinkAction;
+import jenkins.model.menu.event.ConfirmationAction;
 
 public class DeleteProjectMenuItem implements Action {
 
@@ -29,7 +29,7 @@ public class DeleteProjectMenuItem implements Action {
 
     @Override
     public jenkins.model.menu.event.Action getAction() {
-        return LinkAction.of("delete");
+        return ConfirmationAction.of("Delete project", "Are you sure you want to delete this project?", "doDelete");
     }
 
     @Override

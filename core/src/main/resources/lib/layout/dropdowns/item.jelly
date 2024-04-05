@@ -40,8 +40,14 @@ THE SOFTWARE.
         <st:attribute name="clazz">
             Optional class for the menu item
         </st:attribute>
+        <st:attribute name="semantic">
+            Optional ??? for the menu item
+        </st:attribute>
         <st:attribute name="badge" type="jenkins.management.Badge">
             Optional badge for the menu item
+        </st:attribute>
+        <st:attribute name="confirmation" type="jenkins.model.menu.event.ConfirmationAction">
+            TODO
         </st:attribute>
     </st:documentation>
 
@@ -55,8 +61,12 @@ THE SOFTWARE.
               data-dropdown-text="${attrs.text}"
               data-dropdown-href="${attrs.href}"
               data-dropdown-clazz="${attrs.clazz}"
+              data-dropdown-semantic="${attrs.semantic.name().toLowerCase()}"
               data-dropdown-badge-text="${attrs.badge.text}"
               data-dropdown-badge-tooltip="${attrs.badge.tooltip}"
               data-dropdown-badge-severity="${attrs.badge.severity}"
+              data-dropdown-confirmation-title="${confirmation.title}"
+              data-dropdown-confirmation-description="${confirmation.description}"
+              data-dropdown-confirmation-url="${confirmation.postTo}"
     />
 </j:jelly>

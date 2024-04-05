@@ -31,7 +31,7 @@ def listWarnings(warnings, boolean core) {
     def fixables = 0
     warnings.each { warning ->
         dd {
-            a(warning.message, href: warning.url, rel: 'noopener noreferrer', target: "_blank")
+            a(warning.message, href: warning.getPostTo, rel: 'noopener noreferrer', target: "_blank")
             def fixable = warning.isFixable()
             if (fixable != null) {
                 if (fixable) {

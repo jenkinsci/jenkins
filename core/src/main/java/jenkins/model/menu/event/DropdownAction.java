@@ -11,7 +11,7 @@ public final class DropdownAction implements Action {
 
     private final List<hudson.model.Action> actions;
 
-    public DropdownAction(List<hudson.model.Action> actions) {
+    private DropdownAction(List<hudson.model.Action> actions) {
         this.actions = actions;
     }
 

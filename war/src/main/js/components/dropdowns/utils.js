@@ -154,7 +154,16 @@ function convertHtmlToItems(children) {
           icon: attributes.dropdownIcon,
           iconXml: attributes.dropdownIcon,
           clazz: attributes.dropdownClazz,
+          semantic: attributes.dropdownSemantic,
         };
+
+        if (attributes.dropdownConfirmationTitle) {
+          item.confirmation = {
+            title: attributes.dropdownConfirmationTitle,
+            description: attributes.dropdownConfirmationDescription,
+            url: attributes.dropdownConfirmationUrl,
+          };
+        }
 
         if (attributes.dropdownBadgeText) {
           item.badge = {
