@@ -24,11 +24,7 @@
 
 package lib.layout;
 
-import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
-import hudson.widgets.HistoryWidget;
-import jenkins.widgets.BuildQueueWidget;
-import jenkins.widgets.HasWidgetHelper;
 import org.htmlunit.html.DomElement;
 import org.htmlunit.html.HtmlLink;
 import org.htmlunit.html.HtmlPage;
