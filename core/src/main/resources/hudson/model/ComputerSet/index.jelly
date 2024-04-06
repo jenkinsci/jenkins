@@ -45,12 +45,10 @@ THE SOFTWARE.
           ${%Configure Monitors}
         </a>
       </j:if>
-      <j:if test="${hasPermission}">
-        <a class="jenkins-button" href="status" tooltip="${%Node status}">
-          <l:icon src="symbol-computer" />
-          ${%Node status}
-        </a>
-      </j:if>
+      <a class="jenkins-button" href="status" tooltip="${%Node status}">
+        <l:icon src="symbol-computer" />
+        ${%Node status}
+      </a>
       <l:hasAdministerOrManage>
         <form method="post" action="updateNow" class="jenkins-!-display-contents">
           <button tooltip="${%Refresh status}" class="jenkins-button">

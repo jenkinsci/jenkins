@@ -147,12 +147,12 @@ THE SOFTWARE.
       </j:if>
     </d:tag>
   </d:taglib>
-  <l:layout permissions="${app.MANAGE_AND_SYSTEM_READ}" title="${%Node Monitoring Configuration}" type="one-column">
-    <st:include page="sidepanel.jelly" />
+  <l:layout title="${%Node status}" type="one-column">
     <j:set var="readOnlyMode" value="${!app.hasPermission(app.MANAGE)}"/>
-    <l:breadcrumb title="${%Node status}"/>
+    <l:breadcrumb title="${%Status}"/>
+    <st:include page="sidepanel.jelly" />
     <l:main-panel>
-      <l:app-bar title="${%Node status}"/>
+      <l:app-bar title="${%Status}"/>
 
       <j:set var="computers" value="${it.get_all()}"/>
       <j:set var="computersSize" value="${computers.size()}"/>
