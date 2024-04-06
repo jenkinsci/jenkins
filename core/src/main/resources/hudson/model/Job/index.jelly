@@ -61,8 +61,6 @@ THE SOFTWARE.
       <st:include page="main.jelly" />
 
       <st:include page="permalinks.jelly" />
-
-      <script src="${resURL}/jsbundles/pages/project.js" type="text/javascript" defer="true" />
     </l:main-panel>
   </l:layout>
 </j:jelly>

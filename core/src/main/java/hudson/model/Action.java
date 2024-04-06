@@ -154,10 +154,6 @@ public interface Action extends ModelObject {
         return LinkAction.of(getUrlName());
     }
 
-    default String getId() {
-        return null;
-    }
-
     default Semantic getSemantic() {
         return null;
     }

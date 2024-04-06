@@ -4,12 +4,13 @@ import hudson.Extension;
 import hudson.model.Action;
 import hudson.model.View;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Set;
 import jenkins.model.ParameterizedJobMixIn;
 import jenkins.model.TransientActionFactory;
 import jenkins.model.menu.Group;
 import jenkins.model.menu.Semantic;
-import jenkins.model.menu.event.DoNothingAction;
+import jenkins.model.menu.event.JavaScriptAction;
 import jenkins.model.menu.event.LinkAction;
 
 @Extension
@@ -27,15 +28,15 @@ public class BuildActionFactory extends TransientActionFactory<ParameterizedJobM
         }
 
         return Set.of(new Action() {
-                @Override
-                public String getDisplayName() {
-                    return target.getBuildNowText();
-                }
+            @Override
+            public String getDisplayName() {
+                return target.getBuildNowText();
+            }
 
-                @Override
-                public String getIconFileName() {
-                    return "symbol-play";
-                }
+            @Override
+            public String getIconFileName() {
+                return "symbol-play";
+            }
 
             @Override
             public Group getGroup() {
@@ -48,19 +49,14 @@ public class BuildActionFactory extends TransientActionFactory<ParameterizedJobM
             }
 
             @Override
-            public String getId() {
-                return "button-build";
-            }
-
-                @Override
-                public jenkins.model.menu.event.Action getAction() {
-                    if (target.isParameterized()) {
-                        // TODO - deprecated method
-                        return LinkAction.of(target.getAbsoluteUrl() + "build");
-                    } else {
-                     return new DoNothingAction();
-                    }
+            public jenkins.model.menu.event.Action getAction() {
+                if (target.isParameterized()) {
+                    // TODO - deprecated method
+                    return LinkAction.of(target.getAbsoluteUrl() + "build");
+                } else {
+                    return JavaScriptAction.of(Map.of("project-id", target.getUrl()), "project.js");
                 }
+            }
         });
     }
 }

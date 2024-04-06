@@ -32,8 +32,9 @@ function generateDropdown(element, callback) {
   );
 }
 
-/*
+/**
  * Generates the contents for the dropdown
+ * @param {DropdownItemResponse[]}  items
  */
 function generateDropdownItems(items, compact) {
   const menuItems = document.createElement("div");

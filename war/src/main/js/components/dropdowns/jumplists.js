@@ -62,27 +62,14 @@ function generateDropdowns() {
 }
 
 /**
- * @typedef DropdownItem
- * @type {object}
- * @property {string} type
- * @property {string} displayName
- * @property {{order: number}} group
- * @property {string} icon
- * @property {string} iconXml
- * @property {string} url
- * @property {string} post
- * @property {{text: string, tooltip: string, severity: string}} badge
- * @property {string} semantic
- * @property {boolean} requiresConfirmation
- * @property {string} message
- * */
-
-/**
  * Generates the contents for the dropdown
  * @param {DropdownItem[]}  items
+ * @return {DropdownItemResponse[]}
  */
 function mapChildrenItemsToDropdownItems(items) {
+  /** @type {number | null} */
   let initialGroup = null;
+
   return items.flatMap((item) => {
     if (item.type === "HEADER") {
       return {
@@ -110,6 +97,10 @@ function mapChildrenItemsToDropdownItems(items) {
     }
     initialGroup = item.group?.order;
 
+    if (item.action?.['_class'] === 'jenkins.model.menu.event.JavaScriptAction') {
+      alert('hello')
+    }
+
     response.push({
       icon: item.icon,
       iconXml: item.iconXml,
@@ -117,36 +108,37 @@ function mapChildrenItemsToDropdownItems(items) {
       url: item.url,
       type: item.post || item.requiresConfirmation ? "button" : "link",
       badge: item.badge,
+      semantic: item.semantic,
       clazz: item.semantic
         ? "jenkins-!-" + item.semantic?.toLowerCase() + "-color"
         : "",
-      onClick: () => {
-        if (item.post || item.requiresConfirmation) {
-          if (item.requiresConfirmation) {
-            dialog
-              .confirm(item.displayName, { message: item.message })
-              .then(() => {
-                const form = document.createElement("form");
-                form.setAttribute("method", item.post ? "POST" : "GET");
-                form.setAttribute("action", item.url);
-                if (item.post) {
-                  crumb.appendToForm(form);
-                }
-                document.body.appendChild(form);
-                form.submit();
-              });
-          } else {
-            fetch(item.url, {
-              method: "post",
-              headers: crumb.wrap({}),
-            });
-            notificationBar.show(
-              item.displayName + ": Done.",
-              notificationBar.SUCCESS,
-            );
-          }
-        }
-      },
+      // onClick: () => {
+      //   if (item.post || item.requiresConfirmation) {
+      //     if (item.requiresConfirmation) {
+      //       dialog
+      //         .confirm(item.displayName, { message: item.message })
+      //         .then(() => {
+      //           const form = document.createElement("form");
+      //           form.setAttribute("method", item.post ? "POST" : "GET");
+      //           form.setAttribute("action", item.url);
+      //           if (item.post) {
+      //             crumb.appendToForm(form);
+      //           }
+      //           document.body.appendChild(form);
+      //           form.submit();
+      //         });
+      //     } else {
+      //       fetch(item.url, {
+      //         method: "post",
+      //         headers: crumb.wrap({}),
+      //       });
+      //       notificationBar.show(
+      //         item.displayName + ": Done.",
+      //         notificationBar.SUCCESS,
+      //       );
+      //     }
+      //   }
+      // },
       subMenu: item.subMenu
         ? () => {
             return mapChildrenItemsToDropdownItems(item.subMenu.items);
