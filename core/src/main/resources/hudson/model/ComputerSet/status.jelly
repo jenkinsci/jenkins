@@ -37,7 +37,7 @@ THE SOFTWARE.
         <l:icon src="${c.iconClassName}" alt="${altText}"/>
         <span style="margin-left: 1ch;">${title}</span>
       </a>
-      <span style="float: right; font-weight: normal;">
+      <span style="font-weight: normal;">
         <j:if test="${c.offline}">
           <j:choose>
             <j:when test="${c.offlineCause!=null and !c.connecting}">
@@ -62,7 +62,7 @@ THE SOFTWARE.
     <d:tag name="executor">
       <j:if test="${!c.offline or (c.offline and !e.idle)}">
         <tr>
-          <td class="pane" align="right" style="vertical-align: top">
+          <td class="pane" align="right" style="vertical-align: top; width:5rem">
             ${name}
           </td>
           <j:choose>
@@ -83,6 +83,7 @@ THE SOFTWARE.
             <j:otherwise>
               <!-- not actually optional, but it helps with backward compatibility -->
               <j:set var="executor" value="${e}"/>
+              <j:set var="exe" value="${executor.currentExecutable}"/>
               <st:include it="${e.currentExecutable}" page="executorCell.jelly" optional="true">
                 <td class="pane">
                   <div style="white-space: normal">
@@ -147,33 +148,39 @@ THE SOFTWARE.
       </j:if>
     </d:tag>
   </d:taglib>
-  <l:layout title="${%Node status}" type="one-column">
+  <l:layout title="${%Status}" type="one-column">
     <j:set var="readOnlyMode" value="${!app.hasPermission(app.MANAGE)}"/>
     <l:breadcrumb title="${%Status}"/>
-    <st:include page="sidepanel.jelly" />
     <l:main-panel>
       <l:app-bar title="${%Status}"/>
 
       <j:set var="computers" value="${it.get_all()}"/>
       <j:set var="computersSize" value="${computers.size()}"/>
 
-      <table>
-        <j:forEach var="c" items="${computers}">
-          <j:set var="cDisplayExecutors" value="${c.displayExecutors}"/>
-          <tr>
-            <j:if
-                test="${(computersSize gt 1 and !cDisplayExecutors.isEmpty()) or (c.node == app and c.offline)}">
-              <th class="pane" colspan="4">
-                <local:computerCaption title="${c.displayName}"/>
-              </th>
-            </j:if>
-          </tr>
-          <j:forEach var="de" items="${cDisplayExecutors}" varStatus="eloop">
-            <j:set var="e" value="${de.executor}"/>
-            <local:executor name="${de.displayName}" url="${de.url}"/>
-          </j:forEach>
-        </j:forEach>
-      </table>
+      <!-- TODO Temporary workaround after moving from the sidepanel, this page should be redesigned -->
+      <div id="side-panel" class="jenkins-form">
+        <div class="pane-frame">
+          <div class="pane-content">
+            <table id="executors" class="pane">
+              <j:forEach var="c" items="${computers}">
+                <j:set var="cDisplayExecutors" value="${c.displayExecutors}"/>
+                <tr>
+                  <j:if
+                      test="${(computersSize gt 1 and !cDisplayExecutors.isEmpty()) or (c.node == app and c.offline)}">
+                    <th class="pane" colspan="4">
+                      <local:computerCaption title="${c.displayName}"/>
+                    </th>
+                  </j:if>
+                </tr>
+                <j:forEach var="de" items="${cDisplayExecutors}" varStatus="eloop">
+                  <j:set var="e" value="${de.executor}"/>
+                  <local:executor name="${de.displayName}" url="${de.url}"/>
+                </j:forEach>
+              </j:forEach>
+            </table>
+          </div>
+        </div>
+      </div>
     </l:main-panel>
   </l:layout>
 </j:jelly>
