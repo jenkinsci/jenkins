@@ -28,6 +28,8 @@ import static java.nio.file.attribute.PosixFilePermission.OWNER_EXECUTE;
 import static java.nio.file.attribute.PosixFilePermission.OWNER_READ;
 import static java.nio.file.attribute.PosixFilePermission.OWNER_WRITE;
 import static org.awaitility.Awaitility.await;
+import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.not;
@@ -81,6 +83,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 import javax.servlet.ServletException;
 import jenkins.ClassLoaderReflectionToolkit;
 import jenkins.RestartRequiredException;
@@ -635,6 +638,49 @@ public class PluginManagerTest {
 
         // ensure data is loaded - probably unnecessary, but closer to reality
         Assert.assertSame(FormValidation.Kind.OK, uc.getSite("default").updateDirectlyNow().kind);
+    }
+
+    @Test @Issue("JENKINS-64840")
+    public void filteringMultipleTokens() throws Exception {
+        assumeFalse("TODO: Implement this test for Windows", Functions.isWindows());
+        PersistedList<UpdateSite> sites = r.jenkins.getUpdateCenter().getSites();
+        sites.clear();
+        URL url = PluginManagerTest.class.getResource("/plugins/large-update-center.json");
+        UpdateSite site = new UpdateSite(UpdateCenter.ID_DEFAULT, url.toString());
+        sites.add(site);
+        assertEquals(FormValidation.ok(), site.updateDirectly(false).get());
+        assertNotNull(site.getData());
+
+        //Dummy plugin is found in the second site (should have worked before the fix)
+        JenkinsRule.JSONWebResponse response = r.getJSON("pluginManager/pluginsSearch?query=build%20token&limit=50");
+        JSONObject json = response.getJSONObject();
+        assertTrue(json.has("data"));
+        JSONArray data = json.getJSONArray("data");
+
+        List<String> artifactIdResults = data.stream()
+                .map(obj -> (JSONObject) obj)
+                .map(obj -> obj.getString("name"))
+                .collect(Collectors.toList());
+
+        assertThat(artifactIdResults, hasItem("build-token-root"));
+        String firstArtifact = artifactIdResults.get(0);
+
+        assertThat(firstArtifact, is("build-token-root"));
+
+        response = r.getJSON("pluginManager/pluginsSearch?query=Pipeline%20Groovy&limit=50");
+        json = response.getJSONObject();
+        assertTrue(json.has("data"));
+        data = json.getJSONArray("data");
+
+        artifactIdResults = data.stream()
+                .map(obj -> (JSONObject) obj)
+                .map(obj -> obj.getString("name"))
+                .collect(Collectors.toList());
+
+        assertThat(artifactIdResults, hasItem("workflow-cps"));
+
+        firstArtifact = artifactIdResults.get(0);
+        assertThat(firstArtifact, is("workflow-cps"));
     }
 
     @Test @Issue("JENKINS-64840")

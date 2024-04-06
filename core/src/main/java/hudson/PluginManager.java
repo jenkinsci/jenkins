@@ -89,8 +89,10 @@ import java.nio.file.attribute.FileTime;
 import java.security.CodeSource;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -1428,6 +1430,8 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
     @Restricted(NoExternalUse.class)
     public HttpResponse doPluginsSearch(@QueryParameter String query, @QueryParameter Integer limit) {
+        String lQuery = query == null ? "" : query.toLowerCase(Locale.ENGLISH);
+
         List<JSONObject> plugins = new ArrayList<>();
         for (UpdateSite site : Jenkins.get().getUpdateCenter().getSiteList()) {
             List<JSONObject> sitePlugins = site.getAvailables().stream()
@@ -1435,35 +1439,58 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     if (query == null || query.isBlank()) {
                         return true;
                     }
-                    return (plugin.name != null && plugin.name.toLowerCase().contains(query.toLowerCase())) ||
-                        (plugin.title != null && plugin.title.toLowerCase().contains(query.toLowerCase())) ||
-                        (plugin.excerpt != null && plugin.excerpt.toLowerCase().contains(query.toLowerCase())) ||
-                        plugin.hasCategory(query) ||
-                        plugin.getCategoriesStream()
-                            .map(UpdateCenter::getCategoryDisplayName)
-                            .anyMatch(category -> category != null && category.toLowerCase().contains(query.toLowerCase())) ||
-                        plugin.hasWarnings() && query.equalsIgnoreCase("warning:");
+                    boolean matches = searchQueryMatches(query, plugin, lQuery);
+                    if (matches) {
+                        return true;
+                    }
+
+                    String[] tokenised = lQuery.split(" ");
+
+                    if (tokenised.length > 1) {
+                        return Arrays.stream(tokenised)
+                                .anyMatch(q -> searchQueryMatchesLimited(q, plugin, q.toLowerCase()));
+                    }
+                    return false;
                 })
                 .limit(Math.max(limit - plugins.size(), 1))
-                .sorted((o1, o2) -> {
-                    String o1DisplayName = o1.getDisplayName();
-                    if (o1.name.equalsIgnoreCase(query) ||
-                        o1DisplayName.equalsIgnoreCase(query)) {
-                        return -1;
-                    }
-                    String o2DisplayName = o2.getDisplayName();
-                    if (o2.name.equalsIgnoreCase(query) || o2DisplayName.equalsIgnoreCase(query)) {
-                        return 1;
-                    }
-                    if (o1.name.equals(o2.name)) {
-                        return 0;
-                    }
-                    final int pop = Double.compare(o2.popularity, o1.popularity);
-                    if (pop != 0) {
-                        return pop; // highest popularity first
-                    }
-                    return o1DisplayName.compareTo(o2DisplayName);
-                })
+                    .sorted(
+                            Comparator.comparingLong(plugin -> {
+                                long score = 0;
+                                if (plugin.name.equalsIgnoreCase(lQuery) ||
+                                        plugin.getDisplayName().equalsIgnoreCase(lQuery)) {
+                                    return -1000L;
+                                }
+
+                                String[] tokenised = lQuery.toLowerCase().split(" ");
+
+                                // if greater than 1 word match in the title
+                                if (tokenised.length > 1) {
+                                    long o1Match = Arrays.stream(tokenised)
+                                            .filter(plugin.title.toLowerCase(Locale.ENGLISH)::contains)
+                                            .count();
+                                    if (o1Match > 1) {
+                                        score -= 100;
+                                    } else if (o1Match == 1) {
+                                        score -= 50;
+                                    }
+                                }
+
+                                if (plugin.isDeprecated()) {
+                                    score += 100;
+                                } else {
+                                    if (plugin.popularity > 100000) {
+                                        score -= 40;
+                                    } else if (plugin.popularity > 10000) {
+                                        score -= 20;
+                                    } else if (plugin.popularity > 1000) {
+                                        score -= 10;
+                                    }
+                                }
+
+                                return score;
+                            })
+                    )
+
                 .map(plugin -> {
                     JSONObject jsonObject = new JSONObject();
                     jsonObject.put("name", plugin.name);
@@ -1529,6 +1556,22 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         mappedPlugins.addAll(plugins);
 
         return hudson.util.HttpResponses.okJSON(mappedPlugins);
+    }
+
+    private static boolean searchQueryMatches(String query, UpdateSite.Plugin plugin, String lQuery) {
+        return (plugin.name != null && plugin.name.toLowerCase().contains(lQuery)) ||
+                (plugin.title != null && plugin.title.toLowerCase().contains(lQuery)) ||
+                (plugin.excerpt != null && plugin.excerpt.toLowerCase().contains(lQuery)) ||
+                plugin.hasCategory(query) ||
+                plugin.getCategoriesStream()
+                        .map(UpdateCenter::getCategoryDisplayName)
+                        .anyMatch(category -> category != null && category.toLowerCase().contains(lQuery)) ||
+                plugin.hasWarnings() && query.equalsIgnoreCase("warning:");
+    }
+
+    private static boolean searchQueryMatchesLimited(String query, UpdateSite.Plugin plugin, String lQuery) {
+        return (plugin.name != null && plugin.name.toLowerCase().contains(lQuery)) ||
+                (plugin.title != null && plugin.title.toLowerCase().contains(lQuery));
     }
 
     /**
