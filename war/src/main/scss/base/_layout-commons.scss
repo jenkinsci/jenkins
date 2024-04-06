@@ -97,6 +97,12 @@ body.full-screen #main-panel {
   padding: 0;
 }
 
+@media (max-width: 1170px) {
+  body.two-column #side-panel {
+    width: 340px;
+  }
+}
+
 /* stylelint-disable-next-line media-query-no-invalid */
 @media (max-width: breakpoints.$tablet-breakpoint) {
   body.two-column #page-body {
