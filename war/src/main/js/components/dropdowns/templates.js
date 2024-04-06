@@ -27,15 +27,22 @@ function dropdown() {
   };
 }
 
-function menuItem(options) {
+/**
+ * Generates the contents for the dropdown
+ * @param {DropdownItem}  menuItem
+ */
+function menuItem(menuItem) {
+  /**
+  * @type {DropdownItem}
+  */
   const itemOptions = Object.assign(
     {
       type: "link",
     },
-    options,
+    menuItem,
   );
 
-  const label = xmlEscape(itemOptions.label);
+  const label = xmlEscape(itemOptions.displayName);
   let badgeText;
   let badgeTooltip;
   let badgeSeverity;
@@ -45,10 +52,15 @@ function menuItem(options) {
     badgeSeverity = xmlEscape(itemOptions.badge.severity);
   }
 
-  const tag = itemOptions.type === "link" ? "a" : "button";
+  // TODO - improve this
+  let clazz = itemOptions.clazz + (itemOptions.semantic ? ' jenkins-!-' + itemOptions.semantic.toLowerCase() + '-color' : '');
+
+  // TODO - make this better
+  const tag = itemOptions.action && itemOptions.action.url ? "a" : "button";
+  const url = tag === 'a' ? xmlEscape(itemOptions.action.url) : '';
 
   const item = createElementFromHtml(`
-      <${tag} class="jenkins-dropdown__item ${itemOptions.clazz ? xmlEscape(itemOptions.clazz) : ""}" ${itemOptions.url ? `href="${xmlEscape(itemOptions.url)}"` : ""} ${itemOptions.id ? `id="${xmlEscape(itemOptions.id)}"` : ""}>
+      <${tag} class="jenkins-dropdown__item ${clazz ? clazz : ""}" ${url ? `href="${url}"` : ""} ${itemOptions.id ? `id="${xmlEscape(itemOptions.id)}"` : ""}>
           ${
             itemOptions.icon
               ? `<div class="jenkins-dropdown__item__icon">${
@@ -65,29 +77,25 @@ function menuItem(options) {
                         : ``
                     }
           ${
-            itemOptions.subMenu != null
+            itemOptions.action && itemOptions.action.actions
               ? `<span class="jenkins-dropdown__item__chevron"></span>`
               : ``
           }
       </${tag}>
     `);
 
-  if (options.onClick) {
-    item.addEventListener("click", (event) => options.onClick(event));
-  }
-
-  if (options.confirmation) {
+  if (menuItem.action && menuItem.action.postTo) {
     item.addEventListener("click", () => {
       dialog
-        .confirm(options.confirmation.title, {
-          message: options.confirmation.description,
-          type: options.semantic ?? "default",
+        .confirm(menuItem.action.title, {
+          message: menuItem.action.description,
+          type: menuItem.semantic.toLowerCase() ?? "default",
         })
         .then(
           () => {
             const form = document.createElement("form");
             form.setAttribute("method", "POST");
-            form.setAttribute("action", options.confirmation.url);
+            form.setAttribute("action", menuItem.action.postTo);
             crumb.appendToForm(form);
             document.body.appendChild(form);
             form.submit();

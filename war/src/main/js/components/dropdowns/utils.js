@@ -34,9 +34,10 @@ function generateDropdown(element, callback) {
 
 /**
  * Generates the contents for the dropdown
- * @param {DropdownItemResponse[]}  items
+ * @param {DropdownItem[]}  items
+ * @param {boolean}  compact
  */
-function generateDropdownItems(items, compact) {
+function generateDropdownItems(items, compact = false) {
   const menuItems = document.createElement("div");
   menuItems.classList.add("jenkins-dropdown");
   if (compact === true) {
@@ -50,7 +51,7 @@ function generateDropdownItems(items, compact) {
       }
 
       if (item.type === "HEADER") {
-        return Templates.heading(item.label);
+        return Templates.heading(item.displayName);
       }
 
       if (item.type === "SEPARATOR") {
@@ -58,16 +59,16 @@ function generateDropdownItems(items, compact) {
       }
 
       if (item.type === "DISABLED") {
-        return Templates.disabled(item.label);
+        return Templates.disabled(item.displayName);
       }
 
       const menuItem = Templates.menuItem(item);
 
-      if (item.subMenu != null) {
+      if (item.action && item.action.actions != null) {
         tippy(
           menuItem,
           Object.assign({}, Templates.dropdown(), {
-            content: generateDropdownItems(item.subMenu()),
+            content: generateDropdownItems(item.action.actions),
             trigger: "mouseenter",
             placement: "right-start",
             offset: [-8, 0],
@@ -150,7 +151,7 @@ function convertHtmlToItems(children) {
     switch (type) {
       case "ITEM": {
         const item = {
-          label: attributes.dropdownText,
+          displayName: attributes.dropdownText,
           id: attributes.dropdownId,
           icon: attributes.dropdownIcon,
           iconXml: attributes.dropdownIcon,
@@ -159,10 +160,10 @@ function convertHtmlToItems(children) {
         };
 
         if (attributes.dropdownConfirmationTitle) {
-          item.confirmation = {
+          item.action = {
             title: attributes.dropdownConfirmationTitle,
             description: attributes.dropdownConfirmationDescription,
-            url: attributes.dropdownConfirmationUrl,
+            postTo: attributes.dropdownConfirmationUrl,
           };
         }
 
@@ -175,10 +176,9 @@ function convertHtmlToItems(children) {
         }
 
         if (attributes.dropdownHref) {
-          item.url = attributes.dropdownHref;
-          item.type = "link";
-        } else {
-          item.type = "button";
+          item.action = {
+            url: attributes.dropdownHref
+          }
         }
 
         items.push(item);
@@ -187,10 +187,12 @@ function convertHtmlToItems(children) {
       case "SUBMENU":
         items.push({
           type: "ITEM",
-          label: attributes.dropdownText,
+          displayName: attributes.dropdownText,
           icon: attributes.dropdownIcon,
           iconXml: attributes.dropdownIcon,
-          subMenu: () => convertHtmlToItems(child.content.children),
+          action: {
+            actions: convertHtmlToItems(child.content.children)
+          },
         });
         break;
       case "SEPARATOR":

@@ -43,7 +43,7 @@ THE SOFTWARE.
         <l:app-bar-controls />
       </div>
 
-      <t:editableDescription permission="${it.CONFIGURE}" customButton="custom-description" />
+      <t:editableDescription permission="${it.CONFIGURE}" />
 
       <j:if test="${(it.fullName!=it.fullDisplayName) and (it.class.name!='hudson.matrix.MatrixConfiguration')}"> <!-- TODO rather check for TopLevelItem (how to do this from Jelly?) -->
         <j:choose>

@@ -1,31 +1,15 @@
 /**
  * @typedef DropdownItem
  * @type {object}
- * @property {string} type
+ * @property {'DISABLED' | 'SEPARATOR' | 'HEADER' | 'CUSTOM'} type
+ * @property {string} id
  * @property {string} displayName
  * @property {{order: number}} group
  * @property {string} icon
  * @property {string} iconXml
- * @property {string} url
- * @property {string} post
  * @property {{text: string, tooltip: string, severity: string}} badge
+ * @property {{url: string} | {title: string, description: string, postTo: string}, {attributes: {[key: string]: string}, javascriptUrl: string} | {actions: DropdownItem[]}} action
  * @property {string} semantic
- * @property {boolean} requiresConfirmation
- * @property {string} message
- * */
-
-/**
- * @typedef DropdownItemResponse
- * @type {object}
- * @property {string} type
- * @property {string} displayName
- * @property {{order: number}} group
- * @property {string} icon
- * @property {string} iconXml
- * @property {string} url
- * @property {string} post
- * @property {{text: string, tooltip: string, severity: string}} badge
- * @property {string} semantic
- * @property {boolean} requiresConfirmation
- * @property {string} message
+ * @property {string} contents - TODO
+ * @property {string} clazz - TODO ??? not sure if this is staying
  * */
