@@ -27,7 +27,7 @@ public class DeleteProjectFactory extends TransientActionFactory<Job> {
         return Set.of(new Action() {
             @Override
             public String getDisplayName() {
-                return "Delete project";
+                return Messages.DeleteProjectFactory_Delete();
             }
 
             @Override
@@ -43,7 +43,7 @@ public class DeleteProjectFactory extends TransientActionFactory<Job> {
             @Override
             public jenkins.model.menu.event.Action getAction() {
                 // TODO - Change this - Deprecated method
-                return ConfirmationAction.of("Delete project", "Are you sure you want to delete this project?",  target.getAbsoluteUrl() + "doDelete");
+                return ConfirmationAction.of(Messages.DeleteProjectFactory_DeleteDialog_Title(), Messages.DeleteProjectFactory_DeleteDialog_Description(),  target.getAbsoluteUrl() + "doDelete");
             }
 
             @Override

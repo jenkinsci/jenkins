@@ -14,7 +14,7 @@ import jenkins.model.menu.event.JavaScriptAction;
 import jenkins.model.menu.event.LinkAction;
 
 @Extension
-public class BuildActionFactory extends TransientActionFactory<ParameterizedJobMixIn.ParameterizedJob> {
+public class BuildProjectFactory extends TransientActionFactory<ParameterizedJobMixIn.ParameterizedJob> {
 
     @Override
     public Class<ParameterizedJobMixIn.ParameterizedJob> type() {
