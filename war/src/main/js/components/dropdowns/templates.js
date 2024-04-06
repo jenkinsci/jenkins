@@ -1,5 +1,6 @@
 import { createElementFromHtml } from "@/util/dom";
 import { xmlEscape } from "@/util/security";
+import behaviorShim from "@/util/behavior-shim";
 
 function dropdown() {
   return {
@@ -25,6 +26,29 @@ function dropdown() {
       referenceParent.classList.remove("model-link--open");
     },
   };
+}
+
+function kebabToCamelCase(str) {
+  return str.replace(/-([a-z])/g, function(match, char) {
+    return char.toUpperCase();
+  });
+}
+
+function loadScriptIfNotLoaded(url, item) {
+  // Check if the script element with the given URL already exists
+  const existingScript = document.querySelector(`script[src="${url}"]`);
+
+  if (!existingScript) {
+    const script = document.createElement('script');
+    script.src = url;
+
+    script.onload = () => {
+      // TODO - This is hacky
+      behaviorShim.applySubtree(item, true);
+    };
+
+    document.body.appendChild(script);
+  }
 }
 
 /**
@@ -83,6 +107,14 @@ function menuItem(menuItem) {
           }
       </${tag}>
     `);
+
+  if (menuItem.action && menuItem.action.attributes) {
+    for (const key in menuItem.action.attributes) {
+      item.dataset[kebabToCamelCase(key)] = menuItem.action.attributes[key].toString();
+    }
+
+    loadScriptIfNotLoaded(menuItem.action.javascriptUrl, item);
+  }
 
   if (menuItem.action && menuItem.action.postTo) {
     item.addEventListener("click", () => {

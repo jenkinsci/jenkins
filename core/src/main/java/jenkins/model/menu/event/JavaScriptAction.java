@@ -1,6 +1,7 @@
 package jenkins.model.menu.event;
 
 import java.util.Map;
+import jenkins.model.Jenkins;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
@@ -17,7 +18,8 @@ public final class JavaScriptAction implements Action {
     }
 
     public static JavaScriptAction of(Map<String, String> attributes, String javascriptUrl) {
-        return new JavaScriptAction(attributes, javascriptUrl);
+        Jenkins jenkins = Jenkins.get();
+        return new JavaScriptAction(attributes, jenkins.getRootUrl() + javascriptUrl);
     }
 
     @Exported
