@@ -5,7 +5,6 @@ import Utils from "@/components/dropdowns/utils";
 function init() {
   generateJumplistAccessors();
   generateDropdowns();
-  generateDropdowns12();
 }
 
 /*
@@ -25,22 +24,6 @@ function generateJumplistAccessors() {
     });
     link.appendChild(dropdownChevron);
   });
-}
-
-/*
- * Generates the dropdowns for the jump lists
- */
-function generateDropdowns12() {
-  behaviorShim.specify(
-    "#auto-overflow",
-    "-dropdosswn-",
-    1000,
-    (element) =>
-      Utils.generateDropdown(element, (instance) => {
-        const template = JSON.parse(element.nextSibling.content.textContent);
-        instance.setContent(Utils.generateDropdownItems(mapChildrenItemsToDropdownItems(template.items)));
-      }),
-  );
 }
 
 /*
@@ -119,4 +102,4 @@ function mapChildrenItemsToDropdownItems(items) {
   });
 }
 
-export default { init };
+export default { init, mapChildrenItemsToDropdownItems };

@@ -1,11 +1,16 @@
 import behaviorShim from "@/util/behavior-shim";
 
-behaviorShim.specify("button[data-button-type='build']", "TODO", 100, function (e) {
-  e.addEventListener('click', () => {
-    fetch(e.dataset.projectId + "build?delay=0sec", {
-      method: "post",
-      headers: crumb.wrap({}),
+behaviorShim.specify(
+  "button[data-button-type='build']",
+  "TODO",
+  100,
+  function (e) {
+    e.addEventListener("click", () => {
+      fetch(e.dataset.projectId + "build?delay=0sec", {
+        method: "post",
+        headers: crumb.wrap({}),
+      });
+      notificationBar.show("Build scheduled", notificationBar.SUCCESS);
     });
-    notificationBar.show("Build scheduled", notificationBar.SUCCESS);
-  })
-});
+  },
+);

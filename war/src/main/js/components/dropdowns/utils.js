@@ -177,8 +177,8 @@ function convertHtmlToItems(children) {
 
         if (attributes.dropdownHref) {
           item.action = {
-            url: attributes.dropdownHref
-          }
+            url: attributes.dropdownHref,
+          };
         }
 
         items.push(item);
@@ -191,7 +191,7 @@ function convertHtmlToItems(children) {
           icon: attributes.dropdownIcon,
           iconXml: attributes.dropdownIcon,
           action: {
-            actions: convertHtmlToItems(child.content.children)
+            actions: convertHtmlToItems(child.content.children),
           },
         });
         break;

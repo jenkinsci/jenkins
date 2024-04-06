@@ -29,7 +29,7 @@ function dropdown() {
 }
 
 function kebabToCamelCase(str) {
-  return str.replace(/-([a-z])/g, function(match, char) {
+  return str.replace(/-([a-z])/g, function (match, char) {
     return char.toUpperCase();
   });
 }
@@ -39,7 +39,7 @@ function loadScriptIfNotLoaded(url, item) {
   const existingScript = document.querySelector(`script[src="${url}"]`);
 
   if (!existingScript) {
-    const script = document.createElement('script');
+    const script = document.createElement("script");
     script.src = url;
 
     script.onload = () => {
@@ -54,11 +54,12 @@ function loadScriptIfNotLoaded(url, item) {
 /**
  * Generates the contents for the dropdown
  * @param {DropdownItem}  menuItem
+ * @return {Element}
  */
-function menuItem(menuItem) {
+function menuItem(menuItem, type = 'jenkins-dropdown__item') {
   /**
-  * @type {DropdownItem}
-  */
+   * @type {DropdownItem}
+   */
   const itemOptions = Object.assign(
     {
       type: "link",
@@ -77,14 +78,18 @@ function menuItem(menuItem) {
   }
 
   // TODO - improve this
-  let clazz = itemOptions.clazz + (itemOptions.semantic ? ' jenkins-!-' + itemOptions.semantic.toLowerCase() + '-color' : '');
+  let clazz =
+    itemOptions.clazz +
+    (itemOptions.semantic
+      ? " jenkins-!-" + itemOptions.semantic.toLowerCase() + "-color"
+      : "");
 
   // TODO - make this better
   const tag = itemOptions.action && itemOptions.action.url ? "a" : "button";
-  const url = tag === 'a' ? xmlEscape(itemOptions.action.url) : '';
+  const url = tag === "a" ? xmlEscape(itemOptions.action.url) : "";
 
   const item = createElementFromHtml(`
-      <${tag} class="jenkins-dropdown__item ${clazz ? clazz : ""}" ${url ? `href="${url}"` : ""} ${itemOptions.id ? `id="${xmlEscape(itemOptions.id)}"` : ""}>
+      <${tag} class="${type} ${clazz ? clazz : ""}" ${url ? `href="${url}"` : ""} ${itemOptions.id ? `id="${xmlEscape(itemOptions.id)}"` : ""}>
           ${
             itemOptions.icon
               ? `<div class="jenkins-dropdown__item__icon">${
@@ -110,7 +115,8 @@ function menuItem(menuItem) {
 
   if (menuItem.action && menuItem.action.attributes) {
     for (const key in menuItem.action.attributes) {
-      item.dataset[kebabToCamelCase(key)] = menuItem.action.attributes[key].toString();
+      item.dataset[kebabToCamelCase(key)] =
+        menuItem.action.attributes[key].toString();
     }
 
     loadScriptIfNotLoaded(menuItem.action.javascriptUrl, item);
