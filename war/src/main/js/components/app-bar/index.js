@@ -18,7 +18,10 @@ function init() {
         item.icon = null;
         item.iconXml = null;
       }
-      element.parentNode.insertBefore(Templates.menuItem(item, 'jenkins-button'), element);
+      element.parentNode.insertBefore(
+        Templates.menuItem(item, "jenkins-button"),
+        element,
+      );
     });
 
     // Add any additional items as an overflow menu

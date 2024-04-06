@@ -26,7 +26,7 @@ public class ConfigureProjectFactory extends TransientActionFactory<Job> {
         return Set.of(new Action() {
             @Override
             public String getDisplayName() {
-                return target.hasPermission(Job.CONFIGURE) ? "Configure" : "View configuration";
+                return target.hasPermission(Job.CONFIGURE) ? Messages.ConfigureProjectFactory_Configure() : Messages.ConfigureProjectFactory_View();
             }
 
             @Override

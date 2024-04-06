@@ -56,7 +56,7 @@ function loadScriptIfNotLoaded(url, item) {
  * @param {DropdownItem}  menuItem
  * @return {Element}
  */
-function menuItem(menuItem, type = 'jenkins-dropdown__item') {
+function menuItem(menuItem, type = "jenkins-dropdown__item") {
   /**
    * @type {DropdownItem}
    */
