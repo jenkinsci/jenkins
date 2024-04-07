@@ -97,10 +97,8 @@ body.full-screen #main-panel {
   padding: 0;
 }
 
-@media (max-width: 1170px) {
-  body.two-column #side-panel {
-    width: 340px;
-  }
+body.two-column #side-panel {
+  width: 340px;
 }
 
 /* stylelint-disable-next-line media-query-no-invalid */
@@ -121,10 +119,6 @@ body.full-screen #main-panel {
 }
 
 @media (width >= 1170px) {
-  body.two-column #side-panel {
-    width: 340px;
-  }
-
   body.two-column #main-panel {
     width: calc(100% - 370px);
   }
