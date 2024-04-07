@@ -31,8 +31,11 @@ import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import jenkins.model.ModelObjectWithContextMenu;
 import jenkins.model.TransientActionFactory;
+import org.apache.commons.lang.StringUtils;
+import org.jenkins.ui.icon.IconSpec;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
@@ -104,22 +107,7 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
             }
         }
 
-        return actions;
-//        return _actions.stream()
-//                .filter(e -> {
-//                    String icon = e.getIconFileName();
-//
-//                    if (e instanceof IconSpec) {
-//                        if (((IconSpec) e).getIconClassName() != null) {
-//                            icon = ((IconSpec) e).getIconClassName();
-//                        }
-//                    }
-//
-//                    return !StringUtils.isBlank(e.getDisplayName()) && !StringUtils.isBlank(icon);
-//                })
-//                .sorted(Comparator.comparingInt((Action e) -> e.getGroup().getOrder())
-//                        .thenComparing(e -> Objects.requireNonNullElse(e.getDisplayName(), "")))
-//                .collect(Collectors.toUnmodifiableList());
+        return _actions;
     }
 
     public List<Action> getTransientActions() {
@@ -128,22 +116,22 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
         for (TransientActionFactory factory : TransientActionFactory.factoriesFor(getClass(), Action.class)) {
             actions.addAll(factory.createFor(this));
         }
-return actions;
-//        return actions.stream()
-//                .filter(e -> {
-//                    String icon = e.getIconFileName();
-//
-//                    if (e instanceof IconSpec) {
-//                        if (((IconSpec) e).getIconClassName() != null) {
-//                            icon = ((IconSpec) e).getIconClassName();
-//                        }
-//                    }
-//
-//                    return !StringUtils.isBlank(e.getDisplayName()) && !StringUtils.isBlank(icon);
-//                })
-//                .sorted(Comparator.comparingInt((Action e) -> e.getGroup().getOrder())
-//                        .thenComparing(e -> Objects.requireNonNullElse(e.getDisplayName(), "")))
-//                .collect(Collectors.toUnmodifiableList());
+
+        return actions.stream()
+                .filter(e -> {
+                    String icon = e.getIconFileName();
+
+                    if (e instanceof IconSpec) {
+                        if (((IconSpec) e).getIconClassName() != null) {
+                            icon = ((IconSpec) e).getIconClassName();
+                        }
+                    }
+
+                    return !StringUtils.isBlank(e.getDisplayName()) && !StringUtils.isBlank(icon);
+                })
+                .sorted(Comparator.comparingInt((Action e) -> e.getGroup().getOrder())
+                        .thenComparing(e -> Objects.requireNonNullElse(e.getDisplayName(), "")))
+                .collect(Collectors.toUnmodifiableList());
     }
 
     private <T> Collection<? extends Action> createFor(TransientActionFactory<T> taf) {

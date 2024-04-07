@@ -237,7 +237,7 @@ public interface ModelObjectWithContextMenu extends ModelObject {
         public ContextMenu from(ModelObjectWithContextMenu self, StaplerRequest request, StaplerResponse response, String view) throws JellyException, IOException {
             // TODO - refactor this
             if (self instanceof Job) {
-                this.addAll(((Actionable) self).getAllActions());
+                this.addAll(((Actionable) self).getTransientActions());
                 return this;
             }
 
