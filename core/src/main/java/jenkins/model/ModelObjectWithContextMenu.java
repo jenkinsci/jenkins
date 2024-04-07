@@ -118,7 +118,7 @@ public interface ModelObjectWithContextMenu extends ModelObject {
             if (icon != null && icon.startsWith("symbol-")) {
                 menuItem.iconXml = Symbol.get(new SymbolRequest.Builder()
                         .withName(icon.split(" ")[0].substring(7))
-                        .withPluginName(Functions.extractPluginNameFromIconSrc(action.getIconFileName()))
+                        .withPluginName(Functions.extractPluginNameFromIconSrc(icon))
                         .build());
             }
 
