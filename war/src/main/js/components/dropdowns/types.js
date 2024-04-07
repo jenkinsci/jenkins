@@ -12,4 +12,5 @@
  * @property {string} semantic
  * @property {string} contents - TODO
  * @property {string} clazz - TODO ??? not sure if this is staying
+ * @property {() => {}} onClick - TODO ??? not sure if this is staying
  * */

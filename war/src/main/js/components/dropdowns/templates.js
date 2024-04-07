@@ -122,6 +122,10 @@ function menuItem(menuItem, type = "jenkins-dropdown__item") {
     loadScriptIfNotLoaded(menuItem.action.javascriptUrl, item);
   }
 
+  if (menuItem.onClick) {
+    item.addEventListener('click', menuItem.onClick);
+  }
+
   if (menuItem.action && menuItem.action.postTo) {
     item.addEventListener("click", () => {
       dialog
