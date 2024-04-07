@@ -2,10 +2,8 @@ package jenkins.model;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Functions;
-import hudson.model.Action;
-import hudson.model.Actionable;
-import hudson.model.Job;
-import hudson.model.ModelObject;
+import hudson.model.*;
+import hudson.slaves.Cloud;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -152,6 +150,50 @@ public interface ModelObjectWithContextMenu extends ModelObject {
         public ContextMenu add(MenuItem item) {
             items.add(item);
             return this;
+        }
+
+        /**
+         * Adds a node
+         *
+         * @since 1.513
+         */
+        public ContextMenu add(Node n) {
+            Computer c = n.toComputer();
+            return add(new MenuItem()
+                    .withDisplayName(n.getDisplayName())
+                    .withStockIcon(c == null ? "computer.svg" : c.getIcon())
+                    .withContextRelativeUrl(n.getSearchUrl()));
+        }
+
+        /**
+         * Adds a computer
+         *
+         * @since 1.513
+         */
+        public ContextMenu add(Computer c) {
+            return add(new MenuItem()
+                    .withDisplayName(c.getDisplayName())
+                    .withIconClass(c.getIconClassName())
+                    .withContextRelativeUrl(c.getUrl()));
+        }
+
+        public ContextMenu add(Cloud c) {
+            return add(new MenuItem()
+                    .withDisplayName(c.getDisplayName())
+                    .withIconClass(c.getIconClassName())
+                    .withContextRelativeUrl(c.getUrl()));
+        }
+
+        /**
+         * Adds a child item when rendering context menu of its parent.
+         *
+         * @since 1.513
+         */
+        public ContextMenu add(Job job) {
+            return add(new MenuItem()
+                    .withDisplayName(job.getDisplayName())
+                    .withIcon(job.getIconColor().getImage())
+                    .withUrl(job.getSearchUrl()));
         }
 
         // Used in Jelly! - task.jelly
