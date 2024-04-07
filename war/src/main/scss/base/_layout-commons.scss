@@ -114,7 +114,7 @@ body.full-screen #main-panel {
   }
 }
 
-@media (width > 900px) {
+@media (width >= 1170px) {
   body.two-column #side-panel {
     width: 340px;
   }
