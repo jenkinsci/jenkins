@@ -54,7 +54,7 @@ public class BuildProjectFactory extends TransientActionFactory<ParameterizedJob
                     // TODO - deprecated method - dont use this!
                     return LinkAction.of(target.getAbsoluteUrl() + "build");
                 } else {
-                    return JavaScriptAction.of(Map.of("button-type", "build", "project-id", target.getAbsoluteUrl()), "jsbundles/pages/project/build.js");
+                    return JavaScriptAction.of(Map.of("button-type", "build", "project-id", target.getAbsoluteUrl(), "build-scheduled", Messages.BuildProjectFactory_BuildScheduled()), "jsbundles/pages/project/build.js");
                 }
             }
         });

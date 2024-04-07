@@ -10,7 +10,7 @@ behaviorShim.specify(
         method: "post",
         headers: crumb.wrap({}),
       });
-      notificationBar.show("Build scheduled", notificationBar.SUCCESS);
+      notificationBar.show(e.dataset.buildScheduled, notificationBar.SUCCESS);
     });
   },
 );
