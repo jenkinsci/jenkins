@@ -19,6 +19,7 @@ import jenkins.model.menu.event.LinkAction;
 import org.apache.commons.jelly.*;
 import org.jenkins.ui.icon.Icon;
 import org.jenkins.ui.icon.IconSet;
+import org.jenkins.ui.icon.IconSpec;
 import org.jenkins.ui.symbol.Symbol;
 import org.jenkins.ui.symbol.SymbolRequest;
 import org.kohsuke.accmod.Restricted;
@@ -106,14 +107,19 @@ public interface ModelObjectWithContextMenu extends ModelObject {
                 menuItem.subMenu = cm.addAll(((DropdownAction)action.getAction()).getActions());
             }
 
-            if (action.getIconFileName() != null && action.getIconFileName().startsWith("symbol-")) {
-                menuItem.icon = action.getIconFileName();
+            String icon = action.getIconFileName();
+            if (action instanceof IconSpec) {
+                if (((IconSpec) action).getIconClassName() != null) {
+                    icon = ((IconSpec) action).getIconClassName();
+                }
+            }
+            menuItem.icon = icon;
+
+            if (icon != null && icon.startsWith("symbol-")) {
                 menuItem.iconXml = Symbol.get(new SymbolRequest.Builder()
-                        .withName(action.getIconFileName().split(" ")[0].substring(7))
+                        .withName(icon.split(" ")[0].substring(7))
                         .withPluginName(Functions.extractPluginNameFromIconSrc(action.getIconFileName()))
                         .build());
-            } else {
-                menuItem.icon = action.getIconFileName();
             }
 
             return add(menuItem);
