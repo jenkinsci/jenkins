@@ -91,6 +91,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -1251,6 +1252,13 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     @Exported
     public List<PluginWrapper> getPlugins() {
         return Collections.unmodifiableList(plugins);
+    }
+
+    @Restricted(NoExternalUse.class) // used by jelly
+    public List<PluginWrapper> getPluginsSortedByTitle() {
+        return plugins.stream()
+                .sorted(Comparator.comparing(PluginWrapper::getDisplayName, String.CASE_INSENSITIVE_ORDER))
+                .collect(Collectors.toUnmodifiableList());
     }
 
     public List<FailedPlugin> getFailedPlugins() {
