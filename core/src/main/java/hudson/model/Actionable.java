@@ -108,7 +108,9 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
 
         return _actions.stream()
                 .filter(e -> !StringUtils.isBlank(e.getDisplayName()) && !StringUtils.isBlank(e.getIconFileName()))
-                .sorted(Comparator.comparingInt(e -> e.getGroup().getOrder())).collect(Collectors.toUnmodifiableList());
+                .sorted(Comparator.comparingInt((Action e) -> e.getGroup().getOrder())
+                        .thenComparing(e -> Objects.requireNonNullElse(e.getDisplayName(), "")))
+                .collect(Collectors.toUnmodifiableList());
     }
 
     public List<Action> getTransientActions() {
@@ -118,13 +120,11 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
             actions.addAll(factory.createFor(this));
         }
 
-        List<Action> collect = actions.stream()
+        return actions.stream()
                 .filter(e -> !StringUtils.isBlank(e.getDisplayName()) && !StringUtils.isBlank(e.getIconFileName()))
                 .sorted(Comparator.comparingInt((Action e) -> e.getGroup().getOrder())
-                        .thenComparing(action -> Objects.requireNonNullElse(action.getDisplayName(), "")))
-                .collect(Collectors.toList());
-
-        return collect;
+                        .thenComparing(e -> Objects.requireNonNullElse(e.getDisplayName(), "")))
+                .collect(Collectors.toUnmodifiableList());
     }
 
     private <T> Collection<? extends Action> createFor(TransientActionFactory<T> taf) {
