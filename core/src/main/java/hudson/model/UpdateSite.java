@@ -84,7 +84,6 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
 import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.HttpResponse;
@@ -1573,7 +1572,7 @@ public class UpdateSite {
         /**
          * @since 2.40
          */
-        @Restricted(DoNotUse.class)
+        @Restricted(NoExternalUse.class)
         public boolean hasWarnings() {
             return !getWarnings().isEmpty();
         }
