@@ -42,6 +42,10 @@ THE SOFTWARE.
       <l:task icon="symbol-folder"  href="${url}/ws/" title="${%Workspace}" permission="${it.WORKSPACE}">
         <l:task confirmationMessage="${%wipe.out.confirm}" href="${url}/doWipeOutWorkspace" icon="symbol-trash" permission="${h.isWipeOutPermissionEnabled() ? it.WIPEOUT : it.BUILD}" post="true" requiresConfirmation="true" title="${%Wipe Out Workspace}"/>
       </l:task>
+      <j:if test="${it.configurable}">
+        <p:configurable/>
+      </j:if>
+      <st:include page="actions.jelly" />
     </l:tasks>
 
     <st:include page="sidepanel2.jelly" optional="true" />
