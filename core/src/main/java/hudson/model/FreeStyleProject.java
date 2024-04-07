@@ -111,7 +111,7 @@ public class FreeStyleProject extends Project<FreeStyleProject, FreeStyleBuild> 
 
         @Override
         public String getIconClassName() {
-            return "symbol-freestyle";
+            return "symbol-freestyle-project";
         }
 
         static {
