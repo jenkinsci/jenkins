@@ -1,7 +1,7 @@
 <!--
 The MIT License
 
-Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi
+Copyright (c) 2004-2009, Sun Microsystems, Inc., Kohsuke Kawaguchi, Tom Huybrechts
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -23,22 +23,11 @@ THE SOFTWARE.
 -->
 
 <!--
-  Manage monitoring
+  Used to asynchronously update executor queue
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout"
-         xmlns:t="/lib/hudson" xmlns:st="jelly:stapler"
->
-  <l:layout title="${%Status}" type="one-column">
-    <j:set var="readOnlyMode" value="${!app.hasPermission(app.MANAGE)}"/>
-    <l:breadcrumb title="${%Status}"/>
-    <l:main-panel>
-      <l:app-bar title="${%Status}"/>
-      <div id="side-panel">
-        <t:executors ajax="false"/>
-        <div class="widget-refresh-reference" data-id="executors" data-url="${rootURL}/manage/computer/statusAjax"/>
-        <st:adjunct includes="lib.hudson.widget-refresh"/>
-      </div>
-    </l:main-panel>
-  </l:layout>
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:t="/lib/hudson">
+  <l:ajax>
+    <t:executors ajax="false"/>
+  </l:ajax>
 </j:jelly>

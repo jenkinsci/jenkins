@@ -1,0 +1,59 @@
+package jenkins.widgets;
+
+import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.Extension;
+import hudson.model.Computer;
+import hudson.widgets.Widget;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import jenkins.model.Jenkins;
+import org.jenkinsci.Symbol;
+
+/**
+ * The default executors widget.
+ *
+ * A plugin may remove this from {@link Jenkins#getWidgets()} and swap in their own.
+ *
+ * @author Kohsuke Kawaguchi
+ * @since 1.514
+ */
+public class ExecutorsWidget extends Widget {
+    private final String ownerUrl;
+    private final List<Computer> computers;
+
+    public ExecutorsWidget(@NonNull String ownerUrl, @NonNull List<Computer> computers) {
+        this.ownerUrl = ownerUrl;
+        this.computers = new ArrayList<>(computers);
+    }
+
+    @Override
+    protected String getOwnerUrl() {
+        return ownerUrl;
+    }
+
+    public List<Computer> getComputers() {
+        return Collections.unmodifiableList(computers);
+    }
+
+
+    @Extension(ordinal = 100) @Symbol("executorsComputer") // historically this was above normal widgets and below BuildQueueWidget
+    public static final class ComputerFactoryImpl extends WidgetFactory<Computer, ExecutorsWidget> {
+        @Override
+        public Class<Computer> type() {
+            return Computer.class;
+        }
+
+        @Override
+        public Class<ExecutorsWidget> widgetType() {
+            return ExecutorsWidget.class;
+        }
+
+        @NonNull
+        @Override
+        public Collection<ExecutorsWidget> createFor(@NonNull Computer target) {
+            return List.of(new ExecutorsWidget(target.getUrl(), List.of(target)));
+        }
+    }
+}
