@@ -11,7 +11,7 @@ import jenkins.model.menu.Semantic;
 import jenkins.model.menu.event.ConfirmationAction;
 
 @Extension
-public class DeleteProjectFactory extends TransientActionFactory<Job> {
+public class DeleteProjectAction extends TransientActionFactory<Job> {
 
     @Override
     public Class<Job> type() {

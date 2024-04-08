@@ -10,7 +10,7 @@ import jenkins.model.menu.Group;
 import jenkins.model.menu.event.LinkAction;
 
 @Extension
-public class ConfigureProjectFactory extends TransientActionFactory<Job> {
+public class ConfigureProjectAction extends TransientActionFactory<Job> {
 
     @Override
     public Class<Job> type() {
@@ -41,6 +41,7 @@ public class ConfigureProjectFactory extends TransientActionFactory<Job> {
 
             @Override
             public jenkins.model.menu.event.Action getAction() {
+                // TODO - deprecated method - dont use this!
                 return LinkAction.of(target.getAbsoluteUrl() + "configure");
             }
         });
