@@ -158,8 +158,7 @@
     margin: -10px 0;
     padding: 0.5rem 0.75rem;
 
-    svg,
-    .build-status-icon__wrapper,
+    // Increase the size of symbols compared to regular buttons
     svg {
       width: 1.375rem !important;
       height: 1.375rem !important;
