@@ -239,8 +239,6 @@ function checkRowCellOverflows(row, recalculate = false) {
     buildBadges = null;
   }
 
-  var desc = row.querySelector(".desc");
-
   function resetCellOverflows() {
     markSingleline();
 
