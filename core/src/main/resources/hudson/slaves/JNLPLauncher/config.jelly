@@ -24,6 +24,10 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+ <j:if test="${it.launcher.configured}">
+  <f:block>
+    ${%configured}
+  </f:block>
   <!-- This property is included only if used directly. Causes JENKINS-45895 in the case of includes otherwise -->
   <j:if test="${descriptor.workDirSupported}"> 
     <f:property title="${%Enable work directory}" field="workDirSettings" />
@@ -36,4 +40,5 @@ THE SOFTWARE.
       <f:textbox field="tunnel"/>
     </f:entry>
   </f:advanced>
+ </j:if>
 </j:jelly>

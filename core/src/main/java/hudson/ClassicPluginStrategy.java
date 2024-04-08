@@ -40,6 +40,7 @@ import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.nio.file.Files;
@@ -60,7 +61,6 @@ import jenkins.ClassLoaderReflectionToolkit;
 import jenkins.ExtensionFilter;
 import jenkins.plugins.DetachedPluginsUtil;
 import jenkins.util.URLClassLoader2;
-import org.apache.commons.io.output.NullOutputStream;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Expand;
@@ -85,11 +85,6 @@ public class ClassicPluginStrategy implements PluginStrategy {
     private static final FilenameFilter JAR_FILTER = (dir, name) -> name.endsWith(".jar");
 
     private final PluginManager pluginManager;
-
-    /**
-     * All the plugins eventually delegate this classloader to load core, servlet APIs, and SE runtime.
-     */
-    private final MaskingClassLoader coreClassLoader = new MaskingClassLoader(getClass().getClassLoader());
 
     public ClassicPluginStrategy(PluginManager pluginManager) {
         this.pluginManager = pluginManager;
@@ -235,16 +230,8 @@ public class ClassicPluginStrategy implements PluginStrategy {
 
         fix(atts, optionalDependencies);
 
-        // Register global classpath mask. This is useful for hiding JavaEE APIs that you might see from the container,
-        // such as database plugin for JPA support. The Mask-Classes attribute is insufficient because those classes
-        // also need to be masked by all the other plugins that depend on the database plugin.
-        String masked = atts.getValue("Global-Mask-Classes");
-        if (masked != null) {
-            for (String pkg : masked.trim().split("[ \t\r\n]+"))
-                coreClassLoader.add(pkg);
-        }
-
-        ClassLoader dependencyLoader = new DependencyClassLoader(coreClassLoader, archive, Util.join(dependencies, optionalDependencies), pluginManager);
+        ClassLoader dependencyLoader = new DependencyClassLoader(
+                getClass().getClassLoader(), archive, Util.join(dependencies, optionalDependencies), pluginManager);
         dependencyLoader = getBaseClassLoader(atts, dependencyLoader);
 
         return new PluginWrapper(pluginManager, archive, manifest, baseResourceURL,
@@ -290,6 +277,10 @@ public class ClassicPluginStrategy implements PluginStrategy {
 
         List<URL> urls = new ArrayList<>();
         for (File path : paths) {
+            if (path.getName().startsWith("jenkins-test-harness")) {
+                throw new IllegalStateException("Refusing to load the Jenkins test harness in production (via "
+                        + atts.getValue("Short-Name") + ")");
+            }
             urls.add(path.toURI().toURL());
         }
         URLClassLoader2 classLoader;
@@ -503,7 +494,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
 
         final long dirTime = archive.lastModified();
         // this ZipOutputStream is reused and not created for each directory
-        try (ZipOutputStream wrappedZOut = new ZipOutputStream(NullOutputStream.NULL_OUTPUT_STREAM) {
+        try (OutputStream nos = OutputStream.nullOutputStream(); ZipOutputStream wrappedZOut = new ZipOutputStream(nos) {
             @Override
             public void putNextEntry(ZipEntry ze) throws IOException {
                 ze.setTime(dirTime + 1999);   // roundup

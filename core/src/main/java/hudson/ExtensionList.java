@@ -450,10 +450,38 @@ public class ExtensionList<T> extends AbstractList<T> implements OnMaster {
      */
     public static @NonNull <U> U lookupSingleton(Class<U> type) {
         ExtensionList<U> all = lookup(type);
-        if (all.size() != 1) {
+        if (Main.isUnitTest && all.isEmpty()) {
+            throw new IllegalStateException("Found no instances of " + type.getName() +
+                " registered (possible annotation processor issue); try using `mvn clean test -Dtest=…` rather than an IDE test runner");
+        } else if (all.size() != 1) {
             throw new IllegalStateException("Expected 1 instance of " + type.getName() + " but got " + all.size());
         }
         return all.get(0);
+    }
+
+    /**
+     * Convenience method allowing lookup of the instance of a given type with the highest ordinal.
+     * Equivalent to {@code ExtensionList.lookup(type).get(0)} if there is at least one instance,
+     * and throws an {@link IllegalStateException} otherwise if no instance could be found.
+     *
+     * @param type The type to look up.
+     * @return the singleton instance of the given type in its list.
+     * @throws IllegalStateException if there are no instances
+     *
+     * @since 2.435
+     */
+    public static @NonNull <U> U lookupFirst(Class<U> type) {
+        var all = lookup(type);
+        if (!all.isEmpty()) {
+            return all.get(0);
+        } else {
+            if (Main.isUnitTest) {
+                throw new IllegalStateException("Found no instances of " + type.getName() +
+                        " registered (possible annotation processor issue); try using `mvn clean test -Dtest=…` rather than an IDE test runner");
+            } else {
+                throw new IllegalStateException("Found no instances of " + type.getName() + " registered");
+            }
+        }
     }
 
     /**

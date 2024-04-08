@@ -48,14 +48,16 @@ THE SOFTWARE.
         <!-- mobile friendly layout -->
         <meta name="viewport" content="width=device-width, initial-scale=1"/>
         <!-- css styling, will fallback to default implementation -->
-        <st:include it="${simpleDecorator}" page="simple-head.jelly" optional="true"/>
+        <st:include it="${simpleDecorator}" page="simple-head.jelly" />
         <script src="${resURL}/jsbundles/pages/register.js" type="text/javascript" defer="true" />
       </head>
       <body class="app-sign-in-register">
-        <st:include it="${simpleDecorator}" page="simple-header.jelly" optional="true" />
+        <st:include it="${simpleDecorator}" page="simple-branding.jelly" />
         <main id="main-panel" class="app-sign-in-register__content">
           <div class="app-sign-in-register__content-inner">
             <h1>${%Register}</h1>
+
+            <st:include it="${simpleDecorator}" page="simple-header.jelly" />
 
             <template id="i18n" data-strength-strong="${%Strong}"
                                 data-strength-moderate="${%Moderate}"
@@ -71,7 +73,7 @@ THE SOFTWARE.
                   ${data.errors.containsKey('username') ? data.errors.get('username') : ''}
                 </div>
                 <input class="jenkins-input ${data.errors.containsKey('username') ? 'jenkins-input--error' : ''}"
-                       autofocus="${(data.errors.containsKey('username') || !data) ? true : null}"
+                       autofocus="${(data == null || data.errors.containsKey('username')) ? true : null}"
                        value="${data.username}"
                        type="text"
                        name="username"

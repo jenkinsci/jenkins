@@ -31,9 +31,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import com.gargoylesoftware.htmlunit.html.HtmlButton;
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.EnvVars;
 import hudson.model.Cause.LegacyCodeCause;
 import hudson.model.FreeStyleBuild;
@@ -60,12 +57,16 @@ import jenkins.mvn.DefaultSettingsProvider;
 import jenkins.mvn.FilePathGlobalSettingsProvider;
 import jenkins.mvn.FilePathSettingsProvider;
 import jenkins.mvn.GlobalMavenConfig;
+import org.htmlunit.html.HtmlButton;
+import org.htmlunit.html.HtmlForm;
+import org.htmlunit.html.HtmlPage;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.ExtractResourceSCM;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.ToolInstallations;
+import org.jvnet.hudson.test.recipes.WithTimeout;
 import org.kohsuke.stapler.jelly.JellyFacet;
 
 /**
@@ -165,8 +166,8 @@ public class MavenTest {
         HtmlForm f = p.getFormByName("config");
         HtmlButton b = j.getButtonByCaption(f, "Add Maven");
         b.click();
-        j.findPreviousInputElement(b, "name").setValueAttribute("myMaven");
-        j.findPreviousInputElement(b, "home").setValueAttribute("/tmp/foo");
+        j.findPreviousInputElement(b, "name").setValue("myMaven");
+        j.findPreviousInputElement(b, "home").setValue("/tmp/foo");
         j.submit(f);
         verify();
 
@@ -190,7 +191,7 @@ public class MavenTest {
         assertNotNull(isp.installers.get(MavenInstaller.class));
     }
 
-    @Test public void sensitiveParameters() throws Exception {
+    @Test @WithTimeout(500) public void sensitiveParameters() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject();
         ParametersDefinitionProperty pdb = new ParametersDefinitionProperty(
                 new StringParameterDefinition("string", "defaultValue", "string description"),

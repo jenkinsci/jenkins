@@ -27,6 +27,7 @@ package hudson.slaves;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
@@ -73,6 +74,9 @@ public class NodeCanTakeTaskTest {
         assertEquals(project, item.task);
         assertNotNull(item.getCauseOfBlockage());
         assertEquals("rejecting everything", item.getCauseOfBlockage().getShortDescription());
+
+        // Clear the queue
+        assertTrue(r.jenkins.getQueue().cancel(project));
     }
 
     private static class RejectAllTasksProperty extends NodeProperty<Node> {
@@ -95,7 +99,7 @@ public class NodeCanTakeTaskTest {
         project.setConcurrentBuild(true);
         project.getBuildersList().add(new SleepBuilder(Long.MAX_VALUE));
         FreeStyleBuild build = project.scheduleBuild2(0).waitForStart(); // consume the one executor
-        project.scheduleBuild2(0); // now try to reschedule
+        var build2F = project.scheduleBuild2(0); // now try to reschedule
         Queue.Item item;
         while ((item = r.jenkins.getQueue().getItem(project)) == null || !item.isBuildable()) {
             Thread.sleep(100);
@@ -103,6 +107,9 @@ public class NodeCanTakeTaskTest {
         assertEquals(hudson.model.Messages.Queue_WaitingForNextAvailableExecutorOn(slave.getDisplayName()), item.getWhy());
         build.doStop();
         r.assertBuildStatus(Result.ABORTED, r.waitForCompletion(build));
+        FreeStyleBuild build2 = build2F.waitForStart();
+        build2.doStop();
+        r.assertBuildStatus(Result.ABORTED, r.waitForCompletion(build2));
     }
 
 }

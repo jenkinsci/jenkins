@@ -32,20 +32,22 @@ function menuItem(options) {
     {
       type: "link",
     },
-    options
+    options,
   );
 
   const label = xmlEscape(itemOptions.label);
   let badgeText;
   let badgeTooltip;
+  let badgeSeverity;
   if (itemOptions.badge) {
     badgeText = xmlEscape(itemOptions.badge.text);
     badgeTooltip = xmlEscape(itemOptions.badge.tooltip);
+    badgeSeverity = xmlEscape(itemOptions.badge.severity);
   }
   const tag = itemOptions.type === "link" ? "a" : "button";
 
   const item = createElementFromHtml(`
-      <${tag} class="jenkins-dropdown__item" href="${itemOptions.url}">
+      <${tag} class="jenkins-dropdown__item ${itemOptions.clazz ? xmlEscape(itemOptions.clazz) : ""}" ${itemOptions.url ? `href="${xmlEscape(itemOptions.url)}"` : ""} ${itemOptions.id ? `id="${xmlEscape(itemOptions.id)}"` : ""}>
           ${
             itemOptions.icon
               ? `<div class="jenkins-dropdown__item__icon">${
@@ -58,7 +60,7 @@ function menuItem(options) {
           ${label}
                     ${
                       itemOptions.badge != null
-                        ? `<span class="jenkins-dropdown__item__badge" tooltip="${badgeTooltip}">${badgeText}</span>`
+                        ? `<span class="jenkins-dropdown__item__badge jenkins-badge alert-${badgeSeverity}" tooltip="${badgeTooltip}">${badgeText}</span>`
                         : ``
                     }
           ${
@@ -70,7 +72,7 @@ function menuItem(options) {
     `);
 
   if (options.onClick) {
-    item.addEventListener("click", () => options.onClick());
+    item.addEventListener("click", (event) => options.onClick(event));
   }
 
   return item;
@@ -78,19 +80,25 @@ function menuItem(options) {
 
 function heading(label) {
   return createElementFromHtml(
-    `<p class="jenkins-dropdown__heading">${label}</p>`
+    `<p class="jenkins-dropdown__heading">${label}</p>`,
   );
 }
 
 function separator() {
   return createElementFromHtml(
-    `<div class="jenkins-dropdown__separator"></div>`
+    `<div class="jenkins-dropdown__separator"></div>`,
   );
 }
 
 function placeholder(label) {
   return createElementFromHtml(
-    `<p class="jenkins-dropdown__placeholder">${label}</p>`
+    `<p class="jenkins-dropdown__placeholder">${label}</p>`,
+  );
+}
+
+function disabled(label) {
+  return createElementFromHtml(
+    `<p class="jenkins-dropdown__disabled">${label}</p>`,
   );
 }
 
@@ -100,4 +108,5 @@ export default {
   heading,
   separator,
   placeholder,
+  disabled,
 };

@@ -28,12 +28,13 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
-import com.gargoylesoftware.htmlunit.html.DomElement;
-import com.gargoylesoftware.htmlunit.html.DomNodeList;
-import com.gargoylesoftware.htmlunit.html.HtmlElement;
-import com.gargoylesoftware.htmlunit.html.HtmlOption;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import hudson.ExtensionList;
 import hudson.model.RootAction;
+import org.htmlunit.html.DomElement;
+import org.htmlunit.html.DomNodeList;
+import org.htmlunit.html.HtmlElement;
+import org.htmlunit.html.HtmlOption;
+import org.htmlunit.html.HtmlPage;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -216,7 +217,7 @@ public class OptionTest {
                             String bodyContainsExpected, String valueContainsExpected,
                             boolean checkExactCharacters,
                             boolean withValueTrue, boolean withValueFalse) throws Exception {
-        UsingJellyView view = j.jenkins.getExtensionList(UsingJellyView.class).get(0);
+        UsingJellyView view = ExtensionList.lookupFirst(UsingJellyView.class);
         view.setMode(mode);
         view.setInjection(msgToInject);
 
@@ -242,7 +243,7 @@ public class OptionTest {
                              String bodyContainsExpected, String valueContainsExpected,
                              boolean checkExactCharacters,
                              boolean withValueTrue, boolean withValueFalse) throws Exception {
-        UsingGroovyView view = j.jenkins.getExtensionList(UsingGroovyView.class).get(0);
+        UsingGroovyView view = ExtensionList.lookupFirst(UsingGroovyView.class);
         view.setMode(mode);
         view.setInjection(msgToInject);
 
@@ -278,7 +279,7 @@ public class OptionTest {
             assertEquals(-1, indexOfScript);
         } else {
             // in this mode, we check the content as displayed to the user, converting all the escaped characters to
-            // their un-escaped equivalent, done by com.gargoylesoftware.htmlunit.html.HtmlSerializer#cleanUp(String)
+            // their un-escaped equivalent, done by org.htmlunit.html.HtmlSerializer#cleanUp(String)
 
             HtmlElement document = page.getDocumentElement();
             DomNodeList<HtmlElement> elements = document.getElementsByTagName("option");
@@ -286,7 +287,7 @@ public class OptionTest {
 
             HtmlOption option = (HtmlOption) elements.get(0);
 
-            // without that check, the getValueAttribute could return getText if the value is not present
+            // without that check, the getValue could return getText if the value is not present
             assertNotEquals(DomElement.ATTRIBUTE_NOT_DEFINED, option.getAttribute("value"));
 
             assertTrue(

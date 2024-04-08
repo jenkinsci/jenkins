@@ -32,9 +32,14 @@ THE SOFTWARE.
     <st:attribute name="executor">
       Executor that's carrying out the build. If null, defaults to "build.executor"
     </st:attribute>
+    <st:attribute name="animate">
+      animate the progress bar
+    </st:attribute>
   </st:documentation>
   <j:set var="executor" value="${executor?:build.executor}" /> <!-- TODO use Executor.of -->
   <t:progressBar tooltip="${%text(executor.timestampString,executor.estimatedRemainingTime)}"
                  red="${executor.isLikelyStuck()}"
-                 pos="${executor.progress}" href="${rootURL}/${build.url}console"/>
+                 pos="${executor.progress}" href="${h.getConsoleUrl(build) ?: (rootURL + '/' + build.url + 'console')}"
+                 tooltipTemplate="${%text('%0','%1')}"
+                 animate="${attrs.animate}"/>
 </j:jelly>

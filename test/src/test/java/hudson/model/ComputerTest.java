@@ -31,6 +31,7 @@ import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isA;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
@@ -39,25 +40,30 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeThat;
 
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
-import com.gargoylesoftware.htmlunit.HttpMethod;
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.xml.XmlPage;
 import hudson.ExtensionList;
+import hudson.Functions;
 import hudson.diagnosis.OldDataMonitor;
+import hudson.remoting.Channel;
 import hudson.slaves.DumbSlave;
 import hudson.slaves.OfflineCause;
 import java.io.File;
+import java.lang.ref.WeakReference;
 import java.net.HttpURLConnection;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import jenkins.model.Jenkins;
+import jenkins.widgets.ExecutorsWidget;
+import jenkins.widgets.HasWidgetHelper;
+import org.htmlunit.FailingHttpStatusCodeException;
+import org.htmlunit.HttpMethod;
+import org.htmlunit.Page;
+import org.htmlunit.WebRequest;
+import org.htmlunit.html.HtmlForm;
+import org.htmlunit.xml.XmlPage;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -65,6 +71,7 @@ import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.LoggerRule;
+import org.jvnet.hudson.test.MemoryAssert;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.MockFolder;
 import org.jvnet.hudson.test.SmokeTest;
@@ -105,7 +112,7 @@ public class ComputerTest {
         WebClient wc = j.createWebClient()
                 .withThrowExceptionOnFailingStatusCode(false);
         HtmlForm form = wc.getPage(nodeB, "configure").getFormByName("config");
-        form.getInputByName("_.name").setValueAttribute("nodeA");
+        form.getInputByName("_.name").setValue("nodeA");
 
         Page page = j.submit(form);
         assertEquals(NOTE, HttpURLConnection.HTTP_BAD_REQUEST, page.getWebResponse().getStatusCode());
@@ -226,10 +233,10 @@ public class ComputerTest {
         FreeStyleProject p = j.createFreeStyleProject();
         p.setAssignedNode(agent);
 
-        Future<FreeStyleBuild> r = ExecutorTest.startBlockingBuild(p);
+        FreeStyleBuild b = ExecutorTest.startBlockingBuild(p);
 
         String message = "It went away";
-        p.getLastBuild().getBuiltOn().toComputer().disconnect(
+        b.getBuiltOn().toComputer().disconnect(
                 new OfflineCause.ChannelTermination(new RuntimeException(message))
         );
 
@@ -237,6 +244,8 @@ public class ComputerTest {
         Page page = wc.getPage(wc.createCrumbedUrl(agent.toComputer().getUrl()));
         String content = page.getWebResponse().getContentAsString();
         assertThat(content, not(containsString(message)));
+
+        j.assertBuildStatus(Result.FAILURE, j.waitForCompletion(b));
     }
 
     @Test
@@ -245,17 +254,37 @@ public class ComputerTest {
         FreeStyleProject p = j.createFreeStyleProject();
         p.setAssignedNode(agent);
 
-        Future<FreeStyleBuild> r = ExecutorTest.startBlockingBuild(p);
+        FreeStyleBuild b = ExecutorTest.startBlockingBuild(p);
 
         String message = "It went away";
-        p.getLastBuild().getBuiltOn().toComputer().disconnect(
+        b.getBuiltOn().toComputer().disconnect(
                 new OfflineCause.ChannelTermination(new RuntimeException(message))
         );
 
         WebClient wc = j.createWebClient();
-        Page page = wc.getPage(wc.createCrumbedUrl("ajaxExecutors"));
+        Page page = wc.getPage(wc.createCrumbedUrl(HasWidgetHelper.getWidget(agent.toComputer(), ExecutorsWidget.class).orElseThrow().getUrl() + "ajax"));
         String content = page.getWebResponse().getContentAsString();
         assertThat(content, not(containsString(message)));
+
+        j.assertBuildStatus(Result.FAILURE, j.waitForCompletion(b));
+    }
+
+    @Test
+    public void computersCollected() throws Exception {
+        assumeThat("Seems to crash the test JVM at least in CI", Functions.isWindows(), is(false));
+        DumbSlave agent = j.createOnlineSlave();
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.setAssignedNode(agent);
+        j.buildAndAssertSuccess(p);
+        Computer computer = agent.toComputer();
+        WeakReference<Computer> computerRef = new WeakReference<>(computer);
+        WeakReference<Channel> channelRef = new WeakReference<>((Channel) computer.getChannel());
+        computer.disconnect(null);
+        computer = null;
+        j.jenkins.removeNode(agent);
+        agent = null;
+        MemoryAssert.assertGC(computerRef, false);
+        MemoryAssert.assertGC(channelRef, false);
     }
 
 }

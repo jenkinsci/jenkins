@@ -108,6 +108,7 @@ import jenkins.RestartRequiredException;
 import jenkins.install.InstallUtil;
 import jenkins.management.Badge;
 import jenkins.model.Jenkins;
+import jenkins.model.Loadable;
 import jenkins.security.stapler.StaplerDispatchable;
 import jenkins.util.SystemProperties;
 import jenkins.util.Timer;
@@ -154,7 +155,7 @@ import org.springframework.security.core.Authentication;
  * @since 1.220
  */
 @ExportedBean
-public class UpdateCenter extends AbstractModelObject implements Saveable, OnMaster, StaplerProxy {
+public class UpdateCenter extends AbstractModelObject implements Loadable, Saveable, OnMaster, StaplerProxy {
 
     private static final Logger LOGGER;
     private static final String UPDATE_CENTER_URL;
@@ -984,6 +985,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     /**
      * Loads the data from the disk into this object.
      */
+    @Override
     public synchronized void load() throws IOException {
         XmlFile file = getConfigFile();
         if (file.exists()) {
@@ -1665,7 +1667,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                                 if (e.getMessage().contains("Connection timed out")) {
                                     // Google can't be down, so this is probably a proxy issue
                                     connectionStates.put(ConnectionStatus.INTERNET, ConnectionStatus.FAILED);
-                                    statuses.add(Messages.UpdateCenter_Status_ConnectionFailed(Functions.xmlEscape(connectionCheckUrl)));
+                                    statuses.add(Messages.UpdateCenter_Status_ConnectionFailed(Functions.xmlEscape(connectionCheckUrl), Jenkins.get().getRootUrl()));
                                     return;
                                 }
                             }
@@ -1687,7 +1689,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                 statuses.add(Messages.UpdateCenter_Status_Success());
             } catch (UnknownHostException e) {
                 connectionStates.put(ConnectionStatus.UPDATE_SITE, ConnectionStatus.FAILED);
-                statuses.add(Messages.UpdateCenter_Status_UnknownHostException(Functions.xmlEscape(e.getMessage())));
+                statuses.add(Messages.UpdateCenter_Status_UnknownHostException(Functions.xmlEscape(e.getMessage()), Jenkins.get().getRootUrl()));
                 addStatus(e);
                 error = e;
             } catch (Exception e) {

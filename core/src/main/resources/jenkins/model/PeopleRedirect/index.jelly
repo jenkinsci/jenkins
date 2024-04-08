@@ -1,0 +1,21 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
+    <l:layout title="${%People}">
+        <st:include page="sidepanel.jelly" it="${app}" />
+        <st:statusCode value="404" />
+        <l:breadcrumb title="${%People}" />
+        <l:main-panel>
+            <div class="jenkins-app-bar">
+                <div class="jenkins-app-bar__content">
+                    <h1>
+                        ${%People}
+                    </h1>
+                </div>
+            </div>
+
+            <div>
+                ${%blurb}
+            </div>
+        </l:main-panel>
+    </l:layout>
+</j:jelly>

@@ -34,11 +34,11 @@ import hudson.tools.ToolInstallation;
 import hudson.tools.ToolInstaller;
 import hudson.tools.ToolProperty;
 import hudson.util.FormValidation;
-import hudson.util.NullStream;
 import hudson.util.StreamTaskListener;
 import hudson.util.XStream2;
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.lang.reflect.Constructor;
 import java.util.Arrays;
 import java.util.Collections;
@@ -164,7 +164,7 @@ public final class JDK extends ToolInstallation implements NodeSpecific<JDK>, En
      */
     public static boolean isDefaultJDKValid(Node n) {
         try {
-            TaskListener listener = new StreamTaskListener(new NullStream());
+            TaskListener listener = new StreamTaskListener(OutputStream.nullOutputStream());
             Launcher launcher = n.createLauncher(listener);
             return launcher.launch().cmds("java", "-fullversion").stdout(listener).join() == 0;
         } catch (IOException | InterruptedException e) {
