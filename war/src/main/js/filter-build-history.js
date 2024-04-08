@@ -222,15 +222,19 @@ function checkRowCellOverflows(row, recalculate = false) {
   }
 
   var cell = row.querySelector(".build-row-cell");
-  var buildName = row.querySelector(".build-name");
-  var buildDetails = row.querySelector(".build-details");
-  var leftBar = row.querySelector(".left-bar");
-  if (!buildName || !buildDetails) {
+  if (!cell) {
     return;
+  }
+  var buildName = cell.querySelector(".build-name");
+  var buildDetails = cell.querySelector(".build-details");
+  var insertDiv = cell.querySelector(".left-bar");
+  var desc = cell.querySelector(".desc");
+  if (desc !== null) {
+    insertDiv = desc;
   }
 
   var buildBadges = row.querySelector(".build-badges");
-  if (buildBadges.childElementCount === 0) {
+  if (buildBadges && buildBadges.childElementCount === 0) {
     buildBadges.remove();
     buildBadges = null;
   }
@@ -240,10 +244,10 @@ function checkRowCellOverflows(row, recalculate = false) {
   function resetCellOverflows() {
     markSingleline();
 
-    cell.insertBefore(buildName, leftBar);
-    cell.insertBefore(buildDetails, leftBar);
+    cell.insertBefore(buildName, insertDiv);
+    cell.insertBefore(buildDetails, insertDiv);
     if (buildBadges) {
-      cell.insertBefore(buildBadges, leftBar);
+      cell.insertBefore(buildBadges, insertDiv);
     }
     buildName.classList.remove("block");
     buildName.classList.remove("block");
@@ -360,8 +364,10 @@ function checkRowCellOverflows(row, recalculate = false) {
   ) {
     // Everything fits in one row
     buildDetails.style.width = "fit-content";
-    buildBadges.style.float = "right";
-    buildBadges.style.width = "fit-content";
+    if (buildBadges) {
+      buildBadges.style.float = "right";
+      buildBadges.style.width = "fit-content";
+    }
   } else {
     markMultiline();
     if (buildBadges) {
@@ -429,7 +435,7 @@ function checkAllRowCellOverflows(recalculate = false) {
     return;
   }
   var dataTable = getDataTable(buildHistoryContainer);
-  var rows = dataTable.rows;
+  var rows = dataTable.getElementsByClassName("build-row");
 
   for (var i = 0; i < rows.length; i++) {
     var row = rows[i];
