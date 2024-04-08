@@ -67,7 +67,7 @@ public class Security2278Test {
         final JenkinsRule.WebClient webClient = j.createWebClient();
         final HtmlPage topPage = webClient.goTo("computer/status");
         final String contentAsString = topPage.getWebResponse().getContentAsString();
-        assertThat(contentAsString, containsString("Status"));
+        assertThat(contentAsString, containsString("Build Executor Status"));
         assertThat(contentAsString, containsString("Unknown Task"));
         assertThat(contentAsString, not(containsString("job/foo/job/bar")));
         assertThat(contentAsString, not(containsString("stop-button-link")));
@@ -78,7 +78,7 @@ public class Security2278Test {
         final JenkinsRule.WebClient webClient = j.createWebClient().login("alice");
         final HtmlPage topPage = webClient.goTo("computer/status");
         final String contentAsString = topPage.getWebResponse().getContentAsString();
-        assertThat(contentAsString, containsString("Status"));
+        assertThat(contentAsString, containsString("Build Executor Status"));
         assertThat(contentAsString, not(containsString("Unknown Task")));
         assertThat(contentAsString, containsString("job/foo/job/bar"));
         assertThat(contentAsString, containsString("stop-button-link"));
