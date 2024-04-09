@@ -4,6 +4,8 @@ import com.google.common.annotations.VisibleForTesting;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ClassicPluginStrategy;
 import hudson.PluginWrapper;
+import hudson.model.AbstractProject;
+import hudson.util.FormValidation;
 import hudson.util.VersionNumber;
 import java.io.IOException;
 import java.io.InputStream;
@@ -15,9 +17,13 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import jenkins.model.Jenkins;
 import org.apache.commons.io.IOUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.AncestorInPath;
+import org.kohsuke.stapler.QueryParameter;
 
 /**
  * Dedicated class to handle the logic related to so-called <em>detached plugins</em>.
@@ -205,5 +211,10 @@ public class DetachedPluginsUtil {
         public String toString() {
             return shortName + " " + splitWhen.toString().replace(".*", "") + " " + requiredVersion;
         }
+    }
+
+    @Restricted(NoExternalUse.class)
+    public static FormValidation doCheckDisplayNameOrNull(@AncestorInPath AbstractProject<?, ?> project, @QueryParameter String value) {
+        return Jenkins.get().doCheckDisplayName(value, project.getName());
     }
 }
