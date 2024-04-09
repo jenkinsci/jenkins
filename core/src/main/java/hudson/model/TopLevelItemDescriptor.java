@@ -287,7 +287,7 @@ public abstract class TopLevelItemDescriptor extends Descriptor<TopLevelItem> im
     }
 
     @Restricted(NoExternalUse.class)
-    public static FormValidation doCheckDisplayNameOrNull(@AncestorInPath AbstractProject<?, ?> project, @QueryParameter String value) {
-        return Jenkins.get().doCheckDisplayName(value, project.getName());
+    public FormValidation doCheckDisplayNameOrNull(@AncestorInPath TopLevelItem item, @QueryParameter String value) {
+        return Jenkins.get().doCheckDisplayName(value, item.getName());
     }
 }
