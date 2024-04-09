@@ -5276,7 +5276,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     boolean isDisplayNameUnique(ItemGroup<?> itemGroup, String displayName, String currentJobName) {
 
-        Collection<TopLevelItem> itemCollection = itemGroup.getAllItems(TopLevelItem.class);
+        Collection<TopLevelItem> itemCollection = (Collection<TopLevelItem>) itemGroup.getItems(t -> t instanceof TopLevelItem);
 
         // if there are a lot of projects, we'll have to store their
         // display names in a HashSet or something for a quick check
@@ -5324,7 +5324,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @param displayName The display name to test
      * @param jobName The name of the job the user is configuring
      *
-     * @deprecated use {@link Jenkins#doCheckDisplayName(String, Item)}
+     * @deprecated use {@link TopLevelItemDescriptor#doCheckDisplayNameOrNull(TopLevelItem, String)}
      */
     @Deprecated
     public FormValidation doCheckDisplayName(@QueryParameter String displayName,
@@ -5350,8 +5350,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @param displayName The display name to test
      * @param item The item to check for duplicates
      */
-    public FormValidation doCheckDisplayName(String displayName,
-                                             Item item) {
+    @Restricted(NoExternalUse.class)
+    public FormValidation checkDisplayName(String displayName,
+                                           TopLevelItem item) {
         displayName = displayName.trim();
         String jobName = item.getName();
 

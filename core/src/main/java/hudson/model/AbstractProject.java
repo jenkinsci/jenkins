@@ -1941,11 +1941,6 @@ public abstract class AbstractProject<P extends AbstractProject<P, R>, R extends
         }
 
         @Restricted(DoNotUse.class)
-        public FormValidation doCheckDisplayNameOrNull(@AncestorInPath AbstractProject project, @QueryParameter String value) {
-            return Jenkins.get().doCheckDisplayName(value, project);
-        }
-
-        @Restricted(DoNotUse.class)
         public FormValidation doCheckAssignedLabelString(@AncestorInPath AbstractProject<?, ?> project,
                                                          @QueryParameter String value) {
           // Provide a legacy interface in case plugins are not going through p:config-assignedLabel
