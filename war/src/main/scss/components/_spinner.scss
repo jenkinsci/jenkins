@@ -93,7 +93,7 @@
   --color: var(--accent-color);
 
   display: inline-flex;
-  background: color-mix(in srgb, var(--text-color-secondary) 25%, transparent);
+  background: color-mix(in sRGB, var(--text-color-secondary) 25%, transparent);
   border-radius: 100px;
   width: 100px;
   height: 4px;
@@ -132,6 +132,7 @@
         from {
           translate: -100% 0;
         }
+
         to {
           translate: 100px 0;
         }

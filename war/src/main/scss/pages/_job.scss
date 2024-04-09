@@ -152,7 +152,8 @@
   &--notinteractable {
     cursor: default;
 
-    &::before, &::after {
+    &::before,
+    &::after {
       display: none;
     }
 
