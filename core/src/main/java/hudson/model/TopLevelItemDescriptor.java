@@ -27,6 +27,7 @@ package hudson.model;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionList;
+import hudson.util.FormValidation;
 import java.io.StringWriter;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -37,10 +38,9 @@ import org.apache.commons.jelly.XMLOutput;
 import org.jenkins.ui.icon.Icon;
 import org.jenkins.ui.icon.IconSet;
 import org.jenkins.ui.icon.IconSpec;
-import org.kohsuke.stapler.MetaClass;
-import org.kohsuke.stapler.Stapler;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.WebApp;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.*;
 import org.kohsuke.stapler.jelly.DefaultScriptInvoker;
 import org.kohsuke.stapler.jelly.JellyClassTearOff;
 import org.springframework.security.access.AccessDeniedException;
@@ -286,4 +286,8 @@ public abstract class TopLevelItemDescriptor extends Descriptor<TopLevelItem> im
         return Items.all();
     }
 
+    @Restricted(NoExternalUse.class)
+    public static FormValidation doCheckDisplayNameOrNull(@AncestorInPath AbstractProject<?, ?> project, @QueryParameter String value) {
+        return Jenkins.get().doCheckDisplayName(value, project.getName());
+    }
 }

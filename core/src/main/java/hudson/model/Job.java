@@ -1604,9 +1604,4 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     private static final HexStringConfidentialKey SERVER_COOKIE = new HexStringConfidentialKey(Job.class, "serverCookie", 16);
-
-    @Restricted(NoExternalUse.class)
-    public static FormValidation doCheckDisplayNameOrNull(@AncestorInPath AbstractProject<?, ?> project, @QueryParameter String value) {
-        return Jenkins.get().doCheckDisplayName(value, project.getName());
-    }
 }
