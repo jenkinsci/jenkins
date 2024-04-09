@@ -450,48 +450,6 @@ div.listview-jobs {
 }
 
 /* ========================= build history ========================= */
-#buildHistory a:visited {
-  color: fuchsia;
-}
-
-#buildHistory tr.no-wrap td.middle-align {
-  padding: 0;
-}
-
-#buildHistory .desc {
-  position: relative;
-  padding: 0;
-  margin-top: 5px;
-  white-space: normal;
-  color: var(--text-color-secondary);
-  word-break: break-word;
-}
-
-#buildHistory .build-row-cell {
-  position: relative;
-}
-
-#buildHistory .build-rss-links {
-  display: flex;
-  justify-content: end;
-}
-
-#buildHistory .build-rss-links a {
-  display: inline-flex;
-  align-items: center;
-  margin-right: 0.5rem;
-}
-
-#buildHistory .build-rss-all-icon,
-#buildHistory .build-rss-failed-icon {
-  margin-right: 0.25rem;
-
-  svg {
-    width: 16px;
-    height: 16px;
-  }
-}
-
 #buildHistoryPage {
   position: relative;
 
@@ -620,11 +578,9 @@ div.listview-jobs {
   text-decoration: underline;
 }
 
-.pane.build-details a,
-.pane.build-details a:visited {
-  color: var(--pane-link-color--visited);
-  opacity: 0.6;
-  text-decoration: none;
+.pane.build-details a {
+  color: var(--text-color-secondary) !important;
+  text-decoration: none !important;
 }
 
 .pane.build-details a:hover {
