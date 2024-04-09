@@ -1942,7 +1942,7 @@ public abstract class AbstractProject<P extends AbstractProject<P, R>, R extends
 
         @Restricted(DoNotUse.class)
         public FormValidation doCheckDisplayNameOrNull(@AncestorInPath AbstractProject project, @QueryParameter String value) {
-            return Jenkins.get().doCheckDisplayName(value, project.getName());
+            return Jenkins.get().doCheckDisplayName(value, project);
         }
 
         @Restricted(DoNotUse.class)
