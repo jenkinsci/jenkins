@@ -590,15 +590,10 @@ function parseHtml(html) {
 
 /**
  * Evaluates the script in global context.
+ * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/eval#direct_and_indirect_eval
  */
 function geval(script) {
-  // execScript chokes on "" but eval doesn't, so we need to reject it first.
-  if (script == null || script == "") {
-    return;
-  }
-  // see http://perfectionkills.com/global-eval-what-are-the-options/
-  // note that execScript cannot return value
-  (this.execScript || eval)(script);
+  eval(script);
 }
 
 /**
@@ -675,17 +670,9 @@ function registerValidator(e) {
       try {
         return eval(url); // need access to 'this', so no 'geval'
       } catch (e) {
-        if (window.console != null) {
-          console.warn(
-            "Legacy checkUrl '" + url + "' is not valid JavaScript: " + e,
-          );
-        }
-        if (window.YUI != null) {
-          YUI.log(
-            "Legacy checkUrl '" + url + "' is not valid JavaScript: " + e,
-            "warn",
-          );
-        }
+        console.warn(
+          "Legacy checkUrl '" + url + "' is not valid JavaScript: " + e,
+        );
         return url; // return plain url as fallback
       }
     } else {
@@ -750,15 +737,7 @@ function registerValidator(e) {
       TryEach(function (name) {
         var c = findNearBy(e, name);
         if (c == null) {
-          if (window.console != null) {
-            console.warn("Unable to find nearby " + name);
-          }
-          if (window.YUI != null) {
-            YUI.log(
-              "Unable to find a nearby control of the name " + name,
-              "warn",
-            );
-          }
+          console.warn("Unable to find nearby " + name);
           return;
         }
         c.addEventListener("change", checker.bind(e));
@@ -1902,15 +1881,7 @@ function refillOnChange(e, onChange) {
       TryEach(function (name) {
         var c = findNearBy(e, name);
         if (c == null) {
-          if (window.console != null) {
-            console.warn("Unable to find nearby " + name);
-          }
-          if (window.YUI != null) {
-            YUI.log(
-              "Unable to find a nearby control of the name " + name,
-              "warn",
-            );
-          }
+          console.warn("Unable to find nearby " + name);
           return;
         }
         c.addEventListener("change", h);
