@@ -1,0 +1,11 @@
+<div>
+  Om detta anges kommer batchresultatet för felnivån att tolkas som ett
+  instabilt byggresultat. Om den slutliga felnivån matchar värdet ändras
+  byggresultaten till instabilt och nästa steg återupptas. Värden som stöds
+  matchar det bredaste intervallet av felnivåer för Windows-liknande system. I
+  Windows NT4 och senare lagras ERRORLEVEL som fyra byte, heltal med tecken,
+  vilket ger ett värde mellan 2147483647 och -2147483648. Äldre versioner av
+  Windows använder 2 byte. DOS-liknande system använder en byte, vilket ger
+  felnivåer mellan 0-255. Värdet 0 ignoreras och gör inte bygget instabilt för
+  att hålla standardbeteendet konsekvent.
+</div>
