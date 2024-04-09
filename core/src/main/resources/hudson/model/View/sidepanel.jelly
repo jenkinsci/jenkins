@@ -58,7 +58,7 @@ THE SOFTWARE.
 
       <!-- These users will access from Manage Jenkins -->
       <j:if test="${!h.hasAnyPermission(it, app.ADMINISTER_MANAGE_SYSTEM_READ)}">
-        <l:task href="${rootURL}/computer" icon="symbol-computer" title="${%Nodes}" permission="${it.READ}"/>
+        <l:task href="${rootURL}/computer" icon="symbol-computer" title="${%Nodes}" />
       </j:if>
 
       <!-- subtypes can put more stuff here -->
