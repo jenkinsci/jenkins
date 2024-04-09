@@ -53,19 +53,7 @@ import hudson.search.SearchItem;
 import hudson.search.SearchItems;
 import hudson.security.ACL;
 import hudson.tasks.LogRotator;
-import hudson.util.AlternativeUiTextProvider;
-import hudson.util.ChartUtil;
-import hudson.util.ColorPalette;
-import hudson.util.CopyOnWriteList;
-import hudson.util.DataSetBuilder;
-import hudson.util.DescribableList;
-import hudson.util.FormApply;
-import hudson.util.Graph;
-import hudson.util.ProcessTree;
-import hudson.util.RunList;
-import hudson.util.ShiftedCategoryAxis;
-import hudson.util.StackedAreaRenderer2;
-import hudson.util.TextFile;
+import hudson.util.*;
 import hudson.widgets.HistoryWidget;
 import hudson.widgets.HistoryWidget.Adapter;
 import hudson.widgets.Widget;
@@ -120,15 +108,13 @@ import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
-import org.kohsuke.stapler.StaplerOverridable;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.*;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.kohsuke.stapler.verb.POST;
 
 /**
- * A job is an runnable entity under the monitoring of Hudson.
+ * A job is a runnable entity under the monitoring of Hudson.
  *
  * <p>
  * Every time it "runs", it will be recorded as a {@link Run} object.
@@ -1618,4 +1604,9 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     private static final HexStringConfidentialKey SERVER_COOKIE = new HexStringConfidentialKey(Job.class, "serverCookie", 16);
+
+    @Restricted(NoExternalUse.class)
+    public static FormValidation doCheckDisplayNameOrNull(@AncestorInPath AbstractProject<?, ?> project, @QueryParameter String value) {
+        return Jenkins.get().doCheckDisplayName(value, project.getName());
+    }
 }
