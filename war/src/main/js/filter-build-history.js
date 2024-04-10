@@ -56,17 +56,7 @@ down.addEventListener("click", () => {
 });
 
 function loadPage(options) {
-  const params = {
-    ...options,
-    search: pageSearchInput.value,
-  };
-
-  // console.log(getNewestEntryId())
-  // console.log(getOldestEntryId())
-
-  // newerThan
-  // loadPage({ "newer-than": getNewestEntryId() });
-  // loadPage({ "older-than": getOldestEntryId() });
+  const params = Object.assign({}, options, { search: pageSearchInput.value });
 
   fetch(ajaxUrl + toQueryString(params)).then((rsp) => {
     if (rsp.ok) {
