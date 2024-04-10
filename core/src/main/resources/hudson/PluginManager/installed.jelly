@@ -85,7 +85,7 @@ THE SOFTWARE.
             </tr>
             </thead>
             <tbody>
-              <j:forEach var="p" items="${app.pluginManager.plugins}">
+              <j:forEach var="p" items="${app.pluginManager.pluginsSortedByTitle}">
                 <tr
                   class="plugin ${p.hasMandatoryDependents()?'has-dependents':''} ${(p.hasMandatoryDependents() and !p.enabled)?'has-dependents-but-disabled':''} ${p.isDeleted()?'deleted':''} ${p.hasImpliedDependents() and p.enabled ? 'possibly-has-implied-dependents' : ''}"
                   data-plugin-id="${p.shortName}" data-plugin-name="${p.displayName}">
