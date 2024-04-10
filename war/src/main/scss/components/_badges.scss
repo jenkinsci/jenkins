@@ -42,8 +42,9 @@
   min-height: 20px;
   min-width: 20px;
   padding: 0 0.4rem;
-  background: color-mix(in srgb, var(--color) 25%, transparent);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color) 5%, transparent);
-  backdrop-filter: brightness(110%) blur(10px);
-  color: var(--color) !important;
+  background: color-mix(in srgb, var(--color) 85%, transparent);
+  box-shadow: inset 0 -1px  2px var(--color);
+  color: var(--white) !important;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(2.5px);
 }
