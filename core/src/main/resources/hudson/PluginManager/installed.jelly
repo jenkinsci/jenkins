@@ -85,7 +85,7 @@ THE SOFTWARE.
             </tr>
             </thead>
             <tbody>
-              <j:forEach var="p" items="${app.pluginManager.plugins}">
+              <j:forEach var="p" items="${app.pluginManager.pluginsSortedByTitle}">
                 <tr
                   class="plugin ${p.hasMandatoryDependents()?'has-dependents':''} ${(p.hasMandatoryDependents() and !p.enabled)?'has-dependents-but-disabled':''} ${p.isDeleted()?'deleted':''} ${p.hasImpliedDependents() and p.enabled ? 'possibly-has-implied-dependents' : ''}"
                   data-plugin-id="${p.shortName}" data-plugin-name="${p.displayName}">
@@ -171,12 +171,14 @@ THE SOFTWARE.
                     <td class="jenkins-table__cell--tight">
                       <div class="jenkins-table__cell__button-wrapper">
                         <j:if test="${p.downgradable}">
-                          <form class="jenkins-buttons-row" method="post"
+                          <form method="post"
+                                class="jenkins-buttons-row"
                                 action="${rootURL}/updateCenter/plugin/${p.shortName}/downgrade">
-                            <button class="jenkins-table__button jenkins-!-color-orange" tooltip="${%downgradeTo(p.backupVersion)}">
+                            <button class="jenkins-button jenkins-button--tertiary jenkins-!-color-orange"
+                                    style="padding: 0.5rem"
+                                    tooltip="${%downgradeTo(p.backupVersion)}">
                               <l:icon src="symbol-downgrade-circle"/>
-                              <span class="jenkins-!-margin-left-1"
-                                    style="font-size: 0.75rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 50px;">
+                              <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 60px;">
                                 ${p.backupVersion}
                               </span>
                             </button>
@@ -220,7 +222,7 @@ THE SOFTWARE.
                             </j:if>
                             <button data-action="uninstall"
                                     type="button"
-                                    class="jenkins-table__button jenkins-!-destructive-color"
+                                    class="jenkins-button jenkins-button--tertiary jenkins-!-destructive-color"
                                     tooltip="${%Uninstall} ${p.updateInfo.displayName ?: p.displayName}"
                                     data-href="plugin/${p.shortName}/doUninstall"
                                     data-message="${%uninstall-title(p.updateInfo.displayName ?: p.displayName)}">
