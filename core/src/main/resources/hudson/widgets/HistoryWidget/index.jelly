@@ -54,7 +54,7 @@ THE SOFTWARE.
         <div id="jenkins-build-history" class="app-builds-container__items">
         </div>
 
-        <div class="app-builds-container__controls">
+        <div class="app-builds-container__controls" id="controls">
           <button class="jenkins-button jenkins-button--tertiary jenkins-card__unveil" id="up">
             <l:icon src="symbol-arrow-left" />
           </button>

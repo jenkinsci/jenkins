@@ -9,26 +9,26 @@ const contents = card.querySelector("#jenkins-build-history");
 const container = card.querySelector(".app-builds-container");
 const noBuilds = card.querySelector("#no-builds");
 
+const controls = document.querySelector("#controls");
 const up = document.querySelector("#up");
 const down = document.querySelector("#down");
 
 // const updateBuildsRefreshInterval = 5000;
 
 function updatePageParams(dataTable) {
-  const pageHasUp = dataTable.getAttribute("page-has-up");
-  const pageHasDown = dataTable.getAttribute("page-has-down");
+  const pageHasUp = dataTable.getAttribute("page-has-up") === "true";
+  const pageHasDown = dataTable.getAttribute("page-has-down") === "true";
 
-  up.classList.toggle(
-    "app-builds-container__button--disabled",
-    pageHasUp === "false",
-  );
-  down.classList.toggle(
-    "app-builds-container__button--disabled",
-    pageHasDown === "false",
+  controls.classList.toggle(
+    "jenkins-!-display-none",
+    !pageHasUp && !pageHasDown,
   );
 
-  buildHistoryPage.setAttribute("page-has-up", pageHasUp);
-  buildHistoryPage.setAttribute("page-has-down", pageHasDown);
+  up.classList.toggle("app-builds-container__button--disabled", !pageHasUp);
+  down.classList.toggle("app-builds-container__button--disabled", !pageHasDown);
+
+  buildHistoryPage.setAttribute("page-has-up", pageHasUp.toString());
+  buildHistoryPage.setAttribute("page-has-down", pageHasDown.toString());
   buildHistoryPage.setAttribute(
     "page-entry-newest",
     dataTable.getAttribute("page-entry-newest"),
@@ -82,7 +82,7 @@ function loadPage(options) {
           });
         }
 
-        var div = document.createElement("div");
+        const div = document.createElement("div");
         div.innerHTML = responseText;
         updatePageParams(div.children[0]);
       });
