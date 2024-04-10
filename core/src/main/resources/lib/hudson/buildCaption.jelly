@@ -38,22 +38,12 @@ THE SOFTWARE.
     <div class="jenkins-app-bar__controls">
       <j:if test="${it.building}">
         <div class="build-caption-progress-container">
-          <table class="middle-align">
-            <tr>
-              <td>
-                ${%Progress}:
-              </td>
-              <td class="build-caption-progress-bar">
-                <t:buildProgressBar build="${it}" animate="true"/>
-              </td>
-              <td class="jenkins-table__link">
-                <j:if test="${it.parent.hasAbortPermission()}">
-                  <l:stopButton href="stop" confirm="${%confirm(it.fullDisplayName)}"
+          ${%Progress}:
+          <t:buildProgressBar build="${it}" animate="true"/>
+          <j:if test="${it.parent.hasAbortPermission()}">
+            <l:stopButton href="stop" confirm="${%confirm(it.fullDisplayName)}"
                           alt="${%cancel}"/>
-                </j:if>
-              </td>
-            </tr>
-          </table>
+          </j:if>
         </div>
       </j:if>
       <st:adjunct includes="lib.hudson.build-caption"/>
