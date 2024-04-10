@@ -128,7 +128,7 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.kohsuke.stapler.verb.POST;
 
 /**
- * A job is a runnable entity under the monitoring of Hudson.
+ * A job is an runnable entity under the monitoring of Hudson.
  *
  * <p>
  * Every time it "runs", it will be recorded as a {@link Run} object.
