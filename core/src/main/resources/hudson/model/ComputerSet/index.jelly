@@ -95,7 +95,7 @@ THE SOFTWARE.
           <td class="jenkins-table__cell--tight">
             <j:if test="${c.hasPermission(c.EXTENDED_READ)}">
               <div class="jenkins-table__cell__button-wrapper">
-                <a href="../${c.url}configure" class="jenkins-table__button">
+                <a href="../${c.url}configure" class="jenkins-button jenkins-button--tertiary">
                   <l:icon src="symbol-settings" />
                 </a>
               </div>

@@ -63,7 +63,7 @@ THE SOFTWARE.
               </td>
               <td>
                 <div class="jenkins-table__cell__button-wrapper">
-                  <a href="${user.url}/configure" class="jenkins-table__button">
+                  <a href="${user.url}/configure" class="jenkins-button jenkins-button--tertiary">
                     <l:icon src="symbol-settings" />
                   </a>
                 </div>
@@ -71,7 +71,7 @@ THE SOFTWARE.
               <td>
                 <j:if test="${user.canDelete()}">
                   <div class="jenkins-table__cell__button-wrapper">
-                    <l:confirmationLink href="${user.url}/doDelete" class="jenkins-table__button jenkins-!-destructive-color"
+                    <l:confirmationLink href="${user.url}/doDelete" class="jenkins-button jenkins-button--tertiary jenkins-!-destructive-color"
                                         post="true" message="${%delete.user(user.displayName)}">
                       <l:icon src="symbol-trash" />
                     </l:confirmationLink>
