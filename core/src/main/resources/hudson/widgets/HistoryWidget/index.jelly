@@ -24,6 +24,8 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:dd="/lib/layout/dropdowns">
+  <script src="${resURL}/jsbundles/pages/project/filter-build-history.js" type="text/javascript" defer="true" />
+
   <j:set var="page" value="${it.historyPageFilter}" />
 
   <j:set var="controls">
@@ -69,6 +71,4 @@ THE SOFTWARE.
       <div id="properties" page-next-build="${it.nextBuildNumberToFetch ?: it.owner.nextBuildNumber}"/>
     </l:card>
   </div>
-
-  <script src="${resURL}/jsbundles/filter-build-history.js" type="text/javascript" defer="true" />
 </j:jelly>
