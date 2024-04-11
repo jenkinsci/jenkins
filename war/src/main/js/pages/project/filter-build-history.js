@@ -47,10 +47,10 @@ function load(options = {}) {
         div.innerHTML = responseText;
         const innerChild = div.children[0];
         updateCardControls({
-          "page-has-up": innerChild.getAttribute("page-has-up") === "true",
-          "page-has-down": innerChild.getAttribute("page-has-down") === "true",
-          "page-entry-newest": innerChild.getAttribute("page-entry-newest"),
-          "page-entry-oldest": innerChild.getAttribute("page-entry-oldest"),
+          pageHasUp: innerChild.dataset.pageHasUp === "true",
+          pageHasDown: innerChild.dataset.pageHasDown === "true",
+          pageEntryNewest: innerChild.dataset.pageEntryNewest,
+          pageEntryOldest: innerChild.dataset.pageEntryOldest,
         });
       });
     }
@@ -62,36 +62,25 @@ function load(options = {}) {
  * @param {CardControlsOptions}  parameters
  */
 function updateCardControls(parameters) {
-  const pageHasUp = parameters["page-has-up"];
-  const pageHasDown = parameters["page-has-down"];
-
   controls.classList.toggle(
     "jenkins-!-display-none",
-    !pageHasUp && !pageHasDown,
+    !parameters.pageHasUp && !parameters.pageHasDown,
   );
 
-  up.classList.toggle("app-builds-container__button--disabled", !pageHasUp);
-  down.classList.toggle("app-builds-container__button--disabled", !pageHasDown);
+  up.classList.toggle("app-builds-container__button--disabled", !parameters.pageHasUp);
+  down.classList.toggle("app-builds-container__button--disabled", !parameters.pageHasDown);
 
-  buildHistoryPage.setAttribute("page-has-up", pageHasUp.toString());
-  buildHistoryPage.setAttribute("page-has-down", pageHasDown.toString());
-  buildHistoryPage.setAttribute(
-    "page-entry-newest",
-    parameters["page-entry-newest"],
-  );
-  buildHistoryPage.setAttribute(
-    "page-entry-oldest",
-    parameters["page-entry-oldest"],
-  );
+  buildHistoryPage.dataset.pageEntryNewest = parameters.pageEntryNewest;
+  buildHistoryPage.dataset.pageEntryOldest = parameters.pageEntryOldest;
 }
 
 up.addEventListener("click", () => {
-  load({ "newer-than": buildHistoryPage.getAttribute("page-entry-newest") });
+  load({ "newer-than": buildHistoryPage.dataset.pageEntryNewest });
 });
 
 down.addEventListener("click", () => {
   // cancelRefreshTimeout();
-  load({ "older-than": buildHistoryPage.getAttribute("page-entry-oldest") });
+  load({ "older-than": buildHistoryPage.dataset.pageEntryOldest });
 });
 
 const handleFilter = function () {

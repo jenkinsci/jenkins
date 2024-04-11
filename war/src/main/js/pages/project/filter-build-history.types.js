@@ -9,9 +9,8 @@
 /**
  * @typedef CardControlsOptions
  * @type {object}
- * @property {boolean} banana
- * @property {boolean} page-has-up
- * @property {boolean} page-has-down
- * @property {string | undefined} page-entry-newest
- * @property {string | undefined} page-entry-oldest
+ * @property {boolean} pageHasUp
+ * @property {boolean} pageHasDown
+ * @property {string | undefined} pageEntryNewest
+ * @property {string | undefined} pageEntryOldest
  */

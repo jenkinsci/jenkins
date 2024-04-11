@@ -26,10 +26,10 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
   <l:ajax>
     <j:if test="${it.size() > 0}">
-      <div page-entry-newest="${it.newestOnPage}"
-           page-entry-oldest="${it.oldestOnPage}"
-           page-has-up="${it.hasUpPage}"
-           page-has-down="${it.hasDownPage}">
+      <div data-page-entry-newest="${it.newestOnPage}"
+           data-page-entry-oldest="${it.oldestOnPage}"
+           data-page-has-up="${it.hasUpPage}"
+           data-page-has-down="${it.hasDownPage}">
         <st:include page="entries.jelly" />
       </div>
     </j:if>

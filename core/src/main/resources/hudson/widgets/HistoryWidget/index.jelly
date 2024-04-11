@@ -40,10 +40,10 @@ THE SOFTWARE.
   </j:set>
 
   <div id="buildHistoryPage" page-ajax="${it.baseUrl}/buildHistory/ajax"
-       page-entry-newest="${page.newestOnPage}"
-       page-entry-oldest="${page.oldestOnPage}"
-       page-has-up="${page.hasUpPage}"
-       page-has-down="${page.hasDownPage}">
+       data-page-entry-newest="${page.newestOnPage}"
+       data-page-entry-oldest="${page.oldestOnPage}"
+       data-page-has-up="${page.hasUpPage}"
+       data-page-has-down="${page.hasDownPage}">
     <l:card id="jenkins-builds" title="Builds" controls="${controls}" expandable="buildTimeTrend">
       <l:search-bar placeholder="${%find}"
                     clazz="${page.runs.isEmpty() and page.queueItems.isEmpty() ? 'jenkins-hidden' : ''}"/>
