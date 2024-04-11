@@ -66,9 +66,14 @@ function updateCardControls(parameters) {
     "jenkins-!-display-none",
     !parameters.pageHasUp && !parameters.pageHasDown,
   );
-
-  up.classList.toggle("app-builds-container__button--disabled", !parameters.pageHasUp);
-  down.classList.toggle("app-builds-container__button--disabled", !parameters.pageHasDown);
+  up.classList.toggle(
+    "app-builds-container__button--disabled",
+    !parameters.pageHasUp,
+  );
+  down.classList.toggle(
+    "app-builds-container__button--disabled",
+    !parameters.pageHasDown,
+  );
 
   buildHistoryPage.dataset.pageEntryNewest = parameters.pageEntryNewest;
   buildHistoryPage.dataset.pageEntryOldest = parameters.pageEntryOldest;
@@ -83,12 +88,6 @@ down.addEventListener("click", () => {
   load({ "older-than": buildHistoryPage.dataset.pageEntryOldest });
 });
 
-const handleFilter = function () {
-  load();
-};
-
-const debouncedFilter = debounce(handleFilter, 300);
-
 // setInterval(() => {
 //   loadPage({})
 // }, updateBuildsRefreshInterval)
@@ -97,7 +96,9 @@ document.addEventListener("DOMContentLoaded", function () {
   pageSearchInput.addEventListener("input", function () {
     container.classList.add("app-builds-container--loading");
     pageSearch.classList.add("jenkins-search--loading");
-    debouncedFilter();
+    debounce(() => {
+      load();
+    }, 300);
   });
 
   load();
