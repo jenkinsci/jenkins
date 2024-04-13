@@ -33,7 +33,7 @@ THE SOFTWARE.
           <j:set var="lastBuild" value="${it.lastBuild}" />
           <j:if test="${lastBuild != null}">
             <a href="${rootURL + '/' + lastBuild.url}" class="jenkins-!-display-contents" tabindex="-1">
-              <l:icon class="${lastBuild.buildStatusIconClassName}" tooltip="${lastBuild.iconColor.description}"/>
+              <l:icon src="symbol-status-${lastBuild.iconColor.iconName}" tooltip="${lastBuild.iconColor.description}"/>
             </a>
           </j:if>
           <h1 class="job-index-headline page-headline">

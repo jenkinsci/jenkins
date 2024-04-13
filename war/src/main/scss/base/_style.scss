@@ -163,6 +163,10 @@ pre {
   }
 }
 
+pre.jenkins-readonly {
+  margin-bottom: 0 !important;
+}
+
 pre.console {
   overflow: auto;
 }
@@ -459,7 +463,7 @@ div.listview-jobs {
   padding: 0;
   margin-top: 5px;
   white-space: normal;
-  opacity: 0.6;
+  color: var(--text-color-secondary);
   word-break: break-word;
 }
 
@@ -498,7 +502,7 @@ div.listview-jobs {
     }
 
     td {
-      padding: 8px;
+      padding: 0 8px 8px;
     }
   }
 
@@ -593,7 +597,7 @@ div.listview-jobs {
 
 .build-row-cell .pane.build-name {
   width: 25%;
-  font-weight: bold;
+  font-weight: 500;
   vertical-align: top;
 }
 
@@ -866,13 +870,22 @@ table.progress-bar.red td.progress-bar-done {
 
 /* Unknown */
 
+[data-symbol-animation] {
+  animation: spin 1s linear infinite;
+  transform-origin: center;
+
+  @media (prefers-reduced-motion) {
+    animation-duration: 3s;
+  }
+}
+
 @keyframes spin {
   from {
-    transform: rotate(0deg) translateZ(0);
+    transform: rotate(0deg);
   }
 
   to {
-    transform: rotate(360deg) translateZ(0);
+    transform: rotate(360deg);
   }
 }
 
@@ -1033,57 +1046,6 @@ select.select-ajax-pending {
 
 .i18n {
   display: none;
-}
-
-.alert {
-  font-size: var(--font-size-sm);
-  padding: 15px;
-  margin-bottom: 20px;
-  border: 1px solid transparent;
-  border-radius: var(--form-input-border-radius);
-}
-
-.alert a {
-  color: inherit;
-  text-decoration: underline;
-
-  &:hover,
-  &:focus,
-  &:active {
-    text-decoration: underline;
-  }
-}
-
-.alert-success {
-  color: var(--alert-success-text-color);
-  background-color: var(--alert-success-bg-color);
-  border-color: var(--alert-success-border-color);
-}
-
-.alert-info {
-  color: var(--alert-info-text-color);
-  background-color: var(--alert-info-bg-color);
-  border-color: var(--alert-info-border-color);
-}
-
-.alert-warning {
-  color: var(--alert-warning-text-color);
-  background-color: var(--alert-warning-bg-color);
-  border-color: var(--alert-warning-border-color);
-}
-
-.alert-warning p {
-  color: var(--alert-warning-text-color);
-}
-
-.alert-danger {
-  color: var(--alert-danger-text-color);
-  background-color: var(--alert-danger-bg-color);
-  border-color: var(--alert-danger-border-color);
-}
-
-.alert-danger p {
-  color: var(--alert-danger-text-color);
 }
 
 body.no-decoration #main-panel {

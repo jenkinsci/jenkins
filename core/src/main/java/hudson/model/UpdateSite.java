@@ -83,7 +83,6 @@ import jenkins.util.SystemProperties;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
-import org.apache.commons.lang.StringUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -491,6 +490,17 @@ public class UpdateSite {
     @Exported
     public String getUrl() {
         return url;
+    }
+
+    /**
+     *
+     * @return the URL used by {@link jenkins.install.SetupWizard} for suggested plugins to install at setup time
+     * @since 2.446
+     */
+    @Exported
+    public String getSuggestedPluginsUrl() {
+        String updateCenterJsonUrl = getUrl();
+        return updateCenterJsonUrl.replace("/update-center.json", "/platform-plugins.json");
     }
 
 
@@ -1288,7 +1298,11 @@ public class UpdateSite {
                 displayName = title;
             else
                 displayName = name;
-            return StringUtils.removeStart(displayName, "Jenkins ");
+            String removePrefix = "Jenkins ";
+            if (displayName != null && displayName.startsWith(removePrefix)) {
+                return displayName.substring(removePrefix.length());
+            }
+            return displayName;
         }
 
         /**
@@ -1561,7 +1575,7 @@ public class UpdateSite {
          */
         @Restricted(DoNotUse.class)
         public boolean hasWarnings() {
-            return getWarnings().size() > 0;
+            return !getWarnings().isEmpty();
         }
 
         /**

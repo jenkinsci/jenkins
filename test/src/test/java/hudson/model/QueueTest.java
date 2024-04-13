@@ -108,6 +108,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import jenkins.model.BlockedBecauseOfBuildInProgress;
 import jenkins.model.Jenkins;
+import jenkins.model.queue.QueueIdStrategy;
 import jenkins.security.QueueItemAuthenticatorConfiguration;
 import org.acegisecurity.acls.sid.PrincipalSid;
 import org.apache.commons.fileupload.FileUploadException;
@@ -200,7 +201,7 @@ public class QueueTest {
 
         // The current counter should be the id from the item brought back
         // from the persisted queue.xml.
-        assertEquals(3, Queue.WaitingItem.getCurrentCounterValue());
+        assertEquals(3, QueueIdStrategy.DefaultStrategy.getCurrentCounterValue());
 
         // Clear the queue
         assertTrue(r.jenkins.getQueue().cancel(r.jenkins.getItemByFullName("test", FreeStyleProject.class)));
@@ -213,7 +214,7 @@ public class QueueTest {
         Queue q = r.jenkins.getQueue();
 
         resetQueueState();
-        assertEquals(0, Queue.WaitingItem.getCurrentCounterValue());
+        assertEquals(0, QueueIdStrategy.DefaultStrategy.getCurrentCounterValue());
 
         // prevent execution to push stuff into the queue
         r.jenkins.setNumExecutors(0);
@@ -234,7 +235,7 @@ public class QueueTest {
         assertEquals(0, q.getItems().length);
 
         // The counter state should be maintained.
-        assertEquals(1, Queue.WaitingItem.getCurrentCounterValue());
+        assertEquals(1, QueueIdStrategy.DefaultStrategy.getCurrentCounterValue());
     }
 
     /**
@@ -819,19 +820,18 @@ public class QueueTest {
      */
     @Test public void accessControl() throws Exception {
         FreeStyleProject p = r.createFreeStyleProject();
-        QueueItemAuthenticatorConfiguration.get().getAuthenticators().add(new MockQueueItemAuthenticator(Map.of(p.getFullName(), alice)));
+        QueueItemAuthenticatorConfiguration.get().getAuthenticators().add(new MockQueueItemAuthenticator().authenticate(p.getFullName(), alice));
         p.getBuildersList().add(new TestBuilder() {
             @Override
             public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) {
-                assertEquals(alice2, Jenkins.getAuthentication2());
+                assertEquals(alice, Jenkins.getAuthentication2());
                 return true;
             }
         });
         r.buildAndAssertSuccess(p);
     }
 
-    private static Authentication alice2 = new UsernamePasswordAuthenticationToken("alice", "alice", Collections.emptySet());
-    private static org.acegisecurity.Authentication alice = org.acegisecurity.Authentication.fromSpring(alice2);
+    private static Authentication alice = new UsernamePasswordAuthenticationToken("alice", "alice", Collections.emptySet());
 
 
     /**
@@ -846,11 +846,11 @@ public class QueueTest {
         DumbSlave s2 = r.createSlave();
 
         FreeStyleProject p = r.createFreeStyleProject();
-        QueueItemAuthenticatorConfiguration.get().getAuthenticators().add(new MockQueueItemAuthenticator(Map.of(p.getFullName(), alice)));
+        QueueItemAuthenticatorConfiguration.get().getAuthenticators().add(new MockQueueItemAuthenticator().authenticate(p.getFullName(), alice));
         p.getBuildersList().add(new TestBuilder() {
             @Override
             public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener) {
-                assertEquals(alice2, Jenkins.getAuthentication2());
+                assertEquals(alice, Jenkins.getAuthentication2());
                 return true;
             }
         });
@@ -883,7 +883,7 @@ public class QueueTest {
             if (node.getNodeName().equals(blocked)) {
                 // ACL that allow anyone to do anything except Alice can't build.
                 SparseACL acl = new SparseACL(null);
-                acl.add(new PrincipalSid(alice2), Computer.BUILD, false);
+                acl.add(new PrincipalSid(alice), Computer.BUILD, false);
                 acl.add(new PrincipalSid("anonymous"), Jenkins.ADMINISTER, true);
                 return acl;
             }

@@ -47,7 +47,6 @@ import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import jenkins.security.MasterToSlaveCallable;
 import jenkins.util.io.OnMaster;
-import org.apache.commons.lang.StringUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -102,7 +101,7 @@ public class SystemProperties {
         public void contextInitialized(ServletContextEvent event) {
             ServletContext theContext = event.getServletContext();
             handler = key -> {
-                if (StringUtils.isNotBlank(key)) {
+                if (key != null && !key.isBlank()) {
                     try {
                         return theContext.getInitParameter(key);
                     } catch (SecurityException ex) {

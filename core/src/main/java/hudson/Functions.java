@@ -117,6 +117,9 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -163,7 +166,6 @@ import org.apache.commons.jelly.Script;
 import org.apache.commons.jelly.XMLOutput;
 import org.apache.commons.jexl.parser.ASTSizeFunction;
 import org.apache.commons.jexl.util.Introspector;
-import org.apache.commons.lang.StringUtils;
 import org.jenkins.ui.icon.Icon;
 import org.jenkins.ui.icon.IconSet;
 import org.jvnet.tiger_types.Types;
@@ -219,12 +221,12 @@ public class Functions {
     }
 
     public static String xsDate(Calendar cal) {
-        return Util.XS_DATETIME_FORMATTER.format(cal.getTime());
+        return Util.XS_DATETIME_FORMATTER2.format(cal.toInstant());
     }
 
     @Restricted(NoExternalUse.class)
     public static String iso8601DateTime(Date date) {
-        return Util.XS_DATETIME_FORMATTER.format(date);
+        return Util.XS_DATETIME_FORMATTER2.format(date.toInstant());
     }
 
     /**
@@ -236,7 +238,7 @@ public class Functions {
     }
 
     public static String rfc822Date(Calendar cal) {
-        return Util.RFC822_DATETIME_FORMATTER.format(cal.getTime());
+        return DateTimeFormatter.RFC_1123_DATE_TIME.format(ZonedDateTime.ofInstant(cal.toInstant(), ZoneId.systemDefault()));
     }
 
     /**
@@ -692,13 +694,13 @@ public class Functions {
     }
 
     @Restricted(NoExternalUse.class)
-    public static String getUserTimeZonePostfix() {
+    public static String getUserTimeZonePostfix(Date date) {
         if (!isUserTimeZoneOverride()) {
             return "";
         }
 
         TimeZone tz = TimeZone.getTimeZone(getUserTimeZone());
-        return tz.getDisplayName(tz.observesDaylightTime(), TimeZone.SHORT);
+        return tz.getDisplayName(tz.inDaylightTime(date), TimeZone.SHORT, getCurrentLocale());
     }
 
     @Restricted(NoExternalUse.class)
@@ -968,7 +970,7 @@ public class Functions {
     public static String getFooterURL() {
         if (footerURL == null) {
             footerURL = SystemProperties.getString("hudson.footerURL");
-            if (StringUtils.isBlank(footerURL)) {
+            if (footerURL == null || footerURL.isBlank()) {
                 footerURL = "https://www.jenkins.io/";
             }
         }
@@ -1909,7 +1911,7 @@ public class Functions {
      * Computes the link to the console for the run for the specified executable, taking {@link ConsoleUrlProvider} into account.
      * @param executable the executable (normally a {@link Run})
      * @return the absolute URL for accessing the build console for the executable, or null if there is no build associated with the executable
-     * @since TODO
+     * @since 2.433
      */
     public static @CheckForNull String getConsoleUrl(Queue.Executable executable) {
         if (executable == null) {
@@ -2194,7 +2196,7 @@ public class Functions {
             int firstPeriod = part.indexOf(".");
             return slash > 0 && firstPeriod > 0 && slash < firstPeriod;
         }).collect(Collectors.joining(" "));
-        if (StringUtils.isBlank(views)) {
+        if (views == null || views.isBlank()) {
             // fallback to full thread name if there are no apparent views
             return threadName;
         }
@@ -2242,8 +2244,17 @@ public class Functions {
         return SystemProperties.getBoolean("hudson.security.WipeOutPermission");
     }
 
+    @Deprecated
     public static String createRenderOnDemandProxy(JellyContext context, String attributesToCapture) {
         return Stapler.getCurrentRequest().createJavaScriptProxy(new RenderOnDemandClosure(context, attributesToCapture));
+    }
+
+    /**
+     * Called from renderOnDemand.jelly to generate the parameters for the proxy object generation.
+     */
+    @Restricted(NoExternalUse.class)
+    public static StaplerRequest.RenderOnDemandParameters createRenderOnDemandProxyParameters(JellyContext context, String attributesToCapture) {
+        return Stapler.getCurrentRequest().createJavaScriptProxyParameters(new RenderOnDemandClosure(context, attributesToCapture));
     }
 
     public static String getCurrentDescriptorByNameUrl() {
@@ -2318,13 +2329,17 @@ public class Functions {
         double number = size;
         if (number >= 1024) {
             number = number / 1024;
-            measure = "KB";
+            measure = "KiB";
             if (number >= 1024) {
                 number = number / 1024;
-                measure = "MB";
+                measure = "MiB";
                 if (number >= 1024) {
                     number = number / 1024;
-                    measure = "GB";
+                    measure = "GiB";
+                    if (number >= 1024) {
+                        number = number / 1024;
+                        measure = "TiB";
+                    }
                 }
             }
         }
@@ -2402,7 +2417,7 @@ public class Functions {
     }
 
     private static @NonNull String filterIconNameClasses(@NonNull String classNames) {
-        return Arrays.stream(StringUtils.split(classNames, ' '))
+        return Arrays.stream(classNames.split(" "))
             .filter(className -> className.startsWith("icon-"))
             .collect(Collectors.joining(" "));
     }

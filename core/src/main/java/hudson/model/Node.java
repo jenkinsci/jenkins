@@ -29,15 +29,18 @@ import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import hudson.BulkChange;
 import hudson.Extension;
 import hudson.ExtensionPoint;
 import hudson.FilePath;
 import hudson.FileSystemProvisioner;
 import hudson.Launcher;
 import hudson.Util;
+import hudson.XmlFile;
 import hudson.model.Descriptor.FormException;
 import hudson.model.Queue.Task;
 import hudson.model.labels.LabelAtom;
+import hudson.model.listeners.SaveableListener;
 import hudson.model.queue.CauseOfBlockage;
 import hudson.remoting.Callable;
 import hudson.remoting.VirtualChannel;
@@ -45,6 +48,7 @@ import hudson.security.ACL;
 import hudson.security.AccessControlled;
 import hudson.slaves.Cloud;
 import hudson.slaves.ComputerListener;
+import hudson.slaves.EphemeralNode;
 import hudson.slaves.NodeDescriptor;
 import hudson.slaves.NodeProperty;
 import hudson.slaves.NodePropertyDescriptor;
@@ -53,6 +57,7 @@ import hudson.util.ClockDifference;
 import hudson.util.DescribableList;
 import hudson.util.EnumConverter;
 import hudson.util.TagCloud;
+import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.Collections;
@@ -63,6 +68,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
+import jenkins.model.Nodes;
 import jenkins.util.SystemProperties;
 import jenkins.util.io.OnMaster;
 import net.sf.json.JSONObject;
@@ -96,7 +102,7 @@ import org.springframework.security.core.Authentication;
  * @see Computer
  */
 @ExportedBean
-public abstract class Node extends AbstractModelObject implements ReconfigurableDescribable<Node>, ExtensionPoint, AccessControlled, OnMaster, Saveable {
+public abstract class Node extends AbstractModelObject implements ReconfigurableDescribable<Node>, ExtensionPoint, AccessControlled, OnMaster, PersistenceRoot {
 
     private static final Logger LOGGER = Logger.getLogger(Node.class.getName());
 
@@ -109,6 +115,8 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
      * is saved once.
      */
     protected transient volatile boolean holdOffLaunchUntilSave;
+
+    private transient Nodes parent;
 
     @Override
     public String getDisplayName() {
@@ -133,16 +141,18 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
      */
     @Override
     public void save() throws IOException {
-        // this should be a no-op unless this node instance is the node instance in Jenkins' list of nodes
-        // thus where Jenkins.get() == null there is no list of nodes, so we do a no-op
-        // Nodes.updateNode(n) will only persist the node record if the node instance is in the list of nodes
-        // so either path results in the same behaviour: the node instance is only saved if it is in the list of nodes
-        // for all other cases we do not know where to persist the node record and hence we follow the default
-        // no-op of a Saveable.NOOP
-        final Jenkins jenkins = Jenkins.getInstanceOrNull();
-        if (jenkins != null) {
-            jenkins.updateNode(this);
+        if (parent == null) return;
+        if (this instanceof EphemeralNode) {
+            Util.deleteRecursive(getRootDir());
+            return;
         }
+        if (BulkChange.contains(this))   return;
+        getConfigFile().write(this);
+        SaveableListener.fireOnChange(this, getConfigFile());
+    }
+
+    protected XmlFile getConfigFile() {
+        return parent.getConfigFile(this);
     }
 
     /**
@@ -246,6 +256,11 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
      */
     public boolean isAcceptingTasks() {
         return true;
+    }
+
+    public void onLoad(Nodes parent, String name) {
+        this.parent = parent;
+        setNodeName(name);
     }
 
     /**
@@ -629,4 +644,16 @@ public abstract class Node extends AbstractModelObject implements Reconfigurable
         }
     }
 
+    @Override
+    public File getRootDir() {
+        return getParent().getRootDirFor(this);
+    }
+
+    @NonNull
+    private Nodes getParent() {
+        if (parent == null) {
+            throw new IllegalStateException("no parent set on " + getClass().getName() + "[" + getNodeName() + "]");
+        }
+        return parent;
+    }
 }

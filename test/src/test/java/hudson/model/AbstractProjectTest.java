@@ -245,12 +245,7 @@ public class AbstractProjectTest {
                 };
             }
         });
-        Thread t = new Thread() {
-            @Override
-            public void run() {
-                p.pollSCMChanges(StreamTaskListener.fromStdout());
-            }
-        };
+        Thread t = new Thread(() -> p.poll(StreamTaskListener.fromStdout()));
         try {
             t.start();
             Future<FreeStyleBuild> f = p.scheduleBuild2(0);
