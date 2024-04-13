@@ -35,7 +35,7 @@ THE SOFTWARE.
     <!-- if there's only one JDK configured, always use that. -->
     <f:entry title="JDK"
              description="${%JDK to be used for this project}">
-      <select class="jenkins-input validated" name="jdk" checkUrl="'${rootURL}/defaultJDKCheck?value='+this.value">
+      <select class="jenkins-input validated" name="jdk" checkUrl="${rootURL}/defaultJDKCheck" checkDependsOn="">
         <j:getStatic var="DEFAULT_NAME" className="hudson.model.JDK" field="DEFAULT_NAME"/>
         <option>${DEFAULT_NAME}</option>
         <j:forEach var="inst" items="${jdks}">
@@ -54,7 +54,7 @@ THE SOFTWARE.
     <p:config-blockWhenDownstreamBuilding />
     <st:include page="configure-advanced.jelly" optional="true" />
     <f:entry title="${%Display Name}" field="displayNameOrNull">
-      <f:textbox checkUrl="'${rootURL}/checkDisplayName?displayName='+encodeURIComponent(this.value)+'&amp;jobName='+encodeURIComponent('${h.jsStringEscape(it.name)}')"/>
+      <f:textbox/>
     </f:entry>
     <f:optionalBlock name="keepDependencies" checked="${it.keepDependencies}" title="${%Keep the build logs of dependencies}" help="/help/tasks/fingerprint/keepDependencies.html"/>
   </f:advanced>

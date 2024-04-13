@@ -76,7 +76,6 @@ import jenkins.mvn.GlobalSettingsProvider;
 import jenkins.mvn.SettingsProvider;
 import jenkins.security.MasterToSlaveCallable;
 import net.sf.json.JSONObject;
-import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -331,13 +330,13 @@ public class Maven extends Builder {
 
             if (!S_PATTERN.matcher(targets).find()) { // check the given target/goals do not contain settings parameter already
                 String settingsPath = SettingsProvider.getSettingsRemotePath(getSettings(), build, listener);
-                if (StringUtils.isNotBlank(settingsPath)) {
+                if (settingsPath != null && !settingsPath.isBlank()) {
                     args.add("-s", settingsPath);
                 }
             }
             if (!GS_PATTERN.matcher(targets).find()) {
                 String settingsPath = GlobalSettingsProvider.getSettingsRemotePath(getGlobalSettings(), build, listener);
-                if (StringUtils.isNotBlank(settingsPath)) {
+                if (settingsPath != null && !settingsPath.isBlank()) {
                     args.add("-gs", settingsPath);
                 }
             }

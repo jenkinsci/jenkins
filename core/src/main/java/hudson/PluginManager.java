@@ -41,6 +41,7 @@ import hudson.PluginWrapper.Dependency;
 import hudson.init.InitMilestone;
 import hudson.init.InitStrategy;
 import hudson.init.InitializerFinder;
+import hudson.lifecycle.Lifecycle;
 import hudson.model.AbstractItem;
 import hudson.model.AbstractModelObject;
 import hudson.model.AdministrativeMonitor;
@@ -90,6 +91,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -144,7 +146,6 @@ import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.LogFactory;
 import org.jenkinsci.Symbol;
 import org.jvnet.hudson.reactor.Executable;
@@ -272,7 +273,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      */
     public static @NonNull PluginManager createDefault(@NonNull Jenkins jenkins) {
         String pmClassName = SystemProperties.getString(CUSTOM_PLUGIN_MANAGER);
-        if (!StringUtils.isBlank(pmClassName)) {
+        if (pmClassName != null && !pmClassName.isBlank()) {
             LOGGER.log(FINE, String.format("Use of custom plugin manager [%s] requested.", pmClassName));
             try {
                 final Class<? extends PluginManager> klass = Class.forName(pmClassName).asSubclass(PluginManager.class);
@@ -370,7 +371,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             throw new UncheckedIOException(e);
         }
         String workDir = SystemProperties.getString(PluginManager.class.getName() + ".workDir");
-        this.workDir = StringUtils.isBlank(workDir) ? null : new File(workDir);
+        this.workDir = workDir == null || workDir.isBlank() ? null : new File(workDir);
 
         strategy = createPluginStrategy();
     }
@@ -924,6 +925,9 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     throw new RestartRequiredException(Messages._PluginManager_PluginIsAlreadyInstalled_RestartRequired(sn));
                 }
             }
+            if (!Lifecycle.get().supportsDynamicLoad()) {
+                throw new RestartRequiredException(Messages._PluginManager_LifecycleDoesNotSupportDynamicLoad_RestartRequired());
+            }
             if (p == null) {
                 p = strategy.createPluginWrapper(arc);
             }
@@ -1250,6 +1254,13 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         return Collections.unmodifiableList(plugins);
     }
 
+    @Restricted(NoExternalUse.class) // used by jelly
+    public List<PluginWrapper> getPluginsSortedByTitle() {
+        return plugins.stream()
+                .sorted(Comparator.comparing(PluginWrapper::getDisplayName, String.CASE_INSENSITIVE_ORDER))
+                .collect(Collectors.toUnmodifiableList());
+    }
+
     public List<FailedPlugin> getFailedPlugins() {
         return failedPlugins;
     }
@@ -1429,16 +1440,16 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         for (UpdateSite site : Jenkins.get().getUpdateCenter().getSiteList()) {
             List<JSONObject> sitePlugins = site.getAvailables().stream()
                 .filter(plugin -> {
-                    if (StringUtils.isBlank(query)) {
+                    if (query == null || query.isBlank()) {
                         return true;
                     }
-                    return StringUtils.containsIgnoreCase(plugin.name, query) ||
-                        StringUtils.containsIgnoreCase(plugin.title, query) ||
-                        StringUtils.containsIgnoreCase(plugin.excerpt, query) ||
+                    return (plugin.name != null && plugin.name.toLowerCase().contains(query.toLowerCase())) ||
+                        (plugin.title != null && plugin.title.toLowerCase().contains(query.toLowerCase())) ||
+                        (plugin.excerpt != null && plugin.excerpt.toLowerCase().contains(query.toLowerCase())) ||
                         plugin.hasCategory(query) ||
                         plugin.getCategoriesStream()
                             .map(UpdateCenter::getCategoryDisplayName)
-                            .anyMatch(category -> StringUtils.containsIgnoreCase(category, query)) ||
+                            .anyMatch(category -> category != null && category.toLowerCase().contains(query.toLowerCase())) ||
                         plugin.hasWarnings() && query.equalsIgnoreCase("warning:");
                 })
                 .limit(Math.max(limit - plugins.size(), 1))
@@ -1468,7 +1479,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     jsonObject.put("title", plugin.title);
                     jsonObject.put("displayName", plugin.getDisplayName());
                     if (plugin.wiki == null || !(plugin.wiki.startsWith("https://") || plugin.wiki.startsWith("http://"))) {
-                        jsonObject.put("wiki", StringUtils.EMPTY);
+                        jsonObject.put("wiki", "");
                     } else {
                         jsonObject.put("wiki", plugin.wiki);
                     }
@@ -1864,9 +1875,10 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             File tmpDir = Files.createTempDirectory("uploadDir").toFile();
             ServletFileUpload upload = new ServletFileUpload(new DiskFileItemFactory(DiskFileItemFactory.DEFAULT_SIZE_THRESHOLD, tmpDir));
             List<FileItem> items = upload.parseRequest(req);
-            if (StringUtils.isNotBlank(items.get(1).getString())) {
+            String string = items.get(1).getString();
+            if (string != null && !string.isBlank()) {
                 // this is a URL deployment
-                fileName = items.get(1).getString();
+                fileName = string;
                 copier = new UrlPluginCopier(fileName);
             } else {
                 // this is a file upload
@@ -1909,7 +1921,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                 }
                 String deps = m.getMainAttributes().getValue("Plugin-Dependencies");
 
-                if (StringUtils.isNotBlank(deps)) {
+                if (deps != null && !deps.isBlank()) {
                     // now we get to parse it!
                     String[] plugins = deps.split(",");
                     for (String p : plugins) {
@@ -1940,7 +1952,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
 
     @Restricted(NoExternalUse.class)
     @RequirePOST public FormValidation doCheckPluginUrl(StaplerRequest request, @QueryParameter String value) throws IOException {
-        if (StringUtils.isNotBlank(value)) {
+        if (value != null && !value.isBlank()) {
             try {
                 URL url = new URL(value);
                 if (!url.getProtocol().startsWith("http")) {

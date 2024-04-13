@@ -26,6 +26,7 @@ package hudson.model;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.model.Descriptor.FormException;
+import java.io.File;
 import java.io.IOException;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -62,7 +63,7 @@ public abstract class ViewJob<JobT extends ViewJob<JobT, RunT>, RunT extends Run
     /**
      * All {@link Run}s. Copy-on-write semantics.
      */
-    protected transient volatile /*almost final*/ RunMap<RunT> runs = new RunMap<>(null, null);
+    protected transient volatile /*almost final*/ RunMap<RunT> runs = new RunMap<>((File) null, null);
 
     private transient volatile boolean notLoaded = true;
 

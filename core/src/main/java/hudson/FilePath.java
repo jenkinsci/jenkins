@@ -28,6 +28,7 @@ package hudson;
 
 import static hudson.Util.fileToPath;
 import static hudson.Util.fixEmpty;
+import static hudson.Util.fixEmptyAndTrim;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.jcraft.jzlib.GZIPInputStream;
@@ -86,6 +87,7 @@ import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.CopyOption;
 import java.nio.file.FileSystemException;
 import java.nio.file.FileSystems;
@@ -132,7 +134,6 @@ import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.io.input.CountingInputStream;
-import org.apache.commons.lang.StringUtils;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Project;
@@ -344,21 +345,21 @@ public final class FilePath implements SerializableOnlyOverRemoting {
             String token = tokens.get(i);
             if (token.equals(".")) {
                 tokens.remove(i);
-                if (tokens.size() > 0)
+                if (!tokens.isEmpty())
                     tokens.remove(i > 0 ? i - 1 : i);
             } else if (token.equals("..")) {
                 if (i == 0) {
                     // If absolute path, just remove: /../something
                     // If relative path, not collapsible so leave as-is
                     tokens.remove(0);
-                    if (tokens.size() > 0) token += tokens.remove(0);
+                    if (!tokens.isEmpty()) token += tokens.remove(0);
                     if (!isAbsolute) buf.append(token);
                 } else {
                     // Normalize: remove something/.. plus separator before/after
                     i -= 2;
                     for (int j = 0; j < 3; j++) tokens.remove(i);
                     if (i > 0) tokens.remove(i - 1);
-                    else if (tokens.size() > 0) tokens.remove(0);
+                    else if (!tokens.isEmpty()) tokens.remove(0);
                 }
             } else
                 i += 2;
@@ -482,7 +483,6 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      * @return The number of files/directories archived.
      *          This is only really useful to check for a situation where nothing
      */
-    @Restricted(NoExternalUse.class)
     public int zip(OutputStream out, DirScanner scanner, String verificationRoot, String prefix, OpenOption... openOptions) throws IOException, InterruptedException {
         ArchiverFactory archiverFactory = prefix == null ? ArchiverFactory.ZIP : ArchiverFactory.createZipWithPrefix(prefix, openOptions);
         return archive(archiverFactory, out, scanner, verificationRoot, openOptions);
@@ -514,7 +514,6 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      * @return The number of files/directories archived.
      *          This is only really useful to check for a situation where nothing
      */
-    @Restricted(NoExternalUse.class)
     public int archive(final ArchiverFactory factory, OutputStream os, final DirScanner scanner,
                        String verificationRoot, OpenOption... openOptions) throws IOException, InterruptedException {
         final OutputStream out = channel != null ? new RemoteOutputStream(os) : os;
@@ -761,7 +760,6 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         }
     }
 
-    @Restricted(NoExternalUse.class)
     public boolean hasSymlink(FilePath verificationRoot, OpenOption... openOptions) throws IOException, InterruptedException {
         return act(new HasSymlink(verificationRoot == null ? null : verificationRoot.remote, openOptions));
     }
@@ -782,7 +780,6 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         }
     }
 
-    @Restricted(NoExternalUse.class)
     public boolean containsSymlink(FilePath verificationRoot, OpenOption... openOptions) throws IOException, InterruptedException {
         return !list(new SymlinkRetainingFileFilter(verificationRoot, openOptions)).isEmpty();
     }
@@ -962,7 +959,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      * </ul>
      *
      * @param archive
-     *      The resource that represents the tgz/zip file. This URL must support the {@code Last-Modified} header.
+     *      The resource that represents the tgz/zip file. This URL must support the {@code Last-Modified} header or the {@code ETag} header.
      *      (For example, you could use {@link ClassLoader#getResource}.)
      * @param listener
      *      If non-null, a message will be printed to this listener once this method decides to
@@ -984,11 +981,17 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         try {
             FilePath timestamp = this.child(".timestamp");
             long lastModified = timestamp.lastModified();
+            // https://httpwg.org/specs/rfc9110.html#field.etag is the ETag specification
+            // Read previously stored ETag if timestamp is available
+            String etag = timestamp.exists() ? fixEmptyAndTrim(timestamp.readToString()) : null;
             URLConnection con;
             try {
                 con = ProxyConfiguration.open(archive);
                 if (lastModified != 0) {
                     con.setIfModifiedSince(lastModified);
+                }
+                if (etag != null) {
+                    con.setRequestProperty("If-None-Match", etag);
                 }
                 con.connect();
             } catch (IOException x) {
@@ -1016,7 +1019,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                         return false;
                     }
                 }
-                if (lastModified != 0) {
+                if (lastModified != 0 || etag != null) {
                     if (responseCode == HttpURLConnection.HTTP_NOT_MODIFIED) {
                         return false;
                     } else if (responseCode != HttpURLConnection.HTTP_OK) {
@@ -1027,8 +1030,12 @@ public final class FilePath implements SerializableOnlyOverRemoting {
             }
 
             long sourceTimestamp = con.getLastModified();
+            String resultEtag = fixEmptyAndTrim(con.getHeaderField("ETag"));
 
             if (this.exists()) {
+                if (equalETags(etag, resultEtag)) {
+                    return false;   // already up to date
+                }
                 if (lastModified != 0 && sourceTimestamp == lastModified)
                     return false;   // already up to date
                 this.deleteContents();
@@ -1042,6 +1049,10 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                 // First try to download from the agent machine.
                 try {
                     act(new Unpack(archive));
+                    if (resultEtag != null && !equalETags(etag, resultEtag)) {
+                        /* Store the ETag value in the timestamp file for later use */
+                        timestamp.write(resultEtag, "UTF-8");
+                    }
                     timestamp.touch(sourceTimestamp);
                     return true;
                 } catch (IOException x) {
@@ -1061,11 +1072,34 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                 throw new IOException(String.format("Failed to unpack %s (%d bytes read of total %d)",
                         archive, cis.getByteCount(), con.getContentLength()), e);
             }
+            if (resultEtag != null && !equalETags(etag, resultEtag)) {
+                /* Store the ETag value in the timestamp file for later use */
+                timestamp.write(resultEtag, "UTF-8");
+            }
             timestamp.touch(sourceTimestamp);
             return true;
         } catch (IOException e) {
             throw new IOException("Failed to install " + archive + " to " + remote, e);
         }
+    }
+
+    /* Return true if etag1 equals etag2 as defined by the etag specification
+       https://httpwg.org/specs/rfc9110.html#field.etag
+     */
+    private boolean equalETags(String etag1, String etag2) {
+        if (etag1 == null || etag2 == null) {
+            return false;
+        }
+        if (etag1.equals(etag2)) {
+            return true;
+        }
+        /* Weak tags are identified by leading characters "W/" as a marker */
+        /* Weak tag marker must not be considered in tag comparison.
+           This implements the weak comparison in the specification at
+           https://httpwg.org/specs/rfc9110.html#field.etag */
+        String opaqueTag1 = etag1.startsWith("W/") ? etag1.substring(2) : etag1;
+        String opaqueTag2 = etag2.startsWith("W/") ? etag2.substring(2) : etag2;
+        return opaqueTag1.equals(opaqueTag2);
     }
 
     // this reads from arbitrary URL
@@ -1678,7 +1712,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     public FilePath createTempDir(final String prefix, final String suffix) throws IOException, InterruptedException {
         try {
             String[] s;
-            if (StringUtils.isBlank(suffix)) {
+            if (suffix == null || suffix.isBlank()) {
                 s = new String[]{prefix, "tmp"}; // see File.createTempFile - tmp is used if suffix is null
             } else {
                 s = new String[]{prefix, suffix};
@@ -2019,7 +2053,6 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      * @param openOptions the options to apply when opening.
      * @return Direct children of this directory.
      */
-    @Restricted(NoExternalUse.class)
     @NonNull
     public List<FilePath> list(FilePath verificationRoot, OpenOption... openOptions) throws IOException, InterruptedException {
         return list(new OptionalDiscardingFileFilter(verificationRoot, openOptions));
@@ -2184,7 +2217,6 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         return read(null, new OpenOption[0]);
     }
 
-    @Restricted(NoExternalUse.class)
     public InputStream read(FilePath rootPath, OpenOption... openOptions) throws IOException, InterruptedException {
         String rootPathString = rootPath == null ? null : rootPath.remote;
         if (channel == null) {
@@ -2199,7 +2231,6 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         return p.getIn();
     }
 
-    @Restricted(NoExternalUse.class)
     public static InputStream newInputStreamDenyingSymlinkAsNeeded(File file, String verificationRoot, OpenOption... openOptions) throws IOException {
         InputStream inputStream = null;
         try {
@@ -2216,7 +2247,6 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         return inputStream;
     }
 
-    @Restricted(NoExternalUse.class)
     public static InputStream openInputStream(File file, OpenOption[] openOptions) throws IOException {
         return Files.newInputStream(fileToPath(file), stripLocalOptions(openOptions));
     }
@@ -2252,7 +2282,6 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         }
     }
 
-    @Restricted(NoExternalUse.class)
     public static boolean isSymlink(File file, String root, OpenOption... openOptions) {
         if (isNoFollowLink(openOptions)) {
             if (Util.isSymlink(file.toPath())) {
@@ -2268,7 +2297,6 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         return isSymlink(visitorInfo.f, visitorInfo.verificationRoot, visitorInfo.openOptions);
     }
 
-    @Restricted(NoExternalUse.class)
     public static boolean isTmpDir(File file, String root, OpenOption... openOptions) {
         if (isIgnoreTmpDirs(openOptions)) {
             if (isTmpDir(file)) {
@@ -2280,7 +2308,6 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         return false;
     }
 
-    @Restricted(NoExternalUse.class)
     public static boolean isTmpDir(String filename, OpenOption... openOptions) {
         if (isIgnoreTmpDirs(openOptions)) {
             return isTmpDir(filename);
@@ -2300,12 +2327,10 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         return filename.length() > WorkspaceList.TMP_DIR_SUFFIX.length() && filename.endsWith(WorkspaceList.TMP_DIR_SUFFIX);
     }
 
-    @Restricted(NoExternalUse.class)
     public static boolean isNoFollowLink(OpenOption... openOptions) {
         return Arrays.asList(openOptions).contains(LinkOption.NOFOLLOW_LINKS);
     }
 
-    @Restricted(NoExternalUse.class)
     public static boolean isIgnoreTmpDirs(OpenOption... openOptions) {
         return Arrays.asList(openOptions).contains(DisplayOption.IGNORE_TMP_DIRS);
     }
@@ -2810,8 +2835,8 @@ public final class FilePath implements SerializableOnlyOverRemoting {
             // local -> remote copy
             final Pipe pipe = Pipe.createLocalToRemote();
 
-            Future<Void> future = target.actAsync(new ReadFromTar(target, pipe, description, compression));
-            Future<Integer> future2 = actAsync(new WriteToTar(scanner, pipe, compression));
+            Future<Void> future = target.actAsync(new ReadFromTar(target, pipe, description, compression, StandardCharsets.UTF_8));
+            Future<Integer> future2 = actAsync(new WriteToTar(scanner, pipe, compression, StandardCharsets.UTF_8));
             try {
                 // JENKINS-9540 in case the reading side failed, report that error first
                 future.get();
@@ -2823,9 +2848,9 @@ public final class FilePath implements SerializableOnlyOverRemoting {
             // remote -> local copy
             final Pipe pipe = Pipe.createRemoteToLocal();
 
-            Future<Integer> future = actAsync(new CopyRecursiveRemoteToLocal(pipe, scanner, compression));
+            Future<Integer> future = actAsync(new CopyRecursiveRemoteToLocal(pipe, scanner, compression, StandardCharsets.UTF_8));
             try {
-                readFromTar(remote + '/' + description, new File(target.remote), compression.extract(pipe.getIn()));
+                readFromTar(remote + '/' + description, new File(target.remote), compression.extract(pipe.getIn()), StandardCharsets.UTF_8);
             } catch (IOException e) { // BuildException or IOException
                 try {
                     future.get(3, TimeUnit.SECONDS);
@@ -2938,12 +2963,14 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         private final String description;
         private final TarCompression compression;
         private final FilePath target;
+        private final String filenamesEncoding;
 
-        ReadFromTar(FilePath target, Pipe pipe, String description, @NonNull TarCompression compression) {
+        ReadFromTar(FilePath target, Pipe pipe, String description, @NonNull TarCompression compression, Charset filenamesEncoding) {
             this.target = target;
             this.pipe = pipe;
             this.description = description;
             this.compression = compression;
+            this.filenamesEncoding = filenamesEncoding.name();
         }
 
         private static final long serialVersionUID = 1L;
@@ -2951,7 +2978,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         @Override
         public Void invoke(File f, VirtualChannel channel) throws IOException {
             try (InputStream in = pipe.getIn()) {
-                readFromTar(target.remote + '/' + description, f, compression.extract(in));
+                readFromTar(target.remote + '/' + description, f, compression.extract(in), Charset.forName(filenamesEncoding));
                 return null;
             }
         }
@@ -2961,18 +2988,20 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         private final DirScanner scanner;
         private final Pipe pipe;
         private final TarCompression compression;
+        private final String filenamesEncoding;
 
-        WriteToTar(DirScanner scanner, Pipe pipe, @NonNull TarCompression compression) {
+        WriteToTar(DirScanner scanner, Pipe pipe, @NonNull TarCompression compression, Charset filenamesEncoding) {
             this.scanner = scanner;
             this.pipe = pipe;
             this.compression = compression;
+            this.filenamesEncoding = filenamesEncoding.name();
         }
 
         private static final long serialVersionUID = 1L;
 
         @Override
         public Integer invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
-            return writeToTar(f, scanner, compression.compress(pipe.getOut()));
+            return writeToTar(f, scanner, compression.compress(pipe.getOut()), Charset.forName(filenamesEncoding));
         }
     }
 
@@ -2981,17 +3010,19 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         private final Pipe pipe;
         private final DirScanner scanner;
         private final TarCompression compression;
+        private final String filenamesEncoding;
 
-        CopyRecursiveRemoteToLocal(Pipe pipe, DirScanner scanner, @NonNull TarCompression compression) {
+        CopyRecursiveRemoteToLocal(Pipe pipe, DirScanner scanner, @NonNull TarCompression compression, Charset filenamesEncoding) {
             this.pipe = pipe;
             this.scanner = scanner;
             this.compression = compression;
+            this.filenamesEncoding = filenamesEncoding.name();
         }
 
         @Override
         public Integer invoke(File f, VirtualChannel channel) throws IOException {
             try (OutputStream out = pipe.getOut()) {
-                return writeToTar(f, scanner, compression.compress(out));
+                return writeToTar(f, scanner, compression.compress(out), Charset.forName(filenamesEncoding));
             }
         }
     }
@@ -3023,22 +3054,26 @@ public final class FilePath implements SerializableOnlyOverRemoting {
      * @return
      *      number of files/directories that are written.
      */
-    private static Integer writeToTar(File baseDir, DirScanner scanner, OutputStream out) throws IOException {
-        Archiver tw = ArchiverFactory.TAR.create(out);
+    private static Integer writeToTar(File baseDir, DirScanner scanner, OutputStream out, Charset filenamesEncoding) throws IOException {
+        Archiver tw = ArchiverFactory.TAR.create(out, filenamesEncoding);
         try (tw) {
             scanner.scan(baseDir, tw);
         }
         return tw.countEntries();
     }
 
+    private static void readFromTar(String name, File baseDir, InputStream in) throws IOException {
+        readFromTar(name, baseDir, in, Charset.defaultCharset());
+    }
+
     /**
      * Reads from a tar stream and stores obtained files to the base dir.
      * Supports large files > 10 GB since 1.627 when this was migrated to use commons-compress.
      */
-    private static void readFromTar(String name, File baseDir, InputStream in) throws IOException {
+    private static void readFromTar(String name, File baseDir, InputStream in, Charset filenamesEncoding) throws IOException {
 
         // TarInputStream t = new TarInputStream(in);
-        try (TarArchiveInputStream t = new TarArchiveInputStream(in)) {
+        try (TarArchiveInputStream t = new TarArchiveInputStream(in, filenamesEncoding.name())) {
             TarArchiveEntry te;
             while ((te = t.getNextTarEntry()) != null) {
                 File f = new File(baseDir, te.getName());
@@ -3675,7 +3710,6 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     /**
      * Wraps {@link FileVisitor} to ignore symlinks.
      */
-    @Restricted(NoExternalUse.class)
     public static FileVisitor ignoringSymlinks(final FileVisitor v, String verificationRoot, OpenOption... openOptions) {
         return validatingVisitor(FilePath::isNoFollowLink,
                 visitorInfo -> !isSymlink(visitorInfo),
@@ -3685,7 +3719,6 @@ public final class FilePath implements SerializableOnlyOverRemoting {
     /**
      * Wraps {@link FileVisitor} to ignore tmp directories.
      */
-    @Restricted(NoExternalUse.class)
     public static FileVisitor ignoringTmpDirs(final FileVisitor v, String verificationRoot, OpenOption... openOptions) {
         return validatingVisitor(FilePath::isIgnoreTmpDirs,
                 visitorInfo -> !isTmpDir(visitorInfo),
@@ -3728,10 +3761,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
 
     /**
      * Check if the relative child is really a descendant after symlink resolution if any.
-     *
-     * TODO un-restrict it in a weekly after the patch
      */
-    @Restricted(NoExternalUse.class)
     public boolean isDescendant(@NonNull String potentialChildRelativePath) throws IOException, InterruptedException {
         return act(new IsDescendant(potentialChildRelativePath));
     }

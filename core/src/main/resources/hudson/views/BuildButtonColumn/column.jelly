@@ -23,29 +23,30 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-      <td class="jenkins-table__cell--tight">
-          <j:if test="${job.buildable and job.hasPermission(job.BUILD)}">
-            <j:set var="id" value="${h.generateId()}"/>
-            <j:set var="href" value="${jobBaseUrl}${job.shortUrl}build?delay=0sec"/>
-            <div class="jenkins-table__cell__button-wrapper">
-              <j:choose>
-                <j:when test="${job.parameterized}">
-                  <j:set var="title" value="${%Schedule_a_task_with_parameters(h.getRelativeDisplayNameFrom(job, itemGroup),it.taskNoun(job))}"/>
-                </j:when>
-                <j:otherwise>
-                  <span class="build-button-column-icon-reference-holder" data-id="${id}" data-url="${href}" data-notification="${%Task_scheduled(it.taskNoun(job))}"/>
-                  <j:set var="title" value="${%Schedule_a_task(h.getRelativeDisplayNameFrom(job, itemGroup),it.taskNoun(job))}"/>
-                </j:otherwise>
-              </j:choose>
-              <j:set var="isQueued" value="${app.queue.contains(job)}"/>
-              <a id="${id}" tooltip="${title}" class="jenkins-table__button jenkins-!-build-color" href="${href}">
-                <span class="${isQueued ? 'pulse-animation': ''}">
-                  <l:icon src="symbol-play" />
-                </span>
-                <st:adjunct includes="hudson.views.BuildButtonColumn.icon"/>
-              </a>
-            </div>
-          </j:if>
-      </td>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt" xmlns:x="jelly:xml">
+    <x:element name="${jenkins_mobile_show?'div':'td'}">
+        <j:if test="${!jenkins_mobile_show}">
+          <x:attribute name="class">jenkins-table__cell--tight</x:attribute>
+        </j:if>
+        <j:if test="${job.buildable and job.hasPermission(job.BUILD)}">
+          <j:set var="id" value="${h.generateId()}"/>
+          <j:set var="href" value="${jobBaseUrl}${job.shortUrl}build?delay=0sec"/>
+          <div class="jenkins-table__cell__button-wrapper">
+            <j:choose>
+              <j:when test="${job.parameterized}">
+                <j:set var="title" value="${%Schedule_a_task_with_parameters(h.getRelativeDisplayNameFrom(job, itemGroup),it.taskNoun(job))}"/>
+              </j:when>
+              <j:otherwise>
+                <span class="build-button-column-icon-reference-holder" data-id="${id}" data-url="${href}" data-notification="${%Task_scheduled(it.taskNoun(job))}"/>
+                <j:set var="title" value="${%Schedule_a_task(h.getRelativeDisplayNameFrom(job, itemGroup),it.taskNoun(job))}"/>
+              </j:otherwise>
+            </j:choose>
+            <j:set var="isQueued" value="${app.queue.contains(job)}"/>
+            <a id="${id}" tooltip="${title}" class="jenkins-button jenkins-button--tertiary jenkins-!-build-color ${isQueued ? 'pulse-animation': ''}" href="${href}">
+              <l:icon src="symbol-play" />
+              <st:adjunct includes="hudson.views.BuildButtonColumn.icon"/>
+            </a>
+          </div>
+        </j:if>
+    </x:element>
 </j:jelly>

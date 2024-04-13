@@ -28,7 +28,10 @@ import static java.util.logging.Level.FINEST;
 import static jenkins.model.lazy.AbstractLazyLoadRunMap.Direction.ASC;
 import static jenkins.model.lazy.AbstractLazyLoadRunMap.Direction.DESC;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Util;
+import hudson.model.listeners.RunListener;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -38,6 +41,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.SortedMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -64,6 +68,8 @@ public final class RunMap<R extends Run<?, R>> extends AbstractLazyLoadRunMap<R>
      */
     private final SortedMap<Integer, R> view = Collections.unmodifiableSortedMap(this);
 
+    private final @CheckForNull Job<?, ?> job;
+
     private Constructor<R> cons;
 
     /** Normally overwritten by {@link LazyBuildMixIn#onLoad} or {@link LazyBuildMixIn#onCreatedFromScratch}, in turn created during {@link Job#onLoad}. */
@@ -76,20 +82,38 @@ public final class RunMap<R extends Run<?, R>> extends AbstractLazyLoadRunMap<R>
 
     /**
      * @deprecated as of 1.485
-     *      Use {@link #RunMap(File, Constructor)}.
+     *      Use {@link #RunMap(Job, Constructor)}.
      */
     @Deprecated
     public RunMap() {
-        super(null); // will be set later
+        job = null;
+        initBaseDir(null); // will be set later
+    }
+
+    @Restricted(NoExternalUse.class)
+    public RunMap(@NonNull Job<?, ?> job) {
+        this.job = Objects.requireNonNull(job);
     }
 
     /**
      * @param cons
      *      Used to create new instance of {@link Run}.
+     * @since 2.451
      */
-    public RunMap(File baseDir, Constructor cons) {
-        super(baseDir);
+    public RunMap(@NonNull Job<?, ?> job, Constructor cons) {
+        this.job = Objects.requireNonNull(job);
         this.cons = cons;
+        initBaseDir(job.getBuildDir());
+    }
+
+    /**
+     * @deprecated Use {@link #RunMap(Job, Constructor)}.
+     */
+    @Deprecated
+    public RunMap(File baseDir, Constructor cons) {
+        job = null;
+        this.cons = cons;
+        initBaseDir(baseDir);
     }
 
     public boolean remove(R run) {
@@ -222,6 +246,22 @@ public final class RunMap<R extends Run<?, R>> extends AbstractLazyLoadRunMap<R>
     @Override
     protected BuildReference<R> createReference(R r) {
         return r.createReference();
+    }
+
+    @Override
+    protected boolean allowLoad(int buildNumber) {
+        if (job == null) {
+            LOGGER.fine(() -> "deprecated constructor without Job used on " + dir);
+            return true;
+        }
+        for (RunListener<?> l : RunListener.all()) {
+            if (!l.allowLoad(job, buildNumber)) {
+                LOGGER.finer(() -> l + " declined to load " + buildNumber + " in " + job);
+                return false;
+            }
+        }
+        LOGGER.finest(() -> "no RunListener declined to load " + buildNumber + " in " + job + " so proceeding");
+        return true;
     }
 
     @Override

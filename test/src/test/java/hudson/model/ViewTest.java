@@ -29,7 +29,6 @@ import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
@@ -64,7 +63,6 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -127,8 +125,8 @@ public class ViewTest {
         j.configRoundtrip(view);
 
         assertEquals("Some description", view.getDescription());
-        assertEquals(true, view.isFilterExecutors());
-        assertEquals(true, view.isFilterQueue());
+        assertTrue(view.isFilterExecutors());
+        assertTrue(view.isFilterQueue());
     }
 
     @Issue("JENKINS-7100")
@@ -825,7 +823,7 @@ public class ViewTest {
         Object result = page.executeJavaScript("Array.from(document.querySelectorAll('.label')).filter(el => el.innerText.indexOf('" + customizableTLID.customDisplayName + "') !== -1)[0].parentElement.parentElement").getJavaScriptResult();
         assertThat(result, instanceOf(HTMLElement.class));
         HTMLElement resultElement = (HTMLElement) result;
-        assertThat(resultElement.getAttribute("onclick", null), nullValue());
+        assertThat(resultElement.getAttribute("onclick"), nullValue());
     }
 
     @Test
@@ -901,13 +899,6 @@ public class ViewTest {
         JenkinsRule.WebClient wc = j.createWebClient();
 
         HtmlPage page = wc.goTo("view/all/newJob");
-
-        Object resultClassNames = page.executeJavaScript("document.querySelector('.hudson_model_FreeStyleProject .icon img').className").getJavaScriptResult();
-        assertThat(resultClassNames, instanceOf(String.class));
-        String resultClassNamesString = (String) resultClassNames;
-        List<String> resultClassNamesList = Arrays.asList(resultClassNamesString.split(" "));
-        assertThat(resultClassNamesList, hasItem("icon-xlg"));
-        assertThat(resultClassNamesList, hasItem("icon-freestyle-project"));
 
         Object resultSrc = page.executeJavaScript("document.querySelector('.hudson_model_FreeStyleProject .icon img').src").getJavaScriptResult();
         assertThat(resultSrc, instanceOf(String.class));

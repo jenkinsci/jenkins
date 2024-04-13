@@ -154,13 +154,24 @@
     }
   }
 
+  .jenkins-button {
+    margin: -10px 0;
+    padding: 0.5rem 0.75rem;
+
+    // Increase the size of symbols compared to regular buttons
+    svg {
+      width: 1.375rem !important;
+      height: 1.375rem !important;
+    }
+  }
+
   &__button,
   &__icon {
     svg,
     .build-status-icon__wrapper,
     img {
-      width: 1.5rem !important;
-      height: 1.5rem !important;
+      width: 1.375rem !important;
+      height: 1.375rem !important;
     }
   }
 
