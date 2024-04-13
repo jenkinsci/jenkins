@@ -69,7 +69,8 @@ $.when(getItems()).done(function (data) {
     }
 
     function enableSubmit(status) {
-      var btn = $("form .footer .btn-decorator button[type=submit]");
+      console.log("status", status)
+      var btn = $(".bottom-sticker-inner button[type=submit]");
       if (status === true) {
         if (btn.hasClass("disabled")) {
           btn.removeClass("disabled");
