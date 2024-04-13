@@ -1,6 +1,7 @@
 import debounce from "lodash/debounce";
 import behaviorShim from "@/util/behavior-shim";
 
+// Card/item controls
 const buildHistoryPage = document.getElementById("buildHistoryPage");
 const pageSearch = buildHistoryPage.querySelector(".jenkins-search");
 const pageSearchInput = buildHistoryPage.querySelector("input");
@@ -10,11 +11,14 @@ const contents = card.querySelector("#jenkins-build-history");
 const container = card.querySelector(".app-builds-container");
 const noBuilds = card.querySelector("#no-builds");
 
-const controls = document.querySelector("#controls");
-const up = document.querySelector("#up");
-const down = document.querySelector("#down");
+// Pagination controls
+const paginationControls = document.querySelector("#controls");
+const paginationPrevious = document.querySelector("#up");
+const paginationNext = document.querySelector("#down");
 
-// const updateBuildsRefreshInterval = 5000;
+// Refresh variables
+let buildRefreshTimeout;
+const updateBuildsRefreshInterval = 5000;
 
 /**
  * Refresh the 'Builds' card
@@ -62,35 +66,52 @@ function load(options = {}) {
  * @param {CardControlsOptions}  parameters
  */
 function updateCardControls(parameters) {
-  controls.classList.toggle(
+  paginationControls.classList.toggle(
     "jenkins-!-display-none",
     !parameters.pageHasUp && !parameters.pageHasDown,
   );
-  up.classList.toggle(
+  paginationPrevious.classList.toggle(
     "app-builds-container__button--disabled",
     !parameters.pageHasUp,
   );
-  down.classList.toggle(
+  paginationNext.classList.toggle(
     "app-builds-container__button--disabled",
     !parameters.pageHasDown,
   );
+
+  // We only want the list to refresh if the user is on the first page of results
+  if (!parameters.pageHasUp) {
+    createRefreshTimeout();
+  } else {
+    cancelRefreshTimeout();
+  }
 
   buildHistoryPage.dataset.pageEntryNewest = parameters.pageEntryNewest;
   buildHistoryPage.dataset.pageEntryOldest = parameters.pageEntryOldest;
 }
 
-up.addEventListener("click", () => {
+paginationPrevious.addEventListener("click", () => {
   load({ "newer-than": buildHistoryPage.dataset.pageEntryNewest });
 });
 
-down.addEventListener("click", () => {
-  // cancelRefreshTimeout();
+paginationNext.addEventListener("click", () => {
+  cancelRefreshTimeout();
   load({ "older-than": buildHistoryPage.dataset.pageEntryOldest });
 });
 
-// setInterval(() => {
-//   loadPage({})
-// }, updateBuildsRefreshInterval)
+function createRefreshTimeout() {
+  cancelRefreshTimeout();
+  buildRefreshTimeout = window.setTimeout(() => {
+    load();
+  }, updateBuildsRefreshInterval);
+}
+
+function cancelRefreshTimeout() {
+  if (buildRefreshTimeout) {
+    window.clearTimeout(buildRefreshTimeout);
+    buildRefreshTimeout = undefined;
+  }
+}
 
 document.addEventListener("DOMContentLoaded", function () {
   pageSearchInput.addEventListener("input", function () {
