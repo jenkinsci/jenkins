@@ -35,7 +35,7 @@ THE SOFTWARE.
       Shows controls in the top right of the card
     </st:attribute>
     <st:attribute name="expandable">
-      Shows the expand icon if set, navigates to the value provided
+      Shows the expand icon if set, navigates to the value provided on click
     </st:attribute>
   </st:documentation>
 
