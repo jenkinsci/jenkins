@@ -28,6 +28,11 @@ function load(options = {}) {
   /** @type {QueryParameters} */
   const params = Object.assign({}, options, { search: pageSearchInput.value });
 
+  // Avoid fetching if the page isn't active
+  if (document.hidden) {
+    return;
+  }
+
   fetch(ajaxUrl + toQueryString(params)).then((rsp) => {
     if (rsp.ok) {
       rsp.text().then((responseText) => {
@@ -101,9 +106,10 @@ paginationNext.addEventListener("click", () => {
 
 function createRefreshTimeout() {
   cancelRefreshTimeout();
-  buildRefreshTimeout = window.setTimeout(() => {
-    load();
-  }, updateBuildsRefreshInterval);
+  buildRefreshTimeout = window.setTimeout(
+    () => load(),
+    updateBuildsRefreshInterval,
+  );
 }
 
 function cancelRefreshTimeout() {
