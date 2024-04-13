@@ -31,16 +31,16 @@ THE SOFTWARE.
     <!-- pending build -->
     <j:set var="queuedItems" value="${it.queueItems}"/>
     <j:if test="${!queuedItems.isEmpty()}">
-        <span class="willow">Pending</span>
+        <span class="app-builds-container__heading">Pending</span>
         <j:forEach var="pageEntry" items="${queuedItems}">
             <j:set var="item" value="${pageEntry.entry}"/>
             <j:set var="id" value="${h.generateId()}"/>
 
-            <div class="app-builds-container__item app-builds-container__item--notinteractable" page-entry-id="${pageEntry.entryId}">
+            <div class="app-builds-container__item app-builds-container__item--not-interactable" page-entry-id="${pageEntry.entryId}">
+                <div class="app-builds-container__item__icon">
+                    <l:icon src="symbol-status-nobuilt"/>
+                </div>
                 <div class="app-builds-container__item__inner">
-                    <div class="app-builds-container__item__inner__icon">
-                        <l:icon src="symbol-status-nobuilt"/>
-                    </div>
                     <div class="app-builds-container__item__inner__link">
                         <!-- Don't use math unless needed, in case nextBuildNumber is not numeric -->
                         #${queuedItems.size() == 1 ? it.widget.owner.nextBuildNumber : it.widget.owner.nextBuildNumber+queuedItems.size()-i-1}
@@ -52,7 +52,7 @@ THE SOFTWARE.
                             </j:if>
                         </div>
                     </j:if>
-                    <div class="app-builds-container__item__inner__badges">
+                    <div class="app-builds-container__item__inner__controls">
                         <j:if test="${!item.params.isEmpty()}">
                             <div tooltip="Build Parameters: ${item.params}">
                                 <l:icon class="icon-notepad icon-sm"/>

@@ -256,6 +256,9 @@ $dropdown-padding: 0.4rem;
 }
 
 .jenkins-jumplist-link {
+  appearance: none;
+  border: none;
+  background: none;
   display: flex;
   align-items: center;
   justify-content: center;

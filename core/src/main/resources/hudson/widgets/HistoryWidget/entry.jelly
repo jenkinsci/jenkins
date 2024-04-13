@@ -36,12 +36,13 @@ THE SOFTWARE.
    </j:if>
 
   <div class="app-builds-container__item" page-entry-id="${pageEntry.entryId}">
+    <a class="app-builds-container__item__icon"
+       href="${h.getConsoleUrl(build)}"
+       tooltip="${build.iconColor.description}">
+      <l:icon src="symbol-status-${build.iconColor.iconName}" />
+    </a>
+
     <div class="app-builds-container__item__inner">
-      <a class="app-builds-container__item__inner__icon"
-         href="${h.getConsoleUrl(build)}"
-         tooltip="${build.iconColor.description}">
-          <l:icon src="symbol-status-${build.iconColor.iconName}" />
-      </a>
       <a href="${link}" class="app-builds-container__item__inner__link">
         ${build.displayName}
         <span class="app-builds-container__item__time" time="${build.timestamp.time.time}">
@@ -74,12 +75,12 @@ THE SOFTWARE.
             <st:include it="${badge}" page="badge.jelly" />
           </j:forEach>
         </j:if>
-
-        <div class="jenkins-card__reveal jenkins-jumplist-link" data-href="${link}">
-          <l:icon src="symbol-menu" />
-        </div>
       </div>
     </div>
+
+    <button class="jenkins-card__reveal jenkins-jumplist-link" data-href="${link}">
+      <l:icon src="symbol-menu" />
+    </button>
     <j:if test="${!empty build.truncatedDescription}">
       <div class="app-builds-container__item__description">
         <j:out value="${app.markupFormatter.translate(build.truncatedDescription)}"/>

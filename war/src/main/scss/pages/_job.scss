@@ -96,38 +96,39 @@
 .app-builds-container__item {
   @include mixins.item();
 
-  display: flex;
-  flex-direction: column;
-  padding: 0;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 0.5rem 0.65rem;
+  padding: 0 0 0.25rem;
   margin: 0 -0.5rem;
   font-size: 0.8125rem !important;
+  min-height: 2rem;
+
+  &__icon {
+    display: inline-flex;
+    justify-content: center;
+    padding: 0 0 0 0.5rem;
+    margin-top: 0.385rem;
+
+    svg {
+      width: 1.25rem;
+      height: 1.25rem;
+    }
+  }
 
   .app-builds-container__item__inner {
     display: flex;
-    align-items: center;
-    padding-right: 0.5rem;
-
-    &__icon {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      padding: 0 0.25rem 0 0.5rem;
-
-      svg {
-        width: 1.25rem;
-        height: 1.25rem;
-      }
-    }
+    align-items: stretch;
+    flex-wrap: wrap;
 
     &__link {
       display: flex;
-      align-items: center;
       color: var(--text-color);
       gap: 0.5rem;
       text-decoration: none;
       font-weight: 450;
       flex-grow: 1;
-      padding: 0.4rem 0 0.4rem 0.25rem;
+      padding: 0.45rem 0 0 0;
 
       .app-builds-container__item__time {
         color: var(--text-color-secondary);
@@ -139,17 +140,11 @@
       align-items: center;
       justify-content: center;
       gap: 0.5rem;
-    }
-
-    &__badges {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.5rem;
+      margin-top: 0.3rem;
     }
   }
 
-  &--notinteractable {
+  &--not-interactable {
     cursor: default;
 
     &::before,
@@ -162,19 +157,23 @@
     }
   }
 
+  .jenkins-jumplist-link {
+    margin-top: 0.2rem;
+    padding-right: 0.8rem;
+  }
+
   &__description {
-    position: relative;
     color: var(--text-color-secondary);
-    padding-left: 36px;
+    padding-left: 2.25rem;
     margin-top: -2px;
-    margin-bottom: 4px;
+    grid-column: 1 / span 2;
 
     &::before {
       content: "";
       position: absolute;
       left: 17px;
-      top: 2px;
-      bottom: 2px;
+      top: 34px;
+      bottom: 6px;
       width: 2px;
       background: var(--text-color-secondary);
       border-radius: 10px;
