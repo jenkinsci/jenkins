@@ -193,7 +193,10 @@ $.when(getItems()).done(function (data) {
 
     function drawIcon(elem) {
       var iconDiv = document.createElement("div");
-      if (elem.iconClassName && elem.iconQualifiedUrl) {
+      if (elem.iconXml) {
+        iconDiv.className = "icon";
+        iconDiv.innerHTML = elem.iconXml;
+      } else if (elem.iconClassName && elem.iconQualifiedUrl) {
         iconDiv.className = "icon";
 
         var img1 = document.createElement("img");

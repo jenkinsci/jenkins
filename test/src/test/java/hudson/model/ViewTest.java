@@ -83,6 +83,7 @@ import org.htmlunit.html.HtmlForm;
 import org.htmlunit.html.HtmlLabel;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.javascript.host.html.HTMLElement;
+import org.htmlunit.javascript.host.svg.SVGElement;
 import org.htmlunit.util.NameValuePair;
 import org.jenkins.ui.icon.Icon;
 import org.jenkins.ui.icon.IconSet;
@@ -896,15 +897,34 @@ public class ViewTest {
 
     @Test
     public void newJob_iconClassName() throws Exception {
+
+        CustomizableTLID customizableTLID = j.jenkins.getExtensionList(TopLevelItemDescriptor.class).get(CustomizableTLID.class);
+        customizableTLID.customId = "with_Icon";
+        customizableTLID.customIconClassName = "icon-freestyle-project";
+
         JenkinsRule.WebClient wc = j.createWebClient();
 
         HtmlPage page = wc.goTo("view/all/newJob");
 
-        Object resultSrc = page.executeJavaScript("document.querySelector('.hudson_model_FreeStyleProject .icon img').src").getJavaScriptResult();
+        Object resultSrc = page.executeJavaScript("document.querySelector('." + customizableTLID.customId + " .icon img').src").getJavaScriptResult();
+
         assertThat(resultSrc, instanceOf(String.class));
         String resultSrcString = (String) resultSrc;
         assertThat(resultSrcString, containsString("48x48"));
         assertThat(resultSrcString, containsString("freestyleproject.png"));
+    }
+
+    @Test
+    public void newJob_svg() throws Exception {
+
+        JenkinsRule.WebClient wc = j.createWebClient();
+
+        HtmlPage page = wc.goTo("view/all/newJob");
+
+        Object result = page.executeJavaScript("document.querySelector('.hudson_model_FreeStyleProject .icon svg')").getJavaScriptResult();
+        assertThat(result, instanceOf(SVGElement.class));
+        SVGElement svg = (SVGElement) result;
+        assertThat(svg.getClassName_js(), is("icon-xlg"));
     }
 
     @Test
