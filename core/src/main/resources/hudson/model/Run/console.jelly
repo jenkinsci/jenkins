@@ -36,7 +36,7 @@ THE SOFTWARE.
 
     <l:main-panel>
       <j:set var="controls">
-        <l:copyButton message="${%successfullyCopied}" tooltip="${%clickToCopy}" ref="out" label="${%Copy}" />
+        <l:copyButton ref="out" label="${%Copy}" />
         <l:overflowButton>
           <dd:custom>
             <a class="jenkins-dropdown__item" href="consoleText" download="${it.displayName}.txt">
