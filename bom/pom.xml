@@ -38,7 +38,6 @@ THE SOFTWARE.
   <description>The module contains dependencies that are used by a specific Jenkins version</description>
 
   <properties>
-    <asm.version>9.7</asm.version>
     <slf4jVersion>2.0.13</slf4jVersion>
     <stapler.version>1847.v97341b_b_a_414f</stapler.version>
     <groovy.version>2.4.21</groovy.version>
@@ -310,31 +309,6 @@ THE SOFTWARE.
         <groupId>org.kohsuke.stapler</groupId>
         <artifactId>stapler-groovy</artifactId>
         <version>${stapler.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.ow2.asm</groupId>
-        <artifactId>asm</artifactId>
-        <version>${asm.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.ow2.asm</groupId>
-        <artifactId>asm-analysis</artifactId>
-        <version>${asm.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.ow2.asm</groupId>
-        <artifactId>asm-commons</artifactId>
-        <version>${asm.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.ow2.asm</groupId>
-        <artifactId>asm-tree</artifactId>
-        <version>${asm.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.ow2.asm</groupId>
-        <artifactId>asm-util</artifactId>
-        <version>${asm.version}</version>
       </dependency>
       <dependency>
         <groupId>org.samba.jcifs</groupId>
