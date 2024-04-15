@@ -489,7 +489,7 @@ THE SOFTWARE.
                   <!-- dependency of scm-api -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>asm-api</artifactId>
-                  <version>9.6-3.v2e1fa_b_338cd7</version>
+                  <version>9.7-33.v4d23ef79fcc8</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
