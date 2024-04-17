@@ -38,44 +38,33 @@ THE SOFTWARE.
         <span style="margin-left: 1ch;">${title}</span>
       </a>
       <span style="float: right; font-weight: normal;">
-        <j:if test="${c.offline}">
-          <j:choose>
-            <j:when test="${c.offlineCause!=null and !c.connecting}">
-              (<img src="${imagesURL}/svgs/error.svg" width="16" height="16" title="${c.offlineCause}"/> ${%offline})
-            </j:when>
-            <j:when test="${c.connecting}">
-              (<l:icon src="symbol-hourglass" class="icon-sm"/>${%launching})
-            </j:when>
-            <j:otherwise>
-              (${%offline})
-            </j:otherwise>
-          </j:choose>
-        </j:if>
+        <j:choose>
+          <j:when test="${c.offline}">
+            <j:choose>
+              <j:when test="${c.offlineCause!=null and !c.connecting}">
+                (<img src="${imagesURL}/svgs/error.svg" width="16" height="16" title="${c.offlineCause}"/> ${%offline})
+              </j:when>
+              <j:when test="${c.connecting}">
+                (<l:icon src="symbol-hourglass" class="icon-sm"/>${%launching})
+              </j:when>
+              <j:otherwise>
+                (${%offline})
+              </j:otherwise>
+            </j:choose>
+          </j:when>
+          <j:otherwise>
+            <span tooltip="${%busy(c.countBusy(), c.countExecutors())}">${c.countBusy()}/${c.countExecutors()}</span>
+          </j:otherwise>
+        </j:choose>
         <j:if test="${!c.acceptingTasks}"> <st:nbsp/> (${%suspended})</j:if>
       </span>
     </d:tag>
     <d:tag name="executor">
-      <j:if test="${!c.offline or (c.offline and !e.idle)}">
+      <j:if test="${!e.idle}">
           <tr>
             <td class="pane" align="right" style="vertical-align: top">
               ${name}
             </td>
-            <j:choose>
-              <j:when test="${e.idle}">
-                <td class="pane">
-                  <j:choose>
-                    <j:when test="${c.offline}">
-                      <a href="${rootURL}/${c.url}" class="model-link inside">${%Offline}</a>
-                    </j:when>
-                    <j:otherwise>
-                      ${%Idle}
-                    </j:otherwise>
-                  </j:choose>
-                </td>
-                <td class="pane"/>
-                <td class="pane"/>
-              </j:when>
-              <j:otherwise>
                 <!-- not actually optional, but it helps with backward compatibility -->
                 <j:set var="executor" value="${e}" />
                 <st:include it="${e.currentExecutable}" page="executorCell.jelly" optional="true">
@@ -129,8 +118,6 @@ THE SOFTWARE.
                     <l:stopButton href="${rootURL}/${c.url}${url}/stopBuild?runExtId=${h.urlEncode(exe.externalizableId)}" confirm="${%confirm(exe.fullDisplayName)}" alt="${%terminate this build}"  />
                   </j:if>
                 </td>
-              </j:otherwise>
-            </j:choose>
           </tr>
       </j:if>
     </d:tag>
