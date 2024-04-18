@@ -454,7 +454,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
     public abstract <V, P> V accept(LabelVisitor<V, P> visitor, P param);
 
     /**
-     * Lists up all the atoms contained in in this label.
+     * Lists all the atoms contained in this label.
      *
      * @since 1.420
      */
