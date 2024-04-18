@@ -63,7 +63,9 @@ THE SOFTWARE.
       <j:if test="${!e.idle}">
           <tr>
             <td class="pane" align="right" style="vertical-align: top">
-              ${name}
+              <j:if test="${name == ''}">
+                <l:icon src="symbol-paper-plane-outline" class="icon-sm" tooltip="${%Light weight executor}"/>
+              </j:if>
             </td>
                 <!-- not actually optional, but it helps with backward compatibility -->
                 <j:set var="executor" value="${e}" />
@@ -132,11 +134,18 @@ THE SOFTWARE.
       <j:forEach var="c" items="${computers}">
         <j:set var="cDisplayExecutors" value="${c.displayExecutors}"/>
         <tr>
-          <j:if test="${(computersSize gt 1 and !cDisplayExecutors.isEmpty()) or (c.node == app and c.offline)}">
-            <th class="pane" colspan="4">
-              <local:computerCaption title="${c.displayName}" />
-            </th>
-          </j:if>
+          <j:choose>
+            <j:when test="${(computersSize gt 1 and !cDisplayExecutors.isEmpty()) or (c.node == app and c.offline)}">
+              <th class="pane" colspan="4">
+                <local:computerCaption title="${c.displayName}" />
+              </th>
+            </j:when>
+            <j:when test="${c.node == app and !c.offline and c.countBusy() == 0}">
+              <td class="pane">
+              ${%Computers(computersSize - 1, app.unlabeledLoad.computeTotalExecutors() - app.unlabeledLoad.computeIdleExecutors(), app.unlabeledLoad.computeTotalExecutors())}
+              </td>
+            </j:when>
+          </j:choose>
         </tr>
         <j:forEach var="de" items="${cDisplayExecutors}" varStatus="eloop">
           <j:set var="e" value="${de.executor}"/>
