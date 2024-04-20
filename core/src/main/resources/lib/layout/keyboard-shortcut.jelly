@@ -25,32 +25,19 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define">
   <st:documentation>
-    <st:attribute name="prefix">
-      Optional prefix to the shortcut
-    </st:attribute>
-    <st:attribute name="suffix">
-      Optional suffix to the shortcut
+    <st:attribute name="message">
+      Optional message for the shortcut
     </st:attribute>
     Displays a keyboard shortcut chip based on the component's body.
     CMD will automatically be translated to the user's operating system's appropriate variant.
   </st:documentation>
 
   <div class="jenkins-tooltip__keyboard-shortcut">
-    <j:if test="${attrs.containsKey('prefix') and attrs.prefix != '(empty)'}">
-      <span>
-        ${attrs.prefix}
-      </span>
-    </j:if>
-    <div class="jenkins-tooltip__keyboard-shortcut__symbol">
-      <j:set var="body">
+    <j:set var="body">
+      <div class="jenkins-tooltip__keyboard-shortcut__symbol">
         <d:invokeBody trim="true" />
-      </j:set>
-      <j:out value="${h.translateModifierKeysForUsersPlatform(body)}" />
-    </div>
-    <j:if test="${attrs.containsKey('suffix') and attrs.suffix != '(empty)'}">
-      <span>
-        ${attrs.suffix}
-      </span>
-    </j:if>
+      </div>
+    </j:set>
+    <j:out value="${h.formatMessage(message, h.translateModifierKeysForUsersPlatform(body))}" />
   </div>
 </j:jelly>

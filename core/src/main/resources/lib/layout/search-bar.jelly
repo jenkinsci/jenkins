@@ -59,7 +59,7 @@ THE SOFTWARE.
              disabled="${attrs.enabled == false ? true : null}" />
       <j:if test="${attrs.hasKeyboardShortcut != 'false'}">
         <j:set var="tooltip">
-          <l:keyboard-shortcut prefix="${%Press}" suffix="${%on your keyboard to focus}">
+          <l:keyboard-shortcut message="${%shortcut}">
             <l:icon src="symbol-search-shortcut" />
           </l:keyboard-shortcut>
         </j:set>
