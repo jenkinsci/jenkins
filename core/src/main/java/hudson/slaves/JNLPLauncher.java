@@ -175,7 +175,7 @@ public class JNLPLauncher extends ComputerLauncher {
      */
     @DataBoundSetter
     public void setTunnel(String tunnel) {
-        this.tunnel = tunnel;
+        this.tunnel = Util.fixEmptyAndTrim(tunnel);
     }
 
     @Override

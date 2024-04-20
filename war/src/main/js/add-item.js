@@ -60,6 +60,7 @@ $.when(getItems()).done(function (data) {
       }
       cleanValidationMessages(context);
       $(messageId).removeClass("input-message-disabled");
+      enableSubmit(false);
     }
 
     function cleanValidationMessages(context) {
@@ -69,7 +70,7 @@ $.when(getItems()).done(function (data) {
     }
 
     function enableSubmit(status) {
-      var btn = $("form .footer .btn-decorator button[type=submit]");
+      var btn = $(".bottom-sticker-inner button[type=submit]");
       if (status === true) {
         if (btn.hasClass("disabled")) {
           btn.removeClass("disabled");
