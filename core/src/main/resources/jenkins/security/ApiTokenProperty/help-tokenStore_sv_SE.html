@@ -1,0 +1,29 @@
+<div>
+  API-tokens erbjuder ett sätt att göra autentiserade CLI- eller REST API-anrop.
+  Mer information finns på
+  <a href="https://www.jenkins.io/redirect/api-token">vår wiki</a>
+  .
+  <br />
+  Användarnamnet som är associerat med varje token är ditt Jenkins-användarnamn.
+  <br />
+  <br />
+  Några bra metoder för att hålla dina API-tokens säkra är att:
+  <ul>
+    <li>
+      Använda en annan token för varje applikation så att om en applikation
+      äventyras kan du återkalla dess token individuellt.
+    </li>
+    <li>
+      Återskapa tokens var sjätte månad (beroende på ditt sammanhang). Vi visar
+      en indikator för tokens ålder.
+    </li>
+    <li>
+      Skydda det som in det vore ditt lösenord, eftersom det låter andra att
+      komma åt Jenkins i ditt ställe.
+    </li>
+  </ul>
+  <div class="warning">
+    Varje gång Jenkins startas om återställs datumen för skapande av oanvända
+    äldre tokens, vilket innebär att datumen kan vara felaktiga.
+  </div>
+</div>

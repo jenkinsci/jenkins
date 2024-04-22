@@ -87,6 +87,7 @@ import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -124,7 +125,6 @@ import jenkins.util.io.OnMaster;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.jelly.XMLOutput;
-import org.apache.commons.lang.ArrayUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
@@ -364,8 +364,7 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      */
     public void reload() throws IOException {
         this.state = State.COMPLETED;
-        // TODO ABORTED would perhaps make more sense than FAILURE:
-        this.result = Result.FAILURE;  // defensive measure. value should be overwritten by unmarshal, but just in case the saved data is inconsistent
+        this.result = Result.ABORTED;  // defensive measure. value should be overwritten by unmarshal, but just in case the saved data is inconsistent
         getDataFile().unmarshal(this); // load the rest of the data
 
         if (state == State.COMPLETED) {
@@ -768,7 +767,7 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * Returns the timestamp formatted in xs:dateTime.
      */
     public @NonNull String getTimestampString2() {
-        return Util.XS_DATETIME_FORMATTER.format(new Date(timestamp));
+        return Util.XS_DATETIME_FORMATTER2.format(Instant.ofEpochMilli(timestamp));
     }
 
     /**
@@ -2151,8 +2150,11 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
     private String convertBytesToString(List<Byte> bytes) {
         Collections.reverse(bytes);
-        Byte[] byteArray = bytes.toArray(new Byte[0]);
-        return new String(ArrayUtils.toPrimitive(byteArray), getCharset());
+        byte[] byteArray = new byte[bytes.size()];
+        for (int i = 0; i < byteArray.length; i++) {
+            byteArray[i] = bytes.get(i);
+        }
+        return new String(byteArray, getCharset());
     }
 
     public void doBuildStatus(StaplerRequest req, StaplerResponse rsp) throws IOException {
@@ -2480,10 +2482,12 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         }
         Jenkins j = Jenkins.getInstanceOrNull();
         if (j == null) {
+            LOGGER.fine(() -> "Jenkins not running");
             return null;
         }
         Job<?, ?> job = j.getItemByFullName(jobName, Job.class);
         if (job == null) {
+            LOGGER.fine(() -> "no such job " + jobName + " when running as " + Jenkins.getAuthentication2().getName());
             return null;
         }
         return job.getBuildByNumber(number);
@@ -2665,18 +2669,13 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
 
     public static class RedirectUp {
-        public void doDynamic(StaplerResponse rsp) throws IOException {
+        public void doDynamic(StaplerRequest req, StaplerResponse rsp) throws IOException {
             // Compromise to handle both browsers (auto-redirect) and programmatic access
             // (want accurate 404 response).. send 404 with javascript to redirect browsers.
             rsp.setStatus(HttpServletResponse.SC_NOT_FOUND);
             rsp.setContentType("text/html;charset=UTF-8");
             PrintWriter out = rsp.getWriter();
-            out.println("<html><head>" +
-                "<meta http-equiv='refresh' content='1;url=..'/>" +
-                "<script>window.location.replace('..');</script>" +
-                "</head>" +
-                "<body style='background-color:white; color:white;'>" +
-                "Not found</body></html>");
+            Util.printRedirect(req.getContextPath(), "..", "Not found", out);
             out.flush();
         }
     }

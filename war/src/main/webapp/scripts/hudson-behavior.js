@@ -590,15 +590,10 @@ function parseHtml(html) {
 
 /**
  * Evaluates the script in global context.
+ * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/eval#direct_and_indirect_eval
  */
 function geval(script) {
-  // execScript chokes on "" but eval doesn't, so we need to reject it first.
-  if (script == null || script == "") {
-    return;
-  }
-  // see http://perfectionkills.com/global-eval-what-are-the-options/
-  // note that execScript cannot return value
-  (this.execScript || eval)(script);
+  eval(script);
 }
 
 /**
@@ -612,9 +607,10 @@ function geval(script) {
 // eslint-disable-next-line no-unused-vars
 function fireEvent(element, event) {
   return !element.dispatchEvent(
-    new Event(event, {
+    new CustomEvent(event, {
       bubbles: true,
       cancelable: true,
+      detail: element,
     }),
   );
 }
@@ -639,17 +635,7 @@ function updateValidationArea(validationArea, content) {
     // Only change content if different, causes an unnecessary animation otherwise
     if (validationArea.innerHTML !== content) {
       validationArea.innerHTML = content;
-      validationArea.style.height =
-        validationArea.children[0].offsetHeight + "px";
-
-      // Only include the notice in the validation-error-area, move all other elements out
-      if (validationArea.children.length > 1) {
-        Array.from(validationArea.children)
-          .slice(1)
-          .forEach((element) => {
-            validationArea.after(element);
-          });
-      }
+      validationArea.style.height = "auto";
 
       Behaviour.applySubtree(validationArea);
       // For errors with additional details, apply the subtree to the expandable details pane
@@ -684,17 +670,9 @@ function registerValidator(e) {
       try {
         return eval(url); // need access to 'this', so no 'geval'
       } catch (e) {
-        if (window.console != null) {
-          console.warn(
-            "Legacy checkUrl '" + url + "' is not valid JavaScript: " + e,
-          );
-        }
-        if (window.YUI != null) {
-          YUI.log(
-            "Legacy checkUrl '" + url + "' is not valid JavaScript: " + e,
-            "warn",
-          );
-        }
+        console.warn(
+          "Legacy checkUrl '" + url + "' is not valid JavaScript: " + e,
+        );
         return url; // return plain url as fallback
       }
     } else {
@@ -759,15 +737,7 @@ function registerValidator(e) {
       TryEach(function (name) {
         var c = findNearBy(e, name);
         if (c == null) {
-          if (window.console != null) {
-            console.warn("Unable to find nearby " + name);
-          }
-          if (window.YUI != null) {
-            YUI.log(
-              "Unable to find a nearby control of the name " + name,
-              "warn",
-            );
-          }
+          console.warn("Unable to find nearby " + name);
           return;
         }
         c.addEventListener("change", checker.bind(e));
@@ -1006,7 +976,13 @@ function renderOnDemand(e, callback, noBehaviour) {
   if (!e || !e.classList.contains("render-on-demand")) {
     return;
   }
-  var proxy = eval(e.getAttribute("proxy"));
+
+  let proxyMethod = e.getAttribute("data-proxy-method");
+  let proxyUrl = e.getAttribute("data-proxy-url");
+  let proxyCrumb = e.getAttribute("data-proxy-crumb");
+  let proxyUrlNames = e.getAttribute("data-proxy-url-names").split(",");
+
+  var proxy = window[proxyMethod](proxyUrl, proxyCrumb, proxyUrlNames);
   proxy.render(function (t) {
     var contextTagName = e.parentNode.tagName;
     var c;
@@ -1224,6 +1200,13 @@ function rowvgStartEachRow(recursive, f) {
 }
 
 (function () {
+  // This moves all link elements to the head
+  // fixes JENKINS-72196 when a link is inside a div of a repeatable and the
+  // div is deleted then the styling is lost for divs afterwards.
+  Behaviour.specify("body link", "move-css-to-head", -9999, function (link) {
+    document.head.appendChild(link);
+  });
+
   var p = 20;
   Behaviour.specify("TABLE.sortable", "table-sortable", ++p, function (e) {
     // sortable table
@@ -1231,7 +1214,7 @@ function rowvgStartEachRow(recursive, f) {
   });
 
   Behaviour.specify(
-    "TABLE.progress-bar",
+    "TABLE.progress-bar, div.app-progress-bar",
     "table-progress-bar",
     ++p,
     function (e) {
@@ -1898,15 +1881,7 @@ function refillOnChange(e, onChange) {
       TryEach(function (name) {
         var c = findNearBy(e, name);
         if (c == null) {
-          if (window.console != null) {
-            console.warn("Unable to find nearby " + name);
-          }
-          if (window.YUI != null) {
-            YUI.log(
-              "Unable to find a nearby control of the name " + name,
-              "warn",
-            );
-          }
+          console.warn("Unable to find nearby " + name);
           return;
         }
         c.addEventListener("change", h);
@@ -2200,6 +2175,7 @@ function encode(str) {
 // when there are multiple form elements of the same name,
 // this method returns the input field of the given name that pairs up
 // with the specified 'base' input element.
+// eslint-disable-next-line no-unused-vars
 function findMatchingFormInput(base, name) {
   // find the FORM element that owns us
   var f = base.closest("form");
@@ -2230,17 +2206,6 @@ function findMatchingFormInput(base, name) {
   }
 
   return null; // not found
-}
-
-// TODO remove when Prototype.js is removed
-if (typeof Form === "object") {
-  /** @deprecated For backward compatibility only; use {@link findMatchingFormInput} instead. */
-  Form.findMatchingInput = function (base, name) {
-    console.warn(
-      "Deprecated call to Form.findMatchingInput detected; use findMatchingFormInput instead.",
-    );
-    return findMatchingFormInput(base, name);
-  };
 }
 
 // eslint-disable-next-line no-unused-vars
@@ -2627,14 +2592,7 @@ function buildFormTree(form) {
       }
     }
 
-    // TODO simplify when Prototype.js is removed
-    if (Object.toJSON) {
-      // Prototype.js
-      jsonElement.value = Object.toJSON(form.formDom);
-    } else {
-      // Standard
-      jsonElement.value = JSON.stringify(form.formDom);
-    }
+    jsonElement.value = JSON.stringify(form.formDom);
 
     // clean up
     for (i = 0; i < doms.length; i++) {
@@ -2728,8 +2686,13 @@ function validateButton(checkUrl, paramList, button) {
   paramList.split(",").forEach(function (name) {
     var p = findPreviousFormItem(button, name);
     if (p != null) {
-      if (p.type == "checkbox") {
+      if (p.type === "checkbox") {
         parameters[name] = p.checked;
+      } else if (p.type === "radio") {
+        while (p && !p.checked) {
+          p = findPreviousFormItem(p, name);
+        }
+        parameters[name] = p.value;
       } else {
         parameters[name] = p.value;
       }
@@ -2801,15 +2764,6 @@ function createComboBox(idOrField, valueFunction) {
   } else {
     creator();
   }
-}
-
-// Exception in code during the AJAX processing should be reported,
-// so that our users can find them more easily.
-// TODO remove when Prototype.js is removed
-if (typeof Ajax === "object" && Ajax.Request) {
-  Ajax.Request.prototype.dispatchException = function (e) {
-    throw e;
-  };
 }
 
 // event callback when layouts/visibility are updated and elements might have moved around

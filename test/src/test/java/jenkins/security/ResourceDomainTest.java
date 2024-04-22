@@ -1,7 +1,9 @@
 package jenkins.security;
 
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assume.assumeFalse;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
@@ -12,11 +14,13 @@ import hudson.model.DirectoryBrowserSupport;
 import hudson.model.FreeStyleProject;
 import hudson.model.Item;
 import hudson.model.UnprotectedRootAction;
+import java.net.URI;
 import java.net.URL;
 import java.time.Instant;
 import java.util.UUID;
 import jenkins.model.Jenkins;
 import jenkins.model.JenkinsLocationConfiguration;
+import org.htmlunit.FailingHttpStatusCodeException;
 import org.htmlunit.Page;
 import org.htmlunit.html.HtmlPage;
 import org.junit.Assert;
@@ -352,13 +356,13 @@ public class ResourceDomainTest {
         URL url = page.getUrl();
         Assert.assertTrue("page is served by resource domain", url.toString().contains("/static-files/"));
 
-        URL dirUrl = new URL(url.toString().replace("%20100%25%20evil%20content%20.html", ""));
+        URL dirUrl = new URI(url.toString().replace("%20100%25%20evil%20content%20.html", "")).toURL();
         Page dirPage = webClient.getPage(dirUrl);
         Assert.assertEquals("page is found", 200, dirPage.getWebResponse().getStatusCode());
         Assert.assertTrue("page content is HTML", dirPage.getWebResponse().getContentAsString().contains("href"));
         Assert.assertTrue("page content references file", dirPage.getWebResponse().getContentAsString().contains("evil content"));
 
-        URL topDirUrl = new URL(url.toString().replace("%20100%25%20evil%20dir%20name%20%20%20/%20100%25%20evil%20content%20.html", ""));
+        URL topDirUrl = new URI(url.toString().replace("%20100%25%20evil%20dir%20name%20%20%20/%20100%25%20evil%20content%20.html", "")).toURL();
         Page topDirPage = webClient.getPage(topDirUrl);
         Assert.assertEquals("page is found", 200, topDirPage.getWebResponse().getStatusCode());
         Assert.assertTrue("page content is HTML", topDirPage.getWebResponse().getContentAsString().contains("href"));
@@ -391,6 +395,26 @@ public class ResourceDomainTest {
             FilePath tempDir = jenkins.getRootPath().createTempDir("root", "tmp");
             tempDir.child(" 100% evil dir name   ").child(" 100% evil content .html").write("this is the content", "UTF-8");
             return new DirectoryBrowserSupport(jenkins, tempDir, "title", "", true);
+        }
+    }
+
+    @Test
+    public void authenticatedCannotAccessResourceDomain() throws Exception {
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        final MockAuthorizationStrategy authorizationStrategy = new MockAuthorizationStrategy();
+        authorizationStrategy.grant(Jenkins.ADMINISTER).everywhere().to("admin").grant(Jenkins.READ).everywhere().toEveryone();
+        j.jenkins.setAuthorizationStrategy(authorizationStrategy);
+        final String resourceUrl;
+        try (JenkinsRule.WebClient wc = j.createWebClient().withRedirectEnabled(false).withThrowExceptionOnFailingStatusCode(false)) {
+            final Page htmlPage = wc.goTo("userContent/readme.txt", "");
+            resourceUrl = htmlPage.getWebResponse().getResponseHeaderValue("Location");
+        }
+        assertThat(resourceUrl, containsString("static-files/"));
+        try (JenkinsRule.WebClient wc = j.createWebClient().withBasicApiToken("admin")) {
+            assertThat(assertThrows(FailingHttpStatusCodeException.class, () -> wc.getPage(new URL(resourceUrl))).getStatusCode(), is(400));
+        }
+        try (JenkinsRule.WebClient wc = j.createWebClient().withBasicCredentials("admin")) {
+            assertThat(assertThrows(FailingHttpStatusCodeException.class, () -> wc.getPage(new URL(resourceUrl))).getStatusCode(), is(400));
         }
     }
 }

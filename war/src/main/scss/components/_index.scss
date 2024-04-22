@@ -1,4 +1,5 @@
 @use "app-bar";
+@use "alert";
 @use "badges";
 @use "breadcrumbs";
 @use "buttons-deprecated";
@@ -13,6 +14,7 @@
 @use "page-header";
 @use "panes-and-bigtable";
 @use "progress-animation";
+@use "progress-bar";
 @use "row-selection-controller";
 @use "section";
 @use "side-panel-tasks";

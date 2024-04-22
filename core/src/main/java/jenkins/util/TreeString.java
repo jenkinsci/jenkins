@@ -32,7 +32,6 @@ import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import java.io.Serializable;
 import java.util.Map;
-import org.apache.commons.lang.StringUtils;
 
 /**
  * {@link TreeString} is an alternative string representation that saves the
@@ -165,7 +164,8 @@ public final class TreeString implements Serializable {
     }
 
     public boolean isBlank() {
-        return StringUtils.isBlank(toString());
+        String string = toString();
+        return string == null || string.isBlank();
     }
 
     public static String toString(final TreeString t) {

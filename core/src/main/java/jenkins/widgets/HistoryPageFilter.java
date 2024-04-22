@@ -264,7 +264,7 @@ public class HistoryPageFilter<T> {
     private void addRun(Run run) {
         HistoryPageEntry<Run> entry = new HistoryPageEntry<>(run);
         // Assert that runs have been added in descending order
-        if (runs.size() > 0) {
+        if (!runs.isEmpty()) {
             if (entry.getEntryId() > runs.get(runs.size() - 1).getEntryId()) {
                 throw new IllegalStateException("Runs were out of order");
             }

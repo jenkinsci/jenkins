@@ -66,6 +66,7 @@ import org.jvnet.hudson.test.ExtractResourceSCM;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.ToolInstallations;
+import org.jvnet.hudson.test.recipes.WithTimeout;
 import org.kohsuke.stapler.jelly.JellyFacet;
 
 /**
@@ -190,7 +191,7 @@ public class MavenTest {
         assertNotNull(isp.installers.get(MavenInstaller.class));
     }
 
-    @Test public void sensitiveParameters() throws Exception {
+    @Test @WithTimeout(500) public void sensitiveParameters() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject();
         ParametersDefinitionProperty pdb = new ParametersDefinitionProperty(
                 new StringParameterDefinition("string", "defaultValue", "string description"),

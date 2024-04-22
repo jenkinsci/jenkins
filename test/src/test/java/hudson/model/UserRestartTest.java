@@ -33,7 +33,7 @@ import static org.junit.Assert.assertNotNull;
 
 import hudson.FilePath;
 import hudson.tasks.Mailer;
-import java.net.URL;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import org.htmlunit.WebRequest;
@@ -115,7 +115,7 @@ public class UserRestartTest {
                     JenkinsRule.WebClient wc = r.createWebClient()
                             .withThrowExceptionOnFailingStatusCode(false);
 
-                    WebRequest request = new WebRequest(new URL(r.jenkins.getRootUrl() + "whoAmI/api/xml"));
+                    WebRequest request = new WebRequest(new URI(r.jenkins.getRootUrl() + "whoAmI/api/xml").toURL());
                     request.setAdditionalHeader("Authorization", base64("..", "any-password"));
                     wc.getPage(request);
                 }
@@ -123,7 +123,7 @@ public class UserRestartTest {
                     JenkinsRule.WebClient wc = r.createWebClient()
                             .withThrowExceptionOnFailingStatusCode(false);
 
-                    WebRequest request = new WebRequest(new URL(r.jenkins.getRootUrl() + "whoAmI/api/xml"));
+                    WebRequest request = new WebRequest(new URI(r.jenkins.getRootUrl() + "whoAmI/api/xml").toURL());
                     request.setAdditionalHeader("Authorization", base64("../users/..", "any-password"));
                     wc.getPage(request);
                 }

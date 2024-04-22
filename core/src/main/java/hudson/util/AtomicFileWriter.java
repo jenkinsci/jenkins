@@ -26,11 +26,13 @@ package hudson.util;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
+import hudson.Functions;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.lang.ref.Cleaner;
+import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.AtomicMoveNotSupportedException;
@@ -61,6 +63,9 @@ public class AtomicFileWriter extends Writer {
 
     private static /* final */ boolean DISABLE_FORCED_FLUSH = SystemProperties.getBoolean(
             AtomicFileWriter.class.getName() + ".DISABLE_FORCED_FLUSH");
+
+    private static /* final */ boolean REQUIRES_DIR_FSYNC = SystemProperties.getBoolean(
+            AtomicFileWriter.class.getName() + ".REQUIRES_DIR_FSYNC", !Functions.isWindows());
 
     static {
         if (DISABLE_FORCED_FLUSH) {
@@ -232,6 +237,18 @@ public class AtomicFileWriter extends Writer {
                 }
 
                 throw replaceFailed;
+            }
+        }
+
+        /*
+         * From fsync(2) on Linux:
+         *
+         *     Calling fsync() does not necessarily ensure that the entry in the directory containing the file has also
+         *     reached disk. For that an explicit fsync() on a file descriptor for the directory is also needed.
+         */
+        if (!DISABLE_FORCED_FLUSH && REQUIRES_DIR_FSYNC) {
+            try (FileChannel parentChannel = FileChannel.open(destPath.getParent())) {
+                parentChannel.force(true);
             }
         }
     }

@@ -35,6 +35,7 @@ import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionList;
 import hudson.model.Descriptor;
 import hudson.model.Failure;
@@ -48,6 +49,7 @@ import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
+import org.jvnet.hudson.test.recipes.LocalData;
 
 public class NodesTest {
 
@@ -204,4 +206,20 @@ public class NodesTest {
             }
         }
     }
+
+    @Test
+    @LocalData
+    public void vetoLoad() {
+        assertNull("one-node should not have been loaded because vetoed by VetoLoadingNodes", Jenkins.get().getNode("one-node"));
+    }
+
+    @TestExtension("vetoLoad")
+    public static class VetoLoadingNodes extends NodeListener {
+        @Override
+        protected boolean allowLoad(@NonNull Node node) {
+            // Don't allow loading any node.
+            return false;
+        }
+    }
+
 }

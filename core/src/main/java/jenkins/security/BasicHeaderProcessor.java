@@ -9,6 +9,7 @@ import hudson.security.SecurityRealm;
 import hudson.util.Scrambler;
 import java.io.IOException;
 import java.util.List;
+import java.util.Locale;
 import java.util.logging.Logger;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -18,7 +19,6 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.apache.commons.lang.StringUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
@@ -65,7 +65,7 @@ public class BasicHeaderProcessor implements Filter {
         HttpServletResponse rsp = (HttpServletResponse) response;
         String authorization = req.getHeader("Authorization");
 
-        if (StringUtils.startsWithIgnoreCase(authorization, "Basic ")) {
+        if (authorization != null && authorization.toLowerCase(Locale.ROOT).startsWith("Basic ".toLowerCase(Locale.ROOT))) {
             // authenticate the user
             String uidpassword = Scrambler.descramble(authorization.substring(6));
             int idx = uidpassword.indexOf(':');

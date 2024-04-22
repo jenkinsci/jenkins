@@ -60,14 +60,14 @@ public class BuildListTableTest {
         v2.add(p);
         d.addView(v2);
         JenkinsRule.WebClient wc = r.createWebClient();
-        HtmlPage page = wc.goTo("view/v1/job/d/view/v2/builds?suppressTimelineControl=true");
+        HtmlPage page = wc.goTo("view/v1/job/d/view/v2/builds");
         assertEquals(0, wc.waitForBackgroundJavaScript(120000));
         HtmlAnchor anchor = page.getAnchorByText("d » d2 » p");
         String href = anchor.getHrefAttribute();
         URL target = URI.create(page.getUrl().toExternalForm()).resolve(href).toURL();
         wc.getPage(target);
         assertEquals(href, r.getURL() + "view/v1/job/d/view/v2/job/d2/job/p/", target.toString());
-        page = wc.goTo("job/d/view/All/builds?suppressTimelineControl=true");
+        page = wc.goTo("job/d/view/All/builds");
         assertEquals(0, wc.waitForBackgroundJavaScript(120000));
         anchor = page.getAnchorByText("d » d2 » p");
         href = anchor.getHrefAttribute();

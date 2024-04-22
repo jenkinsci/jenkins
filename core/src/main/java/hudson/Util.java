@@ -43,6 +43,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.Writer;
@@ -83,6 +84,8 @@ import java.text.NumberFormat;
 import java.text.ParseException;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -108,6 +111,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
+import jenkins.model.Jenkins;
 import jenkins.util.MemoryReductionUtil;
 import jenkins.util.SystemProperties;
 import jenkins.util.io.PathRemover;
@@ -1856,9 +1860,34 @@ public class Util {
         return t;
     }
 
+    @Restricted(NoExternalUse.class)
+    public static void printRedirect(String contextPath, String redirectUrl, String message, PrintWriter out) {
+        out.printf(
+                "<html><head>" +
+                "<meta http-equiv='refresh' content='1;url=%1$s'/>" +
+                "<script id='redirect' data-redirect-url='%1$s' src='" +
+                contextPath + Jenkins.RESOURCE_PATH +
+                "/scripts/redirect.js'></script>" +
+                "</head>" +
+                "<body style='background-color:white; color:white;'>%n" +
+                "%2$s%n" +
+                "<!--%n", Functions.htmlAttributeEscape(redirectUrl), message);
+    }
+
+    /**
+     * @deprecated use {@link #XS_DATETIME_FORMATTER2}
+     */
+    @Deprecated
     public static final FastDateFormat XS_DATETIME_FORMATTER = FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ss'Z'", new SimpleTimeZone(0, "GMT"));
 
+    public static final DateTimeFormatter XS_DATETIME_FORMATTER2 =
+            DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'").withZone(ZoneOffset.UTC);
+
     // Note: RFC822 dates must not be localized!
+    /**
+     * @deprecated use {@link DateTimeFormatter#RFC_1123_DATE_TIME}
+     */
+    @Deprecated
     public static final FastDateFormat RFC822_DATETIME_FORMATTER
             = FastDateFormat.getInstance("EEE, dd MMM yyyy HH:mm:ss Z", Locale.US);
 

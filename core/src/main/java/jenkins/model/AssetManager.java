@@ -11,7 +11,6 @@ import java.util.concurrent.TimeUnit;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 import jenkins.ClassLoaderReflectionToolkit;
-import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -76,7 +75,7 @@ public class AssetManager implements UnprotectedRootAction {
      * doesn't find it, fall back to the parent classloader.
      */
     private @CheckForNull URL findResource(@NonNull String path) throws IOException {
-        if (StringUtils.isBlank(path)) {
+        if (path == null || path.isBlank()) {
             return null;
         }
 

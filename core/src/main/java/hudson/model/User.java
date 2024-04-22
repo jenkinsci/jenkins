@@ -70,6 +70,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 import jenkins.model.IdStrategy;
 import jenkins.model.Jenkins;
+import jenkins.model.Loadable;
 import jenkins.model.ModelObjectWithContextMenu;
 import jenkins.scm.RunWithSCM;
 import jenkins.security.ImpersonatingUserDetailsService2;
@@ -77,7 +78,6 @@ import jenkins.security.LastGrantedAuthoritiesProperty;
 import jenkins.security.UserDetailsCache;
 import jenkins.util.SystemProperties;
 import net.sf.json.JSONObject;
-import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -120,7 +120,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
  * @author Kohsuke Kawaguchi
  */
 @ExportedBean
-public class User extends AbstractModelObject implements AccessControlled, DescriptorByNameOwner, Saveable, Comparable<User>, ModelObjectWithContextMenu, StaplerProxy {
+public class User extends AbstractModelObject implements AccessControlled, DescriptorByNameOwner, Loadable, Saveable, Comparable<User>, ModelObjectWithContextMenu, StaplerProxy {
 
     public static final XStream2 XSTREAM = new XStream2();
     private static final Logger LOGGER = Logger.getLogger(User.class.getName());
@@ -188,6 +188,11 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     private User(String id, String fullName) {
         this.id = id;
         this.fullName = fullName;
+        load(id);
+    }
+
+    @Override
+    public void load() {
         load(id);
     }
 
@@ -789,7 +794,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * @since 1.600
      */
     public static boolean isIdOrFullnameAllowed(@CheckForNull String id) {
-        if (StringUtils.isBlank(id)) {
+        if (id == null || id.isBlank()) {
             return false;
         }
         final String trimmedId = id.trim();
