@@ -390,7 +390,7 @@ THE SOFTWARE.
                   <!-- dependency of bootstrap5-api and echarts-api -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>font-awesome-api</artifactId>
-                  <version>6.5.1-3</version>
+                  <version>6.5.2-1</version>
                   <type>hpi</type>
                 </artifactItem>
 
