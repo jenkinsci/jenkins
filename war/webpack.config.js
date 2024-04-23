@@ -1,5 +1,3 @@
-/* eslint no-undef: 0 */
-
 const path = require("path");
 const MiniCSSExtractPlugin = require("mini-css-extract-plugin");
 const CssMinimizerPlugin = require("css-minimizer-webpack-plugin");
