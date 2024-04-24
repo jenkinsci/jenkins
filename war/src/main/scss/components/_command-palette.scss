@@ -2,11 +2,7 @@
 
 .jenkins-command-palette__dialog {
   &::backdrop {
-    background: radial-gradient(
-      farthest-corner at 50% 30vh,
-      rgba(black, 0.2),
-      transparent
-    );
+    background: var(--command-palette-backdrop-background);
     backdrop-filter: contrast(0.7) brightness(0.9) saturate(1.25) blur(3px);
     animation: jenkins-modal-backdrop-animate-in 0.3s;
   }
