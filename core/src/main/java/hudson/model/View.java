@@ -98,6 +98,8 @@ import jenkins.widgets.HasWidgets;
 import net.sf.json.JSONObject;
 import org.jenkins.ui.icon.Icon;
 import org.jenkins.ui.icon.IconSet;
+import org.jenkins.ui.symbol.Symbol;
+import org.jenkins.ui.symbol.SymbolRequest;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.DataBoundSetter;
@@ -801,11 +803,20 @@ public abstract class View extends AbstractModelObject implements AccessControll
             String iconClassName = descriptor.getIconClassName();
             if (iconClassName != null && !iconClassName.isBlank()) {
                 metadata.put("iconClassName", iconClassName);
-                if (resUrl != null) {
-                    Icon icon = IconSet.icons
-                            .getIconByClassSpec(String.join(" ", iconClassName, iconStyle));
-                    if (icon != null) {
-                        metadata.put("iconQualifiedUrl", icon.getQualifiedUrl(resUrl));
+                if (iconClassName.startsWith("symbol-")) {
+                    String iconXml = Symbol.get(new SymbolRequest.Builder()
+                            .withName(iconClassName.split(" ")[0].substring(7))
+                            .withPluginName(Functions.extractPluginNameFromIconSrc(iconClassName))
+                            .withClasses("icon-xlg")
+                            .build());
+                    metadata.put("iconXml", iconXml);
+                } else {
+                    if (resUrl != null) {
+                        Icon icon = IconSet.icons
+                                .getIconByClassSpec(String.join(" ", iconClassName, iconStyle));
+                        if (icon != null) {
+                            metadata.put("iconQualifiedUrl", icon.getQualifiedUrl(resUrl));
+                        }
                     }
                 }
             }

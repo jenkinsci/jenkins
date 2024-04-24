@@ -24,6 +24,8 @@ $semantics: (
   "success": var(--green),
   "destructive": var(--red),
   "build": var(--green),
+  "danger": var(--red),
+  "info": var(--blue),
 );
 
 :root,

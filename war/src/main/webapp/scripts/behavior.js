@@ -184,7 +184,6 @@ Behaviour.start();
 function findElementsBySelector(startNode, selector, includeSelf) {
   if (includeSelf) {
     var isSelfOrChild = function (c) {
-      // eslint-disable-next-line no-constant-condition
       while (true) {
         if (startNode == c) {
           return true;
