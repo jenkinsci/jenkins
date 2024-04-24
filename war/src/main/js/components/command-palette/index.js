@@ -3,6 +3,7 @@ import { JenkinsSearchSource } from "./datasources";
 import debounce from "lodash/debounce";
 import * as Symbols from "./symbols";
 import makeKeyboardNavigable from "@/util/keyboard";
+import { xmlEscape } from "@/util/security";
 
 const datasources = [JenkinsSearchSource];
 
@@ -94,7 +95,7 @@ function init() {
         "<span>" +
         i18n.dataset.noResultsFor +
         "</span> " +
-        commandPaletteInput.value.escapeHTML();
+        xmlEscape(commandPaletteInput.value);
       searchResults.append(label);
     }
 
