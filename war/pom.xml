@@ -390,7 +390,7 @@ THE SOFTWARE.
                   <!-- dependency of bootstrap5-api and echarts-api -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>font-awesome-api</artifactId>
-                  <version>6.5.1-3</version>
+                  <version>6.5.2-1</version>
                   <type>hpi</type>
                 </artifactItem>
 
@@ -405,7 +405,7 @@ THE SOFTWARE.
                   <!-- dependency of workflow-api and workflow-support -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>scm-api</artifactId>
-                  <version>689.v237b_6d3a_ef7f</version>
+                  <version>690.vfc8b_54395023</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
