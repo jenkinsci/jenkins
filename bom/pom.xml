@@ -38,9 +38,8 @@ THE SOFTWARE.
   <description>The module contains dependencies that are used by a specific Jenkins version</description>
 
   <properties>
-    <asm.version>9.7</asm.version>
     <slf4jVersion>2.0.13</slf4jVersion>
-    <stapler.version>1847.v97341b_b_a_414f</stapler.version>
+    <stapler.version>1849.v2fdf1a_5359b_4</stapler.version>
     <groovy.version>2.4.21</groovy.version>
   </properties>
 
@@ -56,7 +55,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.springframework</groupId>
         <artifactId>spring-framework-bom</artifactId>
-        <version>5.3.33</version>
+        <version>5.3.34</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -64,7 +63,7 @@ THE SOFTWARE.
         <!-- https://docs.spring.io/spring-security/site/docs/5.5.4/reference/html5/#getting-maven-no-boot -->
         <groupId>org.springframework.security</groupId>
         <artifactId>spring-security-bom</artifactId>
-        <version>5.8.11</version>
+        <version>5.8.12</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -310,31 +309,6 @@ THE SOFTWARE.
         <groupId>org.kohsuke.stapler</groupId>
         <artifactId>stapler-groovy</artifactId>
         <version>${stapler.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.ow2.asm</groupId>
-        <artifactId>asm</artifactId>
-        <version>${asm.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.ow2.asm</groupId>
-        <artifactId>asm-analysis</artifactId>
-        <version>${asm.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.ow2.asm</groupId>
-        <artifactId>asm-commons</artifactId>
-        <version>${asm.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.ow2.asm</groupId>
-        <artifactId>asm-tree</artifactId>
-        <version>${asm.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.ow2.asm</groupId>
-        <artifactId>asm-util</artifactId>
-        <version>${asm.version}</version>
       </dependency>
       <dependency>
         <groupId>org.samba.jcifs</groupId>

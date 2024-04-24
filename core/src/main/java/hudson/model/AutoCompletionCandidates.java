@@ -32,6 +32,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
 import org.kohsuke.stapler.HttpResponse;
@@ -172,6 +173,6 @@ public class AutoCompletionCandidates implements HttpResponse {
     }
 
     private static boolean startsWithImpl(String str, String prefix, boolean ignoreCase) {
-        return ignoreCase ? str.toLowerCase().startsWith(prefix.toLowerCase()) : str.startsWith(prefix);
+        return ignoreCase ? str.toLowerCase(Locale.ROOT).startsWith(prefix.toLowerCase(Locale.ROOT)) : str.startsWith(prefix);
     }
 }
