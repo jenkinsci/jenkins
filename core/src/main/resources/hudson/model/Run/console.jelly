@@ -36,18 +36,14 @@ THE SOFTWARE.
 
     <l:main-panel>
       <j:set var="controls">
+        <a class="jenkins-button" href="consoleText" download="${it.displayName}.txt">
+          <l:icon src="symbol-download" />
+          ${%Download}
+        </a>
         <l:copyButton ref="out" label="${%Copy}" />
-        <l:overflowButton>
-          <dd:custom>
-            <a class="jenkins-dropdown__item" href="consoleText" download="${it.displayName}.txt">
-              <div class="jenkins-dropdown__item__icon">
-                <l:icon src="symbol-download" />
-              </div>
-              ${%Download}
-            </a>
-          </dd:custom>
-          <dd:item href="consoleText" text="${%View as plain text}" icon="symbol-document-text" />
-        </l:overflowButton>
+        <a class="jenkins-button" href="consoleText">
+          ${%View as plain text}
+        </a>
       </j:set>
 
       <t:buildCaption controls="${controls}">
