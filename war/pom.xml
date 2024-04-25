@@ -151,6 +151,7 @@ THE SOFTWARE.
                   <maxJdkVersion>1.8</maxJdkVersion>
                   <excludes>
                     <exclude>com.infradna.tool:bridge-method-annotation</exclude>
+                    <exclude>jakarta.annotation:jakarta.annotation-api</exclude>
                     <exclude>org.antlr:antlr4</exclude>
                     <exclude>org.jenkins-ci:annotation-indexer</exclude>
                     <exclude>org.jenkins-ci:commons-jelly</exclude>
