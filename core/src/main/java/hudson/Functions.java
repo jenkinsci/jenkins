@@ -2492,7 +2492,7 @@ public class Functions {
 
     /**
      * @param keyboardShortcut the shortcut to be translated
-     * @return the translated shortcut, e.g. CMD+K -> ⌘+K for macOS, CTRL+K for Windows
+     * @return the translated shortcut, e.g. CMD+K to ⌘+K for macOS, CTRL+K for Windows
      */
     @Restricted(NoExternalUse.class)
     public static String translateModifierKeysForUsersPlatform(String keyboardShortcut) {
