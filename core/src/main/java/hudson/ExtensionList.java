@@ -468,7 +468,7 @@ public class ExtensionList<T> extends AbstractList<T> implements OnMaster {
      * @return the singleton instance of the given type in its list.
      * @throws IllegalStateException if there are no instances
      *
-     * @since TODO
+     * @since 2.435
      */
     public static @NonNull <U> U lookupFirst(Class<U> type) {
         var all = lookup(type);

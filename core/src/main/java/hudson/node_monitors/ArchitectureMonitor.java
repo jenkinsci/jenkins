@@ -30,10 +30,8 @@ import hudson.model.Computer;
 import hudson.remoting.Callable;
 import java.io.IOException;
 import jenkins.security.MasterToSlaveCallable;
-import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.StaplerRequest;
 
 /**
  * Discovers the architecture of the system to display in the agent list page.
@@ -60,8 +58,8 @@ public class ArchitectureMonitor extends NodeMonitor {
         }
 
         @Override
-        public NodeMonitor newInstance(StaplerRequest req, JSONObject formData) throws FormException {
-            return new ArchitectureMonitor();
+        public boolean canTakeOffline() {
+            return false;
         }
     }
 

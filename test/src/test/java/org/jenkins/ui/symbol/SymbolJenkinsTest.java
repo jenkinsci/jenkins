@@ -12,7 +12,8 @@ import org.jvnet.hudson.test.RealJenkinsRule;
 
 public class SymbolJenkinsTest {
     @Rule
-    public RealJenkinsRule rjr = new RealJenkinsRule().addPlugins("plugins/design-library.jpi");
+    public RealJenkinsRule rjr = new RealJenkinsRule()
+            .addPlugins("plugins/design-library.jpi", "plugins/prism-api.jpi", "plugins/bootstrap5-api.jpi");
 
     @Test
     @DisplayName("When resolving a symbol from a missing plugin, the placeholder is generated instead")

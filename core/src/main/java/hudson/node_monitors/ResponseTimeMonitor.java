@@ -34,10 +34,8 @@ import java.io.Serializable;
 import java.util.Map;
 import java.util.logging.Logger;
 import jenkins.security.MasterToSlaveCallable;
-import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
@@ -102,11 +100,6 @@ public class ResponseTimeMonitor extends NodeMonitor {
         @Override
         public String getDisplayName() {
             return Messages.ResponseTimeMonitor_DisplayName();
-        }
-
-        @Override
-        public NodeMonitor newInstance(StaplerRequest req, JSONObject formData) throws FormException {
-            return new ResponseTimeMonitor();
         }
     }
 

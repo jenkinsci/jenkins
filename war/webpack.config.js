@@ -1,5 +1,3 @@
-/* eslint no-undef: 0 */
-
 const path = require("path");
 const MiniCSSExtractPlugin = require("mini-css-extract-plugin");
 const CssMinimizerPlugin = require("css-minimizer-webpack-plugin");
@@ -19,6 +17,9 @@ module.exports = (env, argv) => ({
     "add-item": [
       path.join(__dirname, "src/main/js/add-item.js"),
       path.join(__dirname, "src/main/js/add-item.scss"),
+    ],
+    "pages/computer-set": [
+      path.join(__dirname, "src/main/js/pages/computer-set"),
     ],
     "pages/dashboard": [path.join(__dirname, "src/main/js/pages/dashboard")],
     "pages/manage-jenkins/system-information": [

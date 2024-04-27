@@ -27,6 +27,7 @@ package hudson.slaves;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -112,6 +113,31 @@ public class JNLPLauncherTest {
                 jnlpLauncher.getWorkDirSettings().isDisabled());
     }
 
+    @Issue("JENKINS-73011")
+    @SuppressWarnings("deprecation")
+    @Test
+    public void deprecatedFields() throws Exception {
+        var launcher = new JNLPLauncher();
+        launcher.setWebSocket(true);
+        launcher.setWorkDirSettings(new RemotingWorkDirSettings(false, null, "remoting2", false));
+        launcher.setTunnel("someproxy");
+        var agent = j.createSlave();
+        agent.setLauncher(launcher);
+        agent = j.configRoundtrip(agent);
+        launcher = (JNLPLauncher) agent.getLauncher();
+        assertThat(launcher.isWebSocket(), is(true));
+        assertThat(launcher.getWorkDirSettings().getInternalDir(), is("remoting2"));
+        assertThat(launcher.getTunnel(), is("someproxy"));
+        launcher = new JNLPLauncher();
+        launcher.setWebSocket(true);
+        agent.setLauncher(launcher);
+        agent = j.configRoundtrip(agent);
+        launcher = (JNLPLauncher) agent.getLauncher();
+        assertThat(launcher.isWebSocket(), is(true));
+        assertThat(launcher.getWorkDirSettings().getInternalDir(), is("remoting"));
+        assertThat(launcher.getTunnel(), nullValue());
+    }
+
     @Test
     public void testDefaults() {
         assertFalse("Work directory enabled by default", new JNLPLauncher().getWorkDirSettings().isDisabled());
@@ -157,12 +183,21 @@ public class JNLPLauncherTest {
         ArgumentListBuilder args = new ArgumentListBuilder();
         args.add(new File(new File(System.getProperty("java.home")), "bin/java").getPath(), "-jar");
         args.add(Which.jarFile(Launcher.class).getAbsolutePath());
-        // TODO deprecated mode
-        args.add("-jnlpUrl", j.getURL() + "computer/" + c.getName() + "/jenkins-agent.jnlp");
+        args.add("-url");
+        args.add(j.getURL());
+        args.add("-name");
+        args.add(c.getName());
 
         if (c instanceof SlaveComputer) {
             SlaveComputer sc = (SlaveComputer) c;
+            args.add("-secret");
+            args.add(sc.getJnlpMac());
             ComputerLauncher launcher = sc.getLauncher();
+            if (launcher instanceof ComputerLauncherFilter) {
+                launcher = ((ComputerLauncherFilter) launcher).getCore();
+            } else if (launcher instanceof DelegatingComputerLauncher) {
+                launcher = ((DelegatingComputerLauncher) launcher).getLauncher();
+            }
             if (launcher instanceof JNLPLauncher) {
                 args.add(((JNLPLauncher) launcher).getWorkDirSettings().toCommandLineArgs(sc));
             }

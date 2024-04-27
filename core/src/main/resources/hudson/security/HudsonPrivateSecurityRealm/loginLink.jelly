@@ -26,7 +26,6 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
   <st:include page="/hudson/security/SecurityRealm/loginLink.jelly" />
   <j:if test="${it.allowsSignup()}">
-    |
-    <a href="${rootURL}/signup"><b>${%sign up}</b></a>
+    <a href="${rootURL}/signup">${%sign up}</a>
   </j:if>
 </j:jelly>
