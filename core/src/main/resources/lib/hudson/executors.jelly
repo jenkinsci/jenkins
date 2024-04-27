@@ -129,7 +129,7 @@ THE SOFTWARE.
       </j:if>
     </d:tag>
   </d:taglib>
-  <j:set var="paneIsCollapsed" value="${h.isCollapsed(attrs.id)}" />
+  <j:set var="paneIsCollapsed" value="${h.isCollapsed('executors')}" />
   <j:set var="computers" value="${attrs.computers?:app.computers}" />
   <j:set var="computersSize" value="${computers.size()}"/>
   <j:set var="collapsedText" value="${%Computers(computersSize - 1, app.unlabeledLoad.computeTotalExecutors() - app.unlabeledLoad.computeIdleExecutors(), app.unlabeledLoad.computeTotalExecutors())}"/>
@@ -159,14 +159,19 @@ THE SOFTWARE.
     <j:choose>
       <div class="pane-content">
         <j:when test="${paneIsCollapsed}">
-          ${collapsedText}
+          <j:if test="${computersSize gt 1}">
+            <div class="executors-collapsed">
+            ${collapsedText}
+            </div>
+          </j:if>
         </j:when>
         <j:otherwise>
           <j:forEach var="c" items="${computers}">
             <div class="computer-row">
               <j:set var="cDisplayExecutors" value="${c.displayExecutors}"/>
               <j:choose>
-                <j:when test="${(computersSize gt 1 and !cDisplayExecutors.isEmpty()) or (c.node == app and c.offline)}">
+                <j:when test="${(computersSize gt 1 and !cDisplayExecutors.isEmpty()) or
+                              (c.node == app and c.offline and c.numExecutors gt 0)}">
                   <div class="computer-caption">
                     <local:computerCaption title="${c.displayName}" />
                   </div>
