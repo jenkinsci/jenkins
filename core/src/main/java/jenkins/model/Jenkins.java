@@ -2897,13 +2897,16 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     public void refreshExtensions() throws ExtensionRefreshException {
         ExtensionList<ExtensionFinder> finders = getExtensionList(ExtensionFinder.class);
+        LOGGER.finer(() -> "refreshExtensions " + finders);
         for (ExtensionFinder ef : finders) {
             if (!ef.isRefreshable())
                 throw new ExtensionRefreshException(ef + " doesn't support refresh");
         }
 
         List<ExtensionComponentSet> fragments = new ArrayList<>();
+
         for (ExtensionFinder ef : finders) {
+            LOGGER.finer(() -> "searching " + ef);
             fragments.add(ef.refresh());
         }
         ExtensionComponentSet delta = ExtensionComponentSet.union(fragments).filtered();
@@ -2912,10 +2915,19 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         List<ExtensionComponent<ExtensionFinder>> newFinders = new ArrayList<>(delta.find(ExtensionFinder.class));
         while (!newFinders.isEmpty()) {
             ExtensionFinder f = newFinders.remove(newFinders.size() - 1).getInstance();
+            LOGGER.finer(() -> "found new ExtensionFinder " + f);
 
             ExtensionComponentSet ecs = ExtensionComponentSet.allOf(f).filtered();
             newFinders.addAll(ecs.find(ExtensionFinder.class));
             delta = ExtensionComponentSet.union(delta, ecs);
+        }
+
+        // we may not have found a new Extension finder but we may be using an extension finder that is extensible
+        // e.g. hudson.ExtensionFinder.GuiceFinder is extensible by GuiceExtensionAnnotation which is done by the variant plugin
+        // so lets give it one more chance.
+        for (ExtensionFinder ef : finders) {
+            LOGGER.finer(() -> "searching again in " + ef);
+            delta = ExtensionComponentSet.union(delta, ef.refresh().filtered());
         }
 
         for (ExtensionList el : extensionLists.values()) {

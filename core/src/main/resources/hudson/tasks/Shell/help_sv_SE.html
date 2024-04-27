@@ -1,0 +1,29 @@
+<div>
+  Kör ett skalskript (standard är
+  <code>sh</code>
+  , men detta kan konfigureras) för att bygga projektet. Skriptet kommer att
+  köras med arbetsytan som aktuell katalog. Ange innehållet i ditt skalskript.
+  Om ditt skalskript inte har någon rubrikrad (t.ex.
+  <code>#!/bin/sh</code>
+  ) kommer skalprogrammet som är konfigurerat för hela systemet att användas,
+  men du kan också använda rubrikraden för att skriva skriptet på ett annat
+  språk (som
+  <code>#!/bin/perl</code>
+  ) eller kontrollera alternativen som skalprogrammet använder.
+
+  <p>
+    Som standard kommer skalprogrammet att anropas med alternativet "-ex". Så
+    alla kommandon skrivs ut innan de körs och bygget anses vara ha misslyckats
+    om något kommando avslutas med en slutkod som inte är noll. Lägg till raden
+    <code>#!/bin/...</code>
+    för att ändra detta beteende.
+  </p>
+
+  <p>
+    Försök helst inte att lägga in ett långt skalskript här. Överväg istället
+    att lägga till skalskriptet i versionskontrollen och helt enkelt anropa
+    skalskriptet från Jenkins (via
+    <code>bash -ex myscript.sh</code>
+    eller något liknande) så att du kan spåra förändringar i ditt skalskript.
+  </p>
+</div>
