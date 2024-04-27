@@ -4,7 +4,7 @@ import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
 @ExportedBean
-public final class ConfirmationAction implements Action {
+public final class ConfirmationEvent implements Event {
 
     private final String title;
 
@@ -12,14 +12,14 @@ public final class ConfirmationAction implements Action {
 
     private final String postTo;
 
-    private ConfirmationAction(String title, String description, String postTo) {
+    private ConfirmationEvent(String title, String description, String postTo) {
         this.title = title;
         this.description = description;
         this.postTo = postTo;
     }
 
-    public static ConfirmationAction of(String title, String description, String postTo) {
-        return new ConfirmationAction(title, description, postTo);
+    public static ConfirmationEvent of(String title, String description, String postTo) {
+        return new ConfirmationEvent(title, description, postTo);
     }
 
     @Exported

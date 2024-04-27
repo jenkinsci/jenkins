@@ -46,7 +46,7 @@ THE SOFTWARE.
         <st:attribute name="badge" type="jenkins.management.Badge">
             Optional badge for the menu item
         </st:attribute>
-        <st:attribute name="confirmation" type="jenkins.model.menu.event.ConfirmationAction">
+        <st:attribute name="confirmation" type="jenkins.model.menu.event.ConfirmationEvent">
             TODO
         </st:attribute>
     </st:documentation>

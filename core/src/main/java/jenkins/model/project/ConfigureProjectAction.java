@@ -7,7 +7,8 @@ import java.util.Collection;
 import java.util.Set;
 import jenkins.model.TransientActionFactory;
 import jenkins.model.menu.Group;
-import jenkins.model.menu.event.LinkAction;
+import jenkins.model.menu.event.Event;
+import jenkins.model.menu.event.LinkEvent;
 
 @Extension
 public class ConfigureProjectAction extends TransientActionFactory<Job> {
@@ -40,9 +41,9 @@ public class ConfigureProjectAction extends TransientActionFactory<Job> {
             }
 
             @Override
-            public jenkins.model.menu.event.Action getAction() {
+            public Event getEvent() {
                 // TODO - deprecated method - dont use this!
-                return LinkAction.of(target.getAbsoluteUrl() + "configure");
+                return LinkEvent.of(target.getAbsoluteUrl() + "configure");
             }
         });
     }

@@ -10,8 +10,9 @@ import jenkins.model.ParameterizedJobMixIn;
 import jenkins.model.TransientActionFactory;
 import jenkins.model.menu.Group;
 import jenkins.model.menu.Semantic;
-import jenkins.model.menu.event.JavaScriptAction;
-import jenkins.model.menu.event.LinkAction;
+import jenkins.model.menu.event.Event;
+import jenkins.model.menu.event.JavaScriptEvent;
+import jenkins.model.menu.event.LinkEvent;
 
 @Extension
 public class BuildProjectAction extends TransientActionFactory<ParameterizedJobMixIn.ParameterizedJob> {
@@ -49,12 +50,12 @@ public class BuildProjectAction extends TransientActionFactory<ParameterizedJobM
             }
 
             @Override
-            public jenkins.model.menu.event.Action getAction() {
+            public Event getEvent() {
                 if (target.isParameterized()) {
                     // TODO - deprecated method - dont use this!
-                    return LinkAction.of(target.getAbsoluteUrl() + "build");
+                    return LinkEvent.of(target.getAbsoluteUrl() + "build");
                 } else {
-                    return JavaScriptAction.of(Map.of("button-type", "build", "project-id", target.getAbsoluteUrl(), "build-scheduled", Messages.BuildProjectFactory_BuildScheduled()), "jsbundles/pages/project/build.js");
+                    return JavaScriptEvent.of(Map.of("button-type", "build", "project-id", target.getAbsoluteUrl(), "build-scheduled", Messages.BuildProjectFactory_BuildScheduled()), "jsbundles/pages/project/build.js");
                 }
             }
         });

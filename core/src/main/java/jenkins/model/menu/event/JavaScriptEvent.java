@@ -6,20 +6,20 @@ import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 
 @ExportedBean
-public final class JavaScriptAction implements Action {
+public final class JavaScriptEvent implements Event {
 
     private final Map<String, String> attributes;
 
     private final String javascriptUrl;
 
-    private JavaScriptAction(Map<String, String> attributes, String javascriptUrl) {
+    private JavaScriptEvent(Map<String, String> attributes, String javascriptUrl) {
         this.attributes = attributes;
         this.javascriptUrl = javascriptUrl;
     }
 
-    public static JavaScriptAction of(Map<String, String> attributes, String javascriptUrl) {
+    public static JavaScriptEvent of(Map<String, String> attributes, String javascriptUrl) {
         Jenkins jenkins = Jenkins.get();
-        return new JavaScriptAction(attributes, jenkins.getRootUrl() + javascriptUrl);
+        return new JavaScriptEvent(attributes, jenkins.getRootUrl() + javascriptUrl);
     }
 
     @Exported

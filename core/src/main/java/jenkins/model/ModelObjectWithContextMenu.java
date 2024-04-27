@@ -14,8 +14,8 @@ import javax.servlet.ServletException;
 import jenkins.management.Badge;
 import jenkins.model.menu.Group;
 import jenkins.model.menu.Semantic;
-import jenkins.model.menu.event.DropdownAction;
-import jenkins.model.menu.event.LinkAction;
+import jenkins.model.menu.event.Event;
+import jenkins.model.menu.event.LinkEvent;
 import org.apache.commons.jelly.*;
 import org.jenkins.ui.icon.Icon;
 import org.jenkins.ui.icon.IconSet;
@@ -96,15 +96,10 @@ public interface ModelObjectWithContextMenu extends ModelObject {
             menuItem.badge = action.getBadge();
             menuItem.semantic = action.getSemantic();
             menuItem.group = action.getGroup();
-            menuItem.action = action.getAction();
+            menuItem.event = action.getEvent();
 
-            if (action.getAction().getClass() == LinkAction.class) {
-                menuItem.url = ((LinkAction)action.getAction()).getUrl();
-            }
-
-            if (action.getAction().getClass() == DropdownAction.class) {
-                ContextMenu cm = new ContextMenu();
-                menuItem.subMenu = cm.addAll(((DropdownAction)action.getAction()).getActions());
+            if (action.getEvent().getClass() == LinkEvent.class) {
+                menuItem.url = ((LinkEvent)action.getEvent()).getUrl();
             }
 
             String icon = action.getIconFileName();
@@ -323,7 +318,7 @@ public interface ModelObjectWithContextMenu extends ModelObject {
 
         private Group group;
 
-        private jenkins.model.menu.event.Action action;
+        private Event event;
 
         private Semantic semantic;
 
@@ -364,8 +359,8 @@ public interface ModelObjectWithContextMenu extends ModelObject {
         }
 
         @Exported(inline = true)
-        public jenkins.model.menu.event.Action getAction() {
-            return action;
+        public Event getEvent() {
+            return event;
         }
 
         @Exported

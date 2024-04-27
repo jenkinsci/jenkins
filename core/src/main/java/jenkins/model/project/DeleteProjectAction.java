@@ -8,7 +8,8 @@ import java.util.Set;
 import jenkins.model.TransientActionFactory;
 import jenkins.model.menu.Group;
 import jenkins.model.menu.Semantic;
-import jenkins.model.menu.event.ConfirmationAction;
+import jenkins.model.menu.event.ConfirmationEvent;
+import jenkins.model.menu.event.Event;
 
 @Extension
 public class DeleteProjectAction extends TransientActionFactory<Job> {
@@ -41,9 +42,9 @@ public class DeleteProjectAction extends TransientActionFactory<Job> {
             }
 
             @Override
-            public jenkins.model.menu.event.Action getAction() {
+            public Event getEvent() {
                 // TODO - Change this - Deprecated method
-                return ConfirmationAction.of(Messages.DeleteProjectFactory_DeleteDialog_Title(), Messages.DeleteProjectFactory_DeleteDialog_Description(),  target.getAbsoluteUrl() + "doDelete");
+                return ConfirmationEvent.of(Messages.DeleteProjectFactory_DeleteDialog_Title(), Messages.DeleteProjectFactory_DeleteDialog_Description(),  target.getAbsoluteUrl() + "doDelete");
             }
 
             @Override

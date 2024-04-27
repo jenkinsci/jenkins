@@ -64,17 +64,17 @@ function generateDropdownItems(items, compact = false) {
 
       const menuItem = Templates.menuItem(item);
 
-      if (item.action && item.action.actions != null) {
-        tippy(
-          menuItem,
-          Object.assign({}, Templates.dropdown(), {
-            content: generateDropdownItems(item.action.actions),
-            trigger: "mouseenter",
-            placement: "right-start",
-            offset: [-8, 0],
-          }),
-        );
-      }
+      // if (item.event && item.event.actions != null) {
+      //   tippy(
+      //     menuItem,
+      //     Object.assign({}, Templates.dropdown(), {
+      //       content: generateDropdownItems(item.event.actions),
+      //       trigger: "mouseenter",
+      //       placement: "right-start",
+      //       offset: [-8, 0],
+      //     }),
+      //   );
+      // }
 
       return menuItem;
     })
@@ -160,7 +160,7 @@ function convertHtmlToItems(children) {
         };
 
         if (attributes.dropdownConfirmationTitle) {
-          item.action = {
+          item.event = {
             title: attributes.dropdownConfirmationTitle,
             description: attributes.dropdownConfirmationDescription,
             postTo: attributes.dropdownConfirmationUrl,
@@ -176,7 +176,7 @@ function convertHtmlToItems(children) {
         }
 
         if (attributes.dropdownHref) {
-          item.action = {
+          item.event = {
             url: attributes.dropdownHref,
           };
         }
@@ -190,7 +190,7 @@ function convertHtmlToItems(children) {
           displayName: attributes.dropdownText,
           icon: attributes.dropdownIcon,
           iconXml: attributes.dropdownIcon,
-          action: {
+          event: {
             actions: convertHtmlToItems(child.content.children),
           },
         });

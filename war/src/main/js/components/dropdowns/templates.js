@@ -85,8 +85,8 @@ function menuItem(menuItem, type = "jenkins-dropdown__item") {
       : "");
 
   // TODO - make this better
-  const tag = itemOptions.action && itemOptions.action.url ? "a" : "button";
-  const url = tag === "a" ? xmlEscape(itemOptions.action.url) : "";
+  const tag = itemOptions.event && itemOptions.event.url ? "a" : "button";
+  const url = tag === "a" ? xmlEscape(itemOptions.event.url) : "";
 
   const item = createElementFromHtml(`
       <${tag} class="${type} ${clazz ? clazz : ""}" ${url ? `href="${url}"` : ""} ${itemOptions.id ? `id="${xmlEscape(itemOptions.id)}"` : ""}>
@@ -106,38 +106,38 @@ function menuItem(menuItem, type = "jenkins-dropdown__item") {
                         : ``
                     }
           ${
-            itemOptions.action && itemOptions.action.actions
+            itemOptions.event && itemOptions.event.actions
               ? `<span class="jenkins-dropdown__item__chevron"></span>`
               : ``
           }
       </${tag}>
     `);
 
-  if (menuItem.action && menuItem.action.attributes) {
-    for (const key in menuItem.action.attributes) {
+  if (menuItem.event && menuItem.event.attributes) {
+    for (const key in menuItem.event.attributes) {
       item.dataset[kebabToCamelCase(key)] =
-        menuItem.action.attributes[key].toString();
+        menuItem.event.attributes[key].toString();
     }
 
-    loadScriptIfNotLoaded(menuItem.action.javascriptUrl, item);
+    loadScriptIfNotLoaded(menuItem.event.javascriptUrl, item);
   }
 
   if (menuItem.onClick) {
     item.addEventListener('click', menuItem.onClick);
   }
 
-  if (menuItem.action && menuItem.action.postTo) {
+  if (menuItem.event && menuItem.event.postTo) {
     item.addEventListener("click", () => {
       dialog
-        .confirm(menuItem.action.title, {
-          message: menuItem.action.description,
+        .confirm(menuItem.event.title, {
+          message: menuItem.event.description,
           type: menuItem.semantic.toLowerCase() ?? "default",
         })
         .then(
           () => {
             const form = document.createElement("form");
             form.setAttribute("method", "POST");
-            form.setAttribute("action", menuItem.action.postTo);
+            form.setAttribute("action", menuItem.event.postTo);
             crumb.appendToForm(form);
             document.body.appendChild(form);
             form.submit();

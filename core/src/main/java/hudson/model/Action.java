@@ -29,7 +29,8 @@ import hudson.Functions;
 import jenkins.management.Badge;
 import jenkins.model.menu.Group;
 import jenkins.model.menu.Semantic;
-import jenkins.model.menu.event.LinkAction;
+import jenkins.model.menu.event.Event;
+import jenkins.model.menu.event.LinkEvent;
 
 /**
  * Object that contributes additional information, behaviors, and UIs to {@link ModelObject}
@@ -141,6 +142,9 @@ public interface Action extends ModelObject {
      *      null if this action object doesn't need to be bound to web
      *      (when you do that, be sure to also return null from {@link #getIconFileName()}.
      * @see Functions#getActionUrl(String, Action)
+     *
+     * @deprecated
+     *      Override {@link #getEvent()} instead
      */
     @CheckForNull default String getUrlName() {
         return null;
@@ -150,8 +154,8 @@ public interface Action extends ModelObject {
         return Group.IN_MENU;
     }
 
-    default jenkins.model.menu.event.Action getAction() {
-        return LinkAction.of(getUrlName());
+    default Event getEvent() {
+        return LinkEvent.of(getUrlName());
     }
 
     default Semantic getSemantic() {
