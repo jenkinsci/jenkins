@@ -646,7 +646,7 @@ public class ProjectTest {
         wc.withBasicCredentials(user.getId(), "password");
 
         HtmlPage p = wc.getPage(project, "configure");
-        HtmlForm form = p.getForms().get(0);
+        HtmlForm form = p.getFormByName("config");
         form.getInputByName("enable").click();
         j.submit(form);
 
