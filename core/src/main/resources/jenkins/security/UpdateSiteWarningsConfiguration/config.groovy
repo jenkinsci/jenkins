@@ -36,7 +36,7 @@ def printEntry(warning, title, checked) {
                 checked: checked,
                 class: 'hideWarnings')
         div(class: "setting-description") {
-            a(warning.getPostTo, href: warning.getPostTo)
+            a(warning.url, href: warning.url)
         }
     }
 }
