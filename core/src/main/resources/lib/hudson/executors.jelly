@@ -148,14 +148,15 @@ THE SOFTWARE.
 
   <j:set var="computersSize" value="${computers.size()}"/>
   <j:choose>
+    <j:when test="${!builtInHasExecutors and app.clouds.isEmpty() and app.nodes.isEmpty()}">
+      <j:set var="collapsedText" value="${%noExecutors}"/>
+      <j:set var="showCollapsedText" value="true" />
+    </j:when>
     <j:when test="${singleComputer}">
       <j:set var="sc" value="${computers.get(0)}"/>
       <j:set var="executorDetails" value="${sc.countBusy()}/${sc.countExecutors()}"/>
       <j:set var="collapsedText" value="${%CollapsedSingle(sc.countBusy(), sc.countExecutors())}"/>
       <j:set var="singleToolTip" value="${%busy(sc.countBusy(), sc.countExecutors())}"/>
-      <j:if test="${sc.node == app and !builtInHasExecutors and app.clouds.isEmpty() and app.nodes.isEmpty()}">
-        <j:set var="collapsedText" value="${%noExecutors}"/>
-      </j:if>
     </j:when>
     <j:when test="${computersSize > 1 and !builtInHasExecutors}">
       <j:set var="collapsedText" value="${%CollapsedMulti(computersSize, app.unlabeledLoad.computeTotalExecutors() - app.unlabeledLoad.computeIdleExecutors(), app.unlabeledLoad.computeTotalExecutors())}"/>
@@ -182,7 +183,7 @@ THE SOFTWARE.
     </div>
     <j:choose>
       <div class="pane-content">
-        <j:when test="${paneIsCollapsed or (computersSize == 0 and app.clouds.isEmpty())}">
+        <j:when test="${paneIsCollapsed or showCollapsedText}">
           <div class="executors-collapsed">
             ${collapsedText}
           </div>
