@@ -51,7 +51,7 @@
 
 #side-panel .pane-header-details {
   font-weight: normal;
-  font-size: var(--font-size-xs)
+  font-size: var(--font-size-xs);
 }
 
 #side-panel .pane-content {
@@ -122,7 +122,7 @@
 
   .executor-row {
     display: flex;
-    padding:0 0 .5rem 0;
+    padding: 0 0 0.5rem 0;
     align-items: center;
   }
 
