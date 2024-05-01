@@ -1063,6 +1063,18 @@ body.no-sticker #bottom-sticker {
 }
 
 /* see the Icon class for the definition of these CSS classes */
+.icon-xs,
+svg.icon-xs {
+  width: 12px;
+  height: 12px;
+  vertical-align: middle;
+
+  svg {
+    width: 12px;
+    height: 12px;
+  }
+}
+
 .icon-sm,
 svg.icon-sm {
   width: 16px;

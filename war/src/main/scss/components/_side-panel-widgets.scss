@@ -106,12 +106,9 @@
     gap: 5px;
     padding: 0.5rem 1rem;
 
-    & > a {
-      flex: 1 1 auto;
-    }
-
     & > div {
-      flex: 0 0 auto;
+      margin-left: auto;
+      align-self: end;
     }
   }
 

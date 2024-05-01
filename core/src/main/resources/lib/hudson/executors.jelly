@@ -41,11 +41,11 @@ THE SOFTWARE.
             <j:choose>
               <j:when test="${c.offlineCause!=null and !c.connecting}">
                 <div>
-                  (<img src="${imagesURL}/svgs/error.svg" width="16" height="16" title="${c.offlineCause}"/> ${%offline})
+                  (<l:icon src="symbol-error" class="icon-xs jenkins-!-error-color" title="${c.offlineCause}"/> ${%offline})
                 </div>
               </j:when>
               <j:when test="${c.connecting}">
-                <div>(<l:icon src="symbol-hourglass" class="icon-sm"/>${%launching})</div>
+                <div>(<l:icon src="symbol-hourglass" class="icon-xs"/>${%launching})</div>
               </j:when>
               <j:otherwise>
                 <div>(${%offline})</div>
@@ -131,14 +131,38 @@ THE SOFTWARE.
   </d:taglib>
   <j:set var="paneIsCollapsed" value="${h.isCollapsed('executors')}" />
   <j:set var="computers" value="${attrs.computers?:app.computers}" />
-  <j:set var="computersSize" value="${computers.size()}"/>
-  <j:set var="collapsedText" value="${%Computers(computersSize - 1, app.unlabeledLoad.computeTotalExecutors() - app.unlabeledLoad.computeIdleExecutors(), app.unlabeledLoad.computeTotalExecutors())}"/>
+
+  <!-- Check if the built-in has to be shown, this is the case when it has either executors configured or is running
+       an asynchronous execution that doesn't want to hide the displaycell -->
+  <j:set var="builtInHasExecutors" value="${!app.toComputer().displayExecutors.isEmpty()}"/>
+  <j:set var="singleComputer" value="${computers.size() == 1 and (computers.get(0).node != app or (!computers.get(0).offline and builtInHasExecutors))}"/>
+
+  <!-- Remove the built-in from the list when it is included but has no executors to show -->
   <j:choose>
-    <j:when test="${computersSize == 1}">
+    <j:when test="${!builtInHasExecutors and computers.get(0).node == app and computers.size() gt 1}">
+      <j:set var="computers" value="${computers.subList(1, computers.size())}"/>
+    </j:when>
+    <j:when test="${!builtInHasExecutors and computers.get(0).node == app and computers.size() == 1}">
+      <j:set var="computers" value="${computers.subList(0, 0)}"/>
+    </j:when>
+  </j:choose>
+
+  <j:set var="computersSize" value="${computers.size()}"/>
+  <j:choose>
+    <j:when test="${singleComputer}">
       <j:set var="sc" value="${computers.get(0)}"/>
       <j:set var="executorDetails" value="${sc.countBusy()}/${sc.countExecutors()}"/>
       <j:set var="collapsedText" value="${%CollapsedSingle(sc.countBusy(), sc.countExecutors())}"/>
       <j:set var="singleToolTip" value="${%busy(sc.countBusy(), sc.countExecutors())}"/>
+    </j:when>
+    <j:when test="${computersSize > 1 and !builtInHasExecutors}">
+      <j:set var="collapsedText" value="${%CollapsedMulti(computersSize, app.unlabeledLoad.computeTotalExecutors() - app.unlabeledLoad.computeIdleExecutors(), app.unlabeledLoad.computeTotalExecutors())}"/>
+    </j:when>
+    <j:when test="${computersSize > 1 and builtInHasExecutors}">
+      <j:set var="collapsedText" value="${%Computers(computersSize - 1, app.unlabeledLoad.computeTotalExecutors() - app.unlabeledLoad.computeIdleExecutors(), app.unlabeledLoad.computeTotalExecutors())}"/>
+    </j:when>
+    <j:when test="${computersSize == 0 and app.clouds.isEmpty()}">
+      <j:set var="collapsedText" value="${%noExecutors}"/>
     </j:when>
   </j:choose>
   <div class="pane-frame ${paneIsCollapsed ? 'collapsed' : 'expanded'}" id="executors">
@@ -146,40 +170,36 @@ THE SOFTWARE.
       <span class="pane-header-title">
         <a href="${rootURL}/computer/">${%Build Executor Status}</a>
       </span>
-      <span class="pane-header-details" tooltip="${singleToolTip}">
-        ${executorDetails}
-      </span>
+
+      <j:if test="${singleComputer and !paneIsCollapsed}">
+        <span class="pane-header-details" tooltip="${singleToolTip}">
+          ${executorDetails}
+        </span>
+      </j:if>
       <a class="collapse" href="${rootURL}/toggleCollapse?paneId=executors"
          tooltip="${paneIsCollapsed ? '%expand' : '%collapse'}">
-
         <j:set var="svgIconId" value="${paneIsCollapsed ? 'chevron-up' : 'chevron-down'}" />
         <l:icon src="symbol-${svgIconId}" />
       </a>
     </div>
     <j:choose>
       <div class="pane-content">
-        <j:when test="${paneIsCollapsed}">
-          <j:if test="${computersSize gt 1}">
-            <div class="executors-collapsed">
+        <j:when test="${paneIsCollapsed or (computersSize == 0 and app.clouds.isEmpty())}">
+          <div class="executors-collapsed">
             ${collapsedText}
-            </div>
-          </j:if>
+          </div>
         </j:when>
         <j:otherwise>
           <j:forEach var="c" items="${computers}">
             <div class="computer-row">
               <j:set var="cDisplayExecutors" value="${c.displayExecutors}"/>
               <j:choose>
-                <j:when test="${(computersSize gt 1 and !cDisplayExecutors.isEmpty()) or
-                              (c.node == app and c.offline and c.numExecutors gt 0)}">
-                  <div class="computer-caption">
-                    <local:computerCaption title="${c.displayName}" />
-                  </div>
-                </j:when>
-                <j:when test="${c.node == app and !c.offline and c.countBusy() == 0 and c.numExecutors gt 0}">
-                  <div class="computer-caption">
-                    ${collapsedText}
-                  </div>
+                <j:when test="${!singleComputer}">
+                  <j:if test="${!cDisplayExecutors.isEmpty()}">
+                    <div class="computer-caption">
+                      <local:computerCaption title="${c.displayName}" />
+                    </div>
+                  </j:if>
                 </j:when>
               </j:choose>
               <j:if test="${!cDisplayExecutors.isEmpty()}">
