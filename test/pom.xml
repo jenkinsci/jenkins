@@ -99,7 +99,7 @@ THE SOFTWARE.
         <!-- RequireUpperBoundDeps via mailer and junit -->
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>display-url-api</artifactId>
-        <version>2.200.vb_9327d658781</version>
+        <version>2.204.vf6fddd8a_8b_e9</version>
       </dependency>
       <dependency>
         <!-- Required by workflow-support -->
@@ -142,7 +142,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>2189.v1c38d94b_43b_a_</version>
+      <version>2193.v71b_f09ec6d46</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -211,7 +211,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>cloudbees-folder</artifactId>
-      <version>6.928.v7c780211d66e</version>
+      <version>6.940.v7fa_03b_f14759</version>
       <scope>test</scope>
     </dependency>
     <dependency>
