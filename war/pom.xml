@@ -345,7 +345,7 @@ THE SOFTWARE.
                   <!-- dependency of checks-api and plugin-util-api -->
                   <groupId>org.jenkins-ci.plugins.workflow</groupId>
                   <artifactId>workflow-support</artifactId>
-                  <version>896.v175a_a_9c5b_78f</version>
+                  <version>907.v6713a_ed8a_573</version>
                   <type>hpi</type>
                 </artifactItem>
 
