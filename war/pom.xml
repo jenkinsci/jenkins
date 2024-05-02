@@ -302,7 +302,7 @@ THE SOFTWARE.
                   <!-- dependency of command-launcher, junit, matrix-project, and workflow-support -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>script-security</artifactId>
-                  <version>1335.vf07d9ce377a_e</version>
+                  <version>1336.vf33a_a_9863911</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -345,7 +345,7 @@ THE SOFTWARE.
                   <!-- dependency of checks-api and plugin-util-api -->
                   <groupId>org.jenkins-ci.plugins.workflow</groupId>
                   <artifactId>workflow-support</artifactId>
-                  <version>896.v175a_a_9c5b_78f</version>
+                  <version>907.v6713a_ed8a_573</version>
                   <type>hpi</type>
                 </artifactItem>
 
@@ -519,7 +519,7 @@ THE SOFTWARE.
                   <!-- dependency of junit and matrix-auth -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>ionicons-api</artifactId>
-                  <version>70.v2959a_b_74e3cf</version>
+                  <version>73.vb_f522f227457</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>

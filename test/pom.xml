@@ -78,7 +78,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>io.jenkins.plugins</groupId>
         <artifactId>ionicons-api</artifactId>
-        <version>70.v2959a_b_74e3cf</version>
+        <version>73.vb_f522f227457</version>
       </dependency>
       <dependency>
         <groupId>io.jenkins.plugins</groupId>
@@ -111,7 +111,7 @@ THE SOFTWARE.
         <!-- requireUpperBoundDeps via matrix-project and junit -->
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>script-security</artifactId>
-        <version>1335.vf07d9ce377a_e</version>
+        <version>1336.vf33a_a_9863911</version>
       </dependency>
       <dependency>
         <groupId>org.jenkins-ci.plugins.workflow</groupId>
@@ -127,7 +127,7 @@ THE SOFTWARE.
         <!-- Required by plugin-util-api -->
         <groupId>org.jenkins-ci.plugins.workflow</groupId>
         <artifactId>workflow-support</artifactId>
-        <version>896.v175a_a_9c5b_78f</version>
+        <version>907.v6713a_ed8a_573</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -211,7 +211,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>cloudbees-folder</artifactId>
-      <version>6.936.v3c5cd2190e9e</version>
+      <version>6.940.v7fa_03b_f14759</version>
       <scope>test</scope>
     </dependency>
     <dependency>
