@@ -25,6 +25,7 @@
 package hudson.console;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.is;
 
 import java.io.IOException;
@@ -51,7 +52,9 @@ public final class LineTransformationOutputStreamTest {
         long max = 1_000_000; // to see OOME in cr without fix: 1_000_000_000
         try (var counter = new LineTransformationOutputStream() {
             @Override protected void eol(byte[] b, int len) throws IOException {
-                count.addAndGet(Integer.parseInt(trimEOL(new String(b, 0, len))));
+                var line = new String(b, 0, len);
+                assertThat(line, endsWith(linefeed));
+                count.addAndGet(Integer.parseInt(trimEOL(line)));
             }
         }) {
             for (long i = 0; i < max; i++) {
