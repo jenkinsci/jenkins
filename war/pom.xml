@@ -302,7 +302,7 @@ THE SOFTWARE.
                   <!-- dependency of command-launcher, junit, matrix-project, and workflow-support -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>script-security</artifactId>
-                  <version>1335.vf07d9ce377a_e</version>
+                  <version>1336.vf33a_a_9863911</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
