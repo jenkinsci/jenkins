@@ -327,7 +327,6 @@ function checkRowCellOverflows(row) {
             detailsOverflowParams.scrollWidth < usableRowWidth / 2;
         }
       }
-      // eslint-disable-next-line no-inner-declarations
       function expandLeftWithRight(
         leftCellOverFlowParams,
         rightCellOverflowParams,

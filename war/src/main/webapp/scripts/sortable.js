@@ -451,6 +451,7 @@ var Sortable = (function () {
         order: [YAHOO.util.StorageEngineGears],
       },
     );
+    // eslint-disable-next-line no-unused-vars
   } catch (e) {
     // no storage available
     storage = {
