@@ -456,7 +456,12 @@ public abstract class Slave extends Node implements Serializable {
             if (owner != null) {
                 File jar = Which.jarFile(owner);
                 if (jar.isFile()) {
-                    name = "lib/" + jar.getName();
+                    if (!"lib".equals(jar.getParentFile().getName())) {
+                        // the obtained jar comes from the maven repository, we want to use the copy under WEB-INF/lib
+                        name = jar.getName().split("-")[0] + ".jar";
+                    } else {
+                        name = jar.getName();
+                    }
                 } else {
                     URL res = findExecutableJar(jar, owner);
                     if (res != null) {
@@ -465,7 +470,7 @@ public abstract class Slave extends Node implements Serializable {
                 }
             }
 
-            URL res = Jenkins.get().servletContext.getResource("/WEB-INF/" + name);
+            URL res = Jenkins.get().servletContext.getResource("/WEB-INF/lib/" + name);
             if (res == null) {
                 throw new FileNotFoundException(name); // giving up
             } else {
