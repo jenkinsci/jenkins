@@ -269,7 +269,8 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jvnet.winp</groupId>
         <artifactId>winp</artifactId>
-        <version>1.30</version>
+        <!-- TODO https://github.com/jenkinsci/winp/pull/112 -->
+        <version>1.31-rc361.b_66b_d9b_9ea_3b_</version>
       </dependency>
       <dependency>
         <groupId>org.kohsuke</groupId>
