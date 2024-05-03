@@ -34,7 +34,6 @@
                     </a>
 
                     <div id="search-box-completion" data-search-url="${searchURL}" />
-                    <st:adjunct includes="jenkins.views.JenkinsHeader.search-box" />
                 </div>
             </form>
         </div>

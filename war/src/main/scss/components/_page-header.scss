@@ -167,16 +167,21 @@ a.page-header__brand-link {
 
 #search-box-completion {
   text-align: left;
-  width: 25em;
   position: absolute;
   z-index: 1000;
 }
 
 #search-box-completion ul {
   padding: 0.75rem 0;
+  min-width: 30em;
   width: 100%;
   margin: 0;
   list-style: none;
+  overflow: hidden;
+  background-color: var(--input-color);
+  box-shadow: var(--dropdown-box-shadow);
+  border: none;
+  border-radius: var(--form-input-border-radius);
 }
 
 #search-box-completion li {
@@ -186,6 +191,12 @@ a.page-header__brand-link {
   line-height: var(--line-height-base);
   overflow: hidden;
   text-overflow: ellipsis;
+  cursor: default;
+
+  &.ac-highlight {
+    background: var(--search-box-completion-bg);
+    font-weight: bold;
+  }
 }
 
 #search-box-sizer {
