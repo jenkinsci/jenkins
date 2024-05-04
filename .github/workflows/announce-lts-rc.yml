@@ -7,6 +7,8 @@ on:
 jobs:
   post:
     runs-on: ubuntu-latest
+    permissions: {} # Empty because permissions should be defined for the secret being used
+
     steps:
       - name: Post on Discourse
         uses: roots/discourse-topic-github-release-action@c30dc233349b7c6f24f52fb1c659cc64f13b5474 # v1.0.1
