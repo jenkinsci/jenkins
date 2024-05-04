@@ -40,7 +40,7 @@ function init() {
   ul.classList.add("jenkins-hidden");
   comp.appendChild(ul);
 
-  const dataSrc = async (val) => {
+  async function dataSrc(val) {
     let url = searchURL + "suggest?query=" + val;
     const result = await fetch(url);
     const data = await result.json();
@@ -52,7 +52,7 @@ function init() {
     });
 
     return list;
-  };
+  }
 
   function handleEvent(event) {
     if (event.type === "focus") {
@@ -193,7 +193,7 @@ function init() {
       // sizer hidden on small screen, make sure resizing looks OK
       cssWidth = getStyle(sizer, "minWidth");
     }
-    input.style.width = comp.style.minWidth = "calc(85px + " + cssWidth + ")";
+    input.style.width = comp.style.width = "calc(85px + " + cssWidth + ")";
   }
 
   input.addEventListener("input", updatePos);
