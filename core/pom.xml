@@ -39,7 +39,7 @@ THE SOFTWARE.
   <url>https://github.com/jenkinsci/jenkins</url>
 
   <properties>
-    <xmlunit.version>2.9.1</xmlunit.version>
+    <xmlunit.version>2.10.0</xmlunit.version>
     <!-- Filled in by jacoco-maven-plugin -->
     <jacocoSurefireArgs />
   </properties>
@@ -408,26 +408,6 @@ THE SOFTWARE.
           <artifactId>commons-jexl</artifactId>
         </exclusion>
       </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.ow2.asm</groupId>
-      <artifactId>asm</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.ow2.asm</groupId>
-      <artifactId>asm-analysis</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.ow2.asm</groupId>
-      <artifactId>asm-commons</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.ow2.asm</groupId>
-      <artifactId>asm-tree</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.ow2.asm</groupId>
-      <artifactId>asm-util</artifactId>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
