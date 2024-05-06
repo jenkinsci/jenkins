@@ -41,7 +41,8 @@ function init() {
   comp.appendChild(ul);
 
   async function dataSrc(val) {
-    let url = searchURL + "suggest?query=" + val;
+    const params = new URLSearchParams({ query: val });
+    let url = searchURL + "suggest?" + params;
     const result = await fetch(url);
     const data = await result.json();
     const list = [];
