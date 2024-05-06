@@ -40,21 +40,6 @@ function init() {
   ul.classList.add("jenkins-hidden");
   comp.appendChild(ul);
 
-  async function dataSrc(val) {
-    const params = new URLSearchParams({ query: val });
-    let url = searchURL + "suggest?" + params;
-    const result = await fetch(url);
-    const data = await result.json();
-    const list = [];
-    data.suggestions.forEach((item, i) => {
-      if (i < maxResults) {
-        list.push(item.name);
-      }
-    });
-
-    return list;
-  }
-
   function handleEvent(event) {
     if (event.type === "focus") {
       return;
@@ -119,17 +104,33 @@ function init() {
     return false;
   }
 
-  async function search() {
+  function search() {
     if (!input.value) {
       return;
     }
-    suggestions = await dataSrc(input.value);
-    if (!suggestions.length) {
-      hide();
-      return;
-    }
 
-    showSuggestions();
+    const params = new URLSearchParams({ query: input.value });
+    let url = searchURL + "suggest?" + params;
+
+    fetch(url).then((rsp) => {
+      if (rsp.ok) {
+        rsp.json().then((data) => {
+          const list = [];
+          data.suggestions.forEach((item, i) => {
+            if (i < maxResults) {
+              list.push(item.name);
+            }
+          });
+          suggestions = list;
+          if (!suggestions.length) {
+            hide();
+            return;
+          }
+
+          showSuggestions();
+        });
+      }
+    });
   }
 
   function nav(direction, event) {
