@@ -78,7 +78,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>io.jenkins.plugins</groupId>
         <artifactId>ionicons-api</artifactId>
-        <version>70.v2959a_b_74e3cf</version>
+        <version>73.vb_f522f227457</version>
       </dependency>
       <dependency>
         <groupId>io.jenkins.plugins</groupId>
@@ -111,7 +111,7 @@ THE SOFTWARE.
         <!-- requireUpperBoundDeps via matrix-project and junit -->
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>script-security</artifactId>
-        <version>1335.vf07d9ce377a_e</version>
+        <version>1336.vf33a_a_9863911</version>
       </dependency>
       <dependency>
         <groupId>org.jenkins-ci.plugins.workflow</groupId>
