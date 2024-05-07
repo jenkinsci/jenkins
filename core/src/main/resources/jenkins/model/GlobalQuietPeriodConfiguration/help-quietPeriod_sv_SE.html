@@ -1,0 +1,23 @@
+<div>
+  När det här alternativet inte är noll kommer nyligen utlösta byggen av detta
+  projekt att läggas till i kön, men Jenkins väntar under den angivna
+  tidsperioden (i sekunder) innan bygget faktiskt påbörjas.
+  <p>
+    Till exempel om dina byggen tar lång tid att köra kanske du vill förhindra
+    att flera incheckningar i källkontrollen som görs vid ungefär samma tidpunkt
+    utlöser flera byggen. Att aktivera den tysta perioden skulle förhindra att
+    ett bygge startas så snart Jenkins upptäcker den första incheckningen; detta
+    skulle ge utvecklaren chansen att skicka in fler incheckningar som ska
+    inkluderas i bygget när det startar. Detta minskar storleken på kön, vilket
+    innebär att utvecklare skulle få snabbare återkoppling på sina incheckningar
+    och belastningen på Jenkins-systemet skulle minska.
+  </p>
+
+  <p>
+    Om ett nytt bygge av det här projektet utlöses medan ett bygge redan finns i
+    kön och väntar på att dess tysta period ska ta slut kommer den tysta
+    perioden inte att återställas. Det nyligen utlösta bygget kommer inte att
+    läggas till i kön, såvida inte detta projekt är parametriserat och bygget
+    har andra parametrar än bygget som redan finns i kön.
+  </p>
+</div>
