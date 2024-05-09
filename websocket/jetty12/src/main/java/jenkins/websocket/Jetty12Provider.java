@@ -74,7 +74,7 @@ public class Jetty12Provider implements Provider {
     public Handler handle(HttpServletRequest req, HttpServletResponse rsp, Listener listener) throws Exception {
         init(req);
         req.setAttribute(ATTR_LISTENER, listener);
-        // TODO Jetty 10 has no obvious equivalent to WebSocketServerFactory.isUpgradeRequest; RFC6455Negotiation?
+        // TODO Jetty 12 has no obvious equivalent to WebSocketServerFactory.isUpgradeRequest; RFC6455Negotiation?
         if (!"websocket".equalsIgnoreCase(req.getHeader("Upgrade"))) {
             rsp.sendError(HttpServletResponse.SC_BAD_REQUEST, "only WS connections accepted here");
             return null;
