@@ -33,8 +33,8 @@ THE SOFTWARE.
   </parent>
 
   <artifactId>websocket-jetty12-ee8</artifactId>
-  <name>Jetty 12 implementation for WebSocket ee8</name>
-  <description>An implementation of the WebSocket handler that works with Jetty 12 based on EE8</description>
+  <name>Jetty 12 (EE 8) implementation for WebSocket</name>
+  <description>An implementation of the WebSocket handler that works with Jetty 12 (EE 8).</description>
 
   <dependencyManagement>
     <dependencies>
