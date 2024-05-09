@@ -596,7 +596,9 @@ THE SOFTWARE.
           <loginServices>
             <loginService implementation="org.eclipse.jetty.security.HashLoginService">
               <name>default</name>
-              <config>${basedir}/src/realm.properties</config>
+              <config implementation="org.eclipse.jetty.maven.MavenResource">
+                <resourceAsString>${basedir}/src/realm.properties</resourceAsString>
+              </config>
             </loginService>
           </loginServices>
           <systemProperties>
