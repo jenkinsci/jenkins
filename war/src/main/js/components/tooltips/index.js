@@ -21,8 +21,8 @@ function registerTooltip(element) {
   const tooltip = element.getAttribute("tooltip");
   const htmlTooltip = element.getAttribute("data-html-tooltip");
   let appendTo = document.body;
-  if (element.hasAttribute("data-tooltip-append-to")) {
-    appendTo = element.getAttribute("data-tooltip-append-to");
+  if (element.hasAttribute("data-tooltip-append-to-parent")) {
+    appendTo = "parent";
   }
   if (
     tooltip !== null &&
