@@ -317,7 +317,7 @@ public abstract class Lifecycle implements ExtensionPoint {
      * Whether {@link PluginManager#dynamicLoad(File)} should be supported at all.
      * If not, {@link RestartRequiredException} will always be thrown.
      * @return true by default
-     * @since TODO
+     * @since 2.449
      */
     @Restricted(Beta.class)
     public boolean supportsDynamicLoad() {

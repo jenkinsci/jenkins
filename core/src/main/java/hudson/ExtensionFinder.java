@@ -298,9 +298,11 @@ public abstract class ExtensionFinder implements ExtensionPoint {
         }
 
         private void refreshExtensionAnnotations() {
+            LOGGER.finer(() -> "refreshExtensionAnnotations()");
             for (ExtensionComponent<GuiceExtensionAnnotation> ec : moduleFinder.find(GuiceExtensionAnnotation.class, Hudson.getInstance())) {
                 GuiceExtensionAnnotation gea = ec.getInstance();
                 extensionAnnotations.put(gea.annotationType, gea);
+                LOGGER.finer(() -> "found " + gea.getClass());
             }
         }
 
@@ -328,6 +330,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
          */
         @Override
         public synchronized ExtensionComponentSet refresh() throws ExtensionRefreshException {
+            LOGGER.finer(() -> "refresh()");
             refreshExtensionAnnotations();
             // figure out newly discovered sezpoz components
             List<IndexItem<?, Object>> delta = new ArrayList<>();

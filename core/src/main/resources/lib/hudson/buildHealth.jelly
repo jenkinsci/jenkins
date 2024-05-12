@@ -70,7 +70,7 @@ THE SOFTWARE.
       <div class="jenkins-table__cell__button-wrapper">
         <j:choose>
           <j:when test="${!empty(healthReports)}">
-            <a class="build-health-link jenkins-table__button" href="${empty(link)?'#':link}" style="${attrs.style}">
+            <a class="build-health-link jenkins-button jenkins-button--tertiary" href="${empty(link)?'#':link}" style="${attrs.style}">
               <l:icon src="symbol-weather-${buildHealth.iconClassName}" />
             </a>
           </j:when>
