@@ -244,7 +244,7 @@ $semantics: (
   --pane-link-color--visited: black;
 
   // Cards
-  --card-background: transparent;
+  --card-background: var(--background);
   --card-background--hover: transparent;
   --card-background--active: transparent;
   --card-border-color: hsla(240, 25%, 75%, 0.25);
