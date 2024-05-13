@@ -430,9 +430,9 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         String gsub_base = null;
         // fetch the localized string for "Disconnected By"
         if (temporarilyOfflineCause) {
-            gsub_base = hudson.slaves.Messages.SlaveComputer_DisconnectedBy("", "");
-        } else {
             gsub_base = hudson.slaves.Messages.SlaveComputer_SetTempOfflineBy("", "");
+        } else {
+            gsub_base = hudson.slaves.Messages.SlaveComputer_DisconnectedBy("", "");
         }
         // regex to remove commented reason base string
         String gsub1 = "^" + gsub_base + "[\\w\\W]* \\: ";
