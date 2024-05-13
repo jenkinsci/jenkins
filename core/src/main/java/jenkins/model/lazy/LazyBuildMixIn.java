@@ -296,7 +296,7 @@ public abstract class LazyBuildMixIn<JobT extends Job<JobT, RunT> & Queue.Task &
     }
 
     /**
-     * @deprecated Remove any method calling this method, history widget is now created via {@link jenkins.widgets.WidgetFactory} implementation.
+     * @deprecated Remove any code calling this method, history widget is now created via {@link jenkins.widgets.WidgetFactory} implementation.
      */
     @Deprecated(forRemoval = true, since = "TODO")
     public final HistoryWidget createHistoryWidget() {
