@@ -43,7 +43,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 @Restricted(NoExternalUse.class)
 @MetaInfServices(Provider.class)
-public class Jetty12Provider implements Provider {
+public class Jetty12E88Provider implements Provider {
 
     /**
      * Number of seconds a WebsocketConnection may stay idle until it expires.
