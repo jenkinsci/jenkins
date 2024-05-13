@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.113</version>
+    <version>1.114</version>
     <relativePath />
   </parent>
 
@@ -73,8 +73,9 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.457</revision>
+    <revision>2.458</revision>
     <changelist>-SNAPSHOT</changelist>
+    <project.build.outputTimestamp>2024-05-07T14:35:14Z</project.build.outputTimestamp>
 
     <!-- configuration for patch tracker plugin  -->
     <project.patchManagement.system>github</project.patchManagement.system>
@@ -98,7 +99,7 @@ THE SOFTWARE.
     <bridge-method-injector.version>1.29</bridge-method-injector.version>
     <spotless.check.skip>false</spotless.check.skip>
     <!-- Make sure to keep the jetty-maven-plugin version in war/pom.xml in sync with the Jetty release in Winstone: -->
-    <winstone.version>6.18</winstone.version>
+    <winstone.version>6.19</winstone.version>
   </properties>
 
   <!--
