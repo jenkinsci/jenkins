@@ -4,6 +4,7 @@
     let descriptionLink = document.querySelector("#description-link");
     descriptionLink.addEventListener("click", function (e) {
       e.preventDefault();
+      descriptionLink.classList.add("jenkins-hidden");
       let url = descriptionLink.getAttribute("data-url");
       let description = descriptionLink.getAttribute("data-description");
       return replaceDescription(description, url);
