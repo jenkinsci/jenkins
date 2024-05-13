@@ -7,10 +7,6 @@ on:
 permissions:
   contents: read # to fetch code (actions/checkout)
 
-concurrency: 
-  group: ${{github.workflow}} - ${{github.ref}}
-  cancel-in-progress: true  # Cancel release if release is started again for same tag. 
-
 jobs:
   determine-version:
     runs-on: ubuntu-latest
