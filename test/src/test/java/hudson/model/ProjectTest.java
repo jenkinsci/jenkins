@@ -644,13 +644,15 @@ public class ProjectTest {
 
         JenkinsRule.WebClient wc = j.createWebClient();
         wc.withBasicCredentials(user.getId(), "password");
+        HtmlPage p = wc.goTo(project.getUrl());
 
-        HtmlPage p = wc.getPage(project, "configure");
-        HtmlForm form = p.getFormByName("config");
-        form.getInputByName("enable").click();
-        j.submit(form);
-
-        assertTrue("Project should be disabled.", project.isDisabled());
+        List<HtmlForm> forms = p.getForms();
+        for (HtmlForm form : forms) {
+            if ("disable".equals(form.getAttribute("action"))) {
+                j.submit(form);
+            }
+        }
+       assertTrue("Project should be disabled.", project.isDisabled());
     }
 
     @Test
