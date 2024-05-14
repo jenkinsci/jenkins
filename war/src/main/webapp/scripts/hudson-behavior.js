@@ -589,10 +589,15 @@ function parseHtml(html) {
 
 /**
  * Evaluates the script in global context.
- * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/eval#direct_and_indirect_eval
  */
 function geval(script) {
-  eval(script);
+  // execScript chokes on "" but eval doesn't, so we need to reject it first.
+  if (script == null || script == "") {
+    return;
+  }
+  // see http://perfectionkills.com/global-eval-what-are-the-options/
+  // note that execScript cannot return value
+  (this.execScript || eval)(script);
 }
 
 /**
