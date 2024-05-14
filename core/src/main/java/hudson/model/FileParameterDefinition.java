@@ -35,7 +35,7 @@ import java.nio.file.Files;
 import java.util.Objects;
 import javax.servlet.ServletException;
 import net.sf.json.JSONObject;
-import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload2.core.FileItem;
 import org.apache.commons.io.FileUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
