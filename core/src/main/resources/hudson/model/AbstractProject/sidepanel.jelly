@@ -40,7 +40,7 @@ THE SOFTWARE.
       <l:task contextMenu="false" href="${url}/" icon="symbol-details" title="${%Status}"/>
       <l:task href="${url}/changes" icon="symbol-changes" title="${%Changes}"/>
       <l:task icon="symbol-folder"  href="${url}/ws/" title="${%Workspace}" permission="${it.WORKSPACE}">
-        <l:task confirmationMessage="${%wipe.out.confirm}" href="${url}/doWipeOutWorkspace" icon="symbol-trash" permission="${h.isWipeOutPermissionEnabled() ? it.WIPEOUT : it.BUILD}" post="true" requiresConfirmation="true" title="${%Wipe Out Workspace}"/>
+        <l:task confirmationMessage="${%wipe.out.confirm}" href="${url}/doWipeOutWorkspace" icon="symbol-trash" permission="${it.WIPEOUT.getEnabled() ? it.WIPEOUT : it.BUILD}" post="true" requiresConfirmation="true" title="${%Wipe Out Workspace}"/>
       </l:task>
       <j:if test="${it.configurable}">
         <p:configurable/>
