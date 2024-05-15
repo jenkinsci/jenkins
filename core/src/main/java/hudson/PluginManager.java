@@ -2337,7 +2337,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         }
 
         public UberClassLoader(List<PluginWrapper> activePlugins) {
-            super(activePlugins.stream().map(PluginWrapper::getShortName).collect(Collectors.joining(", ", "UberClassLoader for ", "")), PluginManager.class.getClassLoader());
+            super("UberClassLoader", PluginManager.class.getClassLoader());
             this.activePlugins = activePlugins;
         }
 

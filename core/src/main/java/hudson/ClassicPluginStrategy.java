@@ -271,7 +271,7 @@ public class ClassicPluginStrategy implements PluginStrategy {
     /**
      * @deprecated since TODO use {@link #createClassLoader(String, List, ClassLoader, Attributes)}
      */
-    @Deprecated(since = "//TODO")
+    @Deprecated(since = "TODO")
     protected ClassLoader createClassLoader(List<File> paths, ClassLoader parent) throws IOException {
         return createClassLoader(paths, parent, null);
     }
@@ -279,15 +279,15 @@ public class ClassicPluginStrategy implements PluginStrategy {
     /**
      * @deprecated since TODO use {@link #createClassLoader(String, List, ClassLoader, Attributes)}
      */
-    @Deprecated(since="@TODO")
+    @Deprecated(since="TODO")
     protected ClassLoader createClassLoader(List<File> paths, ClassLoader parent, Attributes atts) throws IOException {
         // generate a legacy id so at least we can track to something
-        return createClassLoader("legacy"+UUID.randomUUID(), paths, parent, atts);
+        return createClassLoader("unidentified-" + UUID.randomUUID(), paths, parent, atts);
     }
 
     /**
      * Creates a  classloader that can load all the specified jar files and delegate to the given parent.
-     * @since //TODO
+     * @since TODO
      */
     protected ClassLoader createClassLoader(String name, List<File> paths, ClassLoader parent, Attributes atts) throws IOException {
         boolean usePluginFirstClassLoader =
