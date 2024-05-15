@@ -127,7 +127,7 @@ public class MultipartFormDataParser implements AutoCloseable {
     }
 
     /**
-     * @deprecated use {@link getFileItem2(String)}
+     * @deprecated use {@link #getFileItem2(String)}
      */
     @Deprecated
     public org.apache.commons.fileupload.FileItem getFileItem(String key) {
