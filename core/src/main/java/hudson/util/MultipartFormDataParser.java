@@ -24,7 +24,6 @@
 
 package hudson.util;
 
-import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import java.io.File;
 import java.io.IOException;
@@ -123,13 +122,16 @@ public class MultipartFormDataParser implements AutoCloseable {
         return fi.getString();
     }
 
-    @WithBridgeMethods(value = org.apache.commons.fileupload.FileItem.class, adapterMethod = "fromFileUpload2FileItem")
-    public FileItem getFileItem(String key) {
+    public FileItem getFileItem2(String key) {
         return byName.get(key);
     }
 
-    private Object fromFileUpload2FileItem(FileItem fileItem, Class<?> type) {
-        return org.apache.commons.fileupload.FileItem.fromFileUpload2FileItem(fileItem);
+    /**
+     * @deprecated use {@link getFileItem2(String)}
+     */
+    @Deprecated
+    public org.apache.commons.fileupload.FileItem getFileItem(String key) {
+        return org.apache.commons.fileupload.FileItem.fromFileUpload2FileItem(getFileItem2(key));
     }
 
     /**

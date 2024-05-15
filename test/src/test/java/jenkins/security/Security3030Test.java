@@ -312,7 +312,7 @@ public class Security3030Test {
         }
 
         protected HttpResponse processMultipart(StaplerRequest req) throws ServletException, IOException {
-            req.getFileItem("any-name");
+            req.getFileItem2("any-name");
             return HttpResponses.ok();
         }
     }

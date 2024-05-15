@@ -90,7 +90,7 @@ public class FileParameterDefinition extends ParameterDefinition {
     public ParameterValue createValue(StaplerRequest req) {
         FileItem src;
         try {
-            src = req.getFileItem(getName());
+            src = req.getFileItem2(getName());
         } catch (ServletException | IOException e) {
             // Not sure what to do here. We might want to raise this
             // but that would involve changing the throws for this call
