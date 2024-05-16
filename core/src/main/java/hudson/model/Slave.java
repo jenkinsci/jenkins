@@ -470,9 +470,10 @@ public abstract class Slave extends Node implements Serializable {
                 }
             }
 
-            URL res = Jenkins.get().servletContext.getResource("/WEB-INF/lib/" + name);
+            var warRelativePath = "/WEB-INF/lib/" + name;
+            URL res = Jenkins.get().servletContext.getResource(warRelativePath);
             if (res == null) {
-                throw new FileNotFoundException(name); // giving up
+                throw new FileNotFoundException("Could not find " + warRelativePath + " in " + Jenkins.get().servletContext.getResource("/")); // giving up
             } else {
                 LOGGER.log(Level.FINE, "found {0}", res);
             }
