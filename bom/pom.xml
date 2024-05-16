@@ -39,7 +39,7 @@ THE SOFTWARE.
 
   <properties>
     <slf4jVersion>2.0.13</slf4jVersion>
-    <stapler.version>1860.vb_89682cf8d96</stapler.version>
+    <stapler.version>1863.vd250086e9885</stapler.version>
     <groovy.version>2.4.21</groovy.version>
   </properties>
 
