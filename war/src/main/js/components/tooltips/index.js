@@ -5,7 +5,7 @@ const TOOLTIP_BASE = {
   arrow: false,
   theme: "tooltip",
   animation: "tooltip",
-  appendTo: document.body,
+  appendTo: "parent",
 };
 
 /**
