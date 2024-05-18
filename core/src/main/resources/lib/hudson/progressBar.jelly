@@ -55,6 +55,7 @@ THE SOFTWARE.
     <x:attribute name="class">app-progress-bar ${attrs.large?'app-progress-bar--large':null} ${attrs.red?'app-progress-bar--error':null}</x:attribute>
     <x:attribute name="href">${attrs.href}</x:attribute>
     <x:attribute name="tooltip">${attrs.tooltip}</x:attribute>
+    <x:attribute name="data-tooltip-append-to-parent">true</x:attribute>
     <x:attribute name="id">${attrs.id}</x:attribute>
     <x:attribute name="data-tooltip-template">${attrs.tooltipTemplate}</x:attribute>
       <j:choose>
