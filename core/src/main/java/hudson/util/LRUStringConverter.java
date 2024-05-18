@@ -2,8 +2,8 @@ package hudson.util;
 
 import com.thoughtworks.xstream.converters.basic.AbstractSingleValueConverter;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.Map;
-import org.apache.commons.collections.map.LRUMap;
 
 public class LRUStringConverter extends AbstractSingleValueConverter {
 
@@ -18,7 +18,12 @@ public class LRUStringConverter extends AbstractSingleValueConverter {
     }
 
     public LRUStringConverter(int size) {
-        cache = Collections.synchronizedMap(new LRUMap(size));
+        cache = Collections.synchronizedMap(new LinkedHashMap<>(size, 0.75f, true) {
+            @Override
+            protected boolean removeEldestEntry(Map.Entry<String, String> eldest) {
+                return size() > size;
+            }
+        });
     }
 
     @Override
