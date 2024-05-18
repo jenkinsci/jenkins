@@ -36,14 +36,21 @@
 }
 
 .simple-page .safe-restarting {
+  font-size: var(--font-size-sm);
+  padding: 15px;
+  border-radius: 10px;
   text-align: center;
-  border-color: var(--alert-success-border-color);
-  background-color: var(--alert-success-bg-color);
-  border-width: 2px;
-  border-radius: 2px;
-  border-style: solid;
   margin: 5% auto auto;
-  padding: 5px;
+  background-color: var(--alert-success-bg-color);
+  border: 1px solid var(--alert-success-border-color);
+
+  * {
+    color: var(--alert-success-text-color) !important;
+  }
+
+  strong {
+    font-weight: 500;
+  }
 }
 
 .simple-page .safe-restarting > p {

@@ -47,6 +47,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
 /**
  * Defines a mapping problem for answering "where do we execute this task?"
@@ -85,6 +86,9 @@ import java.util.Map;
  * @author Kohsuke Kawaguchi
  */
 public class MappingWorksheet {
+
+    private static final Logger LOGGER = Logger.getLogger(MappingWorksheet.class.getName());
+
     public final List<ExecutorChunk> executors;
     public final List<WorkChunk> works;
     /**
@@ -135,8 +139,10 @@ public class MappingWorksheet {
             if (c.assignedLabel != null && !c.assignedLabel.contains(node))
                 return false;   // label mismatch
 
-            if (!(Node.SKIP_BUILD_CHECK_ON_FLYWEIGHTS && item.task instanceof Queue.FlyweightTask) && !nodeAcl.hasPermission2(item.authenticate2(), Computer.BUILD))
-                return false;   // tasks don't have a permission to run on this node
+            if (!(Node.SKIP_BUILD_CHECK_ON_FLYWEIGHTS && item.task instanceof Queue.FlyweightTask) && !nodeAcl.hasPermission2(item.authenticate2(), Computer.BUILD)) {
+                LOGGER.fine(() -> "Agent/Build permission denied to " + item.authenticate2().getName() + " on " + node.getNodeName());
+                return false;
+            }
 
             return true;
         }

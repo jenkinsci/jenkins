@@ -43,7 +43,6 @@ import java.util.regex.Pattern;
 import jenkins.util.SystemProperties;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileItemHeaders;
-import org.apache.commons.fileupload.disk.DiskFileItem;
 import org.apache.commons.fileupload.util.FileItemHeadersImpl;
 import org.apache.commons.io.FilenameUtils;
 import org.kohsuke.accmod.Restricted;
@@ -54,12 +53,6 @@ import org.kohsuke.stapler.StaplerResponse;
 
 /**
  * {@link ParameterValue} for {@link FileParameterDefinition}.
- *
- * <h2>Persistence</h2>
- * <p>
- * {@link DiskFileItem} is persistable via serialization,
- * (although the data may get very large in XML) so this object
- * as a whole is persistable.
  *
  * @author Kohsuke Kawaguchi
  */

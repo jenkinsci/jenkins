@@ -47,12 +47,12 @@ THE SOFTWARE.
     <!-- HTTP listener port -->
     <port>8080</port>
     <mina-sshd-api.version>2.12.1-101.v85b_e08b_780dd</mina-sshd-api.version>
-    <node.version>20.12.1</node.version>
+    <node.version>20.13.1</node.version>
     <!-- frontend-maven-plugin will install this Yarn version as bootstrap, then hand over control to Yarn Berry. -->
     <yarn.version>1.22.19</yarn.version>
     <!-- maven-antrun-plugin will download this Yarn version. -->
-    <yarn-berry.version>4.1.1</yarn-berry.version>
-    <yarn-berry.sha256sum>f3cc0eda8e5560e529c7147565b30faa43b4e472d90e8634d7134a37c7f59781</yarn-berry.sha256sum>
+    <yarn-berry.version>4.2.2</yarn-berry.version>
+    <yarn-berry.sha256sum>1aa43a5304405be7a7cb9cb5de7b97de9c4e8ddd3273e4dad00d6ae3eb39f0ef</yarn-berry.sha256sum>
   </properties>
 
   <dependencyManagement>
@@ -136,60 +136,6 @@ THE SOFTWARE.
   <build>
     <finalName>jenkins</finalName>
     <plugins>
-      <!-- TODO When Java 8 usage declines to a terminal level, this can be deleted. -->
-      <plugin>
-        <artifactId>maven-enforcer-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>display-info</id>
-            <configuration>
-              <rules>
-                <requireJavaVersion>
-                  <version>1.8</version>
-                </requireJavaVersion>
-                <enforceBytecodeVersion>
-                  <maxJdkVersion>1.8</maxJdkVersion>
-                  <excludes>
-                    <exclude>com.infradna.tool:bridge-method-annotation</exclude>
-                    <exclude>org.antlr:antlr4</exclude>
-                    <exclude>org.jenkins-ci:annotation-indexer</exclude>
-                    <exclude>org.jenkins-ci:commons-jelly</exclude>
-                    <exclude>org.jenkins-ci:crypto-util</exclude>
-                    <exclude>org.jenkins-ci.main:cli</exclude>
-                    <exclude>org.jenkins-ci.main:jenkins-core</exclude>
-                    <exclude>org.jenkins-ci.main:remoting</exclude>
-                    <exclude>org.jenkins-ci.main:websocket-jetty10</exclude>
-                    <exclude>org.jenkins-ci.main:websocket-spi</exclude>
-                    <exclude>org.jenkins-ci:memory-monitor</exclude>
-                    <exclude>org.jenkins-ci:symbol-annotation</exclude>
-                    <exclude>org.jenkins-ci:task-reactor</exclude>
-                    <exclude>org.jenkins-ci:version-number</exclude>
-                    <exclude>org.jvnet.hudson:commons-jelly-tags-define</exclude>
-                    <exclude>org.jvnet.winp:winp</exclude>
-                    <exclude>org.kohsuke:access-modifier-annotation</exclude>
-                    <exclude>org.kohsuke.stapler:stapler</exclude>
-                    <exclude>org.kohsuke.stapler:stapler-groovy</exclude>
-                    <exclude>org.kohsuke.stapler:stapler-jelly</exclude>
-                  </excludes>
-                </enforceBytecodeVersion>
-              </rules>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <configuration>
-          <release>8</release>
-          <testRelease>8</testRelease>
-        </configuration>
-      </plugin>
-      <plugin>
-        <artifactId>maven-javadoc-plugin</artifactId>
-        <configuration>
-          <release>8</release>
-        </configuration>
-      </plugin>
       <plugin>
         <artifactId>maven-war-plugin</artifactId>
         <!-- version specified in grandparent pom -->
@@ -265,7 +211,7 @@ THE SOFTWARE.
                   <!-- dependency of checks-api, junit, and mailer -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>display-url-api</artifactId>
-                  <version>2.200.vb_9327d658781</version>
+                  <version>2.204.vf6fddd8a_8b_e9</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -300,7 +246,7 @@ THE SOFTWARE.
                   <!-- dependency of command-launcher, junit, matrix-project, and workflow-support -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>script-security</artifactId>
-                  <version>1335.vf07d9ce377a_e</version>
+                  <version>1336.vf33a_a_9863911</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -343,7 +289,7 @@ THE SOFTWARE.
                   <!-- dependency of checks-api and plugin-util-api -->
                   <groupId>org.jenkins-ci.plugins.workflow</groupId>
                   <artifactId>workflow-support</artifactId>
-                  <version>896.v175a_a_9c5b_78f</version>
+                  <version>907.v6713a_ed8a_573</version>
                   <type>hpi</type>
                 </artifactItem>
 
@@ -390,7 +336,7 @@ THE SOFTWARE.
                   <!-- dependency of bootstrap5-api and echarts-api -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>font-awesome-api</artifactId>
-                  <version>6.5.1-3</version>
+                  <version>6.5.2-1</version>
                   <type>hpi</type>
                 </artifactItem>
 
@@ -405,7 +351,7 @@ THE SOFTWARE.
                   <!-- dependency of workflow-api and workflow-support -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>scm-api</artifactId>
-                  <version>689.v237b_6d3a_ef7f</version>
+                  <version>690.vfc8b_54395023</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -489,7 +435,7 @@ THE SOFTWARE.
                   <!-- dependency of scm-api -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>asm-api</artifactId>
-                  <version>9.6-3.v2e1fa_b_338cd7</version>
+                  <version>9.7-33.v4d23ef79fcc8</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -503,7 +449,7 @@ THE SOFTWARE.
                   <!-- dependency of bootstrap5-api, checks-api, echarts-api, font-awesome-api, jquery3-api, and plugin-util-api -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>commons-text-api</artifactId>
-                  <version>1.11.0-95.v22a_d30ee5d36</version>
+                  <version>1.11.0-109.vfe16c66636eb_</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -517,7 +463,7 @@ THE SOFTWARE.
                   <!-- dependency of junit and matrix-auth -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>ionicons-api</artifactId>
-                  <version>70.v2959a_b_74e3cf</version>
+                  <version>74.v93d5eb_813d5f</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>

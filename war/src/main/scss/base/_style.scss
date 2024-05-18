@@ -872,7 +872,7 @@ table.progress-bar.red td.progress-bar-done {
 
 [data-symbol-animation] {
   animation: spin 1s linear infinite;
-  transform-origin: center;
+  transform-origin: 0 0;
 
   @media (prefers-reduced-motion) {
     animation-duration: 3s;
