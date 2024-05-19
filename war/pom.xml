@@ -260,7 +260,7 @@ THE SOFTWARE.
                   <!-- dependency of junit, plugin-util-api, and workflow-support -->
                   <groupId>org.jenkins-ci.plugins.workflow</groupId>
                   <artifactId>workflow-api</artifactId>
-                  <version>1291.v51fd2a_625da_7</version>
+                  <version>1311.v4250456a_e552</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -463,7 +463,7 @@ THE SOFTWARE.
                   <!-- dependency of junit and matrix-auth -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>ionicons-api</artifactId>
-                  <version>73.vb_f522f227457</version>
+                  <version>74.v93d5eb_813d5f</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>

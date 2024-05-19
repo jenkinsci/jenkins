@@ -592,7 +592,7 @@ function parseHtml(html) {
  * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/eval#direct_and_indirect_eval
  */
 function geval(script) {
-  eval(script);
+  (0, eval)(script);
 }
 
 /**

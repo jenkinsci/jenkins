@@ -78,7 +78,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>io.jenkins.plugins</groupId>
         <artifactId>ionicons-api</artifactId>
-        <version>73.vb_f522f227457</version>
+        <version>74.v93d5eb_813d5f</version>
       </dependency>
       <dependency>
         <groupId>io.jenkins.plugins</groupId>
@@ -116,7 +116,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jenkins-ci.plugins.workflow</groupId>
         <artifactId>workflow-api</artifactId>
-        <version>1291.v51fd2a_625da_7</version>
+        <version>1311.v4250456a_e552</version>
       </dependency>
       <dependency>
         <groupId>org.jenkins-ci.plugins.workflow</groupId>
@@ -329,7 +329,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>design-library</artifactId>
-                  <version>296.v56576267b_508</version>
+                  <version>303.v6b_23c12334c9</version>
                   <type>hpi</type>
                   <outputDirectory>${project.build.outputDirectory}/plugins</outputDirectory>
                   <destFileName>design-library.jpi</destFileName>
