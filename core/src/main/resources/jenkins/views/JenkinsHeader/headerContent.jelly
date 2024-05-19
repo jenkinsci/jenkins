@@ -1,6 +1,10 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:h="/lib/layout/header">
-    <header id="page-header" class="page-header">
+    <header id="page-header"
+            class="page-header"
+            data-root-url="${rootURL}"
+            data-search-url="${rootURL + '/search/suggest'}"
+            data-search-help-url="${searchHelpUrl}">
       <h:logo/>
       <h:searchbox/>
       <h:login/>
