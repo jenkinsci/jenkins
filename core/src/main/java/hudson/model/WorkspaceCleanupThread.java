@@ -143,7 +143,7 @@ public class WorkspaceCleanupThread extends AsyncPeriodicWork {
 
         private final int retentionInDays;
 
-        public CleanupOldWorkspaces(int retentionInDays) {
+        CleanupOldWorkspaces(int retentionInDays) {
             this.retentionInDays = retentionInDays;
         }
 
@@ -171,7 +171,7 @@ public class WorkspaceCleanupThread extends AsyncPeriodicWork {
 
         private final String workspaceBaseName;
 
-        public ShouldBeDeletedFilter(int retentionInDays, String workspaceBaseName) {
+        ShouldBeDeletedFilter(int retentionInDays, String workspaceBaseName) {
             this.retentionInDays = retentionInDays;
             this.workspaceBaseName = workspaceBaseName;
         }

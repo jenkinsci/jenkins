@@ -39,12 +39,12 @@ THE SOFTWARE.
     </st:documentation>
     <j:choose>
       <j:when test="${confirm == null}">
-        <a class="stop-button-link" href="${href}" tooltip="${alt}">
+        <a class="stop-button-link" href="${href}" tooltip="${alt}" data-tooltip-append-to-parent="true">
           <l:icon src="symbol-close" />
         </a>
       </j:when>
       <j:otherwise>
-        <a class="stop-button-link" href="${href}" data-confirm="${confirm}" tooltip="${alt}">
+        <a class="stop-button-link" href="${href}" data-confirm="${confirm}" tooltip="${alt}" data-tooltip-append-to-parent="true">
           <l:icon src="symbol-close" />
         </a>
       </j:otherwise>
