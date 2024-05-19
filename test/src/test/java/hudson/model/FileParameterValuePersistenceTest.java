@@ -59,7 +59,7 @@ public class FileParameterValuePersistenceTest {
             }
             j.assertBuildStatusSuccess(j.waitForCompletion(b));
             FileParameterValue fpv = (FileParameterValue) b.getAction(ParametersAction.class).getParameter(FILENAME);
-            fpv.getFile().delete();
+            fpv.getFile2().delete();
             verifyPersistence(j);
         });
         sessions.then(FileParameterValuePersistenceTest::verifyPersistence);

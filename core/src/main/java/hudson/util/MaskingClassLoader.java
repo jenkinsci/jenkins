@@ -59,7 +59,7 @@ public class MaskingClassLoader extends ClassLoader {
     }
 
     public MaskingClassLoader(ClassLoader parent, Collection<String> masks) {
-        super(parent);
+        super("Masking ClassLoader of " + parent.getName(), parent);
         this.masksClasses = List.copyOf(masks);
 
         /*
