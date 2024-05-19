@@ -146,6 +146,11 @@ THE SOFTWARE.
         <version>1.1</version>
       </dependency>
       <dependency>
+        <groupId>jakarta.servlet</groupId>
+        <artifactId>jakarta.servlet-api</artifactId>
+        <version>4.0.4</version>
+      </dependency>
+      <dependency>
         <groupId>jakarta.servlet.jsp.jstl</groupId>
         <artifactId>jakarta.servlet.jsp.jstl-api</artifactId>
         <version>1.2.7</version>
