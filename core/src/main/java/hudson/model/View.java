@@ -554,7 +554,7 @@ public abstract class View extends AbstractModelObject implements AccessControll
 
     @Override
     public String getSearchUrl() {
-        return getAbsoluteUrl();
+        return getUrl();
     }
 
     /**

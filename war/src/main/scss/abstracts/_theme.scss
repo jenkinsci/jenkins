@@ -206,9 +206,9 @@ $semantics: (
 
   ::backdrop {
     --command-palette-backdrop-background: radial-gradient(
-                    farthest-corner at 50% 30vh,
-                    rgba(0, 0, 0, 0.3),
-                    rgba(0, 0, 0, 0.1)
+      farthest-corner at 50% 30vh,
+      rgba(0, 0, 0, 0.3),
+      rgba(0, 0, 0, 0.1)
     );
   }
 

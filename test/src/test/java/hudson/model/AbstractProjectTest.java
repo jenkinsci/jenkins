@@ -623,23 +623,23 @@ public class AbstractProjectTest {
         assertThat(responseContent, containsString("ok"));
     }
 
-//    @Test
-//    public void autoCompleteUpstreamProjects() throws Exception {
-//        j.jenkins.setCrumbIssuer(null);
-//        FreeStyleProject p1 = j.createFreeStyleProject("p1");
-//        this.testAutoCompleteResponse(this.requestAutoCompleteUpstreamProjects(p1, "").getJSONObject(), "p1");
-//        this.testAutoCompleteResponse(this.requestAutoCompleteUpstreamProjects(p1, "z").getJSONObject());
-//        j.createFreeStyleProject("z1");
-//        this.testAutoCompleteResponse(this.requestAutoCompleteUpstreamProjects(p1, "").getJSONObject(), "p1", "z1");
-//        this.testAutoCompleteResponse(this.requestAutoCompleteUpstreamProjects(p1, "z").getJSONObject(), "z1");
-//        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
-//        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().
-//                grant(Jenkins.READ).everywhere().toEveryone().
-//                grant(Item.READ).everywhere().to("alice").
-//                grant(Item.READ).onItems(p1).to("bob"));
-//        this.testAutoCompleteResponse(this.requestAutoCompleteUpstreamProjectsWithUser(p1, "", "alice").getJSONObject(), "p1", "z1");
-//        this.testAutoCompleteResponse(this.requestAutoCompleteUpstreamProjectsWithUser(p1, "", "bob").getJSONObject(), "p1");
-//    }
+    @Test
+    public void autoCompleteUpstreamProjects() throws Exception {
+        j.jenkins.setCrumbIssuer(null);
+        FreeStyleProject p1 = j.createFreeStyleProject("p1");
+        this.testAutoCompleteResponse(this.requestAutoCompleteUpstreamProjects(p1, "").getJSONObject(), "p1");
+        this.testAutoCompleteResponse(this.requestAutoCompleteUpstreamProjects(p1, "z").getJSONObject());
+        j.createFreeStyleProject("z1");
+        this.testAutoCompleteResponse(this.requestAutoCompleteUpstreamProjects(p1, "").getJSONObject(), "p1", "z1");
+        this.testAutoCompleteResponse(this.requestAutoCompleteUpstreamProjects(p1, "z").getJSONObject(), "z1");
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().
+                grant(Jenkins.READ).everywhere().toEveryone().
+                grant(Item.READ).everywhere().to("alice").
+                grant(Item.READ).onItems(p1).to("bob"));
+        this.testAutoCompleteResponse(this.requestAutoCompleteUpstreamProjectsWithUser(p1, "", "alice").getJSONObject(), "p1", "z1");
+        this.testAutoCompleteResponse(this.requestAutoCompleteUpstreamProjectsWithUser(p1, "", "bob").getJSONObject(), "p1");
+    }
 
     private HtmlPage requestCheckAssignedLabelString(FreeStyleProject p, String label) throws Exception {
         return j.createWebClient().goTo(p.getUrl() + p.getDescriptor().getDescriptorUrl() + "/checkAssignedLabelString?value=" + Util.rawEncode(label));

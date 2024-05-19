@@ -2431,7 +2431,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     public SearchIndexBuilder makeSearchIndex() {
         SearchIndexBuilder builder = super.makeSearchIndex();
         if (hasPermission(ADMINISTER)) {
-            builder.add(getRootUrl() + "manage", "Manage");
+            builder.add("manage", Messages.ManageJenkinsAction_DisplayName());
         }
         builder.add(new CollectionSearchIndex<TopLevelItem>() {
                     @Override

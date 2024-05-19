@@ -129,8 +129,7 @@ public class Search implements StaplerProxy {
     public void doSuggest(StaplerRequest req, StaplerResponse rsp, @QueryParameter String query) throws IOException, ServletException {
         Result r = new Result();
         for (SuggestedItem item : getSuggestions(req, query))
-            r.suggestions.add(new Item(item.getPath(),
-                    item.item.getSearchUrl()));
+            r.suggestions.add(new Item(item.getPath(), item.getUrl()));
 
         rsp.serveExposedBean(req, r, Flavor.JSON);
     }

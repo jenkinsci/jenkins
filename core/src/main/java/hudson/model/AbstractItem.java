@@ -591,7 +591,7 @@ public abstract class AbstractItem extends Actionable implements Loadable, Item,
 
     @Override
     public String getSearchUrl() {
-        return getAbsoluteUrl();
+        return getShortUrl();
     }
 
     @Override

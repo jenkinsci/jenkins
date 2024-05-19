@@ -12,11 +12,7 @@ export const JenkinsSearchSource = {
         url = url.substring(1);
       }
 
-      if (!url.includes(rootUrl)) {
-        url = rootUrl + "/" + url;
-      }
-
-      return url;
+      return rootUrl + "/" + url;
     }
 
     return await response.json().then((data) => {
