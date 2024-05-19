@@ -132,7 +132,7 @@ window.displayBuilds = function (data) {
     var div2 = document.createElement("div");
     div2.classList.add("jenkins-table__cell__button-wrapper");
     var a3 = document.createElement("a");
-    a3.classList.add("jenkins-table__button");
+    a3.classList.add("jenkins-button");
     a3.href = e.consoleUrl;
     a3.innerHTML = p.dataset.consoleOutputIcon;
     div2.appendChild(a3);

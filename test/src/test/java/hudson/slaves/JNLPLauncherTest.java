@@ -27,6 +27,7 @@ package hudson.slaves;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -110,6 +111,31 @@ public class JNLPLauncherTest {
                 jnlpLauncher.getWorkDirSettings());
         assertTrue("Work directory should be disabled for the migrated agent",
                 jnlpLauncher.getWorkDirSettings().isDisabled());
+    }
+
+    @Issue("JENKINS-73011")
+    @SuppressWarnings("deprecation")
+    @Test
+    public void deprecatedFields() throws Exception {
+        var launcher = new JNLPLauncher();
+        launcher.setWebSocket(true);
+        launcher.setWorkDirSettings(new RemotingWorkDirSettings(false, null, "remoting2", false));
+        launcher.setTunnel("someproxy");
+        var agent = j.createSlave();
+        agent.setLauncher(launcher);
+        agent = j.configRoundtrip(agent);
+        launcher = (JNLPLauncher) agent.getLauncher();
+        assertThat(launcher.isWebSocket(), is(true));
+        assertThat(launcher.getWorkDirSettings().getInternalDir(), is("remoting2"));
+        assertThat(launcher.getTunnel(), is("someproxy"));
+        launcher = new JNLPLauncher();
+        launcher.setWebSocket(true);
+        agent.setLauncher(launcher);
+        agent = j.configRoundtrip(agent);
+        launcher = (JNLPLauncher) agent.getLauncher();
+        assertThat(launcher.isWebSocket(), is(true));
+        assertThat(launcher.getWorkDirSettings().getInternalDir(), is("remoting"));
+        assertThat(launcher.getTunnel(), nullValue());
     }
 
     @Test
