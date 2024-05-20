@@ -104,6 +104,7 @@
   border-color: var(--danger-color, #c4000a);
 }
 
-.simple-page .alert {
+.simple-page .alert,
+.simple-page .jenkins-alert {
   color: var(--danger-color, #c4000a);
 }

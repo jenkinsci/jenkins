@@ -64,7 +64,7 @@ def listWarnings(warnings, boolean core) {
 def coreWarnings = my.activeCoreWarnings
 def pluginWarnings = my.activePluginWarningsByPlugin
 
-div(class: "alert alert-danger", role: "alert") {
+div(class: "jenkins-alert jenkins-alert-danger", role: "alert") {
 
     l.isAdmin() {
         form(method: "post", action: "${rootURL}/${my.url}/forward") {
