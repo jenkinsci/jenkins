@@ -48,7 +48,7 @@ THE SOFTWARE.
                     <div class="app-builds-container__item__inner__controls">
                         <j:if test="${!item.params.isEmpty()}">
                             <div tooltip="Build Parameters: ${item.params}" data-tooltip-append-to-parent="true">
-                                <l:icon class="icon-notepad icon-sm"/>
+                                <l:icon src="symbol-parameters" class="icon-sm" />
                             </div>
                         </j:if>
                         <j:if test="${item.hasCancelPermission()}">
