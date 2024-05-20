@@ -39,7 +39,8 @@ THE SOFTWARE.
       Optional submission URL. If not specified, will use 'submitDescription'.
     </st:attribute>
     <st:attribute name="hideButton">
-      Hide the add/edit description button. To be used when the button is provided via the app bar.
+      Hide the add/edit description button. Set to true when the button is provided via the app bar.
+      See 'editDescriptionButton'
     </st:attribute>
   </st:documentation>
 
