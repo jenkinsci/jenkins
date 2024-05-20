@@ -54,7 +54,7 @@ THE SOFTWARE.
             data-is-restart-required="${app.updateCenter.isRestartRequiredForCompletion()}" />
 
       <j:if test="${app.updateCenter.isRestartRequiredForCompletion()}">
-        <div class="alert alert-warning"><strong>${%Warning}</strong>: ${%requires.restart}</div>
+        <div class="jenkins-alert jenkins-alert-warning"><strong>${%Warning}</strong>: ${%requires.restart}</div>
       </j:if>
 
       <template id="i18n"
@@ -130,7 +130,7 @@ THE SOFTWARE.
                       </div>
                     </j:if>
                     <j:if test="${!p.getActiveWarnings().isEmpty()}">
-                      <div class="alert alert-danger">${%securityWarning}
+                      <div class="jenkins-alert jenkins-alert-danger">${%securityWarning}
                         <ul>
                           <j:forEach var="warning" items="${p.getActiveWarnings()}">
                             <li>
@@ -143,13 +143,13 @@ THE SOFTWARE.
                       </div>
                     </j:if>
                     <j:if test="${p.isDeprecated()}">
-                      <div class="alert alert-warning">
+                      <div class="jenkins-alert jenkins-alert-warning">
                         <!-- figure out a way how to present deprecations by multiple update sites instead of just the first one -->
                         ${%deprecationWarning(p.getDeprecations().get(0).url)}
                       </div>
                     </j:if>
                     <j:if test="${it.hasAdoptThisPluginLabel(p)}">
-                      <div class="alert alert-warning jenkins-!-margin-top-1 jenkins-!-margin-bottom-0">
+                      <div class="jenkins-alert jenkins-alert-warning jenkins-!-margin-top-1 jenkins-!-margin-bottom-0">
                         ${%adoptThisPlugin}
                       </div>
                     </j:if>
@@ -252,7 +252,7 @@ THE SOFTWARE.
                         ${p.name}
                       </div>
                     </j:if>
-                    <div class="alert alert-danger jenkins-!-margin-top-1 jenkins-!-margin-bottom-0">
+                    <div class="jenkins-alert jenkins-alert-danger jenkins-!-margin-top-1 jenkins-!-margin-bottom-0">
                       <pre>${p.cause.message}</pre>
                     </div>
                   </td>
