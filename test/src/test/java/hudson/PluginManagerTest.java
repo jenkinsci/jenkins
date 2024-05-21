@@ -806,7 +806,7 @@ public class PluginManagerTest {
 
             PluginManagerUtil.getCheckForUpdatesButton(p).click();
             HtmlPage available = wc.goTo("pluginManager/available");
-            assertTrue(available.querySelector(".alert-danger")
+            assertTrue(available.querySelector(".jenkins-alert-danger")
                     .getTextContent().contains("This plugin is built for Jenkins 9999999"));
             wc.waitForBackgroundJavaScript(100);
 
