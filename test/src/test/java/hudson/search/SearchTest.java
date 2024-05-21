@@ -127,7 +127,7 @@ public class SearchTest {
         MockFolder myMockFolder = j.createFolder("my-folder-1");
         FreeStyleProject myFreeStyleProject = myMockFolder.createProject(FreeStyleProject.class, "my-job-1");
 
-        Page result = j.createWebClient().goTo(myMockFolder.getUrl() + "search?q=" + myFreeStyleProject.getFullName());
+        Page result = j.search(myFreeStyleProject.getFullName());
 
         assertNotNull(result);
         j.assertGoodStatus(result);
