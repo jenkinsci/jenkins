@@ -26,7 +26,7 @@
   white-space: nowrap;
   gap: 1ch;
   transition: var(--standard-transition);
-
+  position: relative;
   &::before {
     background: var(--button-background);
   }
