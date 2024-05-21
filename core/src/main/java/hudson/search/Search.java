@@ -207,28 +207,25 @@ public class Search implements StaplerProxy {
 
     @ExportedBean(defaultVisibility = 999)
     public static class Item {
-        private String url;
 
         @Exported
         @SuppressFBWarnings(value = "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD", justification = "read by Stapler")
         public String name;
 
+        private final String url;
+
         public Item(String name) {
-            this.name = name;
+            this(name, null);
         }
 
         public Item(String name, String url) {
-            this(name);
+            this.name = name;
             this.url = url;
         }
 
         @Exported
         public String getUrl() {
             return url;
-        }
-
-        public void setUrl(String url) {
-            this.url = url;
         }
     }
 
