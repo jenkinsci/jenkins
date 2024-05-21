@@ -626,11 +626,11 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     /**
-     * @deprecated see {@link LazyBuildMixIn#createHistoryWidget()}
+     * @deprecated Remove any override, history widget is now created via {@link jenkins.widgets.WidgetFactory} implementation.
      */
     @Deprecated(forRemoval = true, since = "2.410")
     protected HistoryWidget createHistoryWidget() {
-        return new HistoryWidget<Job, RunT>(this, getBuilds(), HISTORY_ADAPTER);
+        throw new IllegalStateException("HistoryWidget is now created via WidgetFactory implementation");
     }
 
     public static final HistoryWidget.Adapter<Run> HISTORY_ADAPTER = new Adapter<>() {
