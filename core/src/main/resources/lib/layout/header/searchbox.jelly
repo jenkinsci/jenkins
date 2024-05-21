@@ -4,7 +4,10 @@
     <l:keyboard-shortcut prefix="${%Search}">CMD+K</l:keyboard-shortcut>
   </j:set>
   <div class="page-header__hyperlinks">
-    <button id="button-open-command-palette" data-html-tooltip="${tooltip}" data-keyboard-shortcut="CMD+K">
+    <button id="button-open-command-palette" data-html-tooltip="${tooltip}" data-keyboard-shortcut="CMD+K"
+            data-search-url="${rootURL + '/search/suggest'}"
+            data-search-help-url="${searchHelpUrl}"
+    >
       <l:icon src="symbol-search" />
     </button>
   </div>

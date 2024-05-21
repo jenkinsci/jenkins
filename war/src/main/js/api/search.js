@@ -2,7 +2,8 @@
  * @param {string} searchTerm
  */
 async function search(searchTerm) {
-  const address = document.getElementById("page-header").dataset.searchUrl;
+  const address = document.getElementById("button-open-command-palette").dataset
+    .searchUrl;
   return fetch(`${address}?query=${encodeURIComponent(searchTerm)}`);
 }
 

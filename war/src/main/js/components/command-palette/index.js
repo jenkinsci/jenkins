@@ -61,7 +61,7 @@ function init() {
           i18n.dataset.getHelp,
           "https://www.jenkins.io/redirect/search-box",
           true,
-          document.getElementById("page-header").dataset.searchHelpUrl,
+          headerCommandPaletteButton.dataset.searchHelpUrl,
           true,
         ),
       ];
