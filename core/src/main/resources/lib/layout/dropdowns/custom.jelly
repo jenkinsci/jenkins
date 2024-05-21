@@ -31,7 +31,7 @@ THE SOFTWARE.
 
         <![CDATA[
             <dd:custom>
-              <img src="jenkins.svg" alt=""/>
+              <img src="jenkins.svg" alt="null"/>
             </dd:custom>
         ]]>
     </st:documentation>
