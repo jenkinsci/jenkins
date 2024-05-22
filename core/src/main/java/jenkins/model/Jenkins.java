@@ -4492,7 +4492,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 rsp.sendError(HttpServletResponse.SC_FORBIDDEN, "No crumb found");
             }
             rsp.sendRedirect2(req.getContextPath() + "/fingerprint/" +
-                Util.getDigestOf(p.getFileItem("name").getInputStream()) + '/');
+                Util.getDigestOf(p.getFileItem2("name").getInputStream()) + '/');
         }
     }
 
