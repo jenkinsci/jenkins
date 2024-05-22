@@ -68,6 +68,8 @@ function load(options = {}) {
           pageEntryOldest: innerChild.dataset.pageEntryOldest,
         });
       });
+    } else {
+      console.error("Failed to load 'Builds' card, response from API is:", rsp);
     }
   });
 }
