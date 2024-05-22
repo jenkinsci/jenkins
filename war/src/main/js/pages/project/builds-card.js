@@ -72,7 +72,7 @@ function load(options = {}) {
  */
 function updateCardControls(parameters) {
   paginationControls.classList.toggle(
-    "jenkins-!-display-none",
+    "jenkins-hidden",
     !parameters.pageHasUp && !parameters.pageHasDown,
   );
   paginationPrevious.classList.toggle(
