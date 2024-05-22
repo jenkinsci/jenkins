@@ -119,13 +119,15 @@ function cancelRefreshTimeout() {
   }
 }
 
+const debouncedLoad = debounce(() => {
+  load();
+}, 150);
+
 document.addEventListener("DOMContentLoaded", function () {
   pageSearchInput.addEventListener("input", function () {
     container.classList.add("app-builds-container--loading");
     pageSearch.classList.add("jenkins-search--loading");
-    debounce(() => {
-      load();
-    }, 300);
+    debouncedLoad();
   });
 
   load();
