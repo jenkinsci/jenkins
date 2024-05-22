@@ -59,9 +59,11 @@ THE SOFTWARE.
         <div class="app-builds-container__controls" id="controls">
           <button class="jenkins-button jenkins-button--tertiary jenkins-card__unveil" id="up">
             <l:icon src="symbol-arrow-left" />
+            <span class="jenkins-visually-hidden">${%Newer builds}</span>
           </button>
           <button class="jenkins-button jenkins-button--tertiary jenkins-card__unveil" id="down">
             <l:icon src="symbol-arrow-right" />
+            <span class="jenkins-visually-hidden">${%Older builds}</span>
           </button>
         </div>
       </div>
