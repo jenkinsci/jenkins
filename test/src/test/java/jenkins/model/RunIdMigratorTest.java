@@ -58,7 +58,6 @@ public class RunIdMigratorTest {
         assertTrue(legacyIds.exists());
     }
 
-    @Ignore("TODO Item#onCreatedFromScratch is not called")
     @Issue("JENKINS-64356")
     @Test
     public void legacyIdsPresentViaRestApi() throws Exception {
@@ -82,7 +81,6 @@ public class RunIdMigratorTest {
         assertTrue(legacyIds.exists());
     }
 
-    @Ignore("TODO Item#onCreatedFromScratch is not called")
     @Issue("JENKINS-64356")
     @Test
     public void legacyIdsPresentViaCli() {
