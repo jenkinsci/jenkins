@@ -39,7 +39,6 @@ import java.io.File;
 import java.nio.charset.StandardCharsets;
 import org.htmlunit.HttpMethod;
 import org.htmlunit.WebRequest;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
