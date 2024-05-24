@@ -239,7 +239,7 @@ THE SOFTWARE.
                   <!-- detached after 1.561 -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>matrix-project</artifactId>
-                  <version>822.824.v14451b_c0fd42</version>
+                  <version>830.v7ea_da_561b_a_34</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
