@@ -41,7 +41,7 @@ THE SOFTWARE.
         <j:if test="${c.offline}">
           <j:choose>
             <j:when test="${c.offlineCause!=null and !c.connecting}">
-              (<img src="${imagesURL}/svgs/error.svg" width="16" height="16" title="${c.offlineCause}" alt="error image"/> ${%offline})
+              (<img src="${imagesURL}/svgs/error.svg" width="16" height="16" title="${c.offlineCause}" alt="Agent offline"/> ${%offline})
             </j:when>
             <j:when test="${c.connecting}">
               (<l:icon src="symbol-hourglass" class="icon-sm"/>${%launching})
