@@ -1,22 +1,27 @@
 import * as Symbols from "./symbols";
 import { xmlEscape } from "@/util/security";
 
-export class LinkResult {
-  constructor(icon, label, url, isExternal) {
-    this.icon = icon;
-    this.label = label;
-    this.url = url;
-    this.isExternal = isExternal;
-  }
-  render() {
-    return `<a class="jenkins-command-palette__results__item" href="${xmlEscape(
-      this.url,
-    )}">
+/**
+ * @param {Object} params
+ * @param {string} params.icon
+ * @param {string} params.label
+ * @param {string} params.url
+ * @param {boolean | undefined} params.isExternal
+ */
+export function LinkResult(params) {
+  return {
+    label: params.label,
+    url: params.url,
+    render: () => {
+      return `<a class="jenkins-command-palette__results__item" href="${xmlEscape(
+        params.url,
+      )}">
         <div class="jenkins-command-palette__results__item__icon">${
-          this.icon
+          params.icon
         }</div>
-        ${xmlEscape(this.label)}
-        ${this.isExternal ? Symbols.EXTERNAL_LINK : ""}
+        ${xmlEscape(params.label)}
+        ${params.isExternal ? Symbols.EXTERNAL_LINK : ""}
     </a>`;
-  }
+    },
+  };
 }

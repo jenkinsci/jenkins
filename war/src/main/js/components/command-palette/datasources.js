@@ -16,8 +16,12 @@ export const JenkinsSearchSource = {
     }
 
     return await response.json().then((data) => {
-      return [...data["suggestions"]].map(
-        (e) => new LinkResult(Symbols.SEARCH, e.name, correctAddress(e.url)),
+      return data["suggestions"].slice().map((e) =>
+        LinkResult({
+          icon: Symbols.SEARCH,
+          label: e.name,
+          url: correctAddress(e.url),
+        }),
       );
     });
   },

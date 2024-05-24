@@ -4,7 +4,7 @@ import debounce from "lodash/debounce";
 import * as Symbols from "./symbols";
 import makeKeyboardNavigable from "@/util/keyboard";
 import { xmlEscape } from "@/util/security";
-import { createElementFromHtml } from "../../util/dom";
+import { createElementFromHtml } from "@/util/dom";
 
 const datasources = [JenkinsSearchSource];
 
@@ -57,14 +57,12 @@ function init() {
 
     if (query.length === 0) {
       results = [
-        new LinkResult(
-          Symbols.HELP,
-          i18n.dataset.getHelp,
-          "https://www.jenkins.io/redirect/search-box",
-          true,
-          headerCommandPaletteButton.dataset.searchHelpUrl,
-          true,
-        ),
+        LinkResult({
+          icon: Symbols.HELP,
+          label: i18n.dataset.getHelp,
+          url: headerCommandPaletteButton.dataset.searchHelpUrl,
+          isExternal: true,
+        }),
       ];
     } else {
       await Promise.all(datasources.map((ds) => ds.execute(query))).then(
@@ -141,7 +139,9 @@ function init() {
     }
 
     if (index < maxLength) {
-      const element = [...searchResults.getElementsByTagName("a")][index];
+      const element = Array.from(searchResults.getElementsByTagName("a"))[
+        index
+      ];
       element.classList.add(hoverClass);
 
       if (scrollIntoView) {
