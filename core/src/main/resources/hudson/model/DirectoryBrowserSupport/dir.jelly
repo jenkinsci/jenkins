@@ -50,13 +50,13 @@ THE SOFTWARE.
             ${%No files in directory}
            <j:if test="${showSymlinkWarning}">
              <p>
-                <img id="symlinkalert" src="${imagesURL}/svgs/warning.svg" width="16" height="16" alt="null"/>
+                <img id="symlinkalert" src="${imagesURL}/svgs/warning.svg" width="16" height="16" alt="symlink alert"/>
                ${%Symlinks are hidden}
              </p>
             </j:if>
            <j:if test="${showTmpDirWarning}">
              <p>
-               <img id="tmpdiralert" src="${imagesURL}/svgs/warning.svg" width="16" height="16" alt="null"/>
+               <img id="tmpdiralert" src="${imagesURL}/svgs/warning.svg" width="16" height="16" alt="temporary directory warning"/>
                ${%Tmp directories are hidden}
              </p>
             </j:if>
@@ -130,7 +130,7 @@ THE SOFTWARE.
             </j:if>
            <j:if test="${showTmpDirWarning}">
              <p>
-                <img id="alert" src="${imagesURL}/svgs/warning.svg" width="16" height="16" alt="warning image"/>
+                <img id="alert" src="${imagesURL}/svgs/warning.svg" width="16" height="16" alt="temporary directory warning"/>
                ${%Tmp directories are hidden}
              </p>
             </j:if>
