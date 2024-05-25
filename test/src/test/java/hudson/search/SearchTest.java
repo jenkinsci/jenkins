@@ -27,6 +27,7 @@ package hudson.search;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import hudson.model.FreeStyleProject;
@@ -64,15 +65,14 @@ public class SearchTest {
 
     @Rule public JenkinsRule j = new JenkinsRule();
 
-    /**
-     * No exact match should result in a failure status code.
-     */
     @Test
     public void testFailure() throws Exception {
         WebClient wc = j.createWebClient()
                 .withThrowExceptionOnFailingStatusCode(false);
+
         HtmlPage resultPage = wc.search("no-such-thing");
-        assertEquals(HttpURLConnection.HTTP_NOT_FOUND, resultPage.getWebResponse().getStatusCode());
+
+        assertNull(resultPage);
     }
 
     /**
