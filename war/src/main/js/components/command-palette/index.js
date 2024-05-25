@@ -35,11 +35,11 @@ function init() {
   );
 
   // Events
-  headerCommandPaletteButton.addEventListener("click", async function () {
+  headerCommandPaletteButton.addEventListener("click", function () {
     if (commandPalette.hasAttribute("open")) {
       hideCommandPalette();
     } else {
-      await showCommandPalette();
+      showCommandPalette();
     }
   });
 
@@ -51,53 +51,53 @@ function init() {
     hideCommandPalette();
   });
 
-  async function renderResults() {
+  function renderResults() {
     const query = commandPaletteInput.value;
     let results;
 
     if (query.length === 0) {
-      results = [
+      results = Promise.all([
         LinkResult({
           icon: Symbols.HELP,
           label: i18n.dataset.getHelp,
           url: headerCommandPaletteButton.dataset.searchHelpUrl,
           isExternal: true,
         }),
-      ];
+      ]);
     } else {
-      await Promise.all(datasources.map((ds) => ds.execute(query))).then(
-        (response) => {
-          results = response.flat();
-        },
+      results = Promise.all(datasources.map((ds) => ds.execute(query))).then(
+        (e) => e.flat(),
       );
     }
 
-    // Clear current search results
-    searchResults.innerHTML = "";
+    results.then((results) => {
+      // Clear current search results
+      searchResults.innerHTML = "";
 
-    if (query.length === 0 || Object.keys(results).length > 0) {
-      results.forEach(function (obj) {
-        const link = createElementFromHtml(obj.render());
-        link.addEventListener("mouseenter", (e) => itemMouseEnter(e));
-        searchResults.append(link);
-      });
+      if (query.length === 0 || Object.keys(results).length > 0) {
+        results.forEach(function (obj) {
+          const link = createElementFromHtml(obj.render());
+          link.addEventListener("mouseenter", (e) => itemMouseEnter(e));
+          searchResults.append(link);
+        });
 
-      updateSelectedItem(0);
-    } else {
-      const label = document.createElement("p");
-      label.className = "jenkins-command-palette__info";
-      label.innerHTML =
-        "<span>" +
-        i18n.dataset.noResultsFor +
-        "</span> " +
-        xmlEscape(commandPaletteInput.value);
-      searchResults.append(label);
-    }
+        updateSelectedItem(0);
+      } else {
+        const label = document.createElement("p");
+        label.className = "jenkins-command-palette__info";
+        label.innerHTML =
+          "<span>" +
+          i18n.dataset.noResultsFor +
+          "</span> " +
+          xmlEscape(commandPaletteInput.value);
+        searchResults.append(label);
+      }
 
-    searchResultsContainer.style.height = searchResults.offsetHeight + "px";
-    commandPaletteSearchBarContainer.classList.remove(
-      "jenkins-search--loading",
-    );
+      searchResultsContainer.style.height = searchResults.offsetHeight + "px";
+      commandPaletteSearchBarContainer.classList.remove(
+        "jenkins-search--loading",
+      );
+    });
   }
 
   commandPaletteInput.addEventListener("input", () => {
@@ -106,7 +106,7 @@ function init() {
   });
 
   // Helper methods for visibility of command palette
-  async function showCommandPalette() {
+  function showCommandPalette() {
     commandPalette.showModal();
     commandPaletteInput.focus();
     commandPaletteInput.setSelectionRange(
@@ -114,7 +114,7 @@ function init() {
       commandPaletteInput.value.length,
     );
 
-    await renderResults();
+    renderResults();
   }
 
   function hideCommandPalette() {
@@ -151,6 +151,4 @@ function init() {
   }
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-  init();
-});
+export default { init };
