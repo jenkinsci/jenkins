@@ -2463,7 +2463,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         @Override
         public Void invoke(File f, VirtualChannel channel) throws IOException {
             try (OutputStream os = p.getOut();
-                 OutputStream out = new java.util.zip.GZIPOutputStream(os, 8192);
+                 OutputStream out = new GZIPOutputStream(os, 8192);
                  RandomAccessFile raf = new RandomAccessFile(f, "r")) {
                 raf.seek(offset);
                 byte[] buf = new byte[8192];
