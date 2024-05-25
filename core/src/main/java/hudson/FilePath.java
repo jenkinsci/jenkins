@@ -31,8 +31,6 @@ import static hudson.Util.fixEmpty;
 import static hudson.Util.fixEmptyAndTrim;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.jcraft.jzlib.GZIPInputStream;
-import com.jcraft.jzlib.GZIPOutputStream;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -61,7 +59,6 @@ import hudson.util.DirScanner;
 import hudson.util.ExceptionCatchingThreadFactory;
 import hudson.util.FileVisitor;
 import hudson.util.FormValidation;
-import hudson.util.HeadBufferingStream;
 import hudson.util.IOUtils;
 import hudson.util.NamingThreadFactory;
 import hudson.util.io.Archiver;
@@ -124,6 +121,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 import jenkins.MasterToSlaveFileCallable;
 import jenkins.SlaveToMasterFileCallable;
 import jenkins.model.Jenkins;
@@ -888,15 +887,8 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         },
         GZIP {
             @Override
-            public InputStream extract(InputStream _in) throws IOException {
-                HeadBufferingStream in = new HeadBufferingStream(_in, SIDE_BUFFER_SIZE);
-                try {
-                    return new GZIPInputStream(in, 8192, true);
-                } catch (IOException e) {
-                    // various people reported "java.io.IOException: Not in GZIP format" here, so diagnose this problem better
-                    in.fillSide();
-                    throw new IOException(e.getMessage() + "\nstream=" + Util.toHexString(in.getSideBuffer()), e);
-                }
+            public InputStream extract(InputStream in) throws IOException {
+                return new GZIPInputStream(new BufferedInputStream(in));
             }
 
             @Override
