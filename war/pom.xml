@@ -239,7 +239,7 @@ THE SOFTWARE.
                   <!-- detached after 1.561 -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>matrix-project</artifactId>
-                  <version>822.824.v14451b_c0fd42</version>
+                  <version>830.v7ea_da_561b_a_34</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -260,7 +260,7 @@ THE SOFTWARE.
                   <!-- dependency of junit, plugin-util-api, and workflow-support -->
                   <groupId>org.jenkins-ci.plugins.workflow</groupId>
                   <artifactId>workflow-api</artifactId>
-                  <version>1291.v51fd2a_625da_7</version>
+                  <version>1312.ve804c2f2d51e</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -407,14 +407,14 @@ THE SOFTWARE.
                   <!-- detached after 2.330 -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>javax-activation-api</artifactId>
-                  <version>1.2.0-6</version>
+                  <version>1.2.0-7</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <!-- detached after 2.330 -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>javax-mail-api</artifactId>
-                  <version>1.6.2-9</version>
+                  <version>1.6.2-10</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>

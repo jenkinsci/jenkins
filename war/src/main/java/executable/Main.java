@@ -266,7 +266,7 @@ public class Main {
         // locate the Winstone launcher
         ClassLoader cl;
         try {
-            cl = new URLClassLoader(new URL[] {tmpJar.toURI().toURL()});
+            cl = new URLClassLoader("Jenkins Main ClassLoader", new URL[] {tmpJar.toURI().toURL()}, ClassLoader.getSystemClassLoader());
         } catch (MalformedURLException e) {
             throw new UncheckedIOException(e);
         }

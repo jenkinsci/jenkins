@@ -161,10 +161,6 @@ THE SOFTWARE.
       <artifactId>commons-collections</artifactId>
     </dependency>
     <dependency>
-      <groupId>commons-fileupload</groupId>
-      <artifactId>commons-fileupload</artifactId>
-    </dependency>
-    <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
     </dependency>
@@ -283,6 +279,14 @@ THE SOFTWARE.
           <artifactId>commons-lang3</artifactId>
         </exclusion>
       </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-fileupload2-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-fileupload2-javax</artifactId>
     </dependency>
     <dependency>
       <groupId>org.codehaus.groovy</groupId>
@@ -439,7 +443,6 @@ THE SOFTWARE.
     <dependency>
       <groupId>jakarta.servlet</groupId>
       <artifactId>jakarta.servlet-api</artifactId>
-      <version>4.0.4</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
