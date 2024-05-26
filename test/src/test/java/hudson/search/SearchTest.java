@@ -90,8 +90,7 @@ public class SearchTest {
     @Issue("JENKINS-3415")
     @Test
     public void testXSS() throws Exception {
-        WebClient wc = j.createWebClient()
-                .withThrowExceptionOnFailingStatusCode(false);
+        WebClient wc = j.createWebClient();
         wc.setAlertHandler((page, message) -> {
             throw new AssertionError();
         });
