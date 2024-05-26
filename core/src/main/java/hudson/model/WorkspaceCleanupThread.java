@@ -24,6 +24,8 @@
 
 package hudson.model;
 
+import static hudson.Util.fileToPath;
+
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
@@ -31,12 +33,19 @@ import hudson.ExtensionList;
 import hudson.FilePath;
 import hudson.Functions;
 import hudson.Util;
+import hudson.remoting.VirtualChannel;
+import hudson.slaves.WorkspaceList;
+import java.io.File;
+import java.io.FileFilter;
 import java.io.IOException;
+import java.io.Serializable;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import jenkins.MasterToSlaveFileCallable;
 import jenkins.model.Jenkins;
 import jenkins.model.ModifiableTopLevelItemGroup;
 import jenkins.util.SystemProperties;
@@ -90,8 +99,7 @@ public class WorkspaceCleanupThread extends AsyncPeriodicWork {
                 if (check) {
                     listener.getLogger().println("Deleting " + ws + " on " + node.getDisplayName());
                     try {
-                        ws.deleteSuffixesRecursive();
-                        ws.deleteRecursive();
+                        ws.act(new CleanupOldWorkspaces(retainForDays));
                     } catch (IOException | InterruptedException x) {
                         Functions.printStackTrace(x, listener.error("Failed to delete " + ws + " on " + node.getDisplayName()));
                     }
@@ -101,21 +109,6 @@ public class WorkspaceCleanupThread extends AsyncPeriodicWork {
     }
 
     private boolean shouldBeDeleted(@NonNull TopLevelItem item, FilePath dir, @NonNull Node n) throws IOException, InterruptedException {
-        // TODO: the use of remoting is not optimal.
-        // One remoting can execute "exists", "lastModified", and "delete" all at once.
-        // (Could even invert master loop so that one FileCallable takes care of all known items.)
-        if (!dir.exists()) {
-            LOGGER.log(Level.FINE, "Directory {0} does not exist", dir);
-            return false;
-        }
-
-        // if younger than a month, keep it
-        long now = new Date().getTime();
-        if (dir.lastModified() + retainForDays * DAY > now) {
-            LOGGER.log(Level.FINE, "Directory {0} is only {1} old, so not deleting", new Object[] {dir, Util.getTimeSpanString(now - dir.lastModified())});
-            return false;
-        }
-
         // TODO could also be good to add checkbox that lets users configure a workspace to never be auto-cleaned.
 
         // TODO check instead for SCMTriggerItem:
@@ -143,9 +136,67 @@ public class WorkspaceCleanupThread extends AsyncPeriodicWork {
                 return false;
             }
         }
-
-        LOGGER.log(Level.FINER, "Going to delete directory {0}", dir);
         return true;
+    }
+
+    private static class CleanupOldWorkspaces extends MasterToSlaveFileCallable<Void> {
+
+        private final int retentionInDays;
+
+        CleanupOldWorkspaces(int retentionInDays) {
+            this.retentionInDays = retentionInDays;
+        }
+
+        @Override
+        public Void invoke(File f, VirtualChannel channel) throws IOException, InterruptedException {
+            File[] workspaces = null;
+            File parentWs = f.getParentFile();
+            if (parentWs != null) {
+                workspaces = parentWs.listFiles(new ShouldBeDeletedFilter(this.retentionInDays, f.getName()));
+            }
+
+            if (workspaces != null) {
+                for (File workspace : workspaces) {
+                    LOGGER.log(Level.FINER, "Going to delete directory {0}", workspace);
+                    Util.deleteRecursive(fileToPath(workspace), Path::toFile);
+                }
+            }
+            return null;
+        }
+    }
+
+    private static class ShouldBeDeletedFilter implements FileFilter, Serializable {
+
+        private final int retentionInDays;
+
+        private final String workspaceBaseName;
+
+        ShouldBeDeletedFilter(int retentionInDays, String workspaceBaseName) {
+            this.retentionInDays = retentionInDays;
+            this.workspaceBaseName = workspaceBaseName;
+        }
+
+        @Override
+        public boolean accept(File dir) {
+
+            if (!dir.isDirectory()) {
+                return false;
+            }
+
+            // if not the workspace or a workspace suffix
+            if (!dir.getName().equals(workspaceBaseName) && !dir.getName().startsWith(workspaceBaseName + WorkspaceList.COMBINATOR)) {
+                return false;
+            }
+
+            // if younger than a month, keep it
+            long now = new Date().getTime();
+            if (dir.lastModified() + this.retentionInDays * DAY > now) {
+                LOGGER.log(Level.FINE, "Directory {0} is only {1} old, so not deleting", new Object[] {dir, Util.getTimeSpanString(now - dir.lastModified())});
+                return false;
+            }
+
+            return true;
+        }
     }
 
     private static final Logger LOGGER = Logger.getLogger(WorkspaceCleanupThread.class.getName());

@@ -360,7 +360,6 @@ function findNearBy(e, name) {
 
   function locate(iterator, e) {
     // keep finding elements until we find the good match
-    // eslint-disable-next-line no-constant-condition
     while (true) {
       e = iterator(e, name);
       if (e == null) {
@@ -593,7 +592,7 @@ function parseHtml(html) {
  * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/eval#direct_and_indirect_eval
  */
 function geval(script) {
-  eval(script);
+  (0, eval)(script);
 }
 
 /**
@@ -693,6 +692,7 @@ function registerValidator(e) {
   var url = e.targetUrl();
   try {
     FormChecker.delayedCheck(url, method, e.targetElement);
+    // eslint-disable-next-line no-unused-vars
   } catch (x) {
     // this happens if the checkUrl refers to a non-existing element.
     // don't let this kill off the entire JavaScript

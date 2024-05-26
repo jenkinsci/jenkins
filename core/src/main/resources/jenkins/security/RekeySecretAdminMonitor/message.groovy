@@ -26,22 +26,22 @@ package jenkins.security.RekeySecretAdminMonitor
 def f = namespace(lib.FormTagLib)
 
 if (!my.isDone()) {
-    div(class:"alert alert-danger") {
+    div(class:"jenkins-alert jenkins-alert-danger") {
         raw _("pleaseRekeyAsap", app.rootDir, my.url)
     }
 }
 
 if (my.isFixingActive()) {
-    div(class:"alert alert-info") {
+    div(class:"jenkins-alert jenkins-alert-info") {
         raw _("rekeyInProgress", my.url)
     }
 } else if (my.logFile.exists()) {
     if (my.isDone()) {
-        div(class:"alert alert-info") {
+        div(class:"jenkins-alert jenkins-alert-info") {
             raw _("rekeySuccessful", my.url)
         }
     } else {
-        div(class:"alert alert-warning") {
+        div(class:"jenkins-alert jenkins-alert-warning") {
             raw _("rekeyHadProblems", my.url)
         }
     }

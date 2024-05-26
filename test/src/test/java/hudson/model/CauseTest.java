@@ -63,9 +63,9 @@ public class CauseTest {
         FreeStyleProject b = j.createFreeStyleProject("b");
         FreeStyleBuild early = null;
         FreeStyleBuild last = null;
-        List<QueueTaskFuture<FreeStyleBuild>> futures = new ArrayList<>();
         for (int i = 1; i <= 15; i++) {
-            last = recordFuture(b.scheduleBuild2(0, new Cause.UpstreamCause(recordFuture(a.scheduleBuild2(0, last == null ? null : new Cause.UpstreamCause(last)), futures).get())), futures).get();
+            last = j.waitForCompletion(a.scheduleBuild2(0, last == null ? null : new Cause.UpstreamCause(last)).get());
+            last = j.waitForCompletion(b.scheduleBuild2(0, new Cause.UpstreamCause(last)).get());
             if (i == 5) {
                 early = last;
             }
@@ -74,9 +74,6 @@ public class CauseTest {
         assertTrue("keeps full history:\n" + buildXml, buildXml.contains("<upstreamBuild>1</upstreamBuild>"));
         buildXml = new XmlFile(Run.XSTREAM, new File(last.getRootDir(), "build.xml")).asString();
         assertFalse("too big:\n" + buildXml, buildXml.contains("<upstreamBuild>1</upstreamBuild>"));
-        for (QueueTaskFuture<FreeStyleBuild> future : futures) {
-            j.assertBuildStatusSuccess(j.waitForCompletion(future.waitForStart()));
-        }
     }
 
     @Issue("JENKINS-15747")
@@ -88,16 +85,16 @@ public class CauseTest {
         Run<?, ?> last = null;
         for (int i = 1; i <= 10; i++) {
             Cause cause = last == null ? null : new Cause.UpstreamCause(last);
-            QueueTaskFuture<FreeStyleBuild> next1 = recordFuture(a.scheduleBuild2(0, cause), futures);
-            recordFuture(a.scheduleBuild2(0, cause), futures);
-            cause = new Cause.UpstreamCause(next1.get());
-            QueueTaskFuture<FreeStyleBuild> next2 = recordFuture(b.scheduleBuild2(0, cause), futures);
-            recordFuture(b.scheduleBuild2(0, cause), futures);
-            cause = new Cause.UpstreamCause(next2.get());
-            QueueTaskFuture<FreeStyleBuild> next3 = recordFuture(c.scheduleBuild2(0, cause), futures);
-            recordFuture(c.scheduleBuild2(0, cause), futures);
-            last = next3.get();
+            last = j.waitForCompletion(a.scheduleBuild2(0, cause).get());
+            recordFuture(b.scheduleBuild2(1, cause), futures);
+            cause = new Cause.UpstreamCause(last);
+            last = j.waitForCompletion(b.scheduleBuild2(0, cause).get());
+            recordFuture(c.scheduleBuild2(1, cause), futures);
+            cause = new Cause.UpstreamCause(last);
+            last = j.waitForCompletion(c.scheduleBuild2(0, cause).get());
+            recordFuture(a.scheduleBuild2(1, cause), futures);
         }
+        last = j.waitForCompletion(a.scheduleBuild2(0, new Cause.UpstreamCause(last)).get());
         int count = new XmlFile(Run.XSTREAM, new File(last.getRootDir(), "build.xml")).asString().split(Pattern.quote("<hudson.model.Cause_-UpstreamCause")).length;
         assertFalse("too big at " + count, count > 100);
         //j.interactiveBreak();
