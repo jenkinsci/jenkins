@@ -63,6 +63,20 @@ public class CreateJobCommandTest {
         assertThat(invoker.withStdin(new ByteArrayInputStream("<project/>".getBytes(StandardCharsets.UTF_8))).invokeWithArgs("d/p"), succeededSilently());
         assertNotNull(d.getItem("p"));
     }
+    
+    @Test public void cannotCreateDuplicateJob() {
+        CLICommand cmd = new CreateJobCommand();
+        CLICommandInvoker invoker = new CLICommandInvoker(r, cmd);
+        assertThat(r.jenkins.getItems(), Matchers.hasSize(0));
+
+        assertThat(invoker.withStdin(new ByteArrayInputStream("<project/>".getBytes(StandardCharsets.UTF_8))).invokeWithArgs("job1"), succeededSilently());
+        assertThat(r.jenkins.getItems(), Matchers.hasSize(1));
+
+        CLICommandInvoker.Result result = invoker.withStdin(new ByteArrayInputStream("<project/>".getBytes(StandardCharsets.UTF_8))).invokeWithArgs("job1");
+        assertThat(result.stderr(), containsString("already exists"));
+        assertThat(result, failedWith(4));
+        assertThat(r.jenkins.getItems(), Matchers.hasSize(1));
+    }
 
     @Issue("SECURITY-2424")
     @Test public void cannotCreateJobWithTrailingDot_withoutOtherJob() {
