@@ -39,12 +39,10 @@ import hudson.security.ACLContext;
 import hudson.security.GlobalMatrixAuthorizationStrategy;
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
 import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -97,8 +95,13 @@ public class SearchTest {
         wc.setAlertHandler((page, message) -> {
             throw new AssertionError();
         });
-        HtmlPage resultPage = wc.search("<script>alert('script');</script>");
-        assertEquals(HttpURLConnection.HTTP_NOT_FOUND, resultPage.getWebResponse().getStatusCode());
+        FreeStyleProject freeStyleProject = j.createFreeStyleProject("Project");
+        freeStyleProject.setDisplayName("<script>alert('script');</script>");
+
+        Page result = wc.search("<script>alert('script');</script>");
+
+        assertNotNull(result);
+        assertEquals(j.getInstance().getRootUrl() + freeStyleProject.getUrl(), result.getUrl().toString());
     }
 
     @Test
