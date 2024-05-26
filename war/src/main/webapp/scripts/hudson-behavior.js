@@ -1756,15 +1756,6 @@ function rowvgStartEachRow(recursive, f) {
     },
   );
 
-  Behaviour.specify(
-    ".button-with-dropdown",
-    "-button-with-dropdown",
-    ++p,
-    function (e) {
-      new YAHOO.widget.Button(e, { type: "menu", menu: e.nextElementSibling });
-    },
-  );
-
   window.addEventListener("load", function () {
     // Add a class to the bottom bar when it's stuck to the bottom of the screen
     const el = document.querySelector("#bottom-sticker");
