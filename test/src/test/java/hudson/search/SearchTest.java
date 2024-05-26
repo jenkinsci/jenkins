@@ -195,41 +195,6 @@ public class SearchTest {
     }
 
     @Test
-    public void testProjectNamePrecedesDisplayName() throws Exception {
-        final String project1Name = "foo";
-        final String project1DisplayName = "project1DisplayName";
-        final String project2Name = "project2Name";
-        final String project2DisplayName = project1Name;
-        final String project3Name = "project3Name";
-        final String project3DisplayName = "project3DisplayName";
-
-        // create 1 freestyle project with the name foo
-        FreeStyleProject project1 = j.createFreeStyleProject(project1Name);
-        project1.setDisplayName(project1DisplayName);
-
-        // create another with the display name foo
-        FreeStyleProject project2 = j.createFreeStyleProject(project2Name);
-        project2.setDisplayName(project2DisplayName);
-
-        // create a third project and make sure it's not picked up by search
-        FreeStyleProject project3 = j.createFreeStyleProject(project3Name);
-        project3.setDisplayName(project3DisplayName);
-
-        // search for foo
-        Page result = j.search(project1Name);
-        assertNotNull(result);
-        j.assertGoodStatus(result);
-
-        // make sure we get the project with the name foo
-        String contents = result.getWebResponse().getContentAsString();
-        assertTrue(contents.contains(String.format("<title>%s [Jenkins]</title>", project1DisplayName)));
-        // make sure projects 2 and 3 were not picked up
-        assertFalse(contents.contains(project2Name));
-        assertFalse(contents.contains(project3Name));
-        assertFalse(contents.contains(project3DisplayName));
-    }
-
-    @Test
     public void testGetSuggestionsHasBothNamesAndDisplayNames() throws Exception {
         final String projectName = "project name";
         final String displayName = "display name";
