@@ -27,8 +27,8 @@ package hudson.search;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.jvnet.hudson.test.QueryUtils.waitUntilStringIsPresent;
 
 import hudson.model.FreeStyleProject;
 import hudson.model.ListView;
@@ -44,11 +44,14 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
 import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import net.sf.json.JSONSerializer;
 import org.htmlunit.Page;
+import org.htmlunit.html.HtmlButton;
+import org.htmlunit.html.HtmlInput;
 import org.htmlunit.html.HtmlPage;
 import org.junit.Rule;
 import org.junit.Test;
@@ -65,14 +68,22 @@ public class SearchTest {
 
     @Rule public JenkinsRule j = new JenkinsRule();
 
+    private void searchWithoutNavigating(HtmlPage page, String query) throws IOException {
+        HtmlButton button = page.querySelector("#button-open-command-palette");
+        button.click();
+
+        HtmlInput search = page.querySelector("#command-bar");
+        search.setValue(query);
+        page.executeJavaScript("document.querySelector('#command-bar').dispatchEvent(new Event(\"input\"))");
+    }
+
     @Test
     public void testFailure() throws Exception {
-        WebClient wc = j.createWebClient()
-                .withThrowExceptionOnFailingStatusCode(false);
+        HtmlPage page = j.createWebClient().goTo("");
 
-        HtmlPage resultPage = wc.search("no-such-thing");
+        searchWithoutNavigating(page, "no-such-thing");
 
-        assertNull(resultPage);
+        waitUntilStringIsPresent(page, "No results for no-such-thing");
     }
 
     /**
