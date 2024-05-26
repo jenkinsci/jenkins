@@ -140,7 +140,7 @@ public class SearchTest {
         MockFolder myMockFolder = j.createFolder("my-folder-1");
         FreeStyleProject myFreeStyleProject = myMockFolder.createProject(FreeStyleProject.class, "my-job-1");
 
-        Page result = j.search(myFreeStyleProject.getFullName());
+        Page result = j.search(myFreeStyleProject.getName());
 
         assertNotNull(result);
         j.assertGoodStatus(result);
@@ -348,7 +348,7 @@ public class SearchTest {
 
             String name = (String) jsonSuggestion.get("name");
 
-            if (displayName2.equals(name)) {
+            if ("my-folder-1 → job-2".equals(name)) {
                 foundDisplayName = true;
             }
         }
