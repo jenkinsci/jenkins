@@ -53,7 +53,7 @@ THE SOFTWARE.
             </j:choose>
           </j:when>
           <j:otherwise>
-            <div tooltip="${%busy(c.countBusy(), c.countExecutors())}">${c.countBusy()}/${c.countExecutors()}</div>
+            <div tooltip="${%busy(c.countBusy(), c.countExecutors())}" data-tooltip-append-to-parent="true">${c.countBusy()}/${c.countExecutors()}</div>
           </j:otherwise>
         </j:choose>
         <j:if test="${!c.acceptingTasks}"> <st:nbsp/> (${%suspended})</j:if>
@@ -63,7 +63,9 @@ THE SOFTWARE.
           <div class="executor-row">
             <div class="executor-type">
               <j:if test="${name == ''}">
-                <l:icon src="symbol-paper-plane-outline" class="icon-sm" tooltip="${%Light weight executor}"/>
+                <span tooltip="${%Light weight executor}" data-tooltip-append-to-parent="true">
+                  <l:icon src="symbol-paper-plane-outline" class="icon-sm"/>
+                </span>
               </j:if>
             </div>
             <div class="executor-cell">
@@ -171,12 +173,12 @@ THE SOFTWARE.
         <a href="${rootURL}/computer/">${%Build Executor Status}</a>
       </span>
       <j:if test="${origComputersSize == 1 and !paneIsCollapsed}">
-        <span class="pane-header-details" tooltip="${singleToolTip}">
+        <span class="pane-header-details" tooltip="${singleToolTip}" data-tooltip-append-to-parent="true">
           ${executorDetails}
         </span>
       </j:if>
       <a class="collapse" href="${rootURL}/toggleCollapse?paneId=executors"
-         tooltip="${paneIsCollapsed ? '%expand' : '%collapse'}">
+         tooltip="${paneIsCollapsed ? '%Expand' : '%Collapse'}" data-tooltip-append-to-parent="true">
         <j:set var="svgIconId" value="${paneIsCollapsed ? 'chevron-up' : 'chevron-down'}" />
         <l:icon src="symbol-${svgIconId}" />
       </a>
