@@ -25,12 +25,6 @@
     }
   }
 
-  &--border {
-    margin-bottom: var(--section-padding);
-    padding-bottom: var(--section-padding);
-    border-bottom: 2px solid var(--panel-border-color);
-  }
-
   &--sticky {
     position: sticky;
     top: 40px;
@@ -68,6 +62,11 @@
   h2 {
     margin: 0;
     font-size: 1.5rem;
+  }
+
+  &__subtitle {
+    color: var(--text-color-secondary);
+    margin-left: 0.5ch;
   }
 }
 
