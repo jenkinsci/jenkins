@@ -131,14 +131,14 @@ import jenkins.security.MasterToSlaveCallable;
 import jenkins.util.ContextResettingExecutorService;
 import jenkins.util.SystemProperties;
 import jenkins.util.VirtualFile;
-import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
-import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.fileupload2.core.FileItem;
 import org.apache.commons.io.input.CountingInputStream;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.types.FileSet;
+import org.apache.tools.tar.TarEntry;
+import org.apache.tools.tar.TarInputStream;
 import org.apache.tools.zip.ZipEntry;
 import org.apache.tools.zip.ZipFile;
 import org.jenkinsci.remoting.RoleChecker;
@@ -3079,14 +3079,13 @@ public final class FilePath implements SerializableOnlyOverRemoting {
 
     /**
      * Reads from a tar stream and stores obtained files to the base dir.
-     * Supports large files > 10 GB since 1.627 when this was migrated to use commons-compress.
+     * Supports large files &gt; 10 GB since 1.627.
      */
     private static void readFromTar(String name, File baseDir, InputStream in, Charset filenamesEncoding) throws IOException {
 
-        // TarInputStream t = new TarInputStream(in);
-        try (TarArchiveInputStream t = new TarArchiveInputStream(in, filenamesEncoding.name())) {
-            TarArchiveEntry te;
-            while ((te = t.getNextTarEntry()) != null) {
+        try (TarInputStream t = new TarInputStream(in, filenamesEncoding.name())) {
+            TarEntry te;
+            while ((te = t.getNextEntry()) != null) {
                 File f = new File(baseDir, te.getName());
                 if (!f.toPath().normalize().startsWith(baseDir.toPath())) {
                     throw new IOException(
