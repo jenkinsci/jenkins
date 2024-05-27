@@ -39,7 +39,6 @@ import java.io.File;
 import java.nio.charset.StandardCharsets;
 import org.htmlunit.HttpMethod;
 import org.htmlunit.WebRequest;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -58,7 +57,6 @@ public class RunIdMigratorTest {
         assertTrue(legacyIds.exists());
     }
 
-    @Ignore("TODO Item#onCreatedFromScratch is not called")
     @Issue("JENKINS-64356")
     @Test
     public void legacyIdsPresentViaRestApi() throws Exception {
@@ -82,7 +80,6 @@ public class RunIdMigratorTest {
         assertTrue(legacyIds.exists());
     }
 
-    @Ignore("TODO Item#onCreatedFromScratch is not called")
     @Issue("JENKINS-64356")
     @Test
     public void legacyIdsPresentViaCli() {

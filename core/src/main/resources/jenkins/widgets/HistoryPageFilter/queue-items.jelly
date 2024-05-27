@@ -57,8 +57,8 @@ THE SOFTWARE.
 	      </j:otherwise>
 	    </j:choose>
 	  <j:if test="${!item.params.isEmpty()}">
-	    <div style="float:right;margin-right:10px;">
-	      <l:icon src="symbol-parameters" class="icon-sm" tooltip="Build Parameters:${item.params}"/>
+	    <div style="float:right;margin-right:10px;" tooltip="Build Parameters:${item.params}" data-tooltip-append-to-parent="true">
+	      <l:icon src="symbol-parameters" class="icon-sm" />
 	    </div>
 	  </j:if>
 	  </div>

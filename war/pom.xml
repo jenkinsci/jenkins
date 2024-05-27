@@ -47,12 +47,12 @@ THE SOFTWARE.
     <!-- HTTP listener port -->
     <port>8080</port>
     <mina-sshd-api.version>2.12.1-101.v85b_e08b_780dd</mina-sshd-api.version>
-    <node.version>20.13.0</node.version>
+    <node.version>20.13.1</node.version>
     <!-- frontend-maven-plugin will install this Yarn version as bootstrap, then hand over control to Yarn Berry. -->
     <yarn.version>1.22.19</yarn.version>
     <!-- maven-antrun-plugin will download this Yarn version. -->
-    <yarn-berry.version>4.2.1</yarn-berry.version>
-    <yarn-berry.sha256sum>15ce76682a8cd2090257b883cd69c637925b29573f9573e8403ec227d5ab6815</yarn-berry.sha256sum>
+    <yarn-berry.version>4.2.2</yarn-berry.version>
+    <yarn-berry.sha256sum>1aa43a5304405be7a7cb9cb5de7b97de9c4e8ddd3273e4dad00d6ae3eb39f0ef</yarn-berry.sha256sum>
   </properties>
 
   <dependencyManagement>
@@ -239,7 +239,7 @@ THE SOFTWARE.
                   <!-- detached after 1.561 -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>matrix-project</artifactId>
-                  <version>822.824.v14451b_c0fd42</version>
+                  <version>830.v7ea_da_561b_a_34</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -260,7 +260,7 @@ THE SOFTWARE.
                   <!-- dependency of junit, plugin-util-api, and workflow-support -->
                   <groupId>org.jenkins-ci.plugins.workflow</groupId>
                   <artifactId>workflow-api</artifactId>
-                  <version>1291.v51fd2a_625da_7</version>
+                  <version>1312.ve804c2f2d51e</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -407,14 +407,14 @@ THE SOFTWARE.
                   <!-- detached after 2.330 -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>javax-activation-api</artifactId>
-                  <version>1.2.0-6</version>
+                  <version>1.2.0-7</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <!-- detached after 2.330 -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>javax-mail-api</artifactId>
-                  <version>1.6.2-9</version>
+                  <version>1.6.2-10</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -463,7 +463,7 @@ THE SOFTWARE.
                   <!-- dependency of junit and matrix-auth -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>ionicons-api</artifactId>
-                  <version>73.vb_f522f227457</version>
+                  <version>74.v93d5eb_813d5f</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
