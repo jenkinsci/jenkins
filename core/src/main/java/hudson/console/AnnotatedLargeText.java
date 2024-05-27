@@ -28,8 +28,6 @@ package hudson.console;
 
 import static java.lang.Math.abs;
 
-import com.jcraft.jzlib.GZIPInputStream;
-import com.jcraft.jzlib.GZIPOutputStream;
 import edu.umd.cs.findbugs.annotations.CheckReturnValue;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.remoting.ObjectInputStreamEx;
@@ -45,6 +43,8 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.concurrent.TimeUnit;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 import javax.crypto.Cipher;
 import javax.crypto.CipherInputStream;
 import javax.crypto.CipherOutputStream;
