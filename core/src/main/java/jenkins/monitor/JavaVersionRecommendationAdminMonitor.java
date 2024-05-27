@@ -82,7 +82,7 @@ public class JavaVersionRecommendationAdminMonitor extends AdministrativeMonitor
         if (Jenkins.VERSION.split("[.]").length > 2) {
             // LTS will require Java 17 or newer beginning 30 Oct 2024
             // https://groups.google.com/g/jenkinsci-dev/c/gsXAqOQQEPc/m/VT9IBYdmAQAJ
-            supportedVersions.put(11, LocalDate.of(2024, 10, 30)); // Temurin: 2024-10-31
+            supportedVersions.put(11, LocalDate.of(2024, 9, 30)); // Temurin: 2024-10-31
         } else {
             // Weekly will require Java 17 or newer beginning 18 Jun 2024
             // https://groups.google.com/g/jenkinsci-dev/c/gsXAqOQQEPc/m/4fn4Un1iAwAJ
