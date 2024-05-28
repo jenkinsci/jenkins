@@ -26,7 +26,7 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
   <l:layout permission="${app.ADMINISTER}" title="${%Users}" type="one-column">
     <l:main-panel>
-      <l:app-bar title="${%Users}">
+      <l:app-bar title="${%Users}" subtitle="${it.allUsers.size()}">
         <l:isAdmin>
           <a href="addUser" class="jenkins-button jenkins-button--primary">
             <l:icon src="symbol-add" />
