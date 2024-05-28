@@ -242,9 +242,13 @@ public class CloudSet extends AbstractModelObject implements Describable<CloudSe
      */
     @POST
     public synchronized void doDoCreate(StaplerRequest req, StaplerResponse rsp,
-                                            @QueryParameter String type) throws IOException, ServletException, Descriptor.FormException {
+                                            @QueryParameter String cloudDescriptorName) throws IOException, ServletException, Descriptor.FormException {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
-        Cloud cloud = Cloud.all().find(type).newInstance(req, req.getSubmittedForm());
+        Descriptor<Cloud> cloudDescriptor = Cloud.all().findByName(cloudDescriptorName);
+        if (cloudDescriptor == null) {
+            throw new Failure(String.format("No cloud type ‘%s’ is known", cloudDescriptorName));
+        }
+        Cloud cloud = cloudDescriptor.newInstance(req, req.getSubmittedForm());
         if (!Jenkins.get().clouds.add(cloud)) {
             LOGGER.log(Level.WARNING, () -> "Creating duplicate cloud name " + cloud.name + ". Plugin " + Jenkins.get().getPluginManager().whichPlugin(cloud.getClass()) + " should be updated to support user provided name.");
         }
