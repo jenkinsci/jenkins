@@ -26,7 +26,6 @@ package hudson.model;
 
 import static java.util.concurrent.TimeUnit.DAYS;
 
-import com.jcraft.jzlib.GZIPOutputStream;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
@@ -56,6 +55,7 @@ import java.util.Base64;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.zip.GZIPOutputStream;
 import javax.crypto.Cipher;
 import javax.crypto.CipherInputStream;
 import javax.crypto.CipherOutputStream;

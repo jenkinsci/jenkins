@@ -83,7 +83,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>io.jenkins.plugins</groupId>
         <artifactId>javax-activation-api</artifactId>
-        <version>1.2.0-6</version>
+        <version>1.2.0-7</version>
       </dependency>
       <dependency>
         <groupId>io.jenkins.plugins</groupId>
@@ -116,7 +116,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jenkins-ci.plugins.workflow</groupId>
         <artifactId>workflow-api</artifactId>
-        <version>1311.v4250456a_e552</version>
+        <version>1312.ve804c2f2d51e</version>
       </dependency>
       <dependency>
         <groupId>org.jenkins-ci.plugins.workflow</groupId>
@@ -142,7 +142,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>2205.v7e19cc98f9c7</version>
+      <version>2207.v3b_df04c801d4</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -177,7 +177,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>io.jenkins.plugins</groupId>
       <artifactId>javax-mail-api</artifactId>
-      <version>1.6.2-9</version>
+      <version>1.6.2-10</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -211,7 +211,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>cloudbees-folder</artifactId>
-      <version>6.940.v7fa_03b_f14759</version>
+      <version>6.942.vb_43318a_156b_2</version>
       <scope>test</scope>
     </dependency>
     <dependency>
