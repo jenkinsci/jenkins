@@ -382,7 +382,7 @@ public class CLI {
         }
     }
 
-    private static int plainHttpConnection(String url, List<String> args, CLIConnectionFactory factory)
+    static int plainHttpConnection(String url, List<String> args, CLIConnectionFactory factory)
             throws GeneralSecurityException, IOException, InterruptedException {
         LOGGER.log(FINE, "Trying to connect to {0} via plain protocol over HTTP", url);
         if (factory.noCertificateCheck) {
@@ -419,7 +419,7 @@ public class CLI {
         }
     }
 
-    private static final class ClientSideImpl extends PlainCLIProtocol.ClientSide {
+    static final class ClientSideImpl extends PlainCLIProtocol.ClientSide {
 
         volatile boolean complete;
         private int exit = -1;
@@ -539,4 +539,50 @@ public class CLI {
     static final Logger LOGGER = Logger.getLogger(CLI.class.getName());
 
     private static final int PING_INTERVAL = Integer.getInteger(CLI.class.getName() + ".pingInterval", 3_000); // JENKINS-59267
+}
+
+class HttpConnectionManager{
+
+    private static CLIConnectionFactory factory;
+    static final Logger LOGGER = Logger.getLogger(CLI.class.getName());
+
+    private static final int PING_INTERVAL = Integer.getInteger(CLI.class.getName() + ".pingInterval", 3_000);
+    public HttpConnectionManager(CLIConnectionFactory factory) throws IOException {
+        this.factory = factory;
+    }
+
+    static FullDuplexHttpStream createStream(String url) throws IOException {
+        return new FullDuplexHttpStream(new URL(url), "cli?remoting=false", factory.authorization);
+    }
+
+     int plainHttpConnection(String url, List<String> args) throws IOException, InterruptedException {
+        LOGGER.log(FINE, "Trying to connect to {0} via plain protocol over HTTP", url);
+        FullDuplexHttpStream streams = createStream(url);
+        try (CLI.ClientSideImpl connection = new CLI.ClientSideImpl(new PlainCLIProtocol.FramedOutput(streams.getOutputStream()))) {
+            connection.start(args);
+            InputStream is = streams.getInputStream();
+            if (is.read() != 0) { // cf. FullDuplexHttpService
+                throw new IOException("expected to see initial zero byte; perhaps you are connecting to an old server which does not support -http?");
+            }
+            new PlainCLIProtocol.FramedReader(connection, is).start();
+            new Thread("ping") { // JENKINS-46659
+                @Override
+                public void run() {
+                    try {
+                        Thread.sleep(PING_INTERVAL);
+                        while (!connection.complete) {
+                            LOGGER.fine("sending ping");
+                            connection.sendEncoding(Charset.defaultCharset().name()); // no-op at this point
+                            Thread.sleep(PING_INTERVAL);
+                        }
+                    } catch (IOException | InterruptedException x) {
+                        LOGGER.log(Level.WARNING, null, x);
+                    }
+                }
+
+            }.start();
+            return connection.exit();
+        }
+    }
+
 }
