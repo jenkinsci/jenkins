@@ -1,10 +1,7 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout">
-  <j:set var="tooltip">
-    <l:keyboard-shortcut prefix="${%Search}">CMD+K</l:keyboard-shortcut>
-  </j:set>
   <div class="page-header__hyperlinks">
-    <button id="button-open-command-palette" data-html-tooltip="${tooltip}" data-keyboard-shortcut="CMD+K"
+    <button id="button-open-command-palette" tooltip="${%Search}" data-keyboard-shortcut="CMD+K"
             data-search-url="${rootURL + '/search/suggest'}"
             data-search-help-url="${searchHelpUrl}"
     >
