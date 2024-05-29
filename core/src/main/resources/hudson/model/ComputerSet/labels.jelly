@@ -1,0 +1,73 @@
+<!--
+The MIT License
+
+Copyright (c) 2022-, Martin Pokorny, and a number of other of contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+
+-->
+
+<!--
+  Manage node labels
+-->
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
+  <l:layout permissions="${app.MANAGE_AND_SYSTEM_READ}" title="${%Node labels configuration}">
+    <j:set var="readOnlyMode" value="${!app.hasPermission(app.MANAGE)}" />
+    <st:include page="sidepanel.jelly" />
+    <l:main-panel>
+      <table id="computers" class="jenkins-table sortable">
+      <thead>
+        <tr>
+          <th align="left" initialSortDir="down">${%Name}</th>
+          <th align="right" >${%Description}</th>
+          <th align="right" tooltip="${%Count of assigned nodes}">${%Assigned nodes}</th>
+          <th align="right" class="jenkins-table__cell--tight" data-sort-disable="true"/>
+        </tr>
+      </thead> 
+      <tbody>
+
+      <j:forEach var="label" items="${it.getAllLabels()}">
+        <tr id="label_${label.name}">
+          <td align="left">
+            <st:include it="${label}" page="../Label/Badge/index.jelly"/>
+          </td>
+          <td align="right">
+            <div class="pane desc indent-multiline">
+              <j:out value="${app.markupFormatter.translate(label.description)}"/>
+            </div>
+          </td>
+          <td align="right">
+            ${label.sortedNodes.size()}
+          </td>
+          <td class="jenkins-table__cell--tight" align="right">
+              <div class="jenkins-table__cell__button-wrapper">
+                <a href="${rootURL}/${label.url}configure" class="jenkins-table__button">
+                  <l:icon src="symbol-settings" />
+                </a>
+              </div>
+          </td>
+        </tr>
+      </j:forEach>
+      </tbody>
+      </table>
+
+    </l:main-panel>
+  </l:layout>
+</j:jelly>

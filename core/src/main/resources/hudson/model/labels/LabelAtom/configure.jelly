@@ -42,6 +42,18 @@ THE SOFTWARE.
           <f:textarea name="description" value="${it.description}" codemirror-mode="${app.markupFormatter.codeMirrorMode}" codemirror-config="${app.markupFormatter.codeMirrorConfig}" previewEndpoint="/markupFormatter/previewDescription"/>
         </f:entry>
 
+        <f:entry title="${%Color}">
+          <input type="color" name="color" style="color:${it.color}" value="${it.color}" />
+
+          
+        </f:entry>
+
+        <h2>${%Supported colors}</h2>
+          <j:forEach var="entry" items="${it.supportedColors}">
+            ${entry}<br>
+          </j:forEach>
+
+
         <f:descriptorList descriptors="${it.getApplicablePropertyDescriptors()}" instances="${it.properties}" />
 
         <f:block>

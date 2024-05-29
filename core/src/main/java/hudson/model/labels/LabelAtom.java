@@ -67,6 +67,7 @@ import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.kohsuke.stapler.verb.POST;
 
+
 /**
  * Atomic single token label, like "foo" or "bar".
  *
@@ -86,14 +87,17 @@ public class LabelAtom extends Label implements Saveable {
     @CopyOnWrite
     protected transient volatile List<Action> transientActions = new Vector<>();
 
+    // label description
     private String description;
+    // label color (used in badges)
+    private String color;
 
     public LabelAtom(@NonNull String name) {
         super(name);
     }
 
     /**
-     * If the label contains 'unsafe' chars, escape them.
+     * If the label contains "unsafe" chars, escape them.
      */
     @Override
     public String getExpression() {
@@ -134,6 +138,7 @@ public class LabelAtom extends Label implements Saveable {
     }
 
     /**
+     * Returns label description.
      * @since 1.580
      */
     @Override
@@ -141,8 +146,90 @@ public class LabelAtom extends Label implements Saveable {
         return description;
     }
 
+    /**
+     * Set and save description
+     */
+    @SuppressWarnings("unused") // used by jelly view
     public void setDescription(String description) throws IOException {
         this.description = description;
+        save();
+    }
+
+    /**
+     * Returns label color as string. In case of empty string (or null)
+     * it means there are no color assigned.
+     */
+    @SuppressWarnings("unused") // used by jelly view in /computer/labels
+    public String getColor() {
+        if (color == null || color.isEmpty()) {
+            color = getSupportedColors().get(0);
+        }
+        if (color.startsWith("#")) {
+           return color;
+        }
+
+        return "var(--" + color + ")";
+    }
+
+    @SuppressWarnings("unused") // used by jelly view in /computer/labels
+    public String getColorCssClassId() {
+        // remove invalid css characters
+        return this.getColor().replace("#", "").replaceAll(" ", "").replace("(", "").replace(")", "").replaceAll("-", "");
+    }
+
+    public static List<String> getSupportedColors() {
+        List<String> list = new ArrayList<>();
+
+        list.add("background");
+
+        list.add("light-red");
+        list.add("red");
+        list.add("dark-red");
+
+        list.add("light-green");
+        list.add("green");
+        list.add("dark-green");
+
+        list.add("light-orange");
+        list.add("orange");
+        list.add("dark-orange");
+
+        list.add("light-yellow");
+        list.add("yellow");
+        list.add("dark-yellow");
+
+        list.add("light-blue");
+        list.add("blue");
+        list.add("dark-blue");
+
+        list.add("light-indigo");
+        list.add("indigo");
+        list.add("dark-indigo");
+
+        list.add("light-purple");
+        list.add("purple");
+        list.add("dark-purple");
+
+        list.add("light-pink");
+        list.add("pink");
+        list.add("dark-pink");
+
+        list.add("light-brown");
+        list.add("brown");
+        list.add("dark-brown");
+
+        return list;
+    }
+
+    /**
+     * Set and save color string.
+     * The function does not checks, if the color is valid or not.
+     * That means, when you use the function in external things, you must validate
+     * color-string by your self (use some color-picker tool).
+     */
+    @SuppressWarnings("unused") // used by jelly view in /computer/labels
+    public void setColor(String color) throws IOException {
+        this.color = color;
         save();
     }
 
@@ -234,6 +321,9 @@ public class LabelAtom extends Label implements Saveable {
 
         this.description = req.getSubmittedForm().getString("description");
 
+        // the color is given by color-picker, therefore should be valid and we skip the validation here
+        this.color = req.getSubmittedForm().getString("color");
+
         updateTransientActions();
         save();
 
@@ -298,7 +388,7 @@ public class LabelAtom extends Label implements Saveable {
     private static final XStream2 XSTREAM = new XStream2();
 
     static {
-        // Don't want Label.ConverterImpl to be used:
+        // Don"t want Label.ConverterImpl to be used:
         XSTREAM.registerConverter(new LabelAtomConverter(), 100);
     }
 
