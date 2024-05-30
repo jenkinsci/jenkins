@@ -43,7 +43,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 @Restricted(NoExternalUse.class)
 @MetaInfServices(Provider.class)
-public class Jetty12E88Provider implements Provider {
+public class Jetty12EE8Provider implements Provider {
 
     /**
      * Number of seconds a WebsocketConnection may stay idle until it expires.
@@ -55,11 +55,11 @@ public class Jetty12E88Provider implements Provider {
      */
     private static long IDLE_TIMEOUT_SECONDS = Long.getLong("jenkins.websocket.idleTimeout", 60L);
 
-    private static final String ATTR_LISTENER = Jetty12E88Provider.class.getName() + ".listener";
+    private static final String ATTR_LISTENER = Jetty12EE8Provider.class.getName() + ".listener";
 
     private boolean initialized = false;
 
-    public Jetty12E88Provider() {
+    public Jetty12EE8Provider() {
         JettyWebSocketServerContainer.class.hashCode();
     }
 
@@ -79,7 +79,7 @@ public class Jetty12E88Provider implements Provider {
             rsp.sendError(HttpServletResponse.SC_BAD_REQUEST, "only WS connections accepted here");
             return null;
         }
-        if (!JettyWebSocketServerContainer.getContainer(req.getServletContext()).upgrade(Jetty12E88Provider::createWebSocket, req, rsp)) {
+        if (!JettyWebSocketServerContainer.getContainer(req.getServletContext()).upgrade(Jetty12EE8Provider::createWebSocket, req, rsp)) {
             rsp.sendError(HttpServletResponse.SC_BAD_REQUEST, "did not manage to upgrade");
             return null;
         }
