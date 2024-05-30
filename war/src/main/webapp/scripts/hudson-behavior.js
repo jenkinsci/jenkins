@@ -1901,8 +1901,11 @@ function xor(a, b) {
 // eslint-disable-next-line no-unused-vars
 function replaceDescription(initialDescription, submissionUrl) {
   var d = document.getElementById("description");
-  d.firstElementChild.nextElementSibling.innerHTML =
-    "<div class='jenkins-spinner'></div>";
+  let button = d.firstElementChild.nextElementSibling;
+  if (button !== null) {
+    d.firstElementChild.nextElementSibling.innerHTML =
+      "<div class='jenkins-spinner'></div>";
+  }
   let parameters = {};
   if (initialDescription !== null && initialDescription !== "") {
     parameters["description"] = initialDescription;
