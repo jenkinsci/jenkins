@@ -239,14 +239,14 @@ THE SOFTWARE.
                   <!-- detached after 1.561 -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>matrix-project</artifactId>
-                  <version>830.v7ea_da_561b_a_34</version>
+                  <version>831.v084e85a_b_4ea_d</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <!-- dependency of command-launcher, junit, matrix-project, and workflow-support -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>script-security</artifactId>
-                  <version>1336.vf33a_a_9863911</version>
+                  <version>1341.va_2819b_414686</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -260,7 +260,7 @@ THE SOFTWARE.
                   <!-- dependency of junit, plugin-util-api, and workflow-support -->
                   <groupId>org.jenkins-ci.plugins.workflow</groupId>
                   <artifactId>workflow-api</artifactId>
-                  <version>1311.v4250456a_e552</version>
+                  <version>1316.v33eb_726c50b_a_</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -365,7 +365,7 @@ THE SOFTWARE.
                   <!-- detached after 2.16 -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>bouncycastle-api</artifactId>
-                  <version>2.30.1.77-225.v26ea_c9455fd9</version>
+                  <version>2.30.1.78.1-233.vfdcdeb_0a_08a_a_</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -407,14 +407,14 @@ THE SOFTWARE.
                   <!-- detached after 2.330 -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>javax-activation-api</artifactId>
-                  <version>1.2.0-6</version>
+                  <version>1.2.0-7</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <!-- detached after 2.330 -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>javax-mail-api</artifactId>
-                  <version>1.6.2-9</version>
+                  <version>1.6.2-10</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -456,7 +456,7 @@ THE SOFTWARE.
                   <!-- dependency of trilead-api -->
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>gson-api</artifactId>
-                  <version>2.10.1-15.v0d99f670e0a_7</version>
+                  <version>2.11.0-41.v019fcf6125dc</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>

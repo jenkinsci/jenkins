@@ -937,6 +937,7 @@ public abstract class AbstractItem extends Actionable implements Loadable, Item,
             // if everything went well, commit this new version
             out.commit();
             SaveableListener.fireOnChange(this, getConfigFile());
+            ItemListener.fireOnUpdated(this);
 
         } finally {
             out.abort(); // don't leave anything behind
