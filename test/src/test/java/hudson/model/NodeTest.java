@@ -172,7 +172,7 @@ public class NodeTest {
             computer.doToggleOffline("original message");
             cause = (OfflineCause.UserCause) computer.getTemporarilyOfflineCause();
             assertTrue(cause.toString(), cause.toString().matches("^.*?Marked temporarily offline by someone@somewhere.com : original message"));
-            assertThat(computer.getTemporarilyOfflineCauseReason(), equalTo("Marked temporarily offline by someone@somewhere.com : original message"));
+            assertThat(computer.getTemporarilyOfflineCauseReason(), equalTo("original message"));
             assertEquals(someone, cause.getUser());
         }
 
@@ -181,12 +181,12 @@ public class NodeTest {
             ((SlaveComputer) computer).doDoDisconnect("disconnect message");
             cause = (OfflineCause.UserCause) computer.getTemporarilyOfflineCause();
             assertTrue(cause.toString(), cause.toString().matches("^.*?Marked temporarily offline by someone@somewhere.com : original message"));
-            assertThat(computer.getTemporarilyOfflineCauseReason(), equalTo("Marked temporarily offline by someone@somewhere.com : original message"));
+            assertThat(computer.getTemporarilyOfflineCauseReason(), equalTo("original message"));
             assertEquals(someone, cause.getUser());
 
             cause = (OfflineCause.UserCause) computer.getOfflineCause();
             assertTrue(cause.toString(), cause.toString().matches("^.*?Disconnected by root@localhost : disconnect message"));
-            assertThat(computer.getOfflineCauseReason(), equalTo("Disconnected by root@localhost : disconnect message"));
+            assertThat(computer.getOfflineCauseReason(), equalTo("disconnect message"));
             assertEquals(root, cause.getUser());
         }
 }
