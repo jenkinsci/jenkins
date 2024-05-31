@@ -307,7 +307,13 @@ THE SOFTWARE.
                   <version>5.5.0-1</version>
                   <type>hpi</type>
                 </artifactItem>
-
+                <artifactItem>
+                  <!-- dependency of trilead-api -->
+                  <groupId>io.jenkins.plugins</groupId>
+                  <artifactId>eddsa-api</artifactId>
+                  <version>0.3.0-4.v84c6f0f4969e</version>
+                  <type>hpi</type>
+                </artifactItem>
                 <artifactItem>
                   <!-- dependency of jackson2-api -->
                   <groupId>io.jenkins.plugins</groupId>
