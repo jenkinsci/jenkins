@@ -44,7 +44,7 @@ THE SOFTWARE.
        data-page-entry-oldest="${page.oldestOnPage}"
        data-page-has-up="${page.hasUpPage}"
        data-page-has-down="${page.hasDownPage}">
-    <l:card id="jenkins-builds" title="Builds" controls="${controls}" expandable="buildTimeTrend">
+    <l:card id="jenkins-builds" title="Builds" controls="${controls}" expandable="${it.baseUrl}/buildTimeTrend">
       <l:search-bar placeholder="${%find}"
                     clazz="${page.runs.isEmpty() and page.queueItems.isEmpty() ? 'jenkins-hidden' : ''}"/>
 
