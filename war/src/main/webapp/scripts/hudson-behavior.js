@@ -1756,15 +1756,6 @@ function rowvgStartEachRow(recursive, f) {
     },
   );
 
-  Behaviour.specify(
-    ".button-with-dropdown",
-    "-button-with-dropdown",
-    ++p,
-    function (e) {
-      new YAHOO.widget.Button(e, { type: "menu", menu: e.nextElementSibling });
-    },
-  );
-
   window.addEventListener("load", function () {
     // Add a class to the bottom bar when it's stuck to the bottom of the screen
     const el = document.querySelector("#bottom-sticker");
@@ -1901,8 +1892,11 @@ function xor(a, b) {
 // eslint-disable-next-line no-unused-vars
 function replaceDescription(initialDescription, submissionUrl) {
   var d = document.getElementById("description");
-  d.firstElementChild.nextElementSibling.innerHTML =
-    "<div class='jenkins-spinner'></div>";
+  let button = d.firstElementChild.nextElementSibling;
+  if (button !== null) {
+    d.firstElementChild.nextElementSibling.innerHTML =
+      "<div class='jenkins-spinner'></div>";
+  }
   let parameters = {};
   if (initialDescription !== null && initialDescription !== "") {
     parameters["description"] = initialDescription;
