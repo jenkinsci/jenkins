@@ -40,7 +40,6 @@ THE SOFTWARE.
             <l:breakable value="${it.displayName}"/>
           </h1>
         </div>
-        <l:app-bar-controls />
         <div class="jenkins-app-bar__controls">
           <t:editDescriptionButton permission="${it.CONFIGURE}"/>
         </div>
