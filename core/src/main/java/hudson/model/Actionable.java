@@ -110,6 +110,24 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
         return _actions;
     }
 
+    public List<Action> getMagic() {
+        return getAllActions().stream()
+                .filter(e -> {
+                    String icon = e.getIconFileName();
+
+                    if (e instanceof IconSpec) {
+                        if (((IconSpec) e).getIconClassName() != null) {
+                            icon = ((IconSpec) e).getIconClassName();
+                        }
+                    }
+
+                    return !StringUtils.isBlank(e.getDisplayName()) && !StringUtils.isBlank(icon);
+                })
+                .sorted(Comparator.comparingInt((Action e) -> e.getGroup().getOrder())
+                        .thenComparing(e -> Objects.requireNonNullElse(e.getDisplayName(), "")))
+                .collect(Collectors.toUnmodifiableList());
+    }
+
     public List<Action> getTransientActions() {
         List<Action> actions = new ArrayList<>();
 

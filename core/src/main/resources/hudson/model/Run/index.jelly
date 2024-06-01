@@ -26,19 +26,20 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:i="jelly:fmt">
   <l:layout title="${it.fullDisplayName}">
-    <st:include page="sidepanel.jelly" />
+    <st:include page="sidepanel.jelly" /> 
 
     <!-- no need for additional breadcrumb here as we're on an index page already including breadcrumb -->
     <l:main-panel>
       <j:set var="controls">
-        <t:editDescriptionButton permission="${it.UPDATE}"/>
-        <l:hasPermission permission="${it.UPDATE}">
-          <st:include page="logKeep.jelly" />
-        </l:hasPermission>
         <l:app-bar-controls />
       </j:set>
 
       <t:buildCaption controls="${controls}">${it.displayName} (<i:formatDate value="${it.timestamp.time}" type="both" dateStyle="medium" timeStyle="medium"/>)</t:buildCaption>
+
+      <t:editDescriptionButton permission="${it.UPDATE}"/>
+      <l:hasPermission permission="${it.UPDATE}">
+        <st:include page="logKeep.jelly" />
+      </l:hasPermission>
 
       <div>
         <t:editableDescription permission="${it.UPDATE}" hideButton="true"/>

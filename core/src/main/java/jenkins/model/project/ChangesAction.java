@@ -2,7 +2,7 @@ package jenkins.model.project;
 
 import hudson.Extension;
 import hudson.model.Action;
-import hudson.model.Job;
+import hudson.model.Run;
 import java.util.Collection;
 import java.util.Set;
 import jenkins.model.TransientActionFactory;
@@ -11,39 +11,38 @@ import jenkins.model.menu.event.Event;
 import jenkins.model.menu.event.LinkEvent;
 
 @Extension
-public class ConfigureProjectAction extends TransientActionFactory<Job> {
+public class ChangesAction extends TransientActionFactory<Run> {
 
     @Override
-    public Class<Job> type() {
-        return Job.class;
+    public Class<Run> type() {
+        return Run.class;
     }
 
     @Override
-    public Collection<? extends Action> createFor(Job target) {
-        if (!target.hasPermission(Job.CONFIGURE) && !(target.hasPermission(Job.EXTENDED_READ))) {
+    public Collection<? extends Action> createFor(Run target) {
+        if (!target.hasPermission(Run.DELETE)) {
             return Set.of();
         }
 
         return Set.of(new Action() {
             @Override
             public String getDisplayName() {
-                return target.hasPermission(Job.CONFIGURE) ? Messages.ConfigureProjectFactory_Configure() : Messages.ConfigureProjectFactory_View();
+                return "Changes";
             }
 
             @Override
             public String getIconFileName() {
-                return "symbol-settings";
+                return "symbol-changes";
             }
 
             @Override
             public Group getGroup() {
-                return Group.IN_APP_BAR;
+                return Group.FIRST_IN_APP_BAR;
             }
 
             @Override
             public Event getEvent() {
-                // TODO - deprecated method - dont use this!
-                return LinkEvent.of(target.getAbsoluteUrl() + "configure");
+                return LinkEvent.of("changes");
             }
         });
     }
