@@ -41,9 +41,12 @@ THE SOFTWARE.
           </h1>
         </div>
         <l:app-bar-controls />
+        <div class="jenkins-app-bar__controls">
+          <t:editDescriptionButton permission="${it.CONFIGURE}"/>
+        </div>
       </div>
 
-      <t:editableDescription permission="${it.CONFIGURE}" />
+      <t:editableDescription permission="${it.CONFIGURE}" hideButton="true"/>
 
       <j:if test="${(it.fullName!=it.fullDisplayName) and (it.class.name!='hudson.matrix.MatrixConfiguration')}"> <!-- TODO rather check for TopLevelItem (how to do this from Jelly?) -->
         <j:choose>

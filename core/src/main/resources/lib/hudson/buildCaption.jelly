@@ -27,6 +27,12 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <st:documentation>
+    <st:attribute name="controls">
+      Optional field to set controls in the app bar
+    </st:attribute>
+  </st:documentation>
+
   <div class="jenkins-app-bar">
     <div class="jenkins-app-bar__content jenkins-build-caption" data-status-url="${rootURL}/${it.url}statusIcon">
       <l:icon alt="${it.iconColor.description}" src="symbol-status-${it.iconColor.iconName}"
@@ -47,6 +53,7 @@ THE SOFTWARE.
         </div>
       </j:if>
       <st:adjunct includes="lib.hudson.build-caption"/>
+      <j:out value="${attrs.controls}" />
     </div>
   </div>
 </j:jelly>
