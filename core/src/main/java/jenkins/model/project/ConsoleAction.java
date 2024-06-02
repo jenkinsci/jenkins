@@ -11,7 +11,7 @@ import jenkins.model.menu.event.Event;
 import jenkins.model.menu.event.LinkEvent;
 
 @Extension
-public class ChangesAction extends TransientActionFactory<Run> {
+public class ConsoleAction extends TransientActionFactory<Run> {
 
     @Override
     public Class<Run> type() {
@@ -20,19 +20,15 @@ public class ChangesAction extends TransientActionFactory<Run> {
 
     @Override
     public Collection<? extends Action> createFor(Run target) {
-        if (!target.hasPermission(Run.DELETE)) {
-            return Set.of();
-        }
-
         return Set.of(new Action() {
             @Override
             public String getDisplayName() {
-                return "Changes";
+                return "Console Output";
             }
 
             @Override
             public String getIconFileName() {
-                return "symbol-changes";
+                return "symbol-terminal";
             }
 
             @Override
@@ -42,7 +38,7 @@ public class ChangesAction extends TransientActionFactory<Run> {
 
             @Override
             public Event getEvent() {
-                return LinkEvent.of("changes");
+                return LinkEvent.of("console");
             }
         });
     }
