@@ -26,7 +26,7 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define">
   <st:documentation>
     <st:attribute name="message">
-      Optional message for the shortcut
+      Tooltip message for the shortcut. Use the placeholder {0} escaped (wrapped in '). A minimal message consisting of only the shortcut would be '{0}'.
     </st:attribute>
     Displays a keyboard shortcut chip based on the component's body.
     CMD will automatically be translated to the user's operating system's appropriate variant.
