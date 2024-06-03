@@ -16,6 +16,21 @@ public class SymbolJenkinsTest {
             .addPlugins("plugins/design-library.jpi", "plugins/prism-api.jpi", "plugins/bootstrap5-api.jpi");
 
     @Test
+    @DisplayName("When resolving a symbol where the tooltip contains '$' no error is thrown")
+    public void dollarInToolTipSucceeds() throws Throwable {
+        rjr.then(SymbolJenkinsTest::_dollarInTooltipSucceeds);
+    }
+
+    private static void _dollarInTooltipSucceeds(JenkinsRule j) {
+        String symbol = Symbol.get(new SymbolRequest.Builder()
+                .withName("add")
+                .withTooltip("$test")
+                .build()
+        );
+        assertThat(symbol, containsString("tooltip=\"$test\""));
+    }
+
+    @Test
     @DisplayName("When resolving a symbol from a missing plugin, the placeholder is generated instead")
     public void missingSymbolFromPluginDefaultsToPlaceholder() throws Throwable {
         rjr.then(SymbolJenkinsTest::_missingSymbolFromPluginDefaultsToPlaceholder);
