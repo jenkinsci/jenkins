@@ -79,7 +79,7 @@ public final class Symbol {
             symbol = symbol.replaceAll("<svg", Matcher.quoteReplacement("<svg data-html-tooltip=\"" + Functions.htmlAttributeEscape(htmlTooltip) + "\""));
         }
         if (id != null && !id.isBlank()) {
-            symbol = symbol.replaceAll("<svg", "<svg id=\"" + Functions.htmlAttributeEscape(id) + "\"");
+            symbol = symbol.replaceAll("<svg", Matcher.quoteReplacement("<svg id=\"" + Functions.htmlAttributeEscape(id) + "\""));
         }
         if (classes != null && !classes.isBlank()) {
             symbol = symbol.replaceAll("<svg", "<svg class=\"" + Functions.htmlAttributeEscape(classes) + "\"");
