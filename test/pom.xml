@@ -96,6 +96,11 @@ THE SOFTWARE.
         <version>497.v94e7d9fffa_b_9</version>
       </dependency>
       <dependency>
+        <groupId>org.jenkins-ci.plugins</groupId>
+        <artifactId>bouncycastle-api</artifactId>
+        <version>2.30.1.78.1-233.vfdcdeb_0a_08a_a_</version>
+      </dependency>
+      <dependency>
         <!-- RequireUpperBoundDeps via mailer and junit -->
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>display-url-api</artifactId>
