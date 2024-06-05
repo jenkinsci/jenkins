@@ -61,7 +61,8 @@ public class HudsonPrivateSecurityRealmFIPSTest {
 
     @Rule
     public RealJenkinsRule rjr = new RealJenkinsRule().includeTestClasspathPlugins(false)
-                                                       .javaOptions("-Xmx256M", "-Djenkins.security.FIPS140.COMPLIANCE=true");
+                                                       .javaOptions("-Xmx256M", "-Djenkins.security.FIPS140.COMPLIANCE=true")
+                                                       .updateRealJenkinsRuleInitPluginBaseline(true); // prevent detached plugins
 
     @Test
     public void generalLogin() throws Throwable {
