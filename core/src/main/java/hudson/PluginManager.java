@@ -719,7 +719,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         if (manifest == null) {
             return;
         }
-        
+
         String dependencySpec = manifest.getMainAttributes().getValue("Plugin-Dependencies");
         if (dependencySpec != null) {
             String[] dependencyTokens = dependencySpec.split(",");
