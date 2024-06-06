@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
 import jenkins.model.Jenkins;
 import org.apache.commons.io.IOUtils;
 
@@ -55,13 +56,13 @@ public final class Symbol {
                 .computeIfAbsent(identifier, key -> new ConcurrentHashMap<>())
                 .computeIfAbsent(name, key -> loadSymbol(identifier, key));
         if ((tooltip != null && !tooltip.isBlank()) && (htmlTooltip == null || htmlTooltip.isBlank())) {
-            symbol = symbol.replaceAll("<svg", "<svg tooltip=\"" + Functions.htmlAttributeEscape(tooltip) + "\"");
+            symbol = symbol.replaceAll("<svg", Matcher.quoteReplacement("<svg tooltip=\"" + Functions.htmlAttributeEscape(tooltip) + "\""));
         }
         if (htmlTooltip != null && !htmlTooltip.isBlank()) {
-            symbol = symbol.replaceAll("<svg", "<svg data-html-tooltip=\"" + Functions.htmlAttributeEscape(htmlTooltip) + "\"");
+            symbol = symbol.replaceAll("<svg", Matcher.quoteReplacement("<svg data-html-tooltip=\"" + Functions.htmlAttributeEscape(htmlTooltip) + "\""));
         }
         if (id != null && !id.isBlank()) {
-            symbol = symbol.replaceAll("<svg", "<svg id=\"" + Functions.htmlAttributeEscape(id) + "\"");
+            symbol = symbol.replaceAll("<svg", Matcher.quoteReplacement("<svg id=\"" + Functions.htmlAttributeEscape(id) + "\""));
         }
         if (classes != null && !classes.isBlank()) {
             symbol = symbol.replaceAll("<svg", "<svg class=\"" + Functions.htmlAttributeEscape(classes) + "\"");
