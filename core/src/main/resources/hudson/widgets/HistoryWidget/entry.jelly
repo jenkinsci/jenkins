@@ -80,7 +80,7 @@ THE SOFTWARE.
     </div>
 
     <button class="jenkins-card__reveal jenkins-jumplist-link" data-href="${link}">
-      <l:icon src="symbol-menu" />
+      <l:icon src="symbol-chevron-down" />
     </button>
     <j:if test="${!empty build.truncatedDescription}">
       <div class="app-builds-container__item__description">
