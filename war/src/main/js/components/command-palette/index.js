@@ -110,7 +110,7 @@ function init() {
     commandPalette.showModal();
     commandPaletteInput.focus();
     commandPaletteInput.setSelectionRange(
-      commandPaletteInput.value.length,
+      0,
       commandPaletteInput.value.length,
     );
 
