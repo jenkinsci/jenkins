@@ -100,19 +100,20 @@ function init() {
     });
   }
 
+  const debouncedLoad = debounce(() => {
+    renderResults();
+  }, 150);
+
   commandPaletteInput.addEventListener("input", () => {
     commandPaletteSearchBarContainer.classList.add("jenkins-search--loading");
-    debounce(renderResults, 300)();
+    debouncedLoad();
   });
 
   // Helper methods for visibility of command palette
   function showCommandPalette() {
     commandPalette.showModal();
     commandPaletteInput.focus();
-    commandPaletteInput.setSelectionRange(
-      0,
-      commandPaletteInput.value.length,
-    );
+    commandPaletteInput.setSelectionRange(0, commandPaletteInput.value.length);
 
     renderResults();
   }
