@@ -313,7 +313,7 @@ public class SearchTest {
 
             String name = (String) jsonSuggestion.get("name");
 
-            if ("my-folder-1 → job-2".equals(name)) {
+            if ("my-folder-1 » job-2".equals(name)) {
                 foundDisplayName = true;
             }
         }
