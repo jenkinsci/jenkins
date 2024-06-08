@@ -28,32 +28,43 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <st:documentation>
-    See https://www.jenkins.io/doc/developer/forms/jelly-form-controls/ for the reference.
+    See
+    https://www.jenkins.io/doc/developer/forms/jelly-form-controls/
+    for the reference.
 
-    <st:attribute name="method" use="required">Server-side method that handles the validation. For example, if this is 'foo', you need "doFoo" on your descriptor class.</st:attribute>
-    <st:attribute name="title" use="required">Caption of the validate button. Should be internationalized.</st:attribute>
-    <st:attribute name="progress">Caption of the text shown while the AJAX call is in progress. For example, "checking..."</st:attribute>
-    <st:attribute name="with">','-separated list of fields that are sent to the server.</st:attribute>
-    <st:attribute name="clazz">Additional CSS class(es) to add (such as client-side validation clazz="required", "number" or "positive-number"; these may be combined, as clazz="required number").</st:attribute>
+    <st:attribute name="method" use="required">
+      Server-side method that handles the validation. For example, if this is 'foo', you need "doFoo" on
+      your descriptor class.
+    </st:attribute>
+    <st:attribute name="title" use="required">
+      Caption of the validate button. Should be internationalized.
+    </st:attribute>
+    <st:attribute name="progress">
+      Caption of the text shown while the AJAX call is in progress. For example, "checking..."
+    </st:attribute>
+    <st:attribute name="with">
+      ','-separated list of fields that are sent to the server.
+    </st:attribute>
+    <st:attribute name="clazz">
+      Additional CSS class(es) to add (such as client-side validation clazz="required",
+      "number" or "positive-number"; these may be combined, as clazz="required number").
+    </st:attribute>
   </st:documentation>
   <f:entry>
     <div class="jenkins-validate-button__container">
-      <div style="display: none">
+      <div style="display:none;">
         <l:spinner text="${attrs.progress}" />
       </div>
-      <button
-        type="button"
-        class="jenkins-button validate-button ${attrs.clazz} Behaviour-validateButton"
-        data-validate-button-descriptor-url="${descriptor.descriptorFullUrl}"
-        data-validate-button-method="${method}"
-        data-validate-button-with="${with}"
-      >
+      <button type="button" class="jenkins-button validate-button ${attrs.clazz} Behaviour-validateButton"
+             data-validate-button-descriptor-url="${descriptor.descriptorFullUrl}"
+             data-validate-button-method="${method}"
+             data-validate-button-with="${with}">
         ${title}
       </button>
       <div class="jenkins-validate-button__container__status">
         <!-- Used to display the form validation status -->
       </div>
     </div>
-    <st:adjunct includes="lib.form.validateButton.validateButton" />
+    <st:adjunct includes="lib.form.validateButton.validateButton"/>
   </f:entry>
 </j:jelly>

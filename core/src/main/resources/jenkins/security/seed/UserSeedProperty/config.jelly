@@ -1,42 +1,34 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:f="/lib/form">
-  <st:adjunct includes="jenkins.security.seed.UserSeedProperty.resources" />
-  <f:entry field="resetSeed">
-    <!-- 
+    <st:adjunct includes="jenkins.security.seed.UserSeedProperty.resources" />
+    <f:entry field="resetSeed">
+        <!-- 
             name=OK is a hack until 2.129 where the "ignore-dirty-panel" is added, 
             otherwise the "there are some modifications on the page" will appear after redirection 
         -->
-    <div class="user-seed-panel" name="OK">
-      <j:choose>
-        <j:when test="${descriptor.isCurrentUser(it)}">
-          <button
-            class="jenkins-button jenkins-!-destructive-color"
-            type="button"
-            name="reset-seed"
-            id="user-seed-property-reset-seed"
-            data-target-url="${descriptor.descriptorFullUrl}/renewSessionSeed"
-            data-confirm="${%resetSeed.confirmation}"
-            data-redirect-url="${request.contextPath}/"
-            data-confirm-title="${%resetSeed.confirmationTitle}"
-          >
-            ${%resetSeed.button}
-          </button>
-        </j:when>
-        <j:otherwise>
-          <button
-            class="jenkins-button jenkins-!-destructive-color"
-            type="button"
-            name="reset-seed"
-            id="user-seed-property-reset-seed"
-            data-target-url="${descriptor.descriptorFullUrl}/renewSessionSeed"
-            data-confirm="${%resetSeed.confirmation}"
-            data-confirm-title="${%resetSeed.confirmationTitle}"
-          >
-            ${%resetSeed.button}
-          </button>
-        </j:otherwise>
-      </j:choose>
-      <div class="display-after-reset">${%resetSeed.result}</div>
-    </div>
-  </f:entry>
+        <div class="user-seed-panel" name="OK">
+            <j:choose>
+                <j:when test="${descriptor.isCurrentUser(it)}">
+                    <button class="jenkins-button jenkins-!-destructive-color" type="button" name="reset-seed"
+                            id="user-seed-property-reset-seed"
+                            data-target-url="${descriptor.descriptorFullUrl}/renewSessionSeed"
+                            data-confirm="${%resetSeed.confirmation}"
+                            data-redirect-url="${request.contextPath}/"
+                            data-confirm-title="${%resetSeed.confirmationTitle}">
+                        ${%resetSeed.button}
+                    </button>
+                </j:when>
+                <j:otherwise>
+                    <button class="jenkins-button jenkins-!-destructive-color" type="button" name="reset-seed"
+                            id="user-seed-property-reset-seed"
+                            data-target-url="${descriptor.descriptorFullUrl}/renewSessionSeed"
+                            data-confirm="${%resetSeed.confirmation}"
+                            data-confirm-title="${%resetSeed.confirmationTitle}">
+                        ${%resetSeed.button}
+                    </button>
+                </j:otherwise>
+            </j:choose>
+            <div class="display-after-reset">${%resetSeed.result}</div>
+        </div>
+    </f:entry>
 </j:jelly>

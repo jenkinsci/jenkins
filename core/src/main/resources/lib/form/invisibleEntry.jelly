@@ -24,8 +24,11 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:f="/lib/form">
-  <st:documentation><![CDATA[ Invisible <f:entry> type. Useful for adding hidden field values. ]]></st:documentation>
-  <div style="display: none" class="tr">
+  <st:documentation> <![CDATA[
+    Invisible <f:entry> type. Useful for adding hidden field values.
+    ]]>
+  </st:documentation>
+  <div style="display:none" class='tr'>
     <div>
       <d:invokeBody />
     </div>

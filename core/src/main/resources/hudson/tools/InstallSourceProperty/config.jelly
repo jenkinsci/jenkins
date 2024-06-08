@@ -23,10 +23,12 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
-  <f:block>
-    <j:invokeStatic var="descriptors" className="hudson.tools.ToolInstallerDescriptor" method="for_">
-      <j:arg value="${toolDescriptor.clazz}" type="java.lang.Class" />
-    </j:invokeStatic>
-    <f:hetero-list name="installers" items="${instance.installers}" descriptors="${descriptors}" addCaption="${%Add Installer}" deleteCaption="${%Delete Installer}" hasHeader="true" />
-  </f:block>
+    <f:block>
+        <j:invokeStatic var="descriptors" className="hudson.tools.ToolInstallerDescriptor" method="for_">
+          <j:arg value="${toolDescriptor.clazz}" type="java.lang.Class" />
+        </j:invokeStatic>
+        <f:hetero-list name="installers" items="${instance.installers}" descriptors="${descriptors}"
+                       addCaption="${%Add Installer}" deleteCaption="${%Delete Installer}"
+                       hasHeader="true"/>
+    </f:block>
 </j:jelly>

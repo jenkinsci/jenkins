@@ -26,35 +26,47 @@ THE SOFTWARE.
   <st:documentation>
     Foldable block expanded when the corresponding item is selected in the drop-down list.
 
-    <st:attribute name="title"><![CDATA[ Human readable title text of this drop-down listbox. Shown in the same position as <f:entry title="..." /> ]]></st:attribute>
-    <st:attribute name="name" use="required">name of the drop-down list.</st:attribute>
-    <st:attribute name="help"><![CDATA[ Path to the inline help. See <f:entry help="..." /> ]]></st:attribute>
+    <st:attribute name="title"> <![CDATA[
+      Human readable title text of this drop-down listbox.
+      Shown in the same position as <f:entry title="..." />
+    ]]>
+    </st:attribute>
+    <st:attribute name="name" use="required">
+      name of the drop-down list.
+    </st:attribute>
+    <st:attribute name="help"> <![CDATA[
+      Path to the inline help. See <f:entry help="..." />
+    ]]>
+    </st:attribute>
   </st:documentation>
 
-  <div class="jenkins-form-item">
-    <div class="jenkins-form-label help-sibling">
-      ${attrs.title}
-      <f:helpLink url="${attrs.help}" featureName="${title}" />
+    <div class='jenkins-form-item'>
+        <div class="jenkins-form-label help-sibling">
+            ${attrs.title}
+            <f:helpLink url="${attrs.help}" featureName="${title}"/>
+        </div>
+        <j:if test="${attrs.help!=null}">
+            <f:helpArea/>
+        </j:if>
+        <div class="jenkins-select">
+            <!-- create drop-down list -->
+            <select class="jenkins-select__input dropdownList"
+                    disabled="${readOnlyMode ? 'true' : null}"
+            >
+                <j:set var="dropdownListMode" value="createSelectField"/>
+                <d:invokeBody/>
+            </select>
+        </div>
     </div>
-    <j:if test="${attrs.help!=null}">
-      <f:helpArea />
-    </j:if>
-    <div class="jenkins-select">
-      <!-- create drop-down list -->
-      <select class="jenkins-select__input dropdownList" disabled="${readOnlyMode ? 'true' : null}">
-        <j:set var="dropdownListMode" value="createSelectField" />
-        <d:invokeBody />
-      </select>
-    </div>
-  </div>
 
-  <!-- generate the actual form entries -->
-  <div class="dropdownList-container tr">
-    <div>
-      <div width="100%" name="${name}">
-        <j:set var="dropdownListMode" value="generateEntries" />
-        <d:invokeBody />
+    <!-- generate the actual form entries -->
+    <div class="dropdownList-container tr">
+      <div>
+        <div width="100%" name="${name}">
+            <j:set var="dropdownListMode" value="generateEntries"/>
+            <d:invokeBody/>
+        </div>
       </div>
     </div>
-  </div>
+
 </j:jelly>

@@ -24,7 +24,9 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout">
   <j:if test="${app.pluginManager.lastErrorCheckUpdateCenters != null}">
-    <template id="update-center-error">${app.pluginManager.lastErrorCheckUpdateCenters}</template>
+    <template id="update-center-error">
+      ${app.pluginManager.lastErrorCheckUpdateCenters}
+    </template>
   </j:if>
 
   <form action="checkUpdatesServer" method="post">

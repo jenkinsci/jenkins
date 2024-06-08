@@ -25,7 +25,7 @@ THE SOFTWARE.
 <!-- tell user that there's no workspace yet -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-  <st:statusCode value="404" />
+  <st:statusCode value="404"/>
   <l:layout>
     <st:include page="sidepanel.jelly" />
     <l:breadcrumb title="${%Error}" />
@@ -33,20 +33,34 @@ THE SOFTWARE.
       <h1>${%Error: no workspace}</h1>
       <j:choose>
         <j:when test="${it.lastBuild==null}">
-          <p>${%A project won't have any workspace until at least one build is performed.}</p>
+          <p>
+            ${%A project won't have any workspace until at least one build is performed.}
+          </p>
         </j:when>
         <j:otherwise>
-          <p>${%There's no workspace for this project. Possible reasons are:}</p>
+          <p>
+            ${%There's no workspace for this project. Possible reasons are:}
+          </p>
           <ol>
-            <li>${%The project was renamed recently and no build was done under the new name.}</li>
-            <li>${%The agent this project has run on for the last time was removed.}</li>
-            <li>${%li3(it.workspace)}</li>
-            <li>${%The workspace was wiped out and no build has been done since then.}</li>
+            <li>
+              ${%The project was renamed recently and no build was done under the new name.}
+            </li>
+            <li>
+              ${%The agent this project has run on for the last time was removed.}
+            </li>
+            <li>
+              ${%li3(it.workspace)}
+            </li>
+            <li>
+              ${%The workspace was wiped out and no build has been done since then.}
+            </li>
           </ol>
         </j:otherwise>
       </j:choose>
       <p>
-        <j:if test="${!it.isDisabled()}">${%text}</j:if>
+      <j:if test="${!it.isDisabled()}">
+        ${%text}
+      </j:if>
       </p>
     </l:main-panel>
   </l:layout>

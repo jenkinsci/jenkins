@@ -31,21 +31,17 @@ THE SOFTWARE.
   <l:layout title="Jenkins" type="one-column">
     <l:header />
     <l:main-panel>
-      <h1 style="text-align: center">
-        <img src="${imagesURL}/rage.svg" height="179" width="154" />
-        <span style="font-size: 50px">
-          <st:nbsp />
-          ${%Oops!}
-        </span>
-      </h1>
-      <div id="error-description">
-        <h2 style="text-align: center">${%problemHappened}</h2>
+        <h1 style="text-align: center">
+          <img src="${imagesURL}/rage.svg" height="179" width="154"/> <span style="font-size:50px"><st:nbsp/>${%Oops!}</span>
+        </h1>
+        <div id="error-description">
+          <h2 style="text-align: center">${%problemHappened}</h2>
         <p style="text-align: center">Logging ID=${request.getAttribute('jenkins.exception.id')}</p>
       </div>
       <j:if test="${app.shouldShowStackTrace()}">
         <p>${%checkJIRA} ${%vote} ${%pleaseReport} ${%stackTracePlease} ${%checkML}</p>
         <h2>${%Stack trace}</h2>
-        <pre style="margin: 2em; clear: both">${h.printThrowable(request.getAttribute('javax.servlet.error.exception'))}</pre>
+        <pre style="margin:2em; clear:both">${h.printThrowable(request.getAttribute('javax.servlet.error.exception'))}</pre>
       </j:if>
     </l:main-panel>
   </l:layout>

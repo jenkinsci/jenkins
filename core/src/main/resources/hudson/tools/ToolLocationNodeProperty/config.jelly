@@ -22,30 +22,32 @@
   ~ THE SOFTWARE.
   -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <f:entry title="${%List of tool locations}" help="/help/tools/tool-location-node-property.html">
-    <f:repeatable var="location" name="locations" items="${instance.locations}">
-      <table width="100%">
-        <f:entry title="${%Name}">
-          <div class="jenkins-select">
-            <select class="jenkins-select__input" name="locations.key">
-              <j:forEach var="toolDescriptor" items="${descriptor.toolDescriptors}">
-                <j:forEach var="toolInstallation" items="${toolDescriptor.installations}">
-                  <f:option selected="${descriptor.getKey(toolInstallation)==location.key}" value="${descriptor.getKey(toolInstallation)}">(${toolDescriptor.displayName}) ${toolInstallation.name}</f:option>
-                </j:forEach>
-              </j:forEach>
-            </select>
-          </div>
-        </f:entry>
-        <f:entry title="${%Home}">
-          <f:textbox name="locations.home" value="${location.home}" />
-        </f:entry>
-        <f:entry title="">
-          <div align="right">
-            <f:repeatableDeleteButton />
-          </div>
-        </f:entry>
-      </table>
-    </f:repeatable>
-  </f:entry>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
+	xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+	<f:entry title="${%List of tool locations}" help="/help/tools/tool-location-node-property.html">
+		<f:repeatable var="location" name="locations" items="${instance.locations}">
+			<table width="100%">
+				<f:entry title="${%Name}">
+				        <div class="jenkins-select">
+                  <select class="jenkins-select__input" name="locations.key">
+                    <j:forEach var="toolDescriptor" items="${descriptor.toolDescriptors}">
+                        <j:forEach var="toolInstallation" items="${toolDescriptor.installations}">
+                            <f:option selected="${descriptor.getKey(toolInstallation)==location.key}" value="${descriptor.getKey(toolInstallation)}">(${toolDescriptor.displayName}) ${toolInstallation.name}</f:option>
+                        </j:forEach>
+                    </j:forEach>
+                  </select>
+                </div>
+				</f:entry>
+				<f:entry title="${%Home}">
+					<f:textbox name="locations.home" value="${location.home}" />
+				</f:entry>
+				<f:entry title="">
+					<div align="right">
+						<f:repeatableDeleteButton />
+					</div>
+				</f:entry>
+			</table>
+		</f:repeatable>
+	</f:entry>
+
 </j:jelly>

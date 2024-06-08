@@ -91,6 +91,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -138,14 +139,15 @@ import jenkins.util.io.OnMaster;
 import jenkins.util.xml.RestrictiveEntityResolver;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import org.apache.commons.fileupload.FileItem;
-import org.apache.commons.fileupload.FileUploadException;
-import org.apache.commons.fileupload.disk.DiskFileItemFactory;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.commons.fileupload2.core.DiskFileItem;
+import org.apache.commons.fileupload2.core.DiskFileItemFactory;
+import org.apache.commons.fileupload2.core.FileItem;
+import org.apache.commons.fileupload2.core.FileUploadException;
+import org.apache.commons.fileupload2.javax.JavaxServletDiskFileUpload;
+import org.apache.commons.fileupload2.javax.JavaxServletFileUpload;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.LogFactory;
 import org.jenkinsci.Symbol;
 import org.jvnet.hudson.reactor.Executable;
@@ -1099,7 +1101,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     }
 
     /*package*/ static @CheckForNull Manifest parsePluginManifest(URL bundledJpi) {
-        try (URLClassLoader cl = new URLClassLoader(new URL[]{bundledJpi})) {
+        try (URLClassLoader cl = new URLClassLoader("Temporary classloader for parsing " + bundledJpi.toString(), new URL[]{bundledJpi}, ClassLoader.getSystemClassLoader())) {
             InputStream in = null;
             try {
                 URL res = cl.findResource(PluginWrapper.MANIFEST_FILENAME);
@@ -1252,6 +1254,13 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     @Exported
     public List<PluginWrapper> getPlugins() {
         return Collections.unmodifiableList(plugins);
+    }
+
+    @Restricted(NoExternalUse.class) // used by jelly
+    public List<PluginWrapper> getPluginsSortedByTitle() {
+        return plugins.stream()
+                .sorted(Comparator.comparing(PluginWrapper::getDisplayName, String.CASE_INSENSITIVE_ORDER))
+                .collect(Collectors.toUnmodifiableList());
     }
 
     public List<FailedPlugin> getFailedPlugins() {
@@ -1436,13 +1445,13 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     if (query == null || query.isBlank()) {
                         return true;
                     }
-                    return StringUtils.containsIgnoreCase(plugin.name, query) ||
-                        StringUtils.containsIgnoreCase(plugin.title, query) ||
-                        StringUtils.containsIgnoreCase(plugin.excerpt, query) ||
+                    return (plugin.name != null && plugin.name.toLowerCase(Locale.ROOT).contains(query.toLowerCase(Locale.ROOT))) ||
+                        (plugin.title != null && plugin.title.toLowerCase(Locale.ROOT).contains(query.toLowerCase(Locale.ROOT))) ||
+                        (plugin.excerpt != null && plugin.excerpt.toLowerCase(Locale.ROOT).contains(query.toLowerCase(Locale.ROOT))) ||
                         plugin.hasCategory(query) ||
                         plugin.getCategoriesStream()
                             .map(UpdateCenter::getCategoryDisplayName)
-                            .anyMatch(category -> StringUtils.containsIgnoreCase(category, query)) ||
+                            .anyMatch(category -> category != null && category.toLowerCase(Locale.ROOT).contains(query.toLowerCase(Locale.ROOT))) ||
                         plugin.hasWarnings() && query.equalsIgnoreCase("warning:");
                 })
                 .limit(Math.max(limit - plugins.size(), 1))
@@ -1472,7 +1481,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
                     jsonObject.put("title", plugin.title);
                     jsonObject.put("displayName", plugin.getDisplayName());
                     if (plugin.wiki == null || !(plugin.wiki.startsWith("https://") || plugin.wiki.startsWith("http://"))) {
-                        jsonObject.put("wiki", StringUtils.EMPTY);
+                        jsonObject.put("wiki", "");
                     } else {
                         jsonObject.put("wiki", plugin.wiki);
                     }
@@ -1825,13 +1834,21 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         }
 
         @Override
-        public void copy(File target) throws Exception {
-            fileItem.write(target);
+        public void copy(File target) throws IOException {
+            try {
+                fileItem.write(Util.fileToPath(target));
+            } catch (UncheckedIOException e) {
+                throw e.getCause();
+            }
         }
 
         @Override
         public void cleanup() {
-            fileItem.delete();
+            try {
+                fileItem.delete();
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
         }
     }
 
@@ -1866,8 +1883,8 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             String fileName = "";
             PluginCopier copier;
             File tmpDir = Files.createTempDirectory("uploadDir").toFile();
-            ServletFileUpload upload = new ServletFileUpload(new DiskFileItemFactory(DiskFileItemFactory.DEFAULT_SIZE_THRESHOLD, tmpDir));
-            List<FileItem> items = upload.parseRequest(req);
+            JavaxServletFileUpload<DiskFileItem, DiskFileItemFactory> upload = new JavaxServletDiskFileUpload(DiskFileItemFactory.builder().setFile(tmpDir).get());
+            List<DiskFileItem> items = upload.parseRequest(req);
             String string = items.get(1).getString();
             if (string != null && !string.isBlank()) {
                 // this is a URL deployment
@@ -2330,7 +2347,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         }
 
         public UberClassLoader(List<PluginWrapper> activePlugins) {
-            super(PluginManager.class.getClassLoader());
+            super("UberClassLoader", PluginManager.class.getClassLoader());
             this.activePlugins = activePlugins;
         }
 

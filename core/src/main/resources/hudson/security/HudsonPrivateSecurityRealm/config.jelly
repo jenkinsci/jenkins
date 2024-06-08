@@ -29,12 +29,14 @@ THE SOFTWARE.
   </f:entry>
   <j:if test="${size(h.captchaSupportDescriptors) gt 0}">
     <f:entry>
-      <f:checkbox name="privateRealm.enableCaptcha" checked="${h.defaultToTrue(instance.isEnableCaptcha())}" title="${%Enable captcha on sign up}" />
+      <f:checkbox name="privateRealm.enableCaptcha" checked="${h.defaultToTrue(instance.isEnableCaptcha())}"
+        title="${%Enable captcha on sign up}" />
     </f:entry>
     <f:dropdownList name="privateRealm.captchaSupport" title="${%Captcha Support}">
       <!-- Loop through available Captcha Support Descriptors -->
       <j:forEach var="descriptor" items="${h.captchaSupportDescriptors}" varStatus="loop">
-        <f:dropdownListBlock title="${descriptor.displayName}" value="${loop.index}" selected="${descriptor==instance.captchaSupport.descriptor}" staplerClass="${descriptor.clazz.name}">
+        <f:dropdownListBlock title="${descriptor.displayName}" value="${loop.index}"
+          selected="${descriptor==instance.captchaSupport.descriptor}" staplerClass="${descriptor.clazz.name}">
           <!-- Include config.jelly for this Captcha Support -->
           <st:include page="${descriptor.configPage}" from="${descriptor}" optional="true" />
         </f:dropdownListBlock>

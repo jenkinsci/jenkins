@@ -27,24 +27,27 @@ THE SOFTWARE.
   This view is rendered as /hudson/job/XYZ/build
 -->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt" xmlns:p="/lib/hudson/project">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
+	xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form"
+	xmlns:i="jelly:fmt" xmlns:p="/lib/hudson/project">
   <!--
     send back 4xx code so that machine agents don't confuse this form with successful build triggering
     405 is "Method Not Allowed" and this fits here because we need POST.
   -->
   <st:statusCode value="405" />
   <l:layout title="${it.displayName}">
-    <st:include page="sidepanel.jelly" it="${it.job}" />
+    <st:include page="sidepanel.jelly" it="${it.job}"/>
     <l:main-panel>
       <h1>${it.job.pronoun} ${it.job.displayName}</h1>
       <p class="jenkins-description">${%description}</p>
       <j:set var="delay" value="${request.getParameter('delay')}" />
-      <f:form method="post" action="build${empty(delay)?'':'?delay='+delay}" name="parameters" tableClass="parameters" class="jenkins-form">
+      <f:form method="post" action="build${empty(delay)?'':'?delay='+delay}" name="parameters"
+              tableClass="parameters" class="jenkins-form">
         <j:forEach var="parameterDefinition" items="${it.parameterDefinitions}">
-          <j:set var="escapeEntryTitleAndDescription" value="true" />
-          <!-- SECURITY-353 defense unless overridden -->
+          <j:set var="escapeEntryTitleAndDescription" value="true"/> <!-- SECURITY-353 defense unless overridden -->
           <tbody>
-            <st:include it="${parameterDefinition}" page="${parameterDefinition.descriptor.valuePage}" />
+            <st:include it="${parameterDefinition}"
+                        page="${parameterDefinition.descriptor.valuePage}" />
           </tbody>
         </j:forEach>
         <f:bottomButtonBar>
@@ -63,7 +66,9 @@ THE SOFTWARE.
             <l:icon src="symbol-play" />
             ${it.buildButtonText}
           </button>
-          <a href="./" class="jenkins-button">${%Cancel}</a>
+          <a href="./" class="jenkins-button">
+            ${%Cancel}
+          </a>
         </f:bottomButtonBar>
       </f:form>
     </l:main-panel>

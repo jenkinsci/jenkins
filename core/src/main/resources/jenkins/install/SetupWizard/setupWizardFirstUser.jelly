@@ -1,12 +1,14 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout">
+
   <l:layout type="full-screen" title="${it.displayName}">
     <l:main-panel>
-      <div class="create-admin-user">
-        <form action="${rootURL}/setupWizard/createAdminUser" method="post">
+     <div class="create-admin-user">
+       <form action="${rootURL}/setupWizard/createAdminUser" method="post">
           <local:_entryForm it="${app.securityRealm}" host="${app.securityRealm}" title="${%Create First Admin User}" captcha="${false}" xmlns:local="/hudson/security/HudsonPrivateSecurityRealm" />
-        </form>
-      </div>
+       </form>
+     </div>
     </l:main-panel>
   </l:layout>
+
 </j:jelly>

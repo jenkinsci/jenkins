@@ -23,5 +23,5 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:t="/lib/hudson">
-  <t:executors computers="${it.computers}" />
+    <t:executors computers="${it.computers}"/>
 </j:jelly>

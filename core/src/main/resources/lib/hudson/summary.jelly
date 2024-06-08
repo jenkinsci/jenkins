@@ -28,11 +28,19 @@ THE SOFTWARE.
     Displays a link with a large icon. Used in the project top page.
 
     <st:attribute name="icon" use="required">
-      Supports Jenkins Symbols (e.g. 'symbol-search') Supports path to bitmap image (e.g. '/plugin/foo/abc.gif') Supports icon class specification (e.g. 'icon-help icon-sm', 'icon-blue icon-md', 'icon-blue-anime icon-xlg')
+      Supports Jenkins Symbols (e.g. 'symbol-search')
+      Supports path to bitmap image (e.g. '/plugin/foo/abc.gif')
+      Supports icon class specification (e.g. 'icon-help icon-sm', 'icon-blue icon-md', 'icon-blue-anime icon-xlg')
     </st:attribute>
-    <st:attribute name="href">where the summary icon links to.</st:attribute>
-    <st:attribute name="iconOnly" type="boolean">if true, hyperlink will only cover the icon, not the body.</st:attribute>
-    <st:attribute name="permission" type="hudson.security.Permission">permission object. If specified, the link will be displayed only if you have a permission</st:attribute>
+    <st:attribute name="href">
+      where the summary icon links to.
+    </st:attribute>
+    <st:attribute name="iconOnly" type="boolean">
+      if true, hyperlink will only cover the icon, not the body.
+    </st:attribute>
+    <st:attribute name="permission" type="hudson.security.Permission">
+      permission object. If specified, the link will be displayed only if you have a permission
+    </st:attribute>
   </st:documentation>
   <j:if test="${h.hasPermission(it,attrs.permission)}">
     <j:if test="${attrs.icon!=null}">
@@ -40,7 +48,7 @@ THE SOFTWARE.
         <td>
           <l:icon src="${icon}" />
         </td>
-        <td style="vertical-align: middle">
+        <td style="vertical-align:middle">
           <j:choose>
             <j:when test="${attrs.href!=null &amp;&amp; !attrs.iconOnly}">
               <a href="${attrs.href}">

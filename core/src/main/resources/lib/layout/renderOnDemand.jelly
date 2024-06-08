@@ -24,12 +24,19 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:x="jelly:xml">
   <st:documentation>
-    <st:attribute name="tag">Place holder HTML tag. By default it's DIV, but depending on where this is used, you might need other tags (e.g., inside a table.)</st:attribute>
-    <st:attribute name="clazz">Additional CSS class names, so that you can discover this tag more easily from your JavaScript.</st:attribute>
-    <st:attribute name="capture">','-separated list of variables to capture and make available when later evaluating the body.</st:attribute>
+    <st:attribute name="tag">
+      Place holder HTML tag. By default it's DIV, but depending on where this is used,
+      you might need other tags (e.g., inside a table.)
+    </st:attribute>
+    <st:attribute name="clazz">
+      Additional CSS class names, so that you can discover this tag more easily from your JavaScript.
+    </st:attribute>
+    <st:attribute name="capture">
+      ','-separated list of variables to capture and make available when later evaluating the body.
+    </st:attribute>
   </st:documentation>
 
-  <j:set var="parameters" value="${h.createRenderOnDemandProxyParameters(context,attrs.capture)}" />
+  <j:set var="parameters" value="${h.createRenderOnDemandProxyParameters(context,attrs.capture)}"/>
   <x:element name="${attrs.tag?:'div'}">
     <x:attribute name="class">render-on-demand ${attrs.clazz}</x:attribute>
     <x:attribute name="data-proxy-method">${parameters.proxyMethod}</x:attribute>

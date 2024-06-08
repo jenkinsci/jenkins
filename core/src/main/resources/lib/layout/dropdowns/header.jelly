@@ -24,11 +24,11 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
-  <st:documentation>
-    <st:attribute name="text" />
+    <st:documentation>
+        <st:attribute name="text" />
 
-    Displays a header to visually group items in a dropdown
-  </st:documentation>
+        Displays a header to visually group items in a dropdown
+    </st:documentation>
 
-  <template data-dropdown-type="HEADER" data-dropdown-text="${attrs.text}" />
+    <template data-dropdown-type="HEADER" data-dropdown-text="${attrs.text}" />
 </j:jelly>

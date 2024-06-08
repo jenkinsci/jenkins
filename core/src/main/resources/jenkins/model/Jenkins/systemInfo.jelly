@@ -33,7 +33,7 @@ THE SOFTWARE.
       <script src="${resURL}/jsbundles/pages/manage-jenkins/system-information.js" type="text/javascript" defer="true" />
     </l:header>
     <st:include page="sidepanel.jelly" />
-    <l:breadcrumb title="${%System Information}" />
+    <l:breadcrumb title="${%System Information}"/>
     <l:main-panel>
       <l:app-bar title="${%System Information}" />
 
@@ -50,6 +50,7 @@ THE SOFTWARE.
       </l:hasPermission>
 
       <l:tabPane title="${%Plugins}">
+
         <j:choose>
           <j:when test="${empty(app.pluginManager.plugins) and empty(app.pluginManager.failedPlugins)}">
             <l:notice icon="symbol-plugins" text="${%No plugins installed}" />
@@ -65,18 +66,18 @@ THE SOFTWARE.
               </thead>
               <tbody>
                 <j:forEach var="p" items="${app.pluginManager.plugins}">
-                  <j:set var="state" value="${p.enabled?'true':'false'}" />
+                  <j:set var="state" value="${p.enabled?'true':'false'}"/>
                   <tr>
                     <td>
                       <a class="jenkins-table__link" href="${p.url}" target="_blank" rel="noopener noreferrer">
-                        <st:out value="${p.displayName}" />
+                        <st:out value="${p.displayName}"/>
                       </a>
                     </td>
                     <td>
-                      <st:out value="${p.version}" />
+                      <st:out value="${p.version}"/>
                     </td>
                     <td>
-                      <st:out value="${state}" />
+                      <st:out value="${state}"/>
                     </td>
                   </tr>
                 </j:forEach>

@@ -24,21 +24,47 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define">
-  <st:documentation>
-    <![CDATA[ Outer-most tag of the entire form taglib, that generates <form> element. ]]>
-    <st:attribute name="action" use="required">@action of the form field. The URL where the submission is sent.</st:attribute>
-    <st:attribute name="method" use="required">Submission method. Either post or get.</st:attribute>
-    <st:attribute name="name" use="required">@name of the form. In HTML this is not a mandatory attribute, but in Hudson you should have it for testing and page scraping, so this attribute is marked required.</st:attribute>
-    <st:attribute name="class">Classes to apply to the form</st:attribute>
-    <st:attribute name="enctype"><![CDATA[ @enctype of the <form> HTML element. ]]></st:attribute>
-    <st:attribute name="id">ID of the form.</st:attribute>
-    <st:attribute name="target"><![CDATA[ @target of the <form> HTML element. Works like <a target="..."> and controls which window the result of the submission goes to. ]]></st:attribute>
-    <st:attribute name="tableClass"><![CDATA[ Optional class attribute for <table> that is created in the form. ]]></st:attribute>
-    <st:attribute name="autocomplete">Optional attribute for allowing browsers to perform auto complete or pre-fill the form from history. Default: false</st:attribute>
+  <st:documentation> <![CDATA[
+    Outer-most tag of the entire form taglib, that generates <form> element.
+    ]]>
+    <st:attribute name="action" use="required">
+      @action of the form field. The URL where the submission is sent.
+    </st:attribute>
+    <st:attribute name="method" use="required">
+      Submission method. Either post or get.
+    </st:attribute>
+    <st:attribute name="name" use="required">
+      @name of the form. In HTML this is not a mandatory attribute,
+      but in Hudson you should have it for testing and page scraping,
+      so this attribute is marked required.
+    </st:attribute>
+    <st:attribute name="class">
+      Classes to apply to the form
+    </st:attribute>
+    <st:attribute name="enctype"> <![CDATA[
+      @enctype of the <form> HTML element.
+      ]]>
+    </st:attribute>
+    <st:attribute name="id">
+      ID of the form.
+    </st:attribute>
+    <st:attribute name="target"> <![CDATA[
+      @target of the <form> HTML element. Works like <a target="...">
+      and controls which window the result of the submission goes to.
+      ]]>
+    </st:attribute>
+    <st:attribute name="tableClass"> <![CDATA[
+      Optional class attribute for <table> that is created in the form.
+        ]]>
+    </st:attribute>
+    <st:attribute name="autocomplete">
+      Optional attribute for allowing browsers to perform auto complete or pre-fill the form from history.
+      Default: false
+    </st:attribute>
   </st:documentation>
   <form id="${id}" class="${attrs.class}" action="${action}" method="${method}" enctype="${attrs.enctype}" name="${name}" target="${attrs.target}" autocomplete="${attrs.autocomplete==true?'on':'off'}">
     <div width="100%" class="${attrs.tableClass}">
-      <d:invokeBody />
+      <d:invokeBody/>
     </div>
   </form>
 </j:jelly>

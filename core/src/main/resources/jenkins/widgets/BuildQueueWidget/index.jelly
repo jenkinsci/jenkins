@@ -23,5 +23,5 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:t="/lib/hudson">
-  <t:queue items="${it.queueItems}" filtered="${it.filterQueue}" />
+    <t:queue items="${it.queueItems}" filtered="${it.filterQueue}" />
 </j:jelly>

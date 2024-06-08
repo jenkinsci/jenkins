@@ -24,11 +24,14 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
-  <st:documentation>
-    <![CDATA[ Delete button for the <repeatable> tag. ]]>
-    <st:attribute name="value">Caption of the button. Defaults to 'Delete'.</st:attribute>
+  <st:documentation> <![CDATA[
+    Delete button for the <repeatable> tag.
+    ]]>
+    <st:attribute name="value">
+      Caption of the button. Defaults to 'Delete'.
+    </st:attribute>
   </st:documentation>
-  <st:adjunct includes="lib.form.repeatable.repeatable" />
+  <st:adjunct includes="lib.form.repeatable.repeatable"/>
   <button tooltip="${attrs.value ?: '%Delete'}" class="repeatable-delete danger" type="button">
     <l:icon src="symbol-close" />
   </button>

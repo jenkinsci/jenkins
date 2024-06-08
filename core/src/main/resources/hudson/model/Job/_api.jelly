@@ -24,60 +24,45 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
-  <st:include page="/hudson/model/AbstractItem/_api.jelly" />
+
+  <st:include page="/hudson/model/AbstractItem/_api.jelly"/>
 
   <h2>Retrieving all builds</h2>
   <p>
-    To prevent Jenkins from having to load all builds from disk when someone accesses the job API, the
-    <code>builds</code>
-    tree only contains the 50 newest builds. If you really need to get all builds, access the
-    <code>allBuilds</code>
-    tree, e.g. by fetching
-    <code>…/api/xml?tree=allBuilds[…]</code>
-    . Note that this may result in significant performance degradation if you have a lot of builds in this job.
+    To prevent Jenkins from having to load all builds from disk when someone accesses the job API, the <code>builds</code>
+    tree only contains the 50 newest builds. If you really need to get all builds, access the <code>allBuilds</code> tree,
+    e.g. by fetching <code>…/api/xml?tree=allBuilds[…]</code>. Note that this may result in significant performance degradation
+    if you have a lot of builds in this job.
   </p>
 
   <h2>Fetch/Update job description</h2>
   <p>
     <a href="../description">this URL</a>
-    can be used to get and set just the job description. POST form data with a "description" parameter to set the description.
+    can be used to get and set just the job description.  POST form data with a
+    "description" parameter to set the description.
     <!-- TODO perhaps have this override documentation in AbstractItem suggesting ../submitDescription and xml?tree=description -->
   </p>
 
   <h2>Perform a build</h2>
   <p>
-    To programmatically schedule a new build, post to
-    <a href="../build?delay=0sec">this URL</a>
-    . If the build has parameters, post to
-    <a href="../buildWithParameters">this URL</a>
-    and provide the parameters as form data. Either way, the successful queueing will result in 201 status code with
-    <code>Location</code>
-    HTTP header pointing the URL of the item in the queue. By polling the
-    <code>api/json</code>
-    sub-URL of the queue item, you can track the status of the queued task. Generally, the task will go through some state transitions, then eventually it becomes either cancelled (look for the
-    <code>cancelled</code>
-    boolean property), or gets executed (look for the
-    <code>executable</code>
-    field that typically points to the
-    <code>Run</code>
-    object.)
+    To programmatically schedule a new build, post to <a href="../build?delay=0sec">this URL</a>.
+    If the build has parameters, post to <a href="../buildWithParameters">this URL</a> and provide the parameters as form data.
+    Either way, the successful queueing will result in 201 status code with <code>Location</code> HTTP header
+    pointing the URL of the item in the queue. By polling the <code>api/json</code> sub-URL of the queue item,
+    you can track the status of the queued task. Generally, the task will go through some state transitions,
+    then eventually it becomes either cancelled (look for the <code>cancelled</code> boolean property), or gets executed
+    (look for the <code>executable</code> field that typically points to the <code>Run</code> object.)
   </p>
   <p>
-    To programmatically schedule SCM polling, post to
-    <a href="../polling">this URL</a>
-    .
+    To programmatically schedule SCM polling, post to <a href="../polling">this URL</a>.
   </p>
   <p>
-    Unless the configured security realm is
-    <em>None</em>
-    , the recommended method is to provide the username and API token of an account with build permission in the request. Tools such as
-    <code>curl</code>
-    and
-    <code>wget</code>
-    have parameters to specify these credentials. Another alternative (but deprecated) is to configure the 'Trigger builds remotely' section in the job configuration. Then building or polling can be triggered by including a parameter called
-    <code>token</code>
-    in the request. (The
-    <code>build-token-root</code>
-    plugin may be needed in general.)
+    Unless the configured security realm is <em>None</em>, the recommended method is to provide the username and API token of an
+    account with build permission in the request.  Tools such as <code>curl</code> and <code>wget</code>
+    have parameters to specify these credentials.  Another alternative (but deprecated) is to
+    configure the 'Trigger builds remotely' section in the job configuration.  Then building
+    or polling can be triggered by including a parameter called <code>token</code> in the request.
+    (The <code>build-token-root</code> plugin may be needed in general.)
   </p>
+
 </j:jelly>

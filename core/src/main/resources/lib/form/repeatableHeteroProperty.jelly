@@ -24,37 +24,55 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <st:documentation>
-    <![CDATA[ Data-bound only version of <f:hetero-list> that assumes the type pointed by the property is data-bound as well. The nested property type must be Describable and it needs to have config.jelly. ]]>
+  <st:documentation> <![CDATA[
+    Data-bound only version of <f:hetero-list> that assumes the type pointed by the property is data-bound as well.
+    The nested property type must be Describable and it needs to have config.jelly.
+    ]]>
 
-    <st:attribute name="field">Used for the data binding.</st:attribute>
-    <st:attribute name="addCaption">caption of the 'add' button.</st:attribute>
-    <st:attribute name="deleteCaption">caption of the 'delete' button.</st:attribute>
-    <st:attribute name="targetType">the type for which descriptors will be configured. Defaults to ${it.class} (optional)</st:attribute>
-    <st:attribute name="hasHeader"><![CDATA[ For each item, add a caption from descriptor.getDisplayName(). This also activates drag&drop (where the header is a grip), and help text support. ]]></st:attribute>
-    <st:attribute name="oneEach">If true, only allow up to one instance per descriptor.</st:attribute>
-    <st:attribute name="menuAlign">Menu alignment against the button. Defaults to tl-bl</st:attribute>
-    <st:attribute name="honorOrder">If true, insert new addition by default to their 'desired' location, which is the order induced by the descriptors.</st:attribute>
+    <st:attribute name="field">
+      Used for the data binding.
+    </st:attribute>
+    <st:attribute name="addCaption">
+      caption of the 'add' button.
+    </st:attribute>
+    <st:attribute name="deleteCaption">
+      caption of the 'delete' button.
+    </st:attribute>
+    <st:attribute name="targetType">
+      the type for which descriptors will be configured. Defaults to ${it.class} (optional)
+    </st:attribute>
+    <st:attribute name="hasHeader"> <![CDATA[
+      For each item, add a caption from descriptor.getDisplayName().
+      This also activates drag&drop (where the header is a grip), and help text support.
+       ]]>
+    </st:attribute>
+    <st:attribute name="oneEach">
+      If true, only allow up to one instance per descriptor.
+    </st:attribute>
+    <st:attribute name="menuAlign">
+      Menu alignment against the button. Defaults to tl-bl
+    </st:attribute>
+    <st:attribute name="honorOrder">
+      If true, insert new addition by default to their 'desired' location, which
+      is the order induced by the descriptors.
+    </st:attribute>
     <st:attribute name="capture">
-      Config fragments from descriptors are rendered lazily by default, which means variables seen in the caller aren't visible to them. This attribute allows you to nominate additional variables and their values to be captured for descriptors.
+      Config fragments from descriptors are rendered lazily by default, which means
+      variables seen in the caller aren't visible to them. This attribute allows you
+      to nominate additional variables and their values to be captured for descriptors.
     </st:attribute>
   </st:documentation>
   <f:prepareDatabinding />
   <!--
       first try getFooBarDescriptors() then fall back to automatic inference by type
   -->
-  <f:hetero-list
-    name="${field}"
-    items="${instance[attrs.field]}"
-    descriptors="${descriptor[attrs.field+'Descriptors'] ?: descriptor.getPropertyType(instance,attrs.field).getApplicableItemDescriptors()}"
-    addCaption="${attrs.addCaption}"
-    deleteCaption="${attrs.deleteCaption}"
-    hasHeader="${attrs.hasHeader}"
-    honorOrder="${attrs.honorOrder}"
-    menuAlign="${attrs.menuAlign}"
-    oneEach="${attrs.oneEach}"
-    targetType="${attrs.targetType}"
-    capture="${attrs.capture}"
-  />
+  <f:hetero-list name="${field}" items="${instance[attrs.field]}"
+                 descriptors="${descriptor[attrs.field+'Descriptors'] ?: descriptor.getPropertyType(instance,attrs.field).getApplicableItemDescriptors()}"
+                 addCaption="${attrs.addCaption}" deleteCaption="${attrs.deleteCaption}"
+                 hasHeader="${attrs.hasHeader}" honorOrder="${attrs.honorOrder}"
+                 menuAlign="${attrs.menuAlign}" oneEach="${attrs.oneEach}"
+                 targetType="${attrs.targetType}"
+                 capture="${attrs.capture}"
+          />
   <!-- TODO: there should be a mechanism to pass-through map as parameters -->
 </j:jelly>

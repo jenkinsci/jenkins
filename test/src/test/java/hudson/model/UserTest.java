@@ -256,7 +256,7 @@ public class UserTest {
         user.addProperty(prop);
         assertNotNull("User should have SomeUserProperty property.", user.getProperty(SomeUserProperty.class));
         assertEquals("UserProperty1 should be assigned to its descriptor", prop, user.getProperties().get(prop.getDescriptor()));
-        assertTrue("User should should contain SomeUserProperty.", user.getAllProperties().contains(prop));
+        assertTrue("User should contain SomeUserProperty.", user.getAllProperties().contains(prop));
         }
         j.jenkins.reload();
         {

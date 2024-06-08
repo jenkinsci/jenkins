@@ -24,14 +24,18 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
-  <j:if test="${instance.allGlobalRules.size() gt 0}">
-    <!-- hide this configuration when there are no descriptors -->
-    <f:section title="${%jobEnvironmentVariableFilters}">
-      <f:advanced title="${%showGlobalRules}">
-        <f:entry title="${%globalRules}">
-          <f:hetero-list name="rules" hasHeader="true" descriptors="${instance.allGlobalRules}" items="${instance.allActivatedGlobalRules}" addCaption="${%addRule}" />
-        </f:entry>
-      </f:advanced>
-    </f:section>
-  </j:if>
+    <j:if test="${instance.allGlobalRules.size() gt 0}">
+        <!-- hide this configuration when there are no descriptors -->
+        <f:section title="${%jobEnvironmentVariableFilters}">
+            <f:advanced title="${%showGlobalRules}">
+                <f:entry title="${%globalRules}">
+                    <f:hetero-list name="rules"
+                                   hasHeader="true"
+                                   descriptors="${instance.allGlobalRules}"
+                                   items="${instance.allActivatedGlobalRules}"
+                                   addCaption="${%addRule}"/>
+                </f:entry>
+            </f:advanced>
+        </f:section>
+    </j:if>
 </j:jelly>

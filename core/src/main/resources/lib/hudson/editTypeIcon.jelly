@@ -27,4 +27,4 @@ THE SOFTWARE.
 	<%@ attribute name="type" type="hudson.scm.EditType" use="required" %>
 -->
 <?jelly escape-by-default='true'?>
-<l:icon alt="${type.description}" class="icon-sm" src="symbol-${type.name}" title="${type.description}" xmlns:l="/lib/layout" />
+<l:icon alt="${type.description}" class="icon-sm" src="symbol-${type.name}" title="${type.description}" xmlns:l="/lib/layout"/>

@@ -24,18 +24,24 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout">
-  <st:documentation>
-    <st:attribute name="icon">Icon to be used for the menu item</st:attribute>
-    <st:attribute name="text">Text to be displayed on the menu item</st:attribute>
+    <st:documentation>
+        <st:attribute name="icon">
+            Icon to be used for the menu item
+        </st:attribute>
+        <st:attribute name="text">
+            Text to be displayed on the menu item
+        </st:attribute>
 
-    Displays the contents as a submenu to a menu item
-  </st:documentation>
+        Displays the contents as a submenu to a menu item
+    </st:documentation>
 
-  <j:set var="icon">
-    <l:icon src="${attrs.icon}" />
-  </j:set>
+    <j:set var="icon">
+        <l:icon src="${attrs.icon}" />
+    </j:set>
 
-  <template data-dropdown-type="SUBMENU" data-dropdown-text="${attrs.text}" data-dropdown-icon="${icon}">
-    <d:invokeBody />
-  </template>
+    <template data-dropdown-type="SUBMENU"
+              data-dropdown-text="${attrs.text}"
+              data-dropdown-icon="${icon}">
+        <d:invokeBody />
+    </template>
 </j:jelly>

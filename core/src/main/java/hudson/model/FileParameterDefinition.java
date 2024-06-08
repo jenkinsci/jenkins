@@ -35,7 +35,7 @@ import java.nio.file.Files;
 import java.util.Objects;
 import javax.servlet.ServletException;
 import net.sf.json.JSONObject;
-import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload2.core.FileItem;
 import org.apache.commons.io.FileUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -90,7 +90,7 @@ public class FileParameterDefinition extends ParameterDefinition {
     public ParameterValue createValue(StaplerRequest req) {
         FileItem src;
         try {
-            src = req.getFileItem(getName());
+            src = req.getFileItem2(getName());
         } catch (ServletException | IOException e) {
             // Not sure what to do here. We might want to raise this
             // but that would involve changing the throws for this call

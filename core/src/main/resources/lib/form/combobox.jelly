@@ -25,48 +25,69 @@ THE SOFTWARE.
 <!-- Tomcat doesn't like us using the attribute called 'class' -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:f="/lib/form">
-  <st:documentation>
-    <![CDATA[ Editable drop-down combo box that supports the data binding and AJAX updates. Your descriptor should have the 'doFillXyzItems' method, which returns a ComboBoxModel representation of the items in your combo box, and your instance field
-    should hold the current value. For a read only input set <j:set var="readOnlyMode" value="true"/> inside your entry tag See https://www.jenkins.io/doc/developer/views/read-only/#enabling-read-only-view-support ]]>
-    <st:attribute name="name"><![CDATA[ This becomes @name of the <input> tag. If @field is specified, this value is inferred from it. ]]></st:attribute>
-    <st:attribute name="value">
-      <![CDATA[ The initial value of the field. This becomes the @value of the <input> tag. If @field is specified, the current property from the "instance" object will be set as the initial value automatically, which is the recommended approach. ]]>
+  <st:documentation> <![CDATA[
+    Editable drop-down combo box that supports the data binding and AJAX updates.
+    Your descriptor should have the 'doFillXyzItems' method, which returns a ComboBoxModel
+    representation of the items in your combo box, and your instance field should
+    hold the current value.
+
+    For a read only input set <j:set var="readOnlyMode" value="true"/> inside your entry tag
+    See https://www.jenkins.io/doc/developer/views/read-only/#enabling-read-only-view-support
+    ]]>
+    <st:attribute name="name"> <![CDATA[
+      This becomes @name of the <input> tag.
+      If @field is specified, this value is inferred from it.
+    ]]>
     </st:attribute>
-    <st:attribute name="default">The default value of the combo box, in case both @value and 'instance[field]' are null.</st:attribute>
-    <st:attribute name="clazz">Additional CSS classes that the control gets.</st:attribute>
-    <st:attribute name="field">Used for databinding.</st:attribute>
+    <st:attribute name="value"> <![CDATA[
+      The initial value of the field. This becomes the @value of the <input> tag.
+      If @field is specified, the current property from the "instance" object
+      will be set as the initial value automatically,
+      which is the recommended approach.
+    ]]>
+    </st:attribute>
+    <st:attribute name="default">
+      The default value of the combo box, in case both @value and 'instance[field]' are null.
+    </st:attribute>
+    <st:attribute name="clazz">
+      Additional CSS classes that the control gets.
+    </st:attribute>
+    <st:attribute name="field">
+      Used for databinding.
+    </st:attribute>
     <st:attribute name="checkUrl">
-      If specified, the value entered in this input field will be checked (via AJAX) against this URL, and errors will be rendered under the text field. If @field is specified, this will be inferred automatically, which is the recommended approach.
+      If specified, the value entered in this input field will be checked (via AJAX)
+      against this URL, and errors will be rendered under the text field.
+
+      If @field is specified, this will be inferred automatically,
+      which is the recommended approach.
     </st:attribute>
     <st:attribute name="checkMethod" use="optional" type="String">
-      Specify 'get' (must be lowercase) to change the HTTP method used for the AJAX requests to @checkUrl from a POST to a GET. If any other value is specified then requests will use POST. The historical default was GET and 'post' had to be specified
-      to change that, but this was changed in Jenkins 2.285.
+      Specify 'get' (must be lowercase) to change the HTTP method used for the AJAX requests to @checkUrl from a POST to a GET.
+      If any other value is specified then requests will use POST.
+      The historical default was GET and 'post' had to be specified to change that, but this was changed in Jenkins 2.285.
     </st:attribute>
   </st:documentation>
-  <f:prepareDatabinding />
-  ${descriptor.calcFillSettings(field,attrs)}
-  <!-- this figures out the 'fillUrl' and 'fillDependsOn' attribute -->
+  <f:prepareDatabinding/>
+  ${descriptor.calcFillSettings(field,attrs)} <!-- this figures out the 'fillUrl' and 'fillDependsOn' attribute -->
   <st:once>
-    <script type="text/javascript" src="${request.contextPath}/scripts/utilities.js" />
-    <script type="text/javascript" src="${request.contextPath}/scripts/combobox.js" />
+    <script type="text/javascript" src="${request.contextPath}/scripts/utilities.js"/>
+    <script type="text/javascript" src="${request.contextPath}/scripts/combobox.js"/>
   </st:once>
-  <st:adjunct includes="lib.form.combobox.combobox" />
+  <st:adjunct includes="lib.form.combobox.combobox"/>
 
   <!-- mostly pass-through all the attributes -->
-  <j:set var="name" value="${attrs.name ?: '_.'+attrs.field}" />
-  <j:set var="default" value="${attrs.default ?: ''}" />
-  <j:set var="value" value="${attrs.value ?: instance[attrs.field] ?: default}" />
+  <j:set var="name" value="${attrs.name ?: '_.'+attrs.field}"/>
+  <j:set var="default" value="${attrs.default ?: ''}"/>
+  <j:set var="value" value="${attrs.value ?: instance[attrs.field] ?: default}"/>
 
   <f:possibleReadOnlyField>
-    <m:input
-      xmlns:m="jelly:hudson.util.jelly.MorphTagLibrary"
-      autocomplete="off"
-      class="combobox2 jenkins-input ${attrs.clazz}${attrs.checkUrl!=null ? ' validated' : ''}"
-      name="${name}"
-      value="${value}"
-      ATTRIBUTES="${attrs}"
-      EXCEPT="field items clazz"
-    />
+    <m:input xmlns:m="jelly:hudson.util.jelly.MorphTagLibrary"
+             autocomplete="off"
+             class="combobox2 jenkins-input ${attrs.clazz}${attrs.checkUrl!=null ? ' validated' : ''}"
+             name="${name}"
+             value="${value}"
+             ATTRIBUTES="${attrs}" EXCEPT="field items clazz" />
   </f:possibleReadOnlyField>
   <!-- TODO consider customizedFields -->
 </j:jelly>

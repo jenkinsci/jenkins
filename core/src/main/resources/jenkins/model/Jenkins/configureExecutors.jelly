@@ -28,19 +28,20 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <l:layout title="This page has moved">
-    <st:include page="sidepanel.jelly" />
-    <l:main-panel>
-      <h1>This page has moved</h1>
-      <p>
-        Starting 1.271, agent configuration is split into individual configuration page per agent, accessible from
-        <a href="computer/">here</a>
-        .
-      </p>
-      <ul>
-        <li>To configure existing agents, click the above link, click their name, and then click the config link from the left</li>
-        <li>To add a new agent, click the above link, and click "add new agent"</li>
-      </ul>
-    </l:main-panel>
-  </l:layout>
+<l:layout title="This page has moved">
+  <st:include page="sidepanel.jelly" />
+  <l:main-panel>
+    <h1>
+      This page has moved
+    </h1>
+    <p>
+      Starting 1.271, agent configuration is split into individual configuration page per agent,
+      accessible from <a href="computer/">here</a>.
+    </p>
+    <ul>
+      <li>To configure existing agents, click the above link, click their name, and then click the config link from the left</li>
+      <li>To add a new agent, click the above link, and click "add new agent"</li>
+    </ul>
+  </l:main-panel>
+</l:layout>
 </j:jelly>
