@@ -26,6 +26,7 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <l:layout title="${it.displayName}">
     <st:include page="sidepanel.jelly" />
+    <l:breadcrumb title="${%Build History}" />
     <l:main-panel>
       <h1>
         ${%title(it.displayName)}
@@ -33,8 +34,6 @@ THE SOFTWARE.
       <p>
         <em>${%disclaimer}</em>
       </p>
-
-      <st:include page="control.jelly" it="${it.timeline}" />
 
       <t:buildListTable builds="${it.builds}"/>
     </l:main-panel>

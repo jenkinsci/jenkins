@@ -51,7 +51,6 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
-import org.apache.commons.lang.ArrayUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.Stapler;
@@ -73,6 +72,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 @Extension
 @Restricted(NoExternalUse.class)
 public class ResourceDomainRootAction implements UnprotectedRootAction {
+
+    private static final String RESOURCE_DOMAIN_ROOT_ACTION_ERROR = "jenkins.security.ResourceDomainRootAction.error";
 
     private static final Logger LOGGER = Logger.getLogger(ResourceDomainRootAction.class.getName());
 
@@ -104,13 +105,20 @@ public class ResourceDomainRootAction implements UnprotectedRootAction {
         if (ResourceDomainConfiguration.isResourceRequest(req)) {
             rsp.sendError(404, ResourceDomainFilter.ERROR_RESPONSE);
         } else {
+            req.setAttribute(RESOURCE_DOMAIN_ROOT_ACTION_ERROR, true);
             rsp.sendError(404, "Cannot handle requests to this URL unless on Jenkins resource URL.");
         }
     }
 
     public Object getDynamic(String id, StaplerRequest req, StaplerResponse rsp) throws Exception {
         if (!ResourceDomainConfiguration.isResourceRequest(req)) {
+            req.setAttribute(RESOURCE_DOMAIN_ROOT_ACTION_ERROR, true);
             rsp.sendError(404, "Cannot handle requests to this URL unless on Jenkins resource URL.");
+            return null;
+        }
+
+        if (!ACL.isAnonymous2(Jenkins.getAuthentication2())) {
+            rsp.sendError(400);
             return null;
         }
 
@@ -281,8 +289,11 @@ public class ResourceDomainRootAction implements UnprotectedRootAction {
         private String encode() {
             String value = timestamp.toEpochMilli() + ":" + username.length() + ":" + username + ":" + path;
             byte[] valueBytes = value.getBytes(StandardCharsets.UTF_8);
-            byte[] byteValue = ArrayUtils.addAll(KEY.mac(valueBytes), valueBytes);
-            return Base64.getUrlEncoder().encodeToString(byteValue);
+            byte[] macBytes = KEY.mac(valueBytes);
+            byte[] result = new byte[macBytes.length + valueBytes.length];
+            System.arraycopy(macBytes, 0, result, 0, macBytes.length);
+            System.arraycopy(valueBytes, 0, result, macBytes.length, valueBytes.length);
+            return Base64.getUrlEncoder().encodeToString(result);
         }
 
         private static Token decode(String value) {

@@ -1,0 +1,63 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:base",
+    ":disableDependencyDashboard",
+    ":semanticCommitsDisabled"
+  ],
+  "enabledManagers": ["npm", "regex"],
+  "postUpdateOptions": ["yarnDedupeHighest"],
+  "packageRules": [
+    {
+      "matchDatasources": ["npm"],
+      "addLabels": ["javascript"],
+      "stabilityDays": 3,
+      "reviewers": ["team:sig-ux"]
+    },
+    {
+      "matchPackageNames": ["node"],
+      "allowedVersions": "/20.[0-9]+.[0-9]+(.[0-9]+)?$/"
+    }
+  ],
+  "regexManagers": [
+    {
+      "fileMatch": ["war/pom.xml"],
+      "matchStrings": ["<node.version>(?<currentValue>.*?)</node.version>"],
+      "depNameTemplate": "node",
+      "datasourceTemplate": "npm"
+    },
+    {
+      "fileMatch": ["ath.sh"],
+      "matchStrings": ["export ATH_VERSION=(?<currentValue>.*?)\n"],
+      "depNameTemplate": "jenkins/ath",
+      "datasourceTemplate": "docker",
+      "versioningTemplate": "loose"
+    },
+    {
+      "fileMatch": [".gitpod/Dockerfile"],
+      "matchStrings": ["ARG MAVEN_VERSION=(?<currentValue>.*?)\n"],
+      "depNameTemplate": "org.apache.maven:maven-core",
+      "datasourceTemplate": "maven"
+    },
+    {
+      "fileMatch": ["core/src/site/site.xml"],
+      "matchStrings": ["lit@(?<currentValue>.*?)/"],
+      "depNameTemplate": "lit",
+      "datasourceTemplate": "npm"
+    },
+    {
+      "fileMatch": ["core/src/site/site.xml"],
+      "matchStrings": ["webcomponentsjs@(?<currentValue>.*?)/"],
+      "depNameTemplate": "@webcomponents/webcomponentsjs",
+      "datasourceTemplate": "npm"
+    },
+    {
+      "fileMatch": ["core/src/site/site.xml"],
+      "matchStrings": ["<version>(?<currentValue>.*?)<\/version>"],
+      "depNameTemplate": "org.apache.maven.skins:maven-fluido-skin",
+      "datasourceTemplate": "maven"
+    }
+  ],
+  "labels": ["dependencies", "skip-changelog"],
+  "rebaseWhen": "conflicted"
+}

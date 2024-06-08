@@ -34,6 +34,7 @@ import hudson.Extension;
 import hudson.Util;
 import hudson.model.Queue.WaitingItem;
 import hudson.model.queue.ScheduleResult;
+import hudson.util.AlternativeUiTextProvider;
 import java.io.IOException;
 import java.util.AbstractList;
 import java.util.ArrayList;
@@ -72,6 +73,8 @@ import org.kohsuke.stapler.export.ExportedBean;
 public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
         implements Action {
 
+    public static final AlternativeUiTextProvider.Message<Job> BUILD_BUTTON_TEXT = new AlternativeUiTextProvider.Message<>();
+
     private final List<ParameterDefinition> parameterDefinitions;
 
     @DataBoundConstructor
@@ -85,6 +88,11 @@ public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
 
     private Object readResolve() {
         return parameterDefinitions == null ? new ParametersDefinitionProperty() : this;
+    }
+
+
+    public final String getBuildButtonText() {
+        return AlternativeUiTextProvider.get(BUILD_BUTTON_TEXT, owner, Messages.ParametersDefinitionProperty_BuildButtonText());
     }
 
     @Deprecated
@@ -145,20 +153,23 @@ public class ParametersDefinitionProperty extends OptionalJobProperty<Job<?, ?>>
         List<ParameterValue> values = new ArrayList<>();
 
         JSONObject formData = req.getSubmittedForm();
-        JSONArray a = JSONArray.fromObject(formData.get("parameter"));
+        Object parameter = formData.get("parameter");
+        if (parameter != null) {
+            JSONArray a = JSONArray.fromObject(parameter);
 
-        for (Object o : a) {
-            JSONObject jo = (JSONObject) o;
-            String name = jo.getString("name");
+            for (Object o : a) {
+                JSONObject jo = (JSONObject) o;
+                String name = jo.getString("name");
 
-            ParameterDefinition d = getParameterDefinition(name);
-            if (d == null)
-                throw new IllegalArgumentException("No such parameter definition: " + name);
-            ParameterValue parameterValue = d.createValue(req, jo);
-            if (parameterValue != null) {
-                values.add(parameterValue);
-            } else {
-                throw new IllegalArgumentException("Cannot retrieve the parameter value: " + name);
+                ParameterDefinition d = getParameterDefinition(name);
+                if (d == null)
+                    throw new IllegalArgumentException("No such parameter definition: " + name);
+                ParameterValue parameterValue = d.createValue(req, jo);
+                if (parameterValue != null) {
+                    values.add(parameterValue);
+                } else {
+                    throw new IllegalArgumentException("Cannot retrieve the parameter value: " + name);
+                }
             }
         }
 

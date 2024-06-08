@@ -24,7 +24,6 @@
 
 package hudson.triggers;
 
-import antlr.ANTLRException;
 import hudson.Extension;
 import hudson.model.Item;
 import java.io.ByteArrayInputStream;
@@ -60,7 +59,7 @@ public class TriggerTest {
         public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
         @DataBoundConstructor
-        public MockTrigger(String cron) throws ANTLRException {
+        public MockTrigger(String cron) {
             super(cron);
         }
 

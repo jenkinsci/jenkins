@@ -4,11 +4,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
-import com.gargoylesoftware.htmlunit.HttpMethod;
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.util.NameValuePair;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Collections;
@@ -21,8 +16,14 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import org.htmlunit.FailingHttpStatusCodeException;
+import org.htmlunit.HttpMethod;
+import org.htmlunit.Page;
+import org.htmlunit.WebRequest;
+import org.htmlunit.util.NameValuePair;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
+import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.CapturedParameterNames;
@@ -87,17 +88,19 @@ public class DoActionFilterTest extends StaplerAbstractTest {
 
     @Test
     public void testProtectedMethodDispatch() throws Exception {
-        try {
-            wc.goTo("testAccessModifierUrl/public/value", null);
-        } catch (FailingHttpStatusCodeException e) {
-            throw new AssertionError("should have access to a public method", e);
+        try (JenkinsRule.WebClient wc = j.createWebClient()) {
+            try {
+                wc.goTo("testAccessModifierUrl/public/value", null);
+            } catch (FailingHttpStatusCodeException e) {
+                throw new AssertionError("should have access to a public method", e);
+            }
+            FailingHttpStatusCodeException x = assertThrows("should not have allowed protected access", FailingHttpStatusCodeException.class, () -> wc.goTo("testAccessModifierUrl/protected/value", null));
+            assertEquals(HttpServletResponse.SC_NOT_FOUND, x.getStatusCode());
+            x = assertThrows("should not have allowed internal access", FailingHttpStatusCodeException.class, () -> wc.goTo("testAccessModifierUrl/internal/value", null));
+            assertEquals(HttpServletResponse.SC_NOT_FOUND, x.getStatusCode());
+            x = assertThrows("should not have allowed private access", FailingHttpStatusCodeException.class, () -> wc.goTo("testAccessModifierUrl/private/value", null));
+            assertEquals(HttpServletResponse.SC_NOT_FOUND, x.getStatusCode());
         }
-        FailingHttpStatusCodeException x = assertThrows("should not have allowed protected access", FailingHttpStatusCodeException.class, () -> wc.goTo("testAccessModifierUrl/protected/value", null));
-        assertEquals(HttpServletResponse.SC_NOT_FOUND, x.getStatusCode());
-        x = assertThrows("should not have allowed internal access", FailingHttpStatusCodeException.class, () -> wc.goTo("testAccessModifierUrl/internal/value", null));
-        assertEquals(HttpServletResponse.SC_NOT_FOUND, x.getStatusCode());
-        x = assertThrows("should not have allowed private access", FailingHttpStatusCodeException.class, () -> wc.goTo("testAccessModifierUrl/private/value", null));
-        assertEquals(HttpServletResponse.SC_NOT_FOUND, x.getStatusCode());
     }
 
     //================================= doXxx methods =================================
@@ -354,15 +357,19 @@ public class DoActionFilterTest extends StaplerAbstractTest {
         WebRequest settings = new WebRequest(new URL(j.getURL(), "testNewRulesOk/annotatedJsonResponse/"));
         settings.setHttpMethod(HttpMethod.POST);
         settings.setRequestBody(JSONObject.fromObject(Collections.emptyMap()).toString());
-        Page page = wc.getPage(settings);
-        assertEquals(200, page.getWebResponse().getStatusCode());
+        try (JenkinsRule.WebClient wc = j.createWebClient()) {
+            Page page = wc.getPage(settings);
+            assertEquals(200, page.getWebResponse().getStatusCode());
+        }
     }
 
     @Test
     public void testAnnotatedMethodOk_annotatedLimitedTo() {
-        FailingHttpStatusCodeException e = assertThrows(FailingHttpStatusCodeException.class, () -> wc.getPage(new URL(j.getURL(), "testNewRulesOk/annotatedLimitedTo/")));
-        assertEquals(500, e.getStatusCode());
-        assertTrue(e.getResponse().getContentAsString().contains("Needs to be in role"));
+        try (JenkinsRule.WebClient wc = j.createWebClient()) {
+            FailingHttpStatusCodeException e = assertThrows(FailingHttpStatusCodeException.class, () -> wc.getPage(new URL(j.getURL(), "testNewRulesOk/annotatedLimitedTo/")));
+            assertEquals(500, e.getStatusCode());
+            assertTrue(e.getResponse().getContentAsString().contains("Needs to be in role"));
+        }
     }
 
     @Test

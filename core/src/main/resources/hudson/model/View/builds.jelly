@@ -27,6 +27,7 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <l:layout title="${it.displayName}">
     <st:include page="sidepanel.jelly" />
+    <l:breadcrumb title="${%Build History}" />
     <l:main-panel>
       <div class="jenkins-app-bar">
         <div class="jenkins-app-bar__content">
@@ -35,10 +36,6 @@ THE SOFTWARE.
           </h1>
         </div>
       </div>
-
-      <j:if test="${!request.getParameter('suppressTimelineControl')}"> <!-- cf. BuildListTableTest; breaks HtmlUnit -->
-        <st:include page="control.jelly" it="${it.timeline}"/>
-      </j:if>
 
       <t:buildListTable builds="${it.builds}"/>
     </l:main-panel>

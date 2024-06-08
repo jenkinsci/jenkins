@@ -27,12 +27,12 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:f="/lib/form">
-  <l:layout permission="${h.ADMINISTER}" title="${%Script Console}">
+  <l:layout permission="${app.ADMINISTER}" title="${%scriptConsole}">
     <st:include page="sidepanel.jelly" />
 
-    <l:breadcrumb title="${%Script Console}"/>
+    <l:breadcrumb title="${%scriptConsole}"/>
     <l:main-panel>
-      <h1>${%Script Console}</h1>
+      <h1>${%scriptConsole}</h1>
 
       <j:choose>
         <j:when test="${it.channel != null}">
@@ -62,7 +62,7 @@ THE SOFTWARE.
           </j:if>
         </j:when>
         <j:otherwise>
-          ${%It is not possible to run scripts when agent is offline.}
+          ${%impossibleOffline}
         </j:otherwise>
       </j:choose>
     </l:main-panel>

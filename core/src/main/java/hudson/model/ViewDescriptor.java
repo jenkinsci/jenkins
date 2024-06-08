@@ -35,7 +35,6 @@ import java.util.List;
 import java.util.Objects;
 import jenkins.model.DirectlyModifiableTopLevelItemGroup;
 import jenkins.model.Jenkins;
-import org.apache.commons.lang.StringUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.AncestorInPath;
@@ -141,7 +140,7 @@ public abstract class ViewDescriptor extends Descriptor<View> {
      */
     @SuppressWarnings("unused") // expose utility check method to subclasses
     protected FormValidation checkDisplayName(@NonNull View view, @CheckForNull String value) {
-        if (StringUtils.isBlank(value)) {
+        if (value == null || value.isBlank()) {
             // no custom name, no need to check
             return FormValidation.ok();
         }

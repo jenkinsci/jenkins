@@ -24,7 +24,7 @@ pluginManager.initialPluginList = function (handler) {
       error: function (xhr, textStatus, errorThrown) {
         handler.call({ isError: true, errorMessage: errorThrown });
       },
-    }
+    },
   );
 };
 
@@ -112,7 +112,7 @@ pluginManager.installPlugins = function (plugins, handler) {
       error: function (xhr, textStatus, errorThrown) {
         handler.call({ isError: true, errorMessage: errorThrown });
       },
-    }
+    },
   );
 };
 
@@ -141,7 +141,7 @@ pluginManager.installStatus = function (handler, correlationId) {
       error: function (xhr, textStatus, errorThrown) {
         handler.call({ isError: true, errorMessage: errorThrown });
       },
-    }
+    },
   );
 };
 
@@ -168,7 +168,7 @@ pluginManager.availablePlugins = function (handler) {
       error: function (xhr, textStatus, errorThrown) {
         handler.call({ isError: true, errorMessage: errorThrown });
       },
-    }
+    },
   );
 };
 
@@ -188,7 +188,7 @@ pluginManager.availablePluginsSearch = function (query, limit, handler) {
       error: function (xhr, textStatus, errorThrown) {
         handler.call({ isError: true, errorMessage: errorThrown });
       },
-    }
+    },
   );
 };
 
@@ -217,7 +217,7 @@ pluginManager.incompleteInstallStatus = function (handler, correlationId) {
       error: function (xhr, textStatus, errorThrown) {
         handler.call({ isError: true, errorMessage: errorThrown });
       },
-    }
+    },
   );
 };
 
@@ -236,7 +236,7 @@ pluginManager.completeInstall = function (handler) {
       error: function (xhr, textStatus, errorThrown) {
         handler.call({ isError: true, message: errorThrown });
       },
-    }
+    },
   );
 };
 
@@ -254,7 +254,7 @@ pluginManager.getRestartStatus = function (handler) {
       error: function (xhr, textStatus, errorThrown) {
         handler.call({ isError: true, message: errorThrown });
       },
-    }
+    },
   );
 };
 
@@ -273,7 +273,7 @@ pluginManager.installPluginsDone = function (handler) {
       error: function (xhr, textStatus, errorThrown) {
         handler.call({ isError: true, message: errorThrown });
       },
-    }
+    },
   );
 };
 
@@ -292,7 +292,7 @@ pluginManager.restartJenkins = function (handler) {
       error: function (xhr, textStatus, errorThrown) {
         handler.call({ isError: true, message: errorThrown });
       },
-    }
+    },
   );
 };
 

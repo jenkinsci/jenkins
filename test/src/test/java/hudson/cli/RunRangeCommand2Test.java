@@ -31,6 +31,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import hudson.Functions;
 import hudson.model.FreeStyleBuild;
@@ -84,7 +85,7 @@ public class RunRangeCommand2Test {
 
     @Test public void dummyRangeShouldSuccessEvenTheBuildIsRunning() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject("aProject");
-        project.getBuildersList().add(Functions.isWindows() ? new BatchFile("echo 1\r\nping -n 10 127.0.0.1 >nul") : new Shell("echo 1\nsleep 10s"));
+        project.getBuildersList().add(Functions.isWindows() ? new BatchFile("echo 1\r\nping -n 10 127.0.0.1 >nul") : new Shell("echo 1\nsleep 10"));
         FreeStyleBuild build = project.scheduleBuild2(0).waitForStart();
         j.waitForMessage("echo 1", build);
 
@@ -98,7 +99,7 @@ public class RunRangeCommand2Test {
 
     @Test public void dummyRangeShouldSuccessEvenTheBuildIsStuckInTheQueue() throws Exception {
         FreeStyleProject project = j.createFreeStyleProject("aProject");
-        project.getBuildersList().add(new Shell("echo 1\nsleep 10s"));
+        project.getBuildersList().add(new Shell("echo 1\nsleep 10"));
         project.setAssignedLabel(new LabelAtom("never_created"));
         assertNotNull(project.scheduleBuild2(0));
         Thread.sleep(1000);
@@ -112,6 +113,7 @@ public class RunRangeCommand2Test {
                 .invokeWithArgs("aProject", "1");
         assertThat(result, succeeded());
         assertThat(result.stdout(), containsString("Builds: " + System.lineSeparator()));
+        assertTrue(j.jenkins.getQueue().cancel(project));
     }
 
 }

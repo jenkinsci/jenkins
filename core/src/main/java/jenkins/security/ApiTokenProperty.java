@@ -58,7 +58,6 @@ import jenkins.util.SystemProperties;
 import net.jcip.annotations.Immutable;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.Beta;
@@ -192,7 +191,7 @@ public class ApiTokenProperty extends UserProperty {
     }
 
     public boolean matchesPassword(String token) {
-        if (StringUtils.isBlank(token)) {
+        if (token == null || token.isBlank()) {
             return false;
         }
 
@@ -513,7 +512,7 @@ public class ApiTokenProperty extends UserProperty {
             }
 
             final String tokenName;
-            if (StringUtils.isBlank(newTokenName)) {
+            if (newTokenName == null || newTokenName.isBlank()) {
                 tokenName = Messages.Token_Created_on(DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(ZonedDateTime.now()));
             } else {
                 tokenName = newTokenName;
@@ -549,7 +548,7 @@ public class ApiTokenProperty extends UserProperty {
             }
 
             final String tokenName;
-            if (StringUtils.isBlank(newTokenName)) {
+            if (newTokenName == null || newTokenName.isBlank()) {
                 tokenName = String.format("Token created on %s", DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(ZonedDateTime.now()));
             } else {
                 tokenName = newTokenName;
@@ -576,10 +575,10 @@ public class ApiTokenProperty extends UserProperty {
             // only current user + administrator can rename token
             u.checkPermission(Jenkins.ADMINISTER);
 
-            if (StringUtils.isBlank(newName)) {
+            if (newName == null || newName.isBlank()) {
                 return HttpResponses.errorJSON("The name cannot be empty");
             }
-            if (StringUtils.isBlank(tokenUuid)) {
+            if (tokenUuid == null || tokenUuid.isBlank()) {
                 // using the web UI this should not occur
                 return HttpResponses.errorWithoutStack(400, "The tokenUuid cannot be empty");
             }
@@ -607,7 +606,7 @@ public class ApiTokenProperty extends UserProperty {
             // only current user + administrator can revoke token
             u.checkPermission(Jenkins.ADMINISTER);
 
-            if (StringUtils.isBlank(tokenUuid)) {
+            if (tokenUuid == null || tokenUuid.isBlank()) {
                 // using the web UI this should not occur
                 return HttpResponses.errorWithoutStack(400, "The tokenUuid cannot be empty");
             }
@@ -645,7 +644,7 @@ public class ApiTokenProperty extends UserProperty {
             // only current user + administrator can revoke token
             u.checkPermission(Jenkins.ADMINISTER);
 
-            if (StringUtils.isBlank(tokenUuid)) {
+            if (tokenUuid == null || tokenUuid.isBlank()) {
                 // using the web UI this should not occur
                 return HttpResponses.errorWithoutStack(400, "The tokenUuid cannot be empty");
             }

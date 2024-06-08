@@ -5,7 +5,7 @@ if (typeof JSON=="undefined") {
             return String.evalJSON(str);
         },
         stringify : function (obj) {
-            return Object.toJSON(obj);
+            return JSON.stringify(obj);
        }
     };
 }

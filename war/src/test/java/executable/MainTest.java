@@ -1,5 +1,7 @@
 package executable;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import org.junit.jupiter.api.Test;
 
@@ -28,6 +30,7 @@ class MainTest {
         assertJavaCheckFails(16, false);
         assertJavaCheckFails(18, false);
         assertJavaCheckFails(19, false);
+        assertJavaCheckFails(20, false);
         assertJavaCheckPasses(12, true);
         assertJavaCheckPasses(13, true);
         assertJavaCheckPasses(14, true);
@@ -35,6 +38,7 @@ class MainTest {
         assertJavaCheckPasses(16, true);
         assertJavaCheckPasses(18, true);
         assertJavaCheckPasses(19, true);
+        assertJavaCheckPasses(20, true);
     }
 
     private static void assertJavaCheckFails(int releaseVersion, boolean enableFutureJava) {
@@ -49,17 +53,10 @@ class MainTest {
                     releaseVersion, enableFutureJava);
         }
 
-        // TODO use assertThrows once we drop support for Java 8 in this module
-        boolean failed;
-        try {
-            Main.verifyJavaVersion(releaseVersion, enableFutureJava);
-            failed = false;
-        } catch (UnsupportedClassVersionError error) {
-            failed = true;
-        }
-        if (!failed) {
-            throw new AssertionError(message);
-        }
+        assertThrows(
+                UnsupportedClassVersionError.class,
+                () -> Main.verifyJavaVersion(releaseVersion, enableFutureJava),
+                message);
     }
 
     private static void assertJavaCheckPasses(int releaseVersion, boolean enableFutureJava) {

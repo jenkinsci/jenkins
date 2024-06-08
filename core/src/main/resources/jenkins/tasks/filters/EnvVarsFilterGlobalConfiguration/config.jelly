@@ -27,7 +27,7 @@ THE SOFTWARE.
     <j:if test="${instance.allGlobalRules.size() gt 0}">
         <!-- hide this configuration when there are no descriptors -->
         <f:section title="${%jobEnvironmentVariableFilters}">
-            <f:advanced title="${%showGlobalRules}" align="left">
+            <f:advanced title="${%showGlobalRules}">
                 <f:entry title="${%globalRules}">
                     <f:hetero-list name="rules"
                                    hasHeader="true"

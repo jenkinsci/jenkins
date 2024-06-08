@@ -1,8 +1,5 @@
 <a href="https://jenkins.io">
-  <picture>
-    <source width="400" media="(prefers-color-scheme: dark)" srcset="https://www.jenkins.io/images/jenkins-logo-title-dark.svg">
-    <img width="400" src="https://www.jenkins.io/images/jenkins-logo-title.svg">
-  </picture>
+    <img width="400" src="https://www.jenkins.io/images/jenkins-logo-title-dark.svg" alt="Jenkins logo"> 
 </a>
 
 # About
@@ -11,6 +8,8 @@
 [![Jenkins LTS Release](https://img.shields.io/endpoint?url=https%3A%2F%2Fwww.jenkins.io%2Fchangelog-stable%2Fbadge.json)](https://www.jenkins.io/changelog-stable)
 [![Docker Pulls](https://img.shields.io/docker/pulls/jenkins/jenkins.svg)](https://hub.docker.com/r/jenkins/jenkins/)
 [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/3538/badge)](https://bestpractices.coreinfrastructure.org/projects/3538)
+[![Reproducible Builds](https://img.shields.io/badge/Reproducible_Builds-ok-green)](https://maven.apache.org/guides/mini/guide-reproducible-builds.html)
+[![Gitter](https://img.shields.io/gitter/room/jenkinsci/jenkins)](https://app.gitter.im/#/room/#jenkinsci_jenkins:gitter.im)
 
 In a nutshell, Jenkins is the leading open-source automation server.
 Built with Java, it provides over 1,800 [plugins](https://plugins.jenkins.io/) to support automating virtually anything,
@@ -72,4 +71,4 @@ See [adopters](https://www.jenkins.io/project/adopters/) for the list of Jenkins
 
 # License
 
-Jenkins is **licensed** under the **[MIT License](https://github.com/jenkinsci/jenkins/blob/master/LICENSE.txt)**.
+Jenkins is **licensed** under the **[MIT License](LICENSE.txt)**.

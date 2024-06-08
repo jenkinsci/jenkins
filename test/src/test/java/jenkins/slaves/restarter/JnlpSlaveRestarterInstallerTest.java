@@ -69,7 +69,6 @@ public class JnlpSlaveRestarterInstallerTest {
                     builder.webSocket();
                 }
                 Slave s = inboundAgents.createAgent(r, builder.build());
-                r.waitOnline(s);
                 assertEquals(1, s.getChannel().call(new JVMCount()).intValue());
                 while (logging.getMessages().stream().noneMatch(msg -> msg.contains("Effective SlaveRestarter on remote:"))) {
                     Thread.sleep(100);
@@ -80,7 +79,11 @@ public class JnlpSlaveRestarterInstallerTest {
             rr.then(r -> {
                 DumbSlave s = (DumbSlave) r.jenkins.getNode("remote");
                 r.waitOnline(s);
-                assertEquals(canWork.get() ? 1 : 2, s.getChannel().call(new JVMCount()).intValue());
+                try {
+                    assertEquals(canWork.get() ? 1 : 2, s.getChannel().call(new JVMCount()).intValue());
+                } finally {
+                    inboundAgents.stop(r, s.getNodeName());
+                }
             });
     }
 

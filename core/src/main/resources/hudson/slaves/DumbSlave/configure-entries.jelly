@@ -28,9 +28,11 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout"
          xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <f:entry title="${%Description}" help="/help/system-config/master-slave/description.html">
-    <f:textbox field="nodeDescription" />
-  </f:entry>
+  <div class="jenkins-section">
+    <f:entry title="${%Description}" help="/help/system-config/master-slave/description.html">
+      <f:textarea name="nodeDescription" value="${it.nodeDescription}" codemirror-mode="${app.markupFormatter.codeMirrorMode}" codemirror-config="${app.markupFormatter.codeMirrorConfig}" previewEndpoint="/markupFormatter/previewDescription"/>
+    </f:entry>
+  </div>
 
   <f:entry title="${%Number of executors}" field="numExecutors">
     <f:number clazz="positive-number-required" min="1" step="1" default="1"/>

@@ -26,6 +26,7 @@ package hudson.console;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
+import hudson.Functions;
 import hudson.MarkupText;
 import java.io.IOException;
 import java.util.logging.Level;
@@ -52,7 +53,7 @@ public class ExpandableDetailsNote extends ConsoleNote {
     @Override
     public ConsoleAnnotator annotate(Object context, MarkupText text, int charPos) {
         text.addMarkup(charPos,
-                "<input type=button value='" + caption + "' class='reveal-expandable-detail'><div class='expandable-detail'>" + html + "</div>");
+                "<input type=button value='" + Functions.htmlAttributeEscape(caption) + "' class='reveal-expandable-detail'><div class='expandable-detail'>" + html + "</div>");
         return null;
     }
 

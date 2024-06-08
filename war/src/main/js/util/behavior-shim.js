@@ -1,6 +1,9 @@
 function specify(selector, id, priority, behavior) {
-  // eslint-ignore-next-line
   Behaviour.specify(selector, id, priority, behavior);
 }
 
-export default { specify };
+function applySubtree(startNode, includeSelf) {
+  Behaviour.applySubtree(startNode, includeSelf);
+}
+
+export default { specify, applySubtree };

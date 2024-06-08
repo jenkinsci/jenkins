@@ -24,17 +24,13 @@
 
 package jenkins.security.stapler;
 
-import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.startsWith;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
-import com.gargoylesoftware.htmlunit.HttpMethod;
-import com.gargoylesoftware.htmlunit.Page;
-import com.gargoylesoftware.htmlunit.WebRequest;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.model.UnprotectedRootAction;
 import java.awt.Point;
@@ -42,6 +38,10 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.URL;
 import org.apache.commons.lang3.StringUtils;
+import org.htmlunit.FailingHttpStatusCodeException;
+import org.htmlunit.HttpMethod;
+import org.htmlunit.Page;
+import org.htmlunit.WebRequest;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -55,8 +55,6 @@ public abstract class StaplerAbstractTest {
     public static JenkinsRule rule = new JenkinsRule();
     protected JenkinsRule j;
 
-    protected JenkinsRule.WebClient wc;
-
     protected WebApp webApp;
 
     protected static boolean filteredGetMethodTriggered = false;
@@ -67,7 +65,6 @@ public abstract class StaplerAbstractTest {
     public void setUp() throws Exception {
         j = rule;
         j.jenkins.setCrumbIssuer(null);
-        wc = j.createWebClient();
 
         this.webApp = (WebApp) j.jenkins.servletContext.getAttribute(WebApp.class.getName());
 
@@ -176,7 +173,7 @@ public abstract class StaplerAbstractTest {
     }
 
     protected void assertReachable(String url, HttpMethod method) throws IOException {
-        try {
+        try (JenkinsRule.WebClient wc = j.createWebClient()) {
             Page page = wc.getPage(new WebRequest(new URL(j.getURL(), url), method));
             assertEquals(200, page.getWebResponse().getStatusCode());
             assertThat(page.getWebResponse().getContentAsString(), startsWith("ok"));
@@ -194,14 +191,16 @@ public abstract class StaplerAbstractTest {
     }
 
     protected void assertReachableWithSettings(WebRequest request) throws IOException {
-        Page page = wc.getPage(request);
-        assertEquals(200, page.getWebResponse().getStatusCode());
-        assertEquals("ok", page.getWebResponse().getContentAsString());
+        try (JenkinsRule.WebClient wc = j.createWebClient()) {
+            Page page = wc.getPage(request);
+            assertEquals(200, page.getWebResponse().getStatusCode());
+            assertEquals("ok", page.getWebResponse().getContentAsString());
+        }
         assertDoActionRequestWasNotBlocked();
     }
 
     protected void assertReachableWithoutOk(String url) throws IOException {
-        try {
+        try (JenkinsRule.WebClient wc = j.createWebClient()) {
             Page page = wc.getPage(new URL(j.getURL(), url));
             assertEquals(200, page.getWebResponse().getStatusCode());
         } catch (FailingHttpStatusCodeException e) {
@@ -210,7 +209,9 @@ public abstract class StaplerAbstractTest {
     }
 
     protected void assertNotReachable(String url) throws IOException {
-        FailingHttpStatusCodeException e = assertThrows("Url " + url + " is reachable but should not be, a not-found error is expected", FailingHttpStatusCodeException.class, () -> wc.getPage(new URL(j.getURL(), url)));
-        assertEquals("Url " + url + " returns an error different from 404", 404, e.getResponse().getStatusCode());
+        try (JenkinsRule.WebClient wc = j.createWebClient()) {
+            FailingHttpStatusCodeException e = assertThrows("Url " + url + " is reachable but should not be, a not-found error is expected", FailingHttpStatusCodeException.class, () -> wc.getPage(new URL(j.getURL(), url)));
+            assertEquals("Url " + url + " returns an error different from 404", 404, e.getResponse().getStatusCode());
+        }
     }
 }

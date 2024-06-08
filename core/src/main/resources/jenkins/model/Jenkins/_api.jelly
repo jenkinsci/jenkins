@@ -27,6 +27,8 @@ THE SOFTWARE.
 
   <st:include page="/hudson/model/ModifiableItemGroup/_api.jelly"/>
 
+  <st:include page="/hudson/model/ModifiableViewGroup/_api.jelly"/>
+
   <h2>Build Queue</h2>
   <p>
     Build queue has <a href="../queue/api/">its own separate API</a>.
@@ -44,7 +46,7 @@ THE SOFTWARE.
     You can cancel this mode by sending a POST request to <a href="../cancelQuietDown">this URL</a>. On environments
     where Jenkins can restart itself (such as when Jenkins is installed as a Windows service), POSTing to
     <a href="../restart">this URL</a> will start the restart sequence, or
-    <a href="../safeRestart">this URL</a> to restart once no jobs are running.
+    <a href="../safeRestart">this URL</a> to restart once no jobs are running. (Pipeline builds may prevent Jenkins from restarting for a short period of time in some cases, but if so, they will be paused at the next available opportunity and then resumed after Jenkins restarts.)
     All these URLs need Overall/Manage permission (typically granted via Overall/Administer).
   </p>
 </j:jelly>

@@ -30,28 +30,26 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <l:layout title="${it.displayName} ${%System Information}" permissions="${it.EXTENDED_READ_AND_CONNECT}">
+    <j:if test="${it.channel != null}">
+      <l:header>
+        <script src="${resURL}/jsbundles/section-to-tabs.js" type="text/javascript" defer="true" />
+      </l:header>
+    </j:if>
     <st:include page="sidepanel.jelly" />
+    <l:breadcrumb title="${%System Information}" />
 
     <l:main-panel>
-
-      <h1>
-        <span class="icon-lg">
-          <l:icon src="${it.icon}"/>
-        </span>
-        ${it.caption} ${%System Information}
-        <j:if test="${!empty(it.node.nodeDescription)}">
-          <span style="font-size:smaller">(${it.node.nodeDescription})</span>
-        </j:if>
-      </h1>
+      <l:app-bar title="${it.caption} ${%System Information}"/>
 
       <j:choose>
         <j:when test="${it.channel != null}">
-          <h2>${it.oSDescription} agent, version ${it.slaveVersion}</h2>
+          <h4>${it.oSDescription} agent, version ${it.slaveVersion}</h4>
 
           <j:forEach var="instance" items="${it.systemInfoExtensions}">
             <l:hasPermission permission="${instance.requiredPermission}">
-              <h1>${instance.displayName}</h1>
-              <st:include page="systemInfo" from="${instance}"/>
+              <l:tabPane title="${instance.displayName}">
+                <st:include page="systemInfo" from="${instance}"/>
+              </l:tabPane>
             </l:hasPermission>
           </j:forEach>
         </j:when>

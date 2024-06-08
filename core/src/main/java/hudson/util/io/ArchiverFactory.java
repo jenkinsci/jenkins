@@ -30,6 +30,8 @@ import hudson.FilePath.TarCompression;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Serializable;
+import java.nio.charset.Charset;
+import java.nio.file.OpenOption;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -42,9 +44,21 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 public abstract class ArchiverFactory implements Serializable {
     /**
      * Creates an archiver on top of the given stream.
+     * File names in the archive are encoded with default character set.
      */
     @NonNull
-    public abstract Archiver create(OutputStream out) throws IOException;
+    public Archiver create(OutputStream out) throws IOException {
+        return create(out, Charset.defaultCharset());
+    }
+
+    /**
+     * Creates an archiver on top of the given stream.
+     *
+     * @param filenamesEncoding the encoding to be used in the archive for file names
+     * @since 2.449
+     */
+    @NonNull
+    public abstract Archiver create(OutputStream out, Charset filenamesEncoding) throws IOException;
 
     /**
      * Uncompressed tar format.
@@ -65,13 +79,14 @@ public abstract class ArchiverFactory implements Serializable {
     public static ArchiverFactory ZIP = new ZipArchiverFactory();
 
     /**
-     * Zip format, without following symlinks.
+     * Zip format, with prefix and optional OpenOptions.
      * @param prefix The portion of file path that will be added at the beginning of the relative path inside the archive.
      *               If non-empty, a trailing forward slash will be enforced.
+     * @param openOptions the options to apply when opening files.
      */
     @Restricted(NoExternalUse.class)
-    public static ArchiverFactory createZipWithoutSymlink(String prefix) {
-        return new ZipWithoutSymLinksArchiverFactory(prefix);
+    public static ArchiverFactory createZipWithPrefix(String prefix, OpenOption... openOptions) {
+        return new ZipArchiverFactory(prefix, openOptions);
     }
 
     private static final class TarArchiverFactory extends ArchiverFactory {
@@ -83,34 +98,31 @@ public abstract class ArchiverFactory implements Serializable {
 
         @NonNull
         @Override
-        public Archiver create(OutputStream out) throws IOException {
-            return new TarArchiver(method.compress(out));
+        public Archiver create(OutputStream out, Charset filenamesEncoding) throws IOException {
+            return new TarArchiver(method.compress(out), filenamesEncoding);
         }
 
         private static final long serialVersionUID = 1L;
     }
 
     private static final class ZipArchiverFactory extends ArchiverFactory {
-        @NonNull
-        @Override
-        public Archiver create(OutputStream out) {
-            return new ZipArchiver(out);
-        }
 
-        private static final long serialVersionUID = 1L;
-    }
-
-    private static final class ZipWithoutSymLinksArchiverFactory extends ArchiverFactory {
         private final String prefix;
+        private final OpenOption[] openOptions;
 
-        ZipWithoutSymLinksArchiverFactory(String prefix) {
+        ZipArchiverFactory() {
+            this(null);
+        }
+
+        ZipArchiverFactory(String prefix, OpenOption... openOptions) {
             this.prefix = prefix;
+            this.openOptions = openOptions;
         }
 
         @NonNull
         @Override
-        public Archiver create(OutputStream out) {
-            return new ZipArchiver(out, true, prefix);
+        public Archiver create(OutputStream out, Charset filenamesEncoding) {
+            return new ZipArchiver(out, prefix, filenamesEncoding, openOptions);
         }
 
         private static final long serialVersionUID = 1L;

@@ -27,6 +27,7 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <l:layout title="${it.title} : ${path}">
     <st:include page="sidepanel.jelly" it="${it.owner}"/>
+    <l:breadcrumb title="${it.title}" />
     <l:main-panel>
       <h1><l:breakable value="${it.title}"/></h1>
       <div class="dirTree">
@@ -51,6 +52,12 @@ THE SOFTWARE.
              <p>
                 <img id="symlinkalert" src="${imagesURL}/svgs/warning.svg" width="16" height="16" />
                ${%Symlinks are hidden}
+             </p>
+            </j:if>
+           <j:if test="${showTmpDirWarning}">
+             <p>
+               <img id="tmpdiralert" src="${imagesURL}/svgs/warning.svg" width="16" height="16" />
+               ${%Tmp directories are hidden}
              </p>
             </j:if>
           </j:when>
@@ -119,6 +126,12 @@ THE SOFTWARE.
              <p>
                 <img id="alert" src="${imagesURL}/svgs/warning.svg" width="16" height="16" />
                ${%Symlinks are hidden}
+             </p>
+            </j:if>
+           <j:if test="${showTmpDirWarning}">
+             <p>
+                <img id="alert" src="${imagesURL}/svgs/warning.svg" width="16" height="16" />
+               ${%Tmp directories are hidden}
              </p>
             </j:if>
           </j:otherwise>

@@ -210,7 +210,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P, R>, R extends A
      *      null, for example if the agent that this build run no longer exists.
      */
     public @CheckForNull Node getBuiltOn() {
-        if (builtOn == null || builtOn.equals(""))
+        if (builtOn == null || builtOn.isEmpty())
             return Jenkins.get();
         else
             return Jenkins.get().getNode(builtOn);

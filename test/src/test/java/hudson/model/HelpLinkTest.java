@@ -1,17 +1,19 @@
 package hudson.model;
 
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.not;
 
-import com.gargoylesoftware.htmlunit.WebResponseListener;
-import com.gargoylesoftware.htmlunit.html.DomNodeUtil;
-import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
-import com.gargoylesoftware.htmlunit.html.HtmlElementUtil;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.matrix.MatrixProject;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Publisher;
 import java.util.List;
+import org.htmlunit.WebResponseListener;
+import org.htmlunit.html.DomNodeUtil;
+import org.htmlunit.html.HtmlAnchor;
+import org.htmlunit.html.HtmlElementUtil;
+import org.htmlunit.html.HtmlPage;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -33,11 +35,11 @@ import org.jvnet.hudson.test.JenkinsRule;
     "Executing negative(hudson.model.HelpLinkTest)@1" prio=5 tid=0x1 nid=NA waiting
       java.lang.Thread.State: WAITING
           at java.lang.Object.wait(Object.java:-1)
-          at com.gargoylesoftware.htmlunit.javascript.background.JavaScriptJobManagerImpl.waitForJobs(JavaScriptJobManagerImpl.java:200)
-          at com.gargoylesoftware.htmlunit.WebClient.waitForBackgroundJavaScript(WebClient.java:1843)
-          at com.gargoylesoftware.htmlunit.WebClientUtil.waitForJSExec(WebClientUtil.java:57)
-          at com.gargoylesoftware.htmlunit.WebClientUtil.waitForJSExec(WebClientUtil.java:46)
-          at com.gargoylesoftware.htmlunit.html.HtmlElementUtil.click(HtmlElementUtil.java:61)
+          at org.htmlunit.javascript.background.JavaScriptJobManagerImpl.waitForJobs(JavaScriptJobManagerImpl.java:200)
+          at org.htmlunit.WebClient.waitForBackgroundJavaScript(WebClient.java:1843)
+          at org.htmlunit.WebClientUtil.waitForJSExec(WebClientUtil.java:57)
+          at org.htmlunit.WebClientUtil.waitForJSExec(WebClientUtil.java:46)
+          at org.htmlunit.html.HtmlElementUtil.click(HtmlElementUtil.java:61)
           at hudson.model.HelpLinkTest.clickAllHelpLinks(HelpLinkTest.java:70)
           at hudson.model.HelpLinkTest.clickAllHelpLinks(HelpLinkTest.java:61)
           at hudson.model.HelpLinkTest.negative(HelpLinkTest.java:106)
@@ -94,7 +96,7 @@ public class HelpLinkTest {
 
     private void clickAllHelpLinks(HtmlPage p) throws Exception {
         List<?> helpLinks = DomNodeUtil.selectNodes(p, "//a[@class='jenkins-help-button']");
-        assertTrue(helpLinks.size() > 0);
+        assertThat(helpLinks, not(empty()));
         System.out.println("Clicking " + helpLinks.size() + " help links");
 
         for (HtmlAnchor helpLink : (List<HtmlAnchor>) helpLinks) {

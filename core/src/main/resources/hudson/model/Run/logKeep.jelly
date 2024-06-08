@@ -28,12 +28,12 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <j:if test="${it.canToggleLogKeep()}">
-    <form method="post" action="toggleLogKeep" style="margin-top:1em">
+    <form method="post" action="toggleLogKeep">
       <j:if test="${it.keepLog and h.hasPermission(it,it.DELETE)}">
-        <f:submit value="${%Don't keep this build forever}"  />
+        <f:submit value="${%Don't keep this build forever}" primary="false" />
       </j:if>
       <j:if test="${!it.keepLog and h.hasPermission(it,it.UPDATE)}">
-        <f:submit value="${%Keep this build forever}"  />
+        <f:submit value="${%Keep this build forever}" primary="false" />
       </j:if>
     </form>
   </j:if>

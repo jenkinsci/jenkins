@@ -31,7 +31,6 @@ import hudson.AbortException;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
-import hudson.Functions;
 import hudson.Launcher;
 import hudson.Util;
 import hudson.model.AbstractBuild;
@@ -236,7 +235,7 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
 
     @Override
     public void perform(Run<?, ?> build, FilePath ws, EnvVars environment, Launcher launcher, TaskListener listener) throws IOException, InterruptedException {
-        if (artifacts.length() == 0) {
+        if (artifacts.isEmpty()) {
             throw new AbortException(Messages.ArtifactArchiver_NoIncludes());
         }
 
@@ -272,10 +271,8 @@ public class ArtifactArchiver extends Recorder implements SimpleBuildStep {
                         if (msg != null) {
                             listener.getLogger().println(msg);
                         }
-                    } catch (FilePath.FileMaskNoMatchesFoundException e) {
-                        listener.getLogger().println(e.getMessage());
                     } catch (Exception e) {
-                        Functions.printStackTrace(e, listener.getLogger());
+                        LOG.log(Level.FINE, e, () -> "Failed to validate ant file mask.");
                     }
                     if (allowEmptyArchive) {
                         listener.getLogger().println(Messages.ArtifactArchiver_NoMatchFound(artifacts));

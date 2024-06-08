@@ -29,15 +29,16 @@ import static java.util.Calendar.HOUR_OF_DAY;
 import static java.util.Calendar.MINUTE;
 import static java.util.Calendar.MONTH;
 
-import antlr.ANTLRException;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
-import java.io.StringReader;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.Locale;
 import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import jenkins.util.antlr.JenkinsANTLRErrorListener;
+import org.antlr.v4.runtime.CharStreams;
+import org.antlr.v4.runtime.CommonTokenStream;
 
 /**
  * Table for driving scheduled tasks.
@@ -67,53 +68,70 @@ public final class CronTab {
      */
     private @CheckForNull String specTimezone;
 
-    public CronTab(String format) throws ANTLRException {
+    /**
+     * @param format the crontab entry to be parsed
+     * @throws IllegalArgumentException if the crontab entry cannot be parsed
+     */
+    public CronTab(String format) {
         this(format, null);
     }
 
-    public CronTab(String format, Hash hash) throws ANTLRException {
+    /**
+     * @param format the crontab entry to be parsed
+     * @throws IllegalArgumentException if the crontab entry cannot be parsed
+     */
+    public CronTab(String format, Hash hash) {
         this(format, 1, hash);
     }
 
     /**
-     * @deprecated as of 1.448
-     *      Use {@link #CronTab(String, int, Hash)}
+     * @param format the crontab entry to be parsed
+     * @throws IllegalArgumentException if the crontab entry cannot be parsed
+     * @deprecated use {@link #CronTab(String, int, Hash)}
      */
-    @Deprecated
-    public CronTab(String format, int line) throws ANTLRException {
+    @Deprecated(since = "1.448")
+    public CronTab(String format, int line) {
         set(format, line, null);
     }
 
     /**
+     * @param format the crontab entry to be parsed
      * @param hash
      *      Used to spread out token like "@daily". Null to preserve the legacy behaviour
      *      of not spreading it out at all.
+     * @throws IllegalArgumentException if the crontab entry cannot be parsed
      */
-    public CronTab(String format, int line, Hash hash) throws ANTLRException {
+    public CronTab(String format, int line, Hash hash) {
         this(format, line, hash, null);
     }
 
     /**
+     * @param format the crontab entry to be parsed
      * @param timezone
      *      Used to schedule cron in a different timezone. Null to use the default system
      *      timezone
+     * @throws IllegalArgumentException if the crontab entry cannot be parsed
      * @since 1.615
      */
-    public CronTab(String format, int line, Hash hash, @CheckForNull String timezone) throws ANTLRException {
+    public CronTab(String format, int line, Hash hash, @CheckForNull String timezone) {
         set(format, line, hash, timezone);
     }
 
-    private void set(String format, int line, Hash hash) throws ANTLRException {
+    private void set(String format, int line, Hash hash) {
         set(format, line, hash, null);
     }
 
     /**
      * @since 1.615
      */
-    private void set(String format, int line, Hash hash, String timezone) throws ANTLRException {
-        CrontabLexer lexer = new CrontabLexer(new StringReader(format));
+    private void set(String format, int line, Hash hash, String timezone) {
+        CrontabLexer lexer = new CrontabLexer(CharStreams.fromString(format));
+        lexer.removeErrorListeners();
+        lexer.addErrorListener(new JenkinsANTLRErrorListener());
         lexer.setLine(line);
-        CrontabParser parser = new CrontabParser(lexer);
+        CrontabParser parser = new CrontabParser(new CommonTokenStream(lexer));
+        parser.removeErrorListeners();
+        parser.addErrorListener(new JenkinsANTLRErrorListener(parser::getErrorMessage));
         parser.setHash(hash);
         spec = format;
         specTimezone = timezone;
@@ -465,7 +483,11 @@ public final class CronTab {
         }
     }
 
-    void set(String format, Hash hash) throws ANTLRException {
+    /**
+     * @param format the crontab entry to be parsed
+     * @throws IllegalArgumentException if the crontab entry cannot be parsed
+     */
+    void set(String format, Hash hash) {
         set(format, 1, hash);
     }
 

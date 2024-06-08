@@ -1,11 +1,11 @@
 package jenkins.security;
 
-import com.gargoylesoftware.htmlunit.Page;
 import hudson.model.UnprotectedRootAction;
 import hudson.security.ACL;
 import hudson.security.FullControlOnceLoggedInAuthorizationStrategy;
 import hudson.util.HttpResponses;
 import jenkins.model.Jenkins;
+import org.htmlunit.Page;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -29,12 +29,7 @@ public class Security380Test {
         Jenkins.get().setSecurityRealm(j.createDummySecurityRealm());
 
         j.createFreeStyleProject();
-        ACL.impersonate2(Jenkins.ANONYMOUS2, new Runnable() {
-            @Override
-            public void run() {
-                Assert.assertEquals("no items", 0, Jenkins.get().getItems().size());
-            }
-        });
+        ACL.impersonate2(Jenkins.ANONYMOUS2, () -> Assert.assertEquals("no items", 0, Jenkins.get().getItems().size()));
     }
 
     @Issue("SECURITY-380")
@@ -47,12 +42,7 @@ public class Security380Test {
         Jenkins.get().setSecurityRealm(j.createDummySecurityRealm());
 
         j.createFreeStyleProject();
-        ACL.impersonate2(Jenkins.ANONYMOUS2, new Runnable() {
-            @Override
-            public void run() {
-                Assert.assertEquals("one item", 1, Jenkins.get().getItems().size());
-            }
-        });
+        ACL.impersonate2(Jenkins.ANONYMOUS2, () -> Assert.assertEquals("one item", 1, Jenkins.get().getItems().size()));
     }
 
     @Issue("SECURITY-380")

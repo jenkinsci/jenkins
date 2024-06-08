@@ -38,14 +38,15 @@ THE SOFTWARE.
     </st:attribute>
     <st:attribute name="hasMenu">
       If true, this breadcrumb item will include a '⌄' symbol to display a dropdown menu with items
-      from the '{breadcrumb.href}/contextMenu' path. Since TODO
+      from the '{breadcrumb.href}/contextMenu' path. Since 2.361.
     </st:attribute>
   </st:documentation>
 
   <j:if test="${mode=='breadcrumbs'}">
-    <li id="${attrs.id}" class="item">
+    <j:set var="hasLink" value="${attrs.href != null}" />
+    <li id="${attrs.id}" class="jenkins-breadcrumbs__list-item" aria-current="${hasLink ? null : 'page'}">
       <j:choose>
-        <j:when test="${attrs.href == null}">
+        <j:when test="${!hasLink}">
           ${attrs.title}
         </j:when>
         <j:otherwise>

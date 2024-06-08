@@ -42,6 +42,7 @@ import hudson.model.Hudson;
 import jakarta.annotation.PostConstruct;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -297,9 +298,11 @@ public abstract class ExtensionFinder implements ExtensionPoint {
         }
 
         private void refreshExtensionAnnotations() {
+            LOGGER.finer(() -> "refreshExtensionAnnotations()");
             for (ExtensionComponent<GuiceExtensionAnnotation> ec : moduleFinder.find(GuiceExtensionAnnotation.class, Hudson.getInstance())) {
                 GuiceExtensionAnnotation gea = ec.getInstance();
                 extensionAnnotations.put(gea.annotationType, gea);
+                LOGGER.finer(() -> "found " + gea.getClass());
             }
         }
 
@@ -327,6 +330,7 @@ public abstract class ExtensionFinder implements ExtensionPoint {
          */
         @Override
         public synchronized ExtensionComponentSet refresh() throws ExtensionRefreshException {
+            LOGGER.finer(() -> "refresh()");
             refreshExtensionAnnotations();
             // figure out newly discovered sezpoz components
             List<IndexItem<?, Object>> delta = new ArrayList<>();
@@ -498,10 +502,51 @@ public abstract class ExtensionFinder implements ExtensionPoint {
                          */
                         cc.getGenericSuperclass();
                         cc.getGenericInterfaces();
-                        cc.getDeclaredConstructors();
-                        cc.getDeclaredMethods();
+
+                        /*
+                         * See com.google.inject.spi.InjectionPoint#forConstructorOf(TypeLiteral, boolean)
+                         * and com.google.inject.spi.InjectionPoint(TypeLiteral, Constructor)
+                         */
+                        boolean foundInjectableConstructor = false;
+                        for (Constructor constructor : cc.getDeclaredConstructors()) {
+                            if (constructor.isAnnotationPresent(javax.inject.Inject.class)
+                                    || constructor.isAnnotationPresent(jakarta.inject.Inject.class)
+                                    || constructor.isAnnotationPresent(com.google.inject.Inject.class)) {
+                                constructor.getAnnotatedParameterTypes();
+                                constructor.getParameterAnnotations();
+                                foundInjectableConstructor = true;
+                            }
+                        }
+                        if (!foundInjectableConstructor) {
+                            Constructor<?> noArg = null;
+                            try {
+                                noArg = cc.getDeclaredConstructor();
+                            } catch (NoSuchMethodException e) {
+                                // ignore
+                            }
+                            if (noArg != null) {
+                                noArg.getAnnotatedParameterTypes();
+                                noArg.getParameterAnnotations();
+                            }
+                        }
+
+                        // See com.google.inject.spi.InjectionPoint(TypeLiteral, Method, boolean)
+                        for (Method method : cc.getDeclaredMethods()) {
+                            if (method.isAnnotationPresent(javax.inject.Inject.class)
+                                    || method.isAnnotationPresent(jakarta.inject.Inject.class)
+                                    || method.isAnnotationPresent(com.google.inject.Inject.class)) {
+                                method.getAnnotatedParameterTypes();
+                                method.getParameterAnnotations();
+                            }
+                        }
+
+                        // See com.google.inject.spi.InjectionPoint(TypeLiteral, Field, boolean)
                         for (Field f : cc.getDeclaredFields()) {
-                            if (f.getAnnotation(javax.inject.Inject.class) != null || f.getAnnotation(com.google.inject.Inject.class) != null) {
+                            if (f.isAnnotationPresent(javax.inject.Inject.class)
+                                    || f.isAnnotationPresent(jakarta.inject.Inject.class)
+                                    || f.isAnnotationPresent(com.google.inject.Inject.class)) {
+                                f.getAnnotations();
+                                f.getAnnotatedType().getAnnotations();
                                 resolve(f.getType(), encountered);
                             }
                         }

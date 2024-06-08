@@ -37,7 +37,6 @@ import hudson.Functions;
 import hudson.Util;
 import hudson.XmlFile;
 import hudson.cli.declarative.CLIResolver;
-import hudson.model.Queue.Executable;
 import hudson.model.listeners.ItemListener;
 import hudson.model.listeners.SaveableListener;
 import hudson.model.queue.SubTask;
@@ -76,6 +75,7 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import jenkins.model.DirectlyModifiableTopLevelItemGroup;
 import jenkins.model.Jenkins;
+import jenkins.model.Loadable;
 import jenkins.model.queue.ItemDeletion;
 import jenkins.security.NotReallyRoleSensitiveCallable;
 import jenkins.util.SystemProperties;
@@ -111,8 +111,7 @@ import org.xml.sax.SAXException;
 // Item doesn't necessarily have to be Actionable, but
 // Java doesn't let multiple inheritance.
 @ExportedBean
-@SuppressFBWarnings(value = "THROWS_METHOD_THROWS_CLAUSE_THROWABLE", justification = "TODO needs triage")
-public abstract class AbstractItem extends Actionable implements Item, HttpDeletable, AccessControlled, DescriptorByNameOwner, StaplerProxy {
+public abstract class AbstractItem extends Actionable implements Loadable, Item, HttpDeletable, AccessControlled, DescriptorByNameOwner, StaplerProxy {
 
     private static final Logger LOGGER = Logger.getLogger(AbstractItem.class.getName());
 
@@ -480,7 +479,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     @Exported
     public final String getFullName() {
         String n = getParent().getFullName();
-        if (n.length() == 0)   return getName();
+        if (n.isEmpty())   return getName();
         else                return n + '/' + getName();
     }
 
@@ -488,7 +487,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
     @Exported
     public final String getFullDisplayName() {
         String n = getParent().getFullDisplayName();
-        if (n.length() == 0)   return getDisplayName();
+        if (n.isEmpty())   return getDisplayName();
         else                return n + " » " + getDisplayName();
     }
 
@@ -556,9 +555,15 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
                     View view = (View) last.getObject();
                     if (view.getOwner().getItemGroup() == getParent() && !view.isDefault()) {
                         // Showing something inside a view, so should use that as the base URL.
-                        String base = last.getUrl().substring(req.getContextPath().length() + 1) + '/';
-                        LOGGER.log(Level.FINER, "using {0}{1} for {2} from {3}", new Object[] {base, shortUrl, this, uri});
-                        return base + shortUrl;
+                        String prefix = req.getContextPath() + "/";
+                        String url = last.getUrl();
+                        if (url.startsWith(prefix)) {
+                            String base = url.substring(prefix.length()) + '/';
+                            LOGGER.log(Level.FINER, "using {0}{1} for {2} from {3} given {4}", new Object[] {base, shortUrl, this, uri, prefix});
+                            return base + shortUrl;
+                        } else {
+                            LOGGER.finer(() -> url + " does not start with " + prefix + " as expected");
+                        }
                     } else {
                         LOGGER.log(Level.FINER, "irrelevant {0} for {1} from {2}", new Object[] {view.getViewName(), this, uri});
                     }
@@ -725,7 +730,9 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
                     Item item = Tasks.getItemOf(i.task);
                     while (item != null) {
                         if (item == this) {
-                            queue.cancel(i);
+                            if (!queue.cancel(i)) {
+                                LOGGER.warning(() -> "failed to cancel " + i);
+                            }
                             break;
                         }
                         if (item.getParent() instanceof Item) {
@@ -742,7 +749,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
                 for (Computer c : Jenkins.get().getComputers()) {
                     for (Executor e : c.getAllExecutors()) {
                         final WorkUnit workUnit = e.getCurrentWorkUnit();
-                        final Executable executable = workUnit != null ? workUnit.getExecutable() : null;
+                        final Queue.Executable executable = workUnit != null ? workUnit.getExecutable() : null;
                         final SubTask subtask = executable != null ? getParentOf(executable) : null;
 
                         if (subtask != null) {
@@ -792,6 +799,24 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
                         throw new Failure(Messages.AbstractItem_FailureToStopBuilds(
                                 buildsInProgress.size(), getFullDisplayName()
                         ));
+                    }
+                }
+            }
+            if (this instanceof ItemGroup) {
+                // delete individual items first
+                // (disregard whether they would be deletable in isolation)
+                // JENKINS-34939: do not hold the monitor on this folder while deleting them
+                // (thus we cannot do this inside performDelete)
+                try (ACLContext oldContext = ACL.as2(ACL.SYSTEM2)) {
+                    for (Item i : ((ItemGroup<?>) this).getItems(TopLevelItem.class::isInstance)) {
+                        try {
+                            i.delete();
+                        } catch (AbortException e) {
+                            throw (AbortException) new AbortException(
+                                    "Failed to delete " + i.getFullDisplayName() + " : " + e.getMessage()).initCause(e);
+                        } catch (IOException e) {
+                            throw new IOException("Failed to delete " + i.getFullDisplayName(), e);
+                        }
                     }
                 }
             }
@@ -912,6 +937,7 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
             // if everything went well, commit this new version
             out.commit();
             SaveableListener.fireOnChange(this, getConfigFile());
+            ItemListener.fireOnUpdated(this);
 
         } finally {
             out.abort(); // don't leave anything behind
@@ -929,6 +955,11 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
      */
     @RequirePOST
     public void doReload() throws IOException {
+        load();
+    }
+
+    @Override
+    public void load() throws IOException {
         checkPermission(CONFIGURE);
 
         // try to reflect the changes by reloading
@@ -936,13 +967,11 @@ public abstract class AbstractItem extends Actionable implements Item, HttpDelet
         Items.whileUpdatingByXml(new NotReallyRoleSensitiveCallable<Void, IOException>() {
             @Override
             public Void call() throws IOException {
-                onLoad(getParent(), getRootDir().getName());
+                onLoad(getParent(), getParent().getItemName(getRootDir(), AbstractItem.this));
                 return null;
             }
         });
         Jenkins.get().rebuildDependencyGraphAsync();
-
-        SaveableListener.fireOnChange(this, getConfigFile());
     }
 
 

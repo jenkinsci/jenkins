@@ -1,0 +1,62 @@
+.manage-messages a,
+.manage-messages a:visited {
+  color: inherit !important;
+  text-decoration: none;
+}
+
+.manage-messages a:hover,
+.manage-messages a:focus {
+  text-decoration: underline;
+}
+
+.manage-messages dl:first-child {
+  margin-top: 0;
+}
+
+.manage-messages dl dt:first-child {
+  margin-top: 0;
+}
+
+.manage-messages dl dt {
+  margin-top: 10px;
+  font-weight: normal;
+}
+
+.manage-messages dl dd {
+  margin-left: 15px;
+}
+
+.manage-messages dl:last-child {
+  margin-bottom: 0;
+}
+
+.manage-messages dl dt::after {
+  content: ": ";
+}
+
+.manage-messages .alert,
+.manage-messages .jenkins-alert {
+  &:last-of-type {
+    margin-bottom: 30px;
+  }
+
+  a {
+    text-decoration: underline;
+  }
+
+  form {
+    position: relative;
+    float: right;
+    margin: -6px 0 0 !important;
+    display: flex;
+    gap: 0.5rem;
+
+    & > div {
+      display: contents;
+    }
+
+    span {
+      margin: 0 0 0 4px !important;
+    }
+  }
+}

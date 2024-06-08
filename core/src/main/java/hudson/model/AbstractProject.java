@@ -31,7 +31,6 @@ package hudson.model;
 import static hudson.scm.PollingResult.BUILD_NOW;
 import static hudson.scm.PollingResult.NO_CHANGES;
 
-import antlr.ANTLRException;
 import com.infradna.tool.bridge_method_injector.WithBridgeMethods;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -78,7 +77,6 @@ import hudson.util.AlternativeUiTextProvider;
 import hudson.util.AlternativeUiTextProvider.Message;
 import hudson.util.DescribableList;
 import hudson.util.FormValidation;
-import hudson.widgets.HistoryWidget;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -352,7 +350,10 @@ public abstract class AbstractProject<P extends AbstractProject<P, R>, R extends
     @Override
     protected void performDelete() throws IOException, InterruptedException {
         // prevent a new build while a delete operation is in progress
-        makeDisabled(true);
+        if (supportsMakeDisabled()) {
+            setDisabled(true);
+            Jenkins.get().getQueue().cancel(this);
+        }
         FilePath ws = getWorkspace();
         if (ws != null) {
             Node on = getLastBuiltOn();
@@ -414,7 +415,7 @@ public abstract class AbstractProject<P extends AbstractProject<P, R>, R extends
         try {
             Label.parseExpression(assignedNode);
             return assignedNode;
-        } catch (ANTLRException e) {
+        } catch (IllegalArgumentException e) {
             // must be old label or host name that includes whitespace or other unsafe chars
             return LabelAtom.escape(assignedNode);
         }
@@ -684,7 +685,7 @@ public abstract class AbstractProject<P extends AbstractProject<P, R>, R extends
      */
     public FormValidation doCheckRetryCount(@QueryParameter String value)throws IOException, ServletException {
         // retry count is optional so this is ok
-        if (value == null || value.trim().equals(""))
+        if (value == null || value.trim().isEmpty())
             return FormValidation.ok();
         if (!value.matches("[0-9]*")) {
             return FormValidation.error("Invalid retry count");
@@ -954,6 +955,11 @@ public abstract class AbstractProject<P extends AbstractProject<P, R>, R extends
         return buildMixIn.getNearestOldBuild(n);
     }
 
+    @Override
+    protected List<R> getEstimatedDurationCandidates() {
+        return buildMixIn.getEstimatedDurationCandidates();
+    }
+
     /**
      * Type token for the corresponding build type.
      * The build class must have two constructors:
@@ -1111,8 +1117,9 @@ public abstract class AbstractProject<P extends AbstractProject<P, R>, R extends
         // Blocked downstream tasks must block this project.
         // Projects blocked by upstream or downstream builds
         // are ignored to break deadlocks.
-        for (Queue.Item item : Jenkins.get().getQueue().getBlockedItems()) {
-            if (item.getCauseOfBlockage() instanceof AbstractProject.BecauseOfUpstreamBuildInProgress ||
+        for (Queue.BlockedItem item : Jenkins.get().getQueue().getBlockedItems()) {
+            if (item.isCauseOfBlockageNull() ||
+                    item.getCauseOfBlockage() instanceof AbstractProject.BecauseOfUpstreamBuildInProgress ||
                     item.getCauseOfBlockage() instanceof AbstractProject.BecauseOfDownstreamBuildInProgress) {
                 continue;
             }
@@ -1139,8 +1146,9 @@ public abstract class AbstractProject<P extends AbstractProject<P, R>, R extends
         // Blocked upstream tasks must block this project.
         // Projects blocked by upstream or downstream builds
         // are ignored to break deadlocks.
-        for (Queue.Item item : Jenkins.get().getQueue().getBlockedItems()) {
-            if (item.getCauseOfBlockage() instanceof AbstractProject.BecauseOfUpstreamBuildInProgress ||
+        for (Queue.BlockedItem item : Jenkins.get().getQueue().getBlockedItems()) {
+            if (item.isCauseOfBlockageNull() ||
+                    item.getCauseOfBlockage() instanceof AbstractProject.BecauseOfUpstreamBuildInProgress ||
                     item.getCauseOfBlockage() instanceof AbstractProject.BecauseOfDownstreamBuildInProgress) {
                 continue;
             }
@@ -1712,11 +1720,6 @@ public abstract class AbstractProject<P extends AbstractProject<P, R>, R extends
         return getParameterizedJobMixIn().extendSearchIndex(super.makeSearchIndex());
     }
 
-    @Override
-    protected HistoryWidget createHistoryWidget() {
-        return buildMixIn.createHistoryWidget();
-    }
-
 //
 //
 // actions
@@ -1929,6 +1932,11 @@ public abstract class AbstractProject<P extends AbstractProject<P, R>, R extends
         @Override
         public boolean isApplicable(Descriptor descriptor) {
             return true;
+        }
+
+        @Restricted(DoNotUse.class)
+        public FormValidation doCheckDisplayNameOrNull(@AncestorInPath AbstractProject project, @QueryParameter String value) {
+            return Jenkins.get().doCheckDisplayName(value, project.getName());
         }
 
         @Restricted(DoNotUse.class)

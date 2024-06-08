@@ -25,10 +25,9 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <div>
-    <l:icon class="icon-red icon-md"/> ${%Failure}
+    <l:icon src="symbol-status-red" class="icon-md"/> ${%Failure}
     -
-    <a href="" onclick="var n=findNext(this,function(e){return e.tagName=='PRE'});
-               n.style.display='block';this.style.display='none';return false">${%Details}</a>
+    <a class="update-center-job-failure-show-details" href="">${%Details}</a>
   </div>
   <pre style="display:none">${it.problemStackTrace}</pre>
 </j:jelly>

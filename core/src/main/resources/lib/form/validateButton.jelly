@@ -55,14 +55,16 @@ THE SOFTWARE.
       <div style="display:none;">
         <l:spinner text="${attrs.progress}" />
       </div>
-      <input type="button" value="${title}" class="yui-button validate-button ${attrs.clazz} Behaviour-validateButton"
+      <button type="button" class="jenkins-button validate-button ${attrs.clazz} Behaviour-validateButton"
              data-validate-button-descriptor-url="${descriptor.descriptorFullUrl}"
              data-validate-button-method="${method}"
-             data-validate-button-with="${with}" />
+             data-validate-button-with="${with}">
+        ${title}
+      </button>
       <div class="jenkins-validate-button__container__status">
         <!-- Used to display the form validation status -->
       </div>
     </div>
-    <st:adjunct includes="lib.form.validateButton.adjunct"/>
+    <st:adjunct includes="lib.form.validateButton.validateButton"/>
   </f:entry>
 </j:jelly>

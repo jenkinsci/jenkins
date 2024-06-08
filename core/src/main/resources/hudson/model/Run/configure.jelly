@@ -26,7 +26,9 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <l:layout title="${it.displayName} Config">
     <st:include page="sidepanel.jelly" />
+    <l:breadcrumb title="${%Edit Build Information}" />
     <l:main-panel>
+      <l:app-bar title="${%Edit Build Information}" />
       <div class="behavior-loading"><l:spinner text="${%LOADING}"/></div>
       <f:form method="post" action="configSubmit" name="config">
         <j:set var="readOnlyMode" value="${!h.hasPermission(it,it.UPDATE)}"/>

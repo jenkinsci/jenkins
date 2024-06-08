@@ -78,8 +78,8 @@ public class WebSocketAgentsTest {
      */
     @Test
     public void smokes() throws Exception {
-            Slave s = inboundAgents.createAgent(r, InboundAgentRule.Options.newBuilder().secret().webSocket().build());
-            r.waitOnline(s);
+        Slave s = inboundAgents.createAgent(r, InboundAgentRule.Options.newBuilder().secret().webSocket().build());
+        try {
             assertEquals("response", s.getChannel().call(new DummyTask()));
             assertNotNull(s.getChannel().call(new FatTask()));
             FreeStyleProject p = r.createFreeStyleProject();
@@ -87,6 +87,9 @@ public class WebSocketAgentsTest {
             p.getBuildersList().add(Functions.isWindows() ? new BatchFile("echo hello") : new Shell("echo hello"));
             r.buildAndAssertSuccess(p);
             s.toComputer().getLogText().writeLogTo(0, System.out);
+        } finally {
+            inboundAgents.stop(r, s.getNodeName());
+        }
     }
 
     private static class DummyTask extends SlaveToMasterCallable<String, RuntimeException> {

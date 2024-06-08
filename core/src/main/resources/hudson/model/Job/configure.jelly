@@ -34,7 +34,9 @@ THE SOFTWARE.
       <script src="${resURL}/jsbundles/section-to-sidebar-items.js" type="text/javascript" defer="true" />
     </l:header>
 
-    <l:side-panel>
+    <l:breadcrumb title="${%Configuration}" />
+
+    <l:side-panel sticky="true">
       <l:app-bar title="${%Configure}" />
       <div id="tasks" />
     </l:side-panel>

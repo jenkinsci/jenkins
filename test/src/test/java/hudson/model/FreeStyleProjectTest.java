@@ -34,11 +34,6 @@ import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
-import com.gargoylesoftware.htmlunit.HttpMethod;
-import com.gargoylesoftware.htmlunit.WebRequest;
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import hudson.ExtensionList;
 import hudson.diagnosis.OldDataMonitor;
 import hudson.tasks.Builder;
@@ -49,15 +44,22 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import jenkins.model.Jenkins;
+import org.htmlunit.FailingHttpStatusCodeException;
+import org.htmlunit.HttpMethod;
+import org.htmlunit.WebRequest;
+import org.htmlunit.html.HtmlForm;
+import org.htmlunit.html.HtmlPage;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.FailureBuilder;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.JenkinsRule.WebClient;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
 import org.jvnet.hudson.test.SmokeTest;
+import org.jvnet.hudson.test.recipes.WithTimeout;
 import org.kohsuke.stapler.jelly.JellyFacet;
 
 /**
@@ -68,6 +70,9 @@ public class FreeStyleProjectTest {
 
     @Rule
     public JenkinsRule j = new JenkinsRule();
+
+    @Rule
+    public TemporaryFolder tempFolder = new TemporaryFolder();
 
     /**
      * Tests a trivial configuration round-trip.
@@ -101,8 +106,7 @@ public class FreeStyleProjectTest {
     @Issue("JENKINS-4206")
     public void customWorkspaceAllocation() throws Exception {
         FreeStyleProject f = j.createFreeStyleProject();
-        File d = j.createTmpDir();
-        f.setCustomWorkspace(d.getPath());
+        f.setCustomWorkspace(tempFolder.newFolder().getPath());
         j.buildAndAssertSuccess(f);
     }
 
@@ -113,7 +117,7 @@ public class FreeStyleProjectTest {
     @Issue("JENKINS-3997")
     public void customWorkspaceVariableExpansion() throws Exception {
         FreeStyleProject f = j.createFreeStyleProject();
-        File d = new File(j.createTmpDir(), "${JOB_NAME}");
+        File d = new File(tempFolder.newFolder(), "${JOB_NAME}");
         f.setCustomWorkspace(d.getPath());
         FreeStyleBuild b = j.buildAndAssertSuccess(f);
 
@@ -146,6 +150,7 @@ public class FreeStyleProjectTest {
 
     @Test
     @Issue("JENKINS-36629")
+    @WithTimeout(300)
     public void buildStabilityReports() throws Exception {
         for (int i = 0; i <= 32; i++) {
             FreeStyleProject p = j.createFreeStyleProject(String.format("Pattern-%s", Integer.toBinaryString(i)));

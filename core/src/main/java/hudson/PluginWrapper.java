@@ -72,9 +72,7 @@ import jenkins.YesNoMaybe;
 import jenkins.model.Jenkins;
 import jenkins.plugins.DetachedPluginsUtil;
 import jenkins.security.UpdateSiteWarningsMonitor;
-import jenkins.util.AntClassLoader;
 import jenkins.util.URLClassLoader2;
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.LogFactory;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.Beta;
@@ -414,12 +412,7 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
      */
     @Restricted(Beta.class)
     public void injectJarsToClasspath(File... jars) throws Exception {
-        if (classLoader instanceof AntClassLoader) {
-            for (File f : jars) {
-                LOGGER.log(Level.CONFIG, () -> "Inserting " + f + " into " + shortName + " plugin's classpath");
-                ((AntClassLoader) classLoader).addPathComponent(f);
-            }
-        } else if (classLoader instanceof URLClassLoader2) {
+        if (classLoader instanceof URLClassLoader2) {
             for (File f : jars) {
                 LOGGER.log(Level.CONFIG, () -> "Inserting " + f + " into " + shortName + " plugin's classpath");
                 ((URLClassLoader2) classLoader).addURL(f.toURI().toURL());
@@ -503,7 +496,12 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
 
     @Override
     public String getDisplayName() {
-        return StringUtils.removeStart(getLongName(), "Jenkins ");
+        String displayName = getLongName();
+        String removePrefix = "Jenkins ";
+        if (displayName != null && displayName.startsWith(removePrefix)) {
+            return displayName.substring(removePrefix.length());
+        }
+        return displayName;
     }
 
     public Api getApi() {
@@ -1356,11 +1354,12 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
 
         jenkins.checkPermission(Jenkins.ADMINISTER);
         Files.deleteIfExists(Util.fileToPath(archive));
+        Files.deleteIfExists(Util.fileToPath(disableFile));
 
         // Redo who depends on who.
         jenkins.getPluginManager().resolveDependentPlugins();
 
-        return HttpResponses.redirectViaContextPath("/pluginManager/installed");   // send back to plugin manager
+        return HttpResponses.redirectViaContextPath("/manage/pluginManager/installed");   // send back to plugin manager
     }
 
     @Restricted(DoNotUse.class) // Jelly

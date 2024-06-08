@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-256 -256 512 512">
+    <ellipse opacity="0.4" cx="0" cy="0" rx="210" ry="210" fill="none" stroke="var(--red)" stroke-linecap="round" stroke-miterlimit="10" stroke-width="36" />
+    <path d="M0 -210C-115.98 -210 -210 -115.98 -210 0" fill="transparent" stroke="var(--red)" stroke-width="36" stroke-miterlimit="10" stroke-linecap="round" data-symbol-animation="spin"/>
+    <path fill="none" stroke="var(--red)" stroke-linecap="round" stroke-linejoin="round" stroke-width="36" d="M64 64L-64 -64M-64 64 64 -64"/>
+</svg>

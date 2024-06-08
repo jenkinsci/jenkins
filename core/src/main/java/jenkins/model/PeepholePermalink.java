@@ -7,6 +7,7 @@ import hudson.Extension;
 import hudson.Util;
 import hudson.model.Job;
 import hudson.model.PermalinkProjectAction.Permalink;
+import hudson.model.Result;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.model.listeners.RunListener;
@@ -22,6 +23,8 @@ import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Convenient base implementation for {@link Permalink}s that satisfy
@@ -147,7 +150,6 @@ public abstract class PeepholePermalink extends Permalink implements Predicate<R
         }
     }
 
-    @SuppressFBWarnings(value = "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE", justification = "https://github.com/spotbugs/spotbugs/issues/756")
     private static @NonNull Map<String, Integer> load(@NonNull File buildDir) {
         Map<String, Integer> cache = new TreeMap<>();
         File storage = storageFor(buildDir);
@@ -238,6 +240,145 @@ public abstract class PeepholePermalink extends Permalink implements Predicate<R
             }
         }
     }
+
+    /**
+     * @since 2.436
+     */
+    public static final Permalink LAST_STABLE_BUILD = new PeepholePermalink() {
+        @Override
+        public String getDisplayName() {
+            return hudson.model.Messages.Permalink_LastStableBuild();
+        }
+
+        @Override
+        public String getId() {
+            return "lastStableBuild";
+        }
+
+        @Override
+        public boolean apply(Run<?, ?> run) {
+            return !run.isBuilding() && run.getResult() == Result.SUCCESS;
+        }
+    };
+
+    /**
+     * @since 2.436
+     */
+    public static final Permalink LAST_SUCCESSFUL_BUILD = new PeepholePermalink() {
+        @Override
+        public String getDisplayName() {
+            return hudson.model.Messages.Permalink_LastSuccessfulBuild();
+        }
+
+        @Override
+        public String getId() {
+            return "lastSuccessfulBuild";
+        }
+
+        @SuppressFBWarnings(value = "NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE", justification = "TODO needs triage")
+        @Override
+        public boolean apply(Run<?, ?> run) {
+            return !run.isBuilding() && run.getResult().isBetterOrEqualTo(Result.UNSTABLE);
+        }
+    };
+
+    /**
+     * @since 2.436
+     */
+    public static final Permalink LAST_FAILED_BUILD = new PeepholePermalink() {
+        @Override
+        public String getDisplayName() {
+            return hudson.model.Messages.Permalink_LastFailedBuild();
+        }
+
+        @Override
+        public String getId() {
+            return "lastFailedBuild";
+        }
+
+        @Override
+        public boolean apply(Run<?, ?> run) {
+            return !run.isBuilding() && run.getResult() == Result.FAILURE;
+        }
+    };
+
+    /**
+     * @since 2.436
+     */
+    public static final Permalink LAST_UNSTABLE_BUILD = new PeepholePermalink() {
+        @Override
+        public String getDisplayName() {
+            return hudson.model.Messages.Permalink_LastUnstableBuild();
+        }
+
+        @Override
+        public String getId() {
+            return "lastUnstableBuild";
+        }
+
+        @Override
+        public boolean apply(Run<?, ?> run) {
+            return !run.isBuilding() && run.getResult() == Result.UNSTABLE;
+        }
+    };
+
+    /**
+     * @since 2.436
+     */
+    public static final Permalink LAST_UNSUCCESSFUL_BUILD = new PeepholePermalink() {
+        @Override
+        public String getDisplayName() {
+            return hudson.model.Messages.Permalink_LastUnsuccessfulBuild();
+        }
+
+        @Override
+        public String getId() {
+            return "lastUnsuccessfulBuild";
+        }
+
+        @Override
+        public boolean apply(Run<?, ?> run) {
+            return !run.isBuilding() && run.getResult() != Result.SUCCESS;
+        }
+    };
+
+    /**
+     * @since 2.436
+     */
+    public static final Permalink LAST_COMPLETED_BUILD = new PeepholePermalink() {
+        @Override
+        public String getDisplayName() {
+            return hudson.model.Messages.Permalink_LastCompletedBuild();
+        }
+
+        @Override
+        public String getId() {
+            return "lastCompletedBuild";
+        }
+
+        @Override
+        public boolean apply(Run<?, ?> run) {
+            return !run.isBuilding();
+        }
+    };
+
+    static {
+        BUILTIN.add(LAST_STABLE_BUILD);
+        BUILTIN.add(LAST_SUCCESSFUL_BUILD);
+        BUILTIN.add(LAST_FAILED_BUILD);
+        BUILTIN.add(LAST_UNSTABLE_BUILD);
+        BUILTIN.add(LAST_UNSUCCESSFUL_BUILD);
+        BUILTIN.add(LAST_COMPLETED_BUILD);
+        Permalink.LAST_STABLE_BUILD = LAST_STABLE_BUILD;
+        Permalink.LAST_SUCCESSFUL_BUILD = LAST_SUCCESSFUL_BUILD;
+        Permalink.LAST_FAILED_BUILD = LAST_FAILED_BUILD;
+        Permalink.LAST_UNSTABLE_BUILD = LAST_UNSTABLE_BUILD;
+        Permalink.LAST_UNSUCCESSFUL_BUILD = LAST_UNSUCCESSFUL_BUILD;
+        Permalink.LAST_COMPLETED_BUILD = LAST_COMPLETED_BUILD;
+    }
+
+    @Restricted(NoExternalUse.class)
+    public static void initialized() {}
 
     private static final int RESOLVES_TO_NONE = -1;
 

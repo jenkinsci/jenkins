@@ -26,10 +26,22 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define">
   <st:documentation>
     Generates a left side content as part of a Jenkins page. Typically known as two-column or left-side +  main-content layouts
+    <st:attribute name="sticky">
+      Make the side panel sticky. Should not be used on pages that include widgets in the sidepanel and when plugins can
+      add their own tasks, so the number of tasks is not fixed.
+    </st:attribute>
+
   </st:documentation>
 
   <j:if test="${mode=='side-panel'}">
-    <d:invokeBody />
+    <div id="side-panel" class="app-page-body__sidebar ${attrs.sticky == 'true' ? 'app-page-body__sidebar--sticky' : ''}">
+        <d:invokeBody />
+      <!-- add YUI logger if debugging YUI -->
+      <j:if test="${h.yuiSuffix=='debug'}">
+        <!-- script to transform this into the Logger Console is done in hudson-behavior.js -->
+        <div id="yui-logreader" style="margin-top:1em"/>
+      </j:if>
+    </div>
   </j:if>
 
 </j:jelly>
