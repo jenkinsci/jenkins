@@ -37,7 +37,6 @@ import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
-//TODO DRAFT experimental to split
 @Restricted(NoExternalUse.class)
 public class UserPropertyCategoryAppearanceAction extends UserPropertyCategoryAction implements Action {
     public UserPropertyCategoryAppearanceAction(@NonNull User user) {
