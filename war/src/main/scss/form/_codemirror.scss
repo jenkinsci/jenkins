@@ -42,6 +42,10 @@
   .CodeMirror-selected {
     background-color: var(--selection-color) !important;
   }
+
+  .CodeMirror-lines {
+    padding: var(--form-input-padding);
+  }
 }
 
 .jenkins-codemirror-resizer {
