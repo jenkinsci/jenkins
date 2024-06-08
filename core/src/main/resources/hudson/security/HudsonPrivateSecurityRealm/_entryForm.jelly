@@ -26,22 +26,11 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:f="/lib/form">
   <st:documentation>
-    <st:attribute name="it" use="required" type="hudson.security.HudsonPrivateSecurityRealm">
-      Context where the page is loaded.
-    </st:attribute>
-    <st:attribute name="title" use="required"> <![CDATA[
-      Title of the HTML page. Rendered in the page content inside a <h1>.
-    ]]>
-    </st:attribute>
-    <st:attribute name="action" use="required">
-      The method to call from within the HudsonPrivateSecurityRealm.
-    </st:attribute>
-    <st:attribute name="captcha" use="optional">
-      Determines if the tag will include the captcha.
-    </st:attribute>
-    <st:attribute name="data" use="optional" type="hudson.security.HudsonPrivateSecurityRealm.SignupInfo">
-      The wrapper for the data provided by the user and the error message(s) if any. Is null on first form display.
-    </st:attribute>
+    <st:attribute name="it" use="required" type="hudson.security.HudsonPrivateSecurityRealm">Context where the page is loaded.</st:attribute>
+    <st:attribute name="title" use="required"><![CDATA[ Title of the HTML page. Rendered in the page content inside a <h1>. ]]></st:attribute>
+    <st:attribute name="action" use="required">The method to call from within the HudsonPrivateSecurityRealm.</st:attribute>
+    <st:attribute name="captcha" use="optional">Determines if the tag will include the captcha.</st:attribute>
+    <st:attribute name="data" use="optional" type="hudson.security.HudsonPrivateSecurityRealm.SignupInfo">The wrapper for the data provided by the user and the error message(s) if any. Is null on first form display.</st:attribute>
   </st:documentation>
 
   <h1>${title}</h1>
@@ -52,9 +41,7 @@ THE SOFTWARE.
           <input class="jenkins-input" type="text" name="username" id="username" value="${data.username}" autofocus="autofocus" />
         </f:entry>
         <j:if test="${data.errors.containsKey('username')}">
-          <div class="error jenkins-!-margin-bottom-2">
-            ${data.errors.get('username')}
-          </div>
+          <div class="error jenkins-!-margin-bottom-2">${data.errors.get('username')}</div>
         </j:if>
       </tr>
       <tr>
@@ -62,9 +49,7 @@ THE SOFTWARE.
           <input class="jenkins-input" type="password" name="password1" value="${data.password1}" />
         </f:entry>
         <j:if test="${data.errors.containsKey('password1')}">
-          <div class="error jenkins-!-margin-bottom-2">
-            ${data.errors.get('password1')}
-          </div>
+          <div class="error jenkins-!-margin-bottom-2">${data.errors.get('password1')}</div>
         </j:if>
       </tr>
       <tr>
@@ -72,9 +57,7 @@ THE SOFTWARE.
           <input class="jenkins-input" type="password" name="password2" value="${data.password2}" />
         </f:entry>
         <j:if test="${data.errors.containsKey('password1')}">
-          <div class="error jenkins-!-margin-bottom-2">
-            ${data.errors.get('password1')}
-          </div>
+          <div class="error jenkins-!-margin-bottom-2">${data.errors.get('password1')}</div>
         </j:if>
       </tr>
       <tr>
@@ -82,9 +65,7 @@ THE SOFTWARE.
           <input class="jenkins-input" type="text" name="fullname" value="${data.fullname}" />
         </f:entry>
         <j:if test="${data.errors.containsKey('fullname')}">
-          <div class="error jenkins-!-margin-bottom-2">
-            ${data.errors.get('fullname')}
-          </div>
+          <div class="error jenkins-!-margin-bottom-2">${data.errors.get('fullname')}</div>
         </j:if>
       </tr>
       <j:if test="${it.mailerPluginPresent}">
@@ -93,9 +74,7 @@ THE SOFTWARE.
             <input class="jenkins-input" type="text" name="email" value="${data.email}" />
           </f:entry>
           <j:if test="${data.errors.containsKey('email')}">
-            <div class="error jenkins-!-margin-bottom-2">
-              ${data.errors.get('email')}
-            </div>
+            <div class="error jenkins-!-margin-bottom-2">${data.errors.get('email')}</div>
           </j:if>
         </tr>
       </j:if>
@@ -103,7 +82,8 @@ THE SOFTWARE.
         <tr>
           <td>${%Enter text as shown}:</td>
           <td>
-            <input class="jenkins-input" type="text" name="captcha" autocomplete="off" /><br />
+            <input class="jenkins-input" type="text" name="captcha" autocomplete="off" />
+            <br />
             <img src="${rootURL}/securityRealm/captcha" alt="[${%captcha}]" />
           </td>
         </tr>

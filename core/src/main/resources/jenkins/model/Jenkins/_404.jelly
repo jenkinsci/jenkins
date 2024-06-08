@@ -24,34 +24,33 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
-    <!--
+  <!--
       This is the page designated by web.xml to handle 404 errors. Show a nice error message and suggest logging in if applicable.
       Generally kept very similar to 'oops.jelly'.
     -->
-    <st:statusCode value="${response.getStatus()}" />
-    ${request.session.setAttribute('from', request.getAttribute('javax.servlet.error.request_uri'))}
-    <l:layout title="${%title(javax.servlet.error.message?:'Not Found')}" type="one-column">
-        <l:header />
-        <l:main-panel>
-            <h1 style="text-align: center">
-                <img src="${imagesURL}/rage.svg" height="179" width="154"/>
-                <span style="font-size:50px"><st:nbsp/>${%Oops!}</span>
-            </h1>
-            <div id="error-description" style="text-align: center">
-                <h2>${%title(javax.servlet.error.message?:'Not Found')}</h2>
-                <j:if test="${!request.getAttribute('jenkins.security.ResourceDomainRootAction.error')}">
-	                <p>
-	                    <j:choose>
-	                        <j:when test="${app.useSecurity}">
-                                ${%noAccess}
-		                    </j:when>
-		                    <j:otherwise>
-		                        ${%notFound}
-                            </j:otherwise>
-                        </j:choose>
-                    </p>
-                </j:if>
-            </div>
-        </l:main-panel>
-    </l:layout>
+  <st:statusCode value="${response.getStatus()}" />
+  ${request.session.setAttribute('from', request.getAttribute('javax.servlet.error.request_uri'))}
+  <l:layout title="${%title(javax.servlet.error.message?:'Not Found')}" type="one-column">
+    <l:header />
+    <l:main-panel>
+      <h1 style="text-align: center">
+        <img src="${imagesURL}/rage.svg" height="179" width="154" />
+        <span style="font-size: 50px">
+          <st:nbsp />
+          ${%Oops!}
+        </span>
+      </h1>
+      <div id="error-description" style="text-align: center">
+        <h2>${%title(javax.servlet.error.message?:'Not Found')}</h2>
+        <j:if test="${!request.getAttribute('jenkins.security.ResourceDomainRootAction.error')}">
+          <p>
+            <j:choose>
+              <j:when test="${app.useSecurity}">${%noAccess}</j:when>
+              <j:otherwise>${%notFound}</j:otherwise>
+            </j:choose>
+          </p>
+        </j:if>
+      </div>
+    </l:main-panel>
+  </l:layout>
 </j:jelly>

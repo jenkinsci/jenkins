@@ -24,12 +24,12 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-<j:if test="${app.updateCenter.downgradable}">
-<div class="jenkins-alert jenkins-alert-warning">
-  ${%Restore the previous version of Jenkins}
-  <form method="post" action="${rootURL}/updateCenter/downgrade">
-    <f:submit value="${%buttonText(app.updateCenter.backupVersion)}"/>
-  </form>
-</div>
-</j:if>
+  <j:if test="${app.updateCenter.downgradable}">
+    <div class="jenkins-alert jenkins-alert-warning">
+      ${%Restore the previous version of Jenkins}
+      <form method="post" action="${rootURL}/updateCenter/downgrade">
+        <f:submit value="${%buttonText(app.updateCenter.backupVersion)}" />
+      </form>
+    </div>
+  </j:if>
 </j:jelly>

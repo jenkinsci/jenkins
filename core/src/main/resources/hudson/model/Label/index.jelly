@@ -30,11 +30,11 @@ THE SOFTWARE.
     <l:main-panel>
       <l:app-bar title="${it.name}">
         <j:if test="${it.atom}">
-          <t:editDescriptionButton permission="${app.ADMINISTER}"/>
+          <t:editDescriptionButton permission="${app.ADMINISTER}" />
         </j:if>
       </l:app-bar>
       <j:if test="${it.atom}">
-        <t:editableDescription permission="${app.ADMINISTER}" hideButton="true"/>
+        <t:editableDescription permission="${app.ADMINISTER}" hideButton="true" />
       </j:if>
 
       <j:forEach var="a" items="${it.allActions}">
@@ -44,14 +44,14 @@ THE SOFTWARE.
       <div>
         <h2>${%Nodes}</h2>
         <j:forEach var="n" items="${it.sortedNodes}">
-          <j:set var="c" value="${app.getComputer(n.nodeName)}"/>
-          <j:set var="url" value="${rootURL}/${c.url}"/>
+          <j:set var="c" value="${app.getComputer(n.nodeName)}" />
+          <j:set var="url" value="${rootURL}/${c.url}" />
           <nobr>
             <a href="${url}" class="jenkins-link--with-icon"><l:icon src="${c.iconClassName}" /></a>
-            <st:nbsp/>
+            <st:nbsp />
             <a href="${url}" class="model-link inside">${c.displayName}</a>
           </nobr>
-          <wbr/>
+          <wbr />
         </j:forEach>
       </div>
 
@@ -59,15 +59,12 @@ THE SOFTWARE.
       <j:set var="jobs" value="${it.tiedJobs}" />
       <j:choose>
         <j:when test="${empty(jobs)}">
-          <p>
-            ${%None}
-          </p>
+          <p>${%None}</p>
         </j:when>
         <j:otherwise>
-          <t:projectView jobs="${jobs}"/>
+          <t:projectView jobs="${jobs}" />
         </j:otherwise>
       </j:choose>
-
     </l:main-panel>
   </l:layout>
 </j:jelly>

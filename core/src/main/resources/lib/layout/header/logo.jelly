@@ -9,9 +9,7 @@
     </div>
 
     <a class="page-header__brand-link" href="${rootURL}/">
-      <img src="${imagesURL}/svgs/logo.svg"
-           alt="[${logoAlt}]"
-           class="page-header__brand-image" />
+      <img src="${imagesURL}/svgs/logo.svg" alt="[${logoAlt}]" class="page-header__brand-image" />
       <span class="page-header__brand-name">Jenkins</span>
     </a>
   </div>

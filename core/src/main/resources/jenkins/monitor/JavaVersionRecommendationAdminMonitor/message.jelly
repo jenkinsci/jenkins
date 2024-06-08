@@ -24,14 +24,14 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:f="/lib/form">
-    <div class="jenkins-alert jenkins-alert-${it.severityAsString}">
-        <form id="JavaVersionRecommendationAdminMonitor" method="post" action="${rootURL}/${it.url}/act" name="${it.id}">
-            <f:submit name="yes" value="${%More Info}"/>
-            <l:isAdmin>
-                <f:submit value="${%Ignore}" name="no"/>
-            </l:isAdmin>
-        </form>
-        <h2>${%Recommended_Java_Version_Heading(it.javaVersion)}</h2>
-        ${%Recommended_Java_Version(it.javaVersion, it.endOfLifeAsDate)}
-    </div>
+  <div class="jenkins-alert jenkins-alert-${it.severityAsString}">
+    <form id="JavaVersionRecommendationAdminMonitor" method="post" action="${rootURL}/${it.url}/act" name="${it.id}">
+      <f:submit name="yes" value="${%More Info}" />
+      <l:isAdmin>
+        <f:submit value="${%Ignore}" name="no" />
+      </l:isAdmin>
+    </form>
+    <h2>${%Recommended_Java_Version_Heading(it.javaVersion)}</h2>
+    ${%Recommended_Java_Version(it.javaVersion, it.endOfLifeAsDate)}
+  </div>
 </j:jelly>

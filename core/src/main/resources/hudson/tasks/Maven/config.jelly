@@ -39,13 +39,13 @@ THE SOFTWARE.
   </f:entry>
   <f:advanced>
     <f:entry title="${%POM}" help="/plugin/maven-plugin/root-pom.html">
-      <f:textbox field="pom"/>
+      <f:textbox field="pom" />
     </f:entry>
     <f:entry field="properties" title="${%Properties}">
-      <f:textarea/>
+      <f:textarea />
     </f:entry>
     <f:entry title="${%JVM Options}" help="/plugin/maven-plugin/maven-opts.html">
-      <f:expandableTextbox field="jvmOptions"/>
+      <f:expandableTextbox field="jvmOptions" />
     </f:entry>
     <f:entry field="injectBuildVariables">
       <f:checkbox title="${%Inject build variables}" checked="${it.injectBuildVariables}" />
@@ -54,7 +54,7 @@ THE SOFTWARE.
       <f:checkbox title="${%Use private Maven repository}" help="/plugin/maven-plugin/private-repository.html" checked="${it.usesPrivateRepository()}" />
     </f:entry>
 
-    <f:dropdownDescriptorSelector title="${%Settings file}"  field="settings" default="${descriptor.defaultSettingsProvider}"/>
-	<f:dropdownDescriptorSelector title="${%Global Settings file}" field="globalSettings"  default="${descriptor.defaultGlobalSettingsProvider}"/>
+    <f:dropdownDescriptorSelector title="${%Settings file}" field="settings" default="${descriptor.defaultSettingsProvider}" />
+    <f:dropdownDescriptorSelector title="${%Global Settings file}" field="globalSettings" default="${descriptor.defaultGlobalSettingsProvider}" />
   </f:advanced>
 </j:jelly>

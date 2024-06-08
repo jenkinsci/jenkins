@@ -25,15 +25,9 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:x="jelly:xml">
   <st:documentation>
-    <st:attribute name="title" use="required">
-      The title for the application bar
-    </st:attribute>
-    <st:attribute name="headingLevel">
-      Defaults to h1
-    </st:attribute>
-    <st:attribute name="subtitle">
-      The subtitle for the application bar
-    </st:attribute>
+    <st:attribute name="title" use="required">The title for the application bar</st:attribute>
+    <st:attribute name="headingLevel">Defaults to h1</st:attribute>
+    <st:attribute name="subtitle">The subtitle for the application bar</st:attribute>
     Generates a row containing the page title and an optional set of controls
   </st:documentation>
 
@@ -48,7 +42,7 @@ THE SOFTWARE.
         </x:element>
       </div>
       <div class="jenkins-app-bar__controls">
-        <d:invokeBody/>
+        <d:invokeBody />
       </div>
     </div>
   </j:if>

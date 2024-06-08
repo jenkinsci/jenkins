@@ -1,8 +1,8 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:h="/lib/layout/header">
-    <header id="page-header" class="page-header">
-      <h:logo/>
-      <h:searchbox/>
-      <h:login/>
-    </header>
+  <header id="page-header" class="page-header">
+    <h:logo />
+    <h:searchbox />
+    <h:login />
+  </header>
 </j:jelly>

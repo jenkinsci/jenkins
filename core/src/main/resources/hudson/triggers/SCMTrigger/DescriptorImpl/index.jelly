@@ -30,22 +30,16 @@ THE SOFTWARE.
       <h1>${%Current SCM Polling Activities}</h1>
 
       <j:if test="${it.isClogged()}">
-        <div class="warning" style="margin:1em;">
-          ${%clogged}
-        </div>
+        <div class="warning" style="margin: 1em">${%clogged}</div>
       </j:if>
 
-      <j:set var="runners" value="${it.runners}"/>
+      <j:set var="runners" value="${it.runners}" />
       <j:choose>
         <j:when test="${empty(runners)}">
-          <p>
-            ${%No polling activity is in progress.}
-          </p>
+          <p>${%No polling activity is in progress.}</p>
         </j:when>
         <j:otherwise>
-          <p>
-            ${%The following polling activities are currently in progress:}
-          </p>
+          <p>${%The following polling activities are currently in progress:}</p>
           <table id="threads" class="jenkins-table sortable">
             <thead>
               <tr>
@@ -59,9 +53,7 @@ THE SOFTWARE.
                   <td>
                     <a href="${rootURL}/${r.target.asItem().url}scmPollLog/">${r.target.asItem().fullDisplayName}</a>
                   </td>
-                  <td>
-                    ${r.duration}
-                  </td>
+                  <td>${r.duration}</td>
                 </tr>
               </j:forEach>
             </tbody>

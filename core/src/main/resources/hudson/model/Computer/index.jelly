@@ -29,26 +29,26 @@ THE SOFTWARE.
     <!-- no need for additional breadcrumb here as we're on an index page already including breadcrumb -->
     <l:main-panel>
       <l:app-bar title="${it.caption}">
-        <t:editDescriptionButton permission="${it.CONFIGURE}"/>
+        <t:editDescriptionButton permission="${it.CONFIGURE}" />
         <j:if test="${it.manualLaunchAllowed}">
-          <st:include from="${it.launcher}" page="app-bar-controls.jelly" optional="true"/>
+          <st:include from="${it.launcher}" page="app-bar-controls.jelly" optional="true" />
         </j:if>
         <!-- temporarily offline switch -->
         <j:choose>
           <j:when test="${it.temporarilyOffline}">
             <l:hasPermission permission="${it.CONNECT}">
               <form method="post" action="toggleOffline">
-                <f:submit value="${%submit.temporarilyOffline}"  />
+                <f:submit value="${%submit.temporarilyOffline}" />
               </form>
               <form method="post" action="setOfflineCause">
-              <f:submit primary="false" value="${%submit.updateOfflineCause}"  />
+                <f:submit primary="false" value="${%submit.updateOfflineCause}" />
               </form>
             </l:hasPermission>
           </j:when>
           <j:otherwise>
             <l:hasPermission permission="${it.DISCONNECT}">
               <form method="post" action="markOffline">
-                <f:submit primary="false" value="${%submit.not.temporarilyOffline}"  />
+                <f:submit primary="false" value="${%submit.not.temporarilyOffline}" />
               </form>
             </l:hasPermission>
           </j:otherwise>
@@ -63,7 +63,7 @@ THE SOFTWARE.
       </j:if>
 
       <j:if test="${it.manualLaunchAllowed}">
-        <st:include from="${it.launcher}" page="main.jelly" optional="true"/>
+        <st:include from="${it.launcher}" page="main.jelly" optional="true" />
       </j:if>
 
       <j:if test="${it.offline and !it.manualLaunchAllowed and it.launchSupported}">
@@ -75,7 +75,7 @@ THE SOFTWARE.
           <j:forEach var="m" items="${it.monitoringData}">
             <tr>
               <td>${m.key.columnCaption}</td>
-              <j:set var="data" value="${m.value}"/>
+              <j:set var="data" value="${m.value}" />
               <st:include page="column.jelly" from="${m.key}" />
             </tr>
           </j:forEach>
@@ -89,7 +89,7 @@ THE SOFTWARE.
             <!-- Skip the label for this node -->
             <j:if test="${entry.item!=it.node.selfLabel}">
               <a class="${entry.className} model-link inside" href="${rootURL}/label/${entry.item.name}">${entry.item.name}</a>
-              <wbr/>
+              <wbr />
             </j:if>
           </j:forEach>
         </div>
@@ -101,16 +101,14 @@ THE SOFTWARE.
       <j:set var="jobs" value="${it.tiedJobs}" />
       <j:choose>
         <j:when test="${empty(jobs)}">
-          <p>
-            ${%None}
-          </p>
+          <p>${%None}</p>
         </j:when>
         <j:otherwise>
-          <t:projectView jobs="${jobs}"/>
+          <t:projectView jobs="${jobs}" />
         </j:otherwise>
       </j:choose>
 
-      <st:include page="main.jelly" optional="true"/>
+      <st:include page="main.jelly" optional="true" />
     </l:main-panel>
   </l:layout>
 </j:jelly>

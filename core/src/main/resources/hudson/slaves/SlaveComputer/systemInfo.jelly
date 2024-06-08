@@ -39,7 +39,7 @@ THE SOFTWARE.
     <l:breadcrumb title="${%System Information}" />
 
     <l:main-panel>
-      <l:app-bar title="${it.caption} ${%System Information}"/>
+      <l:app-bar title="${it.caption} ${%System Information}" />
 
       <j:choose>
         <j:when test="${it.channel != null}">
@@ -48,14 +48,12 @@ THE SOFTWARE.
           <j:forEach var="instance" items="${it.systemInfoExtensions}">
             <l:hasPermission permission="${instance.requiredPermission}">
               <l:tabPane title="${instance.displayName}">
-                <st:include page="systemInfo" from="${instance}"/>
+                <st:include page="systemInfo" from="${instance}" />
               </l:tabPane>
             </l:hasPermission>
           </j:forEach>
         </j:when>
-        <j:otherwise>
-          ${%System Information is unavailable when agent is offline.}
-        </j:otherwise>
+        <j:otherwise>${%System Information is unavailable when agent is offline.}</j:otherwise>
       </j:choose>
     </l:main-panel>
   </l:layout>

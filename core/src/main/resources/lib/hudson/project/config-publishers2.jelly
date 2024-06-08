@@ -29,13 +29,7 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
   <f:section title="${%Post-build Actions}" icon="symbol-post-build">
     <f:block>
-      <f:hetero-list name="publisher" hasHeader="true"
-                     descriptors="${h.getPublisherDescriptors(it)}"
-                     items="${it.publishersList}"
-                     oneEach="true"
-                     menuAlign="bl-tl"
-                     honorOrder="true"
-                     addCaption="${%Add post-build action}"/>
+      <f:hetero-list name="publisher" hasHeader="true" descriptors="${h.getPublisherDescriptors(it)}" items="${it.publishersList}" oneEach="true" menuAlign="bl-tl" honorOrder="true" addCaption="${%Add post-build action}" />
     </f:block>
   </f:section>
 </j:jelly>

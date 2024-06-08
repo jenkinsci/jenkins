@@ -25,8 +25,11 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
-    <j:forEach var="delegate" items="${it.uniqueReasons.values()}" indexVar="index">
-        <j:if test="${index > 0}">; <wbr/></j:if>
-        <st:include it="${delegate}" page="summary"/>
-    </j:forEach>
+  <j:forEach var="delegate" items="${it.uniqueReasons.values()}" indexVar="index">
+    <j:if test="${index > 0}">
+      ;
+      <wbr />
+    </j:if>
+    <st:include it="${delegate}" page="summary" />
+  </j:forEach>
 </j:jelly>

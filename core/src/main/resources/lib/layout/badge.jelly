@@ -24,23 +24,11 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
   <st:documentation>
-    If a Badge is informed it will be displayed, otherwise nothing is done.
-    
-    @since 2.445
-    <st:attribute name="badge" type="jenkins.management.Badge">
-      Badge to be displayed, accepts null value.
-      
-      @since 2.445
-    </st:attribute>
-    <st:attribute name="class" use="optional">
-      Additional class to be applied.
-      
-      @since 2.445
-    </st:attribute>
+    If a Badge is informed it will be displayed, otherwise nothing is done. @since 2.445
+    <st:attribute name="badge" type="jenkins.management.Badge">Badge to be displayed, accepts null value. @since 2.445</st:attribute>
+    <st:attribute name="class" use="optional">Additional class to be applied. @since 2.445</st:attribute>
   </st:documentation>
   <j:if test="${attrs.badge != null}">
-    <span class="jenkins-badge jenkins-!-${attrs.badge.severity}-color ${attrs.class?:''}" tooltip="${attrs.badge.tooltip}">
-      ${attrs.badge.text}
-    </span>
+    <span class="jenkins-badge jenkins-!-${attrs.badge.severity}-color ${attrs.class?:''}" tooltip="${attrs.badge.tooltip}">${attrs.badge.text}</span>
   </j:if>
 </j:jelly>

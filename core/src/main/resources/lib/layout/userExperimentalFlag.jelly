@@ -23,22 +23,17 @@
   ~ THE SOFTWARE.
   -->
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
-    <st:documentation>
-        Retrieve the value of a given experimental flag for the current user.
-        <st:attribute name="var" type="java.lang.String">
-            The variable that receives the value of the flag for the current user.
-        </st:attribute>
-        <st:attribute name="flagClassName" type="java.lang.String">
-            The canonical class name of the flag
-        </st:attribute>
-    </st:documentation>
+  <st:documentation>
+    Retrieve the value of a given experimental flag for the current user.
+    <st:attribute name="var" type="java.lang.String">The variable that receives the value of the flag for the current user.</st:attribute>
+    <st:attribute name="flagClassName" type="java.lang.String">The canonical class name of the flag</st:attribute>
+  </st:documentation>
 
-    <j:invokeStatic var="flagValue" className="jenkins.model.experimentalflags.UserExperimentalFlag"
-                    method="getFlagValueForCurrentUser">
-        <j:arg value="${attrs.flagClassName}" />
-    </j:invokeStatic>
+  <j:invokeStatic var="flagValue" className="jenkins.model.experimentalflags.UserExperimentalFlag" method="getFlagValueForCurrentUser">
+    <j:arg value="${attrs.flagClassName}" />
+  </j:invokeStatic>
 
-    <j:if test="${flagValue != null}">
-        <j:set var="${attrs.var}" value="${flagValue}" scope="parent" />
-    </j:if>
+  <j:if test="${flagValue != null}">
+    <j:set var="${attrs.var}" value="${flagValue}" scope="parent" />
+  </j:if>
 </j:jelly>

@@ -26,9 +26,9 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <h2>Accessing Update Sites</h2>
   <p>
-    Update center is a collection of update sites. The "main" update site that contains Jenkins update
-    can be accessed from <a href="../coreSource/api">here</a>. Otherwise you can obtain update center
-    by its ID:
+    Update center is a collection of update sites. The "main" update site that contains Jenkins update can be accessed from
+    <a href="../coreSource/api">here</a>
+    . Otherwise you can obtain update center by its ID:
   </p>
   <ul>
     <j:forEach var="site" items="${it.sites}">
@@ -37,13 +37,11 @@ THE SOFTWARE.
       </li>
     </j:forEach>
   </ul>
-  <a href="json?tree=sites[id,url]">This data can be retrieved in a form more accessible for programs</a>, too.
+  <a href="json?tree=sites[id,url]">This data can be retrieved in a form more accessible for programs</a>
+  , too.
 
   <h2>Update Center Jobs</h2>
-  <p>
-    Once a plugin installation/update, and core update is requested, these tasks are recorded in the update center
-    and get executed in turn. Jenkins calls them "update center jobs". The current list of jobs are as follows:
-  </p>
+  <p>Once a plugin installation/update, and core update is requested, these tasks are recorded in the update center and get executed in turn. Jenkins calls them "update center jobs". The current list of jobs are as follows:</p>
   <ul>
     <j:forEach var="j" items="${it.jobs}" varStatus="loop">
       <li>
@@ -51,7 +49,5 @@ THE SOFTWARE.
       </li>
     </j:forEach>
   </ul>
-  <p>
-    Each job exposes its own set of APIs.
-  </p>
+  <p>Each job exposes its own set of APIs.</p>
 </j:jelly>

@@ -27,17 +27,9 @@ THE SOFTWARE.
   <st:documentation>
     Section header in the form table.
 
-    <st:attribute name="title"> <![CDATA[
-      The section header text.
-      If null is given, the entire <f:section> tag becomes no-op.
-      ]]>
-    </st:attribute>
-    <st:attribute name="icon">
-      Optional attribute to set an icon for the section, this is only visible when using section-to-sidebar-items.js
-    </st:attribute>
-    <st:attribute name="name">
-      Optional attribute to create a JSON object from this section.
-    </st:attribute>
+    <st:attribute name="title"><![CDATA[ The section header text. If null is given, the entire <f:section> tag becomes no-op. ]]></st:attribute>
+    <st:attribute name="icon">Optional attribute to set an icon for the section, this is only visible when using section-to-sidebar-items.js</st:attribute>
+    <st:attribute name="name">Optional attribute to create a JSON object from this section.</st:attribute>
   </st:documentation>
 
   <f:rowSet name="${attrs.name}">

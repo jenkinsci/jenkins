@@ -35,6 +35,6 @@ THE SOFTWARE.
   <st:setHeader name="X-Executor-Remaining" value="${it.executor.estimatedRemainingTime}" />
   <st:setHeader name="X-Executor-Stuck" value="${it.executor.likelyStuck}" />
   <l:ajax>
-    <l:icon alt="${it.iconColor.description}" src="symbol-status-${it.iconColor.iconName}" class="icon-xlg" tooltip="${it.iconColor.description}"/>
+    <l:icon alt="${it.iconColor.description}" src="symbol-status-${it.iconColor.iconName}" class="icon-xlg" tooltip="${it.iconColor.description}" />
   </l:ajax>
 </st:compress>

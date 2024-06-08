@@ -30,13 +30,11 @@ THE SOFTWARE.
     <l:main-panel>
       <l:hasPermission permission="${it.DISCONNECT}">
         <h2>${%title(it.displayName)}</h2>
-        <p>
-          ${%blurb}
-        </p>
+        <p>${%blurb}</p>
         <form method="post" action="changeOfflineCause">
-          <f:textarea name="offlineMessage" value="${it.getOfflineCauseReason()}"/>
+          <f:textarea name="offlineMessage" value="${it.getOfflineCauseReason()}" />
           <p>
-            <f:submit value="${%submit}"  />
+            <f:submit value="${%submit}" />
           </p>
         </form>
       </l:hasPermission>

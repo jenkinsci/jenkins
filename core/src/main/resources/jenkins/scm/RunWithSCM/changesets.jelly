@@ -24,13 +24,13 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:t="/lib/hudson">
-  <j:set var="changeSets" value="${it.changeSets}"/>
+  <j:set var="changeSets" value="${it.changeSets}" />
   <table>
     <t:summary icon="symbol-changes">
       <j:choose>
         <j:when test="${!changeSets.isEmpty()}">
           <j:forEach var="changeSet" items="${changeSets}">
-            <st:include it="${changeSet}" page="digest.jelly"/>
+            <st:include it="${changeSet}" page="digest.jelly" />
           </j:forEach>
         </j:when>
         <j:otherwise>

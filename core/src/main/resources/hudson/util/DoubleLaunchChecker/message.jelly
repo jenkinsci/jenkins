@@ -25,23 +25,21 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
   <div class="jenkins-alert jenkins-alert-warning">
-      <p>
-        ${%message(it.home)}
-      </p>
-      <table>
-        <tr>
-          <td>${%This Jenkins}:</td>
-          <td>${it.id}</td>
-        </tr>
-        <tr>
-          <td>${%Other Jenkins}:</td>
-          <td>${it.collidingId}</td>
-        </tr>
-      </table>
-      <div>
-        <form method="post" action="${rootURL}/${it.url}/disable">
-          <f:submit value="${%label}" />
-        </form>
-      </div>
+    <p>${%message(it.home)}</p>
+    <table>
+      <tr>
+        <td>${%This Jenkins}:</td>
+        <td>${it.id}</td>
+      </tr>
+      <tr>
+        <td>${%Other Jenkins}:</td>
+        <td>${it.collidingId}</td>
+      </tr>
+    </table>
+    <div>
+      <form method="post" action="${rootURL}/${it.url}/disable">
+        <f:submit value="${%label}" />
+      </form>
+    </div>
   </div>
 </j:jelly>

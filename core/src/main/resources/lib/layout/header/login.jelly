@@ -11,14 +11,14 @@
           <j:invokeStatic var="user" className="hudson.model.User" method="current" />
           <j:choose>
             <j:when test="${user.fullName == null || user.fullName.trim().isEmpty()}">
-              <j:set var="userName" value="${user.id}"/>
+              <j:set var="userName" value="${user.id}" />
             </j:when>
             <j:otherwise>
-              <j:set var="userName" value="${user.fullName}"/>
+              <j:set var="userName" value="${user.fullName}" />
             </j:otherwise>
           </j:choose>
           <a href="${rootURL}/${user.url}" class="model-link">
-            <l:icon src="symbol-person-circle" class="icon-md"/>
+            <l:icon src="symbol-person-circle" class="icon-md" />
             <span class="hidden-xs hidden-sm">${userName}</span>
           </a>
           <j:if test="${app.securityRealm.canLogOut()}">

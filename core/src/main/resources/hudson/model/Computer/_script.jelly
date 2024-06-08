@@ -30,8 +30,6 @@ THE SOFTWARE.
   <t:scriptConsole>
     <pre>println System.getenv("PATH")</pre>
     <pre>println "uname -a".execute().text</pre>
-    <p>
-      ${%This execution happens in the agent JVM.}
-    </p>
+    <p>${%This execution happens in the agent JVM.}</p>
   </t:scriptConsole>
 </j:jelly>
