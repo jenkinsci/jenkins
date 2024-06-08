@@ -32,7 +32,12 @@ import hudson.model.TransientUserActionFactory;
 import hudson.model.User;
 import hudson.model.UserProperty;
 import hudson.model.UserPropertyDescriptor;
-import hudson.util.FormApply;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
 import jenkins.security.UserDetailsCache;
 import net.sf.json.JSONObject;
@@ -43,24 +48,10 @@ import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.verb.POST;
 
-import javax.servlet.ServletException;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-
 @Restricted(NoExternalUse.class)
-public class UserPropertyCategoryAccountAction implements Action {
-    private final @NonNull User targetUser;
-
+public class UserPropertyCategoryAccountAction extends UserPropertyCategoryAction implements Action {
     public UserPropertyCategoryAccountAction(@NonNull User user) {
-        this.targetUser = user;
-    }
-
-    @SuppressWarnings("unused") // Jelly use
-    public @NonNull User getTargetUser() {
-        return targetUser;
+        super(user);
     }
 
     @Override
@@ -100,44 +91,21 @@ public class UserPropertyCategoryAccountAction implements Action {
     }
 
     @POST
-    public void doAccountConfigSubmit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, Descriptor.FormException {
-        this.targetUser.checkPermission(Jenkins.ADMINISTER);
+    public void doConfigSubmit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, Descriptor.FormException {
+        User targetUser = this.getTargetUser();
+        targetUser.checkPermission(Jenkins.ADMINISTER);
 
         JSONObject json = req.getSubmittedForm();
 
-        String oldFullName = this.targetUser.getFullName();
-        this.targetUser.setFullName(json.getString("fullName"));
-        this.targetUser.setDescription(json.getString("description"));
+        String oldFullName = targetUser.getFullName();
+        targetUser.setFullName(json.getString("fullName"));
+        targetUser.setDescription(json.getString("description"));
 
-        List<UserProperty> props = new ArrayList<>();
-        List<UserPropertyDescriptor> myCategoryDescriptors = getMyCategoryDescriptors();
-        int i = 0;
-        for (UserPropertyDescriptor d : myCategoryDescriptors) {
-            UserProperty p = this.targetUser.getProperty(d.clazz);
+        super.doConfigSubmit(req, rsp);
 
-            JSONObject o = json.optJSONObject("userProperty" + i++);
-            if (o != null) {
-                if (p != null) {
-                    p = p.reconfigure(req, o);
-                } else {
-                    p = d.newInstance(req, o);
-                }
-            }
-
-            if (p != null) {
-                props.add(p);
-            }
-        }
-        this.targetUser.addProperties(props);
-
-        this.targetUser.save();
-
-        if (oldFullName != null && !oldFullName.equals(this.targetUser.getFullName())) {
+        if (!oldFullName.equals(targetUser.getFullName())) {
             UserDetailsCache.get().invalidate(oldFullName);
         }
-        
-        // we are in /user/<userLogin>/account/, going to /user/<userLogin>/
-        FormApply.success("..").generateResponse(req, rsp, this);
     }
 
     /**

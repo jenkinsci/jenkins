@@ -40,12 +40,8 @@ import org.kohsuke.accmod.restrictions.DoNotUse;
  * <p>
  * To facilitate the separation of the user properties into multiple pages, tabs, and so on,
  * {@link UserProperty}s are classified into categories (such as "security", "preferences", as well
- * as the catch all "unclassified".) Categories themselves are extensible &mdash; plugins may introduce
+ * as the catch-all "unclassified".) Categories themselves are extensible &mdash; plugins may introduce
  * its own category as well, although that should only happen if you are creating a big enough subsystem.
- *
- * <p>
- * The primary purpose of this is to enable future UIs to split the global configurations to
- * smaller pieces that can be individually looked at and updated.
  *
  * @since TODO
  * @see UserProperty
@@ -149,7 +145,25 @@ public abstract class UserPropertyCategory implements ExtensionPoint, ModelObjec
     }
 
     /**
-     * Security related configurations (e.g. API Token, SSH keys, ...). 
+     * Per user feature flags (e.g. new design, ...).
+     */
+    @Extension
+    @Symbol("appearance")
+    public static class Appearance extends UserPropertyCategory {
+        @Override
+        public String getDisplayName() {
+            return Messages.UserPropertyCategory_Appearance_DisplayName();
+        }
+
+        @Override
+        public String getShortDescription() {
+            return Messages.UserPropertyCategory_Appearance_ShortDescription();
+        }
+    }
+
+
+    /**
+     * Security related configurations (e.g. API Token, SSH keys, ...).
      * With this separation, we can more easily add control on their modifications.
      */
     @Extension

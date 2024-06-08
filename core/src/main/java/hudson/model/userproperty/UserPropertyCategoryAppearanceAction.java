@@ -21,72 +21,56 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
 package hudson.model.userproperty;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
-import hudson.ExtensionPoint;
-import hudson.model.Messages;
+import hudson.Extension;
+import hudson.model.Action;
+import hudson.model.TransientUserActionFactory;
 import hudson.model.User;
 import hudson.model.UserProperty;
 import hudson.model.UserPropertyDescriptor;
-import jenkins.model.Jenkins;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import org.jenkinsci.Symbol;
-import org.kohsuke.stapler.export.ExportedBean;
-
-import java.util.Map;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 //TODO DRAFT experimental to split
-/**
- * Property of {@link User} responsible to store their preferences.
- *
- * TODO rest of the javadoc
- * 
- * @since TODO
- */
-@ExportedBean
-public class UserPreferencesProperty extends UserProperty {
+@Restricted(NoExternalUse.class)
+public class UserPropertyCategoryAppearanceAction extends UserPropertyCategoryAction implements Action {
+    public UserPropertyCategoryAppearanceAction(@NonNull User user) {
+        super(user);
+    }
 
-    private Map<UserPreferenceKey, UserPreferenceValue> preferences;
-    
-    
-    
-    // descriptor must be of the UserPropertyDescriptor type
     @Override
-    public UserPropertyDescriptor getDescriptor() {
-        return (UserPropertyDescriptor) Jenkins.get().getDescriptorOrDie(getClass());
+    public String getDisplayName() {
+        return Messages.UserPropertyCategoryAppearanceAction_DisplayName();
     }
 
-    public static class UserPreference implements ExtensionPoint {
-        public UserPreferenceKey getKey(){
-            return null;
-        }
-        public UserPreferenceValue getValue(){
-            return null;
-        }
+    @Override
+    public String getIconFileName() {
+        return "symbol-brush-outline";
     }
 
-    public static class UserPreferenceKey {
-
+    @Override
+    public String getUrlName() {
+        return "appearance";
     }
 
-    public static class UserPreferenceValue {
-
+    public @NonNull List<UserPropertyDescriptor> getMyCategoryDescriptors() {
+        return UserProperty.allByCategoryClass(UserPropertyCategory.Appearance.class);
     }
 
-//    @Extension 
-    @Symbol("preferences")
-    public static class DescriptorImpl extends UserPropertyDescriptor {
-
-        @NonNull
-        @Override
-        public String getDisplayName() {
-            return Messages.UserPreferencesProperty_DisplayName();
-        }
-
-        @Override
-        public UserProperty newInstance(User user) {
-            return new UserPreferencesProperty();
+    /**
+     * Inject the outer class configuration page into the sidenav and the request routing of the user
+     */
+    @Extension(ordinal = 350)
+    @Symbol("appearance")
+    public static class AppearanceActionFactory extends TransientUserActionFactory {
+        public Collection<? extends Action> createFor(User target) {
+            return Collections.singleton(new UserPropertyCategoryAppearanceAction(target));
         }
     }
 }

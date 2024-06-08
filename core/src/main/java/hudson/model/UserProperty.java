@@ -29,15 +29,12 @@ import hudson.DescriptorExtensionList;
 import hudson.ExtensionPoint;
 import hudson.model.Descriptor.FormException;
 import hudson.model.userproperty.UserPropertyCategory;
+import java.util.ArrayList;
+import java.util.List;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.export.ExportedBean;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 
 /**
  * Extensible property of {@link User}.
@@ -88,7 +85,7 @@ public abstract class UserProperty implements ReconfigurableDescribable<UserProp
 
     /**
      * Returns all the registered {@link UserPropertyCategory} descriptors for a given category.
-     * 
+     *
      * @since TODO
      */
     public static List<UserPropertyDescriptor> allByCategoryClass(@NonNull Class<? extends UserPropertyCategory> categoryClass) {

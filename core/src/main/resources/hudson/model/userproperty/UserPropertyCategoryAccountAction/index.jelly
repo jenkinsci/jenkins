@@ -27,12 +27,12 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:f="/lib/form">
-    <l:layout permission="${app.ADMINISTER}" title="${%title(it.targetUser.fullName)}">
+    <l:layout permission="${app.ADMINISTER}" title="${%title}">
         <st:include page="sidepanel.jelly" it="${it.targetUser}" />
         <l:main-panel>
-            <f:form method="post" action="accountConfigSubmit" name="config">
+            <f:form method="post" action="configSubmit" name="config">
                 <h1>
-                    ${%title(it.targetUser.fullName)}
+                    ${%title}
                 </h1>
 
                 <j:set var="thisAction" value="${it}" />

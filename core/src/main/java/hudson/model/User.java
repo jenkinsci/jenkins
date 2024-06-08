@@ -39,16 +39,12 @@ import hudson.Util;
 import hudson.XmlFile;
 import hudson.init.InitMilestone;
 import hudson.init.Initializer;
-import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.SaveableListener;
-import hudson.model.userproperty.UserPreferencesProperty;
 import hudson.security.ACL;
 import hudson.security.AccessControlled;
 import hudson.security.SecurityRealm;
 import hudson.security.UserMayOrMayNotExistException2;
-import hudson.util.FormApply;
 import hudson.util.FormValidation;
-import hudson.util.HttpResponses;
 import hudson.util.RunList;
 import hudson.util.XStream2;
 import java.io.File;
@@ -79,7 +75,6 @@ import jenkins.security.ImpersonatingUserDetailsService2;
 import jenkins.security.LastGrantedAuthoritiesProperty;
 import jenkins.security.UserDetailsCache;
 import jenkins.util.SystemProperties;
-import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -89,7 +84,6 @@ import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.interceptor.RequirePOST;
-import org.kohsuke.stapler.verb.POST;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -343,13 +337,13 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         properties = ps;
         save();
     }
-    
+
     /**
      * Expand {@link #addProperty(UserProperty)} for multiple properties to be done at once.
      * Expected to be used by the categorized configuration pages to update part of the properties.
      * The properties not included in the list will be let untouched.
-     * It will call the {@link UserProperty#setUser(User)} method and at the end, {@link #save()} once. 
-     * 
+     * It will call the {@link UserProperty#setUser(User)} method and at the end, {@link #save()} once.
+     *
      * @since TODO
      */
     public synchronized void addProperties(@NonNull List<UserProperty> multipleProperties) throws IOException {
@@ -882,57 +876,6 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      */
     public Api getApi() {
         return new Api(this);
-    }
-
-    /**
-     * Accepts submission from the configuration page.
-     */
-    @POST
-    public void doConfigSubmit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, FormException {
-        // FIXME DRAFT system property
-        if (true) {
-            LOGGER.warning(() -> 
-                    "Attempt to use the legacy /configSubmit endpoint of user login=" + this.id + 
-                    ". The global configuration page has been deprecated in favor of categorized pages. For more details, see JENKINS-69869."
-            );
-            throw HttpResponses.error(400, "The user global configuration page was split into categorized individual pages. See JENKINS-69869.");
-        }
-
-        checkPermission(Jenkins.ADMINISTER);
-
-        JSONObject json = req.getSubmittedForm();
-        String oldFullName = this.fullName;
-        fullName = json.getString("fullName");
-        description = json.getString("description");
-
-        List<UserProperty> props = new ArrayList<>();
-        int i = 0;
-        for (UserPropertyDescriptor d : UserProperty.all()) {
-            UserProperty p = getProperty(d.clazz);
-
-            JSONObject o = json.optJSONObject("userProperty" + i++);
-            if (o != null) {
-                if (p != null) {
-                    p = p.reconfigure(req, o);
-                } else {
-                    p = d.newInstance(req, o);
-                }
-            }
-
-            if (p != null) {
-                p.setUser(this);
-                props.add(p);
-            }
-        }
-        this.properties = props;
-
-        save();
-
-        if (oldFullName != null && !oldFullName.equals(this.fullName)) {
-            UserDetailsCache.get().invalidate(oldFullName);
-        }
-
-        FormApply.success(".").generateResponse(req, rsp, this);
     }
 
     /**

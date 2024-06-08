@@ -27,9 +27,8 @@ package hudson.model;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.userproperty.UserPropertyCategory;
-import org.jenkinsci.Symbol;
-
 import java.util.Optional;
+import org.jenkinsci.Symbol;
 
 /**
  * {@link Descriptor} for {@link UserProperty}.
@@ -83,9 +82,9 @@ public abstract class UserPropertyDescriptor extends Descriptor<UserProperty> {
 
     /**
      * Define the category for this user property descriptor.
-     * 
+     *
      * @return never null, always the same value for a given instance of {@link Descriptor}.
-     * 
+     *
      * @since TODO
      */
     public @NonNull UserPropertyCategory getUserPropertyCategory() {
@@ -114,13 +113,13 @@ public abstract class UserPropertyDescriptor extends Descriptor<UserProperty> {
     }
 
     /**
-     * Method proposed to prevent plugins to rely on too recent core version 
+     * Method proposed to prevent plugins to rely on too recent core version
      * while keeping the possibility to use the categories.
-     * 
+     *
      * @deprecated This should only be used when the core requirement is below the version this method was added
-     * 
+     *
      * @return String name corresponding to the symbol of {@link #getUserPropertyCategory()}
-     * 
+     *
      * @since TODO
      */
     @Deprecated

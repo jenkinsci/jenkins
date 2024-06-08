@@ -26,39 +26,21 @@ package hudson.model.userproperty;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.model.Action;
-import hudson.model.Descriptor;
 import hudson.model.TransientUserActionFactory;
 import hudson.model.User;
 import hudson.model.UserProperty;
 import hudson.model.UserPropertyDescriptor;
-import hudson.util.FormApply;
-import jenkins.model.Jenkins;
-import net.sf.json.JSONObject;
-import org.jenkinsci.Symbol;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-import org.kohsuke.stapler.verb.POST;
-
-import javax.servlet.ServletException;
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import org.jenkinsci.Symbol;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 @Restricted(NoExternalUse.class)
-public class UserPropertyCategoryPreferencesAction implements Action {
-    private final @NonNull User targetUser;
-
+public class UserPropertyCategoryPreferencesAction extends UserPropertyCategoryAction implements Action {
     public UserPropertyCategoryPreferencesAction(@NonNull User user) {
-        this.targetUser = user;
-    }
-
-    @SuppressWarnings("unused") // Jelly use
-    public @NonNull User getTargetUser() {
-        return targetUser;
+        super(user);
     }
 
     @Override
@@ -78,39 +60,6 @@ public class UserPropertyCategoryPreferencesAction implements Action {
 
     public @NonNull List<UserPropertyDescriptor> getMyCategoryDescriptors() {
         return UserProperty.allByCategoryClass(UserPropertyCategory.Preferences.class);
-    }
-
-    @POST
-    public void doPreferencesConfigSubmit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, Descriptor.FormException {
-        this.targetUser.checkPermission(Jenkins.ADMINISTER);
-
-        JSONObject json = req.getSubmittedForm();
-
-        List<UserProperty> props = new ArrayList<>();
-        List<UserPropertyDescriptor> myCategoryDescriptors = getMyCategoryDescriptors();
-        int i = 0;
-        for (UserPropertyDescriptor d : myCategoryDescriptors) {
-            UserProperty p = this.targetUser.getProperty(d.clazz);
-
-            JSONObject o = json.optJSONObject("userProperty" + i++);
-            if (o != null) {
-                if (p != null) {
-                    p = p.reconfigure(req, o);
-                } else {
-                    p = d.newInstance(req, o);
-                }
-            }
-
-            if (p != null) {
-                props.add(p);
-            }
-        }
-        this.targetUser.addProperties(props);
-
-        this.targetUser.save();
-
-        // we are in /user/<userLogin>/experimental/, going to /user/<userLogin>/
-        FormApply.success("..").generateResponse(req, rsp, this);
     }
 
     /**
