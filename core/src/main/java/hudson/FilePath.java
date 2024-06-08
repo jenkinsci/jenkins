@@ -31,8 +31,6 @@ import static hudson.Util.fixEmpty;
 import static hudson.Util.fixEmptyAndTrim;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.jcraft.jzlib.GZIPInputStream;
-import com.jcraft.jzlib.GZIPOutputStream;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -61,7 +59,6 @@ import hudson.util.DirScanner;
 import hudson.util.ExceptionCatchingThreadFactory;
 import hudson.util.FileVisitor;
 import hudson.util.FormValidation;
-import hudson.util.HeadBufferingStream;
 import hudson.util.IOUtils;
 import hudson.util.NamingThreadFactory;
 import hudson.util.io.Archiver;
@@ -124,6 +121,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 import jenkins.MasterToSlaveFileCallable;
 import jenkins.SlaveToMasterFileCallable;
 import jenkins.model.Jenkins;
@@ -131,14 +130,14 @@ import jenkins.security.MasterToSlaveCallable;
 import jenkins.util.ContextResettingExecutorService;
 import jenkins.util.SystemProperties;
 import jenkins.util.VirtualFile;
-import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
-import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.fileupload2.core.FileItem;
 import org.apache.commons.io.input.CountingInputStream;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.types.FileSet;
+import org.apache.tools.tar.TarEntry;
+import org.apache.tools.tar.TarInputStream;
 import org.apache.tools.zip.ZipEntry;
 import org.apache.tools.zip.ZipFile;
 import org.jenkinsci.remoting.RoleChecker;
@@ -888,15 +887,8 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         },
         GZIP {
             @Override
-            public InputStream extract(InputStream _in) throws IOException {
-                HeadBufferingStream in = new HeadBufferingStream(_in, SIDE_BUFFER_SIZE);
-                try {
-                    return new GZIPInputStream(in, 8192, true);
-                } catch (IOException e) {
-                    // various people reported "java.io.IOException: Not in GZIP format" here, so diagnose this problem better
-                    in.fillSide();
-                    throw new IOException(e.getMessage() + "\nstream=" + Util.toHexString(in.getSideBuffer()), e);
-                }
+            public InputStream extract(InputStream in) throws IOException {
+                return new GZIPInputStream(new BufferedInputStream(in));
             }
 
             @Override
@@ -2471,7 +2463,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         @Override
         public Void invoke(File f, VirtualChannel channel) throws IOException {
             try (OutputStream os = p.getOut();
-                 OutputStream out = new java.util.zip.GZIPOutputStream(os, 8192);
+                 OutputStream out = new GZIPOutputStream(os, 8192);
                  RandomAccessFile raf = new RandomAccessFile(f, "r")) {
                 raf.seek(offset);
                 byte[] buf = new byte[8192];
@@ -3079,14 +3071,13 @@ public final class FilePath implements SerializableOnlyOverRemoting {
 
     /**
      * Reads from a tar stream and stores obtained files to the base dir.
-     * Supports large files > 10 GB since 1.627 when this was migrated to use commons-compress.
+     * Supports large files &gt; 10 GB since 1.627.
      */
     private static void readFromTar(String name, File baseDir, InputStream in, Charset filenamesEncoding) throws IOException {
 
-        // TarInputStream t = new TarInputStream(in);
-        try (TarArchiveInputStream t = new TarArchiveInputStream(in, filenamesEncoding.name())) {
-            TarArchiveEntry te;
-            while ((te = t.getNextTarEntry()) != null) {
+        try (TarInputStream t = new TarInputStream(in, filenamesEncoding.name())) {
+            TarEntry te;
+            while ((te = t.getNextEntry()) != null) {
                 File f = new File(baseDir, te.getName());
                 if (!f.toPath().normalize().startsWith(baseDir.toPath())) {
                     throw new IOException(
