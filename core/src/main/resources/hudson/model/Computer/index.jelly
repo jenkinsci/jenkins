@@ -29,6 +29,7 @@ THE SOFTWARE.
     <!-- no need for additional breadcrumb here as we're on an index page already including breadcrumb -->
     <l:main-panel>
       <l:app-bar title="${it.caption}">
+        <t:editDescriptionButton permission="${it.CONFIGURE}"/>
         <j:if test="${it.manualLaunchAllowed}">
           <st:include from="${it.launcher}" page="app-bar-controls.jelly" optional="true"/>
         </j:if>
