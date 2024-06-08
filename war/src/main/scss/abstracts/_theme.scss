@@ -54,7 +54,7 @@ $semantics: (
   // branding
   --secondary: rgb(96, 125, 159);
   --focus-input-border: var(--accent-color);
-  --focus-input-glow: color-mix(in srgb, var(--accent-color) 15%, transparent);
+  --focus-input-glow: color-mix(in sRGB, var(--accent-color) 15%, transparent);
 
   // Deprecated
   --focus-btn-primary: #{color.change(#0b6aa2, $alpha: 0.5)};
@@ -278,9 +278,21 @@ $semantics: (
 
   // Form
   --section-padding: 1.625rem;
-  --input-color: color-mix(in srgb, var(--text-color-secondary) 1.5%, var(--background));
-  --input-border: color-mix(in srgb, var(--text-color-secondary) 25%, transparent);
-  --input-border-hover: color-mix(in srgb, var(--text-color-secondary) 50%, transparent);
+  --input-color: color-mix(
+    in sRGB,
+    var(--text-color-secondary) 1.5%,
+    var(--background)
+  );
+  --input-border: color-mix(
+    in sRGB,
+    var(--text-color-secondary) 25%,
+    transparent
+  );
+  --input-border-hover: color-mix(
+    in sRGB,
+    var(--text-color-secondary) 50%,
+    transparent
+  );
   --input-hidden-password-bg-color: #f9f9f9;
   --form-item-max-width: min(65vw, 1600px);
   --form-item-max-width--medium: min(50vw, 1400px);

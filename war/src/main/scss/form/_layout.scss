@@ -112,7 +112,8 @@
     content: "";
     position: absolute;
     inset: 0;
-    border: 1px solid color-mix(in srgb, var(--text-color-secondary), transparent);
+    border: 1px solid
+      color-mix(in sRGB, var(--text-color-secondary), transparent);
     box-shadow: var(--form-input-glow);
     border-radius: inherit;
     opacity: 0.1;
