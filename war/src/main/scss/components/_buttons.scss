@@ -14,15 +14,14 @@
   border: none;
   outline: none;
   margin: 0;
-  padding: 0.5rem 0.85rem;
-  font-size: 0.8125rem;
-  font-weight: 500;
+  padding: 0.5rem 0.9rem;
+  font-size: 0.875rem;
   text-decoration: none !important;
   background: transparent;
   color: var(--text-color) !important;
   border-radius: 0.66rem;
   cursor: pointer;
-  min-height: 36px;
+  min-height: 2.25rem;
   white-space: nowrap;
   gap: 1ch;
   transition: var(--standard-transition);
@@ -32,8 +31,8 @@
   }
 
   svg {
-    width: 1.1rem;
-    height: 1.1rem;
+    width: 1.125rem;
+    height: 1.125rem;
   }
 
   &:disabled {
@@ -45,14 +44,13 @@
 
 .jenkins-button--primary {
   color: var(--button-color--primary) !important;
-  font-weight: 600;
 
   &::before {
     background: var(--accent-color) !important;
   }
 
   &::after {
-    box-shadow: 0 0 0 0.66rem var(--accent-color);
+    box-shadow: 0 0 0 0.5rem var(--accent-color);
     opacity: 0;
   }
 
@@ -70,7 +68,7 @@
       }
 
       &::after {
-        box-shadow: 0 0 0 0.33rem var(--accent-color);
+        box-shadow: 0 0 0 0.25rem var(--accent-color);
         opacity: 0.2;
       }
     }
@@ -95,7 +93,7 @@
   }
 
   &::after {
-    box-shadow: 0 0 0 0.66rem currentColor;
+    box-shadow: 0 0 0 0.5rem currentColor;
     opacity: 0;
   }
 
@@ -112,7 +110,7 @@
       }
 
       &::after {
-        box-shadow: 0 0 0 0.33rem currentColor;
+        box-shadow: 0 0 0 0.25rem currentColor;
         opacity: 0.1;
       }
     }
@@ -129,7 +127,7 @@
   }
 
   &::after {
-    box-shadow: 0 0 0 0.66rem var(--color);
+    box-shadow: 0 0 0 0.5rem var(--color);
     opacity: 0;
   }
 
@@ -147,7 +145,7 @@
       }
 
       &::after {
-        box-shadow: 0 0 0 0.33rem var(--color);
+        box-shadow: 0 0 0 0.25rem var(--color);
         opacity: 0.3;
       }
     }
