@@ -55,7 +55,7 @@ public class UserPropertyCategoryExperimentalAction extends UserPropertyCategory
 
     @Override
     public String getUrlName() {
-        return "experimental";
+        return "experiments";
     }
 
     public @NonNull List<UserPropertyDescriptor> getMyCategoryDescriptors() {
