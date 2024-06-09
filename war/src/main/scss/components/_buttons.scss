@@ -50,7 +50,7 @@
   }
 
   &::after {
-    box-shadow: 0 0 0 0.5rem var(--accent-color);
+    box-shadow: 0 0 0 0.66rem var(--accent-color);
     opacity: 0;
   }
 
@@ -68,7 +68,7 @@
       }
 
       &::after {
-        box-shadow: 0 0 0 0.25rem var(--accent-color);
+        box-shadow: 0 0 0 0.33rem var(--accent-color);
         opacity: 0.2;
       }
     }
@@ -93,7 +93,7 @@
   }
 
   &::after {
-    box-shadow: 0 0 0 0.5rem currentColor;
+    box-shadow: 0 0 0 0.66rem currentColor;
     opacity: 0;
   }
 
@@ -110,7 +110,7 @@
       }
 
       &::after {
-        box-shadow: 0 0 0 0.25rem currentColor;
+        box-shadow: 0 0 0 0.33rem currentColor;
         opacity: 0.1;
       }
     }
@@ -127,7 +127,7 @@
   }
 
   &::after {
-    box-shadow: 0 0 0 0.5rem var(--color);
+    box-shadow: 0 0 0 0.66rem var(--color);
     opacity: 0;
   }
 
@@ -145,7 +145,7 @@
       }
 
       &::after {
-        box-shadow: 0 0 0 0.25rem var(--color);
+        box-shadow: 0 0 0 0.33rem var(--color);
         opacity: 0.3;
       }
     }
