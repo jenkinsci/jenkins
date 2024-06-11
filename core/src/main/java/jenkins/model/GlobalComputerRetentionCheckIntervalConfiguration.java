@@ -1,9 +1,7 @@
 package jenkins.model;
 
-import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.model.PersistentDescriptor;
-import hudson.security.Permission;
 import java.util.logging.Logger;
 import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
@@ -68,12 +66,6 @@ public class GlobalComputerRetentionCheckIntervalConfiguration extends GlobalCon
         } catch (JSONException e) {
             throw new FormException(e.getMessage(), "computerRetentionCheckInterval");
         }
-    }
-
-    @NonNull
-    @Override
-    public Permission getRequiredGlobalConfigPagePermission() {
-        return Jenkins.ADMINISTER;
     }
 
     private static final Logger LOGGER = Logger.getLogger(GlobalComputerRetentionCheckIntervalConfiguration.class.getName());

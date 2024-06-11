@@ -4,7 +4,7 @@
   <f:entry title="${%Computer Retention Check Interval}" help="/help/system-config/computerRetentionCheckInterval.html">
     <f:number
       clazz="required number" min="1" max="60"
-      name="computerRetentionCheckInterval" value="${instance.computerRetentionCheckInterval}"
+      field="computerRetentionCheckInterval"
       checkMessage="${%The Computer Retention Check Interval is mandatory and must be a number greater than zero.}" />
   </f:entry>
 </j:jelly>
