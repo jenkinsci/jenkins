@@ -61,7 +61,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>io.jenkins.plugins</groupId>
         <artifactId>commons-lang3-api</artifactId>
-        <version>3.13.0-62.v7d18e55f51e2</version>
+        <version>3.14.0-76.vda_5591261cfe</version>
       </dependency>
       <dependency>
         <!-- RequireUpperBoundDeps between checks-api, plugin-util-api, and font-awesome-api -->
@@ -94,6 +94,11 @@ THE SOFTWARE.
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>ant</artifactId>
         <version>497.v94e7d9fffa_b_9</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jenkins-ci.plugins</groupId>
+        <artifactId>bouncycastle-api</artifactId>
+        <version>2.30.1.78.1-233.vfdcdeb_0a_08a_a_</version>
       </dependency>
       <dependency>
         <!-- RequireUpperBoundDeps via mailer and junit -->
@@ -142,7 +147,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>2207.v3b_df04c801d4</version>
+      <version>2225.v04fa_3929c9b_5</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -241,7 +246,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>matrix-project</artifactId>
-      <version>831.v084e85a_b_4ea_d</version>
+      <version>832.va_66e270d2946</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -329,7 +334,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>design-library</artifactId>
-                  <version>304.v44f7d19e8537</version>
+                  <version>307.vecc0205ca_707</version>
                   <type>hpi</type>
                   <outputDirectory>${project.build.outputDirectory}/plugins</outputDirectory>
                   <destFileName>design-library.jpi</destFileName>

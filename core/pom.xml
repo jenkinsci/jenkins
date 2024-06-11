@@ -508,6 +508,62 @@ THE SOFTWARE.
   <build>
     <plugins>
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <!-- Version specified in parent POM -->
+        <executions>
+          <execution>
+            <id>enforce-banned-dependencies</id>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <bannedDependencies>
+                  <excludes combine.children="append">
+                    <!-- Library plugins -->
+                    <exclude>com.fasterxml.jackson.*</exclude>
+                    <exclude>com.github.ben-manes.caffeine:caffeine</exclude>
+                    <exclude>com.github.jnr:jnr-posix</exclude>
+                    <exclude>com.github.mwiede:jsch</exclude>
+                    <exclude>com.google.code.gson:gson</exclude>
+                    <exclude>com.jayway.jsonpath:json-path</exclude>
+                    <exclude>commons-httpclient:commons-httpclient</exclude>
+                    <exclude>com.sun.activation:javax.activation</exclude>
+                    <exclude>com.sun.mail:javax.mail</exclude>
+                    <exclude>com.sun.xml.bind:jaxb-impl</exclude>
+                    <exclude>io.jsonwebtoken</exclude>
+                    <!-- Used in unit tests, so exclude from compile and runtime scope only -->
+                    <exclude>jakarta.activation:jakarta.activation-api:*:jar:compile</exclude>
+                    <exclude>jakarta.activation:jakarta.activation-api:*:jar:runtime</exclude>
+                    <exclude>jakarta.mail:jakarta.mail-api</exclude>
+                    <exclude>javax.activation:javax.activation-api</exclude>
+                    <exclude>javax.mail:javax.mail-api</exclude>
+                    <exclude>javax.xml.bind:jaxb-api</exclude>
+                    <exclude>joda-time:joda-time</exclude>
+                    <!-- Used in unit tests, so exclude from compile and runtime scope only -->
+                    <exclude>net.bytebuddy:byte-buddy:*:jar:compile</exclude>
+                    <exclude>net.bytebuddy:byte-buddy:*:jar:runtime</exclude>
+                    <exclude>net.i2p.crypto:eddsa</exclude>
+                    <exclude>net.minidev</exclude>
+                    <exclude>org.apache.commons:commons-lang3</exclude>
+                    <exclude>org.apache.commons:commons-text</exclude>
+                    <exclude>org.apache.httpcomponents</exclude>
+                    <exclude>org.bouncycastle</exclude>
+                    <exclude>org.eclipse.angus:angus-activation</exclude>
+                    <exclude>org.eclipse.angus:angus-mail</exclude>
+                    <exclude>org.glassfish.jersey.*</exclude>
+                    <exclude>org.json:json</exclude>
+                    <exclude>org.ow2.asm</exclude>
+                    <exclude>org.yaml:snakeyaml</exclude>
+                  </excludes>
+                </bannedDependencies>
+              </rules>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>build-helper-maven-plugin</artifactId>
         <!-- Version specified in grandparent POM -->

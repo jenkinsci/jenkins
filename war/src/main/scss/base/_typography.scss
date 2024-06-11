@@ -49,7 +49,7 @@ h5,
 h6,
 .h6 {
   line-height: var(--line-height-heading);
-  font-weight: 650;
+  font-weight: 600;
   display: block;
   margin-top: 0;
   margin-bottom: var(--section-padding);
@@ -62,12 +62,12 @@ h1,
 
 h2,
 .h2 {
-  font-size: 1.35rem;
+  font-size: 1.375rem;
 }
 
 h3,
 .h3 {
-  font-size: 1.2rem;
+  font-size: 1.1875rem;
 }
 
 h4,
@@ -77,12 +77,12 @@ h4,
 
 h5,
 .h5 {
-  font-size: 0.8rem;
+  font-size: 0.8125rem;
 }
 
 h6,
 .h6 {
-  font-size: 0.6rem;
+  font-size: 0.625rem;
 }
 
 .jenkins-description {
