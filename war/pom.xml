@@ -136,6 +136,51 @@ THE SOFTWARE.
   <build>
     <finalName>jenkins</finalName>
     <plugins>
+      <!-- TODO When Java 11 usage declines to a terminal level, this can be deleted. -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>display-info</id>
+            <configuration>
+              <rules>
+                <requireJavaVersion>
+                  <version>11</version>
+                </requireJavaVersion>
+                <enforceBytecodeVersion>
+                  <maxJdkVersion>11</maxJdkVersion>
+                  <excludes>
+                    <exclude>org.jenkins-ci:commons-jelly</exclude>
+                    <exclude>org.jenkins-ci.main:cli</exclude>
+                    <exclude>org.jenkins-ci.main:jenkins-core</exclude>
+                    <exclude>org.jenkins-ci.main:websocket-jetty10</exclude>
+                    <exclude>org.jenkins-ci.main:websocket-spi</exclude>
+                    <exclude>org.kohsuke.stapler:stapler</exclude>
+                    <exclude>org.kohsuke.stapler:stapler-groovy</exclude>
+                    <exclude>org.kohsuke.stapler:stapler-jelly</exclude>
+                  </excludes>
+                </enforceBytecodeVersion>
+              </rules>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <release>11</release>
+          <testRelease>11</testRelease>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <configuration>
+          <release>11</release>
+        </configuration>
+      </plugin>
       <plugin>
         <artifactId>maven-war-plugin</artifactId>
         <!-- version specified in grandparent pom -->
