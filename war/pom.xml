@@ -399,7 +399,7 @@ THE SOFTWARE.
                   <!-- detached after 2.281 -->
                   <groupId>org.jenkins-ci.modules</groupId>
                   <artifactId>sshd</artifactId>
-                  <version>3.328.v659088899699</version>
+                  <version>3.330.vc866a_8389b_58</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
