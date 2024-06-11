@@ -104,7 +104,7 @@
       width: 22px;
       height: 22px;
       border-radius: 50%;
-      background: transparent;
+      background: var(--input-color);
       box-shadow:
         0 0 0 10px transparent,
         inset 0 0 0 2px var(--input-border);
