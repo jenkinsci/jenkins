@@ -61,7 +61,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>io.jenkins.plugins</groupId>
         <artifactId>commons-lang3-api</artifactId>
-        <version>3.13.0-62.v7d18e55f51e2</version>
+        <version>3.14.0-76.vda_5591261cfe</version>
       </dependency>
       <dependency>
         <!-- RequireUpperBoundDeps between checks-api, plugin-util-api, and font-awesome-api -->
@@ -78,12 +78,12 @@ THE SOFTWARE.
       <dependency>
         <groupId>io.jenkins.plugins</groupId>
         <artifactId>ionicons-api</artifactId>
-        <version>70.v2959a_b_74e3cf</version>
+        <version>74.v93d5eb_813d5f</version>
       </dependency>
       <dependency>
         <groupId>io.jenkins.plugins</groupId>
         <artifactId>javax-activation-api</artifactId>
-        <version>1.2.0-6</version>
+        <version>1.2.0-7</version>
       </dependency>
       <dependency>
         <groupId>io.jenkins.plugins</groupId>
@@ -96,10 +96,15 @@ THE SOFTWARE.
         <version>497.v94e7d9fffa_b_9</version>
       </dependency>
       <dependency>
+        <groupId>org.jenkins-ci.plugins</groupId>
+        <artifactId>bouncycastle-api</artifactId>
+        <version>2.30.1.78.1-233.vfdcdeb_0a_08a_a_</version>
+      </dependency>
+      <dependency>
         <!-- RequireUpperBoundDeps via mailer and junit -->
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>display-url-api</artifactId>
-        <version>2.200.vb_9327d658781</version>
+        <version>2.204.vf6fddd8a_8b_e9</version>
       </dependency>
       <dependency>
         <!-- Required by workflow-support -->
@@ -111,12 +116,12 @@ THE SOFTWARE.
         <!-- requireUpperBoundDeps via matrix-project and junit -->
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>script-security</artifactId>
-        <version>1335.vf07d9ce377a_e</version>
+        <version>1341.va_2819b_414686</version>
       </dependency>
       <dependency>
         <groupId>org.jenkins-ci.plugins.workflow</groupId>
         <artifactId>workflow-api</artifactId>
-        <version>1291.v51fd2a_625da_7</version>
+        <version>1316.v33eb_726c50b_a_</version>
       </dependency>
       <dependency>
         <groupId>org.jenkins-ci.plugins.workflow</groupId>
@@ -127,7 +132,7 @@ THE SOFTWARE.
         <!-- Required by plugin-util-api -->
         <groupId>org.jenkins-ci.plugins.workflow</groupId>
         <artifactId>workflow-support</artifactId>
-        <version>896.v175a_a_9c5b_78f</version>
+        <version>907.v6713a_ed8a_573</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -142,7 +147,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>2189.v1c38d94b_43b_a_</version>
+      <version>2225.v04fa_3929c9b_5</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -177,7 +182,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>io.jenkins.plugins</groupId>
       <artifactId>javax-mail-api</artifactId>
-      <version>1.6.2-9</version>
+      <version>1.6.2-10</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -211,7 +216,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>cloudbees-folder</artifactId>
-      <version>6.928.v7c780211d66e</version>
+      <version>6.942.vb_43318a_156b_2</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -241,7 +246,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>matrix-project</artifactId>
-      <version>822.824.v14451b_c0fd42</version>
+      <version>832.va_66e270d2946</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -329,7 +334,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>design-library</artifactId>
-                  <version>296.v56576267b_508</version>
+                  <version>307.vecc0205ca_707</version>
                   <type>hpi</type>
                   <outputDirectory>${project.build.outputDirectory}/plugins</outputDirectory>
                   <destFileName>design-library.jpi</destFileName>
@@ -337,7 +342,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>io.jenkins.plugins</groupId>
                   <artifactId>prism-api</artifactId>
-                  <version>1.29.0-13</version>
+                  <version>1.29.0-15</version>
                   <type>hpi</type>
                   <outputDirectory>${project.build.outputDirectory}/plugins</outputDirectory>
                   <destFileName>prism-api.jpi</destFileName>
