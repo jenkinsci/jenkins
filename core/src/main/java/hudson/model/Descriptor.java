@@ -1007,6 +1007,10 @@ public abstract class Descriptor<T extends Describable<T>> implements Loadable, 
             if (url != null)    return url;
             url = c.getResource(base + '_' + locale.getLanguage() + ".html");
             if (url != null)    return url;
+            if (locale.getLanguage().equals("en")) {
+                url = c.getResource(base + ".html");
+                if (url != null)    return url;
+            }
         }
 
         // default
