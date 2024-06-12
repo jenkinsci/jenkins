@@ -90,11 +90,6 @@ public final class DirectoryBrowserSupport implements HttpResponse {
 
     private static final Pattern TMPDIR_PATTERN = Pattern.compile(".+@tmp/.*");
 
-    /**
-     * Escape hatch for the protection against SECURITY-2481. If enabled, the absolute paths on Windows will be allowed.
-     */
-    static final String ALLOW_ABSOLUTE_PATH_PROPERTY_NAME = DirectoryBrowserSupport.class.getName() + ".allowAbsolutePath";
-
     public final ModelObject owner;
 
     public final String title;
@@ -260,13 +255,11 @@ public final class DirectoryBrowserSupport implements HttpResponse {
         if (base.isEmpty()) {
             baseFile = root;
         } else {
-            if (!SystemProperties.getBoolean(ALLOW_ABSOLUTE_PATH_PROPERTY_NAME, false)) {
-                boolean isAbsolute = root.run(new IsAbsolute(base));
-                if (isAbsolute) {
-                    LOGGER.info(() -> "SECURITY-2481 The path provided in the URL (" + base + ") is absolute and thus is refused.");
-                    rsp.sendError(HttpServletResponse.SC_NOT_FOUND);
-                    return;
-                }
+            boolean isAbsolute = root.run(new IsAbsolute(base));
+            if (isAbsolute) {
+                LOGGER.info(() -> "SECURITY-2481 The path provided in the URL (" + base + ") is absolute and thus is refused.");
+                rsp.sendError(HttpServletResponse.SC_NOT_FOUND);
+                return;
             }
             baseFile = root.child(base);
         }
