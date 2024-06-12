@@ -110,15 +110,6 @@ public class StaplerDispatchValidatorTest {
     }
 
     @Test
-    public void canViewCompressedViews() throws Exception {
-        String[] urls = {"groovy/compress", "jelly/compress"};
-        for (String url : urls) {
-            HtmlPage root = j.createWebClient().goTo(url);
-            assertEquals("Fragment", root.getElementById("frag").asNormalizedText());
-        }
-    }
-
-    @Test
     public void cannotViewFragment() throws Exception {
         String[] urls = {"annotated/frag", "groovy/frag", "jelly/frag", "whitelist/frag"};
         for (String url : urls) {

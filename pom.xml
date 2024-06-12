@@ -99,7 +99,8 @@ THE SOFTWARE.
     <bridge-method-injector.version>1.29</bridge-method-injector.version>
     <spotless.check.skip>false</spotless.check.skip>
     <!-- Make sure to keep the jetty-maven-plugin version in war/pom.xml in sync with the Jetty release in Winstone: -->
-    <winstone.version>6.19</winstone.version>
+    <!-- TODO https://github.com/jenkinsci/winstone/pull/390 -->
+    <winstone.version>6.20-rc906.930e934f9e84</winstone.version>
   </properties>
 
   <!--
