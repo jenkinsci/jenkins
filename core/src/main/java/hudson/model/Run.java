@@ -1341,7 +1341,7 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         private String combineLast(String[] token, int n) {
             StringBuilder buf = new StringBuilder();
             for (int i = Math.max(0, token.length - n); i < token.length; i++) {
-                if (buf.length() > 0)  buf.append('/');
+                if (!buf.isEmpty())  buf.append('/');
                 buf.append(token[i]);
             }
             return buf.toString();
