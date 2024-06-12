@@ -266,8 +266,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             // If any of the other ItemListeners modify the job, they effect
             // a save, which will clear the holdOffBuildUntilUserSave and
             // causing a regression of JENKINS-2494
-            if (item instanceof Job) {
-                Job job = (Job) item;
+            if (item instanceof Job job) {
                 synchronized (job) {
                     job.holdOffBuildUntilUserSave = false;
                 }
@@ -1110,8 +1109,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
         List<FeedItem> entries = new ArrayList<>();
         String scmDisplayName = "";
-        if (this instanceof SCMTriggerItem) {
-            SCMTriggerItem scmItem = (SCMTriggerItem) this;
+        if (this instanceof SCMTriggerItem scmItem) {
             List<String> scmNames = new ArrayList<>();
             for (SCM s : scmItem.getSCMs()) {
                 scmNames.add(s.getDescriptor().getDisplayName());
