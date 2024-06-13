@@ -997,8 +997,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                 }
             }
 
-            if (con instanceof HttpURLConnection) {
-                HttpURLConnection httpCon = (HttpURLConnection) con;
+            if (con instanceof HttpURLConnection httpCon) {
                 int responseCode = httpCon.getResponseCode();
                 if (responseCode == HttpURLConnection.HTTP_MOVED_PERM
                         || responseCode == HttpURLConnection.HTTP_MOVED_TEMP) {
