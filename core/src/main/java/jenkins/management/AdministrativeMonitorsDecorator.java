@@ -150,7 +150,7 @@ public class AdministrativeMonitorsDecorator extends PageDecorator {
         }
         List<Ancestor> ancestors = req.getAncestors();
 
-        if (ancestors == null || ancestors.size() == 0) {
+        if (ancestors == null || ancestors.isEmpty()) {
             // ???
             return null;
         }

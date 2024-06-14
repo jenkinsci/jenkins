@@ -254,3 +254,18 @@ $dropdown-padding: 0.4rem;
     border-radius: 50%;
   }
 }
+
+.jenkins-jumplist-link {
+  appearance: none;
+  border: none;
+  background: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+
+  svg {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+}
