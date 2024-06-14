@@ -230,7 +230,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
                 String pathElement = pathTokens.nextToken();
                 // Treat * and ? as wildcard unless they match a literal filename
                 if ((pathElement.contains("?") || pathElement.contains("*"))
-                        && inBase && !root.child((_base.length() > 0 ? _base + "/" : "") + pathElement).exists())
+                        && inBase && !root.child((!_base.isEmpty() ? _base + "/" : "") + pathElement).exists())
                     inBase = false;
                 if (pathElement.equals("*zip*")) {
                     // the expected syntax is foo/bar/*zip*/bar.zip
@@ -245,7 +245,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
                 }
 
                 StringBuilder sb = inBase ? _base : _rest;
-                if (sb.length() > 0)   sb.append('/');
+                if (!sb.isEmpty())   sb.append('/');
                 sb.append(pathElement);
                 if (!inBase)
                     restSize++;
@@ -315,7 +315,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
             }
 
             List<List<Path>> glob = null;
-            boolean patternUsed = rest.length() > 0;
+            boolean patternUsed = !rest.isEmpty();
             boolean containsSymlink = false;
             boolean containsTmpDir = false;
                 if (patternUsed) {

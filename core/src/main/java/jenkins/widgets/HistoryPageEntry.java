@@ -57,8 +57,7 @@ public class HistoryPageEntry<T> {
     protected static long getEntryId(@NonNull Object entry) {
         if (entry instanceof QueueItem) {
             return ((QueueItem) entry).getId();
-        } else if (entry instanceof Run) {
-            Run run = (Run) entry;
+        } else if (entry instanceof Run run) {
             return Long.MIN_VALUE + run.getNumber();
         } else if (entry instanceof Number) {
             // Used for testing purposes because of JENKINS-30899 and JENKINS-30909

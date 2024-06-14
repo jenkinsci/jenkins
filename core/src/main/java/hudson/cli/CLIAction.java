@@ -217,7 +217,7 @@ public class CLIAction implements UnprotectedRootAction, StaplerProxy {
     @Override
     public Object getTarget() {
         StaplerRequest req = Stapler.getCurrentRequest();
-        if (req.getRestOfPath().length() == 0 && "POST".equals(req.getMethod())) {
+        if (req.getRestOfPath().isEmpty() && "POST".equals(req.getMethod())) {
             // CLI connection request
             if ("false".equals(req.getParameter("remoting"))) {
                 throw new PlainCliEndpointResponse();
