@@ -321,7 +321,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
             buf.append(m.group(1));
             path = path.substring(m.end());
         }
-        boolean isAbsolute = buf.length() > 0;
+        boolean isAbsolute = !buf.isEmpty();
         // Split remaining path into tokens, trimming any duplicate or trailing separators
         List<String> tokens = new ArrayList<>();
         int s = 0, end = path.length();
@@ -366,7 +366,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         }
         // Recombine tokens
         for (String token : tokens) buf.append(token);
-        if (buf.length() == 0) buf.append('.');
+        if (buf.isEmpty()) buf.append('.');
         return buf.toString();
     }
 

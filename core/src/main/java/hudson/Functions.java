@@ -1421,7 +1421,7 @@ public class Functions {
         StringBuilder buf = new StringBuilder();
         Item i = p;
         while (true) {
-            if (buf.length() > 0) buf.insert(0, separationString);
+            if (!buf.isEmpty()) buf.insert(0, separationString);
             buf.insert(0, useDisplayName ? i.getDisplayName() : i.getName());
             ItemGroup gr = i.getParent();
 
@@ -1872,7 +1872,7 @@ public class Functions {
         for (String s : components) {
             if (s.isEmpty())  continue;
 
-            if (buf.length() > 0) {
+            if (!buf.isEmpty()) {
                 if (buf.charAt(buf.length() - 1) != '/')
                     buf.append('/');
                 if (s.charAt(0) == '/')   s = s.substring(1);
@@ -2054,7 +2054,7 @@ public class Functions {
      * Prepend a prefix only when there's the specified body.
      */
     public String prepend(String prefix, String body) {
-        if (body != null && body.length() > 0)
+        if (body != null && !body.isEmpty())
             return prefix + body;
         return body;
     }

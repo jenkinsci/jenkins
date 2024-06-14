@@ -105,7 +105,7 @@ public class CrumbFilter implements Filter {
                 buf.append(token);
             }
             // translation: if (path.endsWith("/") && !buf.endsWith("/"))
-            if (path.endsWith("/") && (buf.length() == 0 || buf.charAt(buf.length() - 1) != '/'))
+            if (path.endsWith("/") && (buf.isEmpty() || buf.charAt(buf.length() - 1) != '/'))
                 buf.append('/');
             return buf.toString();
         }
