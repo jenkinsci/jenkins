@@ -518,8 +518,7 @@ public abstract class AbstractProject<P extends AbstractProject<P, R>, R extends
         Executor e = Executor.currentExecutor();
         if (e != null) {
             Executable exe = e.getCurrentExecutable();
-            if (exe instanceof AbstractBuild) {
-                AbstractBuild b = (AbstractBuild) exe;
+            if (exe instanceof AbstractBuild b) {
                 if (b.getProject() == this)
                     return b;
             }

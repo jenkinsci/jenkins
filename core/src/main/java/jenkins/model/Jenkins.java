@@ -3106,8 +3106,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 continue;
             }
 
-            if (ctx instanceof ItemGroup) {
-                ItemGroup g = (ItemGroup) ctx;
+            if (ctx instanceof ItemGroup g) {
                 Item i = g.getItem(s);
                 if (i == null || !i.hasPermission(Item.READ)) { // TODO consider DISCOVER
                     ctx = null;    // can't go up further

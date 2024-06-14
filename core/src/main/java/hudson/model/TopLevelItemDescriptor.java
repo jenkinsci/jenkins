@@ -239,7 +239,7 @@ public abstract class TopLevelItemDescriptor extends Descriptor<TopLevelItem> im
                 // this one is easy... too easy... also will never happen
                 return IconSet.toNormalizedIconNameClass(path);
             }
-            if (Jenkins.RESOURCE_PATH.length() > 0 && path.startsWith(Jenkins.RESOURCE_PATH)) {
+            if (!Jenkins.RESOURCE_PATH.isEmpty() && path.startsWith(Jenkins.RESOURCE_PATH)) {
                 // will to live falling
                 path = path.substring(Jenkins.RESOURCE_PATH.length());
             }

@@ -114,8 +114,7 @@ public class EnvVars extends TreeMap<String, String> {
 
         // because of the backward compatibility, some parts of Jenkins passes
         // EnvVars as Map<String,String> so downcasting is safer.
-        if (m instanceof EnvVars) {
-            EnvVars lhs = (EnvVars) m;
+        if (m instanceof EnvVars lhs) {
             this.platform = lhs.platform;
         }
     }

@@ -359,7 +359,7 @@ public class ListView extends View implements DirectlyModifiableView {
 
     private boolean needToAddToCurrentView(StaplerRequest req) throws ServletException {
         String json = req.getParameter("json");
-        if (json != null && json.length() > 0) {
+        if (json != null && !json.isEmpty()) {
             // Submitted via UI
             JSONObject form = req.getSubmittedForm();
             return form.has("addToCurrentView") && form.getBoolean("addToCurrentView");
