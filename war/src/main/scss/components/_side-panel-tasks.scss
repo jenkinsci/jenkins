@@ -111,11 +111,7 @@ $background-outset: 0.7rem;
   &--active {
     font-weight: 500 !important;
     cursor: default;
-
-    svg * {
-      stroke-width: 35px;
-    }
-
+    
     &::before {
       background-color: var(--item-background--active) !important;
     }
