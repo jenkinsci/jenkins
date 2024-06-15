@@ -578,8 +578,7 @@ public class PluginManagerTest {
             Thread.sleep(100);
             done = true;
             for (UpdateCenterJob job : r.jenkins.getUpdateCenter().getJobs()) {
-                if (job instanceof UpdateCenter.DownloadJob) {
-                    UpdateCenter.DownloadJob j = (UpdateCenter.DownloadJob) job;
+                if (job instanceof UpdateCenter.DownloadJob j) {
                     assertFalse(j.status instanceof UpdateCenter.DownloadJob.Failure);
                     done &= !(j.status instanceof UpdateCenter.DownloadJob.Pending ||
                             j.status instanceof UpdateCenter.DownloadJob.Installing);
@@ -806,7 +805,7 @@ public class PluginManagerTest {
 
             PluginManagerUtil.getCheckForUpdatesButton(p).click();
             HtmlPage available = wc.goTo("pluginManager/available");
-            assertTrue(available.querySelector(".alert-danger")
+            assertTrue(available.querySelector(".jenkins-alert-danger")
                     .getTextContent().contains("This plugin is built for Jenkins 9999999"));
             wc.waitForBackgroundJavaScript(100);
 

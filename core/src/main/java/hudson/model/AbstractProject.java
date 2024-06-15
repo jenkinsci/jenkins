@@ -77,7 +77,6 @@ import hudson.util.AlternativeUiTextProvider;
 import hudson.util.AlternativeUiTextProvider.Message;
 import hudson.util.DescribableList;
 import hudson.util.FormValidation;
-import hudson.widgets.HistoryWidget;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -519,8 +518,7 @@ public abstract class AbstractProject<P extends AbstractProject<P, R>, R extends
         Executor e = Executor.currentExecutor();
         if (e != null) {
             Executable exe = e.getCurrentExecutable();
-            if (exe instanceof AbstractBuild) {
-                AbstractBuild b = (AbstractBuild) exe;
+            if (exe instanceof AbstractBuild b) {
                 if (b.getProject() == this)
                     return b;
             }
@@ -1719,11 +1717,6 @@ public abstract class AbstractProject<P extends AbstractProject<P, R>, R extends
     @Override
     protected SearchIndexBuilder makeSearchIndex() {
         return getParameterizedJobMixIn().extendSearchIndex(super.makeSearchIndex());
-    }
-
-    @Override
-    protected HistoryWidget createHistoryWidget() {
-        return buildMixIn.createHistoryWidget();
     }
 
 //

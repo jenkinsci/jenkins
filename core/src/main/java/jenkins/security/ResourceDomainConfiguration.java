@@ -150,8 +150,7 @@ public final class ResourceDomainConfiguration extends GlobalConfiguration {
         // Send a request to /instance-identity/ at the resource root URL and check whether it is this Jenkins
         try {
             URLConnection urlConnection = new URI(resourceRootUrlString + "instance-identity/").toURL().openConnection();
-            if (urlConnection instanceof HttpURLConnection) {
-                HttpURLConnection httpURLConnection = (HttpURLConnection) urlConnection;
+            if (urlConnection instanceof HttpURLConnection httpURLConnection) {
                 int responseCode = httpURLConnection.getResponseCode();
 
                 if (responseCode == 200) {

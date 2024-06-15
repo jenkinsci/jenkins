@@ -316,8 +316,7 @@ public class Functions {
      */
     public static <B> Class getTypeParameter(Class<? extends B> c, Class<B> base, int n) {
         Type parameterization = Types.getBaseClass(c, base);
-        if (parameterization instanceof ParameterizedType) {
-            ParameterizedType pt = (ParameterizedType) parameterization;
+        if (parameterization instanceof ParameterizedType pt) {
             return Types.erasure(Types.getTypeArgument(pt, n));
         } else {
             throw new AssertionError(c + " doesn't properly parameterize " + base);
@@ -1422,7 +1421,7 @@ public class Functions {
         StringBuilder buf = new StringBuilder();
         Item i = p;
         while (true) {
-            if (buf.length() > 0) buf.insert(0, separationString);
+            if (!buf.isEmpty()) buf.insert(0, separationString);
             buf.insert(0, useDisplayName ? i.getDisplayName() : i.getName());
             ItemGroup gr = i.getParent();
 
@@ -1873,7 +1872,7 @@ public class Functions {
         for (String s : components) {
             if (s.isEmpty())  continue;
 
-            if (buf.length() > 0) {
+            if (!buf.isEmpty()) {
                 if (buf.charAt(buf.length() - 1) != '/')
                     buf.append('/');
                 if (s.charAt(0) == '/')   s = s.substring(1);
@@ -1979,8 +1978,7 @@ public class Functions {
     @Deprecated
     public String getCheckUrl(String userDefined, Object descriptor, String field) {
         if (userDefined != null || field == null)   return userDefined;
-        if (descriptor instanceof Descriptor) {
-            Descriptor d = (Descriptor) descriptor;
+        if (descriptor instanceof Descriptor d) {
             return d.getCheckUrl(field);
         }
         return null;
@@ -1993,8 +1991,7 @@ public class Functions {
     public void calcCheckUrl(Map attributes, String userDefined, Object descriptor, String field) {
         if (userDefined != null || field == null)   return;
 
-        if (descriptor instanceof Descriptor) {
-            Descriptor d = (Descriptor) descriptor;
+        if (descriptor instanceof Descriptor d) {
             CheckMethod m = d.getCheckMethod(field);
             attributes.put("checkUrl", m.toStemUrl());
             attributes.put("checkDependsOn", m.getDependsOn());
@@ -2057,7 +2054,7 @@ public class Functions {
      * Prepend a prefix only when there's the specified body.
      */
     public String prepend(String prefix, String body) {
-        if (body != null && body.length() > 0)
+        if (body != null && !body.isEmpty())
             return prefix + body;
         return body;
     }

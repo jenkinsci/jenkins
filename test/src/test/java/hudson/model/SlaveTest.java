@@ -160,7 +160,7 @@ public class SlaveTest {
     private void assertJnlpJarUrlFails(@NonNull Slave slave, @NonNull String url) throws Exception {
         // Raw access to API
         Slave.JnlpJar jnlpJar = slave.getComputer().getJnlpJars(url);
-        assertThrows(MalformedURLException.class, () -> jnlpJar.getURL());
+        assertThrows(MalformedURLException.class, jnlpJar::getURL);
     }
 
     private void assertJnlpJarUrlIsAllowed(@NonNull Slave slave, @NonNull String url) throws Exception {

@@ -592,7 +592,7 @@ function parseHtml(html) {
  * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/eval#direct_and_indirect_eval
  */
 function geval(script) {
-  eval(script);
+  (0, eval)(script);
 }
 
 /**
@@ -1756,15 +1756,6 @@ function rowvgStartEachRow(recursive, f) {
     },
   );
 
-  Behaviour.specify(
-    ".button-with-dropdown",
-    "-button-with-dropdown",
-    ++p,
-    function (e) {
-      new YAHOO.widget.Button(e, { type: "menu", menu: e.nextElementSibling });
-    },
-  );
-
   window.addEventListener("load", function () {
     // Add a class to the bottom bar when it's stuck to the bottom of the screen
     const el = document.querySelector("#bottom-sticker");
@@ -1901,8 +1892,11 @@ function xor(a, b) {
 // eslint-disable-next-line no-unused-vars
 function replaceDescription(initialDescription, submissionUrl) {
   var d = document.getElementById("description");
-  d.firstElementChild.nextElementSibling.innerHTML =
-    "<div class='jenkins-spinner'></div>";
+  let button = d.firstElementChild.nextElementSibling;
+  if (button !== null) {
+    d.firstElementChild.nextElementSibling.innerHTML =
+      "<div class='jenkins-spinner'></div>";
+  }
   let parameters = {};
   if (initialDescription !== null && initialDescription !== "") {
     parameters["description"] = initialDescription;
@@ -2224,35 +2218,6 @@ function toQueryString(params) {
     }
   }
   return query;
-}
-
-// eslint-disable-next-line no-unused-vars
-function getElementOverflowParams(element) {
-  // First we force it to wrap so we can get those dimension.
-  // Then we force it to "nowrap", so we can get those dimension.
-  // We can then compare the two sets, which will indicate if
-  // wrapping is potentially happening, or not.
-
-  // Force it to wrap.
-  element.classList.add("force-wrap");
-  var wrappedClientWidth = element.clientWidth;
-  var wrappedClientHeight = element.clientHeight;
-  element.classList.remove("force-wrap");
-
-  // Force it to nowrap. Return the comparisons.
-  element.classList.add("force-nowrap");
-  var nowrapClientHeight = element.clientHeight;
-  try {
-    var overflowParams = {
-      element: element,
-      clientWidth: wrappedClientWidth,
-      scrollWidth: element.scrollWidth,
-      isOverflowed: wrappedClientHeight > nowrapClientHeight,
-    };
-    return overflowParams;
-  } finally {
-    element.classList.remove("force-nowrap");
-  }
 }
 
 // get the cascaded computed style value. 'a' is the style name like 'backgroundColor'

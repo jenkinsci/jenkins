@@ -28,7 +28,7 @@ THE SOFTWARE.
     <st:include page="sidepanel.jelly" class="hudson.model.ManagementLink" />
 
     <l:main-panel>
-      <l:app-bar title="${%Users}">
+      <l:app-bar title="${%Users}" subtitle="${it.allUsers.size()}">
         <l:isAdmin>
           <a href="addUser" class="jenkins-button jenkins-button--primary">
             <l:icon src="symbol-add" />

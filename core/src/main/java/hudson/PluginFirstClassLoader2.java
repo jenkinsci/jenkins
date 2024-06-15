@@ -25,8 +25,9 @@ public class PluginFirstClassLoader2 extends URLClassLoader2 {
         registerAsParallelCapable();
     }
 
-    public PluginFirstClassLoader2(@NonNull URL[] urls, @NonNull ClassLoader parent) {
-        super(Objects.requireNonNull(urls), Objects.requireNonNull(parent));
+
+    public PluginFirstClassLoader2(String name, @NonNull URL[] urls, @NonNull ClassLoader parent) {
+        super(name, Objects.requireNonNull(urls), Objects.requireNonNull(parent));
     }
 
     /**

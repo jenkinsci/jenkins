@@ -157,7 +157,7 @@ public class RunTest  {
         HtmlPage htmlPage = wc.goTo(upProject.getUrl());
 
         // trigger the tooltip display
-        htmlPage.executeJavaScript("document.querySelector('#buildHistory table .build-badge svg')._tippy.show()");
+        htmlPage.executeJavaScript("document.querySelector('#jenkins-build-history .app-builds-container__item__inner__controls svg')._tippy.show()");
         wc.waitForBackgroundJavaScript(500);
         ScriptResult result = htmlPage.executeJavaScript("document.querySelector('.tippy-content').innerHTML;");
         Object jsResult = result.getJavaScriptResult();
