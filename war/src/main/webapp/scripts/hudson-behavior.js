@@ -1661,7 +1661,8 @@ function rowvgStartEachRow(recursive, f) {
         }
       }
       changeTo(e, "-hover.png");
-      YAHOO.util.Event.stopEvent(event);
+      event.stopPropagation();
+      event.preventDefault();
       return false;
     };
     e = null; // memory leak prevention
