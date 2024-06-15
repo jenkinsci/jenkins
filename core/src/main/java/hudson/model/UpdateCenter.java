@@ -390,7 +390,7 @@ public class UpdateCenter extends AbstractModelObject implements Loadable, Savea
         if (size > 0) {
             StringBuilder tooltip = new StringBuilder();
             Badge.Severity severity = Badge.Severity.WARNING;
-            int securityFixSize = (int) plugins.stream().filter(plugin -> plugin.fixesSecurityVulnerabilities()).count();
+            int securityFixSize = (int) plugins.stream().filter(Plugin::fixesSecurityVulnerabilities).count();
             int incompatibleSize = (int) plugins.stream().filter(plugin -> !plugin.isCompatibleWithInstalledVersion()).count();
             if (size > 1) {
                 tooltip.append(jenkins.management.Messages.PluginsLink_updatesAvailable(size));

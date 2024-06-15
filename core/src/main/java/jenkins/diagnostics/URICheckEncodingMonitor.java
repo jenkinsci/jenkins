@@ -7,6 +7,7 @@ import hudson.Util;
 import hudson.model.AdministrativeMonitor;
 import hudson.util.FormValidation;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -22,7 +23,7 @@ public class URICheckEncodingMonitor extends AdministrativeMonitor {
     private static final Logger LOGGER = Logger.getLogger(URICheckEncodingMonitor.class.getName());
 
     public boolean isCheckEnabled() {
-        return !"ISO-8859-1".equalsIgnoreCase(System.getProperty("file.encoding"));
+        return !"ISO-8859-1".equalsIgnoreCase(Charset.defaultCharset().displayName());
     }
 
     @Override

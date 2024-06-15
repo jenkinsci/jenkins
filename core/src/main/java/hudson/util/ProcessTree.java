@@ -455,7 +455,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
         }
 
         // Null-check in case the previous call worked
-        boolean vetoes = vetoersExist == null ? true : vetoersExist;
+        boolean vetoes = vetoersExist == null || vetoersExist;
 
         try {
             if (File.pathSeparatorChar == ';')
