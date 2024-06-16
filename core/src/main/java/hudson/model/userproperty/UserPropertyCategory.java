@@ -72,7 +72,7 @@ public abstract class UserPropertyCategory implements ExtensionPoint, ModelObjec
      * This category is used when the {@link hudson.model.UserPropertyDescriptor} has not implemented
      * the {@link UserPropertyDescriptor#getUserPropertyCategory()} method
      * (or the getUserPropertyCategoryAsString method for compatibility reason).
-     *
+     * <p />
      * If you do not know what to use, choose the {@link Account} instead of this one.
      */
     @Extension
@@ -92,7 +92,7 @@ public abstract class UserPropertyCategory implements ExtensionPoint, ModelObjec
 
     /**
      * User property related to account settings (e.g. timezone, email, ...).
-     *
+     * <p />
      * It could be seen as the default choice for {@link UserProperty} that are defining their category.
      * Currently it has the same effect as {@link Unclassified} but the behavior could change in the future.
      */
@@ -145,7 +145,9 @@ public abstract class UserPropertyCategory implements ExtensionPoint, ModelObjec
     }
 
     /**
-     * Per user feature flags (e.g. new design, ...).
+     * User interface related configurations (e.g. theme, language, ...).
+     * <p />
+     * See also {@link jenkins.appearance.AppearanceCategory}.
      */
     @Extension
     @Symbol("appearance")
