@@ -36,10 +36,10 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.attribute.BasicFileAttributes;
-import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
-import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
-import org.apache.commons.compress.archivers.tar.TarConstants;
-import org.apache.commons.compress.utils.BoundedInputStream;
+import org.apache.commons.io.input.BoundedInputStream;
+import org.apache.tools.tar.TarConstants;
+import org.apache.tools.tar.TarEntry;
+import org.apache.tools.tar.TarOutputStream;
 
 /**
  * {@link FileVisitor} that creates a tar archive.
@@ -48,17 +48,17 @@ import org.apache.commons.compress.utils.BoundedInputStream;
  */
 final class TarArchiver extends Archiver {
     private final byte[] buf = new byte[8192];
-    private final TarArchiveOutputStream tar;
+    private final TarOutputStream tar;
 
     TarArchiver(OutputStream out, Charset filenamesEncoding) {
-        tar = new TarArchiveOutputStream(out, filenamesEncoding.name());
-        tar.setBigNumberMode(TarArchiveOutputStream.BIGNUMBER_STAR);
-        tar.setLongFileMode(TarArchiveOutputStream.LONGFILE_GNU);
+        tar = new TarOutputStream(out, filenamesEncoding.name());
+        tar.setBigNumberMode(TarOutputStream.BIGNUMBER_STAR);
+        tar.setLongFileMode(TarOutputStream.LONGFILE_GNU);
     }
 
     @Override
     public void visitSymlink(File link, String target, String relativePath) throws IOException {
-        TarArchiveEntry e = new TarArchiveEntry(relativePath, TarConstants.LF_SYMLINK);
+        TarEntry e = new TarEntry(relativePath, TarConstants.LF_SYMLINK);
         try {
             int mode = IOUtils.mode(link);
             if (mode != -1) {
@@ -70,8 +70,8 @@ final class TarArchiver extends Archiver {
 
         e.setLinkName(target);
 
-        tar.putArchiveEntry(e);
-        tar.closeArchiveEntry();
+        tar.putNextEntry(e);
+        tar.closeEntry();
         entriesWritten++;
     }
 
@@ -88,7 +88,7 @@ final class TarArchiver extends Archiver {
         BasicFileAttributes basicFileAttributes = Files.readAttributes(Util.fileToPath(file), BasicFileAttributes.class);
         if (basicFileAttributes.isDirectory())
             relativePath += '/';
-        TarArchiveEntry te = new TarArchiveEntry(relativePath);
+        TarEntry te = new TarEntry(relativePath);
         int mode = IOUtils.mode(file);
         if (mode != -1)   te.setMode(mode);
         te.setModTime(basicFileAttributes.lastModifiedTime().toMillis());
@@ -98,7 +98,7 @@ final class TarArchiver extends Archiver {
             size = basicFileAttributes.size();
             te.setSize(size);
         }
-        tar.putArchiveEntry(te);
+        tar.putNextEntry(te);
         try {
             if (!basicFileAttributes.isDirectory()) {
                 // ensure we don't write more bytes than the declared when we created the entry
@@ -118,7 +118,7 @@ final class TarArchiver extends Archiver {
                 }
             }
         } finally { // always close the entry
-            tar.closeArchiveEntry();
+            tar.closeEntry();
         }
         entriesWritten++;
     }

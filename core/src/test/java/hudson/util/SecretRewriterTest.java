@@ -54,7 +54,7 @@ public class SecretRewriterTest {
         Files.writeString(path, before, Charset.defaultCharset());
         sr.rewrite(path.toFile());
         //assert after.replaceAll(System.getProperty("line.separator"), "\n").trim()==f.text.replaceAll(System.getProperty("line.separator"), "\n").trim()
-        return Files.readString(path, Charset.defaultCharset()).replaceAll(System.getProperty("line.separator"), "\n").trim();
+        return Files.readString(path, Charset.defaultCharset()).replaceAll(System.lineSeparator(), "\n").trim();
     }
 
     @SuppressWarnings("deprecation")

@@ -219,8 +219,7 @@ public class DescribableList<T extends Describable<T>, D extends Descriptor<T>> 
      */
     public void buildDependencyGraph(AbstractProject owner, DependencyGraph graph) {
         for (Object o : this) {
-            if (o instanceof DependencyDeclarer) {
-                DependencyDeclarer dd = (DependencyDeclarer) o;
+            if (o instanceof DependencyDeclarer dd) {
                 try {
                     dd.buildDependencyGraph(owner, graph);
                 } catch (RuntimeException e) {

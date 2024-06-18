@@ -499,7 +499,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      *     STARTUP_MARKER_FILE.get(); // returns false if we are on a fresh startup. True for next startups.
      * }
      */
-    private static transient FileBoolean STARTUP_MARKER_FILE;
+    private static FileBoolean STARTUP_MARKER_FILE;
 
     private volatile List<JDK> jdks = new ArrayList<>();
 
@@ -3106,8 +3106,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 continue;
             }
 
-            if (ctx instanceof ItemGroup) {
-                ItemGroup g = (ItemGroup) ctx;
+            if (ctx instanceof ItemGroup g) {
                 Item i = g.getItem(s);
                 if (i == null || !i.hasPermission(Item.READ)) { // TODO consider DISCOVER
                     ctx = null;    // can't go up further
@@ -3477,10 +3476,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         File d = new File(replacedValue);
         if (!d.isDirectory()) {
             // if dir does not exist (almost guaranteed) need to make sure nearest existing ancestor can be written to
-            d = d.getParentFile();
-            while (!d.exists()) {
+            do {
                 d = d.getParentFile();
-            }
+            } while (!d.exists());
             if (!d.canWrite()) {
                 throw new InvalidBuildsDir(newBuildsDirValue +  " does not exist and probably cannot be created");
             }
