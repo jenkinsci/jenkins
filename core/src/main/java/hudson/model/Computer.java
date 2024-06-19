@@ -1457,7 +1457,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         checkPermission(Jenkins.ADMINISTER);
 
         rsp.setContentType("text/plain");
-        try (PrintWriter w = new PrintWriter(rsp.getCompressedWriter(req))) {
+        try (PrintWriter w = new PrintWriter(rsp.getWriter())) {
             VirtualChannel vc = getChannel();
             if (vc instanceof Channel) {
                 w.println("Controller to agent");

@@ -1115,33 +1115,6 @@ public class DirectoryBrowserSupportTest {
     }
 
     @Test
-    @Issue("SECURITY-2481")
-    public void windows_canViewAbsolutePath_withEscapeHatch() throws Exception {
-        Assume.assumeTrue("can only be tested this on Windows", Functions.isWindows());
-
-        String originalValue = System.getProperty(DirectoryBrowserSupport.ALLOW_ABSOLUTE_PATH_PROPERTY_NAME);
-        System.setProperty(DirectoryBrowserSupport.ALLOW_ABSOLUTE_PATH_PROPERTY_NAME, "true");
-        try {
-            Path targetTmpPath = Files.createTempFile("sec2481", "tmp");
-            String content = "random data provided as fixed value";
-            Files.writeString(targetTmpPath, content, StandardCharsets.UTF_8);
-
-            JenkinsRule.WebClient wc = j.createWebClient().withThrowExceptionOnFailingStatusCode(false);
-            Page page = wc.goTo("userContent/" + targetTmpPath.toAbsolutePath() + "/*view*", null);
-
-            MatcherAssert.assertThat(page.getWebResponse().getStatusCode(), equalTo(200));
-            MatcherAssert.assertThat(page.getWebResponse().getContentAsString(), containsString(content));
-        } finally {
-            if (originalValue == null) {
-                System.clearProperty(DirectoryBrowserSupport.ALLOW_ABSOLUTE_PATH_PROPERTY_NAME);
-            } else {
-                System.setProperty(DirectoryBrowserSupport.ALLOW_ABSOLUTE_PATH_PROPERTY_NAME, originalValue);
-            }
-        }
-
-    }
-
-    @Test
     @Issue("SECURITY-1807")
     public void tmpNotListed() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();

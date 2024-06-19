@@ -73,9 +73,9 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.463</revision>
+    <revision>2.464</revision>
     <changelist>-SNAPSHOT</changelist>
-    <project.build.outputTimestamp>2024-06-11T13:29:41Z</project.build.outputTimestamp>
+    <project.build.outputTimestamp>2024-06-18T13:25:00Z</project.build.outputTimestamp>
 
     <!-- configuration for patch tracker plugin  -->
     <project.patchManagement.system>github</project.patchManagement.system>
@@ -99,7 +99,7 @@ THE SOFTWARE.
     <bridge-method-injector.version>1.29</bridge-method-injector.version>
     <spotless.check.skip>false</spotless.check.skip>
     <!-- Make sure to keep the jetty-maven-plugin version in war/pom.xml in sync with the Jetty release in Winstone: -->
-    <winstone.version>6.19</winstone.version>
+    <winstone.version>6.20</winstone.version>
   </properties>
 
   <!--

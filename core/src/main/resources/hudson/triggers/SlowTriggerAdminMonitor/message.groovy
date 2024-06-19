@@ -10,7 +10,9 @@ SlowTriggerAdminMonitor tam = my
 dl {
     div(class: "jenkins-alert jenkins-alert-warning") {
         form(method: "post", name: "clear", action: rootURL + "/" + tam.url + "/clear") {
-            input(name: "clear", type: "submit", value: _("Dismiss"), class: "submit-button primary")
+            button(name: "clear", type: "submit", class: "jenkins-button jenkins-submit-button jenkins-button--primary") {
+                raw _("Dismiss")
+            }
         }
 
         text(_("blurb"))
