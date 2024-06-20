@@ -795,11 +795,11 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
     /**
      * A process.
      */
-    public abstract class UnixProcess extends OSProcess implements Serializable {
+    public abstract class UnixProcess extends OSProcess {
 
         protected int ppid;
         protected EnvVars envVars;
-        protected  List<String> arguments;
+        protected List<String> arguments;
 
         protected UnixProcess(int pid) {
             super(pid);
