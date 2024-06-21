@@ -174,8 +174,8 @@ $semantics: (
   --table-header-foreground: var(--text-color);
   --table-body-background: var(--background);
   --table-body-foreground: var(--text-color);
-  --table-border-radius: 10px;
-  --table-row-border-radius: 4px;
+  --table-border-radius: 0.75rem;
+  --table-row-border-radius: 0.3125rem;
 
   // Deprecated
   --even-row-color: var(--very-light-grey);
