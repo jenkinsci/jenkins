@@ -63,9 +63,11 @@ public abstract class UserPropertyCategory implements ExtensionPoint, ModelObjec
     }
 
     public static @NonNull <T extends UserPropertyCategory> T get(Class<T> type) {
-        T category = all().get(type); if (category == null) {
+        T category = all().get(type);
+        if (category == null) {
             throw new AssertionError("Category not found. It seems the " + type + " is not annotated with @Extension and so not registered");
-        } return category;
+        }
+        return category;
     }
 
     /**
