@@ -106,8 +106,7 @@
   margin: 0;
 }
 
-.am-container .am-message .alert form,
-.am-container .am-message .jenkins-alert form {
+.am-container .am-message .alert form {
   position: relative;
   float: right;
   margin: -6px 0 0 0 !important;
@@ -116,13 +115,11 @@
   padding-left: 0.5rem;
 }
 
-.am-container .am-message .alert form span,
-.am-container .am-message .jenkins-alert form span {
+.am-container .am-message .alert form span {
   margin: 0 0 0 4px !important;
 }
 
-.am-container .am-message .alert,
-.am-container .am-message .jenkins-alert {
+.am-container .am-message .alert {
   margin-bottom: 0 !important;
 }
 
@@ -151,19 +148,19 @@
   text-decoration: var(--link-text-decoration--hover);
 }
 
-.am-container .am-list .jenkins-alert-success a {
+.am-container .am-list .alert-success a {
   color: var(--alert-success-text-color);
 }
 
-.am-container .am-list .jenkins-alert-info a {
+.am-container .am-list .alert-info a {
   color: var(--alert-info-text-color);
 }
 
-.am-container .am-list .jenkins-alert-warning a {
+.am-container .am-list .alert-warning a {
   color: var(--alert-warning-text-color);
 }
 
-.am-container .am-list .jenkins-alert-danger a {
+.am-container .am-list .alert-danger a {
   color: var(--alert-danger-text-color);
 }
 

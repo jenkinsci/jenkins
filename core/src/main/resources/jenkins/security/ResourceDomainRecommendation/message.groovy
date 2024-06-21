@@ -27,7 +27,7 @@ def f = namespace(lib.FormTagLib)
 def l = namespace(lib.LayoutTagLib)
 
 dl {
-    div(class: "jenkins-alert jenkins-alert-info") {
+    div(class: "alert alert-info") {
         a(name: "resource-root-url")
         l.isAdmin() {
           form(method: "post", action: "${rootURL}/${my.url}/act") {
