@@ -32,8 +32,8 @@
       & > th {
         color: var(--table-header-foreground);
         text-align: left;
-        padding-top: calc((var(--table-padding) * 1.7) - 7.5px);
-        padding-bottom: calc((var(--table-padding) * 1.7) - 2.5px);
+        padding-top: calc(var(--table-padding) * 0.9);
+        padding-bottom: calc((var(--table-padding) * 0.9) + 2px);
         padding-left: 1.6rem;
         font-weight: 600;
         font-size: 0.85rem;
