@@ -31,12 +31,12 @@
                 </div>
             {{/if}}
             {{#if this.newerCoreRequired }}
-                <div class="jenkins-alert jenkins-alert-danger">
+                <div class="alert alert-danger">
                     {{{ this.newerCoreRequired }}}
                 </div>
             {{/if}}
             {{#if this.unresolvedSecurityWarnings }}
-                <div class="jenkins-alert jenkins-alert-danger">
+                <div class="alert alert-danger">
                     {{ this.unresolvedSecurityWarnings.text }}
                     <ul>
                         {{#each this.unresolvedSecurityWarnings.warnings}}
@@ -50,12 +50,12 @@
                 </div>
             {{/if}}
             {{#if this.deprecated }}
-                <div class="jenkins-alert jenkins-alert-warning">
+                <div class="alert alert-warning">
                     {{{ this.deprecated }}}
                 </div>
             {{/if}}
             {{#if this.adoptMe }}
-                <div class="jenkins-alert jenkins-alert-warning">
+                <div class="alert alert-warning">
                     {{{ this.adoptMe }}}
                 </div>
             {{/if}}
