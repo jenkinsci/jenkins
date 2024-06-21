@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.111</version>
+    <version>1.116</version>
     <relativePath />
   </parent>
 
@@ -73,8 +73,9 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.450</revision>
+    <revision>2.464</revision>
     <changelist>-SNAPSHOT</changelist>
+    <project.build.outputTimestamp>2024-06-18T13:25:00Z</project.build.outputTimestamp>
 
     <!-- configuration for patch tracker plugin  -->
     <project.patchManagement.system>github</project.patchManagement.system>
@@ -86,7 +87,7 @@ THE SOFTWARE.
     <changelog.url>https://www.jenkins.io/changelog</changelog.url>
 
     <!-- Bundled Remoting version -->
-    <remoting.version>3206.vb_15dcf73f6a_9</remoting.version>
+    <remoting.version>3248.v65ecb_254c298</remoting.version>
     <!-- Minimum Remoting version, which is tested for API compatibility -->
     <remoting.minimum.supported.version>4.13</remoting.minimum.supported.version>
 
@@ -98,7 +99,7 @@ THE SOFTWARE.
     <bridge-method-injector.version>1.29</bridge-method-injector.version>
     <spotless.check.skip>false</spotless.check.skip>
     <!-- Make sure to keep the jetty-maven-plugin version in war/pom.xml in sync with the Jetty release in Winstone: -->
-    <winstone.version>6.18</winstone.version>
+    <winstone.version>6.20</winstone.version>
   </properties>
 
   <!--
@@ -282,7 +283,7 @@ THE SOFTWARE.
             <dependency>
               <groupId>com.puppycrawl.tools</groupId>
               <artifactId>checkstyle</artifactId>
-              <version>10.14.1</version>
+              <version>10.17.0</version>
             </dependency>
           </dependencies>
           <executions>
@@ -298,7 +299,7 @@ THE SOFTWARE.
         <plugin>
           <groupId>org.jacoco</groupId>
           <artifactId>jacoco-maven-plugin</artifactId>
-          <version>0.8.11</version>
+          <version>0.8.12</version>
         </plugin>
       </plugins>
     </pluginManagement>

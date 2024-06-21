@@ -56,7 +56,6 @@ import jenkins.security.AuthenticationSuccessHandler;
 import jenkins.security.BasicHeaderProcessor;
 import jenkins.util.SystemProperties;
 import net.sf.json.JSONObject;
-import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
@@ -327,7 +326,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         SecurityContextHolder.clearContext();
 
-        String contextPath = req.getContextPath().length() > 0 ? req.getContextPath() : "/";
+        String contextPath = !req.getContextPath().isEmpty() ? req.getContextPath() : "/";
         resetRememberMeCookie(req, rsp, contextPath);
         clearStaleSessionCookies(req, rsp, contextPath);
 
@@ -672,7 +671,10 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
 
         // If deduced entry point isn't deduced yet or the content is a blank value
         // use the root web point "/" as a fallback
-        from = StringUtils.defaultIfBlank(from, "/").trim();
+        if (from == null || from.isBlank()) {
+            from = "/";
+        }
+        from = from.trim();
 
         // Encode the return value
         String returnValue = URLEncoder.encode(from, StandardCharsets.UTF_8);

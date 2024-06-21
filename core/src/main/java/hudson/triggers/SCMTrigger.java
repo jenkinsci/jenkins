@@ -468,7 +468,7 @@ public class SCMTrigger extends Trigger<Item> {
          */
         public void doPollingLog(StaplerRequest req, StaplerResponse rsp) throws IOException {
             rsp.setContentType("text/plain;charset=UTF-8");
-            try (OutputStream os = rsp.getCompressedOutputStream(req);
+            try (OutputStream os = rsp.getOutputStream();
                  // Prevent jelly from flushing stream so Content-Length header can be added afterwards
                  FlushProofOutputStream out = new FlushProofOutputStream(os)) {
                 getPollingLogText().writeLogTo(0, out);

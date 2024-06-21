@@ -449,7 +449,7 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
             si.errors.put("password1", Messages.HudsonPrivateSecurityRealm_CreateAccount_PasswordNotMatch());
         }
 
-        if (!(si.password1 != null && si.password1.length() != 0)) {
+        if (!(si.password1 != null && !si.password1.isEmpty())) {
             si.errors.put("password1", Messages.HudsonPrivateSecurityRealm_CreateAccount_PasswordRequired());
         }
 

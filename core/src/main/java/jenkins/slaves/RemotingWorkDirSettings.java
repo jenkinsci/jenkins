@@ -102,7 +102,7 @@ public class RemotingWorkDirSettings implements Describable<RemotingWorkDirSetti
     /**
      * Check if startup should fail if the workdir is missing.
      *
-     * @return {@code true} if Remoting should fail if the the work directory is missing instead of creating it
+     * @return {@code true} if Remoting should fail if the work directory is missing instead of creating it
      */
     public boolean isFailIfWorkDirIsMissing() {
         return failIfWorkDirIsMissing;

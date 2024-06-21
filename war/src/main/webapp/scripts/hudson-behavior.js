@@ -360,7 +360,6 @@ function findNearBy(e, name) {
 
   function locate(iterator, e) {
     // keep finding elements until we find the good match
-    // eslint-disable-next-line no-constant-condition
     while (true) {
       e = iterator(e, name);
       if (e == null) {
@@ -590,15 +589,10 @@ function parseHtml(html) {
 
 /**
  * Evaluates the script in global context.
+ * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/eval#direct_and_indirect_eval
  */
 function geval(script) {
-  // execScript chokes on "" but eval doesn't, so we need to reject it first.
-  if (script == null || script == "") {
-    return;
-  }
-  // see http://perfectionkills.com/global-eval-what-are-the-options/
-  // note that execScript cannot return value
-  (this.execScript || eval)(script);
+  (0, eval)(script);
 }
 
 /**
@@ -675,17 +669,9 @@ function registerValidator(e) {
       try {
         return eval(url); // need access to 'this', so no 'geval'
       } catch (e) {
-        if (window.console != null) {
-          console.warn(
-            "Legacy checkUrl '" + url + "' is not valid JavaScript: " + e,
-          );
-        }
-        if (window.YUI != null) {
-          YUI.log(
-            "Legacy checkUrl '" + url + "' is not valid JavaScript: " + e,
-            "warn",
-          );
-        }
+        console.warn(
+          "Legacy checkUrl '" + url + "' is not valid JavaScript: " + e,
+        );
         return url; // return plain url as fallback
       }
     } else {
@@ -706,6 +692,7 @@ function registerValidator(e) {
   var url = e.targetUrl();
   try {
     FormChecker.delayedCheck(url, method, e.targetElement);
+    // eslint-disable-next-line no-unused-vars
   } catch (x) {
     // this happens if the checkUrl refers to a non-existing element.
     // don't let this kill off the entire JavaScript
@@ -750,15 +737,7 @@ function registerValidator(e) {
       TryEach(function (name) {
         var c = findNearBy(e, name);
         if (c == null) {
-          if (window.console != null) {
-            console.warn("Unable to find nearby " + name);
-          }
-          if (window.YUI != null) {
-            YUI.log(
-              "Unable to find a nearby control of the name " + name,
-              "warn",
-            );
-          }
+          console.warn("Unable to find nearby " + name);
           return;
         }
         c.addEventListener("change", checker.bind(e));
@@ -1682,7 +1661,8 @@ function rowvgStartEachRow(recursive, f) {
         }
       }
       changeTo(e, "-hover.png");
-      YAHOO.util.Event.stopEvent(event);
+      event.stopPropagation();
+      event.preventDefault();
       return false;
     };
     e = null; // memory leak prevention
@@ -1774,15 +1754,6 @@ function rowvgStartEachRow(recursive, f) {
     ++p,
     function (e) {
       e.classList.add("behavior-loading--hidden");
-    },
-  );
-
-  Behaviour.specify(
-    ".button-with-dropdown",
-    "-button-with-dropdown",
-    ++p,
-    function (e) {
-      new YAHOO.widget.Button(e, { type: "menu", menu: e.nextElementSibling });
     },
   );
 
@@ -1902,15 +1873,7 @@ function refillOnChange(e, onChange) {
       TryEach(function (name) {
         var c = findNearBy(e, name);
         if (c == null) {
-          if (window.console != null) {
-            console.warn("Unable to find nearby " + name);
-          }
-          if (window.YUI != null) {
-            YUI.log(
-              "Unable to find a nearby control of the name " + name,
-              "warn",
-            );
-          }
+          console.warn("Unable to find nearby " + name);
           return;
         }
         c.addEventListener("change", h);
@@ -1930,8 +1893,11 @@ function xor(a, b) {
 // eslint-disable-next-line no-unused-vars
 function replaceDescription(initialDescription, submissionUrl) {
   var d = document.getElementById("description");
-  d.firstElementChild.nextElementSibling.innerHTML =
-    "<div class='jenkins-spinner'></div>";
+  let button = d.firstElementChild.nextElementSibling;
+  if (button !== null) {
+    d.firstElementChild.nextElementSibling.innerHTML =
+      "<div class='jenkins-spinner'></div>";
+  }
   let parameters = {};
   if (initialDescription !== null && initialDescription !== "") {
     parameters["description"] = initialDescription;
@@ -2253,35 +2219,6 @@ function toQueryString(params) {
     }
   }
   return query;
-}
-
-// eslint-disable-next-line no-unused-vars
-function getElementOverflowParams(element) {
-  // First we force it to wrap so we can get those dimension.
-  // Then we force it to "nowrap", so we can get those dimension.
-  // We can then compare the two sets, which will indicate if
-  // wrapping is potentially happening, or not.
-
-  // Force it to wrap.
-  element.classList.add("force-wrap");
-  var wrappedClientWidth = element.clientWidth;
-  var wrappedClientHeight = element.clientHeight;
-  element.classList.remove("force-wrap");
-
-  // Force it to nowrap. Return the comparisons.
-  element.classList.add("force-nowrap");
-  var nowrapClientHeight = element.clientHeight;
-  try {
-    var overflowParams = {
-      element: element,
-      clientWidth: wrappedClientWidth,
-      scrollWidth: element.scrollWidth,
-      isOverflowed: wrappedClientHeight > nowrapClientHeight,
-    };
-    return overflowParams;
-  } finally {
-    element.classList.remove("force-nowrap");
-  }
 }
 
 // get the cascaded computed style value. 'a' is the style name like 'backgroundColor'

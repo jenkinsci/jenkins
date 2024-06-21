@@ -1,3 +1,11 @@
+$jenkins-radio-size: 1.375rem;
+$jenkins-radio-border-size: 0.125rem;
+$jenkins-radio-border-hover-size: 0.3125rem;
+$jenkins-radio-border-active-size: 0.5rem;
+$jenkins-radio-border-checked-size: 0.4rem;
+$jenkins-radio-glow-size: 0.625rem;
+$jenkins-radio-glow-active-size: 0.3125rem;
+
 .jenkins-radio-help-wrapper {
   display: flex;
   align-items: center;
@@ -5,69 +13,59 @@
 }
 
 .jenkins-radio {
-  margin-top: 3px;
-
   &:not(:last-of-type) {
-    margin-bottom: calc(var(--section-padding) / 3);
+    margin-bottom: 0.875rem;
   }
 
   &__input {
     position: absolute;
     opacity: 0;
-    margin-top: 10px;
+    margin-top: 0.625rem;
 
-    &:hover {
-      & + label {
-        &::before {
+    &:not(:checked) {
+      &:hover {
+        & + label::before {
           box-shadow:
-            0 0 0 10px transparent,
-            inset 0 0 0 5px var(--input-border-hover);
+            0 0 0 $jenkins-radio-glow-size transparent,
+            inset 0 0 0 $jenkins-radio-border-hover-size
+              var(--input-border-hover);
         }
       }
-    }
 
-    &:not(:disabled) {
+      &:focus-visible,
       &:focus,
       &:active {
-        & + label {
-          &::before {
-            transition: box-shadow var(--elastic-transition);
-            box-shadow:
-              0 0 0 5px var(--focus-input-glow),
-              inset 0 0 0 5px var(--focus-input-border);
-          }
-        }
-      }
-
-      &:checked {
-        &:focus,
-        &:active {
-          & + label {
-            &::before {
-              box-shadow:
-                0 0 0 5px var(--focus-input-glow),
-                inset 0 0 0 8px var(--focus-input-border);
-            }
-          }
+        & + label::before {
+          box-shadow:
+            0 0 0 $jenkins-radio-glow-active-size var(--focus-input-glow),
+            inset 0 0 0 $jenkins-radio-border-active-size
+              var(--focus-input-border);
         }
       }
     }
 
     &:checked {
       & + label {
-        &:active,
-        &:focus {
-          &::before {
-            box-shadow:
-              0 0 0 5px var(--focus-input-glow),
-              inset 0 0 0 12px var(--focus-input-border);
-          }
+        cursor: default;
+
+        &::before {
+          box-shadow:
+            0 0 0 $jenkins-radio-glow-size transparent,
+            inset 0 0 0 $jenkins-radio-border-checked-size
+              var(--focus-input-border);
         }
       }
 
-      & + label {
-        &::before {
-          box-shadow: inset 0 0 0 8px var(--focus-input-border);
+      &:not(:disabled) {
+        &:focus-visible,
+        &:focus,
+        &:active {
+          & + label::before {
+            box-shadow:
+              0 0 0 $jenkins-radio-glow-active-size var(--focus-input-glow),
+              inset 0 0 0 $jenkins-radio-border-active-size
+                var(--focus-input-border);
+          }
         }
       }
     }
@@ -85,11 +83,9 @@
 
   &__label {
     position: relative;
-    top: -5px;
     display: inline-block;
-    margin-top: 10px;
     margin-bottom: 0;
-    padding: 0 0 5px 32px;
+    padding: 0 0 0 2rem;
     cursor: pointer;
     font-weight: var(--form-label-font-weight);
     // remove 300ms pause on mobile
@@ -101,54 +97,24 @@
       position: absolute;
       top: 0;
       left: 0;
-      width: 22px;
-      height: 22px;
+      width: $jenkins-radio-size;
+      height: $jenkins-radio-size;
       border-radius: 50%;
-      background: transparent;
+      background: var(--input-color);
       box-shadow:
-        0 0 0 10px transparent,
-        inset 0 0 0 2px var(--input-border);
+        0 0 0 $jenkins-radio-glow-size transparent,
+        inset 0 0 0 $jenkins-radio-border-size var(--input-border);
       transition: box-shadow var(--standard-transition);
     }
   }
 
   &__description {
-    margin: 0 0 0 32px;
+    margin: 0 0 0 2rem;
     color: var(--text-color-secondary);
     line-height: 1.66;
   }
 
-  &__children {
-    position: relative;
-    margin-top: 10px;
-    opacity: 0;
-    padding-left: 32px;
-    transition: var(--standard-transition);
-    visibility: hidden;
-    max-height: 0;
-
-    &::after {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: 10px;
-      bottom: 0;
-      width: 2px;
-      background: var(--input-border);
-      border-radius: 2px;
-      transition: var(--standard-transition);
-    }
-
-    &:focus-within {
-      &::after {
-        background: var(--focus-input-border);
-      }
-    }
-  }
-
-  &__input:checked + &__label + &__children {
-    visibility: visible;
-    opacity: 1;
-    max-height: none;
+  &__input:not(:checked) + &__label + &__children {
+    display: none;
   }
 }

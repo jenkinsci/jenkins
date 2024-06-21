@@ -607,8 +607,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P, R>, R extends A
             final Node currentNode = getCurrentNode();
             Launcher l = currentNode.createLauncher(listener);
 
-            if (project instanceof BuildableItemWithBuildWrappers) {
-                BuildableItemWithBuildWrappers biwbw = (BuildableItemWithBuildWrappers) project;
+            if (project instanceof BuildableItemWithBuildWrappers biwbw) {
                 for (BuildWrapper bw : biwbw.getBuildWrappersList())
                     l = bw.decorateLauncher(AbstractBuild.this, l, listener);
             }
