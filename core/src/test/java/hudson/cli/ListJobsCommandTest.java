@@ -191,7 +191,7 @@ public class ListJobsCommandTest {
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
-                Set<String> jobs = new HashSet<>(Arrays.asList(item.toString(charset).split(System.getProperty("line.separator"))));
+                Set<String> jobs = new HashSet<>(Arrays.asList(item.toString(charset).split(System.lineSeparator())));
 
                 return new HashSet<>(Arrays.asList(expected)).equals(jobs);
             }
