@@ -721,30 +721,6 @@ THE SOFTWARE.
         <plugins>
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-enforcer-plugin</artifactId>
-            <!-- Version specified in grandparent POM -->
-            <executions>
-              <execution>
-                <id>enforce-versions</id>
-                <goals>
-                  <goal>enforce</goal>
-                </goals>
-                <configuration>
-                  <rules>
-                    <requireMavenVersion>
-                      <version>3.1.0</version>
-                    </requireMavenVersion>
-                    <requireJavaVersion>
-                      <!-- let's encrypt certs used for https://updates.jenkins.io -->
-                      <version>[1.8.0-101,]</version>
-                    </requireJavaVersion>
-                  </rules>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-antrun-plugin</artifactId>
             <executions>
               <execution>
