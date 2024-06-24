@@ -27,7 +27,14 @@ package hudson.model;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.Util;
-import java.util.*;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -106,7 +113,6 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
                 _actions.addAll(additions);
             }
         }
-
         return Collections.unmodifiableList(_actions);
     }
 

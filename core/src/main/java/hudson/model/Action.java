@@ -26,7 +26,6 @@ package hudson.model;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.Functions;
-import jenkins.management.Badge;
 import jenkins.model.menu.Group;
 import jenkins.model.menu.Semantic;
 import jenkins.model.menu.event.Event;
