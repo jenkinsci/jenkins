@@ -167,14 +167,6 @@ function convertHtmlToItems(children) {
           };
         }
 
-        if (attributes.dropdownBadgeText) {
-          item.badge = {
-            text: attributes.dropdownBadgeText,
-            severity: attributes.dropdownBadgeSeverity,
-            tooltip: attributes.dropdownBadgeTooltip,
-          };
-        }
-
         if (attributes.dropdownHref) {
           item.event = {
             url: attributes.dropdownHref,

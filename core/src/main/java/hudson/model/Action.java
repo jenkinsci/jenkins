@@ -162,10 +162,6 @@ public interface Action extends ModelObject {
         return null;
     }
 
-    default Badge getBadge() {
-        return null;
-    }
-
     default boolean isVisibleInContextMenu() {
         return true;
     }

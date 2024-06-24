@@ -93,7 +93,6 @@ public interface ModelObjectWithContextMenu extends ModelObject {
             MenuItem menuItem = new MenuItem()
                     .withDisplayName(action.getDisplayName());
 
-            menuItem.badge = action.getBadge();
             menuItem.semantic = action.getSemantic();
             menuItem.group = action.getGroup();
             menuItem.event = action.getEvent();
