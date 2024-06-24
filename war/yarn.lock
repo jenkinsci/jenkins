@@ -4424,9 +4424,9 @@ __metadata:
     style-loader: "npm:4.0.0"
     stylelint: "npm:16.6.1"
     stylelint-checkstyle-reporter: "npm:1.0.0"
-    stylelint-config-standard: "npm:36.0.0"
+    stylelint-config-standard: "npm:36.0.1"
     tippy.js: "npm:6.3.7"
-    webpack: "npm:5.92.0"
+    webpack: "npm:5.92.1"
     webpack-cli: "npm:5.1.4"
     webpack-remove-empty-scripts: "npm:1.0.4"
     window-handle: "npm:1.0.1"
@@ -6661,23 +6661,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"stylelint-config-recommended@npm:^14.0.0":
-  version: 14.0.0
-  resolution: "stylelint-config-recommended@npm:14.0.0"
+"stylelint-config-recommended@npm:^14.0.1":
+  version: 14.0.1
+  resolution: "stylelint-config-recommended@npm:14.0.1"
   peerDependencies:
-    stylelint: ^16.0.0
-  checksum: 10c0/4ad15c36e8c03291aa7bbe4b672ebfb0f46ab698e7580a0da8d29644046d102d7f31dbf00a2a6eab94b565c390c6fb0d5d528737b83ac3acf6dc2ef085a90b11
+    stylelint: ^16.1.0
+  checksum: 10c0/a0a0ecd91f4d193bbe2cc3408228f8a2d8fcb2b2578d77233f86780c9247c796a04e16aad7a91d97cb918e2de34b6a8062bab66ee017c3835d855081d94f4828
   languageName: node
   linkType: hard
 
-"stylelint-config-standard@npm:36.0.0":
-  version: 36.0.0
-  resolution: "stylelint-config-standard@npm:36.0.0"
+"stylelint-config-standard@npm:36.0.1":
+  version: 36.0.1
+  resolution: "stylelint-config-standard@npm:36.0.1"
   dependencies:
-    stylelint-config-recommended: "npm:^14.0.0"
+    stylelint-config-recommended: "npm:^14.0.1"
   peerDependencies:
     stylelint: ^16.1.0
-  checksum: 10c0/1fc9adddfc5cf0a1d7a443182a0731712a3950ace72a24081b4ede2b0bb6fc1eebd003c009f1d8d06c3a64ba9b31b0ed12512db2f91c8fa549238d8341580e4b
+  checksum: 10c0/7f9b954694358e77be5110418f31335be579ce59dd952bc3c6a9449265297db3170ec520e0905769253b48b99c3109a95c71f5b985bf402e48fd6c89b5364cb2
   languageName: node
   linkType: hard
 
@@ -7075,9 +7075,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"webpack@npm:5.92.0":
-  version: 5.92.0
-  resolution: "webpack@npm:5.92.0"
+"webpack@npm:5.92.1":
+  version: 5.92.1
+  resolution: "webpack@npm:5.92.1"
   dependencies:
     "@types/eslint-scope": "npm:^3.7.3"
     "@types/estree": "npm:^1.0.5"
@@ -7108,7 +7108,7 @@ __metadata:
       optional: true
   bin:
     webpack: bin/webpack.js
-  checksum: 10c0/588de5ce6f1e8fb4fec7300c2c36a8fc844fe71f4c871b06aca1a68553bea8f6479697615abb53cbbeb2e3859fc1b982f2f48ff23dd0e60024f69bb3d46d0712
+  checksum: 10c0/43ca7c76b9c1005bd85f05303d048f918bac10276a209e3ef5e359353fbfef4e5fcee876265e6bc305bf5ef326576e02df63bc7e5af878fb7f06d7e1795b811a
   languageName: node
   linkType: hard
 

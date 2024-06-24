@@ -47,8 +47,8 @@
     "style-loader": "4.0.0",
     "stylelint": "16.6.1",
     "stylelint-checkstyle-reporter": "1.0.0",
-    "stylelint-config-standard": "36.0.0",
-    "webpack": "5.92.0",
+    "stylelint-config-standard": "36.0.1",
+    "webpack": "5.92.1",
     "webpack-cli": "5.1.4",
     "webpack-remove-empty-scripts": "1.0.4"
   },
@@ -65,5 +65,5 @@
     "defaults",
     "not IE 11"
   ],
-  "packageManager": "yarn@4.3.0"
+  "packageManager": "yarn@4.3.1"
 }
