@@ -128,30 +128,6 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
                 .collect(Collectors.toUnmodifiableList());
     }
 
-    public List<Action> getTransientActions() {
-        List<Action> actions = new ArrayList<>();
-
-        for (TransientActionFactory factory : TransientActionFactory.factoriesFor(getClass(), Action.class)) {
-            actions.addAll(factory.createFor(this));
-        }
-
-        return actions.stream()
-                .filter(e -> {
-                    String icon = e.getIconFileName();
-
-                    if (e instanceof IconSpec) {
-                        if (((IconSpec) e).getIconClassName() != null) {
-                            icon = ((IconSpec) e).getIconClassName();
-                        }
-                    }
-
-                    return !StringUtils.isBlank(e.getDisplayName()) && !StringUtils.isBlank(icon);
-                })
-                .sorted(Comparator.comparingInt((Action e) -> e.getGroup().getOrder())
-                        .thenComparing(e -> Objects.requireNonNullElse(e.getDisplayName(), "")))
-                .collect(Collectors.toUnmodifiableList());
-    }
-
     private <T> Collection<? extends Action> createFor(TransientActionFactory<T> taf) {
         try {
             Collection<? extends Action> result = taf.createFor(taf.type().cast(this));
