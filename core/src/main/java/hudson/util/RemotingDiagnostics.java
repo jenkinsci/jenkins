@@ -217,7 +217,7 @@ public final class RemotingDiagnostics {
 
             FilePath dump = obtain();
             try {
-                dump.copyTo(rsp.getCompressedOutputStream(req));
+                dump.copyTo(rsp.getOutputStream());
             } finally {
                 dump.delete();
             }

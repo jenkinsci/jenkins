@@ -66,8 +66,8 @@ THE SOFTWARE.
     <async-supported>true</async-supported>
   </filter>
   <filter>
-    <filter-name>compression-filter</filter-name>
-    <filter-class>org.kohsuke.stapler.compression.CompressionFilter</filter-class>
+    <filter-name>uncaught-exception-filter</filter-name>
+    <filter-class>org.kohsuke.stapler.UncaughtExceptionFilter</filter-class>
     <async-supported>true</async-supported>
   </filter>
   <filter>
@@ -149,7 +149,7 @@ THE SOFTWARE.
     <url-pattern>/*</url-pattern>
   </filter-mapping>
   <filter-mapping>
-    <filter-name>compression-filter</filter-name>
+    <filter-name>uncaught-exception-filter</filter-name>
     <url-pattern>/*</url-pattern>
   </filter-mapping>
   <filter-mapping>

@@ -321,7 +321,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
             buf.append(m.group(1));
             path = path.substring(m.end());
         }
-        boolean isAbsolute = buf.length() > 0;
+        boolean isAbsolute = !buf.isEmpty();
         // Split remaining path into tokens, trimming any duplicate or trailing separators
         List<String> tokens = new ArrayList<>();
         int s = 0, end = path.length();
@@ -366,7 +366,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         }
         // Recombine tokens
         for (String token : tokens) buf.append(token);
-        if (buf.length() == 0) buf.append('.');
+        if (buf.isEmpty()) buf.append('.');
         return buf.toString();
     }
 
@@ -997,8 +997,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
                 }
             }
 
-            if (con instanceof HttpURLConnection) {
-                HttpURLConnection httpCon = (HttpURLConnection) con;
+            if (con instanceof HttpURLConnection httpCon) {
                 int responseCode = httpCon.getResponseCode();
                 if (responseCode == HttpURLConnection.HTTP_MOVED_PERM
                         || responseCode == HttpURLConnection.HTTP_MOVED_TEMP) {
@@ -1445,7 +1444,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
         public Void invoke(File f, VirtualChannel channel) throws IOException {
             for (File file : listParentFiles(f)) {
                 if (file.getName().startsWith(f.getName() + WorkspaceList.COMBINATOR)) {
-                    Util.deleteRecursive(file.toPath(), path -> path.toFile());
+                    Util.deleteRecursive(file.toPath(), Path::toFile);
                 }
             }
 
@@ -1476,7 +1475,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
 
         @Override
         public Void invoke(File f, VirtualChannel channel) throws IOException {
-            Util.deleteRecursive(fileToPath(f), path -> path.toFile());
+            Util.deleteRecursive(fileToPath(f), Path::toFile);
             return null;
         }
     }
@@ -1493,7 +1492,7 @@ public final class FilePath implements SerializableOnlyOverRemoting {
 
         @Override
         public Void invoke(File f, VirtualChannel channel) throws IOException {
-            Util.deleteContentsRecursive(fileToPath(f), path -> path.toFile());
+            Util.deleteContentsRecursive(fileToPath(f), Path::toFile);
             return null;
         }
     }

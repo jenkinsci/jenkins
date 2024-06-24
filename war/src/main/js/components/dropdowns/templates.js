@@ -102,7 +102,7 @@ function menuItem(menuItem, type = "jenkins-dropdown__item") {
           ${label}
                     ${
                       itemOptions.badge != null
-                        ? `<span class="jenkins-dropdown__item__badge jenkins-badge alert-${badgeSeverity}" tooltip="${badgeTooltip}">${badgeText}</span>`
+                        ? `<span class="jenkins-dropdown__item__badge jenkins-badge jenkins-!-${badgeSeverity}-color" tooltip="${badgeTooltip}">${badgeText}</span>`
                         : ``
                     }
           ${
