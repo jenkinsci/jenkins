@@ -107,7 +107,7 @@ public abstract class Actionable extends AbstractModelObject implements ModelObj
             }
         }
 
-        return _actions;
+        return Collections.unmodifiableList(_actions);
     }
 
     public List<Action> getMagic() {
