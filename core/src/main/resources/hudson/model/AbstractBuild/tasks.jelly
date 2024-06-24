@@ -27,5 +27,5 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:p="/lib/hudson/project">
-      <p:console-link/>
+<!--      <p:console-link/>-->
 </j:jelly>
