@@ -61,7 +61,7 @@ public class UserPropertyCategoryAccountAction extends UserPropertyCategoryActio
 
     @Override
     public String getIconFileName() {
-        return "symbol-settings";
+        return getTargetUser().hasPermission(Jenkins.ADMINISTER) ? "symbol-settings" : null;
     }
 
     @Override

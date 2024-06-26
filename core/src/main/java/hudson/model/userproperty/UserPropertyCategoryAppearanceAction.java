@@ -33,6 +33,7 @@ import hudson.model.UserPropertyDescriptor;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -50,7 +51,7 @@ public class UserPropertyCategoryAppearanceAction extends UserPropertyCategoryAc
 
     @Override
     public String getIconFileName() {
-        return "symbol-brush-outline";
+        return getTargetUser().hasPermission(Jenkins.ADMINISTER) ?  "symbol-brush-outline" : null;
     }
 
     @Override

@@ -33,6 +33,7 @@ import hudson.model.UserPropertyDescriptor;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -50,7 +51,7 @@ public class UserPropertyCategoryPreferencesAction extends UserPropertyCategoryA
 
     @Override
     public String getIconFileName() {
-        return "symbol-parameters";
+        return getTargetUser().hasPermission(Jenkins.ADMINISTER) ? "symbol-parameters" : null;
     }
 
     @Override
