@@ -53,7 +53,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 /**
  * Executes a series of commands by using a shell.
@@ -234,7 +234,7 @@ public class Shell extends CommandInterpreter {
         }
 
         @Override
-        public boolean configure(StaplerRequest req, JSONObject data) throws FormException {
+        public boolean configure(StaplerRequest2 req, JSONObject data) throws FormException {
             req.bindJSON(this, data);
             return super.configure(req, data);
         }

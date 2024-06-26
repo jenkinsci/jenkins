@@ -31,7 +31,7 @@ import java.io.IOException;
 import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 /**
  * Configures global SCM retry count default.
@@ -45,7 +45,7 @@ public class GlobalSCMRetryCountConfiguration extends GlobalConfiguration {
     }
 
     @Override
-    public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
+    public boolean configure(StaplerRequest2 req, JSONObject json) throws FormException {
         try {
             // for compatibility reasons, this value is stored in Jenkins
             Jenkins.get().setScmCheckoutRetryCount(json.getInt("scmCheckoutRetryCount"));

@@ -25,15 +25,18 @@
 package hudson.util;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.Util;
 import hudson.model.ModelObject;
+import jakarta.servlet.ServletException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import javax.servlet.ServletException;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.export.Flavor;
@@ -166,12 +169,39 @@ public class ListBoxModel extends ArrayList<ListBoxModel.Option> implements Http
         return this;
     }
 
-    public void writeTo(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    /**
+     * @since TODO
+     */
+    public void writeTo(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
+        if (Util.isOverridden(ListBoxModel.class, getClass(), "writeTo", StaplerRequest.class, StaplerResponse.class)) {
+            try {
+                writeTo(StaplerRequest.fromStaplerRequest2(req), StaplerResponse.fromStaplerResponse2(rsp));
+            } catch (javax.servlet.ServletException e) {
+                throw e.toJakartaServletException();
+            }
+        } else {
+            writeToImpl(req, rsp);
+        }
+    }
+
+    /**
+     * @deprecated use {@link #writeTo(StaplerRequest2, StaplerResponse2)}
+     */
+    @Deprecated
+    public void writeTo(StaplerRequest req, StaplerResponse rsp) throws IOException, javax.servlet.ServletException {
+        try {
+            writeToImpl(req.toStaplerRequest2(), rsp.toStaplerResponse2());
+        } catch (ServletException e) {
+            throw javax.servlet.ServletException.fromJakartaServletException(e);
+        }
+    }
+
+    private void writeToImpl(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         rsp.serveExposedBean(req, this, Flavor.JSON);
     }
 
     @Override
-    public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
+    public void generateResponse(StaplerRequest2 req, StaplerResponse2 rsp, Object node) throws IOException, ServletException {
         writeTo(req, rsp);
     }
 

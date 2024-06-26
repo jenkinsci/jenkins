@@ -47,7 +47,7 @@ import jenkins.model.Jenkins;
 import jenkins.security.stapler.StaplerAccessibleType;
 import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 /**
  * Controls authorization throughout Hudson.
@@ -241,7 +241,7 @@ public abstract class AuthorizationStrategy extends AbstractDescribableImpl<Auth
             }
 
             @Override
-            public @NonNull AuthorizationStrategy newInstance(StaplerRequest req, JSONObject formData) throws FormException {
+            public @NonNull AuthorizationStrategy newInstance(StaplerRequest2 req, JSONObject formData) throws FormException {
                 return UNSECURED;
             }
         }

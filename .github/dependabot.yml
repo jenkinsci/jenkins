@@ -42,14 +42,6 @@ updates:
       # https://github.com/jenkinsci/jenkins/pull/4224
       - dependency-name: "org.jfree:jfreechart"
 
-      # Starting with 6.x, Spring requires Java 17 at a minimum.
-      - dependency-name: "org.springframework:spring-framework-bom"
-        versions: [">=6.0.0"]
-
-      # Starting with 6.x, Spring Security requires Java 17 at a minimum.
-      - dependency-name: "org.springframework.security:spring-security-bom"
-        versions: [">=6.0.0"]
-
       # Starting with 7.x, Guice switches from javax.* to jakarta.* bindings.
       # See https://github.com/google/guice/wiki/Guice700
       - dependency-name: "com.google.inject:guice-bom"

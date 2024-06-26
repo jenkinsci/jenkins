@@ -1,24 +1,24 @@
 package jenkins;
 
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.FilterConfig;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
 import java.io.IOException;
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
 import jenkins.model.Jenkins;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import org.kohsuke.stapler.CompatibleFilter;
 import org.springframework.security.core.Authentication;
 
 /**
  * Record the current user authentication for later impersonation if the response is 404 Not Found.
  *
- * @see Jenkins#generateNotFoundResponse(org.kohsuke.stapler.StaplerRequest, org.kohsuke.stapler.StaplerResponse)
+ * @see Jenkins#generateNotFoundResponse(org.kohsuke.stapler.StaplerRequest2, org.kohsuke.stapler.StaplerResponse2)
  */
 @Restricted(NoExternalUse.class)
-public class ErrorAttributeFilter implements Filter {
+public class ErrorAttributeFilter implements CompatibleFilter {
 
     public static final String USER_ATTRIBUTE = "jenkins.ErrorAttributeFilter.user";
 

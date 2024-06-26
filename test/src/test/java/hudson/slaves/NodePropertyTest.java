@@ -19,7 +19,7 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.LoggerRule;
 import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 /**
  * @author Kohsuke Kawaguchi
@@ -52,7 +52,7 @@ public class NodePropertyTest {
         boolean reconfigured = false;
 
         @Override
-        public NodeProperty<?> reconfigure(StaplerRequest req, JSONObject form) {
+        public NodeProperty<?> reconfigure(StaplerRequest2 req, JSONObject form) {
             reconfigured = true;
             return this;
         }

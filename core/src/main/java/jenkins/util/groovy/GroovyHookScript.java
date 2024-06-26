@@ -8,6 +8,7 @@ import groovy.lang.Binding;
 import groovy.lang.GroovyCodeSource;
 import groovy.lang.GroovyShell;
 import hudson.model.User;
+import jakarta.servlet.ServletContext;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -15,7 +16,6 @@ import java.util.Arrays;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Logger;
-import javax.servlet.ServletContext;
 import jenkins.model.Jenkins;
 import jenkins.util.ScriptListener;
 import jenkins.util.SystemProperties;
@@ -55,7 +55,7 @@ public class GroovyHookScript {
     }
 
     private GroovyHookScript(String hook, Jenkins j) {
-        this(hook, j.servletContext, j.getRootDir(), j.getPluginManager().uberClassLoader);
+        this(hook, j.getServletContext(), j.getRootDir(), j.getPluginManager().uberClassLoader);
     }
 
     public GroovyHookScript(String hook, @NonNull ServletContext servletContext, @NonNull File jenkinsHome, @NonNull ClassLoader loader) {

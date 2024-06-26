@@ -5,14 +5,14 @@ import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.when;
 
 import hudson.model.Items;
+import jakarta.servlet.ReadListener;
+import jakarta.servlet.ServletInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.logging.Level;
-import javax.servlet.ReadListener;
-import javax.servlet.ServletInputStream;
 import jenkins.security.ClassFilterImpl;
 import org.apache.commons.io.IOUtils;
 import org.junit.After;
@@ -23,8 +23,8 @@ import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.LoggerRule;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -40,10 +40,10 @@ public class XStream2Security383Test {
     public LoggerRule logging = new LoggerRule().record(ClassFilterImpl.class, Level.FINE);
 
     @Mock
-    private StaplerRequest req;
+    private StaplerRequest2 req;
 
     @Mock
-    private StaplerResponse rsp;
+    private StaplerResponse2 rsp;
 
     private AutoCloseable mocks;
 

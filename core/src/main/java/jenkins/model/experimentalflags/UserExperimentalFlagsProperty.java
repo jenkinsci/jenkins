@@ -36,7 +36,7 @@ import java.util.Map;
 import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 
 /**
@@ -73,7 +73,7 @@ public class UserExperimentalFlagsProperty extends UserProperty {
         }
 
         @Override
-        public UserProperty newInstance(@Nullable StaplerRequest req, @NonNull JSONObject formData) throws FormException {
+        public UserProperty newInstance(@Nullable StaplerRequest2 req, @NonNull JSONObject formData) throws FormException {
             JSONObject flagsObj = formData.getJSONObject("flags");
             Map<String, String> flags = new HashMap<>();
             for (Object key : flagsObj.keySet()) {

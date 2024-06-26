@@ -28,11 +28,12 @@ package jenkins.util;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
-import javax.servlet.http.HttpSession;
-import javax.servlet.http.HttpSessionEvent;
+import hudson.Util;
+import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpSessionEvent;
 
 /**
- * {@link javax.servlet.http.HttpSessionListener} {@link ExtensionPoint} for Jenkins.
+ * {@link jakarta.servlet.http.HttpSessionListener} {@link ExtensionPoint} for Jenkins.
  * <p>
  * Allows plugins to listen to {@link HttpSession} lifecycle events.
  *
@@ -40,7 +41,7 @@ import javax.servlet.http.HttpSessionEvent;
  * @since 2.2
  */
 @SuppressFBWarnings(value = "NM_SAME_SIMPLE_NAME_AS_INTERFACE", justification = "Should shadow HttpSessionListener")
-public abstract class HttpSessionListener implements ExtensionPoint, javax.servlet.http.HttpSessionListener {
+public abstract class HttpSessionListener implements ExtensionPoint, jakarta.servlet.http.HttpSessionListener, javax.servlet.http.HttpSessionListener {
 
     /**
      * Get all of the {@link HttpSessionListener} implementations.
@@ -52,9 +53,37 @@ public abstract class HttpSessionListener implements ExtensionPoint, javax.servl
 
     @Override
     public void sessionCreated(HttpSessionEvent httpSessionEvent) {
+        if (Util.isOverridden(HttpSessionListener.class, getClass(), "sessionCreated", javax.servlet.http.HttpSessionEvent.class)) {
+            sessionCreated(javax.servlet.http.HttpSessionEvent.fromJakartaHttpSessionEvent(httpSessionEvent));
+        }
     }
 
     @Override
     public void sessionDestroyed(HttpSessionEvent httpSessionEvent) {
+        if (Util.isOverridden(HttpSessionListener.class, getClass(), "sessionCreated", javax.servlet.http.HttpSessionEvent.class)) {
+            sessionCreated(javax.servlet.http.HttpSessionEvent.fromJakartaHttpSessionEvent(httpSessionEvent));
+        }
+    }
+
+    /**
+     * @deprecated use {@link #sessionCreated(HttpSessionEvent)}
+     */
+    @Deprecated
+    @Override
+    public void sessionCreated(javax.servlet.http.HttpSessionEvent httpSessionEvent) {
+        if (Util.isOverridden(HttpSessionListener.class, getClass(), "sessionCreated", HttpSessionEvent.class)) {
+            sessionCreated(httpSessionEvent.toJakartaHttpSessionEvent());
+        }
+    }
+
+    /**
+     * @deprecated use {@link #sessionDestroyed(HttpSessionEvent)}
+     */
+    @Deprecated
+    @Override
+    public void sessionDestroyed(javax.servlet.http.HttpSessionEvent httpSessionEvent) {
+        if (Util.isOverridden(HttpSessionListener.class, getClass(), "sessionDestroyed", HttpSessionEvent.class)) {
+            sessionDestroyed(httpSessionEvent.toJakartaHttpSessionEvent());
+        }
     }
 }

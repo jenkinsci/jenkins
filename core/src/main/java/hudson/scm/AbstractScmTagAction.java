@@ -30,11 +30,11 @@ import hudson.model.Run;
 import hudson.model.TaskAction;
 import hudson.security.ACL;
 import hudson.security.Permission;
+import jakarta.servlet.ServletException;
 import java.io.IOException;
-import javax.servlet.ServletException;
 import jenkins.model.RunAction2;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 
 /**
  * Common part of {@code CVSSCM.TagAction} and {@code SubversionTagAction}.
@@ -108,7 +108,7 @@ public abstract class AbstractScmTagAction extends TaskAction implements BuildBa
         return run.getACL();
     }
 
-    public void doIndex(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    public void doIndex(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         req.getView(this, chooseAction()).forward(req, rsp);
     }
 

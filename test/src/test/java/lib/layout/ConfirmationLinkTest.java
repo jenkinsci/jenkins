@@ -46,7 +46,7 @@ import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.WebMethod;
 
 public class ConfirmationLinkTest {
@@ -202,7 +202,7 @@ public class ConfirmationLinkTest {
         }
 
         @WebMethod(name = "submit")
-        public HttpResponse doSubmit(StaplerRequest request) {
+        public HttpResponse doSubmit(StaplerRequest2 request) {
             return HttpResponses.plainText("method:" + request.getMethod());
         }
     }

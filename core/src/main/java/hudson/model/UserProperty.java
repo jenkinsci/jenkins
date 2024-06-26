@@ -26,10 +26,12 @@ package hudson.model;
 
 import hudson.DescriptorExtensionList;
 import hudson.ExtensionPoint;
+import hudson.Util;
 import hudson.model.Descriptor.FormException;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.export.ExportedBean;
 
 /**
@@ -76,7 +78,21 @@ public abstract class UserProperty implements ReconfigurableDescribable<UserProp
     }
 
     @Override
+    public UserProperty reconfigure(StaplerRequest2 req, JSONObject form) throws FormException {
+        if (Util.isOverridden(UserProperty.class, getClass(), "reconfigure", StaplerRequest.class, JSONObject.class)) {
+            return reconfigure(StaplerRequest.fromStaplerRequest2(req), form);
+        } else {
+            return reconfigureImpl(req, form);
+        }
+    }
+
+    @Deprecated
+    @Override
     public UserProperty reconfigure(StaplerRequest req, JSONObject form) throws FormException {
+        return reconfigureImpl(req.toStaplerRequest2(), form);
+    }
+
+    private UserProperty reconfigureImpl(StaplerRequest2 req, JSONObject form) throws FormException {
         return form == null ? null : getDescriptor().newInstance(req, form);
     }
 }

@@ -1,7 +1,7 @@
 package hudson.security;
 
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.PrintWriter;
-import javax.servlet.http.HttpServletResponse;
 import jenkins.util.SystemProperties;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
@@ -43,6 +43,18 @@ public class AccessDeniedException3 extends AccessDeniedException {
      * Reports the details of the access failure in HTTP headers to assist diagnosis.
      */
     public void reportAsHeaders(HttpServletResponse rsp) {
+        reportAsHeadersImpl(rsp);
+    }
+
+    /**
+     * @deprecated use {@link #reportAsHeaders(HttpServletResponse)}
+     */
+    @Deprecated
+    public void reportAsHeaders(javax.servlet.http.HttpServletResponse rsp) {
+        reportAsHeadersImpl(rsp.toJakartaHttpServletResponse());
+    }
+
+    private void reportAsHeadersImpl(HttpServletResponse rsp) {
         rsp.addHeader("X-You-Are-Authenticated-As", authentication.getName());
         if (REPORT_GROUP_HEADERS) {
             for (GrantedAuthority auth : authentication.getAuthorities()) {

@@ -26,13 +26,13 @@ package hudson.model;
 
 import hudson.FeedAdapter;
 import hudson.util.RunList;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Collection;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletResponse;
 import jenkins.model.Jenkins;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 
 /**
  * RSS related code.
@@ -53,7 +53,7 @@ public final class RSS {
      * @param adapter
      *      Controls how to render entries to RSS.
      */
-    public static <E> void forwardToRss(String title, String url, Collection<? extends E> entries, FeedAdapter<E> adapter, StaplerRequest req, HttpServletResponse rsp) throws IOException, ServletException {
+    public static <E> void forwardToRss(String title, String url, Collection<? extends E> entries, FeedAdapter<E> adapter, StaplerRequest2 req, HttpServletResponse rsp) throws IOException, ServletException {
         req.setAttribute("adapter", adapter);
         req.setAttribute("title", title);
         req.setAttribute("url", url);
@@ -83,7 +83,7 @@ public final class RSS {
      *      Entries to be listed in the RSS feed.
      * @since 2.215
      */
-    public static void rss(StaplerRequest req, StaplerResponse rsp, String title, String url, RunList runList) throws IOException, ServletException {
+    public static void rss(StaplerRequest2 req, StaplerResponse2 rsp, String title, String url, RunList runList) throws IOException, ServletException {
         rss(req, rsp, title, url, runList, null);
     }
 
@@ -100,7 +100,7 @@ public final class RSS {
      *      Controls how to render entries to RSS.
      * @since 2.215
      */
-    public static void rss(StaplerRequest req, StaplerResponse rsp, String title, String url, RunList runList, FeedAdapter<Run> feedAdapter) throws IOException, ServletException {
+    public static void rss(StaplerRequest2 req, StaplerResponse2 rsp, String title, String url, RunList runList, FeedAdapter<Run> feedAdapter) throws IOException, ServletException {
         final FeedAdapter<Run> feedAdapter_ = feedAdapter == null ? Run.FEED_ADAPTER : feedAdapter;
         forwardToRss(title, url, runList, feedAdapter_, req, rsp);
     }

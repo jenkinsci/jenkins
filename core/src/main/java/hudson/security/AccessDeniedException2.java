@@ -42,7 +42,7 @@ public class AccessDeniedException2 extends AccessDeniedException {
      * Reports the details of the access failure in HTTP headers to assist diagnosis.
      */
     public void reportAsHeaders(HttpServletResponse rsp) {
-        toSpring().reportAsHeaders(rsp);
+        toSpring().reportAsHeaders(rsp.toJakartaHttpServletResponse());
     }
 
     /**

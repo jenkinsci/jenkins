@@ -35,7 +35,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 public class SystemConfigurationTestCase {
 
@@ -70,7 +70,7 @@ public class SystemConfigurationTestCase {
         private String decoratorId;
 
         @Override
-        public boolean configure(StaplerRequest req, JSONObject json) {
+        public boolean configure(StaplerRequest2 req, JSONObject json) {
             decoratorId = json.getString("decoratorId");
             return true;
         }

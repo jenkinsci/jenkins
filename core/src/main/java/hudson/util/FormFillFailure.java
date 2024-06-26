@@ -27,14 +27,14 @@ package hudson.util;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Functions;
 import hudson.Util;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Locale;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletResponse;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.Stapler;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 
 /**
  * Represents a failure in a form field doFillXYZ method.
@@ -132,7 +132,7 @@ public abstract class FormFillFailure extends IOException implements HttpRespons
         return new FormFillFailure(kind, message) {
             @Override
             public String renderHtml() {
-                StaplerRequest req = Stapler.getCurrentRequest();
+                StaplerRequest2 req = Stapler.getCurrentRequest2();
                 if (req == null) { // being called from some other context
                     return message;
                 }
@@ -182,7 +182,7 @@ public abstract class FormFillFailure extends IOException implements HttpRespons
     }
 
     @Override
-    public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node)
+    public void generateResponse(StaplerRequest2 req, StaplerResponse2 rsp, Object node)
             throws IOException, ServletException {
         rsp.setContentType("text/html;charset=UTF-8");
         rsp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);

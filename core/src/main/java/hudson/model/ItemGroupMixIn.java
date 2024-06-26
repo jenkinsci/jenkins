@@ -32,6 +32,8 @@ import hudson.security.AccessControlled;
 import hudson.util.CopyOnWriteMap;
 import hudson.util.Function1;
 import hudson.util.Secret;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -42,8 +44,6 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletResponse;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
@@ -51,7 +51,9 @@ import jenkins.model.Jenkins;
 import jenkins.security.NotReallyRoleSensitiveCallable;
 import jenkins.util.xml.XMLUtils;
 import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.springframework.security.access.AccessDeniedException;
 import org.xml.sax.SAXException;
 
@@ -140,8 +142,10 @@ public abstract class ItemGroupMixIn {
     /**
      * Creates a {@link TopLevelItem} for example from the submission of the {@code /lib/hudson/newFromList/form} tag
      * or throws an exception if it fails.
+     *
+     * @since TODO
      */
-    public synchronized TopLevelItem createTopLevelItem(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    public synchronized TopLevelItem createTopLevelItem(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         acl.checkPermission(Item.CREATE);
 
         TopLevelItem result;
@@ -207,9 +211,21 @@ public abstract class ItemGroupMixIn {
     }
 
     /**
+     * @deprecated use {@link #createTopLevelItem(StaplerRequest2, StaplerResponse2)}
+     */
+    @Deprecated
+    public synchronized TopLevelItem createTopLevelItem(StaplerRequest req, StaplerResponse rsp) throws IOException, javax.servlet.ServletException {
+        try {
+            return createTopLevelItem(req.toStaplerRequest2(), rsp.toStaplerResponse2());
+        } catch (ServletException e) {
+            throw javax.servlet.ServletException.fromJakartaServletException(e);
+        }
+    }
+
+    /**
      * Computes the redirection target URL for the newly created {@link TopLevelItem}.
      */
-    protected String redirectAfterCreateItem(StaplerRequest req, TopLevelItem result) throws IOException {
+    protected String redirectAfterCreateItem(StaplerRequest2 req, TopLevelItem result) throws IOException {
         return req.getContextPath() + '/' + result.getUrl() + "configure";
     }
 

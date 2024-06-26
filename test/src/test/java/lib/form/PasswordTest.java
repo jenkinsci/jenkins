@@ -84,7 +84,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.Stapler;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 import org.springframework.security.core.Authentication;
 
 public class PasswordTest {
@@ -244,7 +244,7 @@ public class PasswordTest {
             static String checkedSecret;
 
             public FormValidation doCheckSecret(@QueryParameter String value) {
-                StaplerRequest req = Stapler.getCurrentRequest();
+                StaplerRequest2 req = Stapler.getCurrentRequest2();
                 incomingURL = req.getRequestURIWithQueryString();
                 System.err.println("processing " + incomingURL + " via " + req.getMethod() + ": " + value);
                 checkedSecret = value;

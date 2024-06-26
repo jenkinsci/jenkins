@@ -58,6 +58,7 @@ import hudson.util.NamingThreadFactory;
 import hudson.util.PersistedList;
 import hudson.util.VersionNumber;
 import hudson.util.XStream2;
+import jakarta.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -102,7 +103,6 @@ import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.net.ssl.SSLHandshakeException;
-import javax.servlet.ServletException;
 import jenkins.MissingDependencyException;
 import jenkins.RestartRequiredException;
 import jenkins.install.InstallUtil;
@@ -123,8 +123,8 @@ import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerProxy;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.interceptor.RequirePOST;
@@ -434,7 +434,7 @@ public class UpdateCenter extends AbstractModelObject implements Loadable, Savea
      * @return The current connection status.
      */
     @Restricted(DoNotUse.class)
-    public HttpResponse doConnectionStatus(StaplerRequest request) {
+    public HttpResponse doConnectionStatus(StaplerRequest2 request) {
         Jenkins.get().checkPermission(Jenkins.SYSTEM_READ);
         try {
             String siteId = request.getParameter("siteId");
@@ -531,12 +531,12 @@ public class UpdateCenter extends AbstractModelObject implements Loadable, Savea
      * <p>
      * Supports a "correlationId" request parameter if you only want to get the
      * install status of a set of plugins requested for install through
-     * {@link PluginManager#doInstallPlugins(org.kohsuke.stapler.StaplerRequest)}.
+     * {@link PluginManager#doInstallPlugins(org.kohsuke.stapler.StaplerRequest2)}.
      *
      * @return The current installation status of a plugin set.
      */
     @Restricted(DoNotUse.class)
-    public HttpResponse doInstallStatus(StaplerRequest request) {
+    public HttpResponse doInstallStatus(StaplerRequest2 request) {
         try {
             String correlationId = request.getParameter("correlationId");
             Map<String, Object> response = new HashMap<>();
@@ -749,7 +749,7 @@ public class UpdateCenter extends AbstractModelObject implements Loadable, Savea
      * Schedules a Jenkins upgrade.
      */
     @RequirePOST
-    public void doUpgrade(StaplerResponse rsp) throws IOException, ServletException {
+    public void doUpgrade(StaplerResponse2 rsp) throws IOException, ServletException {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         HudsonUpgradeJob job = new HudsonUpgradeJob(getCoreSource(), Jenkins.getAuthentication2());
         if (!Lifecycle.get().canRewriteHudsonWar()) {
@@ -781,7 +781,7 @@ public class UpdateCenter extends AbstractModelObject implements Loadable, Savea
      * Schedules a Jenkins restart.
      */
     @RequirePOST
-    public void doSafeRestart(StaplerRequest request, StaplerResponse response) throws IOException, ServletException {
+    public void doSafeRestart(StaplerRequest2 request, StaplerResponse2 response) throws IOException, ServletException {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         synchronized (jobs) {
             if (!isRestartScheduled()) {
@@ -796,7 +796,7 @@ public class UpdateCenter extends AbstractModelObject implements Loadable, Savea
      * Cancel all scheduled jenkins restarts
      */
     @RequirePOST
-    public void doCancelRestart(StaplerResponse response) throws IOException, ServletException {
+    public void doCancelRestart(StaplerResponse2 response) throws IOException, ServletException {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         synchronized (jobs) {
             for (UpdateCenterJob job : jobs) {
@@ -855,7 +855,7 @@ public class UpdateCenter extends AbstractModelObject implements Loadable, Savea
      * Performs hudson downgrade.
      */
     @RequirePOST
-    public void doDowngrade(StaplerResponse rsp) throws IOException, ServletException {
+    public void doDowngrade(StaplerResponse2 rsp) throws IOException, ServletException {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         if (!isDowngradable()) {
             sendError("Jenkins downgrade is not possible, probably backup does not exist");
@@ -872,7 +872,7 @@ public class UpdateCenter extends AbstractModelObject implements Loadable, Savea
      * Performs hudson downgrade.
      */
     @RequirePOST
-    public void doRestart(StaplerResponse rsp) throws IOException, ServletException {
+    public void doRestart(StaplerResponse2 rsp) throws IOException, ServletException {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
         HudsonDowngradeJob job = new HudsonDowngradeJob(getCoreSource(), Jenkins.getAuthentication2());
         LOGGER.info("Scheduling the core downgrade");

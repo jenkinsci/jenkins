@@ -24,8 +24,8 @@
 
 package org.acegisecurity.ui;
 
+import jakarta.servlet.http.HttpServletRequest;
 import java.io.Serializable;
-import javax.servlet.http.HttpServletRequest;
 
 /**
  * @deprecated use {@link org.springframework.security.web.authentication.WebAuthenticationDetails}

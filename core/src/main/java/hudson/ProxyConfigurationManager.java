@@ -32,7 +32,7 @@ import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 @Extension @Restricted(NoExternalUse.class)
 public class ProxyConfigurationManager extends GlobalConfiguration {
@@ -48,7 +48,7 @@ public class ProxyConfigurationManager extends GlobalConfiguration {
     }
 
     @Override
-    public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
+    public boolean configure(StaplerRequest2 req, JSONObject json) throws FormException {
         ProxyConfiguration pc = req.bindJSON(ProxyConfiguration.class, json);
         try {
             saveProxyConfiguration(pc);

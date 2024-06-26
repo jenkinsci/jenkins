@@ -17,7 +17,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 public class EnumTest {
     @Rule
@@ -61,7 +61,7 @@ public class EnumTest {
         public BallColor enum1 = BallColor.YELLOW;
         public BallColor enum2 = null;
 
-        public void doSubmitForm(StaplerRequest req) throws Exception {
+        public void doSubmitForm(StaplerRequest2 req) throws Exception {
             JSONObject json = req.getSubmittedForm();
             System.out.println(json);
         }

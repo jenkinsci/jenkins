@@ -123,7 +123,7 @@ public class StaticRoutingDecisionProvider extends RoutingDecisionProvider imple
 
     private void resetMetaClassCache() {
         // to allow the change to be effective, i.e. rebuild the MetaClass using the new whitelist
-        WebApp.get(Jenkins.get().servletContext).clearMetaClassCache();
+        WebApp.get(Jenkins.get().getServletContext()).clearMetaClassCache();
     }
 
     private synchronized void reloadFromDefault() {
