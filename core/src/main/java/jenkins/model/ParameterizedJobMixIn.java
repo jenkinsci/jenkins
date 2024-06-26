@@ -346,7 +346,7 @@ public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & Param
          * (Would have been done entirely as an interface with default methods had this been designed for Java 8.)
          */
         default ParameterizedJobMixIn<JobT, RunT> getParameterizedJobMixIn() {
-            return new ParameterizedJobMixIn<JobT, RunT>() {
+            return new ParameterizedJobMixIn<>() {
                 @SuppressWarnings("unchecked") // untypable
                 @Override protected JobT asJob() {
                     return (JobT) ParameterizedJob.this;

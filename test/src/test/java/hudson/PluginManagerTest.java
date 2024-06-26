@@ -578,8 +578,7 @@ public class PluginManagerTest {
             Thread.sleep(100);
             done = true;
             for (UpdateCenterJob job : r.jenkins.getUpdateCenter().getJobs()) {
-                if (job instanceof UpdateCenter.DownloadJob) {
-                    UpdateCenter.DownloadJob j = (UpdateCenter.DownloadJob) job;
+                if (job instanceof UpdateCenter.DownloadJob j) {
                     assertFalse(j.status instanceof UpdateCenter.DownloadJob.Failure);
                     done &= !(j.status instanceof UpdateCenter.DownloadJob.Pending ||
                             j.status instanceof UpdateCenter.DownloadJob.Installing);

@@ -294,8 +294,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Loadable, 
 
         // detect an type error
         Type bt = Types.getBaseClass(getClass(), Descriptor.class);
-        if (bt instanceof ParameterizedType) {
-            ParameterizedType pt = (ParameterizedType) bt;
+        if (bt instanceof ParameterizedType pt) {
             // this 't' is the closest approximation of T of Descriptor<T>.
             Class t = Types.erasure(pt.getActualTypeArguments()[0]);
             if (!t.isAssignableFrom(clazz))
@@ -688,8 +687,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Loadable, 
 
         @Override
         public Object onConvert(Type targetType, Class targetTypeErasure, Object jsonSource) {
-            if (jsonSource instanceof JSONObject) {
-                JSONObject json = (JSONObject) jsonSource;
+            if (jsonSource instanceof JSONObject json) {
                 if (isApplicable(targetTypeErasure, json)) {
                     LOGGER.log(Level.FINE, "switching to newInstance {0} {1}", new Object[] {targetTypeErasure.getName(), json});
                     try {
@@ -895,8 +893,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Loadable, 
     protected List<String> getPossibleViewNames(String baseName) {
         List<String> names = new ArrayList<>();
         for (Facet f : WebApp.get(Jenkins.get().servletContext).facets) {
-            if (f instanceof JellyCompatibleFacet) {
-                JellyCompatibleFacet jcf = (JellyCompatibleFacet) f;
+            if (f instanceof JellyCompatibleFacet jcf) {
                 for (String ext : jcf.getScriptExtensions())
                     names.add(baseName + ext);
             }
@@ -1007,6 +1004,10 @@ public abstract class Descriptor<T extends Describable<T>> implements Loadable, 
             if (url != null)    return url;
             url = c.getResource(base + '_' + locale.getLanguage() + ".html");
             if (url != null)    return url;
+            if (locale.getLanguage().equals("en")) {
+                url = c.getResource(base + ".html");
+                if (url != null)    return url;
+            }
         }
 
         // default

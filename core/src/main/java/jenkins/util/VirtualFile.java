@@ -46,6 +46,7 @@ import java.io.OutputStream;
 import java.io.Serializable;
 import java.net.URI;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.OpenOption;
@@ -375,7 +376,7 @@ public abstract class VirtualFile implements Comparable<VirtualFile>, Serializab
 
         Collection<String> files = list(includes, excludes, useDefaultExcludes, openOptions);
         try (ZipOutputStream zos = new ZipOutputStream(outputStream)) {
-            zos.setEncoding(System.getProperty("file.encoding")); // TODO JENKINS-20663 make this overridable via query parameter
+            zos.setEncoding(Charset.defaultCharset().displayName()); // TODO JENKINS-20663 make this overridable via query parameter
 
             for (String relativePath : files) {
                 VirtualFile virtualFile = this.child(relativePath);
