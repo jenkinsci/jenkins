@@ -8,7 +8,7 @@
 def failFast = false
 
 properties([
-  buildDiscarder(logRotator(numToKeepStr: '50', artifactNumToKeepStr: '3')),
+  buildDiscarder(logRotator(numToKeepStr: '40', artifactNumToKeepStr: '3')),
   disableConcurrentBuilds(abortPrevious: true)
 ])
 
