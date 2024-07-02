@@ -4,7 +4,8 @@
   border-radius: 1rem;
   background: var(--card-background);
   border: var(--card-border-width) solid var(--card-border-color);
-  margin-left: 10px;
+  margin-left: -0.7rem;
+  margin-right: -0.7rem;
   margin-bottom: calc(var(--section-padding) / 2);
   overflow: hidden;
 }

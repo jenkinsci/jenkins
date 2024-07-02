@@ -59,7 +59,7 @@ THE SOFTWARE.
       (The permissions will be checked against the "it" object.)
     </st:attribute>
     <st:attribute name="type" use="optional">
-      Available values: two-column (by default), one-column (full-width size) or full-screen (since 2.53).
+      Set to 'full-screen' to hide the navigation bar, breadcrumb bar and footer
     </st:attribute>
     <st:attribute name="nogrid" use="optional">
       Do not include Bootstrap 3 grid. When a plugin wants to use a more recent version of Bootstrap then
@@ -192,14 +192,8 @@ THE SOFTWARE.
     </j:if>
 
     <div id="page-body" class="app-page-body app-page-body--${layoutType} clear">
-      <j:if test="${layoutType=='two-column'}">
-        <j:set var="mode" value="side-panel" />
-        <d:invokeBody />
-      </j:if>
-      <div id="main-panel">
-        <j:set var="mode" value="main-panel" />
-        <d:invokeBody/>
-      </div>
+      <j:set var="mode" value="main" />
+      <d:invokeBody />
     </div>
 
     <j:if test="${layoutType!='full-screen'}">

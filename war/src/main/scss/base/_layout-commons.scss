@@ -1,7 +1,5 @@
 @use "../base/breakpoints";
 
-/* --------------- header --------------- */
-
 #page-header .logo {
   margin-left: 1.2rem;
   display: inline-flex;
@@ -23,104 +21,53 @@
   margin-left: 0.25rem;
 }
 
-/* -------------------------------------- */
-
 .app-page-body {
   display: flex;
-  justify-content: flex-start;
-  align-items: stretch;
-  flex: 1 0 auto;
-}
+  align-items: start;
+  padding: var(--section-padding);
+  gap: var(--section-padding);
+  min-height: calc(100vh - 110px);
 
-.app-page-body__sidebar {
-  /* stylelint-disable-next-line media-query-no-invalid */
-  @media (min-width: breakpoints.$tablet-breakpoint) {
+  &__side-panel {
+    width: 320px;
+    flex-shrink: 0;
+
     &--sticky {
       position: sticky;
-      top: 44px;
-      align-self: flex-start;
+      top: 40px;
+      margin-top: calc(var(--section-padding) * -1);
+      padding-top: var(--section-padding);
+    }
+
+    /* stylelint-disable-next-line media-query-no-invalid */
+    @media (max-width: breakpoints.$tablet-breakpoint) {
+      width: 100%;
+    }
+
+    & + .app-page-body__main-panel {
+      max-width: unset;
     }
   }
-}
 
-#page-body.clear::after {
-  clear: both;
-  content: "";
-  display: table;
-}
-
-#side-panel {
-  flex-shrink: 0;
-}
-
-#main-panel {
-  padding: var(--section-padding);
-  display: inline-block;
-  width: 100%;
-}
-
-.app-page-body--one-column {
-  --form-item-max-width: calc(85vw - 4rem);
-
-  @media screen and (width <= 1200px) {
-    --form-item-max-width: 100%;
-  }
-
-  max-width: 85vw;
-
-  #main-panel {
-    width: 100vw;
-  }
-
-  .jenkins-section {
-    max-width: unset;
-  }
-
-  @media (width <= 1200px) {
-    max-width: unset;
-  }
-
-  margin: auto;
-}
-
-body.two-column #main-panel {
-  width: calc(100% - 320px);
-  flex: 1;
-  display: block;
-}
-
-body.full-screen {
-  padding: 0;
-}
-
-body.full-screen #main-panel {
-  padding: 0;
-}
-
-body.two-column #side-panel {
-  width: 340px;
-}
-
-/* stylelint-disable-next-line media-query-no-invalid */
-@media (max-width: breakpoints.$tablet-breakpoint) {
-  body.two-column #page-body {
-    flex-wrap: wrap;
-  }
-
-  body.two-column #side-panel {
+  &__main-panel {
     width: 100%;
-    border-right: none;
+    max-width: 1150px;
+    margin-inline: auto;
   }
 
-  body.two-column #main-panel {
-    margin-left: 0;
-    width: 100%;
-  }
-}
+  &--full-screen {
+    flex-direction: column;
+    padding: 0;
+    gap: 0;
 
-@media (width >= 1170px) {
-  body.two-column #main-panel {
-    width: calc(100% - 370px);
+    .app-page-body__main-panel {
+      max-width: unset !important;
+    }
+  }
+
+  /* stylelint-disable-next-line media-query-no-invalid */
+  @media (max-width: breakpoints.$tablet-breakpoint) {
+    flex-direction: column;
   }
 }
 

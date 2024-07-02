@@ -1,5 +1,4 @@
 @use "../abstracts/mixins";
-@use "../base/breakpoints";
 
 $background-outset: 0.7rem;
 
@@ -7,13 +6,8 @@ $background-outset: 0.7rem;
 .subtasks {
   display: flex;
   flex-direction: column;
-  margin: var(--section-padding);
   gap: 0.125rem;
-
-  /* stylelint-disable-next-line media-query-no-invalid */
-  @media (min-width: breakpoints.$tablet-breakpoint) {
-    margin-right: calc($background-outset);
-  }
+  margin-bottom: var(--section-padding);
 }
 
 .subtasks {
@@ -26,12 +20,6 @@ $background-outset: 0.7rem;
 }
 
 #side-panel {
-  .jenkins-app-bar {
-    margin-top: var(--section-padding);
-    margin-left: var(--section-padding);
-    margin-right: var(--section-padding);
-  }
-
   & > #tasks > .jenkins-search-container {
     margin-left: -$background-outset;
     margin-right: -$background-outset;

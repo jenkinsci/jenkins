@@ -37,19 +37,17 @@ THE SOFTWARE.
     Generates a row containing the page title and an optional set of controls
   </st:documentation>
 
-  <j:if test="${mode=='main-panel' or mode=='side-panel'}">
-    <div class="jenkins-app-bar">
-      <div class="jenkins-app-bar__content">
-        <x:element name="${headingLevel ?: 'h1'}">
-          ${title}
-          <j:if test="${attrs.subtitle != null}">
-            <span class="jenkins-app-bar__subtitle">${attrs.subtitle}</span>
-          </j:if>
-        </x:element>
-      </div>
-      <div class="jenkins-app-bar__controls">
-        <d:invokeBody/>
-      </div>
+  <div class="jenkins-app-bar">
+    <div class="jenkins-app-bar__content">
+      <x:element name="${headingLevel ?: 'h1'}">
+        ${title}
+        <j:if test="${attrs.subtitle != null}">
+          <span class="jenkins-app-bar__subtitle">${attrs.subtitle}</span>
+        </j:if>
+      </x:element>
     </div>
-  </j:if>
+    <div class="jenkins-app-bar__controls">
+      <d:invokeBody/>
+    </div>
+  </div>
 </j:jelly>
