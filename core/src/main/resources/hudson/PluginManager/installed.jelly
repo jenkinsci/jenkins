@@ -155,7 +155,7 @@ THE SOFTWARE.
                     </j:if>
                   </td>
                   <j:set var="state" value="${p.enabled?'true':null}"/>
-                  <td class="jenkins-table__cell--tight enable" data="${state}">
+                  <td class="jenkins-table__cell--tight enable" data="${it.getSortIndex(p)}">
                     <div class="jenkins-table__cell__button-wrapper">
                       <span class="jenkins-toggle-switch">
                         <input type="checkbox" checked="${state}"
