@@ -23,6 +23,10 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <p class="error">${it} <a href="log">${%See log for more details}</a></p>
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <p class="error">${it}
+    <j:if test="${it.hasPermission(it.CONFIGURE) or it.hasPermission(it.CONNECT)}">
+      <a href="log">${%See log for more details}</a>
+    </j:if>
+  </p>
 </j:jelly>
