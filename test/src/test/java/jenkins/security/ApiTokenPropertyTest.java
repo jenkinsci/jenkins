@@ -170,7 +170,7 @@ public class ApiTokenPropertyTest {
         WebClient wc = createClientForUser("foo");
         WebRequest wr = new WebRequest(new URL(j.getURL(), "job/bar/build"), HttpMethod.POST);
 
-        assertEquals(HttpURLConnection.HTTP_CREATED, wc.getPage(wr).getWebResponse().getStatusCode());
+        assertEquals(HttpURLConnection.HTTP_OK, wc.getPage(wr).getWebResponse().getStatusCode());
 
         j.waitUntilNoActivity();
 
