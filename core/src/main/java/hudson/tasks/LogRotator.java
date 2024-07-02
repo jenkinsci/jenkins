@@ -50,6 +50,7 @@ import jenkins.model.BuildDiscarderDescriptor;
 import jenkins.util.io.CompositeIOException;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.DataBoundSetter;
 
 /**
  * Default implementation of {@link BuildDiscarder}.
@@ -108,6 +109,18 @@ public class LogRotator extends BuildDiscarder {
      */
     private final Integer artifactNumToKeep;
 
+    /**
+     * If enabled also remove last successful build.
+     * @since 2.464
+     */
+    private boolean removeLastSuccessfulBuild;
+
+    /**
+     * If enabled also remove last stable build.
+     * @since 2.464
+     */
+    private boolean removeLastStableBuild;
+
     @DataBoundConstructor
     public LogRotator(String daysToKeepStr, String numToKeepStr, String artifactDaysToKeepStr, String artifactNumToKeepStr) {
         this (parse(daysToKeepStr), parse(numToKeepStr),
@@ -140,6 +153,16 @@ public class LogRotator extends BuildDiscarder {
 
     }
 
+    @DataBoundSetter
+    public void setRemoveLastSuccessfulBuild(boolean removeLastSuccessfulBuild) {
+        this.removeLastSuccessfulBuild = removeLastSuccessfulBuild;
+    }
+
+    @DataBoundSetter
+    public void setRemoveLastStableBuild(boolean removeLastStableBuild) {
+        this.removeLastStableBuild = removeLastStableBuild;
+    }
+
     @Override
     @SuppressWarnings("rawtypes")
     public void perform(Job<?, ?> job) throws IOException, InterruptedException {
@@ -148,9 +171,9 @@ public class LogRotator extends BuildDiscarder {
 
         LOGGER.log(FINE, "Running the log rotation for {0} with numToKeep={1} daysToKeep={2} artifactNumToKeep={3} artifactDaysToKeep={4}", new Object[] {job, numToKeep, daysToKeep, artifactNumToKeep, artifactDaysToKeep});
 
-        // always keep the last successful and the last stable builds
-        Run lsb = job.getLastSuccessfulBuild();
-        Run lstb = job.getLastStableBuild();
+        // if configured keep the last successful and the last stable builds
+        Run lsb = removeLastSuccessfulBuild ? null : job.getLastSuccessfulBuild();
+        Run lstb = removeLastStableBuild ? null : job.getLastStableBuild();
 
         if (numToKeep != -1) {
             // Note that RunList.size is deprecated, and indeed here we are loading all the builds of the job.
@@ -268,6 +291,14 @@ public class LogRotator extends BuildDiscarder {
 
     public int getArtifactNumToKeep() {
         return unbox(artifactNumToKeep);
+    }
+
+    public boolean isRemoveLastSuccessfulBuild() {
+        return removeLastSuccessfulBuild;
+    }
+
+    public boolean isRemoveLastStableBuild() {
+        return removeLastStableBuild;
     }
 
     public String getDaysToKeepStr() {
