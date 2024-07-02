@@ -1351,10 +1351,17 @@ public class PluginWrapper implements Comparable<PluginWrapper>, ModelObject {
     @RequirePOST
     public HttpResponse doDoUninstall() throws IOException {
         Jenkins jenkins = Jenkins.get();
-
         jenkins.checkPermission(Jenkins.ADMINISTER);
         Files.deleteIfExists(Util.fileToPath(archive));
         Files.deleteIfExists(Util.fileToPath(disableFile));
+        if (isDetached()) {
+            File uninstallFile = new File(archive.getAbsolutePath() + ".uninstalled");
+            try (OutputStream os = Files.newOutputStream(uninstallFile.toPath())) {
+                // creates an empty file
+            } catch (InvalidPathException e) {
+                throw new IOException(e);
+            }
+        }
 
         // Redo who depends on who.
         jenkins.getPluginManager().resolveDependentPlugins();

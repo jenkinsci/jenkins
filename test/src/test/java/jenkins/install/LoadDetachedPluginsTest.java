@@ -32,7 +32,9 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import hudson.ClassicPluginStrategy;
@@ -41,6 +43,7 @@ import hudson.PluginManager;
 import hudson.PluginManagerUtil;
 import hudson.PluginWrapper;
 import hudson.util.VersionNumber;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -53,18 +56,21 @@ import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.LoggerRule;
 import org.jvnet.hudson.test.RestartableJenkinsRule;
 import org.jvnet.hudson.test.SmokeTest;
 import org.jvnet.hudson.test.recipes.LocalData;
+import org.jvnet.hudson.test.recipes.WithPlugin;
 
 @Category(SmokeTest.class)
 public class LoadDetachedPluginsTest {
 
     @Rule public RestartableJenkinsRule rr = PluginManagerUtil.newRestartableJenkinsRule();
     @Rule public LoggerRule logging = new LoggerRule();
+    @Rule public TemporaryFolder tmp = new TemporaryFolder();
 
     @Issue("JENKINS-48365")
     @Test
@@ -160,6 +166,43 @@ public class LoadDetachedPluginsTest {
             /* TODO currently still loads the detached 1.0, since we only skip $shortName.[jh]pi not $shortName-$version.[jh]pi; during PLUGINS_LISTED there is a list of known filenames but not short names
             assertEquals("1.3", r.jenkins.pluginManager.getPlugin("command-launcher").getVersion());
             */
+        });
+    }
+
+    @Issue("JENKINS-69487")
+    @WithPlugin("htmlpublisher.jpi")
+    @Test public void createUninstallStatusAfterUninstallDetached() throws Exception {
+        rr.then(r -> {
+            PluginWrapper pw = r.jenkins.pluginManager.getPlugin("javax-mail-api");
+            assertNotNull(pw);
+
+            pw.doDoUninstall();
+
+            File uninstalledMarker = new File(r.jenkins.getRootDir(), "plugins/javax-mail-api.jpi.uninstalled");
+            assertTrue(uninstalledMarker.exists());  // `.uninstalled` file should be created after uninstall of detached
+        });
+        rr.then(r -> {
+            PluginWrapper pw = r.jenkins.pluginManager.getPlugin("javax-mail-api");
+            assertNull(pw);
+
+            pw = r.jenkins.pluginManager.getPlugin("htmlpublisher");
+            assertNotNull(pw);
+
+            pw.doDoUninstall();
+
+            File uninstalledMarker = new File(r.jenkins.getRootDir(), "plugins/htmlpublisher.jpi.uninstalled");
+            assertFalse(uninstalledMarker.exists());  // `.uninstalled` file should not be created after uninstall of regular
+        });
+    }
+
+    @Issue("JENKINS-69487")
+    @Test public void uninstalledDetachedIsLoadedOnExplicit() throws Exception {
+        rr.then(r -> {
+            File uninstalledMarker = new File(r.jenkins.getRootDir(), "plugins/javax-activation-api.jpi.uninstalled");
+            uninstalledMarker.createNewFile();
+            PluginManagerUtil.dynamicLoad("javax-activation-api.jpi", r.jenkins);
+
+            assertFalse(uninstalledMarker.exists());  // `.uninstalled` file should be deleted after explicit install of detached
         });
     }
 

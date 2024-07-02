@@ -630,7 +630,9 @@ public class UpdateSite {
                 if (!implicitDeps.isEmpty()) {
                     for (PluginWrapper.Dependency dep : implicitDeps) {
                         if (!p.dependencies.containsKey(dep.shortName)) {
-                            p.dependencies.put(dep.shortName, dep.version);
+                            if (!Jenkins.get().getPluginManager().isImpliedToBeIgnored(dep.shortName, false)) {
+                                p.dependencies.put(dep.shortName, dep.version);
+                            }
                         }
                     }
                 }

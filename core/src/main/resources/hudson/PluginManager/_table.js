@@ -484,9 +484,17 @@ window.addEventListener("load", function () {
     uninstallButton.addEventListener("click", () => {
       const title = uninstallButton.dataset.message;
       const href = uninstallButton.dataset.href;
+      let message = i18n("uninstall-description");
+      const pluginRow = uninstallButton.closest(
+        "TR.possibly-has-implied-dependents",
+      );
+
+      if (pluginRow != null) {
+        message += "\n" + i18n("uninstall-detached-warning");
+      }
 
       const options = {
-        message: i18n("uninstall-description"),
+        message: message,
         type: "destructive",
       };
 

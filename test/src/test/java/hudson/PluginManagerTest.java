@@ -853,6 +853,20 @@ public class PluginManagerTest {
         assertEquals(EnumSet.of(OWNER_EXECUTE, OWNER_READ, OWNER_WRITE), filesPermission[0]);
     }
 
+    @Issue("JENKINS-69487")
+    @Test public void impliedIsIgnoredWithSystemProperty() throws Exception {
+        PluginManager.IGNORE_DETACHED.add("javax-mail-api");
+        HtmlPage page = r.createWebClient().goTo("pluginManager/advanced");
+        HtmlForm f = page.getFormByName("uploadPlugin");
+        File dir = tmp.newFolder();
+        File plugin = new File(dir, "htmlpublisher.jpi");
+        FileUtils.copyURLToFile(getClass().getClassLoader().getResource("plugins/htmlpublisher.jpi"), plugin);
+        f.getInputByName("name").setValue(plugin.getAbsolutePath());
+        r.submit(f);
+        PluginWrapper pw = r.jenkins.pluginManager.getPlugin("javax-mail-api");
+        assertNull(pw);
+    }
+
     static class AlertHandlerImpl implements AlertHandler {
         List<String> messages = Collections.synchronizedList(new ArrayList<>());
 
