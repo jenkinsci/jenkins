@@ -77,6 +77,7 @@ import org.kohsuke.stapler.export.ExportedBean;
 @ExportedBean(defaultVisibility = 3)
 @StaplerAccessibleType
 public abstract class ParameterValue implements Serializable {
+    private static final long serialVersionUID = 1L;
 
     private static final Logger LOGGER = Logger.getLogger(ParameterValue.class.getName());
 
