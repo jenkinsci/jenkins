@@ -70,7 +70,7 @@ public class BasicHeaderApiTokenAuthenticatorTest {
                     // default SecurityListener will save the user when adding the LastGrantedAuthoritiesProperty
                     // and so the user is persisted
                     wc.login("user1");
-                    HtmlPage page = wc.goTo("user/user1/configure");
+                    HtmlPage page = wc.goTo("user/user1/security/");
                     String tokenValue = ((HtmlTextInput) page.getDocumentElement().querySelector("#apiToken")).getText();
                     token.set(tokenValue);
                 }
@@ -118,7 +118,7 @@ public class BasicHeaderApiTokenAuthenticatorTest {
                 {
                     JenkinsRule.WebClient wc = j.createWebClient();
                     wc.login("user1");
-                    HtmlPage page = wc.goTo("user/user1/configure");
+                    HtmlPage page = wc.goTo("user/user1/security/");
                     String tokenValue = ((HtmlTextInput) page.getDocumentElement().querySelector("#apiToken")).getText();
                     token.set(tokenValue);
                 }

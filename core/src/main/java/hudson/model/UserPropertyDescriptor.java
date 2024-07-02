@@ -24,6 +24,12 @@
 
 package hudson.model;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.model.userproperty.UserPropertyCategory;
+import java.util.Optional;
+import org.jenkinsci.Symbol;
+
 /**
  * {@link Descriptor} for {@link UserProperty}.
  *
@@ -72,5 +78,52 @@ public abstract class UserPropertyDescriptor extends Descriptor<UserProperty> {
      */
     public boolean isEnabled() {
         return true;
+    }
+
+    /**
+     * Define the category for this user property descriptor.
+     *
+     * @return never null, always the same value for a given instance of {@link Descriptor}.
+     *
+     * @since TODO
+     */
+    public @NonNull UserPropertyCategory getUserPropertyCategory() {
+        // As this method is expected to be overloaded by subclasses
+        // the logic here is just done to support plugins with older core version
+        String categoryAsString = this.getUserPropertyCategoryAsString();
+        if (categoryAsString != null) {
+            Optional<UserPropertyCategory> firstIfFound = UserPropertyCategory.all().stream()
+                    .filter(cat -> {
+                        Symbol symbolAnnotation = cat.getClass().getAnnotation(Symbol.class);
+                        if (symbolAnnotation != null) {
+                            for (String symbolValue : symbolAnnotation.value()) {
+                                if (symbolValue.equalsIgnoreCase(categoryAsString)) {
+                                    return true;
+                                }
+                            }
+                        }
+                        return false;
+                    })
+                    .findFirst();
+            if (firstIfFound.isPresent()) {
+                return firstIfFound.get();
+            }
+        }
+        return UserPropertyCategory.get(UserPropertyCategory.Unclassified.class);
+    }
+
+    /**
+     * Method proposed to prevent plugins to rely on too recent core version
+     * while keeping the possibility to use the categories.
+     *
+     * @deprecated This should only be used when the core requirement is below the version this method was added
+     *
+     * @return String name corresponding to the symbol of {@link #getUserPropertyCategory()}
+     *
+     * @since TODO
+     */
+    @Deprecated
+    protected @CheckForNull String getUserPropertyCategoryAsString() {
+        return null;
     }
 }
