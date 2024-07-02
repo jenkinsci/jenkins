@@ -51,3 +51,62 @@
 .jenkins-table .healthReportDetails {
   display: none !important;
 }
+
+.jenkins-tooltip__keyboard-shortcut {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6ch;
+
+  &__symbol {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.7em;
+    height: 1.7em;
+    padding-inline: 0.5ch;
+
+    &::before,
+    &::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: 0.375rem;
+      border: 0.1rem solid var(--text-color-secondary);
+      opacity: 0.3;
+    }
+
+    &::after {
+      mask-image: linear-gradient(
+        -45deg,
+        transparent 40%,
+        white,
+        transparent 60%
+      );
+      mask-size: 200% 200%;
+      animation: shortcut-glow-animation 1.25s forwards linear;
+    }
+
+    svg {
+      width: 1em;
+      height: 1em;
+    }
+
+    @keyframes shortcut-glow-animation {
+      0% {
+        opacity: 0;
+        mask-position: 100% 100%;
+      }
+
+      50% {
+        opacity: 1;
+      }
+
+      100% {
+        opacity: 0;
+        mask-position: 0;
+      }
+    }
+  }
+}
