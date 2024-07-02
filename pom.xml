@@ -63,7 +63,7 @@ THE SOFTWARE.
   <scm child.scm.connection.inherit.append.path="false" child.scm.developerConnection.inherit.append.path="false" child.scm.url.inherit.append.path="false">
     <connection>scm:git:https://github.com/jenkinsci/jenkins.git</connection>
     <developerConnection>scm:git:git@github.com:jenkinsci/jenkins.git</developerConnection>
-    <tag>jenkins-2.465</tag>
+    <tag>${scmTag}</tag>
     <url>https://github.com/jenkinsci/jenkins</url>
   </scm>
 
@@ -73,9 +73,9 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.465</revision>
+    <revision>2.466-SNAPSHOT</revision>
     <changelist>-SNAPSHOT</changelist>
-    <project.build.outputTimestamp>2024-07-02T10:33:29Z</project.build.outputTimestamp>
+    <project.build.outputTimestamp>2024-07-02T13:43:58Z</project.build.outputTimestamp>
 
     <!-- configuration for patch tracker plugin  -->
     <project.patchManagement.system>github</project.patchManagement.system>
