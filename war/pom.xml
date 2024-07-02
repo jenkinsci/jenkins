@@ -201,7 +201,7 @@ THE SOFTWARE.
               <Remoting-Minimum-Supported-Version>${remoting.minimum.supported.version}</Remoting-Minimum-Supported-Version>
             </manifestEntries>
           </archive>
-          <!--outputFileNameMapping>@{artifactId}@.@{extension}@</outputFileNameMapping-->
+          <outputFileNameMapping>@{artifactId}@@{dashClassifier?}@.@{extension}@</outputFileNameMapping>
         </configuration>
       </plugin>
       <plugin>
