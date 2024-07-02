@@ -416,7 +416,7 @@ public abstract class AbstractBuild<P extends AbstractProject<P, R>, R extends A
          * @return Returns the current {@link Node}
          * @throws IllegalStateException if that cannot be determined
          */
-        protected final @NonNull Node getCurrentNode() throws IllegalStateException {
+        protected final @NonNull Node getCurrentNode() {
             Executor exec = Executor.currentExecutor();
             if (exec == null) {
                 throw new IllegalStateException("not being called from an executor thread");

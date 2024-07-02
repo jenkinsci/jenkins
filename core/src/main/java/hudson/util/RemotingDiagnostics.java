@@ -143,7 +143,7 @@ public final class RemotingDiagnostics {
 
         @Override
         @SuppressFBWarnings(value = "GROOVY_SHELL", justification = "script console is a feature, not a bug")
-        public String call() throws RuntimeException {
+        public String call() {
             // if we run locally, cl!=null. Otherwise the delegating classloader will be available as context classloader.
             if (cl == null)       cl = Thread.currentThread().getContextClassLoader();
             CompilerConfiguration cc = new CompilerConfiguration();

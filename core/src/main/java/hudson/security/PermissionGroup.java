@@ -60,7 +60,7 @@ public final class PermissionGroup implements Iterable<Permission>, Comparable<P
      * @param title sets {@link #title}
      * @throws IllegalStateException if this group was already registered
      */
-    public PermissionGroup(@NonNull Class owner, Localizable title) throws IllegalStateException {
+    public PermissionGroup(@NonNull Class owner, Localizable title) {
         this(title.toString(Locale.ENGLISH), owner, title);
     }
 
@@ -71,7 +71,7 @@ public final class PermissionGroup implements Iterable<Permission>, Comparable<P
      * @throws IllegalStateException if this group was already registered
      * @since 2.127
      */
-    public PermissionGroup(String id, @NonNull Class owner, Localizable title) throws IllegalStateException {
+    public PermissionGroup(String id, @NonNull Class owner, Localizable title) {
         this.owner = owner;
         this.title = title;
         this.id = id;

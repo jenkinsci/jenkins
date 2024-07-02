@@ -19,7 +19,7 @@ public abstract class MasterToSlaveCallable<V, T extends Throwable> implements C
     private static final long serialVersionUID = 1L;
 
     @Override
-    public void checkRoles(RoleChecker checker) throws SecurityException {
+    public void checkRoles(RoleChecker checker) {
         checker.check(this, Roles.SLAVE);
     }
 }

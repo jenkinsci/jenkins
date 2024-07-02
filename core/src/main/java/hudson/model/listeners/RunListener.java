@@ -161,7 +161,7 @@ public abstract class RunListener<R extends Run> implements ExtensionPoint {
      *      to suppress a stack trace by the receiver.
      * @since 1.410
      */
-    public Environment setUpEnvironment(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException, RunnerAbortedException {
+    public Environment setUpEnvironment(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
         return new Environment() {};
     }
 

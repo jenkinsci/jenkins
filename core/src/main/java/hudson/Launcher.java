@@ -1160,7 +1160,7 @@ public abstract class Launcher {
             }
 
             @Override
-            public Void call() throws RuntimeException {
+            public Void call() {
                 try {
                     ProcessTree.get().killAll(modelEnvVars);
                 } catch (InterruptedException e) {

@@ -139,7 +139,7 @@ public final class Permission {
      */
     public Permission(@NonNull PermissionGroup group, @NonNull String name,
             @CheckForNull Localizable description, @CheckForNull Permission impliedBy, boolean enable,
-            @NonNull PermissionScope[] scopes) throws IllegalStateException {
+            @NonNull PermissionScope[] scopes) {
         if (!JSONUtils.isJavaIdentifier(name))
             throw new IllegalArgumentException(name + " is not a Java identifier");
         this.owner = group.owner;

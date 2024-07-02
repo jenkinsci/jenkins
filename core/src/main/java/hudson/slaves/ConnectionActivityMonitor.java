@@ -109,7 +109,7 @@ public class ConnectionActivityMonitor extends AsyncPeriodicWork {
 
     private static final class PingCommand extends SlaveToMasterCallable<Void, RuntimeException> {
         @Override
-        public Void call() throws RuntimeException {
+        public Void call() {
             return null;
         }
 
