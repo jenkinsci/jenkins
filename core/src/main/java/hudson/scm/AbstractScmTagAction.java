@@ -24,6 +24,7 @@
 
 package hudson.scm;
 
+import hudson.Util;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildBadgeAction;
 import hudson.model.Run;
@@ -33,7 +34,9 @@ import hudson.security.Permission;
 import jakarta.servlet.ServletException;
 import java.io.IOException;
 import jenkins.model.RunAction2;
+import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.StaplerResponse2;
 
 /**
@@ -109,6 +112,30 @@ public abstract class AbstractScmTagAction extends TaskAction implements BuildBa
     }
 
     public void doIndex(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
+        if (Util.isOverridden(AbstractScmTagAction.class, getClass(), "doIndex", StaplerRequest.class, StaplerResponse.class)) {
+            try {
+                doIndex(StaplerRequest.fromStaplerRequest2(req), StaplerResponse.fromStaplerResponse2(rsp));
+            } catch (javax.servlet.ServletException e) {
+                throw e.toJakartaServletException();
+            }
+        } else {
+            doIndexImpl(req, rsp);
+        }
+    }
+
+    /**
+     * @deprecated use {@link #doIndex(StaplerRequest2, StaplerResponse2)}
+     */
+    @Deprecated
+    public void doIndex(StaplerRequest req, StaplerResponse rsp) throws IOException, javax.servlet.ServletException {
+        try {
+            doIndexImpl(req.toStaplerRequest2(), rsp.toStaplerResponse2());
+        } catch (ServletException e) {
+            throw javax.servlet.ServletException.fromJakartaServletException(e);
+        }
+    }
+
+    private void doIndexImpl(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         req.getView(this, chooseAction()).forward(req, rsp);
     }
 

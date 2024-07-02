@@ -65,6 +65,14 @@ public class GroovyHookScript {
         this.loader = loader;
     }
 
+    /**
+     * @deprecated use {@link #GroovyHookScript(String, ServletContext, File, ClassLoader)}
+     */
+    @Deprecated
+    public GroovyHookScript(String hook, @NonNull javax.servlet.ServletContext servletContext, @NonNull File jenkinsHome, @NonNull ClassLoader loader) {
+        this(hook, servletContext.toJakartaServletContext(), jenkinsHome, loader);
+    }
+
     public GroovyHookScript bind(String name, Object o) {
         bindings.setProperty(name, o);
         return this;

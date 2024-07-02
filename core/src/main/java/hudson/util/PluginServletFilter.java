@@ -139,7 +139,7 @@ public final class PluginServletFilter implements CompatibleFilter, ExtensionPoi
      * Checks whether the given filter is already registered in the chain.
      * @param filter the filter to check.
      * @return true if the filter is already registered in the chain.
-     * @since 2.94
+     * @since TODO
      */
     public static boolean hasFilter(Filter filter) {
         Jenkins j = Jenkins.getInstanceOrNull();
@@ -152,6 +152,15 @@ public final class PluginServletFilter implements CompatibleFilter, ExtensionPoi
         } else {
             return container.list.contains(filter);
         }
+    }
+
+    /**
+     * @deprecated use {@link #hasFilter(Filter)}
+     * @since 2.94
+     */
+    @Deprecated
+    public static boolean hasFilter(javax.servlet.Filter filter) {
+        return hasFilter(filter.toJakartaFilter());
     }
 
     /**

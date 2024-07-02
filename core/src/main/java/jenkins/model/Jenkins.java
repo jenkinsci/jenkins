@@ -4647,14 +4647,14 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      *
      */
     @Deprecated(since = "2.414")
-    public HttpResponse doSafeRestart(StaplerRequest2 req) throws IOException, ServletException, RestartNotSupportedException {
-        return doSafeRestart(req, null);
+    public HttpResponse doSafeRestart(StaplerRequest req) throws IOException, ServletException, RestartNotSupportedException {
+        return doSafeRestart(req.toStaplerRequest2(), null);
     }
 
     /**
      * Queues up a safe restart of Jenkins. Jobs have to finish or pause before it can proceed. No new jobs are accepted.
      *
-     * @since TODO
+     * @since 2.414
      */
     public HttpResponse doSafeRestart(StaplerRequest2 req, @QueryParameter("message") String message) throws IOException, ServletException, RestartNotSupportedException {
         checkPermission(MANAGE);
