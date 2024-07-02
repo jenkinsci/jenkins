@@ -17,6 +17,7 @@ updates:
       # version of Jetty we deliver. See:
       # https://github.com/jenkinsci/jenkins/pull/5211
       - dependency-name: "jakarta.servlet:jakarta.servlet-api"
+      - dependency-name: "jakarta.servlet.jsp.jstl:jakarta.servlet.jsp.jstl-api"
 
       # Jetty Maven Plugin and Winstone should be upgraded in lockstep in order
       # to keep their corresponding Jetty versions aligned.
@@ -26,9 +27,6 @@ updates:
       # Here lies technical debt. Exclusions in this section have been triaged
       # and determined to be temporary. Exclusions should be removed from this
       # section once the remaining action items have been completed.
-
-      # Contains incompatible API changes and needs compatibility work.
-      - dependency-name: "jakarta.servlet.jsp.jstl:jakarta.servlet.jsp.jstl-api"
 
       # Needs significant testing. See:
       # https://github.com/jenkinsci/jenkins/pull/5112#issuecomment-744429487

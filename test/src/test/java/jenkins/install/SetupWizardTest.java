@@ -40,6 +40,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -50,15 +51,16 @@ import java.security.cert.TrustAnchor;
 import java.security.cert.X509Certificate;
 import java.util.HashSet;
 import java.util.Set;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import jenkins.model.Jenkins;
 import jenkins.util.JSONSignatureValidator;
+import org.eclipse.jetty.http.HttpHeader;
+import org.eclipse.jetty.http.HttpStatus;
+import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Request;
+import org.eclipse.jetty.server.Response;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
-import org.eclipse.jetty.server.handler.AbstractHandler;
+import org.eclipse.jetty.util.Callback;
 import org.htmlunit.Page;
 import org.junit.Before;
 import org.junit.Rule;
@@ -336,7 +338,7 @@ public class SetupWizardTest {
         }
     }
 
-    private static class RemoteUpdateSiteHandler extends AbstractHandler {
+    private static class RemoteUpdateSiteHandler extends Handler.Abstract {
         private String serverContext;
         private boolean includeSignature;
 
@@ -347,15 +349,18 @@ public class SetupWizardTest {
         }
 
         @Override
-        public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-            String responseBody = getWebServerResource(target, request.getParameter("version"));
+        public boolean handle(Request request, Response response, Callback callback) throws IOException {
+            String target = request.getHttpURI().getPath();
+            String version = Request.extractQueryParameters(request).get("version").getValue();
+            String responseBody = getWebServerResource(target, version);
             if (responseBody != null) {
-                baseRequest.setHandled(true);
-                response.setContentType("text/plain; charset=utf-8");
-                response.setStatus(HttpServletResponse.SC_OK);
-                response.getOutputStream().write(responseBody.getBytes(StandardCharsets.UTF_8));
+                response.getHeaders().add(HttpHeader.CONTENT_TYPE, "text/plain; charset=utf-8");
+                response.setStatus(HttpStatus.OK_200);
+                response.write(true, ByteBuffer.wrap(responseBody.getBytes(StandardCharsets.UTF_8)), callback);
+                return true;
             } else {
-                response.sendError(404);
+                Response.writeError(request, response, callback, HttpStatus.NOT_FOUND_404);
+                return true;
             }
         }
 

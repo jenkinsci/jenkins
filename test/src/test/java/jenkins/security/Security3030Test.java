@@ -272,6 +272,14 @@ public class Security3030Test {
                 return processMultipartAndUnwrap(req);
             } else {
                 actualWrapped = Assert.assertThrows(expectedWrapped, () -> processMultipartAndUnwrap(req));
+
+                // The client might still be sending us more of the request, but we have had enough of it already and
+                // have decided to stop processing it. Drain the read end of the socket so that the client can finish
+                // sending its request in order to read the response we are about to provide.
+                try (OutputStream os = OutputStream.nullOutputStream()) {
+                    req.getInputStream().transferTo(os);
+                }
+
                 return HttpResponses.ok();
             }
         }
