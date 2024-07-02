@@ -5787,6 +5787,10 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     public static final Permission[] MANAGE_AND_SYSTEM_READ =
             new Permission[] { MANAGE, SYSTEM_READ };
 
+    @Restricted(NoExternalUse.class) // called by jelly
+    public static final Permission[] ADMINISTER_MANAGE_SYSTEM_READ =
+            new Permission[] { ADMINISTER, MANAGE, SYSTEM_READ };
+
     public static final Permission READ = new Permission(PERMISSIONS, "Read", Messages._Hudson_ReadPermission_Description(), Permission.READ, PermissionScope.JENKINS);
     /** @deprecated in Jenkins 2.222 use {@link Jenkins#ADMINISTER} instead */
     @Deprecated

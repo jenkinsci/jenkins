@@ -56,6 +56,11 @@ THE SOFTWARE.
         <l:task href="${rootURL}/fingerprintCheck" icon="icon-fingerprint icon-md" title="${%Check File Fingerprint}"/>
       </j:if>
 
+      <!-- These users will access from Manage Jenkins -->
+      <j:if test="${!h.hasAnyPermission(it, app.ADMINISTER_MANAGE_SYSTEM_READ)}">
+        <l:task href="${rootURL}/computer" icon="symbol-computer" title="${%Nodes}" />
+      </j:if>
+
       <!-- subtypes can put more stuff here -->
       <st:include page="sidepanel2.jelly" optional="true"/>
 

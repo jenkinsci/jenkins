@@ -3,8 +3,6 @@ package jenkins.widgets;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.model.Computer;
-import hudson.model.ComputerSet;
-import hudson.model.View;
 import hudson.widgets.Widget;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -39,24 +37,6 @@ public class ExecutorsWidget extends Widget {
         return Collections.unmodifiableList(computers);
     }
 
-    @Extension(ordinal = 100) @Symbol("executors") // historically this was above normal widgets and below BuildQueueWidget
-    public static final class ViewFactoryImpl extends WidgetFactory<View, ExecutorsWidget> {
-        @Override
-        public Class<View> type() {
-            return View.class;
-        }
-
-        @Override
-        public Class<ExecutorsWidget> widgetType() {
-            return ExecutorsWidget.class;
-        }
-
-        @NonNull
-        @Override
-        public Collection<ExecutorsWidget> createFor(@NonNull View target) {
-            return List.of(new ExecutorsWidget(target.getUrl(), target.getComputers()));
-        }
-    }
 
     @Extension(ordinal = 100) @Symbol("executorsComputer") // historically this was above normal widgets and below BuildQueueWidget
     public static final class ComputerFactoryImpl extends WidgetFactory<Computer, ExecutorsWidget> {
@@ -74,25 +54,6 @@ public class ExecutorsWidget extends Widget {
         @Override
         public Collection<ExecutorsWidget> createFor(@NonNull Computer target) {
             return List.of(new ExecutorsWidget(target.getUrl(), List.of(target)));
-        }
-    }
-
-    @Extension(ordinal = 100) @Symbol("executorsComputerSet") // historically this was above normal widgets and below BuildQueueWidget
-    public static final class ComputerSetFactoryImpl extends WidgetFactory<ComputerSet, ExecutorsWidget> {
-        @Override
-        public Class<ComputerSet> type() {
-            return ComputerSet.class;
-        }
-
-        @Override
-        public Class<ExecutorsWidget> widgetType() {
-            return ExecutorsWidget.class;
-        }
-
-        @NonNull
-        @Override
-        public Collection<ExecutorsWidget> createFor(@NonNull ComputerSet target) {
-            return List.of(new ExecutorsWidget("computer/", List.of(target.get_all())));
         }
     }
 }

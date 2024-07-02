@@ -45,6 +45,10 @@ THE SOFTWARE.
           ${%Configure Monitors}
         </a>
       </j:if>
+      <a class="jenkins-button" href="status" tooltip="${%Status}">
+        <l:icon src="symbol-computer" />
+        ${%Status}
+      </a>
       <l:hasAdministerOrManage>
         <form method="post" action="updateNow" class="jenkins-!-display-contents">
           <button tooltip="${%Refresh status}" class="jenkins-button">
