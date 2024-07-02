@@ -55,6 +55,7 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.zip.GZIPInputStream;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 import jenkins.model.Jenkins;
@@ -384,6 +385,13 @@ public final class DirectoryBrowserSupport implements HttpResponse {
             InputStream in;
             try {
                 in = baseFile.open(getOpenOptions());
+                byte[] sig = new byte[2];
+                int len = in.read(sig, 0, 2);
+                in.close();
+                in = baseFile.open(getOpenOptions());
+                if (len == 2 && (int) ((sig[0] & 0xff) | ((sig[1] << 8) & 0xff00)) == GZIPInputStream.GZIP_MAGIC) {
+                    in = new GZIPInputStream(in);
+                }
             } catch (IOException ioe) {
                 rsp.sendError(HttpServletResponse.SC_NOT_FOUND);
                 return;
