@@ -796,6 +796,11 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
      * A process.
      */
     public abstract class UnixProcess extends OSProcess {
+
+        protected int ppid;
+        protected EnvVars envVars;
+        protected List<String> arguments;
+
         protected UnixProcess(int pid) {
             super(pid);
         }
@@ -877,9 +882,6 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
         }
 
         class LinuxProcess extends UnixProcess {
-            private int ppid = -1;
-            private EnvVars envVars;
-            private List<String> arguments;
 
             LinuxProcess(int pid) throws IOException {
                 super(pid);
@@ -1001,13 +1003,11 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
              */
             private final boolean b64;
 
-            private final int ppid;
 
             private final long pr_envp;
             private final long pr_argp;
             private final int argc;
-            private EnvVars envVars;
-            private List<String> arguments;
+
 
             private AIXProcess(int pid) throws IOException {
                 super(pid);
@@ -1327,7 +1327,6 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
              */
             private final boolean b64;
 
-            private final int ppid;
             /**
              * Address of the environment vector.
              */
@@ -1337,8 +1336,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
              */
             private final long argp;
             private final int argc;
-            private EnvVars envVars;
-            private List<String> arguments;
+
 
             private SolarisProcess(int pid) throws IOException {
                 super(pid);
@@ -1596,9 +1594,6 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
         }
 
         private class DarwinProcess extends UnixProcess {
-            private final int ppid;
-            private EnvVars envVars;
-            private List<String> arguments;
 
             DarwinProcess(int pid, int ppid) {
                 super(pid);
@@ -1881,9 +1876,6 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
 
         private class FreeBSDProcess extends UnixProcess {
 
-            private final int ppid;
-            private EnvVars envVars;
-            private List<String> arguments;
 
             FreeBSDProcess(int pid, int ppid) {
                 super(pid);
@@ -1934,7 +1926,7 @@ public abstract class ProcessTree implements Iterable<OSProcess>, IProcessTree, 
 
             @Override
             @NonNull
-            public List<String> getArguments() {
+            public synchronized List<String> getArguments() {
                 if (arguments != null) {
                     return arguments;
                 }
