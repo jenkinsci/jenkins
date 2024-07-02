@@ -105,7 +105,8 @@ THE SOFTWARE.
       <j:mute>${customizedFields.add(name)}</j:mute>
     </j:if>
   </f:possibleReadOnlyField>
-  <j:if test="${attrs.previewEndpoint!=null and !readOnlyMode}">
+
+  <j:if test="${attrs.previewEndpoint!=null and !readOnlyMode and app.markupFormatter.class.name != 'hudson.markup.EscapedMarkupFormatter'}">
     <div class="textarea-preview-container">
       <j:if test="${attrs.previewEndpoint == '/markupFormatter/previewDescription'}">
         ${app.markupFormatter.descriptor.displayName}
