@@ -57,7 +57,11 @@ import jenkins.util.SystemProperties;
  */
 public class Main {
 
-    /** @see #remotePost */
+    /**
+     * @see #remotePost
+     * @deprecated Scheduled for removal in mid 2024.
+     * */
+    @Deprecated
     public static void main(String[] args) {
         try {
             System.exit(run(args));
@@ -67,8 +71,16 @@ public class Main {
         }
     }
 
-    /** @see #remotePost */
+    /**
+     * @see #remotePost
+     * @deprecated Scheduled for removal in mid 2024.
+     * */
+    @Deprecated
     public static int run(String[] args) throws Exception {
+        System.err.println("Running `java -jar jenkins-core.jar …` has been deprecated and will be removed in a future release.");
+        System.err.println("Use `java -jar jenkins-cli.jar set-external-build-result …` instead.");
+        System.err.println("See JENKINS-70684 for more information.");
+
         String home = getHudsonHome();
         if (home == null) {
             System.err.println("JENKINS_HOME is not set.");
@@ -91,7 +103,9 @@ public class Main {
     /**
      * Run command and send result to {@code ExternalJob} in the {@code external-monitor-job} plugin.
      * Obsoleted by {@code SetExternalBuildResultCommand} but kept here for compatibility.
+     * @deprecated Scheduled for removal in mid 2024.
      */
+    @Deprecated
     public static int remotePost(String[] args) throws Exception {
         String projectName = args[0];
 
@@ -233,6 +247,8 @@ public class Main {
 
     /**
      * Time out for socket connection to Hudson.
+     * @deprecated Scheduled for removal in mid 2024.
      */
+    @Deprecated
     public static final int TIMEOUT = SystemProperties.getInteger(Main.class.getName() + ".timeout", 15000);
 }
