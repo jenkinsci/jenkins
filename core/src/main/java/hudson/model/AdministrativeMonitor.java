@@ -183,7 +183,7 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
 
     /**
      * Required permission to view this admin monitor.
-     * By default {@link Jenkins#ADMINISTER}, but {@link Jenkins#SYSTEM_READ} is also supported.
+     * By default {@link Jenkins#ADMINISTER}, but {@link Jenkins#SYSTEM_READ} or {@link Jenkins#MANAGE} are also supported.
      * <p>
      *     Changing this permission check to return {@link Jenkins#SYSTEM_READ} will make the active
      *     administrative monitor appear on {@code manage.jelly} and on the globally visible
@@ -199,6 +199,17 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
      */
     public Permission getRequiredPermission() {
         return Jenkins.ADMINISTER;
+    }
+
+    /**
+     * Checks if the current user has the minimum required permission to view any administrative monitor.
+     *
+     * @return true if the current user has the minimum required permission to view any administrative monitor.
+     *
+     * @since TODO
+     */
+    public static boolean hasPermissionToDisplay() {
+        return Jenkins.get().hasAnyPermission(Jenkins.SYSTEM_READ, Jenkins.MANAGE);
     }
 
     /**
