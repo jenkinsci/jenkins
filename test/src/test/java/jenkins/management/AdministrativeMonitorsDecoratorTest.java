@@ -175,4 +175,46 @@ public class AdministrativeMonitorsDecoratorTest {
             return true;
         }
     }
+
+    @Test
+    public void ensureAdminMonitorsCanBeSeenByManagersOrSystemReaders() {
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        var managerLogin = "manager";
+        var systemReadLogin = "system-reader";
+        var managerUser = User.getById(managerLogin, true);
+        var systemReadUser = User.getById(systemReadLogin, true);
+
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy()
+                .grant(Jenkins.MANAGE, Jenkins.READ).everywhere().to(managerLogin)
+                .grant(Jenkins.READ, Jenkins.SYSTEM_READ).everywhere().to(systemReadLogin)
+        );
+
+        try (var ignored = ACL.as2(managerUser.impersonate2())) {
+            assertThat(Jenkins.get().getActiveAdministrativeMonitors(), hasItem(instanceOf(ManagerOrSystemReaderAdministrativeMonitor.class)));
+        }
+        try (var ignored = ACL.as2(systemReadUser.impersonate2())) {
+            assertThat(Jenkins.get().getActiveAdministrativeMonitors(), hasItem(instanceOf(ManagerOrSystemReaderAdministrativeMonitor.class)));
+        }
+    }
+
+    @TestExtension("ensureAdminMonitorsCanBeSeenByManagersOrSystemReaders")
+    public static class ManagerOrSystemReaderAdministrativeMonitor extends AdministrativeMonitor {
+
+        private static final Permission[] REQUIRED_ANY_PERMISSIONS = {Jenkins.MANAGE, Jenkins.SYSTEM_READ};
+
+        @Override
+        public void checkRequiredPermission() {
+            Jenkins.get().checkAnyPermission(REQUIRED_ANY_PERMISSIONS);
+        }
+
+        @Override
+        public boolean hasRequiredPermission() {
+            return Jenkins.get().hasAnyPermission(REQUIRED_ANY_PERMISSIONS);
+        }
+
+        @Override
+        public boolean isActivated() {
+            return true;
+        }
+    }
 }

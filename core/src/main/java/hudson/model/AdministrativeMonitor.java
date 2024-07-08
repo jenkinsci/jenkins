@@ -192,7 +192,7 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
      * </p>
      * <p>
      *     This method only allows for a single permission to be returned. If more complex permission checks are required,
-     *     override {@link #checkRequiredPermission()} instead.
+     *     override {@link #checkRequiredPermission()} and {@link #hasRequiredPermission()} instead.
      * </p>
      * <p>
      *     Implementers need to ensure that {@code doAct} and other web methods perform necessary permission checks:
@@ -208,13 +208,27 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
     /**
      * Checks if the current user has the minimum required permission to view this administrative monitor.
      * <p>
-     * Subclasses may override this method instead of {@link #getRequiredPermission()} to perform more complex permission checks,
+     * Subclasses may override this method and {@link #hasRequiredPermission()} instead of {@link #getRequiredPermission()} to perform more complex permission checks,
      * for example, checking either {@link Jenkins#MANAGE} or {@link Jenkins#SYSTEM_READ}.
      * </p>
      * @see #getRequiredPermission()
+     * @see #hasRequiredPermission()
      */
     public void checkRequiredPermission() {
         Jenkins.get().checkPermission(getRequiredPermission());
+    }
+
+    /**
+     * Checks if the current user has the minimum required permission to view this administrative monitor.
+     * <p>
+     * Subclasses may override this method and {@link #checkRequiredPermission} instead of {@link #getRequiredPermission()} to perform more complex permission checks,
+     * for example, checking either {@link Jenkins#MANAGE} or {@link Jenkins#SYSTEM_READ}.
+     * </p>
+     * @see #getRequiredPermission()
+     * @see #checkRequiredPermission()
+     */
+    public boolean hasRequiredPermission() {
+        return Jenkins.get().hasPermission(getRequiredPermission());
     }
 
     /**
