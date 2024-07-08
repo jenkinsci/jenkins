@@ -37,10 +37,9 @@ import hudson.security.ACL;
 import hudson.security.Permission;
 import jenkins.model.Jenkins;
 import org.jenkinsci.Symbol;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.FlagRule;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
@@ -51,15 +50,8 @@ public class AdministrativeMonitorsDecoratorTest {
     @Rule
     public JenkinsRule j = new JenkinsRule();
 
-    @BeforeClass
-    public static void enablePermissions() {
-        System.setProperty("jenkins.security.ManagePermission", "true");
-    }
-
-    @AfterClass
-    public static void disablePermissions() {
-        System.clearProperty("jenkins.security.ManagePermission");
-    }
+    @Rule
+    public final FlagRule<String> managePermissionRule = FlagRule.systemProperty("jenkins.security.ManagePermission", "true");
 
     @Test
     public void ensureAdminMonitorsAreNotRunPerNonAdminPage() throws Exception {

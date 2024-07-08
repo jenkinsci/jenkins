@@ -191,6 +191,10 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
      *     {@link #doDisable(StaplerRequest, StaplerResponse)} will still always require Administer permission.
      * </p>
      * <p>
+     *     This method only allows for a single permission to be returned. If more complex permission checks are required,
+     *     override {@link #checkRequiredPermission()} instead.
+     * </p>
+     * <p>
      *     Implementers need to ensure that {@code doAct} and other web methods perform necessary permission checks:
      *     Users with System Read permissions are expected to be limited to read-only access.
      *     Form UI elements that change system state, e.g. toggling a feature on or off, need to be hidden from users
@@ -199,6 +203,18 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
      */
     public Permission getRequiredPermission() {
         return Jenkins.ADMINISTER;
+    }
+
+    /**
+     * Checks if the current user has the minimum required permission to view this administrative monitor.
+     * <p>
+     * Subclasses may override this method instead of {@link #getRequiredPermission()} to perform more complex permission checks,
+     * for example, checking either {@link Jenkins#MANAGE} or {@link Jenkins#SYSTEM_READ}.
+     * </p>
+     * @see #getRequiredPermission()
+     */
+    public void checkRequiredPermission() {
+        Jenkins.get().checkPermission(getRequiredPermission());
     }
 
     /**
@@ -218,7 +234,7 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
     @Override
     @Restricted(NoExternalUse.class)
     public Object getTarget() {
-        Jenkins.get().checkPermission(getRequiredPermission());
+        checkRequiredPermission();
         return this;
     }
 
