@@ -87,9 +87,9 @@ THE SOFTWARE.
     <changelog.url>https://www.jenkins.io/changelog</changelog.url>
 
     <!-- Bundled Remoting version -->
-    <remoting.version>3256.v88a_f6e922152</remoting.version>
+    <remoting.version>999999-SNAPSHOT</remoting.version>
     <!-- Minimum Remoting version, which is tested for API compatibility -->
-    <remoting.minimum.supported.version>3107.v665000b_51092</remoting.minimum.supported.version>
+    <remoting.minimum.supported.version>999999-SNAPSHOT</remoting.minimum.supported.version>
 
     <spotbugs.effort>Max</spotbugs.effort>
     <spotbugs.threshold>Medium</spotbugs.threshold>
