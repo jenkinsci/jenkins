@@ -1,4 +1,4 @@
-package jenkins.model.project;
+package jenkins.model.run;
 
 import hudson.Extension;
 import hudson.model.Action;
@@ -7,11 +7,12 @@ import java.util.Collection;
 import java.util.Set;
 import jenkins.model.TransientActionFactory;
 import jenkins.model.menu.Group;
+import jenkins.model.menu.Semantic;
+import jenkins.model.menu.event.ConfirmationEvent;
 import jenkins.model.menu.event.Event;
-import jenkins.model.menu.event.LinkEvent;
 
 @Extension
-public class EditRunAction extends TransientActionFactory<Run> {
+public class DeleteRunAction extends TransientActionFactory<Run> {
 
     @Override
     public Class<Run> type() {
@@ -20,30 +21,34 @@ public class EditRunAction extends TransientActionFactory<Run> {
 
     @Override
     public Collection<? extends Action> createFor(Run target) {
-        if (!target.hasPermission(Run.UPDATE)) {
+        if (!target.hasPermission(Run.DELETE)) {
             return Set.of();
         }
 
         return Set.of(new Action() {
             @Override
             public String getDisplayName() {
-                return target.hasPermission(Run.UPDATE) ? "Edit Run information" : "View Run information";
+                return Messages.DeleteRunFactory_Delete();
             }
 
             @Override
             public String getIconFileName() {
-                return "symbol-edit";
+                return "symbol-trash";
             }
 
             @Override
             public Group getGroup() {
-                return Group.IN_APP_BAR;
+                return Group.LAST_IN_MENU;
             }
 
             @Override
             public Event getEvent() {
-                // TODO - deprecated method - dont use this!
-                return LinkEvent.of(target.getAbsoluteUrl() + "configure");
+                return ConfirmationEvent.of(Messages.DeleteRunFactory_DeleteDialog_Title(), Messages.DeleteRunFactory_DeleteDialog_Description(),  "doDelete");
+            }
+
+            @Override
+            public Semantic getSemantic() {
+                return Semantic.DESTRUCTIVE;
             }
         });
     }

@@ -1,4 +1,4 @@
-package jenkins.model.project;
+package jenkins.model.run;
 
 import hudson.Extension;
 import hudson.model.Action;
@@ -10,6 +10,7 @@ import jenkins.model.TransientActionFactory;
 import jenkins.model.menu.Group;
 import jenkins.model.menu.event.ConfirmationEvent;
 import jenkins.model.menu.event.Event;
+import jenkins.model.project.Messages;
 
 @Extension
 public class KeepRunAction extends TransientActionFactory<Run> {
@@ -39,7 +40,7 @@ public class KeepRunAction extends TransientActionFactory<Run> {
 
                 @Override
                 public Group getGroup() {
-                    return Group.LAST_IN_MENU;
+                    return Group.FIRST_IN_MENU;
                 }
 
                 @Override
@@ -67,7 +68,7 @@ public class KeepRunAction extends TransientActionFactory<Run> {
 
                 @Override
                 public Group getGroup() {
-                    return Group.LAST_IN_MENU;
+                    return Group.FIRST_IN_MENU;
                 }
 
                 @Override

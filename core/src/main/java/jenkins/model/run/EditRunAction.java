@@ -1,4 +1,4 @@
-package jenkins.model.project;
+package jenkins.model.run;
 
 import hudson.Extension;
 import hudson.model.Action;
@@ -7,12 +7,11 @@ import java.util.Collection;
 import java.util.Set;
 import jenkins.model.TransientActionFactory;
 import jenkins.model.menu.Group;
-import jenkins.model.menu.Semantic;
-import jenkins.model.menu.event.ConfirmationEvent;
 import jenkins.model.menu.event.Event;
+import jenkins.model.menu.event.LinkEvent;
 
 @Extension
-public class DeleteRunAction extends TransientActionFactory<Run> {
+public class EditRunAction extends TransientActionFactory<Run> {
 
     @Override
     public Class<Run> type() {
@@ -21,35 +20,29 @@ public class DeleteRunAction extends TransientActionFactory<Run> {
 
     @Override
     public Collection<? extends Action> createFor(Run target) {
-        if (!target.hasPermission(Run.DELETE)) {
+        if (!target.hasPermission(Run.UPDATE)) {
             return Set.of();
         }
 
         return Set.of(new Action() {
             @Override
             public String getDisplayName() {
-                return Messages.DeleteProjectFactory_Delete();
+                return target.hasPermission(Run.UPDATE) ? "Edit Run information" : "View Run information";
             }
 
             @Override
             public String getIconFileName() {
-                return "symbol-trash";
+                return "symbol-edit";
             }
 
             @Override
             public Group getGroup() {
-                return Group.LAST_IN_MENU;
+                return Group.IN_APP_BAR;
             }
 
             @Override
             public Event getEvent() {
-                // TODO - Change this - Deprecated method
-                return ConfirmationEvent.of(Messages.DeleteProjectFactory_DeleteDialog_Title(), Messages.DeleteProjectFactory_DeleteDialog_Description(),  target.getAbsoluteUrl() + "doDelete");
-            }
-
-            @Override
-            public Semantic getSemantic() {
-                return Semantic.DESTRUCTIVE;
+                return LinkEvent.of("configure");
             }
         });
     }

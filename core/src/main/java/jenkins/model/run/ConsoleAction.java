@@ -1,4 +1,4 @@
-package jenkins.model.project;
+package jenkins.model.run;
 
 import hudson.Extension;
 import hudson.model.Action;
