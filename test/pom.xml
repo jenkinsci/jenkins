@@ -98,7 +98,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>bouncycastle-api</artifactId>
-        <version>2.30.1.78.1-233.vfdcdeb_0a_08a_a_</version>
+        <version>2.30.1.78.1-248.ve27176eb_46cb_</version>
       </dependency>
       <dependency>
         <!-- RequireUpperBoundDeps via mailer and junit -->
@@ -126,7 +126,7 @@ THE SOFTWARE.
       <dependency>
         <groupId>org.jenkins-ci.plugins.workflow</groupId>
         <artifactId>workflow-step-api</artifactId>
-        <version>657.v03b_e8115821b_</version>
+        <version>678.v3ee58b_469476</version>
       </dependency>
       <dependency>
         <!-- Required by plugin-util-api -->
@@ -147,7 +147,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>2225.v04fa_3929c9b_5</version>
+      <version>2225.2227.vfc00092c557a_</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -222,7 +222,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>credentials</artifactId>
-      <version>1344.v5a_3f65a_1e173</version>
+      <version>1361.v56f5ca_35d21c</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -326,7 +326,7 @@ THE SOFTWARE.
                 <artifactItem>
                   <groupId>org.jenkins-ci.main</groupId>
                   <artifactId>remoting</artifactId>
-                  <version>4.12</version>
+                  <version>3085.vc4c6977c075a</version>
                   <type>jar</type>
                   <outputDirectory>${project.build.outputDirectory}/old-remoting</outputDirectory>
                   <destFileName>remoting-unsupported.jar</destFileName>
