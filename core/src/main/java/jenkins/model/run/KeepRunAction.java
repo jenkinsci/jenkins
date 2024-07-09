@@ -8,9 +8,8 @@ import java.util.Collection;
 import java.util.Set;
 import jenkins.model.TransientActionFactory;
 import jenkins.model.menu.Group;
-import jenkins.model.menu.event.ConfirmationEvent;
 import jenkins.model.menu.event.Event;
-import jenkins.model.project.Messages;
+import jenkins.model.menu.event.LinkEvent;
 
 @Extension
 public class KeepRunAction extends TransientActionFactory<Run> {
@@ -45,11 +44,7 @@ public class KeepRunAction extends TransientActionFactory<Run> {
 
                 @Override
                 public Event getEvent() {
-                    // TODO - Change this - Deprecated method
-                    return ConfirmationEvent.of(
-                            Messages.DeleteProjectFactory_DeleteDialog_Title(),
-                            Messages.DeleteProjectFactory_DeleteDialog_Description(),
-                            target.getAbsoluteUrl() + "doDelete");
+                    return LinkEvent.of("");
                 }
             });
         }
@@ -73,11 +68,7 @@ public class KeepRunAction extends TransientActionFactory<Run> {
 
                 @Override
                 public Event getEvent() {
-                    // TODO - Change this - Deprecated method
-                    return ConfirmationEvent.of(
-                            Messages.DeleteProjectFactory_DeleteDialog_Title(),
-                            Messages.DeleteProjectFactory_DeleteDialog_Description(),
-                            target.getAbsoluteUrl() + "doDelete");
+                    return LinkEvent.of("");
                 }
             });
         }
