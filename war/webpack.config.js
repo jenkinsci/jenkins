@@ -22,9 +22,6 @@ module.exports = (env, argv) => ({
       path.join(__dirname, "src/main/js/pages/computer-set"),
     ],
     "pages/dashboard": [path.join(__dirname, "src/main/js/pages/dashboard")],
-    "pages/project/build": [
-      path.join(__dirname, "src/main/js/pages/project/build.js"),
-    ],
     "pages/manage-jenkins/system-information": [
       path.join(
         __dirname,

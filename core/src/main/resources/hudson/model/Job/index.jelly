@@ -23,7 +23,7 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:dd="/lib/layout/dropdowns">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:t="/lib/hudson">
   <l:layout title="${it.displayName}${not empty it.parent.fullDisplayName?' ['+it.parent.fullDisplayName+']':''}">
     <st:include page="sidepanel.jelly" />
     <!-- no need for additional breadcrumb here as we're on an index page already including breadcrumb -->
@@ -45,8 +45,6 @@ THE SOFTWARE.
         </div>
       </div>
 
-      <t:editableDescription permission="${it.CONFIGURE}" hideButton="true"/>
-
       <j:if test="${(it.fullName!=it.fullDisplayName) and (it.class.name!='hudson.matrix.MatrixConfiguration')}"> <!-- TODO rather check for TopLevelItem (how to do this from Jelly?) -->
         <j:choose>
           <j:when test="${it.parent!=app}">
@@ -57,6 +55,7 @@ THE SOFTWARE.
           </j:otherwise>
         </j:choose>
       </j:if>
+      <t:editableDescription permission="${it.CONFIGURE}" hideButton="true"/>
 
       <st:include page="jobpropertysummaries.jelly" />
       <!-- inject main part here -->

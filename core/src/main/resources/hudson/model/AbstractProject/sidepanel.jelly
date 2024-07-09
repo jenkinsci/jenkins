@@ -45,9 +45,7 @@ THE SOFTWARE.
       <j:if test="${it.configurable}">
         <p:configurable/>
       </j:if>
-      <j:forEach var="action" items="${it.allActions}">
-        <st:include page="action.jelly" from="${action}" optional="true" />
-      </j:forEach>
+      <st:include page="actions.jelly" />
     </l:tasks>
 
     <st:include page="sidepanel2.jelly" optional="true" />
