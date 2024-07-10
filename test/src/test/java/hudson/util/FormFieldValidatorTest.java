@@ -196,8 +196,8 @@ public class FormFieldValidatorTest {
         }
 
         @DataBoundSetter
-        public void setEmptyPassword(String emptyPassword) {
-            this.emptyPassword = Secret.fromString(emptyPassword);
+        public void setEmptyPassword(Secret emptyPassword) {
+            this.emptyPassword = emptyPassword;
         }
 
         public Secret getPopulatedPassword() {
@@ -205,8 +205,8 @@ public class FormFieldValidatorTest {
         }
 
         @DataBoundSetter
-        public void setPopulatedPassword(String populatedPassword) {
-            this.populatedPassword = Secret.fromString(populatedPassword);
+        public void setPopulatedPassword(Secret populatedPassword) {
+            this.populatedPassword = populatedPassword;
         }
 
         public String getTextarea() {
@@ -223,8 +223,8 @@ public class FormFieldValidatorTest {
         }
 
         @DataBoundSetter
-        public void setEmptySecretTextarea(String emptySecretTextarea) {
-            this.emptySecretTextarea = Secret.fromString(emptySecretTextarea);
+        public void setEmptySecretTextarea(Secret emptySecretTextarea) {
+            this.emptySecretTextarea = emptySecretTextarea;
         }
 
         public Secret getPopulatedSecretTextarea() {
@@ -232,8 +232,8 @@ public class FormFieldValidatorTest {
         }
 
         @DataBoundSetter
-        public void setPopulatedSecretTextarea(String populatedSecretTextarea) {
-            this.populatedSecretTextarea = Secret.fromString(populatedSecretTextarea);
+        public void setPopulatedSecretTextarea(Secret populatedSecretTextarea) {
+            this.populatedSecretTextarea = populatedSecretTextarea;
         }
 
         @TestExtension
