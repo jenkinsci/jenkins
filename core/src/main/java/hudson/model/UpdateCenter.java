@@ -1311,7 +1311,7 @@ public class UpdateCenter extends AbstractModelObject implements Loadable, Savea
                 File dst = job.getDestination();
                 File tmp = new File(dst.getPath() + ".tmp");
 
-                LOGGER.info("Downloading " + job.getName());
+                LOGGER.info(() -> "Downloading " + job.getName() + " from " + src);
                 Thread t = Thread.currentThread();
                 String oldName = t.getName();
                 t.setName(oldName + ": " + src);
