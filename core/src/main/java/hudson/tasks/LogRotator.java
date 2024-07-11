@@ -111,7 +111,7 @@ public class LogRotator extends BuildDiscarder {
 
     /**
      * If enabled also remove last successful build.
-     * @since 2.464
+     * @since TODO
      */
     private boolean removeLastBuild;
 
