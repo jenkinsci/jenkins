@@ -37,7 +37,7 @@ import hudson.util.Secret;
 import java.io.IOException;
 import org.htmlunit.html.HtmlElement;
 import org.htmlunit.html.HtmlForm;
-import org.htmlunit.html.HtmlHiddenInput;
+import org.htmlunit.html.HtmlTextArea;
 import org.htmlunit.html.HtmlTextInput;
 import org.junit.Before;
 import org.junit.Rule;
@@ -120,8 +120,8 @@ public class SecretTextareaTest {
     }
 
     private static String getHiddenSecretValue(HtmlForm configForm) {
-        HtmlHiddenInput hiddenSecret = configForm.getInputByName("_.secret");
-        return hiddenSecret == null ? null : hiddenSecret.getValue();
+        HtmlTextArea hiddenSecret = configForm.getTextAreaByName("_.secret");
+        return hiddenSecret == null ? null : hiddenSecret.getTextContent();
     }
 
     public static class TestBuilder extends Builder {
