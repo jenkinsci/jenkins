@@ -144,7 +144,7 @@ public class SecretTextareaTest {
 
         @DataBoundConstructor
         public TestBuilder(Secret secret) {
-            this.secret = secret;
+            this.secret = fixEmptySecret(secret);
         }
 
         public Secret getSecret() {
@@ -158,6 +158,13 @@ public class SecretTextareaTest {
         @DataBoundSetter
         public void setDescription(String description) {
             this.description = description;
+        }
+
+        private static Secret fixEmptySecret(Secret possiblyEmpty) {
+            if (possiblyEmpty == null || possiblyEmpty.getPlainText().isEmpty()) {
+                return null;
+            }
+            return possiblyEmpty;
         }
 
         @TestExtension
