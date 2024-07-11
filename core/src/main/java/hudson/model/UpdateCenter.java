@@ -1323,8 +1323,8 @@ public class UpdateCenter extends AbstractModelObject implements Loadable, Savea
                      InputStream in = con.getInputStream();
                      CountingInputStream cin = new CountingInputStream(in)) {
                     if (LOGGER.isLoggable(Level.FINE)) {
-                        var connectionUrl = con.getURL();
-                        LOGGER.fine(() -> "Downloading " + job.getName() + " from " + getSourceUrl(src, connectionUrl));
+                        var sourceUrlString = getSourceUrl(src, con);
+                        LOGGER.fine(() -> "Downloading " + job.getName() + " from " + sourceUrlString);
                     }
                     while ((len = cin.read(buf)) >= 0) {
                         out.write(buf, 0, len);
@@ -1362,25 +1362,22 @@ public class UpdateCenter extends AbstractModelObject implements Loadable, Savea
                 return tmp;
             } catch (IOException e) {
                 // assist troubleshooting in case of e.g. "too many redirects" by printing actual URL
-                String extraMessage = "";
-                if (con != null && con.getURL() != null && !src.toString().equals(con.getURL().toString())) {
-                    // Two URLs are considered equal if different hosts resolve to same IP. Prefer to log in case of string inequality,
-                    // because who knows how the server responds to different host name in the request header?
-                    // Also, since it involved name resolution, it'd be an expensive operation.
-                    extraMessage = " (redirected to: " + con.getURL() + ")";
-                }
-                throw new IOException("Failed to download from " + src + extraMessage, e);
+                throw new IOException("Failed to download from " + getSourceUrl(src, con), e);
             }
         }
 
-        private static String getSourceUrl(@NonNull URL src, @NonNull URL connectionURL) {
+        private static String getSourceUrl(@NonNull URL src, @CheckForNull URLConnection connection) {
             var sourceUrlString = src.toExternalForm();
-            var finalUrlString = connectionURL.toExternalForm();
-            if (!sourceUrlString.equals(finalUrlString)) {
-                return sourceUrlString + " → " + finalUrlString;
-            } else {
-                return sourceUrlString;
+            if (connection != null) {
+                var connectionURL = connection.getURL();
+                if (connectionURL != null) {
+                    var finalUrlString = connectionURL.toExternalForm();
+                    if (!sourceUrlString.equals(finalUrlString)) {
+                        return sourceUrlString + " → " + finalUrlString;
+                    }
+                }
             }
+            return sourceUrlString;
         }
 
         /**
