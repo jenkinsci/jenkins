@@ -1311,7 +1311,7 @@ public class UpdateCenter extends AbstractModelObject implements Loadable, Savea
                 File dst = job.getDestination();
                 File tmp = new File(dst.getPath() + ".tmp");
 
-                LOGGER.info(() -> "Downloading " + job.getName() + " from " + src);
+                LOGGER.info("Downloading " + job.getName());
                 Thread t = Thread.currentThread();
                 String oldName = t.getName();
                 t.setName(oldName + ": " + src);
@@ -1322,6 +1322,10 @@ public class UpdateCenter extends AbstractModelObject implements Loadable, Savea
                                              sha512 != null ? new DigestOutputStream(_out, sha512) : _out, sha256) : _out, sha1) : _out;
                      InputStream in = con.getInputStream();
                      CountingInputStream cin = new CountingInputStream(in)) {
+                    if (LOGGER.isLoggable(Level.FINE)) {
+                        var connectionUrl = con.getURL();
+                        LOGGER.fine(() -> "Downloading " + job.getName() + " from " + getSourceUrl(src, connectionUrl));
+                    }
                     while ((len = cin.read(buf)) >= 0) {
                         out.write(buf, 0, len);
                         final int count = cin.getCount();
@@ -1366,6 +1370,16 @@ public class UpdateCenter extends AbstractModelObject implements Loadable, Savea
                     extraMessage = " (redirected to: " + con.getURL() + ")";
                 }
                 throw new IOException("Failed to download from " + src + extraMessage, e);
+            }
+        }
+
+        private static String getSourceUrl(@NonNull URL src, @NonNull URL connectionURL) {
+            var sourceUrlString = src.toExternalForm();
+            var finalUrlString = connectionURL.toExternalForm();
+            if (!sourceUrlString.equals(finalUrlString)) {
+                return sourceUrlString + " → " + finalUrlString;
+            } else {
+                return sourceUrlString;
             }
         }
 
