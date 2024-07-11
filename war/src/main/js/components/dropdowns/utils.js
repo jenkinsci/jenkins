@@ -11,12 +11,12 @@ const SELECTED_ITEM_CLASS = "jenkins-dropdown__item--selected";
  * @param element - the element to generate the dropdown for
  * @param callback - called to retrieve the list of dropdown items
  */
-function generateDropdown(element, callback) {
+function generateDropdown(element, callback, immediate) {
   tippy(
     element,
     Object.assign({}, Templates.dropdown(), {
       onCreate(instance) {
-        instance.reference.addEventListener("mouseenter", () => {
+        const onload = () => {
           if (instance.loaded) {
             return;
           }
@@ -26,7 +26,12 @@ function generateDropdown(element, callback) {
           });
 
           callback(instance);
-        });
+        };
+        if (immediate) {
+          onload();
+        } else {
+          instance.reference.addEventListener("mouseenter", onload);
+        }
       },
     }),
   );

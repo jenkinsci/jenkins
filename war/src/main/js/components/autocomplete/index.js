@@ -1,0 +1,88 @@
+import behaviorShim from "@/util/behavior-shim";
+import Utils from "@/components/dropdowns/utils";
+
+function init() {
+  function addValue(value, item, delimiter) {
+    const prev = value.includes(delimiter)
+      ? value.substring(0, value.lastIndexOf(delimiter) + 1) + " "
+      : "";
+    return prev + item + delimiter + " ";
+  }
+
+  function validate(e) {
+    if (e.targetUrl) {
+      var method = e.getAttribute("checkMethod") || "post";
+      try {
+        FormChecker.delayedCheck(e.targetUrl(), method, e.targetElement);
+      } catch (x) {
+        console.warn(x);
+        return;
+      }
+    }
+  }
+
+  function convertSuggestionToItem(suggestion, e) {
+    const delimiter = e.getAttribute("autoCompleteDelimChar");
+    return {
+      label: suggestion.name,
+      onClick: () => {
+        e.value = delimiter
+          ? addValue(e.value, suggestion.name, delimiter)
+          : suggestion.name;
+        validate(e);
+        e.focus();
+      },
+    };
+  }
+
+  function createAndShowDropdown(e, div, suggestions) {
+    const items = suggestions.map((s) => convertSuggestionToItem(s, e));
+    if (!e.dropdown) {
+      Utils.generateDropdown(
+        div,
+        (instance) => {
+          e.dropdown = instance;
+        },
+        true,
+      );
+    }
+    e.dropdown.setContent(Utils.generateDropdownItems(items, true));
+    e.dropdown.show();
+  }
+
+  function updateSuggestions(e, div) {
+    const text = e.value.trim();
+    const delimiter = e.getAttribute("autoCompleteDelimChar");
+    const word = delimiter ? text.split(delimiter).reverse()[0].trim() : text;
+    if (!word) {
+      if (e.dropdown) {
+        e.dropdown.hide();
+      }
+      return;
+    }
+    const url =
+      e.getAttribute("autoCompleteUrl") + "?value=" + encodeURIComponent(word);
+    fetch(url)
+      .then((rsp) => (rsp.ok ? rsp.json().suggestions : {}))
+      .then((response) => createAndShowDropdown(e, div, response));
+  }
+
+  behaviorShim.specify(
+    "INPUT.auto-complete",
+    "input-auto-complete",
+    0,
+    function (e) {
+      // form field with auto-completion support
+      // insert the auto-completion container
+      var div = document.createElement("DIV");
+      e.parentNode.insertBefore(div, e.nextElementSibling);
+      e.style.position = "relative";
+
+      e.addEventListener("input", (evt) => {
+        updateSuggestions(e, div);
+      });
+    },
+  );
+}
+
+export default { init };
