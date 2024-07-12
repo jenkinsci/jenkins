@@ -23,20 +23,30 @@ function init() {
 
   function convertSuggestionToItem(suggestion, e) {
     const delimiter = e.getAttribute("autoCompleteDelimChar");
+    const confirm = () => {
+      e.value = delimiter
+        ? addValue(e.value, suggestion.name, delimiter)
+        : suggestion.name;
+      validate(e);
+      e.focus();
+    };
     return {
       label: suggestion.name,
-      onClick: () => {
-        e.value = delimiter
-          ? addValue(e.value, suggestion.name, delimiter)
-          : suggestion.name;
-        validate(e);
-        e.focus();
+      onClick: confirm,
+      onKeyPress: (evt) => {
+        if (evt.key == "Tab") {
+          confirm();
+          e.dropdown.hide();
+          evt.preventDefault();
+        }
       },
     };
   }
 
   function createAndShowDropdown(e, div, suggestions) {
-    const items = suggestions.map((s) => convertSuggestionToItem(s, e));
+    const items = suggestions
+      .splice(0, 10)
+      .map((s) => convertSuggestionToItem(s, e));
     if (!e.dropdown) {
       Utils.generateDropdown(
         div,
@@ -63,8 +73,23 @@ function init() {
     const url =
       e.getAttribute("autoCompleteUrl") + "?value=" + encodeURIComponent(word);
     fetch(url)
-      .then((rsp) => (rsp.ok ? rsp.json().suggestions : {}))
-      .then((response) => createAndShowDropdown(e, div, response));
+      .then((rsp) => (rsp.ok ? rsp.json() : {}))
+      .then((response) =>
+        createAndShowDropdown(e, div, response.suggestions || []),
+      );
+  }
+
+  function debounce(callback) {
+    callback.running = false;
+    return () => {
+      if (!callback.running) {
+        callback.running = true;
+        setTimeout(() => {
+          callback();
+          callback.running = false;
+        }, 300);
+      }
+    };
   }
 
   behaviorShim.specify(
@@ -77,10 +102,12 @@ function init() {
       var div = document.createElement("DIV");
       e.parentNode.insertBefore(div, e.nextElementSibling);
       e.style.position = "relative";
-
-      e.addEventListener("input", (evt) => {
-        updateSuggestions(e, div);
-      });
+      e.addEventListener(
+        "input",
+        debounce(() => {
+          updateSuggestions(e, div);
+        }),
+      );
     },
   );
 }

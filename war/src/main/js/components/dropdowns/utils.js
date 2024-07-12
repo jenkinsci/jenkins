@@ -91,7 +91,7 @@ function generateDropdownItems(items, compact) {
     menuItems,
     () => menuItems.querySelectorAll(".jenkins-dropdown__item"),
     SELECTED_ITEM_CLASS,
-    (selectedItem, key) => {
+    (selectedItem, key, evt) => {
       switch (key) {
         case "ArrowLeft": {
           const root = selectedItem.closest("[data-tippy-root]");
@@ -115,6 +115,10 @@ function generateDropdownItems(items, compact) {
             .classList.add(SELECTED_ITEM_CLASS);
           break;
         }
+        default:
+          if (selectedItem && selectedItem.onkeypress) {
+            selectedItem.onkeypress(evt);
+          }
       }
     },
     (container) => {
