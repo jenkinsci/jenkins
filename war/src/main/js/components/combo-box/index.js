@@ -2,9 +2,21 @@ import behaviorShim from "@/util/behavior-shim";
 import Utils from "@/components/dropdowns/utils";
 
 function init() {
+  function validate(e) {
+    if (e.targetUrl) {
+      const method = e.getAttribute("checkMethod") || "post";
+      try {
+        FormChecker.delayedCheck(e.targetUrl(), method, e.targetElement);
+      } catch (x) {
+        console.warn(x);
+      }
+    }
+  }
+
   function convertSuggestionToItem(suggestion, e) {
     const confirm = () => {
       e.value = suggestion.name;
+      validate(e);
       e.focus();
     };
     return {
