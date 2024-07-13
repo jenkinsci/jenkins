@@ -1909,6 +1909,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         return names;
     }
 
+    @Restricted(NoExternalUse.class)
     public ComboBoxModel doFillJobNameItems() {
         return new ComboBoxModel(getJobNames());
     }
