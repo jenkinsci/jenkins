@@ -39,6 +39,7 @@ import hudson.model.ModelObject;
 import hudson.model.User;
 import hudson.model.UserProperty;
 import hudson.model.UserPropertyDescriptor;
+import hudson.model.userproperty.UserPropertyCategory;
 import hudson.security.FederatedLoginService.FederatedIdentity;
 import hudson.security.captcha.CaptchaSupport;
 import hudson.util.FormValidation;
@@ -801,7 +802,6 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
             public int hashCode() {
                 return getUsername().hashCode();
             }
-
         }
 
         public static class ConverterImpl extends XStream2.PassthruConverter<Details> {
@@ -883,6 +883,11 @@ public class HudsonPrivateSecurityRealm extends AbstractPasswordBasedSecurityRea
             @Override
             public UserProperty newInstance(User user) {
                 return null;
+            }
+
+            @Override
+            public @NonNull UserPropertyCategory getUserPropertyCategory() {
+                return UserPropertyCategory.get(UserPropertyCategory.Security.class);
             }
         }
     }
