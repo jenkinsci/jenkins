@@ -5,7 +5,7 @@
     ":disableDependencyDashboard",
     ":semanticCommitsDisabled"
   ],
-  "enabledManagers": ["npm", "regex"],
+  "prHourlyLimit": 0,
   "postUpdateOptions": ["yarnDedupeHighest"],
   "packageRules": [
     {
@@ -17,6 +17,54 @@
     {
       "matchPackageNames": ["node"],
       "allowedVersions": "/20.[0-9]+.[0-9]+(.[0-9]+)?$/"
+    },
+    {
+      "matchPackagePatterns": ["(org.eclipse.jetty:jetty-maven-plugin|org.jenkins-ci:winstone)"],
+      "description": "Should be upgraded in lockstep in order to keep their corresponding Jetty versions aligned, could be grouped but releases are likely separated by a bit of time",
+      "matchManagers": ["maven"],
+      "enabled": false
+    },
+    {
+      "matchPackagePatterns": ["jakarta.servlet:jakarta.servlet-api"],
+      "description": "Provided by Jetty and should be aligned with the version provided by the version of Jetty we deliver. See: https://github.com/jenkinsci/jenkins/pull/5211",
+      "matchManagers": ["maven"],
+      "enabled": false
+    },
+    {
+      "matchPackagePatterns": ["jakarta.servlet.jsp.jstl:jakarta.servlet.jsp.jstl-api"],
+      "description": "Contains incompatible API changes and needs compatibility work",
+      "matchManagers": ["maven"],
+      "enabled": false
+    },
+    {
+      "matchPackagePatterns": ["org.codehaus.groovy:groovy-all"],
+      "description": "Needs significant testing. See: https://github.com/jenkinsci/jenkins/pull/5112#issuecomment-744429487 and https://github.com/jenkinsci/jenkins/pull/5116#issuecomment-744526638",
+      "matchManagers": ["maven"],
+      "allowedVersions": "<2.5.0"
+    },
+    {
+      "matchPackagePatterns": ["org.fusesource.jansi:jansi"],
+      "description": "Consumed by Groovy and should be updated in lockstep with Groovy. See: https://github.com/jenkinsci/jenkins/pull/5184",
+      "matchManagers": ["maven"],
+      "enabled": false
+    },
+    {
+      "matchPackagePatterns": ["org.jfree:jfreechart"],
+      "description": "Contains incompatible API changes and needs compatibility work. See: https://github.com/jenkinsci/jenkins/pull/4224",
+      "matchManagers": ["maven"],
+      "enabled": false
+    },
+    {
+      "matchPackagePatterns": ["org.springframework"],
+      "description": "Starting with 6.x, Spring requires Java 17 at a minimum.",
+      "matchManagers": ["maven"],
+      "allowedVersions": "<6.0.0"
+    },
+    {
+      "matchPackagePatterns": ["com.google.inject:guice-bom"],
+      "description": "Starting with 7.x, Guice switches from javax.* to jakarta.* bindings. See https://github.com/google/guice/wiki/Guice700",
+      "matchManagers": ["maven"],
+      "allowedVersions": "<7.0.0"
     }
   ],
   "regexManagers": [
@@ -59,5 +107,14 @@
     }
   ],
   "labels": ["dependencies", "skip-changelog"],
-  "rebaseWhen": "conflicted"
+  "rebaseWhen": "conflicted",
+  "ignorePaths": [
+    "**/node_modules/**",
+    "**/bower_components/**",
+    "**/vendor/**",
+    "**/examples/**",
+    "**/__tests__/**",
+    "**/tests/**",
+    "**/__fixtures__/**"
+  ]
 }
