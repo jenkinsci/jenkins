@@ -44,12 +44,12 @@ THE SOFTWARE.
       <form action="projectRelationship" method="get">
         <div class="jenkins-form-item">
           <label class="jenkins-form-label" for="lhs">${%upstream project}:</label>
-          <f:comboBox id="lhs" fillUrl="fillJobNameItems" name="lhs" value="${request.getParameter('lhs')}"/>
+          <f:combobox id="lhs" fillUrl="fillJobNameItems" name="lhs" value="${request.getParameter('lhs')}"/>
         </div>
 
         <div class="jenkins-form-item">
           <label class="jenkins-form-label" for="rhs">${%downstream project}:</label>
-          <f:comboBox id="rhs" fillUrl="fillJobNameItems" name="rhs" value="${request.getParameter('rhs')}"/>
+          <f:combobox id="rhs" fillUrl="fillJobNameItems" name="rhs" value="${request.getParameter('rhs')}"/>
         </div>
         <f:submit value="${%Compare}"/>
 
