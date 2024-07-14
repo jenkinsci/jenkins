@@ -1,3 +1,4 @@
-img.build-time-graph {
-  float: right;
+#buildTimeTrend {
+  display: flex;
+  column-gap: 5px;
 }
