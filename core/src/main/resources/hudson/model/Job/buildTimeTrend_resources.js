@@ -75,7 +75,7 @@ window.buildTimeTrend_displayBuilds = function (data) {
     link.appendChild(generateSVGIcon("console"));
     div2.appendChild(link);
     tdConsole.appendChild(div2);
-    tr.appendChild(tdConsole)
+    tr.appendChild(tdConsole);
 
     p.appendChild(tr);
     Behaviour.applySubtree(tr);
