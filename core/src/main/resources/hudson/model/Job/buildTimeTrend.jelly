@@ -55,7 +55,7 @@ THE SOFTWARE.
               <j:set var="showAgent" value="${!empty(app.nodes) and handler.isAbstractProject(it)}"/>
               <l:progressiveRendering handler="${handler}" callback="buildTimeTrend_displayBuilds"/>
               <t:setIconSize/>
-              <table class="jenkins-table ${iconSize == '16x16' ? 'jenkins-table--small' : iconSize == '24x24' ? 'jenkins-table--medium' : ''} sortable jenkins-hidden" id="trend"
+              <table class="jenkins-table jenkins-table--auto-width ${iconSize == '16x16' ? 'jenkins-table--small' : iconSize == '24x24' ? 'jenkins-table--medium' : ''} sortable jenkins-hidden" id="trend"
                      data-show-agent="${showAgent}" data-icon-size-class="${iconSizeClass}">
                 <thead>
                   <tr>

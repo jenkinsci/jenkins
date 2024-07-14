@@ -1,4 +1,10 @@
 #buildTimeTrend {
   display: flex;
-  column-gap: 5px;
+  gap: 15px;
+}
+
+@media (max-width: 1300px) {
+  #buildTimeTrend {
+    flex-direction: column-reverse;
+  }
 }
