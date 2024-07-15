@@ -80,7 +80,7 @@ public class ApiTokenPropertyTest {
         assertEquals(u, wc.executeOnServer(User::current));
 
         // Make sure the UI shows the token to the user
-        HtmlPage config = wc.goTo(u.getUrl() + "/configure");
+        HtmlPage config = wc.goTo(u.getUrl() + "/security/");
         HtmlForm form = config.getFormByName("config");
         assertEquals(token, form.getInputByName("_.apiToken").getValue());
 
@@ -126,7 +126,7 @@ public class ApiTokenPropertyTest {
 
         // Make sure the UI does not show the token to another user
         WebClient wc = createClientForUser("bar");
-        HtmlPage config = wc.goTo(u.getUrl() + "/configure");
+        HtmlPage config = wc.goTo(u.getUrl() + "/security/");
         HtmlForm form = config.getFormByName("config");
         assertEquals(Messages.ApiTokenProperty_ChangeToken_TokenIsHidden(), form.getInputByName("_.apiToken").getValue());
     }
