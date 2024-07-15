@@ -54,7 +54,7 @@ THE SOFTWARE.
   <j:set var="consoleOutputIcon" trim="true">
     <l:icon src="symbol-terminal" alt="${%Console output}" />
   </j:set>
-  <table class="jenkins-table ${iconSize == '16x16' ? 'jenkins-table--small' : iconSize == '24x24' ? 'jenkins-table--medium' : ''} jenkins-table--compact sortable" id="projectStatus" style="display: none;" data-icon-size-class="${iconSizeClass}"  data-console-output-icon="${consoleOutputIcon}">
+  <table class="jenkins-table ${iconSize == '16x16' ? 'jenkins-table--small' : iconSize == '24x24' ? 'jenkins-table--medium' : ''} sortable" id="projectStatus" style="display: none;" data-icon-size-class="${iconSizeClass}"  data-console-output-icon="${consoleOutputIcon}">
     <thead>
         <tr>
             <th class="jenkins-table__cell--tight">${%S}</th>
@@ -66,5 +66,5 @@ THE SOFTWARE.
     </thead>
     <tbody></tbody>
   </table>
-  <t:iconSize/>
+  <t:rssBar-with-iconSize/>
 </j:jelly>
