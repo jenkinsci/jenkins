@@ -102,6 +102,11 @@ function init() {
       var div = document.createElement("DIV");
       e.parentNode.insertBefore(div, e.nextElementSibling);
       e.style.position = "relative";
+      // otherwise menu won't hide on tab with nothing selected
+      // needs delay as without that it blocks click selection of an item
+      e.addEventListener("focusout", () =>
+        setTimeout(() => e.dropdown && e.dropdown.hide(), 200),
+      );
       e.addEventListener(
         "input",
         debounce(() => {
