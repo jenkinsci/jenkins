@@ -52,6 +52,7 @@ function init() {
         div,
         (instance) => {
           e.dropdown = instance;
+          instance.popper.style.minWidth = e.offsetWidth + "px";
         },
         true,
       );
