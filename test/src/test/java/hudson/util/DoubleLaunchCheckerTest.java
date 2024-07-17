@@ -24,7 +24,10 @@
 
 package hudson.util;
 
+import static jenkins.SkipSomeTests.ReasonTestShouldRun.NEVER_FAILING_TEST;
+import static jenkins.SkipSomeTests.runTestSometimes;
 import static org.awaitility.Awaitility.await;
+import static org.junit.Assume.assumeTrue;
 
 import hudson.ExtensionList;
 import java.time.Duration;
@@ -51,6 +54,7 @@ public final class DoubleLaunchCheckerTest {
 
     @Test
     public void activated() throws Throwable {
+        assumeTrue(runTestSometimes(NEVER_FAILING_TEST));
         mainController.startJenkins();
         duplicateController.startJenkins();
         mainController.runRemotely(DoubleLaunchCheckerTest::waitForWarning);

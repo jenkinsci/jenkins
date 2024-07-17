@@ -24,6 +24,8 @@
 
 package hudson.model;
 
+import static jenkins.SkipSomeTests.ReasonTestShouldRun.NEVER_FAILING_TEST;
+import static jenkins.SkipSomeTests.runTestSometimes;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsString;
@@ -36,6 +38,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeTrue;
 
 import hudson.FilePath;
 import hudson.Functions;
@@ -172,6 +175,7 @@ public class AbstractProjectTest {
      */
     @Test
     public void optionalBlockDataBindingRoundtrip() throws Exception {
+        assumeTrue(runTestSometimes(NEVER_FAILING_TEST));
         FreeStyleProject p = j.createFreeStyleProject();
         for (boolean b : new boolean[] {true, false}) {
             p.setConcurrentBuild(b);

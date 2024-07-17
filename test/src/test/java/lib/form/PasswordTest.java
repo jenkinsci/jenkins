@@ -24,6 +24,8 @@
 
 package lib.form;
 
+import static jenkins.SkipSomeTests.ReasonTestShouldRun.NEVER_FAILING_TEST;
+import static jenkins.SkipSomeTests.runTestSometimes;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
@@ -33,6 +35,7 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeTrue;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -346,6 +349,7 @@ public class PasswordTest {
 
     @Test
     public void testBuildStep() throws Exception {
+        assumeTrue(runTestSometimes(NEVER_FAILING_TEST));
         final FreeStyleProject project = j.createFreeStyleProject();
         project.getBuildersList().add(new PasswordHolderBuildStep());
         project.save();

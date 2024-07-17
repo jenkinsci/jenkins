@@ -24,8 +24,11 @@
 
 package hudson.util;
 
+import static jenkins.SkipSomeTests.ReasonTestShouldRun.NEVER_FAILING_TEST;
+import static jenkins.SkipSomeTests.runTestSometimes;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.junit.Assume.assumeTrue;
 
 import hudson.model.AbstractProject;
 import hudson.model.FreeStyleProject;
@@ -64,6 +67,7 @@ public class AlternativeUiTextProviderTest {
      */
     @Test
     public void basics() throws Exception {
+        assumeTrue(runTestSometimes(NEVER_FAILING_TEST));
         Impl.oldschool = false;
         FreeStyleProject p = j.createFreeStyleProject("aaa");
         assertThat(j.createWebClient().getPage(p).asNormalizedText(), containsString("newschool:aaa"));

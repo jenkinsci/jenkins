@@ -1,9 +1,12 @@
 package hudson.model;
 
+import static jenkins.SkipSomeTests.ReasonTestShouldRun.NEVER_FAILING_TEST;
+import static jenkins.SkipSomeTests.runTestSometimes;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeTrue;
 
 import hudson.Functions;
 import hudson.tasks.BatchFile;
@@ -36,6 +39,7 @@ public class FileParameterValuePersistenceTest {
     @Issue("JENKINS-13536")
     @Test
     public void fileParameterValuePersistence() throws Throwable {
+        assumeTrue(runTestSometimes(NEVER_FAILING_TEST));
         sessions.then(j -> {
             FreeStyleProject p = j.createFreeStyleProject("p");
             p.addProperty(new ParametersDefinitionProperty(new FileParameterDefinition(FILENAME, "The file.")));

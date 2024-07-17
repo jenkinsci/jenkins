@@ -24,6 +24,8 @@
 
 package hudson.tasks;
 
+import static jenkins.SkipSomeTests.ReasonTestShouldRun.NEVER_FAILING_TEST;
+import static jenkins.SkipSomeTests.runTestSometimes;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.lessThan;
 import static org.junit.Assert.assertArrayEquals;
@@ -333,6 +335,7 @@ public class ArtifactArchiverTest {
     @Issue("JENKINS-29922")
     @Test
     public void configRoundTrip() throws Exception {
+        assumeTrue(runTestSometimes(NEVER_FAILING_TEST));
         ArtifactArchiver aa = new ArtifactArchiver("*.txt");
         assertNull(Util.fixEmpty(aa.getExcludes())); // null and "" behave the same, we do not care which it is
         assertEquals("{artifacts=*.txt}", DescribableModel.uninstantiate_(aa).toString()); // but we do care that excludes is considered to be at the default

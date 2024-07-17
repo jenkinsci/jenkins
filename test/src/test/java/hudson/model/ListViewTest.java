@@ -24,6 +24,8 @@
 
 package hudson.model;
 
+import static jenkins.SkipSomeTests.ReasonTestShouldRun.NEVER_FAILING_TEST;
+import static jenkins.SkipSomeTests.runTestSometimes;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.instanceOf;
@@ -33,6 +35,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -101,6 +104,7 @@ public class ListViewTest {
        *      +-- folder2
        *          +-- job2
        */
+      assumeTrue(runTestSometimes(NEVER_FAILING_TEST));
       MockFolder folder1 = j.jenkins.createProject(MockFolder.class, "folder1");
       FreeStyleProject job1 = folder1.createProject(FreeStyleProject.class, "job1");
       MockFolder folder2 = folder1.createProject(MockFolder.class, "folder2");

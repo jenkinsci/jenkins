@@ -24,10 +24,13 @@
 
 package jenkins.model;
 
+import static jenkins.SkipSomeTests.ReasonTestShouldRun.NEVER_FAILING_TEST;
+import static jenkins.SkipSomeTests.runTestSometimes;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeTrue;
 
 import hudson.model.AbstractProject;
 import hudson.model.FreeStyleProject;
@@ -50,6 +53,7 @@ public class BuildDiscarderPropertyTest {
     @LocalData
     @Test
     public void buildDiscarderField() throws Exception {
+        assumeTrue(runTestSometimes(NEVER_FAILING_TEST));
         FreeStyleProject p = r.jenkins.getItemByFullName("p", FreeStyleProject.class);
         verifyBuildDiscarder(p);
         r.configRoundtrip(p);

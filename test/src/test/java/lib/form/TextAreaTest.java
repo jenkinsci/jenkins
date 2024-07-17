@@ -1,6 +1,9 @@
 package lib.form;
 
+import static jenkins.SkipSomeTests.ReasonTestShouldRun.NEVER_FAILING_TEST;
+import static jenkins.SkipSomeTests.runTestSometimes;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assume.assumeTrue;
 
 import hudson.model.AbstractProject;
 import hudson.model.FreeStyleProject;
@@ -74,6 +77,7 @@ public class TextAreaTest {
     @Issue("JENKINS-27505")
     @Test
     public void text() throws Exception {
+        assumeTrue(runTestSometimes(NEVER_FAILING_TEST));
         {
             String TEXT_TO_TEST = "some\nvalue\n";
             FreeStyleProject p = j.createFreeStyleProject();

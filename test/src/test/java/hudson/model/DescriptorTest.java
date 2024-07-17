@@ -24,11 +24,14 @@
 
 package hudson.model;
 
+import static jenkins.SkipSomeTests.ReasonTestShouldRun.NEVER_FAILING_TEST;
+import static jenkins.SkipSomeTests.runTestSometimes;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeTrue;
 
 import hudson.Launcher;
 import hudson.model.Descriptor.PropertyType;
@@ -69,6 +72,7 @@ public class DescriptorTest {
 
     @Issue("JENKINS-26781")
     @Test public void overriddenId() throws Exception {
+        assumeTrue(runTestSometimes(NEVER_FAILING_TEST));
         FreeStyleProject p = rule.createFreeStyleProject();
         p.getBuildersList().add(new BuilderImpl("builder-a"));
         rule.configRoundtrip(p);

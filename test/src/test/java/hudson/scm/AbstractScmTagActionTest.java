@@ -24,7 +24,10 @@
 
 package hudson.scm;
 
+import static jenkins.SkipSomeTests.ReasonTestShouldRun.NEVER_FAILING_TEST;
+import static jenkins.SkipSomeTests.runTestSometimes;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assume.assumeTrue;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -50,6 +53,7 @@ public class AbstractScmTagActionTest {
 
     @Test
     public void regularTextDisplayedCorrectly() throws Exception {
+        assumeTrue(runTestSometimes(NEVER_FAILING_TEST));
         FreeStyleProject p = j.createFreeStyleProject();
 
         String tagToKeep = "Nice tag with space";

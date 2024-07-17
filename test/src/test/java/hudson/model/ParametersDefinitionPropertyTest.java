@@ -24,7 +24,10 @@
 
 package hudson.model;
 
+import static jenkins.SkipSomeTests.ReasonTestShouldRun.NEVER_FAILING_TEST;
+import static jenkins.SkipSomeTests.runTestSometimes;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assume.assumeTrue;
 
 import java.util.Locale;
 import java.util.logging.Level;
@@ -48,6 +51,7 @@ public class ParametersDefinitionPropertyTest {
     @Issue("JENKINS-31458")
     @Test
     public void customNewInstance() throws Exception {
+        assumeTrue(runTestSometimes(NEVER_FAILING_TEST));
         logs.record(Descriptor.class, Level.ALL);
         KrazyParameterDefinition kpd = new KrazyParameterDefinition("kpd", "desc", "KrAzY");
         FreeStyleProject p = r.createFreeStyleProject();

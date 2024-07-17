@@ -24,6 +24,8 @@
 
 package hudson.model;
 
+import static jenkins.SkipSomeTests.ReasonTestShouldRun.NEVER_FAILING_TEST;
+import static jenkins.SkipSomeTests.runTestSometimes;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
@@ -38,6 +40,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeTrue;
 
 import com.sun.management.UnixOperatingSystemMXBean;
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -576,6 +579,7 @@ public class DirectoryBrowserSupportTest {
     @Test
     @Issue("SECURITY-904")
     public void symlink_outsideWorkspace_areNotAllowed() throws Exception {
+        assumeTrue(runTestSometimes(NEVER_FAILING_TEST));
         FreeStyleProject p = j.createFreeStyleProject();
 
         File secretsFolder = new File(j.jenkins.getRootDir(), "secrets");

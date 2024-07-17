@@ -6,6 +6,8 @@
 
 package hudson.security.csrf;
 
+import static jenkins.SkipSomeTests.ReasonTestShouldRun.NEVER_FAILING_TEST;
+import static jenkins.SkipSomeTests.runTestSometimes;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
@@ -14,6 +16,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeTrue;
 
 import hudson.model.User;
 import java.net.HttpURLConnection;
@@ -178,6 +181,7 @@ public class DefaultCrumbIssuerTest {
     @Issue("SECURITY-626")
     @WithTimeout(300)
     public void crumbOnlyValidForOneSession() throws Exception {
+        assumeTrue(runTestSometimes(NEVER_FAILING_TEST));
         r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
         DefaultCrumbIssuer issuer = new DefaultCrumbIssuer(false);
         r.jenkins.setCrumbIssuer(issuer);

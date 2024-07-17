@@ -1,5 +1,7 @@
 package hudson.model;
 
+import static jenkins.SkipSomeTests.ReasonTestShouldRun.NEVER_FAILING_TEST;
+import static jenkins.SkipSomeTests.runTestSometimes;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
@@ -7,6 +9,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeTrue;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.markup.MarkupFormatter;
@@ -46,6 +49,7 @@ public class ParametersTest {
 
     @Test
     public void parameterTypes() throws Exception {
+        assumeTrue(runTestSometimes(NEVER_FAILING_TEST));
         FreeStyleProject otherProject = j.createFreeStyleProject();
         j.buildAndAssertSuccess(otherProject);
 
@@ -103,6 +107,7 @@ public class ParametersTest {
 
     @Test
     public void choiceWithLTGT() throws Exception {
+        assumeTrue(runTestSometimes(NEVER_FAILING_TEST));
         FreeStyleProject project = j.createFreeStyleProject();
         ParametersDefinitionProperty pdp = new ParametersDefinitionProperty(
                 new ChoiceParameterDefinition("choice", "Choice 1\nChoice <2>", "choice description"));

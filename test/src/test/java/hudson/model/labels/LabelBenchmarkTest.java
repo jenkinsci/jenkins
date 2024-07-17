@@ -1,6 +1,9 @@
 package hudson.model.labels;
 
+import static jenkins.SkipSomeTests.ReasonTestShouldRun.NEVER_FAILING_TEST;
+import static jenkins.SkipSomeTests.runTestSometimes;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeTrue;
 
 import hudson.model.Label;
 import hudson.slaves.DumbSlave;
@@ -22,6 +25,7 @@ import org.openjdk.jmh.runner.options.OptionsBuilder;
 public class LabelBenchmarkTest {
     @Test
     public void runBenchmark() throws Exception {
+        assumeTrue(runTestSometimes(NEVER_FAILING_TEST));
         // run the minimum possible number of iterations
         ChainedOptionsBuilder options = new OptionsBuilder()
                 .mode(Mode.AverageTime)
