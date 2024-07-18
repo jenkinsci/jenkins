@@ -615,7 +615,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         }});
     }
 
-    void considerDetachedPlugin(String shortName) {
+    void considerDetachedPlugin(String shortName, String source) {
         if (new File(rootDir, shortName + ".jpi").isFile() ||
             new File(rootDir, shortName + ".hpi").isFile() ||
             new File(rootDir, shortName + ".jpl").isFile() ||
@@ -627,7 +627,7 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         for (String loadedFile : loadPluginsFromWar(getDetachedLocation(), (dir, name) -> normalisePluginName(name).equals(shortName))) {
             String loaded = normalisePluginName(loadedFile);
             File arc = new File(rootDir, loaded + ".jpi");
-            LOGGER.info(() -> "Loading a detached plugin as a dependency: " + arc);
+            LOGGER.info(() -> "Loading a detached plugin " + arc + " as a dependency of " + source);
             try {
                 plugins.add(strategy.createPluginWrapper(arc));
             } catch (IOException e) {
