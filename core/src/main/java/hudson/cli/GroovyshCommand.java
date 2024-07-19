@@ -77,7 +77,7 @@ public class GroovyshCommand extends CLICommand {
 
         StringBuilder commandLine = new StringBuilder();
         for (String arg : args) {
-            if (commandLine.length() > 0) {
+            if (!commandLine.isEmpty()) {
                 commandLine.append(" ");
             }
             commandLine.append(arg);

@@ -18,8 +18,8 @@ import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.UncaughtExceptionFilter;
 import org.kohsuke.stapler.WebApp;
-import org.kohsuke.stapler.compression.CompressionFilter;
 
 /**
  * Deals with exceptions that get thrown all the way up to the Stapler rendering layer.
@@ -30,7 +30,7 @@ public class InstallUncaughtExceptionHandler {
 
     @Initializer
     public static void init(final Jenkins j) throws IOException {
-        CompressionFilter.setUncaughtExceptionHandler(j.servletContext, (e, context, req, rsp) -> handleException(j, e, req, rsp, 500));
+        UncaughtExceptionFilter.setUncaughtExceptionHandler(j.servletContext, (e, context, req, rsp) -> handleException(j, e, req, rsp, 500));
         try {
             Thread.setDefaultUncaughtExceptionHandler(new DefaultUncaughtExceptionHandler());
             LOGGER.log(Level.FINE, "Successfully installed a global UncaughtExceptionHandler.");

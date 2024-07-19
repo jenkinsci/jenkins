@@ -208,7 +208,7 @@ public class Items {
     public static String toNameList(Collection<? extends Item> items) {
         StringBuilder buf = new StringBuilder();
         for (Item item : items) {
-            if (buf.length() > 0)
+            if (!buf.isEmpty())
                 buf.append(", ");
             buf.append(item.getFullName());
         }
@@ -373,7 +373,7 @@ public class Items {
      */
     public static Item load(ItemGroup parent, File dir) throws IOException {
         Item item = (Item) getConfigFile(dir).read();
-        item.onLoad(parent, dir.getName());
+        item.onLoad(parent, parent.getItemName(dir, item));
         return item;
     }
 

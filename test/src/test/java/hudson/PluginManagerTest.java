@@ -29,6 +29,7 @@ import static java.nio.file.attribute.PosixFilePermission.OWNER_READ;
 import static java.nio.file.attribute.PosixFilePermission.OWNER_WRITE;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInRelativeOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
@@ -81,6 +82,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 import javax.servlet.ServletException;
 import jenkins.ClassLoaderReflectionToolkit;
 import jenkins.RestartRequiredException;
@@ -576,8 +578,7 @@ public class PluginManagerTest {
             Thread.sleep(100);
             done = true;
             for (UpdateCenterJob job : r.jenkins.getUpdateCenter().getJobs()) {
-                if (job instanceof UpdateCenter.DownloadJob) {
-                    UpdateCenter.DownloadJob j = (UpdateCenter.DownloadJob) job;
+                if (job instanceof UpdateCenter.DownloadJob j) {
                     assertFalse(j.status instanceof UpdateCenter.DownloadJob.Failure);
                     done &= !(j.status instanceof UpdateCenter.DownloadJob.Pending ||
                             j.status instanceof UpdateCenter.DownloadJob.Installing);
@@ -624,6 +625,17 @@ public class PluginManagerTest {
         assertNotNull(r.jenkins.getPluginManager().getPlugin("variant"));
         dynamicLoad("jenkins-50336.hpi");
         assertTrue(ExtensionList.lookup(GlobalConfiguration.class).stream().anyMatch(gc -> "io.jenkins.plugins.MyGlobalConfiguration".equals(gc.getClass().getName())));
+    }
+
+    @Test @Issue("JENKINS-64840")
+    @WithPlugin({"mandatory-depender-0.0.2.hpi", "dependee-0.0.2.hpi", "depender-0.0.2.hpi"})
+    public void getPluginsSortedByTitle() throws Exception {
+        List<String> installedPlugins = r.jenkins.getPluginManager().getPluginsSortedByTitle()
+                .stream()
+                .map(PluginWrapper::getDisplayName)
+                .collect(Collectors.toUnmodifiableList());
+
+        assertThat(installedPlugins, containsInRelativeOrder("dependee", "depender", "mandatory-depender"));
     }
 
     @Issue("JENKINS-62622")
@@ -793,8 +805,8 @@ public class PluginManagerTest {
 
             PluginManagerUtil.getCheckForUpdatesButton(p).click();
             HtmlPage available = wc.goTo("pluginManager/available");
-            assertTrue(available.querySelector(".alert-danger")
-                    .getTextContent().contains("This plugin is built for Jenkins 2.999"));
+            assertTrue(available.querySelector(".jenkins-alert-danger")
+                    .getTextContent().contains("This plugin is built for Jenkins 9999999"));
             wc.waitForBackgroundJavaScript(100);
 
             HtmlAnchor anchor = available.querySelector(".jenkins-table__link");

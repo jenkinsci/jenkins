@@ -157,8 +157,7 @@ public abstract class ListViewColumn implements ExtensionPoint, Describable<List
         final JSONObject emptyJSON = new JSONObject();
         for (Descriptor<ListViewColumn> d : descriptors)
             try {
-                if (d instanceof ListViewColumnDescriptor) {
-                    ListViewColumnDescriptor ld = (ListViewColumnDescriptor) d;
+                if (d instanceof ListViewColumnDescriptor ld) {
                     if (!ld.shownByDefault()) {
                         continue;   // skip this
                     }

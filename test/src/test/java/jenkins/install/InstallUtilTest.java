@@ -112,7 +112,7 @@ public class InstallUtilTest {
         Assert.assertEquals(InstallState.UPGRADE, InstallUtil.getNextInstallState(InstallState.UNKNOWN));
 
         // Fudge things yet again, changing the stored version to something very very new, faking a downgrade...
-        InstallUtil.saveLastExecVersion("1000.0");
+        InstallUtil.saveLastExecVersion("1000000.0");
         Assert.assertEquals(InstallState.DOWNGRADE, InstallUtil.getNextInstallState(InstallState.UNKNOWN));
     }
 

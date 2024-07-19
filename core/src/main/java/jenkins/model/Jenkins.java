@@ -499,7 +499,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      *     STARTUP_MARKER_FILE.get(); // returns false if we are on a fresh startup. True for next startups.
      * }
      */
-    private static transient FileBoolean STARTUP_MARKER_FILE;
+    private static FileBoolean STARTUP_MARKER_FILE;
 
     private volatile List<JDK> jdks = new ArrayList<>();
 
@@ -539,6 +539,11 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * Active {@link Cloud}s.
      */
     public final Hudson.CloudList clouds = new Hudson.CloudList(this);
+
+    @Restricted(Beta.class)
+    public void loadNode(File dir) throws IOException {
+        getNodesObject().load(dir);
+    }
 
     public static class CloudList extends DescribableList<Cloud, Descriptor<Cloud>> {
         public CloudList(Jenkins h) {
@@ -1450,26 +1455,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         save();
     }
 
-    public View.People getPeople() {
-        return new View.People(this);
-    }
-
-    /**
-     * @since 1.484
-     */
-    public View.AsynchPeople getAsynchPeople() {
-        return new View.AsynchPeople(this);
-    }
-
-    /**
-     * Does this {@link View} has any associated user information recorded?
-     * @deprecated Potentially very expensive call; do not use from Jelly views.
-     */
-    @Deprecated
-    public boolean hasPeople() {
-        return View.People.isApplicable(items.values());
-    }
-
     public Api getApi() {
         /* Do not show "REST API" link in footer when on 404 error page */
         final StaplerRequest req = Stapler.getCurrentRequest();
@@ -2219,6 +2204,12 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         return nodes.getNode(name);
     }
 
+    @CheckForNull
+    @Restricted(Beta.class)
+    public Node getOrLoadNode(String nodeName) {
+        return getNodesObject().getOrLoad(nodeName);
+    }
+
     /**
      * Gets a {@link Cloud} by {@link Cloud#name its name}, or null.
      */
@@ -2264,6 +2255,14 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     public void removeNode(@NonNull Node n) throws IOException {
         nodes.removeNode(n);
+    }
+
+    /**
+     * Unload a node from Jenkins without touching its configuration file.
+     */
+    @Restricted(Beta.class)
+    public void unloadNode(@NonNull Node n) {
+        nodes.unload(n);
     }
 
     /**
@@ -2356,12 +2355,12 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @since 2.64
      */
     public List<AdministrativeMonitor> getActiveAdministrativeMonitors() {
-        if (!Jenkins.get().hasPermission(SYSTEM_READ)) {
+        if (!AdministrativeMonitor.hasPermissionToDisplay()) {
             return Collections.emptyList();
         }
         return administrativeMonitors.stream().filter(m -> {
             try {
-                return Jenkins.get().hasPermission(m.getRequiredPermission()) && m.isEnabled() && m.isActivated();
+                return m.hasRequiredPermission() && m.isEnabled() && m.isActivated();
             } catch (Throwable x) {
                 LOGGER.log(Level.WARNING, null, x);
                 return false;
@@ -2898,13 +2897,16 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     public void refreshExtensions() throws ExtensionRefreshException {
         ExtensionList<ExtensionFinder> finders = getExtensionList(ExtensionFinder.class);
+        LOGGER.finer(() -> "refreshExtensions " + finders);
         for (ExtensionFinder ef : finders) {
             if (!ef.isRefreshable())
                 throw new ExtensionRefreshException(ef + " doesn't support refresh");
         }
 
         List<ExtensionComponentSet> fragments = new ArrayList<>();
+
         for (ExtensionFinder ef : finders) {
+            LOGGER.finer(() -> "searching " + ef);
             fragments.add(ef.refresh());
         }
         ExtensionComponentSet delta = ExtensionComponentSet.union(fragments).filtered();
@@ -2913,10 +2915,19 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         List<ExtensionComponent<ExtensionFinder>> newFinders = new ArrayList<>(delta.find(ExtensionFinder.class));
         while (!newFinders.isEmpty()) {
             ExtensionFinder f = newFinders.remove(newFinders.size() - 1).getInstance();
+            LOGGER.finer(() -> "found new ExtensionFinder " + f);
 
             ExtensionComponentSet ecs = ExtensionComponentSet.allOf(f).filtered();
             newFinders.addAll(ecs.find(ExtensionFinder.class));
             delta = ExtensionComponentSet.union(delta, ecs);
+        }
+
+        // we may not have found a new Extension finder but we may be using an extension finder that is extensible
+        // e.g. hudson.ExtensionFinder.GuiceFinder is extensible by GuiceExtensionAnnotation which is done by the variant plugin
+        // so lets give it one more chance.
+        for (ExtensionFinder ef : finders) {
+            LOGGER.finer(() -> "searching again in " + ef);
+            delta = ExtensionComponentSet.union(delta, ef.refresh().filtered());
         }
 
         for (ExtensionList el : extensionLists.values()) {
@@ -3095,8 +3106,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 continue;
             }
 
-            if (ctx instanceof ItemGroup) {
-                ItemGroup g = (ItemGroup) ctx;
+            if (ctx instanceof ItemGroup g) {
                 Item i = g.getItem(s);
                 if (i == null || !i.hasPermission(Item.READ)) { // TODO consider DISCOVER
                     ctx = null;    // can't go up further
@@ -3298,7 +3308,8 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
     /**
      * The file we save our configuration.
      */
-    private XmlFile getConfigFile() {
+    @Restricted(NoExternalUse.class)
+    protected XmlFile getConfigFile() {
         return new XmlFile(XSTREAM, new File(root, "config.xml"));
     }
 
@@ -3388,6 +3399,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
             primaryView = v.getViewName();
         }
         primaryView = AllView.migrateLegacyPrimaryAllViewLocalizedName(views, primaryView);
+        clouds.setOwner(this);
         configLoaded = true;
         try {
             checkRawBuildsDir(buildsDir);
@@ -3464,10 +3476,9 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         File d = new File(replacedValue);
         if (!d.isDirectory()) {
             // if dir does not exist (almost guaranteed) need to make sure nearest existing ancestor can be written to
-            d = d.getParentFile();
-            while (!d.exists()) {
+            do {
                 d = d.getParentFile();
-            }
+            } while (!d.exists());
             if (!d.canWrite()) {
                 throw new InvalidBuildsDir(newBuildsDirValue +  " does not exist and probably cannot be created");
             }
@@ -3497,8 +3508,6 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 } else {
                     nodes.load();
                 }
-
-                clouds.setOwner(Jenkins.this);
             }
         });
 
@@ -4481,7 +4490,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
                 rsp.sendError(HttpServletResponse.SC_FORBIDDEN, "No crumb found");
             }
             rsp.sendRedirect2(req.getContextPath() + "/fingerprint/" +
-                Util.getDigestOf(p.getFileItem("name").getInputStream()) + '/');
+                Util.getDigestOf(p.getFileItem2("name").getInputStream()) + '/');
         }
     }
 

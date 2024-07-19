@@ -32,7 +32,6 @@ import hudson.PluginWrapper;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Slave;
-import hudson.util.FormValidation;
 import java.io.File;
 import jenkins.agents.WebSocketAgentsTest;
 import jenkins.slaves.JnlpSlaveAgentProtocol4;
@@ -50,13 +49,14 @@ public class JNLPLauncherRealTest {
 
     private static final String STATIC_AGENT_NAME = "static";
 
-    @Rule public RealJenkinsRule rr = new RealJenkinsRule().includeTestClasspathPlugins(false).withColor(PrefixedOutputStream.Color.BLUE);
+    @Rule public RealJenkinsRule rr = new RealJenkinsRule().withColor(PrefixedOutputStream.Color.BLUE);
 
     @Rule public InboundAgentRule iar = new InboundAgentRule();
 
     @Issue("JEP-230")
     @Test public void smokes() throws Throwable {
-        /* Since RealJenkinsRuleInit.jpi will load detached plugins, to reproduce a failure use:
+        /* Since RealJenkinsRuleInit.jpi will load detached and test scope plugins, to reproduce a failure use:
+        rr.includeTestClasspathPlugins(false);
         FileUtils.touch(new File(rr.getHome(), "plugins/instance-identity.jpi.disabled"));
         */
         then(false);
@@ -98,7 +98,7 @@ public class JNLPLauncherRealTest {
             for (PluginWrapper plugin : r.jenkins.pluginManager.getPlugins()) {
                 System.err.println(plugin + " active=" + plugin.isActive() + " enabled=" + plugin.isEnabled());
             }
-            assertThat(ExtensionList.lookupSingleton(JNLPLauncher.DescriptorImpl.class).doCheckWebSocket(webSocket, null).kind, is(FormValidation.Kind.OK));
+            assertThat(ExtensionList.lookupSingleton(JNLPLauncher.DescriptorImpl.class).isWebSocketSupported(), is(true));
             Slave agent = (Slave) r.jenkins.getNode(agentName);
             FreeStyleProject p = r.createFreeStyleProject();
             p.setAssignedNode(agent);

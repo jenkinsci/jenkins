@@ -55,7 +55,6 @@ import java.util.logging.Logger;
 import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
 import jenkins.util.xml.XMLUtils;
-import org.apache.commons.lang.StringUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 
@@ -214,7 +213,7 @@ public class InstallUtil {
                 String version = Files.readString(Util.fileToPath(lastExecVersionFile), Charset.defaultCharset());
                 // JENKINS-37438 blank will force the setup
                 // wizard regardless of current state of the system
-                if (StringUtils.isBlank(version)) {
+                if (version == null || version.isBlank()) {
                     return FORCE_NEW_INSTALL_VERSION.toString();
                 }
                 return version;
@@ -235,7 +234,7 @@ public class InstallUtil {
             if (configFile.exists()) {
                 try {
                     String lastVersion = XMLUtils.getValue("/hudson/version", configFile);
-                    if (lastVersion.length() > 0) {
+                    if (!lastVersion.isEmpty()) {
                         LOGGER.log(Level.FINE, "discovered serialized lastVersion {0}", lastVersion);
                         return lastVersion;
                     }

@@ -81,7 +81,6 @@ import jenkins.triggers.SCMTriggerItem;
 import jenkins.util.SystemProperties;
 import net.sf.json.JSONObject;
 import org.apache.commons.jelly.XMLOutput;
-import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
@@ -381,7 +380,7 @@ public class SCMTrigger extends Trigger<Item> {
         public FormValidation doCheckScmpoll_spec(@QueryParameter String value,
                                                   @QueryParameter boolean ignorePostCommitHooks,
                                                   @AncestorInPath Item item) {
-            if (StringUtils.isBlank(value)) {
+            if (value == null || value.isBlank()) {
                 if (ignorePostCommitHooks) {
                     return FormValidation.ok(Messages.SCMTrigger_no_schedules_no_hooks());
                 } else {
@@ -469,7 +468,7 @@ public class SCMTrigger extends Trigger<Item> {
          */
         public void doPollingLog(StaplerRequest req, StaplerResponse rsp) throws IOException {
             rsp.setContentType("text/plain;charset=UTF-8");
-            try (OutputStream os = rsp.getCompressedOutputStream(req);
+            try (OutputStream os = rsp.getOutputStream();
                  // Prevent jelly from flushing stream so Content-Length header can be added afterwards
                  FlushProofOutputStream out = new FlushProofOutputStream(os)) {
                 getPollingLogText().writeLogTo(0, out);

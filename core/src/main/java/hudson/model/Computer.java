@@ -63,6 +63,7 @@ import hudson.slaves.OfflineCause.ByCLI;
 import hudson.slaves.RetentionStrategy;
 import hudson.slaves.WorkspaceList;
 import hudson.triggers.SafeTimerTask;
+import hudson.util.ClassLoaderSanityThreadFactory;
 import hudson.util.DaemonThreadFactory;
 import hudson.util.EditDistance;
 import hudson.util.ExceptionCatchingThreadFactory;
@@ -90,6 +91,7 @@ import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -114,7 +116,6 @@ import jenkins.util.Listeners;
 import jenkins.util.SystemProperties;
 import jenkins.widgets.HasWidgets;
 import net.jcip.annotations.GuardedBy;
-import org.apache.commons.lang.StringUtils;
 import org.jenkins.ui.icon.Icon;
 import org.jenkins.ui.icon.IconSet;
 import org.kohsuke.accmod.Restricted;
@@ -737,8 +738,12 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
     public String getIcon() {
         // The machine was taken offline by someone
         if (isTemporarilyOffline() && getOfflineCause() instanceof OfflineCause.UserCause) return "symbol-computer-disconnected";
-        // There is a "technical" reason the computer will not accept new builds
-        if (isOffline() || !isAcceptingTasks()) return "symbol-computer-offline";
+        // The computer is not accepting tasks, e.g. because the availability demands it being offline.
+        if (!isAcceptingTasks()) {
+            return "symbol-computer-not-accepting";
+        }
+        // The computer is not connected or it is temporarily offline due to a node monitor
+        if (isOffline()) return "symbol-computer-offline";
         return "symbol-computer";
     }
 
@@ -755,11 +760,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      */
     @Exported
     public String getIconClassName() {
-        // The machine was taken offline by someone
-        if (isTemporarilyOffline() && getOfflineCause() instanceof OfflineCause.UserCause) return "symbol-computer-disconnected";
-        // There is a "technical" reason the computer will not accept new builds
-        if (isOffline() || !isAcceptingTasks()) return "symbol-computer-offline";
-        return "symbol-computer";
+        return getIcon();
     }
 
     public String getIconAltText() {
@@ -1161,6 +1162,17 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         return r;
     }
 
+    @Restricted(NoExternalUse.class)
+    public Map<NodeMonitor, Object> getMonitoringData() {
+        Map<NodeMonitor, Object> r = new LinkedHashMap<>();
+        for (NodeMonitor monitor : NodeMonitor.getAll()) {
+            if (monitor.getColumnCaption() != null) {
+                r.put(monitor, monitor.data(this));
+            }
+        }
+        return r;
+    }
+
     /**
      * Gets the system properties of the JVM on this computer.
      * If this is the master, it returns the system property of the master computer.
@@ -1369,7 +1381,9 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
                 Executors.newCachedThreadPool(
                     new ExceptionCatchingThreadFactory(
                         new NamingThreadFactory(
-                            new DaemonThreadFactory(), "Computer.threadPoolForRemoting")))), ACL.SYSTEM2));
+                            new ClassLoaderSanityThreadFactory(new DaemonThreadFactory()),
+                            "Computer.threadPoolForRemoting")))),
+            ACL.SYSTEM2));
 
 //
 //
@@ -1443,7 +1457,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         checkPermission(Jenkins.ADMINISTER);
 
         rsp.setContentType("text/plain");
-        try (PrintWriter w = new PrintWriter(rsp.getCompressedWriter(req))) {
+        try (PrintWriter w = new PrintWriter(rsp.getWriter())) {
             VirtualChannel vc = getChannel();
             if (vc instanceof Channel) {
                 w.println("Controller to agent");
@@ -1510,7 +1524,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
         }
 
         String nExecutors = req.getSubmittedForm().getString("numExecutors");
-        if (StringUtils.isBlank(nExecutors) || Integer.parseInt(nExecutors) <= 0) {
+        if (nExecutors == null || nExecutors.isBlank() || Integer.parseInt(nExecutors) <= 0) {
             throw new FormException(Messages.Slave_InvalidConfig_Executors(nodeName), "numExecutors");
         }
 

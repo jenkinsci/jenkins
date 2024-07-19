@@ -386,7 +386,7 @@ public class SlaveComputer extends Computer {
     public OutputStream openLogFile() {
         try {
             log.rewind();
-            return log;
+            return decorate(log);
         } catch (IOException e) {
             logger.log(Level.SEVERE, "Failed to create log file " + getLogFile(), e);
             return OutputStream.nullOutputStream();
@@ -877,6 +877,12 @@ public class SlaveComputer extends Computer {
 
     @WebMethod(name = "jenkins-agent.jnlp")
     public HttpResponse doJenkinsAgentJnlp(StaplerRequest req, StaplerResponse res) {
+        LOGGER.log(
+                Level.WARNING,
+                "Agent \"" + getName()
+                        + "\" is connecting with the \"-jnlpUrl\" argument, which is deprecated."
+                        + " Use \"-url\" and \"-name\" instead, potentially also passing in"
+                        + " \"-webSocket\", \"-tunnel\", and/or work directory options as needed.");
         return new EncryptedSlaveAgentJnlpFile(this, "jenkins-agent.jnlp.jelly", getName(), CONNECT);
     }
 

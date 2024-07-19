@@ -33,7 +33,6 @@ import static java.util.logging.Level.FINER;
 import static java.util.logging.Level.SEVERE;
 import static java.util.logging.Level.WARNING;
 
-import com.jcraft.jzlib.GZIPInputStream;
 import com.thoughtworks.xstream.XStream;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -87,6 +86,7 @@ import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -105,6 +105,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.zip.GZIPInputStream;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 import jenkins.model.ArtifactManager;
@@ -124,7 +125,6 @@ import jenkins.util.io.OnMaster;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.jelly.XMLOutput;
-import org.apache.commons.lang.ArrayUtils;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
@@ -364,8 +364,7 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      */
     public void reload() throws IOException {
         this.state = State.COMPLETED;
-        // TODO ABORTED would perhaps make more sense than FAILURE:
-        this.result = Result.FAILURE;  // defensive measure. value should be overwritten by unmarshal, but just in case the saved data is inconsistent
+        this.result = Result.ABORTED;  // defensive measure. value should be overwritten by unmarshal, but just in case the saved data is inconsistent
         getDataFile().unmarshal(this); // load the rest of the data
 
         if (state == State.COMPLETED) {
@@ -768,7 +767,7 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * Returns the timestamp formatted in xs:dateTime.
      */
     public @NonNull String getTimestampString2() {
-        return Util.XS_DATETIME_FORMATTER.format(new Date(timestamp));
+        return Util.XS_DATETIME_FORMATTER2.format(Instant.ofEpochMilli(timestamp));
     }
 
     /**
@@ -1342,7 +1341,7 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         private String combineLast(String[] token, int n) {
             StringBuilder buf = new StringBuilder();
             for (int i = Math.max(0, token.length - n); i < token.length; i++) {
-                if (buf.length() > 0)  buf.append('/');
+                if (!buf.isEmpty())  buf.append('/');
                 buf.append(token[i]);
             }
             return buf.toString();
@@ -2151,8 +2150,11 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
     private String convertBytesToString(List<Byte> bytes) {
         Collections.reverse(bytes);
-        Byte[] byteArray = bytes.toArray(new Byte[0]);
-        return new String(ArrayUtils.toPrimitive(byteArray), getCharset());
+        byte[] byteArray = new byte[bytes.size()];
+        for (int i = 0; i < byteArray.length; i++) {
+            byteArray[i] = bytes.get(i);
+        }
+        return new String(byteArray, getCharset());
     }
 
     public void doBuildStatus(StaplerRequest req, StaplerResponse rsp) throws IOException {
@@ -2284,7 +2286,7 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     public void doConsoleText(StaplerRequest req, StaplerResponse rsp) throws IOException {
         rsp.setContentType("text/plain;charset=UTF-8");
         try (InputStream input = getLogInputStream();
-             OutputStream os = rsp.getCompressedOutputStream(req);
+             OutputStream os = rsp.getOutputStream();
              PlainTextConsoleOutputStream out = new PlainTextConsoleOutputStream(os)) {
             IOUtils.copy(input, out);
         }
@@ -2480,10 +2482,12 @@ public abstract class Run<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
         }
         Jenkins j = Jenkins.getInstanceOrNull();
         if (j == null) {
+            LOGGER.fine(() -> "Jenkins not running");
             return null;
         }
         Job<?, ?> job = j.getItemByFullName(jobName, Job.class);
         if (job == null) {
+            LOGGER.fine(() -> "no such job " + jobName + " when running as " + Jenkins.getAuthentication2().getName());
             return null;
         }
         return job.getBuildByNumber(number);

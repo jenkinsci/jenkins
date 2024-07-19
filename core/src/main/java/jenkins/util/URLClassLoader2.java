@@ -17,12 +17,41 @@ public class URLClassLoader2 extends URLClassLoader implements JenkinsClassLoade
         registerAsParallelCapable();
     }
 
+    /**
+     * @deprecated use {@link URLClassLoader2#URLClassLoader2(String, URL[])}
+     */
+    @Deprecated(since = "2.459")
     public URLClassLoader2(URL[] urls) {
         super(urls);
     }
 
+    /**
+     * @deprecated use {@link URLClassLoader2#URLClassLoader2(String, URL[], ClassLoader)}
+     */
+    @Deprecated(since = "2.459")
     public URLClassLoader2(URL[] urls, ClassLoader parent) {
         super(urls, parent);
+    }
+
+    /**
+     * Create a new {@link URLClassLoader2} with the given name and URLS and the {@link #getSystemClassLoader()} as its parent.
+     * @param name name of this classloader.
+     * @param urls the list of URLS to find classes in.
+     * @since 2.459
+     */
+    public URLClassLoader2(String name, URL[] urls) {
+        super(name, urls, getSystemClassLoader());
+    }
+
+    /**
+     *  Create a new {@link URLClassLoader2} with the given name, URLS parent.
+     * @param name name of this classloader.
+     * @param urls the list of URLS to find classes in.
+     * @param parent the parent to search for classes before we look in the {@code urls}
+     * @since 2.459
+     */
+    public URLClassLoader2(String name, URL[] urls, ClassLoader parent) {
+        super(name, urls, parent);
     }
 
     @Override

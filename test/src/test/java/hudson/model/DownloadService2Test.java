@@ -60,7 +60,7 @@ public class DownloadService2Test {
         URL resource = DownloadService2Test.class.getResource(file);
         assertNotNull(file, resource);
         JSONObject json = JSONObject.fromObject(DownloadService.loadJSONHTML(resource));
-        @SuppressWarnings("unchecked") Set<String> keySet = json.keySet();
+        Set<String> keySet = json.keySet();
         assertEquals(expected, new TreeSet<>(keySet).toString());
     }
 

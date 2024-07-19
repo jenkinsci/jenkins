@@ -324,17 +324,19 @@ public class Executor extends Thread implements ModelObject {
 
     @Override
     public void run() {
-        if (!owner.isOnline()) {
-            resetWorkUnit("went off-line before the task's worker thread started");
-            owner.removeExecutor(this);
-            queue.scheduleMaintenance();
-            return;
-        }
-        if (owner.getNode() == null) {
-            resetWorkUnit("was removed before the task's worker thread started");
-            owner.removeExecutor(this);
-            queue.scheduleMaintenance();
-            return;
+        if (!(owner instanceof Jenkins.MasterComputer)) {
+            if (!owner.isOnline()) {
+                resetWorkUnit("went off-line before the task's worker thread started");
+                owner.removeExecutor(this);
+                queue.scheduleMaintenance();
+                return;
+            }
+            if (owner.getNode() == null) {
+                resetWorkUnit("was removed before the task's worker thread started");
+                owner.removeExecutor(this);
+                queue.scheduleMaintenance();
+                return;
+            }
         }
         final WorkUnit workUnit;
         lock.writeLock().lock();
@@ -352,13 +354,15 @@ public class Executor extends Thread implements ModelObject {
             task = Queue.withLock(new Callable<>() {
                 @Override
                 public SubTask call() throws Exception {
-                    if (!owner.isOnline()) {
-                        resetWorkUnit("went off-line before the task's worker thread was ready to execute");
-                        return null;
-                    }
-                    if (owner.getNode() == null) {
-                        resetWorkUnit("was removed before the task's worker thread was ready to execute");
-                        return null;
+                    if (!(owner instanceof Jenkins.MasterComputer)) {
+                        if (!owner.isOnline()) {
+                            resetWorkUnit("went off-line before the task's worker thread was ready to execute");
+                            return null;
+                        }
+                        if (owner.getNode() == null) {
+                            resetWorkUnit("was removed before the task's worker thread was ready to execute");
+                            return null;
+                        }
                     }
                     // after this point we cannot unwind the assignment of the work unit, if the owner
                     // is removed or goes off-line then the build will just have to fail.

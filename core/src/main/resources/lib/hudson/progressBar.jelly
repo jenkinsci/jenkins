@@ -22,29 +22,49 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 
-<!--
-  Progress bar. @pos (0-100) specifies the current position
-
-  Attributes:
-    pos  : 0-100 to indicates the current progress. -1 if the progress is unknown
-    href : if set, the progress bar becomes a hyperlink
-    red  : if set to non-null, the progress bar will be drawn in red, to indicate that the processing is likely stuck.
--->
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:x="jelly:xml" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <table class="progress-bar ${attrs.red?'red':null}" id="${attrs.id}" tooltip="${attrs.tooltip}" href="${attrs.href}" style="${attrs.href!=null ? 'cursor:pointer' : null}">
-    <j:choose>
-      <j:when test="${pos lt 0}">
-        <!-- style sheet will fill in the progress bar image -->
-        <tbody><tr class="unknown"><td/></tr></tbody>
-      </j:when>
-      <j:otherwise>
-          <tbody><tr>
-            <td class="progress-bar-done" style="width:${pos}%;"/>
-            <td class="progress-bar-left" style="width:${100-pos}%"/>
-          </tr>
-        </tbody>
-      </j:otherwise>
-    </j:choose>
-  </table>
+<j:jelly xmlns:j="jelly:core" xmlns:x="jelly:xml" xmlns:st="jelly:stapler">
+  <st:documentation>
+    <st:attribute name="pos" use="required">
+      0-100 to indicates the current progress. -1 if the progress is unknown
+    </st:attribute>
+    <st:attribute name="href" use="optional">
+      if set, the progress bar becomes a hyperlink
+    </st:attribute>
+    <st:attribute name="red" use="optional">
+      if set to non-null, the progress bar will be drawn in red, to indicate that the processing is likely stuck.
+    </st:attribute>
+    <st:attribute name="id" use="optional">
+      If set, id will be the identifier for the component
+    </st:attribute>
+    <st:attribute name="large" use="optional">
+      If set, the progress bar will have the double size
+    </st:attribute>
+    <st:attribute name="tooltip" use="optional">
+      Tooltip with more progress details.
+    </st:attribute>
+    <st:attribute name="tooltipTemplate" use="optional">
+      Template for the tooltip, so the tooltip can be updated dynamically via javascript. Used by buildCaption.
+    </st:attribute>
+    <st:attribute name="animate" use="optional">
+      If set the progress bar will be animated. Animation will also be used when the current progress is unknown.
+    </st:attribute>
+  </st:documentation>
+  <j:set var="animate" value="${(attrs.animate != null || attrs.pos lt 0) ? 'app-progress-bar--animate' : null}"/>
+  <x:element name="${attrs.href != null ? 'a' : 'div'}">
+    <x:attribute name="class">app-progress-bar ${attrs.large?'app-progress-bar--large':null} ${attrs.red?'app-progress-bar--error':null}</x:attribute>
+    <x:attribute name="href">${attrs.href}</x:attribute>
+    <x:attribute name="tooltip">${attrs.tooltip}</x:attribute>
+    <x:attribute name="data-tooltip-append-to-parent">true</x:attribute>
+    <x:attribute name="id">${attrs.id}</x:attribute>
+    <x:attribute name="data-tooltip-template">${attrs.tooltipTemplate}</x:attribute>
+      <j:choose>
+        <j:when test="${pos lt 0}">
+          <span class="${animate} app-progress-bar--unknown"/>
+        </j:when>
+        <j:otherwise>
+          <span class="${animate}" style="width: ${pos}%;"/>
+        </j:otherwise>
+      </j:choose>
+  </x:element>
 </j:jelly>

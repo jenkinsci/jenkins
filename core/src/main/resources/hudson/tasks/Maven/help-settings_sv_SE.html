@@ -1,0 +1,36 @@
+<div>
+  Inställningselementet i filen
+  <code>settings.xml</code>
+  innehåller element som används för att definiera värden som konfigurerar
+  Maven-körningen på olika sätt, som
+  <code>pom.xml</code>
+  , men bör inte buntas ihop till någon specifikt projekt eller distribueras
+  offentligt. Detta inkluderar värden som den lokala kodlagringsplatsen,
+  alternativa fjärrlagringsservrar och autentiseringsinformation.
+  <br />
+  Som standard finns det två platser där en fil som heter
+  <code>settings.xml</code>
+  kan finnas:
+
+  <ul>
+    <li>
+      Installationen av Maven - standard:
+      <code>$M2_HOME/conf/settings.xml</code>
+    </li>
+    <li>
+      En användares installation - standard:
+      <code>${user.home}/.m2/settings.xml</code>
+    </li>
+  </ul>
+
+  Först- och sistnämnda settings.xml kallas även globala respektive
+  användarspecifika inställningar. Om båda filer finns kommer deras innehåll
+  slås samman, där användarspecifika settings.xml prioriteras.
+  <p>
+    se även:
+    <a href="https://maven.apache.org/settings.html">
+      referens av
+      <code>settings.xml</code>
+    </a>
+  </p>
+</div>

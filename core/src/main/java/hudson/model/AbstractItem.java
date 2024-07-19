@@ -551,8 +551,7 @@ public abstract class AbstractItem extends Actionable implements Loadable, Item,
             List<Ancestor> ancestors = req.getAncestors();
             if (!ancestors.isEmpty()) {
                 Ancestor last = ancestors.get(ancestors.size() - 1);
-                if (last.getObject() instanceof View) {
-                    View view = (View) last.getObject();
+                if (last.getObject() instanceof View view) {
                     if (view.getOwner().getItemGroup() == getParent() && !view.isDefault()) {
                         // Showing something inside a view, so should use that as the base URL.
                         String prefix = req.getContextPath() + "/";
@@ -937,6 +936,7 @@ public abstract class AbstractItem extends Actionable implements Loadable, Item,
             // if everything went well, commit this new version
             out.commit();
             SaveableListener.fireOnChange(this, getConfigFile());
+            ItemListener.fireOnUpdated(this);
 
         } finally {
             out.abort(); // don't leave anything behind
@@ -966,7 +966,7 @@ public abstract class AbstractItem extends Actionable implements Loadable, Item,
         Items.whileUpdatingByXml(new NotReallyRoleSensitiveCallable<Void, IOException>() {
             @Override
             public Void call() throws IOException {
-                onLoad(getParent(), getRootDir().getName());
+                onLoad(getParent(), getParent().getItemName(getRootDir(), AbstractItem.this));
                 return null;
             }
         });

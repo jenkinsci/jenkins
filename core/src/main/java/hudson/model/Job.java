@@ -92,6 +92,7 @@ import jenkins.model.DirectlyModifiableTopLevelItemGroup;
 import jenkins.model.Jenkins;
 import jenkins.model.JenkinsLocationConfiguration;
 import jenkins.model.ModelObjectWithChildren;
+import jenkins.model.PeepholePermalink;
 import jenkins.model.ProjectNamingStrategy;
 import jenkins.model.RunIdMigrator;
 import jenkins.model.lazy.LazyBuildMixIn;
@@ -114,6 +115,7 @@ import org.jfree.data.category.CategoryDataset;
 import org.jfree.ui.RectangleInsets;
 import org.jvnet.localizer.Localizable;
 import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.Beta;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.args4j.Argument;
@@ -264,8 +266,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             // If any of the other ItemListeners modify the job, they effect
             // a save, which will clear the holdOffBuildUntilUserSave and
             // causing a regression of JENKINS-2494
-            if (item instanceof Job) {
-                Job job = (Job) item;
+            if (item instanceof Job job) {
                 synchronized (job) {
                     job.holdOffBuildUntilUserSave = false;
                 }
@@ -423,6 +424,16 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
             this.nextBuildNumber = next;
             saveNextBuildNumber();
         }
+    }
+
+    /**
+     * Unconditionally sets the value of {@link #getNextBuildNumber}.
+     * Unlike {@link #updateNextBuildNumber} this does not save the number on disk,
+     * and does not check {@link #getLastBuild}.
+     */
+    @Restricted(Beta.class)
+    public void fastUpdateNextBuildNumber(int nextBuildNumber) {
+        this.nextBuildNumber = nextBuildNumber;
     }
 
     /**
@@ -614,11 +625,11 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     }
 
     /**
-     * @deprecated see {@link LazyBuildMixIn#createHistoryWidget()}
+     * @deprecated Remove any override, history widget is now created via {@link jenkins.widgets.WidgetFactory} implementation.
      */
     @Deprecated(forRemoval = true, since = "2.410")
     protected HistoryWidget createHistoryWidget() {
-        return new HistoryWidget<Job, RunT>(this, getBuilds(), HISTORY_ADAPTER);
+        throw new IllegalStateException("HistoryWidget is now created via WidgetFactory implementation");
     }
 
     public static final HistoryWidget.Adapter<Run> HISTORY_ADAPTER = new Adapter<>() {
@@ -941,7 +952,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     @Exported
     @QuickSilver
     public RunT getLastSuccessfulBuild() {
-        return (RunT) Permalink.LAST_SUCCESSFUL_BUILD.resolve(this);
+        return (RunT) PeepholePermalink.LAST_SUCCESSFUL_BUILD.resolve(this);
     }
 
     /**
@@ -951,7 +962,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     @Exported
     @QuickSilver
     public RunT getLastUnsuccessfulBuild() {
-        return (RunT) Permalink.LAST_UNSUCCESSFUL_BUILD.resolve(this);
+        return (RunT) PeepholePermalink.LAST_UNSUCCESSFUL_BUILD.resolve(this);
     }
 
     /**
@@ -961,7 +972,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     @Exported
     @QuickSilver
     public RunT getLastUnstableBuild() {
-        return (RunT) Permalink.LAST_UNSTABLE_BUILD.resolve(this);
+        return (RunT) PeepholePermalink.LAST_UNSTABLE_BUILD.resolve(this);
     }
 
     /**
@@ -971,7 +982,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     @Exported
     @QuickSilver
     public RunT getLastStableBuild() {
-        return (RunT) Permalink.LAST_STABLE_BUILD.resolve(this);
+        return (RunT) PeepholePermalink.LAST_STABLE_BUILD.resolve(this);
     }
 
     /**
@@ -980,7 +991,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     @Exported
     @QuickSilver
     public RunT getLastFailedBuild() {
-        return (RunT) Permalink.LAST_FAILED_BUILD.resolve(this);
+        return (RunT) PeepholePermalink.LAST_FAILED_BUILD.resolve(this);
     }
 
     /**
@@ -989,7 +1000,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
     @Exported
     @QuickSilver
     public RunT getLastCompletedBuild() {
-        return (RunT) Permalink.LAST_COMPLETED_BUILD.resolve(this);
+        return (RunT) PeepholePermalink.LAST_COMPLETED_BUILD.resolve(this);
     }
 
     /**
@@ -1067,6 +1078,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
      * @return never null
      */
     public PermalinkList getPermalinks() {
+        PeepholePermalink.initialized();
         // TODO: shall we cache this?
         PermalinkList permalinks = new PermalinkList(Permalink.BUILTIN);
         for (PermalinkProjectAction ppa : getActions(PermalinkProjectAction.class)) {
@@ -1097,8 +1109,7 @@ public abstract class Job<JobT extends Job<JobT, RunT>, RunT extends Run<JobT, R
 
         List<FeedItem> entries = new ArrayList<>();
         String scmDisplayName = "";
-        if (this instanceof SCMTriggerItem) {
-            SCMTriggerItem scmItem = (SCMTriggerItem) this;
+        if (this instanceof SCMTriggerItem scmItem) {
             List<String> scmNames = new ArrayList<>();
             for (SCM s : scmItem.getSCMs()) {
                 scmNames.add(s.getDescriptor().getDisplayName());
