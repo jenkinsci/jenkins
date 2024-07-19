@@ -99,7 +99,6 @@ public class ItemListener implements ExtensionPoint {
     /**
      * Called before an item is deleted, providing the ability to veto the deletion operation before it starts.
      * @param item the item being deleted
-     * @param parent the proposed parent
      * @throws Failure to veto the operation.
      * @throws InterruptedException If a blocking condition was interrupted, also vetoing the operation.
      * @since TODO
