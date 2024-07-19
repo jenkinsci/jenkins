@@ -24,9 +24,13 @@
 
 package hudson.model;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.DescriptorExtensionList;
 import hudson.ExtensionPoint;
 import hudson.model.Descriptor.FormException;
+import hudson.model.userproperty.UserPropertyCategory;
+import java.util.ArrayList;
+import java.util.List;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
@@ -58,6 +62,10 @@ public abstract class UserProperty implements ReconfigurableDescribable<UserProp
      */
     protected transient User user;
 
+    /**
+     * This method is used to inform the property about its owner.
+     * It could be called multiple times, even without change, thus it should be idempotent.
+     */
     protected void setUser(User u) {
         this.user = u;
     }
@@ -73,6 +81,24 @@ public abstract class UserProperty implements ReconfigurableDescribable<UserProp
      */
     public static DescriptorExtensionList<UserProperty, UserPropertyDescriptor> all() {
         return Jenkins.get().getDescriptorList(UserProperty.class);
+    }
+
+    /**
+     * Returns all the registered {@link UserPropertyCategory} descriptors for a given category.
+     *
+     * @since TODO
+     */
+    public static List<UserPropertyDescriptor> allByCategoryClass(@NonNull Class<? extends UserPropertyCategory> categoryClass) {
+        DescriptorExtensionList<UserProperty, UserPropertyDescriptor> all = all();
+
+        List<UserPropertyDescriptor> onlyForTheCategory = new ArrayList<>(all.size());
+        for (UserPropertyDescriptor descriptor : all) {
+            if (descriptor.getUserPropertyCategory().getClass().equals(categoryClass)) {
+                onlyForTheCategory.add(descriptor);
+            }
+        }
+
+        return onlyForTheCategory;
     }
 
     @Override
