@@ -344,7 +344,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * The properties not included in the list will be let untouched.
      * It will call the {@link UserProperty#setUser(User)} method and at the end, {@link #save()} once.
      *
-     * @since TODO
+     * @since 2.468
      */
     public synchronized void addProperties(@NonNull List<UserProperty> multipleProperties) throws IOException {
         List<UserProperty> newProperties = new ArrayList<>(this.properties);
