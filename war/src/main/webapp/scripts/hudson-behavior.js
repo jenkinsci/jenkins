@@ -2242,7 +2242,10 @@ function getStyle(e, a) {
  */
 // eslint-disable-next-line no-unused-vars
 function ensureVisible(e) {
-  const scrollTop = Math.max(document.documentElement.scrollTop, document.body.scrollTop);
+  const scrollTop = Math.max(
+    document.documentElement.scrollTop,
+    document.body.scrollTop,
+  );
   let Y = scrollTop;
   let H = window.innerHeight;
   let c = 0;
