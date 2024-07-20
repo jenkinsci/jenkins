@@ -6,7 +6,7 @@ import hudson.Extension;
 @Extension
 public class RemoveYuiUserExperimentalFlag extends BooleanUserExperimentalFlag {
     public RemoveYuiUserExperimentalFlag() {
-        super("remove-vui.flag");
+        super("remove-yui.flag");
     }
 
     @Override
