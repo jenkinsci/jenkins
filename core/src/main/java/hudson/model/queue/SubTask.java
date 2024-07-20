@@ -62,7 +62,9 @@ public interface SubTask extends ResourceActivity {
      * and this task prefers to run on the same node, return that.
      * Otherwise null.
      * @return by default, null
+     * @deprecated Unused.
      */
+    @Deprecated
     default Node getLastBuiltOn() {
         return null;
     }
