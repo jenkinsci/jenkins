@@ -5,7 +5,7 @@ package jenkins;
  */
 public class SkipSomeTests {
 
-    private static final boolean isContinuousIntegration = System.getenv("CI") != null
+    private static final boolean IS_CONTINUOUS_INTEGRATION = System.getenv("CI") != null
             ? Boolean.parseBoolean(System.getenv("CI"))
             : false;
 
@@ -27,7 +27,7 @@ public class SkipSomeTests {
     public static boolean runTestSometimes(ReasonTestShouldRun testReason) {
         switch (testReason) {
         case NEVER_FAILING_TEST:
-            if (isContinuousIntegration) {
+            if (IS_CONTINUOUS_INTEGRATION) {
                 if (GIT_BRANCH.endsWith("master")) {
                     /* Run 1 of 15 times on the master branch, typically at least once a week */
                     /* The master branch builds 10-15 times per week, with each build running 3 configurations */
