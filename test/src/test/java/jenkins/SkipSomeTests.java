@@ -5,9 +5,9 @@ package jenkins;
  */
 public class SkipSomeTests {
 
-    private static final String JENKINS_URL = System.getenv("JENKINS_URL") != null
-            ? System.getenv("JENKINS_URL")
-            : "http://localhost:8080/";
+    private static final boolean isContinuousIntegration = System.getenv("CI") != null
+            ? Boolean.parseBoolean(System.getenv("CI"))
+            : false;
 
     private static final String GIT_BRANCH = System.getenv("GIT_BRANCH") != null
             ? System.getenv("GIT_BRANCH")
@@ -27,8 +27,8 @@ public class SkipSomeTests {
     public static boolean runTestSometimes(ReasonTestShouldRun testReason) {
         switch (testReason) {
         case NEVER_FAILING_TEST:
-            if (JENKINS_URL.contains("ci.jenkins.io")) {
-                if (GIT_BRANCH.contains("master")) {
+            if (isContinuousIntegration) {
+                if (GIT_BRANCH.endsWith("master")) {
                     /* Run 1 of 15 times on the master branch, typically at least once a week */
                     /* The master branch builds 10-15 times per week, with each build running 3 configurations */
                     return (TEST_START_TIME % 15) == 0;
