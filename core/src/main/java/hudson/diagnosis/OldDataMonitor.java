@@ -218,7 +218,7 @@ public class OldDataMonitor extends AdministrativeMonitor {
                 buf.append(e.getClass().getSimpleName()).append(": ").append(e.getMessage());
             }
         }
-        if (buf.length() == 0) return;
+        if (buf.isEmpty()) return;
         Jenkins j = Jenkins.getInstanceOrNull();
         if (j == null) { // Need this path, at least for unit tests, but also in case of very broken startup
             // Startup failed, something is very broken, so report what we can.

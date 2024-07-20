@@ -39,6 +39,7 @@ import hudson.tasks.Ant.AntInstallation;
 import hudson.tasks.BuildStep;
 import java.lang.reflect.Field;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
 import java.util.List;
 import jenkins.model.Jenkins;
@@ -177,7 +178,7 @@ public class HudsonTest {
 
         wc.setThrowExceptionOnFailingStatusCode(false);
         // try to delete it by hitting the final URL directly
-        WebRequest req = new WebRequest(new URL(wc.getContextPath() + "computer/(built-in)/doDelete"), HttpMethod.POST);
+        WebRequest req = new WebRequest(new URI(wc.getContextPath() + "computer/(built-in)/doDelete").toURL(), HttpMethod.POST);
         page = wc.getPage(wc.addCrumb(req));
         assertEquals(HttpURLConnection.HTTP_BAD_REQUEST, page.getWebResponse().getStatusCode());
 

@@ -226,6 +226,7 @@ public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & Param
                 path = path.substring(0, path.lastIndexOf('/'));
                 rsp.sendRedirect(req.getContextPath() + path); // Redirect to the job page
             } else {
+                // TODO JENKINS-66105 use SC_SEE_OTHER if !ScheduleResult.created
                 rsp.sendRedirect(SC_CREATED, req.getContextPath() + '/' + item.getUrl());
             }
         } else {
@@ -297,12 +298,14 @@ public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & Param
      * @since 1.624
      */
     public static final AlternativeUiTextProvider.Message<ParameterizedJob> BUILD_NOW_TEXT = new AlternativeUiTextProvider.Message<>();
+    public static final AlternativeUiTextProvider.Message<ParameterizedJob> BUILD_WITH_PARAMETERS_TEXT = new AlternativeUiTextProvider.Message<>();
 
     /**
      * Suggested implementation of {@link ParameterizedJob#getBuildNowText}.
      */
     public final String getBuildNowText() {
-        return isParameterized() ? AlternativeUiTextProvider.get(BUILD_NOW_TEXT, asJob(), Messages.ParameterizedJobMixIn_build_with_parameters())
+        return isParameterized() ? AlternativeUiTextProvider.get(BUILD_WITH_PARAMETERS_TEXT, asJob(),
+                AlternativeUiTextProvider.get(BUILD_NOW_TEXT, asJob(), Messages.ParameterizedJobMixIn_build_with_parameters()))
                 : AlternativeUiTextProvider.get(BUILD_NOW_TEXT, asJob(), Messages.ParameterizedJobMixIn_build_now());
     }
 
@@ -353,7 +356,7 @@ public abstract class ParameterizedJobMixIn<JobT extends Job<JobT, RunT> & Param
          * (Would have been done entirely as an interface with default methods had this been designed for Java 8.)
          */
         default ParameterizedJobMixIn<JobT, RunT> getParameterizedJobMixIn() {
-            return new ParameterizedJobMixIn<JobT, RunT>() {
+            return new ParameterizedJobMixIn<>() {
                 @SuppressWarnings("unchecked") // untypable
                 @Override protected JobT asJob() {
                     return (JobT) ParameterizedJob.this;

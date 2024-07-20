@@ -1,15 +1,15 @@
 const rowSelectionControllers = document.querySelectorAll(
-  ".jenkins-table__checkbox"
+  ".jenkins-table__checkbox",
 );
 
 rowSelectionControllers.forEach((headerCheckbox) => {
   const table = headerCheckbox.closest(".jenkins-table");
   const tableCheckboxes = table.querySelectorAll("input[type='checkbox']");
   const moreOptionsButton = table.querySelector(
-    ".jenkins-table__checkbox-options"
+    ".jenkins-table__checkbox-options",
   );
   const moreOptionsDropdown = table.querySelector(
-    ".jenkins-table__checkbox-dropdown"
+    ".jenkins-table__checkbox-dropdown",
   );
   const moreOptionsAllButton = table.querySelector("[data-select='all']");
   const moreOptionsNoneButton = table.querySelector("[data-select='none']");
@@ -23,14 +23,14 @@ rowSelectionControllers.forEach((headerCheckbox) => {
 
   const allCheckboxesSelected = () => {
     const selectedCheckboxes = Array.from(tableCheckboxes).filter(
-      (e) => e.checked
+      (e) => e.checked,
     );
     return tableCheckboxes.length === selectedCheckboxes.length;
   };
 
   const anyCheckboxesSelected = () => {
     const selectedCheckboxes = Array.from(tableCheckboxes).filter(
-      (e) => e.checked
+      (e) => e.checked,
     );
     return selectedCheckboxes.length > 0;
   };
@@ -66,7 +66,7 @@ rowSelectionControllers.forEach((headerCheckbox) => {
     headerCheckbox.classList.remove("jenkins-table__checkbox--indeterminate");
     if (moreOptionsDropdown !== null) {
       moreOptionsDropdown.classList.remove(
-        "jenkins-table__checkbox-dropdown--visible"
+        "jenkins-table__checkbox-dropdown--visible",
       );
     }
 
@@ -89,7 +89,7 @@ rowSelectionControllers.forEach((headerCheckbox) => {
         return;
       }
       moreOptionsDropdown.classList.remove(
-        "jenkins-table__checkbox-dropdown--visible"
+        "jenkins-table__checkbox-dropdown--visible",
       );
     }
   });
@@ -97,7 +97,7 @@ rowSelectionControllers.forEach((headerCheckbox) => {
   if (moreOptionsButton !== null) {
     moreOptionsButton.addEventListener("click", () => {
       moreOptionsDropdown.classList.toggle(
-        "jenkins-table__checkbox-dropdown--visible"
+        "jenkins-table__checkbox-dropdown--visible",
       );
     });
   }

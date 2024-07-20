@@ -1,0 +1,22 @@
+<div>
+  Etiketter (eller taggar) används för att gruppera flera agenter till en logisk grupp.
+  <p>
+  Om du t.ex. har flera Windows-agenter och ett jobb som måste köras
+  på Windows kan du konfigurera alla dina Windows-agenter till att få etiketten
+  <code>windows</code> och sedan knyta detta jobb till denna etikett.
+  <br>
+  Detta skulle säkerställa att ditt jobb körs på en av dina Windows-agenter, men inte
+  på några agenter som saknar denna etikett.
+  <p>
+  Etiketter behöver inte nödvändigtvis representera agentens operativsystem; du kan
+  också använda etiketter för att notera processorarkitekturen eller att ett visst
+  verktyg har installerats på agenten.
+  <p>
+  Flera etiketter måste separeras med ett mellanslag. T.ex. skulle
+  <code>windows docker</code> tilldela två etiketter till agenten:
+  <code>windows</code> och <code>docker</code>.
+  <p>
+  Etiketter kan innehålla alla tecken som inte är mellanslag, men du bör undvika
+  följande specialtecken: <code>!&amp;|&lt;&gt;()</code>, eftersom andra
+  Jenkins-funktioner tillåter etikettuttryck där dessa tecken kan användas.
+</div>

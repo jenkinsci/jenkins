@@ -1,0 +1,150 @@
+@use "../abstracts/mixins";
+
+#side-panel .pane-frame {
+  border-radius: 1rem;
+  background: var(--card-background);
+  border: var(--card-border-width) solid var(--card-border-color);
+  margin-left: 10px;
+  margin-bottom: calc(var(--section-padding) / 2);
+  overflow: hidden;
+}
+
+#side-panel .pane-header {
+  font-size: var(--font-size-sm);
+  display: flex;
+}
+
+#side-panel .pane-footer {
+  font-size: var(--font-size-xs);
+}
+
+#side-panel .pane-header,
+#side-panel .pane-footer {
+  color: var(--link-dark-color);
+  background: transparent;
+  padding: 0.65rem 1rem;
+}
+
+#side-panel .pane-header-title {
+  display: inline-block;
+  flex: 1;
+  font-weight: 500;
+
+  & > div {
+    font-weight: normal;
+  }
+}
+
+#side-panel .pane-header .expand,
+#side-panel .pane-header .collapse {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: auto;
+  padding-left: 0.5rem;
+
+  svg {
+    width: 1rem;
+    height: 1rem;
+  }
+}
+
+#side-panel .pane-header-details {
+  font-weight: normal;
+  font-size: var(--font-size-xs);
+}
+
+#side-panel .pane-content {
+  font-size: var(--font-size-xs);
+}
+
+#side-panel .pane-content .pane {
+  font-size: var(--font-size-xs);
+  padding: 0.5rem 0.25rem;
+
+  &:first-child {
+    padding-left: 1rem;
+  }
+
+  &:last-child {
+    padding-right: 1rem;
+  }
+}
+
+#side-panel .pane-content > table {
+  padding: 0 1.25rem;
+}
+
+#side-panel .pane-content tbody tr {
+  &:not(:first-child) {
+    border-top: 1px solid var(--panel-border-color);
+  }
+}
+
+#side-panel .pane-header a,
+#side-panel .pane-footer a,
+#side-panel .pane-content a {
+  @include mixins.link-dark;
+
+  text-decoration: underline;
+}
+
+/**
+ * Executors
+ */
+#executors {
+  th.pane {
+    text-align: left;
+  }
+
+  .pane-header {
+    align-items: center;
+  }
+
+  .computer-caption {
+    display: flex;
+    gap: 5px;
+    padding: 0.5rem 1rem;
+
+    & > div {
+      margin-left: auto;
+      align-self: end;
+    }
+  }
+
+  .executors-cell {
+    padding: 0 1rem;
+  }
+
+  .executors-collapsed {
+    padding: 0 1rem 0.5rem;
+  }
+
+  .executor-row {
+    display: flex;
+    padding: 0 0 0.5rem;
+    align-items: center;
+  }
+
+  .executor-type {
+    width: 16px;
+    margin-right: 1ch;
+  }
+
+  .executor-cell {
+    width: 100%;
+  }
+
+  .executor-cell-table .pane {
+    margin: 0 !important;
+    padding: 0 !important;
+
+    & > div {
+      margin-right: 15px;
+    }
+  }
+
+  .executor-stop {
+    width: 16px;
+  }
+}

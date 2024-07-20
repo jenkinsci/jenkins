@@ -39,6 +39,10 @@ import hudson.util.FormValidation;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletException;
@@ -126,7 +130,7 @@ public class CloudSet extends AbstractModelObject implements Describable<CloudSe
     @Override
     public ModelObjectWithContextMenu.ContextMenu doChildrenContextMenu(StaplerRequest request, StaplerResponse response) throws Exception {
         ModelObjectWithContextMenu.ContextMenu m = new ModelObjectWithContextMenu.ContextMenu();
-        Jenkins.get().clouds.stream().forEach(c -> m.add(c));
+        Jenkins.get().clouds.stream().forEach(m::add);
         return m;
     }
 
@@ -226,7 +230,6 @@ public class CloudSet extends AbstractModelObject implements Describable<CloudSe
         checkName(name);
         JSONObject formData = req.getSubmittedForm();
         formData.put("name", name);
-        formData.put("cloudName", name); // ec2 uses that field name
         formData.remove("mode"); // Cloud descriptors won't have this field.
         req.setAttribute("instance", formData);
         req.setAttribute("descriptor", descriptor);
@@ -238,14 +241,37 @@ public class CloudSet extends AbstractModelObject implements Describable<CloudSe
      */
     @POST
     public synchronized void doDoCreate(StaplerRequest req, StaplerResponse rsp,
-                                            @QueryParameter String type) throws IOException, ServletException, Descriptor.FormException {
+                                            @QueryParameter String cloudDescriptorName) throws IOException, ServletException, Descriptor.FormException {
         Jenkins.get().checkPermission(Jenkins.ADMINISTER);
-        Cloud cloud = Cloud.all().find(type).newInstance(req, req.getSubmittedForm());
+        Descriptor<Cloud> cloudDescriptor = Cloud.all().findByName(cloudDescriptorName);
+        if (cloudDescriptor == null) {
+            throw new Failure(String.format("No cloud type ‘%s’ is known", cloudDescriptorName));
+        }
+        Cloud cloud = cloudDescriptor.newInstance(req, req.getSubmittedForm());
         if (!Jenkins.get().clouds.add(cloud)) {
             LOGGER.log(Level.WARNING, () -> "Creating duplicate cloud name " + cloud.name + ". Plugin " + Jenkins.get().getPluginManager().whichPlugin(cloud.getClass()) + " should be updated to support user provided name.");
         }
         // take the user back to the cloud list top page
         rsp.sendRedirect2(".");
+    }
+
+    @POST
+    public void doReorder(StaplerRequest req, StaplerResponse rsp) throws IOException {
+        Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+        var names = req.getParameterValues("name");
+        if (names == null) {
+            throw new Failure("No cloud names given");
+        }
+        var namesList = Arrays.asList(names);
+        var clouds = new ArrayList<>(Jenkins.get().clouds);
+        clouds.sort(Comparator.comparingInt(c -> getIndexOf(namesList, c)));
+        Jenkins.get().clouds.replaceBy(clouds);
+        rsp.sendRedirect2(".");
+    }
+
+    private static int getIndexOf(List<String> namesList, Cloud cloud) {
+        var i = namesList.indexOf(cloud.name);
+        return i == -1 ? Integer.MAX_VALUE : i;
     }
 
     @Extension

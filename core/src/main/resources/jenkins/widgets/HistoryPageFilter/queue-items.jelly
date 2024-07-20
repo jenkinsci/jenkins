@@ -28,50 +28,43 @@ THE SOFTWARE.
 -->
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
-  <!-- pending build -->
-  <j:set var="queuedItems" value="${it.queueItems}" />
-  <j:if test="${!queuedItems.isEmpty()}">
-    <j:forEach var="pageEntry" items="${queuedItems}" indexVar="i">
-      <j:set var="item" value="${pageEntry.entry}"/>
-      <j:set var="id" value="${h.generateId()}"/>
-      <tr class="build-row build-pending transitive single-line" id="${item.id}"  page-entry-id="${pageEntry.entryId}">
-	<td class="build-row-cell">
-	  <div class="pane build-name">
-	    <div class="build-icon">
-	      <l:icon class="icon-nobuilt icon-sm"/>
-	    </div>
-	    <!-- Don't use math unless needed, in case nextBuildNumber is not numeric -->
-	    <div class="display-name" title="${%Expected build number}">
-	    #${queuedItems.size()==1 ? it.widget.owner.nextBuildNumber
-	       : it.widget.owner.nextBuildNumber+queuedItems.size()-i-1}
-	    </div>
-	  </div>
-	  <div class="pane build-details indent-multiline">
-	    <j:set var="cause" value="${item.getCauseOfBlockage()}"/>
-	    <j:choose>
-	      <j:when test="${cause!=null}">
-		(${%pending}—<st:include it="${cause}" page="summary.jelly"/>)
-	      </j:when>
-	      <j:otherwise>
-		(${%pending})
-	      </j:otherwise>
-	    </j:choose>
-	  <j:if test="${!item.params.isEmpty()}">
-	    <div style="float:right;margin-right:10px;">
-	      <a href="#" tooltip="Build Parameters:${item.params}"><l:icon class="icon-notepad icon-sm" /></a>
-	    </div>
-	  </j:if>
-	  </div>
-	  <div class="pane build-controls">
-	    <div class="build-stop">
-	      <j:if test="${item.hasCancelPermission()}">
-		<l:stopButton href="${rootURL}/queue/cancelItem?id=${item.id}" alt="${%cancel this build}"/>
-	      </j:if>
-	    </div>
-	  </div>
-	  <div class="left-bar"></div>
-	</td>
-      </tr>
-    </j:forEach>
-  </j:if>
+    <!-- pending build -->
+    <j:set var="queuedItems" value="${it.queueItems}"/>
+    <j:if test="${!queuedItems.isEmpty()}">
+        <span class="app-builds-container__heading">${%Pending}</span>
+        <j:forEach var="pageEntry" items="${queuedItems}">
+            <j:set var="item" value="${pageEntry.entry}"/>
+            <j:set var="id" value="${h.generateId()}"/>
+
+            <div class="app-builds-container__item app-builds-container__item--not-interactable" page-entry-id="${pageEntry.entryId}">
+                <div class="app-builds-container__item__icon">
+                    <l:icon src="symbol-status-nobuilt" />
+                </div>
+                <div class="app-builds-container__item__inner">
+                    <div class="app-builds-container__item__inner__link">
+                        <!-- Don't use math unless needed, in case nextBuildNumber is not numeric -->
+                        #${queuedItems.size() == 1 ? it.widget.owner.nextBuildNumber : it.widget.owner.nextBuildNumber+queuedItems.size()-i-1}
+                    </div>
+                    <div class="app-builds-container__item__inner__controls">
+                        <j:if test="${!item.params.isEmpty()}">
+                            <div tooltip="Build Parameters: ${item.params}" data-tooltip-append-to-parent="true">
+                                <l:icon src="symbol-parameters" class="icon-sm" />
+                            </div>
+                        </j:if>
+                        <j:if test="${item.hasCancelPermission()}">
+                            <l:stopButton href="${rootURL}/queue/cancelItem?id=${item.id}" alt="${%Cancel}"/>
+                        </j:if>
+                    </div>
+                </div>
+                <div class="app-builds-container__item__description">
+                    <j:set var="cause" value="${item.getCauseOfBlockage()}"/>
+                    <j:choose>
+                        <j:when test="${cause!=null}">
+                            <st:include it="${cause}" page="summary.jelly"/>
+                        </j:when>
+                    </j:choose>
+                </div>
+            </div>
+        </j:forEach>
+    </j:if>
 </j:jelly>

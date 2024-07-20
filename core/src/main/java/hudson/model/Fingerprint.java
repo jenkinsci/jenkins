@@ -67,7 +67,6 @@ import jenkins.fingerprints.FingerprintStorage;
 import jenkins.model.FingerprintFacet;
 import jenkins.model.Jenkins;
 import jenkins.model.TransientFingerprintFacetFactory;
-import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.springframework.security.access.AccessDeniedException;
@@ -609,7 +608,7 @@ public class Fingerprint implements ModelObject, Saveable {
         public synchronized String toString() {
             StringBuilder buf = new StringBuilder();
             for (Range r : ranges) {
-                if (buf.length() > 0)  buf.append(',');
+                if (!buf.isEmpty())  buf.append(',');
                 buf.append(r);
             }
             return buf.toString();
@@ -681,7 +680,7 @@ public class Fingerprint implements ModelObject, Saveable {
             }
 
             String[] items = Util.tokenize(list, ",");
-            if (items.length > 1 && items.length <= StringUtils.countMatches(list, ",")) {
+            if (items.length > 1 && items.length <= list.chars().filter(c -> c == ',').count()) {
                 if (!skipError) {
                     throw new IllegalArgumentException(
                             String.format("Unable to parse '%s', expected correct notation M,N or M-N", list));
@@ -704,7 +703,7 @@ public class Fingerprint implements ModelObject, Saveable {
                     }
 
                     if (s.contains("-")) {
-                        if (StringUtils.countMatches(s, "-") > 1) {
+                        if (s.chars().filter(c -> c == '-').count() > 1) {
                             if (!skipError) {
                                 throw new IllegalArgumentException(String.format(
                                         "Unable to parse '%s', expected correct notation M,N or M-N", list));
@@ -788,7 +787,7 @@ public class Fingerprint implements ModelObject, Saveable {
             public static String serialize(RangeSet src) {
                 StringBuilder buf = new StringBuilder(src.ranges.size() * 10);
                 for (Range r : src.ranges) {
-                    if (buf.length() > 0)  buf.append(',');
+                    if (!buf.isEmpty())  buf.append(',');
                     if (r.isSingle())
                         buf.append(r.start);
                     else

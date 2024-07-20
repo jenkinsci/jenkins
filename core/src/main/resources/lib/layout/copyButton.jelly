@@ -26,7 +26,7 @@ THE SOFTWARE.
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:i="jelly:fmt" xmlns:x="jelly:xml">
   <st:documentation>
-    Button that copies text into the user's clipboard upon click
+    Button that copies text into the user's clipboard upon click, either <code>text</code> or <code>ref</code> is required.
 
     <st:attribute name="text" use="required">
       Text to be copied into the clipboard.
@@ -43,15 +43,24 @@ THE SOFTWARE.
     <st:attribute name="clazz">
       Additional CSS class names
     </st:attribute>
+    <st:attribute name="label">
+      Optional label for the button, hides the tooltip if set
+    </st:attribute>
+    <st:attribute name="ref" use="required">
+      The id of the target element to be copied
+      @since 2.449
+    </st:attribute>
   </st:documentation>
 
   <!-- 'copy-button' class is for backwards compatability -->
   <button class="copy-button jenkins-button ${attrs.iconOnly == 'true' ? 'jenkins-button--tertiary' : ''} jenkins-copy-button ${attrs.clazz}"
           text="${attrs.text}"
+          ref="${attrs.ref}"
           message="${attrs.message ?: '%Copied'}"
-          tooltip="${attrs.tooltip ?: '%Copy'}"
+          tooltip="${attrs.label != null ? null : attrs.tooltip ?: '%Copy'}"
           type="button">
     <span class="jenkins-copy-button__icon" />
+    ${attrs.label}
   </button>
 
   <st:adjunct includes="lib.layout.copyButton.copyButton"/>

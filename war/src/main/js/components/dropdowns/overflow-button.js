@@ -11,9 +11,13 @@ function init() {
     1000,
     (element) => {
       Utils.generateDropdown(element, (instance) => {
-        instance.setContent(element.nextElementSibling.content);
+        const elements =
+          element.nextElementSibling.content.children[0].children;
+        const mappedItems = Utils.convertHtmlToItems(elements);
+
+        instance.setContent(Utils.generateDropdownItems(mappedItems));
       });
-    }
+    },
   );
 }
 

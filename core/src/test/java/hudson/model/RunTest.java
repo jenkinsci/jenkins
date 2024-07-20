@@ -197,7 +197,7 @@ public class RunTest {
         for (int i = 1; i < 10; i++) {
             assertEquals("dummy" + (10 + i), logLines.get(i));
         }
-        int truncatedCount = 10 * ("dummyN".length() + System.getProperty("line.separator").length()) - 2;
+        int truncatedCount = 10 * ("dummyN".length() + System.lineSeparator().length()) - 2;
         assertEquals("[...truncated " + truncatedCount + " B...]", logLines.get(0));
     }
 

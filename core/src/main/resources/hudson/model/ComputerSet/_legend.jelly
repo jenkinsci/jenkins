@@ -1,0 +1,34 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout">
+  <h2 class="jenkins-dialog__subtitle">${%Status}</h2>
+
+  <dl class="app-icon-legend">
+    <dt>
+      <l:icon src="symbol-computer" />
+    </dt>
+    <dd>
+      ${%online}
+    </dd>
+
+    <dt>
+      <l:icon src="symbol-computer-disconnected" />
+    </dt>
+    <dd>
+      ${%temp-offline}
+    </dd>
+
+    <dt>
+      <l:icon src="symbol-computer-not-accepting" />
+    </dt>
+    <dd>
+      ${%not-accepting}
+    </dd>
+
+    <dt>
+      <l:icon src="symbol-computer-offline" />
+    </dt>
+    <dd>
+      ${%offline}
+    </dd>
+  </dl>
+</j:jelly>

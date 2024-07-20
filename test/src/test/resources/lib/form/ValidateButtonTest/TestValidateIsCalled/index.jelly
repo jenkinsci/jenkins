@@ -50,7 +50,27 @@ THE SOFTWARE.
           <f:option value="e2" selected="true">e2</f:option>
         </select>
       </f:entry>
-      <f:validateButton method="validateTest1" title="test" with="a,b,c,d,e" />
+
+      <f:entry title="f">
+        <f:radioBlock name="f" value="notf" title="fa" checked="false">
+          <f:entry title="fa">
+            <f:textbox name="fa"/>
+          </f:entry>
+        </f:radioBlock>
+
+        <f:radioBlock name="f" value="f" title="fb" checked="true">
+          <f:entry title="fb">
+            <f:textbox name="fb"/>
+          </f:entry>
+        </f:radioBlock>
+
+        <f:radioBlock name="f" value="reallynotf" title="fb" checked="false">
+          <f:entry title="fc">
+            <f:textbox name="fc"/>
+          </f:entry>
+        </f:radioBlock>
+      </f:entry>
+      <f:validateButton method="validateTest1" title="test" with="a,b,c,d,e,f" />
     </f:form>
   </l:main-panel>
 </l:layout>

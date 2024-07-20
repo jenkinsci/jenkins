@@ -955,7 +955,7 @@ var Dom = YAHOO.util.Dom,
 
             /**
             * @attribute collapse
-            * @description Boolean indicating if the the titlebar should have a collapse button.
+            * @description Boolean indicating if the titlebar should have a collapse button.
             * The collapse button will not remove the toolbar, it will minimize it to the titlebar
             * @default false
             * @type Boolean

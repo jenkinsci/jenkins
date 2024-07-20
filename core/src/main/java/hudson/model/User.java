@@ -39,13 +39,11 @@ import hudson.Util;
 import hudson.XmlFile;
 import hudson.init.InitMilestone;
 import hudson.init.Initializer;
-import hudson.model.Descriptor.FormException;
 import hudson.model.listeners.SaveableListener;
 import hudson.security.ACL;
 import hudson.security.AccessControlled;
 import hudson.security.SecurityRealm;
 import hudson.security.UserMayOrMayNotExistException2;
-import hudson.util.FormApply;
 import hudson.util.FormValidation;
 import hudson.util.RunList;
 import hudson.util.XStream2;
@@ -70,14 +68,13 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 import jenkins.model.IdStrategy;
 import jenkins.model.Jenkins;
+import jenkins.model.Loadable;
 import jenkins.model.ModelObjectWithContextMenu;
 import jenkins.scm.RunWithSCM;
 import jenkins.security.ImpersonatingUserDetailsService2;
 import jenkins.security.LastGrantedAuthoritiesProperty;
 import jenkins.security.UserDetailsCache;
 import jenkins.util.SystemProperties;
-import net.sf.json.JSONObject;
-import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -87,7 +84,6 @@ import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.interceptor.RequirePOST;
-import org.kohsuke.stapler.verb.POST;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -120,7 +116,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
  * @author Kohsuke Kawaguchi
  */
 @ExportedBean
-public class User extends AbstractModelObject implements AccessControlled, DescriptorByNameOwner, Saveable, Comparable<User>, ModelObjectWithContextMenu, StaplerProxy {
+public class User extends AbstractModelObject implements AccessControlled, DescriptorByNameOwner, Loadable, Saveable, Comparable<User>, ModelObjectWithContextMenu, StaplerProxy {
 
     public static final XStream2 XSTREAM = new XStream2();
     private static final Logger LOGGER = Logger.getLogger(User.class.getName());
@@ -188,6 +184,11 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
     private User(String id, String fullName) {
         this.id = id;
         this.fullName = fullName;
+        load(id);
+    }
+
+    @Override
+    public void load() {
         load(id);
     }
 
@@ -335,6 +336,29 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
         p.setUser(this);
         properties = ps;
         save();
+    }
+
+    /**
+     * Expand {@link #addProperty(UserProperty)} for multiple properties to be done at once.
+     * Expected to be used by the categorized configuration pages to update part of the properties.
+     * The properties not included in the list will be let untouched.
+     * It will call the {@link UserProperty#setUser(User)} method and at the end, {@link #save()} once.
+     *
+     * @since 2.468
+     */
+    public synchronized void addProperties(@NonNull List<UserProperty> multipleProperties) throws IOException {
+        List<UserProperty> newProperties = new ArrayList<>(this.properties);
+        for (UserProperty property : multipleProperties) {
+            UserProperty oldProp = getProperty(property.getClass());
+            if (oldProp != null) {
+                newProperties.remove(oldProp);
+            }
+            newProperties.add(property);
+            property.setUser(this);
+        }
+
+        this.properties = newProperties;
+        this.save();
     }
 
     /**
@@ -789,7 +813,7 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      * @since 1.600
      */
     public static boolean isIdOrFullnameAllowed(@CheckForNull String id) {
-        if (StringUtils.isBlank(id)) {
+        if (id == null || id.isBlank()) {
             return false;
         }
         final String trimmedId = id.trim();
@@ -852,48 +876,6 @@ public class User extends AbstractModelObject implements AccessControlled, Descr
      */
     public Api getApi() {
         return new Api(this);
-    }
-
-    /**
-     * Accepts submission from the configuration page.
-     */
-    @POST
-    public void doConfigSubmit(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, FormException {
-        checkPermission(Jenkins.ADMINISTER);
-
-        JSONObject json = req.getSubmittedForm();
-        String oldFullName = this.fullName;
-        fullName = json.getString("fullName");
-        description = json.getString("description");
-
-        List<UserProperty> props = new ArrayList<>();
-        int i = 0;
-        for (UserPropertyDescriptor d : UserProperty.all()) {
-            UserProperty p = getProperty(d.clazz);
-
-            JSONObject o = json.optJSONObject("userProperty" + i++);
-            if (o != null) {
-                if (p != null) {
-                    p = p.reconfigure(req, o);
-                } else {
-                    p = d.newInstance(req, o);
-                }
-            }
-
-            if (p != null) {
-                p.setUser(this);
-                props.add(p);
-            }
-        }
-        this.properties = props;
-
-        save();
-
-        if (oldFullName != null && !oldFullName.equals(this.fullName)) {
-            UserDetailsCache.get().invalidate(oldFullName);
-        }
-
-        FormApply.success(".").generateResponse(req, rsp, this);
     }
 
     /**

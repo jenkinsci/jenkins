@@ -24,6 +24,7 @@
 
 package jenkins.widgets;
 
+import hudson.model.Action;
 import hudson.model.Build;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
@@ -42,6 +43,7 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import jenkins.model.queue.QueueItem;
 import org.junit.Assert;
@@ -446,6 +448,18 @@ public class HistoryPageFilterTest {
         public int getNumber() {
             return (int) queueId;
         }
+
+        @SuppressWarnings("deprecation") // avoid TransientActionFactory
+        @Override
+        public <T extends Action> T getAction(Class<T> type) {
+            for (Action a : getActions()) {
+                if (type.isInstance(a)) {
+                    return type.cast(a);
+                }
+            }
+            return null;
+        }
+
     }
 
     // A version of MockRun that will throw an exception if getQueueId or getNumber is called
@@ -472,6 +486,7 @@ public class HistoryPageFilterTest {
         private final int buildNumber;
 
         private Map<String, String> buildVariables = Collections.emptyMap();
+        private Set<String> sensitiveBuildVariables = Collections.emptySet();
 
         private MockBuild(int buildNumber) {
             super(Mockito.mock(FreeStyleProject.class), Mockito.mock(Calendar.class));
@@ -486,6 +501,11 @@ public class HistoryPageFilterTest {
         @Override
         public Map<String, String> getBuildVariables() {
             return buildVariables;
+        }
+
+        @Override
+        public Set<String> getSensitiveBuildVariables() {
+            return sensitiveBuildVariables; // TODO This is never actually set (bad Mock), actual test in test harness
         }
 
         MockBuild withBuildVariables(Map<String, String> buildVariables) {
@@ -508,6 +528,17 @@ public class HistoryPageFilterTest {
             addAction(new ParametersAction(List.of(createSensitiveStringParameterValue(paramName, paramValue)),
                     List.of(paramName)));
             return this;
+        }
+
+        @SuppressWarnings("deprecation") // avoid TransientActionFactory
+        @Override
+        public <T extends Action> T getAction(Class<T> type) {
+            for (Action a : getActions()) {
+                if (type.isInstance(a)) {
+                    return type.cast(a);
+                }
+            }
+            return null;
         }
 
         private StringParameterValue createSensitiveStringParameterValue(final String paramName, final String paramValue) {

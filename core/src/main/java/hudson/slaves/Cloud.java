@@ -54,7 +54,6 @@ import java.util.concurrent.Future;
 import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
-import org.apache.commons.lang.Validate;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -118,8 +117,14 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
     public String name;
 
     protected Cloud(String name) {
-        Validate.notEmpty(name, Messages.Cloud_RequiredName());
-        this.name = name;
+        this.name = validateNotEmpty(name);
+    }
+
+    private static String validateNotEmpty(String name) {
+        if (name == null || name.isEmpty()) {
+            throw new IllegalArgumentException(Messages.Cloud_RequiredName());
+        }
+        return name;
     }
 
     @Override
@@ -263,7 +268,7 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
         return Jenkins.get().getDescriptorList(Cloud.class);
     }
 
-    private static final PermissionScope PERMISSION_SCOPE = new PermissionScope(Cloud.class);
+    private static final PermissionScope PERMISSION_SCOPE = new PermissionScope(Cloud.class, PermissionScope.JENKINS);
 
     /**
      * Permission constant to control mutation operations on {@link Cloud}.
@@ -331,7 +336,8 @@ public abstract class Cloud extends Actionable implements ExtensionPoint, Descri
         j.clouds.replace(this, result);
         j.save();
         // take the user back to the cloud top page.
-        return FormApply.success(".");
+        return FormApply.success("../" + result.name + '/');
+
     }
 
     public Cloud reconfigure(@NonNull final StaplerRequest req, JSONObject form) throws Descriptor.FormException {

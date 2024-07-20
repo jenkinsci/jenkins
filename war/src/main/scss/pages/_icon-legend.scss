@@ -1,0 +1,30 @@
+.app-icon-legend {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 1rem;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+
+  &:not(:last-of-type) {
+    margin-bottom: var(--section-padding);
+  }
+
+  dt {
+    display: flex;
+    place-items: center center;
+
+    svg {
+      width: 2rem;
+      height: 2rem;
+    }
+  }
+
+  dd {
+    margin: 0;
+    padding: 0;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    line-height: 1.6;
+  }
+}

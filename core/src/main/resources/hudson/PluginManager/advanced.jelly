@@ -37,22 +37,11 @@ THE SOFTWARE.
         <l:main-panel>
           <l:app-bar title="${%Advanced settings}"/>
 
+          <div class="jenkins-alert jenkins-alert-info">
+              <strong>${%proxyMovedBlurb(rootURL+"/manage/configure")}</strong>
+          </div>
+
           <div class="jenkins-form">
-            <section class="jenkins-section jenkins-!-margin-bottom-5">
-                <h2 class="jenkins-section__title">${%HTTP Proxy Configuration}</h2>
-                <f:form method="post" action="proxyConfigure" name="proxyConfigure">
-                    <j:scope>
-                        <j:set var="instance" value="${app.proxy}"/>
-                        <j:set var="descriptor" value="${it.proxyDescriptor}"/>
-                        <st:include from="${descriptor}" page="${descriptor.configPage}"/>
-                    </j:scope>
-                    <l:isAdmin>
-                        <f:block>
-                            <f:submit/>
-                        </f:block>
-                    </l:isAdmin>
-                </f:form>
-            </section>
 
             <l:isAdmin>
                 <section class="jenkins-section jenkins-!-margin-bottom-5">
@@ -78,16 +67,18 @@ THE SOFTWARE.
                 <h2 class="jenkins-section__title">${%Update Site}</h2>
                 <f:form method="post" action="siteConfigure" name="siteConfigure">
                     <f:entry title="${%URL}">
-                        <j:if test="${app.updateCenter.ID_DEFAULT.equals(app.updateCenter.PREDEFINED_UPDATE_SITE_ID)}">
-                          <a id="reset-to-default" href="#">${%Reset to default}</a>
-                        </j:if>
+                        <l:isAdmin>
+                            <j:if test="${app.updateCenter.ID_DEFAULT.equals(app.updateCenter.PREDEFINED_UPDATE_SITE_ID)}">
+                                <a id="reset-to-default" href="#">${%Reset to default}</a>
+                            </j:if>
+                        </l:isAdmin>
                         <f:textbox name="site"
                                    id="update-site-url"
                                    value="${app.updateCenter.getSite(app.updateCenter.ID_DEFAULT).url}"
                                    checkUrl="checkUpdateSiteUrl" checkDependsOn=""/>
                     </f:entry>
-                    <st:adjunct includes="hudson.PluginManager._updateSite"/>
                     <l:isAdmin>
+                        <st:adjunct includes="hudson.PluginManager._updateSite"/>
                         <f:block>
                             <f:submit/>
                         </f:block>

@@ -29,7 +29,6 @@ import hudson.Util;
 import hudson.security.ACL;
 import java.io.IOException;
 import javax.servlet.http.HttpServletResponse;
-import jenkins.security.ApiTokenProperty;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -79,10 +78,6 @@ public final class BuildAuthorizationToken {
         project.checkPermission(Item.BUILD);
 
         if (req.getMethod().equals("POST")) {
-            return;
-        }
-
-        if (req.getAttribute(ApiTokenProperty.class.getName()) instanceof User) {
             return;
         }
 

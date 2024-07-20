@@ -25,6 +25,7 @@
 package jenkins.model;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.arrayWithSize;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
@@ -96,11 +97,12 @@ public class ParameterizedJobMixInTest {
 
         long triggerTime = System.currentTimeMillis();
 
-        Queue.Item item = Jenkins.get().getQueue().getItem(1);
-        assertThat(item, instanceOf(Queue.WaitingItem.class));
-        assertThat(item.task, instanceOf(FreeStyleProject.class));
+        Queue.Item[] items = Jenkins.get().getQueue().getItems();
+        assertThat(items, arrayWithSize(1));
+        assertThat(items[0], instanceOf(Queue.WaitingItem.class));
+        assertThat(items[0].task, instanceOf(FreeStyleProject.class));
 
-        Queue.WaitingItem waitingItem = (Queue.WaitingItem) item;
+        Queue.WaitingItem waitingItem = (Queue.WaitingItem) items[0];
         Assert.assertTrue(waitingItem.timestamp.getTimeInMillis() - triggerTime > 45000);
 
         Jenkins.get().getQueue().doCancelItem(1);

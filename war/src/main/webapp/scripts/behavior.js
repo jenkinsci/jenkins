@@ -61,14 +61,14 @@ var Behaviour = (function () {
         return location != 0
           ? location
           : a.id < b.id
-          ? -1
-          : a.id > b.id
-          ? 1
-          : a.selector < b.selector
-          ? -1
-          : a.selector > b.selector
-          ? 1
-          : 0;
+            ? -1
+            : a.id > b.id
+              ? 1
+              : a.selector < b.selector
+                ? -1
+                : a.selector > b.selector
+                  ? 1
+                  : 0;
       });
     },
 
@@ -128,7 +128,7 @@ var Behaviour = (function () {
               var list = findElementsBySelector(
                 node,
                 registration.selector,
-                includeSelf
+                includeSelf,
               );
               if (list.length > 0) {
                 //console.log(registration.id + ":" + registration.selector + " @" + registration.priority + " on " + list.length + " elements");
@@ -184,7 +184,6 @@ Behaviour.start();
 function findElementsBySelector(startNode, selector, includeSelf) {
   if (includeSelf) {
     var isSelfOrChild = function (c) {
-      // eslint-disable-next-line no-constant-condition
       while (true) {
         if (startNode == c) {
           return true;
@@ -196,7 +195,7 @@ function findElementsBySelector(startNode, selector, includeSelf) {
       }
     };
     return Array.from(startNode.parentNode.querySelectorAll(selector)).filter(
-      isSelfOrChild
+      isSelfOrChild,
     );
   } else {
     return Array.from(startNode.querySelectorAll(selector));

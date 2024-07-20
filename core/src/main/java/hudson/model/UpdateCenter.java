@@ -108,6 +108,7 @@ import jenkins.RestartRequiredException;
 import jenkins.install.InstallUtil;
 import jenkins.management.Badge;
 import jenkins.model.Jenkins;
+import jenkins.model.Loadable;
 import jenkins.security.stapler.StaplerDispatchable;
 import jenkins.util.SystemProperties;
 import jenkins.util.Timer;
@@ -154,7 +155,7 @@ import org.springframework.security.core.Authentication;
  * @since 1.220
  */
 @ExportedBean
-public class UpdateCenter extends AbstractModelObject implements Saveable, OnMaster, StaplerProxy {
+public class UpdateCenter extends AbstractModelObject implements Loadable, Saveable, OnMaster, StaplerProxy {
 
     private static final Logger LOGGER;
     private static final String UPDATE_CENTER_URL;
@@ -389,7 +390,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
         if (size > 0) {
             StringBuilder tooltip = new StringBuilder();
             Badge.Severity severity = Badge.Severity.WARNING;
-            int securityFixSize = (int) plugins.stream().filter(plugin -> plugin.fixesSecurityVulnerabilities()).count();
+            int securityFixSize = (int) plugins.stream().filter(Plugin::fixesSecurityVulnerabilities).count();
             int incompatibleSize = (int) plugins.stream().filter(plugin -> !plugin.isCompatibleWithInstalledVersion()).count();
             if (size > 1) {
                 tooltip.append(jenkins.management.Messages.PluginsLink_updatesAvailable(size));
@@ -984,6 +985,7 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
     /**
      * Loads the data from the disk into this object.
      */
+    @Override
     public synchronized void load() throws IOException {
         XmlFile file = getConfigFile();
         if (file.exists()) {
@@ -1320,6 +1322,10 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                                              sha512 != null ? new DigestOutputStream(_out, sha512) : _out, sha256) : _out, sha1) : _out;
                      InputStream in = con.getInputStream();
                      CountingInputStream cin = new CountingInputStream(in)) {
+                    if (LOGGER.isLoggable(Level.FINE)) {
+                        var sourceUrlString = getSourceUrl(src, con);
+                        LOGGER.fine(() -> "Downloading " + job.getName() + " from " + sourceUrlString);
+                    }
                     while ((len = cin.read(buf)) >= 0) {
                         out.write(buf, 0, len);
                         final int count = cin.getCount();
@@ -1356,15 +1362,22 @@ public class UpdateCenter extends AbstractModelObject implements Saveable, OnMas
                 return tmp;
             } catch (IOException e) {
                 // assist troubleshooting in case of e.g. "too many redirects" by printing actual URL
-                String extraMessage = "";
-                if (con != null && con.getURL() != null && !src.toString().equals(con.getURL().toString())) {
-                    // Two URLs are considered equal if different hosts resolve to same IP. Prefer to log in case of string inequality,
-                    // because who knows how the server responds to different host name in the request header?
-                    // Also, since it involved name resolution, it'd be an expensive operation.
-                    extraMessage = " (redirected to: " + con.getURL() + ")";
-                }
-                throw new IOException("Failed to download from " + src + extraMessage, e);
+                throw new IOException("Failed to download from " + getSourceUrl(src, con), e);
             }
+        }
+
+        private static String getSourceUrl(@NonNull URL src, @CheckForNull URLConnection connection) {
+            var sourceUrlString = src.toExternalForm();
+            if (connection != null) {
+                var connectionURL = connection.getURL();
+                if (connectionURL != null) {
+                    var finalUrlString = connectionURL.toExternalForm();
+                    if (!sourceUrlString.equals(finalUrlString)) {
+                        return sourceUrlString + " → " + finalUrlString;
+                    }
+                }
+            }
+            return sourceUrlString;
         }
 
         /**

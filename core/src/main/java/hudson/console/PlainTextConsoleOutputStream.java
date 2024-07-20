@@ -28,6 +28,10 @@ import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import jenkins.util.SourceCodeEscapers;
 
 /**
  * Filters out console notes.
@@ -35,6 +39,8 @@ import java.io.OutputStream;
  * @author Kohsuke Kawaguchi
  */
 public class PlainTextConsoleOutputStream extends LineTransformationOutputStream.Delegating {
+
+    private static final Logger LOGGER = Logger.getLogger(PlainTextConsoleOutputStream.class.getName());
 
     /**
      *
@@ -64,7 +70,11 @@ public class PlainTextConsoleOutputStream extends LineTransformationOutputStream
             int rest = sz - next;
             ByteArrayInputStream b = new ByteArrayInputStream(in, next, rest);
 
-            ConsoleNote.skip(new DataInputStream(b));
+            try {
+                ConsoleNote.skip(new DataInputStream(b));
+            } catch (IOException x) {
+                LOGGER.log(Level.FINE, "Failed to skip annotation from \"" + SourceCodeEscapers.javaCharEscaper().escape(new String(in, next, rest, Charset.defaultCharset())) + "\"", x);
+            }
 
             int bytesUsed = rest - b.available(); // bytes consumed by annotations
             written += bytesUsed;

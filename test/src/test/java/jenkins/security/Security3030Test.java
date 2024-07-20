@@ -43,9 +43,10 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Random;
 import javax.servlet.ServletException;
-import org.apache.commons.fileupload.FileCountLimitExceededException;
-import org.apache.commons.fileupload.FileUploadBase;
-import org.apache.commons.fileupload.FileUploadException;
+import org.apache.commons.fileupload2.core.FileUploadByteCountLimitException;
+import org.apache.commons.fileupload2.core.FileUploadException;
+import org.apache.commons.fileupload2.core.FileUploadFileCountLimitException;
+import org.apache.commons.fileupload2.core.FileUploadSizeException;
 import org.htmlunit.HttpMethod;
 import org.htmlunit.WebRequest;
 import org.junit.Assert;
@@ -71,18 +72,18 @@ public class Security3030Test {
 
     @Test
     public void tooManyFilesStapler() throws Exception {
-        ServletException ex = assertSubmissionThrows(StaplerRequestFormAction.instance(), 10, 1000, 20, FileCountLimitExceededException.class);
+        ServletException ex = assertSubmissionThrows(StaplerRequestFormAction.instance(), 10, 1000, 20, FileUploadFileCountLimitException.class);
         assertThat(ex.getMessage(), containsString(RequestImpl.class.getName() + ".FILEUPLOAD_MAX_FILES"));
-        ex = assertSubmissionThrows(StaplerRequestFormAction.instance(), 1000, 10, 10, FileCountLimitExceededException.class);
+        ex = assertSubmissionThrows(StaplerRequestFormAction.instance(), 1000, 10, 10, FileUploadFileCountLimitException.class);
         assertThat(ex.getMessage(), containsString(RequestImpl.class.getName() + ".FILEUPLOAD_MAX_FILES"));
         try (FieldValue v = withStaticField(RequestImpl.class, "FILEUPLOAD_MAX_FILES", 10_000)) {
             assertSubmissionOK(StaplerRequestFormAction.instance(), 1000, 10, 10);
-            ex = assertSubmissionThrows(StaplerRequestFormAction.instance(), 10_000, 10, 10, FileCountLimitExceededException.class);
+            ex = assertSubmissionThrows(StaplerRequestFormAction.instance(), 10_000, 10, 10, FileUploadFileCountLimitException.class);
             assertThat(ex.getMessage(), containsString(RequestImpl.class.getName() + ".FILEUPLOAD_MAX_FILES"));
         }
-        ex = assertSubmissionThrows(StaplerRequestFormAction.instance(), 10, 1000, 20, FileCountLimitExceededException.class);
+        ex = assertSubmissionThrows(StaplerRequestFormAction.instance(), 10, 1000, 20, FileUploadFileCountLimitException.class);
         assertThat(ex.getMessage(), containsString(RequestImpl.class.getName() + ".FILEUPLOAD_MAX_FILES"));
-        ex = assertSubmissionThrows(StaplerRequestFormAction.instance(), 1000, 10, 10, FileCountLimitExceededException.class);
+        ex = assertSubmissionThrows(StaplerRequestFormAction.instance(), 1000, 10, 10, FileUploadFileCountLimitException.class);
         assertThat(ex.getMessage(), containsString(RequestImpl.class.getName() + ".FILEUPLOAD_MAX_FILES"));
     }
 
@@ -91,7 +92,7 @@ public class Security3030Test {
         assertSubmissionOK(StaplerRequestFormAction.instance(), 1, 50, 10 * 1024 * 1024);
         try (FieldValue v = withStaticField(RequestImpl.class, "FILEUPLOAD_MAX_FILE_SIZE", 1024 * 1024)) {
             assertSubmissionOK(StaplerRequestFormAction.instance(), 200, 100, 1024);
-            ServletException ex = assertSubmissionThrows(StaplerRequestFormAction.instance(), 1, 50, 10 * 1024 * 1024, FileUploadBase.FileSizeLimitExceededException.class);
+            ServletException ex = assertSubmissionThrows(StaplerRequestFormAction.instance(), 1, 50, 10 * 1024 * 1024, FileUploadByteCountLimitException.class);
             assertThat(ex.getMessage(), containsString(RequestImpl.class.getName() + ".FILEUPLOAD_MAX_FILE_SIZE"));
         }
         assertSubmissionOK(StaplerRequestFormAction.instance(), 1, 50, 10 * 1024 * 1024);
@@ -102,7 +103,7 @@ public class Security3030Test {
         assertSubmissionOK(StaplerRequestFormAction.instance(), 1, 50, 10 * 1024 * 1024);
         try (FieldValue v = withStaticField(RequestImpl.class, "FILEUPLOAD_MAX_SIZE", 1024 * 1024)) {
             assertSubmissionOK(StaplerRequestFormAction.instance(), 200, 100, 1024);
-            ServletException ex = assertSubmissionThrows(StaplerRequestFormAction.instance(), 1, 50, 10 * 1024 * 1024, FileUploadBase.SizeLimitExceededException.class);
+            ServletException ex = assertSubmissionThrows(StaplerRequestFormAction.instance(), 1, 50, 10 * 1024 * 1024, FileUploadSizeException.class);
             assertThat(ex.getMessage(), containsString(RequestImpl.class.getName() + ".FILEUPLOAD_MAX_SIZE"));
         }
         assertSubmissionOK(StaplerRequestFormAction.instance(), 1, 50, 10 * 1024 * 1024);
@@ -116,18 +117,18 @@ public class Security3030Test {
 
     @Test
     public void tooManyFilesParser() throws Exception {
-        ServletException ex = assertSubmissionThrows(MultipartFormDataParserAction.instance(), 10, 1000, 20, FileCountLimitExceededException.class);
+        ServletException ex = assertSubmissionThrows(MultipartFormDataParserAction.instance(), 10, 1000, 20, FileUploadFileCountLimitException.class);
         assertThat(ex.getMessage(), containsString(MultipartFormDataParser.class.getName() + ".FILEUPLOAD_MAX_FILES"));
-        ex = assertSubmissionThrows(MultipartFormDataParserAction.instance(), 1000, 10, 10, FileCountLimitExceededException.class);
+        ex = assertSubmissionThrows(MultipartFormDataParserAction.instance(), 1000, 10, 10, FileUploadFileCountLimitException.class);
         assertThat(ex.getMessage(), containsString(MultipartFormDataParser.class.getName() + ".FILEUPLOAD_MAX_FILES"));
         try (FieldValue v = withStaticField(MultipartFormDataParser.class, "FILEUPLOAD_MAX_FILES", 10_000)) {
             assertSubmissionOK(MultipartFormDataParserAction.instance(), 1000, 10, 10);
-            ex = assertSubmissionThrows(MultipartFormDataParserAction.instance(), 10_000, 10, 10, FileCountLimitExceededException.class);
+            ex = assertSubmissionThrows(MultipartFormDataParserAction.instance(), 10_000, 10, 10, FileUploadFileCountLimitException.class);
             assertThat(ex.getMessage(), containsString(MultipartFormDataParser.class.getName() + ".FILEUPLOAD_MAX_FILES"));
         }
-        ex = assertSubmissionThrows(MultipartFormDataParserAction.instance(), 10, 1000, 20, FileCountLimitExceededException.class);
+        ex = assertSubmissionThrows(MultipartFormDataParserAction.instance(), 10, 1000, 20, FileUploadFileCountLimitException.class);
         assertThat(ex.getMessage(), containsString(MultipartFormDataParser.class.getName() + ".FILEUPLOAD_MAX_FILES"));
-        ex = assertSubmissionThrows(MultipartFormDataParserAction.instance(), 1000, 10, 10, FileCountLimitExceededException.class);
+        ex = assertSubmissionThrows(MultipartFormDataParserAction.instance(), 1000, 10, 10, FileUploadFileCountLimitException.class);
         assertThat(ex.getMessage(), containsString(MultipartFormDataParser.class.getName() + ".FILEUPLOAD_MAX_FILES"));
     }
 
@@ -136,7 +137,7 @@ public class Security3030Test {
         assertSubmissionOK(MultipartFormDataParserAction.instance(), 1, 50, 10 * 1024 * 1024);
         try (FieldValue v = withStaticField(MultipartFormDataParser.class, "FILEUPLOAD_MAX_FILE_SIZE", 1024 * 1024)) {
             assertSubmissionOK(MultipartFormDataParserAction.instance(), 200, 100, 1024);
-            ServletException ex = assertSubmissionThrows(MultipartFormDataParserAction.instance(), 1, 50, 10 * 1024 * 1024, FileUploadBase.FileSizeLimitExceededException.class);
+            ServletException ex = assertSubmissionThrows(MultipartFormDataParserAction.instance(), 1, 50, 10 * 1024 * 1024, FileUploadByteCountLimitException.class);
             assertThat(ex.getMessage(), containsString(MultipartFormDataParser.class.getName() + ".FILEUPLOAD_MAX_FILE_SIZE"));
         }
         assertSubmissionOK(MultipartFormDataParserAction.instance(), 1, 50, 10 * 1024 * 1024);
@@ -147,7 +148,7 @@ public class Security3030Test {
         assertSubmissionOK(MultipartFormDataParserAction.instance(), 1, 50, 10 * 1024 * 1024);
         try (FieldValue v = withStaticField(MultipartFormDataParser.class, "FILEUPLOAD_MAX_SIZE", 1024 * 1024)) {
             assertSubmissionOK(MultipartFormDataParserAction.instance(), 200, 100, 1024);
-            ServletException ex = assertSubmissionThrows(MultipartFormDataParserAction.instance(), 1, 50, 10 * 1024 * 1024, FileUploadBase.SizeLimitExceededException.class);
+            ServletException ex = assertSubmissionThrows(MultipartFormDataParserAction.instance(), 1, 50, 10 * 1024 * 1024, FileUploadSizeException.class);
             assertThat(ex.getMessage(), containsString(MultipartFormDataParser.class.getName() + ".FILEUPLOAD_MAX_SIZE"));
         }
         assertSubmissionOK(MultipartFormDataParserAction.instance(), 1, 50, 10 * 1024 * 1024);
@@ -311,7 +312,7 @@ public class Security3030Test {
         }
 
         protected HttpResponse processMultipart(StaplerRequest req) throws ServletException, IOException {
-            req.getFileItem("any-name");
+            req.getFileItem2("any-name");
             return HttpResponses.ok();
         }
     }

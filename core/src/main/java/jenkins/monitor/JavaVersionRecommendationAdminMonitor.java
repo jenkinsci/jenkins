@@ -24,13 +24,21 @@
 
 package jenkins.monitor;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.model.AdministrativeMonitor;
 import hudson.security.Permission;
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.Period;
+import java.time.ZoneId;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Locale;
+import java.util.NavigableMap;
+import java.util.TreeMap;
 import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
-import jenkins.util.java.JavaUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
@@ -46,15 +54,67 @@ import org.kohsuke.stapler.interceptor.RequirePOST;
 @Symbol("javaVersionRecommendation")
 public class JavaVersionRecommendationAdminMonitor extends AdministrativeMonitor {
 
+    /**
+     * The list of supported Java long-term support (LTS) releases. The key is the {@link
+     * Runtime.Version#feature() feature-release counter}. The value is the date the Jenkins project
+     * drops support for that release, which must be before the date the Eclipse Temurin project
+     * drops support for that release. This list must remain synchronized with the one in {@code
+     * executable.Main}.
+     *
+     * <p>To add support for a Java version:
+     *
+     * <ul>
+     *   <li>Update {@link #SUPPORTED_JAVA_VERSIONS}
+     *   <li>Update {@code executable.Main#SUPPORTED_JAVA_VERSIONS}
+     *   <li>Update the {@code Jenkinsfile} for core and core components
+     *   <li>Update the {@code Jenkinsfile} for PCT
+     *   <li>Update the {@code Jenkinsfile} for ATH
+     *   <li>Update the archetype and the {@code Jenkinsfile} for critical plugins
+     * </ul>
+     *
+     * @see <a href="https://endoflife.date/eclipse-temurin">Eclipse Temurin End of Life</a>
+     */
+    private static final NavigableMap<Integer, LocalDate> SUPPORTED_JAVA_VERSIONS;
+
+    static {
+        NavigableMap<Integer, LocalDate> supportedVersions = new TreeMap<>();
+        supportedVersions.put(17, LocalDate.of(2026, 3, 31)); // Temurin: 2027-10-31
+        supportedVersions.put(21, LocalDate.of(2027, 9, 30)); // Temurin: 2029-09-30
+        SUPPORTED_JAVA_VERSIONS = Collections.unmodifiableNavigableMap(supportedVersions);
+    }
+
     public JavaVersionRecommendationAdminMonitor() {
-        super(JavaVersionRecommendationAdminMonitor.class.getName() + "-3");
+        super(getId());
+    }
+
+    /**
+     * Compute the ID for the administrative monitor. The ID includes the Java version, EOL date,
+     * and severity so that changes to the EOL date for a given Java version will invalidate
+     * previous dismissals of the administrative monitor and so that users who decline to upgrade
+     * after the first warning get a second warning when they are closer to the deadline.
+     *
+     * @return The computed ID.
+     */
+    private static String getId() {
+        StringBuilder id = new StringBuilder();
+        id.append(JavaVersionRecommendationAdminMonitor.class.getName());
+        LocalDate endOfLife = getEndOfLife();
+        if (endOfLife.isBefore(LocalDate.MAX)) {
+            id.append('-');
+            id.append(Runtime.version().feature());
+            id.append('-');
+            id.append(endOfLife);
+            id.append('-');
+            id.append(getSeverity());
+        }
+        return id.toString();
     }
 
     private static Boolean disabled = SystemProperties.getBoolean(JavaVersionRecommendationAdminMonitor.class.getName() + ".disabled", false);
 
     @Override
     public boolean isActivated() {
-        return !disabled && JavaUtils.isRunningWithJava8OrBelow();
+        return !disabled && getDeprecationPeriod().toTotalMonths() < 12;
     }
 
     @Override
@@ -78,8 +138,55 @@ public class JavaVersionRecommendationAdminMonitor extends AdministrativeMonitor
             disable(true);
             return HttpResponses.forwardToPreviousPage();
         } else {
-            return new HttpRedirect("https://www.jenkins.io/redirect/upgrading-jenkins-java-version-8-to-11");
+            return new HttpRedirect("https://jenkins.io/redirect/java-support/");
         }
     }
 
+    @NonNull
+    private static LocalDate getEndOfLife() {
+        LocalDate endOfLife = SUPPORTED_JAVA_VERSIONS.get(Runtime.version().feature());
+        return endOfLife != null ? endOfLife : LocalDate.MAX;
+    }
+
+    @NonNull
+    private static Period getDeprecationPeriod() {
+        return Period.between(LocalDate.now(), getEndOfLife());
+    }
+
+    @NonNull
+    private static Severity getSeverity() {
+        return getDeprecationPeriod().toTotalMonths() < 3 ? Severity.DANGER : Severity.WARNING;
+    }
+
+    /**
+     * @return The current feature-release counter.
+     * @see Runtime#version()
+     */
+    @Restricted(DoNotUse.class)
+    public int getJavaVersion() {
+        return Runtime.version().feature();
+    }
+
+    /**
+     * @return The end of life date for the current Java version in the system default time zone.
+     */
+    @Restricted(DoNotUse.class)
+    public Date getEndOfLifeAsDate() {
+        return Date.from(getEndOfLife().atStartOfDay(ZoneId.systemDefault()).toInstant());
+    }
+
+    /**
+     * @return The severity of the administrative monitor, used to set the background color of the alert.
+     */
+    @Restricted(DoNotUse.class)
+    public String getSeverityAsString() {
+        return getSeverity().toString().toLowerCase(Locale.US);
+    }
+
+    private enum Severity {
+        SUCCESS,
+        INFO,
+        WARNING,
+        DANGER
+    }
 }

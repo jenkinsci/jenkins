@@ -34,6 +34,8 @@ import hudson.util.FormValidation;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
@@ -112,14 +114,14 @@ public final class ResourceDomainConfiguration extends GlobalConfiguration {
 
         URL resourceRootUrl;
         try {
-            resourceRootUrl = new URL(resourceRootUrlString);
-        } catch (MalformedURLException ex) {
+            resourceRootUrl = new URI(resourceRootUrlString).toURL();
+        } catch (MalformedURLException | URISyntaxException ex) {
             return FormValidation.error(Messages.ResourceDomainConfiguration_Invalid());
         }
 
         String resourceRootUrlHost = resourceRootUrl.getHost();
         try {
-            String jenkinsRootUrlHost = new URL(jenkinsRootUrlString).getHost();
+            String jenkinsRootUrlHost = new URI(jenkinsRootUrlString).getHost();
             if (jenkinsRootUrlHost.equals(resourceRootUrlHost)) {
                 // We do not allow the same host for Jenkins and resource root URLs even if there's some other difference.
                 // This is a conservative choice and prohibits same host/different proto/different port/different path:
@@ -147,9 +149,8 @@ public final class ResourceDomainConfiguration extends GlobalConfiguration {
 
         // Send a request to /instance-identity/ at the resource root URL and check whether it is this Jenkins
         try {
-            URLConnection urlConnection = new URL(resourceRootUrlString + "instance-identity/").openConnection();
-            if (urlConnection instanceof HttpURLConnection) {
-                HttpURLConnection httpURLConnection = (HttpURLConnection) urlConnection;
+            URLConnection urlConnection = new URI(resourceRootUrlString + "instance-identity/").toURL().openConnection();
+            if (urlConnection instanceof HttpURLConnection httpURLConnection) {
                 int responseCode = httpURLConnection.getResponseCode();
 
                 if (responseCode == 200) {
@@ -179,7 +180,7 @@ public final class ResourceDomainConfiguration extends GlobalConfiguration {
                 return FormValidation.error(Messages.ResourceDomainConfiguration_FailedIdentityCheck(responseCode, responseMessage));
             }
             return FormValidation.error(Messages.ResourceDomainConfiguration_Invalid()); // unlikely to ever be hit
-        } catch (MalformedURLException ex) {
+        } catch (MalformedURLException | URISyntaxException ex) {
             // Not expected to be hit
             LOGGER.log(Level.FINE, "MalformedURLException occurred during instance identity check for " + resourceRootUrlString, ex);
             return FormValidation.error(Messages.ResourceDomainConfiguration_Exception(ex.getMessage()));

@@ -18,7 +18,7 @@ function updateListBox(listBox, url, config) {
       if (!settingMain) {
         console.warn(
           "Couldn't find the expected validation element (.validation-error-area) for element",
-          listBox.parentNode
+          listBox.parentNode,
         );
         return;
       }
@@ -127,6 +127,36 @@ Behaviour.specify("SELECT.select", "select", 1000, function (e) {
     } else {
       return originalValue != selectedValue;
     }
+  }
+
+  let parentDiv = e.closest(".jenkins-select");
+
+  function handleFilled(event) {
+    // ignore events for other elements
+    if (event.detail === e) {
+      let pre = document.createElement("pre");
+      if (e.selectedIndex != -1) {
+        pre.innerText = e.options[e.selectedIndex].text;
+      } else {
+        pre.innerText = "N/A";
+      }
+      e.remove();
+      pre.classList.add("jenkins-readonly");
+      parentDiv.classList.remove("jenkins-select");
+      parentDiv.appendChild(pre);
+    }
+  }
+
+  // handle readonly mode, the actually selected option is only filled asynchronously so we have
+  // to wait until the data is filled by registering to the filled event.
+  if (
+    parentDiv != null &&
+    parentDiv.dataset.readonly === "true" &&
+    !parentDiv.hasAttribute("data-listener-added")
+  ) {
+    // need to avoid duplicate eventListeners so mark that we already added it
+    parentDiv.setAttribute("data-listener-added", "true");
+    parentDiv.addEventListener("filled", handleFilled);
   }
 
   // controls that this SELECT box depends on

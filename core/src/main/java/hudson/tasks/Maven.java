@@ -51,7 +51,6 @@ import hudson.tools.ToolInstaller;
 import hudson.tools.ToolProperty;
 import hudson.util.ArgumentListBuilder;
 import hudson.util.FormValidation;
-import hudson.util.NullStream;
 import hudson.util.StreamTaskListener;
 import hudson.util.VariableResolver;
 import hudson.util.VariableResolver.ByMap;
@@ -59,6 +58,7 @@ import hudson.util.VariableResolver.Union;
 import hudson.util.XStream2;
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -76,7 +76,6 @@ import jenkins.mvn.GlobalSettingsProvider;
 import jenkins.mvn.SettingsProvider;
 import jenkins.security.MasterToSlaveCallable;
 import net.sf.json.JSONObject;
-import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -331,13 +330,13 @@ public class Maven extends Builder {
 
             if (!S_PATTERN.matcher(targets).find()) { // check the given target/goals do not contain settings parameter already
                 String settingsPath = SettingsProvider.getSettingsRemotePath(getSettings(), build, listener);
-                if (StringUtils.isNotBlank(settingsPath)) {
+                if (settingsPath != null && !settingsPath.isBlank()) {
                     args.add("-s", settingsPath);
                 }
             }
             if (!GS_PATTERN.matcher(targets).find()) {
                 String settingsPath = GlobalSettingsProvider.getSettingsRemotePath(getGlobalSettings(), build, listener);
-                if (StringUtils.isNotBlank(settingsPath)) {
+                if (settingsPath != null && !settingsPath.isBlank()) {
                     args.add("-gs", settingsPath);
                 }
             }
@@ -665,7 +664,7 @@ public class Maven extends Builder {
          */
         public boolean getExists() {
             try {
-                return getExecutable(new LocalLauncher(new StreamTaskListener(new NullStream()))) != null;
+                return getExecutable(new LocalLauncher(new StreamTaskListener(OutputStream.nullOutputStream()))) != null;
             } catch (IOException | InterruptedException e) {
                 return false;
             }

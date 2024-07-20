@@ -1,0 +1,23 @@
+name: Label PRs targeting LTS branches
+
+on: [pull_request_target]
+
+permissions:
+  pull-requests: write
+
+jobs:
+  label:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check if PR targets LTS branch
+        if: startsWith(github.event.pull_request.base.ref, 'stable-')
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            github.rest.issues.addLabels({
+              owner: context.payload.repository.owner.login,
+              repo: context.payload.repository.name,
+              issue_number: context.payload.pull_request.number,
+              labels: ['into-lts']
+            });

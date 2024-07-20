@@ -56,7 +56,7 @@ function init() {
       this.init();
 
       this.div.appendChild(
-        createElementFromHtml(options.icon || this.defaultIcon)
+        createElementFromHtml(options.icon || this.defaultIcon),
       );
       const message = this.div.appendChild(document.createElement("span"));
       message.appendChild(document.createTextNode(text));

@@ -454,7 +454,7 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
     public abstract <V, P> V accept(LabelVisitor<V, P> visitor, P param);
 
     /**
-     * Lists up all the atoms contained in in this label.
+     * Lists all the atoms contained in this label.
      *
      * @since 1.420
      */
@@ -591,11 +591,17 @@ public abstract class Label extends Actionable implements Comparable<Label>, Mod
     public static Set<LabelAtom> parse(@CheckForNull String labels) {
         final Set<LabelAtom> r = new TreeSet<>();
         labels = fixNull(labels);
-        if (labels.length() > 0) {
-            final QuotedStringTokenizer tokenizer = new QuotedStringTokenizer(labels);
-            while (tokenizer.hasMoreTokens())
-                r.add(Jenkins.get().getLabelAtom(tokenizer.nextToken()));
+        if (!labels.isEmpty()) {
+            Jenkins j = Jenkins.get();
+            LabelAtom labelAtom = j.tryGetLabelAtom(labels);
+            if (labelAtom == null) {
+                final QuotedStringTokenizer tokenizer = new QuotedStringTokenizer(labels);
+                while (tokenizer.hasMoreTokens())
+                    r.add(j.getLabelAtom(tokenizer.nextToken()));
+            } else {
+                r.add(labelAtom);
             }
+        }
         return r;
     }
 
