@@ -190,7 +190,9 @@ public class MappingWorksheet {
          * If the previous execution of this task run on a certain node
          * and this task prefers to run on the same node, return that.
          * Otherwise null.
+         * @deprecated Unused.
          */
+        @Deprecated
         public final ExecutorChunk lastBuiltOn;
 
 
@@ -200,6 +202,7 @@ public class MappingWorksheet {
             this.index = index;
             this.assignedLabel = getAssignedLabel(base.get(0));
 
+            @SuppressWarnings("deprecation")
             Node lbo = base.get(0).getLastBuiltOn();
             for (ExecutorChunk ec : executors) {
                 if (ec.node == lbo) {

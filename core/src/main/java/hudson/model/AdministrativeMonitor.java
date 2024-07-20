@@ -236,7 +236,7 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
      *
      * @return true if the current user has the minimum required permission to view any administrative monitor.
      *
-     * @since TODO
+     * @since 2.468
      */
     public static boolean hasPermissionToDisplay() {
         return Jenkins.get().hasAnyPermission(Jenkins.SYSTEM_READ, Jenkins.MANAGE);
