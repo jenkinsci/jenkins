@@ -25,8 +25,6 @@
 
 package hudson.util;
 
-import static jenkins.SkipSomeTests.ReasonTestShouldRun.NEVER_FAILING_TEST;
-import static jenkins.SkipSomeTests.runTestSometimes;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.instanceOf;
@@ -34,7 +32,6 @@ import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeTrue;
 
 import hudson.model.FreeStyleProject;
 import hudson.model.ParameterDefinition;
@@ -58,7 +55,6 @@ public class SecretCompatTest {
     @Test
     @Issue("SECURITY-304")
     public void encryptedValueStaysTheSameAfterRoundtrip() throws Exception {
-        assumeTrue(runTestSometimes(NEVER_FAILING_TEST));
         FreeStyleProject project = j.createFreeStyleProject();
         project.addProperty(new ParametersDefinitionProperty(new PasswordParameterDefinition("p", Secret.fromString("s3cr37"), "Keep this a secret")));
         project.getAllActions(); // initialize Actionable.actions; otherwise first made nonnull while rendering sidepanel after redirect after round #1 has been saved, so only round #2 has <actions/>
@@ -86,7 +82,6 @@ public class SecretCompatTest {
     @Issue("SECURITY-304")
     @LocalData
     public void canReadPreSec304Secrets() throws Exception {
-        assumeTrue(runTestSometimes(NEVER_FAILING_TEST));
         FreeStyleProject project = j.jenkins.getItemByFullName("OldSecret", FreeStyleProject.class);
         String oldxml = project.getConfigFile().asString();
         //It should be unchanged on disk

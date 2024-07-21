@@ -24,10 +24,7 @@
 
 package hudson.model;
 
-import static jenkins.SkipSomeTests.ReasonTestShouldRun.NEVER_FAILING_TEST;
-import static jenkins.SkipSomeTests.runTestSometimes;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assume.assumeTrue;
 
 import hudson.Launcher;
 import java.io.IOException;
@@ -47,7 +44,6 @@ public class PasswordParameterDefinitionTest {
     @Rule public JenkinsRule j = new JenkinsRule();
 
     @Test public void defaultValueKeptSecret() throws Exception {
-        assumeTrue(runTestSometimes(NEVER_FAILING_TEST));
         FreeStyleProject p = j.createFreeStyleProject();
         p.addProperty(new ParametersDefinitionProperty(new PasswordParameterDefinition("p", "s3cr3t", "")));
         j.configRoundtrip(p);
