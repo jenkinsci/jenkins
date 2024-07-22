@@ -86,7 +86,7 @@ public abstract class UserProperty implements ReconfigurableDescribable<UserProp
     /**
      * Returns all the registered {@link UserPropertyCategory} descriptors for a given category.
      *
-     * @since TODO
+     * @since 2.468
      */
     public static List<UserPropertyDescriptor> allByCategoryClass(@NonNull Class<? extends UserPropertyCategory> categoryClass) {
         DescriptorExtensionList<UserProperty, UserPropertyDescriptor> all = all();
