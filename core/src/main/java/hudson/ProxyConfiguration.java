@@ -540,6 +540,34 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
             return FormValidation.ok();
         }
 
+        /**
+         * Do check if the provided value is empty or composed of whitespaces.
+         * If so, return a validation warning.
+         *
+         * @param value the value to test
+         * @return a validation warning iff the provided value is empty or composed of whitespaces.
+         */
+        private static FormValidation doCheckProxyCredentials(String value) {
+            value = Util.fixEmptyAndTrim(value);
+            if (value == null) {
+                return FormValidation.ok();
+            } else {
+                return FormValidation.warning(Messages.ProxyConfiguration_NonTLSWarning());
+            }
+        }
+
+        @RequirePOST
+        @Restricted(NoExternalUse.class)
+        public FormValidation doCheckUserName(@QueryParameter String value) {
+            return doCheckProxyCredentials(value);
+        }
+
+        @RequirePOST
+        @Restricted(NoExternalUse.class)
+        public FormValidation doCheckSecretPassword(@QueryParameter String value) {
+            return doCheckProxyCredentials(value);
+        }
+
         @RequirePOST
         @Restricted(NoExternalUse.class)
         public FormValidation doValidateProxy(
