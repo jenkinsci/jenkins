@@ -547,7 +547,7 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
          * @param value the value to test
          * @return a validation warning iff the provided value is empty or composed of whitespaces.
          */
-        private static FormValidation doCheckProxyCredentials(String value) {
+        private static FormValidation checkProxyCredentials(String value) {
             value = Util.fixEmptyAndTrim(value);
             if (value == null) {
                 return FormValidation.ok();
@@ -559,13 +559,13 @@ public final class ProxyConfiguration extends AbstractDescribableImpl<ProxyConfi
         @RequirePOST
         @Restricted(NoExternalUse.class)
         public FormValidation doCheckUserName(@QueryParameter String value) {
-            return doCheckProxyCredentials(value);
+            return checkProxyCredentials(value);
         }
 
         @RequirePOST
         @Restricted(NoExternalUse.class)
         public FormValidation doCheckSecretPassword(@QueryParameter String value) {
-            return doCheckProxyCredentials(value);
+            return checkProxyCredentials(value);
         }
 
         @RequirePOST
