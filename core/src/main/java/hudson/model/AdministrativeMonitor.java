@@ -213,6 +213,7 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
      * </p>
      * @see #getRequiredPermission()
      * @see #hasRequiredPermission()
+     * @since 2.468
      */
     public void checkRequiredPermission() {
         Jenkins.get().checkPermission(getRequiredPermission());
@@ -226,6 +227,7 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
      * </p>
      * @see #getRequiredPermission()
      * @see #checkRequiredPermission()
+     * @since 2.468
      */
     public boolean hasRequiredPermission() {
         return Jenkins.get().hasPermission(getRequiredPermission());
