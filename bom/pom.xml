@@ -41,7 +41,7 @@ THE SOFTWARE.
     <commons-fileupload2.version>2.0.0-M2</commons-fileupload2.version>
     <slf4jVersion>2.0.13</slf4jVersion>
     <!-- TODO https://github.com/jenkinsci/stapler/pull/571 -->
-    <stapler.version>999999-SNAPSHOT</stapler.version>
+    <stapler.version>1891.v4efde02f1509</stapler.version>
     <groovy.version>2.4.21</groovy.version>
   </properties>
 
