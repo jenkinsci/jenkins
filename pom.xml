@@ -28,7 +28,7 @@ THE SOFTWARE.
   <parent>
     <groupId>org.jenkins-ci</groupId>
     <artifactId>jenkins</artifactId>
-    <version>1.116</version>
+    <version>1.119</version>
     <relativePath />
   </parent>
 
@@ -73,9 +73,9 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.463</revision>
+    <revision>2.470</revision>
     <changelist>-SNAPSHOT</changelist>
-    <project.build.outputTimestamp>2024-06-11T13:29:41Z</project.build.outputTimestamp>
+    <project.build.outputTimestamp>2024-07-23T13:33:48Z</project.build.outputTimestamp>
 
     <!-- configuration for patch tracker plugin  -->
     <project.patchManagement.system>github</project.patchManagement.system>
@@ -87,9 +87,9 @@ THE SOFTWARE.
     <changelog.url>https://www.jenkins.io/changelog</changelog.url>
 
     <!-- Bundled Remoting version -->
-    <remoting.version>3248.v65ecb_254c298</remoting.version>
+    <remoting.version>3256.v88a_f6e922152</remoting.version>
     <!-- Minimum Remoting version, which is tested for API compatibility -->
-    <remoting.minimum.supported.version>4.13</remoting.minimum.supported.version>
+    <remoting.minimum.supported.version>3107.v665000b_51092</remoting.minimum.supported.version>
 
     <spotbugs.effort>Max</spotbugs.effort>
     <spotbugs.threshold>Medium</spotbugs.threshold>
@@ -99,7 +99,7 @@ THE SOFTWARE.
     <bridge-method-injector.version>1.29</bridge-method-injector.version>
     <spotless.check.skip>false</spotless.check.skip>
     <!-- Make sure to keep the jetty-maven-plugin version in war/pom.xml in sync with the Jetty release in Winstone: -->
-    <winstone.version>6.20</winstone.version>
+    <winstone.version>6.21</winstone.version>
   </properties>
 
   <!--

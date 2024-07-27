@@ -24,11 +24,19 @@
 
 package hudson.model;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 
+import hudson.security.FullControlOnceLoggedInAuthorizationStrategy;
+import java.net.URL;
 import java.util.Locale;
 import java.util.logging.Level;
 import net.sf.json.JSONObject;
+import org.htmlunit.HttpMethod;
+import org.htmlunit.WebRequest;
+import org.htmlunit.WebResponse;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -90,6 +98,29 @@ public class ParametersDefinitionPropertyTest {
 
         }
 
+    }
+
+    @Issue("JENKINS-66105")
+    @Test
+    public void statusCodes() throws Exception {
+        r.jenkins.setSecurityRealm(r.createDummySecurityRealm());
+        r.jenkins.setAuthorizationStrategy(new FullControlOnceLoggedInAuthorizationStrategy());
+        FreeStyleProject p = r.createFreeStyleProject("p");
+        ParametersDefinitionProperty pdp = new ParametersDefinitionProperty(new StringParameterDefinition("K"));
+        p.addProperty(pdp);
+        p.setConcurrentBuild(true);
+        p.setAssignedLabel(Label.get("nonexistent")); // force it to stay in queue
+        JenkinsRule.WebClient wc = r.createWebClient();
+        wc.withBasicApiToken("dev");
+        assertThat("initially 201 Created queue item", buildWithParameters(wc, "v1").getStatusCode(), is(201));
+        WebResponse rsp = buildWithParameters(wc, "v1");
+        assertThat("then 303 See Other → 200 OK", rsp.getStatusCode(), is(200));
+        assertThat("offers advice on API", rsp.getContentAsString(), containsString("api/json?tree="));
+        assertThat("201 Created queue item for different key", buildWithParameters(wc, "v2").getStatusCode(), is(201));
+    }
+
+    private WebResponse buildWithParameters(JenkinsRule.WebClient wc, String value) throws Exception {
+        return wc.getPage(new WebRequest(new URL(wc.getContextPath() + "job/p/buildWithParameters?K=" + value), HttpMethod.POST)).getWebResponse();
     }
 
 }

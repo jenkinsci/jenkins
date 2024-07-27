@@ -39,7 +39,7 @@ $semantics: (
   --font-size-base: 1rem; // 16px
   --font-size-sm: 0.875rem; // 14px
   --font-size-xs: 0.75rem; // 12px
-  --font-size-monospace: 0.95em;
+  --font-size-monospace: 1em;
 
   // Line height
   --line-height-base: 1.5;
@@ -174,8 +174,8 @@ $semantics: (
   --table-header-foreground: var(--text-color);
   --table-body-background: var(--background);
   --table-body-foreground: var(--text-color);
-  --table-border-radius: 10px;
-  --table-row-border-radius: 4px;
+  --table-border-radius: 0.75rem;
+  --table-row-border-radius: 0.3125rem;
 
   // Deprecated
   --even-row-color: var(--very-light-grey);
@@ -197,7 +197,7 @@ $semantics: (
   --link-text-decoration: none;
   --link-text-decoration--hover: underline;
   --link-text-decoration--active: underline;
-  --link-font-weight: 500;
+  --link-font-weight: 450;
 
   // Tooltips
   --tooltip-backdrop-filter: contrast(0.6) brightness(2.4) saturate(2)

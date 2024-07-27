@@ -46,8 +46,8 @@ THE SOFTWARE.
     <host>localhost</host>
     <!-- HTTP listener port -->
     <port>8080</port>
-    <mina-sshd-api.version>2.12.1-113.v4d3ea_5eb_7f72</mina-sshd-api.version>
-    <node.version>20.14.0</node.version>
+    <mina-sshd-api.version>2.13.1-117.v2f1a_b_66ff91d</mina-sshd-api.version>
+    <node.version>20.15.1</node.version>
     <!-- frontend-maven-plugin will install this Yarn version as bootstrap, then hand over control to Yarn Berry. -->
     <yarn.version>1.22.19</yarn.version>
     <!-- maven-antrun-plugin will download this Yarn version. -->
@@ -298,14 +298,14 @@ THE SOFTWARE.
                   <!-- detached after 1.577 -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>junit</artifactId>
-                  <version>1265.v65b_14fa_f12f0</version>
+                  <version>1279.v72cf99b_25c43</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <!-- dependency of junit, plugin-util-api, and workflow-support -->
                   <groupId>org.jenkins-ci.plugins.workflow</groupId>
                   <artifactId>workflow-api</artifactId>
-                  <version>1316.v33eb_726c50b_a_</version>
+                  <version>1322.v857eeeea_9902</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -334,7 +334,7 @@ THE SOFTWARE.
                   <!-- dependency of checks-api and plugin-util-api -->
                   <groupId>org.jenkins-ci.plugins.workflow</groupId>
                   <artifactId>workflow-support</artifactId>
-                  <version>907.v6713a_ed8a_573</version>
+                  <version>920.v59f71ce16f04</version>
                   <type>hpi</type>
                 </artifactItem>
 
@@ -395,7 +395,7 @@ THE SOFTWARE.
                   <!-- dependency of checks-api, junit, plugin-util-api, workflow-api, and workflow-support -->
                   <groupId>org.jenkins-ci.plugins.workflow</groupId>
                   <artifactId>workflow-step-api</artifactId>
-                  <version>657.v03b_e8115821b_</version>
+                  <version>678.v3ee58b_469476</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -409,14 +409,14 @@ THE SOFTWARE.
                   <!-- dependency of scm-api and workflow-step-api -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>structs</artifactId>
-                  <version>337.v1b_04ea_4df7c8</version>
+                  <version>338.v848422169819</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
                   <!-- detached after 2.16 -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>bouncycastle-api</artifactId>
-                  <version>2.30.1.78.1-233.vfdcdeb_0a_08a_a_</version>
+                  <version>2.30.1.78.1-248.ve27176eb_46cb_</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -719,30 +719,6 @@ THE SOFTWARE.
       </activation>
       <build>
         <plugins>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-enforcer-plugin</artifactId>
-            <!-- Version specified in grandparent POM -->
-            <executions>
-              <execution>
-                <id>enforce-versions</id>
-                <goals>
-                  <goal>enforce</goal>
-                </goals>
-                <configuration>
-                  <rules>
-                    <requireMavenVersion>
-                      <version>3.1.0</version>
-                    </requireMavenVersion>
-                    <requireJavaVersion>
-                      <!-- let's encrypt certs used for https://updates.jenkins.io -->
-                      <version>[1.8.0-101,]</version>
-                    </requireJavaVersion>
-                  </rules>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-antrun-plugin</artifactId>
