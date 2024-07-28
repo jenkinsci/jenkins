@@ -154,6 +154,7 @@ public abstract class OfflineCause {
          * @param user user that took agent offline
          * @param message Reason for setting it offline
          * @param temporarily indicates that the offline cause is a temporarily offline cause
+         * @since TODO
          */
         public UserCause(@CheckForNull User user, @CheckForNull String message, boolean temporarily) {
             this(
