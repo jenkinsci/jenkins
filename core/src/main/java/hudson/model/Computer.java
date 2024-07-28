@@ -384,6 +384,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      *
      * @return
      *      null if the system was put temporarily offline without given a cause.
+     * @since TODO
      */
     @Exported
     public OfflineCause getTemporarilyOfflineCause() {
@@ -408,6 +409,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      *
      * @return
      *      empty string if the system was put temporarily offline without given a cause.
+     * @since TODO
      */
     @Exported
     public String getTemporarilyOfflineCauseReason() {
@@ -691,6 +693,7 @@ public /*transient*/ abstract class Computer extends Actionable implements Acces
      * Helper for the UI
      *
      * @return true if the agent is offline and not trying to connect currently and the cause differs from the temporarily offline cause
+     * @since TODO
      */
     @Restricted(NoExternalUse.class)
     public boolean isOfflineAfterDisconnect() {
