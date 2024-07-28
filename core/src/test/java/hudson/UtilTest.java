@@ -248,7 +248,7 @@ public class UtilTest {
             Util.createSymlink(d, buf.toString(), "x", l);
 
             String log = baos.toString(Charset.defaultCharset());
-            if (log.length() > 0)
+            if (!log.isEmpty())
                 System.err.println("log output: " + log);
 
             assertEquals(buf.toString(), Util.resolveSymlink(new File(d, "x")));

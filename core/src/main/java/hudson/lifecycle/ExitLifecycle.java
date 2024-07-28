@@ -26,6 +26,7 @@ package hudson.lifecycle;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
+import hudson.util.BootFailure;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
@@ -71,5 +72,10 @@ public class ExitLifecycle extends Lifecycle {
         }
 
         System.exit(exitOnRestart);
+    }
+
+    @Override
+    public void onBootFailure(BootFailure problem) {
+        restart();
     }
 }

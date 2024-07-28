@@ -130,6 +130,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.HttpResponses;
 import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.export.Exported;
 import org.kohsuke.stapler.export.ExportedBean;
 import org.kohsuke.stapler.interceptor.RequirePOST;
@@ -2412,6 +2413,10 @@ public class Queue extends ResourceController implements Saveable {
             } else { // err on the safe side
                 return null;
             }
+        }
+
+        public HttpResponse doIndex(StaplerRequest req) {
+            return HttpResponses.text("Queue item exists. For details check, for example, " + req.getRequestURI() + "api/json?tree=cancelled,executable[url]");
         }
 
         protected Object readResolve() {

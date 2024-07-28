@@ -326,7 +326,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         SecurityContextHolder.clearContext();
 
-        String contextPath = req.getContextPath().length() > 0 ? req.getContextPath() : "/";
+        String contextPath = !req.getContextPath().isEmpty() ? req.getContextPath() : "/";
         resetRememberMeCookie(req, rsp, contextPath);
         clearStaleSessionCookies(req, rsp, contextPath);
 

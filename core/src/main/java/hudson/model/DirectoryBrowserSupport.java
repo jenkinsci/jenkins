@@ -33,6 +33,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.LinkOption;
 import java.nio.file.OpenOption;
@@ -89,11 +90,6 @@ public final class DirectoryBrowserSupport implements HttpResponse {
     public static boolean ALLOW_TMP_DISPLAY = SystemProperties.getBoolean(DirectoryBrowserSupport.class.getName() + ".allowTmpEscape");
 
     private static final Pattern TMPDIR_PATTERN = Pattern.compile(".+@tmp/.*");
-
-    /**
-     * Escape hatch for the protection against SECURITY-2481. If enabled, the absolute paths on Windows will be allowed.
-     */
-    static final String ALLOW_ABSOLUTE_PATH_PROPERTY_NAME = DirectoryBrowserSupport.class.getName() + ".allowAbsolutePath";
 
     public final ModelObject owner;
 
@@ -230,7 +226,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
                 String pathElement = pathTokens.nextToken();
                 // Treat * and ? as wildcard unless they match a literal filename
                 if ((pathElement.contains("?") || pathElement.contains("*"))
-                        && inBase && !root.child((_base.length() > 0 ? _base + "/" : "") + pathElement).exists())
+                        && inBase && !root.child((!_base.isEmpty() ? _base + "/" : "") + pathElement).exists())
                     inBase = false;
                 if (pathElement.equals("*zip*")) {
                     // the expected syntax is foo/bar/*zip*/bar.zip
@@ -245,7 +241,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
                 }
 
                 StringBuilder sb = inBase ? _base : _rest;
-                if (sb.length() > 0)   sb.append('/');
+                if (!sb.isEmpty())   sb.append('/');
                 sb.append(pathElement);
                 if (!inBase)
                     restSize++;
@@ -260,13 +256,11 @@ public final class DirectoryBrowserSupport implements HttpResponse {
         if (base.isEmpty()) {
             baseFile = root;
         } else {
-            if (!SystemProperties.getBoolean(ALLOW_ABSOLUTE_PATH_PROPERTY_NAME, false)) {
-                boolean isAbsolute = root.run(new IsAbsolute(base));
-                if (isAbsolute) {
-                    LOGGER.info(() -> "SECURITY-2481 The path provided in the URL (" + base + ") is absolute and thus is refused.");
-                    rsp.sendError(HttpServletResponse.SC_NOT_FOUND);
-                    return;
-                }
+            boolean isAbsolute = root.run(new IsAbsolute(base));
+            if (isAbsolute) {
+                LOGGER.info(() -> "SECURITY-2481 The path provided in the URL (" + base + ") is absolute and thus is refused.");
+                rsp.sendError(HttpServletResponse.SC_NOT_FOUND);
+                return;
             }
             baseFile = root.child(base);
         }
@@ -315,7 +309,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
             }
 
             List<List<Path>> glob = null;
-            boolean patternUsed = rest.length() > 0;
+            boolean patternUsed = !rest.isEmpty();
             boolean containsSymlink = false;
             boolean containsTmpDir = false;
                 if (patternUsed) {
@@ -530,7 +524,7 @@ public final class DirectoryBrowserSupport implements HttpResponse {
     private static void zip(StaplerResponse rsp, VirtualFile root, VirtualFile dir, String glob) throws IOException, InterruptedException {
         OutputStream outputStream = rsp.getOutputStream();
         try (ZipOutputStream zos = new ZipOutputStream(outputStream)) {
-            zos.setEncoding(System.getProperty("file.encoding")); // TODO JENKINS-20663 make this overridable via query parameter
+            zos.setEncoding(Charset.defaultCharset().displayName()); // TODO JENKINS-20663 make this overridable via query parameter
             // TODO consider using run(Callable) here
 
             if (glob.isEmpty()) {

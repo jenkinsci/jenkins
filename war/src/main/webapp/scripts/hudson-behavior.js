@@ -1661,7 +1661,8 @@ function rowvgStartEachRow(recursive, f) {
         }
       }
       changeTo(e, "-hover.png");
-      YAHOO.util.Event.stopEvent(event);
+      event.stopPropagation();
+      event.preventDefault();
       return false;
     };
     e = null; // memory leak prevention
@@ -1753,15 +1754,6 @@ function rowvgStartEachRow(recursive, f) {
     ++p,
     function (e) {
       e.classList.add("behavior-loading--hidden");
-    },
-  );
-
-  Behaviour.specify(
-    ".button-with-dropdown",
-    "-button-with-dropdown",
-    ++p,
-    function (e) {
-      new YAHOO.widget.Button(e, { type: "menu", menu: e.nextElementSibling });
     },
   );
 
@@ -1901,8 +1893,11 @@ function xor(a, b) {
 // eslint-disable-next-line no-unused-vars
 function replaceDescription(initialDescription, submissionUrl) {
   var d = document.getElementById("description");
-  d.firstElementChild.nextElementSibling.innerHTML =
-    "<div class='jenkins-spinner'></div>";
+  let button = d.firstElementChild.nextElementSibling;
+  if (button !== null) {
+    d.firstElementChild.nextElementSibling.innerHTML =
+      "<div class='jenkins-spinner'></div>";
+  }
   let parameters = {};
   if (initialDescription !== null && initialDescription !== "") {
     parameters["description"] = initialDescription;
@@ -2226,35 +2221,6 @@ function toQueryString(params) {
   return query;
 }
 
-// eslint-disable-next-line no-unused-vars
-function getElementOverflowParams(element) {
-  // First we force it to wrap so we can get those dimension.
-  // Then we force it to "nowrap", so we can get those dimension.
-  // We can then compare the two sets, which will indicate if
-  // wrapping is potentially happening, or not.
-
-  // Force it to wrap.
-  element.classList.add("force-wrap");
-  var wrappedClientWidth = element.clientWidth;
-  var wrappedClientHeight = element.clientHeight;
-  element.classList.remove("force-wrap");
-
-  // Force it to nowrap. Return the comparisons.
-  element.classList.add("force-nowrap");
-  var nowrapClientHeight = element.clientHeight;
-  try {
-    var overflowParams = {
-      element: element,
-      clientWidth: wrappedClientWidth,
-      scrollWidth: element.scrollWidth,
-      isOverflowed: wrappedClientHeight > nowrapClientHeight,
-    };
-    return overflowParams;
-  } finally {
-    element.classList.remove("force-nowrap");
-  }
-}
-
 // get the cascaded computed style value. 'a' is the style name like 'backgroundColor'
 function getStyle(e, a) {
   if (document.defaultView && document.defaultView.getComputedStyle) {
@@ -2276,14 +2242,13 @@ function getStyle(e, a) {
  */
 // eslint-disable-next-line no-unused-vars
 function ensureVisible(e) {
-  var viewport = YAHOO.util.Dom.getClientRegion();
-  var pos = YAHOO.util.Dom.getRegion(e);
-
-  var Y = viewport.top;
-  var H = viewport.height;
+  const scrollTop = document.documentElement.scrollTop;
+  let Y = scrollTop;
+  let H = window.innerHeight;
+  let c = 0;
 
   function handleStickers(name, f) {
-    var e = document.getElementById(name);
+    const e = document.getElementById(name);
     if (e) {
       f(e);
     }
@@ -2295,6 +2260,7 @@ function ensureVisible(e) {
     t = t.clientHeight;
     Y += t;
     H -= t;
+    c += t;
   });
 
   handleStickers("bottom-sticker", function (b) {
@@ -2302,17 +2268,15 @@ function ensureVisible(e) {
     H -= b;
   });
 
-  var y = pos.top;
-  var h = pos.height;
+  const box = e.getBoundingClientRect();
+  const y = Math.round(box.top + scrollTop);
+  const h = e.offsetHeight;
+  const d = y + h - (Y + H);
 
-  var d = y + h - (Y + H);
-  if (d > 0) {
-    document.body.scrollTop += d;
-  } else {
-    d = Y - y;
-    if (d > 0) {
-      document.body.scrollTop -= d;
-    }
+  if (h > H) {
+    document.documentElement.scrollTop = y - c;
+  } else if (d > 0) {
+    document.documentElement.scrollTop += d;
   }
 }
 
