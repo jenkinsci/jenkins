@@ -52,7 +52,7 @@ THE SOFTWARE.
     </s:attribute>
     <s:attribute name="tooltip">
       Used as tooltip of the button
-      
+
       @since TODO
     </s:attribute>
     <s:attribute name="clazz" />
