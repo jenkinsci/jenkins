@@ -43,13 +43,13 @@ function init() {
     };
   }
 
-  function createAndShowDropdown(e, div, suggestions) {
+  function createAndShowDropdown(e, suggestions) {
     const items = suggestions
       .splice(0, 10)
       .map((s) => convertSuggestionToItem(s, e));
     if (!e.dropdown) {
       Utils.generateDropdown(
-        div,
+        e,
         (instance) => {
           e.dropdown = instance;
           instance.popper.style.minWidth = e.offsetWidth + "px";
@@ -61,7 +61,7 @@ function init() {
     e.dropdown.show();
   }
 
-  function updateSuggestions(e, div) {
+  function updateSuggestions(e) {
     const text = e.value.trim();
     const delimiter = e.getAttribute("autoCompleteDelimChar");
     const word = delimiter ? text.split(delimiter).reverse()[0].trim() : text;
@@ -75,9 +75,7 @@ function init() {
       e.getAttribute("autoCompleteUrl") + "?value=" + encodeURIComponent(word);
     fetch(url)
       .then((rsp) => (rsp.ok ? rsp.json() : {}))
-      .then((response) =>
-        createAndShowDropdown(e, div, response.suggestions || []),
-      );
+      .then((response) => createAndShowDropdown(e, response.suggestions || []));
   }
 
   function debounce(callback) {
@@ -98,10 +96,9 @@ function init() {
     "input-auto-complete",
     0,
     function (e) {
+      e.setAttribute("autocomplete", "off");
+      e.dataset["hideOnClick"] = "false";
       // form field with auto-completion support
-      // insert the auto-completion container
-      var div = document.createElement("DIV");
-      e.parentNode.insertBefore(div, e.nextElementSibling);
       e.style.position = "relative";
       // otherwise menu won't hide on tab with nothing selected
       // needs delay as without that it blocks click selection of an item
@@ -111,7 +108,7 @@ function init() {
       e.addEventListener(
         "input",
         debounce(() => {
-          updateSuggestions(e, div);
+          updateSuggestions(e);
         }),
       );
     },
