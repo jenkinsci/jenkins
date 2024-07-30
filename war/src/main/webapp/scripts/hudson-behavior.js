@@ -917,7 +917,6 @@ function makeButton(e, onclick) {
     "Deprecated call to makeButton - use <button class='jenkins-button'> instead and standard javascript to attach listeners.",
   );
   const h = e.onclick;
-  const clsName = e.className;
   const n = e.name;
 
   const button = document.createElement("button");
