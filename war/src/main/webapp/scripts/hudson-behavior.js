@@ -913,47 +913,69 @@ function escapeHTML(html) {
  *      YUI Button widget.
  */
 function makeButton(e, onclick) {
-  var h = e.onclick;
-  var clsName = e.className;
-  var n = e.name;
+  console.warn(
+    "Deprecated call to makeButton - use <button class='jenkins-button'> instead and standard javascript to attach listeners.",
+  );
+  const h = e.onclick;
+  const clsName = e.className;
+  const n = e.name;
 
-  var attributes = {};
-  // YUI Button class interprets value attribute of <input> as HTML
-  // similar to how the child nodes of a <button> are treated as HTML.
-  // in standard HTML, we wouldn't expect the former case, yet here we are!
-  if (e.tagName === "INPUT") {
-    attributes.label = escapeHTML(e.value);
+  const button = document.createElement("button");
+  if (e.id) {
+    button.id = e.id;
   }
-  var btn = new YAHOO.widget.Button(e, attributes);
   if (onclick != null) {
-    btn.addListener("click", onclick);
+    button.addEventListener("click", onclick);
   }
   if (h != null) {
-    btn.addListener("click", h);
-  }
-  var be = btn.get("element");
-  var classesSeparatedByWhitespace = clsName.split(" ");
-  for (let i = 0; i < classesSeparatedByWhitespace.length; i++) {
-    var singleClass = classesSeparatedByWhitespace[i];
-    if (singleClass) {
-      be.classList.add(singleClass);
-    }
+    button.addEventListener("click", h);
   }
   if (n) {
     // copy the name
-    be.setAttribute("name", n);
+    button.setAttribute("name", n);
   }
-
-  // keep the data-* attributes from the source
-  var length = e.attributes.length;
+  if (e.type === "submit" || e.type === "button") {
+    button.type = e.type;
+  }
+  const length = e.attributes.length;
   for (let i = 0; i < length; i++) {
-    var attribute = e.attributes[i];
-    var attributeName = attribute.name;
+    const attribute = e.attributes[i];
+    const attributeName = attribute.name;
     if (attributeName.startsWith("data-")) {
-      btn._button.setAttribute(attributeName, attribute.value);
+      button.setAttribute(attributeName, attribute.value);
     }
   }
-  return btn;
+  button.innerHTML=e.value;
+  button.classList.add("jenkins-button");
+  const classNames = e.classList;
+  if (classNames.contains("primary") || classNames.contains("submit-button")) {
+    button.classList.add("jenkins-button--primary");
+  }
+  classNames.remove("primary");
+  classNames.remove("submit-button");
+  classNames.remove("yui-button");
+  classNames.forEach(cn => {
+    button.classList.add(cn)
+  })
+
+  function Button(button) {
+    this.button = button;
+  }
+  Button.prototype.set = function(attributeName, value) {
+    if (attributeName === "disabled") {
+      if (value) {
+        this.button.disabled = "disabled";
+      } else {
+        this.button.removeAttribute("disabled");
+      }
+    }
+  }
+  Button.prototype.getForm = function() {
+    return this.button.closest("form");
+  }
+  e.parentNode.insertBefore(button, e);
+  e.remove();
+  return new Button(button);
 }
 
 /*
