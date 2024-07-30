@@ -945,7 +945,7 @@ function makeButton(e, onclick) {
       button.setAttribute(attributeName, attribute.value);
     }
   }
-  button.innerHTML=e.value;
+  button.innerHTML = e.value;
   button.classList.add("jenkins-button");
   const classNames = e.classList;
   if (classNames.contains("primary") || classNames.contains("submit-button")) {
@@ -954,14 +954,14 @@ function makeButton(e, onclick) {
   classNames.remove("primary");
   classNames.remove("submit-button");
   classNames.remove("yui-button");
-  classNames.forEach(cn => {
-    button.classList.add(cn)
-  })
+  classNames.forEach((cn) => {
+    button.classList.add(cn);
+  });
 
   function Button(button) {
     this.button = button;
   }
-  Button.prototype.set = function(attributeName, value) {
+  Button.prototype.set = function (attributeName, value) {
     if (attributeName === "disabled") {
       if (value) {
         this.button.disabled = "disabled";
@@ -969,10 +969,10 @@ function makeButton(e, onclick) {
         this.button.removeAttribute("disabled");
       }
     }
-  }
-  Button.prototype.getForm = function() {
+  };
+  Button.prototype.getForm = function () {
     return this.button.closest("form");
-  }
+  };
   e.parentNode.insertBefore(button, e);
   e.remove();
   return new Button(button);
