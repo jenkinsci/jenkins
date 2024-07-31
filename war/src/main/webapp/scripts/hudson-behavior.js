@@ -903,14 +903,15 @@ function escapeHTML(html) {
 }
 
 /**
- * Wraps a <button> into YUI button.
+ * Replaces a <input> with a <button class="jenkins-button">
  *
  * @param e
  *      button element
  * @param onclick
  *      onclick handler
  * @return
- *      YUI Button widget.
+ *      wrapper with some functions (formerly a YUI widget).
+ * @deprecated use <button class="jenkins-button"> and attach event listeners with standard javascript
  */
 function makeButton(e, onclick) {
   console.warn(
