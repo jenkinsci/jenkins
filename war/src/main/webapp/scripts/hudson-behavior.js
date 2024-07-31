@@ -2263,14 +2263,13 @@ function getStyle(e, a) {
  */
 // eslint-disable-next-line no-unused-vars
 function ensureVisible(e) {
-  var viewport = YAHOO.util.Dom.getClientRegion();
-  var pos = YAHOO.util.Dom.getRegion(e);
-
-  var Y = viewport.top;
-  var H = viewport.height;
+  const scrollTop = document.documentElement.scrollTop;
+  let Y = scrollTop;
+  let H = window.innerHeight;
+  let c = 0;
 
   function handleStickers(name, f) {
-    var e = document.getElementById(name);
+    const e = document.getElementById(name);
     if (e) {
       f(e);
     }
@@ -2282,6 +2281,7 @@ function ensureVisible(e) {
     t = t.clientHeight;
     Y += t;
     H -= t;
+    c += t;
   });
 
   handleStickers("bottom-sticker", function (b) {
@@ -2289,17 +2289,15 @@ function ensureVisible(e) {
     H -= b;
   });
 
-  var y = pos.top;
-  var h = pos.height;
+  const box = e.getBoundingClientRect();
+  const y = Math.round(box.top + scrollTop);
+  const h = e.offsetHeight;
+  const d = y + h - (Y + H);
 
-  var d = y + h - (Y + H);
-  if (d > 0) {
-    document.body.scrollTop += d;
-  } else {
-    d = Y - y;
-    if (d > 0) {
-      document.body.scrollTop -= d;
-    }
+  if (h > H) {
+    document.documentElement.scrollTop = y - c;
+  } else if (d > 0) {
+    document.documentElement.scrollTop += d;
   }
 }
 

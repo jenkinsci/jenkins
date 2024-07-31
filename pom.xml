@@ -73,9 +73,9 @@ THE SOFTWARE.
   </issueManagement>
 
   <properties>
-    <revision>2.470</revision>
+    <revision>2.471</revision>
     <changelist>-SNAPSHOT</changelist>
-    <project.build.outputTimestamp>2024-07-23T13:33:48Z</project.build.outputTimestamp>
+    <project.build.outputTimestamp>2024-07-30T17:24:44Z</project.build.outputTimestamp>
 
     <!-- configuration for patch tracker plugin  -->
     <project.patchManagement.system>github</project.patchManagement.system>
