@@ -104,16 +104,6 @@ public class FreeStyleProject extends Project<FreeStyleProject, FreeStyleBuild> 
             return StandaloneProjectsCategory.ID;
         }
 
-        @Override
-        public String getIconFilePathPattern() {
-            return (Jenkins.RESOURCE_PATH + "/images/:size/freestyleproject.png").replaceFirst("^/", "");
-        }
-
-        @Override
-        public String getIconClassName() {
-            return "symbol-freestyle-project";
-        }
-
         static {
             IconSet.icons.addIcon(new Icon("icon-freestyle-project icon-sm", "16x16/freestyleproject.png", Icon.ICON_SMALL_STYLE));
             IconSet.icons.addIcon(new Icon("icon-freestyle-project icon-md", "24x24/freestyleproject.png", Icon.ICON_MEDIUM_STYLE));
