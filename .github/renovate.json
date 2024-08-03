@@ -67,8 +67,9 @@
       "allowedVersions": "<7.0.0"
     },
     {
-      "matchFileNames": ["test/pom.xml", ".mvn/maven.config"],
+      "matchFileNames": ["test/pom.xml", "core/pom.xml", "war/pom.xml"],
       "matchPackageNames": ["org.jenkins-ci.main:remoting"],
+      "description": "Avoid updating the remoting.minimum.supported.version property but still update latest one by not placing this property in the parent pom.xml",
       "enabled": false
     }
   ],
