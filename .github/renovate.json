@@ -1,7 +1,7 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:base",
+    "config:recommended",
     ":disableDependencyDashboard",
     ":semanticCommitsDisabled"
   ],
@@ -11,7 +11,7 @@
     {
       "matchDatasources": ["npm"],
       "addLabels": ["javascript"],
-      "stabilityDays": 3,
+      "minimumReleaseAge": "3 days",
       "reviewers": ["team:sig-ux"]
     },
     {
@@ -19,52 +19,56 @@
       "allowedVersions": "/20.[0-9]+.[0-9]+(.[0-9]+)?$/"
     },
     {
-      "matchPackagePatterns": ["(org.eclipse.jetty:jetty-maven-plugin|org.jenkins-ci:winstone)"],
       "description": "Should be upgraded in lockstep in order to keep their corresponding Jetty versions aligned, could be grouped but releases are likely separated by a bit of time",
       "matchManagers": ["maven"],
-      "enabled": false
+      "enabled": false,
+      "matchPackageNames": [
+        "/(org.eclipse.jetty:jetty-maven-plugin|org.jenkins-ci:winstone)/"
+      ]
     },
     {
-      "matchPackagePatterns": ["jakarta.servlet:jakarta.servlet-api"],
       "description": "Provided by Jetty and should be aligned with the version provided by the version of Jetty we deliver. See: https://github.com/jenkinsci/jenkins/pull/5211",
       "matchManagers": ["maven"],
-      "enabled": false
+      "enabled": false,
+      "matchPackageNames": ["/jakarta.servlet:jakarta.servlet-api/"]
     },
     {
-      "matchPackagePatterns": ["jakarta.servlet.jsp.jstl:jakarta.servlet.jsp.jstl-api"],
       "description": "Contains incompatible API changes and needs compatibility work",
       "matchManagers": ["maven"],
-      "enabled": false
+      "enabled": false,
+      "matchPackageNames": [
+        "/jakarta.servlet.jsp.jstl:jakarta.servlet.jsp.jstl-api/"
+      ]
     },
     {
-      "matchPackagePatterns": ["org.codehaus.groovy:groovy-all"],
       "description": "Needs significant testing. See: https://github.com/jenkinsci/jenkins/pull/5112#issuecomment-744429487 and https://github.com/jenkinsci/jenkins/pull/5116#issuecomment-744526638",
       "matchManagers": ["maven"],
-      "allowedVersions": "<2.5.0"
+      "allowedVersions": "<2.5.0",
+      "matchPackageNames": ["/org.codehaus.groovy:groovy-all/"]
     },
     {
-      "matchPackagePatterns": ["org.fusesource.jansi:jansi"],
       "description": "Consumed by Groovy and should be updated in lockstep with Groovy. See: https://github.com/jenkinsci/jenkins/pull/5184",
       "matchManagers": ["maven"],
-      "enabled": false
+      "enabled": false,
+      "matchPackageNames": ["/org.fusesource.jansi:jansi/"]
     },
     {
-      "matchPackagePatterns": ["org.jfree:jfreechart"],
       "description": "Contains incompatible API changes and needs compatibility work. See: https://github.com/jenkinsci/jenkins/pull/4224",
       "matchManagers": ["maven"],
-      "enabled": false
+      "enabled": false,
+      "matchPackageNames": ["/org.jfree:jfreechart/"]
     },
     {
-      "matchPackagePatterns": ["org.springframework"],
       "description": "Starting with 6.x, Spring requires Java 17 at a minimum.",
       "matchManagers": ["maven"],
-      "allowedVersions": "<6.0.0"
+      "allowedVersions": "<6.0.0",
+      "matchPackageNames": ["/org.springframework/"]
     },
     {
-      "matchPackagePatterns": ["com.google.inject:guice-bom"],
       "description": "Starting with 7.x, Guice switches from javax.* to jakarta.* bindings. See https://github.com/google/guice/wiki/Guice700",
       "matchManagers": ["maven"],
-      "allowedVersions": "<7.0.0"
+      "allowedVersions": "<7.0.0",
+      "matchPackageNames": ["/com.google.inject:guice-bom/"]
     },
     {
       "matchFileNames": ["test/pom.xml", "core/pom.xml", "war/pom.xml"],
@@ -73,14 +77,16 @@
       "enabled": false
     }
   ],
-  "regexManagers": [
+  "customManagers": [
     {
+      "customType": "regex",
       "fileMatch": ["war/pom.xml"],
       "matchStrings": ["<node.version>(?<currentValue>.*?)</node.version>"],
       "depNameTemplate": "node",
       "datasourceTemplate": "npm"
     },
     {
+      "customType": "regex",
       "fileMatch": ["ath.sh"],
       "matchStrings": ["export ATH_VERSION=(?<currentValue>.*?)\n"],
       "depNameTemplate": "jenkins/ath",
@@ -88,26 +94,30 @@
       "versioningTemplate": "loose"
     },
     {
+      "customType": "regex",
       "fileMatch": [".gitpod/Dockerfile"],
       "matchStrings": ["ARG MAVEN_VERSION=(?<currentValue>.*?)\n"],
       "depNameTemplate": "org.apache.maven:maven-core",
       "datasourceTemplate": "maven"
     },
     {
+      "customType": "regex",
       "fileMatch": ["core/src/site/site.xml"],
       "matchStrings": ["lit@(?<currentValue>.*?)/"],
       "depNameTemplate": "lit",
       "datasourceTemplate": "npm"
     },
     {
+      "customType": "regex",
       "fileMatch": ["core/src/site/site.xml"],
       "matchStrings": ["webcomponentsjs@(?<currentValue>.*?)/"],
       "depNameTemplate": "@webcomponents/webcomponentsjs",
       "datasourceTemplate": "npm"
     },
     {
+      "customType": "regex",
       "fileMatch": ["core/src/site/site.xml"],
-      "matchStrings": ["<version>(?<currentValue>.*?)<\/version>"],
+      "matchStrings": ["<version>(?<currentValue>.*?)</version>"],
       "depNameTemplate": "org.apache.maven.skins:maven-fluido-skin",
       "datasourceTemplate": "maven"
     }
