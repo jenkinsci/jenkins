@@ -63,6 +63,11 @@ public class TimeZoneProperty extends UserProperty {
         }
 
         @Override
+        public String getDescription() {
+            return Messages.TimeZoneProperty_Description();
+        }
+
+        @Override
         public UserProperty newInstance(User user) {
             return new TimeZoneProperty();
         }

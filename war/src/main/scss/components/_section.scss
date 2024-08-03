@@ -34,6 +34,13 @@
   font-weight: 500;
 }
 
+.jenkins-section__description {
+  // Tweaked margin so that it appears visually centred when placed next to `.jenkins-section__title`
+  margin: -0.5rem 0 1rem;
+  color: var(--text-color-secondary);
+  line-height: 1.66;
+}
+
 .jenkins-section__items {
   display: grid;
   grid-template-columns: 1fr;

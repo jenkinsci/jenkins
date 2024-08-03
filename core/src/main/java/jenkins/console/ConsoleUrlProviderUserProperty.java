@@ -66,6 +66,11 @@ public class ConsoleUrlProviderUserProperty extends UserProperty {
         }
 
         @Override
+        public String getDescription() {
+            return Messages.consoleUrlProviderDisplayName_Description();
+        }
+
+        @Override
         public UserProperty newInstance(User user) {
             return new ConsoleUrlProviderUserProperty();
         }
