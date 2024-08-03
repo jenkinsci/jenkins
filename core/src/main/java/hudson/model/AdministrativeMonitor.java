@@ -200,7 +200,10 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
      *     Form UI elements that change system state, e.g. toggling a feature on or off, need to be hidden from users
      *     lacking Administer permission.
      * </p>
+     * @since 2.233
+     * @deprecated Callers should use {@link #checkRequiredPermission()} or {@link #hasRequiredPermission()}.
      */
+    @Deprecated
     public Permission getRequiredPermission() {
         return Jenkins.ADMINISTER;
     }
@@ -213,6 +216,7 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
      * </p>
      * @see #getRequiredPermission()
      * @see #hasRequiredPermission()
+     * @since 2.468
      */
     public void checkRequiredPermission() {
         Jenkins.get().checkPermission(getRequiredPermission());
@@ -226,6 +230,7 @@ public abstract class AdministrativeMonitor extends AbstractModelObject implemen
      * </p>
      * @see #getRequiredPermission()
      * @see #checkRequiredPermission()
+     * @since 2.468
      */
     public boolean hasRequiredPermission() {
         return Jenkins.get().hasPermission(getRequiredPermission());

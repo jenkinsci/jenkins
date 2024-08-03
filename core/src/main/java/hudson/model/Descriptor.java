@@ -594,6 +594,9 @@ public abstract class Descriptor<T extends Describable<T>> implements Loadable, 
                 return verifyNewInstance(bindJSON(req, clazz, formData, true));
             }
         } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException | RuntimeException e) {
+            if (e instanceof RuntimeException && e instanceof HttpResponse) {
+                throw (RuntimeException) e;
+            }
             throw new LinkageError("Failed to instantiate " + clazz + " from " + RedactSecretJsonInErrorMessageSanitizer.INSTANCE.sanitize(formData), e);
         }
     }
@@ -674,7 +677,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Loadable, 
                                 + actualType.getName() + " " + json);
                     }
                 } catch (Exception x) {
-                    LOGGER.log(Level.WARNING, "falling back to default instantiation " + actualType.getName() + " " + json, x);
+                    LOGGER.log(x instanceof HttpResponse ? Level.FINE : Level.WARNING, "falling back to default instantiation " + actualType.getName() + " " + json, x);
                     // If nested objects are not using newInstance, bindJSON will wind up throwing the same exception anyway,
                     // so logging above will result in a duplicated stack trace.
                     // However if they *are* then this is the only way to find errors in that newInstance.

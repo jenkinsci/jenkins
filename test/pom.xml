@@ -110,7 +110,7 @@ THE SOFTWARE.
         <!-- Required by workflow-support -->
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>scm-api</artifactId>
-        <version>690.vfc8b_54395023</version>
+        <version>696.v778d637b_a_762</version>
       </dependency>
       <dependency>
         <!-- requireUpperBoundDeps via matrix-project and junit -->
@@ -147,7 +147,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>jenkins-test-harness</artifactId>
-      <version>2225.2229.vc4c7fcb_6673c</version>
+      <version>2225.2230.v6210cb_b_827f9</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -228,7 +228,7 @@ THE SOFTWARE.
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>junit</artifactId>
-      <version>1279.v72cf99b_25c43</version>
+      <version>1280.v310a_78b_9a_1e0</version>
       <scope>test</scope>
     </dependency>
     <dependency>

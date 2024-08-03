@@ -47,7 +47,7 @@ THE SOFTWARE.
     <!-- HTTP listener port -->
     <port>8080</port>
     <mina-sshd-api.version>2.13.1-117.v2f1a_b_66ff91d</mina-sshd-api.version>
-    <node.version>20.15.1</node.version>
+    <node.version>20.16.0</node.version>
     <!-- frontend-maven-plugin will install this Yarn version as bootstrap, then hand over control to Yarn Berry. -->
     <yarn.version>1.22.19</yarn.version>
     <!-- maven-antrun-plugin will download this Yarn version. -->
@@ -298,7 +298,7 @@ THE SOFTWARE.
                   <!-- detached after 1.577 -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>junit</artifactId>
-                  <version>1279.v72cf99b_25c43</version>
+                  <version>1280.v310a_78b_9a_1e0</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
@@ -402,7 +402,7 @@ THE SOFTWARE.
                   <!-- dependency of workflow-api and workflow-support -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>scm-api</artifactId>
-                  <version>690.vfc8b_54395023</version>
+                  <version>696.v778d637b_a_762</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>

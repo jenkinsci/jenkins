@@ -1,7 +1,7 @@
 [
   {
     "pattern": "AlmaLinux.* 8.*",
-    "endOfLife": "2029-03-31"
+    "endOfLife": "2029-03-01"
   },
   {
     "pattern": "AlmaLinux.* 9.*",
@@ -17,38 +17,39 @@
   },
   {
     "pattern": "Alpine Linux v3.16",
-    "endOfLife": "2024-05-01"
+    "endOfLife": "2024-05-23"
   },
   {
     "pattern": "Alpine Linux v3.17",
-    "endOfLife": "2024-11-01"
+    "endOfLife": "2024-11-22"
   },
   {
     "pattern": "Alpine Linux v3.18",
-    "endOfLife": "2025-05-01"
+    "endOfLife": "2025-05-09"
   },
   {
     "pattern": "Alpine Linux v3.19",
     "endOfLife": "2025-11-01"
   },
   {
+    "pattern": "Alpine Linux v3.20",
+    "endOfLife": "2026-04-01"
+  },
+  {
     "pattern": "Amazon Linux 2",
-    "start": "2023-05-01",
     "endOfLife": "2023-11-16"
   },
   {
     "pattern": "Amazon Linux 2023",
-    "start": "2027-09-15",
     "endOfLife": "2028-03-15"
   },
   {
     "pattern": "CentOS Linux.* 7.*",
-    "start": "2023-05-01",
     "endOfLife": "2023-11-16"
   },
   {
     "pattern": "CentOS Linux.* 8.*",
-    "endOfLife": "2029-03-31"
+    "endOfLife": "2021-12-31"
   },
   {
     "pattern": "Debian.* 10.*",
@@ -60,45 +61,47 @@
   },
   {
     "pattern": "Debian.* 12.*",
-    "endOfLife": "2028-06-30"
+    "endOfLife": "2028-06-10"
   },
   {
     "pattern": "Fedora.* 36.*",
-    "endOfLife": "2023-05-18"
+    "endOfLife": "2023-05-16"
   },
   {
     "pattern": "Fedora.* 37.*",
-    "endOfLife": "2023-12-15"
+    "endOfLife": "2023-12-05"
   },
   {
     "pattern": "Fedora.* 38.*",
-    "endOfLife": "2024-05-18"
+    "endOfLife": "2024-05-21"
   },
   {
     "pattern": "Fedora.* 39.*",
-    "endOfLife": "2024-12-07"
+    "endOfLife": "2024-11-12"
+  },
+  {
+    "pattern": "Fedora.* 40.*",
+    "endOfLife": "2025-05-13"
   },
   {
     "pattern": "Oracle Linux.* 7.*",
-    "start": "2023-05-01",
     "endOfLife": "2023-11-16"
   },
   {
     "pattern": "Oracle Linux.* 8.*",
-    "endOfLife": "2029-03-31"
+    "endOfLife": "2029-07-31"
   },
   {
     "pattern": "Oracle Linux.* 9.*",
-    "endOfLife": "2034-06-30"
+    "endOfLife": "2032-06-30"
   },
   {
     "pattern": "Red Hat Enterprise Linux.* 7.*",
-    "start": "2023-05-01",
     "endOfLife": "2023-11-16"
   },
   {
     "pattern": "Red Hat Enterprise Linux.* 8.*",
-    "endOfLife": "2029-03-31"
+    "endOfLife": "2029-05-31"
   },
   {
     "pattern": "Red Hat Enterprise Linux.* 9.*",
@@ -106,7 +109,7 @@
   },
   {
     "pattern": "Rocky Linux.* 8.*",
-    "endOfLife": "2029-03-31"
+    "endOfLife": "2029-05-31"
   },
   {
     "pattern": "Rocky Linux.* 9.*",
@@ -114,7 +117,6 @@
   },
   {
     "pattern": "Scientific Linux.* 7.*",
-    "start": "2023-05-01",
     "endOfLife": "2023-11-16"
   },
   {
@@ -152,5 +154,9 @@
   {
     "pattern": "Ubuntu.* 23.04.*",
     "endOfLife": "2024-01-20"
+  },
+  {
+    "pattern": "Ubuntu.* 24.04.*",
+    "endOfLife": "2029-04-25"
   }
 ]
