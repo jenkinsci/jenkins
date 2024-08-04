@@ -23,21 +23,48 @@ THE SOFTWARE.
 -->
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
   <st:documentation>
-    <st:attribute name="message">
-      Tooltip message for the shortcut. Use the placeholder {0} escaped (wrapped in '). A minimal message consisting of only the shortcut would be '{0}'.
+    <st:attribute name="shortcut" use="required">
+      The shortcut to display
+
+      CMD will automatically be translated to the user's operating system's appropriate variant
+
+      This attribute also supports Jenkins Symbols, values prefixed with 'symbol-' will be displayed as expected
     </st:attribute>
-    Displays a keyboard shortcut chip based on the component's body.
-    CMD will automatically be translated to the user's operating system's appropriate variant.
+    <st:attribute name="message">
+      Optional tooltip message for the shortcut. Use the placeholder {0} escaped (wrapped in '). A minimal message consisting of
+      only the shortcut would be '{0}'
+    </st:attribute>
+    Displays a keyboard shortcut chip
   </st:documentation>
 
-  <div class="jenkins-tooltip__keyboard-shortcut">
-    <j:set var="body">
-      <div class="jenkins-tooltip__keyboard-shortcut__symbol">
-        <d:invokeBody trim="true" />
-      </div>
-    </j:set>
-    <j:out value="${h.formatMessage(message, h.translateModifierKeysForUsersPlatform(body))}" />
+  <j:set var="tooltip">
+    <div class="jenkins-keyboard-shortcut__tooltip">
+      <j:set var="body">
+        <div class="jenkins-keyboard-shortcut jenkins-keyboard-shortcut--tooltip">
+          <j:choose>
+            <j:when test="${attrs.shortcut.startsWith('symbol-')}">
+              <l:icon src="${attrs.shortcut}" />
+            </j:when>
+            <j:otherwise>
+              ${attrs.shortcut}
+            </j:otherwise>
+          </j:choose>
+        </div>
+      </j:set>
+      <j:out value="${h.formatMessage(message, h.translateModifierKeysForUsersPlatform(body))}"/>
+    </div>
+  </j:set>
+
+  <div class="jenkins-keyboard-shortcut" data-html-tooltip="${attrs.message != null ? tooltip : null}">
+    <j:choose>
+      <j:when test="${attrs.shortcut.startsWith('symbol-')}">
+        <l:icon src="${attrs.shortcut}" />
+      </j:when>
+      <j:otherwise>
+        ${h.translateModifierKeysForUsersPlatform(attrs.shortcut)}
+      </j:otherwise>
+    </j:choose>
   </div>
 </j:jelly>
