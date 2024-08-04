@@ -74,7 +74,7 @@ public class BuildTimeTrendTest {
         wc.withThrowExceptionOnFailingStatusCode(false);
         HtmlPage page = wc.getPage(p, "buildTimeTrend");
 
-        HtmlTable table = page.getDocumentElement().querySelector("table[data-is-distributed-build-enabled=false]");
+        HtmlTable table = page.getDocumentElement().querySelector("table[data-show-agent=false]");
         assertNotNull(table);
     }
 
@@ -91,7 +91,7 @@ public class BuildTimeTrendTest {
 
         wc.withThrowExceptionOnFailingStatusCode(false);
         HtmlPage page = wc.getPage(p, "buildTimeTrend");
-        DomNodeList<DomNode> anchors = page.getDocumentElement().querySelectorAll("table[data-is-distributed-build-enabled=true] td a");
+        DomNodeList<DomNode> anchors = page.getDocumentElement().querySelectorAll("table[data-show-agent=true] td a");
         Optional<DomNode> anchor = anchors.stream()
                 .filter(a -> a.getTextContent().equals(agent.getNodeName()))
                 .findFirst();
@@ -115,7 +115,7 @@ public class BuildTimeTrendTest {
         wc.withThrowExceptionOnFailingStatusCode(false);
         HtmlPage page = wc.getPage(p, "buildTimeTrend");
 
-        DomNodeList<DomNode> anchors = page.getDocumentElement().querySelectorAll("table[data-is-distributed-build-enabled=true] td a");
+        DomNodeList<DomNode> anchors = page.getDocumentElement().querySelectorAll("table[data-show-agent=true] td a");
         Optional<DomNode> anchor = anchors.stream()
                 .filter(a -> a.getTextContent().equals(agent.getNodeName()))
                 .findFirst();
@@ -123,7 +123,7 @@ public class BuildTimeTrendTest {
         assertTrue(anchor.isPresent());
 
         String builtInNode = hudson.model.Messages.Hudson_Computer_DisplayName();
-        DomNodeList<DomNode> tds = page.getDocumentElement().querySelectorAll("table[data-is-distributed-build-enabled=true] td");
+        DomNodeList<DomNode> tds = page.getDocumentElement().querySelectorAll("table[data-show-agent=true] td");
         Optional<DomNode> td = tds.stream()
                 .filter(t -> t.getTextContent().equals(builtInNode))
                 .findFirst();
@@ -142,7 +142,7 @@ public class BuildTimeTrendTest {
         wc.withThrowExceptionOnFailingStatusCode(false);
         HtmlPage page = wc.getPage(p, "buildTimeTrend");
 
-        DomNodeList<DomNode> tds = page.getDocumentElement().querySelectorAll("table[data-is-distributed-build-enabled=false] td");
+        DomNodeList<DomNode> tds = page.getDocumentElement().querySelectorAll("table[data-show-agent=false] td");
         Optional<DomNode> td = tds.stream()
                 .filter(t -> t.getTextContent().equals("#1"))
                 .findFirst();
@@ -168,7 +168,7 @@ public class BuildTimeTrendTest {
         wc.withThrowExceptionOnFailingStatusCode(false);
         HtmlPage page = wc.getPage(p, "buildTimeTrend");
 
-        DomNodeList<DomNode> tds = page.getDocumentElement().querySelectorAll("table[data-is-distributed-build-enabled=true] td");
+        DomNodeList<DomNode> tds = page.getDocumentElement().querySelectorAll("table[data-show-agent=false] td");
         Optional<DomNode> td = tds.stream()
                 .filter(t -> t.getTextContent().equals("#1"))
                 .findFirst();

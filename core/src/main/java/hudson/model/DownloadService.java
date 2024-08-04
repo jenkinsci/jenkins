@@ -404,7 +404,7 @@ public class DownloadService {
                 }
                 jsonList.add(o);
             }
-            if (jsonList.size() == 0 && toolInstallerMetadataExists) {
+            if (jsonList.isEmpty() && toolInstallerMetadataExists) {
                 return FormValidation.warning("None of the tool installer metadata passed the signature check");
             } else if (!toolInstallerMetadataExists) {
                 LOGGER.log(Level.WARNING, "No tool installer metadata found for " + id);

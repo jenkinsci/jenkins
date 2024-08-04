@@ -66,7 +66,7 @@ public class AbstractScmTagActionTest {
 
         HtmlPage page = wc.getPage(p);
 
-        DomElement buildHistory = page.getElementById("buildHistory");
+        DomElement buildHistory = page.getElementById("buildHistoryPage");
         DomNodeList<HtmlElement> imgs = buildHistory.getElementsByTagName("img");
         HtmlImage tagImage = (HtmlImage) imgs.stream()
                 .filter(i -> i.getAttribute("class").contains("icon-save"))

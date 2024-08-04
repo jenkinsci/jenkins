@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2019 CloudBees, Inc.
+ * Copyright (c) 2024, Markus Winter
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,13 +22,28 @@
  * THE SOFTWARE.
  */
 
-package jenkins.security.stapler.StaplerDispatchValidatorTest.Groovy
+package jenkins.model.experimentalflags;
 
-def st = namespace('jelly:stapler')
-def l = namespace('/lib/layout')
-st.compress {
-    l.view {
-        st.contentType(value: 'text/html')
-        st.include(page: 'frag')
+import edu.umd.cs.findbugs.annotations.Nullable;
+import hudson.Extension;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
+
+@Extension
+@Restricted(NoExternalUse.class)
+public class RemoveYuiUserExperimentalFlag extends BooleanUserExperimentalFlag {
+    public RemoveYuiUserExperimentalFlag() {
+        super("remove-yui.flag");
+    }
+
+    @Override
+    public String getDisplayName() {
+        return "Remove YUI";
+    }
+
+    @Nullable
+    @Override
+    public String getShortDescription() {
+        return "Remove YUI from all Jenkins UI pages. This will break anything that depends on YUI";
     }
 }

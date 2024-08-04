@@ -393,7 +393,7 @@ public class LogRecorder extends AbstractModelObject implements Loadable, Saveab
 
         void broadcast() {
             for (Computer c : Jenkins.get().getComputers()) {
-                if (c.getName().length() > 0) { // i.e. not master
+                if (!c.getName().isEmpty()) { // i.e. not master
                     VirtualChannel ch = c.getChannel();
                     if (ch != null) {
                         try {
@@ -595,7 +595,7 @@ public class LogRecorder extends AbstractModelObject implements Loadable, Saveab
             }
         });
         for (Computer c : Jenkins.get().getComputers()) {
-            if (c.getName().length() == 0) {
+            if (c.getName().isEmpty()) {
                 continue; // master
             }
             List<LogRecord> recs = new ArrayList<>();

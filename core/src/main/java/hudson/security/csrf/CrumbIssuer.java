@@ -78,7 +78,7 @@ public abstract class CrumbIssuer implements Describable<CrumbIssuer>, Extension
         if (crumb == null) {
             crumb = issueCrumb(request, getDescriptor().getCrumbSalt());
             if (request != null) {
-                if (crumb != null && crumb.length() > 0) {
+                if (crumb != null && !crumb.isEmpty()) {
                     request.setAttribute(CRUMB_ATTRIBUTE, crumb);
                 } else {
                     request.removeAttribute(CRUMB_ATTRIBUTE);
@@ -204,7 +204,7 @@ public abstract class CrumbIssuer implements Describable<CrumbIssuer>, Extension
                 text = null;
             }
             if (text != null) {
-                try (OutputStream o = rsp.getCompressedOutputStream(req)) {
+                try (OutputStream o = rsp.getOutputStream()) {
                     rsp.setContentType("text/plain;charset=UTF-8");
                     o.write(text.getBytes(StandardCharsets.UTF_8));
                 }

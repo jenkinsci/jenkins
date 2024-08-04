@@ -33,7 +33,7 @@ THE SOFTWARE.
     <st:attribute name="hasKeyboardShortcut">
       If false the default keyboard shortcut for the input is disabled. Defaults to true.
     </st:attribute>
-    <st:attribute name="enabled" since="TODO">
+    <st:attribute name="enabled" since="2.420">
       Defaults to true. Sets whether the search bar is enabled or not.
     </st:attribute>
     Creates a search input

@@ -190,8 +190,7 @@ public class Api extends AbstractModelObject {
             return;
         }
 
-        // switch to gzipped output
-        try (OutputStream o = rsp.getCompressedOutputStream(req)) {
+        try (OutputStream o = rsp.getOutputStream()) {
             if (isSimpleOutput(result)) {
                 // simple output allowed
                 rsp.setContentType("text/plain;charset=UTF-8");
