@@ -6,6 +6,7 @@
     ":semanticCommitsDisabled"
   ],
   "prHourlyLimit": 0,
+  "prConcurrentLimit": 0,
   "postUpdateOptions": ["yarnDedupeHighest"],
   "baseBranches": ["master", "stable-2.462"],
   "packageRules": [
