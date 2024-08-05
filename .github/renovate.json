@@ -30,7 +30,7 @@
       "description": "Provided by Jetty and should be aligned with the version provided by the version of Jetty we deliver. See: https://github.com/jenkinsci/jenkins/pull/5211",
       "matchManagers": ["maven"],
       "enabled": false,
-      "matchPackageNames": ["/jakarta.servlet:jakarta.servlet-api/"]
+      "matchPackageNames": ["jakarta.servlet:jakarta.servlet-api"]
     },
     {
       "description": "Contains incompatible API changes and needs compatibility work",
