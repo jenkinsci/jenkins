@@ -252,7 +252,6 @@ public class Security3430Test {
         @Override
         public Void call() throws Exception {
             final ClassLoader ccl = Thread.currentThread().getContextClassLoader();
-            System.err.println(ccl.getClass().getName());
             final Field classLoaderProxyField = ccl.getClass().getDeclaredField("proxy");
             classLoaderProxyField.setAccessible(true);
             final Object theProxy = classLoaderProxyField.get(ccl);
