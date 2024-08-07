@@ -1,5 +1,6 @@
 package hudson.security;
 
+import io.jenkins.servlet.http.HttpServletResponseWrapper;
 import java.io.PrintWriter;
 import javax.servlet.http.HttpServletResponse;
 import jenkins.util.SystemProperties;
@@ -42,7 +43,7 @@ public class AccessDeniedException2 extends AccessDeniedException {
      * Reports the details of the access failure in HTTP headers to assist diagnosis.
      */
     public void reportAsHeaders(HttpServletResponse rsp) {
-        toSpring().reportAsHeaders(rsp);
+        toSpring().reportAsHeaders(HttpServletResponseWrapper.toJakartaHttpServletResponse(rsp));
     }
 
     /**

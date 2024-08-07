@@ -145,7 +145,7 @@ public class DescriptorExtensionList<T extends Describable<T>, D extends Descrip
         if (config.isNullObject())
             return null;    // none was selected
         int idx = config.getInt("value");
-        return get(idx).newInstance(Stapler.getCurrentRequest(), config);
+        return get(idx).newInstance(Stapler.getCurrentRequest2(), config);
     }
 
     /**

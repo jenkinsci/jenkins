@@ -12,13 +12,13 @@ import hudson.Extension;
 import hudson.Util;
 import hudson.model.ModelObject;
 import hudson.model.PersistentDescriptor;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.servlet.ServletRequest;
-import javax.servlet.http.HttpServletRequest;
 import jenkins.model.Jenkins;
 import jenkins.security.HexStringConfidentialKey;
 import jenkins.util.SystemProperties;
@@ -27,7 +27,7 @@ import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 import org.springframework.security.core.Authentication;
 
 /**
@@ -69,6 +69,7 @@ public class DefaultCrumbIssuer extends CrumbIssuer {
     }
 
     @Override
+    @SuppressFBWarnings(value = "NM_WRONG_PACKAGE", justification = "false positive")
     protected synchronized String issueCrumb(ServletRequest request, String salt) {
         if (request instanceof HttpServletRequest) {
             if (md != null) {
@@ -135,7 +136,7 @@ public class DefaultCrumbIssuer extends CrumbIssuer {
         }
 
         @Override
-        public DefaultCrumbIssuer newInstance(StaplerRequest req, JSONObject formData) throws FormException {
+        public DefaultCrumbIssuer newInstance(StaplerRequest2 req, JSONObject formData) throws FormException {
             if (req == null) {
                 // This state is prohibited according to the Javadoc of the super method.
                 throw new FormException("DefaultCrumbIssuer new instance method is called for null Stapler request. "

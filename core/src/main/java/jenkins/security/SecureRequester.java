@@ -2,13 +2,16 @@ package jenkins.security;
 
 import hudson.Extension;
 import hudson.ExtensionPoint;
+import hudson.Util;
 import hudson.model.Api;
 import java.util.logging.Logger;
 import jenkins.model.Jenkins;
+import jenkins.security.stapler.StaplerNotDispatchable;
 import jenkins.util.SystemProperties;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 /**
  * An extension point for authorizing REST API access to an object where an unsafe result type would be produced.
@@ -22,13 +25,37 @@ public interface SecureRequester extends ExtensionPoint {
 
     /**
      * Checks if a Jenkins object can be accessed by a given REST request.
-     * For instance, if the {@link StaplerRequest#getReferer} matches a given host, or
+     * For instance, if the {@link StaplerRequest2#getReferer} matches a given host, or
      * anonymous read is allowed for the given object.
      * @param req a request going through the REST API
      * @param bean an exported object of some kind
      * @return true if this requester should be trusted, false to reject
      */
-    boolean permit(StaplerRequest req, Object bean);
+    @StaplerNotDispatchable
+    default boolean permit(StaplerRequest2 req, Object bean) {
+        return Util.ifOverridden(
+                () -> permit(StaplerRequest.fromStaplerRequest2(req), bean),
+                SecureRequester.class,
+                getClass(),
+                "permit",
+                StaplerRequest.class,
+                Object.class);
+    }
+
+    /**
+     * @deprecated use {@link #permit(StaplerRequest2, Object)}
+     */
+    @Deprecated
+    @StaplerNotDispatchable
+    default boolean permit(StaplerRequest req, Object bean) {
+        return Util.ifOverridden(
+                () -> permit(StaplerRequest.toStaplerRequest2(req), bean),
+                SecureRequester.class,
+                getClass(),
+                "permit",
+                StaplerRequest2.class,
+                Object.class);
+    }
 
     @Restricted(NoExternalUse.class)
     @Extension class Default implements SecureRequester {
@@ -42,7 +69,7 @@ public interface SecureRequester extends ExtensionPoint {
             }
         }
 
-        @Override public boolean permit(StaplerRequest req, Object bean) {
+        @Override public boolean permit(StaplerRequest2 req, Object bean) {
             return INSECURE || !Jenkins.get().isUseSecurity();
         }
 

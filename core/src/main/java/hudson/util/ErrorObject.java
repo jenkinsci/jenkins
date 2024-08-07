@@ -24,13 +24,13 @@
 
 package hudson.util;
 
-import static javax.servlet.http.HttpServletResponse.SC_SERVICE_UNAVAILABLE;
+import static jakarta.servlet.http.HttpServletResponse.SC_SERVICE_UNAVAILABLE;
 
 import hudson.Functions;
+import jakarta.servlet.ServletException;
 import java.io.IOException;
-import javax.servlet.ServletException;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 
 /**
  * Basis for error model objects.
@@ -52,7 +52,7 @@ public abstract class ErrorObject extends Exception {
         return Functions.printThrowable(this);
     }
 
-    public void doDynamic(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException, InterruptedException {
+    public void doDynamic(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException, InterruptedException {
         rsp.setStatus(SC_SERVICE_UNAVAILABLE);
         req.getView(this, "index.jelly").forward(req, rsp);
     }

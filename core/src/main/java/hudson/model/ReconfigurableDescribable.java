@@ -26,10 +26,13 @@ package hudson.model;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.Util;
 import hudson.model.Descriptor.FormException;
 import hudson.slaves.NodeProperty;
+import jenkins.security.stapler.StaplerNotDispatchable;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 /**
  * Marks modern {@link Describable}s that allow the current instances to pass information down to the next
@@ -44,7 +47,7 @@ import org.kohsuke.stapler.StaplerRequest;
  * <strong>Invisible Property:</strong>
  * This mechanism can be used to create an entirely invisible {@link Describable}, which is handy
  * for {@link NodeProperty}, {@link JobProperty}, etc. To do so, define an empty config.jelly to prevent it from
- * showing up in the config UI, then implement {@link #reconfigure(StaplerRequest, JSONObject)}
+ * showing up in the config UI, then implement {@link #reconfigure(StaplerRequest2, JSONObject)}
  * and simply return {@code this}.
  *
  * <p>
@@ -78,5 +81,29 @@ public interface ReconfigurableDescribable<T extends ReconfigurableDescribable<T
      * @return
      *      The new instance. To not to create an instance of a describable, return null.
      */
-    @CheckForNull T reconfigure(@NonNull StaplerRequest req, @CheckForNull JSONObject form) throws FormException;
+    @CheckForNull
+    @StaplerNotDispatchable
+    default T reconfigure(@NonNull StaplerRequest2 req, @CheckForNull JSONObject form) throws FormException {
+        if (Util.isOverridden(ReconfigurableDescribable.class, getClass(), "reconfigure", StaplerRequest.class, JSONObject.class)) {
+            return reconfigure(StaplerRequest.fromStaplerRequest2(req), form);
+        } else {
+            throw new AbstractMethodError("The class " + getClass().getName() + " must override at least one of the "
+                    + ReconfigurableDescribable.class.getSimpleName() + ".reconfigure methods");
+        }
+    }
+
+    /**
+     * @deprecated use {@link #reconfigure(StaplerRequest2, JSONObject)}
+     */
+    @CheckForNull
+    @Deprecated
+    @StaplerNotDispatchable
+    default T reconfigure(@NonNull StaplerRequest req, @CheckForNull JSONObject form) throws FormException {
+        if (Util.isOverridden(ReconfigurableDescribable.class, getClass(), "reconfigure", StaplerRequest2.class, JSONObject.class)) {
+            return reconfigure(StaplerRequest.toStaplerRequest2(req), form);
+        } else {
+            throw new AbstractMethodError("The class " + getClass().getName() + " must override at least one of the "
+                    + ReconfigurableDescribable.class.getSimpleName() + ".reconfigure methods");
+        }
+    }
 }

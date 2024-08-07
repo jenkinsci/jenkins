@@ -84,7 +84,7 @@ public class Security400Test {
 
     @Before
     public void prepareFilterListener() {
-        WebApp webApp = WebApp.get(j.jenkins.servletContext);
+        WebApp webApp = WebApp.get(j.jenkins.getServletContext());
         webApp.setFilteredDoActionTriggerListener((f, req, rsp, node) -> {
             filteredDoActionTriggered = true;
             return false;

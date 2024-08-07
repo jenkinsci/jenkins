@@ -87,12 +87,7 @@ THE SOFTWARE.
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.main</groupId>
-      <artifactId>websocket-jetty10</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.jenkins-ci.main</groupId>
-      <artifactId>websocket-jetty12-ee8</artifactId>
+      <artifactId>websocket-jetty12-ee9</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
@@ -161,13 +156,21 @@ THE SOFTWARE.
                     <exclude>org.jenkins-ci:commons-jelly</exclude>
                     <exclude>org.jenkins-ci.main:cli</exclude>
                     <exclude>org.jenkins-ci.main:jenkins-core</exclude>
-                    <exclude>org.jenkins-ci.main:websocket-jetty10</exclude>
-                    <exclude>org.jenkins-ci.main:websocket-jetty12-ee8</exclude>
+                    <exclude>org.jenkins-ci.main:websocket-jetty12-ee9</exclude>
                     <exclude>org.jenkins-ci.main:websocket-spi</exclude>
                     <exclude>org.jvnet.winp:winp</exclude>
                     <exclude>org.kohsuke.stapler:stapler</exclude>
                     <exclude>org.kohsuke.stapler:stapler-groovy</exclude>
                     <exclude>org.kohsuke.stapler:stapler-jelly</exclude>
+                    <exclude>org.springframework.security:spring-security-core</exclude>
+                    <exclude>org.springframework.security:spring-security-crypto</exclude>
+                    <exclude>org.springframework.security:spring-security-web</exclude>
+                    <exclude>org.springframework:spring-aop</exclude>
+                    <exclude>org.springframework:spring-beans</exclude>
+                    <exclude>org.springframework:spring-context</exclude>
+                    <exclude>org.springframework:spring-core</exclude>
+                    <exclude>org.springframework:spring-expression</exclude>
+                    <exclude>org.springframework:spring-web</exclude>
                   </excludes>
                 </enforceBytecodeVersion>
               </rules>
@@ -636,8 +639,8 @@ THE SOFTWARE.
         </configuration>
       </plugin>
       <plugin>
-        <groupId>org.eclipse.jetty.ee8</groupId>
-        <artifactId>jetty-ee8-maven-plugin</artifactId>
+        <groupId>org.eclipse.jetty.ee9</groupId>
+        <artifactId>jetty-ee9-maven-plugin</artifactId>
         <version>12.0.12</version>
         <configuration>
           <!--

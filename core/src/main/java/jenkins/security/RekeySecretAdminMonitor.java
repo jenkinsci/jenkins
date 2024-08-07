@@ -21,7 +21,7 @@ import jenkins.model.Jenkins;
 import jenkins.util.io.FileBoolean;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
 /**
@@ -91,7 +91,7 @@ public class RekeySecretAdminMonitor extends AsynchronousAdministrativeMonitor {
     }
 
     @RequirePOST
-    public HttpResponse doScan(StaplerRequest req) throws IOException, GeneralSecurityException {
+    public HttpResponse doScan(StaplerRequest2 req) throws IOException, GeneralSecurityException {
         if (req.hasParameter("background")) {
             start(false);
         } else

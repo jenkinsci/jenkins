@@ -8,7 +8,7 @@ import hudson.model.UserPropertyDescriptor;
 import hudson.model.userproperty.UserPropertyCategory;
 import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.export.Exported;
 
 public class UserSearchProperty extends hudson.model.UserProperty {
@@ -51,7 +51,7 @@ public class UserSearchProperty extends hudson.model.UserProperty {
         }
 
         @Override
-        public UserProperty newInstance(StaplerRequest req, JSONObject formData) throws FormException {
+        public UserProperty newInstance(StaplerRequest2 req, JSONObject formData) throws FormException {
             return new UserSearchProperty(formData.optBoolean("insensitiveSearch"));
         }
 

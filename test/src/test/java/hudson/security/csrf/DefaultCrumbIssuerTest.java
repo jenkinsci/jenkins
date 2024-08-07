@@ -16,9 +16,9 @@ import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 import hudson.model.User;
+import jakarta.servlet.http.HttpServletResponse;
 import java.net.HttpURLConnection;
 import java.net.URI;
-import javax.servlet.http.HttpServletResponse;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.htmlunit.FailingHttpStatusCodeException;

@@ -35,13 +35,13 @@ import hudson.security.ACL;
 import hudson.util.FormValidation;
 import hudson.views.MyViewsTabBar;
 import hudson.views.ViewsTabBar;
+import jakarta.servlet.ServletException;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
-import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
 import jenkins.util.SystemProperties;
 import net.sf.json.JSONObject;
@@ -54,8 +54,8 @@ import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerFallback;
 import org.kohsuke.stapler.StaplerProxy;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.verb.POST;
 
 /**
@@ -196,7 +196,7 @@ public class MyViewsProperty extends UserProperty implements ModifiableViewGroup
     }
 
     @POST
-    public synchronized void doCreateView(StaplerRequest req, StaplerResponse rsp)
+    public synchronized void doCreateView(StaplerRequest2 req, StaplerResponse2 rsp)
             throws IOException, ServletException, ParseException, FormException {
         checkPermission(View.CREATE);
         addView(View.create(req, rsp, this));
@@ -276,7 +276,7 @@ public class MyViewsProperty extends UserProperty implements ModifiableViewGroup
     }
 
     @Override
-    public UserProperty reconfigure(StaplerRequest req, JSONObject form) throws FormException {
+    public UserProperty reconfigure(StaplerRequest2 req, JSONObject form) throws FormException {
         req.bindJSON(this, form);
         return this;
     }

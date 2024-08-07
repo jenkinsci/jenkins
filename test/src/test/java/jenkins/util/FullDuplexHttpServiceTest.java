@@ -30,6 +30,10 @@ import hudson.cli.FullDuplexHttpStream;
 import hudson.model.InvisibleAction;
 import hudson.model.RootAction;
 import hudson.security.csrf.CrumbExclusion;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -38,17 +42,13 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.LoggerRule;
 import org.jvnet.hudson.test.TestExtension;
 import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 public class FullDuplexHttpServiceTest {
 
@@ -83,7 +83,7 @@ public class FullDuplexHttpServiceTest {
         public HttpResponse doIndex() {
             return new FullDuplexHttpService.Response(duplexServices) {
                 @Override
-                protected FullDuplexHttpService createService(StaplerRequest req, UUID uuid) throws IOException, InterruptedException {
+                protected FullDuplexHttpService createService(StaplerRequest2 req, UUID uuid) throws IOException, InterruptedException {
                     return new FullDuplexHttpService(uuid) {
                         @Override
                         protected void run(InputStream upload, OutputStream download) throws IOException, InterruptedException {

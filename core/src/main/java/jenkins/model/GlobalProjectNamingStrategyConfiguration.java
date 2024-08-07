@@ -29,7 +29,7 @@ import hudson.Extension;
 import hudson.security.Permission;
 import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 /**
  * Configures the project naming strategy.
@@ -40,7 +40,7 @@ import org.kohsuke.stapler.StaplerRequest;
 public class GlobalProjectNamingStrategyConfiguration extends GlobalConfiguration {
 
     @Override
-    public boolean configure(StaplerRequest req, JSONObject json) throws hudson.model.Descriptor.FormException {
+    public boolean configure(StaplerRequest2 req, JSONObject json) throws hudson.model.Descriptor.FormException {
         // for compatibility reasons, the actual value is stored in Jenkins
         Jenkins j = Jenkins.get();
         final JSONObject optJSONObject = json.optJSONObject("useProjectNamingStrategy");

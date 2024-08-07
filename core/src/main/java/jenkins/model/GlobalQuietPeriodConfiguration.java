@@ -30,7 +30,7 @@ import hudson.security.Permission;
 import java.io.IOException;
 import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 /**
  * Configures the system-default quiet period.
@@ -44,7 +44,7 @@ public class GlobalQuietPeriodConfiguration extends GlobalConfiguration {
     }
 
     @Override
-    public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
+    public boolean configure(StaplerRequest2 req, JSONObject json) throws FormException {
         int i = 0;
         try {
             i = Integer.parseInt(json.getString("quietPeriod"));

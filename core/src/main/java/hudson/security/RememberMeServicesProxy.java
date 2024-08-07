@@ -24,8 +24,8 @@
 
 package hudson.security;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jenkins.model.Jenkins;
 import jenkins.security.ConfidentialStore;
 import org.kohsuke.accmod.Restricted;

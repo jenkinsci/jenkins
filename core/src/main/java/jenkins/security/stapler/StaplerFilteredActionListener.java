@@ -24,13 +24,14 @@
 
 package jenkins.security.stapler;
 
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.Function;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.event.FilteredDispatchTriggerListener;
 import org.kohsuke.stapler.event.FilteredDoActionTriggerListener;
 import org.kohsuke.stapler.event.FilteredFieldTriggerListener;
@@ -48,35 +49,46 @@ public class StaplerFilteredActionListener implements FilteredDoActionTriggerLis
             "If you consider it safe to use, add the following to the whitelist: \"{1}\". " +
             "Learn more: https://www.jenkins.io/redirect/stapler-routing";
 
+    /**
+     * Do not be noisy about default methods that exist only for compatibility reasons and are annotated with {@link StaplerNotDispatchable}
+     */
+    private static final Set<String> STAPLER_NOT_DISPATCHABLE = Set.of("doCreateItem");
+
     @Override
-    public boolean onDoActionTrigger(Function f, StaplerRequest req, StaplerResponse rsp, Object node) {
-        LOGGER.log(Level.WARNING, LOG_MESSAGE, new Object[]{
-                req.getPathInfo(),
-                f.getSignature(),
-        });
+    public boolean onDoActionTrigger(Function f, StaplerRequest2 req, StaplerResponse2 rsp, Object node) {
+        LOGGER.log(
+                STAPLER_NOT_DISPATCHABLE.contains(f.getName()) ? Level.FINER : Level.WARNING,
+                LOG_MESSAGE,
+                new Object[] {
+                    req.getPathInfo(), f.getSignature(),
+                });
         return false;
     }
 
     @Override
-    public boolean onGetterTrigger(Function f, StaplerRequest req, StaplerResponse rsp, Object node, String expression) {
-        LOGGER.log(Level.WARNING, LOG_MESSAGE, new Object[]{
-                req.getPathInfo(),
-                f.getSignature(),
-        });
+    public boolean onGetterTrigger(Function f, StaplerRequest2 req, StaplerResponse2 rsp, Object node, String expression) {
+        LOGGER.log(
+                STAPLER_NOT_DISPATCHABLE.contains(f.getName()) ? Level.FINER : Level.WARNING,
+                LOG_MESSAGE,
+                new Object[] {
+                    req.getPathInfo(), f.getSignature(),
+                });
         return false;
     }
 
     @Override
-    public boolean onFieldTrigger(FieldRef f, StaplerRequest req, StaplerResponse staplerResponse, Object node, String expression) {
-        LOGGER.log(Level.WARNING, LOG_MESSAGE, new Object[]{
-                req.getPathInfo(),
-                f.getSignature(),
-        });
+    public boolean onFieldTrigger(FieldRef f, StaplerRequest2 req, StaplerResponse2 staplerResponse, Object node, String expression) {
+        LOGGER.log(
+                STAPLER_NOT_DISPATCHABLE.contains(f.getName()) ? Level.FINER : Level.WARNING,
+                LOG_MESSAGE,
+                new Object[] {
+                    req.getPathInfo(), f.getSignature(),
+                });
         return false;
     }
 
     @Override
-    public boolean onDispatchTrigger(StaplerRequest req, StaplerResponse rsp, Object node, String viewName) {
+    public boolean onDispatchTrigger(StaplerRequest2 req, StaplerResponse2 rsp, Object node, String viewName) {
         LOGGER.warning(() -> "New Stapler dispatch rules result in the URL \"" + req.getPathInfo() + "\" no longer being allowed. " +
                 "If you consider it safe to use, add the following to the whitelist: \"" + node.getClass().getName() + " " + viewName + "\". " +
                 "Learn more: https://www.jenkins.io/redirect/stapler-facet-restrictions");

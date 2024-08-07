@@ -36,6 +36,14 @@ import hudson.security.FederatedLoginService.FederatedIdentity;
 import hudson.security.captcha.CaptchaSupport;
 import hudson.util.DescriptorList;
 import hudson.util.PluginServletFilter;
+import io.jenkins.servlet.FilterConfigWrapper;
+import io.jenkins.servlet.FilterWrapper;
+import io.jenkins.servlet.ServletExceptionWrapper;
+import jakarta.servlet.Filter;
+import jakarta.servlet.FilterConfig;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -44,11 +52,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.servlet.Filter;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpSession;
 import jenkins.model.IdStrategy;
 import jenkins.model.Jenkins;
 import jenkins.security.AcegiSecurityExceptionFilter;
@@ -62,7 +65,9 @@ import org.kohsuke.accmod.restrictions.DoNotUse;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -264,7 +269,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
      * of Hudson, but you can return arbitrary URL.
      *
      * @param req
-     *      {@link StaplerRequest} that represents the current request. Primarily so that
+     *      {@link StaplerRequest2} that represents the current request. Primarily so that
      *      you can get the context path. By the time this method is called, the session
      *      is already invalidated. Never null.
      * @param auth
@@ -272,14 +277,31 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
      *      This parameter allows you to redirect people to different pages depending on who they are.
      * @return
      *      never null.
-     * @since 2.266
-     * @see #doLogout(StaplerRequest, StaplerResponse)
+     * @since TODO
+     * @see #doLogout(StaplerRequest2, StaplerResponse2)
      */
+    protected String getPostLogOutUrl2(StaplerRequest2 req, Authentication auth) {
+        if (Util.isOverridden(SecurityRealm.class, getClass(), "getPostLogOutUrl2", StaplerRequest.class, Authentication.class)) {
+            return getPostLogOutUrl2(StaplerRequest.fromStaplerRequest2(req), auth);
+        } else {
+            return getPostLogOutUrl2Impl(req, auth);
+        }
+    }
+
+    /**
+     * @deprecated use {@link #getPostLogOutUrl2(StaplerRequest2, Authentication)}
+     * @since 2.266
+     */
+    @Deprecated
     protected String getPostLogOutUrl2(StaplerRequest req, Authentication auth) {
+        return getPostLogOutUrl2Impl(StaplerRequest.toStaplerRequest2(req), auth);
+    }
+
+    private String getPostLogOutUrl2Impl(StaplerRequest2 req, Authentication auth) {
         if (Util.isOverridden(SecurityRealm.class, getClass(), "getPostLogOutUrl", StaplerRequest.class, org.acegisecurity.Authentication.class) && !insideGetPostLogOutUrl.get()) {
             insideGetPostLogOutUrl.set(true);
             try {
-                return getPostLogOutUrl(req, org.acegisecurity.Authentication.fromSpring(auth));
+                return getPostLogOutUrl(StaplerRequest.fromStaplerRequest2(req), org.acegisecurity.Authentication.fromSpring(auth));
             } finally {
                 insideGetPostLogOutUrl.set(false);
             }
@@ -295,7 +317,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
      */
     @Deprecated
     protected String getPostLogOutUrl(StaplerRequest req, org.acegisecurity.Authentication auth) {
-        return getPostLogOutUrl2(req, auth.toSpring());
+        return getPostLogOutUrl2(StaplerRequest.toStaplerRequest2(req), auth.toSpring());
     }
 
     public CaptchaSupport getCaptchaSupport() {
@@ -315,11 +337,36 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
      *
      * <p>
      * The default implementation erases the session and do a few other clean up, then
-     * redirect the user to the URL specified by {@link #getPostLogOutUrl2(StaplerRequest, Authentication)}.
+     * redirect the user to the URL specified by {@link #getPostLogOutUrl2(StaplerRequest2, Authentication)}.
      *
+     * @since TODO
+     */
+    public void doLogout(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
+        if (Util.isOverridden(SecurityRealm.class, getClass(), "doLogout", StaplerRequest.class, StaplerResponse.class)) {
+            try {
+                doLogout(StaplerRequest.fromStaplerRequest2(req), StaplerResponse.fromStaplerResponse2(rsp));
+            } catch (javax.servlet.ServletException e) {
+                throw ServletExceptionWrapper.toJakartaServletException(e);
+            }
+        } else {
+            doLogoutImpl(req, rsp);
+        }
+    }
+
+    /**
+     * @deprecated use {@link #doLogout(StaplerRequest2, StaplerResponse2)}
      * @since 1.314
      */
-    public void doLogout(StaplerRequest req, StaplerResponse rsp) throws IOException, ServletException {
+    @Deprecated
+    public void doLogout(StaplerRequest req, StaplerResponse rsp) throws IOException, javax.servlet.ServletException {
+        try {
+            doLogoutImpl(StaplerRequest.toStaplerRequest2(req), StaplerResponse.toStaplerResponse2(rsp));
+        } catch (ServletException e) {
+            throw ServletExceptionWrapper.fromJakartaServletException(e);
+        }
+    }
+
+    void doLogoutImpl(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         HttpSession session = req.getSession(false);
         if (session != null)
             session.invalidate();
@@ -333,7 +380,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
         rsp.sendRedirect2(getPostLogOutUrl2(req, auth));
     }
 
-    private void resetRememberMeCookie(StaplerRequest req, StaplerResponse rsp, String contextPath) {
+    private void resetRememberMeCookie(StaplerRequest2 req, StaplerResponse2 rsp, String contextPath) {
         Cookie cookie = new Cookie(AbstractRememberMeServices.SPRING_SECURITY_REMEMBER_ME_COOKIE_KEY, "");
         cookie.setMaxAge(0);
         cookie.setSecure(req.isSecure());
@@ -342,7 +389,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
         rsp.addCookie(cookie);
     }
 
-    private void clearStaleSessionCookies(StaplerRequest req, StaplerResponse rsp, String contextPath) {
+    private void clearStaleSessionCookies(StaplerRequest2 req, StaplerResponse2 rsp, String contextPath) {
         /* While "executableWar.jetty.sessionIdCookieName" and
          * "executableWar.jetty.disableCustomSessionIdCookieName"
          * <https://github.com/jenkinsci/extras-executable-war/blob/6558df699d1366b18d045d2ffda3e970df377873/src/main/java/Main.java#L79-L97>
@@ -516,7 +563,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
     /**
      * Generates a captcha image.
      */
-    public final void doCaptcha(StaplerRequest req, StaplerResponse rsp) throws IOException {
+    public final void doCaptcha(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
         if (captchaSupport != null) {
             String id = req.getSession().getId();
             rsp.setContentType("image/png");
@@ -533,7 +580,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
      */
     protected final boolean validateCaptcha(String text) {
         if (captchaSupport != null) {
-            String id = Stapler.getCurrentRequest().getSession().getId();
+            String id = Stapler.getCurrentRequest2().getSession().getId();
             return captchaSupport.validateCaptcha(id, text);
         }
 
@@ -570,7 +617,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
      * For other plugins that want to contribute {@link Filter}, see
      * {@link PluginServletFilter}.
      *
-     * @since 1.271
+     * @since TODO
      */
     public Filter createFilter(FilterConfig filterConfig) {
         LOGGER.entering(SecurityRealm.class.getName(), "createFilter");
@@ -613,6 +660,15 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
         return new ChainedServletFilter(filters);
     }
 
+    /**
+     * @deprecated use {@link #createFilter(FilterConfig)}
+     * @since 1.271
+     */
+    @Deprecated
+    public javax.servlet.Filter createFilter(javax.servlet.FilterConfig filterConfig) {
+        return FilterWrapper.fromJakartaFilter(createFilter(filterConfig != null ? FilterConfigWrapper.toJakartaFilterConfig(filterConfig) : null));
+    }
+
     protected final List<Filter> commonFilters() {
         // like Jenkins.ANONYMOUS:
         AnonymousAuthenticationFilter apf = new AnonymousAuthenticationFilter("anonymous", "anonymous", List.of(new SimpleGrantedAuthority("anonymous")));
@@ -639,7 +695,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
     @Restricted(DoNotUse.class)
     public static String getFrom() {
         String from = null;
-        final StaplerRequest request = Stapler.getCurrentRequest();
+        final StaplerRequest2 request = Stapler.getCurrentRequest2();
 
         // Try to obtain a return point from the query parameter
         if (request != null) {
@@ -734,7 +790,7 @@ public abstract class SecurityRealm extends AbstractDescribableImpl<SecurityReal
             }
 
             @Override
-            public SecurityRealm newInstance(StaplerRequest req, JSONObject formData) throws Descriptor.FormException {
+            public SecurityRealm newInstance(StaplerRequest2 req, JSONObject formData) throws Descriptor.FormException {
                 return NO_AUTHENTICATION;
             }
         }

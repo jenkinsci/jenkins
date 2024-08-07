@@ -2,6 +2,7 @@ package hudson.util;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.WebAppMain;
+import jakarta.servlet.ServletContext;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -14,7 +15,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.servlet.ServletContext;
 import jenkins.model.Jenkins;
 import jenkins.util.groovy.GroovyHookScript;
 import org.kohsuke.stapler.WebApp;

@@ -27,7 +27,7 @@ package jenkins.security.seed;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-import javax.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpSession;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
@@ -48,7 +48,7 @@ public class UserSeedSecurityListenerTest {
         AuthenticationManager authenticationManager = j.jenkins.getSecurityRealm().getSecurityComponents().manager2;
         JenkinsRule.WebClient wc = j.createWebClient();
         wc.login("alice").executeOnServer(() -> {
-            HttpSession session = Stapler.getCurrentRequest().getSession();
+            HttpSession session = Stapler.getCurrentRequest2().getSession();
             String existingSeed = (String) session.getAttribute(UserSeedProperty.USER_SESSION_SEED);
             assertNotNull(existingSeed);
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken("bob", "bob"));

@@ -28,7 +28,7 @@ import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.WithoutJenkins;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerResponse2;
 
 public class CloudTest {
 
@@ -127,7 +127,7 @@ public class CloudTest {
             return "task";
         }
 
-        public void doIndex(StaplerResponse rsp) throws IOException {
+        public void doIndex(StaplerResponse2 rsp) throws IOException {
             rsp.getOutputStream().println("doIndex called");
         }
     }

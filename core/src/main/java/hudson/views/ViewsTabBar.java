@@ -41,7 +41,7 @@ import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 /**
  * Extension point for adding a ViewsTabBar header to Projects {@link ListView}.
@@ -100,7 +100,7 @@ public abstract class ViewsTabBar extends AbstractDescribableImpl<ViewsTabBar> i
         }
 
         @Override
-        public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
+        public boolean configure(StaplerRequest2 req, JSONObject json) throws FormException {
             // for compatibility reasons, the actual value is stored in Jenkins
             Jenkins j = Jenkins.get();
 

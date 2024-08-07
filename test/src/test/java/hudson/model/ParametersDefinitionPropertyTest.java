@@ -43,7 +43,7 @@ import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.LoggerRule;
 import org.jvnet.hudson.test.TestExtension;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 
 public class ParametersDefinitionPropertyTest {
 
@@ -79,12 +79,12 @@ public class ParametersDefinitionPropertyTest {
         }
 
         @Override
-        public ParameterValue createValue(StaplerRequest req, JSONObject jo) {
+        public ParameterValue createValue(StaplerRequest2 req, JSONObject jo) {
             throw new UnsupportedOperationException();
         }
 
         @Override
-        public ParameterValue createValue(StaplerRequest req) {
+        public ParameterValue createValue(StaplerRequest2 req) {
             throw new UnsupportedOperationException();
         }
 
@@ -92,7 +92,7 @@ public class ParametersDefinitionPropertyTest {
         public static class DescriptorImpl extends ParameterDescriptor {
 
             @Override
-            public ParameterDefinition newInstance(StaplerRequest req, JSONObject formData) {
+            public ParameterDefinition newInstance(StaplerRequest2 req, JSONObject formData) {
                 return new KrazyParameterDefinition(formData.getString("name"), formData.getString("description"), formData.getString("field").toLowerCase(Locale.ENGLISH));
             }
 
