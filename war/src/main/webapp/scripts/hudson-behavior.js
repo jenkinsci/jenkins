@@ -945,7 +945,7 @@ function makeButton(e, onclick) {
       button.setAttribute(attributeName, attribute.value);
     }
   }
-  button.innerHTML = e.value;
+  button.innerText = e.value;
   button.classList.add("jenkins-button");
   const classNames = e.classList;
   if (classNames.contains("primary") || classNames.contains("submit-button")) {
