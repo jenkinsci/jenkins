@@ -425,7 +425,7 @@ THE SOFTWARE.
                   <!-- detached after 2.86 -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>command-launcher</artifactId>
-                  <version>107.v773860566e2e</version>
+                  <version>115.vd8b_301cc15d0</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
