@@ -8,18 +8,7 @@
   "prHourlyLimit": 0,
   "prConcurrentLimit": 0,
   "postUpdateOptions": ["yarnDedupeHighest"],
-  "baseBranches": ["master", "stable-2.462"],
   "packageRules": [
-    {
-      "matchBaseBranches": ["/stable-.+/"],
-      "matchManagers": ["maven"],
-      "labels": ["dependencies", "into-lts", "needs-justification"]
-    },
-    {
-      "matchBaseBranches": ["/stable-.+/"],
-      "matchManagers": ["custom.regex", "npm", "github-actions"],
-      "enabled": false
-    },
     {
       "matchDatasources": ["npm"],
       "addLabels": ["javascript"],
