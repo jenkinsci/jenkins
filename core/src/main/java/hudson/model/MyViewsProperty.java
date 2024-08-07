@@ -26,6 +26,7 @@ package hudson.model;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Extension;
 import hudson.Util;
 import hudson.model.Descriptor.FormException;
@@ -42,6 +43,7 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import javax.servlet.ServletException;
 import jenkins.model.Jenkins;
+import jenkins.util.SystemProperties;
 import net.sf.json.JSONObject;
 import org.jenkinsci.Symbol;
 import org.kohsuke.accmod.Restricted;
@@ -51,6 +53,7 @@ import org.kohsuke.stapler.HttpRedirect;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerFallback;
+import org.kohsuke.stapler.StaplerProxy;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.verb.POST;
@@ -60,7 +63,14 @@ import org.kohsuke.stapler.verb.POST;
  *
  * @author Tom Huybrechts
  */
-public class MyViewsProperty extends UserProperty implements ModifiableViewGroup, Action, StaplerFallback {
+public class MyViewsProperty extends UserProperty implements ModifiableViewGroup, Action, StaplerFallback, StaplerProxy {
+
+    /**
+     * Escape hatch for StaplerProxy-based access control
+     */
+    @Restricted(NoExternalUse.class)
+    @SuppressFBWarnings(value = "MS_SHOULD_BE_FINAL", justification = "for script console")
+    public static /* non-final */ boolean SKIP_PERMISSION_CHECK = SystemProperties.getBoolean(MyViewsProperty.class.getName() + ".skipPermissionCheck");
 
     /**
      * Name of the primary view defined by the user.
@@ -226,12 +236,23 @@ public class MyViewsProperty extends UserProperty implements ModifiableViewGroup
 
     @Override
     public String getIconFileName() {
-        return "symbol-browsers";
+        if (SKIP_PERMISSION_CHECK || getACL().hasPermission(Jenkins.ADMINISTER))
+            return "symbol-browsers";
+        else
+            return null;
     }
 
     @Override
     public String getUrlName() {
         return "my-views";
+    }
+
+    @Override
+    public Object getTarget() {
+        if (!SKIP_PERMISSION_CHECK) {
+            checkPermission(Jenkins.ADMINISTER);
+        }
+        return this;
     }
 
     @Extension @Symbol("myView")
