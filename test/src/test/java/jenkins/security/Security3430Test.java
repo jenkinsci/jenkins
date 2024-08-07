@@ -2,36 +2,27 @@ package jenkins.security;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.empty;
-import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
-import hudson.ExtensionList;
 import hudson.model.Computer;
 import hudson.remoting.Channel;
 import hudson.remoting.Launcher;
 import hudson.slaves.SlaveComputer;
-import hudson.util.RingBufferLogHandler;
 import java.io.File;
-import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.nio.charset.StandardCharsets;
 import java.security.Security;
-import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.LogRecord;
-import java.util.logging.Logger;
 import jenkins.bouncycastle.api.InstallBouncyCastleJCAProvider;
-import jenkins.security.s2m.JarURLValidatorImpl;
 import jenkins.slaves.RemotingVersionInfo;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -43,32 +34,26 @@ import org.junit.Test;
 import org.jvnet.hudson.test.InboundAgentRule;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.RealJenkinsRule;
-import org.kohsuke.args4j.Argument;
 import org.kohsuke.stapler.Stapler;
 
 public class Security3430Test {
     @Rule
-    public RealJenkinsRule jj = new RealJenkinsRule().withLogger(JarURLValidatorImpl.class, Level.FINEST);
+    public RealJenkinsRule jj = new RealJenkinsRule();
 
     @Rule
     public InboundAgentRule agents = new InboundAgentRule();
 
     @Test
     public void runWithOldestSupportedAgentJar() throws Throwable {
-        runWithRemoting(RemotingVersionInfo.getMinimumSupportedVersion().toString(), "/old-remoting/remoting-minimum-supported.jar", true);
-    }
-
-    @Test
-    public void runWithPreviousAgentJar() throws Throwable {
-        runWithRemoting("3256.v88a_f6e922152", "/old-remoting/remoting-before-SECURITY-3430-fix.jar", true);
+        runWithRemoting(RemotingVersionInfo.getMinimumSupportedVersion().toString(), "/old-remoting/remoting-minimum-supported.jar");
     }
 
     @Test
     public void runWithCurrentAgentJar() throws Throwable {
-        runWithRemoting(null, null, false);
+        runWithRemoting(null, null);
     }
 
-    private void runWithRemoting(String expectedRemotingVersion, String remotingResourcePath, boolean requestingJarFromAgent) throws Throwable {
+    private void runWithRemoting(String expectedRemotingVersion, String remotingResourcePath) throws Throwable {
         if (expectedRemotingVersion != null) {
             FileUtils.copyURLToFile(Security3430Test.class.getResource(remotingResourcePath), new File(jj.getHome(), "agent.jar"));
         }
@@ -77,23 +62,10 @@ public class Security3430Test {
         final String agentName = "agent1";
         try {
             agents.createAgent(jj, InboundAgentRule.Options.newBuilder().name(agentName).build());
-            jj.runRemotely(Security3430Test::_run, agentName, expectedRemotingVersion, requestingJarFromAgent, true);
+            jj.runRemotely(Security3430Test::_run, agentName, expectedRemotingVersion, true);
         } finally {
             agents.stop(jj, agentName);
         }
-        jj.runRemotely(Security3430Test::disableJarURLValidatorImpl);
-        final String agentName2 = "agent2";
-        try {
-            agents.createAgent(jj, InboundAgentRule.Options.newBuilder().name(agentName2).build());
-            jj.runRemotely(Security3430Test::_run, agentName2, expectedRemotingVersion, requestingJarFromAgent, false);
-        } finally {
-            agents.stop(jj, agentName2);
-        }
-    }
-
-    // This is quite artificial, but demonstrating that without JarURLValidatorImpl we do not allow any calls from the agent:
-    private static void disableJarURLValidatorImpl(JenkinsRule j) {
-        assertTrue(ExtensionList.lookup(ChannelConfigurator.class).remove(ExtensionList.lookupSingleton(JarURLValidatorImpl.class)));
     }
 
     /**
@@ -101,13 +73,8 @@ public class Security3430Test {
      * @param agentName the name of the agent we're working with
      * @param expectedRemotingVersion The version expected for remoting, or {@code null} if we're using whatever is bundled with this Jenkins.
      * @param requestingJarFromAgent {@code true} if and only if we expect to go through {@code ClassLoaderProxy#fetchJar}
-     * @param hasJenkinsJarURLValidator {@code true} if and only we do not expect {@link jenkins.security.s2m.JarURLValidatorImpl} to be present. Only relevant when {@code requestingJarFromAgent} is {@code true}.
      */
-    private static void _run(JenkinsRule j, String agentName, String expectedRemotingVersion, Boolean requestingJarFromAgent, Boolean hasJenkinsJarURLValidator) throws Throwable {
-        final RingBufferLogHandler logHandler = new RingBufferLogHandler(50);
-        Logger.getLogger(JarURLValidatorImpl.class.getName()).addHandler(logHandler);
-        final List<LogRecord> logRecords = logHandler.getView();
-
+    private static void _run(JenkinsRule j, String agentName, String expectedRemotingVersion, Boolean requestingJarFromAgent) throws Throwable {
         final Computer computer = j.jenkins.getComputer(agentName);
         assertThat(computer, instanceOf(SlaveComputer.class));
         SlaveComputer agent = (SlaveComputer) computer;
@@ -117,111 +84,39 @@ public class Security3430Test {
             assertThat(result, is(expectedRemotingVersion));
         }
 
-        logHandler.clear();
-
         { // regular behavior
-            if (hasJenkinsJarURLValidator) {
-                // it works
-                assertTrue(channel.preloadJar(j.jenkins.getPluginManager().uberClassLoader, Stapler.class));
-                if (requestingJarFromAgent) {
-                    assertThat(logRecords, hasItem(logMessageContainsString("Allowing URL: file:/")));
-                } else {
-                    assertThat(logRecords, is(empty()));
-                }
-
-                logHandler.clear();
-                assertFalse(channel.preloadJar(j.jenkins.getPluginManager().uberClassLoader, Stapler.class));
-                assertThat(logRecords, not(hasItem(logMessageContainsString("Allowing URL"))));
-                assertThat(logRecords, not(hasItem(logMessageContainsString("Rejecting URL"))));
-            } else {
-                // outdated remoting.jar will fail, but up to date one passes
-                if (requestingJarFromAgent) {
-                    final IOException ex = assertThrows(IOException.class, () -> channel.preloadJar(j.jenkins.getPluginManager().uberClassLoader, Stapler.class));
-                    assertThat(ex.getMessage(), containsString("No hudson.remoting.JarURLValidator has been set for this channel, so all #fetchJar calls are rejected. This is likely a bug in Jenkins. As a workaround, try updating the agent.jar file."));
-                } else {
-                    assertTrue(channel.preloadJar(j.jenkins.getPluginManager().uberClassLoader, Stapler.class));
-                    assertThat(logRecords, is(empty()));
-                }
-            }
-        }
-
-        logHandler.clear();
-
-        if (hasJenkinsJarURLValidator) { // Start rejecting everything; only applies to JarURLValidatorImpl
-            System.setProperty(JarURLValidatorImpl.class.getName() + ".REJECT_ALL", "true");
-
+            // it works
+            assertTrue(channel.preloadJar(j.jenkins.getPluginManager().uberClassLoader, Stapler.class));
             // Identify that a jar was already loaded:
             assertFalse(channel.preloadJar(j.jenkins.getPluginManager().uberClassLoader, Stapler.class));
-            assertThat(logRecords, not(hasItem(logMessageContainsString("Allowing URL"))));
-            assertThat(logRecords, not(hasItem(logMessageContainsString("Rejecting URL"))));
-
-            logHandler.clear();
-
-            // different jar file than before, old remoting will fail due to call through ClassLoaderProxy#fetchJar, new remoting passes
-            if (requestingJarFromAgent) {
-                final IOException ioException = assertThrows(IOException.class, () -> channel.preloadJar(j.jenkins.getPluginManager().uberClassLoader, Argument.class));
-                assertThat(ioException.getMessage(), containsString("all attempts by agents to load jars from the controller are rejected"));
-                assertThat(logRecords, not(hasItem(logMessageContainsString("Allowing URL"))));
-                assertThat(logRecords, hasItem(logMessageContainsString("Rejecting URL due to configuration: ")));
-            } else {
-                assertTrue(channel.preloadJar(j.jenkins.getPluginManager().uberClassLoader, org.kohsuke.args4j.Argument.class));
-                assertThat(logRecords, not(hasItem(logMessageContainsString("Allowing URL"))));
-                assertThat(logRecords, not(hasItem(logMessageContainsString("Rejecting URL"))));
-            }
         }
 
-        logHandler.clear();
-
-        if (hasJenkinsJarURLValidator) { // Disable block, only applies to JarURLValidatorImpl
-            System.clearProperty(JarURLValidatorImpl.class.getName() + ".REJECT_ALL");
-            if (requestingJarFromAgent) {
-                // now it works again for old remoting:
-                assertTrue(channel.preloadJar(j.jenkins.getPluginManager().uberClassLoader, org.kohsuke.args4j.Argument.class));
-                assertThat(logRecords, hasItem(logMessageContainsString("Allowing URL: file:/")));
-            } else {
-                // new remoting already has it.
-                assertFalse(channel.preloadJar(j.jenkins.getPluginManager().uberClassLoader, org.kohsuke.args4j.Argument.class));
-                assertThat(logRecords, not(hasItem(logMessageContainsString("Allowing URL"))));
-                assertThat(logRecords, not(hasItem(logMessageContainsString("Rejecting URL"))));
-            }
-            assertThat(logRecords, not(hasItem(logMessageContainsString("Rejecting URL due to configuration: "))));
-        }
-
-        logHandler.clear();
-
-        if (hasJenkinsJarURLValidator || !requestingJarFromAgent) { // prepare bouncycastle-api
-            assertTrue(j.jenkins.getPluginManager().getPlugin("bouncycastle-api").isActive());
-            InstallBouncyCastleJCAProvider.on(channel);
-            channel.call(new ConfirmBouncyCastleLibrary());
-        }
-
-        logHandler.clear();
+        assertTrue(j.jenkins.getPluginManager().getPlugin("bouncycastle-api").isActive());
+        InstallBouncyCastleJCAProvider.on(channel);
+        channel.call(new ConfirmBouncyCastleLibrary());
 
         { // Exploitation tests
             final URL secretKeyFile = new File(j.jenkins.getRootDir(), "secret.key").toURI().toURL();
             final String expectedContent = IOUtils.toString(secretKeyFile, StandardCharsets.UTF_8);
-            { // Protection is effective when agents request non-jar files:
+
+            // Protection is effective when agents request non-jar files:
+            if (expectedRemotingVersion == null) {
+                assertThrows(NoSuchMethodException.class, () -> channel.call(new Exploit(secretKeyFile, expectedContent)));
+            } else {
                 final InvocationTargetException itex = assertThrows(InvocationTargetException.class, () -> channel.call(new Exploit(secretKeyFile, expectedContent)));
-                assertThat(itex.getCause(), instanceOf(IOException.class));
-                if (hasJenkinsJarURLValidator) {
-                    assertThat(itex.getCause().getMessage(), containsString("This URL does not point to a jar file allowed to be requested by agents"));
-                    assertThat(logRecords, not(hasItem(logMessageContainsString("Allowing URL"))));
-                    assertThat(logRecords, hasItem(logMessageContainsString("Rejecting URL: ")));
-                } else {
-                    assertThat(itex.getCause().getMessage(), containsString("No hudson.remoting.JarURLValidator has been set for this channel, so all #fetchJar calls are rejected. This is likely a bug in Jenkins. As a workaround, try updating the agent.jar file."));
-                }
+                assertThat(itex.getCause(), instanceOf(IllegalStateException.class));
             }
+        }
+        { // Support for pre-2024-08 remoting has been dropped, so even formerly legitimate jar files cannot be requested anymore:
+            final URLClassLoader classLoader = (URLClassLoader) j.jenkins.getPluginManager().getPlugin("bouncycastle-api").classLoader;
+            URL safeUrl = classLoader.getURLs()[0];
+            final String expectedContent = IOUtils.toString(safeUrl, StandardCharsets.UTF_8);
 
-            logHandler.clear();
-
-            { // Disable protection and non-jar files can be accessed:
-                System.setProperty(Channel.class.getName() + ".DISABLE_JAR_URL_VALIDATOR", "true");
-                channel.call(new Exploit(secretKeyFile, expectedContent));
-                if (hasJenkinsJarURLValidator) {
-                    assertThat(logRecords, hasItem(logMessageContainsString("Allowing URL due to configuration")));
-                    assertThat(logRecords, not(hasItem(logMessageContainsString("Rejecting URL"))));
-                }
-                System.clearProperty(Channel.class.getName() + ".DISABLE_JAR_URL_VALIDATOR");
+            if (expectedRemotingVersion == null) {
+                assertThrows(NoSuchMethodException.class, () -> channel.call(new Exploit(safeUrl, expectedContent)));
+            } else {
+                final InvocationTargetException itex = assertThrows(InvocationTargetException.class, () -> channel.call(new Exploit(safeUrl, expectedContent)));
+                assertThat(itex.getCause(), instanceOf(IllegalStateException.class));
             }
         }
     }

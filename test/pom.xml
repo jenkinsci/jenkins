@@ -39,7 +39,7 @@ THE SOFTWARE.
   <properties>
     <mavenDebug>false</mavenDebug>
     <!-- Minimum Remoting version, which is tested for API compatibility, duplicated so that renovate only updates the latest remoting version property -->
-    <remoting.minimum.supported.version>3107.v665000b_51092</remoting.minimum.supported.version>
+    <remoting.minimum.supported.version>3256.3258.v858f3c9a_f69d</remoting.minimum.supported.version>
     <!-- Filled in by jacoco-maven-plugin -->
     <jacocoSurefireArgs />
     <!--
@@ -329,14 +329,6 @@ THE SOFTWARE.
                   <groupId>org.jenkins-ci.main</groupId>
                   <artifactId>remoting</artifactId>
                   <version>3256.v88a_f6e922152</version>
-                  <type>jar</type>
-                  <outputDirectory>${project.build.outputDirectory}/old-remoting</outputDirectory>
-                  <destFileName>remoting-before-SECURITY-3430-fix.jar</destFileName>
-                </artifactItem>
-                <artifactItem>
-                  <groupId>org.jenkins-ci.main</groupId>
-                  <artifactId>remoting</artifactId>
-                  <version>3085.vc4c6977c075a</version>
                   <type>jar</type>
                   <outputDirectory>${project.build.outputDirectory}/old-remoting</outputDirectory>
                   <destFileName>remoting-unsupported.jar</destFileName>
