@@ -432,7 +432,7 @@ THE SOFTWARE.
                   <!-- detached after 2.112 -->
                   <groupId>org.jenkins-ci.plugins</groupId>
                   <artifactId>jdk-tool</artifactId>
-                  <version>73.vddf737284550</version>
+                  <version>80.v8a_dee33ed6f0</version>
                   <type>hpi</type>
                 </artifactItem>
                 <artifactItem>
