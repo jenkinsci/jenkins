@@ -1,5 +1,9 @@
 package hudson.cli;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 
 import hudson.Functions;
@@ -129,6 +133,19 @@ public class CLIActionTest {
             }, 1, TimeUnit.MINUTES);
         }
         assertEquals(code, proc.join());
+    }
+
+    @Test public void authenticationFailed() throws Exception {
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        j.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Jenkins.ADMINISTER).everywhere().toAuthenticated());
+        var jar = tmp.newFile("jenkins-cli.jar");
+        FileUtils.copyURLToFile(j.jenkins.getJnlpJars("jenkins-cli.jar").getURL(), jar);
+        var baos = new ByteArrayOutputStream();
+        var exitStatus = new Launcher.LocalLauncher(StreamTaskListener.fromStderr()).launch().cmds(
+            "java", "-jar", jar.getAbsolutePath(), "-s", j.getURL().toString(), "-auth", "user:bogustoken", "who-am-i"
+        ).stdout(baos).start().join();
+        assertThat(baos.toString(), allOf(containsString("status code 401"), containsString("Server: Jetty")));
+        assertThat(exitStatus, is(15));
     }
 
     @Issue("JENKINS-41745")
