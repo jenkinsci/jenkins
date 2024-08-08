@@ -47,16 +47,7 @@
       ],
       "enabled": false,
       "matchPackageNames": [
-        "jakarta.servlet:jakarta.servlet-api"
-      ]
-    },
-    {
-      "description": "Contains incompatible API changes and needs compatibility work",
-      "matchManagers": [
-        "maven"
-      ],
-      "enabled": false,
-      "matchPackageNames": [
+        "jakarta.servlet:jakarta.servlet-api",
         "jakarta.servlet.jsp.jstl:jakarta.servlet.jsp.jstl-api"
       ]
     },
