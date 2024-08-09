@@ -33,6 +33,7 @@ import static java.util.logging.Level.INFO;
 import static java.util.logging.Level.WARNING;
 import static java.util.stream.Collectors.toList;
 
+import com.google.common.annotations.VisibleForTesting;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
@@ -214,11 +215,18 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
      */
     /* private final */ static int CHECK_UPDATE_ATTEMPTS;
 
+    /**
+     * List of detached plugins that should not be installed as implied dependency.
+     */
+    @VisibleForTesting
+    /* private */ static final List<String> IGNORE_DETACHED = new ArrayList<>();
+
     static {
         try {
             // Secure initialization
             CHECK_UPDATE_SLEEP_TIME_MILLIS = SystemProperties.getInteger(PluginManager.class.getName() + ".checkUpdateSleepTimeMillis", 1000);
             CHECK_UPDATE_ATTEMPTS = SystemProperties.getInteger(PluginManager.class.getName() + ".checkUpdateAttempts", 1);
+            IGNORE_DETACHED.addAll(List.of(SystemProperties.getString(PluginManager.class.getName() + ".ignoreDetached", "").split(",")));
         } catch (RuntimeException e) {
             LOGGER.warning(String.format("There was an error initializing the PluginManager. Exception: %s", e));
         } finally {
@@ -615,12 +623,32 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
         }});
     }
 
+    @Restricted(NoExternalUse.class)
+    public boolean isImpliedToBeIgnored(String shortName, boolean register) {
+        if (new File(rootDir, shortName + ".jpi.uninstalled").isFile() || IGNORE_DETACHED.contains(shortName)) {
+            if (Jenkins.get().getInitLevel() == COMPLETED && register) {
+                LOGGER.log(INFO, () -> "not considering loading a detached dependency " + shortName + " as it is marked as uninstalled.");
+                DetachedPluginIgnoredMonitor monitor = AdministrativeMonitor.all().get(DetachedPluginIgnoredMonitor.class);
+                if (monitor != null) {
+                    monitor.setActive(true, shortName);
+                }
+            } else {
+                LOGGER.log(FINE, () -> "not considering loading a detached dependency " + shortName + " as it is marked as uninstalled.");
+            }
+            return true;
+        }
+        return false;
+    }
+
     void considerDetachedPlugin(String shortName, String source) {
         if (new File(rootDir, shortName + ".jpi").isFile() ||
             new File(rootDir, shortName + ".hpi").isFile() ||
             new File(rootDir, shortName + ".jpl").isFile() ||
             new File(rootDir, shortName + ".hpl").isFile()) {
             LOGGER.fine(() -> "not considering loading a detached dependency " + shortName + " as it is already on disk");
+            return;
+        }
+        if (isImpliedToBeIgnored(shortName, true)) {
             return;
         }
         LOGGER.fine(() -> "considering loading a detached dependency " + shortName);
@@ -2611,6 +2639,46 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
             return Jenkins.get().getPluginManager().getPlugins().stream()
                     .filter(PluginWrapper::isDeprecated)
                     .collect(Collectors.toMap(Function.identity(), it -> it.getDeprecations().get(0).url));
+        }
+    }
+
+    @Restricted(NoExternalUse.class)
+    @Symbol("detachedPluginIgnored")
+    @Extension
+    public static final class DetachedPluginIgnoredMonitor extends AdministrativeMonitor {
+
+        private boolean active;
+        private Set<String> ignored = Collections.synchronizedSet(new HashSet<>());
+
+        @Override
+        public String getDisplayName() {
+            return Messages.PluginManager_DetachedPluginIgnoredMonitor_DisplayName();
+        }
+
+        @Override
+        public boolean isActivated() {
+            return active;
+        }
+
+        public void setActive(boolean active, String pluginName) {
+            this.active = active;
+            ignored.add(pluginName);
+        }
+
+        public Set<String> getIgnored() {
+            return Collections.unmodifiableSet(ignored);
+        }
+
+        @POST
+        public HttpResponse doAct(@QueryParameter String reset) throws IOException {
+            Jenkins.get().checkPermission(Jenkins.ADMINISTER);
+            if (reset != null) {
+                active = false;
+                ignored.clear();
+            } else {
+                disable(true);
+            }
+            return HttpResponses.redirectViaContextPath("/manage");
         }
     }
 
