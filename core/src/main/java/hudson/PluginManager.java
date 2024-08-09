@@ -1420,6 +1420,55 @@ public abstract class PluginManager extends AbstractModelObject implements OnMas
     }
 
     /**
+     Returns the sort order index for the given {@link PluginWrapper} on {@code installed.jelly}.
+     <ol>
+     <li>Plugins marked for deletion (temporary until restart)</li>
+     <li>Inactive and disabled plugins that can be enabled (often present for a while before uninstalled)</li>
+     <li>Inactive and disabled plugins that cannot be enabled (often present for a while before uninstalled)</li>
+     <li>Active plugins that have been disabled (temporary until restart)</li>
+     <li>Inactive plugins that have just been enabled (temporary until restart)</li>
+     <li>Enabled and active plugins that can be freely disabled/uninstalled from a dependency POV</li>
+     <li>Enabled and active plugins with implied dependants, can be disabled but might be unsafe</li>
+     <li>Enabled and active plugins with mandatory dependants, cannot be disabled.</li>
+     </ol>
+     <p>
+     This groups by visual presentation, with the states that can be more readily interacted with towards the top, pushing required dependencies to the bottom.
+     '1' / '2-4' / '5-8' is trivially reflected on the UI through the state/existence of the toggle button.
+     </p>
+     */
+    @Restricted(NoExternalUse.class) // Jelly only
+    public int getSortIndex(PluginWrapper p) {
+        if (p.isDeleted()) {
+            return 1; // temporary status
+        }
+        if (!p.isEnabled()) {
+            if (p.isActive()) {
+                return 4; // temporary status
+            }
+            // TODO: Disabled but cannot be enabled
+            for (Dependency d : p.getMandatoryDependencies()) {
+                PluginWrapper dependency = getPlugin(d.shortName);
+                if (dependency == null || !dependency.isEnabled()) {
+                    return 3;
+                }
+            }
+            return 2;
+        } else {
+            // enabled
+            if (p.isActive()) {
+                if (p.hasMandatoryDependents()) {
+                    return 8;
+                }
+                if (p.hasImpliedDependents()) {
+                    return 7;
+                }
+                return 6;
+            }
+            return 5; // temporary status
+        }
+    }
+
+    /**
      * This allows "Update Center" to live at the URL
      * {@code /pluginManager/updates/} in addition to its {@code /updateCenter/}
      * URL which is provided by {@link jenkins.model.Jenkins#getUpdateCenter()}.
