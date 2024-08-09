@@ -74,7 +74,7 @@ export default function makeKeyboardNavigable(
           selectedItem.click();
         }
       } else {
-        additionalBehaviours(selectedItem, e.key);
+        additionalBehaviours(selectedItem, e.key, e);
       }
     }
   });
