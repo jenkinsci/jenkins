@@ -1201,7 +1201,7 @@ public abstract class Descriptor<T extends Describable<T>> implements Loadable, 
         @Override
         public void generateResponse(StaplerRequest req, StaplerResponse rsp, Object node) throws IOException, ServletException {
             if (FormApply.isApply(req)) {
-                FormApply.applyResponse("notificationBar.show(" + quote(getMessage()) + ",notificationBar.ERROR)")
+                FormApply.showNotification(getMessage(), FormApply.NotificationType.ERROR)
                         .generateResponse(req, rsp, node);
             } else {
                 // for now, we can't really use the field name that caused the problem.
