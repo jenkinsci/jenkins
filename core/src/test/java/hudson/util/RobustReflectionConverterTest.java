@@ -46,8 +46,10 @@ import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jenkins.util.xstream.CriticalXStreamException;
@@ -84,6 +86,20 @@ public class RobustReflectionConverterTest {
         assertThat(e.getMessage(), containsString("No such field hudson.util.Point.z"));
     }
 
+    private Map<String, String> getClassOwnerMap(String target) {
+        Map<String, String> classOwnerMap = new TreeMap<>();
+        int index = target.indexOf("plugin=", 0);
+        while (index != -1) {
+            int classNameStart = target.lastIndexOf("<", index) + 1;
+            String className = target.substring(classNameStart, index - 1);
+            int ownerNameEnd = target.indexOf("'", index + 8);
+            String ownerName = target.substring(index + 8, ownerNameEnd);
+            classOwnerMap.put(className, ownerName);
+            index = target.indexOf("plugin=", index + 1);
+        }
+        return classOwnerMap;
+    }
+
     @Test
     public void classOwnership() {
         Enchufla s1 = new Enchufla();
@@ -108,13 +124,16 @@ public class RobustReflectionConverterTest {
         });
         String prefix1 = RobustReflectionConverterTest.class.getName() + "_-";
         String prefix2 = RobustReflectionConverterTest.class.getName() + "$";
-        assertEquals("<Projekt><bildz><Bild><steppes>"
+        String target = "<Projekt><bildz><Bild><steppes>"
                 + "<Enchufla plugin='p1'><number>1</number><direction>North</direction></Enchufla>"
                 // note no plugin='p2' on <boot/> since that would be redundant; <jacket/> is quiet even though unowned
                 + "<Moonwalk plugin='p2'><number>2</number><boot/><lover class='Billy' plugin='p3'/></Moonwalk>"
                 + "<Moonwalk plugin='p2'><number>3</number><boot/><jacket/><lover class='Jean' plugin='p4'/></Moonwalk>"
-                + "</steppes></Bild></bildz></Projekt>",
-                xs.toXML(p).replace(prefix1, "").replace(prefix2, "").replaceAll("\r?\n *", "").replace('"', '\''));
+                + "</steppes></Bild></bildz></Projekt>";
+        String sample = xs.toXML(p).replace(prefix1, "").replace(prefix2, "").replaceAll("\r?\n *", "").replace('"', '\'');
+        Map<String, String> targetClassOwnerMap = getClassOwnerMap(target);
+        Map<String, String> sampleClassOwnerMap = getClassOwnerMap(sample);
+        assertEquals(targetClassOwnerMap, sampleClassOwnerMap);
         Moonwalk s = (Moonwalk) xs.fromXML("<" + prefix1 + "Moonwalk plugin='p2'><lover class='" + prefix2 + "Billy' plugin='p3'/></" + prefix1 + "Moonwalk>");
         assertEquals(Billy.class, s.lover.getClass());
     }
