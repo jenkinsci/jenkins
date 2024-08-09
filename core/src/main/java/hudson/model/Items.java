@@ -561,7 +561,7 @@ public class Items {
      * @throws IllegalArgumentException if the move would really be a rename, or the destination cannot accept the item, or the destination already has an item of that name
      * @since 1.548
      */
-    public static <I extends AbstractItem & TopLevelItem> I move(I item, DirectlyModifiableTopLevelItemGroup destination) throws IOException, IllegalArgumentException {
+    public static <I extends AbstractItem & TopLevelItem> I move(I item, DirectlyModifiableTopLevelItemGroup destination) throws IOException {
         DirectlyModifiableTopLevelItemGroup oldParent = (DirectlyModifiableTopLevelItemGroup) item.getParent();
         if (oldParent == destination) {
             throw new IllegalArgumentException();

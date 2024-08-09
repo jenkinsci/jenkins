@@ -62,7 +62,7 @@ final class AuthenticationSpringImpl implements org.springframework.security.cor
     }
 
     @Override
-    public void setAuthenticated(boolean isAuthenticated) throws IllegalArgumentException {
+    public void setAuthenticated(boolean isAuthenticated) {
         delegate.setAuthenticated(isAuthenticated);
     }
 

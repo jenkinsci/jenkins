@@ -99,7 +99,7 @@ public final class ContainerAuthentication implements Authentication {
     }
 
     @Override
-    public void setAuthenticated(boolean isAuthenticated) throws IllegalArgumentException {
+    public void setAuthenticated(boolean isAuthenticated) {
         // noop
     }
 

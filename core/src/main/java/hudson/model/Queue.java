@@ -2118,7 +2118,7 @@ public class Queue extends ResourceController implements Saveable {
          * Called by {@link Executor} to perform the task.
          * @throws AsynchronousExecution if you would like to continue without consuming a thread
          */
-        @Override void run() throws AsynchronousExecution;
+        @Override void run();
 
         /**
          * Estimate of how long will it take to execute this executable.
@@ -3074,7 +3074,7 @@ public class Queue extends ResourceController implements Saveable {
         }
 
         @Override
-        public void checkRoles(RoleChecker checker) throws SecurityException {
+        public void checkRoles(RoleChecker checker) {
             delegate.checkRoles(checker);
         }
     }

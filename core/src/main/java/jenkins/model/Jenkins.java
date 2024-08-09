@@ -818,7 +818,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @since 2.98
      */
     @NonNull
-    public static Jenkins get() throws IllegalStateException {
+    public static Jenkins get() {
         Jenkins instance = getInstanceOrNull();
         if (instance == null) {
             throw new IllegalStateException("Jenkins.instance is missing. Read the documentation of Jenkins.getInstanceOrNull to see what you are doing wrong.");
@@ -832,7 +832,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      */
     @Deprecated
     @NonNull
-    public static Jenkins getActiveInstance() throws IllegalStateException {
+    public static Jenkins getActiveInstance() {
         return get();
     }
 
@@ -2494,7 +2494,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @since 1.66
      * @see <a href="https://wiki.jenkins-ci.org/display/JENKINS/Hyperlinks+in+HTML">Hyperlinks in HTML</a>
      */
-    public @Nullable String getRootUrl() throws IllegalStateException {
+    public @Nullable String getRootUrl() {
         final JenkinsLocationConfiguration config = JenkinsLocationConfiguration.get();
         String url = config.getUrl();
         if (url != null) {
@@ -3034,7 +3034,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
      * @throws IOException Failed to save the configuration
      * @throws IllegalArgumentException Negative value has been passed
      */
-    public void setNumExecutors(/* @javax.annotation.Nonnegative*/ int n) throws IOException, IllegalArgumentException {
+    public void setNumExecutors(/* @javax.annotation.Nonnegative*/ int n) throws IOException {
         if (n < 0) {
             throw new IllegalArgumentException("Incorrect field \"# of executors\": " + n + ". It should be a non-negative number.");
         }
@@ -3273,7 +3273,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         return true;
     }
 
-    @Override public synchronized <I extends TopLevelItem> I add(I item, String name) throws IOException, IllegalArgumentException {
+    @Override public synchronized <I extends TopLevelItem> I add(I item, String name) throws IOException {
         if (items.containsKey(name)) {
             throw new IllegalArgumentException("already an item '" + name + "'");
         }
@@ -3281,7 +3281,7 @@ public class Jenkins extends AbstractCIBase implements DirectlyModifiableTopLeve
         return item;
     }
 
-    @Override public void remove(TopLevelItem item) throws IOException, IllegalArgumentException {
+    @Override public void remove(TopLevelItem item) throws IOException {
         items.remove(item.getName());
     }
 

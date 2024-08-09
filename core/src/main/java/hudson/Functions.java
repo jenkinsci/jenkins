@@ -613,7 +613,7 @@ public class Functions {
     private static final Pattern ICON_SIZE = Pattern.compile("\\d+x\\d+");
 
     @Restricted(NoExternalUse.class)
-    public static String validateIconSize(String iconSize) throws SecurityException {
+    public static String validateIconSize(String iconSize) {
         if (!ICON_SIZE.matcher(iconSize).matches()) {
             throw new SecurityException("invalid iconSize");
         }

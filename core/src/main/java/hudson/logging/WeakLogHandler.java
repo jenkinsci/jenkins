@@ -63,7 +63,7 @@ public final class WeakLogHandler extends Handler {
     }
 
     @Override
-    public void close() throws SecurityException {
+    public void close() {
         Handler t = resolve();
         if (t != null)
             t.close();
@@ -77,7 +77,7 @@ public final class WeakLogHandler extends Handler {
     }
 
     @Override
-    public void setFormatter(Formatter newFormatter) throws SecurityException {
+    public void setFormatter(Formatter newFormatter) {
         super.setFormatter(newFormatter);
         Handler t = resolve();
         if (t != null)
@@ -85,7 +85,7 @@ public final class WeakLogHandler extends Handler {
     }
 
     @Override
-    public void setEncoding(String encoding) throws SecurityException, UnsupportedEncodingException {
+    public void setEncoding(String encoding) throws UnsupportedEncodingException {
         super.setEncoding(encoding);
         Handler t = resolve();
         if (t != null)
@@ -93,7 +93,7 @@ public final class WeakLogHandler extends Handler {
     }
 
     @Override
-    public void setFilter(Filter newFilter) throws SecurityException {
+    public void setFilter(Filter newFilter) {
         super.setFilter(newFilter);
         Handler t = resolve();
         if (t != null)
@@ -109,7 +109,7 @@ public final class WeakLogHandler extends Handler {
     }
 
     @Override
-    public void setLevel(Level newLevel) throws SecurityException {
+    public void setLevel(Level newLevel) {
         super.setLevel(newLevel);
         Handler t = resolve();
         if (t != null)
