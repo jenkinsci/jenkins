@@ -70,11 +70,6 @@ THE SOFTWARE.
   </st:documentation>
   <f:prepareDatabinding/>
   ${descriptor.calcFillSettings(field,attrs)} <!-- this figures out the 'fillUrl' and 'fillDependsOn' attribute -->
-  <st:once>
-    <script type="text/javascript" src="${request.contextPath}/scripts/utilities.js"/>
-    <script type="text/javascript" src="${request.contextPath}/scripts/combobox.js"/>
-  </st:once>
-  <st:adjunct includes="lib.form.combobox.combobox"/>
 
   <!-- mostly pass-through all the attributes -->
   <j:set var="name" value="${attrs.name ?: '_.'+attrs.field}"/>
