@@ -1,7 +1,8 @@
 package jenkins.security;
 
-import static java.util.logging.Level.FINE;
 import static java.util.logging.Level.FINER;
+import static java.util.logging.Level.INFO;
+import static java.util.logging.Level.WARNING;
 
 import hudson.security.ACL;
 import hudson.security.ACLContext;
@@ -74,6 +75,7 @@ public class BasicHeaderProcessor implements Filter {
                 String password = uidpassword.substring(idx + 1);
 
                 if (!authenticationIsRequired(username)) {
+                    LOGGER.log(INFO, "Request re-authenticated as {0}", new Object[]{username});
                     chain.doFilter(request, response);
                     return;
                 }
@@ -82,7 +84,7 @@ public class BasicHeaderProcessor implements Filter {
                     LOGGER.log(FINER, "Attempting to authenticate with {0}", a);
                     Authentication auth = a.authenticate2(req, rsp, username, password);
                     if (auth != null) {
-                        LOGGER.log(FINE, "Request authenticated as {0} by {1}", new Object[]{auth, a});
+                        LOGGER.log(INFO, "Request authenticated as {0} by {1}", new Object[]{auth, a});
                         success(req, rsp, chain, auth);
                         return;
                     }
@@ -141,7 +143,7 @@ public class BasicHeaderProcessor implements Filter {
     }
 
     protected void fail(HttpServletRequest req, HttpServletResponse rsp, BadCredentialsException failure) throws IOException, ServletException {
-        LOGGER.log(FINE, "Authentication of BASIC header failed");
+        LOGGER.log(WARNING, "Authentication of BASIC header failed: " + failure.getMessage());
 
         rememberMeServices.loginFail(req, rsp);
 
