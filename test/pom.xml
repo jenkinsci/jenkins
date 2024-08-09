@@ -485,5 +485,11 @@ THE SOFTWARE.
         </plugins>
       </build>
     </profile>
+    <profile>
+      <id>release</id>
+      <properties>
+        <surefire.rerunFailingTestsCount>1</surefire.rerunFailingTestsCount>
+      </properties>
+    </profile>
   </profiles>
 </project>
